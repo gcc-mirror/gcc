@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-dfa.h"
 #include "gdb/gdb-index.h"
+#include "rtl-iter.h"
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx_insn *last_var_location_insn;
@@ -11413,14 +11414,11 @@ expansion_failed (tree expr, rtx rtl, char const *reason)
     }
 }
 
-/* Helper function for const_ok_for_output, called either directly
-   or via for_each_rtx.  */
+/* Helper function for const_ok_for_output.  */
 
-static int
-const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
+static bool
+const_ok_for_output_1 (rtx rtl)
 {
-  rtx rtl = *rtlp;
-
   if (GET_CODE (rtl) == UNSPEC)
     {
       /* If delegitimize_address couldn't do anything with the UNSPEC, assume
@@ -11448,14 +11446,14 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
-      return 1;
+      return false;
     }
 
   if (targetm.const_not_ok_for_debug_p (rtl))
     {
       expansion_failed (NULL_TREE, rtl,
 			"Expression rejected for debug by the backend.\n");
-      return 1;
+      return false;
     }
 
   /* FIXME: Refer to PR60655. It is possible for simplification
@@ -11466,9 +11464,8 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (rtl) != SYMBOL_REF)
     {
       if (GET_CODE (rtl) == NOT)
-	  return 1;
-
-      return 0;
+	return false;
+      return true;
     }
 
   if (CONSTANT_POOL_ADDRESS_P (rtl))
@@ -11481,12 +11478,12 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 	{
 	  expansion_failed (NULL_TREE, rtl,
 			    "Constant was removed from constant pool.\n");
-	  return 1;
+	  return false;
 	}
     }
 
   if (SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
-    return 1;
+    return false;
 
   /* Avoid references to external symbols in debug info, on several targets
      the linker might even refuse to link when linking a shared library,
@@ -11501,11 +11498,11 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 	{
 	  expansion_failed (NULL_TREE, rtl,
 			    "Symbol not defined in current TU.\n");
-	  return 1;
+	  return false;
 	}
     }
 
-  return 0;
+  return true;
 }
 
 /* Return true if constant RTL can be emitted in DW_OP_addr or
@@ -11516,10 +11513,16 @@ static bool
 const_ok_for_output (rtx rtl)
 {
   if (GET_CODE (rtl) == SYMBOL_REF)
-    return const_ok_for_output_1 (&rtl, NULL) == 0;
+    return const_ok_for_output_1 (rtl);
 
   if (GET_CODE (rtl) == CONST)
-    return for_each_rtx (&XEXP (rtl, 0), const_ok_for_output_1, NULL) == 0;
+    {
+      subrtx_var_iterator::array_type array;
+      FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 0), ALL)
+	if (!const_ok_for_output_1 (*iter))
+	  return false;
+      return true;
+    }
 
   return true;
 }
