@@ -596,7 +596,6 @@ static void invalidate_from_clobbers (rtx_insn *);
 static void invalidate_from_sets_and_clobbers (rtx_insn *);
 static rtx cse_process_notes (rtx, rtx, bool *);
 static void cse_extended_basic_block (struct cse_basic_block_data *);
-static int check_for_label_ref (rtx *, void *);
 extern void dump_class (struct table_elt*);
 static void get_cse_reg_info_1 (unsigned int regno);
 static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
@@ -6366,6 +6365,32 @@ cse_prescan_path (struct cse_basic_block_data *data)
   data->nsets = nsets;
 }
 
+/* Return true if the pattern of INSN uses a LABEL_REF for which
+   there isn't a REG_LABEL_OPERAND note.  */
+
+static bool
+check_for_label_ref (rtx_insn *insn)
+{
+  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL_OPERAND
+     note for it, we must rerun jump since it needs to place the note.  If
+     this is a LABEL_REF for a CODE_LABEL that isn't in the insn chain,
+     don't do this since no REG_LABEL_OPERAND will be added.  */
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == LABEL_REF
+	  && !LABEL_REF_NONLOCAL_P (x)
+	  && (!JUMP_P (insn)
+	      || !label_is_jump_target_p (XEXP (x, 0), insn))
+	  && LABEL_P (XEXP (x, 0))
+	  && INSN_UID (XEXP (x, 0)) != 0
+	  && !find_reg_note (insn, REG_LABEL_OPERAND, XEXP (x, 0)))
+	return true;
+    }
+  return false;
+}
+
 /* Process a single extended basic block described by EBB_DATA.  */
 
 static void
@@ -6436,8 +6461,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	      /* If we haven't already found an insn where we added a LABEL_REF,
 		 check this one.  */
 	      if (INSN_P (insn) && !recorded_label_ref
-		  && for_each_rtx (&PATTERN (insn), check_for_label_ref,
-				   (void *) insn))
+		  && check_for_label_ref (insn))
 		recorded_label_ref = true;
 
 #ifdef HAVE_cc0
@@ -6628,28 +6652,6 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
     return 1;
   else
     return 0;
-}
-
-/* Called via for_each_rtx to see if an insn is using a LABEL_REF for
-   which there isn't a REG_LABEL_OPERAND note.
-   Return one if so.  DATA is the insn.  */
-
-static int
-check_for_label_ref (rtx *rtl, void *data)
-{
-  rtx_insn *insn = (rtx_insn *) data;
-
-  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL_OPERAND
-     note for it, we must rerun jump since it needs to place the note.  If
-     this is a LABEL_REF for a CODE_LABEL that isn't in the insn chain,
-     don't do this since no REG_LABEL_OPERAND will be added.  */
-  return (GET_CODE (*rtl) == LABEL_REF
-	  && ! LABEL_REF_NONLOCAL_P (*rtl)
-	  && (!JUMP_P (insn)
-	      || !label_is_jump_target_p (XEXP (*rtl, 0), insn))
-	  && LABEL_P (XEXP (*rtl, 0))
-	  && INSN_UID (XEXP (*rtl, 0)) != 0
-	  && ! find_reg_note (insn, REG_LABEL_OPERAND, XEXP (*rtl, 0)));
 }
 
 /* Count the number of times registers are used (not set) in X.
