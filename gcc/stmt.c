@@ -187,7 +187,7 @@ expand_label (tree label)
     {
       expand_builtin_setjmp_receiver (NULL);
       nonlocal_goto_handler_labels
-	= gen_rtx_EXPR_LIST (VOIDmode, label_r,
+	= gen_rtx_INSN_LIST (VOIDmode, label_r,
 			     nonlocal_goto_handler_labels);
     }
 

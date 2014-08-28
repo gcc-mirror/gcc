@@ -1,5 +1,32 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct rtl_data): Convert field
+	"x_nonlocal_goto_handler_labels" from rtx_expr_list * to
+	rtx_insn_list *.
+	* rtl.h (remove_node_from_insn_list): New prototype.
+
+	* builtins.c (expand_builtin): When prepending to
+	nonlocal_goto_handler_labels, use gen_rtx_INSN_LIST rather than
+	gen_rtx_EXPR_LIST.
+	* cfgbuild.c (make_edges): Convert local "x" from rtx_expr_list *
+	to rtx_insn_list *, and use its "insn" method rather than
+	"element" method.
+	* cfgrtl.c (delete_insn): Use new function
+	remove_node_from_insn_list rather than
+	remove_node_from_expr_list.
+	(cfg_layout_initialize): Convert local "x" from rtx_expr_list *
+	to rtx_insn_list *, and use its "insn" method rather than
+	"element" method.
+	* dwarf2cfi.c (create_trace_edges): Likewise for local "lab".
+	* reload1.c (set_initial_label_offsets): Likewise for local "x".
+	* rtlanal.c (remove_node_from_insn_list): New function, adapted
+	from remove_node_from_expr_list.
+	* stmt.c (expand_label): When prepending to
+	nonlocal_goto_handler_labels, use gen_rtx_INSN_LIST rather than
+	gen_rtx_EXPR_LIST.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct rtl_data): Strengthen fields "x_return_label"
 	and "x_naked_return_label" from rtx to rtx_code_label *.
 
