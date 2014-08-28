@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* varasm.c: Include rtl-iter.h.
+	(const_rtx_hash_1): Take a const_rtx rather than an rtx *.
+	Remove the pointer to the cumulative hashval_t and just return
+	the hash for this rtx instead.  Remove recursive CONST_VECTOR case.
+	(const_rtx_hash): Use FOR_EACH_SUBRTX instead of for_each_rtx.
+	Accumulate the hashval_ts here instead of const_rtx_hash_1.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* var-tracking.c (add_uses): Take an rtx rather than an rtx *.
 	Give real type of data parameter.  Remove return value.
 	(add_uses_1): Use FOR_EACH_SUBRTX_VAR rather than for_each_rtx
