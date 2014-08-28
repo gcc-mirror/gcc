@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dce.h"
 #include "valtrack.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 /* Note that turning REG_DEAD_DEBUGGING on will cause
    gcc.c-torture/unsorted/dump-noaddr.c to fail because it prints
@@ -3584,25 +3585,27 @@ df_simulate_one_insn_forwards (basic_block bb, rtx_insn *insn, bitmap live)
 #define MEMREF_NORMAL 1
 #define MEMREF_VOLATILE 2
 
-/* A subroutine of can_move_insns_across_p called through for_each_rtx.
-   Return either MEMREF_NORMAL or MEMREF_VOLATILE if a memory is found.  */
+/* Return an OR of MEMREF_NORMAL or MEMREF_VOLATILE for the MEMs in X.  */
 
 static int
-find_memory (rtx *px, void *data ATTRIBUTE_UNUSED)
+find_memory (rtx insn)
 {
-  rtx x = *px;
-
-  if (GET_CODE (x) == ASM_OPERANDS && MEM_VOLATILE_P (x))
-    return MEMREF_VOLATILE;
-
-  if (!MEM_P (x))
-    return 0;
-  if (MEM_VOLATILE_P (x))
-    return MEMREF_VOLATILE;
-  if (MEM_READONLY_P (x))
-    return 0;
-
-  return MEMREF_NORMAL;
+  int flags = 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == ASM_OPERANDS && MEM_VOLATILE_P (x))
+	flags |= MEMREF_VOLATILE;
+      else if (MEM_P (x))
+	{
+	  if (MEM_VOLATILE_P (x))
+	    flags |= MEMREF_VOLATILE;
+	  else if (!MEM_READONLY_P (x))
+	    flags |= MEMREF_NORMAL;
+	}
+    }
+  return flags;
 }
 
 /* A subroutine of can_move_insns_across_p called through note_stores.
@@ -3706,8 +3709,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	{
 	  if (volatile_insn_p (PATTERN (insn)))
 	    return false;
-	  memrefs_in_across |= for_each_rtx (&PATTERN (insn), find_memory,
-					     NULL);
+	  memrefs_in_across |= find_memory (insn);
 	  note_stores (PATTERN (insn), find_memory_stores,
 		       &mem_sets_in_across);
 	  /* This is used just to find sets of the stack pointer.  */
@@ -3789,8 +3791,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	      int mem_ref_flags = 0;
 	      int mem_set_flags = 0;
 	      note_stores (PATTERN (insn), find_memory_stores, &mem_set_flags);
-	      mem_ref_flags = for_each_rtx (&PATTERN (insn), find_memory,
-					    NULL);
+	      mem_ref_flags = find_memory (insn);
 	      /* Catch sets of the stack pointer.  */
 	      mem_ref_flags |= mem_set_flags;
 
