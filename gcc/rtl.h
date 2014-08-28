@@ -2751,7 +2751,6 @@ extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
 extern int set_noop_p (const_rtx);
 extern int noop_move_p (const_rtx);
-extern rtx find_last_value (rtx, rtx *, rtx, int);
 extern int refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
 extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
 extern const_rtx set_of (const_rtx, const_rtx);
