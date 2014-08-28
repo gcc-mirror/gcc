@@ -2797,7 +2797,7 @@ extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const_rtx, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
-extern bool tls_referenced_p (rtx);
+extern bool tls_referenced_p (const_rtx);
 
 typedef int (*rtx_function) (rtx *, void *);
 extern int for_each_rtx (rtx *, rtx_function, void *);

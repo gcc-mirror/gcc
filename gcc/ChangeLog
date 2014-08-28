@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.h (tls_referenced_p): Take a const_rtx rather than an rtx.
+	* rtlanal.c (tls_referenced_p_1): Delete.
+	(tls_referenced_p): Take a const_rtx rather than an rtx.
+	Use FOR_EACH_SUBRTX rather than for_each_rtx.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (for_each_inc_dec_fn): Remove special case for -1.
 	(for_each_inc_dec): Take an rtx rather than an rtx *.
 	* cselib.c (cselib_record_autoinc_cb): Update accordingly.
