@@ -105,7 +105,7 @@ static unsigned int frv_type_to_unit[TYPE_UNKNOWN + 1];
 
 /* An array of dummy nop INSNs, one for each type of nop that the
    target supports.  */
-static GTY(()) rtx frv_nops[NUM_NOP_PATTERNS];
+static GTY(()) rtx_insn *frv_nops[NUM_NOP_PATTERNS];
 
 /* The number of nop instructions in frv_nops[].  */
 static unsigned int frv_num_nops;
@@ -1405,7 +1405,7 @@ frv_function_contains_far_jump (void)
 static void
 frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  rtx insn, next, last_call;
+  rtx_insn *insn, *next, *last_call;
 
   /* If no frame was created, check whether the function uses a call
      instruction to implement a far jump.  If so, save the link in gr3 and
@@ -1415,7 +1415,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      a stack frame.  */
   if (frv_stack_info ()->total_size == 0 && frv_function_contains_far_jump ())
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* Just to check that the above comment is true.  */
       gcc_assert (!df_regs_ever_live_p (GPR_FIRST + 3));
@@ -1450,7 +1450,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
   /* Locate CALL_ARG_LOCATION notes that have been misplaced
      and move them back to where they should be located.  */
-  last_call = NULL_RTX;
+  last_call = NULL;
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -8161,10 +8161,10 @@ frv_reorg_packet (void)
 static void
 frv_register_nop (rtx nop)
 {
-  nop = make_insn_raw (nop);
-  SET_NEXT_INSN (nop) = 0;
-  SET_PREV_INSN (nop) = 0;
-  frv_nops[frv_num_nops++] = nop;
+  rtx_insn *nop_insn = make_insn_raw (nop);
+  SET_NEXT_INSN (nop_insn) = 0;
+  SET_PREV_INSN (nop_insn) = 0;
+  frv_nops[frv_num_nops++] = nop_insn;
 }
 
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  Divide the instructions

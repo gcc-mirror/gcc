@@ -6804,38 +6804,42 @@ mep_ipipe_ldc_p (rtx_insn *insn)
    Emit the bundle in place of COP and return it.  */
 
 static rtx_insn *
-mep_make_bundle (rtx core, rtx_insn *cop)
+mep_make_bundle (rtx core_insn_or_pat, rtx_insn *cop)
 {
   rtx seq;
+  rtx_insn *core_insn;
   rtx_insn *insn;
 
   /* If CORE is an existing instruction, remove it, otherwise put
      the new pattern in an INSN harness.  */
-  if (INSN_P (core))
-    remove_insn (core);
+  if (INSN_P (core_insn_or_pat))
+    {
+      core_insn = as_a <rtx_insn *> (core_insn_or_pat);
+      remove_insn (core_insn);
+    }
   else
-    core = make_insn_raw (core);
+    core_insn = make_insn_raw (core_insn_or_pat);
 
   /* Generate the bundle sequence and replace COP with it.  */
-  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec (2, core, cop));
+  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec (2, core_insn, cop));
   insn = emit_insn_after (seq, cop);
   remove_insn (cop);
 
   /* Set up the links of the insns inside the SEQUENCE.  */
-  SET_PREV_INSN (core) = PREV_INSN (insn);
-  SET_NEXT_INSN (core) = cop;
-  SET_PREV_INSN (cop) = core;
+  SET_PREV_INSN (core_insn) = PREV_INSN (insn);
+  SET_NEXT_INSN (core_insn) = cop;
+  SET_PREV_INSN (cop) = core_insn;
   SET_NEXT_INSN (cop) = NEXT_INSN (insn);
 
   /* Set the VLIW flag for the coprocessor instruction.  */
-  PUT_MODE (core, VOIDmode);
+  PUT_MODE (core_insn, VOIDmode);
   PUT_MODE (cop, BImode);
 
   /* Derive a location for the bundle.  Individual instructions cannot
      have their own location because there can be no assembler labels
-     between CORE and COP.  */
-  INSN_LOCATION (insn) = INSN_LOCATION (INSN_LOCATION (core) ? core : cop);
-  INSN_LOCATION (core) = 0;
+     between CORE_INSN and COP.  */
+  INSN_LOCATION (insn) = INSN_LOCATION (INSN_LOCATION (core_insn) ? core_insn : cop);
+  INSN_LOCATION (core_insn) = 0;
   INSN_LOCATION (cop) = 0;
 
   return insn;

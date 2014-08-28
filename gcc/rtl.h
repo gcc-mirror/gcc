@@ -1327,7 +1327,7 @@ inline rtx_insn *PREV_INSN (const_rtx insn)
   return safe_as_a <rtx_insn *> (prev);
 }
 
-inline rtx& SET_PREV_INSN (rtx insn)
+inline rtx& SET_PREV_INSN (rtx_insn *insn)
 {
   return XEXP (insn, 0);
 }
@@ -1338,7 +1338,7 @@ inline rtx_insn *NEXT_INSN (const_rtx insn)
   return safe_as_a <rtx_insn *> (next);
 }
 
-inline rtx& SET_NEXT_INSN (rtx insn)
+inline rtx& SET_NEXT_INSN (rtx_insn *insn)
 {
   return XEXP (insn, 1);
 }
@@ -2498,6 +2498,7 @@ extern int rtx_equal_p (const_rtx, const_rtx);
 
 /* In emit-rtl.c */
 extern rtvec gen_rtvec_v (int, rtx *);
+extern rtvec gen_rtvec_v (int, rtx_insn **);
 extern rtx gen_reg_rtx (enum machine_mode);
 extern rtx gen_rtx_REG_offset (rtx, enum machine_mode, unsigned int, int);
 extern rtx gen_reg_rtx_offset (rtx, enum machine_mode, int);

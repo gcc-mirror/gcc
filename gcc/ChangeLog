@@ -1,5 +1,58 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (SET_PREV_INSN): Strengthen param from rtx to rtx_insn *.
+	(SET_NEXT_INSN): Likewise.
+	(gen_rtvec_v): Add an overload for param types (int, rtx_insn **).
+
+	* config/c6x/c6x.c (gen_one_bundle): Strengthen param "slot" from
+	rtx * to rtx_insn **.  Introduce a new local rtx "seq", using it
+	to split out the SEQUENCE from local "bundle", strengthening the
+	latter from rtx to rtx_insn * to hold the insn holding the SEQUENCE.
+	Strengthen locals "t" and "insn" from rtx to rtx_insn *.
+	(c6x_gen_bundles): Strengthen locals "insn", "next", "last_call"
+	and the type of the elements of the "slot" array from rtx to
+	rtx_insn *.
+	(reorg_split_calls): Likewise for locals "insn" and "next", and
+	the type of the elements of the "slot" array.
+
+	* config/frv/frv.c (frv_nops): Likewise for the elements of this
+	array.
+	(frv_function_prologue): Likewise for locals "insn", "next",
+	"last_call".
+	(frv_register_nop): Introduce a local "nop_insn" to be the
+	rtx_insn * containing rtx "nop".
+
+	* config/mep/mep.c (mep_make_bundle): Param "core" is sometimes
+	used as an insn and sometimes as a pattern, so rename it to
+	"core_insn_or_pat", and introduce local rtx_insn * "core_insn",
+	using it where dealing with the core insn.
+
+	* config/picochip/picochip.c (reorder_var_tracking_notes):
+	Strengthen locals "insn", "next", "last_insn", "queue",
+	"next_queue", "prev" from rtx to rtx_insn *.
+
+	* emit-rtl.c (gen_rtvec_v): Add overloaded implementation for when
+	the second param is an rtx_insn ** rather than an rtx **.
+	(link_insn_into_chain): Strengthen locals "seq" and "sequence"
+	from rtx to rtx_sequence *, and introduce local named "sequence",
+	using methods of rtx_sequence to clarify the code.
+	(remove_insn): Introduce local rtx_sequence * named "sequence" and
+	use its methods.
+	(emit_insn_after_1): Strengthen return type from rtx to rtx_insn *.
+	Rename param "after" to "uncast_after", reintroducing "after" as a
+	local rtx_insn * with a checked cast.
+	(emit_pattern_after_noloc): Rename param "after" to "uncast_after",
+	reintroducing "after" as a local rtx_insn * with a checked cast.
+	Strengthen local "last" from rtx to rtx_insn * and remove the
+	now-redundant checked casts.
+	(copy_delay_slot_insn): Strengthen return type and param from rtx
+	to rtx_insn *.
+
+	* haifa-sched.c (reemit_notes): Strengthen params "insn" and
+	"last" from rtx to rtx_insn *.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.h (copy_delay_slot_insn): Strengthen return type and
 	param from rtx to rtx_insn *.
 

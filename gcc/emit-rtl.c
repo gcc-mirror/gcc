@@ -933,6 +933,25 @@ gen_rtvec_v (int n, rtx *argp)
 
   return rt_val;
 }
+
+rtvec
+gen_rtvec_v (int n, rtx_insn **argp)
+{
+  int i;
+  rtvec rt_val;
+
+  /* Don't allocate an empty rtvec...  */
+  if (n == 0)
+    return NULL_RTVEC;
+
+  rt_val = rtvec_alloc (n);
+
+  for (i = 0; i < n; i++)
+    rt_val->elem[i] = *argp++;
+
+  return rt_val;
+}
+
 
 /* Return the number of bytes between the start of an OUTER_MODE
    in-memory value and the start of an INNER_MODE in-memory value,
@@ -3885,22 +3904,25 @@ link_insn_into_chain (rtx_insn *insn, rtx_insn *prev, rtx_insn *next)
       SET_NEXT_INSN (prev) = insn;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
-	  rtx sequence = PATTERN (prev);
-	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
+	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (prev));
+	  SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = insn;
 	}
     }
   if (next != NULL)
     {
       SET_PREV_INSN (next) = insn;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
+	{
+	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (next));
+	  SET_PREV_INSN (sequence->insn (0)) = insn;
+	}
     }
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
-      rtx sequence = PATTERN (insn);
-      SET_PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
-      SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+      rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (insn));
+      SET_PREV_INSN (sequence->insn (0)) = prev;
+      SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
     }
 }
 
@@ -4079,8 +4101,8 @@ remove_insn (rtx insn)
       SET_NEXT_INSN (prev) = next;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
-	  rtx sequence = PATTERN (prev);
-	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (prev));
+	  SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
 	}
     }
   else if (get_insns () == insn)
@@ -4107,7 +4129,10 @@ remove_insn (rtx insn)
     {
       SET_PREV_INSN (next) = prev;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
+	{
+	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (next));
+	  SET_PREV_INSN (sequence->insn (0)) = prev;
+	}
     }
   else if (get_last_insn () == insn)
     set_last_insn (prev);
@@ -4387,9 +4412,10 @@ emit_label_before (rtx label, rtx before)
 /* Helper for emit_insn_after, handles lists of instructions
    efficiently.  */
 
-static rtx
-emit_insn_after_1 (rtx_insn *first, rtx after, basic_block bb)
+static rtx_insn *
+emit_insn_after_1 (rtx_insn *first, rtx uncast_after, basic_block bb)
 {
+  rtx_insn *after = safe_as_a <rtx_insn *> (uncast_after);
   rtx_insn *last;
   rtx_insn *after_after;
   if (!bb && !BARRIER_P (after))
@@ -4431,15 +4457,16 @@ emit_insn_after_1 (rtx_insn *first, rtx after, basic_block bb)
 }
 
 static rtx_insn *
-emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
+emit_pattern_after_noloc (rtx x, rtx uncast_after, basic_block bb,
 			  rtx_insn *(*make_raw)(rtx))
 {
-  rtx last = after;
+  rtx_insn *after = safe_as_a <rtx_insn *> (uncast_after);
+  rtx_insn *last = after;
 
   gcc_assert (after);
 
   if (x == NULL_RTX)
-    return safe_as_a <rtx_insn *> (last);
+    return last;
 
   switch (GET_CODE (x))
     {
@@ -4465,7 +4492,7 @@ emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
       break;
     }
 
-  return safe_as_a <rtx_insn *> (last);
+  return last;
 }
 
 /* Make X be output after the insn AFTER and set the BB of insn.  If
