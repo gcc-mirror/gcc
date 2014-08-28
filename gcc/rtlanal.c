@@ -3130,49 +3130,32 @@ for_each_rtx_in_insn (rtx_insn **insn, rtx_function f, void *data)
 
 
 
-/* Data structure that holds the internal state communicated between
-   for_each_inc_dec, for_each_inc_dec_find_mem and
-   for_each_inc_dec_find_inc_dec.  */
-
-struct for_each_inc_dec_ops {
-  /* The function to be called for each autoinc operation found.  */
-  for_each_inc_dec_fn fn;
-  /* The opaque argument to be passed to it.  */
-  void *arg;
-  /* The MEM we're visiting, if any.  */
-  rtx mem;
-};
-
-static int for_each_inc_dec_find_mem (rtx *r, void *d);
-
-/* Find PRE/POST-INC/DEC/MODIFY operations within *R, extract the
-   operands of the equivalent add insn and pass the result to the
-   operator specified by *D.  */
+/* MEM has a PRE/POST-INC/DEC/MODIFY address X.  Extract the operands of
+   the equivalent add insn and pass the result to FN, using DATA as the
+   final argument.  */
 
 static int
-for_each_inc_dec_find_inc_dec (rtx *r, void *d)
+for_each_inc_dec_find_inc_dec (rtx mem, for_each_inc_dec_fn fn, void *data)
 {
-  rtx x = *r;
-  struct for_each_inc_dec_ops *data = (struct for_each_inc_dec_ops *)d;
-
+  rtx x = XEXP (mem, 0);
   switch (GET_CODE (x))
     {
     case PRE_INC:
     case POST_INC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (data->mem));
+	int size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (size, GET_MODE (r1));
-	return data->fn (data->mem, x, r1, r1, c, data->arg);
+	return fn (mem, x, r1, r1, c, data);
       }
 
     case PRE_DEC:
     case POST_DEC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (data->mem));
+	int size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (-size, GET_MODE (r1));
-	return data->fn (data->mem, x, r1, r1, c, data->arg);
+	return fn (mem, x, r1, r1, c, data);
       }
 
     case PRE_MODIFY:
@@ -3180,69 +3163,43 @@ for_each_inc_dec_find_inc_dec (rtx *r, void *d)
       {
 	rtx r1 = XEXP (x, 0);
 	rtx add = XEXP (x, 1);
-	return data->fn (data->mem, x, r1, add, NULL, data->arg);
-      }
-
-    case MEM:
-      {
-	rtx save = data->mem;
-	int ret = for_each_inc_dec_find_mem (r, d);
-	data->mem = save;
-	return ret;
+	return fn (mem, x, r1, add, NULL, data);
       }
 
     default:
-      return 0;
+      gcc_unreachable ();
     }
 }
 
-/* If *R is a MEM, find PRE/POST-INC/DEC/MODIFY operations within its
-   address, extract the operands of the equivalent add insn and pass
-   the result to the operator specified by *D.  */
-
-static int
-for_each_inc_dec_find_mem (rtx *r, void *d)
-{
-  rtx x = *r;
-  if (x != NULL_RTX && MEM_P (x))
-    {
-      struct for_each_inc_dec_ops *data = (struct for_each_inc_dec_ops *) d;
-      int result;
-
-      data->mem = x;
-
-      result = for_each_rtx (&XEXP (x, 0), for_each_inc_dec_find_inc_dec,
-			     data);
-      if (result)
-	return result;
-
-      return -1;
-    }
-  return 0;
-}
-
-/* Traverse *INSN looking for MEMs, and for autoinc operations within
-   them.  For each such autoinc operation found, call FN, passing it
+/* Traverse *LOC looking for MEMs that have autoinc addresses.
+   For each such autoinc operation found, call FN, passing it
    the innermost enclosing MEM, the operation itself, the RTX modified
    by the operation, two RTXs (the second may be NULL) that, once
    added, represent the value to be held by the modified RTX
-   afterwards, and ARG.  FN is to return -1 to skip looking for other
-   autoinc operations within the visited operation, 0 to continue the
-   traversal, or any other value to have it returned to the caller of
+   afterwards, and DATA.  FN is to return 0 to continue the
+   traversal or any other value to have it returned to the caller of
    for_each_inc_dec.  */
 
 int
-for_each_inc_dec (rtx_insn **insn,
+for_each_inc_dec (rtx x,
 		  for_each_inc_dec_fn fn,
-		  void *arg)
+		  void *data)
 {
-  struct for_each_inc_dec_ops data;
-
-  data.fn = fn;
-  data.arg = arg;
-  data.mem = NULL;
-
-  return for_each_rtx_in_insn (insn, for_each_inc_dec_find_mem, &data);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx mem = *iter;
+      if (mem
+	  && MEM_P (mem)
+	  && GET_RTX_CLASS (GET_CODE (XEXP (mem, 0))) == RTX_AUTOINC)
+	{
+	  int res = for_each_inc_dec_find_inc_dec (mem, fn, data);
+	  if (res != 0)
+	    return res;
+	  iter.skip_subrtxes ();
+	}
+    }
+  return 0;
 }
 
 

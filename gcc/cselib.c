@@ -2464,7 +2464,7 @@ cselib_record_autoinc_cb (rtx mem ATTRIBUTE_UNUSED, rtx op ATTRIBUTE_UNUSED,
 
   data->n_sets++;
 
-  return -1;
+  return 0;
 }
 
 /* Record the effects of any sets and autoincs in INSN.  */
@@ -2523,7 +2523,7 @@ cselib_record_sets (rtx_insn *insn)
 
   data.sets = sets;
   data.n_sets = n_sets_before_autoinc = n_sets;
-  for_each_inc_dec (&insn, cselib_record_autoinc_cb, &data);
+  for_each_inc_dec (PATTERN (insn), cselib_record_autoinc_cb, &data);
   n_sets = data.n_sets;
 
   /* Look up the values that are read.  Do this before invalidating the

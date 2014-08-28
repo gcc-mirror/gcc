@@ -1,5 +1,22 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.h (for_each_inc_dec_fn): Remove special case for -1.
+	(for_each_inc_dec): Take an rtx rather than an rtx *.
+	* cselib.c (cselib_record_autoinc_cb): Update accordingly.
+	(cselib_record_sets): Likewise.
+	* dse.c (emit_inc_dec_insn_before, check_for_inc_dec_1)
+	(check_for_inc_dec): Likewise.
+	* rtlanal.c (for_each_inc_dec_ops): Delete.
+	(for_each_inc_dec_find_inc_dec): Take the MEM as argument,
+	rather than a pointer to the memory address.  Replace
+	for_each_inc_dec_ops argument with separate function and data
+	arguments.  Abort on non-autoinc addresses.
+	(for_each_inc_dec_find_mem): Delete.
+	(for_each_inc_dec): Take an rtx rather than an rtx *.  Use
+	FOR_EACH_SUBRTX_VAR to visit every autoinc MEM.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (find_all_hard_regs): Declare.
 	* rtlanal.c (find_all_hard_regs): New function.
 	(record_hard_reg_uses_1): Delete.
