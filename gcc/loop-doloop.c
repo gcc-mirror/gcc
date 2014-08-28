@@ -713,10 +713,12 @@ doloop_optimize (struct loop *loop)
   doloop_pat = doloop_seq;
   if (INSN_P (doloop_pat))
     {
-      while (NEXT_INSN (doloop_pat) != NULL_RTX)
-	doloop_pat = NEXT_INSN (doloop_pat);
-      if (!JUMP_P (doloop_pat))
-	doloop_pat = NULL_RTX;
+      rtx_insn *doloop_insn = as_a <rtx_insn *> (doloop_pat);
+      while (NEXT_INSN (doloop_insn) != NULL_RTX)
+	doloop_insn = NEXT_INSN (doloop_insn);
+      if (!JUMP_P (doloop_insn))
+	doloop_insn = NULL;
+      doloop_pat = doloop_insn;
     }
 
   if (! doloop_pat

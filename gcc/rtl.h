@@ -635,9 +635,9 @@ class GTY(()) rtx_note : public rtx_insn
                       || JUMP_TABLE_DATA_P (X)		\
                       || BARRIER_P (X)        		\
                       || LABEL_P (X))    		\
-                     && PREV_INSN (X) != NULL           \
-                     && NEXT_INSN (PREV_INSN (X)) == X  \
-                     ? PREV_INSN (X) : NULL)
+		     && PREV_INSN (as_a <rtx_insn *> (X)) != NULL	\
+                     && NEXT_INSN (PREV_INSN (as_a <rtx_insn *> (X))) == X \
+                     ? PREV_INSN (as_a <rtx_insn *> (X)) : NULL)
 
 /* Define macros to access the `code' field of the rtx.  */
 
@@ -1321,7 +1321,7 @@ inline int& INSN_UID (rtx insn)
    and an lvalue form:
      SET_NEXT_INSN/SET_PREV_INSN.  */
 
-inline rtx_insn *PREV_INSN (const_rtx insn)
+inline rtx_insn *PREV_INSN (const rtx_insn *insn)
 {
   rtx prev = XEXP (insn, 0);
   return safe_as_a <rtx_insn *> (prev);
@@ -1332,7 +1332,7 @@ inline rtx& SET_PREV_INSN (rtx_insn *insn)
   return XEXP (insn, 0);
 }
 
-inline rtx_insn *NEXT_INSN (const_rtx insn)
+inline rtx_insn *NEXT_INSN (const rtx_insn *insn)
 {
   rtx next = XEXP (insn, 1);
   return safe_as_a <rtx_insn *> (next);
@@ -1658,7 +1658,7 @@ enum label_kind
    be decremented and possibly the label can be deleted.  */
 #define JUMP_LABEL(INSN)   XCEXP (INSN, 7, JUMP_INSN)
 
-inline rtx_insn *JUMP_LABEL_AS_INSN (rtx_insn *insn)
+inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
 {
   return safe_as_a <rtx_insn *> (JUMP_LABEL (insn));
 }
@@ -2739,12 +2739,12 @@ extern bool unsigned_reg_p (rtx);
 extern int reg_mentioned_p (const_rtx, const_rtx);
 extern int count_occurrences (const_rtx, const_rtx, int);
 extern int reg_referenced_p (const_rtx, const_rtx);
-extern int reg_used_between_p (const_rtx, const_rtx, const_rtx);
+extern int reg_used_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int reg_set_between_p (const_rtx, const_rtx, const_rtx);
 extern int commutative_operand_precedence (rtx);
 extern bool swap_commutative_operands_p (rtx, rtx);
 extern int modified_between_p (const_rtx, const_rtx, const_rtx);
-extern int no_labels_between_p (const_rtx, const_rtx);
+extern int no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern int modified_in_p (const_rtx, const_rtx);
 extern int reg_set_p (const_rtx, const_rtx);
 extern rtx single_set_2 (const_rtx, const_rtx);

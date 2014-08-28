@@ -1011,7 +1011,8 @@ build_store_vectors (void)
 {
   basic_block bb;
   int *regs_set_in_block;
-  rtx insn, st;
+  rtx_insn *insn;
+  rtx_insn_list *st;
   struct st_expr * ptr;
   unsigned int max_gcse_regno = max_reg_num ();
 
@@ -1027,9 +1028,9 @@ build_store_vectors (void)
 
   for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
-      for (st = ptr->avail_stores; st != NULL; st = XEXP (st, 1))
+      for (st = ptr->avail_stores; st != NULL; st = st->next ())
 	{
-	  insn = XEXP (st, 0);
+	  insn = st->insn ();
 	  bb = BLOCK_FOR_INSN (insn);
 
 	  /* If we've already seen an available expression in this block,
@@ -1047,9 +1048,9 @@ build_store_vectors (void)
 	  bitmap_set_bit (st_avloc[bb->index], ptr->index);
 	}
 
-      for (st = ptr->antic_stores; st != NULL; st = XEXP (st, 1))
+      for (st = ptr->antic_stores; st != NULL; st = st->next ())
 	{
-	  insn = XEXP (st, 0);
+	  insn = st->insn ();
 	  bb = BLOCK_FOR_INSN (insn);
 	  bitmap_set_bit (st_antloc[bb->index], ptr->index);
 	}

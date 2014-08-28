@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 extern rtx pa_eh_return_handler_rtx (void);
 
 /* Used in insn-*.c.  */
-extern int pa_following_call (rtx);
+extern int pa_following_call (rtx_insn *);
 
 /* Define functions in pa.c and used in insn-output.c.  */
 
@@ -34,20 +34,20 @@ extern const char *pa_output_move_double (rtx *);
 extern const char *pa_output_fp_move_double (rtx *);
 extern const char *pa_output_block_move (rtx *, int);
 extern const char *pa_output_block_clear (rtx *, int);
-extern const char *pa_output_cbranch (rtx *, int, rtx);
-extern const char *pa_output_lbranch (rtx, rtx, int);
-extern const char *pa_output_bb (rtx *, int, rtx, int);
-extern const char *pa_output_bvb (rtx *, int, rtx, int);
-extern const char *pa_output_dbra (rtx *, rtx, int);
-extern const char *pa_output_movb (rtx *, rtx, int, int);
-extern const char *pa_output_parallel_movb (rtx *, rtx);
-extern const char *pa_output_parallel_addb (rtx *, rtx);
+extern const char *pa_output_cbranch (rtx *, int, rtx_insn *);
+extern const char *pa_output_lbranch (rtx, rtx_insn *, int);
+extern const char *pa_output_bb (rtx *, int, rtx_insn *, int);
+extern const char *pa_output_bvb (rtx *, int, rtx_insn *, int);
+extern const char *pa_output_dbra (rtx *, rtx_insn *, int);
+extern const char *pa_output_movb (rtx *, rtx_insn *, int, int);
+extern const char *pa_output_parallel_movb (rtx *, rtx_insn *);
+extern const char *pa_output_parallel_addb (rtx *, rtx_insn *);
 extern const char *pa_output_call (rtx_insn *, rtx, int);
 extern const char *pa_output_indirect_call (rtx_insn *, rtx);
-extern const char *pa_output_millicode_call (rtx, rtx);
-extern const char *pa_output_mul_insn (int, rtx);
-extern const char *pa_output_div_insn (rtx *, int, rtx);
-extern const char *pa_output_mod_insn (int, rtx);
+extern const char *pa_output_millicode_call (rtx_insn *, rtx);
+extern const char *pa_output_mul_insn (int, rtx_insn *);
+extern const char *pa_output_div_insn (rtx *, int, rtx_insn *);
+extern const char *pa_output_mod_insn (int, rtx_insn *);
 extern const char *pa_singlemove_string (rtx *);
 extern void pa_output_addr_vec (rtx, rtx);
 extern void pa_output_addr_diff_vec (rtx, rtx);
@@ -63,7 +63,7 @@ extern void pa_emit_bcond_fp (rtx[]);
 extern int pa_emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern int pa_emit_hpdiv_const (rtx *, int);
 extern int pa_is_function_label_plus_const (rtx);
-extern int pa_jump_in_call_delay (rtx);
+extern int pa_jump_in_call_delay (rtx_insn *);
 extern int pa_fpstore_bypass_p (rtx, rtx);
 extern int pa_attr_length_millicode_call (rtx_insn *);
 extern int pa_attr_length_call (rtx_insn *, int);

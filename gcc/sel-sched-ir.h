@@ -1628,7 +1628,7 @@ extern struct succs_info * compute_succs_info (insn_t, short);
 extern void free_succs_info (struct succs_info *);
 extern bool sel_insn_has_single_succ_p (insn_t, int);
 extern bool sel_num_cfg_preds_gt_1 (insn_t);
-extern int get_seqno_by_preds (rtx);
+extern int get_seqno_by_preds (rtx_insn *);
 
 extern bool bb_ends_ebb_p (basic_block);
 extern bool in_same_ebb_p (insn_t, insn_t);

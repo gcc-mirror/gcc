@@ -360,7 +360,8 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *tail = BB_END (bb);
-      rtx insn, reg;
+      rtx_insn *insn;
+      rtx reg;
 
       while (tail && NOTE_P (tail) && tail != BB_HEAD (bb))
 	tail = PREV_INSN (tail);
@@ -378,7 +379,7 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
 
       /* There's a degenerate case we can handle - an empty loop consisting
 	 of only a back branch.  Handle that by deleting the branch.  */
-      insn = JUMP_LABEL (tail);
+      insn = JUMP_LABEL_AS_INSN (tail);
       while (insn && !NONDEBUG_INSN_P (insn))
 	insn = NEXT_INSN (insn);
       if (insn == tail)

@@ -369,11 +369,11 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, bool strict)
 
 const char *
 iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
-			rtx cur_insn)
+			rtx_insn *cur_insn)
 {
   rtx set_reg;
   enum machine_mode mode;
-  rtx next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL_RTX;
+  rtx_insn *next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL;
   int num_nops;
 
   if (type == DELAY_LOAD || type == DELAY_FCMP)
@@ -552,7 +552,7 @@ abort_with_insn (rtx insn, const char * reason)
 /* Return the appropriate instructions to move one operand to another.  */
 
 const char *
-iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
+iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 {
   const char *ret = 0;
   rtx op0 = operands[0];

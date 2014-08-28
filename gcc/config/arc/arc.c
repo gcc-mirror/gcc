@@ -2464,7 +2464,7 @@ arc_expand_epilogue (int sibcall_p)
  epilogue_done:
   if (!TARGET_EPILOGUE_CFI)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	RTX_FRAME_RELATED_P (insn) = 0;
@@ -3735,7 +3735,7 @@ arc_ccfsm_at_label (const char *prefix, int num, struct arc_ccfsm *state)
    the ccfsm state accordingly.
    REVERSE says branch will branch when the condition is false.  */
 void
-arc_ccfsm_record_condition (rtx cond, bool reverse, rtx jump,
+arc_ccfsm_record_condition (rtx cond, bool reverse, rtx_insn *jump,
 			    struct arc_ccfsm *state)
 {
   rtx_insn *seq_insn = NEXT_INSN (PREV_INSN (jump));
@@ -9177,7 +9177,7 @@ arc_label_align (rtx label)
 /* Return true if LABEL is in executable code.  */
 
 bool
-arc_text_label (rtx label)
+arc_text_label (rtx_insn *label)
 {
   rtx_insn *next;
 

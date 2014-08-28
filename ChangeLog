@@ -1,3 +1,7 @@
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): NEXT_INSN/PREV_INSN are done.
+
 2014-08-27  Sebastian Pop  <s.pop@samsung.com>
 
 	* config/isl.m4 (_ISL_CHECK_CT_PROG): Removed.

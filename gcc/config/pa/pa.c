@@ -99,8 +99,8 @@ static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
 static inline rtx force_mode (enum machine_mode, rtx);
 static void pa_reorg (void);
 static void pa_combine_instructions (void);
-static int pa_can_combine_p (rtx, rtx, rtx, int, rtx, rtx, rtx);
-static bool forward_branch_p (rtx);
+static int pa_can_combine_p (rtx, rtx_insn *, rtx_insn *, int, rtx, rtx, rtx);
+static bool forward_branch_p (rtx_insn *);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static void compute_zdepdi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static int compute_movmem_length (rtx);
@@ -5693,7 +5693,7 @@ import_milli (enum millicodes code)
    the proper registers.  */
 
 const char *
-pa_output_mul_insn (int unsignedp ATTRIBUTE_UNUSED, rtx insn)
+pa_output_mul_insn (int unsignedp ATTRIBUTE_UNUSED, rtx_insn *insn)
 {
   import_milli (mulI);
   return pa_output_millicode_call (insn, gen_rtx_SYMBOL_REF (Pmode, "$$mulI"));
@@ -5741,7 +5741,7 @@ pa_emit_hpdiv_const (rtx *operands, int unsignedp)
 }
 
 const char *
-pa_output_div_insn (rtx *operands, int unsignedp, rtx insn)
+pa_output_div_insn (rtx *operands, int unsignedp, rtx_insn *insn)
 {
   int divisor;
 
@@ -5795,7 +5795,7 @@ pa_output_div_insn (rtx *operands, int unsignedp, rtx insn)
 /* Output a $$rem millicode to do mod.  */
 
 const char *
-pa_output_mod_insn (int unsignedp, rtx insn)
+pa_output_mod_insn (int unsignedp, rtx_insn *insn)
 {
   if (unsignedp)
     {
@@ -6411,7 +6411,7 @@ use_skip_p (rtx insn)
    parameters.  */
 
 const char *
-pa_output_cbranch (rtx *operands, int negated, rtx insn)
+pa_output_cbranch (rtx *operands, int negated, rtx_insn *insn)
 {
   static char buf[100];
   bool useskip;
@@ -6622,7 +6622,7 @@ pa_output_cbranch (rtx *operands, int negated, rtx insn)
    bytes for the portable runtime, non-PIC and PIC cases, respectively.  */
 
 const char *
-pa_output_lbranch (rtx dest, rtx insn, int xdelay)
+pa_output_lbranch (rtx dest, rtx_insn *insn, int xdelay)
 {
   rtx xoperands[2];
  
@@ -6737,7 +6737,7 @@ pa_output_lbranch (rtx dest, rtx insn, int xdelay)
    above.  it returns the appropriate output template to emit the branch.  */
 
 const char *
-pa_output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
+pa_output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx_insn *insn, int which)
 {
   static char buf[100];
   bool useskip;
@@ -6922,7 +6922,7 @@ pa_output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
    branch.  */
 
 const char *
-pa_output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn,
+pa_output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx_insn *insn,
 	       int which)
 {
   static char buf[100];
@@ -7105,7 +7105,7 @@ pa_output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn,
    Note it may perform some output operations on its own before
    returning the final output string.  */
 const char *
-pa_output_dbra (rtx *operands, rtx insn, int which_alternative)
+pa_output_dbra (rtx *operands, rtx_insn *insn, int which_alternative)
 {
   int length = get_attr_length (insn);
 
@@ -7254,7 +7254,7 @@ pa_output_dbra (rtx *operands, rtx insn, int which_alternative)
    Note it may perform some output operations on its own before
    returning the final output string.  */
 const char *
-pa_output_movb (rtx *operands, rtx insn, int which_alternative,
+pa_output_movb (rtx *operands, rtx_insn *insn, int which_alternative,
 	     int reverse_comparison)
 {
   int length = get_attr_length (insn);
@@ -7533,7 +7533,7 @@ pa_attr_length_millicode_call (rtx_insn *insn)
    CALL_DEST is the routine we are calling.  */
 
 const char *
-pa_output_millicode_call (rtx insn, rtx call_dest)
+pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 {
   int attr_length = get_attr_length (insn);
   int seq_length = dbr_sequence_length ();
@@ -7651,7 +7651,7 @@ pa_output_millicode_call (rtx insn, rtx call_dest)
      sequence insn's address.  */
   if (INSN_ADDRESSES_SET_P ())
     {
-      seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
+      seq_insn = NEXT_INSN (PREV_INSN (final_sequence->insn (0)));
       distance = (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
 		  - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8);
 
@@ -8038,7 +8038,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
          sequence insn's address.  This would break the regular call/return@
          relationship assumed by the table based eh unwinder, so only do that
          if the call is not possibly throwing.  */
-      rtx seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
+      rtx seq_insn = NEXT_INSN (PREV_INSN (final_sequence->insn (0)));
       int distance = (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
 		      - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8);
 
@@ -8786,7 +8786,7 @@ pa_shadd_constant_p (int val)
 /* Return TRUE if INSN branches forward.  */
 
 static bool
-forward_branch_p (rtx insn)
+forward_branch_p (rtx_insn *insn)
 {
   rtx lab = JUMP_LABEL (insn);
 
@@ -8809,7 +8809,7 @@ forward_branch_p (rtx insn)
 
 /* Return 1 if INSN is in the delay slot of a call instruction.  */
 int
-pa_jump_in_call_delay (rtx insn)
+pa_jump_in_call_delay (rtx_insn *insn)
 {
 
   if (! JUMP_P (insn))
@@ -8832,7 +8832,7 @@ pa_jump_in_call_delay (rtx insn)
 /* Output an unconditional move and branch insn.  */
 
 const char *
-pa_output_parallel_movb (rtx *operands, rtx insn)
+pa_output_parallel_movb (rtx *operands, rtx_insn *insn)
 {
   int length = get_attr_length (insn);
 
@@ -8872,7 +8872,7 @@ pa_output_parallel_movb (rtx *operands, rtx insn)
 /* Output an unconditional add and branch insn.  */
 
 const char *
-pa_output_parallel_addb (rtx *operands, rtx insn)
+pa_output_parallel_addb (rtx *operands, rtx_insn *insn)
 {
   int length = get_attr_length (insn);
 
@@ -8907,7 +8907,7 @@ pa_output_parallel_addb (rtx *operands, rtx insn)
    the delay slot of the call.  */
 
 int
-pa_following_call (rtx insn)
+pa_following_call (rtx_insn *insn)
 {
   if (! TARGET_JUMP_IN_DELAY)
     return 0;
@@ -8989,7 +8989,8 @@ pa_reorg (void)
 static void
 pa_combine_instructions (void)
 {
-  rtx anchor, new_rtx;
+  rtx_insn *anchor;
+  rtx new_rtx;
 
   /* This can get expensive since the basic algorithm is on the
      order of O(n^2) (or worse).  Only do it for -O2 or higher
@@ -9023,7 +9024,7 @@ pa_combine_instructions (void)
 	  || (anchor_attr == PA_COMBINE_TYPE_UNCOND_BRANCH
 	      && ! forward_branch_p (anchor)))
 	{
-	  rtx floater;
+	  rtx_insn *floater;
 
 	  for (floater = PREV_INSN (anchor);
 	       floater;
@@ -9038,7 +9039,7 @@ pa_combine_instructions (void)
 	      /* Anything except a regular INSN will stop our search.  */
 	      if (! NONJUMP_INSN_P (floater))
 		{
-		  floater = NULL_RTX;
+		  floater = NULL;
 		  break;
 		}
 
@@ -9098,7 +9099,7 @@ pa_combine_instructions (void)
 		  /* Anything except a regular INSN will stop our search.  */
 		  if (! NONJUMP_INSN_P (floater))
 		    {
-		      floater = NULL_RTX;
+		      floater = NULL;
 		      break;
 		    }
 
@@ -9171,11 +9172,12 @@ pa_combine_instructions (void)
 }
 
 static int
-pa_can_combine_p (rtx new_rtx, rtx anchor, rtx floater, int reversed, rtx dest,
+pa_can_combine_p (rtx new_rtx, rtx_insn *anchor, rtx_insn *floater,
+		  int reversed, rtx dest,
 		  rtx src1, rtx src2)
 {
   int insn_code_number;
-  rtx start, end;
+  rtx_insn *start, *end;
 
   /* Create a PARALLEL with the patterns of ANCHOR and
      FLOATER, try to recognize it, then test constraints

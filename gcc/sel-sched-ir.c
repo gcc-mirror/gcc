@@ -4083,10 +4083,10 @@ get_seqno_for_a_jump (insn_t insn, int old_seqno)
 /*  Find the proper seqno for inserting at INSN.  Returns -1 if no predecessors
     with positive seqno exist.  */
 int
-get_seqno_by_preds (rtx insn)
+get_seqno_by_preds (rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
-  rtx tmp = insn, head = BB_HEAD (bb);
+  rtx_insn *tmp = insn, *head = BB_HEAD (bb);
   insn_t *preds;
   int n, i, seqno;
 
@@ -4950,7 +4950,7 @@ recompute_rev_top_order (void)
 void
 clear_outdated_rtx_info (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))

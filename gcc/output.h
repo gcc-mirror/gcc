@@ -296,7 +296,7 @@ extern void output_quoted_string (FILE *, const char *);
    insn output code.
 
    This variable is defined  in final.c.  */
-extern rtx final_sequence;
+extern rtx_sequence *final_sequence;
 
 /* The line number of the beginning of the current function.  Various
    md code needs this so that it can output relative linenumbers.  */

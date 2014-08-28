@@ -3211,7 +3211,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 static bool
 mn10300_block_contains_call (basic_block block)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (block, insn)
     if (CALL_P (insn))

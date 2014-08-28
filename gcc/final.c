@@ -189,7 +189,7 @@ static int app_on;
 /* If we are outputting an insn sequence, this contains the sequence rtx.
    Zero otherwise.  */
 
-rtx final_sequence;
+rtx_sequence *final_sequence;
 
 #ifdef ASSEMBLER_DIALECT
 
@@ -1279,13 +1279,14 @@ shorten_branches (rtx_insn *first)
 	    {
 	      rtx body = PATTERN (insn);
 	      int old_length = insn_lengths[uid];
-	      rtx rel_lab = XEXP (XEXP (body, 0), 0);
+	      rtx_insn *rel_lab =
+		safe_as_a <rtx_insn *> (XEXP (XEXP (body, 0), 0));
 	      rtx min_lab = XEXP (XEXP (body, 2), 0);
 	      rtx max_lab = XEXP (XEXP (body, 3), 0);
 	      int rel_addr = INSN_ADDRESSES (INSN_UID (rel_lab));
 	      int min_addr = INSN_ADDRESSES (INSN_UID (min_lab));
 	      int max_addr = INSN_ADDRESSES (INSN_UID (max_lab));
-	      rtx prev;
+	      rtx_insn *prev;
 	      int rel_align = 0;
 	      addr_diff_vec_flags flags;
 	      enum machine_mode vec_mode;
@@ -2619,7 +2620,7 @@ final_scan_insn (rtx uncast_insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    /* A delayed-branch sequence */
 	    int i;
 
-	    final_sequence = body;
+	    final_sequence = seq;
 
 	    /* The first insn in this SEQUENCE might be a JUMP_INSN that will
 	       force the restoration of a comparison that was previously

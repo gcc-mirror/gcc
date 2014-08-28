@@ -1701,7 +1701,7 @@ alpha_set_memflags_1 (rtx *xp, void *data)
 void
 alpha_set_memflags (rtx seq, rtx ref)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!MEM_P (ref))
     return;
@@ -1714,7 +1714,7 @@ alpha_set_memflags (rtx seq, rtx ref)
       && !MEM_READONLY_P (ref))
     return;
 
-  for (insn = seq; insn; insn = NEXT_INSN (insn))
+  for (insn = as_a <rtx_insn *> (seq); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       for_each_rtx (&PATTERN (insn), alpha_set_memflags_1, (void *) ref);
     else
@@ -8759,7 +8759,7 @@ alpha_handle_trap_shadows (void)
 {
   struct shadow_summary shadow;
   int trap_pending, exception_nesting;
-  rtx i, n;
+  rtx_insn *i, *n;
 
   trap_pending = 0;
   exception_nesting = 0;

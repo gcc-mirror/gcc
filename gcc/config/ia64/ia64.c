@@ -275,14 +275,15 @@ static void initiate_bundle_state_table (void);
 static void finish_bundle_state_table (void);
 static int try_issue_nops (struct bundle_state *, int);
 static int try_issue_insn (struct bundle_state *, rtx);
-static void issue_nops_and_insn (struct bundle_state *, int, rtx, int, int);
+static void issue_nops_and_insn (struct bundle_state *, int, rtx_insn *,
+				 int, int);
 static int get_max_pos (state_t);
 static int get_template (state_t, int);
 
-static rtx get_next_important_insn (rtx, rtx);
+static rtx_insn *get_next_important_insn (rtx_insn *, rtx_insn *);
 static bool important_for_bundling_p (rtx);
 static bool unknown_for_bundling_p (rtx);
-static void bundling (FILE *, int, rtx, rtx);
+static void bundling (FILE *, int, rtx_insn *, rtx_insn *);
 
 static void ia64_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
@@ -7087,7 +7088,7 @@ static rtx_insn *dfa_stop_insn;
 
 /* The following variable value is the last issued insn.  */
 
-static rtx last_scheduled_insn;
+static rtx_insn *last_scheduled_insn;
 
 /* The following variable value is pointer to a DFA state used as
    temporary variable.  */
@@ -7294,7 +7295,7 @@ ia64_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 		 int max_ready ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_CHECKING
-  rtx insn;
+  rtx_insn *insn;
 
   if (!sel_sched_p () && reload_completed)
     for (insn = NEXT_INSN (current_sched_info->prev_head);
@@ -7302,7 +7303,7 @@ ia64_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 	 insn = NEXT_INSN (insn))
       gcc_assert (!SCHED_GROUP_P (insn));
 #endif
-  last_scheduled_insn = NULL_RTX;
+  last_scheduled_insn = NULL;
   init_insn_group_barriers ();
 
   current_cycle = 0;
@@ -7567,7 +7568,7 @@ static rtx_insn *dfa_pre_cycle_insn;
 /* Returns 1 when a meaningful insn was scheduled between the last group
    barrier and LAST.  */
 static int
-scheduled_good_insn (rtx last)
+scheduled_good_insn (rtx_insn *last)
 {
   if (last && recog_memoized (last) >= 0)
     return 1;
@@ -7669,7 +7670,7 @@ ia64_h_i_d_extended (void)
 struct _ia64_sched_context
 {
   state_t prev_cycle_state;
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
   struct reg_write_state rws_sum[NUM_REGS];
   struct reg_write_state rws_insn[NUM_REGS];
   int first_instruction;
@@ -7697,7 +7698,7 @@ ia64_init_sched_context (void *_sc, bool clean_p)
   if (clean_p)
     {
       state_reset (sc->prev_cycle_state);
-      sc->last_scheduled_insn = NULL_RTX;
+      sc->last_scheduled_insn = NULL;
       memset (sc->rws_sum, 0, sizeof (rws_sum));
       memset (sc->rws_insn, 0, sizeof (rws_insn));
       sc->first_instruction = 1;
@@ -8458,7 +8459,7 @@ struct bundle_state
   /* Unique bundle state number to identify them in the debugging
      output  */
   int unique_num;
-  rtx insn;     /* corresponding insn, NULL for the 1st and the last state  */
+  rtx_insn *insn; /* corresponding insn, NULL for the 1st and the last state  */
   /* number nops before and after the insn  */
   short before_nops_num, after_nops_num;
   int insn_num; /* insn number (0 - for initial state, 1 - for the 1st
@@ -8700,7 +8701,8 @@ try_issue_insn (struct bundle_state *curr_state, rtx insn)
 
 static void
 issue_nops_and_insn (struct bundle_state *originator, int before_nops_num,
-		     rtx insn, int try_bundle_end_p, int only_bundle_end_p)
+		     rtx_insn *insn, int try_bundle_end_p,
+		     int only_bundle_end_p)
 {
   struct bundle_state *curr_state;
 
@@ -8914,13 +8916,13 @@ important_for_bundling_p (rtx insn)
 /* The following function returns an insn important for insn bundling
    followed by INSN and before TAIL.  */
 
-static rtx
-get_next_important_insn (rtx insn, rtx tail)
+static rtx_insn *
+get_next_important_insn (rtx_insn *insn, rtx_insn *tail)
 {
   for (; insn && insn != tail; insn = NEXT_INSN (insn))
     if (important_for_bundling_p (insn))
       return insn;
-  return NULL_RTX;
+  return NULL;
 }
 
 /* True when INSN is unknown, but important, for bundling.  */
@@ -8937,7 +8939,7 @@ unknown_for_bundling_p (rtx insn)
 /* Add a bundle selector TEMPLATE0 before INSN.  */
 
 static void
-ia64_add_bundle_selector_before (int template0, rtx insn)
+ia64_add_bundle_selector_before (int template0, rtx_insn *insn)
 {
   rtx b = gen_bundle_selector (GEN_INT (template0));
 
@@ -9017,15 +9019,14 @@ ia64_add_bundle_selector_before (int template0, rtx insn)
    EBB.  */
 
 static void
-bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
+bundling (FILE *dump, int verbose, rtx_insn *prev_head_insn, rtx_insn *tail)
 {
   struct bundle_state *curr_state, *next_state, *best_state;
-  rtx insn, next_insn;
+  rtx_insn *insn, *next_insn;
   int insn_num;
   int i, bundle_end_p, only_bundle_end_p, asm_p;
   int pos = 0, max_pos, template0, template1;
-  rtx b;
-  rtx nop;
+  rtx_insn *b;
   enum attr_type type;
 
   insn_num = 0;
@@ -9237,8 +9238,8 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	/* Emit nops after the current insn.  */
 	for (i = 0; i < curr_state->after_nops_num; i++)
 	  {
-	    nop = gen_nop ();
-	    emit_insn_after (nop, insn);
+	    rtx nop_pat = gen_nop ();
+	    rtx_insn *nop = emit_insn_after (nop_pat, insn);
 	    pos--;
 	    gcc_assert (pos >= 0);
 	    if (pos % 3 == 0)
@@ -9281,9 +9282,9 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
       /* Emit nops after the current insn.  */
       for (i = 0; i < curr_state->before_nops_num; i++)
 	{
-	  nop = gen_nop ();
-	  ia64_emit_insn_before (nop, insn);
-	  nop = PREV_INSN (insn);
+	  rtx nop_pat = gen_nop ();
+	  ia64_emit_insn_before (nop_pat, insn);
+	  rtx_insn *nop = PREV_INSN (insn);
 	  insn = nop;
 	  pos--;
 	  gcc_assert (pos >= 0);
@@ -9317,7 +9318,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  start_bundle = true;
 	else
 	  {
-	    rtx next_insn;
+	    rtx_insn *next_insn;
 
 	    for (next_insn = NEXT_INSN (insn);
 		 next_insn && next_insn != tail;

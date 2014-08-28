@@ -5226,7 +5226,7 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
 static const char *
 get_some_local_dynamic_name (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (cfun->machine->some_ld_name)
     return cfun->machine->some_ld_name;
@@ -6739,7 +6739,6 @@ static void
 s390_mainpool_finish (struct constant_pool *pool)
 {
   rtx base_reg = cfun->machine->base_reg;
-  rtx insn;
 
   /* If the pool is empty, we're done.  */
   if (pool->size == 0)
@@ -6760,7 +6759,7 @@ s390_mainpool_finish (struct constant_pool *pool)
      located in the .rodata section, so we emit it after the function.  */
   if (TARGET_CPU_ZARCH)
     {
-      insn = gen_main_base_64 (base_reg, pool->label);
+      rtx insn = gen_main_base_64 (base_reg, pool->label);
       insn = emit_insn_after (insn, pool->pool_insn);
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
@@ -6778,7 +6777,7 @@ s390_mainpool_finish (struct constant_pool *pool)
   else if (INSN_ADDRESSES (INSN_UID (pool->emit_pool_after))
 	   + pool->size + 8 /* alignment slop */ < 4096)
     {
-      insn = gen_main_base_31_small (base_reg, pool->label);
+      rtx insn = gen_main_base_31_small (base_reg, pool->label);
       insn = emit_insn_after (insn, pool->pool_insn);
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
@@ -6803,7 +6802,7 @@ s390_mainpool_finish (struct constant_pool *pool)
     {
       rtx pool_end = gen_label_rtx ();
 
-      insn = gen_main_base_31_large (base_reg, pool->label, pool_end);
+      rtx insn = gen_main_base_31_large (base_reg, pool->label, pool_end);
       insn = emit_jump_insn_after (insn, pool->pool_insn);
       JUMP_LABEL (insn) = pool_end;
       INSN_ADDRESSES_NEW (insn, -1);
@@ -6824,7 +6823,7 @@ s390_mainpool_finish (struct constant_pool *pool)
 
   /* Replace all literal pool references.  */
 
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	replace_ltrel_base (&PATTERN (insn));
@@ -8002,7 +8001,7 @@ s390_optimize_nonescaping_tx (void)
 
 	  if (XINT (SET_SRC (pat), 1) == UNSPECV_TBEGIN)
 	    {
-	      rtx tmp;
+	      rtx_insn *tmp;
 
 	      tbegin_insn = insn;
 
@@ -8955,7 +8954,7 @@ s390_emit_prologue (void)
     {
       rtx_insn *insns = s390_load_got ();
 
-      for (insn = insns; insn; insn = NEXT_INSN (insn))
+      for (rtx_insn *insn = insns; insn; insn = NEXT_INSN (insn))
 	annotate_constant_pool_refs (&PATTERN (insn));
 
       emit_insn (insns);

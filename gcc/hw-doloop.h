@@ -75,7 +75,7 @@ struct GTY (()) hwloop_info_d
   rtx iter_reg;
 
   /* The new label placed at the beginning of the loop. */
-  rtx start_label;
+  rtx_insn *start_label;
 
   /* The new label placed at the end of the loop. */
   rtx end_label;

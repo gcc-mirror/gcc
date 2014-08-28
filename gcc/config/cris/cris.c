@@ -1303,7 +1303,7 @@ cris_initial_frame_pointer_offset (void)
       push_topmost_sequence ();
       got_really_used
 	= reg_used_between_p (pic_offset_table_rtx, get_insns (),
-			      NULL_RTX);
+			      NULL);
       pop_topmost_sequence ();
     }
 
@@ -2015,7 +2015,7 @@ cris_simple_epilogue (void)
     {
       push_topmost_sequence ();
       got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL_RTX);
+	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
       pop_topmost_sequence ();
     }
 
@@ -3081,7 +3081,7 @@ cris_expand_prologue (void)
 	 it's still used.  */
       push_topmost_sequence ();
       got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL_RTX);
+	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
       pop_topmost_sequence ();
     }
 
@@ -3364,7 +3364,7 @@ cris_expand_epilogue (void)
 	 it's still used.  */
       push_topmost_sequence ();
       got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL_RTX);
+	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
       pop_topmost_sequence ();
     }
 

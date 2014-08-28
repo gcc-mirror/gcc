@@ -1,5 +1,371 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (RTX_PREV): Added checked casts to uses of PREV_INSN and
+	NEXT_INSN.
+	(PREV_INSN): Strengthen param from const_rtx to const rtx_insn *.
+	(NEXT_INSN): Likewise.
+	(JUMP_LABEL_AS_INSN): Add a "const" modifier to param.
+	(reg_used_between_p): Strengthen params 2 and 3 from const_rtx to
+	const rtx_insn *.
+	(no_labels_between_p): Likewise for both params.
+
+	* config/aarch64/aarch64.c (aarch64_output_casesi): Add a checked
+	cast when using NEXT_INSN on operands[2].
+	* config/alpha/alpha.c (alpha_set_memflags): Strengthen local
+	"insn" from rtx to rtx_insn *, adding a checked cast.
+	(alpha_handle_trap_shadows): Strengthen locals "i", "n" from rtx to
+	rtx_insn *.
+	* config/arc/arc-protos.h (arc_ccfsm_record_condition): Likewise
+	for third param.
+	(arc_text_label): Likewise for param "insn".
+	* config/arc/arc.c (arc_expand_epilogue): Likewise for local
+	"insn".
+	(arc_ccfsm_record_condition): Likewise for param "jump".
+	(arc_text_label): Likewise for local "label".
+	* config/arc/arc.md (doloop_begin_i): Likewise for local "scan".
+	Introduce a local "seq" via a dyn_cast to rtx_sequence *, and use
+	a method for typesafety.  Add a checked cast.
+	* config/arc/constraints.md (Clb): Add a checked cast when getting
+	the CODE_LABEL from a LABEL_REF.
+	* config/arm/arm.c (require_pic_register): Strengthen locals
+	"seq", "insn" from rtx to rtx_insn *.
+	(create_fix_barrier): Likewise for locals "selected", "next".
+	(thumb1_reorg): Likewise for locals "prev", "insn".
+	(arm_expand_prologue): Likewise for local "last".
+	(thumb1_output_casesi): Add a checked cast when using NEXT_INSN on
+	operands[0].
+	(thumb2_output_casesi): Likewise for operands[2].
+	* config/avr/avr-log.c (avr_log_vadump): Within 'L' case,
+	strengthen local "insn" from rtx to rtx_insn *.
+	* config/bfin/bfin.c (find_next_insn_start): Likewise for return
+	type and param "insn".
+	(find_prev_insn_start): Likewise.
+	(hwloop_optimize): Likewise for locals "insn", "last_insn",
+	"prev".
+	(gen_one_bundle): Likewise for loal "t".
+	(find_load): Likewise for param "insn".
+	(workaround_speculation): Likewise for locals "insn", "next",
+	"target", "next_tgt".
+	* config/c6x/c6x.c (assign_reservations): Likewise for both params
+	and for locals "insn", "within", "last".
+	(count_unit_reqs): Likewise for params "head", "tail" and local
+	"insn".
+	(try_rename_operands): Likewise for params "head", "tail".
+	(reshuffle_units): Likewise for locals "head", "tail", "insn".
+	(struct c6x_sched_context): Likewise for fields
+	"last_scheduled_insn", "last_scheduled_iter0".
+	(init_sched_state): Replace NULL_RTX with NULL.
+	(reorg_split_calls): Strengthen local "new_cycle_first" from rtx
+	to rtx_insn *.
+	(undo_split_delayed_nonbranch): Likewise for param and for local
+	"prev".
+	(conditionalize_after_sched): Likewise for local "insn".
+	(bb_earliest_end_cycle): Likewise.
+	(filter_insns_above): Likewise for locals "insn", "next".
+	(hwloop_optimize): Remove redundant checked cast.
+	(hwloop_fail): Strengthen local "t" from rtx to rtx_insn *.
+	* config/cris/cris.c (cris_initial_frame_pointer_offset): Replace
+	NULL_RTX with NULL.
+	(cris_simple_epilogue): Likewise.
+	(cris_expand_prologue): Likewise.
+	(cris_expand_epilogue): Likewise.
+	* config/frv/frv.c (frv_function_contains_far_jump): Strengthen
+	local "insn" from rtx to rtx_insn *.
+	(frv_ifcvt_modify_tests): Likewise for locals "last_insn", "insn".
+	(struct frv_packet_group): Likewise for the elements within array
+	fields "insns", "sorted", and for field "nop".
+	(frv_packet): Likewise for the elements within array field
+	"insns".
+	(frv_add_insn_to_packet): Likewise for param "insn".
+	(frv_insert_nop_in_packet): Likewise for param "insn" and local
+	"last".
+	(frv_for_each_packet): Likewise for locals "insn", "next_insn".
+	(frv_sort_insn_group_1): Likewise for local "insn".
+	(frv_optimize_membar_local): Likewise.
+	(frv_align_label): Likewise for locals "x", "last", "barrier",
+	"label".
+	* config/ia64/ia64.c (last_scheduled_insn): Likewise for this
+	local.
+	(ia64_sched_init): Likewise for local "insn".
+	(scheduled_good_insn): Likewise for param "last".
+	(struct _ia64_sched_context): Likewise for field
+	"last_scheduled_insn".
+	(ia64_init_sched_context): Replace NULL_RTX with NULL.
+	(struct bundle_state): Likewise for field "insn".
+	(issue_nops_and_insn): Likewise for param "insn".
+	(get_next_important_insn): Likewise for return type and both
+	params.
+	(ia64_add_bundle_selector_before): Likewise for param "insn".
+	(bundling): Likewise for params "prev_head_insn", "tail" and
+	locals "insn", "next_insn", "b".  Eliminate top-level local rtx
+	"nop" in favor of new locals rtx "nop_pat" and rtx_insn *nop;
+	* config/iq2000/iq2000-protos.h (iq2000_fill_delay_slot):
+	Strengthen final param from rtx to rtx_insn *.
+	(iq2000_move_1word): Likewise for second param.
+	* config/iq2000/iq2000.c (iq2000_fill_delay_slot): Likewise for
+	param "cur_insn" and local "next_insn".
+	(iq2000_move_1word): Likewise for param "insn".
+	* config/iq2000/iq2000.md (insn before ADDR_DIFF_VEC): Add checked
+	casts when using NEXT_INSN on operands[1].
+	* config/m32c/m32c.c (m32c_function_needs_enter): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	* config/m68k/m68k.c (m68k_jump_table_ref_p): Split out uses of
+	"x", introducing local rtx_insn * "insn" for when working with the
+	CODE_LABEL of the LABEL_REF.
+	(m68k_sched_md_init_global): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	* config/mcore/mcore-protos.h (mcore_is_dead): Likewise for first
+	param.
+	* config/mcore/mcore.c (emit_new_cond_insn): Likewise for return
+	type.
+	(conditionalize_block): Likewise for return type and param.
+	(mcore_is_dead): Likewise for param "first" and local "insn".
+	(emit_new_cond_insn): Likewise for return type.
+	(conditionalize_block): Likewise for return type, param, and
+	locals "insn", "blk_1_br", "end_blk_2_insn", "start_blk_3_lab",
+	"newinsn".
+	(conditionalize_optimization): Likewise for local "insn".
+	* config/mep/mep.c (mep_jmp_return_reorg): Add checked cast when
+	using NEXT_INSN.
+	* config/microblaze/microblaze.md: Add checked casts when using
+	NEXT_INSN.
+	* config/mips/mips.c (mips_expand_prologue): Eliminate top-level
+	rtx "insn" in favor of various more tightly-scoped rtx "insn" and
+	and rtx_insn * "insn".
+	* config/mips/mips.md (casesi_internal_mips16_<mode>): Add a
+	checked cast when using NEXT_INSN on operands[2].
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Strengthen
+	local "insn" from rtx to rtx_insn *.
+	* config/nds32/nds32-fp-as-gp.c (nds32_fp_as_gp_check_available):
+	Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_casesi_pc_relative):
+	Add a checked cast when using NEXT_INSN on operands[1].
+	* config/pa/pa-protos.h (pa_following_call): Strengthen param from
+	rtx to rtx_insn *.
+	(pa_output_cbranch): Likewise for final param.
+	(pa_output_lbranch): Likewise for second param.
+	(pa_output_bb): Likewise for third param.
+	(pa_output_bvb): Likewise.
+	(pa_output_dbra): Likewise for second param.
+	(pa_output_movb): Likewise.
+	(pa_output_parallel_movb): Likewise.
+	(pa_output_parallel_addb): Likewise.
+	(pa_output_millicode_call): Likewise for first param.
+	(pa_output_mul_insn): Likewise for second param.
+	(pa_output_div_insn): Likewise for third param.
+	(pa_output_mod_insn): Likewise for second param.
+	(pa_jump_in_call_delay): Likewise for param.
+	* config/pa/pa.c (pa_output_mul_insn): Likewise for param "insn".
+	(pa_output_div_insn): Likewise.
+	(pa_output_mod_insn): Likewise.
+	(pa_output_cbranch): Likewise.
+	(pa_output_lbranch): Likewise.
+	(pa_output_bb): Likewise.
+	(pa_output_bvb): Likewise.
+	(pa_output_dbra): Likewise.
+	(pa_output_movb): Likewise.
+	(pa_output_millicode_call): Likewise; use method of rtx_sequence *
+	to simplify and for typesafety.
+	(pa_output_call): Use method of rtx_sequence *.
+	(forward_branch_p): Strengthen param "insn" from rtx to rtx_insn *.
+	(pa_jump_in_call_delay): Likewise.
+	(pa_output_parallel_movb): Likewise.
+	(pa_output_parallel_addb): Likewise.
+	(pa_following_call): Likewise.
+	(pa_combine_instructions): Likewise for locals "anchor",
+	"floater".
+	(pa_can_combine_p): Likewise for params "anchor", "floater" and
+	locals "start", "end".
+	* config/picochip/picochip.c (picochip_reset_vliw): Likewise for
+	param "insn" and local "local_insn".
+	(picochip_final_prescan_insn): Likewise for local "local_insn".
+	* config/rs6000/rs6000.c (compute_save_world_info): Likewise for
+	local "insn".
+	(uses_TOC): Likewise.
+	* config/s390/s390.c (get_some_local_dynamic_name): Likewise.
+	(s390_mainpool_finish): Eliminate top-level local rtx "insn",
+	splitting out to more tightly-scoped locals, 3 as rtx and one as
+	rtx_insn *.
+	(s390_optimize_nonescaping_tx): Strengthen local "tmp" from rtx
+	to rtx_insn *.
+	(s390_emit_prologue): Introduce a local "insn" to be an rtx_insn *
+	where needed.
+	* config/sh/sh-protos.h (barrier_align): Strenghten param from rtx
+	to rtx_insn *.
+	(fixup_addr_diff_vecs): Likewise.
+	(reg_unused_after): Likewise for param 2.
+	(sh_can_redirect_branch): Likewise for both params.
+	(check_use_sfunc_addr): Likewise for param 1.
+	* config/sh/sh.c (fixup_mova): Likewise for local "worker".
+	(find_barrier): Likewise for local "last_got".
+	(gen_block_redirect): Likewise for return type, param "jump" and
+	locals "prev", "scan", "next", "insn".
+	(struct far_branch): Likewise for fields "near_label",
+	"insert_place", "far_label".
+	(gen_far_branch): Likewise for local "jump".
+	(fixup_addr_diff_vecs): Likewise for param "first" and locals
+	"insn", "prev".
+	(barrier_align): Likewise for param and for locals "prev", "x".
+	Introduce local rtx_sequence * "prev_seq" and use insn method for
+	typesafety and clarity.
+	(sh_reorg): Strengthen local "scan" from rtx to rtx_insn *.
+	(get_dest_uid): Likewise for local "dest".
+	(split_branches): Likewise for locals "next", "beyond", "label",
+	"block", "far_label".  Add checked casts when assigning to
+	bp->far_label and "far_label".
+	(reg_unused_after): Strengthen param "scan" from rtx to rtx_insn *.
+	(sequence_insn_p): Likewise.
+	(mark_constant_pool_use): Likewise for locals "insn", "lab".  Add a
+	more loop-scoped rtx "insn" when walking LABEL_REFS.
+	(sh_can_redirect_branch): Strengthen both params from rtx to
+	rtx_insn *.
+	(check_use_sfunc_addr): Likewise for param "insn".  Introduce a
+	new local rtx_sequence * "seq" via a dyn_cast, and use a method
+	for clarity and typesafety.
+	* config/sh/sh.md (define_expand "epilogue"): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(define_insn "casesi_worker_1"): Add a checked cast to rtx_insn *
+	when using NEXT_INSN on the CODE_LABEL in operands[2].
+	(define_insn "casesi_worker_2"): Likewise.
+	(define_insn "casesi_shift_media"): Likewise.
+	(define_insn "casesi_load_media"): Likewise for the CODE_LABEL in
+	operands[3].
+	* config/sh/sh_optimize_sett_clrt.cc (struct ccreg_value):
+	Strengthen field "insn" from rtx to rtx_insn *.
+	(sh_optimize_sett_clrt::execute): Likewise for locals "next_i", "i".
+	(sh_optimize_sett_clrt::find_last_ccreg_values): Likewise for
+	param "start_insn" and local "start_insn".
+	* config/sh/sh_treg_combine.cc (struct set_of_reg): Likewise for
+	field "insn".
+	(find_set_of_reg_bb): Likewise for param "insn".
+	(trace_reg_uses_1): Likewise for param "start_insn" and local "i".
+	(trace_reg_uses): Likewise for param "start_insn".
+	(sh_treg_combine::cbranch_trace): Likewise for field
+	"cbranch_insn".
+	(sh_treg_combine::cbranch_trace::cbranch_trace): Likewise for
+	param "insn".
+	(sh_treg_combine::record_set_of_reg): Likewise for param
+	"start_insn" and local "i".
+	(sh_treg_combine::can_remove_cstore): Likewise for local
+	"prev_insn".
+	(sh_treg_combine::try_optimize_cbranch): Likewise for param
+	"insn".
+	(sh_treg_combine::execute): Likewise for local "i".
+	* config/sparc/sparc-protos.h (empty_delay_slot): Likewise for
+	param.
+	(sparc_check_64): Likewise for second param.
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Likewise for
+	locals "insn", "next".  Introduce local rtx_sequence * "seq" via a
+	dyn_cast, using its insn method for typesafety and clarity.
+	(empty_delay_slot): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(set_extends): Likewise.
+	(sparc_check_64): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_split_cbranch): Likewise
+	for locals "seq", "last_insn".
+	(combine_bnp): Likewise for param "insn".
+	(xstormy16_reorg): Likewise for local "insn".
+	* config/v850/v850.c (substitute_ep_register): Likewise for params
+	"first_insn", "last_insn" and local "insn".
+	(v850_reorg): Likewise for fields "first_insn", "last_insn" within
+	elements of "regs" array, and local "insn".
+	* except.c (emit_note_eh_region_end): Likewise for param "insn".
+	* final.c (final_sequence): Strengthen this global from rtx to
+	rtx_sequence *.
+	(shorten_branches): Strenthen locals "rel_lab", "prev" from rtx to
+	rtx_insn *.
+	(final_scan_insn): Update assignment to "final_sequence" to be
+	from "seq", the cast version of "body", for type-safety.
+	* function.c (assign_parm_setup_reg): Strengthen locals "insn",
+	"insns" from rtx to rtx_insn *.
+	(thread_prologue_and_epilogue_insns): Likewise for local "seq".
+	* genattr.c (main): When writing out generated insn-attr.h,
+	strengthen params 1 and 3 of eligible_for_delay,
+	eligible_for_annul_true, eligible_for_annul_false from rtx to
+	rtx_insn *.
+	* genattrtab.c (write_eligible_delay): Likewise when writing out
+	generated insn-attrtab.c; also local "insn" the generated
+	functions.
+	* hw-doloop.c (discover_loops): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	* hw-doloop.h (struct GTY hwloop_info_d): Strengthen field
+	"start_label" from rtx to rtx_insn *.
+	* ira.c (decrease_live_ranges_number): Likewise for local "p".
+	(ira_update_equiv_info_by_shuffle_insn): Likewise for param
+	"insns" and local "insn".
+	(validate_equiv_mem): Likewise for param "start" and local "insn".
+	(memref_used_between_p): Likewise for params "start", "end" and
+	local "insn".
+	* ira.h (ira_update_equiv_info_by_shuffle_insn): Likewise for
+	final param.
+	* loop-doloop.c (doloop_optimize): Within region guarded by
+	INSN_P (doloop_pat), introduce a new local rtx_insn *
+	"doloop_insn" via a checked cast, and use it for typesafety,
+	eventually writing the value back into doloop_pat.
+	* output.h (final_sequence): Strengthen this global from rtx to
+	rtx_sequence *.
+	* recog.c (peep2_attempt): Rename param "insn" to "uncast_insn",
+	reintroducing "insn" as an rtx_insn * via a checked cast.
+	Strengthen param "attempt" and local "new_insn"from rtx to
+	rtx_insn *.
+	(peephole2_optimize): Strengthen locals "insn", "attempt" from rtx
+	to rtx_insn *.
+	* ree.c (emit_note_eh_region_end): Likewise for local "insn".
+	* reload1.c (reload_as_needed): Eliminate top-level locals "x" and
+	"p" in favor of more tightly-scoped replacements, sometimes rtx
+	and sometimes rtx_insn *, as appropriate.
+	(delete_output_reload): Eliminate top-level rtx "i1", splitting
+	into two loop-scoped locals, one an rtx, the other an rtx_insn *.
+	* reorg.c (delete_scheduled_jump): Add checked cast.  Strengthen
+	local "trial" from rtx to rtx_insn *.
+	(redirect_with_delay_slots_safe_p): Strengthen param "jump" from
+	rtx to rtx_insn *.  Strenghten local "pat" from rtx to
+	rtx_sequence * and use methods for clarity and typesafety.
+	(redirect_with_delay_list_safe_p): Strengthen param "jump" from
+	rtx to rtx_insn *.  Strenghten local "li" from rtx to
+	rtx_insn_list * and use its methods for clarity and typesafety.
+	(steal_delay_list_from_target): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	(steal_delay_list_from_fallthrough): Likewise.
+	(try_merge_delay_insns): Likewise for param "thread" and locals
+	"trial", "next_trial", "delay_insn".
+	(redundant_insn): Likewise for param "target" and local "trial".
+	(own_thread_p): Likewise for param "thread" and locals
+	"active_insn", "insn".
+	(get_label_before): Likewise for param "insn".
+	(fill_simple_delay_slots): Likewise for local "new_label"; use
+	JUMP_LABEL_AS_INSN as necessary when calling own_thread_p.
+	(label_before_next_insn): Strengthen return type and local "insn"
+	from rtx to rtx_insn *.
+	(relax_delay_slots): Likewise for locals "other", "tmp".
+	(make_return_insns): Likewise for param "first" and locals "insn",
+	"jump_insn", "prev".  Move declaration of "pat" to its assignment
+	and strengthen from rtx to rtx_sequence *.  Use its methods for
+	clarity and typesafety.
+	* rtlanal.c (no_labels_between_p): Strengthen params from
+	const_rtx to const rtx_insn *.  Strengthen local "p" from rtx to
+	rtx_insn *.
+	(reg_used_between_p): Strengthen params "from_insn", "to_insn"
+	from const_rtx to const rtx_insn *.
+	(reg_set_between_p): Rename param "from_insn" to
+	"uncast_from_insn", and reintroduce "from_insn" as a
+	const rtx_insn * via a checked cast.
+	(modified_between_p): Likewise for param "start" as "uncast_start".
+	(tablejump_p): Add a cast when invoking NEXT_INSN on "label".
+	* sel-sched-ir.c (get_seqno_by_preds): Strengthen param and locals
+	"tmp", head" from rtx to rtx_insn *.
+	(recompute_rev_top_order): Likewise for local "insn".
+	* sel-sched-ir.h (get_seqno_by_preds): Likewise for param.
+	* store-motion.c (build_store_vectors): Likewise for local "insn".
+	Strengthen local "st" from rtx to rtx_insn_list * and use methods
+	for clarity and typesafety.
+	* tree-ssa-loop-ivopts.c (seq_cost): Strengthen param "seq" from
+	rtx to rtx_insn *.
+	(computation_cost): Likewise for local "seq".
+	(get_address_cost): Likewise.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (tablejump_p): Strengthen first param from const_rtx to
 	const rtx_insn *.
 	(label_is_jump_target_p): Likewise for second param.
