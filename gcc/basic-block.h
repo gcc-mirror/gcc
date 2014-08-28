@@ -822,7 +822,7 @@ extern int flow_find_head_matching_sequence (basic_block, basic_block,
 extern bool delete_unreachable_blocks (void);
 
 extern void update_br_prob_note (basic_block);
-extern bool inside_basic_block_p (const_rtx);
+extern bool inside_basic_block_p (const rtx_insn *);
 extern bool control_flow_insn_p (const_rtx);
 extern rtx_insn *get_last_bb_insn (basic_block);
 

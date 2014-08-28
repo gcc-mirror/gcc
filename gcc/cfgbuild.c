@@ -44,7 +44,7 @@ static void compute_outgoing_frequencies (basic_block);
    block.  */
 
 bool
-inside_basic_block_p (const_rtx insn)
+inside_basic_block_p (const rtx_insn *insn)
 {
   switch (GET_CODE (insn))
     {
