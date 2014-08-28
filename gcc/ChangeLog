@@ -1,5 +1,11 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* alias.c: Include rtl-iter.h.
+	(refs_newer_value_cb): Delete.
+	(refs_newer_value_p): Use FOR_EACH_SUBRTX instead of for_each_rtx.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl-iter.h: New file.
 	* rtlanal.c: Include it.
 	(rtx_all_subrtx_bounds, rtx_nonconst_subrtx_bounds): New variables.
