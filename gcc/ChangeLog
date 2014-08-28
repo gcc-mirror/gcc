@@ -1,5 +1,10 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct rtl_data): Strengthen fields "x_return_label"
+	and "x_naked_return_label" from rtx to rtx_code_label *.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (SET_PREV_INSN): Strengthen param from rtx to rtx_insn *.
 	(SET_NEXT_INSN): Likewise.
 	(gen_rtvec_v): Add an overload for param types (int, rtx_insn **).

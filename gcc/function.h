@@ -271,12 +271,12 @@ struct GTY(()) rtl_data {
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_return_label;
+  rtx_code_label *x_return_label;
 
   /* Label that will go on the end of function epilogue.
      Jumping to this label serves as a "naked return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_naked_return_label;
+  rtx_code_label *x_naked_return_label;
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
