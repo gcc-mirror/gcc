@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "emit-rtl.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
@@ -2486,34 +2487,33 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
     }
 }
 
-/* Called through for_each_rtx, this function examines every reg that occurs
-   in PX and adjusts the costs for its elimination which are gathered by IRA.
-   DATA is the insn in which PX occurs.  We do not recurse into MEM
-   expressions.  */
+/* This function examines every reg that occurs in X and adjusts the
+   costs for its elimination which are gathered by IRA.  INSN is the
+   insn in which X occurs.  We do not recurse into MEM expressions.  */
 
-static int
-note_reg_elim_costly (rtx *px, void *data)
+static void
+note_reg_elim_costly (const_rtx x, rtx insn)
 {
-  rtx insn = (rtx)data;
-  rtx x = *px;
-
-  if (MEM_P (x))
-    return -1;
-
-  if (REG_P (x)
-      && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && reg_equiv_init (REGNO (x))
-      && reg_equiv_invariant (REGNO (x)))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
     {
-      rtx t = reg_equiv_invariant (REGNO (x));
-      rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
-      int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
-      int freq = REG_FREQ_FROM_BB (elim_bb);
+      const_rtx x = *iter;
+      if (MEM_P (x))
+	iter.skip_subrtxes ();
+      else if (REG_P (x)
+	       && REGNO (x) >= FIRST_PSEUDO_REGISTER
+	       && reg_equiv_init (REGNO (x))
+	       && reg_equiv_invariant (REGNO (x)))
+	{
+	  rtx t = reg_equiv_invariant (REGNO (x));
+	  rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
+	  int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
+	  int freq = REG_FREQ_FROM_BB (elim_bb);
 
-      if (cost != 0)
-	ira_adjust_equiv_reg_cost (REGNO (x), -cost * freq);
+	  if (cost != 0)
+	    ira_adjust_equiv_reg_cost (REGNO (x), -cost * freq);
+	}
     }
-  return 0;
 }
 
 /* Scan X and replace any eliminable registers (such as fp) with a
@@ -2888,7 +2888,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       if (for_costs
 	  && memory_address_p (GET_MODE (x), XEXP (x, 0))
 	  && !memory_address_p (GET_MODE (x), new_rtx))
-	for_each_rtx (&XEXP (x, 0), note_reg_elim_costly, insn);
+	note_reg_elim_costly (XEXP (x, 0), insn);
 
       return replace_equiv_address_nv (x, new_rtx);
 
@@ -3732,7 +3732,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 	  if (old_set && recog_data.operand_loc[i] == &SET_SRC (old_set))
 	    is_set_src = true;
 	  if (is_set_src && !sets_reg_p)
-	    note_reg_elim_costly (&SET_SRC (old_set), insn);
+	    note_reg_elim_costly (SET_SRC (old_set), insn);
 	  in_plus = false;
 	  if (plus_src && sets_reg_p
 	      && (recog_data.operand_loc[i] == &XEXP (plus_src, 0)
