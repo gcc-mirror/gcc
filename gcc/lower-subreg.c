@@ -765,34 +765,6 @@ resolve_subreg_use (rtx *loc, rtx insn)
   return false;
 }
 
-/* This is called via for_each_rtx.  Look for SUBREGs which can be
-   decomposed and decomposed REGs that need copying.  */
-
-static int
-adjust_decomposed_uses (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (x == NULL_RTX)
-    return 0;
-
-  if (resolve_subreg_p (x))
-    {
-      x = simplify_subreg_concatn (GET_MODE (x), SUBREG_REG (x),
-				   SUBREG_BYTE (x));
-
-      if (x)
-	*px = x;
-      else
-	x = copy_rtx (*px);
-    }
-
-  if (resolve_reg_p (x))
-    *px = copy_rtx (x);
-
-  return 0;
-}
-
 /* Resolve any decomposed registers which appear in register notes on
    INSN.  */
 
@@ -1167,7 +1139,24 @@ resolve_use (rtx pat, rtx_insn *insn)
 static void
 resolve_debug (rtx_insn *insn)
 {
-  for_each_rtx (&PATTERN (insn), adjust_decomposed_uses, NULL_RTX);
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), NONCONST)
+    {
+      rtx *loc = *iter;
+      rtx x = *loc;
+      if (resolve_subreg_p (x))
+	{
+	  x = simplify_subreg_concatn (GET_MODE (x), SUBREG_REG (x),
+				       SUBREG_BYTE (x));
+
+	  if (x)
+	    *loc = x;
+	  else
+	    x = copy_rtx (*loc);
+	}
+      if (resolve_reg_p (x))
+	*loc = copy_rtx (x);
+    }
 
   df_insn_rescan (insn);
 
