@@ -2795,7 +2795,7 @@ extern rtx replace_rtx (rtx, rtx, rtx);
 extern void replace_label (rtx *, rtx, rtx, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
-extern bool tablejump_p (const_rtx, rtx *, rtx_jump_table_data **);
+extern bool tablejump_p (const rtx_insn *, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
 extern bool tls_referenced_p (const_rtx);
 
@@ -2831,7 +2831,7 @@ extern void remove_node_from_insn_list (const rtx_insn *, rtx_insn_list **);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
 extern bool keep_with_call_p (const_rtx);
-extern bool label_is_jump_target_p (const_rtx, const_rtx);
+extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
 extern int insn_rtx_cost (rtx, bool);
 
 /* Given an insn and condition, return a canonical description of
