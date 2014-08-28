@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* cse.c (check_for_label_ref): Move earlier in file.  Turn from
+	being a for_each_rtx callback to being a function that examines
+	each subrtx itself.
+	(cse_extended_basic_block): Update call accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cse.c (check_dependence_data): Delete.
 	(check_dependence): Change from being a for_each_rtx callback to being
 	a function that examines all subrtxes itself.  Don't handle null rtxes.
