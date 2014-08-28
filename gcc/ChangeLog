@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* calls.c: Include rtl-iter.h.
+	(internal_arg_pointer_based_exp_1): Delete.
+	(internal_arg_pointer_based_exp): Take a const_rtx.
+	Use FOR_EACH_SUBRTX to iterate over subrtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* caller-save.c: Include rtl-iter.h.
 	(add_used_regs_1): Delete.
 	(add_used_regs): Use FOR_EACH_SUBRTX rather than for_each_rtx
