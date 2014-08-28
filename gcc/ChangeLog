@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* store-motion.c: Include rtl-iter.h.
+	(extract_mentioned_regs_1): Delete.
+	(extract_mentioned_regs): Use FOR_EACH_SUBRTX_VAR rather than
+	for_each_rtx to iterate over subrtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* sel-sched.c: Include rtl-iter.h
 	(count_occurrences_1): Delete.
 	(count_occurrences_equiv): Turn rtxes into const_rtxes.
