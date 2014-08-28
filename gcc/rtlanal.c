@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "addresses.h"
+#include "rtl-iter.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -62,6 +63,9 @@ static unsigned int num_sign_bit_copies1 (const_rtx, enum machine_mode, const_rt
    -1 if a code has no such operand.  */
 static int non_rtx_starting_operands[NUM_RTX_CODE];
 
+rtx_subrtx_bound_info rtx_all_subrtx_bounds[NUM_RTX_CODE];
+rtx_subrtx_bound_info rtx_nonconst_subrtx_bounds[NUM_RTX_CODE];
+
 /* Truncation narrows the mode from SOURCE mode to DESTINATION mode.
    If TARGET_MODE_REP_EXTENDED (DESTINATION, DESTINATION_REP) is
    SIGN_EXTEND then while narrowing we also have to enforce the
@@ -78,6 +82,93 @@ static int non_rtx_starting_operands[NUM_RTX_CODE];
 static unsigned int
 num_sign_bit_copies_in_rep[MAX_MODE_INT + 1][MAX_MODE_INT + 1];
 
+/* Store X into index I of ARRAY.  ARRAY is known to have at least I
+   elements.  Return the new base of ARRAY.  */
+
+template <typename T>
+typename T::value_type *
+generic_subrtx_iterator <T>::add_single_to_queue (array_type &array,
+						  value_type *base,
+						  size_t i, value_type x)
+{
+  if (base == array.stack)
+    {
+      if (i < LOCAL_ELEMS)
+	{
+	  base[i] = x;
+	  return base;
+	}
+      gcc_checking_assert (i == LOCAL_ELEMS);
+      vec_safe_grow (array.heap, i + 1);
+      base = array.heap->address ();
+      memcpy (base, array.stack, sizeof (array.stack));
+      base[LOCAL_ELEMS] = x;
+      return base;
+    }
+  unsigned int length = array.heap->length ();
+  if (length > i)
+    {
+      gcc_checking_assert (base == array.heap->address ());
+      base[i] = x;
+      return base;
+    }
+  else
+    {
+      gcc_checking_assert (i == length);
+      vec_safe_push (array.heap, x);
+      return array.heap->address ();
+    }
+}
+
+/* Add the subrtxes of X to worklist ARRAY, starting at END.  Return the
+   number of elements added to the worklist.  */
+
+template <typename T>
+size_t
+generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
+						    value_type *base,
+						    size_t end, rtx_type x)
+{
+  const char *format = GET_RTX_FORMAT (GET_CODE (x));
+  size_t orig_end = end;
+  for (int i = 0; format[i]; ++i)
+    if (format[i] == 'e')
+      {
+	value_type subx = T::get_value (x->u.fld[i].rt_rtx);
+	if (__builtin_expect (end < LOCAL_ELEMS, true))
+	  base[end++] = subx;
+	else
+	  base = add_single_to_queue (array, base, end++, subx);
+      }
+    else if (format[i] == 'E')
+      {
+	int length = GET_NUM_ELEM (x->u.fld[i].rt_rtvec);
+	rtx *vec = x->u.fld[i].rt_rtvec->elem;
+	if (__builtin_expect (end + length <= LOCAL_ELEMS, true))
+	  for (int j = 0; j < length; j++)
+	    base[end++] = T::get_value (vec[j]);
+	else
+	  for (int j = 0; j < length; j++)
+	    base = add_single_to_queue (array, base, end++,
+					T::get_value (vec[j]));
+      }
+  return end - orig_end;
+}
+
+template <typename T>
+void
+generic_subrtx_iterator <T>::free_array (array_type &array)
+{
+  vec_free (array.heap);
+}
+
+template <typename T>
+const size_t generic_subrtx_iterator <T>::LOCAL_ELEMS;
+
+template class generic_subrtx_iterator <const_rtx_accessor>;
+template class generic_subrtx_iterator <rtx_var_accessor>;
+template class generic_subrtx_iterator <rtx_ptr_accessor>;
+
 /* Return 1 if the value of X is unstable
    (would be different at a different point in the program).
    The frame pointer, arg pointer, etc. are considered stable
@@ -5346,8 +5437,42 @@ truncated_to_mode (enum machine_mode mode, const_rtx x)
   return false;
 }
 
+/* Return true if RTX code CODE has a single sequence of zero or more
+   "e" operands and no rtvec operands.  Initialize its rtx_all_subrtx_bounds
+   entry in that case.  */
+
+static bool
+setup_reg_subrtx_bounds (unsigned int code)
+{
+  const char *format = GET_RTX_FORMAT ((enum rtx_code) code);
+  unsigned int i = 0;
+  for (; format[i] != 'e'; ++i)
+    {
+      if (!format[i])
+	/* No subrtxes.  Leave start and count as 0.  */
+	return true;
+      if (format[i] == 'E' || format[i] == 'V')
+	return false;
+    }
+
+  /* Record the sequence of 'e's.  */
+  rtx_all_subrtx_bounds[code].start = i;
+  do
+    ++i;
+  while (format[i] == 'e');
+  rtx_all_subrtx_bounds[code].count = i - rtx_all_subrtx_bounds[code].start;
+  /* rtl-iter.h relies on this.  */
+  gcc_checking_assert (rtx_all_subrtx_bounds[code].count <= 3);
+
+  for (; format[i]; ++i)
+    if (format[i] == 'E' || format[i] == 'V' || format[i] == 'e')
+      return false;
+
+  return true;
+}
+
 /* Initialize non_rtx_starting_operands, which is used to speed up
-   for_each_rtx.  */
+   for_each_rtx, and rtx_all_subrtx_bounds.  */
 void
 init_rtlanal (void)
 {
@@ -5357,6 +5482,10 @@ init_rtlanal (void)
       const char *format = GET_RTX_FORMAT (i);
       const char *first = strpbrk (format, "eEV");
       non_rtx_starting_operands[i] = first ? first - format : -1;
+      if (!setup_reg_subrtx_bounds (i))
+	rtx_all_subrtx_bounds[i].count = UCHAR_MAX;
+      if (GET_RTX_CLASS (i) != RTX_CONST_OBJ)
+	rtx_nonconst_subrtx_bounds[i] = rtx_all_subrtx_bounds[i];
     }
 
   init_num_sign_bit_copies_in_rep ();
