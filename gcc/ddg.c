@@ -397,41 +397,25 @@ build_inter_loop_deps (ddg_ptr g)
 }
 
 
-static int
-walk_mems_2 (rtx *x, rtx mem)
-{
-  if (MEM_P (*x))
-    {
-      if (may_alias_p (*x, mem))
-        return 1;
-
-      return -1;
-    }
-  return 0;
-}
-
-static int
-walk_mems_1 (rtx *x, rtx *pat)
-{
-  if (MEM_P (*x))
-    {
-      /* Visit all MEMs in *PAT and check independence.  */
-      if (for_each_rtx (pat, (rtx_function) walk_mems_2, *x))
-        /* Indicate that dependence was determined and stop traversal.  */
-        return 1;
-
-      return -1;
-    }
-  return 0;
-}
-
-/* Return 1 if two specified instructions have mem expr with conflict alias sets*/
-static int
+/* Return true if two specified instructions have mem expr with conflict
+   alias sets.  */
+static bool
 insns_may_alias_p (rtx_insn *insn1, rtx_insn *insn2)
 {
-  /* For each pair of MEMs in INSN1 and INSN2 check their independence.  */
-  return  for_each_rtx (&PATTERN (insn1), (rtx_function) walk_mems_1,
-			 &PATTERN (insn2));
+  subrtx_iterator::array_type array1;
+  subrtx_iterator::array_type array2;
+  FOR_EACH_SUBRTX (iter1, array1, PATTERN (insn1), NONCONST)
+    {
+      const_rtx x1 = *iter1;
+      if (MEM_P (x1))
+	FOR_EACH_SUBRTX (iter2, array2, PATTERN (insn2), NONCONST)
+	  {
+	    const_rtx x2 = *iter2;
+	    if (MEM_P (x2) && may_alias_p (x2, x1))
+	      return true;
+	  }
+    }
+  return false;
 }
 
 /* Given two nodes, analyze their RTL insns and add intra-loop mem deps

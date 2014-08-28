@@ -1,5 +1,11 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ddg.c (walk_mems_2, walk_mems_1): Delete.
+	(insns_may_alias_p): Use FOR_EACH_SUBRTX rather than for_each_rtx
+	to iterate over subrtxes.  Return a bool rather than an int.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ddg.c: Include rtl-iter.h.
 	(mark_mem_use_1): Rename to...
 	(mark_mem_use): ...deleting old mark_mem_use.  Use FOR_EACH_SUBRTX
