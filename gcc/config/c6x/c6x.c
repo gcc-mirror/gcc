@@ -4591,23 +4591,24 @@ c6x_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
    first in the original stream.  */
 
 static void
-gen_one_bundle (rtx *slot, int n_filled, int real_first)
+gen_one_bundle (rtx_insn **slot, int n_filled, int real_first)
 {
-  rtx bundle;
-  rtx t;
+  rtx seq;
+  rtx_insn *bundle;
+  rtx_insn *t;
   int i;
 
-  bundle = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec_v (n_filled, slot));
-  bundle = make_insn_raw (bundle);
+  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec_v (n_filled, slot));
+  bundle = make_insn_raw (seq);
   BLOCK_FOR_INSN (bundle) = BLOCK_FOR_INSN (slot[0]);
   INSN_LOCATION (bundle) = INSN_LOCATION (slot[0]);
   SET_PREV_INSN (bundle) = SET_PREV_INSN (slot[real_first]);
 
-  t = NULL_RTX;
+  t = NULL;
 
   for (i = 0; i < n_filled; i++)
     {
-      rtx insn = slot[i];
+      rtx_insn *insn = slot[i];
       remove_insn (insn);
       SET_PREV_INSN (insn) = t ? t : PREV_INSN (bundle);
       if (t != NULL_RTX)
@@ -4630,14 +4631,14 @@ static void
 c6x_gen_bundles (void)
 {
   basic_block bb;
-  rtx insn, next, last_call;
+  rtx_insn *insn, *next, *last_call;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
       /* The machine is eight insns wide.  We can have up to six shadow
 	 insns, plus an extra slot for merging the jump shadow.  */
-      rtx slot[15];
+      rtx_insn *slot[15];
       int n_filled = 0;
       int first_slot = 0;
 
@@ -4700,7 +4701,7 @@ c6x_gen_bundles (void)
   /* Bundling, and emitting nops, can separate
      NOTE_INSN_CALL_ARG_LOCATION from the corresponding calls.  Fix
      that up here.  */
-  last_call = NULL_RTX;
+  last_call = NULL;
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -4855,13 +4856,13 @@ static void
 reorg_split_calls (rtx *call_labels)
 {
   unsigned int reservation_mask = 0;
-  rtx insn = get_insns ();
+  rtx_insn *insn = get_insns ();
   gcc_assert (NOTE_P (insn));
   insn = next_real_insn (insn);
   while (insn)
     {
       int uid;
-      rtx next = next_real_insn (insn);
+      rtx_insn *next = next_real_insn (insn);
 
       if (DEBUG_INSN_P (insn))
 	goto done;
@@ -4886,7 +4887,7 @@ reorg_split_calls (rtx *call_labels)
 	      else
 		{
 		  rtx t;
-		  rtx slot[4];
+		  rtx_insn *slot[4];
 		  emit_label_after (label, insn);
 
 		  /* Bundle the call and its delay slots into a single

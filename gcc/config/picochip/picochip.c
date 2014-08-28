@@ -3177,8 +3177,8 @@ reorder_var_tracking_notes (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next, last_insn = NULL_RTX;
-      rtx queue = NULL_RTX;
+      rtx_insn *insn, *next, *last_insn = NULL;
+      rtx_insn *queue = NULL;
 
       /* Iterate through the bb and find the last non-debug insn */
       for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = NEXT_INSN(insn))
@@ -3198,7 +3198,7 @@ reorder_var_tracking_notes (void)
             {
               while (queue)
                 {
-                  rtx next_queue = PREV_INSN (queue);
+                  rtx_insn *next_queue = PREV_INSN (queue);
                   SET_PREV_INSN (NEXT_INSN(insn)) = queue;
                   SET_NEXT_INSN(queue) = NEXT_INSN(insn);
                   SET_PREV_INSN(queue) = insn;
@@ -3215,7 +3215,7 @@ reorder_var_tracking_notes (void)
                 {
                   while (queue)
                     {
-                      rtx next_queue = PREV_INSN (queue);
+                      rtx_insn *next_queue = PREV_INSN (queue);
                       SET_NEXT_INSN (PREV_INSN(insn)) = queue;
                       SET_PREV_INSN (queue) = PREV_INSN(insn);
                       SET_PREV_INSN (insn) = queue;
@@ -3226,7 +3226,7 @@ reorder_var_tracking_notes (void)
             }
           else if (NOTE_P (insn))
             {
-               rtx prev = PREV_INSN (insn);
+               rtx_insn *prev = PREV_INSN (insn);
                SET_PREV_INSN (next) = prev;
                SET_NEXT_INSN (prev) = next;
                /* Ignore call_arg notes. They are expected to be just after the
