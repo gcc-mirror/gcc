@@ -6784,7 +6784,7 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
 /* Return true if X is a dead register.  */
 
 static inline int
-is_dead_reg (rtx x, int *counts)
+is_dead_reg (const_rtx x, int *counts)
 {
   return (REG_P (x)
 	  && REGNO (x) >= FIRST_PSEUDO_REGISTER
@@ -6871,30 +6871,29 @@ count_stores (rtx x, const_rtx set ATTRIBUTE_UNUSED, void *data)
     counts[REGNO (x)]++;
 }
 
-struct dead_debug_insn_data
+/* Return if DEBUG_INSN pattern PAT needs to be reset because some dead
+   pseudo doesn't have a replacement.  COUNTS[X] is zero if register X
+   is dead and REPLACEMENTS[X] is null if it has no replacemenet.
+   Set *SEEN_REPL to true if we see a dead register that does have
+   a replacement.  */
+
+static bool
+is_dead_debug_insn (const_rtx pat, int *counts, rtx *replacements,
+		    bool *seen_repl)
 {
-  int *counts;
-  rtx *replacements;
-  bool seen_repl;
-};
-
-/* Return if a DEBUG_INSN needs to be reset because some dead
-   pseudo doesn't have a replacement.  Callback for for_each_rtx.  */
-
-static int
-is_dead_debug_insn (rtx *loc, void *data)
-{
-  rtx x = *loc;
-  struct dead_debug_insn_data *ddid = (struct dead_debug_insn_data *) data;
-
-  if (is_dead_reg (x, ddid->counts))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, pat, NONCONST)
     {
-      if (ddid->replacements && ddid->replacements[REGNO (x)] != NULL_RTX)
-	ddid->seen_repl = true;
-      else
-	return 1;
+      const_rtx x = *iter;
+      if (is_dead_reg (x, counts))
+	{
+	  if (replacements && replacements[REGNO (x)] != NULL_RTX)
+	    *seen_repl = true;
+	  else
+	    return true;
+	}
     }
-  return 0;
+  return false;
 }
 
 /* Replace a dead pseudo in a DEBUG_INSN with replacement DEBUG_EXPR.
@@ -7038,22 +7037,19 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      struct dead_debug_insn_data ddid;
-      ddid.counts = counts;
-      ddid.replacements = replacements;
       for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
 	if (DEBUG_INSN_P (insn))
 	  {
 	    /* If this debug insn references a dead register that wasn't replaced
 	       with an DEBUG_EXPR, reset the DEBUG_INSN.  */
-	    ddid.seen_repl = false;
-	    if (for_each_rtx (&INSN_VAR_LOCATION_LOC (insn),
-			      is_dead_debug_insn, &ddid))
+	    bool seen_repl = false;
+	    if (is_dead_debug_insn (INSN_VAR_LOCATION_LOC (insn),
+				    counts, replacements, &seen_repl))
 	      {
 		INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
 		df_insn_rescan (insn);
 	      }
-	    else if (ddid.seen_repl)
+	    else if (seen_repl)
 	      {
 		INSN_VAR_LOCATION_LOC (insn)
 		  = simplify_replace_fn_rtx (INSN_VAR_LOCATION_LOC (insn),
