@@ -5523,27 +5523,32 @@ preserve_value (cselib_val *val)
    any rtxes not suitable for CONST use not replaced by VALUEs
    are discovered.  */
 
-static int
-non_suitable_const (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+non_suitable_const (const_rtx x)
 {
-  if (*x == NULL_RTX)
-    return 0;
-
-  switch (GET_CODE (*x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
     {
-    case REG:
-    case DEBUG_EXPR:
-    case PC:
-    case SCRATCH:
-    case CC0:
-    case ASM_INPUT:
-    case ASM_OPERANDS:
-      return 1;
-    case MEM:
-      return !MEM_READONLY_P (*x);
-    default:
-      return 0;
+      const_rtx x = *iter;
+      switch (GET_CODE (x))
+	{
+	case REG:
+	case DEBUG_EXPR:
+	case PC:
+	case SCRATCH:
+	case CC0:
+	case ASM_INPUT:
+	case ASM_OPERANDS:
+	  return true;
+	case MEM:
+	  if (!MEM_READONLY_P (x))
+	    return true;
+	  break;
+	default:
+	  break;
+	}
     }
+  return false;
 }
 
 /* Add uses (register and memory references) LOC which will be tracked
@@ -5589,8 +5594,7 @@ add_uses (rtx *ploc, void *data)
 	    }
 
 	  if (CONSTANT_P (vloc)
-	      && (GET_CODE (vloc) != CONST
-		  || for_each_rtx (&vloc, non_suitable_const, NULL)))
+	      && (GET_CODE (vloc) != CONST || non_suitable_const (vloc)))
 	    /* For constants don't look up any value.  */;
 	  else if (!VAR_LOC_UNKNOWN_P (vloc) && !unsuitable_loc (vloc)
 		   && (val = find_use_val (vloc, GET_MODE (oloc), cui)))
