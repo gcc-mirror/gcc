@@ -1,5 +1,13 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df-problems.c: Include rtl-iter.h.
+	(find_memory): Turn from being a for_each_rtx callback to being
+	a function that examines each subrtx itself.  Continue to look for
+	volatile references even after a nonvolatile one has been found.
+	(can_move_insns_across): Update calls accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ddg.c (walk_mems_2, walk_mems_1): Delete.
 	(insns_may_alias_p): Use FOR_EACH_SUBRTX rather than for_each_rtx
 	to iterate over subrtxes.  Return a bool rather than an int.
