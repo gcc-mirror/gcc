@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.h (find_all_hard_regs): Declare.
+	* rtlanal.c (find_all_hard_regs): New function.
+	(record_hard_reg_uses_1): Delete.
+	(record_hard_reg_uses): Use find_all_hard_regs.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (replace_label_data): Delete.
 	(replace_label): Take the old label, new label and update-nuses flag
 	as direct arguments.  Return void.
