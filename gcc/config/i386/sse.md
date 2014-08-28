@@ -281,6 +281,9 @@
 (define_mode_iterator VI8_256_512
   [V8DI (V4DI "TARGET_AVX512VL")])
 
+(define_mode_iterator VI128_256
+  [V4DI V2DI V4SI (V16QI "TARGET_AVX512BW") (V8HI "TARGET_AVX512BW")])
+
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
 
@@ -8921,6 +8924,17 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
+
+(define_insn "<mask_codefor><code><mode>3<mask_name>"
+  [(set (match_operand:VI128_256 0 "register_operand" "=v")
+        (maxmin:VI128_256
+          (match_operand:VI128_256 1 "register_operand" "v")
+          (match_operand:VI128_256 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512VL"
+  "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sseiadd")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI8_AVX2 0 "register_operand")
