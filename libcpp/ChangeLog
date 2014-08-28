@@ -1,3 +1,12 @@
+2014-08-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR cpp/23827 - standard C++ should not have hex float preprocessor
+	tokens
+	* libcpp/init.c (lang_flags): Change CXX98 flag for extended numbers
+	from 1 to 0.
+	* libcpp/expr.c (cpp_classify_number): Weite error message for improper
+	use of hex floating literal.
+
 2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX1Z, CLK_CXX1Z;
