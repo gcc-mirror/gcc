@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* var-tracking.c (use_narrower_mode_test): Turn from being a
+	for_each_rtx callback to being a function that examines each
+	subrtx itself.
+	(adjust_mems): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* var-tracking.c (non_suitable_const): Turn from being a for_each_rtx
 	callback to being a function that examines each subrtx itself.
 	Remove handling of null rtxes.
