@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "hash-table.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 /* Possible return values of iv_get_reaching_def.  */
 
@@ -1398,33 +1399,27 @@ simple_rhs_p (rtx rhs)
     }
 }
 
-/* If REG has a single definition, replace it with its known value in EXPR.
-   Callback for for_each_rtx.  */
+/* If REGNO has a single definition, return its known value, otherwise return
+   null.  */
 
-static int
-replace_single_def_regs (rtx *reg, void *expr1)
+static rtx
+find_single_def_src (unsigned int regno)
 {
-  unsigned regno;
   df_ref adef;
   rtx set, src;
-  rtx *expr = (rtx *)expr1;
 
-  if (!REG_P (*reg))
-    return 0;
-
-  regno = REGNO (*reg);
   for (;;)
     {
       rtx note;
       adef = DF_REG_DEF_CHAIN (regno);
       if (adef == NULL || DF_REF_NEXT_REG (adef) != NULL
-	    || DF_REF_IS_ARTIFICIAL (adef))
-	return -1;
+	  || DF_REF_IS_ARTIFICIAL (adef))
+	return NULL_RTX;
 
       set = single_set (DF_REF_INSN (adef));
       if (set == NULL || !REG_P (SET_DEST (set))
 	  || REGNO (SET_DEST (set)) != regno)
-	return -1;
+	return NULL_RTX;
 
       note = find_reg_equal_equiv_note (DF_REF_INSN (adef));
 
@@ -1443,10 +1438,29 @@ replace_single_def_regs (rtx *reg, void *expr1)
       break;
     }
   if (!function_invariant_p (src))
-    return -1;
+    return NULL_RTX;
 
-  *expr = simplify_replace_rtx (*expr, *reg, src);
-  return 1;
+  return src;
+}
+
+/* If any registers in *EXPR that have a single definition, try to replace
+   them with the known-equivalent values.  */
+
+static void
+replace_single_def_regs (rtx *expr)
+{
+  subrtx_var_iterator::array_type array;
+ repeat:
+  FOR_EACH_SUBRTX_VAR (iter, array, *expr, NONCONST)
+    {
+      rtx x = *iter;
+      if (REG_P (x))
+	if (rtx new_x = find_single_def_src (REGNO (x)))
+	  {
+	    *expr = simplify_replace_rtx (*expr, x, new_x);
+	    goto repeat;
+	  }
+    }
 }
 
 /* A subroutine of simplify_using_initial_values, this function examines INSN
@@ -1491,8 +1505,7 @@ replace_in_expr (rtx *expr, rtx dest, rtx src)
   *expr = simplify_replace_rtx (*expr, dest, src);
   if (old == *expr)
     return;
-  while (for_each_rtx (expr, replace_single_def_regs, expr) != 0)
-    continue;
+  replace_single_def_regs (expr);
 }
 
 /* Checks whether A implies B.  */
@@ -1937,9 +1950,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
   gcc_assert (op == UNKNOWN);
 
-  for (;;)
-    if (for_each_rtx (expr, replace_single_def_regs, expr) == 0)
-      break;
+  replace_single_def_regs (expr);
   if (CONSTANT_P (*expr))
     return;
 
