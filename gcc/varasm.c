@@ -3724,7 +3724,7 @@ force_const_mem (enum machine_mode mode, rtx x)
 /* Given a constant pool SYMBOL_REF, return the corresponding constant.  */
 
 rtx
-get_pool_constant (rtx addr)
+get_pool_constant (const_rtx addr)
 {
   return SYMBOL_REF_CONSTANT (addr)->constant;
 }

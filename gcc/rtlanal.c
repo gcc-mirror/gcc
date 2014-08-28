@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 static void set_of_1 (rtx, const_rtx, void *);
 static bool covers_regno_p (const_rtx, unsigned int);
 static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
-static int rtx_referenced_p_1 (rtx *, void *);
 static int computed_jump_p_1 (const_rtx);
 static void parms_set (rtx, const_rtx, void *);
 
@@ -2832,37 +2831,28 @@ replace_label (rtx *x, void *data)
   return 0;
 }
 
-/* When *BODY is equal to X or X is directly referenced by *BODY
-   return nonzero, thus FOR_EACH_RTX stops traversing and returns nonzero
-   too, otherwise FOR_EACH_RTX continues traversing *BODY.  */
-
-static int
-rtx_referenced_p_1 (rtx *body, void *x)
-{
-  rtx y = (rtx) x;
-
-  if (*body == NULL_RTX)
-    return y == NULL_RTX;
-
-  /* Return true if a label_ref *BODY refers to label Y.  */
-  if (GET_CODE (*body) == LABEL_REF && LABEL_P (y))
-    return XEXP (*body, 0) == y;
-
-  /* If *BODY is a reference to pool constant traverse the constant.  */
-  if (GET_CODE (*body) == SYMBOL_REF
-      && CONSTANT_POOL_ADDRESS_P (*body))
-    return rtx_referenced_p (y, get_pool_constant (*body));
-
-  /* By default, compare the RTL expressions.  */
-  return rtx_equal_p (*body, y);
-}
-
 /* Return true if X is referenced in BODY.  */
 
-int
-rtx_referenced_p (rtx x, rtx body)
+bool
+rtx_referenced_p (const_rtx x, const_rtx body)
 {
-  return for_each_rtx (&body, rtx_referenced_p_1, x);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, body, ALL)
+    if (const_rtx y = *iter)
+      {
+	/* Check if a label_ref Y refers to label X.  */
+	if (GET_CODE (y) == LABEL_REF && LABEL_P (y) && XEXP (y, 0) == x)
+	  return true;
+
+	if (rtx_equal_p (x, y))
+	  return true;
+
+	/* If Y is a reference to pool constant traverse the constant.  */
+	if (GET_CODE (y) == SYMBOL_REF
+	    && CONSTANT_POOL_ADDRESS_P (y))
+	  iter.substitute (get_pool_constant (y));
+      }
+  return false;
 }
 
 /* If INSN is a tablejump return true and store the label (before jump table) to
