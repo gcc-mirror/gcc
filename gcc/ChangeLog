@@ -1,3 +1,25 @@
+2014-08-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_xl): New #define.
+	(vec_xst): Likewise.
+	* config/rs6000/rs6000-builtin.def (XXSPLTD_V2DF): New built-in.
+	(XXSPLTD_V2DI): Likewise.
+	(DIV_V2DI): Likewise.
+	(UDIV_V2DI): Likewise.
+	(MUL_V2DI): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	entries for VSX_BUILTIN_XVRDPI, VSX_BUILTIN_DIV_V2DI,
+	VSX_BUILTIN_UDIV_V2DI, VSX_BUILTIN_MUL_V2DI,
+	VSX_BUILTIN_XXSPLTD_V2DF, and VSX_BUILTIN_XXSPLTD_V2DI).
+	* config/rs6000/vsx.md (UNSPEC_VSX_XXSPLTD): New unspec.
+	(UNSPEC_VSX_DIVSD): Likewise.
+	(UNSPEC_VSX_DIVUD): Likewise.
+	(UNSPEC_VSX_MULSD): Likewise.
+	(vsx_mul_v2di): New insn-and-split.
+	(vsx_div_v2di): Likewise.
+	(vsx_udiv_v2di): Likewise.
+	(vsx_xxspltd_<mode>): New insn.
+
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (RTX_PREV): Added checked casts to uses of PREV_INSN and

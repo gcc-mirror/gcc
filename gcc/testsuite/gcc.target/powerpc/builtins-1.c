@@ -6,6 +6,9 @@
 
 #include <altivec.h>
 
+vector double y = { 2.0, 4.0 };
+vector double z;
+
 int main ()
 {
   vector float fa = {1.0, 2.0, 3.0, -4.0};
@@ -133,6 +136,26 @@ int main ()
 		            1, 117, -36, 99, 98, 97, 96, 95};
   vector signed char scb = vec_cntlz (sca);
   vector unsigned char cb = vec_cntlz (ca);
+
+  vector double dd = vec_xl (0, &y);
+  vec_xst (dd, 0, &z);
+
+  vector double de = vec_round (dd);
+
+  vector double df = vec_splat (de, 0);
+  vector double dg = vec_splat (de, 1);
+  vector long long l3 = vec_splat (l2, 0);
+  vector long long l4 = vec_splat (l2, 1);
+  vector unsigned long long u3 = vec_splat (u2, 0);
+  vector unsigned long long u4 = vec_splat (u2, 1);
+  vector bool long long l5 = vec_splat (ld, 0);
+  vector bool long long l6 = vec_splat (ld, 1);
+
+  vector long long l7 = vec_div (l3, l4);
+  vector unsigned long long u5 = vec_div (u3, u4);
+
+  vector long long l8 = vec_mul (l3, l4);
+  vector unsigned long long u6 = vec_mul (u3, u4);
 
   return 0;
 }

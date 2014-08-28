@@ -322,6 +322,8 @@
 #define vec_sqrt __builtin_vec_sqrt
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
+#define vec_xl __builtin_vec_vsx_ld
+#define vec_xst __builtin_vec_vsx_st
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
    instead of __builtin_vec_<xxx>  */

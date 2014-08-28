@@ -260,6 +260,10 @@
    UNSPEC_VSX_ROUND_IC
    UNSPEC_VSX_SLDWI
    UNSPEC_VSX_XXSPLTW
+   UNSPEC_VSX_XXSPLTD
+   UNSPEC_VSX_DIVSD
+   UNSPEC_VSX_DIVUD
+   UNSPEC_VSX_MULSD
   ])
 
 ;; VSX moves
@@ -747,6 +751,34 @@
   [(set_attr "type" "<VStype_simple>")
    (set_attr "fp_type" "<VSfptype_mul>")])
 
+; Emulate vector with scalar for vec_mul in V2DImode
+(define_insn_and_split "vsx_mul_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_MULSD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_muldi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_muldi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "mul")])
+
 (define_insn "*vsx_div<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
         (div:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")
@@ -755,6 +787,61 @@
   "xvdiv<VSs> %x0,%x1,%x2"
   [(set_attr "type" "<VStype_div>")
    (set_attr "fp_type" "<VSfptype_div>")])
+
+; Emulate vector with scalar for vec_div in V2DImode
+(define_insn_and_split "vsx_div_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_DIVSD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_divdi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_divdi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "div")])
+
+(define_insn_and_split "vsx_udiv_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_DIVUD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_udivdi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_udivdi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "div")])
 
 ;; *tdiv* instruction returning the FG flag
 (define_expand "vsx_tdiv<mode>3_fg"
@@ -1896,6 +1983,22 @@
                       UNSPEC_VSX_XXSPLTW))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxspltw %x0,%x1,%2"
+  [(set_attr "type" "vecperm")])
+
+;; V2DF/V2DI splat for use by vec_splat builtin
+(define_insn "vsx_xxspltd_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
+        (unspec:VSX_D [(match_operand:VSX_D 1 "vsx_register_operand" "wa")
+	               (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      UNSPEC_VSX_XXSPLTD))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  if ((VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 0)
+      || (!VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 1))
+    return "xxpermdi %x0,%x1,%x1,0";
+  else
+    return "xxpermdi %x0,%x1,%x1,3";
+}
   [(set_attr "type" "vecperm")])
 
 ;; V4SF/V4SI interleave
