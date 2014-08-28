@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h" /* for dump_function_header */
 #include "asan.h"
 #include "wide-int-print.h"
+#include "rtl-iter.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -3778,38 +3779,19 @@ output_asm_label (rtx x)
   assemble_name (asm_out_file, buf);
 }
 
-/* Helper rtx-iteration-function for mark_symbol_refs_as_used and
-   output_operand.  Marks SYMBOL_REFs as referenced through use of
-   assemble_external.  */
-
-static int
-mark_symbol_ref_as_used (rtx *xp, void *dummy ATTRIBUTE_UNUSED)
-{
-  rtx x = *xp;
-
-  /* If we have a used symbol, we may have to emit assembly
-     annotations corresponding to whether the symbol is external, weak
-     or has non-default visibility.  */
-  if (GET_CODE (x) == SYMBOL_REF)
-    {
-      tree t;
-
-      t = SYMBOL_REF_DECL (x);
-      if (t)
-	assemble_external (t);
-
-      return -1;
-    }
-
-  return 0;
-}
-
 /* Marks SYMBOL_REFs in x as referenced through use of assemble_external.  */
 
 void
 mark_symbol_refs_as_used (rtx x)
 {
-  for_each_rtx (&x, mark_symbol_ref_as_used, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF)
+	if (tree t = SYMBOL_REF_DECL (x))
+	  assemble_external (t);
+    }
 }
 
 /* Print operand X using machine-dependent assembler syntax.
@@ -3835,7 +3817,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   if (x == NULL_RTX)
     return;
 
-  for_each_rtx (&x, mark_symbol_ref_as_used, NULL);
+  mark_symbol_refs_as_used (x);
 }
 
 /* Print a memory reference operand for address X using
