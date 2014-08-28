@@ -255,14 +255,6 @@ struct qty_table_elem
 /* The table of all qtys, indexed by qty number.  */
 static struct qty_table_elem *qty_table;
 
-/* Structure used to pass arguments via for_each_rtx to function
-   cse_change_cc_mode.  */
-struct change_cc_mode_args
-{
-  rtx_insn *insn;
-  rtx newreg;
-};
-
 #ifdef HAVE_cc0
 /* For machines that have a CC0, we do not record its value in the hash
    table since its use is guaranteed to be the insn immediately following
@@ -603,7 +595,6 @@ static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
 static void flush_hash_table (void);
 static bool insn_live_p (rtx_insn *, int *);
 static bool set_live_p (rtx, rtx_insn *, int *);
-static int cse_change_cc_mode (rtx *, void *);
 static void cse_change_cc_mode_insn (rtx_insn *, rtx);
 static void cse_change_cc_mode_insns (rtx_insn *, rtx_insn *, rtx);
 static enum machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
@@ -7070,26 +7061,26 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
   return ndead;
 }
 
-/* This function is called via for_each_rtx.  The argument, NEWREG, is
-   a condition code register with the desired mode.  If we are looking
-   at the same register in a different mode, replace it with
-   NEWREG.  */
+/* If LOC contains references to NEWREG in a different mode, change them
+   to use NEWREG instead.  */
 
-static int
-cse_change_cc_mode (rtx *loc, void *data)
+static void
+cse_change_cc_mode (subrtx_ptr_iterator::array_type &array,
+		    rtx *loc, rtx insn, rtx newreg)
 {
-  struct change_cc_mode_args* args = (struct change_cc_mode_args*)data;
-
-  if (*loc
-      && REG_P (*loc)
-      && REGNO (*loc) == REGNO (args->newreg)
-      && GET_MODE (*loc) != GET_MODE (args->newreg))
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
     {
-      validate_change (args->insn, loc, args->newreg, 1);
-
-      return -1;
+      rtx *loc = *iter;
+      rtx x = *loc;
+      if (x
+	  && REG_P (x)
+	  && REGNO (x) == REGNO (newreg)
+	  && GET_MODE (x) != GET_MODE (newreg))
+	{
+	  validate_change (insn, loc, newreg, 1);
+	  iter.skip_subrtxes ();
+	}
     }
-  return 0;
 }
 
 /* Change the mode of any reference to the register REGNO (NEWREG) to
@@ -7098,17 +7089,14 @@ cse_change_cc_mode (rtx *loc, void *data)
 static void
 cse_change_cc_mode_insn (rtx_insn *insn, rtx newreg)
 {
-  struct change_cc_mode_args args;
   int success;
 
   if (!INSN_P (insn))
     return;
 
-  args.insn = insn;
-  args.newreg = newreg;
-
-  for_each_rtx (&PATTERN (insn), cse_change_cc_mode, &args);
-  for_each_rtx (&REG_NOTES (insn), cse_change_cc_mode, &args);
+  subrtx_ptr_iterator::array_type array;
+  cse_change_cc_mode (array, &PATTERN (insn), insn, newreg);
+  cse_change_cc_mode (array, &REG_NOTES (insn), insn, newreg);
 
   /* If the following assertion was triggered, there is most probably
      something wrong with the cc_modes_compatible back end function.

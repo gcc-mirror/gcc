@@ -1,5 +1,13 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* cse.c (change_cc_mode_args): Delete.
+	(cse_change_cc_mode): Turn from being a for_each_rtx callback to being
+	a function that examines each subrtx itself.  Take the fields of
+	change_cc_mode_args as argument and return void.
+	(cse_change_cc_mode_insn): Update calls accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cse.c (is_dead_reg): Change argument to const_rtx.
 	(dead_debug_insn_data): Delete.
 	(is_dead_debug_insn): Expand commentary.  Turn from being a
