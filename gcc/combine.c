@@ -471,7 +471,6 @@ static void distribute_links (struct insn_link *);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
 static bool unmentioned_reg_p (rtx, rtx);
-static int record_truncated_value (rtx *, void *);
 static void record_truncated_values (rtx *, void *);
 static bool reg_truncated_to_mode (enum machine_mode, const_rtx);
 static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
@@ -12502,15 +12501,14 @@ reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
   return false;
 }
 
-/* Callback for for_each_rtx.  If *P is a hard reg or a subreg record the mode
-   that the register is accessed in.  For non-TRULY_NOOP_TRUNCATION targets we
-   might be able to turn a truncate into a subreg using this information.
-   Return -1 if traversing *P is complete or 0 otherwise.  */
+/* If X is a hard reg or a subreg record the mode that the register is
+   accessed in.  For non-TRULY_NOOP_TRUNCATION targets we might be able
+   to turn a truncate into a subreg using this information.  Return true
+   if traversing X is complete.  */
 
-static int
-record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
+static bool
+record_truncated_value (rtx x)
 {
-  rtx x = *p;
   enum machine_mode truncated_mode;
   reg_stat_type *rsp;
 
@@ -12520,10 +12518,10 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
       truncated_mode = GET_MODE (x);
 
       if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))
-	return -1;
+	return true;
 
       if (TRULY_NOOP_TRUNCATION_MODES_P (truncated_mode, original_mode))
-	return -1;
+	return true;
 
       x = SUBREG_REG (x);
     }
@@ -12532,7 +12530,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
   else if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
     truncated_mode = GET_MODE (x);
   else
-    return 0;
+    return false;
 
   rsp = &reg_stat[REGNO (x)];
   if (rsp->truncated_to_mode == 0
@@ -12544,7 +12542,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
       rsp->truncation_label = label_tick;
     }
 
-  return -1;
+  return true;
 }
 
 /* Callback for note_uses.  Find hardregs and subregs of pseudos and
@@ -12552,9 +12550,12 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
    SUBREGs.  */
 
 static void
-record_truncated_values (rtx *x, void *data ATTRIBUTE_UNUSED)
+record_truncated_values (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
-  for_each_rtx (x, record_truncated_value, NULL);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *loc, NONCONST)
+    if (record_truncated_value (*iter))
+      iter.skip_subrtxes ();
 }
 
 /* Scan X for promoted SUBREGs.  For each one found,
