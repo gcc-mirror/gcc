@@ -1,3 +1,18 @@
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl-iter.h: New file.
+	* rtlanal.c: Include it.
+	(rtx_all_subrtx_bounds, rtx_nonconst_subrtx_bounds): New variables.
+	(generic_subrtx_iterator <T>::add_single_to_queue)
+	(generic_subrtx_iterator <T>::add_subrtxes_to_queue)
+	(generic_subrtx_iterator <T>::free_array): New functions.
+	(generic_subrtx_iterator <T>::LOCAL_ELEMS): Define.
+	(generic_subrtx_iterator <const_rtx_accessor>)
+	(generic_subrtx_iterator <rtx_var_accessor>
+	(generic_subrtx_iterator <rtx_ptr_accessor>): Instantiate.
+	(setup_reg_subrtx_bounds): New function.
+	(init_rtlanal): Call it.
+
 2014-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
         PR target/62261
