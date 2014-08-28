@@ -331,7 +331,7 @@
 
 ;; ??? We should probably use TImode instead.
 (define_mode_iterator VIMAX_AVX2
-  [(V2TI "TARGET_AVX2") V1TI])
+  [(V4TI "TARGET_AVX512BW") (V2TI "TARGET_AVX2") V1TI])
 
 ;; ??? This should probably be dropped in favor of VIMAX_AVX2.
 (define_mode_iterator SSESCALARMODE
@@ -8819,9 +8819,9 @@
 })
 
 (define_insn "<sse2_avx2>_ashl<mode>3"
-  [(set (match_operand:VIMAX_AVX2 0 "register_operand" "=x,x")
+  [(set (match_operand:VIMAX_AVX2 0 "register_operand" "=x,v")
 	(ashift:VIMAX_AVX2
-	 (match_operand:VIMAX_AVX2 1 "register_operand" "0,x")
+	 (match_operand:VIMAX_AVX2 1 "register_operand" "0,v")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n,n")))]
   "TARGET_SSE2"
 {
@@ -8858,9 +8858,9 @@
 })
 
 (define_insn "<sse2_avx2>_lshr<mode>3"
-  [(set (match_operand:VIMAX_AVX2 0 "register_operand" "=x,x")
+  [(set (match_operand:VIMAX_AVX2 0 "register_operand" "=x,v")
 	(lshiftrt:VIMAX_AVX2
-	 (match_operand:VIMAX_AVX2 1 "register_operand" "0,x")
+	 (match_operand:VIMAX_AVX2 1 "register_operand" "0,v")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n,n")))]
   "TARGET_SSE2"
 {
