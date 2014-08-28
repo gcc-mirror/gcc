@@ -1,5 +1,13 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ddg.c: Include rtl-iter.h.
+	(mark_mem_use_1): Rename to...
+	(mark_mem_use): ...deleting old mark_mem_use.  Use FOR_EACH_SUBRTX
+	instead of for_each_rtx.
+	(mem_read_insn_p): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cse.c (change_cc_mode_args): Delete.
 	(cse_change_cc_mode): Turn from being a for_each_rtx callback to being
 	a function that examines each subrtx itself.  Take the fields of
