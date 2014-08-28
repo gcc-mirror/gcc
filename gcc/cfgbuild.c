@@ -284,8 +284,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 	     everything on the forced_labels list.  */
 	  else if (computed_jump_p (insn))
 	    {
-	      for (rtx_expr_list *x = forced_labels; x; x = x->next ())
-		make_label_edge (edge_cache, bb, x->element (), EDGE_ABNORMAL);
+	      for (rtx_insn_list *x = forced_labels; x; x = x->next ())
+		make_label_edge (edge_cache, bb, x->insn (), EDGE_ABNORMAL);
 	    }
 
 	  /* Returns create an exit out.  */

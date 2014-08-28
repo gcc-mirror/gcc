@@ -2309,8 +2309,8 @@ create_trace_edges (rtx insn)
 	}
       else if (computed_jump_p (insn))
 	{
-	  for (rtx_expr_list *lab = forced_labels; lab; lab = lab->next ())
-	    maybe_record_trace_start (lab->element (), insn);
+	  for (rtx_insn_list *lab = forced_labels; lab; lab = lab->next ())
+	    maybe_record_trace_start (lab->insn (), insn);
 	}
       else if (returnjump_p (insn))
 	;

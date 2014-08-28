@@ -1310,7 +1310,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
      CFG edges more exactly, we can use the forced_labels list instead.  */
   LABEL_PRESERVE_P (dispatch_label) = 1;
   forced_labels
-    = gen_rtx_EXPR_LIST (VOIDmode, dispatch_label, forced_labels);
+    = gen_rtx_INSN_LIST (VOIDmode, dispatch_label, forced_labels);
 #endif
 
   /* Load up exc_ptr and filter values from the function context.  */

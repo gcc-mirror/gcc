@@ -1,5 +1,27 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct expr_status): Convert field "x_forced_labels"
+	from rtx_expr_list * to rtx_insn_list *.
+
+	* cfgbuild.c (make_edges): Convert local "x" from an
+	rtx_expr_list * to an rtx_insn_list *, replacing use of
+	"element" method with "insn" method.
+	* dwarf2cfi.c (create_trace_edges): Likewise for local "lab".
+	* except.c (sjlj_emit_dispatch_table): Replace use of
+	gen_rtx_EXPR_LIST with gen_rtx_INSN_LIST when prepending to
+	forced_labels.
+	* jump.c (rebuild_jump_labels_1): Convert local "insn" from an
+	rtx_expr_list * to an rtx_insn_list *, replacing use of
+	"element" method with "insn" method.
+	* reload1.c (set_initial_label_offsets): Likewise for local "x".
+	* stmt.c (label_rtx): Strengthen local "ref" from rtx to
+	rtx_insn *, adding a checked cast.  Replace use of
+	gen_rtx_EXPR_LIST with gen_rtx_INSN_LIST when prepending it to
+	forced_labels.
+	(expand_label): Likewise for local "label_r".
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct rtl_data): Convert field
 	"x_nonlocal_goto_handler_labels" from rtx_expr_list * to
 	rtx_insn_list *.
