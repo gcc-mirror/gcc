@@ -392,6 +392,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lra.h"
 #include "dce.h"
 #include "dbgcnt.h"
+#include "rtl-iter.h"
 
 struct target_ira default_target_ira;
 struct target_ira_int default_target_ira_int;
@@ -3266,23 +3267,20 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
 /* Check whether the SUBREG is a paradoxical subreg and set the result
    in PDX_SUBREGS.  */
 
-static int
-set_paradoxical_subreg (rtx *subreg, void *pdx_subregs)
+static void
+set_paradoxical_subreg (rtx_insn *insn, bool *pdx_subregs)
 {
-  rtx reg;
-
-  if ((*subreg) == NULL_RTX)
-    return 1;
-  if (GET_CODE (*subreg) != SUBREG)
-    return 0;
-  reg = SUBREG_REG (*subreg);
-  if (!REG_P (reg))
-    return 0;
-
-  if (paradoxical_subreg_p (*subreg))
-    ((bool *)pdx_subregs)[REGNO (reg)] = true;
-
-  return 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx subreg = *iter;
+      if (GET_CODE (subreg) == SUBREG)
+	{
+	  const_rtx reg = SUBREG_REG (subreg);
+	  if (REG_P (reg) && paradoxical_subreg_p (subreg))
+	    pdx_subregs[REGNO (reg)] = true;
+	}
+    }
 }
 
 /* In DEBUG_INSN location adjust REGs from CLEARED_REGS bitmap to the
@@ -3345,8 +3343,7 @@ update_equiv_regs (void)
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
-	for_each_rtx_in_insn (&insn, set_paradoxical_subreg,
-			      (void *) pdx_subregs);
+	set_paradoxical_subreg (insn, pdx_subregs);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
