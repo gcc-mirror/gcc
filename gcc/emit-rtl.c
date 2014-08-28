@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -3505,30 +3506,17 @@ prev_cc0_setter (rtx insn)
 /* Find a RTX_AUTOINC class rtx which matches DATA.  */
 
 static int
-find_auto_inc (rtx *xp, void *data)
+find_auto_inc (const_rtx x, const_rtx reg)
 {
-  rtx x = *xp;
-  rtx reg = (rtx) data;
-
-  if (GET_RTX_CLASS (GET_CODE (x)) != RTX_AUTOINC)
-    return 0;
-
-  switch (GET_CODE (x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
     {
-      case PRE_DEC:
-      case PRE_INC:
-      case POST_DEC:
-      case POST_INC:
-      case PRE_MODIFY:
-      case POST_MODIFY:
-	if (rtx_equal_p (reg, XEXP (x, 0)))
-	  return 1;
-	break;
-
-      default:
-	gcc_unreachable ();
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC
+	  && rtx_equal_p (reg, XEXP (x, 0)))
+	return true;
     }
-  return -1;
+  return false;
 }
 #endif
 
@@ -3715,7 +3703,7 @@ try_split (rtx pat, rtx trial, int last)
 	    {
 	      rtx reg = XEXP (note, 0);
 	      if (!FIND_REG_INC_NOTE (insn, reg)
-		  && for_each_rtx (&PATTERN (insn), find_auto_inc, reg) > 0)
+		  && find_auto_inc (PATTERN (insn), reg))
 		add_reg_note (insn, REG_INC, reg);
 	    }
 	  break;
