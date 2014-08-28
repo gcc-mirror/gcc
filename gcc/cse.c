@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dbgcnt.h"
 #include "hash-set.h"
+#include "rtl-iter.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -550,8 +551,6 @@ static sbitmap cse_visited_basic_blocks;
 
 static bool fixed_base_plus_p (rtx x);
 static int notreg_cost (rtx, enum rtx_code, int);
-static int approx_reg_cost_1 (rtx *, void *);
-static int approx_reg_cost (rtx);
 static int preferable (int, int, int, int);
 static void new_basic_block (void);
 static void make_new_qty (unsigned int, enum machine_mode);
@@ -660,47 +659,35 @@ dump_class (struct table_elt *classp)
     }
 }
 
-/* Subroutine of approx_reg_cost; called through for_each_rtx.  */
-
-static int
-approx_reg_cost_1 (rtx *xp, void *data)
-{
-  rtx x = *xp;
-  int *cost_p = (int *) data;
-
-  if (x && REG_P (x))
-    {
-      unsigned int regno = REGNO (x);
-
-      if (! CHEAP_REGNO (regno))
-	{
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      if (targetm.small_register_classes_for_mode_p (GET_MODE (x)))
-		return 1;
-	      *cost_p += 2;
-	    }
-	  else
-	    *cost_p += 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Return an estimate of the cost of the registers used in an rtx.
    This is mostly the number of different REG expressions in the rtx;
    however for some exceptions like fixed registers we use a cost of
    0.  If any other hard register reference occurs, return MAX_COST.  */
 
 static int
-approx_reg_cost (rtx x)
+approx_reg_cost (const_rtx x)
 {
   int cost = 0;
-
-  if (for_each_rtx (&x, approx_reg_cost_1, (void *) &cost))
-    return MAX_COST;
-
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x))
+	{
+	  unsigned int regno = REGNO (x);
+	  if (!CHEAP_REGNO (regno))
+	    {
+	      if (regno < FIRST_PSEUDO_REGISTER)
+		{
+		  if (targetm.small_register_classes_for_mode_p (GET_MODE (x)))
+		    return MAX_COST;
+		  cost += 2;
+		}
+	      else
+		cost += 1;
+	    }
+	}
+    }
   return cost;
 }
 
