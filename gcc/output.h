@@ -90,7 +90,7 @@ extern void output_asm_insn (const char *, rtx *);
 /* Compute a worst-case reference address of a branch so that it
    can be safely used in the presence of aligned labels.
    Defined in final.c.  */
-extern int insn_current_reference_address (rtx);
+extern int insn_current_reference_address (rtx_insn *);
 
 /* Find the alignment associated with a CODE_LABEL.
    Defined in final.c.  */

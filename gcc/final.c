@@ -637,7 +637,7 @@ align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
    to exclude the branch size.  */
 
 int
-insn_current_reference_address (rtx branch)
+insn_current_reference_address (rtx_insn *branch)
 {
   rtx dest, seq;
   int seq_uid;
