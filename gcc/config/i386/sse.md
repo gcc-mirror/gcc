@@ -9740,12 +9740,56 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_interleave_highv32qi"
-  [(set (match_operand:V32QI 0 "register_operand" "=x")
+(define_insn "avx512bw_interleave_highv64qi<mask_name>"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+	(vec_select:V64QI
+	  (vec_concat:V128QI
+	    (match_operand:V64QI 1 "register_operand" "v")
+	    (match_operand:V64QI 2 "nonimmediate_operand" "vm"))
+	  (parallel [(const_int 8)  (const_int 72)
+		     (const_int 9)  (const_int 73)
+		     (const_int 10) (const_int 74)
+		     (const_int 11) (const_int 75)
+		     (const_int 12) (const_int 76)
+		     (const_int 13) (const_int 77)
+		     (const_int 14) (const_int 78)
+		     (const_int 15) (const_int 79)
+		     (const_int 24) (const_int 88)
+		     (const_int 25) (const_int 89)
+		     (const_int 26) (const_int 90)
+		     (const_int 27) (const_int 91)
+		     (const_int 28) (const_int 92)
+		     (const_int 29) (const_int 93)
+		     (const_int 30) (const_int 94)
+		     (const_int 31) (const_int 95)
+		     (const_int 40) (const_int 104)
+		     (const_int 41) (const_int 105)
+		     (const_int 42) (const_int 106)
+		     (const_int 43) (const_int 107)
+		     (const_int 44) (const_int 108)
+		     (const_int 45) (const_int 109)
+		     (const_int 46) (const_int 110)
+		     (const_int 47) (const_int 111)
+		     (const_int 56) (const_int 120)
+		     (const_int 57) (const_int 121)
+		     (const_int 58) (const_int 122)
+		     (const_int 59) (const_int 123)
+		     (const_int 60) (const_int 124)
+		     (const_int 61) (const_int 125)
+		     (const_int 62) (const_int 126)
+		     (const_int 63) (const_int 127)])))]
+  "TARGET_AVX512BW"
+  "vpunpckhbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx2_interleave_highv32qi<mask_name>"
+  [(set (match_operand:V32QI 0 "register_operand" "=v")
 	(vec_select:V32QI
 	  (vec_concat:V64QI
-	    (match_operand:V32QI 1 "register_operand" "x")
-	    (match_operand:V32QI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V32QI 1 "register_operand" "v")
+	    (match_operand:V32QI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 8)  (const_int 40)
 		     (const_int 9)  (const_int 41)
 		     (const_int 10) (const_int 42)
@@ -9762,18 +9806,18 @@
 		     (const_int 29) (const_int 61)
 		     (const_int 30) (const_int 62)
 		     (const_int 31) (const_int 63)])))]
-  "TARGET_AVX2"
-  "vpunpckhbw\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
+  "vpunpckhbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_highv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_highv16qi<mask_name>"
+  [(set (match_operand:V16QI 0 "register_operand" "=x,v")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
-	    (match_operand:V16QI 1 "register_operand" "0,x")
-	    (match_operand:V16QI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V16QI 1 "register_operand" "0,v")
+	    (match_operand:V16QI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 8)  (const_int 24)
 		     (const_int 9)  (const_int 25)
 		     (const_int 10) (const_int 26)
@@ -9782,22 +9826,66 @@
 		     (const_int 13) (const_int 29)
 		     (const_int 14) (const_int 30)
 		     (const_int 15) (const_int 31)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    punpckhbw\t{%2, %0|%0, %2}
-   vpunpckhbw\t{%2, %1, %0|%0, %1, %2}"
+   vpunpckhbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,<mask_prefix>")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_lowv32qi"
-  [(set (match_operand:V32QI 0 "register_operand" "=x")
+(define_insn "avx512bw_interleave_lowv64qi<mask_name>"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+	(vec_select:V64QI
+	  (vec_concat:V128QI
+	    (match_operand:V64QI 1 "register_operand" "v")
+	    (match_operand:V64QI 2 "nonimmediate_operand" "vm"))
+	  (parallel [(const_int 0) (const_int 64)
+		     (const_int 1) (const_int 65)
+		     (const_int 2) (const_int 66)
+		     (const_int 3) (const_int 67)
+		     (const_int 4) (const_int 68)
+		     (const_int 5) (const_int 69)
+		     (const_int 6) (const_int 70)
+		     (const_int 7) (const_int 71)
+		     (const_int 16) (const_int 80)
+		     (const_int 17) (const_int 81)
+		     (const_int 18) (const_int 82)
+		     (const_int 19) (const_int 83)
+		     (const_int 20) (const_int 84)
+		     (const_int 21) (const_int 85)
+		     (const_int 22) (const_int 86)
+		     (const_int 23) (const_int 87)
+		     (const_int 32) (const_int 96)
+		     (const_int 33) (const_int 97)
+		     (const_int 34) (const_int 98)
+		     (const_int 35) (const_int 99)
+		     (const_int 36) (const_int 100)
+		     (const_int 37) (const_int 101)
+		     (const_int 38) (const_int 102)
+		     (const_int 39) (const_int 103)
+		     (const_int 48) (const_int 112)
+		     (const_int 49) (const_int 113)
+		     (const_int 50) (const_int 114)
+		     (const_int 51) (const_int 115)
+		     (const_int 52) (const_int 116)
+		     (const_int 53) (const_int 117)
+		     (const_int 54) (const_int 118)
+		     (const_int 55) (const_int 119)])))]
+  "TARGET_AVX512BW"
+  "vpunpcklbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx2_interleave_lowv32qi<mask_name>"
+  [(set (match_operand:V32QI 0 "register_operand" "=v")
 	(vec_select:V32QI
 	  (vec_concat:V64QI
-	    (match_operand:V32QI 1 "register_operand" "x")
-	    (match_operand:V32QI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V32QI 1 "register_operand" "v")
+	    (match_operand:V32QI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 0) (const_int 32)
 		     (const_int 1) (const_int 33)
 		     (const_int 2) (const_int 34)
@@ -9814,18 +9902,18 @@
 		     (const_int 21) (const_int 53)
 		     (const_int 22) (const_int 54)
 		     (const_int 23) (const_int 55)])))]
-  "TARGET_AVX2"
-  "vpunpcklbw\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
+  "vpunpcklbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_lowv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_lowv16qi<mask_name>"
+  [(set (match_operand:V16QI 0 "register_operand" "=x,v")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
-	    (match_operand:V16QI 1 "register_operand" "0,x")
-	    (match_operand:V16QI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V16QI 1 "register_operand" "0,v")
+	    (match_operand:V16QI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 0) (const_int 16)
 		     (const_int 1) (const_int 17)
 		     (const_int 2) (const_int 18)
@@ -9834,22 +9922,50 @@
 		     (const_int 5) (const_int 21)
 		     (const_int 6) (const_int 22)
 		     (const_int 7) (const_int 23)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
   "@
    punpcklbw\t{%2, %0|%0, %2}
-   vpunpcklbw\t{%2, %1, %0|%0, %1, %2}"
+   vpunpcklbw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_highv16hi"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+(define_insn "avx512bw_interleave_highv32hi<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(vec_select:V32HI
+	  (vec_concat:V64HI
+	    (match_operand:V32HI 1 "register_operand" "v")
+	    (match_operand:V32HI 2 "nonimmediate_operand" "vm"))
+	  (parallel [(const_int 4) (const_int 36)
+		     (const_int 5) (const_int 37)
+		     (const_int 6) (const_int 38)
+		     (const_int 7) (const_int 39)
+		     (const_int 12) (const_int 44)
+		     (const_int 13) (const_int 45)
+		     (const_int 14) (const_int 46)
+		     (const_int 15) (const_int 47)
+		     (const_int 20) (const_int 52)
+		     (const_int 21) (const_int 53)
+		     (const_int 22) (const_int 54)
+		     (const_int 23) (const_int 55)
+		     (const_int 28) (const_int 60)
+		     (const_int 29) (const_int 61)
+		     (const_int 30) (const_int 62)
+		     (const_int 31) (const_int 63)])))]
+  "TARGET_AVX512BW"
+  "vpunpckhwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx2_interleave_highv16hi<mask_name>"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(vec_select:V16HI
 	  (vec_concat:V32HI
-	    (match_operand:V16HI 1 "register_operand" "x")
-	    (match_operand:V16HI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V16HI 1 "register_operand" "v")
+	    (match_operand:V16HI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 4) (const_int 20)
 		     (const_int 5) (const_int 21)
 		     (const_int 6) (const_int 22)
@@ -9858,38 +9974,66 @@
 		     (const_int 13) (const_int 29)
 		     (const_int 14) (const_int 30)
 		     (const_int 15) (const_int 31)])))]
-  "TARGET_AVX2"
-  "vpunpckhwd\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
+  "vpunpckhwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_highv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_highv8hi<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=x,v")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
-	    (match_operand:V8HI 1 "register_operand" "0,x")
-	    (match_operand:V8HI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V8HI 1 "register_operand" "0,v")
+	    (match_operand:V8HI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 4) (const_int 12)
 		     (const_int 5) (const_int 13)
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
   "@
    punpckhwd\t{%2, %0|%0, %2}
-   vpunpckhwd\t{%2, %1, %0|%0, %1, %2}"
+   vpunpckhwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_lowv16hi"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+(define_insn "<mask_codefor>avx512bw_interleave_lowv32hi<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(vec_select:V32HI
+	  (vec_concat:V64HI
+	    (match_operand:V32HI 1 "register_operand" "v")
+	    (match_operand:V32HI 2 "nonimmediate_operand" "vm"))
+	  (parallel [(const_int 0) (const_int 32)
+		     (const_int 1) (const_int 33)
+		     (const_int 2) (const_int 34)
+		     (const_int 3) (const_int 35)
+		     (const_int 8) (const_int 40)
+		     (const_int 9) (const_int 41)
+		     (const_int 10) (const_int 42)
+		     (const_int 11) (const_int 43)
+		     (const_int 16) (const_int 48)
+		     (const_int 17) (const_int 49)
+		     (const_int 18) (const_int 50)
+		     (const_int 19) (const_int 51)
+		     (const_int 24) (const_int 56)
+		     (const_int 25) (const_int 57)
+		     (const_int 26) (const_int 58)
+		     (const_int 27) (const_int 59)])))]
+  "TARGET_AVX512BW"
+  "vpunpcklwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx2_interleave_lowv16hi<mask_name>"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(vec_select:V16HI
 	  (vec_concat:V32HI
-	    (match_operand:V16HI 1 "register_operand" "x")
-	    (match_operand:V16HI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V16HI 1 "register_operand" "v")
+	    (match_operand:V16HI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 0) (const_int 16)
 		     (const_int 1) (const_int 17)
 		     (const_int 2) (const_int 18)
@@ -9898,46 +10042,46 @@
 		     (const_int 9) (const_int 25)
 		     (const_int 10) (const_int 26)
 		     (const_int 11) (const_int 27)])))]
-  "TARGET_AVX2"
-  "vpunpcklwd\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
+  "vpunpcklwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_lowv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_lowv8hi<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=x,v")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
-	    (match_operand:V8HI 1 "register_operand" "0,x")
-	    (match_operand:V8HI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V8HI 1 "register_operand" "0,v")
+	    (match_operand:V8HI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 0) (const_int 8)
 		     (const_int 1) (const_int 9)
 		     (const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
   "@
    punpcklwd\t{%2, %0|%0, %2}
-   vpunpcklwd\t{%2, %1, %0|%0, %1, %2}"
+   vpunpcklwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_highv8si"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
+(define_insn "avx2_interleave_highv8si<mask_name>"
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(vec_select:V8SI
 	  (vec_concat:V16SI
-	    (match_operand:V8SI 1 "register_operand" "x")
-	    (match_operand:V8SI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V8SI 1 "register_operand" "v")
+	    (match_operand:V8SI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
-  "TARGET_AVX2"
-  "vpunpckhdq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
+  "vpunpckhdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
 (define_insn "<mask_codefor>avx512f_interleave_highv16si<mask_name>"
@@ -9961,38 +10105,38 @@
    (set_attr "mode" "XI")])
 
 
-(define_insn "vec_interleave_highv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_highv4si<mask_name>"
+  [(set (match_operand:V4SI 0 "register_operand" "=x,v")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "register_operand" "0,x")
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V4SI 1 "register_operand" "0,v")
+	    (match_operand:V4SI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 2) (const_int 6)
 		     (const_int 3) (const_int 7)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    punpckhdq\t{%2, %0|%0, %2}
-   vpunpckhdq\t{%2, %1, %0|%0, %1, %2}"
+   vpunpckhdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_lowv8si"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
+(define_insn "avx2_interleave_lowv8si<mask_name>"
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(vec_select:V8SI
 	  (vec_concat:V16SI
-	    (match_operand:V8SI 1 "register_operand" "x")
-	    (match_operand:V8SI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V8SI 1 "register_operand" "v")
+	    (match_operand:V8SI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 0) (const_int 8)
 		     (const_int 1) (const_int 9)
 		     (const_int 4) (const_int 12)
 		     (const_int 5) (const_int 13)])))]
-  "TARGET_AVX2"
-  "vpunpckldq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
+  "vpunpckldq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
 (define_insn "<mask_codefor>avx512f_interleave_lowv16si<mask_name>"
@@ -10015,18 +10159,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "vec_interleave_lowv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_lowv4si<mask_name>"
+  [(set (match_operand:V4SI 0 "register_operand" "=x,v")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "register_operand" "0,x")
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V4SI 1 "register_operand" "0,v")
+	    (match_operand:V4SI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 1) (const_int 5)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    punpckldq\t{%2, %0|%0, %2}
-   vpunpckldq\t{%2, %1, %0|%0, %1, %2}"
+   vpunpckldq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
