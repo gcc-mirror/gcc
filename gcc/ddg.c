@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "bitmap.h"
 #include "ddg.h"
+#include "rtl-iter.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -63,19 +64,16 @@ static void add_edge_to_ddg (ddg_ptr g, ddg_edge_ptr);
 static bool mem_ref_p;
 
 /* Auxiliary function for mem_read_insn_p.  */
-static int
-mark_mem_use (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (MEM_P (*x))
-    mem_ref_p = true;
-  return 0;
-}
-
-/* Auxiliary function for mem_read_insn_p.  */
 static void
-mark_mem_use_1 (rtx *x, void *data)
+mark_mem_use (rtx *x, void *)
 {
-  for_each_rtx (x, mark_mem_use, data);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *x, NONCONST)
+    if (MEM_P (*x))
+      {
+	mem_ref_p = true;
+	break;
+      }
 }
 
 /* Returns nonzero if INSN reads from memory.  */
@@ -83,7 +81,7 @@ static bool
 mem_read_insn_p (rtx_insn *insn)
 {
   mem_ref_p = false;
-  note_uses (&PATTERN (insn), mark_mem_use_1, NULL);
+  note_uses (&PATTERN (insn), mark_mem_use, NULL);
   return mem_ref_p;
 }
 
