@@ -1,5 +1,18 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* dwarf2cfi.c (dw_trace_info): Strengthen field "head" from rtx to
+	rtx_insn *.
+	(get_trace_info): Likewise for param "insn".
+	(save_point_p): Likewise.
+	(maybe_record_trace_start): Likewise for both params.
+	(maybe_record_trace_start_abnormal): Likewise.
+	(create_trace_edges): Likewise for sole param and for three of the
+	locals named "lab".
+	(scan_trace): Strengthen local "prev", "insn", "control" from rtx
+	to rtx_insn *, and update a call to pat->element to pat->insn.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct expr_status): Convert field "x_forced_labels"
 	from rtx_expr_list * to rtx_insn_list *.
 

@@ -100,7 +100,7 @@ typedef struct GTY(()) reg_saved_in_data_struct {
 typedef struct
 {
   /* The insn that begins the trace.  */
-  rtx head;
+  rtx_insn *head;
 
   /* The row state at the beginning and end of the trace.  */
   dw_cfi_row *beg_row, *end_row;
@@ -303,7 +303,7 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 
 
 static dw_trace_info *
-get_trace_info (rtx insn)
+get_trace_info (rtx_insn *insn)
 {
   dw_trace_info dummy;
   dummy.head = insn;
@@ -311,7 +311,7 @@ get_trace_info (rtx insn)
 }
 
 static bool
-save_point_p (rtx insn)
+save_point_p (rtx_insn *insn)
 {
   /* Labels, except those that are really jump tables.  */
   if (LABEL_P (insn))
@@ -2197,7 +2197,7 @@ add_cfis_to_fde (void)
    trace from CUR_TRACE and CUR_ROW.  */
 
 static void
-maybe_record_trace_start (rtx start, rtx origin)
+maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
 {
   dw_trace_info *ti;
   HOST_WIDE_INT args_size;
@@ -2248,7 +2248,7 @@ maybe_record_trace_start (rtx start, rtx origin)
    and non-local goto edges.  */
 
 static void
-maybe_record_trace_start_abnormal (rtx start, rtx origin)
+maybe_record_trace_start_abnormal (rtx_insn *start, rtx_insn *origin)
 {
   HOST_WIDE_INT save_args_size, delta;
   dw_cfa_location save_cfa;
@@ -2284,7 +2284,7 @@ maybe_record_trace_start_abnormal (rtx start, rtx origin)
 /* ??? Sadly, this is in large part a duplicate of make_edges.  */
 
 static void
-create_trace_edges (rtx insn)
+create_trace_edges (rtx_insn *insn)
 {
   rtx tmp;
   int i, n;
@@ -2303,7 +2303,7 @@ create_trace_edges (rtx insn)
 	  n = GET_NUM_ELEM (vec);
 	  for (i = 0; i < n; ++i)
 	    {
-	      rtx lab = XEXP (RTVEC_ELT (vec, i), 0);
+	      rtx_insn *lab = as_a <rtx_insn *> (XEXP (RTVEC_ELT (vec, i), 0));
 	      maybe_record_trace_start (lab, insn);
 	    }
 	}
@@ -2319,13 +2319,14 @@ create_trace_edges (rtx insn)
 	  n = ASM_OPERANDS_LABEL_LENGTH (tmp);
 	  for (i = 0; i < n; ++i)
 	    {
-	      rtx lab = XEXP (ASM_OPERANDS_LABEL (tmp, i), 0);
+	      rtx_insn *lab =
+		as_a <rtx_insn *> (XEXP (ASM_OPERANDS_LABEL (tmp, i), 0));
 	      maybe_record_trace_start (lab, insn);
 	    }
 	}
       else
 	{
-	  rtx lab = JUMP_LABEL (insn);
+	  rtx_insn *lab = JUMP_LABEL_AS_INSN (insn);
 	  gcc_assert (lab != NULL);
 	  maybe_record_trace_start (lab, insn);
 	}
@@ -2376,7 +2377,7 @@ scan_insn_after (rtx insn)
 static void
 scan_trace (dw_trace_info *trace)
 {
-  rtx prev, insn = trace->head;
+  rtx_insn *prev, *insn = trace->head;
   dw_cfa_location this_cfa;
 
   if (dump_file)
@@ -2397,7 +2398,7 @@ scan_trace (dw_trace_info *trace)
        insn;
        prev = insn, insn = NEXT_INSN (insn))
     {
-      rtx control;
+      rtx_insn *control;
 
       /* Do everything that happens "before" the insn.  */
       add_cfi_insn = prev;
@@ -2427,7 +2428,7 @@ scan_trace (dw_trace_info *trace)
 	  rtx elt;
 	  int i, n = pat->len ();
 
-	  control = pat->element (0);
+	  control = pat->insn (0);
 	  if (can_throw_internal (control))
 	    notice_eh_throw (control);
 	  dwarf2out_flush_queued_reg_saves ();
