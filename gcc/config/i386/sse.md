@@ -278,6 +278,9 @@
 (define_mode_iterator VI8_AVX512VL
   [V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
+(define_mode_iterator VI8_256_512
+  [V8DI (V4DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
 
@@ -3910,6 +3913,52 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<mask_codefor>avx512dq_cvtps2qq<mode><mask_name><round_name>"
+  [(set (match_operand:VI8_256_512 0 "register_operand" "=v")
+	(unspec:VI8_256_512 [(match_operand:<ssePSmode2> 1 "nonimmediate_operand" "<round_constraint>")]
+		     UNSPEC_FIX_NOTRUNC))]
+  "TARGET_AVX512DQ && <round_mode512bit_condition>"
+  "vcvtps2qq\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<mask_codefor>avx512dq_cvtps2qqv2di<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(unspec:V2DI
+	  [(vec_select:V2SF
+	     (match_operand:V4SF 1 "nonimmediate_operand" "vm")
+	     (parallel [(const_int 0) (const_int 1)]))]
+	  UNSPEC_FIX_NOTRUNC))]
+  "TARGET_AVX512DQ && TARGET_AVX512VL"
+  "vcvtps2qq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "<mask_codefor>avx512dq_cvtps2uqq<mode><mask_name><round_name>"
+  [(set (match_operand:VI8_256_512 0 "register_operand" "=v")
+	(unspec:VI8_256_512 [(match_operand:<ssePSmode2> 1 "nonimmediate_operand" "<round_constraint>")]
+		     UNSPEC_UNSIGNED_FIX_NOTRUNC))]
+  "TARGET_AVX512DQ && <round_mode512bit_condition>"
+  "vcvtps2uqq\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<mask_codefor>avx512dq_cvtps2uqqv2di<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(unspec:V2DI
+	  [(vec_select:V2SF
+	     (match_operand:V4SF 1 "nonimmediate_operand" "vm")
+	     (parallel [(const_int 0) (const_int 1)]))]
+	  UNSPEC_UNSIGNED_FIX_NOTRUNC))]
+  "TARGET_AVX512DQ && TARGET_AVX512VL"
+  "vcvtps2uqq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
 
 (define_insn "<fixsuffix>fix_truncv16sfv16si2<mask_name><round_saeonly_name>"
   [(set (match_operand:V16SI 0 "register_operand" "=v")
