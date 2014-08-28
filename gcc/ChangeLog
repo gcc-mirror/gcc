@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* reload1.c: Include rtl-iter.h.
+	(note_reg_elim_costly): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.
+	(eliminate_regs_1, elimination_costs_in_insn): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* regcprop.c (cprop_find_used_regs_1): Delete.
 	(cprop_find_used_regs): Use FOR_EACH_SUBRTX instead of for_each_rtx.
 
