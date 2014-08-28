@@ -443,7 +443,7 @@ propagate_pseudo_copies (void)
 }
 
 /* A pointer to one of these values is passed to
-   find_decomposable_subregs via for_each_rtx.  */
+   find_decomposable_subregs.  */
 
 enum classify_move_insn
 {
@@ -455,120 +455,121 @@ enum classify_move_insn
   SIMPLE_MOVE
 };
 
-/* This is called via for_each_rtx.  If we find a SUBREG which we
-   could use to decompose a pseudo-register, set a bit in
-   DECOMPOSABLE_CONTEXT.  If we find an unadorned register which is
-   not a simple pseudo-register copy, DATA will point at the type of
-   move, and we set a bit in DECOMPOSABLE_CONTEXT or
-   NON_DECOMPOSABLE_CONTEXT as appropriate.  */
+/* If we find a SUBREG in *LOC which we could use to decompose a
+   pseudo-register, set a bit in DECOMPOSABLE_CONTEXT.  If we find an
+   unadorned register which is not a simple pseudo-register copy,
+   DATA will point at the type of move, and we set a bit in
+   DECOMPOSABLE_CONTEXT or NON_DECOMPOSABLE_CONTEXT as appropriate.  */
 
-static int
-find_decomposable_subregs (rtx *px, void *data)
+static void
+find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 {
-  enum classify_move_insn *pcmi = (enum classify_move_insn *) data;
-  rtx x = *px;
-
-  if (x == NULL_RTX)
-    return 0;
-
-  if (GET_CODE (x) == SUBREG)
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *loc, NONCONST)
     {
-      rtx inner = SUBREG_REG (x);
-      unsigned int regno, outer_size, inner_size, outer_words, inner_words;
-
-      if (!REG_P (inner))
-	return 0;
-
-      regno = REGNO (inner);
-      if (HARD_REGISTER_NUM_P (regno))
-	return -1;
-
-      outer_size = GET_MODE_SIZE (GET_MODE (x));
-      inner_size = GET_MODE_SIZE (GET_MODE (inner));
-      outer_words = (outer_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-      inner_words = (inner_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
-      /* We only try to decompose single word subregs of multi-word
-	 registers.  When we find one, we return -1 to avoid iterating
-	 over the inner register.
-
-	 ??? This doesn't allow, e.g., DImode subregs of TImode values
-	 on 32-bit targets.  We would need to record the way the
-	 pseudo-register was used, and only decompose if all the uses
-	 were the same number and size of pieces.  Hopefully this
-	 doesn't happen much.  */
-
-      if (outer_words == 1 && inner_words > 1)
+      rtx x = *iter;
+      if (GET_CODE (x) == SUBREG)
 	{
-	  bitmap_set_bit (decomposable_context, regno);
-	  return -1;
-	}
+	  rtx inner = SUBREG_REG (x);
+	  unsigned int regno, outer_size, inner_size, outer_words, inner_words;
 
-      /* If this is a cast from one mode to another, where the modes
-	 have the same size, and they are not tieable, then mark this
-	 register as non-decomposable.  If we decompose it we are
-	 likely to mess up whatever the backend is trying to do.  */
-      if (outer_words > 1
-	  && outer_size == inner_size
-	  && !MODES_TIEABLE_P (GET_MODE (x), GET_MODE (inner)))
-	{
-	  bitmap_set_bit (non_decomposable_context, regno);
-	  bitmap_set_bit (subreg_context, regno);
-	  return -1;
-	}
-    }
-  else if (REG_P (x))
-    {
-      unsigned int regno;
+	  if (!REG_P (inner))
+	    continue;
 
-      /* We will see an outer SUBREG before we see the inner REG, so
-	 when we see a plain REG here it means a direct reference to
-	 the register.
-
-	 If this is not a simple copy from one location to another,
-	 then we can not decompose this register.  If this is a simple
-	 copy we want to decompose, and the mode is right,
-	 then we mark the register as decomposable.
-	 Otherwise we don't say anything about this register --
-	 it could be decomposed, but whether that would be
-	 profitable depends upon how it is used elsewhere.
-
-	 We only set bits in the bitmap for multi-word
-	 pseudo-registers, since those are the only ones we care about
-	 and it keeps the size of the bitmaps down.  */
-
-      regno = REGNO (x);
-      if (!HARD_REGISTER_NUM_P (regno)
-	  && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
-	{
-	  switch (*pcmi)
+	  regno = REGNO (inner);
+	  if (HARD_REGISTER_NUM_P (regno))
 	    {
-	    case NOT_SIMPLE_MOVE:
+	      iter.skip_subrtxes ();
+	      continue;
+	    }
+
+	  outer_size = GET_MODE_SIZE (GET_MODE (x));
+	  inner_size = GET_MODE_SIZE (GET_MODE (inner));
+	  outer_words = (outer_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+	  inner_words = (inner_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+	  /* We only try to decompose single word subregs of multi-word
+	     registers.  When we find one, we return -1 to avoid iterating
+	     over the inner register.
+
+	     ??? This doesn't allow, e.g., DImode subregs of TImode values
+	     on 32-bit targets.  We would need to record the way the
+	     pseudo-register was used, and only decompose if all the uses
+	     were the same number and size of pieces.  Hopefully this
+	     doesn't happen much.  */
+
+	  if (outer_words == 1 && inner_words > 1)
+	    {
+	      bitmap_set_bit (decomposable_context, regno);
+	      iter.skip_subrtxes ();
+	      continue;
+	    }
+
+	  /* If this is a cast from one mode to another, where the modes
+	     have the same size, and they are not tieable, then mark this
+	     register as non-decomposable.  If we decompose it we are
+	     likely to mess up whatever the backend is trying to do.  */
+	  if (outer_words > 1
+	      && outer_size == inner_size
+	      && !MODES_TIEABLE_P (GET_MODE (x), GET_MODE (inner)))
+	    {
 	      bitmap_set_bit (non_decomposable_context, regno);
-	      break;
-	    case DECOMPOSABLE_SIMPLE_MOVE:
-	      if (MODES_TIEABLE_P (GET_MODE (x), word_mode))
-		bitmap_set_bit (decomposable_context, regno);
-	      break;
-	    case SIMPLE_MOVE:
-	      break;
-	    default:
-	      gcc_unreachable ();
+	      bitmap_set_bit (subreg_context, regno);
+	      iter.skip_subrtxes ();
+	      continue;
 	    }
 	}
-    }
-  else if (MEM_P (x))
-    {
-      enum classify_move_insn cmi_mem = NOT_SIMPLE_MOVE;
+      else if (REG_P (x))
+	{
+	  unsigned int regno;
 
-      /* Any registers used in a MEM do not participate in a
-	 SIMPLE_MOVE or DECOMPOSABLE_SIMPLE_MOVE.  Do our own recursion
-	 here, and return -1 to block the parent's recursion.  */
-      for_each_rtx (&XEXP (x, 0), find_decomposable_subregs, &cmi_mem);
-      return -1;
-    }
+	  /* We will see an outer SUBREG before we see the inner REG, so
+	     when we see a plain REG here it means a direct reference to
+	     the register.
 
-  return 0;
+	     If this is not a simple copy from one location to another,
+	     then we can not decompose this register.  If this is a simple
+	     copy we want to decompose, and the mode is right,
+	     then we mark the register as decomposable.
+	     Otherwise we don't say anything about this register --
+	     it could be decomposed, but whether that would be
+	     profitable depends upon how it is used elsewhere.
+
+	     We only set bits in the bitmap for multi-word
+	     pseudo-registers, since those are the only ones we care about
+	     and it keeps the size of the bitmaps down.  */
+
+	  regno = REGNO (x);
+	  if (!HARD_REGISTER_NUM_P (regno)
+	      && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+	    {
+	      switch (*pcmi)
+		{
+		case NOT_SIMPLE_MOVE:
+		  bitmap_set_bit (non_decomposable_context, regno);
+		  break;
+		case DECOMPOSABLE_SIMPLE_MOVE:
+		  if (MODES_TIEABLE_P (GET_MODE (x), word_mode))
+		    bitmap_set_bit (decomposable_context, regno);
+		  break;
+		case SIMPLE_MOVE:
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	}
+      else if (MEM_P (x))
+	{
+	  enum classify_move_insn cmi_mem = NOT_SIMPLE_MOVE;
+
+	  /* Any registers used in a MEM do not participate in a
+	     SIMPLE_MOVE or DECOMPOSABLE_SIMPLE_MOVE.  Do our own recursion
+	     here, and return -1 to block the parent's recursion.  */
+	  find_decomposable_subregs (&XEXP (x, 0), &cmi_mem);
+	  iter.skip_subrtxes ();
+	}
+    }
 }
 
 /* Decompose REGNO into word-sized components.  We smash the REG node
@@ -1496,9 +1497,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	  n = recog_data.n_operands;
 	  for (i = 0; i < n; ++i)
 	    {
-	      for_each_rtx (&recog_data.operand[i],
-			    find_decomposable_subregs,
-			    &cmi);
+	      find_decomposable_subregs (&recog_data.operand[i], &cmi);
 
 	      /* We handle ASM_OPERANDS as a special case to support
 		 things like x86 rdtsc which returns a DImode value.
