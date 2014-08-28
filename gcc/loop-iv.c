@@ -1328,15 +1328,19 @@ inverse (uint64_t x, int mod)
   return rslt;
 }
 
-/* Checks whether register *REG is in set ALT.  Callback for for_each_rtx.  */
+/* Checks whether any register in X is in set ALT.  */
 
-static int
-altered_reg_used (rtx *reg, void *alt)
+static bool
+altered_reg_used (const_rtx x, bitmap alt)
 {
-  if (!REG_P (*reg))
-    return 0;
-
-  return REGNO_REG_SET_P ((bitmap) alt, REGNO (*reg));
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && REGNO_REG_SET_P (alt, REGNO (x)))
+	return true;
+    }
+  return false;
 }
 
 /* Marks registers altered by EXPR in set ALT.  */
@@ -1772,8 +1776,7 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
 
   /* If some register gets altered later, we do not really speak about its
      value at the time of comparison.  */
-  if (altered
-      && for_each_rtx (&cond, altered_reg_used, altered))
+  if (altered && altered_reg_used (cond, altered))
     return;
 
   if (GET_CODE (cond) == EQ
@@ -2051,7 +2054,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	      /* If we did not use this insn to make a replacement, any overlap
 		 between stores in this insn and our expression will cause the
 		 expression to become invalid.  */
-	      if (for_each_rtx (expr, altered_reg_used, this_altered))
+	      if (altered_reg_used (*expr, this_altered))
 		goto out;
 
 	      /* Likewise for the conditions.  */
@@ -2061,7 +2064,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		  rtx old_cond = XEXP (note, 0);
 
 		  pnote_next = (rtx_expr_list **)&XEXP (note, 1);
-		  if (for_each_rtx (&old_cond, altered_reg_used, this_altered))
+		  if (altered_reg_used (old_cond, this_altered))
 		    {
 		      *pnote = *pnote_next;
 		      pnote_next = pnote;
@@ -2079,7 +2082,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	     can't return it to the caller.  However, it is still valid for
 	     further simplification, so keep searching to see if we can
 	     eventually turn it into a constant.  */
-	  if (for_each_rtx (expr, altered_reg_used, altered))
+	  if (altered_reg_used (*expr, altered))
 	    expression_valid = false;
 	  if (expression_valid)
 	    last_valid_expr = *expr;
