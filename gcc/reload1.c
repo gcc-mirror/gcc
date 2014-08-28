@@ -3911,9 +3911,9 @@ set_initial_label_offsets (void)
 {
   memset (offsets_known_at, 0, num_labels);
 
-  for (rtx_expr_list *x = forced_labels; x; x = x->next ())
-    if (x->element ())
-      set_label_offsets (x->element (), NULL, 1);
+  for (rtx_insn_list *x = forced_labels; x; x = x->next ())
+    if (x->insn ())
+      set_label_offsets (x->insn (), NULL, 1);
 
   for (rtx_insn_list *x = nonlocal_goto_handler_labels; x; x = x->next ())
     if (x->insn ())

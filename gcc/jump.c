@@ -74,7 +74,7 @@ static int invert_exp_1 (rtx, rtx);
 static void
 rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
 {
-  rtx_expr_list *insn;
+  rtx_insn_list *insn;
 
   timevar_push (TV_REBUILD_JUMP);
   init_label_info (f);
@@ -86,8 +86,8 @@ rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
 
   if (count_forced)
     for (insn = forced_labels; insn; insn = insn->next ())
-      if (LABEL_P (insn->element ()))
-	LABEL_NUSES (insn->element ())++;
+      if (LABEL_P (insn->insn ()))
+	LABEL_NUSES (insn->insn ())++;
   timevar_pop (TV_REBUILD_JUMP);
 }
 

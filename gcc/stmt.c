@@ -141,12 +141,12 @@ label_rtx (tree label)
 rtx
 force_label_rtx (tree label)
 {
-  rtx ref = label_rtx (label);
+  rtx_insn *ref = as_a <rtx_insn *> (label_rtx (label));
   tree function = decl_function_context (label);
 
   gcc_assert (function);
 
-  forced_labels = gen_rtx_EXPR_LIST (VOIDmode, ref, forced_labels);
+  forced_labels = gen_rtx_INSN_LIST (VOIDmode, ref, forced_labels);
   return ref;
 }
 
@@ -176,7 +176,7 @@ emit_jump (rtx label)
 void
 expand_label (tree label)
 {
-  rtx label_r = label_rtx (label);
+  rtx_insn *label_r = as_a <rtx_insn *> (label_rtx (label));
 
   do_pending_stack_adjust ();
   emit_label (label_r);
@@ -192,7 +192,7 @@ expand_label (tree label)
     }
 
   if (FORCED_LABEL (label))
-    forced_labels = gen_rtx_EXPR_LIST (VOIDmode, label_r, forced_labels);
+    forced_labels = gen_rtx_INSN_LIST (VOIDmode, label_r, forced_labels);
 
   if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
     maybe_set_first_label_num (label_r);
