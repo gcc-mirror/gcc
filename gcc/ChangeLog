@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* cse.c (check_dependence_data): Delete.
+	(check_dependence): Change from being a for_each_rtx callback to being
+	a function that examines all subrtxes itself.  Don't handle null rtxes.
+	(invalidate): Update call accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cse.c: Include rtl-iter.h.
 	(approx_reg_cost_1): Delete.
 	(approx_reg_cost): Use FOR_EACH_SUBRTX instead of for_each_rtx.
