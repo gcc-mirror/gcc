@@ -36,6 +36,7 @@
 #include "obstack.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "rtl-iter.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -81,12 +82,11 @@ static bool skip_debug_insn_p;
 
 static void kill_value_one_regno (unsigned, struct value_data *);
 static void kill_value_regno (unsigned, unsigned, struct value_data *);
-static void kill_value (rtx, struct value_data *);
+static void kill_value (const_rtx, struct value_data *);
 static void set_value_regno (unsigned, enum machine_mode, struct value_data *);
 static void init_value_data (struct value_data *);
 static void kill_clobbered_value (rtx, const_rtx, void *);
 static void kill_set_value (rtx, const_rtx, void *);
-static int kill_autoinc_value (rtx *, void *);
 static void copy_value (rtx, rtx, struct value_data *);
 static bool mode_change_ok (enum machine_mode, enum machine_mode,
 			    unsigned int);
@@ -190,16 +190,13 @@ kill_value_regno (unsigned int regno, unsigned int nregs,
    so that we mind the mode the register is in.  */
 
 static void
-kill_value (rtx x, struct value_data *vd)
+kill_value (const_rtx x, struct value_data *vd)
 {
-  rtx orig_rtx = x;
-
   if (GET_CODE (x) == SUBREG)
     {
-      x = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
-			   GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
-      if (x == NULL_RTX)
-	x = SUBREG_REG (orig_rtx);
+      rtx tmp = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
+				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+      x = tmp ? tmp : SUBREG_REG (x);
     }
   if (REG_P (x))
     {
@@ -276,25 +273,24 @@ kill_set_value (rtx x, const_rtx set, void *data)
     }
 }
 
-/* Called through for_each_rtx.  Kill any register used as the base of an
-   auto-increment expression, and install that register as the root of its
-   own value list.  */
+/* Kill any register used in X as the base of an auto-increment expression,
+   and install that register as the root of its own value list.  */
 
-static int
-kill_autoinc_value (rtx *px, void *data)
+static void
+kill_autoinc_value (rtx insn, struct value_data *vd)
 {
-  rtx x = *px;
-  struct value_data *const vd = (struct value_data *) data;
-
-  if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
     {
-      x = XEXP (x, 0);
-      kill_value (x, vd);
-      set_value_regno (REGNO (x), GET_MODE (x), vd);
-      return -1;
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+	{
+	  x = XEXP (x, 0);
+	  kill_value (x, vd);
+	  set_value_regno (REGNO (x), GET_MODE (x), vd);
+	  iter.skip_subrtxes ();
+	}
     }
-
-  return 0;
 }
 
 /* Assert that SRC has been copied to DEST.  Adjust the data structures
@@ -807,7 +803,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* Kill all auto-incremented values.  */
       /* ??? REG_INC is useless, since stack pushes aren't done that way.  */
-      for_each_rtx (&PATTERN (insn), kill_autoinc_value, vd);
+      kill_autoinc_value (insn, vd);
 
       /* Kill all early-clobbered operands.  */
       for (i = 0; i < n_ops; i++)
