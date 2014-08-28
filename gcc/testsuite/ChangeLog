@@ -1,3 +1,7 @@
+2014-08-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/pr62089.c: Fix test on 32-bit platforms.
+
 2014-08-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR cpp/23827 - standard C++ should not have hex float preprocessor
