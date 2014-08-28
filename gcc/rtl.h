@@ -2723,14 +2723,6 @@ extern void set_insn_deleted (rtx);
 		       : NULL_RTX)
 #define single_set_1(I) single_set_2 (I, PATTERN (I))
 
-/* Structure used for passing data to REPLACE_LABEL.  */
-struct replace_label_data
-{
-  rtx r1;
-  rtx r2;
-  bool update_label_nuses;
-};
-
 extern enum machine_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
@@ -2799,7 +2791,8 @@ extern void copy_reg_eh_region_note_forward (rtx, rtx, rtx);
 extern void copy_reg_eh_region_note_backward (rtx, rtx, rtx);
 extern int inequality_comparisons_p (const_rtx);
 extern rtx replace_rtx (rtx, rtx, rtx);
-extern int replace_label (rtx *, void *);
+extern void replace_label (rtx *, rtx, rtx, bool);
+extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const_rtx, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
