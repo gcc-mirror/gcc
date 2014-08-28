@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "toplev.h"
+#include "rtl-iter.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -1431,57 +1432,60 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
   return new_rtx;
 }
 
-/* A subroutine of instantiate_virtual_regs, called via for_each_rtx.
-   Instantiate any virtual registers present inside of *LOC.  The expression
-   is simplified, as much as possible, but is not to be considered "valid"
-   in any sense implied by the target.  If any change is made, set CHANGED
-   to true.  */
+/* A subroutine of instantiate_virtual_regs.  Instantiate any virtual
+   registers present inside of *LOC.  The expression is simplified,
+   as much as possible, but is not to be considered "valid" in any sense
+   implied by the target.  Return true if any change is made.  */
 
-static int
-instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
+static bool
+instantiate_virtual_regs_in_rtx (rtx *loc)
 {
-  HOST_WIDE_INT offset;
-  bool *changed = (bool *) data;
-  rtx x, new_rtx;
-
-  x = *loc;
-  if (x == 0)
-    return 0;
-
-  switch (GET_CODE (x))
+  if (!*loc)
+    return false;
+  bool changed = false;
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
     {
-    case REG:
-      new_rtx = instantiate_new_reg (x, &offset);
-      if (new_rtx)
+      rtx *loc = *iter;
+      if (rtx x = *loc)
 	{
-	  *loc = plus_constant (GET_MODE (x), new_rtx, offset);
-	  if (changed)
-	    *changed = true;
+	  rtx new_rtx;
+	  HOST_WIDE_INT offset;
+	  switch (GET_CODE (x))
+	    {
+	    case REG:
+	      new_rtx = instantiate_new_reg (x, &offset);
+	      if (new_rtx)
+		{
+		  *loc = plus_constant (GET_MODE (x), new_rtx, offset);
+		  changed = true;
+		}
+	      iter.skip_subrtxes ();
+	      break;
+
+	    case PLUS:
+	      new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
+	      if (new_rtx)
+		{
+		  XEXP (x, 0) = new_rtx;
+		  *loc = plus_constant (GET_MODE (x), x, offset, true);
+		  changed = true;
+		  iter.skip_subrtxes ();
+		  break;
+		}
+
+	      /* FIXME -- from old code */
+	      /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
+		 we can commute the PLUS and SUBREG because pointers into the
+		 frame are well-behaved.  */
+	      break;
+
+	    default:
+	      break;
+	    }
 	}
-      return -1;
-
-    case PLUS:
-      new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
-      if (new_rtx)
-	{
-	  XEXP (x, 0) = new_rtx;
-	  *loc = plus_constant (GET_MODE (x), x, offset, true);
-	  if (changed)
-	    *changed = true;
-	  return -1;
-	}
-
-      /* FIXME -- from old code */
-	  /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
-	     we can commute the PLUS and SUBREG because pointers into the
-	     frame are well-behaved.  */
-      break;
-
-    default:
-      break;
     }
-
-  return 0;
+  return changed;
 }
 
 /* A subroutine of instantiate_virtual_regs_in_insn.  Return true if X
@@ -1518,7 +1522,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	{
 	  start_sequence ();
 
-	  for_each_rtx (&SET_SRC (set), instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&SET_SRC (set));
 	  x = simplify_gen_binary (PLUS, GET_MODE (new_rtx), SET_SRC (set),
 				   gen_int_mode (-offset, GET_MODE (new_rtx)));
 	  x = force_operand (x, new_rtx);
@@ -1621,10 +1625,8 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
-	    bool changed = false;
 
-	    for_each_rtx (&addr, instantiate_virtual_regs_in_rtx, &changed);
-	    if (!changed)
+	    if (!instantiate_virtual_regs_in_rtx (&addr))
 	      continue;
 
 	    start_sequence ();
@@ -1790,7 +1792,7 @@ instantiate_decl_rtl (rtx x)
 	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
     return;
 
-  for_each_rtx (&XEXP (x, 0), instantiate_virtual_regs_in_rtx, NULL);
+  instantiate_virtual_regs_in_rtx (&XEXP (x, 0));
 }
 
 /* Helper for instantiate_decls called via walk_tree: Process all decls
@@ -1927,20 +1929,18 @@ instantiate_virtual_regs (void)
 	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
 	  continue;
 	else if (DEBUG_INSN_P (insn))
-	  for_each_rtx (&INSN_VAR_LOCATION (insn),
-			instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&INSN_VAR_LOCATION (insn));
 	else
 	  instantiate_virtual_regs_in_insn (insn);
 
 	if (INSN_DELETED_P (insn))
 	  continue;
 
-	for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
+	instantiate_virtual_regs_in_rtx (&REG_NOTES (insn));
 
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
 	if (CALL_P (insn))
-	  for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
-			instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&CALL_INSN_FUNCTION_USAGE (insn));
       }
 
   /* Instantiate the virtual registers in the DECLs for debugging purposes.  */

@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* function.c: Include rtl-iter.h
+	(instantiate_virtual_regs_in_rtx): Turn from being a for_each_rtx
+	callback to being a function that examines each subrtx itself.
+	Return the changed flag.
+	(instantiate_virtual_regs_in_insn, instantiate_decl_rtl)
+	(instantiate_virtual_regs): Update calls accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* final.c: Include rtl-iter.h.
 	(mark_symbol_ref_as_used): Delete.
 	(mark_symbol_refs_as_used): Use FOR_EACH_SUBRTX instead of
