@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* dwarf2out.c (resolve_one_addr): Remove unused data parameter.
+	Return a bool, inverting the result so that 0/false means "not ok".
+	Use FOR_EACH_SUBRTX_PTR instead of for_each_rtx to iterate over
+	subrtxes of a CONST.
+	(mem_loc_descriptor, add_const_value_attribute)
+	(resolve_addr_in_expr): Update calls accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* dwarf2out.c: Include rtl-iter.h.
 	(const_ok_for_output_1): Take the rtx instead of a pointer to it.
 	Remove unused data parameter.  Return a bool, inverting the result
