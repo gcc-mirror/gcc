@@ -1,3 +1,10 @@
+2014-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62283
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Do not peel loops for alignment where the vector loop likely
+	doesn't run at least VF times.
+
 2014-08-28  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (iv_ca_add_use): Delete parameter

@@ -1,3 +1,14 @@
+2014-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62283
+	* gfortran.dg/vect/pr62283.f: New testcase.
+	* gcc.dg/tree-ssa/cunroll-5.c: Adjust.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/vect-33.c: Likewise.
+
 2014-08-28  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/pr62089.c: Fix test on 32-bit platforms.
