@@ -1,5 +1,23 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (tablejump_p): Strengthen first param from const_rtx to
+	const rtx_insn *.
+	(label_is_jump_target_p): Likewise for second param.
+
+	* rtlanal.c (tablejump_p): Likewise for param "insn".
+	(label_is_jump_target_p): Likewise for param "jump_insn".
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (find_first_parameter_load): Strengthen return type and
+	both params from rtx to rtx_insn *.
+	* rtlanal.c (find_first_parameter_load): Strengthen return type,
+	both params and locals "before", "first_set" from rtx to
+	rtx_insn *.  Remove now-redundant cast.
+	* except.c (sjlj_mark_call_sites): Use NULL rather than NULL_RTX.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (find_last_value): Delete.
 	* rtlanal.c (find_last_value): Delete.
 
