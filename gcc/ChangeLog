@@ -1,5 +1,15 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* varasm.c (compute_reloc_for_rtx_1): Take a const_rtx.  Remove the
+	pointer to the cumulative reloc value and return the value for
+	this reloc instead.
+	(compute_reloc_for_rtx): Take a const_rtx.  Call
+	compute_reloc_for_rtx_1 directly for SYMBOL_REF and LABEL_REF,
+	avoiding any recursion.  Use FOR_EACH_SUBRTX rather than
+	for_each_rtx for the CONST case.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* varasm.c (mark_constant): Replace this for_each_rtx callback with...
 	(mark_constants_in_pattern): ...this new function to iterate over
 	all the subrtxes.
