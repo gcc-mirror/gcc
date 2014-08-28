@@ -338,8 +338,8 @@
   [(V2TI "TARGET_AVX2") TI])
 
 (define_mode_iterator VI12_AVX2
-  [(V32QI "TARGET_AVX2") V16QI
-   (V16HI "TARGET_AVX2") V8HI])
+  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX2") V16QI
+   (V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI])
 
 (define_mode_iterator VI24_AVX2
   [(V16HI "TARGET_AVX2") V8HI
@@ -8109,27 +8109,28 @@
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "<sse2_avx2>_<plusminus_insn><mode>3"
+(define_expand "<sse2_avx2>_<plusminus_insn><mode>3<mask_name>"
   [(set (match_operand:VI12_AVX2 0 "register_operand")
 	(sat_plusminus:VI12_AVX2
 	  (match_operand:VI12_AVX2 1 "nonimmediate_operand")
 	  (match_operand:VI12_AVX2 2 "nonimmediate_operand")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*<sse2_avx2>_<plusminus_insn><mode>3"
+(define_insn "*<sse2_avx2>_<plusminus_insn><mode>3<mask_name>"
   [(set (match_operand:VI12_AVX2 0 "register_operand" "=x,v")
 	(sat_plusminus:VI12_AVX2
 	  (match_operand:VI12_AVX2 1 "nonimmediate_operand" "<comm>0,v")
 	  (match_operand:VI12_AVX2 2 "nonimmediate_operand" "xm,vm")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<plusminus_mnemonic><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<plusminus_mnemonic><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vp<plusminus_mnemonic><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "TI")])
 
 (define_expand "mul<mode>3"
@@ -8151,8 +8152,8 @@
 
 (define_insn "*mul<mode>3"
   [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
-	(mult:VI2_AVX2 (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,x")
-		       (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,xm")))]
+        (mult:VI2_AVX2 (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,v")
+                       (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
   "@
    pmullw\t{%2, %0|%0, %2}
@@ -11318,7 +11319,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "<sse2_avx2>_uavg<mode>3"
+(define_expand "<sse2_avx2>_uavg<mode>3<mask_name>"
   [(set (match_operand:VI12_AVX2 0 "register_operand")
 	(truncate:VI12_AVX2
 	  (lshiftrt:<ssedoublemode>
@@ -11328,34 +11329,44 @@
 		  (match_operand:VI12_AVX2 1 "nonimmediate_operand"))
 		(zero_extend:<ssedoublemode>
 		  (match_operand:VI12_AVX2 2 "nonimmediate_operand")))
-	      (match_dup 3))
+	      (match_dup <mask_expand_op3>))
 	    (const_int 1))))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
 {
+  rtx tmp;
+  if (<mask_applied>)
+    tmp = operands[3];
   operands[3] = CONST1_RTX(<MODE>mode);
   ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
+
+  if (<mask_applied>)
+    {
+      operands[5] = operands[3];
+      operands[3] = tmp;
+    }
 })
 
-(define_insn "*<sse2_avx2>_uavg<mode>3"
-  [(set (match_operand:VI12_AVX2 0 "register_operand" "=x,x")
+(define_insn "*<sse2_avx2>_uavg<mode>3<mask_name>"
+  [(set (match_operand:VI12_AVX2 0 "register_operand" "=x,v")
 	(truncate:VI12_AVX2
 	  (lshiftrt:<ssedoublemode>
 	    (plus:<ssedoublemode>
 	      (plus:<ssedoublemode>
 		(zero_extend:<ssedoublemode>
-		  (match_operand:VI12_AVX2 1 "nonimmediate_operand" "%0,x"))
+		  (match_operand:VI12_AVX2 1 "nonimmediate_operand" "%0,v"))
 		(zero_extend:<ssedoublemode>
-		  (match_operand:VI12_AVX2 2 "nonimmediate_operand" "xm,xm")))
-	      (match_operand:VI12_AVX2 3 "const1_operand"))
+		  (match_operand:VI12_AVX2 2 "nonimmediate_operand" "xm,vm")))
+	      (match_operand:VI12_AVX2 <mask_expand_op3> "const1_operand"))
 	    (const_int 1))))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, <MODE>mode, operands)"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>
+   && ix86_binary_operator_ok (PLUS, <MODE>mode, operands)"
   "@
    pavg<ssemodesuffix>\t{%2, %0|%0, %2}
-   vpavg<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vpavg<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,<mask_prefix>")
    (set_attr "mode" "<sseinsnmode>")])
 
 ;; The correct representation for this is absolutely enormous, and

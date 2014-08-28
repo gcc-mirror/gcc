@@ -7,6 +7,23 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	(define_mode_iterator VI12_AVX2): Add V64QI and V32HI modes.
+	(define_expand "<sse2_avx2>_<plusminus_insn><mode>3<mask_name>"): Add
+	masking.
+	(define_insn "*<sse2_avx2>_<plusminus_insn><mode>3<mask_name>"): Ditto.
+	(define_expand "<sse2_avx2>_uavg<mode>3<mask_name>"): Ditto.
+	(define_insn "*<sse2_avx2>_uavg<mode>3<mask_name>"): Ditto.
+	(define_insn "*mul<mode>3"): Add EVEX version.
+
+2014-08-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_insn "avx512bw_interleave_highv64qi<mask_name>"): New.
 	(define_insn "avx2_interleave_highv32qi<mask_name>"): Add masking.
