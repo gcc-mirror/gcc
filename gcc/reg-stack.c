@@ -170,6 +170,7 @@
 #include "target.h"
 #include "df.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
+#include "rtl-iter.h"
 
 #ifdef STACK_REGS
 
@@ -1308,31 +1309,6 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
     }
 }
 
-/* Substitute new registers in LOC, which is part of a debug insn.
-   REGSTACK is the current register layout.  */
-
-static int
-subst_stack_regs_in_debug_insn (rtx *loc, void *data)
-{
-  stack_ptr regstack = (stack_ptr)data;
-  int hard_regno;
-
-  if (!STACK_REG_P (*loc))
-    return 0;
-
-  hard_regno = get_hard_regnum (regstack, *loc);
-
-  /* If we can't find an active register, reset this debug insn.  */
-  if (hard_regno == -1)
-    return 1;
-
-  gcc_assert (hard_regno >= FIRST_STACK_REG);
-
-  replace_reg (loc, hard_regno);
-
-  return -1;
-}
-
 /* Substitute hardware stack regs in debug insn INSN, using stack
    layout REGSTACK.  If we can't find a hardware stack reg for any of
    the REGs in it, reset the debug insn.  */
@@ -1340,14 +1316,27 @@ subst_stack_regs_in_debug_insn (rtx *loc, void *data)
 static void
 subst_all_stack_regs_in_debug_insn (rtx_insn *insn, struct stack_def *regstack)
 {
-  int ret = for_each_rtx (&INSN_VAR_LOCATION_LOC (insn),
-			  subst_stack_regs_in_debug_insn,
-			  regstack);
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &INSN_VAR_LOCATION_LOC (insn), NONCONST)
+    {
+      rtx *loc = *iter;
+      rtx x = *loc;
+      if (STACK_REG_P (x))
+	{
+	  int hard_regno = get_hard_regnum (regstack, x);
 
-  if (ret == 1)
-    INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
-  else
-    gcc_checking_assert (ret == 0);
+	  /* If we can't find an active register, reset this debug insn.  */
+	  if (hard_regno == -1)
+	    {
+	      INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	      return;
+	    }
+
+	  gcc_assert (hard_regno >= FIRST_STACK_REG);
+	  replace_reg (loc, hard_regno);
+	  iter.skip_subrtxes ();
+	}
+    }
 }
 
 /* Substitute new registers in PAT, which is part of INSN.  REGSTACK

@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* reg-stack.c: Include rtl-iter.h.
+	(subst_stack_regs_in_debug_insn): Delete.
+	(subst_all_stack_regs_in_debug_insn): Use FOR_EACH_SUBRTX_PTR
+	instead of for_each_rtx.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lower-subreg.c (find_decomposable_subregs): Turn from being
 	a for_each_rtx callback to being a function that examines each
 	subrtx itself.  Remove handling of null rtxes.
