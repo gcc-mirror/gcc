@@ -3871,38 +3871,38 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
   return;
 }
 
-/* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
-   to as used.  Emit referenced deferred strings.  This function can
-   be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
+/* Mark all constants that are referenced by SYMBOL_REFs in X.
+   Emit referenced deferred strings.  */
 
-static int
-mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
+static void
+mark_constants_in_pattern (rtx insn)
 {
-  rtx x = *current_rtx;
-
-  if (x == NULL_RTX || GET_CODE (x) != SYMBOL_REF)
-    return 0;
-
-  if (CONSTANT_POOL_ADDRESS_P (x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
     {
-      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
-      if (desc->mark == 0)
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF)
 	{
-	  desc->mark = 1;
-	  for_each_rtx (&desc->constant, mark_constant, NULL);
+	  if (CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
+	      if (desc->mark == 0)
+		{
+		  desc->mark = 1;
+		  iter.substitute (desc->constant);
+		}
+	    }
+	  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      tree decl = SYMBOL_REF_DECL (x);
+	      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
+		{
+		  n_deferred_constants--;
+		  output_constant_def_contents (CONST_CAST_RTX (x));
+		}
+	    }
 	}
     }
-  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
-    {
-      tree decl = SYMBOL_REF_DECL (x);
-      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
-	{
-	  n_deferred_constants--;
-	  output_constant_def_contents (x);
-	}
-    }
-
-  return -1;
 }
 
 /* Look through appropriate parts of INSN, marking all entries in the
@@ -3926,11 +3926,11 @@ mark_constants (rtx_insn *insn)
 	{
 	  rtx subinsn = seq->element (i);
 	  if (INSN_P (subinsn))
-	    for_each_rtx (&PATTERN (subinsn), mark_constant, NULL);
+	    mark_constants_in_pattern (subinsn);
 	}
     }
   else
-    for_each_rtx (&PATTERN (insn), mark_constant, NULL);
+    mark_constants_in_pattern (insn);
 }
 
 /* Look through the instructions for this function, and mark all the
