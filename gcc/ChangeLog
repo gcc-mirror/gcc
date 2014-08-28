@@ -1,5 +1,10 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (find_last_value): Delete.
+	* rtlanal.c (find_last_value): Delete.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgexpand.c (pass_expand::execute): Strengthen local "after"
 	from rtx to rtx_insn *.
 	* cfgrtl.c (force_nonfallthru_and_redirect): Replace use of local
