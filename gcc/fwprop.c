@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "domwalk.h"
 #include "emit-rtl.h"
+#include "rtl-iter.h"
 
 
 /* This pass does simple forward propagation and simplification when an
@@ -623,14 +624,16 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
 }
 
 
-/* for_each_rtx traversal function that returns 1 if BODY points to
-   a non-constant mem.  */
+/* Return true if X constains a non-constant mem.  */
 
-static int
-varying_mem_p (rtx *body, void *data ATTRIBUTE_UNUSED)
+static bool
+varying_mem_p (const_rtx x)
 {
-  rtx x = *body;
-  return MEM_P (x) && !MEM_READONLY_P (x);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (MEM_P (*iter) && !MEM_READONLY_P (*iter))
+      return true;
+  return false;
 }
 
 
@@ -661,7 +664,7 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
 	  && (GET_MODE_SIZE (mode)
 	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (new_rtx))))))
     flags |= PR_CAN_APPEAR;
-  if (!for_each_rtx (&new_rtx, varying_mem_p, NULL))
+  if (!varying_mem_p (new_rtx))
     flags |= PR_HANDLE_MEM;
 
   if (speed)

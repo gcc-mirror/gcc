@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* fwprop.c: Include rtl-iter.h.
+	(varying_mem_p): Turn from being a for_each_rtx callback to being
+	a function that examines each subrtx itself.
+	(propagate_rtx): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* function.c: Include rtl-iter.h
 	(instantiate_virtual_regs_in_rtx): Turn from being a for_each_rtx
 	callback to being a function that examines each subrtx itself.
