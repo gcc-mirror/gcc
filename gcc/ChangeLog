@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* var-tracking.c: Include rtl-iter.h.
+	(rtx_debug_expr_p): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.
+	(use_type): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* store-motion.c: Include rtl-iter.h.
 	(extract_mentioned_regs_1): Delete.
 	(extract_mentioned_regs): Use FOR_EACH_SUBRTX_VAR rather than
