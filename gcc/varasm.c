@@ -6487,44 +6487,43 @@ default_unique_section (tree decl, int reloc)
   set_decl_section_name (decl, string);
 }
 
+/* Subroutine of compute_reloc_for_rtx for leaf rtxes.  */
+
+static int
+compute_reloc_for_rtx_1 (const_rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      return SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
+    case LABEL_REF:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
    indicates a local relocation.  */
 
 static int
-compute_reloc_for_rtx_1 (rtx *xp, void *data)
+compute_reloc_for_rtx (const_rtx x)
 {
-  int *preloc = (int *) data;
-  rtx x = *xp;
-
   switch (GET_CODE (x))
     {
     case SYMBOL_REF:
-      *preloc |= SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
-      break;
     case LABEL_REF:
-      *preloc |= 1;
-      break;
-    default:
-      break;
-    }
+      return compute_reloc_for_rtx_1 (x);
 
-  return 0;
-}
-
-static int
-compute_reloc_for_rtx (rtx x)
-{
-  int reloc;
-
-  switch (GET_CODE (x))
-    {
     case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      reloc = 0;
-      for_each_rtx (&x, compute_reloc_for_rtx_1, &reloc);
-      return reloc;
+      {
+	int reloc = 0;
+	subrtx_iterator::array_type array;
+	FOR_EACH_SUBRTX (iter, array, x, ALL)
+	  reloc |= compute_reloc_for_rtx_1 (*iter);
+	return reloc;
+      }
 
     default:
       return 0;
