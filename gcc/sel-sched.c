@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtlhooks-def.h"
 #include "emit-rtl.h"
 #include "ira.h"
+#include "rtl-iter.h"
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"
@@ -798,58 +799,35 @@ substitute_reg_in_expr (expr_t expr, insn_t insn, bool undo)
     return false;
 }
 
-/* Helper function for count_occurences_equiv.  */
-static int
-count_occurrences_1 (rtx *cur_rtx, void *arg)
-{
-  rtx_search_arg_p p = (rtx_search_arg_p) arg;
-
-  if (REG_P (*cur_rtx) && REGNO (*cur_rtx) == REGNO (p->x))
-    {
-      /* Bail out if mode is different or more than one register is used.  */
-      if (GET_MODE (*cur_rtx) != GET_MODE (p->x)
-          || (HARD_REGISTER_P (*cur_rtx)
-	      && hard_regno_nregs[REGNO (*cur_rtx)][GET_MODE (*cur_rtx)] > 1))
-        {
-          p->n = 0;
-          return 1;
-        }
-
-      p->n++;
-
-      /* Do not traverse subexprs.  */
-      return -1;
-    }
-
-  if (GET_CODE (*cur_rtx) == SUBREG
-      && (!REG_P (SUBREG_REG (*cur_rtx))
-	  || REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x)))
-    {
-      /* ??? Do not support substituting regs inside subregs.  In that case,
-         simplify_subreg will be called by validate_replace_rtx, and
-         unsubstitution will fail later.  */
-      p->n = 0;
-      return 1;
-    }
-
-  /* Continue search.  */
-  return 0;
-}
-
 /* Return the number of places WHAT appears within WHERE.
    Bail out when we found a reference occupying several hard registers.  */
 static int
-count_occurrences_equiv (rtx what, rtx where)
+count_occurrences_equiv (const_rtx what, const_rtx where)
 {
-  struct rtx_search_arg arg;
-
-  gcc_assert (REG_P (what));
-  arg.x = what;
-  arg.n = 0;
-
-  for_each_rtx (&where, &count_occurrences_1, (void *) &arg);
-
-  return arg.n;
+  int count = 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, where, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && REGNO (x) == REGNO (what))
+	{
+	  /* Bail out if mode is different or more than one register is
+	     used.  */
+	  if (GET_MODE (x) != GET_MODE (what)
+	      || (HARD_REGISTER_P (x)
+		  && hard_regno_nregs[REGNO (x)][GET_MODE (x)] > 1))
+	    return 0;
+	  count += 1;
+	}
+      else if (GET_CODE (x) == SUBREG
+	       && (!REG_P (SUBREG_REG (x))
+		   || REGNO (SUBREG_REG (x)) == REGNO (what)))
+	/* ??? Do not support substituting regs inside subregs.  In that case,
+	   simplify_subreg will be called by validate_replace_rtx, and
+	   unsubstitution will fail later.  */
+	return 0;
+    }
+  return count;
 }
 
 /* Returns TRUE if WHAT is found in WHERE rtx tree.  */
