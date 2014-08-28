@@ -1,5 +1,13 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* caller-save.c: Include rtl-iter.h.
+	(add_used_regs_1): Delete.
+	(add_used_regs): Use FOR_EACH_SUBRTX rather than for_each_rtx
+	to iterate over subrtxes.  Assert that any remaining pseudos
+	have been spilled.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* bt-load.c: Include rtl-iter.h.
 	(btr_reference_found, find_btr_reference, btr_referenced_p): Delete.
 	(find_btr_use): Move further up file.  Use FOR_EACH_SUBRTX_PTR
