@@ -600,7 +600,6 @@ static int check_for_label_ref (rtx *, void *);
 extern void dump_class (struct table_elt*);
 static void get_cse_reg_info_1 (unsigned int regno);
 static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
-static int check_dependence (rtx *, void *);
 
 static void flush_hash_table (void);
 static bool insn_live_p (rtx_insn *, int *);
@@ -1816,22 +1815,20 @@ flush_hash_table (void)
       }
 }
 
-/* Function called for each rtx to check whether an anti dependence exist.  */
-struct check_dependence_data
-{
-  enum machine_mode mode;
-  rtx exp;
-  rtx addr;
-};
+/* Check whether an anti dependence exists between X and EXP.  MODE and
+   ADDR are as for canon_anti_dependence.  */
 
-static int
-check_dependence (rtx *x, void *data)
+static bool
+check_dependence (const_rtx x, rtx exp, enum machine_mode mode, rtx addr)
 {
-  struct check_dependence_data *d = (struct check_dependence_data *) data;
-  if (*x && MEM_P (*x))
-    return canon_anti_dependence (*x, true, d->exp, d->mode, d->addr);
-  else
-    return 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (MEM_P (x) && canon_anti_dependence (x, true, exp, mode, addr))
+	return true;
+    }
+  return false;
 }
 
 /* Remove from the hash table, or mark as invalid, all expressions whose
@@ -1952,18 +1949,13 @@ invalidate (rtx x, enum machine_mode full_mode)
 	      next = p->next_same_hash;
 	      if (p->in_memory)
 		{
-		  struct check_dependence_data d;
-
 		  /* Just canonicalize the expression once;
 		     otherwise each time we call invalidate
 		     true_dependence will canonicalize the
 		     expression again.  */
 		  if (!p->canon_exp)
 		    p->canon_exp = canon_rtx (p->exp);
-		  d.exp = x;
-		  d.addr = addr;
-		  d.mode = full_mode;
-		  if (for_each_rtx (&p->canon_exp, check_dependence, &d))
+		  if (check_dependence (p->canon_exp, x, full_mode, addr))
 		    remove_from_table (p, i);
 		}
 	    }
