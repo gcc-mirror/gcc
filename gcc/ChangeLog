@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* combine.c: Include rtl-iter.h.
+	(unmentioned_reg_p_1): Delete.
+	(unmentioned_reg_p): Use FOR_EACH_SUBRTX rather than for_each_rtx.
+	Don't handle null rtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* calls.c: Include rtl-iter.h.
 	(internal_arg_pointer_based_exp_1): Delete.
 	(internal_arg_pointer_based_exp): Take a const_rtx.

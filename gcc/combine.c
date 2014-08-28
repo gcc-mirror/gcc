@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "statistics.h"
 #include "params.h"
+#include "rtl-iter.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -469,7 +470,6 @@ static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *, rtx, rtx,
 static void distribute_links (struct insn_link *);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
-static int unmentioned_reg_p_1 (rtx *, void *);
 static bool unmentioned_reg_p (rtx, rtx);
 static int record_truncated_value (rtx *, void *);
 static void record_truncated_values (rtx *, void *);
@@ -13845,23 +13845,6 @@ distribute_links (struct insn_link *links)
     }
 }
 
-/* Subroutine of unmentioned_reg_p and callback from for_each_rtx.
-   Check whether the expression pointer to by LOC is a register or
-   memory, and if so return 1 if it isn't mentioned in the rtx EXPR.
-   Otherwise return zero.  */
-
-static int
-unmentioned_reg_p_1 (rtx *loc, void *expr)
-{
-  rtx x = *loc;
-
-  if (x != NULL_RTX
-      && (REG_P (x) || MEM_P (x))
-      && ! reg_mentioned_p (x, (rtx) expr))
-    return 1;
-  return 0;
-}
-
 /* Check for any register or memory mentioned in EQUIV that is not
    mentioned in EXPR.  This is used to restrict EQUIV to "specializations"
    of EXPR where some registers may have been replaced by constants.  */
@@ -13869,7 +13852,15 @@ unmentioned_reg_p_1 (rtx *loc, void *expr)
 static bool
 unmentioned_reg_p (rtx equiv, rtx expr)
 {
-  return for_each_rtx (&equiv, unmentioned_reg_p_1, expr);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, equiv, NONCONST)
+    {
+      const_rtx x = *iter;
+      if ((REG_P (x) || MEM_P (x))
+	  && !reg_mentioned_p (x, expr))
+	return true;
+    }
+  return false;
 }
 
 DEBUG_FUNCTION void
