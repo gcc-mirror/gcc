@@ -1,5 +1,11 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (inside_basic_block_p): Strengthen param from
+	const_rtx to const rtx_insn *.
+	* cfgbuild.c (inside_basic_block_p): Likewise.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* dwarf2cfi.c (dw_trace_info): Strengthen field "head" from rtx to
 	rtx_insn *.
 	(get_trace_info): Likewise for param "insn".
