@@ -1,3 +1,8 @@
+2014-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/random/*: Fix incorrect standard references in
+	comments.
+
 2014-08-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/62159

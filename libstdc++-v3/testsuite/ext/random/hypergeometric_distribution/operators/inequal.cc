@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.5.8.4.5 Class template rice_distribution [rand.dist.ext.hypergeometric]
+// Class template hypergeometric_distribution
 
 #include <ext/random>
 #include <testsuite_hooks.h>
