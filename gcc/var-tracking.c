@@ -952,41 +952,41 @@ struct adjust_mem_data
   rtx_expr_list *side_effects;
 };
 
-/* Helper for adjust_mems.  Return 1 if *loc is unsuitable for
-   transformation of wider mode arithmetics to narrower mode,
-   -1 if it is suitable and subexpressions shouldn't be
-   traversed and 0 if it is suitable and subexpressions should
-   be traversed.  Called through for_each_rtx.  */
+/* Helper for adjust_mems.  Return true if X is suitable for
+   transformation of wider mode arithmetics to narrower mode.  */
 
-static int
-use_narrower_mode_test (rtx *loc, void *data)
+static bool
+use_narrower_mode_test (rtx x, const_rtx subreg)
 {
-  rtx subreg = (rtx) data;
-
-  if (CONSTANT_P (*loc))
-    return -1;
-  switch (GET_CODE (*loc))
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {
-    case REG:
-      if (cselib_lookup (*loc, GET_MODE (SUBREG_REG (subreg)), 0, VOIDmode))
-	return 1;
-      if (!validate_subreg (GET_MODE (subreg), GET_MODE (*loc),
-			    *loc, subreg_lowpart_offset (GET_MODE (subreg),
-							 GET_MODE (*loc))))
-	return 1;
-      return -1;
-    case PLUS:
-    case MINUS:
-    case MULT:
-      return 0;
-    case ASHIFT:
-      if (for_each_rtx (&XEXP (*loc, 0), use_narrower_mode_test, data))
-	return 1;
+      rtx x = *iter;
+      if (CONSTANT_P (x))
+	iter.skip_subrtxes ();
       else
-	return -1;
-    default:
-      return 1;
+	switch (GET_CODE (x))
+	  {
+	  case REG:
+	    if (cselib_lookup (x, GET_MODE (SUBREG_REG (subreg)), 0, VOIDmode))
+	      return false;
+	    if (!validate_subreg (GET_MODE (subreg), GET_MODE (x), x,
+				  subreg_lowpart_offset (GET_MODE (subreg),
+							 GET_MODE (x))))
+	      return false;
+	    break;
+	  case PLUS:
+	  case MINUS:
+	  case MULT:
+	    break;
+	  case ASHIFT:
+	    iter.substitute (XEXP (x, 0));
+	    break;
+	  default:
+	    return false;
+	  }
     }
+  return true;
 }
 
 /* Transform X into narrower mode MODE from wider mode WMODE.  */
@@ -1147,7 +1147,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	  && GET_MODE_SIZE (GET_MODE (tem))
 	     < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tem)))
 	  && subreg_lowpart_p (tem)
-	  && !for_each_rtx (&SUBREG_REG (tem), use_narrower_mode_test, tem))
+	  && use_narrower_mode_test (SUBREG_REG (tem), tem))
 	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
 				  GET_MODE (SUBREG_REG (tem)));
       return tem;
