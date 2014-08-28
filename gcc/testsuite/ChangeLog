@@ -1,3 +1,14 @@
+2014-08-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR cpp/23827 - standard C++ should not have hex float preprocessor
+	tokens
+	* g++.dg/cpp/pr23827_cxx11.C: New.
+	* g++.dg/cpp/pr23827_cxx98.C: New.
+	* g++.dg/cpp/pr23827_cxx98_neg.C: New.
+	* gcc.dg/cpp/pr23827_c90.c: New.
+	* gcc.dg/cpp/pr23827_c90_neg.c: New.
+	* gcc.dg/cpp/pr23827_c99.c: New.
+
 2014-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52892
