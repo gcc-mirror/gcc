@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* dwarf2out.c: Include rtl-iter.h.
+	(const_ok_for_output_1): Take the rtx instead of a pointer to it.
+	Remove unused data parameter.  Return a bool, inverting the result
+	so that 0/false means "not ok".
+	(const_ok_for_output): Update accordingly.  Use FOR_EACH_SUBRTX_VAR
+	instead of for_each_rtx.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* dse.c: Include rtl-iter.h.
 	(check_mem_read_rtx): Change void * parameter to real type.
 	Remove return value.
