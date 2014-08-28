@@ -2465,7 +2465,7 @@ add_call_site (rtx landing_pad, int action, int section)
 }
 
 static rtx_note *
-emit_note_eh_region_end (rtx insn)
+emit_note_eh_region_end (rtx_insn *insn)
 {
   rtx_insn *next = NEXT_INSN (insn);
 

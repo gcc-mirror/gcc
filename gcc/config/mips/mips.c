@@ -11079,7 +11079,6 @@ mips_expand_prologue (void)
   const struct mips_frame_info *frame;
   HOST_WIDE_INT size;
   unsigned int nargs;
-  rtx insn;
 
   if (cfun->machine->global_pointer != INVALID_REGNUM)
     {
@@ -11133,8 +11132,8 @@ mips_expand_prologue (void)
 
 	  /* Build the save instruction.  */
 	  mask = frame->mask;
-	  insn = mips16e_build_save_restore (false, &mask, &offset,
-					     nargs, step1);
+	  rtx insn = mips16e_build_save_restore (false, &mask, &offset,
+						 nargs, step1);
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	  mips_frame_barrier ();
  	  size -= step1;
@@ -11174,8 +11173,8 @@ mips_expand_prologue (void)
 		}
 
 	      /* Allocate the first part of the frame.  */
-	      insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				    GEN_INT (-step1));
+	      rtx insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (-step1));
 	      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	      mips_frame_barrier ();
 	      size -= step1;
@@ -11235,9 +11234,9 @@ mips_expand_prologue (void)
 	    }
 	  else
 	    {
-	      insn = gen_add3_insn (stack_pointer_rtx,
-				    stack_pointer_rtx,
-				    GEN_INT (-step1));
+	      rtx insn = gen_add3_insn (stack_pointer_rtx,
+					stack_pointer_rtx,
+					GEN_INT (-step1));
 	      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	      mips_frame_barrier ();
 	      size -= step1;
@@ -11291,13 +11290,13 @@ mips_expand_prologue (void)
       offset = frame->hard_frame_pointer_offset;
       if (offset == 0)
 	{
-	  insn = mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  rtx insn = mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (SMALL_OPERAND (offset))
 	{
-	  insn = gen_add3_insn (hard_frame_pointer_rtx,
-				stack_pointer_rtx, GEN_INT (offset));
+	  rtx insn = gen_add3_insn (hard_frame_pointer_rtx,
+				    stack_pointer_rtx, GEN_INT (offset));
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
       else
@@ -11338,6 +11337,7 @@ mips_expand_prologue (void)
   /* We need to search back to the last use of K0 or K1.  */
   if (cfun->machine->interrupt_handler_p)
     {
+      rtx_insn *insn;
       for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
 	if (INSN_P (insn)
 	    && for_each_rtx (&PATTERN (insn), mips_kernel_reg_p, NULL))

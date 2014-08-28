@@ -3019,7 +3019,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  && insn_operand_matches (icode, 1, op1))
 	{
 	  enum rtx_code code = unsignedp ? ZERO_EXTEND : SIGN_EXTEND;
-	  rtx insn, insns, t = op1;
+	  rtx_insn *insn, *insns;
+	  rtx t = op1;
 	  HARD_REG_SET hardregs;
 
 	  start_sequence ();
@@ -3038,8 +3039,9 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	    }
 	  else
 	    t = op1;
-	  insn = gen_extend_insn (op0, t, promoted_nominal_mode,
-				  data->passed_mode, unsignedp);
+	  insn = as_a <rtx_insn *> (
+		   gen_extend_insn (op0, t, promoted_nominal_mode,
+				    data->passed_mode, unsignedp));
 	  emit_insn (insn);
 	  insns = get_insns ();
 

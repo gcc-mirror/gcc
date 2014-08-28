@@ -88,7 +88,8 @@ extern rtx gen_mlo (void);
 extern rtx gen_mhi (void);
 extern bool arc_branch_size_unknown_p (void);
 struct arc_ccfsm;
-extern void arc_ccfsm_record_condition (rtx, bool, rtx, struct arc_ccfsm *);
+extern void arc_ccfsm_record_condition (rtx, bool, rtx_insn *,
+					struct arc_ccfsm *);
 extern void arc_expand_prologue (void);
 extern void arc_expand_epilogue (int);
 extern void arc_init_expanders (void);
@@ -108,7 +109,8 @@ extern bool arc_scheduling_not_expected (void);
 extern bool arc_sets_cc_p (rtx insn);
 extern int arc_label_align (rtx label);
 extern bool arc_need_delay (rtx_insn *insn);
-extern bool arc_text_label (rtx);
+extern bool arc_text_label (rtx_insn *insn);
+
 extern int arc_decl_pretend_args (tree decl);
 extern bool arc_short_comparison_p (rtx, int);
 extern bool arc_epilogue_uses (int regno);

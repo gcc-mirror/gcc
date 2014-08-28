@@ -550,7 +550,7 @@ static bool sparc_legitimate_constant_p (enum machine_mode, rtx);
 static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
-static int set_extends (rtx);
+static int set_extends (rtx_insn *);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef TARGET_SOLARIS
@@ -875,7 +875,7 @@ mem_ref (rtx x)
 static unsigned int
 sparc_do_work_around_errata (void)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -887,8 +887,9 @@ sparc_do_work_around_errata (void)
       rtx set;
 
       /* Look into the instruction in a delay slot.  */
-      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 1);
+      if (NONJUMP_INSN_P (insn))
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  insn = seq->insn (1);
 
       /* Look for a single-word load into an odd-numbered FP register.  */
       if (sparc_fix_at697f
@@ -3425,7 +3426,7 @@ emit_tfmode_cvt (enum rtx_code code, rtx *operands)
    nop into its delay slot.  */
 
 int
-empty_delay_slot (rtx insn)
+empty_delay_slot (rtx_insn *insn)
 {
   rtx seq;
 
@@ -9613,7 +9614,7 @@ sparc_issue_rate (void)
 }
 
 static int
-set_extends (rtx insn)
+set_extends (rtx_insn *insn)
 {
   register rtx pat = PATTERN (insn);
 
@@ -9779,7 +9780,7 @@ sparc_output_deferred_case_vectors (void)
    unknown.  Return 1 if the high bits are zero, -1 if the register is
    sign extended.  */
 int
-sparc_check_64 (rtx x, rtx insn)
+sparc_check_64 (rtx x, rtx_insn *insn)
 {
   /* If a register is set only once it is safe to ignore insns this
      code does not know how to handle.  The loop will either recognize

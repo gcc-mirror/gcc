@@ -835,9 +835,9 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
    no CODE_LABEL insn.  */
 
 int
-no_labels_between_p (const_rtx beg, const_rtx end)
+no_labels_between_p (const rtx_insn *beg, const rtx_insn *end)
 {
-  rtx p;
+  rtx_insn *p;
   if (beg == end)
     return 0;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
@@ -850,7 +850,8 @@ no_labels_between_p (const_rtx beg, const_rtx end)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_used_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
+reg_used_between_p (const_rtx reg, const rtx_insn *from_insn,
+		    const rtx_insn *to_insn)
 {
   rtx_insn *insn;
 
@@ -946,8 +947,10 @@ reg_referenced_p (const_rtx x, const_rtx body)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_set_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
+reg_set_between_p (const_rtx reg, const_rtx uncast_from_insn, const_rtx to_insn)
 {
+  const rtx_insn *from_insn =
+    safe_as_a <const rtx_insn *> (uncast_from_insn);
   const rtx_insn *insn;
 
   if (from_insn == to_insn)
@@ -984,8 +987,10 @@ reg_set_p (const_rtx reg, const_rtx insn)
    X contains a MEM; this routine does use memory aliasing.  */
 
 int
-modified_between_p (const_rtx x, const_rtx start, const_rtx end)
+modified_between_p (const_rtx x, const_rtx uncast_start, const_rtx end)
 {
+  const rtx_insn *start =
+    safe_as_a <const rtx_insn *> (uncast_start);
   const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
@@ -2871,7 +2876,7 @@ tablejump_p (const rtx_insn *insn, rtx *labelp, rtx_jump_table_data **tablep)
 
   label = JUMP_LABEL (insn);
   if (label != NULL_RTX && !ANY_RETURN_P (label)
-      && (table = NEXT_INSN (label)) != NULL_RTX
+      && (table = NEXT_INSN (as_a <rtx_insn *> (label))) != NULL_RTX
       && JUMP_TABLE_DATA_P (table))
     {
       if (labelp)

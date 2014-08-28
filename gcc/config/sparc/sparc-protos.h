@@ -83,7 +83,7 @@ extern void emit_conditional_branch_insn (rtx []);
 extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
 extern rtx widen_mem_for_ldd_peep (rtx, rtx, enum machine_mode);
-extern int empty_delay_slot (rtx);
+extern int empty_delay_slot (rtx_insn *);
 extern int emit_cbcond_nop (rtx);
 extern int eligible_for_call_delay (rtx);
 extern int eligible_for_return_delay (rtx);
@@ -99,7 +99,7 @@ extern int memory_ok_for_ldd (rtx);
 extern int v9_regcmp_p (enum rtx_code);
 /* Function used for V8+ code generation.  Returns 1 if the high
    32 bits of REG are 0 before INSN.  */   
-extern int sparc_check_64 (rtx, rtx);
+extern int sparc_check_64 (rtx, rtx_insn *);
 extern rtx gen_df_reg (rtx, int);
 extern void sparc_expand_compare_and_swap (rtx op[]);
 extern void sparc_expand_vector_init (rtx, rtx);

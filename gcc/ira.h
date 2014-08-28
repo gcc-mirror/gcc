@@ -183,7 +183,7 @@ extern rtx ira_eliminate_regs (rtx, enum machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
 extern void ira_expand_reg_equiv (void);
-extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx);
+extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx_insn *);
 
 extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
 extern void ira_mark_allocation_change (int);

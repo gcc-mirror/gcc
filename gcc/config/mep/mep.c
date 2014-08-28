@@ -5653,7 +5653,7 @@ mep_jmp_return_reorg (rtx_insn *insns)
 	     && (NOTE_P (ret)
 		 || LABEL_P (ret)
 		 || GET_CODE (PATTERN (ret)) == USE))
-	ret = NEXT_INSN (ret);
+	ret = NEXT_INSN (as_a <rtx_insn *> (ret));
 
       if (ret)
 	{

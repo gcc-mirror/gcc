@@ -4456,11 +4456,11 @@ write_eligible_delay (FILE *outf, const char *kind)
   /* Write function prelude.  */
 
   fprintf (outf, "int\n");
-  fprintf (outf, "eligible_for_%s (rtx delay_insn ATTRIBUTE_UNUSED, int slot, \n"
-		 "		   rtx candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
+  fprintf (outf, "eligible_for_%s (rtx_insn *delay_insn ATTRIBUTE_UNUSED, int slot, \n"
+		 "		   rtx_insn *candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
 	   kind);
   fprintf (outf, "{\n");
-  fprintf (outf, "  rtx insn;\n");
+  fprintf (outf, "  rtx_insn *insn;\n");
   fprintf (outf, "\n");
   fprintf (outf, "  gcc_assert (slot < %d);\n", max_slots);
   fprintf (outf, "\n");

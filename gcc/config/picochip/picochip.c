@@ -3435,9 +3435,9 @@ picochip_get_vliw_alu_id (void)
 
 /* Reset any information about the current VLIW packing status. */
 static void
-picochip_reset_vliw (rtx insn)
+picochip_reset_vliw (rtx_insn *insn)
 {
-  rtx local_insn = insn;
+  rtx_insn *local_insn = insn;
 
   /* Nothing to do if VLIW scheduling isn't being used. */
   if (picochip_schedule_type != DFA_TYPE_SPEED)
@@ -3877,7 +3877,7 @@ void
 picochip_final_prescan_insn (rtx_insn *insn, rtx * opvec ATTRIBUTE_UNUSED,
 			     int num_operands ATTRIBUTE_UNUSED)
 {
-  rtx local_insn;
+  rtx_insn *local_insn;
 
   picochip_current_prescan_insn = insn;
 

@@ -773,7 +773,7 @@ nds32_output_casesi_pc_relative (rtx *operands)
   enum machine_mode mode;
   rtx diff_vec;
 
-  diff_vec = PATTERN (NEXT_INSN (operands[1]));
+  diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[1])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 

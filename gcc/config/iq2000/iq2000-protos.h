@@ -22,8 +22,8 @@
 
 extern int              iq2000_check_split (rtx, enum machine_mode);
 extern int              iq2000_reg_mode_ok_for_base_p (rtx, enum machine_mode, int);
-extern const char *     iq2000_fill_delay_slot (const char *, enum delay_type, rtx *, rtx);
-extern const char *     iq2000_move_1word (rtx *, rtx, int);
+extern const char *     iq2000_fill_delay_slot (const char *, enum delay_type, rtx *, rtx_insn *);
+extern const char *     iq2000_move_1word (rtx *, rtx_insn *, int);
 extern HOST_WIDE_INT    iq2000_debugger_offset (rtx, HOST_WIDE_INT);
 extern void             final_prescan_insn (rtx_insn *, rtx *, int);
 extern HOST_WIDE_INT    compute_frame_size (HOST_WIDE_INT);

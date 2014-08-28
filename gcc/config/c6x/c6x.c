@@ -3045,13 +3045,13 @@ get_insn_side (rtx insn, enum attr_units units)
 /* After scheduling, walk the insns between HEAD and END and assign unit
    reservations.  */
 static void
-assign_reservations (rtx head, rtx end)
+assign_reservations (rtx_insn *head, rtx_insn *end)
 {
-  rtx insn;
+  rtx_insn *insn;
   for (insn = head; insn != NEXT_INSN (end); insn = NEXT_INSN (insn))
     {
       unsigned int sched_mask, reserved;
-      rtx within, last;
+      rtx_insn *within, *last;
       int pass;
       int rsrv[2];
       int rsrv_count[2][4];
@@ -3061,7 +3061,7 @@ assign_reservations (rtx head, rtx end)
 	continue;
 
       reserved = 0;
-      last = NULL_RTX;
+      last = NULL;
       /* Find the last insn in the packet.  It has a state recorded for it,
 	 which we can use to determine the units we should be using.  */
       for (within = insn;
@@ -3272,9 +3272,9 @@ get_unit_reqs (rtx insn, int *req1, int *side1, int *req2, int *side2)
 /* Walk the insns between and including HEAD and TAIL, and mark the
    resource requirements in the unit_reqs table.  */
 static void
-count_unit_reqs (unit_req_table reqs, rtx head, rtx tail)
+count_unit_reqs (unit_req_table reqs, rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   memset (reqs, 0, sizeof (unit_req_table));
 
@@ -3417,7 +3417,8 @@ get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
    We recompute this information locally after our transformation, and keep
    it only if we managed to improve the balance.  */
 static void
-try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
+try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
+		     rtx insn,
 		     insn_rr_info *info, unsigned int op_mask, int orig_side)
 {
   enum reg_class super_class = orig_side == 0 ? B_REGS : A_REGS;
@@ -3520,9 +3521,9 @@ try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
 static void
 reshuffle_units (basic_block loop)
 {
-  rtx head = BB_HEAD (loop);
-  rtx tail = BB_END (loop);
-  rtx insn;
+  rtx_insn *head = BB_HEAD (loop);
+  rtx_insn *tail = BB_END (loop);
+  rtx_insn *insn;
   unit_req_table reqs;
   edge e;
   edge_iterator ei;
@@ -3613,7 +3614,7 @@ typedef struct c6x_sched_context
   int delays_finished_at;
 
   /* The following variable value is the last issued insn.  */
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
   /* The last issued insn that isn't a shadow of another.  */
   rtx_insn *last_scheduled_iter0;
 
@@ -3844,7 +3845,7 @@ predicate_insn (rtx insn, rtx cond, bool doit)
 static void
 init_sched_state (c6x_sched_context_t sc)
 {
-  sc->last_scheduled_insn = NULL_RTX;
+  sc->last_scheduled_insn = NULL;
   sc->last_scheduled_iter0 = NULL;
   sc->issued_this_cycle = 0;
   memset (sc->jump_cycles, 0, sizeof sc->jump_cycles);
@@ -4954,7 +4955,7 @@ reorg_split_calls (rtx *call_labels)
 			= INSN_INFO_ENTRY (INSN_UID (last_same_clock)).unit_mask;
 		      if (GET_MODE (insn) == TImode)
 			{
-			  rtx new_cycle_first = NEXT_INSN (insn);
+			  rtx_insn *new_cycle_first = NEXT_INSN (insn);
 			  while (!NONDEBUG_INSN_P (new_cycle_first)
 				 || GET_CODE (PATTERN (new_cycle_first)) == USE
 				 || GET_CODE (PATTERN (new_cycle_first)) == CLOBBER)
@@ -5332,11 +5333,12 @@ split_delayed_nonbranch (rtx_insn *insn)
 /* Examine if INSN is the result of splitting a load into a real load and a
    shadow, and if so, undo the transformation.  */
 static void
-undo_split_delayed_nonbranch (rtx insn)
+undo_split_delayed_nonbranch (rtx_insn *insn)
 {
   int icode = recog_memoized (insn);
   enum attr_type type;
-  rtx prev_pat, insn_pat, prev;
+  rtx prev_pat, insn_pat;
+  rtx_insn *prev;
 
   if (icode < 0)
     return;
@@ -5388,7 +5390,7 @@ static void
 conditionalize_after_sched (void)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
@@ -5432,7 +5434,7 @@ static int
 bb_earliest_end_cycle (basic_block bb, rtx ignore)
 {
   int earliest = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -5458,7 +5460,7 @@ bb_earliest_end_cycle (basic_block bb, rtx ignore)
 static void
 filter_insns_above (basic_block bb, int max_uid)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
   bool prev_ti = false;
   int prev_cycle = -1;
 
@@ -5729,7 +5731,7 @@ hwloop_optimize (hwloop_info loop)
      require.  */
   prev = NULL;
   n_execute_packets = 0;
-  for (insn = as_a <rtx_insn *> (loop->start_label);
+  for (insn = loop->start_label;
        insn != loop->loop_end;
        insn = NEXT_INSN (insn))
     {
@@ -5869,7 +5871,7 @@ hwloop_fail (hwloop_info loop)
     emit_insn_before (insn, loop->loop_end);
   else
     {
-      rtx t = loop->start_label;
+      rtx_insn *t = loop->start_label;
       while (!NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_BASIC_BLOCK)
 	t = NEXT_INSN (t);
       emit_insn_after (insn, t);
