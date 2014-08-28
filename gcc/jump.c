@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tree-pass.h"
 #include "target.h"
+#include "rtl-iter.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
@@ -68,7 +69,6 @@ static void mark_jump_label_1 (rtx, rtx, bool, bool);
 static void mark_jump_label_asm (rtx, rtx);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
-static int returnjump_p_1 (rtx *, void *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
 static void
@@ -920,39 +920,35 @@ condjump_label (const_rtx insn)
   return NULL_RTX;
 }
 
-/* Return true if INSN is a (possibly conditional) return insn.  */
-
-static int
-returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *loc;
-
-  if (x == NULL)
-    return false;
-
-  switch (GET_CODE (x))
-    {
-    case RETURN:
-    case SIMPLE_RETURN:
-    case EH_RETURN:
-      return true;
-
-    case SET:
-      return SET_IS_RETURN_P (x);
-
-    default:
-      return false;
-    }
-}
-
 /* Return TRUE if INSN is a return jump.  */
 
 int
 returnjump_p (rtx insn)
 {
-  if (!JUMP_P (insn))
-    return 0;
-  return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
+  if (JUMP_P (insn))
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	{
+	  const_rtx x = *iter;
+	  switch (GET_CODE (x))
+	    {
+	    case RETURN:
+	    case SIMPLE_RETURN:
+	    case EH_RETURN:
+	      return true;
+
+	    case SET:
+	      if (SET_IS_RETURN_P (x))
+		return true;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+  return false;
 }
 
 /* Return true if INSN is a (possibly conditional) return insn.  */

@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* jump.c: Include rtl-iter.h.
+	(returnjump_p_1): Delete.
+	(returnjump_p): Use FOR_EACH_SUBRTX rather than for_each_rtx.
+	Remove handling of null rtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.c: Include rtl-iter.h.
 	(set_paradoxical_subreg): Turn from being a for_each_rtx callback
 	to being a function that examines each subrtx itself.  Remove
