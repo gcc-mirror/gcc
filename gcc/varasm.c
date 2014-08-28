@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "asan.h"
 #include "basic-block.h"
+#include "rtl-iter.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -3485,19 +3486,17 @@ const_desc_rtx_eq (const void *a, const void *b)
   return rtx_equal_p (x->constant, y->constant);
 }
 
-/* This is the worker function for const_rtx_hash, called via for_each_rtx.  */
+/* Hash one component of a constant.  */
 
-static int
-const_rtx_hash_1 (rtx *xp, void *data)
+static hashval_t
+const_rtx_hash_1 (const_rtx x)
 {
   unsigned HOST_WIDE_INT hwi;
   enum machine_mode mode;
   enum rtx_code code;
-  hashval_t h, *hp;
-  rtx x;
+  hashval_t h;
   int i;
 
-  x = *xp;
   code = GET_CODE (x);
   mode = GET_MODE (x);
   h = (hashval_t) code * 1048573 + mode;
@@ -3543,14 +3542,6 @@ const_rtx_hash_1 (rtx *xp, void *data)
       h ^= fixed_hash (CONST_FIXED_VALUE (x));
       break;
 
-    case CONST_VECTOR:
-      {
-	int i;
-	for (i = XVECLEN (x, 0); i-- > 0; )
-	  h = h * 251 + const_rtx_hash_1 (&XVECEXP (x, 0, i), data);
-      }
-      break;
-
     case SYMBOL_REF:
       h ^= htab_hash_string (XSTR (x, 0));
       break;
@@ -3568,9 +3559,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       break;
     }
 
-  hp = (hashval_t *) data;
-  *hp = *hp * 509 + h;
-  return 0;
+  return h;
 }
 
 /* Compute a hash value for X, which should be a constant.  */
@@ -3579,7 +3568,9 @@ static hashval_t
 const_rtx_hash (rtx x)
 {
   hashval_t h = 0;
-  for_each_rtx (&x, const_rtx_hash_1, &h);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    h = h * 509 + const_rtx_hash_1 (*iter);
   return h;
 }
 
