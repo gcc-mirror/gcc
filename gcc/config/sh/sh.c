@@ -2856,11 +2856,12 @@ output_branchy_insn (enum rtx_code code, const char *templ,
       if (GET_CODE (src) == IF_THEN_ELSE && GET_CODE (XEXP (src, 0)) != code)
 	{
 	  /* Following branch not taken */
-	  operands[9] = gen_label_rtx ();
-	  emit_label_after (operands[9], next_insn);
-	  INSN_ADDRESSES_NEW (operands[9],
+	  rtx_code_label *lab = gen_label_rtx ();
+	  emit_label_after (lab, next_insn);
+	  INSN_ADDRESSES_NEW (lab,
 			      INSN_ADDRESSES (INSN_UID (next_insn))
 			      + get_attr_length (next_insn));
+	  operands[9] = lab;
 	  return templ;
 	}
       else
@@ -2877,11 +2878,12 @@ output_branchy_insn (enum rtx_code code, const char *templ,
 	    }
 	}
     }
-  operands[9] = gen_label_rtx ();
-  emit_label_after (operands[9], insn);
-  INSN_ADDRESSES_NEW (operands[9],
+  rtx_code_label *lab = gen_label_rtx ();
+  emit_label_after (lab, insn);
+  INSN_ADDRESSES_NEW (lab,
 		      INSN_ADDRESSES (INSN_UID (insn))
 		      + get_attr_length (insn));
+  operands[9] = lab;
   return templ;
 }
 
