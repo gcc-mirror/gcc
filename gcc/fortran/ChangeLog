@@ -1,3 +1,10 @@
+2014-08-29  Jeffrey Armstrong  <jeffrey.armstrong@approximatrix.com>
+
+	Backport from trunk
+	PR fortran/62215
+	* module.c (gfc_dump_module): Unlink old module file before
+	renaming new one.
+
 2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
