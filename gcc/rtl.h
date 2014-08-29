@@ -1374,7 +1374,7 @@ inline unsigned int& INSN_LOCATION (rtx insn)
   return XUINT (insn, 4);
 }
 
-inline bool INSN_HAS_LOCATION (const_rtx insn)
+inline bool INSN_HAS_LOCATION (const rtx_insn *insn)
 {
   return LOCATION_LOCUS (INSN_LOCATION (insn)) != UNKNOWN_LOCATION;
 }
