@@ -1,3 +1,8 @@
+2014-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbinit.in: Skip various inline functions in rtl.h when
+	stepping.
+
 2014-08-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR bootstrap/62301
