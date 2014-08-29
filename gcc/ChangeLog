@@ -1,3 +1,9 @@
+2014-08-29  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mep/mep-pragma.c (mep_pragma_coprocessor_subclass): Rework
+	to silence warning.
+	* config/mep/mep.c (VECTOR_TYPE_P): Remove duplicate definition.
+
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (previous_insn): Strengthen param from rtx to rtx_insn *.
