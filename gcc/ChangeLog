@@ -1,3 +1,11 @@
+2014-08-29  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from mainline
+	2014-08-27  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR other/62248
+	* config.gcc (arm*-*-*): Check --with-fpu against arm-fpus.def.
+
 2014-08-27  Guozhi Wei  <carrot@google.com>
 
 	PR target/62262
