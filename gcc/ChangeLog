@@ -1,3 +1,8 @@
+2014-08-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR bootstrap/62301
+	* rtlanal.c (rtx_referenced_p): Fix typo in LABEL_P call.
+
 2014-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62291

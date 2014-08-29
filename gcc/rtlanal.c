@@ -2849,7 +2849,7 @@ rtx_referenced_p (const_rtx x, const_rtx body)
     if (const_rtx y = *iter)
       {
 	/* Check if a label_ref Y refers to label X.  */
-	if (GET_CODE (y) == LABEL_REF && LABEL_P (y) && XEXP (y, 0) == x)
+	if (GET_CODE (y) == LABEL_REF && LABEL_P (x) && XEXP (y, 0) == x)
 	  return true;
 
 	if (rtx_equal_p (x, y))
