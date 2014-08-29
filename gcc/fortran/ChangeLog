@@ -1,3 +1,8 @@
+2014-08-30  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* module.c (gfc_dump_module): Use ISO C remove() instead of POSIX
+	unlink().
+
 2014-08-29  Jeffrey Armstrong  <jeffrey.armstrong@approximatrix.com>
 
 	PR fortran/62215
