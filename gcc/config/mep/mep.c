@@ -3445,8 +3445,6 @@ mep_expand_builtin_saveregs (void)
   return XEXP (regbuf, 0);
 }
 
-#define VECTOR_TYPE_P(t) (TREE_CODE(t) == VECTOR_TYPE)
-
 static tree
 mep_build_builtin_va_list (void)
 {
