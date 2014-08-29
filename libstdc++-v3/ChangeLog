@@ -1,3 +1,8 @@
+2014-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (complex): Define copy constructor and
+	assignment operator as defaulted. Improve Doxygen comments.
+
 2014-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/ext/random/*: Fix incorrect standard references in
