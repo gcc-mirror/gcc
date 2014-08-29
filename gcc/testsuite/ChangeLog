@@ -1,5 +1,10 @@
 2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/54002
+	* g++.dg/cpp0x/constexpr-54002.C: New.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/56991
 	* g++.dg/cpp0x/constexpr-56991.C: New.
 
