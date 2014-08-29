@@ -1809,11 +1809,12 @@ proc check_effective_target_ptr32plus { } {
 }
 
 # Return 1 if we support 32-bit or larger array and structure sizes
-# using default options, 0 otherwise.
+# using default options, 0 otherwise.  Avoid false positive on
+# targets with 20 or 24 bit address spaces.
 
 proc check_effective_target_size32plus { } {
     return [check_no_compiler_messages size32plus object {
-	char dummy[65537];
+	char dummy[16777217L];
     }]
 }
 

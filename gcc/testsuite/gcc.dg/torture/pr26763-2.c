@@ -2,7 +2,7 @@
 
 extern void abort(void);
 
-int try (char *a, int d)
+int try (char *a, __SIZE_TYPE__ d)
 {
   return a + d > a;
 }
