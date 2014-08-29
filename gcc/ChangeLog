@@ -1,3 +1,10 @@
+2014-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/62292
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Fix error
+	from previous refactoring.
+	(gimple_fold_builtin_strncpy): Likewise.
+
 2014-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/62300
