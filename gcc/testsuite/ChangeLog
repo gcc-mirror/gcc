@@ -1,3 +1,16 @@
+2014-08-29  DJ Delorie  <dj@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_size32plus):
+	Increase size to avoid false positives on 24-bit address spaces.
+	* gcc.c-torture/compile/limits-stringlit.c: Skip if msp430.
+	* gcc.dg/lto/pr54709_1.c: Fix memcpy prototype.
+	* gcc.dg/torture/pta-ptrarith-3.c: Use __SIZE_TYPE__ instead of "int".
+	* gcc.dg/torture/pr36373-10.c: Use __SIZE_TYPE__ if present.
+	* gcc.dg/torture/pr57864.c: Use __SIZE_TYPE__.
+	* gcc.dg/torture/pr26763-2.c: Use __SIZE_TYPE__ instead of "int".
+	* gcc.dg/tree-ssa/isolate-3.c: Use __SIZE_TYPE__ instead of "long unsigned int".
+	* gcc.dg/pr52549.c: Use __SIZE_TYPE__ if present.
+
 2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54002
