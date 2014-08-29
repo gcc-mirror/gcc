@@ -1440,7 +1440,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
   if (!fn)
     return false;
 
-  tree len = get_maxval_strlen (src, 1);
+  tree len = get_maxval_strlen (src, 0);
   if (!len)
     return false;
 
@@ -1477,7 +1477,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
     return false;
 
   /* Now, we must be passed a constant src ptr parameter.  */
-  tree slen = get_maxval_strlen (src, 1);
+  tree slen = get_maxval_strlen (src, 0);
   if (!slen || TREE_CODE (slen) != INTEGER_CST)
     return false;
 
