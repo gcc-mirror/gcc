@@ -1,5 +1,11 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* shrink-wrap.h (active_insn_between): Strengthen both params from
+	rtx to rtx_insn *.
+	* function.c (active_insn_between): Likewise.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* genattr.c (main): When writing out insn-attr.h, strengthen param
 	of dfa_clear_single_insn_cache from rtx to rtx_insn *.
 	* genautomata.c (output_dfa_clean_insn_cache_func): Likewise when

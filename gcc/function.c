@@ -5426,9 +5426,8 @@ set_return_jump_label (rtx returnjump)
 #if defined (HAVE_return) || defined (HAVE_simple_return)
 /* Return true if there are any active insns between HEAD and TAIL.  */
 bool
-active_insn_between (rtx head, rtx uncast_tail)
+active_insn_between (rtx_insn *head, rtx_insn *tail)
 {
-  rtx_insn *tail = safe_as_a <rtx_insn *> (uncast_tail);
   while (tail)
     {
       if (active_insn_p (tail))
