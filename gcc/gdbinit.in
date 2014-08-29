@@ -234,4 +234,24 @@ set check type off
 # These are used in accessor macros.
 # Note that this is added at the end because older gdb versions
 # do not understand the 'skip' command.
+# See https://sourceware.org/gdb/current/onlinedocs/gdb/Skipping-Over-Functions-and-Files.html
 skip file tree.h
+
+# Likewise, skip various inline functions in rtl.h.
+skip rtx_expr_list::next
+skip rtx_expr_list::element
+skip rtx_insn_list::next
+skip rtx_insn_list::insn
+skip rtx_sequence::len
+skip rtx_sequence::element
+skip rtx_sequence::insn
+skip INSN_UID
+skip PREV_INSN
+skip SET_PREV_INSN
+skip NEXT_INSN
+skip SET_NEXT_INSN
+skip BLOCK_FOR_INSN
+skip PATTERN
+skip INSN_LOCATION
+skip INSN_HAS_LOCATION
+skip JUMP_LABEL_AS_INSN
