@@ -470,8 +470,7 @@ cpp_init_special_builtins (cpp_reader *pfile)
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->type = NT_MACRO;
       hp->flags |= NODE_BUILTIN;
-      if (b->always_warn_if_redefined
-          || CPP_OPTION (pfile, warn_builtin_macro_redefined))
+      if (b->always_warn_if_redefined)
 	hp->flags |= NODE_WARN;
       hp->value.builtin = (enum cpp_builtin_type) b->value;
     }

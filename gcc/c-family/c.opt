@@ -292,7 +292,7 @@ C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++
 Warn about boolean expression compared with an integer value different from true/false
 
 Wbuiltin-macro-redefined
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined
 
 Wc90-c99-compat
