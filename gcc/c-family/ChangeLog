@@ -1,5 +1,12 @@
 2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* c.opt (Wbuiltin-macro-redefined,Wdeprecated,Wendif-labels,
+	Winvalid-pch,Wliteral-suffix,Wmissing-include-dirs,Wtrigraphs,
+	Wundef): Use CPP, Var and Init.
+	* c-opts.c (c_common_handle_option): Do not handle the above flags here.
+
+2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* c.opt (Wbuiltin-macro-redefined): Use CPP, Var and Init.
 	* c-opts.c (c_common_handle_option): Do not handle here.
 

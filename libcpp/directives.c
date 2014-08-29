@@ -213,16 +213,33 @@ skip_rest_of_line (cpp_reader *pfile)
       ;
 }
 
-/* Ensure there are no stray tokens at the end of a directive.  If
-   EXPAND is true, tokens macro-expanding to nothing are allowed.  */
+/* Helper function for check_oel.  */
+
 static void
-check_eol (cpp_reader *pfile, bool expand)
+check_eol_1 (cpp_reader *pfile, bool expand, int reason)
 {
   if (! SEEN_EOL () && (expand
 			? cpp_get_token (pfile)
 			: _cpp_lex_token (pfile))->type != CPP_EOF)
-    cpp_error (pfile, CPP_DL_PEDWARN, "extra tokens at end of #%s directive",
-	       pfile->directive->name);
+    cpp_pedwarning (pfile, reason, "extra tokens at end of #%s directive",
+		    pfile->directive->name);
+}
+
+/* Variant of check_eol used for Wendif-labels warnings.  */
+
+static void
+check_eol_endif_labels (cpp_reader *pfile)
+{
+  check_eol_1 (pfile, false, CPP_W_ENDIF_LABELS);
+}
+
+/* Ensure there are no stray tokens at the end of a directive.  If
+   EXPAND is true, tokens macro-expanding to nothing are allowed.  */
+
+static void
+check_eol (cpp_reader *pfile, bool expand)
+{
+  check_eol_1 (pfile, expand, CPP_W_NONE);
 }
 
 /* Ensure there are no stray tokens other than comments at the end of
@@ -1990,7 +2007,7 @@ do_else (cpp_reader *pfile)
 
       /* Only check EOL if was not originally skipping.  */
       if (!ifs->was_skipping && CPP_OPTION (pfile, warn_endif_labels))
-	check_eol (pfile, false);
+	check_eol_endif_labels (pfile);
     }
 }
 
@@ -2051,7 +2068,7 @@ do_endif (cpp_reader *pfile)
     {
       /* Only check EOL if was not originally skipping.  */
       if (!ifs->was_skipping && CPP_OPTION (pfile, warn_endif_labels))
-	check_eol (pfile, false);
+	check_eol_endif_labels (pfile);
 
       /* If potential control macro, we go back outside again.  */
       if (ifs->next == 0 && ifs->mi_cmacro)
