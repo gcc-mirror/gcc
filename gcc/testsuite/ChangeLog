@@ -1,3 +1,8 @@
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61484
+	* g++.dg/cpp0x/constexpr-61484.C: New.
+
 2014-08-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-1.c: Add tests for vec_xl, vec_xst,
