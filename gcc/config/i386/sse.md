@@ -321,6 +321,9 @@
 (define_mode_iterator VI8_AVX2_AVX512F
   [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
+(define_mode_iterator VI4_128_8_256
+  [V4SI V4DI])
+
 ;; All V8D* modes
 (define_mode_iterator V8FI
   [V8DF V8DI])
@@ -7948,47 +7951,548 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_mode_iterator PMOV_DST_MODE [V16QI V16HI V8SI V8HI])
+(define_mode_iterator PMOV_DST_MODE_1 [V16QI V16HI V8SI V8HI])
 (define_mode_attr pmov_src_mode
   [(V16QI "V16SI") (V16HI "V16SI") (V8SI "V8DI") (V8HI "V8DI")])
 (define_mode_attr pmov_src_lower
   [(V16QI "v16si") (V16HI "v16si") (V8SI "v8di") (V8HI "v8di")])
-(define_mode_attr pmov_suff
+(define_mode_attr pmov_suff_1
   [(V16QI "db") (V16HI "dw") (V8SI "qd") (V8HI "qw")])
 
 (define_insn "*avx512f_<code><pmov_src_lower><mode>2"
-  [(set (match_operand:PMOV_DST_MODE 0 "nonimmediate_operand" "=v,m")
-	(any_truncate:PMOV_DST_MODE
+  [(set (match_operand:PMOV_DST_MODE_1 0 "nonimmediate_operand" "=v,m")
+	(any_truncate:PMOV_DST_MODE_1
 	  (match_operand:<pmov_src_mode> 1 "register_operand" "v,v")))]
   "TARGET_AVX512F"
-  "vpmov<trunsuffix><pmov_suff>\t{%1, %0|%0, %1}"
+  "vpmov<trunsuffix><pmov_suff_1>\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "avx512f_<code><pmov_src_lower><mode>2_mask"
-  [(set (match_operand:PMOV_DST_MODE 0 "nonimmediate_operand" "=v,m")
-    (vec_merge:PMOV_DST_MODE
-      (any_truncate:PMOV_DST_MODE
+  [(set (match_operand:PMOV_DST_MODE_1 0 "nonimmediate_operand" "=v,m")
+    (vec_merge:PMOV_DST_MODE_1
+      (any_truncate:PMOV_DST_MODE_1
         (match_operand:<pmov_src_mode> 1 "register_operand" "v,v"))
-      (match_operand:PMOV_DST_MODE 2 "vector_move_operand" "0C,0")
+      (match_operand:PMOV_DST_MODE_1 2 "vector_move_operand" "0C,0")
       (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F"
-  "vpmov<trunsuffix><pmov_suff>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  "vpmov<trunsuffix><pmov_suff_1>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "avx512f_<code><pmov_src_lower><mode>2_mask_store"
-  [(set (match_operand:PMOV_DST_MODE 0 "memory_operand")
-    (vec_merge:PMOV_DST_MODE
-      (any_truncate:PMOV_DST_MODE
+  [(set (match_operand:PMOV_DST_MODE_1 0 "memory_operand")
+    (vec_merge:PMOV_DST_MODE_1
+      (any_truncate:PMOV_DST_MODE_1
         (match_operand:<pmov_src_mode> 1 "register_operand"))
       (match_dup 0)
       (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
+
+(define_insn "*avx512bw_<code>v32hiv32qi2"
+  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
+	(any_truncate:V32QI
+	    (match_operand:V32HI 1 "register_operand" "v,v")))]
+  "TARGET_AVX512BW"
+  "vpmov<trunsuffix>wb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx512bw_<code>v32hiv32qi2_mask"
+  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
+    (vec_merge:V32QI
+      (any_truncate:V32QI
+        (match_operand:V32HI 1 "register_operand" "v,v"))
+      (match_operand:V32QI 2 "vector_move_operand" "0C,0")
+      (match_operand:SI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512BW"
+  "vpmov<trunsuffix>wb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_expand "avx512bw_<code>v32hiv32qi2_mask_store"
+  [(set (match_operand:V32QI 0 "nonimmediate_operand")
+    (vec_merge:V32QI
+      (any_truncate:V32QI
+        (match_operand:V32HI 1 "register_operand"))
+      (match_dup 0)
+      (match_operand:SI 2 "register_operand")))]
+  "TARGET_AVX512BW")
+
+(define_mode_iterator PMOV_DST_MODE_2
+  [V4SI V8HI (V16QI "TARGET_AVX512BW")])
+(define_mode_attr pmov_suff_2
+  [(V16QI "wb") (V8HI "dw") (V4SI "qd")])
+
+(define_insn "*avx512vl_<code><ssedoublemodelower><mode>2"
+  [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand" "=v,m")
+	(any_truncate:PMOV_DST_MODE_2
+	    (match_operand:<ssedoublemode> 1 "register_operand" "v,v")))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_2>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_<code><ssedoublemodelower><mode>2_mask"
+  [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand" "=v,m")
+    (vec_merge:PMOV_DST_MODE_2
+      (any_truncate:PMOV_DST_MODE_2
+        (match_operand:<ssedoublemode> 1 "register_operand" "v,v"))
+      (match_operand:PMOV_DST_MODE_2 2 "vector_move_operand" "0C,0")
+      (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_2>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "<avx512>_<code><ssedoublemodelower><mode>2_mask_store"
+  [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand")
+    (vec_merge:PMOV_DST_MODE_2
+      (any_truncate:PMOV_DST_MODE_2
+        (match_operand:<ssedoublemode> 1 "register_operand"))
+      (match_dup 0)
+      (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512VL")
+
+(define_mode_iterator PMOV_SRC_MODE_3 [V4DI V2DI V8SI V4SI (V8HI "TARGET_AVX512BW")])
+(define_mode_attr pmov_dst_3
+  [(V4DI "V4QI") (V2DI "V2QI") (V8SI "V8QI") (V4SI "V4QI") (V8HI "V8QI")])
+(define_mode_attr pmov_dst_zeroed_3
+  [(V4DI "V12QI") (V2DI "V14QI") (V8SI "V8QI") (V4SI "V12QI") (V8HI "V8QI")])
+(define_mode_attr pmov_suff_3
+  [(V4DI "qb") (V2DI "qb") (V8SI "db") (V4SI "db") (V8HI "wb")])
+
+(define_insn "*avx512vl_<code><mode>v<ssescalarnum>qi2"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+    (vec_concat:V16QI
+      (any_truncate:<pmov_dst_3>
+	      (match_operand:PMOV_SRC_MODE_3 1 "register_operand" "v"))
+      (match_operand:<pmov_dst_zeroed_3> 2 "const0_operand")))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code>v2div2qi2_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (any_truncate:V2QI
+	      (match_operand:V2DI 1 "register_operand" "v"))
+      (vec_select:V14QI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)
+                   (const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)
+                   (const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2qi2_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+    (vec_concat:V16QI
+      (vec_merge:V2QI
+        (any_truncate:V2QI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2QI
+          (match_operand:V16QI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V14QI [(const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2qi2_mask_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (vec_merge:V2QI
+        (any_truncate:V2QI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2QI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V14QI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)
+                   (const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)
+                   (const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qb\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code><mode>v4qi2_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (any_truncate:V4QI
+	      (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+      (vec_select:V12QI
+        (match_dup 0)
+        (parallel [(const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)
+                   (const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v4qi2_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+    (vec_concat:V16QI
+      (vec_merge:V4QI
+        (any_truncate:V4QI
+          (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+        (vec_select:V4QI
+          (match_operand:V16QI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V12QI [(const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)
+                           (const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v4qi2_mask_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (vec_merge:V4QI
+        (any_truncate:V4QI
+          (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+        (vec_select:V4QI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V12QI
+        (match_dup 0)
+        (parallel [(const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)
+                   (const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_mode_iterator VI2_128_BW_4_256
+  [(V8HI "TARGET_AVX512BW") V8SI])
+
+(define_insn "*avx512vl_<code><mode>v8qi2_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (any_truncate:V8QI
+	      (match_operand:VI2_128_BW_4_256 1 "register_operand" "v"))
+      (vec_select:V8QI
+        (match_dup 0)
+        (parallel [(const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v8qi2_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+    (vec_concat:V16QI
+      (vec_merge:V8QI
+        (any_truncate:V8QI
+          (match_operand:VI2_128_BW_4_256 1 "register_operand" "v"))
+        (vec_select:V8QI
+          (match_operand:V16QI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V8QI [(const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v8qi2_mask_store"
+  [(set (match_operand:V16QI 0 "memory_operand" "=m")
+    (vec_concat:V16QI
+      (vec_merge:V8QI
+        (any_truncate:V8QI
+          (match_operand:VI2_128_BW_4_256 1 "register_operand" "v"))
+        (vec_select:V8QI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V8QI
+        (match_dup 0)
+        (parallel [(const_int 8) (const_int 9)
+                   (const_int 10) (const_int 11)
+                   (const_int 12) (const_int 13)
+                   (const_int 14) (const_int 15)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_3>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_mode_iterator PMOV_SRC_MODE_4 [V4DI V2DI V4SI])
+(define_mode_attr pmov_dst_4
+  [(V4DI "V4HI") (V2DI "V2HI") (V4SI "V4HI")])
+(define_mode_attr pmov_dst_zeroed_4
+  [(V4DI "V4HI") (V2DI "V6HI") (V4SI "V4HI")])
+(define_mode_attr pmov_suff_4
+  [(V4DI "qw") (V2DI "qw") (V4SI "dw")])
+
+(define_insn "*avx512vl_<code><mode>v<ssescalarnum>hi2"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+    (vec_concat:V8HI
+      (any_truncate:<pmov_dst_4>
+	      (match_operand:PMOV_SRC_MODE_4 1 "register_operand" "v"))
+      (match_operand:<pmov_dst_zeroed_4> 2 "const0_operand")))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code><mode>v4hi2_store"
+  [(set (match_operand:V8HI 0 "memory_operand" "=m")
+    (vec_concat:V8HI
+      (any_truncate:V4HI
+	      (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+      (vec_select:V4HI
+        (match_dup 0)
+        (parallel [(const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v4hi2_mask"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+    (vec_concat:V8HI
+      (vec_merge:V4HI
+        (any_truncate:V4HI
+          (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+        (vec_select:V4HI
+          (match_operand:V8HI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V4HI [(const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code><mode>v4hi2_mask_store"
+  [(set (match_operand:V8HI 0 "memory_operand" "=m")
+    (vec_concat:V8HI
+      (vec_merge:V4HI
+        (any_truncate:V4HI
+          (match_operand:VI4_128_8_256 1 "register_operand" "v"))
+        (vec_select:V4HI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V4HI
+        (match_dup 0)
+        (parallel [(const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code>v2div2hi2_store"
+  [(set (match_operand:V8HI 0 "memory_operand" "=m")
+    (vec_concat:V8HI
+      (any_truncate:V2HI
+	      (match_operand:V2DI 1 "register_operand" "v"))
+      (vec_select:V6HI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)
+                   (const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qw\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2hi2_mask"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+    (vec_concat:V8HI
+      (vec_merge:V2HI
+        (any_truncate:V2HI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2HI
+          (match_operand:V8HI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V6HI [(const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)
+                          (const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qw\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2hi2_mask_store"
+  [(set (match_operand:V8HI 0 "memory_operand" "=m")
+    (vec_concat:V8HI
+      (vec_merge:V2HI
+        (any_truncate:V2HI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2HI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V6HI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)
+                   (const_int 4) (const_int 5)
+                   (const_int 6) (const_int 7)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qw\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code>v2div2si2"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+    (vec_concat:V4SI
+      (any_truncate:V2SI
+	      (match_operand:V2DI 1 "register_operand" "v"))
+      (match_operand:V2SI 2 "const0_operand")))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qd\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_<code>v2div2si2_store"
+  [(set (match_operand:V4SI 0 "memory_operand" "=m")
+    (vec_concat:V4SI
+      (any_truncate:V2SI
+	      (match_operand:V2DI 1 "register_operand" "v"))
+      (vec_select:V2SI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qd\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2si2_mask"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+    (vec_concat:V4SI
+      (vec_merge:V2SI
+        (any_truncate:V2SI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2SI
+          (match_operand:V4SI 2 "vector_move_operand" "0C")
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 3 "register_operand" "Yk"))
+      (const_vector:V2SI [(const_int 0) (const_int 0)])))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qd\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512vl_<code>v2div2si2_mask_store"
+  [(set (match_operand:V4SI 0 "memory_operand" "=m")
+    (vec_concat:V4SI
+      (vec_merge:V2SI
+        (any_truncate:V2SI
+          (match_operand:V2DI 1 "register_operand" "v"))
+        (vec_select:V2SI
+          (match_dup 0)
+          (parallel [(const_int 0) (const_int 1)]))
+        (match_operand:QI 2 "register_operand" "Yk"))
+      (vec_select:V2SI
+        (match_dup 0)
+        (parallel [(const_int 2) (const_int 3)]))))]
+  "TARGET_AVX512VL"
+  "vpmov<trunsuffix>qd\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
 
 (define_insn "*avx512f_<code>v8div16qi2"
   [(set (match_operand:V16QI 0 "register_operand" "=v")

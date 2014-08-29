@@ -1,3 +1,62 @@
+2014-08-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386-modes.def: Add V12QI, V14QI, V6HI modes.
+	* config/i386/sse.md
+	(define_mode_iterator VI4_128_8_256): New.
+	(define_mode_iterator VI2_128_4_256): Ditto.
+	(define_mode_iterator PMOV_DST_MODE): Rename into
+	(define_mode_iterator PMOV_DST_MODE_1): this.
+	(define_insn "*avx512f_<code><pmov_src_lower><mode>2"):
+	Use PMOV_DST_MODE_1 mode iterator.
+	(define_insn "avx512f_<code><pmov_src_lower><mode>2_mask"):
+	Ditto.
+	(define_insn "avx512f_<code><pmov_src_lower><mode>2_mask"):
+	Ditto.
+	(define_insn "*avx512bw_<code>v32hiv32qi2"): New.
+	(define_insn "avx512bw_<code>v32hiv32qi2_mask"): Ditto.
+	(define_expand "avx512bw_<code>v32hiv32qi2_store_mask"): Ditto.
+	(define_mode_iterator PMOV_DST_MODE_2): New.
+	(define_insn "*avx512vl_<code><ssedoublemodelower><mode>2"): Ditto.
+	(define_insn "<avx512>_<code><ssedoublemodelower><mode>2_mask"): Ditto.
+	(define_expand "<avx512>_<code><ssedoublemodelower><mode>2_store_mask"):
+	Ditto.
+	(define_mode_iterator PMOV_SRC_MODE_3): Ditto.
+	(define_mode_attr pmov_dst_3): Ditto.
+	(define_mode_attr pmov_dst_zeroed_3): Ditto.
+	(define_mode_attr pmov_suff_3): Ditto.
+	(define_insn "*avx512vl_<code><mode>v<ssescalarnum>qi2"): Ditto.
+	(define_insn "*avx512vl_<code>v2div2qi2_store"): Ditto.
+	(define_insn "avx512vl_<code>v2div2qi2_mask"): Ditto.
+	(define_insn "avx512vl_<code>v2div2qi2_store_mask"): Ditto.
+	(define_insn "*avx512vl_<code><mode>v4qi2_store"): Ditto.
+	(define_insn "avx512vl_<code><mode>v4qi2_mask"): Ditto.
+	(define_insn "avx512vl_<code><mode>v4qi2_store_mask"): Ditto.
+	(define_insn "*avx512vl_<code><mode>v8qi2_store"): Ditto.
+	(define_insn "avx512vl_<code><mode>v8qi2_mask"): Ditto.
+	(define_insn "avx512vl_<code><mode>v8qi2_store_mask"): Ditto.
+	(define_mode_iterator PMOV_SRC_MODE_4): Ditto.
+	(define_mode_attr pmov_dst_4): Ditto.
+	(define_mode_attr pmov_dst_zeroed_4): Ditto.
+	(define_mode_attr pmov_suff_4): Ditto.
+	(define_insn "*avx512vl_<code><mode>v<ssescalarnum>hi2"): Ditto.
+	(define_insn "*avx512vl_<code><mode>v4hi2_store"): Ditto.
+	(define_insn "avx512vl_<code><mode>v4hi2_mask"): Ditto.
+	(define_insn "avx512vl_<code><mode>v4hi2_store_mask"): Ditto.
+	(define_insn "*avx512vl_<code>v2div2hi2_store"): Ditto.
+	(define_insn "avx512vl_<code>v2div2hi2_mask"): Ditto.
+	(define_insn "avx512vl_<code>v2div2hi2_store_mask"): Ditto.
+	(define_insn "*avx512vl_<code>v2div2si2"): Ditto.
+	(define_insn "*avx512vl_<code>v2div2si2_store"): Ditto.
+	(define_insn "avx512vl_<code>v2div2si2_mask"): Ditto.
+	(define_insn "avx512vl_<code>v2div2si2_store_mask"): Ditto.
+
 2014-08-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Do not allow
