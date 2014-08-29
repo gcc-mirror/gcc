@@ -395,7 +395,7 @@ print_rtx (const_rtx in_rtx)
 	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
-	    if (INSN_HAS_LOCATION (in_rtx))
+	    if (INSN_HAS_LOCATION (as_a <const rtx_insn *> (in_rtx)))
 	      {
 		expanded_location xloc = insn_location (in_rtx);
 		fprintf (outfile, " %s:%i", xloc.file, xloc.line);
