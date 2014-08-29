@@ -3039,10 +3039,9 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	    }
 	  else
 	    t = op1;
-	  insn = as_a <rtx_insn *> (
-		   gen_extend_insn (op0, t, promoted_nominal_mode,
-				    data->passed_mode, unsignedp));
-	  emit_insn (insn);
+	  rtx pat = gen_extend_insn (op0, t, promoted_nominal_mode,
+				     data->passed_mode, unsignedp);
+	  emit_insn (pat);
 	  insns = get_insns ();
 
 	  moved = true;

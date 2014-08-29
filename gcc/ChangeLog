@@ -1,3 +1,10 @@
+2014-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/62300
+	* function.c (assign_parm_setup_reg): Remove erroneous checked
+	cast to rtx_insn * on result of gen_extend_insn in favor of
+	introducing a new local rtx "pat".
+
 2014-08-29  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/mep/mep-pragma.c (mep_pragma_coprocessor_subclass): Rework
