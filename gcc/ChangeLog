@@ -1,3 +1,8 @@
+2014-08-29  DJ Delorie  <dj@redhat.com>
+
+	* expr.c (convert_move): If the target has an explicit converter,
+	use it.
+
 2014-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbinit.in: Skip various inline functions in rtl.h when
