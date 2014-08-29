@@ -175,7 +175,7 @@ define_builtin_macros_for_type_sizes (cpp_reader *pfile)
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E switch.  */
   cpp_define_formatted (pfile, "__SIZEOF_POINTER__=%d",
-			POINTER_SIZE / BITS_PER_UNIT);
+			1 << ceil_log2 ((POINTER_SIZE + BITS_PER_UNIT - 1) / BITS_PER_UNIT));
 }
 
 

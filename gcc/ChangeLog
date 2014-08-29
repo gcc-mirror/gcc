@@ -1,5 +1,27 @@
 2014-08-29  DJ Delorie  <dj@redhat.com>
 
+	* cppbuiltin.c (define_builtin_macros_for_type_sizes): Round
+	pointer size up to a power of two.
+	* defaults.h (DWARF2_ADDR_SIZE): Round up.
+	(POINTER_SIZE_UNITS): New, rounded up value.
+	* dwarf2asm.c (size_of_encoded_value): Use it.
+	(dw2_output_indirect_constant_1): Likewise.
+	* expmed.c (init_expmed_one_conv): We now know the sizes of
+	partial int modes.
+	* loop-iv.c (iv_number_of_iterations): Use precision, not size.
+	* optabs.c (expand_float): Use precision, not size.
+	(expand_fix): Likewise.
+	* simplify-rtx (simplify_unary_operation_1): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* varasm.c (assemble_addr_to_section): Round up pointer sizes.
+	(default_assemble_integer) Likewise.
+	(dump_tm_clone_pairs): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Allow partial-int modes also.
+	* var-tracking.c (adjust_mems): Allow partial-int modes also.
+	(prepare_call_arguments): Likewise.
+	* stor-layout.c (finalize_type_size): Preserve precision.
+	(layout_type): Use precision, not size.
+
 	* expr.c (convert_move): If the target has an explicit converter,
 	use it.
 

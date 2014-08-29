@@ -1141,10 +1141,12 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
 	      || GET_CODE (SUBREG_REG (tem)) == MULT
 	      || GET_CODE (SUBREG_REG (tem)) == ASHIFT)
-	  && GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
-	  && GET_MODE_SIZE (GET_MODE (tem))
-	     < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tem)))
+	  && (GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
+	      || GET_MODE_CLASS (GET_MODE (tem)) == MODE_PARTIAL_INT)
+	  && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
+	      || GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_PARTIAL_INT)
+	  && GET_MODE_PRECISION (GET_MODE (tem))
+	     < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (tem)))
 	  && subreg_lowpart_p (tem)
 	  && use_narrower_mode_test (SUBREG_REG (tem), tem))
 	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
@@ -6240,8 +6242,10 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	if (GET_MODE (link) == VOIDmode
 	    || GET_MODE (link) == BLKmode
 	    || (GET_MODE (link) != GET_MODE (x)
-		&& (GET_MODE_CLASS (GET_MODE (link)) != MODE_INT
-		    || GET_MODE_CLASS (GET_MODE (x)) != MODE_INT)))
+		&& ((GET_MODE_CLASS (GET_MODE (link)) != MODE_INT
+		     && GET_MODE_CLASS (GET_MODE (link)) != MODE_PARTIAL_INT)
+		    || (GET_MODE_CLASS (GET_MODE (x)) != MODE_INT
+			&& GET_MODE_CLASS (GET_MODE (x)) != MODE_PARTIAL_INT))))
 	  /* Can't do anything for these, if the original type mode
 	     isn't known or can't be converted.  */;
 	else if (REG_P (x))
@@ -6249,7 +6253,8 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	    cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+		     || GET_MODE_CLASS (GET_MODE (x)) == MODE_PARTIAL_INT)
 	      {
 		enum machine_mode mode = GET_MODE (x);
 
@@ -6288,7 +6293,8 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	    val = cselib_lookup (mem, GET_MODE (mem), 0, VOIDmode);
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT)
+	    else if (GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT
+		     && GET_MODE_CLASS (GET_MODE (mem)) != MODE_PARTIAL_INT)
 	      {
 		/* For non-integer stack argument see also if they weren't
 		   initialized by integers.  */
@@ -6331,7 +6337,8 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 		&& reg
 		&& REG_P (reg)
 		&& GET_MODE (reg) == mode
-		&& GET_MODE_CLASS (mode) == MODE_INT
+		&& (GET_MODE_CLASS (mode) == MODE_INT
+		    || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 		&& REG_P (x)
 		&& REGNO (x) == REGNO (reg)
 		&& GET_MODE (x) == mode

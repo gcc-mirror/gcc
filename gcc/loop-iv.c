@@ -2430,7 +2430,7 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
 
   comp_mode = iv0.extend_mode;
   mode = iv0.mode;
-  size = GET_MODE_BITSIZE (mode);
+  size = GET_MODE_PRECISION (mode);
   get_mode_bounds (mode, (cond == LE || cond == LT), comp_mode, &mmin, &mmax);
   mode_mmin = lowpart_subreg (mode, mmin, comp_mode);
   mode_mmax = lowpart_subreg (mode, mmax, comp_mode);
