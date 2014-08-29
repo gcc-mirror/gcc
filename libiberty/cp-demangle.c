@@ -713,7 +713,9 @@ d_dump (struct demangle_component *dc, int indent)
       printf ("pointer to member type\n");
       break;
     case DEMANGLE_COMPONENT_FIXED_TYPE:
-      printf ("fixed-point type\n");
+      printf ("fixed-point type, accum? %d, sat? %d\n",
+              dc->u.s_fixed.accum, dc->u.s_fixed.sat);
+      d_dump (dc->u.s_fixed.length, indent + 2)
       break;
     case DEMANGLE_COMPONENT_ARGLIST:
       printf ("argument list\n");
@@ -3875,7 +3877,6 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_FUNCTION_TYPE:
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
@@ -3918,6 +3919,11 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
       d_count_templates_scopes (num_templates, num_scopes,
 				dc->u.s_extended_operator.name);
+      break;
+
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+      d_count_templates_scopes (num_templates, num_scopes,
+                                dc->u.s_fixed.length);
       break;
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:

@@ -4343,6 +4343,11 @@ cereal::detail::InputBindingMap<cereal::JSONInputArchive>::Serializers cereal::p
 --format=gnu-v3
 _ZNSt9_Any_data9_M_accessIPZ4postISt8functionIFvvEEEvOT_EUlvE_EERS5_v
 void post<std::function<void ()> >(std::function<void ()>&&)::{lambda()#1}*& std::_Any_data::_M_access<void post<std::function<void ()> >(void post<std::function<void ()> >(std::function<void ()>&&)::{lambda()#1}*&&)::{lambda()#1}*>()
+#
+--format=auto --no-params
+_Z3xxxDFyuVb
+xxx(unsigned long long _Fract, bool volatile)
+xxx
 # https://sourceware.org/bugzilla/show_bug.cgi?id=16817
 --format=auto --no-params
 _QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z
