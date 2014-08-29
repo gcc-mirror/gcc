@@ -7518,18 +7518,18 @@
 })
 
 ;; punpcklqdq and punpckhqdq are shorter than shufpd.
-(define_insn "avx2_interleave_highv4di"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
+(define_insn "avx2_interleave_highv4di<mask_name>"
+  [(set (match_operand:V4DI 0 "register_operand" "=v")
 	(vec_select:V4DI
 	  (vec_concat:V8DI
-	    (match_operand:V4DI 1 "register_operand" "x")
-	    (match_operand:V4DI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V4DI 1 "register_operand" "v")
+	    (match_operand:V4DI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 1)
 		     (const_int 5)
 		     (const_int 3)
 		     (const_int 7)])))]
-  "TARGET_AVX2"
-  "vpunpckhqdq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
+  "vpunpckhqdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
@@ -7550,36 +7550,36 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "vec_interleave_highv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_highv2di<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=x,v")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
-	    (match_operand:V2DI 1 "register_operand" "0,x")
-	    (match_operand:V2DI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V2DI 1 "register_operand" "0,v")
+	    (match_operand:V2DI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 1)
 		     (const_int 3)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    punpckhqdq\t{%2, %0|%0, %2}
-   vpunpckhqdq\t{%2, %1, %0|%0, %1, %2}"
+   vpunpckhqdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,<mask_prefix>")
    (set_attr "mode" "TI")])
 
-(define_insn "avx2_interleave_lowv4di"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
+(define_insn "avx2_interleave_lowv4di<mask_name>"
+  [(set (match_operand:V4DI 0 "register_operand" "=v")
 	(vec_select:V4DI
 	  (vec_concat:V8DI
-	    (match_operand:V4DI 1 "register_operand" "x")
-	    (match_operand:V4DI 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V4DI 1 "register_operand" "v")
+	    (match_operand:V4DI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 0)
 		     (const_int 4)
 		     (const_int 2)
 		     (const_int 6)])))]
-  "TARGET_AVX2"
-  "vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
+  "vpunpcklqdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
@@ -7600,18 +7600,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "vec_interleave_lowv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_lowv2di<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=x,v")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
-	    (match_operand:V2DI 1 "register_operand" "0,x")
-	    (match_operand:V2DI 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V2DI 1 "register_operand" "0,v")
+	    (match_operand:V2DI 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
-   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}"
+   vpunpcklqdq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
