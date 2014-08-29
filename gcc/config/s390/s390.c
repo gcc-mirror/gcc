@@ -6030,7 +6030,7 @@ s390_split_branches (void)
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   int new_literal = 0, ret;
   rtx_insn *insn;
-  rtx pat, tmp, target;
+  rtx pat, target;
   rtx *label;
 
   /* We need correct insn addresses.  */
@@ -6076,10 +6076,10 @@ s390_split_branches (void)
       if (!flag_pic)
 	{
 	  new_literal = 1;
-	  tmp = force_const_mem (Pmode, *label);
-	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
-	  INSN_ADDRESSES_NEW (tmp, -1);
-	  annotate_constant_pool_refs (&PATTERN (tmp));
+	  rtx mem = force_const_mem (Pmode, *label);
+	  rtx_insn *set_insn = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, mem), insn);
+	  INSN_ADDRESSES_NEW (set_insn, -1);
+	  annotate_constant_pool_refs (&PATTERN (set_insn));
 
 	  target = temp_reg;
 	}
@@ -6090,9 +6090,9 @@ s390_split_branches (void)
 				   UNSPEC_LTREL_OFFSET);
 	  target = gen_rtx_CONST (Pmode, target);
 	  target = force_const_mem (Pmode, target);
-	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
-	  INSN_ADDRESSES_NEW (tmp, -1);
-	  annotate_constant_pool_refs (&PATTERN (tmp));
+	  rtx_insn *set_insn = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
+	  INSN_ADDRESSES_NEW (set_insn, -1);
+	  annotate_constant_pool_refs (&PATTERN (set_insn));
 
           target = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XEXP (target, 0),
 							cfun->machine->base_reg),
@@ -6759,8 +6759,8 @@ s390_mainpool_finish (struct constant_pool *pool)
      located in the .rodata section, so we emit it after the function.  */
   if (TARGET_CPU_ZARCH)
     {
-      rtx insn = gen_main_base_64 (base_reg, pool->label);
-      insn = emit_insn_after (insn, pool->pool_insn);
+      rtx set = gen_main_base_64 (base_reg, pool->label);
+      rtx_insn *insn = emit_insn_after (set, pool->pool_insn);
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
 
@@ -6777,8 +6777,8 @@ s390_mainpool_finish (struct constant_pool *pool)
   else if (INSN_ADDRESSES (INSN_UID (pool->emit_pool_after))
 	   + pool->size + 8 /* alignment slop */ < 4096)
     {
-      rtx insn = gen_main_base_31_small (base_reg, pool->label);
-      insn = emit_insn_after (insn, pool->pool_insn);
+      rtx set = gen_main_base_31_small (base_reg, pool->label);
+      rtx_insn *insn = emit_insn_after (set, pool->pool_insn);
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
 
@@ -6800,10 +6800,10 @@ s390_mainpool_finish (struct constant_pool *pool)
      over it, setting up the pool register at the same time.  */
   else
     {
-      rtx pool_end = gen_label_rtx ();
+      rtx_code_label *pool_end = gen_label_rtx ();
 
-      rtx insn = gen_main_base_31_large (base_reg, pool->label, pool_end);
-      insn = emit_jump_insn_after (insn, pool->pool_insn);
+      rtx pat = gen_main_base_31_large (base_reg, pool->label, pool_end);
+      rtx_insn *insn = emit_jump_insn_after (pat, pool->pool_insn);
       JUMP_LABEL (insn) = pool_end;
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);

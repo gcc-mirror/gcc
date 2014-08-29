@@ -1,5 +1,23 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* insn-addr.h (insn_addresses_new): Strengthen param "insn" from
+	rtx to rtx_insn *.
+	* config/s390/s390.c (s390_split_branches): Eliminate top-level
+	local rtx "tmp", in favor of new local rtx "mem" and rtx_insn *
+	"set_insn".
+	(s390_mainpool_finish): In three places, split out a local rtx
+	"insn" into a local rtx - "set" or "pat" - and a rtx_insn *
+	"insn".  Strengthen local "pool_end" from rtx to rtx_code_label *
+	 and split another local rtx "insn" out into rtx "pat" and
+	rtx_insn * "insn".
+	* config/sh/sh.c (output_branchy_insn): Rather than working
+	directly on operands[9], introduce local rtx_code_label *
+	variables named "lab" in two places, working on them, and then
+	assigning them to operands[9], so that the intervening operations
+	are known by the type system to be on insns.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (INSN_HAS_LOCATION): Strengthen param from const_rtx to
 	const rtx_insn *.
 
