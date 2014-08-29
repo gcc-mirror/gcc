@@ -1,5 +1,23 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* resource.h (clear_hashed_info_for_insn): Strengthen param from
+	rtx to rtx_insn *.
+	(incr_ticks_for_insn): Likewise.
+	(init_resource_info): Likewise.
+
+	* resource.c (init_resource_info): Likewise.
+	(clear_hashed_info_for_insn): Likewise.
+	(incr_ticks_for_insn): Likewise.
+
+	* reorg.c (delete_scheduled_jump): Strengthen param "insn" from
+	rtx to rtx_insn *.
+	(steal_delay_list_from_target): Use methods of "seq".
+	(try_merge_delay_insns): Use methods of "merged_insns".
+	(update_block): Strengthen param "insn" from rtx to rtx_insn *.
+	(reorg_redirect_jump): Likewise for param "jump".
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* insn-addr.h (insn_addresses_new): Strengthen param "insn" from
 	rtx to rtx_insn *.
 	* config/s390/s390.c (s390_split_branches): Eliminate top-level

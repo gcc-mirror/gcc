@@ -210,7 +210,7 @@ static rtx_code_label *find_end_label (rtx);
 static rtx_insn *emit_delay_sequence (rtx_insn *, rtx_insn_list *, int);
 static rtx_insn_list *add_to_delay_list (rtx_insn *, rtx_insn_list *);
 static rtx_insn *delete_from_delay_slot (rtx_insn *);
-static void delete_scheduled_jump (rtx);
+static void delete_scheduled_jump (rtx_insn *);
 static void note_delay_statistics (int, int);
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
 static rtx_insn_list *optimize_skip (rtx_insn *);
@@ -240,8 +240,8 @@ static rtx_insn_list *steal_delay_list_from_fallthrough (rtx_insn *, rtx,
 static void try_merge_delay_insns (rtx, rtx_insn *);
 static rtx redundant_insn (rtx, rtx_insn *, rtx);
 static int own_thread_p (rtx_insn *, rtx, int);
-static void update_block (rtx, rtx);
-static int reorg_redirect_jump (rtx, rtx);
+static void update_block (rtx_insn *, rtx);
+static int reorg_redirect_jump (rtx_insn *, rtx);
 static void update_reg_dead_notes (rtx, rtx);
 static void fix_reg_dead_note (rtx, rtx);
 static void update_reg_unused_notes (rtx, rtx);
@@ -666,7 +666,7 @@ delete_from_delay_slot (rtx_insn *insn)
    the insn that sets CC0 for it and delete it too.  */
 
 static void
-delete_scheduled_jump (rtx insn)
+delete_scheduled_jump (rtx_insn *insn)
 {
   /* Delete the insn that sets cc0 for us.  On machines without cc0, we could
      delete the insn that sets the condition code, but it is hard to find it.
@@ -1197,9 +1197,9 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
 
   /* Record the effect of the instructions that were redundant and which
      we therefore decided not to copy.  */
-  for (i = 1; i < XVECLEN (seq, 0); i++)
+  for (i = 1; i < seq->len (); i++)
     if (redundant[i])
-      update_block (XVECEXP (seq, 0, i), insn);
+      update_block (seq->insn (i), insn);
 
   /* Show the place to which we will be branching.  */
   *pnew_thread = first_active_target_insn (JUMP_LABEL_AS_INSN (seq->insn (0)));
@@ -1460,15 +1460,15 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	    {
 	      rtx_insn *new_rtx;
 
-	      update_block (XEXP (merged_insns, 0), thread);
+	      update_block (merged_insns->insn (), thread);
 	      new_rtx = delete_from_delay_slot (merged_insns->insn ());
 	      if (INSN_DELETED_P (thread))
 		thread = new_rtx;
 	    }
 	  else
 	    {
-	      update_block (XEXP (merged_insns, 0), thread);
-	      delete_related_insns (XEXP (merged_insns, 0));
+	      update_block (merged_insns->insn (), thread);
+	      delete_related_insns (merged_insns->insn ());
 	    }
 	}
 
@@ -1759,7 +1759,7 @@ own_thread_p (rtx_insn *thread, rtx label, int allow_fallthrough)
    BARRIER in relax_delay_slots.  */
 
 static void
-update_block (rtx insn, rtx where)
+update_block (rtx_insn *insn, rtx where)
 {
   /* Ignore if this was in a delay slot and it came from the target of
      a branch.  */
@@ -1778,7 +1778,7 @@ update_block (rtx insn, rtx where)
    the basic block containing the jump.  */
 
 static int
-reorg_redirect_jump (rtx jump, rtx nlabel)
+reorg_redirect_jump (rtx_insn *jump, rtx nlabel)
 {
   incr_ticks_for_insn (jump);
   return redirect_jump (jump, nlabel, 1);
