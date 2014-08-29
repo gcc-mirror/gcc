@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_simple_return
 /* In function.c.  */
 extern void emit_return_into_block (bool simple_p, basic_block bb);
-extern bool active_insn_between (rtx head, rtx tail);
+extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);
 extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 					   vec<edge> unconverted);
 extern basic_block emit_return_for_exit (edge exit_fallthru_edge,
