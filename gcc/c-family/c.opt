@@ -368,7 +368,7 @@ LangEnabledBy(C++ ObjC++,Weffc++)
 ;
 
 Wdeprecated
-C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
+C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
 Wdesignated-init
@@ -392,7 +392,7 @@ C ObjC C++ ObjC++ Var(warn_empty_body) Warning EnabledBy(Wextra)
 Warn about an empty body in an if or else statement
 
 Wendif-labels
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_endif_labels) Var(cpp_warn_endif_labels) Init(1) Warning
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
@@ -503,7 +503,7 @@ C++ ObjC++ Var(warn_invalid_offsetof) Init(1) Warning
 Warn about invalid uses of the \"offsetof\" macro
 
 Winvalid-pch
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_invalid_pch) Var(cpp_warn_invalid_pch) Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
@@ -511,7 +511,7 @@ C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization
 
 Wliteral-suffix
-C++ ObjC++ Warning
+C++ ObjC++ CPP(warn_literal_suffix) Var(cpp_warn_literal_suffix) Init(1) Warning
 Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore.
 
 Wlogical-op
@@ -583,7 +583,7 @@ C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
 ;
 
 Wmissing-include-dirs
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_missing_include_dirs) Var(cpp_warn_missing_include_dirs) Warning
 Warn about user-specified include directories that do not exist
 
 Wmissing-parameter-type
@@ -794,7 +794,7 @@ C ObjC Var(warn_traditional_conversion) Warning
 Warn of prototypes causing type conversions different from what would happen in the absence of prototype
 
 Wtrigraphs
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_trigraphs) Var(cpp_warn_trigraphs) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn if trigraphs are encountered that might affect the meaning of the program
 
 Wundeclared-selector
@@ -802,7 +802,7 @@ ObjC ObjC++ Var(warn_undeclared_selector) Warning
 Warn about @selector()s without previously declared methods
 
 Wundef
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_undef) Var(cpp_warn_undef) Warning
 Warn if an undefined macro is used in an #if directive
 
 Wuninitialized

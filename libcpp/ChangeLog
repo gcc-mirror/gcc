@@ -1,5 +1,12 @@
 2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* directives.c (check_eol_1): New.
+	(check_eol_endif_labels): New.
+	(check_eol): Call check_eol_1.
+	(do_else,do_endif): Call check_eol_endif_labels.
+
+2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* macro.c (warn_of_redefinition): Suppress warnings for builtins
 	that lack the NODE_WARN flag, unless Wbuiltin-macro-redefined.
 	(_cpp_create_definition): Use Wbuiltin-macro-redefined for
