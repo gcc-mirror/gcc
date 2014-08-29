@@ -3215,9 +3215,8 @@ get_max_insn_count (void)
    of the sequence.  */
 
 rtx_insn *
-next_insn (rtx uncast_insn)
+next_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   if (insn)
     {
       insn = NEXT_INSN (insn);
@@ -3233,9 +3232,8 @@ next_insn (rtx uncast_insn)
    of the sequence.  */
 
 rtx_insn *
-previous_insn (rtx uncast_insn)
+previous_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   if (insn)
     {
       insn = PREV_INSN (insn);

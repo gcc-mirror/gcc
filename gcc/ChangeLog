@@ -1,5 +1,17 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (previous_insn): Strengthen param from rtx to rtx_insn *.
+	(next_insn): Likewise.
+	* emit-rtl.c (next_insn): Likewise.
+	(previous_insn): Likewise.
+	* config/pa/pa.c (remove_useless_addtr_insns): Strenghten locals
+	"insn" and "next" from rtx to rtx_insn *.
+	* config/picochip/picochip.c (picochip_reorg): Likewise for locals
+	"insn", "insn1", "vliw_start",  "prologue_end_note",
+	"last_insn_in_packet".
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* shrink-wrap.h (active_insn_between): Strengthen both params from
 	rtx to rtx_insn *.
 	* function.c (active_insn_between): Likewise.

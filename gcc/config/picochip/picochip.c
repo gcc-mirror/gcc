@@ -3249,7 +3249,7 @@ reorder_var_tracking_notes (void)
 void
 picochip_reorg (void)
 {
-  rtx insn, insn1, vliw_start = NULL_RTX;
+  rtx_insn *insn, *insn1, *vliw_start = NULL;
   int vliw_insn_location = 0;
 
   /* We are freeing block_for_insn in the toplev to keep compatibility
@@ -3326,8 +3326,8 @@ picochip_reorg (void)
      of VLIW packets. */
   if (picochip_schedule_type == DFA_TYPE_SPEED)
     {
-      rtx prologue_end_note = NULL;
-      rtx last_insn_in_packet = NULL;
+      rtx_insn *prologue_end_note = NULL;
+      rtx_insn *last_insn_in_packet = NULL;
 
       for (insn = get_insns (); insn; insn = next_insn (insn))
 	{

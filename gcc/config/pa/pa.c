@@ -3296,7 +3296,7 @@ pa_output_ascii (FILE *file, const char *p, int size)
 static void
 remove_useless_addtr_insns (int check_notes)
 {
-  rtx insn;
+  rtx_insn *insn;
   static int pass = 0;
 
   /* This is fairly cheap, so always run it when optimizing.  */
@@ -3348,7 +3348,8 @@ remove_useless_addtr_insns (int check_notes)
 	 reverse the comparison & the branch to avoid add,tr insns.  */
       for (insn = get_insns (); insn; insn = next_insn (insn))
 	{
-	  rtx tmp, next;
+	  rtx tmp;
+	  rtx_insn *next;
 
 	  /* Ignore anything that isn't an INSN.  */
 	  if (! NONJUMP_INSN_P (insn))
