@@ -1,5 +1,10 @@
 2014-08-29  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfg.c (verify_gimple_assign_unary): Do not allow
+	NON_LVALUE_EXPR in gimple.
+
+2014-08-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/62292
 	* gimple-fold.c (gimple_fold_builtin_strcpy): Fix error
 	from previous refactoring.

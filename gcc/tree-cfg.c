@@ -3554,7 +3554,6 @@ verify_gimple_assign_unary (gimple stmt)
     case ABS_EXPR:
     case BIT_NOT_EXPR:
     case PAREN_EXPR:
-    case NON_LVALUE_EXPR:
     case CONJ_EXPR:
       break;
 
