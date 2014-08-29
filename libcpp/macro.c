@@ -2699,13 +2699,12 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_WARN)
     return true;
 
-  /* Suppress warnings for builtins that lack the NODE_WARN flag.  */
-  if (node->flags & NODE_BUILTIN)
-    {
-      if (!pfile->cb.user_builtin_macro
-	  || !pfile->cb.user_builtin_macro (pfile, node))
-	return false;
-    }
+  /* Suppress warnings for builtins that lack the NODE_WARN flag,
+     unless Wbuiltin-macro-redefined.  */
+  if (node->flags & NODE_BUILTIN
+      && (!pfile->cb.user_builtin_macro
+	  || !pfile->cb.user_builtin_macro (pfile, node)))
+    return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
      the other hand, must be allowed silently.  */
@@ -3181,14 +3180,14 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason = (node->flags & NODE_BUILTIN)
+          const int reason = ((node->flags & NODE_BUILTIN)
+			      && !(node->flags & NODE_WARN))
                              ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
-	  bool warned;
 
-	  warned = cpp_pedwarning_with_line (pfile, reason,
-					     pfile->directive_line, 0,
-					     "\"%s\" redefined",
-                                             NODE_NAME (node));
+	  bool warned = 
+	    cpp_pedwarning_with_line (pfile, reason,
+				      pfile->directive_line, 0,
+				      "\"%s\" redefined", NODE_NAME (node));
 
 	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,

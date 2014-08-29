@@ -610,6 +610,11 @@ do_undef (cpp_reader *pfile)
 	  if (node->flags & NODE_WARN)
 	    cpp_error (pfile, CPP_DL_WARNING,
 		       "undefining \"%s\"", NODE_NAME (node));
+	  else if ((node->flags & NODE_BUILTIN)
+		   && CPP_OPTION (pfile, warn_builtin_macro_redefined))
+	    cpp_warning_with_line (pfile, CPP_W_BUILTIN_MACRO_REDEFINED,
+				   pfile->directive_line, 0,
+				   "undefining \"%s\"", NODE_NAME (node));
 
 	  if (CPP_OPTION (pfile, warn_unused_macros))
 	    _cpp_warn_if_unused_macro (pfile, node, NULL);

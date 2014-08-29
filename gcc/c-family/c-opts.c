@@ -385,10 +385,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_num_sign_change = value;
       break;
 
-    case OPT_Wbuiltin_macro_redefined:
-      cpp_opts->warn_builtin_macro_redefined = value;
-      break;
-
     case OPT_Wc___compat:
       cpp_opts->warn_cxx_operator_names = value;
       break;

@@ -1,3 +1,8 @@
+2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wbuiltin-macro-redefined): Use CPP, Var and Init.
+	* c-opts.c (c_common_handle_option): Do not handle here.
+
 2014-08-25  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Change -std=c++1y and -std=gnu++1y to be aliases for
