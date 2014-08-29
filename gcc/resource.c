@@ -1155,7 +1155,7 @@ mark_target_live_regs (rtx_insn *insns, rtx_insn *target, struct resources *res)
    This should be invoked before the first call to mark_target_live_regs.  */
 
 void
-init_resource_info (rtx epilogue_insn)
+init_resource_info (rtx_insn *epilogue_insn)
 {
   int i;
   basic_block bb;
@@ -1275,7 +1275,7 @@ free_resource_info (void)
 /* Clear any hashed information that we have stored for INSN.  */
 
 void
-clear_hashed_info_for_insn (rtx insn)
+clear_hashed_info_for_insn (rtx_insn *insn)
 {
   struct target_info *tinfo;
 
@@ -1294,7 +1294,7 @@ clear_hashed_info_for_insn (rtx insn)
 /* Increment the tick count for the basic block that contains INSN.  */
 
 void
-incr_ticks_for_insn (rtx insn)
+incr_ticks_for_insn (rtx_insn *insn)
 {
   int b = find_basic_block (insn, MAX_DELAY_SLOT_LIVE_SEARCH);
 
