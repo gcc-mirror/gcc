@@ -1,3 +1,9 @@
+2014-08-29  Jeffrey Armstrong  <jeffrey.armstrong@approximatrix.com>
+
+	PR fortran/62215
+	* module.c (gfc_dump_module): Unlink old module file before
+	renaming new one.
+
 2014-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend_passes (expr_array):  Replace by vec template.
