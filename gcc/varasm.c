@@ -1489,7 +1489,7 @@ assemble_addr_to_section (rtx symbol, section *sec)
 {
   switch_to_section (sec);
   assemble_align (POINTER_SIZE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  assemble_integer (symbol, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
 }
 
 /* Return the numbered .ctors.N (if CONSTRUCTOR_P) or .dtors.N (if
@@ -2645,7 +2645,7 @@ default_assemble_integer (rtx x ATTRIBUTE_UNUSED,
   const char *op = integer_asm_op (size, aligned_p);
   /* Avoid GAS bugs for large values.  Specifically negative values whose
      absolute value fits in a bfd_vma, but not in a bfd_signed_vma.  */
-  if (size > UNITS_PER_WORD && size > POINTER_SIZE / BITS_PER_UNIT)
+  if (size > UNITS_PER_WORD && size > POINTER_SIZE_UNITS)
     return false;
   return op && (assemble_integer_with_op (op, x), true);
 }
@@ -5765,9 +5765,9 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
 	}
 
       assemble_integer (XEXP (DECL_RTL (src), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
       assemble_integer (XEXP (DECL_RTL (dst), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
     }
 }
 

@@ -12576,7 +12576,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
-      if (GET_MODE_CLASS (mode) != MODE_INT
+      if ((GET_MODE_CLASS (mode) != MODE_INT
+	   && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      && (mode != Pmode || mem_mode == VOIDmode)

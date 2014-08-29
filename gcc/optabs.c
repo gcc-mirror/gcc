@@ -5205,7 +5205,7 @@ expand_float (rtx to, rtx from, int unsignedp)
       rtx value;
       convert_optab tab = unsignedp ? ufloat_optab : sfloat_optab;
 
-      if (GET_MODE_SIZE (GET_MODE (from)) < GET_MODE_SIZE (SImode))
+      if (GET_MODE_PRECISION (GET_MODE (from)) < GET_MODE_PRECISION (SImode))
 	from = convert_to_mode (SImode, from, unsignedp);
 
       libfunc = convert_optab_libfunc (tab, GET_MODE (to), GET_MODE (from));
@@ -5383,7 +5383,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
      that the mode of TO is at least as wide as SImode, since those are the
      only library calls we know about.  */
 
-  if (GET_MODE_SIZE (GET_MODE (to)) < GET_MODE_SIZE (SImode))
+  if (GET_MODE_PRECISION (GET_MODE (to)) < GET_MODE_PRECISION (SImode))
     {
       target = gen_reg_rtx (SImode);
 
