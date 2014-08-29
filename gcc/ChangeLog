@@ -1,3 +1,16 @@
+2014-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62291
+	* tree-ssa-pre.c (sorted_array_from_bitmap_set): Reserve
+	exactly the vector size needed and use quick_push.
+	(phi_translate_1): Adjust comment.
+	(valid_in_sets): Remove block argument and remove pointless
+	checking of NAMEs.
+	(dependent_clean): Adjust for removal of block argument.
+	(clean): Likewise.
+	(compute_antic_aux): Likewise.
+	(compute_partial_antic_aux): Likewise.
+
 2014-08-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
