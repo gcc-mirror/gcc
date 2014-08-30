@@ -1,3 +1,8 @@
+2014-08-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_assemble_integer): Don't add PLABEL relocation
+	prefix to function labels when generating fast indirect calls.
+
 2014-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/62304
