@@ -3217,7 +3217,12 @@ pa_assemble_integer (rtx x, unsigned int size, int aligned_p)
       && aligned_p
       && function_label_operand (x, VOIDmode))
     {
-      fputs (size == 8? "\t.dword\tP%" : "\t.word\tP%", asm_out_file);
+      fputs (size == 8? "\t.dword\t" : "\t.word\t", asm_out_file);
+
+      /* We don't want an OPD when generating fast indirect calls.  */
+      if (!TARGET_FAST_INDIRECT_CALLS)
+	fputs ("P%", asm_out_file);
+
       output_addr_const (asm_out_file, x);
       fputc ('\n', asm_out_file);
       return true;
