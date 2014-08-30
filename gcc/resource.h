@@ -44,7 +44,7 @@ enum mark_resource_type
   MARK_SRC_DEST_CALL = 1
 };
 
-extern void mark_target_live_regs (rtx_insn *, rtx_insn *, struct resources *);
+extern void mark_target_live_regs (rtx_insn *, rtx, struct resources *);
 extern void mark_set_resources (rtx, struct resources *, int,
 				enum mark_resource_type);
 extern void mark_referenced_resources (rtx, struct resources *, bool);
