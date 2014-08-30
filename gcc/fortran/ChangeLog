@@ -1,3 +1,11 @@
+2014-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62278
+	PR fortran/44735
+	PR fortran/60593
+	* dependency.c (gfc_check_dependency): Allow for optimizations
+	in the pointer-alias check.
+
 2014-08-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* module.c (gfc_dump_module): Use ISO C remove() instead of POSIX
