@@ -1,3 +1,7 @@
+2014-08-30  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/20140828-1.c: New testcase.
+
 2014-08-29  DJ Delorie  <dj@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_size32plus):
