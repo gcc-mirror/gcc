@@ -81,7 +81,7 @@ static void update_live_status (rtx, const_rtx, void *);
 static int find_basic_block (rtx, int);
 static rtx_insn *next_insn_no_annul (rtx_insn *);
 static rtx_insn *find_dead_or_set_registers (rtx_insn *, struct resources*,
-					     rtx_insn **, int, struct resources,
+					     rtx *, int, struct resources,
 					     struct resources);
 
 /* Utility function called from mark_target_live_regs via note_stores.
@@ -422,19 +422,20 @@ mark_referenced_resources (rtx x, struct resources *res,
 
 static rtx_insn *
 find_dead_or_set_registers (rtx_insn *target, struct resources *res,
-			    rtx_insn **jump_target, int jump_count,
+			    rtx *jump_target, int jump_count,
 			    struct resources set, struct resources needed)
 {
   HARD_REG_SET scratch;
-  rtx_insn *insn, *next;
+  rtx_insn *insn;
+  rtx_insn *next_insn;
   rtx_insn *jump_insn = 0;
   int i;
 
-  for (insn = target; insn; insn = next)
+  for (insn = target; insn; insn = next_insn)
     {
       rtx_insn *this_jump_insn = insn;
 
-      next = NEXT_INSN (insn);
+      next_insn = NEXT_INSN (insn);
 
       /* If this instruction can throw an exception, then we don't
 	 know where we might end up next.  That means that we have to
@@ -497,14 +498,16 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 	      if (any_uncondjump_p (this_jump_insn)
 		  || ANY_RETURN_P (PATTERN (this_jump_insn)))
 		{
-		  next = JUMP_LABEL_AS_INSN (this_jump_insn);
-		  if (ANY_RETURN_P (next))
-		    next = NULL;
+		  rtx lab_or_return = JUMP_LABEL (this_jump_insn);
+		  if (ANY_RETURN_P (lab_or_return))
+		    next_insn = NULL;
+		  else
+		    next_insn = as_a <rtx_insn *> (lab_or_return);
 		  if (jump_insn == 0)
 		    {
 		      jump_insn = insn;
 		      if (jump_target)
-			*jump_target = JUMP_LABEL_AS_INSN (this_jump_insn);
+			*jump_target = JUMP_LABEL (this_jump_insn);
 		    }
 		}
 	      else if (any_condjump_p (this_jump_insn))
@@ -572,7 +575,7 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 		    find_dead_or_set_registers (JUMP_LABEL_AS_INSN (this_jump_insn),
 						&target_res, 0, jump_count,
 						target_set, needed);
-		  find_dead_or_set_registers (next,
+		  find_dead_or_set_registers (next_insn,
 					      &fallthrough_res, 0, jump_count,
 					      set, needed);
 		  IOR_HARD_REG_SET (fallthrough_res.regs, target_res.regs);
@@ -880,26 +883,30 @@ return_insn_p (const_rtx insn)
    init_resource_info () was invoked before we are called.  */
 
 void
-mark_target_live_regs (rtx_insn *insns, rtx_insn *target, struct resources *res)
+mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resources *res)
 {
   int b = -1;
   unsigned int i;
   struct target_info *tinfo = NULL;
   rtx_insn *insn;
   rtx jump_insn = 0;
-  rtx_insn *jump_target;
+  rtx jump_target;
   HARD_REG_SET scratch;
   struct resources set, needed;
 
   /* Handle end of function.  */
-  if (target == 0 || ANY_RETURN_P (target))
+  if (target_maybe_return == 0 || ANY_RETURN_P (target_maybe_return))
     {
       *res = end_of_function_needs;
       return;
     }
 
+  /* We've handled the case of RETURN/SIMPLE_RETURN; we should now have an
+     instruction.  */
+  rtx_insn *target = as_a <rtx_insn *> (target_maybe_return);
+
   /* Handle return insn.  */
-  else if (return_insn_p (target))
+  if (return_insn_p (target))
     {
       *res = end_of_function_needs;
       mark_referenced_resources (target, res, false);
