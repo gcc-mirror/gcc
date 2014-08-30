@@ -1,3 +1,7 @@
+2014-08-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2014-08-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/complex (complex): Define copy constructor and
