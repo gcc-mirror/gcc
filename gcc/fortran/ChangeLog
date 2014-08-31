@@ -1,3 +1,13 @@
+2014-08-31  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_build_builtin_function_decls): Add
+	may_require_tmp dummy argument.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get,
+	conv_caf_send): Handle may_require_tmp argument.
+	(gfc_conv_intrinsic_function): Update call.
+	* gfortran.texi (_gfortran_caf_send, _gfortran_caf_get,
+	_gfortran_caf_sendget): Update interface description.
+
 2014-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	* trans.h (gfc_caf_get_image_index,

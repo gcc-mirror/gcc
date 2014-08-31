@@ -114,12 +114,12 @@ void _gfortran_caf_co_max (gfc_descriptor_t *, int, int *, char *,
 			   int, int);
 
 void _gfortran_caf_get (caf_token_t, size_t, int, gfc_descriptor_t *,
-                        caf_vector_t *, gfc_descriptor_t *, int, int);
+                        caf_vector_t *, gfc_descriptor_t *, int, int, bool);
 void _gfortran_caf_send (caf_token_t, size_t, int, gfc_descriptor_t *,
-			 caf_vector_t *, gfc_descriptor_t *, int, int);
+			 caf_vector_t *, gfc_descriptor_t *, int, int, bool);
 void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
 			    caf_vector_t *, caf_token_t, size_t, int,
-			    gfc_descriptor_t *, caf_vector_t *, int, int);
+			    gfc_descriptor_t *, caf_vector_t *, int, int, bool);
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);

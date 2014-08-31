@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "trans-array.h"
+#include "dependency.h"	/* For CAF array alias analysis.  */
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "tree-nested.h"
@@ -1086,7 +1087,8 @@ conv_caf_vector_subscript (stmtblock_t *block, tree desc, gfc_array_ref *ar)
 /* Get data from a remote coarray.  */
 
 static void
-gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
+gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
+			    tree may_require_tmp)
 {
   gfc_expr *array_expr;
   gfc_se argse;
@@ -1193,9 +1195,13 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
   image_index = gfc_caf_get_image_index (&se->pre, array_expr, caf_decl);
   gfc_get_caf_token_offset (&token, &offset, caf_decl, argse.expr, array_expr);
 
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 8,
+  /* No overlap possible as we have generated a temporary.  */
+  if (lhs == NULL_TREE)
+    may_require_tmp = boolean_false_node;
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 9,
 			     token, offset, image_index, argse.expr, vec,
-			     dst_var, kind, lhs_kind);
+			     dst_var, kind, lhs_kind, may_require_tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   if (se->ss)
@@ -1215,6 +1221,7 @@ conv_caf_send (gfc_code *code) {
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
+  tree may_require_tmp;
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
 
@@ -1222,6 +1229,8 @@ conv_caf_send (gfc_code *code) {
 
   lhs_expr = code->ext.actual->expr;
   rhs_expr = code->ext.actual->next->expr;
+  may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, false) == 0
+		    ? boolean_false_node : boolean_true_node;
   gfc_init_block (&block);
 
   /* LHS.  */
@@ -1275,7 +1284,8 @@ conv_caf_send (gfc_code *code) {
     {
       gcc_assert (gfc_is_coindexed (rhs_expr));
       gfc_init_se (&rhs_se, NULL);
-      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind);
+      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind,
+				  may_require_tmp);
       gfc_add_block_to_block (&block, &rhs_se.pre);
       gfc_add_block_to_block (&block, &rhs_se.post);
       gfc_add_block_to_block (&block, &lhs_se.post);
@@ -1342,9 +1352,9 @@ conv_caf_send (gfc_code *code) {
   rhs_kind = build_int_cst (integer_type_node, rhs_expr->ts.kind);
 
   if (!gfc_is_coindexed (rhs_expr))
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 8, token,
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 9, token,
 			     offset, image_index, lhs_se.expr, vec,
-			     rhs_se.expr, lhs_kind, rhs_kind);
+			     rhs_se.expr, lhs_kind, rhs_kind, may_require_tmp);
   else
     {
       tree rhs_token, rhs_offset, rhs_image_index;
@@ -1355,10 +1365,11 @@ conv_caf_send (gfc_code *code) {
       rhs_image_index = gfc_caf_get_image_index (&block, rhs_expr, caf_decl);
       gfc_get_caf_token_offset (&rhs_token, &rhs_offset, caf_decl, rhs_se.expr,
 				rhs_expr);
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 12,
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 13,
 				 token, offset, image_index, lhs_se.expr, vec,
 				 rhs_token, rhs_offset, rhs_image_index,
-				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind);
+				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind,
+				 may_require_tmp);
     }
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
@@ -7383,7 +7394,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_CAF_GET:
-      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE);
+      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE, NULL_TREE);
       break;
 
     case GFC_ISYM_CMPLX:
