@@ -1,3 +1,9 @@
+2014-08-31  Fritz Reese  <Reese-Fritz@zai.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62309
+	* gcc/testsuite/gfortran.dg/auto_save_2.f90: New.
+
 2014-08-31  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_lib_comm_1.f90: New.
