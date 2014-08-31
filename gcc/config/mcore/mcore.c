@@ -122,9 +122,9 @@ static bool       mcore_print_operand_punct_valid_p (unsigned char code);
 static void       mcore_unique_section	        (tree, int);
 static void mcore_encode_section_info		(tree, rtx, int);
 static const char *mcore_strip_name_encoding	(const char *);
-static int        mcore_const_costs            	(rtx, RTX_CODE);
-static int        mcore_and_cost               	(rtx);
-static int        mcore_ior_cost               	(rtx);
+static int        mcore_const_costs             (rtx, RTX_CODE);
+static int        mcore_and_cost                (rtx);
+static int        mcore_ior_cost                (rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int,
 						 int *, bool);
 static void       mcore_external_libcall	(rtx);

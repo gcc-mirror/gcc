@@ -1,3 +1,7 @@
+2014-09-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mcore/mcore.c (try_constant_tricks): Fix declaration.
+
 2014-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/generic.texi (Deficiencies): Add note on exemplary mistakes.
