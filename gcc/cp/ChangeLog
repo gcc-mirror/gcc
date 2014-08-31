@@ -1,3 +1,9 @@
+2014-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62302
+	* optimize.c (cdtor_comdat_group): Just look at the
+	DECL_ASSEMBLER_NAME of the 'tors.
+
 2014-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52892
