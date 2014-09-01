@@ -2715,10 +2715,6 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  else
 	    x = p;
 
-	  y = build3 (COMPONENT_REF, TREE_TYPE (field),
-		      root->frame_decl, field, NULL_TREE);
-	  stmt = gimple_build_assign (y, x);
-	  gimple_seq_add_stmt (&stmt_list, stmt);
 	  /* If the assignment is from a non-register the stmt is
 	     not valid gimple.  Make it so by using a temporary instead.  */
 	  if (!is_gimple_reg (x)
@@ -2726,8 +2722,12 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	    {
 	      gimple_stmt_iterator gsi = gsi_last (stmt_list);
 	      x = init_tmp_var (root, x, &gsi);
-	      gimple_assign_set_rhs1 (stmt, x);
 	    }
+
+	  y = build3 (COMPONENT_REF, TREE_TYPE (field),
+		      root->frame_decl, field, NULL_TREE);
+	  stmt = gimple_build_assign (y, x);
+	  gimple_seq_add_stmt (&stmt_list, stmt);
 	}
     }
 
@@ -2897,7 +2897,7 @@ unnest_nesting_tree_1 (struct nesting_info *root)
   if (node->origin)
     {
        node->unnest ();
-       cgraph_finalize_function (root->context, true);
+       cgraph_node::finalize_function (root->context, true);
     }
 }
 

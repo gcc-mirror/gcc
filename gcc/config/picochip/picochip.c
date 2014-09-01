@@ -98,9 +98,9 @@ unsigned int picochip_function_arg_boundary (enum machine_mode mode,
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
-int picochip_sched_adjust_cost (rtx insn, rtx link,
-				       rtx dep_insn, int cost);
-int picochip_sched_reorder (FILE * file, int verbose, rtx * ready,
+int picochip_sched_adjust_cost (rtx_insn *insn, rtx link,
+				rtx_insn *dep_insn, int cost);
+int picochip_sched_reorder (FILE * file, int verbose, rtx_insn ** ready,
 				   int *n_readyp, int clock);
 
 void picochip_init_builtins (void);
@@ -164,7 +164,7 @@ static int picochip_vliw_continuation = 0;
    between final_prescan_insn and functions such as asm_output_opcode,
    and picochip_get_vliw_alu_id (which are otherwise unable to determine the
    current instruction. */
-static rtx picochip_current_prescan_insn;
+static rtx_insn *picochip_current_prescan_insn;
 
 static bool picochip_is_delay_slot_pending = 0;
 
@@ -3177,8 +3177,8 @@ reorder_var_tracking_notes (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next, last_insn = NULL_RTX;
-      rtx queue = NULL_RTX;
+      rtx_insn *insn, *next, *last_insn = NULL;
+      rtx_insn *queue = NULL;
 
       /* Iterate through the bb and find the last non-debug insn */
       for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = NEXT_INSN(insn))
@@ -3198,7 +3198,7 @@ reorder_var_tracking_notes (void)
             {
               while (queue)
                 {
-                  rtx next_queue = PREV_INSN (queue);
+                  rtx_insn *next_queue = PREV_INSN (queue);
                   SET_PREV_INSN (NEXT_INSN(insn)) = queue;
                   SET_NEXT_INSN(queue) = NEXT_INSN(insn);
                   SET_PREV_INSN(queue) = insn;
@@ -3215,7 +3215,7 @@ reorder_var_tracking_notes (void)
                 {
                   while (queue)
                     {
-                      rtx next_queue = PREV_INSN (queue);
+                      rtx_insn *next_queue = PREV_INSN (queue);
                       SET_NEXT_INSN (PREV_INSN(insn)) = queue;
                       SET_PREV_INSN (queue) = PREV_INSN(insn);
                       SET_PREV_INSN (insn) = queue;
@@ -3226,7 +3226,7 @@ reorder_var_tracking_notes (void)
             }
           else if (NOTE_P (insn))
             {
-               rtx prev = PREV_INSN (insn);
+               rtx_insn *prev = PREV_INSN (insn);
                SET_PREV_INSN (next) = prev;
                SET_NEXT_INSN (prev) = next;
                /* Ignore call_arg notes. They are expected to be just after the
@@ -3249,7 +3249,7 @@ reorder_var_tracking_notes (void)
 void
 picochip_reorg (void)
 {
-  rtx insn, insn1, vliw_start = NULL_RTX;
+  rtx_insn *insn, *insn1, *vliw_start = NULL;
   int vliw_insn_location = 0;
 
   /* We are freeing block_for_insn in the toplev to keep compatibility
@@ -3326,8 +3326,8 @@ picochip_reorg (void)
      of VLIW packets. */
   if (picochip_schedule_type == DFA_TYPE_SPEED)
     {
-      rtx prologue_end_note = NULL;
-      rtx last_insn_in_packet = NULL;
+      rtx_insn *prologue_end_note = NULL;
+      rtx_insn *last_insn_in_packet = NULL;
 
       for (insn = get_insns (); insn; insn = next_insn (insn))
 	{
@@ -3435,9 +3435,9 @@ picochip_get_vliw_alu_id (void)
 
 /* Reset any information about the current VLIW packing status. */
 static void
-picochip_reset_vliw (rtx insn)
+picochip_reset_vliw (rtx_insn *insn)
 {
-  rtx local_insn = insn;
+  rtx_insn *local_insn = insn;
 
   /* Nothing to do if VLIW scheduling isn't being used. */
   if (picochip_schedule_type != DFA_TYPE_SPEED)
@@ -3507,7 +3507,7 @@ picochip_reset_vliw (rtx insn)
 
 int
 picochip_sched_reorder (FILE * file, int verbose,
-			rtx * ready ATTRIBUTE_UNUSED,
+			rtx_insn ** ready ATTRIBUTE_UNUSED,
 			int *n_readyp ATTRIBUTE_UNUSED, int clock)
 {
 
@@ -3535,7 +3535,8 @@ picochip_sched_issue_rate (void)
 /* Adjust the scheduling cost between the two given instructions,
    which have the given dependency. */
 int
-picochip_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+picochip_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
+			    int cost)
 {
 
   if (TARGET_DEBUG)
@@ -3873,10 +3874,10 @@ picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 }
 
 void
-picochip_final_prescan_insn (rtx insn, rtx * opvec ATTRIBUTE_UNUSED,
+picochip_final_prescan_insn (rtx_insn *insn, rtx * opvec ATTRIBUTE_UNUSED,
 			     int num_operands ATTRIBUTE_UNUSED)
 {
-  rtx local_insn;
+  rtx_insn *local_insn;
 
   picochip_current_prescan_insn = insn;
 

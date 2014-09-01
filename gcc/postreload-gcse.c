@@ -860,7 +860,7 @@ compute_hash_table (void)
 static bool
 reg_killed_on_edge (rtx reg, edge e)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && reg_set_p (reg, insn))
@@ -877,7 +877,7 @@ reg_killed_on_edge (rtx reg, edge e)
 static bool
 reg_used_on_edge (rtx reg, edge e)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && reg_overlap_mentioned_p (reg, PATTERN (insn)))

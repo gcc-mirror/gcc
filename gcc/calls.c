@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "except.h"
 #include "dbgcnt.h"
+#include "rtl-iter.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -1696,7 +1697,7 @@ static struct
   vec<rtx> cache;
 } internal_arg_pointer_exp_state;
 
-static rtx internal_arg_pointer_based_exp (rtx, bool);
+static rtx internal_arg_pointer_based_exp (const_rtx, bool);
 
 /* Helper function for internal_arg_pointer_based_exp.  Scan insns in
    the tail call sequence, starting with first insn that hasn't been
@@ -1744,28 +1745,13 @@ internal_arg_pointer_based_exp_scan (void)
   internal_arg_pointer_exp_state.scan_start = scan_start;
 }
 
-/* Helper function for internal_arg_pointer_based_exp, called through
-   for_each_rtx.  Return 1 if *LOC is a register based on
-   crtl->args.internal_arg_pointer.  Return -1 if *LOC is not based on it
-   and the subexpressions need not be examined.  Otherwise return 0.  */
-
-static int
-internal_arg_pointer_based_exp_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  if (REG_P (*loc) && internal_arg_pointer_based_exp (*loc, false) != NULL_RTX)
-    return 1;
-  if (MEM_P (*loc))
-    return -1;
-  return 0;
-}
-
 /* Compute whether RTL is based on crtl->args.internal_arg_pointer.  Return
    NULL_RTX if RTL isn't based on it, a CONST_INT offset if RTL is based on
    it with fixed offset, or PC if this is with variable or unknown offset.
    TOPLEVEL is true if the function is invoked at the topmost level.  */
 
 static rtx
-internal_arg_pointer_based_exp (rtx rtl, bool toplevel)
+internal_arg_pointer_based_exp (const_rtx rtl, bool toplevel)
 {
   if (CONSTANT_P (rtl))
     return NULL_RTX;
@@ -1799,8 +1785,15 @@ internal_arg_pointer_based_exp (rtx rtl, bool toplevel)
       return NULL_RTX;
     }
 
-  if (for_each_rtx (&rtl, internal_arg_pointer_based_exp_1, NULL))
-    return pc_rtx;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, rtl, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && internal_arg_pointer_based_exp (x, false) != NULL_RTX)
+	return pc_rtx;
+      if (MEM_P (x))
+	iter.skip_subrtxes ();
+    }
 
   return NULL_RTX;
 }
@@ -2406,7 +2399,7 @@ expand_call (tree exp, rtx target, int ignore)
   preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
   if (fndecl)
     {
-      struct cgraph_rtl_info *i = cgraph_rtl_info (fndecl);
+      struct cgraph_rtl_info *i = cgraph_node::rtl_info (fndecl);
       /* Without automatic stack alignment, we can't increase preferred
 	 stack boundary.  With automatic stack alignment, it is
 	 unnecessary since unless we can guarantee that all callers will

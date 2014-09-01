@@ -453,7 +453,8 @@ score_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
                        HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
                        tree function)
 {
-  rtx this_rtx, temp1, insn, fnaddr;
+  rtx this_rtx, temp1, fnaddr;
+  rtx_insn *insn;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
@@ -1477,7 +1478,7 @@ score_prologue (void)
 
   if (size > 0)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       if (size >= -32768 && size <= 32767)
         EMIT_PL (emit_insn (gen_add3_insn (stack_pointer_rtx,

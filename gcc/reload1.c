@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "emit-rtl.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
@@ -2486,34 +2487,33 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
     }
 }
 
-/* Called through for_each_rtx, this function examines every reg that occurs
-   in PX and adjusts the costs for its elimination which are gathered by IRA.
-   DATA is the insn in which PX occurs.  We do not recurse into MEM
-   expressions.  */
+/* This function examines every reg that occurs in X and adjusts the
+   costs for its elimination which are gathered by IRA.  INSN is the
+   insn in which X occurs.  We do not recurse into MEM expressions.  */
 
-static int
-note_reg_elim_costly (rtx *px, void *data)
+static void
+note_reg_elim_costly (const_rtx x, rtx insn)
 {
-  rtx insn = (rtx)data;
-  rtx x = *px;
-
-  if (MEM_P (x))
-    return -1;
-
-  if (REG_P (x)
-      && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && reg_equiv_init (REGNO (x))
-      && reg_equiv_invariant (REGNO (x)))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
     {
-      rtx t = reg_equiv_invariant (REGNO (x));
-      rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
-      int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
-      int freq = REG_FREQ_FROM_BB (elim_bb);
+      const_rtx x = *iter;
+      if (MEM_P (x))
+	iter.skip_subrtxes ();
+      else if (REG_P (x)
+	       && REGNO (x) >= FIRST_PSEUDO_REGISTER
+	       && reg_equiv_init (REGNO (x))
+	       && reg_equiv_invariant (REGNO (x)))
+	{
+	  rtx t = reg_equiv_invariant (REGNO (x));
+	  rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
+	  int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
+	  int freq = REG_FREQ_FROM_BB (elim_bb);
 
-      if (cost != 0)
-	ira_adjust_equiv_reg_cost (REGNO (x), -cost * freq);
+	  if (cost != 0)
+	    ira_adjust_equiv_reg_cost (REGNO (x), -cost * freq);
+	}
     }
-  return 0;
 }
 
 /* Scan X and replace any eliminable registers (such as fp) with a
@@ -2888,7 +2888,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       if (for_costs
 	  && memory_address_p (GET_MODE (x), XEXP (x, 0))
 	  && !memory_address_p (GET_MODE (x), new_rtx))
-	for_each_rtx (&XEXP (x, 0), note_reg_elim_costly, insn);
+	note_reg_elim_costly (XEXP (x, 0), insn);
 
       return replace_equiv_address_nv (x, new_rtx);
 
@@ -3732,7 +3732,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 	  if (old_set && recog_data.operand_loc[i] == &SET_SRC (old_set))
 	    is_set_src = true;
 	  if (is_set_src && !sets_reg_p)
-	    note_reg_elim_costly (&SET_SRC (old_set), insn);
+	    note_reg_elim_costly (SET_SRC (old_set), insn);
 	  in_plus = false;
 	  if (plus_src && sets_reg_p
 	      && (recog_data.operand_loc[i] == &XEXP (plus_src, 0)
@@ -3909,16 +3909,15 @@ set_initial_eh_label_offset (rtx label)
 static void
 set_initial_label_offsets (void)
 {
-  rtx x;
   memset (offsets_known_at, 0, num_labels);
 
-  for (x = forced_labels; x; x = XEXP (x, 1))
-    if (XEXP (x, 0))
-      set_label_offsets (XEXP (x, 0), NULL, 1);
+  for (rtx_insn_list *x = forced_labels; x; x = x->next ())
+    if (x->insn ())
+      set_label_offsets (x->insn (), NULL, 1);
 
-  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
-    if (XEXP (x, 0))
-      set_label_offsets (XEXP (x, 0), NULL, 1);
+  for (rtx_insn_list *x = nonlocal_goto_handler_labels; x; x = x->next ())
+    if (x->insn ())
+      set_label_offsets (x->insn (), NULL, 1);
 
   for_each_eh_label (set_initial_eh_label_offset);
 }
@@ -4574,7 +4573,6 @@ reload_as_needed (int live_known)
 #if defined (AUTO_INC_DEC)
   int i;
 #endif
-  rtx x;
   rtx_note *marker;
 
   memset (spill_reg_rtx, 0, sizeof spill_reg_rtx);
@@ -4663,7 +4661,6 @@ reload_as_needed (int live_known)
 	  if (n_reloads > 0)
 	    {
 	      rtx_insn *next = NEXT_INSN (insn);
-	      rtx p;
 
 	      /* ??? PREV can get deleted by reload inheritance.
 		 Work around this by emitting a marker note.  */
@@ -4694,7 +4691,7 @@ reload_as_needed (int live_known)
 		fixup_eh_region_note (insn, prev, next);
 
 	      /* Adjust the location of REG_ARGS_SIZE.  */
-	      p = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+	      rtx p = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
 	      if (p)
 		{
 		  remove_note (insn, p);
@@ -4706,7 +4703,9 @@ reload_as_needed (int live_known)
 		 we have generated are valid.  If not, give an error
 		 and delete them.  */
 	      if (asm_noperands (PATTERN (insn)) >= 0)
-		for (p = NEXT_INSN (prev); p != next; p = NEXT_INSN (p))
+		for (rtx_insn *p = NEXT_INSN (prev);
+		     p != next;
+		     p = NEXT_INSN (p))
 		  if (p != insn && INSN_P (p)
 		      && GET_CODE (PATTERN (p)) != USE
 		      && (recog_memoized (p) < 0
@@ -4733,7 +4732,7 @@ reload_as_needed (int live_known)
 
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
-	  for (x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
+	  for (rtx_insn *x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
 	    if (NONJUMP_INSN_P (x) && GET_CODE (PATTERN (x)) == CLOBBER)
 	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
 
@@ -4765,7 +4764,7 @@ reload_as_needed (int live_known)
 		      rtx reload_reg = rld[i].reg_rtx;
 		      enum machine_mode mode = GET_MODE (reload_reg);
 		      int n = 0;
-		      rtx p;
+		      rtx_insn *p;
 
 		      for (p = PREV_INSN (old_next); p != prev; p = PREV_INSN (p))
 			{
@@ -4847,7 +4846,8 @@ reload_as_needed (int live_known)
 			  if (TEST_HARD_REG_BIT (reg_reloaded_valid,
 						 in_hard_regno))
 			    {
-			      for (x = old_prev ? NEXT_INSN (old_prev) : insn;
+			      for (rtx_insn *x = (old_prev ?
+						  NEXT_INSN (old_prev) : insn);
 				   x != old_next;
 				   x = NEXT_INSN (x))
 				if (x == reg_reloaded_insn[in_hard_regno])
@@ -4875,7 +4875,7 @@ reload_as_needed (int live_known)
 	  /* If a pseudo that got a hard register is auto-incremented,
 	     we must purge records of copying it into pseudos without
 	     hard registers.  */
-	  for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
+	  for (rtx x = REG_NOTES (insn); x; x = XEXP (x, 1))
 	    if (REG_NOTE_KIND (x) == REG_INC)
 	      {
 		/* See if this pseudo reg was reloaded in this insn.
@@ -8841,7 +8841,6 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
   int k;
   int n_occurrences;
   int n_inherited = 0;
-  rtx i1;
   rtx substed;
   unsigned regno;
   int nregs;
@@ -8888,7 +8887,7 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
     n_occurrences += count_occurrences (PATTERN (insn),
 					eliminate_regs (substed, VOIDmode,
 							NULL_RTX), 0);
-  for (i1 = reg_equiv_alt_mem_list (REGNO (reg)); i1; i1 = XEXP (i1, 1))
+  for (rtx i1 = reg_equiv_alt_mem_list (REGNO (reg)); i1; i1 = XEXP (i1, 1))
     {
       gcc_assert (!rtx_equal_p (XEXP (i1, 0), substed));
       n_occurrences += count_occurrences (PATTERN (insn), XEXP (i1, 0), 0);
@@ -8907,7 +8906,7 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
      and we're within the same basic block, then the value can only
      pass through the reload reg and end up here.
      Otherwise, give up--return.  */
-  for (i1 = NEXT_INSN (output_reload_insn);
+  for (rtx_insn *i1 = NEXT_INSN (output_reload_insn);
        i1 != insn; i1 = NEXT_INSN (i1))
     {
       if (NOTE_INSN_BASIC_BLOCK_P (i1))

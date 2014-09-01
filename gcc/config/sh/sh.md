@@ -4579,6 +4579,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+       if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4819,6 +4825,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+       if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4912,6 +4924,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -5011,6 +5029,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -5085,6 +5109,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_lshrsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -5279,6 +5309,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_lshrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -9960,7 +9996,8 @@ label:
   sh_expand_epilogue (true);
   if (TARGET_SHCOMPACT)
     {
-      rtx insn, set;
+      rtx_insn *insn;
+      rtx set;
 
       /* If epilogue clobbers r0, preserve it in macl.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -10842,7 +10879,7 @@ label:
    (clobber (match_scratch:SI 3 "=X,1"))]
   "TARGET_SH1"
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -10876,7 +10913,7 @@ label:
    (clobber (match_operand:SI 4 "" "=X,1"))]
   "TARGET_SH2 && reload_completed && flag_pic"
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
   switch (GET_MODE (diff_vec))
@@ -10914,7 +10951,7 @@ label:
 		    UNSPEC_CASESI)))]
   "TARGET_SHMEDIA"
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -10941,7 +10978,7 @@ label:
 		      (label_ref:DI (match_operand 3 "" ""))] UNSPEC_CASESI)))]
   "TARGET_SHMEDIA"
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[3]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[3])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 

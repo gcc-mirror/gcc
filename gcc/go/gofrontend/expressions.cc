@@ -5187,10 +5187,13 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
   // Lower struct, array, and some interface comparisons.
   if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
     {
-      if (left->type()->struct_type() != NULL)
+      if (left->type()->struct_type() != NULL
+	  && right->type()->struct_type() != NULL)
 	return this->lower_struct_comparison(gogo, inserter);
       else if (left->type()->array_type() != NULL
-	       && !left->type()->is_slice_type())
+	       && !left->type()->is_slice_type()
+	       && right->type()->array_type() != NULL
+	       && !right->type()->is_slice_type())
 	return this->lower_array_comparison(gogo, inserter);
       else if ((left->type()->interface_type() != NULL
                 && right->type()->interface_type() == NULL)

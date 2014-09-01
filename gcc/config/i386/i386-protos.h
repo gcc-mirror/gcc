@@ -93,11 +93,11 @@ extern void ix86_expand_binary_operator (enum rtx_code,
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 enum machine_mode, rtx[]);
 extern bool ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
-extern bool ix86_avoid_lea_for_add (rtx, rtx[]);
-extern bool ix86_use_lea_for_mov (rtx, rtx[]);
-extern bool ix86_avoid_lea_for_addr (rtx, rtx[]);
-extern void ix86_split_lea_for_addr (rtx, rtx[], enum machine_mode);
-extern bool ix86_lea_for_add_ok (rtx, rtx[]);
+extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
+extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
+extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
+extern void ix86_split_lea_for_addr (rtx_insn *, rtx[], enum machine_mode);
+extern bool ix86_lea_for_add_ok (rtx_insn *, rtx[]);
 extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
 extern bool ix86_agi_dependent (rtx set_insn, rtx use_insn);
@@ -260,7 +260,7 @@ extern void i386_pe_record_stub (const char *);
 
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);
-extern void i386_pe_seh_unwind_emit (FILE *, rtx);
+extern void i386_pe_seh_unwind_emit (FILE *, rtx_insn *);
 extern void i386_pe_seh_emit_except_personality (rtx);
 extern void i386_pe_seh_init_sections (void);
 
@@ -302,7 +302,7 @@ extern int asm_preferred_eh_data_format (int, int);
 extern enum attr_cpu ix86_schedule;
 #endif
 
-extern const char * ix86_output_call_insn (rtx insn, rtx call_op);
+extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

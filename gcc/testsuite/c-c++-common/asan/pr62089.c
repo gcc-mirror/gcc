@@ -34,4 +34,4 @@ main () {
   return 0;
 }
 
-/* { dg-output "ERROR: AddressSanitizer: use-after-poison" } */
+/* { dg-output "ERROR: AddressSanitizer:\[^\n\r]*on address\[^\n\r]*" } */

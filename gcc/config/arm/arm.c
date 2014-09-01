@@ -115,14 +115,14 @@ static Mnode *move_minipool_fix_backward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
 static Mnode *add_minipool_backward_ref (Mfix *);
 static void assign_minipool_offsets (Mfix *);
 static void arm_print_value (FILE *, rtx);
-static void dump_minipool (rtx);
+static void dump_minipool (rtx_insn *);
 static int arm_barrier_cost (rtx);
 static Mfix *create_fix_barrier (Mfix *, HOST_WIDE_INT);
-static void push_minipool_barrier (rtx, HOST_WIDE_INT);
-static void push_minipool_fix (rtx, HOST_WIDE_INT, rtx *, enum machine_mode,
-			       rtx);
+static void push_minipool_barrier (rtx_insn *, HOST_WIDE_INT);
+static void push_minipool_fix (rtx_insn *, HOST_WIDE_INT, rtx *,
+			       enum machine_mode, rtx);
 static void arm_reorg (void);
-static void note_invalid_constants (rtx, HOST_WIDE_INT, int);
+static void note_invalid_constants (rtx_insn *, HOST_WIDE_INT, int);
 static unsigned long arm_compute_save_reg0_reg12_mask (void);
 static unsigned long arm_compute_save_reg_mask (void);
 static unsigned long arm_isr_value (tree);
@@ -137,8 +137,8 @@ static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
-static int arm_adjust_cost (rtx, rtx, rtx, int);
-static int arm_sched_reorder (FILE *, int, rtx *, int *, int);
+static int arm_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int arm_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int optimal_immediate_sequence (enum rtx_code code,
 				       unsigned HOST_WIDE_INT val,
 				       struct four_ints *return_sequence);
@@ -180,7 +180,7 @@ static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
 static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
-static rtx emit_set_insn (rtx, rtx);
+static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
@@ -216,7 +216,7 @@ static bool arm_return_in_msb (const_tree);
 static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
 static bool arm_return_in_memory (const_tree, const_tree);
 #if ARM_UNWIND_INFO
-static void arm_unwind_emit (FILE *, rtx);
+static void arm_unwind_emit (FILE *, rtx_insn *);
 static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
@@ -238,7 +238,7 @@ static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
-static bool arm_cannot_copy_insn_p (rtx);
+static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static bool arm_output_addr_const_extra (FILE *, rtx);
@@ -2075,7 +2075,7 @@ arm_constant_limit (bool size_p)
 
 /* Emit an insn that's a simple single-set.  Both the operands must be known
    to be valid.  */
-inline static rtx
+inline static rtx_insn *
 emit_set_insn (rtx x, rtx y)
 {
   return emit_insn (gen_rtx_SET (VOIDmode, x, y));
@@ -5135,7 +5135,7 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	     so we are free to use whatever conventions are
 	     appropriate.  */
 	  /* FIXME: remove CONST_CAST_TREE when cgraph is constified.  */
-	  struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
+	  cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE(decl));
 	  if (i && i->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
@@ -6416,7 +6416,7 @@ require_pic_register (void)
 	}
       else
 	{
-	  rtx seq, insn;
+	  rtx_insn *seq, *insn;
 
 	  if (!cfun->machine->pic_reg)
 	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
@@ -11797,8 +11797,8 @@ cortexa7_younger (FILE *file, int verbose, rtx insn)
    instructions.  This heuristic may affect dual issue opportunities
    in the current cycle.  */
 static void
-cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
-                        int clock)
+cortexa7_sched_reorder (FILE *file, int verbose, rtx_insn **ready,
+			int *n_readyp, int clock)
 {
   int i;
   int first_older_only = -1, first_younger = -1;
@@ -11815,7 +11815,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
      older.  */
   for (i = *n_readyp - 1; i >= 0; i--)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (cortexa7_older_only (insn))
         {
           first_older_only = i;
@@ -11850,7 +11850,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
     fprintf (file, ";; cortexa7_sched_reorder insn %d before %d\n",
              INSN_UID(ready [first_older_only]),
              INSN_UID(ready [first_younger]));
-  rtx first_older_only_insn = ready [first_older_only];
+  rtx_insn *first_older_only_insn = ready [first_older_only];
   for (i = first_older_only; i < first_younger; i++)
     {
       ready[i] = ready[i+1];
@@ -11862,7 +11862,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
 
 /* Implement TARGET_SCHED_REORDER. */
 static int
-arm_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
+arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
                    int clock)
 {
   switch (arm_tune)
@@ -11886,7 +11886,7 @@ arm_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
    adjust_cost function. Only put bits of code into arm_adjust_cost that
    are common across all cores.  */
 static int
-arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
+arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   rtx i_pat, d_pat;
 
@@ -13115,7 +13115,7 @@ arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 }
 
 static bool
-arm_cannot_copy_insn_p (rtx insn)
+arm_cannot_copy_insn_p (rtx_insn *insn)
 {
   /* The tls call insn cannot be copied, as it is paired with a data
      word.  */
@@ -16091,7 +16091,7 @@ struct minipool_node
 struct minipool_fixup
 {
   Mfix *            next;
-  rtx               insn;
+  rtx_insn *        insn;
   HOST_WIDE_INT     address;
   rtx *             loc;
   enum machine_mode mode;
@@ -16571,7 +16571,7 @@ assign_minipool_offsets (Mfix *barrier)
 
 /* Output the literal table */
 static void
-dump_minipool (rtx scan)
+dump_minipool (rtx_insn *scan)
 {
   Mnode * mp;
   Mnode * nmp;
@@ -16694,16 +16694,16 @@ static Mfix *
 create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 {
   HOST_WIDE_INT count = 0;
-  rtx barrier;
-  rtx from = fix->insn;
+  rtx_barrier *barrier;
+  rtx_insn *from = fix->insn;
   /* The instruction after which we will insert the jump.  */
-  rtx selected = NULL;
+  rtx_insn *selected = NULL;
   int selected_cost;
   /* The address at which the jump instruction will be placed.  */
   HOST_WIDE_INT selected_address;
   Mfix * new_fix;
   HOST_WIDE_INT max_count = max_address - fix->address;
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
 
   selected_cost = arm_barrier_cost (from);
   selected_address = fix->address;
@@ -16767,7 +16767,7 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
      CALL_ARG_LOCATION note.  */
   if (CALL_P (selected))
     {
-      rtx next = NEXT_INSN (selected);
+      rtx_insn *next = NEXT_INSN (selected);
       if (next && NOTE_P (next)
 	  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
 	  selected = next;
@@ -16792,7 +16792,7 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 /* Record that there is a natural barrier in the insn stream at
    ADDRESS.  */
 static void
-push_minipool_barrier (rtx insn, HOST_WIDE_INT address)
+push_minipool_barrier (rtx_insn *insn, HOST_WIDE_INT address)
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
@@ -16814,7 +16814,7 @@ push_minipool_barrier (rtx insn, HOST_WIDE_INT address)
    fixing; VALUE is the constant that must be loaded, which is of type
    MODE.  */
 static void
-push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
+push_minipool_fix (rtx_insn *insn, HOST_WIDE_INT address, rtx *loc,
 		   enum machine_mode mode, rtx value)
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
@@ -16970,7 +16970,7 @@ arm_const_double_by_immediates (rtx val)
    If DO_PUSHES is false we do not actually push any of the fixups
    needed.  */
 static void
-note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
+note_invalid_constants (rtx_insn *insn, HOST_WIDE_INT address, int do_pushes)
 {
   int opno;
 
@@ -17047,7 +17047,7 @@ thumb1_reorg (void)
     {
       rtx dest, src;
       rtx pat, op0, set = NULL;
-      rtx prev, insn = BB_END (bb);
+      rtx_insn *prev, *insn = BB_END (bb);
       bool insn_clobbered = false;
 
       while (insn != BB_HEAD (bb) && !NONDEBUG_INSN_P (insn))
@@ -17130,7 +17130,7 @@ thumb2_reorg (void)
 	  && optimize_bb_for_speed_p (bb))
 	continue;
 
-      rtx insn;
+      rtx_insn *insn;
       Convert_Action action = SKIP;
       Convert_Action action_for_partial_flag_setting
 	= (current_tune->disparage_partial_flag_setting_t16_encodings
@@ -17324,7 +17324,7 @@ thumb2_reorg (void)
 static void
 arm_reorg (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   HOST_WIDE_INT address = 0;
   Mfix * fix;
 
@@ -21325,7 +21325,7 @@ arm_expand_prologue (void)
     {
       /* This add can produce multiple insns for a large constant, so we
 	 need to get tricky.  */
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       amount = GEN_INT (offsets->saved_args + saved_regs
 			- offsets->outgoing_args);
@@ -22569,9 +22569,9 @@ get_arm_condition_code (rtx comparison)
 /* Tell arm_asm_output_opcode to output IT blocks for conditionally executed
    instructions.  */
 void
-thumb2_final_prescan_insn (rtx insn)
+thumb2_final_prescan_insn (rtx_insn *insn)
 {
-  rtx first_insn = insn;
+  rtx_insn *first_insn = insn;
   rtx body = PATTERN (insn);
   rtx predicate;
   enum arm_cond_code code;
@@ -22653,7 +22653,7 @@ thumb2_final_prescan_insn (rtx insn)
 }
 
 void
-arm_final_prescan_insn (rtx insn)
+arm_final_prescan_insn (rtx_insn *insn)
 {
   /* BODY will hold the body of INSN.  */
   rtx body = PATTERN (insn);
@@ -22668,7 +22668,7 @@ arm_final_prescan_insn (rtx insn)
 
   /* START_INSN will hold the insn from where we start looking.  This is the
      first insn after the following code_label if REVERSE is true.  */
-  rtx start_insn = insn;
+  rtx_insn *start_insn = insn;
 
   /* If in state 4, check if the target branch is reached, in order to
      change back to state 0.  */
@@ -22740,7 +22740,8 @@ arm_final_prescan_insn (rtx insn)
       int fail = FALSE, succeed = FALSE;
       /* Flag which part of the IF_THEN_ELSE is the LABEL_REF.  */
       int then_not_else = TRUE;
-      rtx this_insn = start_insn, label = 0;
+      rtx_insn *this_insn = start_insn;
+      rtx label = 0;
 
       /* Register the insn jumped to.  */
       if (reverse)
@@ -22969,6 +22970,9 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	    || (TARGET_HARD_FLOAT && TARGET_VFP
 		&& regno == VFPCC_REGNUM));
 
+  if (regno == CC_REGNUM && GET_MODE_CLASS (mode) != MODE_CC)
+    return false;
+
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
        registers 0 - 6, so that there is always a second low
@@ -23065,6 +23069,9 @@ arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 enum reg_class
 arm_regno_class (int regno)
 {
+  if (regno == PC_REGNUM)
+    return NO_REGS;
+
   if (TARGET_THUMB1)
     {
       if (regno == STACK_POINTER_REGNUM)
@@ -23111,7 +23118,7 @@ arm_regno_class (int regno)
 int
 arm_debugger_arg_offset (int value, rtx addr)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* We are only interested if dbxout_parms() failed to compute the offset.  */
   if (value != 0)
@@ -26145,11 +26152,12 @@ number_of_first_bit_set (unsigned mask)
    to be saved; REAL_REGS is the set of registers to be described as
    saved.  If REAL_REGS is 0, only describe the stack adjustment.  */
 
-static rtx
+static rtx_insn *
 thumb1_emit_multi_reg_push (unsigned long mask, unsigned long real_regs)
 {
   unsigned long regno;
-  rtx par[10], tmp, reg, insn;
+  rtx par[10], tmp, reg;
+  rtx_insn *insn;
   int i, j;
 
   /* Build the parallel of the registers actually being stored.  */
@@ -26545,7 +26553,7 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
    For Thumb-1, we track the status of the condition codes; this
    information is used in the cbranchsi4_insn pattern.  */
 void
-thumb1_final_prescan_insn (rtx insn)
+thumb1_final_prescan_insn (rtx_insn *insn)
 {
   if (flag_print_asm_name)
     asm_fprintf (asm_out_file, "%@ 0x%04x\n",
@@ -26614,7 +26622,7 @@ thumb_shiftable_const (unsigned HOST_WIDE_INT val)
 static int
 thumb_far_jump_used_p (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   bool far_jump = false;
   unsigned int func_size = 0;
 
@@ -27063,7 +27071,7 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 void
 thumb1_expand_prologue (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   HOST_WIDE_INT amount;
   arm_stack_offsets *offsets;
@@ -27515,7 +27523,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
       int saved_size = arm_get_vfp_saved_size ();
       if (saved_size > 0)
         {
-	  rtx insn;
+	  rtx_insn *insn;
           floats_from_frame += saved_size;
           insn = emit_insn (gen_addsi3 (ip_rtx,
 					hard_frame_pointer_rtx,
@@ -27554,7 +27562,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
     {
       /* The frame pointer is guaranteed to be non-double-word aligned, as
          it is set to double-word-aligned old_stack_pointer - 4.  */
-      rtx insn;
+      rtx_insn *insn;
       int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
 
       for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
@@ -27594,7 +27602,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
   num_regs = bit_count (saved_regs_mask);
   if ((offsets->outgoing_args != (1 + num_regs)) || cfun->calls_alloca)
     {
-      rtx insn;
+      rtx_insn *insn;
       emit_insn (gen_blockage ());
       /* Unwind the stack to just below the saved registers.  */
       insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
@@ -27611,7 +27619,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
     {
       /* Interrupt handlers will have pushed the
          IP onto the stack, so restore it now.  */
-      rtx insn;
+      rtx_insn *insn;
       rtx addr = gen_rtx_MEM (SImode,
                               gen_rtx_POST_INC (SImode,
                               stack_pointer_rtx));
@@ -27680,7 +27688,7 @@ arm_expand_epilogue (bool really_return)
 
   if (frame_pointer_needed)
     {
-      rtx insn;
+      rtx_insn *insn;
       /* Restore stack pointer if necessary.  */
       if (TARGET_ARM)
         {
@@ -27737,7 +27745,7 @@ arm_expand_epilogue (bool really_return)
       amount = offsets->outgoing_args - offsets->saved_regs;
       if (amount)
         {
-	  rtx tmp;
+	  rtx_insn *tmp;
           /* Force out any pending memory operations that reference stacked data
              before stack de-allocation occurs.  */
           emit_insn (gen_blockage ());
@@ -27789,7 +27797,7 @@ arm_expand_epilogue (bool really_return)
     for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
       if (df_regs_ever_live_p (i) && !call_used_regs[i])
         {
-          rtx insn;
+          rtx_insn *insn;
           rtx addr = gen_rtx_MEM (V2SImode,
                                   gen_rtx_POST_INC (SImode,
                                                     stack_pointer_rtx));
@@ -27878,9 +27886,10 @@ arm_expand_epilogue (bool really_return)
     {
       int i, j;
       rtx dwarf = NULL_RTX;
-      rtx tmp = emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   GEN_INT (crtl->args.pretend_args_size)));
+      rtx_insn *tmp =
+	emit_insn (gen_addsi3 (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       GEN_INT (crtl->args.pretend_args_size)));
 
       RTX_FRAME_RELATED_P (tmp) = 1;
 
@@ -29344,7 +29353,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 /* Emit unwind directives for the given insn.  */
 
 static void
-arm_unwind_emit (FILE * asm_out_file, rtx insn)
+arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -29730,7 +29739,7 @@ arm_output_iwmmxt_tinsr (rtx *operands)
 const char *
 thumb1_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[0]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[0])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -29753,7 +29762,7 @@ thumb1_output_casesi (rtx *operands)
 const char *
 thumb2_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -30436,7 +30445,8 @@ arm_split_compare_and_swap (rtx operands[])
   enum machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
-  rtx label1, label2, x, cond;
+  rtx_code_label *label1, *label2;
+  rtx x, cond;
 
   rval = operands[0];
   mem = operands[1];
@@ -30462,7 +30472,7 @@ arm_split_compare_and_swap (rtx operands[])
   if (!(use_acquire || use_release))
     arm_pre_atomic_barrier (mod_s);
 
-  label1 = NULL_RTX;
+  label1 = NULL;
   if (!is_weak)
     {
       label1 = gen_label_rtx ();
@@ -30512,7 +30522,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   enum memmodel model = (enum memmodel) INTVAL (model_rtx);
   enum machine_mode mode = GET_MODE (mem);
   enum machine_mode wmode = (mode == DImode ? DImode : SImode);
-  rtx label, x;
+  rtx_code_label *label;
+  rtx x;
 
   bool use_acquire = TARGET_HAVE_LDACQ
                      && !(model == MEMMODEL_RELAXED
@@ -31438,7 +31449,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 			  ORR (SHIFT (ASHIFT, in_up, scratch1), out_down)));
 	  if (code == ASHIFTRT)
 	    {
-	      rtx done_label = gen_label_rtx ();
+	      rtx_code_label *done_label = gen_label_rtx ();
 	      emit_jump_insn (BRANCH (LT, done_label));
 	      emit_insn (SET (out_down, ORR (SHIFT (ASHIFTRT, in_up, scratch2),
 					     out_down)));
@@ -31457,7 +31468,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 
 	  if (code == ASHIFTRT)
 	    {
-	      rtx done_label = gen_label_rtx ();
+	      rtx_code_label *done_label = gen_label_rtx ();
 	      emit_jump_insn (BRANCH (LT, done_label));
 	      emit_insn (SET (scratch2, SHIFT (ASHIFTRT, in_up, scratch2)));
 	      emit_insn (SET (out_down, ORR (out_down, scratch2)));

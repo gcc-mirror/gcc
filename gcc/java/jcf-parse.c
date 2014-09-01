@@ -1727,7 +1727,7 @@ java_emit_static_constructor (void)
 
       DECL_STATIC_CONSTRUCTOR (decl) = 1;
       java_genericize (decl);
-      cgraph_finalize_function (decl, false);
+      cgraph_node::finalize_function (decl, false);
     }
 }
 

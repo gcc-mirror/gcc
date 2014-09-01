@@ -125,9 +125,9 @@ struct m68k_address {
   int scale;
 };
 
-static int m68k_sched_adjust_cost (rtx, rtx, rtx, int);
+static int m68k_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int m68k_sched_issue_rate (void);
-static int m68k_sched_variable_issue (FILE *, int, rtx, int);
+static int m68k_sched_variable_issue (FILE *, int, rtx_insn *, int);
 static void m68k_sched_md_init_global (FILE *, int, int);
 static void m68k_sched_md_finish_global (FILE *, int);
 static void m68k_sched_md_init (FILE *, int, int);
@@ -911,7 +911,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
    whether or not this is pre-decrement (if STORE_P) or post-increment
    (if !STORE_P) operation.  */
 
-static rtx
+static rtx_insn *
 m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 		 unsigned int count, unsigned int regno,
 		 unsigned int mask, bool store_p, bool adjust_stack_p)
@@ -951,7 +951,7 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 /* Make INSN a frame-related instruction.  */
 
 static void
-m68k_set_frame_related (rtx insn)
+m68k_set_frame_related (rtx_insn *insn)
 {
   rtx body;
   int i;
@@ -1742,7 +1742,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 }
 
 const char *
-output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
+output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos)
 {
   operands[0] = countop;
   operands[1] = dataop;
@@ -1933,12 +1933,12 @@ m68k_jump_table_ref_p (rtx x)
   if (GET_CODE (x) != LABEL_REF)
     return false;
 
-  x = XEXP (x, 0);
-  if (!NEXT_INSN (x) && !PREV_INSN (x))
+  rtx_insn *insn = as_a <rtx_insn *> (XEXP (x, 0));
+  if (!NEXT_INSN (insn) && !PREV_INSN (insn))
     return true;
 
-  x = next_nonnote_insn (x);
-  return x && JUMP_TABLE_DATA_P (x);
+  insn = next_nonnote_insn (insn);
+  return insn && JUMP_TABLE_DATA_P (insn);
 }
 
 /* Return true if X is a legitimate address for values of mode MODE.
@@ -2320,7 +2320,7 @@ m68k_final_prescan_insn_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
 /* Prescan insn before outputing assembler for it.  */
 
 void
-m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
+m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
 			 rtx *operands, int n_operands)
 {
   int i;
@@ -2358,7 +2358,7 @@ m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
 static rtx
 m68k_move_to_reg (rtx x, rtx orig, rtx reg)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (reg == NULL_RTX)
     {
@@ -2495,7 +2495,7 @@ static rtx
 m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
 {
   rtx a0;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   /* Emit the call sequence.  */
@@ -2555,7 +2555,7 @@ m68k_call_m68k_read_tp (void)
 {
   rtx a0;
   rtx eqv;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   start_sequence ();
@@ -4799,10 +4799,10 @@ print_operand_address (FILE *file, rtx addr)
    clear insn.  */
 
 bool
-strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
+strict_low_part_peephole_ok (enum machine_mode mode, rtx_insn *first_insn,
                              rtx target)
 {
-  rtx p = first_insn;
+  rtx_insn *p = first_insn;
 
   while ((p = PREV_INSN (p)))
     {
@@ -5042,7 +5042,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this_slot, offset, addr, mem, insn, tmp;
+  rtx this_slot, offset, addr, mem, tmp;
+  rtx_insn *insn;
 
   /* Avoid clobbering the struct value reg by using the
      static chain reg as a temporary.  */
@@ -5920,8 +5921,8 @@ static state_t sched_adjust_cost_state;
 /* Implement adjust_cost scheduler hook.
    Return adjusted COST of dependency LINK between DEF_INSN and INSN.  */
 static int
-m68k_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx def_insn,
-			int cost)
+m68k_sched_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
+			rtx_insn *def_insn, int cost)
 {
   int delay;
 
@@ -6031,7 +6032,7 @@ static int sched_mem_unit_code;
 static int
 m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED,
-			   rtx insn, int can_issue_more)
+			   rtx_insn *insn, int can_issue_more)
 {
   int insn_size;
 
@@ -6125,12 +6126,12 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
   /* Check that all instructions have DFA reservations and
      that all instructions can be issued from a clean state.  */
   {
-    rtx insn;
+    rtx_insn *insn;
     state_t state;
 
     state = alloca (state_size ());
 
-    for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    for (insn = get_insns (); insn != NULL; insn = NEXT_INSN (insn))
       {
  	if (INSN_P (insn) && recog_memoized (insn) >= 0)
 	  {

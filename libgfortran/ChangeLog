@@ -1,3 +1,10 @@
+2014-08-31  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_send, _gfortran_caf_get,
+	_gfortran_caf_sendget): Update prototype.
+	* caf/single.c (_gfortran_caf_send, _gfortran_caf_get,
+	_gfortran_caf_sendget): Handle may_require_tmp.
+
 2014-08-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR libgfortran/62188

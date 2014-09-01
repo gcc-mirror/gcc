@@ -239,7 +239,7 @@ typedef void (*df_dump_problem_function) (FILE *);
 typedef void (*df_dump_bb_problem_function) (basic_block, FILE *);
 
 /* Function to dump before or after an insn to FILE.  */
-typedef void (*df_dump_insn_problem_function) (const_rtx, FILE *);
+typedef void (*df_dump_insn_problem_function) (const rtx_insn *, FILE *);
 
 /* Function to dump top or bottom of basic block results to FILE.  */
 typedef void (*df_verify_solution_start) (void);
@@ -421,7 +421,7 @@ typedef union df_ref_d *df_ref;
 /* One of these structures is allocated for every insn.  */
 struct df_insn_info
 {
-  rtx insn;                     /* The insn this info comes from.  */
+  rtx_insn *insn;	        /* The insn this info comes from.  */
   df_ref defs;	                /* Head of insn-def chain.  */
   df_ref uses;	                /* Head of insn-use chain.  */
   /* Head of insn-use chain for uses in REG_EQUAL/EQUIV notes.  */
@@ -649,7 +649,7 @@ struct df_d
 			: BLOCK_FOR_INSN (DF_REF_INSN (REF)))
 #define DF_REF_BBNO(REF) (DF_REF_BB (REF)->index)
 #define DF_REF_INSN_INFO(REF) ((REF)->base.insn_info)
-extern rtx_insn *DF_REF_INSN (df_ref ref);
+#define DF_REF_INSN(REF) ((REF)->base.insn_info->insn)
 #define DF_REF_INSN_UID(REF) (INSN_UID (DF_REF_INSN(REF)))
 #define DF_REF_CLASS(REF) ((REF)->base.cl)
 #define DF_REF_TYPE(REF) ((REF)->base.type)
@@ -953,10 +953,10 @@ extern void df_check_cfg_clean (void);
 #endif
 extern df_ref df_bb_regno_first_def_find (basic_block, unsigned int);
 extern df_ref df_bb_regno_last_def_find (basic_block, unsigned int);
-extern df_ref df_find_def (rtx, rtx);
-extern bool df_reg_defined (rtx, rtx);
-extern df_ref df_find_use (rtx, rtx);
-extern bool df_reg_used (rtx, rtx);
+extern df_ref df_find_def (rtx_insn *, rtx);
+extern bool df_reg_defined (rtx_insn *, rtx);
+extern df_ref df_find_use (rtx_insn *, rtx);
+extern bool df_reg_used (rtx_insn *, rtx);
 extern void df_worklist_dataflow (struct dataflow *,bitmap, int *, int);
 extern void df_print_regset (FILE *file, bitmap r);
 extern void df_print_word_regset (FILE *file, bitmap r);
@@ -965,15 +965,15 @@ extern void df_dump_region (FILE *);
 extern void df_dump_start (FILE *);
 extern void df_dump_top (basic_block, FILE *);
 extern void df_dump_bottom (basic_block, FILE *);
-extern void df_dump_insn_top (const_rtx, FILE *);
-extern void df_dump_insn_bottom (const_rtx, FILE *);
+extern void df_dump_insn_top (const rtx_insn *, FILE *);
+extern void df_dump_insn_bottom (const rtx_insn *, FILE *);
 extern void df_refs_chain_dump (df_ref, bool, FILE *);
 extern void df_regs_chain_dump (df_ref,  FILE *);
-extern void df_insn_debug (rtx, bool, FILE *);
-extern void df_insn_debug_regno (rtx, FILE *);
+extern void df_insn_debug (rtx_insn *, bool, FILE *);
+extern void df_insn_debug_regno (rtx_insn *, FILE *);
 extern void df_regno_debug (unsigned int, FILE *);
 extern void df_ref_debug (df_ref, FILE *);
-extern void debug_df_insn (rtx);
+extern void debug_df_insn (rtx_insn *);
 extern void debug_df_regno (unsigned int);
 extern void debug_df_reg (rtx);
 extern void debug_df_defno (unsigned int);
@@ -991,7 +991,7 @@ extern void df_chain_dump (struct df_link *, FILE *);
 extern void df_print_bb_index (basic_block bb, FILE *file);
 extern void df_rd_add_problem (void);
 extern void df_rd_simulate_artificial_defs_at_top (basic_block, bitmap);
-extern void df_rd_simulate_one_insn (basic_block, rtx, bitmap);
+extern void df_rd_simulate_one_insn (basic_block, rtx_insn *, bitmap);
 extern void df_lr_add_problem (void);
 extern void df_lr_verify_transfer_functions (void);
 extern void df_live_verify_transfer_functions (void);
@@ -1000,26 +1000,28 @@ extern void df_live_set_all_dirty (void);
 extern void df_chain_add_problem (unsigned int);
 extern void df_word_lr_add_problem (void);
 extern bool df_word_lr_mark_ref (df_ref, bool, bitmap);
-extern bool df_word_lr_simulate_defs (rtx, bitmap);
-extern void df_word_lr_simulate_uses (rtx, bitmap);
+extern bool df_word_lr_simulate_defs (rtx_insn *, bitmap);
+extern void df_word_lr_simulate_uses (rtx_insn *, bitmap);
 extern void df_word_lr_simulate_artificial_refs_at_top (basic_block, bitmap);
 extern void df_word_lr_simulate_artificial_refs_at_end (basic_block, bitmap);
 extern void df_note_add_problem (void);
 extern void df_md_add_problem (void);
 extern void df_md_simulate_artificial_defs_at_top (basic_block, bitmap);
-extern void df_md_simulate_one_insn (basic_block, rtx, bitmap);
-extern void df_simulate_find_noclobber_defs (rtx, bitmap);
-extern void df_simulate_find_defs (rtx, bitmap);
-extern void df_simulate_defs (rtx, bitmap);
-extern void df_simulate_uses (rtx, bitmap);
+extern void df_md_simulate_one_insn (basic_block, rtx_insn *, bitmap);
+extern void df_simulate_find_noclobber_defs (rtx_insn *, bitmap);
+extern void df_simulate_find_defs (rtx_insn *, bitmap);
+extern void df_simulate_defs (rtx_insn *, bitmap);
+extern void df_simulate_uses (rtx_insn *, bitmap);
 extern void df_simulate_initialize_backwards (basic_block, bitmap);
-extern void df_simulate_one_insn_backwards (basic_block, rtx, bitmap);
+extern void df_simulate_one_insn_backwards (basic_block, rtx_insn *, bitmap);
 extern void df_simulate_finalize_backwards (basic_block, bitmap);
 extern void df_simulate_initialize_forwards (basic_block, bitmap);
-extern void df_simulate_one_insn_forwards (basic_block, rtx, bitmap);
+extern void df_simulate_one_insn_forwards (basic_block, rtx_insn *, bitmap);
 extern void simulate_backwards_to_point (basic_block, regset, rtx);
-extern bool can_move_insns_across (rtx, rtx, rtx, rtx, basic_block, regset,
-				   regset, rtx *);
+extern bool can_move_insns_across (rtx_insn *, rtx_insn *,
+				   rtx_insn *, rtx_insn *,
+				   basic_block, regset,
+				   regset, rtx_insn **);
 /* Functions defined in df-scan.c.  */
 
 extern void df_scan_alloc (bitmap);
@@ -1027,20 +1029,20 @@ extern void df_scan_add_problem (void);
 extern void df_grow_reg_info (void);
 extern void df_grow_insn_info (void);
 extern void df_scan_blocks (void);
-extern void df_uses_create (rtx *, rtx, int);
-extern struct df_insn_info * df_insn_create_insn_record (rtx);
-extern void df_insn_delete (rtx);
+extern void df_uses_create (rtx *, rtx_insn *, int);
+extern struct df_insn_info * df_insn_create_insn_record (rtx_insn *);
+extern void df_insn_delete (rtx_insn *);
 extern void df_bb_refs_record (int, bool);
-extern bool df_insn_rescan (rtx);
-extern bool df_insn_rescan_debug_internal (rtx);
+extern bool df_insn_rescan (rtx_insn *);
+extern bool df_insn_rescan_debug_internal (rtx_insn *);
 extern void df_insn_rescan_all (void);
 extern void df_process_deferred_rescans (void);
 extern void df_recompute_luids (basic_block);
-extern void df_insn_change_bb (rtx, basic_block);
+extern void df_insn_change_bb (rtx_insn *, basic_block);
 extern void df_maybe_reorganize_use_refs (enum df_ref_order);
 extern void df_maybe_reorganize_def_refs (enum df_ref_order);
 extern void df_ref_change_reg_with_loc (int, int, rtx);
-extern void df_notes_rescan (rtx);
+extern void df_notes_rescan (rtx_insn *);
 extern void df_hard_reg_init (void);
 extern void df_update_entry_block_defs (void);
 extern void df_update_exit_block_uses (void);

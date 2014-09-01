@@ -34,8 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct GTY(()) sequence_stack {
   /* First and last insns in the chain of the saved sequence.  */
-  rtx first;
-  rtx last;
+  rtx_insn *first;
+  rtx_insn *last;
   struct sequence_stack *next;
 };
 
@@ -52,8 +52,8 @@ struct GTY(()) emit_status {
 
      start_sequence saves both of these on `sequence_stack' and then starts
      a new, nested sequence of insns.  */
-  rtx x_first_insn;
-  rtx x_last_insn;
+  rtx_insn *x_first_insn;
+  rtx_insn *x_last_insn;
 
   /* Stack of pending (incomplete) sequences saved by `start_sequence'.
      Each element describes one pending sequence.
@@ -135,7 +135,7 @@ struct GTY(()) expr_status {
   rtx x_apply_args_value;
 
   /* List of labels that must never be deleted.  */
-  rtx x_forced_labels;
+  rtx_insn_list *x_forced_labels;
 };
 
 typedef struct call_site_record_d *call_site_record;
@@ -264,23 +264,23 @@ struct GTY(()) rtl_data {
      Used for detecting stack clobbers.  */
   tree stack_protect_guard;
 
-  /* List (chain of EXPR_LIST) of labels heading the current handlers for
+  /* List (chain of INSN_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
-  rtx x_nonlocal_goto_handler_labels;
+  rtx_insn_list *x_nonlocal_goto_handler_labels;
 
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_return_label;
+  rtx_code_label *x_return_label;
 
   /* Label that will go on the end of function epilogue.
      Jumping to this label serves as a "naked return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_naked_return_label;
+  rtx_code_label *x_naked_return_label;
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
-  rtx x_stack_slot_list;
+  rtx_expr_list *x_stack_slot_list;
 
   /* List of empty areas in the stack frame.  */
   struct frame_space *frame_space_list;

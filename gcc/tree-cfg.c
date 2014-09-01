@@ -3554,7 +3554,6 @@ verify_gimple_assign_unary (gimple stmt)
     case ABS_EXPR:
     case BIT_NOT_EXPR:
     case PAREN_EXPR:
-    case NON_LVALUE_EXPR:
     case CONJ_EXPR:
       break;
 
@@ -8611,6 +8610,13 @@ extern void gt_ggc_mx (gimple&);
 extern void gt_ggc_mx (rtx&);
 extern void gt_ggc_mx (basic_block&);
 
+static void
+gt_ggc_mx (rtx_insn *& x)
+{
+  if (x)
+    gt_ggc_mx_rtx_def ((void *) x);
+}
+
 void
 gt_ggc_mx (edge_def *e)
 {
@@ -8630,6 +8636,13 @@ extern void gt_pch_nx (tree&);
 extern void gt_pch_nx (gimple&);
 extern void gt_pch_nx (rtx&);
 extern void gt_pch_nx (basic_block&);
+
+static void
+gt_pch_nx (rtx_insn *& x)
+{
+  if (x)
+    gt_pch_nx_rtx_def ((void *) x);
+}
 
 void
 gt_pch_nx (edge_def *e)

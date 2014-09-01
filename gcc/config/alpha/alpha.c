@@ -1274,7 +1274,7 @@ split_small_symbolic_operand (rtx x)
    containing the call and branch to the block containing the ldgp.  */
 
 static bool
-alpha_cannot_copy_insn_p (rtx insn)
+alpha_cannot_copy_insn_p (rtx_insn *insn)
 {
   if (!reload_completed || !TARGET_EXPLICIT_RELOCS)
     return false;
@@ -1701,7 +1701,7 @@ alpha_set_memflags_1 (rtx *xp, void *data)
 void
 alpha_set_memflags (rtx seq, rtx ref)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!MEM_P (ref))
     return;
@@ -1714,7 +1714,7 @@ alpha_set_memflags (rtx seq, rtx ref)
       && !MEM_READONLY_P (ref))
     return;
 
-  for (insn = seq; insn; insn = NEXT_INSN (insn))
+  for (insn = as_a <rtx_insn *> (seq); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       for_each_rtx (&PATTERN (insn), alpha_set_memflags_1, (void *) ref);
     else
@@ -2009,7 +2009,8 @@ alpha_emit_set_const (rtx target, enum machine_mode mode,
       result = alpha_emit_set_const_1 (target, mode, c, i, no_output);
       if (result)
 	{
-	  rtx insn, set;
+	  rtx_insn *insn;
+	  rtx set;
 
 	  if (no_output)
 	    return result;
@@ -4802,7 +4803,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-alpha_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+alpha_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type dep_insn_type;
 
@@ -4955,7 +4956,8 @@ alpha_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 rtx
 alpha_gp_save_rtx (void)
 {
-  rtx seq, m = cfun->machine->gp_save_rtx;
+  rtx_insn *seq;
+  rtx m = cfun->machine->gp_save_rtx;
 
   if (m == NULL)
     {
@@ -4993,7 +4995,7 @@ alpha_instantiate_decls (void)
 static int
 alpha_ra_ever_killed (void)
 {
-  rtx top;
+  rtx_insn *top;
 
   if (!has_hard_reg_initial_val (Pmode, REG_RA))
     return (int)df_regs_ever_live_p (REG_RA);
@@ -5139,7 +5141,7 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
 static const char *
 get_some_local_dynamic_name (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (cfun->machine->some_ld_name)
     return cfun->machine->some_ld_name;
@@ -7608,7 +7610,7 @@ alpha_find_lo_sum_using_gp (rtx insn)
 static int
 alpha_does_function_need_gp (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* The GP being variable is an OSF abi thing.  */
   if (! TARGET_ABI_OSF)
@@ -7651,16 +7653,16 @@ alpha_does_function_need_gp (void)
 /* Helper function to set RTX_FRAME_RELATED_P on instructions, including
    sequences.  */
 
-static rtx
+static rtx_insn *
 set_frame_related_p (void)
 {
-  rtx seq = get_insns ();
-  rtx insn;
+  rtx_insn *seq = get_insns ();
+  rtx_insn *insn;
 
   end_sequence ();
 
   if (!seq)
-    return NULL_RTX;
+    return NULL;
 
   if (INSN_P (seq))
     {
@@ -7692,7 +7694,8 @@ static void
 emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
 		    HOST_WIDE_INT base_ofs, rtx frame_reg)
 {
-  rtx addr, mem, insn;
+  rtx addr, mem;
+  rtx_insn *insn;
 
   addr = plus_constant (Pmode, base_reg, base_ofs);
   mem = gen_frame_mem (DImode, addr);
@@ -7953,8 +7956,9 @@ alpha_expand_prologue (void)
       /* Register frame procedures save the fp.  */
       if (alpha_procedure_type == PT_REGISTER)
 	{
-	  rtx insn = emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
-				     hard_frame_pointer_rtx);
+	  rtx_insn *insn =
+	    emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
+			    hard_frame_pointer_rtx);
 	  add_reg_note (insn, REG_CFA_REGISTER, NULL);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -7970,7 +7974,7 @@ alpha_expand_prologue (void)
       /* If we have to allocate space for outgoing args, do it now.  */
       if (crtl->outgoing_args_size != 0)
 	{
-	  rtx seq
+	  rtx_insn *seq
 	    = emit_move_insn (stack_pointer_rtx,
 			      plus_constant
 			      (Pmode, hard_frame_pointer_rtx,
@@ -8410,7 +8414,7 @@ alpha_expand_epilogue (void)
 void
 alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* We output a nop after noreturn calls at the very end of the function to
      ensure that the return address always remains in the caller's code range,
@@ -8453,7 +8457,8 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			   tree function)
 {
   HOST_WIDE_INT hi, lo;
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());
@@ -8754,7 +8759,7 @@ alpha_handle_trap_shadows (void)
 {
   struct shadow_summary shadow;
   int trap_pending, exception_nesting;
-  rtx i, n;
+  rtx_insn *i, *n;
 
   trap_pending = 0;
   exception_nesting = 0;
@@ -8914,7 +8919,7 @@ enum alphaev5_pipe {
 };
 
 static enum alphaev4_pipe
-alphaev4_insn_pipe (rtx insn)
+alphaev4_insn_pipe (rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     return EV4_STOP;
@@ -8963,7 +8968,7 @@ alphaev4_insn_pipe (rtx insn)
 }
 
 static enum alphaev5_pipe
-alphaev5_insn_pipe (rtx insn)
+alphaev5_insn_pipe (rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     return EV5_STOP;
@@ -9023,8 +9028,8 @@ alphaev5_insn_pipe (rtx insn)
 
    LEN is, of course, the length of the group in bytes.  */
 
-static rtx
-alphaev4_next_group (rtx insn, int *pin_use, int *plen)
+static rtx_insn *
+alphaev4_next_group (rtx_insn *insn, int *pin_use, int *plen)
 {
   int len, in_use;
 
@@ -9121,8 +9126,8 @@ alphaev4_next_group (rtx insn, int *pin_use, int *plen)
 
    LEN is, of course, the length of the group in bytes.  */
 
-static rtx
-alphaev5_next_group (rtx insn, int *pin_use, int *plen)
+static rtx_insn *
+alphaev5_next_group (rtx_insn *insn, int *pin_use, int *plen)
 {
   int len, in_use;
 
@@ -9306,7 +9311,7 @@ alphaev5_next_nop (int *pin_use)
 
 static void
 alpha_align_insns_1 (unsigned int max_align,
-		     rtx (*next_group) (rtx, int *, int *),
+		     rtx_insn *(*next_group) (rtx_insn *, int *, int *),
 		     rtx (*next_nop) (int *))
 {
   /* ALIGN is the known alignment for the insn group.  */
@@ -9314,7 +9319,7 @@ alpha_align_insns_1 (unsigned int max_align,
   /* OFS is the offset of the current insn in the insn group.  */
   int ofs;
   int prev_in_use, in_use, len, ldgp;
-  rtx i, next;
+  rtx_insn *i, *next;
 
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (get_insns ());
@@ -9372,7 +9377,7 @@ alpha_align_insns_1 (unsigned int max_align,
       else if ((int) align < len)
 	{
 	  unsigned int new_log_align = len > 8 ? 4 : 3;
-	  rtx prev, where;
+	  rtx_insn *prev, *where;
 
 	  where = prev = prev_nonnote_insn (i);
 	  if (!where || !LABEL_P (where))
@@ -9401,7 +9406,7 @@ alpha_align_insns_1 (unsigned int max_align,
       else if (ofs + len > (int) align)
 	{
 	  int nop_count = (align - ofs) / 4;
-	  rtx where;
+	  rtx_insn *where;
 
 	  /* Insert nops before labels, branches, and calls to truly merge
 	     the execution of the nops with the previous instruction group.  */
@@ -9410,7 +9415,7 @@ alpha_align_insns_1 (unsigned int max_align,
 	    {
 	      if (LABEL_P (where))
 		{
-		  rtx where2 = prev_nonnote_insn (where);
+		  rtx_insn *where2 = prev_nonnote_insn (where);
 		  if (where2 && JUMP_P (where2))
 		    where = where2;
 		}
@@ -9448,7 +9453,7 @@ alpha_align_insns (void)
 static void
 alpha_pad_function_end (void)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {

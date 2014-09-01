@@ -2567,8 +2567,8 @@ base_to_reg (struct address_info *ad)
   int code = -1;
   rtx new_inner = NULL_RTX;
   rtx new_reg = NULL_RTX;
-  rtx insn;
-  rtx last_insn = get_last_insn();
+  rtx_insn *insn;
+  rtx_insn *last_insn = get_last_insn();
 
   lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
@@ -2834,8 +2834,8 @@ process_address_1 (int nop, rtx_insn **before, rtx_insn **after)
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "addr");
 #ifdef HAVE_lo_sum
 	  {
-	    rtx insn;
-	    rtx last = get_last_insn ();
+	    rtx_insn *insn;
+	    rtx_insn *last = get_last_insn ();
 
 	    /* addr => lo_sum (new_base, addr), case (2) above.  */
 	    insn = emit_insn (gen_rtx_SET
@@ -4544,7 +4544,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 		   "    Rejecting inheritance %d->%d "
 		   "as it results in 2 or more insns:\n",
 		   original_regno, REGNO (new_reg));
-	  dump_rtl_slim (lra_dump_file, new_insns, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, new_insns, NULL, -1, 0);
 	  fprintf (lra_dump_file,
 		   "	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	}
@@ -4809,7 +4809,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	    (lra_dump_file,
 	     "	  Rejecting split %d->%d resulting in > 2 %s save insns:\n",
 	     original_regno, REGNO (new_reg), call_save_p ? "call" : "");
-	  dump_rtl_slim (lra_dump_file, save, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, save, NULL, -1, 0);
 	  fprintf (lra_dump_file,
 		   "	))))))))))))))))))))))))))))))))))))))))))))))))\n");
 	}
@@ -4825,7 +4825,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 		   "	Rejecting split %d->%d "
 		   "resulting in > 2 %s restore insns:\n",
 		   original_regno, REGNO (new_reg), call_save_p ? "call" : "");
-	  dump_rtl_slim (lra_dump_file, restore, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, restore, NULL, -1, 0);
 	  fprintf (lra_dump_file,
 		   "	))))))))))))))))))))))))))))))))))))))))))))))))\n");
 	}

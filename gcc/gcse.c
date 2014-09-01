@@ -347,8 +347,8 @@ struct ls_expr
   struct expr * expr;		/* Gcse expression reference for LM.  */
   rtx pattern;			/* Pattern of this mem.  */
   rtx pattern_regs;		/* List of registers mentioned by the mem.  */
-  rtx loads;			/* INSN list of loads seen.  */
-  rtx stores;			/* INSN list of stores seen.  */
+  rtx_insn_list *loads;		/* INSN list of loads seen.  */
+  rtx_insn_list *stores;	/* INSN list of stores seen.  */
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
   int index;			/* If it maps to a bitmap index.  */
@@ -2161,7 +2161,7 @@ process_insert_insn (struct expr *expr)
 static void
 insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 {
-  rtx insn = BB_END (bb);
+  rtx_insn *insn = BB_END (bb);
   rtx_insn *new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
@@ -2188,7 +2188,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 	 if cc0 isn't set.  */
       rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
       if (note)
-	insn = XEXP (note, 0);
+	insn = safe_as_a <rtx_insn *> (XEXP (note, 0));
       else
 	{
 	  rtx_insn *maybe_cc0_setter = prev_nonnote_insn (insn);
@@ -3774,8 +3774,8 @@ ldst_entry (rtx x)
   ptr->expr         = NULL;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->loads        = NULL_RTX;
-  ptr->stores       = NULL_RTX;
+  ptr->loads        = NULL;
+  ptr->stores       = NULL;
   ptr->reaching_reg = NULL_RTX;
   ptr->invalid      = 0;
   ptr->index        = 0;
@@ -4092,7 +4092,7 @@ update_ld_motion_stores (struct expr * expr)
 
       for ( ; list != NULL_RTX; list = XEXP (list, 1))
 	{
-	  rtx insn = XEXP (list, 0);
+	  rtx_insn *insn = as_a <rtx_insn *> (XEXP (list, 0));
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;

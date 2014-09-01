@@ -3523,20 +3523,17 @@ case "${target}" in
 			;;
 		esac
 
-		case "$with_fpu" in
-		"" \
-		| vfp | vfp3 | vfpv3 \
-		| vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd \
-		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
-		| fpv4-sp-d16 | neon-vfpv4 | fp-arm-v8 | neon-fp-armv8 \
-                | crypto-neon-fp-armv8)
-			# OK
-			;;
-		*)
-			echo "Unknown fpu used in --with-fpu=$with_fpu" 2>&1
-			exit 1
-			;;
-		esac
+		# see if it matches any of the entries in arm-fpus.def
+		if [ x"$with_fpu" = x ] \
+		    || grep "^ARM_FPU(\"$with_fpu\"," \
+			    ${srcdir}/config/arm/arm-fpus.def \
+			    > /dev/null; then
+		  # OK
+		  true
+		else
+		  echo "Unknown fpu used in --with-fpu=$with_fpu" 1>&2
+		  exit 1
+		fi
 
 		case "$with_abi" in
 		"" \

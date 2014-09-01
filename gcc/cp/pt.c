@@ -2308,7 +2308,8 @@ check_template_variable (tree decl)
 {
   tree ctx = CP_DECL_CONTEXT (decl);
   int wanted = num_template_headers_for_class (ctx);
-  if (!TYPE_P (ctx) || !CLASSTYPE_TEMPLATE_INFO (ctx))
+  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
     {
       if (cxx_dialect < cxx14)
         pedwarn (DECL_SOURCE_LOCATION (decl), 0,
@@ -2323,7 +2324,8 @@ check_template_variable (tree decl)
       bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			     "too many template headers for %D (should be %d)",
 			     decl, wanted);
-      if (warned && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+      if (warned && CLASS_TYPE_P (ctx)
+	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
 	inform (DECL_SOURCE_LOCATION (decl),
 		"members of an explicitly specialized class are defined "
 		"without a template header");
@@ -2451,11 +2453,9 @@ check_explicit_specialization (tree declarator,
       /* Fall through.  */
     case tsk_expl_spec:
       if (VAR_P (decl) && TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
-        {
-           // In cases like template<> constexpr bool v = true;
-           error ("%qD is not a template variable", dname);
-           break;
-        }
+	/* In cases like template<> constexpr bool v = true;
+	   We'll give an error in check_template_variable.  */
+	break;
 
       SET_DECL_TEMPLATE_SPECIALIZATION (decl);
       if (ctype)
@@ -11127,13 +11127,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		   same_type_p, because DECL_CONTEXT is always
 		   canonical...  */
 		if (ctx == DECL_CONTEXT (t)
-		    && (TREE_CODE (t) != TYPE_DECL
-			/* ... unless T is a member template; in which
-			   case our caller can be willing to create a
-			   specialization of that template represented
-			   by T.  */
-			|| !(DECL_TI_TEMPLATE (t)
-			     && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (t)))))
+		    /* ... unless T is a member template; in which
+		       case our caller can be willing to create a
+		       specialization of that template represented
+		       by T.  */
+		    && !(DECL_TI_TEMPLATE (t)
+			 && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
 		  spec = t;
 	      }
 
@@ -11226,6 +11225,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  }
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
+	    if (TREE_STATIC (r) || DECL_EXTERNAL (r))
+	      set_decl_tls_model (r, decl_tls_model (t));
 	  }
 	else if (DECL_SELF_REFERENCE_P (t))
 	  SET_DECL_SELF_REFERENCE_P (r);
@@ -15411,6 +15412,17 @@ tsubst_copy_and_build (tree t,
     case PARM_DECL:
       {
 	tree r = tsubst_copy (t, args, complain, in_decl);
+	if (VAR_P (r)
+	    && !processing_template_decl
+	    && !cp_unevaluated_operand
+	    && (TREE_STATIC (r) || DECL_EXTERNAL (r))
+	    && DECL_THREAD_LOCAL_P (r))
+	  {
+	    if (tree wrap = get_tls_wrapper_fn (r))
+	      /* Replace an evaluated use of the thread_local variable with
+		 a call to its wrapper.  */
+	      r = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+	  }
 
 	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
 	  /* If the original type was a reference, we'll be wrapped in
@@ -19712,8 +19724,6 @@ template_for_substitution (tree decl)
 	 cannot restructure the loop to just keep going until we find
 	 a template with a definition, since that might go too far if
 	 a specialization was declared, but not defined.  */
-      gcc_assert (!VAR_P (decl)
-		  || DECL_IN_AGGR_P (DECL_TEMPLATE_RESULT (tmpl)));
 
       /* Fetch the more general template.  */
       tmpl = DECL_TI_TEMPLATE (tmpl);

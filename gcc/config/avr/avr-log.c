@@ -209,7 +209,7 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
 
             case 'L':
               {
-                rtx insn = va_arg (ap, rtx);
+                rtx_insn *insn = safe_as_a <rtx_insn *> (va_arg (ap, rtx));
 
                 while (insn)
                   {

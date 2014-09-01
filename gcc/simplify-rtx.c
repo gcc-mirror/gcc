@@ -1364,8 +1364,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 (sign_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
       if (GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND)
 	{
-	  gcc_assert (GET_MODE_BITSIZE (mode)
-		      > GET_MODE_BITSIZE (GET_MODE (op)));
+	  gcc_assert (GET_MODE_PRECISION (mode)
+		      > GET_MODE_PRECISION (GET_MODE (op)));
 	  return simplify_gen_unary (GET_CODE (op), mode, XEXP (op, 0),
 				     GET_MODE (XEXP (op, 0)));
 	}
@@ -1476,15 +1476,15 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* (zero_extend:M (lshiftrt:N (ashift <X> (const_int I)) (const_int I)))
 	 is (zero_extend:M (subreg:O <X>)) if there is mode with
-	 GET_MODE_BITSIZE (N) - I bits.  */
+	 GET_MODE_PRECISION (N) - I bits.  */
       if (GET_CODE (op) == LSHIFTRT
 	  && GET_CODE (XEXP (op, 0)) == ASHIFT
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
-	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
+	  && GET_MODE_PRECISION (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
 	{
 	  enum machine_mode tmode
-	    = mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
+	    = mode_for_size (GET_MODE_PRECISION (GET_MODE (op))
 			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
 	  if (tmode != BLKmode)
 	    {
@@ -3079,10 +3079,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 #if defined(HAVE_rotate) && defined(HAVE_rotatert)
       if (CONST_INT_P (trueop1)
 	  && IN_RANGE (INTVAL (trueop1),
-		       GET_MODE_BITSIZE (mode) / 2 + (code == ROTATE),
-		       GET_MODE_BITSIZE (mode) - 1))
+		       GET_MODE_PRECISION (mode) / 2 + (code == ROTATE),
+		       GET_MODE_PRECISION (mode) - 1))
 	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
-				    mode, op0, GEN_INT (GET_MODE_BITSIZE (mode)
+				    mode, op0, GEN_INT (GET_MODE_PRECISION (mode)
 							- INTVAL (trueop1)));
 #endif
       /* FALLTHRU */
@@ -3099,7 +3099,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     canonicalize_shift:
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
 	{
-	  val = INTVAL (op1) & (GET_MODE_BITSIZE (mode) - 1);
+	  val = INTVAL (op1) & (GET_MODE_PRECISION (mode) - 1);
 	  if (val != INTVAL (op1))
 	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
 	}
@@ -3779,7 +3779,8 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   /* We can fold some multi-word operations.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  if ((GET_MODE_CLASS (mode) == MODE_INT
+       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
       && CONST_SCALAR_INT_P (op0)
       && CONST_SCALAR_INT_P (op1))
     {

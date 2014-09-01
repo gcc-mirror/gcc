@@ -859,7 +859,7 @@ enum cris_symbol_type
 /* We don't want an .ident for gcc.  To avoid that but still support
    #ident, we override TARGET_ASM_OUTPUT_IDENT and, since the gcc .ident
    is its only use besides front-end .ident directives, we return if
-   the state if the cgraph is not CGRAPH_STATE_PARSING.  */
+   the state if the cgraph is not PARSING.  */
 #undef TARGET_ASM_OUTPUT_IDENT
 #define TARGET_ASM_OUTPUT_IDENT cris_asm_output_ident
 

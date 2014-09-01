@@ -1,3 +1,4 @@
+/* { dg-options "-Wno-psabi" } */
 void abort (void);
 
 struct S2848

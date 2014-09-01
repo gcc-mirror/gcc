@@ -153,7 +153,7 @@ nds32_fp_as_gp_check_available (void)
       int symbol_count  = 0;
 
       int threshold;
-      rtx insn;
+      rtx_insn *insn;
 
       /* We check if there already requires prologue.
          Note that $gp will be saved in prologue for PIC code generation.

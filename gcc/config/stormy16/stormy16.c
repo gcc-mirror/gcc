@@ -263,7 +263,7 @@ xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
 {
   rtx op0 = XEXP (comparison, 0);
   rtx op1 = XEXP (comparison, 1);
-  rtx seq, last_insn;
+  rtx_insn *seq, *last_insn;
   rtx compare;
 
   start_sequence ();
@@ -2389,7 +2389,7 @@ xstormy16_expand_builtin (tree exp, rtx target,
    patterns.  */
 
 static void
-combine_bnp (rtx insn)
+combine_bnp (rtx_insn *insn)
 {
   int insn_code, regno, need_extend;
   unsigned int mask;
@@ -2606,7 +2606,7 @@ combine_bnp (rtx insn)
 static void
 xstormy16_reorg (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {

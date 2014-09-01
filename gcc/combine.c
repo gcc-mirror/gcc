@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "statistics.h"
 #include "params.h"
+#include "rtl-iter.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -469,9 +470,7 @@ static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *, rtx, rtx,
 static void distribute_links (struct insn_link *);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
-static int unmentioned_reg_p_1 (rtx *, void *);
 static bool unmentioned_reg_p (rtx, rtx);
-static int record_truncated_value (rtx *, void *);
 static void record_truncated_values (rtx *, void *);
 static bool reg_truncated_to_mode (enum machine_mode, const_rtx);
 static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
@@ -515,13 +514,13 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
    reg_stat vector is made larger if the splitter creates a new
    register.  */
 
-static rtx
+static rtx_insn *
 combine_split_insns (rtx pattern, rtx insn)
 {
-  rtx ret;
+  rtx_insn *ret;
   unsigned int nregs;
 
-  ret = split_insns (pattern, insn);
+  ret = safe_as_a <rtx_insn *> (split_insns (pattern, insn));
   nregs = max_reg_num ();
   if (nregs > reg_stat.length ())
     reg_stat.safe_grow_cleared (nregs);
@@ -1548,7 +1547,7 @@ setup_incoming_promotions (rtx_insn *first)
          function lie within the current compilation unit.  (This does
 	 take into account the exporting of a function via taking its
 	 address, and so forth.)  */
-      strictly_local = cgraph_local_info (current_function_decl)->local;
+      strictly_local = cgraph_node::local_info (current_function_decl)->local;
 
       /* The mode and signedness of the argument before any promotions happen
          (equal to the mode of the pseudo holding it at that stage).  */
@@ -2295,8 +2294,9 @@ likely_spilled_retval_1 (rtx x, const_rtx set, void *data)
 static int
 likely_spilled_retval_p (rtx_insn *insn)
 {
-  rtx use = BB_END (this_basic_block);
-  rtx reg, p;
+  rtx_insn *use = BB_END (this_basic_block);
+  rtx reg;
+  rtx_insn *p;
   unsigned regno, nregs;
   /* We assume here that no machine mode needs more than
      32 hard registers when the value overlaps with a register
@@ -2425,7 +2425,7 @@ update_cfg_for_uncondjump (rtx_insn *insn)
 	    if (PREV_INSN (insn))
 	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	    else
-	      SET_BB_FOOTER (bb) = NEXT_INSN (insn);
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
 	    if (NEXT_INSN (insn))
 	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	  }
@@ -3334,13 +3334,14 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   if (i1 && insn_code_number < 0 && GET_CODE (newpat) == SET
       && asm_noperands (newpat) < 0)
     {
-      rtx parallel, m_split, *split;
+      rtx parallel, *split;
+      rtx_insn *m_split_insn;
 
       /* See if the MD file can split NEWPAT.  If it can't, see if letting it
 	 use I2DEST as a scratch register will help.  In the latter case,
 	 convert I2DEST to the mode of the source of NEWPAT if we can.  */
 
-      m_split = combine_split_insns (newpat, i3);
+      m_split_insn = combine_split_insns (newpat, i3);
 
       /* We can only use I2DEST as a scratch reg if it doesn't overlap any
 	 inputs of NEWPAT.  */
@@ -3349,7 +3350,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 possible to try that as a scratch reg.  This would require adding
 	 more code to make it work though.  */
 
-      if (m_split == 0 && ! reg_overlap_mentioned_p (i2dest, newpat))
+      if (m_split_insn == 0 && ! reg_overlap_mentioned_p (i2dest, newpat))
 	{
 	  enum machine_mode new_mode = GET_MODE (SET_DEST (newpat));
 
@@ -3359,11 +3360,11 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 				       gen_rtvec (2, newpat,
 						  gen_rtx_CLOBBER (VOIDmode,
 								   i2dest)));
-	  m_split = combine_split_insns (parallel, i3);
+	  m_split_insn = combine_split_insns (parallel, i3);
 
 	  /* If that didn't work, try changing the mode of I2DEST if
 	     we can.  */
-	  if (m_split == 0
+	  if (m_split_insn == 0
 	      && new_mode != GET_MODE (i2dest)
 	      && new_mode != VOIDmode
 	      && can_change_dest_mode (i2dest, added_sets_2, new_mode))
@@ -3384,9 +3385,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 			   gen_rtvec (2, newpat,
 				      gen_rtx_CLOBBER (VOIDmode,
 						       ni2dest))));
-	      m_split = combine_split_insns (parallel, i3);
+	      m_split_insn = combine_split_insns (parallel, i3);
 
-	      if (m_split == 0
+	      if (m_split_insn == 0
 		  && REGNO (i2dest) >= FIRST_PSEUDO_REGISTER)
 		{
 		  struct undo *buf;
@@ -3399,34 +3400,34 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		}
 	    }
 
-	  i2scratch = m_split != 0;
+	  i2scratch = m_split_insn != 0;
 	}
 
       /* If recog_for_combine has discarded clobbers, try to use them
 	 again for the split.  */
-      if (m_split == 0 && newpat_vec_with_clobbers)
+      if (m_split_insn == 0 && newpat_vec_with_clobbers)
 	{
 	  parallel = gen_rtx_PARALLEL (VOIDmode, newpat_vec_with_clobbers);
-	  m_split = combine_split_insns (parallel, i3);
+	  m_split_insn = combine_split_insns (parallel, i3);
 	}
 
-      if (m_split && NEXT_INSN (m_split) == NULL_RTX)
+      if (m_split_insn && NEXT_INSN (m_split_insn) == NULL_RTX)
 	{
-	  m_split = PATTERN (m_split);
-	  insn_code_number = recog_for_combine (&m_split, i3, &new_i3_notes);
+	  rtx m_split_pat = PATTERN (m_split_insn);
+	  insn_code_number = recog_for_combine (&m_split_pat, i3, &new_i3_notes);
 	  if (insn_code_number >= 0)
-	    newpat = m_split;
+	    newpat = m_split_pat;
 	}
-      else if (m_split && NEXT_INSN (NEXT_INSN (m_split)) == NULL_RTX
+      else if (m_split_insn && NEXT_INSN (NEXT_INSN (m_split_insn)) == NULL_RTX
 	       && (next_nonnote_nondebug_insn (i2) == i3
-		   || ! use_crosses_set_p (PATTERN (m_split), DF_INSN_LUID (i2))))
+		   || ! use_crosses_set_p (PATTERN (m_split_insn), DF_INSN_LUID (i2))))
 	{
 	  rtx i2set, i3set;
-	  rtx newi3pat = PATTERN (NEXT_INSN (m_split));
-	  newi2pat = PATTERN (m_split);
+	  rtx newi3pat = PATTERN (NEXT_INSN (m_split_insn));
+	  newi2pat = PATTERN (m_split_insn);
 
-	  i3set = single_set (NEXT_INSN (m_split));
-	  i2set = single_set (m_split);
+	  i3set = single_set (NEXT_INSN (m_split_insn));
+	  i2set = single_set (m_split_insn);
 
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 
@@ -4535,9 +4536,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 					    MEM_ADDR_SPACE (x)))
 	{
 	  rtx reg = regno_reg_rtx[FIRST_PSEUDO_REGISTER];
-	  rtx seq = combine_split_insns (gen_rtx_SET (VOIDmode, reg,
-						      XEXP (x, 0)),
-					 subst_insn);
+	  rtx_insn *seq = combine_split_insns (gen_rtx_SET (VOIDmode, reg,
+							    XEXP (x, 0)),
+					       subst_insn);
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
@@ -12502,15 +12503,14 @@ reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
   return false;
 }
 
-/* Callback for for_each_rtx.  If *P is a hard reg or a subreg record the mode
-   that the register is accessed in.  For non-TRULY_NOOP_TRUNCATION targets we
-   might be able to turn a truncate into a subreg using this information.
-   Return -1 if traversing *P is complete or 0 otherwise.  */
+/* If X is a hard reg or a subreg record the mode that the register is
+   accessed in.  For non-TRULY_NOOP_TRUNCATION targets we might be able
+   to turn a truncate into a subreg using this information.  Return true
+   if traversing X is complete.  */
 
-static int
-record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
+static bool
+record_truncated_value (rtx x)
 {
-  rtx x = *p;
   enum machine_mode truncated_mode;
   reg_stat_type *rsp;
 
@@ -12520,10 +12520,10 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
       truncated_mode = GET_MODE (x);
 
       if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))
-	return -1;
+	return true;
 
       if (TRULY_NOOP_TRUNCATION_MODES_P (truncated_mode, original_mode))
-	return -1;
+	return true;
 
       x = SUBREG_REG (x);
     }
@@ -12532,7 +12532,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
   else if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
     truncated_mode = GET_MODE (x);
   else
-    return 0;
+    return false;
 
   rsp = &reg_stat[REGNO (x)];
   if (rsp->truncated_to_mode == 0
@@ -12544,7 +12544,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
       rsp->truncation_label = label_tick;
     }
 
-  return -1;
+  return true;
 }
 
 /* Callback for note_uses.  Find hardregs and subregs of pseudos and
@@ -12552,9 +12552,12 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
    SUBREGs.  */
 
 static void
-record_truncated_values (rtx *x, void *data ATTRIBUTE_UNUSED)
+record_truncated_values (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
-  for_each_rtx (x, record_truncated_value, NULL);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *loc, NONCONST)
+    if (record_truncated_value (*iter))
+      iter.skip_subrtxes ();
 }
 
 /* Scan X for promoted SUBREGs.  For each one found,
@@ -12997,7 +13000,7 @@ mark_used_regs_combine (rtx x)
    Return the note used to record the death, if there was one.  */
 
 rtx
-remove_death (unsigned int regno, rtx insn)
+remove_death (unsigned int regno, rtx_insn *insn)
 {
   rtx note = find_regno_note (insn, REG_DEAD, regno);
 
@@ -13028,7 +13031,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
   if (code == REG)
     {
       unsigned int regno = REGNO (x);
-      rtx where_dead = reg_stat[regno].last_death;
+      rtx_insn *where_dead = reg_stat[regno].last_death;
 
       /* Don't move the register if it gets killed in between from and to.  */
       if (maybe_kill_insn && reg_set_p (x, maybe_kill_insn)
@@ -13845,23 +13848,6 @@ distribute_links (struct insn_link *links)
     }
 }
 
-/* Subroutine of unmentioned_reg_p and callback from for_each_rtx.
-   Check whether the expression pointer to by LOC is a register or
-   memory, and if so return 1 if it isn't mentioned in the rtx EXPR.
-   Otherwise return zero.  */
-
-static int
-unmentioned_reg_p_1 (rtx *loc, void *expr)
-{
-  rtx x = *loc;
-
-  if (x != NULL_RTX
-      && (REG_P (x) || MEM_P (x))
-      && ! reg_mentioned_p (x, (rtx) expr))
-    return 1;
-  return 0;
-}
-
 /* Check for any register or memory mentioned in EQUIV that is not
    mentioned in EXPR.  This is used to restrict EQUIV to "specializations"
    of EXPR where some registers may have been replaced by constants.  */
@@ -13869,7 +13855,15 @@ unmentioned_reg_p_1 (rtx *loc, void *expr)
 static bool
 unmentioned_reg_p (rtx equiv, rtx expr)
 {
-  return for_each_rtx (&equiv, unmentioned_reg_p_1, expr);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, equiv, NONCONST)
+    {
+      const_rtx x = *iter;
+      if ((REG_P (x) || MEM_P (x))
+	  && !reg_mentioned_p (x, expr))
+	return true;
+    }
+  return false;
 }
 
 DEBUG_FUNCTION void

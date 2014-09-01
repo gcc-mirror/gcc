@@ -153,10 +153,10 @@ static bool symbolref_p (rtx);
 static void encode_pattern_1 (rtx);
 static void encode_pattern (rtx);
 static bool const_in_range (rtx, int, int);
-static void mep_rewrite_mult (rtx, rtx);
-static void mep_rewrite_mulsi3 (rtx, rtx, rtx, rtx);
-static void mep_rewrite_maddsi3 (rtx, rtx, rtx, rtx, rtx);
-static bool mep_reuse_lo_p_1 (rtx, rtx, rtx, bool);
+static void mep_rewrite_mult (rtx_insn *, rtx);
+static void mep_rewrite_mulsi3 (rtx_insn *, rtx, rtx, rtx);
+static void mep_rewrite_maddsi3 (rtx_insn *, rtx, rtx, rtx, rtx);
+static bool mep_reuse_lo_p_1 (rtx, rtx, rtx_insn *, bool);
 static bool move_needs_splitting (rtx, rtx, enum machine_mode);
 static bool mep_expand_setcc_1 (enum rtx_code, rtx, rtx, rtx);
 static bool mep_nongeneral_reg (rtx);
@@ -171,9 +171,9 @@ static bool mep_reg_set_p (rtx, rtx);
 static bool mep_reg_set_in_function (int);
 static bool mep_interrupt_saved_reg (int);
 static bool mep_call_saves_register (int);
-static rtx F (rtx);
+static rtx_insn *F (rtx_insn *);
 static void add_constant (int, int, int, int);
-static rtx maybe_dead_move (rtx, rtx, bool);
+static rtx_insn *maybe_dead_move (rtx, rtx, bool);
 static void mep_reload_pointer (int, const char *);
 static void mep_start_function (FILE *, HOST_WIDE_INT);
 static bool mep_function_ok_for_sibcall (tree, tree);
@@ -198,14 +198,15 @@ static void mep_unique_section (tree, int);
 static unsigned int mep_section_type_flags (tree, const char *, int);
 static void mep_asm_named_section (const char *, unsigned int, tree);
 static bool mep_mentioned_p (rtx, rtx, int);
-static void mep_reorg_regmove (rtx);
-static rtx mep_insert_repeat_label_last (rtx, rtx, bool, bool);
-static void mep_reorg_repeat (rtx);
-static bool mep_invertable_branch_p (rtx);
-static void mep_invert_branch (rtx, rtx);
-static void mep_reorg_erepeat (rtx);
-static void mep_jmp_return_reorg (rtx);
-static void mep_reorg_addcombine (rtx);
+static void mep_reorg_regmove (rtx_insn *);
+static rtx_insn *mep_insert_repeat_label_last (rtx_insn *, rtx_code_label *,
+					       bool, bool);
+static void mep_reorg_repeat (rtx_insn *);
+static bool mep_invertable_branch_p (rtx_insn *);
+static void mep_invert_branch (rtx_insn *, rtx_insn *);
+static void mep_reorg_erepeat (rtx_insn *);
+static void mep_jmp_return_reorg (rtx_insn *);
+static void mep_reorg_addcombine (rtx_insn *);
 static void mep_reorg (void);
 static void mep_init_intrinsics (void);
 static void mep_init_builtins (void);
@@ -217,13 +218,13 @@ static rtx mep_convert_regnum (const struct cgen_regnum_operand *, rtx);
 static rtx mep_legitimize_arg (const struct insn_operand_data *, rtx, int);
 static void mep_incompatible_arg (const struct insn_operand_data *, rtx, int, tree);
 static rtx mep_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static int mep_adjust_cost (rtx, rtx, rtx, int);
+static int mep_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int mep_issue_rate (void);
-static rtx mep_find_ready_insn (rtx *, int, enum attr_slot, int);
-static void mep_move_ready_insn (rtx *, int, rtx);
-static int mep_sched_reorder (FILE *, int, rtx *, int *, int);
-static rtx mep_make_bundle (rtx, rtx);
-static void mep_bundle_insns (rtx);
+static rtx_insn *mep_find_ready_insn (rtx_insn **, int, enum attr_slot, int);
+static void mep_move_ready_insn (rtx_insn **, int, rtx_insn *);
+static int mep_sched_reorder (FILE *, int, rtx_insn **, int *, int);
+static rtx_insn *mep_make_bundle (rtx, rtx_insn *);
+static void mep_bundle_insns (rtx_insn *);
 static bool mep_rtx_cost (rtx, int, int, int, int *, bool);
 static int mep_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
@@ -623,7 +624,7 @@ const_in_range (rtx x, int minv, int maxv)
    at the end of the insn stream.  */
 
 rtx
-mep_mulr_source (rtx insn, rtx dest, rtx src1, rtx src2)
+mep_mulr_source (rtx_insn *insn, rtx dest, rtx src1, rtx src2)
 {
   if (rtx_equal_p (dest, src1))
     return src2;
@@ -644,7 +645,7 @@ mep_mulr_source (rtx insn, rtx dest, rtx src1, rtx src2)
    to (clobber (reg:SI HI_REGNO)).  */
 
 static void
-mep_rewrite_mult (rtx insn, rtx pattern)
+mep_rewrite_mult (rtx_insn *insn, rtx pattern)
 {
   rtx hi_clobber;
 
@@ -659,7 +660,7 @@ mep_rewrite_mult (rtx insn, rtx pattern)
    store the result in DEST if nonnull.  */
 
 static void
-mep_rewrite_mulsi3 (rtx insn, rtx dest, rtx src1, rtx src2)
+mep_rewrite_mulsi3 (rtx_insn *insn, rtx dest, rtx src1, rtx src2)
 {
   rtx lo, pattern;
 
@@ -677,7 +678,7 @@ mep_rewrite_mulsi3 (rtx insn, rtx dest, rtx src1, rtx src2)
    be deleted by a peephole2 if SRC3 is already in $lo.  */
 
 static void
-mep_rewrite_maddsi3 (rtx insn, rtx dest, rtx src1, rtx src2, rtx src3)
+mep_rewrite_maddsi3 (rtx_insn *insn, rtx dest, rtx src1, rtx src2, rtx src3)
 {
   rtx lo, pattern;
 
@@ -719,7 +720,7 @@ mep_rewrite_maddsi3 (rtx insn, rtx dest, rtx src1, rtx src2, rtx src3)
    if GPR is no longer used.  */
 
 static bool
-mep_reuse_lo_p_1 (rtx lo, rtx gpr, rtx insn, bool gpr_dead_p)
+mep_reuse_lo_p_1 (rtx lo, rtx gpr, rtx_insn *insn, bool gpr_dead_p)
 {
   do
     {
@@ -775,7 +776,7 @@ mep_reuse_lo_p_1 (rtx lo, rtx gpr, rtx insn, bool gpr_dead_p)
 /* A wrapper around mep_reuse_lo_p_1 that preserves recog_data.  */
 
 bool
-mep_reuse_lo_p (rtx lo, rtx gpr, rtx insn, bool gpr_dead_p)
+mep_reuse_lo_p (rtx lo, rtx gpr, rtx_insn *insn, bool gpr_dead_p)
 {
   bool result = mep_reuse_lo_p_1 (lo, gpr, insn, gpr_dead_p);
   extract_insn (insn);
@@ -856,7 +857,7 @@ mep_use_post_modify_for_set_p (rtx set, rtx gpr, rtx offset)
 /* Return the effect of frame-related instruction INSN.  */
 
 static rtx
-mep_frame_expr (rtx insn)
+mep_frame_expr (rtx_insn *insn)
 {
   rtx note, expr;
 
@@ -870,7 +871,7 @@ mep_frame_expr (rtx insn)
    new pattern in INSN1; INSN2 will be deleted by the caller.  */
 
 static void
-mep_make_parallel (rtx insn1, rtx insn2)
+mep_make_parallel (rtx_insn *insn1, rtx_insn *insn2)
 {
   rtx expr;
 
@@ -895,9 +896,9 @@ mep_make_parallel (rtx insn1, rtx insn2)
    be persuaded to do SET_INSN as a side-effect.  Return true if so.  */
 
 static bool
-mep_use_post_modify_p_1 (rtx set_insn, rtx reg, rtx offset)
+mep_use_post_modify_p_1 (rtx_insn *set_insn, rtx reg, rtx offset)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   insn = set_insn;
   do
@@ -924,7 +925,7 @@ mep_use_post_modify_p_1 (rtx set_insn, rtx reg, rtx offset)
 /* A wrapper around mep_use_post_modify_p_1 that preserves recog_data.  */
 
 bool
-mep_use_post_modify_p (rtx insn, rtx reg, rtx offset)
+mep_use_post_modify_p (rtx_insn *insn, rtx reg, rtx offset)
 {
   bool result = mep_use_post_modify_p_1 (insn, reg, offset);
   extract_insn (insn);
@@ -1235,7 +1236,7 @@ mep_legitimize_reload_address (rtx *x, enum machine_mode mode, int opnum,
 }
 
 int
-mep_core_address_length (rtx insn, int opn)
+mep_core_address_length (rtx_insn *insn, int opn)
 {
   rtx set = single_set (insn);
   rtx mem = XEXP (set, opn);
@@ -1282,7 +1283,7 @@ mep_core_address_length (rtx insn, int opn)
 }
 
 int
-mep_cop_address_length (rtx insn, int opn)
+mep_cop_address_length (rtx_insn *insn, int opn)
 {
   rtx set = single_set (insn);
   rtx mem = XEXP (set, opn);
@@ -2337,7 +2338,8 @@ mep_reg_set_p (rtx reg, rtx insn)
 static bool
 mep_reg_set_in_function (int regno)
 {
-  rtx reg, insn;
+  rtx reg;
+  rtx_insn *insn;
 
   if (mep_interrupt_p () && df_regs_ever_live_p(regno))
     return true;
@@ -2365,7 +2367,7 @@ mep_asm_without_operands_p (void)
 {
   if (cfun->machine->asms_without_operands == 0)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       push_topmost_sequence ();
       insn = get_insns ();
@@ -2536,8 +2538,8 @@ mep_elimination_offset (int from, int to)
   gcc_unreachable ();
 }
 
-static rtx
-F (rtx x)
+static rtx_insn *
+F (rtx_insn *x)
 {
   RTX_FRAME_RELATED_P (x) = 1;
   return x;
@@ -2551,7 +2553,7 @@ F (rtx x)
 static void
 add_constant (int dest, int src, int value, int mark_frame)
 {
-  rtx insn;
+  rtx_insn *insn;
   int hi, lo;
 
   if (src == dest && value == 0)
@@ -2611,10 +2613,10 @@ add_constant (int dest, int src, int value, int mark_frame)
 /* Move SRC to DEST.  Mark the move as being potentially dead if
    MAYBE_DEAD_P.  */
 
-static rtx
+static rtx_insn *
 maybe_dead_move (rtx dest, rtx src, bool ATTRIBUTE_UNUSED maybe_dead_p)
 {
-  rtx insn = emit_move_insn (dest, src);
+  rtx_insn *insn = emit_move_insn (dest, src);
 #if 0
   if (maybe_dead_p)
     REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
@@ -2739,7 +2741,7 @@ mep_expand_prologue (void)
 	  F(maybe_dead_move (mem, gen_rtx_REG (rmode, i), maybe_dead_p));
 	else if (rmode == DImode)
 	  {
-	    rtx insn;
+	    rtx_insn *insn;
 	    int be = TARGET_BIG_ENDIAN ? 4 : 0;
 
 	    mem = gen_rtx_MEM (SImode,
@@ -2773,7 +2775,7 @@ mep_expand_prologue (void)
 	  }
 	else
 	  {
-	    rtx insn;
+	    rtx_insn *insn;
 	    maybe_dead_move (gen_rtx_REG (rmode, REGSAVE_CONTROL_TEMP),
 			     gen_rtx_REG (rmode, i),
 			     maybe_dead_p);
@@ -3370,7 +3372,7 @@ mep_print_operand (FILE *file, rtx x, int code)
 }
 
 void
-mep_final_prescan_insn (rtx insn, rtx *operands ATTRIBUTE_UNUSED,
+mep_final_prescan_insn (rtx_insn *insn, rtx *operands ATTRIBUTE_UNUSED,
 			int noperands ATTRIBUTE_UNUSED)
 {
   /* Despite the fact that MeP is perfectly capable of branching and
@@ -3442,8 +3444,6 @@ mep_expand_builtin_saveregs (void)
     }
   return XEXP (regbuf, 0);
 }
-
-#define VECTOR_TYPE_P(t) (TREE_CODE(t) == VECTOR_TYPE)
 
 static tree
 mep_build_builtin_va_list (void)
@@ -4890,9 +4890,10 @@ mep_compatible_reg_class (int r1, int r2)
 }
 
 static void
-mep_reorg_regmove (rtx insns)
+mep_reorg_regmove (rtx_insn *insns)
 {
-  rtx insn, next, pat, follow, *where;
+  rtx_insn *insn, *next, *follow;
+  rtx pat, *where;
   int count = 0, done = 0, replace, before = 0;
 
   if (dump_file)
@@ -4968,7 +4969,7 @@ mep_reorg_regmove (rtx insns)
 	    {
 	      if (dump_file)
 		{
-		  rtx x;
+		  rtx_insn *x;
 
 		  fprintf (dump_file, "----- Candidate for superfluous move deletion:\n\n");
 		  for (x = insn; x ;x = NEXT_INSN (x))
@@ -5012,11 +5013,11 @@ mep_reorg_regmove (rtx insns)
 
    Return the last instruction in the adjusted loop.  */
 
-static rtx
-mep_insert_repeat_label_last (rtx last_insn, rtx label, bool including,
-			      bool shared)
+static rtx_insn *
+mep_insert_repeat_label_last (rtx_insn *last_insn, rtx_code_label *label,
+			      bool including, bool shared)
 {
-  rtx next, prev;
+  rtx_insn *next, *prev;
   int count = 0, code, icode;
 
   if (dump_file)
@@ -5040,7 +5041,7 @@ mep_insert_repeat_label_last (rtx last_insn, rtx label, bool including,
 	if (INSN_P (prev))
 	  {
 	    if (GET_CODE (PATTERN (prev)) == SEQUENCE)
-	      prev = XVECEXP (PATTERN (prev), 0, 1);
+	      prev = as_a <rtx_insn *> (XVECEXP (PATTERN (prev), 0, 1));
 
 	    /* Other insns that should not be in the last two opcodes.  */
 	    icode = recog_memoized (prev);
@@ -5210,7 +5211,7 @@ struct mep_doloop_begin {
   struct mep_doloop_begin *next;
 
   /* The instruction itself.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The initial counter value.  This is known to be a general register.  */
   rtx counter;
@@ -5222,10 +5223,10 @@ struct mep_doloop_end {
   struct mep_doloop_end *next;
 
   /* The instruction itself.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The first instruction after INSN when the branch isn't taken.  */
-  rtx fallthrough;
+  rtx_insn *fallthrough;
 
   /* The location of the counter value.  Since doloop_end_internal is a
      jump instruction, it has to allow the counter to be stored anywhere
@@ -5288,9 +5289,9 @@ mep_repeat_loop_p (struct mep_doloop *loop)
 /* The main repeat reorg function.  See comment above for details.  */
 
 static void
-mep_reorg_repeat (rtx insns)
+mep_reorg_repeat (rtx_insn *insns)
 {
-  rtx insn;
+  rtx_insn *insn;
   struct mep_doloop *loops, *loop;
   struct mep_doloop_begin *begin;
   struct mep_doloop_end *end;
@@ -5351,7 +5352,8 @@ mep_reorg_repeat (rtx insns)
     if (mep_repeat_loop_p (loop))
       {
 	/* Case (1) or (2).  */
-	rtx repeat_label, label_ref;
+	rtx_code_label *repeat_label;
+	rtx label_ref;
 
 	/* Create a new label for the repeat insn.  */
 	repeat_label = gen_label_rtx ();
@@ -5435,7 +5437,7 @@ mep_reorg_repeat (rtx insns)
 
 
 static bool
-mep_invertable_branch_p (rtx insn)
+mep_invertable_branch_p (rtx_insn *insn)
 {
   rtx cond, set;
   enum rtx_code old_code;
@@ -5473,7 +5475,7 @@ mep_invertable_branch_p (rtx insn)
 }
 
 static void
-mep_invert_branch (rtx insn, rtx after)
+mep_invert_branch (rtx_insn *insn, rtx_insn *after)
 {
   rtx cond, set, label;
   int i;
@@ -5519,9 +5521,11 @@ mep_invert_branch (rtx insn, rtx after)
 }
 
 static void
-mep_reorg_erepeat (rtx insns)
+mep_reorg_erepeat (rtx_insn *insns)
 {
-  rtx insn, prev, l, x;
+  rtx_insn *insn, *prev;
+  rtx_code_label *l;
+  rtx x;
   int count;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -5542,7 +5546,7 @@ mep_reorg_erepeat (rtx insns)
 
 	    if (prev == JUMP_LABEL (insn))
 	      {
-		rtx newlast;
+		rtx_insn *newlast;
 		if (dump_file)
 		  fprintf (dump_file, "found loop top, %d insns\n", count);
 
@@ -5554,7 +5558,7 @@ mep_reorg_erepeat (rtx insns)
 		       so, we know nobody inside the loop uses it.
 		       But we must be careful to put the erepeat
 		       *after* the label.  */
-		    rtx barrier;
+		    rtx_insn *barrier;
 		    for (barrier = PREV_INSN (prev);
 			 barrier && NOTE_P (barrier);
 			 barrier = PREV_INSN (barrier))
@@ -5598,7 +5602,7 @@ mep_reorg_erepeat (rtx insns)
 	      {
 		/* A label is OK if there is exactly one user, and we
 		   can find that user before the next label.  */
-		rtx user = 0;
+		rtx_insn *user = 0;
 		int safe = 0;
 		if (LABEL_NUSES (prev) == 1)
 		  {
@@ -5632,9 +5636,10 @@ mep_reorg_erepeat (rtx insns)
    always do this on its own.  */
 
 static void
-mep_jmp_return_reorg (rtx insns)
+mep_jmp_return_reorg (rtx_insn *insns)
 {
-  rtx insn, label, ret;
+  rtx_insn *insn;
+  rtx label, ret;
   int ret_code;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -5646,7 +5651,7 @@ mep_jmp_return_reorg (rtx insns)
 	     && (NOTE_P (ret)
 		 || LABEL_P (ret)
 		 || GET_CODE (PATTERN (ret)) == USE))
-	ret = NEXT_INSN (ret);
+	ret = NEXT_INSN (as_a <rtx_insn *> (ret));
 
       if (ret)
 	{
@@ -5668,9 +5673,9 @@ mep_jmp_return_reorg (rtx insns)
 
 
 static void
-mep_reorg_addcombine (rtx insns)
+mep_reorg_addcombine (rtx_insn *insns)
 {
-  rtx i, n;
+  rtx_insn *i, *n;
 
   for (i = insns; i; i = NEXT_INSN (i))
     if (INSN_P (i)
@@ -5706,7 +5711,7 @@ mep_reorg_addcombine (rtx insns)
 /* If this insn adjusts the stack, return the adjustment, else return
    zero.  */
 static int
-add_sp_insn_p (rtx insn)
+add_sp_insn_p (rtx_insn *insn)
 {
   rtx pat;
 
@@ -5731,10 +5736,10 @@ add_sp_insn_p (rtx insn)
 /* Check for trivial functions that set up an unneeded stack
    frame.  */
 static void
-mep_reorg_noframe (rtx insns)
+mep_reorg_noframe (rtx_insn *insns)
 {
-  rtx start_frame_insn;
-  rtx end_frame_insn = 0;
+  rtx_insn *start_frame_insn;
+  rtx_insn *end_frame_insn = 0;
   int sp_adjust, sp2;
   rtx sp;
 
@@ -5755,7 +5760,7 @@ mep_reorg_noframe (rtx insns)
 
   while (insns)
     {
-      rtx next = next_real_insn (insns);
+      rtx_insn *next = next_real_insn (insns);
       if (!next)
 	break;
 
@@ -5786,7 +5791,7 @@ mep_reorg_noframe (rtx insns)
 static void
 mep_reorg (void)
 {
-  rtx insns = get_insns ();
+  rtx_insn *insns = get_insns ();
 
   /* We require accurate REG_DEAD notes.  */
   compute_bb_for_insn ();
@@ -6470,7 +6475,7 @@ global_reg_mentioned_p (rtx x)
    insns.  Not implemented.  */
 
 static int
-mep_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+mep_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   int cost_specified;
 
@@ -6533,25 +6538,26 @@ mep_vliw_function_p (tree decl)
   return lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))) != 0;
 }
 
-static rtx
-mep_find_ready_insn (rtx *ready, int nready, enum attr_slot slot, int length)
+static rtx_insn *
+mep_find_ready_insn (rtx_insn **ready, int nready, enum attr_slot slot,
+		     int length)
 {
   int i;
 
   for (i = nready - 1; i >= 0; --i)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (recog_memoized (insn) >= 0
 	  && get_attr_slot (insn) == slot
 	  && get_attr_length (insn) == length)
 	return insn;
     }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 static void
-mep_move_ready_insn (rtx *ready, int nready, rtx insn)
+mep_move_ready_insn (rtx_insn **ready, int nready, rtx_insn *insn)
 {
   int i;
 
@@ -6568,7 +6574,7 @@ mep_move_ready_insn (rtx *ready, int nready, rtx insn)
 }
 
 static void
-mep_print_sched_insn (FILE *dump, rtx insn)
+mep_print_sched_insn (FILE *dump, rtx_insn *insn)
 {
   const char *slots = "none";
   const char *name = NULL;
@@ -6613,11 +6619,11 @@ mep_print_sched_insn (FILE *dump, rtx insn)
 
 static int
 mep_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
-		   int sched_verbose ATTRIBUTE_UNUSED, rtx *ready,
+		   int sched_verbose ATTRIBUTE_UNUSED, rtx_insn **ready,
 		   int *pnready, int clock ATTRIBUTE_UNUSED)
 {
   int nready = *pnready;
-  rtx core_insn, cop_insn;
+  rtx_insn *core_insn, *cop_insn;
   int i;
 
   if (dump && sched_verbose > 1)
@@ -6673,7 +6679,7 @@ mep_store_find_set (rtx *x, void *prev)
    not the containing insn.  */
 
 static bool
-mep_store_data_bypass_1 (rtx prev, rtx pat)
+mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 {
   /* Cope with intrinsics like swcpa.  */
   if (GET_CODE (pat) == PARALLEL)
@@ -6681,7 +6687,8 @@ mep_store_data_bypass_1 (rtx prev, rtx pat)
       int i;
 
       for (i = 0; i < XVECLEN (pat, 0); i++)
-	if (mep_store_data_bypass_p (prev, XVECEXP (pat, 0, i)))
+	if (mep_store_data_bypass_p (prev,
+				     as_a <rtx_insn *> (XVECEXP (pat, 0, i))))
 	  return true;
 
       return false;
@@ -6717,7 +6724,7 @@ mep_store_data_bypass_1 (rtx prev, rtx pat)
    has no true dependence on PREV.  */
 
 bool
-mep_store_data_bypass_p (rtx prev, rtx insn)
+mep_store_data_bypass_p (rtx_insn *prev, rtx_insn *insn)
 {
   return INSN_P (insn) ? mep_store_data_bypass_1 (prev, PATTERN (insn)) : false;
 }
@@ -6738,7 +6745,7 @@ mep_mul_hilo_bypass_1 (rtx *x, void *prev)
    between multiplication instructions PREV and INSN.  */
 
 bool
-mep_mul_hilo_bypass_p (rtx prev, rtx insn)
+mep_mul_hilo_bypass_p (rtx_insn *prev, rtx_insn *insn)
 {
   rtx pat;
 
@@ -6754,7 +6761,7 @@ mep_mul_hilo_bypass_p (rtx prev, rtx insn)
    read from PSW, LP, SAR, HI and LO.  */
 
 bool
-mep_ipipe_ldc_p (rtx insn)
+mep_ipipe_ldc_p (rtx_insn *insn)
 {
   rtx pat, src;
 
@@ -6794,38 +6801,43 @@ mep_ipipe_ldc_p (rtx insn)
 
    Emit the bundle in place of COP and return it.  */
 
-static rtx
-mep_make_bundle (rtx core, rtx cop)
+static rtx_insn *
+mep_make_bundle (rtx core_insn_or_pat, rtx_insn *cop)
 {
-  rtx insn;
+  rtx seq;
+  rtx_insn *core_insn;
+  rtx_insn *insn;
 
   /* If CORE is an existing instruction, remove it, otherwise put
      the new pattern in an INSN harness.  */
-  if (INSN_P (core))
-    remove_insn (core);
+  if (INSN_P (core_insn_or_pat))
+    {
+      core_insn = as_a <rtx_insn *> (core_insn_or_pat);
+      remove_insn (core_insn);
+    }
   else
-    core = make_insn_raw (core);
+    core_insn = make_insn_raw (core_insn_or_pat);
 
   /* Generate the bundle sequence and replace COP with it.  */
-  insn = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec (2, core, cop));
-  insn = emit_insn_after (insn, cop);
+  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec (2, core_insn, cop));
+  insn = emit_insn_after (seq, cop);
   remove_insn (cop);
 
   /* Set up the links of the insns inside the SEQUENCE.  */
-  SET_PREV_INSN (core) = PREV_INSN (insn);
-  SET_NEXT_INSN (core) = cop;
-  SET_PREV_INSN (cop) = core;
+  SET_PREV_INSN (core_insn) = PREV_INSN (insn);
+  SET_NEXT_INSN (core_insn) = cop;
+  SET_PREV_INSN (cop) = core_insn;
   SET_NEXT_INSN (cop) = NEXT_INSN (insn);
 
   /* Set the VLIW flag for the coprocessor instruction.  */
-  PUT_MODE (core, VOIDmode);
+  PUT_MODE (core_insn, VOIDmode);
   PUT_MODE (cop, BImode);
 
   /* Derive a location for the bundle.  Individual instructions cannot
      have their own location because there can be no assembler labels
-     between CORE and COP.  */
-  INSN_LOCATION (insn) = INSN_LOCATION (INSN_LOCATION (core) ? core : cop);
-  INSN_LOCATION (core) = 0;
+     between CORE_INSN and COP.  */
+  INSN_LOCATION (insn) = INSN_LOCATION (INSN_LOCATION (core_insn) ? core_insn : cop);
+  INSN_LOCATION (core_insn) = 0;
   INSN_LOCATION (cop) = 0;
 
   return insn;
@@ -6867,7 +6879,7 @@ mep_insn_dependent_p (rtx x, rtx y)
 }
 
 static int
-core_insn_p (rtx insn)
+core_insn_p (rtx_insn *insn)
 {
   if (GET_CODE (PATTERN (insn)) == USE)
     return 0;
@@ -6888,9 +6900,9 @@ core_insn_p (rtx insn)
    Called from mep_insn_reorg.  */
 
 static void
-mep_bundle_insns (rtx insns)
+mep_bundle_insns (rtx_insn *insns)
 {
-  rtx insn, last = NULL_RTX, first = NULL_RTX;
+  rtx_insn *insn, *last = NULL, *first = NULL;
   int saw_scheduling = 0;
 
   /* Only do bundling if we're in vliw mode.  */
@@ -6915,7 +6927,7 @@ mep_bundle_insns (rtx insns)
 
       else if (NONJUMP_INSN_P (insn) && GET_MODE (insn) == VOIDmode && first)
 	{
-	  rtx note, prev;
+	  rtx_insn *note, *prev;
 
 	  /* INSN is part of a bundle; FIRST is the first insn in that
 	     bundle.  Move all intervening notes out of the bundle.
@@ -6971,7 +6983,7 @@ mep_bundle_insns (rtx insns)
 
       if (TARGET_IVC2)
 	{
-	  rtx core_insn = NULL_RTX;
+	  rtx_insn *core_insn = NULL;
 
 	  /* IVC2 slots are scheduled by DFA, so we just accept
 	     whatever the scheduler gives us.  However, we must make

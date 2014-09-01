@@ -53,6 +53,7 @@ seems inelegant.
 @node Deficiencies
 @section Deficiencies
 
+@c The spelling of "incomplet" and "incorrekt" below is intentional.
 There are many places in which this document is incomplet and incorrekt.
 It is, as of yet, only @emph{preliminary} documentation.
 

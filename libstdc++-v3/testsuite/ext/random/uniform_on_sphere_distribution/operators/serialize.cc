@@ -20,8 +20,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Class template uniform_on_sphere_distribution [rand.dist.ext.uniform_on_sphere]
-// Concept RandomNumberDistribution [rand.concept.dist]
+// Class template uniform_on_sphere_distribution
+// 26.5.1.6 Random number distribution requirements [rand.req.dist]
 
 #include <ext/random>
 #include <sstream>

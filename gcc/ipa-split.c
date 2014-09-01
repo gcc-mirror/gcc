@@ -1229,7 +1229,7 @@ split_function (struct split_point *split_point)
     }
 
   /* Now create the actual clone.  */
-  rebuild_cgraph_edges ();
+  cgraph_edge::rebuild_edges ();
   node = cur_node->create_version_clone_with_body
     (vNULL, NULL, args_to_skip, !split_part_return_p, split_point->split_bbs,
      split_point->entry_bb, "part");

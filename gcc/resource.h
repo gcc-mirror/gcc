@@ -44,14 +44,14 @@ enum mark_resource_type
   MARK_SRC_DEST_CALL = 1
 };
 
-extern void mark_target_live_regs (rtx, rtx, struct resources *);
+extern void mark_target_live_regs (rtx_insn *, rtx, struct resources *);
 extern void mark_set_resources (rtx, struct resources *, int,
 				enum mark_resource_type);
 extern void mark_referenced_resources (rtx, struct resources *, bool);
-extern void clear_hashed_info_for_insn (rtx);
-extern void incr_ticks_for_insn (rtx);
+extern void clear_hashed_info_for_insn (rtx_insn *);
+extern void incr_ticks_for_insn (rtx_insn *);
 extern void mark_end_of_function_resources (rtx, bool);
-extern void init_resource_info (rtx);
+extern void init_resource_info (rtx_insn *);
 extern void free_resource_info (void);
 
 #endif /* GCC_RESOURCE_H */

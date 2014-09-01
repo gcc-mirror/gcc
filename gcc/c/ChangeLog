@@ -1,3 +1,8 @@
+2014-08-27  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* c-aux-info.c (gen_type): Resize 'buff' from 10 to 23 bytes,
+	with using HOST_WIDE_INT without truncation to 'int'
+
 2014-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62199

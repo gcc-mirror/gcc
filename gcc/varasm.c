@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "stringpool.h"
-#include "gcc-symtab.h"
 #include "varasm.h"
 #include "flags.h"
 #include "function.h"
@@ -54,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "asan.h"
 #include "basic-block.h"
+#include "rtl-iter.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -856,7 +856,7 @@ set_user_assembler_name (tree decl, const char *name)
   char *starred = (char *) alloca (strlen (name) + 2);
   starred[0] = '*';
   strcpy (starred + 1, name);
-  change_decl_assembler_name (decl, get_identifier (starred));
+  symtab->change_decl_assembler_name (decl, get_identifier (starred));
   SET_DECL_RTL (decl, NULL_RTX);
 }
 
@@ -1372,6 +1372,11 @@ make_decl_rtl (tree decl)
 	  /* As a register variable, it has no section.  */
 	  return;
 	}
+      /* Avoid internal errors from invalid register
+	 specifications.  */
+      SET_DECL_ASSEMBLER_NAME (decl, NULL_TREE);
+      DECL_HARD_REGISTER (decl) = 0;
+      return;
     }
   /* Now handle ordinary static variables and functions (in memory).
      Also handle vars declared register invalidly.  */
@@ -1484,7 +1489,7 @@ assemble_addr_to_section (rtx symbol, section *sec)
 {
   switch_to_section (sec);
   assemble_align (POINTER_SIZE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  assemble_integer (symbol, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
 }
 
 /* Return the numbered .ctors.N (if CONSTRUCTOR_P) or .dtors.N (if
@@ -2332,8 +2337,8 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
      Ideally, only final.c would be calling this function, but it is
      not clear whether that would break things somehow.  See PR 17982
      for further discussion.  */
-  gcc_assert (cgraph_state == CGRAPH_STATE_EXPANSION
-	      || cgraph_state == CGRAPH_STATE_FINISHED);
+  gcc_assert (state == EXPANSION
+	      || state == FINISHED);
 #endif
 
   if (!DECL_P (decl) || !DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
@@ -2640,7 +2645,7 @@ default_assemble_integer (rtx x ATTRIBUTE_UNUSED,
   const char *op = integer_asm_op (size, aligned_p);
   /* Avoid GAS bugs for large values.  Specifically negative values whose
      absolute value fits in a bfd_vma, but not in a bfd_signed_vma.  */
-  if (size > UNITS_PER_WORD && size > POINTER_SIZE / BITS_PER_UNIT)
+  if (size > UNITS_PER_WORD && size > POINTER_SIZE_UNITS)
     return false;
   return op && (assemble_integer_with_op (op, x), true);
 }
@@ -3481,19 +3486,17 @@ const_desc_rtx_eq (const void *a, const void *b)
   return rtx_equal_p (x->constant, y->constant);
 }
 
-/* This is the worker function for const_rtx_hash, called via for_each_rtx.  */
+/* Hash one component of a constant.  */
 
-static int
-const_rtx_hash_1 (rtx *xp, void *data)
+static hashval_t
+const_rtx_hash_1 (const_rtx x)
 {
   unsigned HOST_WIDE_INT hwi;
   enum machine_mode mode;
   enum rtx_code code;
-  hashval_t h, *hp;
-  rtx x;
+  hashval_t h;
   int i;
 
-  x = *xp;
   code = GET_CODE (x);
   mode = GET_MODE (x);
   h = (hashval_t) code * 1048573 + mode;
@@ -3539,14 +3542,6 @@ const_rtx_hash_1 (rtx *xp, void *data)
       h ^= fixed_hash (CONST_FIXED_VALUE (x));
       break;
 
-    case CONST_VECTOR:
-      {
-	int i;
-	for (i = XVECLEN (x, 0); i-- > 0; )
-	  h = h * 251 + const_rtx_hash_1 (&XVECEXP (x, 0, i), data);
-      }
-      break;
-
     case SYMBOL_REF:
       h ^= htab_hash_string (XSTR (x, 0));
       break;
@@ -3564,9 +3559,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       break;
     }
 
-  hp = (hashval_t *) data;
-  *hp = *hp * 509 + h;
-  return 0;
+  return h;
 }
 
 /* Compute a hash value for X, which should be a constant.  */
@@ -3575,7 +3568,9 @@ static hashval_t
 const_rtx_hash (rtx x)
 {
   hashval_t h = 0;
-  for_each_rtx (&x, const_rtx_hash_1, &h);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    h = h * 509 + const_rtx_hash_1 (*iter);
   return h;
 }
 
@@ -3720,7 +3715,7 @@ force_const_mem (enum machine_mode mode, rtx x)
 /* Given a constant pool SYMBOL_REF, return the corresponding constant.  */
 
 rtx
-get_pool_constant (rtx addr)
+get_pool_constant (const_rtx addr)
 {
   return SYMBOL_REF_CONSTANT (addr)->constant;
 }
@@ -3876,38 +3871,38 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
   return;
 }
 
-/* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
-   to as used.  Emit referenced deferred strings.  This function can
-   be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
+/* Mark all constants that are referenced by SYMBOL_REFs in X.
+   Emit referenced deferred strings.  */
 
-static int
-mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
+static void
+mark_constants_in_pattern (rtx insn)
 {
-  rtx x = *current_rtx;
-
-  if (x == NULL_RTX || GET_CODE (x) != SYMBOL_REF)
-    return 0;
-
-  if (CONSTANT_POOL_ADDRESS_P (x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
     {
-      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
-      if (desc->mark == 0)
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF)
 	{
-	  desc->mark = 1;
-	  for_each_rtx (&desc->constant, mark_constant, NULL);
+	  if (CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
+	      if (desc->mark == 0)
+		{
+		  desc->mark = 1;
+		  iter.substitute (desc->constant);
+		}
+	    }
+	  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      tree decl = SYMBOL_REF_DECL (x);
+	      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
+		{
+		  n_deferred_constants--;
+		  output_constant_def_contents (CONST_CAST_RTX (x));
+		}
+	    }
 	}
     }
-  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
-    {
-      tree decl = SYMBOL_REF_DECL (x);
-      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
-	{
-	  n_deferred_constants--;
-	  output_constant_def_contents (x);
-	}
-    }
-
-  return -1;
 }
 
 /* Look through appropriate parts of INSN, marking all entries in the
@@ -3924,19 +3919,18 @@ mark_constants (rtx_insn *insn)
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
      a constant just because it happens to appear in a REG_EQUIV note.  */
-  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      int i, n = seq->len ();
       for (i = 0; i < n; ++i)
 	{
-	  rtx subinsn = XVECEXP (seq, 0, i);
+	  rtx subinsn = seq->element (i);
 	  if (INSN_P (subinsn))
-	    for_each_rtx (&PATTERN (subinsn), mark_constant, NULL);
+	    mark_constants_in_pattern (subinsn);
 	}
     }
   else
-    for_each_rtx (&PATTERN (insn), mark_constant, NULL);
+    mark_constants_in_pattern (insn);
 }
 
 /* Look through the instructions for this function, and mark all the
@@ -5361,7 +5355,7 @@ weak_finish_1 (tree decl)
 static tree
 find_decl (tree target)
 {
-  symtab_node *node = symtab_node_for_asm (target);
+  symtab_node *node = symtab_node::get_for_asmname (target);
   if (node)
     return node->decl;
   return NULL_TREE;
@@ -5656,12 +5650,12 @@ assemble_alias (tree decl, tree target)
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
-  if (cgraph_global_info_ready)
+  if (symtab->global_info_ready)
     target_decl = find_decl (target);
   else
     target_decl= NULL;
   if ((target_decl && TREE_ASM_WRITTEN (target_decl))
-      || cgraph_state >= CGRAPH_STATE_EXPANSION)
+      || symtab->state >= EXPANSION)
     do_assemble_alias (decl, target);
   else
     {
@@ -5771,9 +5765,9 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
 	}
 
       assemble_integer (XEXP (DECL_RTL (src), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
       assemble_integer (XEXP (DECL_RTL (dst), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
     }
 }
 
@@ -6506,44 +6500,43 @@ default_unique_section (tree decl, int reloc)
   set_decl_section_name (decl, string);
 }
 
+/* Subroutine of compute_reloc_for_rtx for leaf rtxes.  */
+
+static int
+compute_reloc_for_rtx_1 (const_rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      return SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
+    case LABEL_REF:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
    indicates a local relocation.  */
 
 static int
-compute_reloc_for_rtx_1 (rtx *xp, void *data)
+compute_reloc_for_rtx (const_rtx x)
 {
-  int *preloc = (int *) data;
-  rtx x = *xp;
-
   switch (GET_CODE (x))
     {
     case SYMBOL_REF:
-      *preloc |= SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
-      break;
     case LABEL_REF:
-      *preloc |= 1;
-      break;
-    default:
-      break;
-    }
+      return compute_reloc_for_rtx_1 (x);
 
-  return 0;
-}
-
-static int
-compute_reloc_for_rtx (rtx x)
-{
-  int reloc;
-
-  switch (GET_CODE (x))
-    {
     case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      reloc = 0;
-      for_each_rtx (&x, compute_reloc_for_rtx_1, &reloc);
-      return reloc;
+      {
+	int reloc = 0;
+	subrtx_iterator::array_type array;
+	FOR_EACH_SUBRTX (iter, array, x, ALL)
+	  reloc |= compute_reloc_for_rtx_1 (*iter);
+	return reloc;
+      }
 
     default:
       return 0;
@@ -7604,10 +7597,10 @@ default_asm_output_ident_directive (const char *ident_str)
      to asm_out_file.  Instead, add a fake top-level asm statement.
      This allows the front ends to use this hook without actually
      writing to asm_out_file, to handle #ident or Pragma Ident.  */
-  if (cgraph_state == CGRAPH_STATE_PARSING)
+  if (symtab->state == PARSING)
     {
       char *buf = ACONCAT ((ident_asm_op, "\"", ident_str, "\"\n", NULL));
-      add_asm_node (build_string (strlen (buf), buf));
+      symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
     }
   else
     fprintf (asm_out_file, "%s\"%s\"\n", ident_asm_op, ident_str);

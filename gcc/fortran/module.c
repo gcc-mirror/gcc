@@ -6000,7 +6000,7 @@ gfc_dump_module (const char *name, int dump_flag)
      module file, even if it was already there.  */
   if (!dump_flag)
     {
-      unlink (filename);
+      remove (filename);
       return;
     }
 
@@ -6040,13 +6040,16 @@ gfc_dump_module (const char *name, int dump_flag)
       || crc_old != crc)
     {
       /* Module file have changed, replace the old one.  */
+      if (remove (filename) && errno != ENOENT)
+	gfc_fatal_error ("Can't delete module file '%s': %s", filename,
+			 xstrerror (errno));
       if (rename (filename_tmp, filename))
 	gfc_fatal_error ("Can't rename module file '%s' to '%s': %s",
 			 filename_tmp, filename, xstrerror (errno));
     }
   else
     {
-      if (unlink (filename_tmp))
+      if (remove (filename_tmp))
 	gfc_fatal_error ("Can't delete temporary module file '%s': %s",
 			 filename_tmp, xstrerror (errno));
     }

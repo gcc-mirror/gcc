@@ -37,12 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "addresses.h"
+#include "rtl-iter.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
 static bool covers_regno_p (const_rtx, unsigned int);
 static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
-static int rtx_referenced_p_1 (rtx *, void *);
 static int computed_jump_p_1 (const_rtx);
 static void parms_set (rtx, const_rtx, void *);
 
@@ -62,6 +62,9 @@ static unsigned int num_sign_bit_copies1 (const_rtx, enum machine_mode, const_rt
    -1 if a code has no such operand.  */
 static int non_rtx_starting_operands[NUM_RTX_CODE];
 
+rtx_subrtx_bound_info rtx_all_subrtx_bounds[NUM_RTX_CODE];
+rtx_subrtx_bound_info rtx_nonconst_subrtx_bounds[NUM_RTX_CODE];
+
 /* Truncation narrows the mode from SOURCE mode to DESTINATION mode.
    If TARGET_MODE_REP_EXTENDED (DESTINATION, DESTINATION_REP) is
    SIGN_EXTEND then while narrowing we also have to enforce the
@@ -78,6 +81,93 @@ static int non_rtx_starting_operands[NUM_RTX_CODE];
 static unsigned int
 num_sign_bit_copies_in_rep[MAX_MODE_INT + 1][MAX_MODE_INT + 1];
 
+/* Store X into index I of ARRAY.  ARRAY is known to have at least I
+   elements.  Return the new base of ARRAY.  */
+
+template <typename T>
+typename T::value_type *
+generic_subrtx_iterator <T>::add_single_to_queue (array_type &array,
+						  value_type *base,
+						  size_t i, value_type x)
+{
+  if (base == array.stack)
+    {
+      if (i < LOCAL_ELEMS)
+	{
+	  base[i] = x;
+	  return base;
+	}
+      gcc_checking_assert (i == LOCAL_ELEMS);
+      vec_safe_grow (array.heap, i + 1);
+      base = array.heap->address ();
+      memcpy (base, array.stack, sizeof (array.stack));
+      base[LOCAL_ELEMS] = x;
+      return base;
+    }
+  unsigned int length = array.heap->length ();
+  if (length > i)
+    {
+      gcc_checking_assert (base == array.heap->address ());
+      base[i] = x;
+      return base;
+    }
+  else
+    {
+      gcc_checking_assert (i == length);
+      vec_safe_push (array.heap, x);
+      return array.heap->address ();
+    }
+}
+
+/* Add the subrtxes of X to worklist ARRAY, starting at END.  Return the
+   number of elements added to the worklist.  */
+
+template <typename T>
+size_t
+generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
+						    value_type *base,
+						    size_t end, rtx_type x)
+{
+  const char *format = GET_RTX_FORMAT (GET_CODE (x));
+  size_t orig_end = end;
+  for (int i = 0; format[i]; ++i)
+    if (format[i] == 'e')
+      {
+	value_type subx = T::get_value (x->u.fld[i].rt_rtx);
+	if (__builtin_expect (end < LOCAL_ELEMS, true))
+	  base[end++] = subx;
+	else
+	  base = add_single_to_queue (array, base, end++, subx);
+      }
+    else if (format[i] == 'E')
+      {
+	int length = GET_NUM_ELEM (x->u.fld[i].rt_rtvec);
+	rtx *vec = x->u.fld[i].rt_rtvec->elem;
+	if (__builtin_expect (end + length <= LOCAL_ELEMS, true))
+	  for (int j = 0; j < length; j++)
+	    base[end++] = T::get_value (vec[j]);
+	else
+	  for (int j = 0; j < length; j++)
+	    base = add_single_to_queue (array, base, end++,
+					T::get_value (vec[j]));
+      }
+  return end - orig_end;
+}
+
+template <typename T>
+void
+generic_subrtx_iterator <T>::free_array (array_type &array)
+{
+  vec_free (array.heap);
+}
+
+template <typename T>
+const size_t generic_subrtx_iterator <T>::LOCAL_ELEMS;
+
+template class generic_subrtx_iterator <const_rtx_accessor>;
+template class generic_subrtx_iterator <rtx_var_accessor>;
+template class generic_subrtx_iterator <rtx_ptr_accessor>;
+
 /* Return 1 if the value of X is unstable
    (would be different at a different point in the program).
    The frame pointer, arg pointer, etc. are considered stable
@@ -745,9 +835,9 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
    no CODE_LABEL insn.  */
 
 int
-no_labels_between_p (const_rtx beg, const_rtx end)
+no_labels_between_p (const rtx_insn *beg, const rtx_insn *end)
 {
-  rtx p;
+  rtx_insn *p;
   if (beg == end)
     return 0;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
@@ -760,7 +850,8 @@ no_labels_between_p (const_rtx beg, const_rtx end)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_used_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
+reg_used_between_p (const_rtx reg, const rtx_insn *from_insn,
+		    const rtx_insn *to_insn)
 {
   rtx_insn *insn;
 
@@ -856,8 +947,10 @@ reg_referenced_p (const_rtx x, const_rtx body)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_set_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
+reg_set_between_p (const_rtx reg, const_rtx uncast_from_insn, const_rtx to_insn)
 {
+  const rtx_insn *from_insn =
+    safe_as_a <const rtx_insn *> (uncast_from_insn);
   const rtx_insn *insn;
 
   if (from_insn == to_insn)
@@ -894,8 +987,10 @@ reg_set_p (const_rtx reg, const_rtx insn)
    X contains a MEM; this routine does use memory aliasing.  */
 
 int
-modified_between_p (const_rtx x, const_rtx start, const_rtx end)
+modified_between_p (const_rtx x, const_rtx uncast_start, const_rtx end)
 {
+  const rtx_insn *start =
+    safe_as_a <const rtx_insn *> (uncast_start);
   const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
@@ -1032,6 +1127,19 @@ set_of (const_rtx pat, const_rtx insn)
   return data.found;
 }
 
+/* Add all hard register in X to *PSET.  */
+void
+find_all_hard_regs (const_rtx x, HARD_REG_SET *pset)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
+    }
+}
+
 /* This function, called through note_stores, collects sets and
    clobbers of hard registers in a HARD_REG_SET, which is pointed to
    by DATA.  */
@@ -1065,27 +1173,11 @@ find_all_hard_reg_sets (const_rtx insn, HARD_REG_SET *pset, bool implicit)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
 }
 
-/* A for_each_rtx subroutine of record_hard_reg_uses.  */
-static int
-record_hard_reg_uses_1 (rtx *px, void *data)
-{
-  rtx x = *px;
-  HARD_REG_SET *pused = (HARD_REG_SET *)data;
-
-  if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    {
-      int nregs = hard_regno_nregs[REGNO (x)][GET_MODE (x)];
-      while (nregs-- > 0)
-	SET_HARD_REG_BIT (*pused, REGNO (x) + nregs);
-    }
-  return 0;
-}
-
 /* Like record_hard_reg_sets, but called through note_uses.  */
 void
 record_hard_reg_uses (rtx *px, void *data)
 {
-  for_each_rtx (px, record_hard_reg_uses_1, data);
+  find_all_hard_regs (*px, (HARD_REG_SET *) data);
 }
 
 /* Given an INSN, return a SET expression if this insn has only a single SET.
@@ -1274,52 +1366,6 @@ noop_move_p (const_rtx insn)
 }
 
 
-/* Return the last thing that X was assigned from before *PINSN.  If VALID_TO
-   is not NULL_RTX then verify that the object is not modified up to VALID_TO.
-   If the object was modified, if we hit a partial assignment to X, or hit a
-   CODE_LABEL first, return X.  If we found an assignment, update *PINSN to
-   point to it.  ALLOW_HWREG is set to 1 if hardware registers are allowed to
-   be the src.  */
-
-rtx
-find_last_value (rtx x, rtx *pinsn, rtx valid_to, int allow_hwreg)
-{
-  rtx p;
-
-  for (p = PREV_INSN (*pinsn); p && !LABEL_P (p);
-       p = PREV_INSN (p))
-    if (INSN_P (p))
-      {
-	rtx set = single_set (p);
-	rtx note = find_reg_note (p, REG_EQUAL, NULL_RTX);
-
-	if (set && rtx_equal_p (x, SET_DEST (set)))
-	  {
-	    rtx src = SET_SRC (set);
-
-	    if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
-	      src = XEXP (note, 0);
-
-	    if ((valid_to == NULL_RTX
-		 || ! modified_between_p (src, PREV_INSN (p), valid_to))
-		/* Reject hard registers because we don't usually want
-		   to use them; we'd rather use a pseudo.  */
-		&& (! (REG_P (src)
-		      && REGNO (src) < FIRST_PSEUDO_REGISTER) || allow_hwreg))
-	      {
-		*pinsn = p;
-		return src;
-	      }
-	  }
-
-	/* If set in non-simple way, we don't have a value.  */
-	if (reg_set_p (x, p))
-	  break;
-      }
-
-  return x;
-}
-
 /* Return nonzero if register in range [REGNO, ENDREGNO)
    appears either explicitly or implicitly in X
    other than being stored into.
@@ -2060,7 +2106,7 @@ remove_note (rtx insn, const_rtx note)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      df_notes_rescan (insn);
+      df_notes_rescan (as_a <rtx_insn *> (insn));
       break;
     default:
       break;
@@ -2134,26 +2180,55 @@ in_expr_list_p (const_rtx listp, const_rtx node)
    A simple equality test is used to determine if NODE matches.  */
 
 void
-remove_node_from_expr_list (const_rtx node, rtx *listp)
+remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
 {
-  rtx temp = *listp;
+  rtx_expr_list *temp = *listp;
   rtx prev = NULL_RTX;
 
   while (temp)
     {
-      if (node == XEXP (temp, 0))
+      if (node == temp->element ())
 	{
 	  /* Splice the node out of the list.  */
 	  if (prev)
-	    XEXP (prev, 1) = XEXP (temp, 1);
+	    XEXP (prev, 1) = temp->next ();
 	  else
-	    *listp = XEXP (temp, 1);
+	    *listp = temp->next ();
 
 	  return;
 	}
 
       prev = temp;
-      temp = XEXP (temp, 1);
+      temp = temp->next ();
+    }
+}
+
+/* Search LISTP (an INSN_LIST) for an entry whose first operand is NODE and
+   remove that entry from the list if it is found.
+
+   A simple equality test is used to determine if NODE matches.  */
+
+void
+remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
+{
+  rtx_insn_list *temp = *listp;
+  rtx prev = NULL;
+
+  while (temp)
+    {
+      if (node == temp->insn ())
+	{
+	  /* Splice the node out of the list.  */
+	  if (prev)
+	    XEXP (prev, 1) = temp->next ();
+	  else
+	    *listp = temp->next ();
+
+	  return;
+	}
+
+      prev = temp;
+      temp = temp->next ();
     }
 }
 
@@ -2680,105 +2755,119 @@ replace_rtx (rtx x, rtx from, rtx to)
   return x;
 }
 
-/* Replace occurrences of the old label in *X with the new one.
-   DATA is a REPLACE_LABEL_DATA containing the old and new labels.  */
+/* Replace occurrences of the OLD_LABEL in *LOC with NEW_LABEL.  Also track
+   the change in LABEL_NUSES if UPDATE_LABEL_NUSES.  */
 
-int
-replace_label (rtx *x, void *data)
+void
+replace_label (rtx *loc, rtx old_label, rtx new_label, bool update_label_nuses)
 {
-  rtx l = *x;
-  rtx old_label = ((replace_label_data *) data)->r1;
-  rtx new_label = ((replace_label_data *) data)->r2;
-  bool update_label_nuses = ((replace_label_data *) data)->update_label_nuses;
-
-  if (l == NULL_RTX)
-    return 0;
-
-  if (GET_CODE (l) == SYMBOL_REF
-      && CONSTANT_POOL_ADDRESS_P (l))
+  /* Handle jump tables specially, since ADDR_{DIFF_,}VECs can be long.  */
+  rtx x = *loc;
+  if (JUMP_TABLE_DATA_P (x))
     {
-      rtx c = get_pool_constant (l);
-      if (rtx_referenced_p (old_label, c))
+      x = PATTERN (x);
+      rtvec vec = XVEC (x, GET_CODE (x) == ADDR_DIFF_VEC);
+      int len = GET_NUM_ELEM (vec);
+      for (int i = 0; i < len; ++i)
 	{
-	  rtx new_c, new_l;
-	  replace_label_data *d = (replace_label_data *) data;
-
-	  /* Create a copy of constant C; replace the label inside
-	     but do not update LABEL_NUSES because uses in constant pool
-	     are not counted.  */
-	  new_c = copy_rtx (c);
-	  d->update_label_nuses = false;
-	  for_each_rtx (&new_c, replace_label, data);
-	  d->update_label_nuses = update_label_nuses;
-
-	  /* Add the new constant NEW_C to constant pool and replace
-	     the old reference to constant by new reference.  */
-	  new_l = XEXP (force_const_mem (get_pool_mode (l), new_c), 0);
-	  *x = replace_rtx (l, l, new_l);
+	  rtx ref = RTVEC_ELT (vec, i);
+	  if (XEXP (ref, 0) == old_label)
+	    {
+	      XEXP (ref, 0) = new_label;
+	      if (update_label_nuses)
+		{
+		  ++LABEL_NUSES (new_label);
+		  --LABEL_NUSES (old_label);
+		}
+	    }
 	}
-      return 0;
+      return;
     }
 
   /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
-     field.  This is not handled by for_each_rtx because it doesn't
+     field.  This is not handled by the iterator because it doesn't
      handle unprinted ('0') fields.  */
-  if (JUMP_P (l) && JUMP_LABEL (l) == old_label)
-    JUMP_LABEL (l) = new_label;
+  if (JUMP_P (x) && JUMP_LABEL (x) == old_label)
+    JUMP_LABEL (x) = new_label;
 
-  if ((GET_CODE (l) == LABEL_REF
-       || GET_CODE (l) == INSN_LIST)
-      && XEXP (l, 0) == old_label)
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
     {
-      XEXP (l, 0) = new_label;
-      if (update_label_nuses)
+      rtx *loc = *iter;
+      if (rtx x = *loc)
 	{
-	  ++LABEL_NUSES (new_label);
-	  --LABEL_NUSES (old_label);
-	}
-      return 0;
-    }
+	  if (GET_CODE (x) == SYMBOL_REF
+	      && CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      rtx c = get_pool_constant (x);
+	      if (rtx_referenced_p (old_label, c))
+		{
+		  /* Create a copy of constant C; replace the label inside
+		     but do not update LABEL_NUSES because uses in constant pool
+		     are not counted.  */
+		  rtx new_c = copy_rtx (c);
+		  replace_label (&new_c, old_label, new_label, false);
 
-  return 0;
+		  /* Add the new constant NEW_C to constant pool and replace
+		     the old reference to constant by new reference.  */
+		  rtx new_mem = force_const_mem (get_pool_mode (x), new_c);
+		  *loc = replace_rtx (x, x, XEXP (new_mem, 0));
+		}
+	    }
+
+	  if ((GET_CODE (x) == LABEL_REF
+	       || GET_CODE (x) == INSN_LIST)
+	      && XEXP (x, 0) == old_label)
+	    {
+	      XEXP (x, 0) = new_label;
+	      if (update_label_nuses)
+		{
+		  ++LABEL_NUSES (new_label);
+		  --LABEL_NUSES (old_label);
+		}
+	    }
+	}
+    }
 }
 
-/* When *BODY is equal to X or X is directly referenced by *BODY
-   return nonzero, thus FOR_EACH_RTX stops traversing and returns nonzero
-   too, otherwise FOR_EACH_RTX continues traversing *BODY.  */
-
-static int
-rtx_referenced_p_1 (rtx *body, void *x)
+void
+replace_label_in_insn (rtx_insn *insn, rtx old_label, rtx new_label,
+		       bool update_label_nuses)
 {
-  rtx y = (rtx) x;
-
-  if (*body == NULL_RTX)
-    return y == NULL_RTX;
-
-  /* Return true if a label_ref *BODY refers to label Y.  */
-  if (GET_CODE (*body) == LABEL_REF && LABEL_P (y))
-    return XEXP (*body, 0) == y;
-
-  /* If *BODY is a reference to pool constant traverse the constant.  */
-  if (GET_CODE (*body) == SYMBOL_REF
-      && CONSTANT_POOL_ADDRESS_P (*body))
-    return rtx_referenced_p (y, get_pool_constant (*body));
-
-  /* By default, compare the RTL expressions.  */
-  return rtx_equal_p (*body, y);
+  rtx insn_as_rtx = insn;
+  replace_label (&insn_as_rtx, old_label, new_label, update_label_nuses);
+  gcc_checking_assert (insn_as_rtx == insn);
 }
 
 /* Return true if X is referenced in BODY.  */
 
-int
-rtx_referenced_p (rtx x, rtx body)
+bool
+rtx_referenced_p (const_rtx x, const_rtx body)
 {
-  return for_each_rtx (&body, rtx_referenced_p_1, x);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, body, ALL)
+    if (const_rtx y = *iter)
+      {
+	/* Check if a label_ref Y refers to label X.  */
+	if (GET_CODE (y) == LABEL_REF && LABEL_P (x) && XEXP (y, 0) == x)
+	  return true;
+
+	if (rtx_equal_p (x, y))
+	  return true;
+
+	/* If Y is a reference to pool constant traverse the constant.  */
+	if (GET_CODE (y) == SYMBOL_REF
+	    && CONSTANT_POOL_ADDRESS_P (y))
+	  iter.substitute (get_pool_constant (y));
+      }
+  return false;
 }
 
 /* If INSN is a tablejump return true and store the label (before jump table) to
    *LABELP and the jump table to *TABLEP.  LABELP and TABLEP may be NULL.  */
 
 bool
-tablejump_p (const_rtx insn, rtx *labelp, rtx_jump_table_data **tablep)
+tablejump_p (const rtx_insn *insn, rtx *labelp, rtx_jump_table_data **tablep)
 {
   rtx label, table;
 
@@ -2787,7 +2876,7 @@ tablejump_p (const_rtx insn, rtx *labelp, rtx_jump_table_data **tablep)
 
   label = JUMP_LABEL (insn);
   if (label != NULL_RTX && !ANY_RETURN_P (label)
-      && (table = NEXT_INSN (label)) != NULL_RTX
+      && (table = NEXT_INSN (as_a <rtx_insn *> (label))) != NULL_RTX
       && JUMP_TABLE_DATA_P (table))
     {
       if (labelp)
@@ -3029,49 +3118,32 @@ for_each_rtx_in_insn (rtx_insn **insn, rtx_function f, void *data)
 
 
 
-/* Data structure that holds the internal state communicated between
-   for_each_inc_dec, for_each_inc_dec_find_mem and
-   for_each_inc_dec_find_inc_dec.  */
-
-struct for_each_inc_dec_ops {
-  /* The function to be called for each autoinc operation found.  */
-  for_each_inc_dec_fn fn;
-  /* The opaque argument to be passed to it.  */
-  void *arg;
-  /* The MEM we're visiting, if any.  */
-  rtx mem;
-};
-
-static int for_each_inc_dec_find_mem (rtx *r, void *d);
-
-/* Find PRE/POST-INC/DEC/MODIFY operations within *R, extract the
-   operands of the equivalent add insn and pass the result to the
-   operator specified by *D.  */
+/* MEM has a PRE/POST-INC/DEC/MODIFY address X.  Extract the operands of
+   the equivalent add insn and pass the result to FN, using DATA as the
+   final argument.  */
 
 static int
-for_each_inc_dec_find_inc_dec (rtx *r, void *d)
+for_each_inc_dec_find_inc_dec (rtx mem, for_each_inc_dec_fn fn, void *data)
 {
-  rtx x = *r;
-  struct for_each_inc_dec_ops *data = (struct for_each_inc_dec_ops *)d;
-
+  rtx x = XEXP (mem, 0);
   switch (GET_CODE (x))
     {
     case PRE_INC:
     case POST_INC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (data->mem));
+	int size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (size, GET_MODE (r1));
-	return data->fn (data->mem, x, r1, r1, c, data->arg);
+	return fn (mem, x, r1, r1, c, data);
       }
 
     case PRE_DEC:
     case POST_DEC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (data->mem));
+	int size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (-size, GET_MODE (r1));
-	return data->fn (data->mem, x, r1, r1, c, data->arg);
+	return fn (mem, x, r1, r1, c, data);
       }
 
     case PRE_MODIFY:
@@ -3079,69 +3151,43 @@ for_each_inc_dec_find_inc_dec (rtx *r, void *d)
       {
 	rtx r1 = XEXP (x, 0);
 	rtx add = XEXP (x, 1);
-	return data->fn (data->mem, x, r1, add, NULL, data->arg);
-      }
-
-    case MEM:
-      {
-	rtx save = data->mem;
-	int ret = for_each_inc_dec_find_mem (r, d);
-	data->mem = save;
-	return ret;
+	return fn (mem, x, r1, add, NULL, data);
       }
 
     default:
-      return 0;
+      gcc_unreachable ();
     }
 }
 
-/* If *R is a MEM, find PRE/POST-INC/DEC/MODIFY operations within its
-   address, extract the operands of the equivalent add insn and pass
-   the result to the operator specified by *D.  */
-
-static int
-for_each_inc_dec_find_mem (rtx *r, void *d)
-{
-  rtx x = *r;
-  if (x != NULL_RTX && MEM_P (x))
-    {
-      struct for_each_inc_dec_ops *data = (struct for_each_inc_dec_ops *) d;
-      int result;
-
-      data->mem = x;
-
-      result = for_each_rtx (&XEXP (x, 0), for_each_inc_dec_find_inc_dec,
-			     data);
-      if (result)
-	return result;
-
-      return -1;
-    }
-  return 0;
-}
-
-/* Traverse *X looking for MEMs, and for autoinc operations within
-   them.  For each such autoinc operation found, call FN, passing it
+/* Traverse *LOC looking for MEMs that have autoinc addresses.
+   For each such autoinc operation found, call FN, passing it
    the innermost enclosing MEM, the operation itself, the RTX modified
    by the operation, two RTXs (the second may be NULL) that, once
    added, represent the value to be held by the modified RTX
-   afterwards, and ARG.  FN is to return -1 to skip looking for other
-   autoinc operations within the visited operation, 0 to continue the
-   traversal, or any other value to have it returned to the caller of
+   afterwards, and DATA.  FN is to return 0 to continue the
+   traversal or any other value to have it returned to the caller of
    for_each_inc_dec.  */
 
 int
-for_each_inc_dec (rtx *x,
+for_each_inc_dec (rtx x,
 		  for_each_inc_dec_fn fn,
-		  void *arg)
+		  void *data)
 {
-  struct for_each_inc_dec_ops data;
-
-  data.fn = fn;
-  data.arg = arg;
-  data.mem = NULL;
-
-  return for_each_rtx (x, for_each_inc_dec_find_mem, &data);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx mem = *iter;
+      if (mem
+	  && MEM_P (mem)
+	  && GET_RTX_CLASS (GET_CODE (XEXP (mem, 0))) == RTX_AUTOINC)
+	{
+	  int res = for_each_inc_dec_find_inc_dec (mem, fn, data);
+	  if (res != 0)
+	    return res;
+	  iter.skip_subrtxes ();
+	}
+    }
+  return 0;
 }
 
 
@@ -3685,10 +3731,11 @@ parms_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    to the outer function is passed down as a parameter).
    Do not skip BOUNDARY.  */
 rtx_insn *
-find_first_parameter_load (rtx call_insn, rtx boundary)
+find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
 {
   struct parms_set_data parm;
-  rtx p, before, first_set;
+  rtx p;
+  rtx_insn *before, *first_set;
 
   /* Since different machines initialize their parameter registers
      in different orders, assume nothing.  Collect the set of all
@@ -3746,7 +3793,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
 	    break;
 	}
     }
-  return safe_as_a <rtx_insn *> (first_set);
+  return first_set;
 }
 
 /* Return true if we should avoid inserting code between INSN and preceding
@@ -3791,7 +3838,7 @@ keep_with_call_p (const_rtx insn)
    not apply to the fallthru case of a conditional jump.  */
 
 bool
-label_is_jump_target_p (const_rtx label, const_rtx jump_insn)
+label_is_jump_target_p (const_rtx label, const rtx_insn *jump_insn)
 {
   rtx tmp = JUMP_LABEL (jump_insn);
   rtx_jump_table_data *table;
@@ -3801,8 +3848,7 @@ label_is_jump_target_p (const_rtx label, const_rtx jump_insn)
 
   if (tablejump_p (jump_insn, NULL, &table))
     {
-      rtvec vec = XVEC (PATTERN (table),
-			GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC);
+      rtvec vec = table->get_labels ();
       int i, veclen = GET_NUM_ELEM (vec);
 
       for (i = 0; i < veclen; ++i)
@@ -4986,11 +5032,12 @@ insn_rtx_cost (rtx pat, bool speed)
    and at INSN.  */
 
 rtx
-canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
+canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
+			rtx_insn **earliest,
 			rtx want_reg, int allow_cc_mode, int valid_at_insn_p)
 {
   enum rtx_code code;
-  rtx prev = insn;
+  rtx_insn *prev = insn;
   const_rtx set;
   rtx tem;
   rtx op0, op1;
@@ -5255,7 +5302,8 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
    VALID_AT_INSN_P is the same as for canonicalize_condition.  */
 
 rtx
-get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
+get_condition (rtx_insn *jump, rtx_insn **earliest, int allow_cc_mode,
+	       int valid_at_insn_p)
 {
   rtx cond;
   int reverse;
@@ -5345,8 +5393,42 @@ truncated_to_mode (enum machine_mode mode, const_rtx x)
   return false;
 }
 
+/* Return true if RTX code CODE has a single sequence of zero or more
+   "e" operands and no rtvec operands.  Initialize its rtx_all_subrtx_bounds
+   entry in that case.  */
+
+static bool
+setup_reg_subrtx_bounds (unsigned int code)
+{
+  const char *format = GET_RTX_FORMAT ((enum rtx_code) code);
+  unsigned int i = 0;
+  for (; format[i] != 'e'; ++i)
+    {
+      if (!format[i])
+	/* No subrtxes.  Leave start and count as 0.  */
+	return true;
+      if (format[i] == 'E' || format[i] == 'V')
+	return false;
+    }
+
+  /* Record the sequence of 'e's.  */
+  rtx_all_subrtx_bounds[code].start = i;
+  do
+    ++i;
+  while (format[i] == 'e');
+  rtx_all_subrtx_bounds[code].count = i - rtx_all_subrtx_bounds[code].start;
+  /* rtl-iter.h relies on this.  */
+  gcc_checking_assert (rtx_all_subrtx_bounds[code].count <= 3);
+
+  for (; format[i]; ++i)
+    if (format[i] == 'E' || format[i] == 'V' || format[i] == 'e')
+      return false;
+
+  return true;
+}
+
 /* Initialize non_rtx_starting_operands, which is used to speed up
-   for_each_rtx.  */
+   for_each_rtx, and rtx_all_subrtx_bounds.  */
 void
 init_rtlanal (void)
 {
@@ -5356,6 +5438,10 @@ init_rtlanal (void)
       const char *format = GET_RTX_FORMAT (i);
       const char *first = strpbrk (format, "eEV");
       non_rtx_starting_operands[i] = first ? first - format : -1;
+      if (!setup_reg_subrtx_bounds (i))
+	rtx_all_subrtx_bounds[i].count = UCHAR_MAX;
+      if (GET_RTX_CLASS (i) != RTX_CONST_OBJ)
+	rtx_nonconst_subrtx_bounds[i] = rtx_all_subrtx_bounds[i];
     }
 
   init_num_sign_bit_copies_in_rep ();
@@ -5978,21 +6064,17 @@ get_index_code (const struct address_info *info)
   return SCRATCH;
 }
 
-/* Return 1 if *X is a thread-local symbol.  */
-
-static int
-tls_referenced_p_1 (rtx *x, void *)
-{
-  return GET_CODE (*x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*x) != 0;
-}
-
 /* Return true if X contains a thread-local symbol.  */
 
 bool
-tls_referenced_p (rtx x)
+tls_referenced_p (const_rtx x)
 {
   if (!targetm.have_tls)
     return false;
 
-  return for_each_rtx (&x, &tls_referenced_p_1, 0);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
+      return true;
+  return false;
 }

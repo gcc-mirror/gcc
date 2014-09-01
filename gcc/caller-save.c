@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "ggc.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)
 
@@ -921,7 +922,7 @@ save_call_clobbered_regs (void)
 		      if (NEXT_INSN (ins))
 			SET_PREV_INSN (NEXT_INSN (ins)) = ins;
                       if (BB_END (bb) == insn)
-			SET_BB_END (bb) = ins;
+			BB_END (bb) = ins;
 		    }
 		  else
 		    gcc_assert (DEBUG_INSN_P (ins));
@@ -1336,36 +1337,26 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   return numregs - 1;
 }
 
-/* A for_each_rtx callback used by add_used_regs.  Add the hard-register
-   equivalent of each REG to regset DATA.  */
-
-static int
-add_used_regs_1 (rtx *loc, void *data)
-{
-  unsigned int regno;
-  regset live;
-  rtx x;
-
-  x = *loc;
-  live = (regset) data;
-  if (REG_P (x))
-    {
-      regno = REGNO (x);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (live, regno, hard_regno_nregs[regno][GET_MODE (x)]);
-      else
-	regno = reg_renumber[regno];
-    }
-  return 0;
-}
-
 /* A note_uses callback used by insert_one_insn.  Add the hard-register
    equivalent of each REG to regset DATA.  */
 
 static void
 add_used_regs (rtx *loc, void *data)
 {
-  for_each_rtx (loc, add_used_regs_1, data);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x))
+	{
+	  unsigned int regno = REGNO (x);
+	  if (HARD_REGISTER_NUM_P (regno))
+	    bitmap_set_range ((regset) data, regno,
+			      hard_regno_nregs[regno][GET_MODE (x)]);
+	  else
+	    gcc_checking_assert (reg_renumber[regno] < 0);
+	}
+    }
 }
 
 /* Emit a new caller-save insn and set the code.  */
@@ -1418,7 +1409,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
-	SET_BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
+	BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   else
     {
@@ -1438,7 +1429,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 		   &new_chain->live_throughout);
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
-	SET_BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
+	BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   new_chain->block = chain->block;
   new_chain->is_caller_save_insn = 1;

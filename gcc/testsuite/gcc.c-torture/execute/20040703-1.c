@@ -1,4 +1,5 @@
 /* PR 16341 */
+/* { dg-require-effective-target int32plus } */
 
 #define PART_PRECISION (sizeof (cpp_num_part) * 8)
 

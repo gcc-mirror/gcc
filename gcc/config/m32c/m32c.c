@@ -4045,7 +4045,7 @@ m32c_encode_section_info (tree decl, rtx rtl, int first)
 static int
 m32c_leaf_function_p (void)
 {
-  rtx saved_first, saved_last;
+  rtx_insn *saved_first, *saved_last;
   struct sequence_stack *seq;
   int rv;
 
@@ -4072,7 +4072,7 @@ m32c_leaf_function_p (void)
 static bool
 m32c_function_needs_enter (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   struct sequence_stack *seq;
   rtx sp = gen_rtx_REG (Pmode, SP_REGNO);
   rtx fb = gen_rtx_REG (Pmode, FB_REGNO);

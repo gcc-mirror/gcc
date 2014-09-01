@@ -533,7 +533,8 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 		   int image_index __attribute__ ((unused)),
 		   gfc_descriptor_t *src,
 		   caf_vector_t *src_vector __attribute__ ((unused)),
-		   gfc_descriptor_t *dest, int src_kind, int dst_kind)
+		   gfc_descriptor_t *dest, int src_kind, int dst_kind,
+		   bool may_require_tmp)
 {
   /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
@@ -583,6 +584,82 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 
   if (size == 0)
     return;
+
+  if (may_require_tmp)
+    {
+      ptrdiff_t array_offset_sr, array_offset_dst;
+      void *tmp = malloc (size*src_size);
+
+      array_offset_dst = 0;
+      for (i = 0; i < size; i++)
+	{
+	  ptrdiff_t array_offset_sr = 0;
+	  ptrdiff_t stride = 1;
+	  ptrdiff_t extent = 1;
+	  for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
+	    {
+	      array_offset_sr += ((i / (extent*stride))
+				  % (src->dim[j]._ubound
+				    - src->dim[j].lower_bound + 1))
+				 * src->dim[j]._stride;
+	      extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
+	      stride = src->dim[j]._stride;
+	    }
+	  array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
+	  void *sr = (void *)((char *) TOKEN (token) + offset
+			  + array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+          memcpy ((void *) ((char *) tmp + array_offset_dst), sr, src_size);
+          array_offset_dst += src_size;
+	}
+
+      array_offset_sr = 0;
+      for (i = 0; i < size; i++)
+	{
+	  ptrdiff_t array_offset_dst = 0;
+	  ptrdiff_t stride = 1;
+	  ptrdiff_t extent = 1;
+	  for (j = 0; j < rank-1; j++)
+	    {
+	      array_offset_dst += ((i / (extent*stride))
+				   % (dest->dim[j]._ubound
+				      - dest->dim[j].lower_bound + 1))
+				  * dest->dim[j]._stride;
+	      extent = (dest->dim[j]._ubound - dest->dim[j].lower_bound + 1);
+	      stride = dest->dim[j]._stride;
+	    }
+	  array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
+	  void *dst = dest->base_addr
+		      + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest);
+          void *sr = tmp + array_offset_sr;
+
+	  if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	      && dst_kind == src_kind)
+	    {
+	      memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
+	      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER
+	          && dst_size > src_size)
+		{
+		  if (dst_kind == 1)
+		    memset ((void*)(char*) dst + src_size, ' ',
+			    dst_size-src_size);
+		  else /* dst_kind == 4.  */
+		    for (k = src_size/4; k < dst_size/4; k++)
+		      ((int32_t*) dst)[k] = (int32_t) ' ';
+		}
+	    }
+	  else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	    assign_char1_from_char4 (dst_size, src_size, dst, sr);
+	  else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	    assign_char4_from_char1 (dst_size, src_size, dst, sr);
+	  else
+	    convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
+			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+          array_offset_sr += src_size;
+	}
+
+      free (tmp);
+      return;
+    }
 
   for (i = 0; i < size; i++)
     {
@@ -646,7 +723,8 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 		    int image_index __attribute__ ((unused)),
 		    gfc_descriptor_t *dest,
 		    caf_vector_t *dst_vector __attribute__ ((unused)),
-		    gfc_descriptor_t *src, int dst_kind, int src_kind)
+		    gfc_descriptor_t *src, int dst_kind, int src_kind,
+		    bool may_require_tmp)
 {
   /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
@@ -696,6 +774,91 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 
   if (size == 0)
     return;
+
+  if (may_require_tmp)
+    {
+      ptrdiff_t array_offset_sr, array_offset_dst;
+      void *tmp;
+
+      if (GFC_DESCRIPTOR_RANK (src) == 0)
+	{
+	  tmp = malloc (src_size);
+	  memcpy (tmp, GFC_DESCRIPTOR_DATA (src), src_size);
+	}
+      else
+	{
+	  tmp = malloc (size*src_size);
+	  array_offset_dst = 0;
+	  for (i = 0; i < size; i++)
+	    {
+	      ptrdiff_t array_offset_sr = 0;
+	      ptrdiff_t stride = 1;
+	      ptrdiff_t extent = 1;
+	      for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
+		{
+		  array_offset_sr += ((i / (extent*stride))
+				      % (src->dim[j]._ubound
+					 - src->dim[j].lower_bound + 1))
+				     * src->dim[j]._stride;
+		  extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
+		  stride = src->dim[j]._stride;
+		}
+	      array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
+	      void *sr = (void *) ((char *) src->base_addr
+				   + array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+	      memcpy ((void *) ((char *) tmp + array_offset_dst), sr, src_size);
+	      array_offset_dst += src_size;
+	    }
+	}
+
+      array_offset_sr = 0;
+      for (i = 0; i < size; i++)
+	{
+	  ptrdiff_t array_offset_dst = 0;
+	  ptrdiff_t stride = 1;
+	  ptrdiff_t extent = 1;
+	  for (j = 0; j < rank-1; j++)
+	    {
+	      array_offset_dst += ((i / (extent*stride))
+				   % (dest->dim[j]._ubound
+				      - dest->dim[j].lower_bound + 1))
+				  * dest->dim[j]._stride;
+	  extent = (dest->dim[j]._ubound - dest->dim[j].lower_bound + 1);
+          stride = dest->dim[j]._stride;
+	    }
+	  array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
+	  void *dst = (void *)((char *) TOKEN (token) + offset
+		      + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest));
+          void *sr = tmp + array_offset_sr;
+	  if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	      && dst_kind == src_kind)
+	    {
+	      memmove (dst, sr,
+		       dst_size > src_size ? src_size : dst_size);
+	      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER
+		  && dst_size > src_size)
+		{
+		  if (dst_kind == 1)
+		    memset ((void*)(char*) dst + src_size, ' ',
+			    dst_size-src_size);
+		  else /* dst_kind == 4.  */
+		    for (k = src_size/4; k < dst_size/4; k++)
+		      ((int32_t*) dst)[k] = (int32_t) ' ';
+		}
+	    }
+	  else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	    assign_char1_from_char4 (dst_size, src_size, dst, sr);
+	  else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	    assign_char4_from_char1 (dst_size, src_size, dst, sr);
+	  else
+	    convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
+			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+          if (GFC_DESCRIPTOR_RANK (src))
+	    array_offset_sr += src_size;
+	}
+      free (tmp);
+      return;
+    }
 
   for (i = 0; i < size; i++)
     {
@@ -769,7 +932,7 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
 		       int src_image_index __attribute__ ((unused)),
 		       gfc_descriptor_t *src,
 		       caf_vector_t *src_vector __attribute__ ((unused)),
-		       int dst_kind, int src_kind)
+		       int dst_kind, int src_kind, bool may_require_tmp)
 {
   /* FIXME: Handle vector subscript of 'src_vector'.  */
   /* For a single image, src->base_addr should be the same as src_token + offset
@@ -777,7 +940,7 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
   void *src_base = GFC_DESCRIPTOR_DATA (src);
   GFC_DESCRIPTOR_DATA (src) = (void *) ((char *) TOKEN (src_token) + src_offset);
   _gfortran_caf_send (dst_token, dst_offset, dst_image_index, dest, dst_vector,
-		      src, dst_kind, src_kind);
+		      src, dst_kind, src_kind, may_require_tmp);
   GFC_DESCRIPTOR_DATA (src) = src_base;
 }
 

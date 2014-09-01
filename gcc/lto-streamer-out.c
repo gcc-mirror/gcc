@@ -2098,7 +2098,7 @@ lto_output_toplevel_asms (void)
   char *section_name;
   struct lto_simple_header_with_strings header;
 
-  if (! asm_nodes)
+  if (!symtab->first_asm_symbol ())
     return;
 
   ob = create_output_block (LTO_section_asm);
@@ -2106,7 +2106,7 @@ lto_output_toplevel_asms (void)
   /* Make string 0 be a NULL string.  */
   streamer_write_char_stream (ob->string_stream, 0);
 
-  for (can = asm_nodes; can; can = can->next)
+  for (can = symtab->first_asm_symbol (); can; can = can->next)
     {
       streamer_write_string_cst (ob, ob->main_stream, can->asm_str);
       streamer_write_hwi (ob, can->order);

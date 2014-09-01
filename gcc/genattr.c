@@ -65,7 +65,7 @@ gen_attr (rtx attr)
   if (! strcmp (XSTR (attr, 0), "length"))
     {
       puts ("\
-extern void shorten_branches (rtx);\n\
+extern void shorten_branches (rtx_insn *);\n\
 extern int insn_default_length (rtx);\n\
 extern int insn_min_length (rtx);\n\
 extern int insn_variable_length_p (rtx);\n\
@@ -177,7 +177,7 @@ main (int argc, char **argv)
 	  if (! have_delay)
 	    {
 	      printf ("extern int num_delay_slots (rtx);\n");
-	      printf ("extern int eligible_for_delay (rtx, int, rtx, int);\n\n");
+	      printf ("extern int eligible_for_delay (rtx_insn *, int, rtx_insn *, int);\n\n");
 	      printf ("extern int const_num_delay_slots (rtx);\n\n");
 	      have_delay = 1;
 	    }
@@ -187,14 +187,14 @@ main (int argc, char **argv)
 	      if (XVECEXP (desc, 1, i + 1) && ! have_annul_true)
 		{
 		  printf ("#define ANNUL_IFTRUE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_true (rtx, int, rtx, int);\n");
+		  printf ("extern int eligible_for_annul_true (rtx_insn *, int, rtx_insn *, int);\n");
 		  have_annul_true = 1;
 		}
 
 	      if (XVECEXP (desc, 1, i + 2) && ! have_annul_false)
 		{
 		  printf ("#define ANNUL_IFFALSE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_false (rtx, int, rtx, int);\n");
+		  printf ("extern int eligible_for_annul_false (rtx_insn *, int, rtx_insn *, int);\n");
 		  have_annul_false = 1;
 		}
 	    }
@@ -321,7 +321,7 @@ main (int argc, char **argv)
       printf ("   define_insn_reservation will be changed after\n");
       printf ("   last call of dfa_start.  */\n");
       printf ("extern void dfa_clean_insn_cache (void);\n\n");
-      printf ("extern void dfa_clear_single_insn_cache (rtx);\n\n");
+      printf ("extern void dfa_clear_single_insn_cache (rtx_insn *);\n\n");
       printf ("/* Initiate and finish work with DFA.  They should be\n");
       printf ("   called as the first and the last interface\n");
       printf ("   functions.  */\n");

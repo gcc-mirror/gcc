@@ -1,3 +1,8 @@
+/* This testcase generates MMX instructions together with x87 instructions.
+   Currently, there is no "emms" generated to switch between register sets,
+   so the testcase fails for targets where MMX insns are enabled.  */
+/* { dg-options "-mno-mmx -Wno-psabi" { target { x86_64-*-* i?86-*-* } } } */
+
 extern void abort (void);
 
 typedef int V2SI __attribute__ ((vector_size (8)));

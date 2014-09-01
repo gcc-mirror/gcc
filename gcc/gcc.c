@@ -576,13 +576,19 @@ proper position among the other output files.  */
 #ifndef LIBLSAN_SPEC
 #define STATIC_LIBLSAN_LIBS \
   " %{static-liblsan:%:include(libsanitizer.spec)%(link_liblsan)}"
-#ifdef HAVE_LD_STATIC_DYNAMIC
-#define LIBLSAN_SPEC "%{!shared:%{static-liblsan:" LD_STATIC_OPTION \
+#ifdef LIBLSAN_EARLY_SPEC
+#define LIBLSAN_SPEC STATIC_LIBLSAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBLSAN_SPEC "%{static-liblsan:" LD_STATIC_OPTION \
 		     "} -llsan %{static-liblsan:" LD_DYNAMIC_OPTION "}" \
-		     STATIC_LIBLSAN_LIBS "}"
+		     STATIC_LIBLSAN_LIBS
 #else
-#define LIBLSAN_SPEC "%{!shared:-llsan" STATIC_LIBLSAN_LIBS "}"
+#define LIBLSAN_SPEC "-llsan" STATIC_LIBLSAN_LIBS
 #endif
+#endif
+
+#ifndef LIBLSAN_EARLY_SPEC
+#define LIBLSAN_EARLY_SPEC ""
 #endif
 
 #ifndef LIBUBSAN_SPEC
@@ -772,7 +778,8 @@ proper position among the other output files.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
 %{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
-    %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "}}}"
+    %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
+    %{%:sanitize(leak):" LIBLSAN_EARLY_SPEC "}}}"
 #endif
 
 /* Linker command line options for -fsanitize= late on the command line.  */

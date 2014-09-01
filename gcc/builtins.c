@@ -198,7 +198,6 @@ static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
-static tree fold_builtin_strcat_chk (location_t, tree, tree, tree, tree);
 static tree fold_builtin_strncat_chk (location_t, tree, tree, tree, tree, tree);
 static tree fold_builtin_printf (location_t, tree, tree, tree, bool, enum built_in_function);
 static tree fold_builtin_fprintf (location_t, tree, tree, tree, tree, bool,
@@ -1743,7 +1742,7 @@ expand_builtin_return (rtx result)
   int size, align, regno;
   enum machine_mode mode;
   rtx reg;
-  rtx call_fusage = 0;
+  rtx_insn *call_fusage = 0;
 
   result = convert_memory_address (Pmode, result);
 
@@ -6186,7 +6185,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	  /* This is copied from the handling of non-local gotos.  */
 	  expand_builtin_setjmp_setup (buf_addr, label_r);
 	  nonlocal_goto_handler_labels
-	    = gen_rtx_EXPR_LIST (VOIDmode, label_r,
+	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
 				 nonlocal_goto_handler_labels);
 	  /* ??? Do not let expand_label treat us as such since we would
 	     not want to be both on the list of non-local labels and on
@@ -10321,9 +10320,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
 
-    case BUILT_IN_STRCAT_CHK:
-      return fold_builtin_strcat_chk (loc, fndecl, arg0, arg1, arg2);
-
     case BUILT_IN_PRINTF_CHK:
     case BUILT_IN_VPRINTF_CHK:
       if (!validate_arg (arg0, INTEGER_TYPE)
@@ -11586,37 +11582,6 @@ fold_builtin_object_size (tree ptr, tree ost)
     }
 
   return NULL_TREE;
-}
-
-/* Fold a call to the __strcat_chk builtin FNDECL.  DEST, SRC, and SIZE
-   are the arguments to the call.  */
-
-static tree
-fold_builtin_strcat_chk (location_t loc, tree fndecl, tree dest,
-			 tree src, tree size)
-{
-  tree fn;
-  const char *p;
-
-  if (!validate_arg (dest, POINTER_TYPE)
-      || !validate_arg (src, POINTER_TYPE)
-      || !validate_arg (size, INTEGER_TYPE))
-    return NULL_TREE;
-
-  p = c_getstr (src);
-  /* If the SRC parameter is "", return DEST.  */
-  if (p && *p == '\0')
-    return omit_one_operand_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), dest, src);
-
-  if (! tree_fits_uhwi_p (size) || ! integer_all_onesp (size))
-    return NULL_TREE;
-
-  /* If __builtin_strcat_chk is used, assume strcat is available.  */
-  fn = builtin_decl_explicit (BUILT_IN_STRCAT);
-  if (!fn)
-    return NULL_TREE;
-
-  return build_call_expr_loc (loc, fn, 2, dest, src);
 }
 
 /* Fold a call to the __strncat_chk builtin with arguments DEST, SRC,

@@ -1,10 +1,31 @@
+2014-08-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2014-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (complex): Define copy constructor and
+	assignment operator as defaulted. Improve Doxygen comments.
+
+2014-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/random/*: Fix incorrect standard references in
+	comments.
+
+2014-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62159
+	* include/Makefile.am (install-freestanding-headers): Add missing
+	C++11 headers.
+	* include/Makefile.in: Regenerate.
+
 2014-08-21  Tony Wang  <tony.wang@arm.com>
 
-        * testsuite/18_support/nested_exception/62154.cc: Disable when the
+	* testsuite/18_support/nested_exception/62154.cc: Disable when the
 	target doesn't provide atomic builtins.
 
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
-	Kai Tietz  <ktietz@redhat.com>
+	    Kai Tietz  <ktietz@redhat.com>
 
 	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_THREAD_ATEXIT_WIN32):
 	Define.

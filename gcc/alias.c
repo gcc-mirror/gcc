@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
+#include "rtl-iter.h"
 
 /* The aliasing API provided here solves related but different problems:
 
@@ -1851,27 +1852,18 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
   return 1;
 }
 
-/* Callback for for_each_rtx, that returns 1 upon encountering a VALUE
-   whose UID is greater than the int uid that D points to.  */
-
-static int
-refs_newer_value_cb (rtx *x, void *d)
-{
-  if (GET_CODE (*x) == VALUE && CSELIB_VAL_PTR (*x)->uid > *(int *)d)
-    return 1;
-
-  return 0;
-}
-
 /* Return TRUE if EXPR refers to a VALUE whose uid is greater than
    that of V.  */
 
 static bool
-refs_newer_value_p (rtx expr, rtx v)
+refs_newer_value_p (const_rtx expr, rtx v)
 {
   int minuid = CSELIB_VAL_PTR (v)->uid;
-
-  return for_each_rtx (&expr, refs_newer_value_cb, &minuid);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, expr, NONCONST)
+    if (GET_CODE (*iter) == VALUE && CSELIB_VAL_PTR (*iter)->uid > minuid)
+      return true;
+  return false;
 }
 
 /* Convert the address X into something we can use.  This is done by returning

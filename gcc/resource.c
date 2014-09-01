@@ -79,10 +79,10 @@ static HARD_REG_SET pending_dead_regs;
 
 static void update_live_status (rtx, const_rtx, void *);
 static int find_basic_block (rtx, int);
-static rtx next_insn_no_annul (rtx);
-static rtx find_dead_or_set_registers (rtx, struct resources*,
-				       rtx*, int, struct resources,
-				       struct resources);
+static rtx_insn *next_insn_no_annul (rtx_insn *);
+static rtx_insn *find_dead_or_set_registers (rtx_insn *, struct resources*,
+					     rtx *, int, struct resources,
+					     struct resources);
 
 /* Utility function called from mark_target_live_regs via note_stores.
    It deadens any CLOBBERed registers and livens any SET registers.  */
@@ -163,8 +163,8 @@ find_basic_block (rtx insn, int search_limit)
 /* Similar to next_insn, but ignores insns in the delay slots of
    an annulled branch.  */
 
-static rtx
-next_insn_no_annul (rtx insn)
+static rtx_insn *
+next_insn_no_annul (rtx_insn *insn)
 {
   if (insn)
     {
@@ -187,7 +187,7 @@ next_insn_no_annul (rtx insn)
       insn = NEXT_INSN (insn);
       if (insn && NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 0);
+	insn = as_a <rtx_sequence *> (PATTERN (insn))->insn (0);
     }
 
   return insn;
@@ -308,16 +308,16 @@ mark_referenced_resources (rtx x, struct resources *res,
 	     However, we may have moved some of the parameter loading insns
 	     into the delay slot of this CALL.  If so, the USE's for them
 	     don't count and should be skipped.  */
-	  rtx_insn *insn = PREV_INSN (x);
-	  rtx sequence = 0;
+	  rtx_insn *insn = PREV_INSN (as_a <rtx_insn *> (x));
+	  rtx_sequence *sequence = 0;
 	  int seq_size = 0;
 	  int i;
 
 	  /* If we are part of a delay slot sequence, point at the SEQUENCE.  */
 	  if (NEXT_INSN (insn) != x)
 	    {
-	      sequence = PATTERN (NEXT_INSN (insn));
-	      seq_size = XVECLEN (sequence, 0);
+	      sequence = as_a <rtx_sequence *> (PATTERN (NEXT_INSN (insn)));
+	      seq_size = sequence->len ();
 	      gcc_assert (GET_CODE (sequence) == SEQUENCE);
 	    }
 
@@ -356,7 +356,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 		{
 		  for (i = 1; i < seq_size; i++)
 		    {
-		      rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
+		      rtx slot_pat = PATTERN (sequence->element (i));
 		      if (GET_CODE (slot_pat) == SET
 			  && rtx_equal_p (SET_DEST (slot_pat),
 					  XEXP (XEXP (link, 0), 0)))
@@ -420,21 +420,22 @@ mark_referenced_resources (rtx x, struct resources *res,
    Stop after passing a few conditional jumps, and/or a small
    number of unconditional branches.  */
 
-static rtx
-find_dead_or_set_registers (rtx target, struct resources *res,
+static rtx_insn *
+find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 			    rtx *jump_target, int jump_count,
 			    struct resources set, struct resources needed)
 {
   HARD_REG_SET scratch;
-  rtx insn, next;
-  rtx jump_insn = 0;
+  rtx_insn *insn;
+  rtx_insn *next_insn;
+  rtx_insn *jump_insn = 0;
   int i;
 
-  for (insn = target; insn; insn = next)
+  for (insn = target; insn; insn = next_insn)
     {
-      rtx this_jump_insn = insn;
+      rtx_insn *this_jump_insn = insn;
 
-      next = NEXT_INSN (insn);
+      next_insn = NEXT_INSN (insn);
 
       /* If this instruction can throw an exception, then we don't
 	 know where we might end up next.  That means that we have to
@@ -473,13 +474,14 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	    }
 	  else if (GET_CODE (PATTERN (insn)) == CLOBBER)
 	    continue;
-	  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  else if (rtx_sequence *seq =
+		     dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	    {
 	      /* An unconditional jump can be used to fill the delay slot
 		 of a call, so search for a JUMP_INSN in any position.  */
-	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	      for (i = 0; i < seq->len (); i++)
 		{
-		  this_jump_insn = XVECEXP (PATTERN (insn), 0, i);
+		  this_jump_insn = seq->insn (i);
 		  if (JUMP_P (this_jump_insn))
 		    break;
 		}
@@ -496,9 +498,11 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	      if (any_uncondjump_p (this_jump_insn)
 		  || ANY_RETURN_P (PATTERN (this_jump_insn)))
 		{
-		  next = JUMP_LABEL (this_jump_insn);
-		  if (ANY_RETURN_P (next))
-		    next = NULL_RTX;
+		  rtx lab_or_return = JUMP_LABEL (this_jump_insn);
+		  if (ANY_RETURN_P (lab_or_return))
+		    next_insn = NULL;
+		  else
+		    next_insn = as_a <rtx_insn *> (lab_or_return);
 		  if (jump_insn == 0)
 		    {
 		      jump_insn = insn;
@@ -536,17 +540,18 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  if (GET_CODE (PATTERN (insn)) == SEQUENCE
 		      && INSN_ANNULLED_BRANCH_P (this_jump_insn))
 		    {
-		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
-			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
-			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+		      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
+		      for (i = 1; i < seq->len (); i++)
+			INSN_FROM_TARGET_P (seq->element (i))
+			  = ! INSN_FROM_TARGET_P (seq->element (i));
 
 		      target_set = set;
 		      mark_set_resources (insn, &target_set, 0,
 					  MARK_SRC_DEST_CALL);
 
-		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
-			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
-			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+		      for (i = 1; i < seq->len (); i++)
+			INSN_FROM_TARGET_P (seq->element (i))
+			  = ! INSN_FROM_TARGET_P (seq->element (i));
 
 		      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 		    }
@@ -567,10 +572,10 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
 
 		  if (!ANY_RETURN_P (JUMP_LABEL (this_jump_insn)))
-		    find_dead_or_set_registers (JUMP_LABEL (this_jump_insn),
+		    find_dead_or_set_registers (JUMP_LABEL_AS_INSN (this_jump_insn),
 						&target_res, 0, jump_count,
 						target_set, needed);
-		  find_dead_or_set_registers (next,
+		  find_dead_or_set_registers (next_insn,
 					      &fallthrough_res, 0, jump_count,
 					      set, needed);
 		  IOR_HARD_REG_SET (fallthrough_res.regs, target_res.regs);
@@ -712,13 +717,14 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
     case SEQUENCE:
       {
-        rtx control = XVECEXP (x, 0, 0);
+        rtx_sequence *seq = as_a <rtx_sequence *> (x);
+        rtx control = seq->element (0);
         bool annul_p = JUMP_P (control) && INSN_ANNULLED_BRANCH_P (control);
 
         mark_set_resources (control, res, 0, mark_type);
-        for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
+        for (i = seq->len () - 1; i >= 0; --i)
 	  {
-	    rtx elt = XVECEXP (x, 0, i);
+	    rtx elt = seq->element (i);
 	    if (!annul_p && INSN_FROM_TARGET_P (elt))
 	      mark_set_resources (elt, res, 0, mark_type);
 	  }
@@ -877,26 +883,30 @@ return_insn_p (const_rtx insn)
    init_resource_info () was invoked before we are called.  */
 
 void
-mark_target_live_regs (rtx insns, rtx target, struct resources *res)
+mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resources *res)
 {
   int b = -1;
   unsigned int i;
   struct target_info *tinfo = NULL;
-  rtx insn;
+  rtx_insn *insn;
   rtx jump_insn = 0;
   rtx jump_target;
   HARD_REG_SET scratch;
   struct resources set, needed;
 
   /* Handle end of function.  */
-  if (target == 0 || ANY_RETURN_P (target))
+  if (target_maybe_return == 0 || ANY_RETURN_P (target_maybe_return))
     {
       *res = end_of_function_needs;
       return;
     }
 
+  /* We've handled the case of RETURN/SIMPLE_RETURN; we should now have an
+     instruction.  */
+  rtx_insn *target = as_a <rtx_insn *> (target_maybe_return);
+
   /* Handle return insn.  */
-  else if (return_insn_p (target))
+  if (return_insn_p (target))
     {
       *res = end_of_function_needs;
       mark_referenced_resources (target, res, false);
@@ -962,7 +972,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   if (b != -1)
     {
       regset regs_live = DF_LR_IN (BASIC_BLOCK_FOR_FN (cfun, b));
-      rtx start_insn, stop_insn;
+      rtx_insn *start_insn, *stop_insn;
 
       /* Compute hard regs live at start of block.  */
       REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
@@ -975,7 +985,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
       if (NONJUMP_INSN_P (start_insn)
 	  && GET_CODE (PATTERN (start_insn)) == SEQUENCE)
-	start_insn = XVECEXP (PATTERN (start_insn), 0, 0);
+	start_insn = as_a <rtx_sequence *> (PATTERN (start_insn))->insn (0);
 
       if (NONJUMP_INSN_P (stop_insn)
 	  && GET_CODE (PATTERN (stop_insn)) == SEQUENCE)
@@ -1119,7 +1129,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   if (jump_insn)
     {
       struct resources new_resources;
-      rtx stop_insn = next_active_insn (jump_insn);
+      rtx_insn *stop_insn = next_active_insn (jump_insn);
 
       if (!ANY_RETURN_P (jump_target))
 	jump_target = next_active_insn (jump_target);
@@ -1152,7 +1162,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
    This should be invoked before the first call to mark_target_live_regs.  */
 
 void
-init_resource_info (rtx epilogue_insn)
+init_resource_info (rtx_insn *epilogue_insn)
 {
   int i;
   basic_block bb;
@@ -1272,7 +1282,7 @@ free_resource_info (void)
 /* Clear any hashed information that we have stored for INSN.  */
 
 void
-clear_hashed_info_for_insn (rtx insn)
+clear_hashed_info_for_insn (rtx_insn *insn)
 {
   struct target_info *tinfo;
 
@@ -1291,7 +1301,7 @@ clear_hashed_info_for_insn (rtx insn)
 /* Increment the tick count for the basic block that contains INSN.  */
 
 void
-incr_ticks_for_insn (rtx insn)
+incr_ticks_for_insn (rtx_insn *insn)
 {
   int b = find_basic_block (insn, MAX_DELAY_SLOT_LIVE_SEARCH);
 

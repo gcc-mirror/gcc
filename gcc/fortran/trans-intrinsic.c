@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "trans-array.h"
+#include "dependency.h"	/* For CAF array alias analysis.  */
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "tree-nested.h"
@@ -926,76 +927,6 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Convert the coindex of a coarray into an image index; the result is
-   image_num =  (idx(1)-lcobound(1)+1) + (idx(2)-lcobound(2)+1)*extent(1)
-              + (idx(3)-lcobound(3)+1)*extent(2) + ...  */
-
-static tree
-caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
-{
-  gfc_ref *ref;
-  tree lbound, ubound, extent, tmp, img_idx;
-  gfc_se se;
-  int i;
-
-  for (ref = e->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
-      break;
-  gcc_assert (ref != NULL);
-
-  img_idx = integer_zero_node;
-  extent = integer_one_node;
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
-    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-      {
-	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
-	gfc_add_block_to_block (block, &se.pre);
-	lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
-	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr,
-			       fold_convert(integer_type_node, lbound));
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
-			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   img_idx, tmp);
-	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
-	  {
-	    ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
-	    extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-	    extent = fold_convert (integer_type_node, extent);
-	  }
-      }
-  else
-    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-      {
-	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
-	gfc_add_block_to_block (block, &se.pre);
-	lbound = GFC_TYPE_ARRAY_LBOUND (TREE_TYPE (desc), i);
-	lbound = fold_convert (integer_type_node, lbound);
-	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr, lbound);
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
-			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   img_idx, tmp);
-	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
-	  {
-	    ubound = GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (desc), i);
-	    ubound = fold_convert (integer_type_node, ubound);
-	    extent = fold_build2_loc (input_location, MINUS_EXPR,
-				      integer_type_node, ubound, lbound);
-	    extent = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				      extent, integer_one_node);
-	  }
-      }
-  img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-			     img_idx, integer_one_node);
-  return img_idx;
-}
-
-
 /* Fill in the following structure
      struct caf_vector_t {
        size_t nvec;  // size of the vector
@@ -1153,78 +1084,11 @@ conv_caf_vector_subscript (stmtblock_t *block, tree desc, gfc_array_ref *ar)
 }
 
 
-static void
-get_caf_token_offset (tree *token, tree *offset, tree caf_decl, tree se_expr,
-		      gfc_expr *expr)
-{
-  tree tmp;
-
-  /* Coarray token.  */
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
-    {
-      gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
-		    == GFC_ARRAY_ALLOCATABLE
-		  || expr->symtree->n.sym->attr.select_type_temporary);
-      *token = gfc_conv_descriptor_token (caf_decl);
-    }
-  else if (DECL_LANG_SPECIFIC (caf_decl)
-	   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
-    *token = GFC_DECL_TOKEN (caf_decl);
-  else
-    {
-      gcc_assert (GFC_ARRAY_TYPE_P (TREE_TYPE (caf_decl))
-		  && GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl)) != NULL_TREE);
-      *token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl));
-    }
-
-  /* Offset between the coarray base address and the address wanted.  */
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl))
-      && (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE
-	  || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_POINTER))
-    *offset = build_int_cst (gfc_array_index_type, 0);
-  else if (DECL_LANG_SPECIFIC (caf_decl)
-	   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
-    *offset = GFC_DECL_CAF_OFFSET (caf_decl);
-  else if (GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl)) != NULL_TREE)
-    *offset = GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl));
-  else
-    *offset = build_int_cst (gfc_array_index_type, 0);
-
-  if (POINTER_TYPE_P (TREE_TYPE (se_expr))
-      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se_expr))))
-    {
-      tmp = build_fold_indirect_ref_loc (input_location, se_expr);
-      tmp = gfc_conv_descriptor_data_get (tmp);
-    }
-  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se_expr)))
-    tmp = gfc_conv_descriptor_data_get (se_expr);
-  else
-    {
-      gcc_assert (POINTER_TYPE_P (TREE_TYPE (se_expr)));
-      tmp = se_expr;
-    }
-
-  *offset = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     *offset, fold_convert (gfc_array_index_type, tmp));
-
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
-    tmp = gfc_conv_descriptor_data_get (caf_decl);
-  else
-   {
-     gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl)));
-     tmp = caf_decl;
-   }
-
-  *offset = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			    fold_convert (gfc_array_index_type, *offset),
-			    fold_convert (gfc_array_index_type, tmp));
-}
-
-
 /* Get data from a remote coarray.  */
 
 static void
-gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
+gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
+			    tree may_require_tmp)
 {
   gfc_expr *array_expr;
   gfc_se argse;
@@ -1328,12 +1192,16 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
   caf_decl = gfc_get_tree_for_caf_expr (array_expr);
   if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
     caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-  image_index = caf_get_image_index (&se->pre, array_expr, caf_decl);
-  get_caf_token_offset (&token, &offset, caf_decl, argse.expr, array_expr);
+  image_index = gfc_caf_get_image_index (&se->pre, array_expr, caf_decl);
+  gfc_get_caf_token_offset (&token, &offset, caf_decl, argse.expr, array_expr);
 
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 8,
+  /* No overlap possible as we have generated a temporary.  */
+  if (lhs == NULL_TREE)
+    may_require_tmp = boolean_false_node;
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 9,
 			     token, offset, image_index, argse.expr, vec,
-			     dst_var, kind, lhs_kind);
+			     dst_var, kind, lhs_kind, may_require_tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   if (se->ss)
@@ -1353,6 +1221,7 @@ conv_caf_send (gfc_code *code) {
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
+  tree may_require_tmp;
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
 
@@ -1360,6 +1229,8 @@ conv_caf_send (gfc_code *code) {
 
   lhs_expr = code->ext.actual->expr;
   rhs_expr = code->ext.actual->next->expr;
+  may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, false) == 0
+		    ? boolean_false_node : boolean_true_node;
   gfc_init_block (&block);
 
   /* LHS.  */
@@ -1413,7 +1284,8 @@ conv_caf_send (gfc_code *code) {
     {
       gcc_assert (gfc_is_coindexed (rhs_expr));
       gfc_init_se (&rhs_se, NULL);
-      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind);
+      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind,
+				  may_require_tmp);
       gfc_add_block_to_block (&block, &rhs_se.pre);
       gfc_add_block_to_block (&block, &rhs_se.post);
       gfc_add_block_to_block (&block, &lhs_se.post);
@@ -1425,8 +1297,8 @@ conv_caf_send (gfc_code *code) {
   caf_decl = gfc_get_tree_for_caf_expr (lhs_expr);
   if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
     caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-  image_index = caf_get_image_index (&block, lhs_expr, caf_decl);
-  get_caf_token_offset (&token, &offset, caf_decl, lhs_se.expr, lhs_expr);
+  image_index = gfc_caf_get_image_index (&block, lhs_expr, caf_decl);
+  gfc_get_caf_token_offset (&token, &offset, caf_decl, lhs_se.expr, lhs_expr);
 
   /* RHS.  */
   gfc_init_se (&rhs_se, NULL);
@@ -1480,9 +1352,9 @@ conv_caf_send (gfc_code *code) {
   rhs_kind = build_int_cst (integer_type_node, rhs_expr->ts.kind);
 
   if (!gfc_is_coindexed (rhs_expr))
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 8, token,
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 9, token,
 			     offset, image_index, lhs_se.expr, vec,
-			     rhs_se.expr, lhs_kind, rhs_kind);
+			     rhs_se.expr, lhs_kind, rhs_kind, may_require_tmp);
   else
     {
       tree rhs_token, rhs_offset, rhs_image_index;
@@ -1490,13 +1362,14 @@ conv_caf_send (gfc_code *code) {
       caf_decl = gfc_get_tree_for_caf_expr (rhs_expr);
       if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-      rhs_image_index = caf_get_image_index (&block, rhs_expr, caf_decl);
-      get_caf_token_offset (&rhs_token, &rhs_offset, caf_decl, rhs_se.expr,
-			    rhs_expr);
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 12,
+      rhs_image_index = gfc_caf_get_image_index (&block, rhs_expr, caf_decl);
+      gfc_get_caf_token_offset (&rhs_token, &rhs_offset, caf_decl, rhs_se.expr,
+				rhs_expr);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 13,
 				 token, offset, image_index, lhs_se.expr, vec,
 				 rhs_token, rhs_offset, rhs_image_index,
-				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind);
+				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind,
+				 may_require_tmp);
     }
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
@@ -5908,7 +5781,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   if (arg->ts.type == BT_ASSUMED)
     {
       /* This only works if an array descriptor has been passed; thus, extract
-	  the size from the descriptor.  */
+	 the size from the descriptor.  */
       gcc_assert (TYPE_PRECISION (gfc_array_index_type)
 		  == TYPE_PRECISION (size_type_node));
       tmp = arg->symtree->n.sym->backend_decl;
@@ -7521,7 +7394,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_CAF_GET:
-      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE);
+      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE, NULL_TREE);
       break;
 
     case GFC_ISYM_CMPLX:
@@ -8519,7 +8392,7 @@ conv_intrinsic_atomic_op (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
@@ -8530,7 +8403,7 @@ conv_intrinsic_atomic_op (gfc_code *code)
           value = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       if (code->resolved_isym->id == GFC_ISYM_ATOMIC_DEF)
 	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_atomic_def, 7,
@@ -8672,11 +8545,11 @@ conv_intrinsic_atomic_ref (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       /* Different type, need type conversion.  */
       if (!POINTER_TYPE_P (TREE_TYPE (value)))
@@ -8790,7 +8663,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
@@ -8809,7 +8682,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
           comp = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_atomic_cas, 9,
 				 token, offset, image_index, old, comp, new_val,

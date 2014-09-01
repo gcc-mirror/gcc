@@ -1,3 +1,9 @@
+2014-08-29  Andrew Burgess  <aburgess@broadcom.com>
+
+	* cp-demangle.c (d_dump): Only access field from s_fixed part of
+	the union for DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_count_templates_scopes): Likewise.
+
 2014-08-13  Gary Benson  <gbenson@redhat.com>
 
 	* testsuite/demangler-fuzzer.c: New file.

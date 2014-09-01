@@ -3448,7 +3448,7 @@ to a remote image identified by the image_index.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_send (caf_token_t token, size_t offset,
 int image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
-gfc_descriptor_t *src, int dst_kind, int src_kind)}
+gfc_descriptor_t *src, int dst_kind, int src_kind, bool may_require_tmp)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3466,15 +3466,26 @@ triplet of the dest argument.
 transferred to the remote image
 @item @var{dst_kind} @tab Kind of the destination argument
 @item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
 @end multitable
 
 @item @emph{NOTES}
 It is permitted to have image_id equal the current image; the memory of the
 send-to and the send-from might (partially) overlap in that case. The
-implementation has to take care that it handles this case. Note that the
-assignment of a scalar to an array is permitted. In addition, the library has
-to handle numeric-type conversion and for strings, padding and different
-character kinds.
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory. If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted. In addition,
+the library has to handle numeric-type conversion and for strings, padding
+and different character kinds.
 @end table
 
 
@@ -3490,7 +3501,7 @@ image identified by the image_index.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_get_desc (caf_token_t token, size_t offset,
 int image_index, gfc_descriptor_t *src, caf_vector_t *src_vector,
-gfc_descriptor_t *dest, int src_kind, int dst_kind)}
+gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3508,14 +3519,25 @@ subscript of the destination array; the values are relative to the dimension
 triplet of the dest argument.
 @item @var{dst_kind} @tab Kind of the destination argument
 @item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
 @end multitable
 
 @item @emph{NOTES}
 It is permitted to have image_id equal the current image; the memory of the
 send-to and the send-from might (partially) overlap in that case. The
-implementation has to take care that it handles this case. Note that the
-library has to handle numeric-type conversion and for strings, padding
-and different character kinds.
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory. If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the library has to handle numeric-type conversion and for strings,
+padding and different character kinds.
 @end table
 
 
@@ -3533,7 +3555,8 @@ dst_image_index.
 @code{void _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
 int dst_image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
 caf_token_t src_token, size_t src_offset, int src_image_index,
-gfc_descriptor_t *src, caf_vector_t *src_vector, int dst_kind, int src_kind)}
+gfc_descriptor_t *src, caf_vector_t *src_vector, int dst_kind, int src_kind,
+bool may_require_tmp)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3543,7 +3566,7 @@ destination coarray.
 shifted compared to the base address of the destination coarray.
 @item @var{dst_image_index} @tab The ID of the destination remote image; must
 be a positive number.
-@item @var{dst_dest} @tab intent(in) Array descriptor for the destination
+@item @var{dest} @tab intent(in) Array descriptor for the destination
 remote image for the bounds and the size. The base_addr shall not be accessed.
 @item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
 subscript of the destination array; the values are relative to the dimension
@@ -3553,21 +3576,31 @@ triplet of the dest argument.
 compared to the base address of the source coarray.
 @item @var{src_image_index} @tab The ID of the source remote image; must be a
 positive number.
-@item @var{src_dest} @tab intent(in) Array descriptor of the local array to be
+@item @var{src} @tab intent(in) Array descriptor of the local array to be
 transferred to the remote image.
 @item @var{src_vector} @tab intent(in) Array descriptor of the local array to
 be transferred to the remote image
 @item @var{dst_kind} @tab Kind of the destination argument
 @item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
 @end multitable
 
 @item @emph{NOTES}
-It is permitted to have image_id equal the current image; the memory of the
-send-to and the send-from might (partially) overlap in that case. The
-implementation has to take care that it handles this case. Note that the
-assignment of a scalar to an array is permitted. In addition, the library has
-to handle numeric-type conversion and for strings, padding and different
-character kinds.
+It is permitted to have image_ids equal; the memory of the send-to and the
+send-from might (partially) overlap in that case. The implementation has to
+take care that it handles this case, e.g. using @code{memmove} which handles
+(partially) overlapping memory. If @var{may_require_tmp} is true, the library
+might additionally create a temporary variable, unless additional checks show
+that this is not required (e.g. because walking backward is possible or because
+both arrays are contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted. In addition,
+the library has to handle numeric-type conversion and for strings, padding and
+different character kinds.
 @end table
 
 

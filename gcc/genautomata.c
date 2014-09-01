@@ -8731,7 +8731,7 @@ output_dfa_clean_insn_cache_func (void)
 	   DFA_INSN_CODES_VARIABLE_NAME, I_VARIABLE_NAME);
 
   fprintf (output_file,
-           "void\n%s (rtx %s)\n{\n  int %s;\n\n",
+           "void\n%s (rtx_insn *%s)\n{\n  int %s;\n\n",
            DFA_CLEAR_SINGLE_INSN_CACHE_FUNC_NAME, INSN_PARAMETER_NAME,
 	   I_VARIABLE_NAME);
   fprintf (output_file,

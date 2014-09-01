@@ -101,15 +101,15 @@ remove_list_elem (rtx elem, rtx *listp)
 /* This call is used in place of a gen_rtx_INSN_LIST. If there is a cached
    node available, we'll use it, otherwise a call to gen_rtx_INSN_LIST
    is made.  */
-rtx
+rtx_insn_list *
 alloc_INSN_LIST (rtx val, rtx next)
 {
-  rtx r;
+  rtx_insn_list *r;
 
   if (unused_insn_list)
     {
-      r = unused_insn_list;
-      unused_insn_list = XEXP (r, 1);
+      r = as_a <rtx_insn_list *> (unused_insn_list);
+      unused_insn_list = r->next ();
       XEXP (r, 0) = val;
       XEXP (r, 1) = next;
       PUT_REG_NOTE_KIND (r, VOIDmode);
@@ -125,14 +125,14 @@ alloc_INSN_LIST (rtx val, rtx next)
 /* This call is used in place of a gen_rtx_EXPR_LIST. If there is a cached
    node available, we'll use it, otherwise a call to gen_rtx_EXPR_LIST
    is made.  */
-rtx
+rtx_expr_list *
 alloc_EXPR_LIST (int kind, rtx val, rtx next)
 {
-  rtx r;
+  rtx_expr_list *r;
 
   if (unused_expr_list)
     {
-      r = unused_expr_list;
+      r = as_a <rtx_expr_list *> (unused_expr_list);
       unused_expr_list = XEXP (r, 1);
       XEXP (r, 0) = val;
       XEXP (r, 1) = next;
@@ -146,48 +146,48 @@ alloc_EXPR_LIST (int kind, rtx val, rtx next)
 
 /* This function will free up an entire list of EXPR_LIST nodes.  */
 void
-free_EXPR_LIST_list (rtx *listp)
+free_EXPR_LIST_list (rtx_expr_list **listp)
 {
   if (*listp == 0)
     return;
-  free_list (listp, &unused_expr_list);
+  free_list ((rtx *)listp, &unused_expr_list);
 }
 
 /* This function will free up an entire list of INSN_LIST nodes.  */
 void
-free_INSN_LIST_list (rtx *listp)
+free_INSN_LIST_list (rtx_insn_list **listp)
 {
   if (*listp == 0)
     return;
-  free_list (listp, &unused_insn_list);
+  free_list ((rtx *)listp, &unused_insn_list);
 }
 
 /* Make a copy of the INSN_LIST list LINK and return it.  */
-rtx
-copy_INSN_LIST (rtx link)
+rtx_insn_list *
+copy_INSN_LIST (rtx_insn_list *link)
 {
-  rtx new_queue;
-  rtx *pqueue = &new_queue;
+  rtx_insn_list *new_queue;
+  rtx_insn_list **pqueue = &new_queue;
 
-  for (; link; link = XEXP (link, 1))
+  for (; link; link = link->next ())
     {
-      rtx x = XEXP (link, 0);
-      rtx newlink = alloc_INSN_LIST (x, NULL);
+      rtx_insn *x = link->insn ();
+      rtx_insn_list *newlink = alloc_INSN_LIST (x, NULL);
       *pqueue = newlink;
-      pqueue = &XEXP (newlink, 1);
+      pqueue = (rtx_insn_list **)&XEXP (newlink, 1);
     }
-  *pqueue = NULL_RTX;
+  *pqueue = NULL;
   return new_queue;
 }
 
 /* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
-rtx
-concat_INSN_LIST (rtx copy, rtx old)
+rtx_insn_list *
+concat_INSN_LIST (rtx_insn_list *copy, rtx_insn_list *old)
 {
-  rtx new_rtx = old;
-  for (; copy ; copy = XEXP (copy, 1))
+  rtx_insn_list *new_rtx = old;
+  for (; copy ; copy = copy->next ())
     {
-      new_rtx = alloc_INSN_LIST (XEXP (copy, 0), new_rtx);
+      new_rtx = alloc_INSN_LIST (copy->insn (), new_rtx);
       PUT_REG_NOTE_KIND (new_rtx, REG_NOTE_KIND (copy));
     }
   return new_rtx;
@@ -213,19 +213,19 @@ free_INSN_LIST_node (rtx ptr)
 /* Remove and free corresponding to ELEM node in the INSN_LIST pointed to
    by LISTP.  */
 void
-remove_free_INSN_LIST_elem (rtx elem, rtx *listp)
+remove_free_INSN_LIST_elem (rtx_insn *elem, rtx_insn_list **listp)
 {
-  free_INSN_LIST_node (remove_list_elem (elem, listp));
+  free_INSN_LIST_node (remove_list_elem (elem, (rtx *)listp));
 }
 
 /* Remove and free the first node in the INSN_LIST pointed to by LISTP.  */
-rtx
-remove_free_INSN_LIST_node (rtx *listp)
+rtx_insn *
+remove_free_INSN_LIST_node (rtx_insn_list **listp)
 {
-  rtx node = *listp;
-  rtx elem = XEXP (node, 0);
+  rtx_insn_list *node = *listp;
+  rtx_insn *elem = node->insn ();
 
-  remove_list_node (listp);
+  remove_list_node ((rtx *)listp);
   free_INSN_LIST_node (node);
 
   return elem;
@@ -233,12 +233,12 @@ remove_free_INSN_LIST_node (rtx *listp)
 
 /* Remove and free the first node in the EXPR_LIST pointed to by LISTP.  */
 rtx
-remove_free_EXPR_LIST_node (rtx *listp)
+remove_free_EXPR_LIST_node (rtx_expr_list **listp)
 {
-  rtx node = *listp;
+  rtx_expr_list *node = *listp;
   rtx elem = XEXP (node, 0);
 
-  remove_list_node (listp);
+  remove_list_node ((rtx *)listp);
   free_EXPR_LIST_node (node);
 
   return elem;

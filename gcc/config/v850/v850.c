@@ -1114,15 +1114,15 @@ ep_memory_operand (rtx op, enum machine_mode mode, int unsigned_load)
    taking care to save and preserve the ep.  */
 
 static void
-substitute_ep_register (rtx first_insn,
-                        rtx last_insn,
+substitute_ep_register (rtx_insn *first_insn,
+                        rtx_insn *last_insn,
                         int uses,
                         int regno,
                         rtx * p_r1,
                         rtx * p_ep)
 {
   rtx reg = gen_rtx_REG (Pmode, regno);
-  rtx insn;
+  rtx_insn *insn;
 
   if (!*p_r1)
     {
@@ -1227,8 +1227,8 @@ v850_reorg (void)
   struct
   {
     int uses;
-    rtx first_insn;
-    rtx last_insn;
+    rtx_insn *first_insn;
+    rtx_insn *last_insn;
   }
   regs[FIRST_PSEUDO_REGISTER];
 
@@ -1236,7 +1236,7 @@ v850_reorg (void)
   int use_ep = FALSE;
   rtx r1 = NULL_RTX;
   rtx ep = NULL_RTX;
-  rtx insn;
+  rtx_insn *insn;
   rtx pattern;
 
   /* If not ep mode, just return now.  */
@@ -1246,8 +1246,8 @@ v850_reorg (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       regs[i].uses = 0;
-      regs[i].first_insn = NULL_RTX;
-      regs[i].last_insn = NULL_RTX;
+      regs[i].first_insn = NULL;
+      regs[i].last_insn = NULL;
     }
 
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
@@ -1280,8 +1280,8 @@ v850_reorg (void)
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    {
 	      regs[i].uses = 0;
-	      regs[i].first_insn = NULL_RTX;
-	      regs[i].last_insn = NULL_RTX;
+	      regs[i].first_insn = NULL;
+	      regs[i].last_insn = NULL;
 	    }
 	  break;
 
@@ -1413,8 +1413,8 @@ v850_reorg (void)
 			  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 			    {
 			      regs[i].uses = 0;
-			      regs[i].first_insn = NULL_RTX;
-			      regs[i].last_insn = NULL_RTX;
+			      regs[i].first_insn = NULL;
+			      regs[i].last_insn = NULL;
 			    }
 			}
 		    }
@@ -1422,8 +1422,8 @@ v850_reorg (void)
 		  for (i = regno; i < endregno; i++)
 		    {
 		      regs[i].uses = 0;
-		      regs[i].first_insn = NULL_RTX;
-		      regs[i].last_insn = NULL_RTX;
+		      regs[i].first_insn = NULL;
+		      regs[i].last_insn = NULL;
 		    }
 		}
 	    }
@@ -3092,7 +3092,7 @@ v850_memory_move_cost (enum machine_mode mode,
 }
 
 int
-v850_adjust_insn_length (rtx insn, int length)
+v850_adjust_insn_length (rtx_insn *insn, int length)
 {
   if (TARGET_V850E3V5_UP)
     {

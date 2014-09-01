@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tree-pass.h"
 #include "target.h"
+#include "rtl-iter.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
@@ -68,13 +69,12 @@ static void mark_jump_label_1 (rtx, rtx, bool, bool);
 static void mark_jump_label_asm (rtx, rtx);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
-static int returnjump_p_1 (rtx *, void *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
 static void
 rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
 {
-  rtx insn;
+  rtx_insn_list *insn;
 
   timevar_push (TV_REBUILD_JUMP);
   init_label_info (f);
@@ -85,9 +85,9 @@ rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
      count doesn't drop to zero.  */
 
   if (count_forced)
-    for (insn = forced_labels; insn; insn = XEXP (insn, 1))
-      if (LABEL_P (XEXP (insn, 0)))
-	LABEL_NUSES (XEXP (insn, 0))++;
+    for (insn = forced_labels; insn; insn = insn->next ())
+      if (LABEL_P (insn->insn ()))
+	LABEL_NUSES (insn->insn ())++;
   timevar_pop (TV_REBUILD_JUMP);
 }
 
@@ -920,55 +920,50 @@ condjump_label (const_rtx insn)
   return NULL_RTX;
 }
 
-/* Return true if INSN is a (possibly conditional) return insn.  */
-
-static int
-returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *loc;
-
-  if (x == NULL)
-    return false;
-
-  switch (GET_CODE (x))
-    {
-    case RETURN:
-    case SIMPLE_RETURN:
-    case EH_RETURN:
-      return true;
-
-    case SET:
-      return SET_IS_RETURN_P (x);
-
-    default:
-      return false;
-    }
-}
-
 /* Return TRUE if INSN is a return jump.  */
 
 int
 returnjump_p (rtx insn)
 {
-  if (!JUMP_P (insn))
-    return 0;
-  return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
+  if (JUMP_P (insn))
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	{
+	  const_rtx x = *iter;
+	  switch (GET_CODE (x))
+	    {
+	    case RETURN:
+	    case SIMPLE_RETURN:
+	    case EH_RETURN:
+	      return true;
+
+	    case SET:
+	      if (SET_IS_RETURN_P (x))
+		return true;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+  return false;
 }
 
 /* Return true if INSN is a (possibly conditional) return insn.  */
 
-static int
-eh_returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  return *loc && GET_CODE (*loc) == EH_RETURN;
-}
-
 int
 eh_returnjump_p (rtx insn)
 {
-  if (!JUMP_P (insn))
-    return 0;
-  return for_each_rtx (&PATTERN (insn), eh_returnjump_p_1, NULL);
+  if (JUMP_P (insn))
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	if (GET_CODE (*iter) == EH_RETURN)
+	  return true;
+    }
+  return false;
 }
 
 /* Return true if INSN is a jump that only transfers control and
@@ -1117,9 +1112,12 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
       break;
 
     case SEQUENCE:
-      for (i = 0; i < XVECLEN (x, 0); i++)
-	mark_jump_label (PATTERN (XVECEXP (x, 0, i)),
-			 XVECEXP (x, 0, i), 0);
+      {
+	rtx_sequence *seq = as_a <rtx_sequence *> (x);
+	for (i = 0; i < seq->len (); i++)
+	  mark_jump_label (PATTERN (seq->insn (i)),
+			   seq->insn (i), 0);
+      }
       return;
 
     case SYMBOL_REF:
@@ -1249,8 +1247,9 @@ mark_jump_label_asm (rtx asmop, rtx insn)
    subsequent cfg_cleanup pass to delete unreachable code if needed.  */
 
 rtx_insn *
-delete_related_insns (rtx insn)
+delete_related_insns (rtx uncast_insn)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   int was_code_label = (LABEL_P (insn));
   rtx note;
   rtx_insn *next = NEXT_INSN (insn), *prev = PREV_INSN (insn);
@@ -1278,7 +1277,7 @@ delete_related_insns (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
 	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
     {
-      rtx p;
+      rtx_insn *p;
 
       for (p = next && INSN_DELETED_P (next) ? NEXT_INSN (next) : next;
 	   p && NOTE_P (p);

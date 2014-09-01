@@ -27,7 +27,7 @@ extern struct rtx_def *gen_compare_reg (enum machine_mode, enum rtx_code,
 #endif
 
 /* Declarations for various fns used in the .md file.  */
-extern void epiphany_final_prescan_insn (rtx, rtx *, int);
+extern void epiphany_final_prescan_insn (rtx_insn *, rtx *, int);
 extern bool epiphany_is_long_call_p (rtx);
 extern bool epiphany_small16 (rtx);
 bool epiphany_uninterruptible_p (tree decl);
@@ -45,8 +45,8 @@ extern void emit_set_fp_mode (int entity, int mode, int prev_mode,
 #endif
 extern void epiphany_insert_mode_switch_use (rtx insn, int, int);
 extern void epiphany_expand_set_fp_mode (rtx *operands);
-extern int epiphany_mode_needed (int entity, rtx insn);
-extern int epiphany_mode_after (int entity, int last_mode, rtx insn);
+extern int epiphany_mode_needed (int entity, rtx_insn *insn);
+extern int epiphany_mode_after (int entity, int last_mode, rtx_insn *insn);
 extern bool epiphany_epilogue_uses (int regno);
 extern bool epiphany_optimize_mode_switching (int entity);
 extern bool epiphany_is_interrupt_p (tree);

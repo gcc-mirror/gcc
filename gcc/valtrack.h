@@ -149,7 +149,7 @@ extern int dead_debug_insert_temp (struct dead_debug_local *,
 				   unsigned int uregno, rtx insn,
 				   enum debug_temp_where);
 
-extern void propagate_for_debug (rtx, rtx, rtx, rtx, basic_block);
+extern void propagate_for_debug (rtx_insn *, rtx_insn *, rtx, rtx, basic_block);
 
 
 #endif /* GCC_VALTRACK_H */

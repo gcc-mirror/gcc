@@ -1269,6 +1269,7 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
       /* The interesting cases are when the symbols don't match.  */
       if (expr1->symtree->n.sym != expr2->symtree->n.sym)
 	{
+	  symbol_attribute attr1, attr2;
 	  gfc_typespec *ts1 = &expr1->symtree->n.sym->ts;
 	  gfc_typespec *ts2 = &expr2->symtree->n.sym->ts;
 
@@ -1284,9 +1285,13 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 		return 0;
 	    }
 
-	  /* If either variable is a pointer, assume the worst.  */
-	  /* TODO: -fassume-no-pointer-aliasing */
-	  if (gfc_is_data_pointer (expr1) || gfc_is_data_pointer (expr2))
+	  /* We have to also include target-target as ptr%comp is not a
+	     pointer but it still alias with "dt%comp" for "ptr => dt".  As
+	     subcomponents and array access to pointers retains the target
+	     attribute, that's sufficient.  */
+	  attr1 = gfc_expr_attr (expr1);
+	  attr2 = gfc_expr_attr (expr2);
+	  if ((attr1.pointer || attr1.target) && (attr2.pointer || attr2.target))
 	    {
 	      if (check_data_pointer_types (expr1, expr2)
 		    && check_data_pointer_types (expr2, expr1))
