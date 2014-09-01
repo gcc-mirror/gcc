@@ -1,3 +1,8 @@
+2014-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/20010129-1.c: Fix typo in -mtune.
+	(abort, exit): Declare.
+
 2014-09-01  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61897
