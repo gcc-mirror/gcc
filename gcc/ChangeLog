@@ -1,3 +1,8 @@
+2014-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genemit.c: Include dumpfile.h.
+	(gen_split): Print name of splitter function to dump file.
+
 2014-09-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-struct-aliases.c (find_func_aliases_for_builtin_call):
