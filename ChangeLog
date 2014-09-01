@@ -1,3 +1,9 @@
+2014-09-01  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Add LTO_EXPORTS.
+	POSTSTAGE1_FLAGS_TO_PASS):  Add LTO_FLAGS_TO_PASS.
+	* Makefile.in: Regenerate.
+
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtx-classes-status.txt: Delete
