@@ -1233,6 +1233,13 @@ add_or_update_dep_1 (dep_t new_dep, bool resolved_p,
       switch (ask_dependency_caches (new_dep))
 	{
 	case DEP_PRESENT:
+	  dep_t present_dep;
+	  sd_iterator_def sd_it;
+      
+	  present_dep = sd_find_dep_between_no_cache (DEP_PRO (new_dep),
+						      DEP_CON (new_dep),
+						      resolved_p, &sd_it);
+	  DEP_MULTIPLE (present_dep) = 1;
 	  return DEP_PRESENT;
 
 	case DEP_CHANGED:
@@ -4747,24 +4754,6 @@ find_inc (struct mem_inc_info *mii, bool backwards)
 		  goto next;
 		}
 	    }
-
-	  /* The inc instruction could have clobbers, make sure those
-	     registers are not used in mem insn.  */
-	  for (def_rec = DF_INSN_DEFS (mii->inc_insn); *def_rec; def_rec++)
-	    if (!reg_overlap_mentioned_p (DF_REF_REG (*def_rec), mii->mem_reg0))
-	      {
-		df_ref *use_rec;
-		for (use_rec = DF_INSN_USES (mii->mem_insn); *use_rec; use_rec++)
-		  if (reg_overlap_mentioned_p (DF_REF_REG (*def_rec),
-					       DF_REF_REG (*use_rec)))
-		    {
-		      if (sched_verbose >= 5)
-			fprintf (sched_dump,
-				 "inc clobber used in store failure.\n");
-		      goto next;
-		    }
-	      }
-
 	  newaddr = mii->inc_input;
 	  if (mii->mem_index != NULL_RTX)
 	    newaddr = gen_rtx_PLUS (GET_MODE (newaddr), newaddr,
