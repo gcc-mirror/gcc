@@ -1,3 +1,8 @@
+2014-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (phi_translate_1): Avoid re-allocating the
+	operands vector in most cases.  Remove redundant code.
+
 2014-09-01  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxworksae.h (VXWORKSAE_TARGET_DIR): Rely on
