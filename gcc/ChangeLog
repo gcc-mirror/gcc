@@ -1,3 +1,8 @@
+2014-09-01  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (FLAGS_TO_PASS): Propagate INSTALL, INSTALL_DATA,
+	INSTALL_SCRIPT and INSTALL_PROGRAM as well.
+
 2014-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/gnu-user.h (LIBLSAN_EARLY_SPEC): Define.
