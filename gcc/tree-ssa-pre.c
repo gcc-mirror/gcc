@@ -1536,12 +1536,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	tree newvuse = vuse;
 	vec<vn_reference_op_s> newoperands = vNULL;
 	bool changed = false, same_valid = true;
-	unsigned int i, j, n;
+	unsigned int i, n;
 	vn_reference_op_t operand;
 	vn_reference_t newref;
 
-	for (i = 0, j = 0;
-	     operands.iterate (i, &operand); i++, j++)
+	for (i = 0; operands.iterate (i, &operand); i++)
 	  {
 	    pre_expr opresult;
 	    pre_expr leader;
@@ -1585,6 +1584,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		newoperands.release ();
 		return NULL;
 	      }
+	    if (!changed)
+	      continue;
 	    if (!newoperands.exists ())
 	      newoperands = operands.copy ();
 	    /* We may have changed from an SSA_NAME to a constant */
@@ -1594,36 +1595,14 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    newop.op0 = op[0];
 	    newop.op1 = op[1];
 	    newop.op2 = op[2];
-	    /* If it transforms a non-constant ARRAY_REF into a constant
-	       one, adjust the constant offset.  */
-	    if (newop.opcode == ARRAY_REF
-		&& newop.off == -1
-		&& TREE_CODE (op[0]) == INTEGER_CST
-		&& TREE_CODE (op[1]) == INTEGER_CST
-		&& TREE_CODE (op[2]) == INTEGER_CST)
-	      {
-		offset_int off = ((wi::to_offset (op[0])
-				   - wi::to_offset (op[1]))
-				  * wi::to_offset (op[2]));
-		if (wi::fits_shwi_p (off))
-		  newop.off = off.to_shwi ();
-	      }
-	    newoperands[j] = newop;
-	    /* If it transforms from an SSA_NAME to an address, fold with
-	       a preceding indirect reference.  */
-	    if (j > 0 && op[0] && TREE_CODE (op[0]) == ADDR_EXPR
-		&& newoperands[j - 1].opcode == MEM_REF)
-	      vn_reference_fold_indirect (&newoperands, &j);
+	    newoperands[i] = newop;
 	  }
-	if (i != operands.length ())
-	  {
-	    newoperands.release ();
-	    return NULL;
-	  }
+	gcc_checking_assert (i == operands.length ());
 
 	if (vuse)
 	  {
-	    newvuse = translate_vuse_through_block (newoperands,
+	    newvuse = translate_vuse_through_block (newoperands.exists ()
+						    ? newoperands : operands,
 						    ref->set, ref->type,
 						    vuse, phiblock, pred,
 						    &same_valid);
@@ -1641,7 +1620,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
-						      newoperands,
+						      newoperands.exists ()
+						      ? newoperands : operands,
 						      &newref, VN_WALK);
 	    if (result)
 	      newoperands.release ();
@@ -1700,11 +1680,13 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  }
 		else
 		  new_val_id = ref->value_id;
+		if (!newoperands.exists ())
+		  newoperands = operands.copy ();
 		newref = vn_reference_insert_pieces (newvuse, ref->set,
 						     ref->type,
 						     newoperands,
 						     result, new_val_id);
-		newoperands.create (0);
+		newoperands = vNULL;
 		PRE_EXPR_REFERENCE (expr) = newref;
 		constant = fully_constant_expression (expr);
 		if (constant != expr)
