@@ -869,9 +869,9 @@
 
 (define_insn "*cmp_div0s_0"
   [(set (reg:SI T_REG)
-	(eq:SI (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+	(eq:SI (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand" "%r")
 			    (const_int 31))
-	       (ge:SI (match_operand:SI 1 "arith_reg_operand")
+	       (ge:SI (match_operand:SI 1 "arith_reg_operand" "r")
 		      (const_int 0))))]
   "TARGET_SH1"
   "div0s	%0,%1"
