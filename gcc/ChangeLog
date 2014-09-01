@@ -1,3 +1,13 @@
+2014-09-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* tree-ssa-math-opts.c (struct symbolic_number): Clarify comment about
+	the size of byte markers.
+	(do_shift_rotate): Fix confusion between host, target and marker byte
+	size.
+	(verify_symbolic_number_p): Likewise.
+	(find_bswap_or_nop_1): Likewise.
+	(find_bswap_or_nop): Likewise.
+
 2014-09-01  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (FLAGS_TO_PASS): Propagate INSTALL, INSTALL_DATA,
