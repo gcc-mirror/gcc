@@ -1,6 +1,14 @@
 2014-09-01  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
+	2014-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61271
+	* expr.c (is_aligning_offset): Remove logical not.
+
+2014-09-01  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
 	2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61271
