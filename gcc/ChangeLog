@@ -1,3 +1,9 @@
+2014-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gnu-user.h (LIBLSAN_EARLY_SPEC): Define.
+	* gcc.c (LIBLSAN_SPEC, LIBLSAN_EARLY_SPEC): Follow LIBTSAN*_SPEC.
+	(SANITIZER_EARLY_SPEC): Include LIBLSAN_EARLY_SPEC for -fsanitize=leak.
+
 2014-09-01  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61897
