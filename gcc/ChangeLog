@@ -1,3 +1,11 @@
+2014-09-01  Andi Kleen  <ak@linux.intel.com>
+
+	* file-find.c (add_prefix_begin): Add.
+	(do_add_prefix): Rename from add_prefix with first argument.
+	(add_prefix): Add new wrapper.
+	* file-find.h (add_prefix_begin): Add.
+	* gcc-ar.c (main): Support -B option.
+
 2014-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* genemit.c: Include dumpfile.h.
