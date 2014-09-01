@@ -1,3 +1,10 @@
+2014-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/62025
+	* sched-deps.c (add_or_update_dep_1): If ask_dependency_caches
+	returned DEP_PRESENT, make sure to set DEP_MULTIPLE on present_dep.
+	(find_inc): Revert 2014-08-13 change.
+
 2014-09-01  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/61903

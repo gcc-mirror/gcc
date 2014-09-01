@@ -1235,6 +1235,13 @@ add_or_update_dep_1 (dep_t new_dep, bool resolved_p,
       switch (ask_dependency_caches (new_dep))
 	{
 	case DEP_PRESENT:
+	  dep_t present_dep;
+	  sd_iterator_def sd_it;
+      
+	  present_dep = sd_find_dep_between_no_cache (DEP_PRO (new_dep),
+						      DEP_CON (new_dep),
+						      resolved_p, &sd_it);
+	  DEP_MULTIPLE (present_dep) = 1;
 	  return DEP_PRESENT;
 
 	case DEP_CHANGED:
@@ -4763,23 +4770,6 @@ find_inc (struct mem_inc_info *mii, bool backwards)
 		  fprintf (sched_dump,
 			   "inc conflicts with store failure.\n");
 		goto next;
-	      }
-
-	  /* The inc instruction could have clobbers, make sure those
-	     registers are not used in mem insn.  */
-	  FOR_EACH_INSN_DEF (def, mii->inc_insn)
-	    if (!reg_overlap_mentioned_p (DF_REF_REG (def), mii->mem_reg0))
-	      {
-		df_ref use;
-		FOR_EACH_INSN_USE (use, mii->mem_insn)
-		  if (reg_overlap_mentioned_p (DF_REF_REG (def),
-					       DF_REF_REG (use)))
-		    {
-		      if (sched_verbose >= 5)
-			fprintf (sched_dump,
-				 "inc clobber used in store failure.\n");
-		      goto next;
-		    }
 	      }
 
 	  newaddr = mii->inc_input;
