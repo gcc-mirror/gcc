@@ -3767,17 +3767,14 @@ compute_avail (void)
 	    case GIMPLE_CALL:
 	      {
 		vn_reference_t ref;
+		vn_reference_s ref1;
 		pre_expr result = NULL;
-		auto_vec<vn_reference_op_s> ops;
 
 		/* We can value number only calls to real functions.  */
 		if (gimple_call_internal_p (stmt))
 		  continue;
 
-		copy_reference_ops_from_call (stmt, &ops);
-		vn_reference_lookup_pieces (gimple_vuse (stmt), 0,
-					    gimple_expr_type (stmt),
-					    ops, &ref, VN_NOWALK);
+		vn_reference_lookup_call (stmt, &ref, &ref1);
 		if (!ref)
 		  continue;
 

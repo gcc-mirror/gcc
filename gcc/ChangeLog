@@ -1,3 +1,26 @@
+2014-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (copy_reference_ops_from_ref,
+	copy_reference_ops_from_call, vn_nary_op_compute_hash,
+	vn_reference_compute_hash, vn_reference_insert): Remove.
+	(vn_reference_lookup_call): New function.
+	* tree-ssa-sccvn.c (vn_reference_compute_hash,
+	copy_reference_ops_from_ref, copy_reference_ops_from_call,
+	vn_reference_insert, vn_nary_op_compute_hash): Make static.
+	(create_reference_ops_from_call): Remove.
+	(vn_reference_lookup_3): Properly update shared_lookup_references.
+	(vn_reference_lookup_pieces): Assert that we updated
+	shared_lookup_references properly.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_lookup_call): New function.
+	(visit_reference_op_call): Use it.  Avoid re-building the
+	reference ops.
+	(visit_reference_op_load): Remove redundant lookup.
+	(visit_reference_op_store): Perform special tail-merging work
+	only when possibly doing tail-merging.
+	(visit_use): Likewise.
+	* tree-ssa-pre.c (compute_avail): Use vn_reference_lookup_call.
+
 2014-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/62025
