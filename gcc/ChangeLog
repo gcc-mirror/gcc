@@ -1,3 +1,9 @@
+2014-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/61903
+	* expmed.c (store_fixed_bit_field_1): Shift UHWI 1 instead of HWI 1.
+	Change the type of V to unsigned HOST_WIDE_INT.
+
 2014-09-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* tree-ssa-math-opts.c (struct symbolic_number): Clarify comment about
