@@ -1,5 +1,13 @@
 2014-09-01  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-struct-aliases.c (find_func_aliases_for_builtin_call):
+	Use stack auto_vecs for constraint expressions.
+	(find_func_aliases_for_call): Likewise.
+	(find_func_aliases): Likewise.
+	(find_func_clobbers): Likewise.
+
+2014-09-01  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (phi_translate_1): Avoid re-allocating the
 	operands vector in most cases.  Remove redundant code.
 
