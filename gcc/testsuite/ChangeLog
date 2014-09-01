@@ -1,5 +1,9 @@
 2014-09-01  Maciej W. Rozycki  <macro@codesourcery.com>
 
+	* gcc.dg/tree-ssa/loop-19.c: Exclude classic FPU Power targets.
+
+2014-09-01  Maciej W. Rozycki  <macro@codesourcery.com>
+
 	* lib/target-supports.exp (check_effective_target_arm_cortex_m):
 	Return right away if !arm*-*-*.
 
