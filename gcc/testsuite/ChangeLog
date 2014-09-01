@@ -1,3 +1,8 @@
+2014-09-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/62312
+	* gcc.c-torture/compile/pr62312.c: New.
+
 2014-09-01  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gcc.dg/tree-ssa/loop-19.c: Exclude classic FPU Power targets.
