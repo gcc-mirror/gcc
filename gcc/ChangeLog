@@ -1,3 +1,11 @@
+2014-09-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-09-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/62312
+	* config/sh/sh.md (*cmp_div0s_0): Add missing constraints.
+
 2014-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/62025
