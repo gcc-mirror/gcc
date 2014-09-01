@@ -1097,7 +1097,7 @@ handle_alias_pairs (void)
 	  /* We use local aliases for C++ thunks to force the tailcall
 	     to bind locally.  This is a hack - to keep it working do
 	     the following (which is not strictly correct).  */
-	  && (! TREE_CODE (target_node->symbol.decl) == FUNCTION_DECL
+	  && (TREE_CODE (target_node->symbol.decl) != FUNCTION_DECL
 	      || ! DECL_VIRTUAL_P (target_node->symbol.decl))
 	  && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
 	{
