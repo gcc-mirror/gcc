@@ -1,3 +1,9 @@
+2014-09-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworksae.h (VXWORKSAE_TARGET_DIR): Rely on
+	$WIND_BASE instead of designating a harcoded arbitrary home dir.
+	(VXWORKS_ADDITIONAL_CPP_SPEC): Adjust callers.
+
 2014-09-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (copy_reference_ops_from_ref,
