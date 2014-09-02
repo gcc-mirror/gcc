@@ -1,5 +1,14 @@
 2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/62275
+	* config/arm/iterators.md (FIXUORS): New code iterator.
+	(VCVT): New int iterator.
+	(su_optab): New code attribute.
+	(su): Likewise.
+	* config/arm/vfp.md (l<vrint_pattern><su_optab><mode>si2): New pattern.
+
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/predicates.md (aarch64_comparison_operation):
 	New special predicate.
 	* config/aarch64/aarch64.md (*csinc2<mode>_insn): Use
