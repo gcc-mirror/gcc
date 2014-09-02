@@ -202,6 +202,18 @@
 (define_special_predicate "aarch64_comparison_operator"
   (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,ordered,unlt,unle,unge,ungt"))
 
+(define_special_predicate "aarch64_comparison_operation"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,ordered,unlt,unle,unge,ungt")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  rtx op0 = XEXP (op, 0);
+  if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+    return false;
+  return aarch64_get_condition_code (op) >= 0;
+})
+
+
 ;; True if the operand is memory reference suitable for a load/store exclusive.
 (define_predicate "aarch64_sync_memory_operand"
   (and (match_operand 0 "memory_operand")

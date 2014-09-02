@@ -3587,7 +3587,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   return CCmode;
 }
 
-static unsigned
+int
 aarch64_get_condition_code (rtx x)
 {
   enum machine_mode mode = GET_MODE (XEXP (x, 0));
@@ -3614,7 +3614,7 @@ aarch64_get_condition_code (rtx x)
 	case UNLE: return AARCH64_LE;
 	case UNGT: return AARCH64_HI;
 	case UNGE: return AARCH64_PL;
-	default: gcc_unreachable ();
+	default: return -1;
 	}
       break;
 
@@ -3631,7 +3631,7 @@ aarch64_get_condition_code (rtx x)
 	case GTU: return AARCH64_HI;
 	case LEU: return AARCH64_LS;
 	case LTU: return AARCH64_CC;
-	default: gcc_unreachable ();
+	default: return -1;
 	}
       break;
 
@@ -3650,7 +3650,7 @@ aarch64_get_condition_code (rtx x)
 	case GTU: return AARCH64_CC;
 	case LEU: return AARCH64_CS;
 	case LTU: return AARCH64_HI;
-	default: gcc_unreachable ();
+	default: return -1;
 	}
       break;
 
@@ -3661,7 +3661,7 @@ aarch64_get_condition_code (rtx x)
 	case EQ: return AARCH64_EQ;
 	case GE: return AARCH64_PL;
 	case LT: return AARCH64_MI;
-	default: gcc_unreachable ();
+	default: return -1;
 	}
       break;
 
@@ -3670,12 +3670,12 @@ aarch64_get_condition_code (rtx x)
 	{
 	case NE: return AARCH64_NE;
 	case EQ: return AARCH64_EQ;
-	default: gcc_unreachable ();
+	default: return -1;
 	}
       break;
 
     default:
-      gcc_unreachable ();
+      return -1;
       break;
     }
 }
@@ -3793,39 +3793,48 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       break;
 
     case 'm':
-      /* Print a condition (eq, ne, etc).  */
+      {
+        int cond_code;
+        /* Print a condition (eq, ne, etc).  */
 
-      /* CONST_TRUE_RTX means always -- that's the default.  */
-      if (x == const_true_rtx)
-	return;
-
-      if (!COMPARISON_P (x))
-	{
-	  output_operand_lossage ("invalid operand for '%%%c'", code);
+        /* CONST_TRUE_RTX means always -- that's the default.  */
+        if (x == const_true_rtx)
 	  return;
-	}
 
-      fputs (aarch64_condition_codes[aarch64_get_condition_code (x)], f);
+        if (!COMPARISON_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+
+        cond_code = aarch64_get_condition_code (x);
+        gcc_assert (cond_code >= 0);
+        fputs (aarch64_condition_codes[cond_code], f);
+      }
       break;
 
     case 'M':
-      /* Print the inverse of a condition (eq <-> ne, etc).  */
+      {
+        int cond_code;
+        /* Print the inverse of a condition (eq <-> ne, etc).  */
 
-      /* CONST_TRUE_RTX means never -- that's the default.  */
-      if (x == const_true_rtx)
-	{
-	  fputs ("nv", f);
-	  return;
-	}
+        /* CONST_TRUE_RTX means never -- that's the default.  */
+        if (x == const_true_rtx)
+	  {
+	    fputs ("nv", f);
+	    return;
+	  }
 
-      if (!COMPARISON_P (x))
-	{
-	  output_operand_lossage ("invalid operand for '%%%c'", code);
-	  return;
-	}
-
-      fputs (aarch64_condition_codes[AARCH64_INVERSE_CONDITION_CODE
-				  (aarch64_get_condition_code (x))], f);
+        if (!COMPARISON_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+        cond_code = aarch64_get_condition_code (x);
+        gcc_assert (cond_code >= 0);
+        fputs (aarch64_condition_codes[AARCH64_INVERSE_CONDITION_CODE
+                                       (cond_code)], f);
+      }
       break;
 
     case 'b':

@@ -173,6 +173,7 @@ struct tune_params
 };
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
+int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, enum machine_mode);
 bool aarch64_cannot_change_mode_class (enum machine_mode,
 				       enum machine_mode,
