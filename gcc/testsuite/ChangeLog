@@ -1,3 +1,10 @@
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62275
+	* gcc.target/arm/lceil-vcvt_1.c: New test.
+	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
+	* gcc.target/arm/lround-vcvt_1.c: Likewise.
+
 2014-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1453

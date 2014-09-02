@@ -194,6 +194,9 @@
 ;; Right shifts
 (define_code_iterator rshifts [ashiftrt lshiftrt])
 
+;; Iterator for integer conversions
+(define_code_iterator FIXUORS [fix unsigned_fix])
+
 ;; Binary operators whose second operand can be shifted.
 (define_code_iterator shiftable_ops [plus minus ior xor and])
 
@@ -214,6 +217,8 @@
 
 (define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
                             UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
+
+(define_int_iterator VCVT [UNSPEC_VRINTP UNSPEC_VRINTM UNSPEC_VRINTA])
 
 (define_int_iterator NEON_VRINT [UNSPEC_NVRINTP UNSPEC_NVRINTZ UNSPEC_NVRINTM
                               UNSPEC_NVRINTX UNSPEC_NVRINTA UNSPEC_NVRINTN])
@@ -518,6 +523,13 @@
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])
+
+;; Signedness suffix for float->fixed conversions.  Empty for signed
+;; conversion.
+(define_code_attr su_optab [(fix "") (unsigned_fix "u")])
+
+;; Sign prefix to use in instruction type suffixes, i.e. s32, u32.
+(define_code_attr su [(fix "s") (unsigned_fix "u")])
 
 ;; Right shifts
 (define_code_attr shift [(ashiftrt "ashr") (lshiftrt "lshr")])
