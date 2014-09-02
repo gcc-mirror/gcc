@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_FUNCTION_H
 
 #include "hashtab.h"
+#include "hash-set.h"
 #include "vec.h"
 #include "machmode.h"
 #include "tm.h"			/* For CUMULATIVE_ARGS.  */
@@ -564,7 +565,7 @@ struct GTY(()) function {
   struct language_function * language;
 
   /* Used types hash table.  */
-  htab_t GTY ((param_is (union tree_node))) used_types_hash;
+  hash_set<tree> *GTY (()) used_types_hash;
 
   /* Dwarf2 Frame Description Entry, containing the Call Frame Instructions
      used for unwinding.  Only set when either dwarf2 unwinding or dwarf2

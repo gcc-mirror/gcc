@@ -500,6 +500,10 @@ static struct globals
   } stats;
 } G;
 
+/* True if a gc is currently taking place.  */
+
+static bool in_gc = false;
+
 /* The size in bytes required to maintain a bitmap for the objects
    on a page-entry.  */
 #define BITMAP_SIZE(Num_objects) \
@@ -1574,6 +1578,9 @@ ggc_get_size (const void *p)
 void
 ggc_free (void *p)
 {
+  if (in_gc)
+    return;
+
   page_entry *pe = lookup_page_table_entry (p);
   size_t order = pe->order;
   size_t size = OBJECT_SIZE (order);
@@ -2139,7 +2146,6 @@ ggc_collect (void)
     MAX (G.allocated_last_gc, (size_t)PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
 
   float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
-
   if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
     return;
 
@@ -2162,6 +2168,7 @@ ggc_collect (void)
 
   invoke_plugin_callbacks (PLUGIN_GGC_START, NULL);
 
+  in_gc = true;
   clear_marks ();
   ggc_mark_roots ();
   ggc_handle_finalizers ();
@@ -2173,6 +2180,7 @@ ggc_collect (void)
   validate_free_objects ();
   sweep_pages ();
 
+  in_gc = false;
   G.allocated_last_gc = G.allocated;
 
   invoke_plugin_callbacks (PLUGIN_GGC_END, NULL);

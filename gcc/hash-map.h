@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_map_h
 #define hash_map_h
 
+#include <new>
 #include "hash-table.h"
 
 /* implement default behavior for traits when types allow it.  */
@@ -103,7 +104,7 @@ private:
 
 template<typename Key, typename Value,
 	 typename Traits = default_hashmap_traits>
-class hash_map
+class GTY((user)) hash_map
 {
   struct hash_entry
   {
@@ -135,10 +136,56 @@ class hash_map
 
     static void mark_empty (hash_entry &e) { Traits::mark_empty (e); }
     static bool is_empty (const hash_entry &e) { return Traits::is_empty (e); }
+
+    static void ggc_mx (hash_entry &e)
+      {
+	gt_ggc_mx (e.m_key);
+	gt_ggc_mx (e.m_value);
+      }
+
+    static void pch_nx (hash_entry &e)
+      {
+	gt_pch_nx (e.m_key);
+	gt_pch_nx (e.m_value);
+      }
+
+    static void pch_nx (hash_entry &e, gt_pointer_operator op, void *c)
+      {
+	pch_nx_helper (e.m_key, op, c);
+	pch_nx_helper (e.m_value, op, c);
+      }
+
+  private:
+    template<typename T>
+    static void
+      pch_nx_helper (T &x, gt_pointer_operator op, void *cookie)
+	{
+	  gt_pch_nx (&x, op, cookie);
+	}
+
+    static void
+      pch_nx_helper (int, gt_pointer_operator, void *)
+	{
+	}
+
+    template<typename T>
+      static void
+      pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
+	{
+	  op (&x, cookie);
+	}
   };
 
 public:
-  explicit hash_map (size_t n = 13) : m_table (n) {}
+  explicit hash_map (size_t n = 13, bool ggc = false) : m_table (n, ggc) {}
+
+  /* Create a hash_map in ggc memory.  */
+  static hash_map *create_ggc (size_t size)
+    {
+      hash_map *map = ggc_alloc<hash_map> ();
+      new (map) hash_map (size, true);
+      return map;
+    }
 
   /* If key k isn't already in the map add key k with value v to the map, and
      return false.  Otherwise set the value of the entry for key k to be v and
@@ -208,7 +255,35 @@ public:
     }
 
 private:
+
+  template<typename T, typename U, typename V> friend void gt_ggc_mx (hash_map<T, U, V> *);
+  template<typename T, typename U, typename V> friend void gt_pch_nx (hash_map<T, U, V> *);
+      template<typename T, typename U, typename V> friend void gt_pch_nx (hash_map<T, U, V> *, gt_pointer_operator, void *);
+
   hash_table<hash_entry> m_table;
 };
+
+/* ggc marking routines.  */
+
+template<typename K, typename V, typename H>
+static inline void
+gt_ggc_mx (hash_map<K, V, H> *h)
+{
+  gt_ggc_mx (&h->m_table);
+}
+
+template<typename K, typename V, typename H>
+static inline void
+gt_pch_nx (hash_map<K, V, H> *h)
+{
+  gt_pch_nx (&h->m_table);
+}
+
+template<typename K, typename V, typename H>
+static inline void
+gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
+{
+  op (&h->m_table.m_entries, cookie);
+}
 
 #endif

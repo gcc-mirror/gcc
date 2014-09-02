@@ -6093,14 +6093,10 @@ used_types_insert_helper (tree type, struct function *func)
 {
   if (type != NULL && func != NULL)
     {
-      void **slot;
-
       if (func->used_types_hash == NULL)
-	func->used_types_hash = htab_create_ggc (37, htab_hash_pointer,
-						 htab_eq_pointer, NULL);
-      slot = htab_find_slot (func->used_types_hash, type, INSERT);
-      if (*slot == NULL)
-	*slot = type;
+	func->used_types_hash = hash_set<tree>::create_ggc (37);
+
+      func->used_types_hash->add (type);
     }
 }
 

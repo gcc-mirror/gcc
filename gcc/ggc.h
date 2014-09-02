@@ -337,4 +337,25 @@ ggc_alloc_cleared_gimple_statement_stat (size_t s CXX_MEM_STAT_INFO)
     ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
+static inline void
+gt_ggc_mx (const char *s)
+{
+  ggc_test_and_set_mark (const_cast<char *> (s));
+}
+
+static inline void
+gt_pch_nx (const char *)
+{
+}
+
+static inline void
+gt_ggc_mx (int)
+{
+}
+
+static inline void
+gt_pch_nx (int)
+{
+}
+
 #endif
