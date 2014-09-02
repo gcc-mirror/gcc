@@ -1,3 +1,20 @@
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/predicates.md (aarch64_comparison_operation):
+	New special predicate.
+	* config/aarch64/aarch64.md (*csinc2<mode>_insn): Use
+	aarch64_comparison_operation instead of matching an operator.
+	Update operand numbers.
+	(csinc3<mode>_insn): Likewise.
+	(*csinv3<mode>_insn): Likewise.
+	(*csneg3<mode>_insn): Likewise.
+	(ffs<mode>2): Update gen_csinc3<mode>_insn callsite.
+	* config/aarch64/aarch64.c (aarch64_get_condition_code):
+	Return -1 instead of aborting on invalid condition codes.
+	(aarch64_print_operand): Update aarch64_get_condition_code callsites
+	to assert that the returned condition code is valid.
+	* config/aarch64/aarch64-protos.h (aarch64_get_condition_code): Export.
+
 2014-09-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (TAGS): Handle constructs in common.opt, rtl.def,
