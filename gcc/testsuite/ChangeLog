@@ -1,3 +1,9 @@
+2014-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1453
+	* g++.dg/cpp0x/constexpr-volatile.C: New.
+	* g++.dg/ext/is_literal_type2.C: Likewise.
+
 2014-09-02  Jakub Jelinek  <jakub@redhat.com>
 	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
 	    Igor Zamyatin  <igor.zamyatin@intel.com>
