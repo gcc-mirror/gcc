@@ -41,8 +41,8 @@
   "lsu_mpc")
 
 (define_insn_reservation "mpccore-integer" 1
-  (and (ior (eq_attr "type" "integer,insert,trap,cntlz,exts,isel")
-	    (and (eq_attr "type" "add,logical,shift")
+  (and (ior (eq_attr "type" "integer,insert,trap,cntlz,isel")
+	    (and (eq_attr "type" "add,logical,shift,exts")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "mpccore"))
   "iu_mpc")
@@ -70,7 +70,7 @@
 
 (define_insn_reservation "mpccore-compare" 3
   (and (ior (eq_attr "type" "cmp,compare")
-	    (and (eq_attr "type" "add,logical,shift")
+	    (and (eq_attr "type" "add,logical,shift,exts")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "mpccore"))
   "iu_mpc,nothing,bpu_mpc")
