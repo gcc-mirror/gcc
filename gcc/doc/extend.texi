@@ -13882,14 +13882,18 @@ vector float vec_cpsgn (vector float, vector float);
 
 vector float vec_ctf (vector unsigned int, const int);
 vector float vec_ctf (vector signed int, const int);
+vector double vec_ctf (vector unsigned long, const int);
+vector double vec_ctf (vector signed long, const int);
 
 vector float vec_vcfsx (vector signed int, const int);
 
 vector float vec_vcfux (vector unsigned int, const int);
 
 vector signed int vec_cts (vector float, const int);
+vector signed long vec_cts (vector double, const int);
 
 vector unsigned int vec_ctu (vector float, const int);
+vector unsigned long vec_ctu (vector double, const int);
 
 void vec_dss (const int);
 
@@ -14725,6 +14729,8 @@ vector float vec_splat (vector float, const int);
 vector signed int vec_splat (vector signed int, const int);
 vector unsigned int vec_splat (vector unsigned int, const int);
 vector bool int vec_splat (vector bool int, const int);
+vector signed long vec_splat (vector signed long, const int);
+vector unsigned long vec_splat (vector unsigned long, const int);
 
 vector signed char vec_splats (signed char);
 vector unsigned char vec_splats (unsigned char);
@@ -15461,6 +15467,8 @@ vector bool long vec_cmplt (vector double, vector double);
 vector double vec_cpsgn (vector double, vector double);
 vector float vec_div (vector float, vector float);
 vector double vec_div (vector double, vector double);
+vector long vec_div (vector long, vector long);
+vector unsigned long vec_div (vector unsigned long, vector unsigned long);
 vector double vec_floor (vector double);
 vector double vec_ld (int, const vector double *);
 vector double vec_ld (int, const double *);
@@ -15487,6 +15495,8 @@ vector float vec_msub (vector float, vector float, vector float);
 vector double vec_msub (vector double, vector double, vector double);
 vector float vec_mul (vector float, vector float);
 vector double vec_mul (vector double, vector double);
+vector long vec_mul (vector long, vector long);
+vector unsigned long vec_mul (vector unsigned long, vector unsigned long);
 vector float vec_nearbyint (vector float);
 vector double vec_nearbyint (vector double);
 vector float vec_nmadd (vector float, vector float, vector float);
