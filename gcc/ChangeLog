@@ -1,5 +1,21 @@
 2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (any_extend): New code iterator.
+	(u, su): New code attributes.
+	(dmode, DMODE): New mode attributes.
+	(<su>mul<mode>3_highpart): New.
+	(*<su>mul<mode>3_highpart): New.
+	(<su>mulsi3_highpart_le): New.
+	(<su>muldi3_highpart_le): New.
+	(<su>mulsi3_highpart_64): New.
+	(<u>mul<mode><dmode>3): New.
+	(mulsidi3, umulsidi3, smulsi3_highpart, umulsi3_highpart, and two
+	splitters): Delete.
+	(mulditi3, umulditi3, smuldi3_highpart, umuldi3_highpart, and two
+	splitters): Delete.
+
+2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (mulsi3, *mulsi3_internal1,
 	*mulsi3_internal2, and two splitters): Delete.
 	(muldi3, *muldi3_internal1, *muldi3_internal2, and two splitters):
