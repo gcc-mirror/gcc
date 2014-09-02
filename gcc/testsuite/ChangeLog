@@ -1,3 +1,9 @@
+2014-09-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C [!STACK_SIZE && !__FreeBSD__]
+	[!__sun__ && !__hpux__] (arena_size): Scale according to
+	target pointer size.
+
 2014-09-02  Marek Polacek  <polacek@redhat.com>
 
 	PR fortran/62270
