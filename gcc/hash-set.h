@@ -81,6 +81,26 @@ struct default_hashset_traits
   /* Return true if the passed in entry is marked as empty.  */
 
   template<typename T> static bool is_empty (T *e) { return e == NULL; }
+
+  /* ggc walking routine, mark all objects refered to by this one.  */
+
+  template<typename T>
+  static void
+  ggc_mx (T &x)
+    {
+      extern void gt_ggc_mx (T &);
+      gt_ggc_mx (x);
+    }
+
+  /* pch walking routine, note all objects refered to by this element.  */
+
+  template<typename T>
+  static void
+  pch_nx (T &x)
+    {
+      extern void gt_pch_nx (T &);
+      gt_pch_nx (x);
+    }
 };
 
 template<typename Key, typename Traits = default_hashset_traits>
@@ -128,10 +148,50 @@ class hash_set
       {
 	return Traits::is_empty (e.m_key);
       }
+
+    static void ggc_mx (hash_entry &e)
+      {
+	Traits::ggc_mx (e.m_key);
+      }
+
+    static void pch_nx (hash_entry &e)
+      {
+	Traits::pch_nx (e.m_key);
+      }
+
+    static void pch_nx (hash_entry &e, gt_pointer_operator op, void *c)
+      {
+	pch_nx_helper (e.m_key, op, c);
+      }
+
+  private:
+    template<typename T>
+    static void
+      pch_nx_helper (T &x, gt_pointer_operator op, void *cookie)
+	{
+	  gt_pch_nx (&x, op, cookie);
+	}
+
+    template<typename T>
+      static void
+      pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
+	{
+	  op (&x, cookie);
+	}
   };
 
 public:
-  explicit hash_set (size_t n = 13) : m_table (n) {}
+  explicit hash_set (size_t n = 13, bool ggc = false) : m_table (n, ggc) {}
+
+  /* Create a hash_set in gc memory with space for at least n elements.  */
+
+  static hash_set *
+    create_ggc (size_t n)
+      {
+	hash_set *set = ggc_alloc<hash_set> ();
+	new (set) hash_set (n, true);
+	return set;
+      }
 
   /* If key k isn't already in the map add it to the map, and
      return false.  Otherwise return true.  */
@@ -166,8 +226,40 @@ public:
 	f ((*iter).m_key, a);
     }
 
+  /* Return the number of elements in the set.  */
+
+  size_t elements () const { return m_table.elements (); }
+
 private:
+
+  template<typename T, typename U> friend void gt_ggc_mx (hash_set<T, U> *);
+  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *);
+      template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *, gt_pointer_operator, void *);
+
   hash_table<hash_entry> m_table;
 };
+
+/* ggc marking routines.  */
+
+template<typename K, typename H>
+static inline void
+gt_ggc_mx (hash_set<K, H> *h)
+{
+  gt_ggc_mx (&h->m_table);
+}
+
+template<typename K, typename H>
+static inline void
+gt_pch_nx (hash_set<K, H> *h)
+{
+  gt_pch_nx (&h->m_table);
+}
+
+template<typename K, typename H>
+static inline void
+gt_pch_nx (hash_set<K, H> *h, gt_pointer_operator op, void *cookie)
+{
+  op (&h->m_table.m_entries, cookie);
+}
 
 #endif

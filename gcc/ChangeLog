@@ -1,3 +1,42 @@
+2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* alloc-pool.c: Include coretypes.h.
+	* cgraph.h, dbxout.c, dwarf2out.c, except.c, except.h, function.c,
+	function.h, symtab.c, tree-cfg.c, tree-eh.c: Use hash_map and
+	hash_set instead of htab.
+	* ggc-page.c (in_gc): New variable.
+	(ggc_free): Do nothing if a collection is taking place.
+	(ggc_collect): Set in_gc appropriately.
+	* ggc.h (gt_ggc_mx(const char *)): New function.
+	(gt_pch_nx(const char *)): Likewise.
+	(gt_ggc_mx(int)): Likewise.
+	(gt_pch_nx(int)): Likewise.
+	* hash-map.h (hash_map::hash_entry::ggc_mx): Likewise.
+	(hash_map::hash_entry::pch_nx): Likewise.
+	(hash_map::hash_entry::pch_nx_helper): Likewise.
+(hash_map::hash_map): Adjust.
+(hash_map::create_ggc): New function.
+(gt_ggc_mx): Likewise.
+(gt_pch_nx): Likewise.
+	* hash-set.h (default_hashset_traits::ggc_mx): Likewise.
+(default_hashset_traits::pch_nx): Likewise.
+(hash_set::hash_entry::ggc_mx): Likewise.
+(hash_set::hash_entry::pch_nx): Likewise.
+(hash_set::hash_entry::pch_nx_helper): Likewise.
+(hash_set::hash_set): Adjust.
+(hash_set::create_ggc): New function.
+(hash_set::elements): Likewise.
+(gt_ggc_mx): Likewise.
+(gt_pch_nx): Likewise.
+	* hash-table.h (hash_table::hash_table): Adjust.
+(hash_table::m_ggc): New member.
+	(hash_table::~hash_table): Adjust.
+	(hash_table::expand): Likewise.
+	(hash_table::empty): Likewise.
+(gt_ggc_mx): New function.
+	(hashtab_entry_note_pointers): Likewise.
+(gt_pch_nx): Likewise.
+
 2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (XVCVSXDDP_SCALE):  New

@@ -1604,7 +1604,6 @@ struct cgraph_2node_hook_list;
 
 /* Map from a symbol to initialization/finalization priorities.  */
 struct GTY(()) symbol_priority_map {
-  symtab_node *symbol;
   priority_type init;
   priority_type fini;
 };
@@ -1872,7 +1871,7 @@ public:
   htab_t GTY((param_is (symtab_node))) assembler_name_hash;
 
   /* Hash table used to hold init priorities.  */
-  htab_t GTY ((param_is (symbol_priority_map))) init_priority_hash;
+  hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
 
   FILE* GTY ((skip)) dump_file;
 
