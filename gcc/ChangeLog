@@ -1,3 +1,11 @@
+2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (mulsi3, *mulsi3_internal1,
+	*mulsi3_internal2, and two splitters): Delete.
+	(muldi3, *muldi3_internal1, *muldi3_internal2, and two splitters):
+	Delete.
+	(mul<mode>3, mul<mode>3_dot, mul<mode>3_dot2): New.
+
 2014-09-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62695
