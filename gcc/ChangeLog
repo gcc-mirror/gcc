@@ -1,5 +1,46 @@
 2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/40x.md (ppc403-integer): Move "exts" to "no dot".
+	(ppc403-compare): Add "exts with dot" case.
+	* config/rs6000/440.md (ppc440-integer, ppc440-compare): As above.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare): Ditto.
+	* config/rs6000/601.md (ppc601-integer, ppc601-compare): Ditto.
+	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Ditto.
+	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Ditto.
+	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare): Ditto.
+	* config/rs6000/7xx.md (ppc750-integer, ppc750-compare): Ditto.
+	* config/rs6000/cell.md (cell-integer, cell-fast-cmp,
+	cell-cmp-microcoded): Similarly.
+	* config/rs6000/e300c2c3.md (ppce300c3_iu, ppce300c3_cmp): As before.
+	* config/rs6000/e500mc64.md (e500mc64_su, e500mc64_su2): Ditto.
+	* config/rs6000/e5500.md (e5500_sfx, e5500_sfx2): Ditto.
+	* config/rs6000/e6500.md (e6500_sfx, e6500_sfx2): Ditto.
+	* config/rs6000/mpc.md (mpccore-integer, mpccore-compare): Ditto.
+	* config/rs6000/power4.md (power4-integer, power4-compare): Ditto.
+	* config/rs6000/power5.md (power5-integer, power5-compare): Ditto.
+	* config/rs6000/power6.md (power6-exts): Add "no dot" condition.
+	(power6-compare): Add "exts with dot" case.
+	* config/rs6000/power7.md (power7-integer, power7-compare): As before.
+	* config/rs6000/power8.md (power8-1cyc, power8-compare): Ditto.
+	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Ditto.
+
+	* config/rs6000/predicates.md (lwa_operand): Don't allow memory
+	if avoiding Cell microcode.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Handle exts+dot case.
+	(is_cracked_insn): Ditto.
+	(insn_must_be_first_in_group): Ditto.
+	* config/rs6000/rs6000.md (dot): Adjust comment.
+	(cell_micro): Handle exts+dot.
+	(extendqidi2, extendhidi2, extendsidi2, *extendsidi2_lfiwax,
+	*extendsidi2_nocell, *extendsidi2_nocell, extendqisi2, extendqihi2,
+	extendhisi2, 16 anonymous instructions, and 12 splitters): Delete.
+	(extendqi<mode>2, *extendqi<mode>2_dot, *extendqi<mode>2_dot2,
+	extendhi<mode>2, *extendhi<mode>2, *extendhi<mode>2_noload,
+	*extendhi<mode>2_dot, *extendhi<mode>2_dot2, extendsi<mode>2,
+	*extendsi<mode>2_dot, *extendsi<mode>2_dot2): New.
+
+2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (QHSI): Delete.
 	(EXTQI, EXTHI, EXTSI): New mode iterators.
 	(zero_extend<mode>di2, *zero_extend<mode>di2_internal1,

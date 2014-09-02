@@ -26444,6 +26444,7 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                 case TYPE_CR_LOGICAL:
                 case TYPE_DELAYED_CR:
 		  return cost + 2;
+                case TYPE_EXTS:
                 case TYPE_MUL:
 		  if (get_attr_dot (dep_insn) == DOT_YES)
 		    return cost + 2;
@@ -26736,6 +26737,8 @@ is_cracked_insn (rtx insn)
 	      && get_attr_update (insn) == UPDATE_YES)
 	  || type == TYPE_DELAYED_CR
 	  || type == TYPE_COMPARE
+	  || (type == TYPE_EXTS
+	      && get_attr_dot (insn) == DOT_YES)
 	  || (type == TYPE_SHIFT
 	      && get_attr_dot (insn) == DOT_YES
 	      && get_attr_var_shift (insn) == VAR_SHIFT_NO)
@@ -27624,6 +27627,7 @@ insn_must_be_first_in_group (rtx insn)
           return true;
         case TYPE_MUL:
         case TYPE_SHIFT:
+        case TYPE_EXTS:
           if (get_attr_dot (insn) == DOT_YES)
             return true;
           else
@@ -27665,6 +27669,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MTJMPR:
           return true;
         case TYPE_SHIFT:
+        case TYPE_EXTS:
         case TYPE_MUL:
           if (get_attr_dot (insn) == DOT_YES)
             return true;
