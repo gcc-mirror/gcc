@@ -1,5 +1,19 @@
 2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (QHSI): Delete.
+	(EXTQI, EXTHI, EXTSI): New mode iterators.
+	(zero_extend<mode>di2, *zero_extend<mode>di2_internal1,
+	*zero_extend<mode>di2_internal2, *zero_extend<mode>di2_internal3,
+	*zero_extendsidi2_lfiwzx, zero_extendqisi2, zero_extendhisi2,
+	9 anonymous instructions, and 8 splitters): Delete.
+	(zero_extendqi<mode>2, *zero_extendqi<mode>2_dot,
+	*zero_extendqi<mode>2_dot2, zero_extendhi<mode>2,
+	*zero_extendhi<mode>2_dot, *zero_extendhi<mode>2_dot2,
+	zero_extendsi<mode>2, *zero_extendsi<mode>2_dot,
+	*zero_extendsi<mode>2_dot2): New.
+
+2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (any_extend): New code iterator.
 	(u, su): New code attributes.
 	(dmode, DMODE): New mode attributes.
