@@ -1,3 +1,9 @@
+2014-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62695
+	* tree-ssa-structalias.c (find_func_clobbers): Add missing
+	vector truncate.
+
 2014-09-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/62312

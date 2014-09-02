@@ -5042,6 +5042,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 	  get_constraint_for_address_of (arg, &rhsc);
 	  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
 	    process_constraint (new_constraint (lhs, *rhsp));
+	  rhsc.truncate (0);
 	}
 
       /* Build constraints for propagating clobbers/uses along the
