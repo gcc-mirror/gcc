@@ -1,3 +1,16 @@
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-cilkplus.c (cilk_for_number_of_iterations): New function.
+	* c-common.c (c_common_reswords): Added _Cilk_for.
+	* c-common.h (enum rid): Added RID_CILK_FOR.
+	(cilk_for_number_of_iterations): Add declaration.
+	* c-omp.c (c_finish_omp_for): Added checks for CILK_SIMD and
+	CILK_FOR.
+	* c-pragma.c (init_pragma): Register "grainsize" pragma.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_CILK_GRAINSIZE.
+
 2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (Wbuiltin-macro-redefined,Wdeprecated,Wendif-labels,

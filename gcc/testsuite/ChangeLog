@@ -1,3 +1,22 @@
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-c++-common/cilk-plus/CK/cilk-fors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk-for-2.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk-for-3.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_errors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain_errors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_ptr_iter.c: New test.
+	* c-c++-common/cilk-plus/CK/nested_cilk_for.c: New test.
+	* g++.dg/cilk-plus/CK/cf3.cc: New test.
+	* g++.dg/cilk-plus/CK/cilk-for-tplt.cc: New test.
+	* g++.dg/cilk-plus/CK/for1.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_iter.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_rev_iter.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_test.cc: New test.
+
 2014-09-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62695

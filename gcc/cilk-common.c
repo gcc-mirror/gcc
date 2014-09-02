@@ -105,6 +105,27 @@ install_builtin (const char *name, tree fntype, enum built_in_function code,
   return fndecl;
 }
 
+/* Returns a FUNCTION_DECL of type TYPE whose name is *NAME.  */
+
+static tree
+declare_cilk_for_builtin (const char *name, tree type,
+			  enum built_in_function code)
+{
+  tree cb, ft, fn;
+
+  cb = build_function_type_list (void_type_node,
+				 ptr_type_node, type, type,
+				 NULL_TREE);
+  cb = build_pointer_type (cb);
+  ft = build_function_type_list (void_type_node,
+				 cb, ptr_type_node, type,
+				 integer_type_node, NULL_TREE);
+  fn = install_builtin (name, ft, code, false);
+  TREE_NOTHROW (fn) = 0;
+
+  return fn;
+}
+
 /* Creates and initializes all the built-in Cilk keywords functions and three
    structures: __cilkrts_stack_frame, __cilkrts_pedigree and __cilkrts_worker.
    Detailed information about __cilkrts_stack_frame and
@@ -119,7 +140,7 @@ cilk_init_builtins (void)
         uint64_t rank;
         struct __cilkrts_pedigree *parent;
       }  */
-       
+
   tree pedigree_type = lang_hooks.types.make_type (RECORD_TYPE);
   tree pedigree_ptr  = build_pointer_type (pedigree_type);
   tree field = add_field ("rank", uint64_type_node, NULL_TREE);
@@ -131,7 +152,7 @@ cilk_init_builtins (void)
   lang_hooks.types.register_builtin_type (pedigree_type,
 					  "__cilkrts_pedigree_t");
   cilk_pedigree_type_decl = pedigree_type; 
-  
+
   /* Build the Cilk Stack Frame:
      struct __cilkrts_stack_frame {
        uint32_t flags;
@@ -212,7 +233,7 @@ cilk_init_builtins (void)
   tree sysdep_t = lang_hooks.types.make_type (RECORD_TYPE);
   finish_builtin_struct (sysdep_t, "__cilkrts_worker_sysdep_state", NULL_TREE,
 			 NULL_TREE);
-  
+
   field = add_field ("tail", fptr_vol_ptr_vol, NULL_TREE);
   cilk_trees[CILK_TI_WORKER_TAIL] = field;
   field = add_field ("head", fptr_vol_ptr_vol, field);
@@ -234,16 +255,16 @@ cilk_init_builtins (void)
 
   tree fptr_arglist = tree_cons (NULL_TREE, frame_ptr, void_list_node);
   tree fptr_fun = build_function_type (void_type_node, fptr_arglist);
-  
+
   /* void __cilkrts_enter_frame_1 (__cilkrts_stack_frame *);  */
   cilk_enter_fndecl = install_builtin ("__cilkrts_enter_frame_1", fptr_fun,
 				       BUILT_IN_CILK_ENTER_FRAME, false);
 
   /* void __cilkrts_enter_frame_fast_1 (__cilkrts_stack_frame *);  */
   cilk_enter_fast_fndecl = 
-    install_builtin ("__cilkrts_enter_frame_fast_1", fptr_fun, 
+    install_builtin ("__cilkrts_enter_frame_fast_1", fptr_fun,
 		     BUILT_IN_CILK_ENTER_FRAME_FAST, false);
-  
+
   /* void __cilkrts_pop_frame (__cilkrts_stack_frame *);  */
   cilk_pop_fndecl = install_builtin ("__cilkrts_pop_frame", fptr_fun,
 				     BUILT_IN_CILK_POP_FRAME, false);
@@ -261,14 +282,22 @@ cilk_init_builtins (void)
 					BUILT_IN_CILK_DETACH, false);
 
   /* __cilkrts_rethrow (struct stack_frame *);  */
-  cilk_rethrow_fndecl = install_builtin ("__cilkrts_rethrow", fptr_fun, 
+  cilk_rethrow_fndecl = install_builtin ("__cilkrts_rethrow", fptr_fun,
 					 BUILT_IN_CILK_RETHROW, false);
   TREE_NOTHROW (cilk_rethrow_fndecl) = 0;
 
   /* __cilkrts_save_fp_ctrl_state (__cilkrts_stack_frame *);  */
-  cilk_save_fp_fndecl = install_builtin ("__cilkrts_save_fp_ctrl_state", 
+  cilk_save_fp_fndecl = install_builtin ("__cilkrts_save_fp_ctrl_state",
 					 fptr_fun, BUILT_IN_CILK_SAVE_FP,
 					 false);
+  /* __cilkrts_cilk_for_32 (...);  */
+  cilk_for_32_fndecl = declare_cilk_for_builtin ("__cilkrts_cilk_for_32",
+						 unsigned_intSI_type_node,
+						 BUILT_IN_CILK_FOR_32);
+  /* __cilkrts_cilk_for_64 (...);  */
+  cilk_for_64_fndecl = declare_cilk_for_builtin ("__cilkrts_cilk_for_64",
+						 unsigned_intDI_type_node,
+						 BUILT_IN_CILK_FOR_64);
 }
 
 /* Get the appropriate frame arguments for CALL that is of type CALL_EXPR.  */

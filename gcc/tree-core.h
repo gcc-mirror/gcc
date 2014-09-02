@@ -334,7 +334,11 @@ enum omp_clause_code {
   OMP_CLAUSE_TASKGROUP,
 
   /* Internally used only clause, holding SIMD uid.  */
-  OMP_CLAUSE__SIMDUID_
+  OMP_CLAUSE__SIMDUID_,
+
+  /* Internally used only clause, holding _Cilk_for # of iterations
+     on OMP_PARALLEL.  */
+  OMP_CLAUSE__CILK_FOR_COUNT_
 };
 
 #undef DEFTREESTRUCT
@@ -351,6 +355,7 @@ enum omp_clause_schedule_kind {
   OMP_CLAUSE_SCHEDULE_GUIDED,
   OMP_CLAUSE_SCHEDULE_AUTO,
   OMP_CLAUSE_SCHEDULE_RUNTIME,
+  OMP_CLAUSE_SCHEDULE_CILKFOR,
   OMP_CLAUSE_SCHEDULE_LAST
 };
 
