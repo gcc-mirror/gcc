@@ -1,3 +1,9 @@
+2014-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/62270
+	* interface.c (compare_parameter): Fix condition.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise.
+
 2014-08-31  Fritz Reese  <Reese-Fritz@zai.com>
 
 	PR fortran/62309

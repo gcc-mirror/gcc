@@ -1,3 +1,8 @@
+2014-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/62270
+	* gfortran.dg/pointer_intent_7.f90: Adjust dg-error.
+
 2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/62275
