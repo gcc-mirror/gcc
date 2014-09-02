@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-nested.h"
 #include "tree-eh.h"
+#include "cilk.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two
@@ -313,6 +314,8 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
   fd->have_ordered = false;
   fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
   fd->chunk_size = NULL_TREE;
+  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_CILKFOR)
+    fd->sched_kind = OMP_CLAUSE_SCHEDULE_CILKFOR;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -392,7 +395,9 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	  break;
 	case NE_EXPR:
 	  gcc_assert (gimple_omp_for_kind (for_stmt)
-		      == GF_OMP_FOR_KIND_CILKSIMD);
+		      == GF_OMP_FOR_KIND_CILKSIMD
+		      || (gimple_omp_for_kind (for_stmt)
+			  == GF_OMP_FOR_KIND_CILKFOR));
 	  break;
 	case LE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
@@ -1604,6 +1609,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_OPERAND (c, 0), ctx->outer);
 	  break;
@@ -1812,6 +1818,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  break;
 
 	default:
@@ -1835,13 +1842,39 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	scan_omp (&OMP_CLAUSE_LINEAR_GIMPLE_SEQ (c), ctx);
 }
 
-/* Create a new name for omp child function.  Returns an identifier.  */
+/* Create a new name for omp child function.  Returns an identifier.  If
+   IS_CILK_FOR is true then the suffix for the child function is
+   "_cilk_for_fn."  */
 
 static tree
-create_omp_child_function_name (bool task_copy)
+create_omp_child_function_name (bool task_copy, bool is_cilk_for)
 {
-  return (clone_function_name (current_function_decl,
-			       task_copy ? "_omp_cpyfn" : "_omp_fn"));
+  if (is_cilk_for)
+    return clone_function_name (current_function_decl, "_cilk_for_fn");
+  return clone_function_name (current_function_decl,
+			      task_copy ? "_omp_cpyfn" : "_omp_fn");
+}
+
+/* Returns the type of the induction variable for the child function for
+   _Cilk_for and the types for _high and _low variables based on TYPE.  */
+
+static tree
+cilk_for_check_loop_diff_type (tree type)
+{
+  if (TYPE_PRECISION (type) <= TYPE_PRECISION (uint32_type_node))
+    {
+      if (TYPE_UNSIGNED (type))
+	return uint32_type_node;
+      else
+	return integer_type_node;
+    }
+  else
+    {
+      if (TYPE_UNSIGNED (type))
+	return uint64_type_node;
+      else
+	return long_long_integer_type_node;
+    }
 }
 
 /* Build a decl for the omp child function.  It'll not contain a body
@@ -1852,15 +1885,28 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 {
   tree decl, type, name, t;
 
-  name = create_omp_child_function_name (task_copy);
+  tree cilk_for_count
+    = (flag_cilkplus && gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL)
+      ? find_omp_clause (gimple_omp_parallel_clauses (ctx->stmt),
+			 OMP_CLAUSE__CILK_FOR_COUNT_) : NULL_TREE;
+  tree cilk_var_type = NULL_TREE;
+
+  name = create_omp_child_function_name (task_copy,
+					 cilk_for_count != NULL_TREE);
   if (task_copy)
     type = build_function_type_list (void_type_node, ptr_type_node,
 				     ptr_type_node, NULL_TREE);
+  else if (cilk_for_count)
+    {
+      type = TREE_TYPE (OMP_CLAUSE_OPERAND (cilk_for_count, 0));
+      cilk_var_type = cilk_for_check_loop_diff_type (type);
+      type = build_function_type_list (void_type_node, ptr_type_node,
+				       cilk_var_type, cilk_var_type, NULL_TREE);
+    }
   else
     type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
 
-  decl = build_decl (gimple_location (ctx->stmt),
-		     FUNCTION_DECL, name, type);
+  decl = build_decl (gimple_location (ctx->stmt), FUNCTION_DECL, name, type);
 
   if (!task_copy)
     ctx->cb.dst_fn = decl;
@@ -1904,13 +1950,42 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_CONTEXT (t) = decl;
   DECL_RESULT (decl) = t;
 
-  t = build_decl (DECL_SOURCE_LOCATION (decl),
-		  PARM_DECL, get_identifier (".omp_data_i"), ptr_type_node);
+  /* _Cilk_for's child function requires two extra parameters called
+     __low and __high that are set the by Cilk runtime when it calls this
+     function.  */
+  if (cilk_for_count)
+    {
+      t = build_decl (DECL_SOURCE_LOCATION (decl),
+		      PARM_DECL, get_identifier ("__high"), cilk_var_type);
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_NAMELESS (t) = 1;
+      DECL_ARG_TYPE (t) = ptr_type_node;
+      DECL_CONTEXT (t) = current_function_decl;
+      TREE_USED (t) = 1;
+      DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
+      DECL_ARGUMENTS (decl) = t;
+
+      t = build_decl (DECL_SOURCE_LOCATION (decl),
+		      PARM_DECL, get_identifier ("__low"), cilk_var_type);
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_NAMELESS (t) = 1;
+      DECL_ARG_TYPE (t) = ptr_type_node;
+      DECL_CONTEXT (t) = current_function_decl;
+      TREE_USED (t) = 1;
+      DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
+      DECL_ARGUMENTS (decl) = t;
+    }
+
+  tree data_name = get_identifier (".omp_data_i");
+  t = build_decl (DECL_SOURCE_LOCATION (decl), PARM_DECL, data_name,
+		  ptr_type_node);
   DECL_ARTIFICIAL (t) = 1;
   DECL_NAMELESS (t) = 1;
   DECL_ARG_TYPE (t) = ptr_type_node;
   DECL_CONTEXT (t) = current_function_decl;
   TREE_USED (t) = 1;
+  if (cilk_for_count)
+    DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
   DECL_ARGUMENTS (decl) = t;
   if (!task_copy)
     ctx->receiver_decl = t;
@@ -4382,6 +4457,44 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 			    false, GSI_CONTINUE_LINKING);
 }
 
+/* Insert a function call whose name is FUNC_NAME with the information from
+   ENTRY_STMT into the basic_block BB.  */
+
+static void
+expand_cilk_for_call (basic_block bb, gimple entry_stmt,
+		      vec <tree, va_gc> *ws_args)
+{
+  tree t, t1, t2;
+  gimple_stmt_iterator gsi;
+  vec <tree, va_gc> *args;
+
+  gcc_assert (vec_safe_length (ws_args) == 2);
+  tree func_name = (*ws_args)[0];
+  tree grain = (*ws_args)[1];
+
+  tree clauses = gimple_omp_parallel_clauses (entry_stmt);
+  tree count = find_omp_clause (clauses, OMP_CLAUSE__CILK_FOR_COUNT_);
+  gcc_assert (count != NULL_TREE);
+  count = OMP_CLAUSE_OPERAND (count, 0);
+
+  gsi = gsi_last_bb (bb);
+  t = gimple_omp_parallel_data_arg (entry_stmt);
+  if (t == NULL)
+    t1 = null_pointer_node;
+  else
+    t1 = build_fold_addr_expr (t);
+  t2 = build_fold_addr_expr (gimple_omp_parallel_child_fn (entry_stmt));
+
+  vec_alloc (args, 4);
+  args->quick_push (t2);
+  args->quick_push (t1);
+  args->quick_push (count);
+  args->quick_push (grain);
+  t = build_call_expr_loc_vec (UNKNOWN_LOCATION, func_name, args);
+
+  force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, false,
+			    GSI_CONTINUE_LINKING);
+}
 
 /* Build the function call to GOMP_task to actually
    generate the task operation.  BB is the block where to insert the code.  */
@@ -4717,7 +4830,18 @@ expand_omp_taskreg (struct omp_region *region)
   entry_bb = region->entry;
   exit_bb = region->exit;
 
-  if (is_combined_parallel (region))
+  bool is_cilk_for
+    = (flag_cilkplus
+       && gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL
+       && find_omp_clause (gimple_omp_parallel_clauses (entry_stmt),
+			   OMP_CLAUSE__CILK_FOR_COUNT_) != NULL_TREE);
+
+  if (is_cilk_for)
+    /* If it is a _Cilk_for statement, it is modelled *like* a parallel for,
+       and the inner statement contains the name of the built-in function
+       and grain.  */
+    ws_args = region->inner->ws_args;
+  else if (is_combined_parallel (region))
     ws_args = region->ws_args;
   else
     ws_args = NULL;
@@ -4929,7 +5053,9 @@ expand_omp_taskreg (struct omp_region *region)
     }
 
   /* Emit a library call to launch the children threads.  */
-  if (gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL)
+  if (is_cilk_for)
+    expand_cilk_for_call (new_bb, entry_stmt, ws_args);
+  else if (gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL)
     expand_parallel_call (region, new_bb, entry_stmt, ws_args);
   else
     expand_task_call (new_bb, entry_stmt);
@@ -6621,6 +6747,191 @@ expand_omp_for_static_chunk (struct omp_region *region,
     }
 }
 
+/* A subroutine of expand_omp_for.  Generate code for _Cilk_for loop.
+   Given parameters:
+   for (V = N1; V cond N2; V += STEP) BODY;
+
+   where COND is "<" or ">" or "!=", we generate pseudocode
+
+   for (ind_var = low; ind_var < high; ind_var++)
+     {
+       V = n1 + (ind_var * STEP)
+
+       <BODY>
+     }
+
+   In the above pseudocode, low and high are function parameters of the
+   child function.  In the function below, we are inserting a temp.
+   variable that will be making a call to two OMP functions that will not be
+   found in the body of _Cilk_for (since OMP_FOR cannot be mixed
+   with _Cilk_for).  These functions are replaced with low and high
+   by the function that handles taskreg.  */
+
+
+static void
+expand_cilk_for (struct omp_region *region, struct omp_for_data *fd)
+{
+  bool broken_loop = region->cont == NULL;
+  basic_block entry_bb = region->entry;
+  basic_block cont_bb = region->cont;
+
+  gcc_assert (EDGE_COUNT (entry_bb->succs) == 2);
+  gcc_assert (broken_loop
+	      || BRANCH_EDGE (entry_bb)->dest == FALLTHRU_EDGE (cont_bb)->dest);
+  basic_block l0_bb = FALLTHRU_EDGE (entry_bb)->dest;
+  basic_block l1_bb, l2_bb;
+
+  if (!broken_loop)
+    {
+      gcc_assert (BRANCH_EDGE (cont_bb)->dest == l0_bb);
+      gcc_assert (EDGE_COUNT (cont_bb->succs) == 2);
+      l1_bb = split_block (cont_bb, last_stmt (cont_bb))->dest;
+      l2_bb = BRANCH_EDGE (entry_bb)->dest;
+    }
+  else
+    {
+      BRANCH_EDGE (entry_bb)->flags &= ~EDGE_ABNORMAL;
+      l1_bb = split_edge (BRANCH_EDGE (entry_bb));
+      l2_bb = single_succ (l1_bb);
+    }
+  basic_block exit_bb = region->exit;
+  basic_block l2_dom_bb = NULL;
+
+  gimple_stmt_iterator gsi = gsi_last_bb (entry_bb);
+
+  /* Below statements until the "tree high_val = ..." are pseudo statements
+     used to pass information to be used by expand_omp_taskreg.
+     low_val and high_val will be replaced by the __low and __high
+     parameter from the child function.
+
+     The call_exprs part is a place-holder, it is mainly used
+     to distinctly identify to the top-level part that this is
+     where we should put low and high (reasoning given in header
+     comment).  */
+
+  tree child_fndecl
+    = gimple_omp_parallel_child_fn (last_stmt (region->outer->entry));
+  tree t, low_val = NULL_TREE, high_val = NULL_TREE;
+  for (t = DECL_ARGUMENTS (child_fndecl); t; t = TREE_CHAIN (t))
+    {
+      if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__high"))
+	high_val = t;
+      else if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__low"))
+	low_val = t;
+    }
+  gcc_assert (low_val && high_val);
+
+  tree type = TREE_TYPE (low_val);
+  tree ind_var = create_tmp_reg (type, "__cilk_ind_var");
+  gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
+
+  /* Not needed in SSA form right now.  */
+  gcc_assert (!gimple_in_ssa_p (cfun));
+  if (l2_dom_bb == NULL)
+    l2_dom_bb = l1_bb;
+
+  tree n1 = low_val;
+  tree n2 = high_val;
+
+  gimple stmt = gimple_build_assign (ind_var, n1);
+
+  /* Replace the GIMPLE_OMP_FOR statement.  */
+  gsi_replace (&gsi, stmt, true);
+
+  if (!broken_loop)
+    {
+      /* Code to control the increment goes in the CONT_BB.  */
+      gsi = gsi_last_bb (cont_bb);
+      stmt = gsi_stmt (gsi);
+      gcc_assert (gimple_code (stmt) == GIMPLE_OMP_CONTINUE);
+      stmt = gimple_build_assign_with_ops (PLUS_EXPR, ind_var, ind_var,
+					   build_one_cst (type));
+
+      /* Replace GIMPLE_OMP_CONTINUE.  */
+      gsi_replace (&gsi, stmt, true);
+    }
+
+  /* Emit the condition in L1_BB.  */
+  gsi = gsi_after_labels (l1_bb);
+  t = fold_build2 (MULT_EXPR, TREE_TYPE (fd->loop.step),
+		   fold_convert (TREE_TYPE (fd->loop.step), ind_var),
+		   fd->loop.step);
+  if (POINTER_TYPE_P (TREE_TYPE (fd->loop.n1)))
+    t = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (fd->loop.n1),
+		     fd->loop.n1, fold_convert (sizetype, t));
+  else
+    t = fold_build2 (PLUS_EXPR, TREE_TYPE (fd->loop.n1),
+		     fd->loop.n1, fold_convert (TREE_TYPE (fd->loop.n1), t));
+  t = fold_convert (TREE_TYPE (fd->loop.v), t);
+  expand_omp_build_assign (&gsi, fd->loop.v, t);
+
+  /* The condition is always '<' since the runtime will fill in the low
+     and high values.  */
+  stmt = gimple_build_cond (LT_EXPR, ind_var, n2, NULL_TREE, NULL_TREE);
+  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+
+  /* Remove GIMPLE_OMP_RETURN.  */
+  gsi = gsi_last_bb (exit_bb);
+  gsi_remove (&gsi, true);
+
+  /* Connect the new blocks.  */
+  remove_edge (FALLTHRU_EDGE (entry_bb));
+
+  edge e, ne;
+  if (!broken_loop)
+    {
+      remove_edge (BRANCH_EDGE (entry_bb));
+      make_edge (entry_bb, l1_bb, EDGE_FALLTHRU);
+
+      e = BRANCH_EDGE (l1_bb);
+      ne = FALLTHRU_EDGE (l1_bb);
+      e->flags = EDGE_TRUE_VALUE;
+    }
+  else
+    {
+      single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
+
+      ne = single_succ_edge (l1_bb);
+      e = make_edge (l1_bb, l0_bb, EDGE_TRUE_VALUE);
+
+    }
+  ne->flags = EDGE_FALSE_VALUE;
+  e->probability = REG_BR_PROB_BASE * 7 / 8;
+  ne->probability = REG_BR_PROB_BASE / 8;
+
+  set_immediate_dominator (CDI_DOMINATORS, l1_bb, entry_bb);
+  set_immediate_dominator (CDI_DOMINATORS, l2_bb, l2_dom_bb);
+  set_immediate_dominator (CDI_DOMINATORS, l0_bb, l1_bb);
+
+  if (!broken_loop)
+    {
+      struct loop *loop = alloc_loop ();
+      loop->header = l1_bb;
+      loop->latch = cont_bb;
+      add_loop (loop, l1_bb->loop_father);
+      loop->safelen = INT_MAX;
+    }
+
+  /* Pick the correct library function based on the precision of the
+     induction variable type.  */
+  tree lib_fun = NULL_TREE;
+  if (TYPE_PRECISION (type) == 32)
+    lib_fun = cilk_for_32_fndecl;
+  else if (TYPE_PRECISION (type) == 64)
+    lib_fun = cilk_for_64_fndecl;
+  else
+    gcc_unreachable ();
+
+  gcc_assert (fd->sched_kind == OMP_CLAUSE_SCHEDULE_CILKFOR);
+
+  /* WS_ARGS contains the library function flavor to call:
+     __libcilkrts_cilk_for_64 or __libcilkrts_cilk_for_32), and the
+     user-defined grain value.  If the user does not define one, then zero
+     is passed in by the parser.  */
+  vec_alloc (region->ws_args, 2);
+  region->ws_args->quick_push (lib_fun);
+  region->ws_args->quick_push (fd->chunk_size);
+}
 
 /* A subroutine of expand_omp_for.  Generate code for a simd non-worksharing
    loop.  Given parameters:
@@ -6964,6 +7275,8 @@ expand_omp_for (struct omp_region *region, gimple inner_stmt)
 
   if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_SIMD)
     expand_omp_simd (region, &fd);
+  else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_CILKFOR)
+    expand_cilk_for (region, &fd);
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
     {

@@ -1,3 +1,52 @@
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* cilk-builtins.def (__cilkrts_cilk_for_32): New.
+	(__cilkrts_cilk_for_64): Likewise.
+	* cilk-common.c (declare_cilk_for_builtin): New function.
+	(cilk_init_builtins): Declare __cilkrts_cilk_for_32 and
+	__cilkrts_cilk_for_64 bultins.
+	* cilk.h (enum cilk_tree_index): Added CILK_TI_F_LOOP_32 and
+	CILK_TI_F_LOOP_64.
+	(cilk_for_32_fndecl): New define.
+	(cilk_for_64_fndecl): Likewise.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Correct hadling of
+	GF_OMP_FOR_KIND_CILKFOR cases; Added NE_EXPR case.
+	* gimple.h (enum gf_mask): Added GF_OMP_FOR_KIND_CILKFOR; adjusted
+	GF_OMP_FOR_KIND_MASK, GF_OMP_FOR_SIMD, GF_OMP_FOR_COMBINED,
+	GF_OMP_FOR_COMBINED_INTO.
+	* gimplify.c (gimplify_scan_omp_clauses): Added
+	OMP_CLAUSE__CILK_FOR_COUNT_ case.
+	(gimplify_adjust_omp_clauses): Ditto.
+	(gimplify_omp_for): Added CILK_FOR case.
+	(gimplify_expr): Ditto.
+	* omp-low.c: Include cilk.h.
+	(extract_omp_for_data): Set appropriate kind for
+	GF_OMP_FOR_KIND_CILKFOR; added check for GF_OMP_FOR_KIND_CILKFOR.
+	(scan_sharing_clauses): Added OMP_CLAUSE__CILK_FOR_COUNT_ cases.
+	(create_omp_child_function_name): Added second argument to handle
+	cilk_for case.
+	(cilk_for_check_loop_diff_type): New function.
+	(expand_cilk_for_call): Likewise.
+	(expand_cilk_for): Likewise.
+	(create_omp_child_function): Set cilk_for_count; handle the cases when
+	it is true; call create_omp_child_function_name with second argument.
+	(expand_omp_taskreg): Set is_cilk_for and handle cases when it's true.
+	(expand_omp_for): Handle case of GF_OMP_FOR_KIND_CILKFOR.
+	* tree-core.h (omp_clause_code): Added OMP_CLAUSE__CILK_FOR_COUNT_.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Added
+	OMP_CLAUSE__CILK_FOR_COUNT_ case.
+	(convert_local_omp_clauses): Ditto.
+	* tree-pretty-print.c (dump_omp_clause): Added
+	OMP_CLAUSE__CILK_FOR_COUNT_ and OMP_CLAUSE_SCHEDULE_CILKFOR cases.
+	(dump_generic_node): Added CILK_FOR case.
+	* tree.c (omp_clause_num_ops): New element
+	OMP_CLAUSE__CILK_FOR_COUNT_ (1).
+	(omp_clause_code_name): New element _Cilk_for_count_.
+	(walk_tree_1): Added OMP_CLAUSE__CILK_FOR_COUNT_ case.
+	* tree.def: Add tree code for CILK_FOR.
+
 2014-09-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/40x.md (ppc403-integer): Move "exts" to "no dot".
