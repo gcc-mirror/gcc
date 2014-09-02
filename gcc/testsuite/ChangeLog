@@ -1,6 +1,13 @@
 2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/62275
+	* gcc.target/arm/vect-lceilf_1.c: New test.
+	* gcc.target/arm/vect-lfloorf_1.c: Likewise.
+	* gcc.target/arm/vect-lroundf_1.c: Likewise.
+
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62275
 	* gcc.target/arm/lceil-vcvt_1.c: New test.
 	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
 	* gcc.target/arm/lround-vcvt_1.c: Likewise.
