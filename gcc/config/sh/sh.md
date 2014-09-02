@@ -4563,6 +4563,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+       if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4803,6 +4809,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+       if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4896,6 +4908,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4995,6 +5013,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -5069,6 +5093,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_lshrsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -5263,6 +5293,12 @@ label:
 {
   if (TARGET_SHMEDIA)
     {
+      if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
       emit_insn (gen_lshrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
