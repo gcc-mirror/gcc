@@ -1,6 +1,19 @@
 2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/62275
+	* config/arm/neon.md
+	(neon_vcvt<NEON_VCVT:nvrint_variant><su_optab><VCVTF:mode>
+	<v_cmp_result>): New pattern.
+	* config/arm/iterators.md (NEON_VCVT): New int iterator.
+	* config/arm/arm_neon_builtins.def (vcvtav2sf, vcvtav4sf, vcvtauv2sf,
+	vcvtauv4sf, vcvtpv2sf, vcvtpv4sf, vcvtpuv2sf, vcvtpuv4sf, vcvtmv2sf,
+	vcvtmv4sf, vcvtmuv2sf, vcvtmuv4sf): New builtin definitions.
+	* config/arm/arm.c (arm_builtin_vectorized_function): Handle
+	BUILT_IN_LROUNDF, BUILT_IN_LFLOORF, BUILT_IN_LCEILF.
+
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62275
 	* config/arm/iterators.md (FIXUORS): New code iterator.
 	(VCVT): New int iterator.
 	(su_optab): New code attribute.
