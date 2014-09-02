@@ -1,3 +1,9 @@
+2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Add tests for vec_ctf,
+	vec_cts, and vec_ctu.
+	* gcc.target/powerpc/builtins-2.c: Likewise.
+
 2014-09-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.old-deja/g++.eh/badalloc1.C [!STACK_SIZE && !__FreeBSD__]

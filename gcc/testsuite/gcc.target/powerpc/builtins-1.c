@@ -157,5 +157,10 @@ int main ()
   vector long long l8 = vec_mul (l3, l4);
   vector unsigned long long u6 = vec_mul (u3, u4);
 
+  vector double dh = vec_ctf (la, -2);
+  vector double di = vec_ctf (ua, 2);
+  vector long long l9 = vec_cts (dh, -2);
+  vector unsigned long long u7 = vec_ctu (di, 2);
+
   return 0;
 }

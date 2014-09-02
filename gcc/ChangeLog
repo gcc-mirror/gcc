@@ -1,3 +1,37 @@
+2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (XVCVSXDDP_SCALE):  New
+	built-in definition.
+	(XVCVUXDDP_SCALE): Likewise.
+	(XVCVDPSXDS_SCALE): Likewise.
+	(XVCVDPUXDS_SCALE): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins):  Add
+	entries for VSX_BUILTIN_XVCVSXDDP_SCALE,
+	VSX_BUILTIN_XVCVUXDDP_SCALE, VSX_BUILTIN_XVCVDPSXDS_SCALE, and
+	VSX_BUILTIN_XVCVDPUXDS_SCALE.
+	* config/rs6000/rs6000-protos.h (rs6000_scale_v2df): New
+	prototype.
+	* config/rs6000/rs6000.c (real.h): New include.
+	(rs6000_scale_v2df): New function.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVSXDDP): New unspec.
+	(UNSPEC_VSX_XVCVUXDDP): Likewise.
+	(UNSPEC_VSX_XVCVDPSXDS): Likewise.
+	(UNSPEC_VSX_XVCVDPUXDS): Likewise.
+	(vsx_xvcvsxddp_scale): New define_expand.
+	(vsx_xvcvsxddp): New define_insn.
+	(vsx_xvcvuxddp_scale): New define_expand.
+	(vsx_xvcvuxddp): New define_insn.
+	(vsx_xvcvdpsxds_scale): New define_expand.
+	(vsx_xvcvdpsxds): New define_insn.
+	(vsx_xvcvdpuxds_scale): New define_expand.
+	(vsx_xvcvdpuxds): New define_insn.
+	* doc/extend.texi (vec_ctf): Add new prototypes.
+	(vec_cts): Likewise.
+	(vec_ctu): Likewise.
+	(vec_splat): Likewise.
+	(vec_div): Likewise.
+	(vec_mul): Likewise.
+
 2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/62275
