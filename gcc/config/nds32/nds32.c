@@ -347,15 +347,15 @@ nds32_compute_stack_frame (void)
    The overall concept are:
      "push registers to memory",
      "adjust stack pointer".  */
-static rtx
-nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
-			       rtx En4 ATTRIBUTE_UNUSED)
+static void
+nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4)
 {
   int regno;
   int extra_count;
   int num_use_regs;
   int par_index;
   int offset;
+  int save_fp, save_gp, save_lp;
 
   rtx reg;
   rtx mem;
@@ -382,13 +382,18 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
                 (set (reg:SI SP_REGNUM)
                      (plus (reg:SI SP_REGNUM) (const_int -32)))]) */
 
+  /* Determine whether we need to save $fp, $gp, or $lp.  */
+  save_fp = INTVAL (En4) & 0x8;
+  save_gp = INTVAL (En4) & 0x4;
+  save_lp = INTVAL (En4) & 0x2;
+
   /* Calculate the number of registers that will be pushed.  */
   extra_count = 0;
-  if (cfun->machine->fp_size)
+  if (save_fp)
     extra_count++;
-  if (cfun->machine->gp_size)
+  if (save_gp)
     extra_count++;
-  if (cfun->machine->lp_size)
+  if (save_lp)
     extra_count++;
   /* Note that Rb and Re may be SP_REGNUM.  DO NOT count it in.  */
   if (REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM)
@@ -411,7 +416,7 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
       /* Rb and Re may be SP_REGNUM.
          We need to break this loop immediately.  */
       if (regno == SP_REGNUM)
-        break;
+	break;
 
       reg = gen_rtx_REG (SImode, regno);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -425,7 +430,7 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
     }
 
   /* Create (set mem fp), (set mem gp), and (set mem lp) if necessary.  */
-  if (cfun->machine->fp_size)
+  if (save_fp)
     {
       reg = gen_rtx_REG (SImode, FP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -437,7 +442,7 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
       offset = offset + 4;
       par_index++;
     }
-  if (cfun->machine->gp_size)
+  if (save_gp)
     {
       reg = gen_rtx_REG (SImode, GP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -449,7 +454,7 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
       offset = offset + 4;
       par_index++;
     }
-  if (cfun->machine->lp_size)
+  if (save_lp)
     {
       reg = gen_rtx_REG (SImode, LP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -473,7 +478,12 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  return parallel_insn;
+  parallel_insn = emit_insn (parallel_insn);
+
+  /* The insn rtx 'parallel_insn' will change frame layout.
+     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+     generate CFI (Call Frame Information) stuff.  */
+  RTX_FRAME_RELATED_P (parallel_insn) = 1;
 }
 
 /* Function to create a parallel rtx pattern
@@ -481,21 +491,22 @@ nds32_gen_stack_push_multiple (rtx Rb, rtx Re,
    The overall concept are:
      "pop registers from memory",
      "adjust stack pointer".  */
-static rtx
-nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
-			      rtx En4 ATTRIBUTE_UNUSED)
+static void
+nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
 {
   int regno;
   int extra_count;
   int num_use_regs;
   int par_index;
   int offset;
+  int save_fp, save_gp, save_lp;
 
   rtx reg;
   rtx mem;
   rtx pop_rtx;
   rtx adjust_sp_rtx;
   rtx parallel_insn;
+  rtx dwarf = NULL_RTX;
 
   /* We need to provide a customized rtx which contains
      necessary information for data analysis,
@@ -516,13 +527,18 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
                 (set (reg:SI SP_REGNUM)
                      (plus (reg:SI SP_REGNUM) (const_int 32)))]) */
 
+  /* Determine whether we need to restore $fp, $gp, or $lp.  */
+  save_fp = INTVAL (En4) & 0x8;
+  save_gp = INTVAL (En4) & 0x4;
+  save_lp = INTVAL (En4) & 0x2;
+
   /* Calculate the number of registers that will be poped.  */
   extra_count = 0;
-  if (cfun->machine->fp_size)
+  if (save_fp)
     extra_count++;
-  if (cfun->machine->gp_size)
+  if (save_gp)
     extra_count++;
-  if (cfun->machine->lp_size)
+  if (save_lp)
     extra_count++;
   /* Note that Rb and Re may be SP_REGNUM.  DO NOT count it in.  */
   if (REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM)
@@ -545,7 +561,7 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
       /* Rb and Re may be SP_REGNUM.
          We need to break this loop immediately.  */
       if (regno == SP_REGNUM)
-        break;
+	break;
 
       reg = gen_rtx_REG (SImode, regno);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -556,10 +572,12 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
 
   /* Create (set fp mem), (set gp mem), and (set lp mem) if necessary.  */
-  if (cfun->machine->fp_size)
+  if (save_fp)
     {
       reg = gen_rtx_REG (SImode, FP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -570,8 +588,10 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
-  if (cfun->machine->gp_size)
+  if (save_gp)
     {
       reg = gen_rtx_REG (SImode, GP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -582,8 +602,10 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
-  if (cfun->machine->lp_size)
+  if (save_lp)
     {
       reg = gen_rtx_REG (SImode, LP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -594,6 +616,8 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
 
   /* Create (set sp sp+x).  */
@@ -604,9 +628,19 @@ nds32_gen_stack_pop_multiple (rtx Rb, rtx Re,
 		   stack_pointer_rtx,
 		   plus_constant (Pmode, stack_pointer_rtx, offset));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
-  RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  return parallel_insn;
+  /* Tell gcc we adjust SP in this insn.  */
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, copy_rtx (adjust_sp_rtx), dwarf);
+
+  parallel_insn = emit_insn (parallel_insn);
+
+  /* The insn rtx 'parallel_insn' will change frame layout.
+     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+     generate CFI (Call Frame Information) stuff.  */
+  RTX_FRAME_RELATED_P (parallel_insn) = 1;
+
+  /* Add CFI info by manual.  */
+  REG_NOTES (parallel_insn) = dwarf;
 }
 
 /* Function to create a parallel rtx pattern
@@ -2629,7 +2663,7 @@ nds32_expand_prologue (void)
   Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
   Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
 
-  /* push_insn = gen_stack_push_multiple(first_regno, last_regno),
+  /* nds32_emit_stack_push_multiple(first_regno, last_regno),
      the pattern 'stack_push_multiple' is implemented in nds32.md.
      For En4 field, we have to calculate its constant value.
      Refer to Andes ISA for more information.  */
@@ -2647,14 +2681,7 @@ nds32_expand_prologue (void)
   if (!(REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM && en4_const == 0))
     {
       /* Create multiple push instruction rtx.  */
-      push_insn = nds32_gen_stack_push_multiple (Rb, Re, GEN_INT (en4_const));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      push_insn = emit_insn (push_insn);
-
-      /* The insn rtx 'push_insn' will change frame layout.
-         We need to use RTX_FRAME_RELATED_P so that GCC is able to
-         generate CFI (Call Frame Information) stuff.  */
-      RTX_FRAME_RELATED_P (push_insn) = 1;
+      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (en4_const));
     }
 
   /* Check frame_pointer_needed to see
@@ -2791,7 +2818,7 @@ nds32_expand_epilogue (void)
   Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
   Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
 
-  /* pop_insn = gen_stack_pop_multiple(first_regno, last_regno),
+  /* nds32_emit_stack_pop_multiple(first_regno, last_regno),
      the pattern 'stack_pop_multiple' is implementad in nds32.md.
      For En4 field, we have to calculate its constant value.
      Refer to Andes ISA for more information.  */
@@ -2809,9 +2836,7 @@ nds32_expand_epilogue (void)
   if (!(REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM && en4_const == 0))
     {
       /* Create multiple pop instruction rtx.  */
-      pop_insn = nds32_gen_stack_pop_multiple (Rb, Re, GEN_INT (en4_const));
-      /* Emit pop instruction.  */
-      emit_insn (pop_insn);
+      nds32_emit_stack_pop_multiple (Rb, Re, GEN_INT (en4_const));
     }
 
   /* Generate return instruction by using
