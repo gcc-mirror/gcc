@@ -1,3 +1,8 @@
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61986
+	* gcc.dg/ipa/pr61986.c: New test.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
