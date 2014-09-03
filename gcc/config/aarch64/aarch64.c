@@ -1805,11 +1805,6 @@ aarch64_libgcc_cmp_return_mode (void)
 static bool
 aarch64_frame_pointer_required (void)
 {
-  /* If the function contains dynamic stack allocations, we need to
-     use the frame pointer to access the static parts of the frame.  */
-  if (cfun->calls_alloca)
-    return true;
-
   /* In aarch64_override_options_after_change
      flag_omit_leaf_frame_pointer turns off the frame pointer by
      default.  Turn it back on now if we've not got a leaf
@@ -1918,22 +1913,6 @@ aarch64_layout_frame (void)
   cfun->machine->frame.laid_out = true;
 }
 
-/* Make the last instruction frame-related and note that it performs
-   the operation described by FRAME_PATTERN.  */
-
-static void
-aarch64_set_frame_expr (rtx frame_pattern)
-{
-  rtx_insn *insn;
-
-  insn = get_last_insn ();
-  RTX_FRAME_RELATED_P (insn) = 1;
-  RTX_FRAME_RELATED_P (frame_pattern) = 1;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      frame_pattern,
-				      REG_NOTES (insn));
-}
-
 static bool
 aarch64_register_saved_on_entry (int regno)
 {
@@ -1961,23 +1940,6 @@ aarch64_pushwb_single_reg (enum machine_mode mode, unsigned regno,
   mem = gen_rtx_MEM (mode, mem);
 
   insn = emit_move_insn (mem, reg);
-  RTX_FRAME_RELATED_P (insn) = 1;
-}
-
-static void
-aarch64_popwb_single_reg (enum machine_mode mode, unsigned regno,
-			  HOST_WIDE_INT adjustment)
-{
-  rtx base_rtx = stack_pointer_rtx;
-  rtx insn, reg, mem;
-
-  reg = gen_rtx_REG (mode, regno);
-  mem = gen_rtx_POST_MODIFY (Pmode, base_rtx,
-			     plus_constant (Pmode, base_rtx, adjustment));
-  mem = gen_rtx_MEM (mode, mem);
-
-  insn = emit_move_insn (reg, mem);
-  add_reg_note (insn, REG_CFA_RESTORE, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -2011,7 +1973,6 @@ aarch64_pushwb_pair_reg (enum machine_mode mode, unsigned regno1,
   insn = emit_insn (aarch64_gen_storewb_pair (mode, stack_pointer_rtx, reg1,
 					      reg2, adjustment));
   RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
-
   RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
   RTX_FRAME_RELATED_P (insn) = 1;
 }
@@ -2031,29 +1992,6 @@ aarch64_gen_loadwb_pair (enum machine_mode mode, rtx base, rtx reg, rtx reg2,
     default:
       gcc_unreachable ();
     }
-}
-
-static void
-aarch64_popwb_pair_reg (enum machine_mode mode, unsigned regno1,
-			unsigned regno2, HOST_WIDE_INT adjustment, rtx cfa)
-{
-  rtx insn;
-  rtx reg1 = gen_rtx_REG (mode, regno1);
-  rtx reg2 = gen_rtx_REG (mode, regno2);
-
-  insn = emit_insn (aarch64_gen_loadwb_pair (mode, stack_pointer_rtx, reg1,
-					     reg2, adjustment));
-  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
-  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-  RTX_FRAME_RELATED_P (insn) = 1;
-
-  if (cfa)
-    add_reg_note (insn, REG_CFA_ADJUST_CFA,
-		  (gen_rtx_SET (Pmode, stack_pointer_rtx,
-				plus_constant (Pmode, cfa, adjustment))));
-
-  add_reg_note (insn, REG_CFA_RESTORE, reg1);
-  add_reg_note (insn, REG_CFA_RESTORE, reg2);
 }
 
 static rtx
@@ -2151,9 +2089,8 @@ aarch64_save_callee_saves (enum machine_mode mode, HOST_WIDE_INT start_offset,
 static void
 aarch64_restore_callee_saves (enum machine_mode mode,
 			      HOST_WIDE_INT start_offset, unsigned start,
-			      unsigned limit, bool skip_wb)
+			      unsigned limit, bool skip_wb, rtx *cfi_ops)
 {
-  rtx insn;
   rtx base_rtx = stack_pointer_rtx;
   rtx (*gen_mem_ref) (enum machine_mode, rtx) = (frame_pointer_needed
 						 ? gen_frame_mem : gen_rtx_MEM);
@@ -2187,25 +2124,14 @@ aarch64_restore_callee_saves (enum machine_mode mode,
 
 	  offset = start_offset + cfun->machine->frame.reg_offset[regno2];
 	  mem2 = gen_mem_ref (mode, plus_constant (Pmode, base_rtx, offset));
-	  insn = emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2,
-						   mem2));
-	  add_reg_note (insn, REG_CFA_RESTORE, reg);
-	  add_reg_note (insn, REG_CFA_RESTORE, reg2);
+	  emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
 
-	  /* The first part of a frame-related parallel insn is
-	     always assumed to be relevant to the frame
-	     calculations; subsequent parts, are only
-	     frame-related if explicitly marked.  */
-	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+	  *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg2, *cfi_ops);
 	  regno = regno2;
 	}
       else
-	{
-	  insn = emit_move_insn (reg, mem);
-	  add_reg_note (insn, REG_CFA_RESTORE, reg);
-	}
-
-      RTX_FRAME_RELATED_P (insn) = 1;
+	emit_move_insn (reg, mem);
+      *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg, *cfi_ops);
     }
 }
 
@@ -2263,18 +2189,17 @@ aarch64_expand_prologue (void)
   */
   HOST_WIDE_INT frame_size, offset;
   HOST_WIDE_INT fp_offset;		/* Offset from hard FP to SP.  */
+  HOST_WIDE_INT hard_fp_offset;
   rtx_insn *insn;
 
   aarch64_layout_frame ();
 
+  offset = frame_size = cfun->machine->frame.frame_size;
+  hard_fp_offset = cfun->machine->frame.hard_fp_offset;
+  fp_offset = frame_size - hard_fp_offset;
+
   if (flag_stack_usage_info)
-    current_function_static_stack_size = cfun->machine->frame.frame_size;
-
-  frame_size = cfun->machine->frame.frame_size;
-  offset = cfun->machine->frame.frame_size;
-
-  fp_offset = cfun->machine->frame.frame_size
-	      - cfun->machine->frame.hard_fp_offset;
+    current_function_static_stack_size = frame_size;
 
   /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
@@ -2285,7 +2210,7 @@ aarch64_expand_prologue (void)
 	 register area.  This will allow the pre-index write-back
 	 store pair instructions to be used for setting up the stack frame
 	 efficiently.  */
-      offset = cfun->machine->frame.hard_fp_offset;
+      offset = hard_fp_offset;
       if (offset >= 512)
 	offset = cfun->machine->frame.saved_regs_size;
 
@@ -2296,29 +2221,29 @@ aarch64_expand_prologue (void)
 	{
 	  rtx op0 = gen_rtx_REG (Pmode, IP0_REGNUM);
 	  emit_move_insn (op0, GEN_INT (-frame_size));
-	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
-	  aarch64_set_frame_expr (gen_rtx_SET
-				  (Pmode, stack_pointer_rtx,
-				   plus_constant (Pmode,
-						  stack_pointer_rtx,
-						  -frame_size)));
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
+
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
+			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
+						    -frame_size)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (frame_size > 0)
 	{
-	  if ((frame_size & 0xfff) != frame_size)
+	  int hi_ofs = frame_size & 0xfff000;
+	  int lo_ofs = frame_size & 0x000fff;
+
+	  if (hi_ofs)
 	    {
 	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx,
-				 GEN_INT (-(frame_size
-					    & ~(HOST_WIDE_INT)0xfff))));
+				(stack_pointer_rtx, GEN_INT (-hi_ofs)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
-	  if ((frame_size & 0xfff) != 0)
+	  if (lo_ofs)
 	    {
 	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx,
-				 GEN_INT (-(frame_size
-					    & (HOST_WIDE_INT)0xfff))));
+				(stack_pointer_rtx, GEN_INT (-lo_ofs)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
@@ -2339,10 +2264,6 @@ aarch64_expand_prologue (void)
 	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
 					       GEN_INT (-offset)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
-	      aarch64_set_frame_expr (gen_rtx_SET
-				      (Pmode, stack_pointer_rtx,
-				       gen_rtx_MINUS (Pmode, stack_pointer_rtx,
-						      GEN_INT (offset))));
 
 	      aarch64_save_callee_saves (DImode, fp_offset, R29_REGNUM,
 					 R30_REGNUM, false);
@@ -2355,14 +2276,8 @@ aarch64_expand_prologue (void)
 	  insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 					   stack_pointer_rtx,
 					   GEN_INT (fp_offset)));
-	  aarch64_set_frame_expr (gen_rtx_SET
-				  (Pmode, hard_frame_pointer_rtx,
-				   plus_constant (Pmode,
-						  stack_pointer_rtx,
-						  fp_offset)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
-					   hard_frame_pointer_rtx));
+	  emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
 	}
       else
 	{
@@ -2417,21 +2332,19 @@ aarch64_expand_epilogue (bool for_sibcall)
 {
   HOST_WIDE_INT frame_size, offset;
   HOST_WIDE_INT fp_offset;
+  HOST_WIDE_INT hard_fp_offset;
   rtx_insn *insn;
-  rtx cfa_reg;
 
   aarch64_layout_frame ();
 
   offset = frame_size = cfun->machine->frame.frame_size;
-  fp_offset = cfun->machine->frame.frame_size
-	      - cfun->machine->frame.hard_fp_offset;
-
-  cfa_reg = frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
+  hard_fp_offset = cfun->machine->frame.hard_fp_offset;
+  fp_offset = frame_size - hard_fp_offset;
 
   /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
     {
-      offset = cfun->machine->frame.hard_fp_offset;
+      offset = hard_fp_offset;
       if (offset >= 512)
 	offset = cfun->machine->frame.saved_regs_size;
 
@@ -2459,11 +2372,6 @@ aarch64_expand_epilogue (bool for_sibcall)
 				       hard_frame_pointer_rtx,
 				       GEN_INT (0)));
       offset = offset - fp_offset;
-      RTX_FRAME_RELATED_P (insn) = 1;
-      /* As SP is set to (FP - fp_offset), according to the rules in
-	 dwarf2cfi.c:dwarf2out_frame_debug_expr, CFA should be calculated
-	 from the value of SP from now on.  */
-      cfa_reg = stack_pointer_rtx;
     }
 
   if (offset > 0)
@@ -2471,6 +2379,7 @@ aarch64_expand_epilogue (bool for_sibcall)
       unsigned reg1 = cfun->machine->frame.wb_candidate1;
       unsigned reg2 = cfun->machine->frame.wb_candidate2;
       bool skip_wb = true;
+      rtx cfi_ops = NULL;
 
       if (frame_pointer_needed)
 	fp_offset = 0;
@@ -2481,99 +2390,86 @@ aarch64_expand_epilogue (bool for_sibcall)
 	skip_wb = false;
 
       aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM,
-				    skip_wb);
+				    skip_wb, &cfi_ops);
       aarch64_restore_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM,
-				    skip_wb);
+				    skip_wb, &cfi_ops);
 
       if (skip_wb)
 	{
 	  enum machine_mode mode1 = (reg1 <= R30_REGNUM) ? DImode : DFmode;
+	  rtx rreg1 = gen_rtx_REG (mode1, reg1);
 
+	  cfi_ops = alloc_reg_note (REG_CFA_RESTORE, rreg1, cfi_ops);
 	  if (reg2 == FIRST_PSEUDO_REGISTER)
-	    aarch64_popwb_single_reg (mode1, reg1, offset);
+	    {
+	      rtx mem = plus_constant (Pmode, stack_pointer_rtx, offset);
+	      mem = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx, mem);
+	      mem = gen_rtx_MEM (mode1, mem);
+	      insn = emit_move_insn (rreg1, mem);
+	    }
 	  else
 	    {
-	      if (reg1 != HARD_FRAME_POINTER_REGNUM)
-		cfa_reg = NULL;
+	      rtx rreg2 = gen_rtx_REG (mode1, reg2);
 
-	      aarch64_popwb_pair_reg (mode1, reg1, reg2, offset, cfa_reg);
+	      cfi_ops = alloc_reg_note (REG_CFA_RESTORE, rreg2, cfi_ops);
+	      insn = emit_insn (aarch64_gen_loadwb_pair
+				(mode1, stack_pointer_rtx, rreg1,
+				 rreg2, offset));
 	    }
 	}
       else
 	{
 	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
 					   GEN_INT (offset)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
+
+      /* Reset the CFA to be SP + FRAME_SIZE.  */
+      rtx new_cfa = stack_pointer_rtx;
+      if (frame_size > 0)
+	new_cfa = plus_constant (Pmode, new_cfa, frame_size);
+      cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, new_cfa, cfi_ops);
+      REG_NOTES (insn) = cfi_ops;
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  if (frame_size > 0)
+    {
+      if (frame_size >= 0x1000000)
+	{
+	  rtx op0 = gen_rtx_REG (Pmode, IP0_REGNUM);
+	  emit_move_insn (op0, GEN_INT (frame_size));
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
+	}
+      else
+	{
+          int hi_ofs = frame_size & 0xfff000;
+          int lo_ofs = frame_size & 0x000fff;
+
+	  if (hi_ofs && lo_ofs)
+	    {
+	      insn = emit_insn (gen_add2_insn
+				(stack_pointer_rtx, GEN_INT (hi_ofs)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      frame_size = lo_ofs;
+	    }
+	  insn = emit_insn (gen_add2_insn
+			    (stack_pointer_rtx, GEN_INT (frame_size)));
+	}
+
+      /* Reset the CFA to be SP + 0.  */
+      add_reg_note (insn, REG_CFA_DEF_CFA, stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Stack adjustment for exception handler.  */
   if (crtl->calls_eh_return)
     {
       /* We need to unwind the stack by the offset computed by
-	 EH_RETURN_STACKADJ_RTX.  However, at this point the CFA is
-	 based on SP.  Ideally we would update the SP and define the
-	 CFA along the lines of:
-
-	 SP = SP + EH_RETURN_STACKADJ_RTX
-	 (regnote CFA = SP - EH_RETURN_STACKADJ_RTX)
-
-	 However the dwarf emitter only understands a constant
-	 register offset.
-
-	 The solution chosen here is to use the otherwise unused IP0
-	 as a temporary register to hold the current SP value.  The
-	 CFA is described using IP0 then SP is modified.  */
-
-      rtx ip0 = gen_rtx_REG (DImode, IP0_REGNUM);
-
-      insn = emit_move_insn (ip0, stack_pointer_rtx);
-      add_reg_note (insn, REG_CFA_DEF_CFA, ip0);
-      RTX_FRAME_RELATED_P (insn) = 1;
-
+	 EH_RETURN_STACKADJ_RTX.  We have already reset the CFA
+	 to be SP; letting the CFA move during this adjustment
+	 is just as correct as retaining the CFA from the body
+	 of the function.  Therefore, do nothing special.  */
       emit_insn (gen_add2_insn (stack_pointer_rtx, EH_RETURN_STACKADJ_RTX));
-
-      /* Ensure the assignment to IP0 does not get optimized away.  */
-      emit_use (ip0);
-    }
-
-  if (frame_size > -1)
-    {
-      if (frame_size >= 0x1000000)
-	{
-	  rtx op0 = gen_rtx_REG (Pmode, IP0_REGNUM);
-	  emit_move_insn (op0, GEN_INT (frame_size));
-	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
-	  aarch64_set_frame_expr (gen_rtx_SET
-				  (Pmode, stack_pointer_rtx,
-				   plus_constant (Pmode,
-						  stack_pointer_rtx,
-						  frame_size)));
-	}
-      else if (frame_size > 0)
-	{
-	  if ((frame_size & 0xfff) != 0)
-	    {
-	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx,
-				 GEN_INT ((frame_size
-					   & (HOST_WIDE_INT) 0xfff))));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  if ((frame_size & 0xfff) != frame_size)
-	    {
-	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx,
-				 GEN_INT ((frame_size
-					   & ~ (HOST_WIDE_INT) 0xfff))));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	}
-
-      aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					   plus_constant (Pmode,
-							  stack_pointer_rtx,
-							  offset)));
     }
 
   emit_use (gen_rtx_REG (DImode, LR_REGNUM));
