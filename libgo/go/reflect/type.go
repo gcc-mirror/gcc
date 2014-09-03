@@ -255,6 +255,7 @@ type rtype struct {
 	hashfn  uintptr // hash function code
 	equalfn uintptr // equality function code
 
+	gc            unsafe.Pointer // garbage collection data
 	string        *string        // string form; unnecessary  but undeniably useful
 	*uncommonType                // (relatively) uncommon fields
 	ptrToThis     *rtype         // type for pointer to this type, if used in binary or has methods
@@ -1130,6 +1131,18 @@ func (t *rtype) ptrTo() *rtype {
 	p.zero = unsafe.Pointer(&make([]byte, p.size)[0])
 	p.elem = t
 
+	if t.kind&kindNoPointers != 0 {
+		p.gc = unsafe.Pointer(&ptrDataGCProg)
+	} else {
+		p.gc = unsafe.Pointer(&ptrGC{
+			width:  p.size,
+			op:     _GC_PTR,
+			off:    0,
+			elemgc: t.gc,
+			end:    _GC_END,
+		})
+	}
+
 	q := canonicalize(&p.rtype)
 	p = (*ptrType)(unsafe.Pointer(q.(*rtype)))
 
@@ -1471,8 +1484,16 @@ func ChanOf(dir ChanDir, t Type) Type {
 	ch.ptrToThis = nil
 	ch.zero = unsafe.Pointer(&make([]byte, ch.size)[0])
 
+	ch.gc = unsafe.Pointer(&chanGC{
+		width: ch.size,
+		op:    _GC_CHAN_PTR,
+		off:   0,
+		typ:   &ch.rtype,
+		end:   _GC_END,
+	})
+
 	// INCORRECT. Uncomment to check that TestChanOfGC fails when ch.gc is wrong.
-	//ch.gc = unsafe.Pointer(&badGC{width: ch.size, end: _GC_END})
+	// ch.gc = unsafe.Pointer(&badGC{width: ch.size, end: _GC_END})
 
 	return cachePut(ckey, &ch.rtype)
 }
@@ -1524,9 +1545,12 @@ func MapOf(key, elem Type) Type {
 	// 	width:  unsafe.Sizeof(uintptr(0)),
 	// 	op:     _GC_PTR,
 	// 	off:    0,
-	// 	elemgc: mt.hmap.gc,
+	// 	elemgc: nil,
 	// 	end:    _GC_END,
 	// })
+
+	// TODO(cmang): Generate GC data for Map elements.
+	mt.gc = unsafe.Pointer(&ptrDataGCProg)
 
 	// INCORRECT. Uncomment to check that TestMapOfGC and TestMapOfGCValues
 	// fail when mt.gc is wrong.
@@ -1593,8 +1617,7 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 
 // Take the GC program for "t" and append it to the GC program "gc".
 func appendGCProgram(gc []uintptr, t *rtype) []uintptr {
-	// p := t.gc
-	var p unsafe.Pointer
+	p := t.gc
 	p = unsafe.Pointer(uintptr(p) + unsafe.Sizeof(uintptr(0))) // skip size
 loop:
 	for {
@@ -1707,8 +1730,20 @@ func SliceOf(t Type) Type {
 	slice.ptrToThis = nil
 	slice.zero = unsafe.Pointer(&make([]byte, slice.size)[0])
 
+	if typ.size == 0 {
+		slice.gc = unsafe.Pointer(&sliceEmptyGCProg)
+	} else {
+		slice.gc = unsafe.Pointer(&sliceGC{
+			width:  slice.size,
+			op:     _GC_SLICE,
+			off:    0,
+			elemgc: typ.gc,
+			end:    _GC_END,
+		})
+	}
+
 	// INCORRECT. Uncomment to check that TestSliceOfOfGC fails when slice.gc is wrong.
-	//slice.gc = unsafe.Pointer(&badGC{width: slice.size, end: _GC_END})
+	// slice.gc = unsafe.Pointer(&badGC{width: slice.size, end: _GC_END})
 
 	return cachePut(ckey, &slice.rtype)
 }

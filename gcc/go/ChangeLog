@@ -1,3 +1,10 @@
+2014-09-03  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Remove init
+	parameter.  Add is_hidden parameter.
+	(Gcc_backend::implicit_variable_set_init): New method.
+	(Gcc_backend::implicit_variable_reference): New method.
+
 2014-08-08  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::compound_statement): Don't return
