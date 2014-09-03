@@ -166,11 +166,19 @@ enum nds32_16bit_address_type
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers
-   for passing argument.  */
-#define NDS32_ARG_PASS_IN_REG_P(reg_offset, mode, type)      \
-  (((reg_offset) < NDS32_MAX_GPR_REGS_FOR_ARGS)              \
-   && ((reg_offset) + NDS32_NEED_N_REGS_FOR_ARG (mode, type) \
-       <= NDS32_MAX_GPR_REGS_FOR_ARGS))
+   for passing argument, which must be entirely in registers.  */
+#define NDS32_ARG_ENTIRE_IN_GPR_REG_P(reg_offset, mode, type)   \
+  ((NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (reg_offset, mode, type) \
+    + NDS32_NEED_N_REGS_FOR_ARG (mode, type))                   \
+   <= (NDS32_GPR_ARG_FIRST_REGNUM                               \
+       + NDS32_MAX_GPR_REGS_FOR_ARGS))
+
+/* This macro is to check if there are still available registers
+   for passing argument, either entirely in registers or partially
+   in registers.  */
+#define NDS32_ARG_PARTIAL_IN_GPR_REG_P(reg_offset, mode, type) \
+  (NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (reg_offset, mode, type) \
+   < NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS)
 
 /* This macro is to check if the register is required to be saved on stack.
    If call_used_regs[regno] == 0, regno is the callee-saved register.

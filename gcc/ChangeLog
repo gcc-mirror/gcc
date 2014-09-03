@@ -1,3 +1,12 @@
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_function_arg): Deal with nameless
+	arguments.
+	(nds32_function_arg_advance): Deal with nameless arguments.
+	* config/nds32/nds32.h (NDS32_ARG_PASS_IN_REG_P): Split it into ...
+	(NDS32_ARG_ENTIRE_IN_GPR_REG_P): ... this one and ...
+	(NDS32_ARG_PARTIAL_IN_GPR_REG_P): ... this one.
+
 2014-09-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (alloc_expression_id): Use quick_grow_cleared.
