@@ -1923,7 +1923,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
-	   && !formal->attr.intent == INTENT_IN)
+	   && formal->attr.intent != INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
     {
       if (actual->ts.type != BT_CLASS)
