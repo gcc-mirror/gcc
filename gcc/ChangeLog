@@ -1,3 +1,8 @@
+2014-09-03  Richard Biener  <rguenther@suse.de>
+
+	* opts.c (default_options_optimization): Adjust
+	max-combine-insns to 2 for -Og.
+
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/62015
