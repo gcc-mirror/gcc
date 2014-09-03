@@ -203,17 +203,18 @@ struct GTY(()) machine_function
   /* The padding bytes in callee-saved area may be required.  */
   int callee_saved_area_padding_bytes;
 
-  /* The first required register that should be saved on stack
-     for va_args (one named argument + nameless arguments).  */
-  int va_args_first_regno;
-  /* The last required register that should be saved on stack
-     for va_args (one named argument + nameless arguments).  */
-  int va_args_last_regno;
-
   /* The first required callee-saved register.  */
   int callee_saved_regs_first_regno;
   /* The last required callee-saved register.  */
   int callee_saved_regs_last_regno;
+
+  /* The padding bytes in varargs area may be required.  */
+  int va_args_area_padding_bytes;
+
+  /* The first required register that should be saved on stack for va_args.  */
+  int va_args_first_regno;
+  /* The last required register that should be saved on stack for va_args.  */
+  int va_args_last_regno;
 
   /* Indicate that whether this function needs
      prologue/epilogue code generation.  */
