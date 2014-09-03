@@ -1294,6 +1294,7 @@ static rtx
 nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
 		    const_tree type, bool named)
 {
+  unsigned int regno;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
 
   /* The last time this hook is called,
@@ -1301,41 +1302,99 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
   if (mode == VOIDmode)
     return NULL_RTX;
 
-  /* For nameless arguments, they are passed on the stack.  */
+  /* For nameless arguments, we need to take care it individually.  */
   if (!named)
-    return NULL_RTX;
-
-  /* If there are still registers available, return it.  */
-  if (NDS32_ARG_PASS_IN_REG_P (cum->gpr_offset, mode, type))
     {
-      /* Pick up the next available register number.  */
-      unsigned int regno;
+      /* If we are under hard float abi, we have arguments passed on the
+         stack and all situation can be handled by GCC itself.  */
+      if (TARGET_HARD_FLOAT)
+	return NULL_RTX;
 
-      regno = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
-      return gen_rtx_REG (mode, regno);
-    }
-  else
-    {
+      if (NDS32_ARG_PARTIAL_IN_GPR_REG_P (cum->gpr_offset, mode, type))
+	{
+	  /* If we still have enough registers to pass argument, pick up
+	     next available register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
+
       /* No register available, return NULL_RTX.
          The compiler will use stack to pass argument instead.  */
       return NULL_RTX;
     }
+
+  /* The following is to handle named argument.
+     Note that the strategies of TARGET_HARD_FLOAT and !TARGET_HARD_FLOAT
+     are different.  */
+  if (TARGET_HARD_FLOAT)
+    {
+      /* Currently we have not implemented hard float yet.  */
+      gcc_unreachable ();
+    }
+  else
+    {
+      /* For !TARGET_HARD_FLOAT calling convention, we always use GPR to pass
+         argument.  Since we allow to pass argument partially in registers,
+         we can just return it if there are still registers available.  */
+      if (NDS32_ARG_PARTIAL_IN_GPR_REG_P (cum->gpr_offset, mode, type))
+	{
+	  /* Pick up the next available register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
+
+    }
+
+  /* No register available, return NULL_RTX.
+     The compiler will use stack to pass argument instead.  */
+  return NULL_RTX;
 }
 
 static void
 nds32_function_arg_advance (cumulative_args_t ca, enum machine_mode mode,
 			    const_tree type, bool named)
 {
+  enum machine_mode sub_mode;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
 
-  /* Advance next register for use.
-     Only named argument could be advanced.  */
   if (named)
     {
-      cum->gpr_offset
-	= NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
-	  - NDS32_GPR_ARG_FIRST_REGNUM
-	  + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+      /* We need to further check TYPE and MODE so that we can determine
+         which kind of register we shall advance.  */
+      if (type && TREE_CODE (type) == COMPLEX_TYPE)
+	sub_mode = TYPE_MODE (TREE_TYPE (type));
+      else
+	sub_mode = mode;
+
+      /* Under hard float abi, we may advance FPR registers.  */
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (sub_mode) == MODE_FLOAT)
+	{
+	  /* Currently we have not implemented hard float yet.  */
+	  gcc_unreachable ();
+	}
+      else
+	{
+	  cum->gpr_offset
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
+	      - NDS32_GPR_ARG_FIRST_REGNUM
+	      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+	}
+    }
+  else
+    {
+      /* If this nameless argument is NOT under TARGET_HARD_FLOAT,
+         we can advance next register as well so that caller is
+         able to pass arguments in registers and callee must be
+         in charge of pushing all of them into stack.  */
+      if (!TARGET_HARD_FLOAT)
+	{
+	  cum->gpr_offset
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
+	      - NDS32_GPR_ARG_FIRST_REGNUM
+	      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+	}
     }
 }
 
