@@ -2784,12 +2784,6 @@ nds32_expand_prologue (void)
   rtx Rb, Re;
   rtx fp_adjust_insn, sp_adjust_insn;
 
-  /* Before computing everything for stack frame size,
-     we check if it is still worth to use fp_as_gp optimization.
-     If it is, the 'df_regs_ever_live_p (FP_REGNUM)' will be set
-     so that $fp will be saved on stack.  */
-  cfun->machine->fp_as_gp_p = nds32_fp_as_gp_check_available ();
-
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
@@ -2992,12 +2986,6 @@ nds32_expand_prologue_v3push (void)
 
   rtx Rb, Re;
   rtx fp_adjust_insn, sp_adjust_insn;
-
-  /* Before computing everything for stack frame size,
-     we check if it is still worth to use fp_as_gp optimization.
-     If it is, the 'df_regs_ever_live_p (FP_REGNUM)' will be set
-     so that $fp will be saved on stack.  */
-  cfun->machine->fp_as_gp_p = nds32_fp_as_gp_check_available ();
 
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
