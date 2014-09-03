@@ -1971,8 +1971,12 @@ create_template:
 (define_expand "prologue" [(const_int 0)]
   ""
 {
-  /* Note that only under V3/V3M ISA, we could use v3push prologue.  */
-  if (TARGET_V3PUSH)
+  /* Note that only under V3/V3M ISA, we could use v3push prologue.
+     In addition, we do not want to use v3push for isr function
+     and variadic function.  */
+  if (TARGET_V3PUSH
+      && !nds32_isr_function_p (current_function_decl)
+      && (cfun->machine->va_args_size == 0))
     nds32_expand_prologue_v3push ();
   else
     nds32_expand_prologue ();
@@ -1982,8 +1986,12 @@ create_template:
 (define_expand "epilogue" [(const_int 0)]
   ""
 {
-  /* Note that only under V3/V3M ISA, we could use v3pop epilogue.  */
-  if (TARGET_V3PUSH)
+  /* Note that only under V3/V3M ISA, we could use v3pop epilogue.
+     In addition, we do not want to use v3pop for isr function
+     and variadic function.  */
+  if (TARGET_V3PUSH
+      && !nds32_isr_function_p (current_function_decl)
+      && (cfun->machine->va_args_size == 0))
     nds32_expand_epilogue_v3pop ();
   else
     nds32_expand_epilogue ();
