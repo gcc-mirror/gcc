@@ -1,3 +1,7 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wlogical-not-parentheses): Enable by -Wall.
+
 2014-09-02  Jakub Jelinek  <jakub@redhat.com>
 	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
 	    Igor Zamyatin  <igor.zamyatin@intel.com>
