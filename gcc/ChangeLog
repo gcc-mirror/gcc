@@ -1,3 +1,9 @@
+2014-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/61078
+	* config/s390/s390.md ("*negdi2_31"): Add s390_split_ok_p check
+	and add a second splitter to handle the remaining cases.
+
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (PIC_OFFSET_TABLE_REGNUM): Define.
