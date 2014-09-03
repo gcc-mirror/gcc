@@ -80,7 +80,7 @@ extern bool nds32_valid_multiple_load_store (rtx, bool);
 
 /* Auxiliary functions for stack operation predicate checking.  */
 
-extern bool nds32_valid_stack_push_pop (rtx, bool);
+extern bool nds32_valid_stack_push_pop_p (rtx, bool);
 
 /* Auxiliary functions for bit operation detection.  */
 
