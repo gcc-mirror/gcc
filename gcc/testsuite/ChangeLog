@@ -1,3 +1,8 @@
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61986
+	* gcc.dg/ipa/pr61986.c: New test.
+
 2014-08-26  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
