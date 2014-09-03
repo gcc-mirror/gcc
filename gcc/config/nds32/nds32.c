@@ -150,16 +150,30 @@ nds32_compute_stack_frame (void)
   cfun->machine->naked_p = 0;
 
   /* Get variadic arguments size to prepare pretend arguments and
-     push them into stack at prologue.
-     Currently, we do not push variadic arguments by ourself.
-     We have GCC handle all the works.
-     The caller will push all corresponding nameless arguments into stack,
-     and the callee is able to retrieve them without problems.
-     These variables are still preserved in case one day
-     we would like caller passing arguments with registers.  */
-  cfun->machine->va_args_size = 0;
-  cfun->machine->va_args_first_regno = SP_REGNUM;
-  cfun->machine->va_args_last_regno  = SP_REGNUM;
+     we will push them into stack at prologue by ourself.  */
+  cfun->machine->va_args_size = crtl->args.pretend_args_size;
+  if (cfun->machine->va_args_size != 0)
+    {
+      cfun->machine->va_args_first_regno
+        = NDS32_GPR_ARG_FIRST_REGNUM
+          + NDS32_MAX_GPR_REGS_FOR_ARGS
+          - (crtl->args.pretend_args_size / UNITS_PER_WORD);
+      cfun->machine->va_args_last_regno
+        = NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS - 1;
+    }
+  else
+    {
+      cfun->machine->va_args_first_regno = SP_REGNUM;
+      cfun->machine->va_args_last_regno  = SP_REGNUM;
+    }
+
+  /* Important: We need to make sure that varargs area is 8-byte alignment.  */
+  block_size = cfun->machine->va_args_size;
+  if (!NDS32_DOUBLE_WORD_ALIGN_P (block_size))
+    {
+      cfun->machine->va_args_area_padding_bytes
+	= NDS32_ROUND_UP_DOUBLE_WORD (block_size) - block_size;
+    }
 
   /* Get local variables, incoming variables, and temporary variables size.
      Note that we need to make sure it is 8-byte alignment because
@@ -323,12 +337,10 @@ nds32_compute_stack_frame (void)
     }
 
   /* Important: We need to make sure that
-                (va_args_size + fp_size + gp_size
-                 + lp_size + callee_saved_regs_size)
+                (fp_size + gp_size + lp_size + callee_saved_regs_size)
                 is 8-byte alignment.
                 If it is not, calculate the padding bytes.  */
-  block_size = cfun->machine->va_args_size
-	       + cfun->machine->fp_size
+  block_size = cfun->machine->fp_size
 	       + cfun->machine->gp_size
 	       + cfun->machine->lp_size
 	       + cfun->machine->callee_saved_regs_size;

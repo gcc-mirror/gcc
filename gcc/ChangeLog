@@ -1,5 +1,10 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Prepare necessary
+	varargs information.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_setup_incoming_varargs): New
 	implementation for TARGET_SETUP_INCOMING_VARARGS.
 	(nds32_strict_argument_naming): Refine comment.
