@@ -1,3 +1,8 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document that -Wlogical-not-parentheses is enabled
+	by -Wall.
+
 2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/rtl.texi (RTX_AUTOINC): Document that the first operand is

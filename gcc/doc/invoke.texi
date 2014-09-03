@@ -4800,6 +4800,8 @@ parentheses:
 if ((!a) > 1) @{ @dots{} @}
 @end smallexample
 
+This warning is enabled by @option{-Wall}.
+
 @item -Waggregate-return
 @opindex Waggregate-return
 @opindex Wno-aggregate-return

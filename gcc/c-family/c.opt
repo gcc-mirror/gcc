@@ -519,7 +519,7 @@ C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning
 Warn when a logical operator is suspiciously always evaluating to true or false
 
 Wlogical-not-parentheses
-C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning
+C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when logical not is used on the left hand side operand of a comparison
 
 Wlong-long
