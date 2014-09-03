@@ -648,11 +648,11 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
    The overall concept are:
      "push registers to memory",
      "adjust stack pointer".  */
-static rtx
-nds32_gen_stack_v3push (rtx Rb,
-			rtx Re,
-			rtx En4 ATTRIBUTE_UNUSED,
-			rtx imm8u)
+static void
+nds32_emit_stack_v3push (rtx Rb,
+			 rtx Re,
+			 rtx En4 ATTRIBUTE_UNUSED,
+			 rtx imm8u)
 {
   int regno;
   int num_use_regs;
@@ -668,8 +668,7 @@ nds32_gen_stack_v3push (rtx Rb,
   /* We need to provide a customized rtx which contains
      necessary information for data analysis,
      so we create a parallel rtx like this:
-     (parallel [
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -32)))
+     (parallel [(set (mem (plus (reg:SI SP_REGNUM) (const_int -32)))
                      (reg:SI Rb))
                 (set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
                      (reg:SI Rb+1))
@@ -761,7 +760,12 @@ nds32_gen_stack_v3push (rtx Rb,
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  return parallel_insn;
+  parallel_insn = emit_insn (parallel_insn);
+
+  /* The insn rtx 'parallel_insn' will change frame layout.
+     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+     generate CFI (Call Frame Information) stuff.  */
+  RTX_FRAME_RELATED_P (parallel_insn) = 1;
 }
 
 /* Function to create a parallel rtx pattern
@@ -769,11 +773,11 @@ nds32_gen_stack_v3push (rtx Rb,
    The overall concept are:
      "pop registers from memory",
      "adjust stack pointer".  */
-static rtx
-nds32_gen_stack_v3pop (rtx Rb,
-		       rtx Re,
-		       rtx En4 ATTRIBUTE_UNUSED,
-		       rtx imm8u)
+static void
+nds32_emit_stack_v3pop (rtx Rb,
+			rtx Re,
+			rtx En4 ATTRIBUTE_UNUSED,
+			rtx imm8u)
 {
   int regno;
   int num_use_regs;
@@ -785,6 +789,7 @@ nds32_gen_stack_v3pop (rtx Rb,
   rtx pop_rtx;
   rtx adjust_sp_rtx;
   rtx parallel_insn;
+  rtx dwarf = NULL_RTX;
 
   /* We need to provide a customized rtx which contains
      necessary information for data analysis,
@@ -835,6 +840,8 @@ nds32_gen_stack_v3pop (rtx Rb,
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
 
   /* Create (set fp mem).  */
@@ -847,6 +854,8 @@ nds32_gen_stack_v3pop (rtx Rb,
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
   /* Create (set gp mem).  */
   reg = gen_rtx_REG (SImode, GP_REGNUM);
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -857,6 +866,8 @@ nds32_gen_stack_v3pop (rtx Rb,
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
   /* Create (set lp mem ).  */
   reg = gen_rtx_REG (SImode, LP_REGNUM);
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -867,6 +878,7 @@ nds32_gen_stack_v3pop (rtx Rb,
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
 
   /* Create (set sp sp+x+imm8u).  */
 
@@ -878,9 +890,19 @@ nds32_gen_stack_v3pop (rtx Rb,
 				  stack_pointer_rtx,
 				  offset + INTVAL (imm8u)));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
-  RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  return parallel_insn;
+  /* Tell gcc we adjust SP in this insn.  */
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, copy_rtx (adjust_sp_rtx), dwarf);
+
+  parallel_insn = emit_insn (parallel_insn);
+
+  /* The insn rtx 'parallel_insn' will change frame layout.
+     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+     generate CFI (Call Frame Information) stuff.  */
+  RTX_FRAME_RELATED_P (parallel_insn) = 1;
+
+  /* Add CFI info by manual.  */
+  REG_NOTES (parallel_insn) = dwarf;
 }
 
 /* Function that may creates more instructions
@@ -2885,18 +2907,11 @@ nds32_expand_prologue_v3push (void)
     {
       /* We can use 'push25 Re,imm8u'.  */
 
-      /* push_insn = gen_stack_v3push(last_regno, sp_adjust),
+      /* nds32_emit_stack_v3push(last_regno, sp_adjust),
          the pattern 'stack_v3push' is implemented in nds32.md.
          The (const_int 14) means v3push always push { $fp $gp $lp }.  */
-      push_insn = nds32_gen_stack_v3push (Rb, Re,
-					  GEN_INT (14), GEN_INT (sp_adjust));
-      /* emit rtx into instructions list and receive INSN rtx form */
-      push_insn = emit_insn (push_insn);
-
-      /* The insn rtx 'push_insn' will change frame layout.
-         We need to use RTX_FRAME_RELATED_P so that GCC is able to
-         generate CFI (Call Frame Information) stuff.  */
-      RTX_FRAME_RELATED_P (push_insn) = 1;
+      nds32_emit_stack_v3push (Rb, Re,
+			       GEN_INT (14), GEN_INT (sp_adjust));
 
       /* Check frame_pointer_needed to see
          if we shall emit fp adjustment instruction.  */
@@ -2929,18 +2944,11 @@ nds32_expand_prologue_v3push (void)
       /* We have to use 'push25 Re,0' and
          expand one more instruction to adjust $sp later.  */
 
-      /* push_insn = gen_stack_v3push(last_regno, sp_adjust),
+      /* nds32_emit_stack_v3push(last_regno, sp_adjust),
          the pattern 'stack_v3push' is implemented in nds32.md.
          The (const_int 14) means v3push always push { $fp $gp $lp }.  */
-      push_insn = nds32_gen_stack_v3push (Rb, Re,
-					  GEN_INT (14), GEN_INT (0));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      push_insn = emit_insn (push_insn);
-
-      /* The insn rtx 'push_insn' will change frame layout.
-         We need to use RTX_FRAME_RELATED_P so that GCC is able to
-         generate CFI (Call Frame Information) stuff.  */
-      RTX_FRAME_RELATED_P (push_insn) = 1;
+      nds32_emit_stack_v3push (Rb, Re,
+			       GEN_INT (14), GEN_INT (0));
 
       /* Check frame_pointer_needed to see
          if we shall emit fp adjustment instruction.  */
@@ -3047,14 +3055,11 @@ nds32_expand_epilogue_v3pop (void)
     {
       /* We can use 'pop25 Re,imm8u'.  */
 
-      /* pop_insn = gen_stack_v3pop(last_regno, sp_adjust),
+      /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
          the pattern 'stack_v3pop' is implementad in nds32.md.
          The (const_int 14) means v3pop always pop { $fp $gp $lp }.  */
-      pop_insn = nds32_gen_stack_v3pop (Rb, Re,
-					GEN_INT (14), GEN_INT (sp_adjust));
-
-      /* Emit pop instruction.  */
-      emit_insn (pop_insn);
+      nds32_emit_stack_v3pop (Rb, Re,
+			      GEN_INT (14), GEN_INT (sp_adjust));
     }
   else
     {
@@ -3111,14 +3116,11 @@ nds32_expand_epilogue_v3pop (void)
 	    }
 	}
 
-      /* pop_insn = gen_stack_v3pop(last_regno, sp_adjust),
+      /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
          the pattern 'stack_v3pop' is implementad in nds32.md.  */
       /* The (const_int 14) means v3pop always pop { $fp $gp $lp }.  */
-      pop_insn = nds32_gen_stack_v3pop (Rb, Re,
-					GEN_INT (14), GEN_INT (0));
-
-      /* Emit pop instruction.  */
-      emit_insn (pop_insn);
+      nds32_emit_stack_v3pop (Rb, Re,
+			      GEN_INT (14), GEN_INT (0));
     }
 }
 
