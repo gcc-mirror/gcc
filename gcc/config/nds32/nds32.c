@@ -2670,7 +2670,6 @@ nds32_expand_prologue (void)
   int en4_const;
 
   rtx Rb, Re;
-  rtx push_insn;
   rtx fp_adjust_insn, sp_adjust_insn;
 
   /* Before computing everything for stack frame size,
@@ -2771,7 +2770,6 @@ nds32_expand_epilogue (void)
   int en4_const;
 
   rtx Rb, Re;
-  rtx pop_insn;
   rtx sp_adjust_insn;
 
   /* Compute and setup stack frame size.
@@ -2881,7 +2879,6 @@ nds32_expand_prologue_v3push (void)
   int sp_adjust;
 
   rtx Rb, Re;
-  rtx push_insn;
   rtx fp_adjust_insn, sp_adjust_insn;
 
   /* Before computing everything for stack frame size,
@@ -3015,7 +3012,6 @@ nds32_expand_epilogue_v3pop (void)
   int sp_adjust;
 
   rtx Rb, Re;
-  rtx pop_insn;
   rtx sp_adjust_insn;
 
   /* Compute and setup stack frame size.
