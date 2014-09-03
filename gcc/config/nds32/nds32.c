@@ -1352,6 +1352,19 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
   return NULL_RTX;
 }
 
+static bool
+nds32_must_pass_in_stack (enum machine_mode mode, const_tree type)
+{
+  /* Return true if a type must be passed in memory.
+     If it is NOT using hard float abi, small aggregates can be
+     passed in a register even we are calling a variadic function.
+     So there is no need to take padding into consideration.  */
+  if (TARGET_HARD_FLOAT)
+    return must_pass_in_stack_var_size_or_pad (mode, type);
+  else
+    return must_pass_in_stack_var_size (mode, type);
+}
+
 static int
 nds32_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
 			 tree type, bool named ATTRIBUTE_UNUSED)
@@ -3497,6 +3510,9 @@ nds32_target_alignment (rtx label)
 
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG nds32_function_arg
+
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK nds32_must_pass_in_stack
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES nds32_arg_partial_bytes
