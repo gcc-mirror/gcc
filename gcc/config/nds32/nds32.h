@@ -813,6 +813,8 @@ enum reg_class
 
 /* Position Independent Code.  */
 
+#define PIC_OFFSET_TABLE_REGNUM GP_REGNUM
+
 
 /* Defining the Output Assembler Language.  */
 
