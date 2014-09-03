@@ -1,5 +1,13 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-predicates.c
+	(nds32_valid_stack_push_pop): Rename to ...
+	(nds32_valid_stack_push_pop_p): ... this.
+	* config/nds32/nds32-protos.h: Likewise.
+	* config/nds32/predicates.md: Likewise.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_gen_stack_v3push): Rename to ...
 	(nds32_emit_stack_v3push): ... this.
 	(nds32_gen_stack_v3pop): Rename to ...
