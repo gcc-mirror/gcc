@@ -1,5 +1,19 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_function_arg): Define and rename some
+	GPR-specific stuff.
+	(nds32_function_arg_advance): Likewise.
+	(nds32_init_cumulative_args): Likewise.
+	* config/nds32/nds32.h (NDS32_MAX_GPR_REGS_FOR_ARGS): Define.
+	(NDS32_FIRST_GPR_REGNUM): Define.
+	(NDS32_LAST_GPR_REGNUM): Define.
+	(NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG): Define.
+	(NDS32_ARG_PASS_IN_REG_P): Use NDS32_MAX_GPR_REGS_FOR_ARGS.
+	(FUNCTION_ARG_REGNO_P): Use NDS32_MAX_GPR_REGS_FOR_ARGS.
+	(machine_function): Use GRP-specific stuff.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_expand_prologue): Remove unused variables.
 	(nds32_expand_epilogue): Likewise.
 	(nds32_expand_prologue_v3push): Likewise.
