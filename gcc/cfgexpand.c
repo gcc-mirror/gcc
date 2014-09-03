@@ -1974,7 +1974,7 @@ maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx_insn *since)
 
 /* Maps the blocks that do not contain tree labels to rtx labels.  */
 
-static hash_map<basic_block, rtx> *lab_rtx_for_bb;
+static hash_map<basic_block, rtx_code_label *> *lab_rtx_for_bb;
 
 /* Returns the label_rtx expression for a label starting basic block BB.  */
 
@@ -1988,7 +1988,7 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
-  rtx *elt = lab_rtx_for_bb->get (bb);
+  rtx_code_label **elt = lab_rtx_for_bb->get (bb);
   if (elt)
     return *elt;
 
@@ -4945,7 +4945,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	stmt = NULL;
     }
 
-  rtx *elt = lab_rtx_for_bb->get (bb);
+  rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
     {
@@ -5815,7 +5815,7 @@ pass_expand::execute (function *fun)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
-  lab_rtx_for_bb = new hash_map<basic_block, rtx>;
+  lab_rtx_for_bb = new hash_map<basic_block, rtx_code_label *>;
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
     bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);

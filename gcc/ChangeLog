@@ -1,5 +1,12 @@
 2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* cfgexpand.c (label_rtx_for_bb): Change type to
+	hash_map<basic_block, rtx_code_label *> *.
+	(expand_gimple_basic_block): Adjust.
+	(pass_expand::execute): Likewise.
+
+2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* asan.c, cfgexpand.c, config/alpha/alpha.md, config/arm/arm.c,
 	config/epiphany/epiphany.md, config/h8300/h8300.c, config/i386/i386.md,
 	config/m32r/m32r.c, config/mcore/mcore.md, config/mips/mips.c,
