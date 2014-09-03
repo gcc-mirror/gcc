@@ -193,7 +193,8 @@ An RTX code for something that matches in insns, such as
 
 @item RTX_AUTOINC
 An RTX code for an auto-increment addressing mode, such as
-@code{POST_INC}.
+@code{POST_INC}.  @samp{XEXP (@var{x}, 0)} gives the auto-modified
+register.
 
 @item RTX_EXTRA
 All other RTX codes.  This category includes the remaining codes used

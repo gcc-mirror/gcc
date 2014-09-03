@@ -1,5 +1,10 @@
 2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/rtl.texi (RTX_AUTOINC): Document that the first operand is
+	the automodified register.
+
+2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* output.h (get_some_local_dynamic_name): Declare.
 	* final.c (some_local_dynamic_name): New variable.
 	(get_some_local_dynamic_name): New function.
