@@ -1,5 +1,10 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (FIRST_PARM_OFFSET): Set proper location
+	according to the value of crtl->args.pretend_args_size.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_compute_stack_frame): Prepare necessary
 	varargs information.
 

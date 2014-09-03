@@ -671,7 +671,8 @@ enum reg_class
 
 #define STACK_POINTER_OFFSET 0
 
-#define FIRST_PARM_OFFSET(fundecl) 0
+#define FIRST_PARM_OFFSET(fundecl) \
+  (NDS32_DOUBLE_WORD_ALIGN_P (crtl->args.pretend_args_size) ? 0 : 4)
 
 #define RETURN_ADDR_RTX(count, frameaddr) \
   nds32_return_addr_rtx (count, frameaddr)
