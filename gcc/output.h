@@ -52,6 +52,8 @@ extern int get_attr_min_length (rtx);
    any branches of variable length if possible.  */
 extern void shorten_branches (rtx_insn *);
 
+const char *get_some_local_dynamic_name ();
+
 /* Output assembler code for the start of a function,
    and initialize some of the variables in this file
    for the new function.  The label for the function and associated

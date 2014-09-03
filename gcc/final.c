@@ -1719,6 +1719,38 @@ reemit_insn_block_notes (void)
   reorder_blocks ();
 }
 
+static const char *some_local_dynamic_name;
+
+/* Locate some local-dynamic symbol still in use by this function
+   so that we can print its name in local-dynamic base patterns.
+   Return null if there are no local-dynamic references.  */
+
+const char *
+get_some_local_dynamic_name ()
+{
+  subrtx_iterator::array_type array;
+  rtx_insn *insn;
+
+  if (some_local_dynamic_name)
+    return some_local_dynamic_name;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+	{
+	  const_rtx x = *iter;
+	  if (GET_CODE (x) == SYMBOL_REF)
+	    {
+	      if (SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
+		return some_local_dynamic_name = XSTR (x, 0);
+	      if (CONSTANT_POOL_ADDRESS_P (x))
+		iter.substitute (get_pool_constant (x));
+	    }
+	}
+
+  return 0;
+}
+
 /* Output assembler code for the start of a function,
    and initialize some of the variables in this file
    for the new function.  The label for the function and associated
@@ -1904,6 +1936,8 @@ final_end_function (void)
   if (!dwarf2_debug_info_emitted_p (current_function_decl)
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue (last_linenum, last_filename);
+
+  some_local_dynamic_name = 0;
 }
 
 
