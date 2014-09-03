@@ -1,5 +1,11 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-isr.c (nds32_isr_function_p): Define new function
+	to check if FUNC is an interrupt service routine.
+	* config/nds32/nds32-protos.h (nds32_isr_function_p): Declaration.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.h (machine_function): Add some fields for variadic
 	arguments implementation.
 
