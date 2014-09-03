@@ -1294,12 +1294,12 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
     return NULL_RTX;
 
   /* If there are still registers available, return it.  */
-  if (NDS32_ARG_PASS_IN_REG_P (cum->reg_offset, mode, type))
+  if (NDS32_ARG_PASS_IN_REG_P (cum->gpr_offset, mode, type))
     {
       /* Pick up the next available register number.  */
       unsigned int regno;
 
-      regno = NDS32_AVAILABLE_REGNUM_FOR_ARG (cum->reg_offset, mode, type);
+      regno = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
       return gen_rtx_REG (mode, regno);
     }
   else
@@ -1320,8 +1320,8 @@ nds32_function_arg_advance (cumulative_args_t ca, enum machine_mode mode,
      Only named argument could be advanced.  */
   if (named)
     {
-      cum->reg_offset
-	= NDS32_AVAILABLE_REGNUM_FOR_ARG (cum->reg_offset, mode, type)
+      cum->gpr_offset
+	= NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
 	  - NDS32_GPR_ARG_FIRST_REGNUM
 	  + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
     }
@@ -2656,7 +2656,7 @@ nds32_init_cumulative_args (CUMULATIVE_ARGS *cum,
   /* Initial available registers
      (in offset, corresponding to NDS32_GPR_ARG_FIRST_REGNUM)
      for passing arguments.  */
-  cum->reg_offset = 0;
+  cum->gpr_offset = 0;
 }
 
 /* -- Function Entry and Exit.  */
