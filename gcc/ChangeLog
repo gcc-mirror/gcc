@@ -1,5 +1,14 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push):
+	Check rtx for varargs implementation.
+	(nds32_output_stack_pop): Likewise.
+	* config/nds32/nds32-protos.h: Have a rtx argument for
+	nds32_output_stack_push and nds32_output_stack_pop.
+	* config/nds32/nds32.md: Likewise.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-isr.c (nds32_isr_function_p): Define new function
 	to check if FUNC is an interrupt service routine.
 	* config/nds32/nds32-protos.h (nds32_isr_function_p): Declaration.

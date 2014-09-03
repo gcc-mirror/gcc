@@ -117,8 +117,8 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
-extern const char *nds32_output_stack_push (void);
-extern const char *nds32_output_stack_pop (void);
+extern const char *nds32_output_stack_push (rtx);
+extern const char *nds32_output_stack_pop (rtx);
 
 /* Auxiliary functions to decide output alignment or not.  */
 
