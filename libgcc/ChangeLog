@@ -1,3 +1,11 @@
+2014-09-02  Nathan sidwell  <nathan@acm.org>
+
+	* libgcov-interface.c (STRONG_ALIAS): New.
+	(__gcov_flush): Call __gcov_reset_int.
+	(__gcov_reset): Strong alias for ...
+	(__gcov_reset_ing): ... this renamed hidden version.
+	* libgcov.h (__gcov_reset_int): New declaration.
+
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* config/i386/cygming-crtend.c (register_frame_ctor): Move atexit
