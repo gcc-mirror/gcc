@@ -23,7 +23,7 @@ contains
     call bar2 (c)
     call bar3 (c)
     call bar2p (b) ! { dg-error "INTENT\\(IN\\) in pointer association context \\(actual argument to INTENT = OUT/INOUT" }
-    call bar3p (b) ! { dg-error "INTENT\\(IN\\) in pointer association context \\(actual argument to INTENT = OUT/INOUT" }
+    call bar3p (b) ! { dg-error "Actual argument to .n. at \\(1\\) must be polymorphic" }
     call bar2p (c) ! { dg-error "INTENT\\(IN\\) in pointer association context \\(actual argument to INTENT = OUT/INOUT" }
     call bar3p (c) ! { dg-error "INTENT\\(IN\\) in pointer association context \\(actual argument to INTENT = OUT/INOUT" }
   end subroutine

@@ -1,3 +1,10 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from trunk
+	PR fortran/62270
+	* interface.c (compare_parameter): Fix condition.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise.
+
 2014-08-29  Jeffrey Armstrong  <jeffrey.armstrong@approximatrix.com>
 
 	Backport from trunk

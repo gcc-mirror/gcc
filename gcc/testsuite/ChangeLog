@@ -1,5 +1,13 @@
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
+	Backport from mainline
+	2014-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/62270
+	* gfortran.dg/pointer_intent_7.f90: Adjust dg-error.
+
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
 	PR c/62294
 	* gcc.dg/pr56724-1.c: New test.
 	* gcc.dg/pr56724-2.c: New test.

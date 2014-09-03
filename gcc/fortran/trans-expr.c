@@ -4409,7 +4409,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && e->expr_type == EXPR_VARIABLE
 		      && (!e->ref
 			  || (e->ref->type == REF_ARRAY
-			      && !e->ref->u.ar.type != AR_FULL))
+			      && e->ref->u.ar.type != AR_FULL))
 		      && e->symtree->n.sym->attr.optional)
 		    {
 		      tmp = fold_build3_loc (input_location, COND_EXPR,
