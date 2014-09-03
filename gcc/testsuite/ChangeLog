@@ -1,3 +1,9 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62024
+	* g++.dg/cpp0x/pr62024.C: New test.
+	* gcc.dg/pr62024.c: New test.
+
 2014-09-03  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/adx-addcarryx32-1.c: Test addcarry, subborrow.
