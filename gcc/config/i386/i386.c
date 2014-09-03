@@ -28789,6 +28789,10 @@ enum ix86_builtins
   IX86_BUILTIN_ADDCARRYX32,
   IX86_BUILTIN_ADDCARRYX64,
 
+  /* SBB instructions.  */
+  IX86_BUILTIN_SBB32,
+  IX86_BUILTIN_SBB64,
+
   /* FSGSBASE instructions.  */
   IX86_BUILTIN_RDFSBASE32,
   IX86_BUILTIN_RDFSBASE64,
@@ -31223,6 +31227,14 @@ ix86_init_mmx_sse_builtins (void)
 	       "__builtin_ia32_addcarryx_u64",
 	       UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG,
 	       IX86_BUILTIN_ADDCARRYX64);
+
+  /* SBB */
+  def_builtin (0, "__builtin_ia32_sbb_u32",
+	       UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED, IX86_BUILTIN_SBB32);
+  def_builtin (OPTION_MASK_ISA_64BIT,
+	       "__builtin_ia32_sbb_u64",
+	       UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG,
+	       IX86_BUILTIN_SBB64);
 
   /* Read/write FLAGS.  */
   def_builtin (~OPTION_MASK_ISA_64BIT, "__builtin_ia32_readeflags_u32",
@@ -35627,6 +35639,16 @@ rdseed_step:
 
       emit_insn (gen_zero_extendqisi2 (target, op2));
       return target;
+
+    case IX86_BUILTIN_SBB32:
+      icode = CODE_FOR_subsi3_carry;
+      mode0 = SImode;
+      goto addcarryx;
+
+    case IX86_BUILTIN_SBB64:
+      icode = CODE_FOR_subdi3_carry;
+      mode0 = DImode;
+      goto addcarryx;
 
     case IX86_BUILTIN_ADDCARRYX32:
       icode = TARGET_ADX ? CODE_FOR_adcxsi3 : CODE_FOR_addsi3_carry;

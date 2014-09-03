@@ -1,3 +1,12 @@
+2014-09-03  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/adx-addcarryx32-1.c: Test addcarry, subborrow.
+	* gcc.target/i386/adx-addcarryx32-2.c: Ditto.
+	* gcc.target/i386/adx-addcarryx32-3.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-1.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-2.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-3.c: Ditto.
+
 2014-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/61078
