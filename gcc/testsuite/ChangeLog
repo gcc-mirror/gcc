@@ -1,3 +1,7 @@
+2014-09-03  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* lib/gcc-dg.exp (set-target-env-var): Change env to ::env.
+
 2014-09-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/61881
