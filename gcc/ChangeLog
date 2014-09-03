@@ -1,3 +1,11 @@
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_setup_incoming_varargs): New
+	implementation for TARGET_SETUP_INCOMING_VARARGS.
+	(nds32_strict_argument_naming): Refine comment.
+	* config/nds32/nds32.h (TARGET_SOFT_FLOAT, TARGET_HARD_FLOAT):
+	Define for future implementation.
+
 2014-09-03  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/adxintrin.h (_subborrow_u32): New.
