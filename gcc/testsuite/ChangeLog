@@ -1,3 +1,8 @@
+2014-09-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr39228.c: Use dg-add-options instead
+	of dg-options.  Add "inline" keyword to test functions.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/62024
