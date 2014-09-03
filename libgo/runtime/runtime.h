@@ -800,7 +800,7 @@ uintptr	runtime_memlimit(void);
 
 enum
 {
-	UseSpanType = 0,
+	UseSpanType = 1,
 };
 
 #define runtime_setitimer setitimer

@@ -15,7 +15,7 @@ package runtime
 import "unsafe"
 
 type rtype struct {
-	Kind       uint8
+	kind       uint8
 	align      uint8
 	fieldAlign uint8
 	size       uintptr
@@ -24,6 +24,7 @@ type rtype struct {
 	hashfn  func(unsafe.Pointer, uintptr) uintptr
 	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) bool
 
+	gc     unsafe.Pointer
 	string *string
 	*uncommonType
 	ptrToThis *rtype

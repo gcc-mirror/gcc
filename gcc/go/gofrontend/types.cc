@@ -36,7 +36,8 @@ get_backend_interface_fields(Gogo* gogo, Interface_type* type,
 // Class Type.
 
 Type::Type(Type_classification classification)
-  : classification_(classification), btype_(NULL), type_descriptor_var_(NULL)
+  : classification_(classification), btype_(NULL), type_descriptor_var_(NULL),
+    gc_symbol_var_(NULL)
 {
 }
 
@@ -1236,7 +1237,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
 	Type::type_descriptor_vars.insert(std::make_pair(this, bvnull));
       if (!ins.second)
 	{
-	  // We've already build a type descriptor for this type.
+	  // We've already built a type descriptor for this type.
 	  this->type_descriptor_var_ = ins.first->second;
 	  return;
 	}
@@ -1405,6 +1406,18 @@ Type::named_type_descriptor(Gogo* gogo, Type* type, Named_type* name)
   return type->do_type_descriptor(gogo, name);
 }
 
+// Generate the GC symbol for this TYPE.  VALS is the data so far in this
+// symbol; extra values will be appended in do_gc_symbol.  OFFSET is the
+// offset into the symbol where the GC data is located.  STACK_SIZE is the
+// size of the GC stack when dealing with array types.
+
+void
+Type::gc_symbol(Gogo* gogo, Type* type, Expression_list** vals,
+		Expression** offset, int stack_size)
+{
+  type->do_gc_symbol(gogo, vals, offset, stack_size);
+}
+
 // Make a builtin struct type from a list of fields.  The fields are
 // pairs of a name and a type.
 
@@ -1519,14 +1532,15 @@ Type::make_type_descriptor_type()
       // The type descriptor type.
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(11,
-				       "Kind", uint8_type,
+	Type::make_builtin_struct_type(12,
+				       "kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
 				       "size", uintptr_type,
 				       "hash", uint32_type,
 				       "hashfn", uintptr_type,
 				       "equalfn", uintptr_type,
+				       "gc", unsafe_pointer_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
@@ -1973,7 +1987,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("Kind"));
+  go_assert(p->is_field_name("kind"));
   mpz_t iv;
   mpz_init_set_ui(iv, runtime_type_kind);
   vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
@@ -2017,6 +2031,10 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 		       &equal_fn);
   vals->push_back(Expression::make_func_code_reference(hash_fn, bloc));
   vals->push_back(Expression::make_func_code_reference(equal_fn, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("gc"));
+  vals->push_back(Expression::make_gc_symbol(this));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -2065,6 +2083,160 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   mpz_clear(iv);
 
   return Expression::make_struct_composite_literal(td_type, vals, bloc);
+}
+
+// Return a pointer to the Garbage Collection information for this type.
+
+Bexpression*
+Type::gc_symbol_pointer(Gogo* gogo)
+{
+  Type* t = this->forwarded();
+  if (t->named_type() != NULL && t->named_type()->is_alias())
+    t = t->named_type()->real_type();
+  if (t->gc_symbol_var_ == NULL)
+    {
+      t->make_gc_symbol_var(gogo);
+      go_assert(t->gc_symbol_var_ != NULL);
+    }
+  Location bloc = Linemap::predeclared_location();
+  Bexpression* var_expr =
+      gogo->backend()->var_expression(t->gc_symbol_var_, bloc);
+  return gogo->backend()->address_expression(var_expr, bloc);
+}
+
+// A mapping from unnamed types to GC symbol variables.
+
+Type::GC_symbol_vars Type::gc_symbol_vars;
+
+// Build the GC symbol for this type.
+
+void
+Type::make_gc_symbol_var(Gogo* gogo)
+{
+  go_assert(this->gc_symbol_var_ == NULL);
+
+  Named_type* nt = this->named_type();
+
+  // We can have multiple instances of unnamed types and similar to type
+  // descriptors, we only want to the emit the GC data once, so we use a
+  // hash table.
+  Bvariable** phash = NULL;
+  if (nt == NULL)
+    {
+      Bvariable* bvnull = NULL;
+      std::pair<GC_symbol_vars::iterator, bool> ins =
+	Type::gc_symbol_vars.insert(std::make_pair(this, bvnull));
+      if (!ins.second)
+	{
+	  // We've already built a gc symbol for this type.
+	  this->gc_symbol_var_ = ins.first->second;
+	  return;
+	}
+      phash = &ins.first->second;
+    }
+
+  std::string sym_name = this->type_descriptor_var_name(gogo, nt) + "$gc";
+
+  // Build the contents of the gc symbol.
+  Expression* sym_init = this->gc_symbol_constructor(gogo);
+  Btype* sym_btype = sym_init->type()->get_backend(gogo);
+
+  // If the type descriptor for this type is defined somewhere else, so is the
+  // GC symbol.
+  const Package* dummy;
+  if (this->type_descriptor_defined_elsewhere(nt, &dummy))
+    {
+      this->gc_symbol_var_ =
+	gogo->backend()->implicit_variable_reference(sym_name, sym_btype);
+      if (phash != NULL)
+	*phash = this->gc_symbol_var_;
+      return;
+    }
+
+  // See if this gc symbol can appear in multiple packages.
+  bool is_common = false;
+  if (nt != NULL)
+    {
+      // We create the symbol for a builtin type whenever we need
+      // it.
+      is_common = nt->is_builtin();
+    }
+  else
+    {
+      // This is an unnamed type.  The descriptor could be defined in
+      // any package where it is needed, and the linker will pick one
+      // descriptor to keep.
+      is_common = true;
+    }
+
+  // Since we are building the GC symbol in this package, we must create the
+  // variable before converting the initializer to its backend representation
+  // because the initializer may refer to the GC symbol for this type.
+  this->gc_symbol_var_ =
+    gogo->backend()->implicit_variable(sym_name, sym_btype, false, true, is_common, 0);
+  if (phash != NULL)
+    *phash = this->gc_symbol_var_;
+
+  Translate_context context(gogo, NULL, NULL, NULL);
+  context.set_is_const();
+  Bexpression* sym_binit = sym_init->get_backend(&context);
+  gogo->backend()->implicit_variable_set_init(this->gc_symbol_var_, sym_name,
+					      sym_btype, false, true, is_common,
+					      sym_binit);
+}
+
+// Return an array literal for the Garbage Collection information for this type.
+
+Expression*
+Type::gc_symbol_constructor(Gogo* gogo)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  // The common GC Symbol data starts with the width of the type and ends
+  // with the GC Opcode GC_END.
+  // However, for certain types, the GC symbol may include extra information
+  // before the ending opcode, so we pass the expression list into
+  // Type::gc_symbol to allow it to add extra information as is necessary.
+  Expression_list* vals = new Expression_list;
+
+  Type* uintptr_t = Type::lookup_integer_type("uintptr");
+  // width
+  vals->push_back(Expression::make_type_info(this,
+					     Expression::TYPE_INFO_SIZE));
+
+  mpz_t off;
+  mpz_init_set_ui(off, 0UL);
+  Expression* offset = Expression::make_integer(&off, uintptr_t, bloc);
+  mpz_clear(off);
+
+  this->do_gc_symbol(gogo, &vals, &offset, 0);
+
+  mpz_t end;
+  mpz_init_set_ui(end, GC_END);
+  vals->push_back(Expression::make_integer(&end, uintptr_t, bloc));
+  mpz_clear(end);
+
+  mpz_t lenval;
+  mpz_init_set_ui(lenval, vals->size() + 1);
+  Expression* len = Expression::make_integer(&lenval, NULL, bloc);
+  mpz_clear(lenval);
+
+  Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
+  return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
+}
+
+// Advance the OFFSET of the GC symbol by this type's width.
+
+void
+Type::advance_gc_offset(Expression** offset)
+{
+  if (this->is_error_type())
+    return;
+
+  Location bloc = Linemap::predeclared_location();
+  Expression* width =
+    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
+  *offset = Expression::make_binary(OPERATOR_PLUS, *offset, width, bloc);
 }
 
 // Return a composite literal for the uncommon type information for
@@ -2498,6 +2670,10 @@ class Error_type : public Type
   { go_assert(saw_errors()); }
 
   void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
+  { go_assert(saw_errors()); }
+
+  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('E'); }
 };
@@ -2533,6 +2709,10 @@ class Void_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const
+  { }
+
+  void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
   { }
 
   void
@@ -2574,6 +2754,9 @@ class Boolean_type : public Type
   { ret->append("bool"); }
 
   void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
+
+  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('b'); }
 };
@@ -2592,6 +2775,12 @@ Boolean_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       return Type::type_descriptor(gogo, no->type_value());
     }
 }
+
+// Update the offset of the GC symbol.
+
+void
+Boolean_type::do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
+{ this->advance_gc_offset(offset); }
 
 Type*
 Type::make_boolean_type()
@@ -3102,6 +3291,22 @@ String_type::do_reflection(Gogo*, std::string* ret) const
   ret->append("string");
 }
 
+// Generate GC symbol for strings.
+
+void
+String_type::do_gc_symbol(Gogo*, Expression_list** vals,
+			  Expression** offset, int)
+{
+  Location bloc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  mpz_t opval;
+  mpz_init_set_ui(opval, GC_STRING);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+  this->advance_gc_offset(offset);
+}
+
 // Mangled name of a string type.
 
 void
@@ -3170,6 +3375,10 @@ class Sink_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const
+  { go_unreachable(); }
+
+  void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
   { go_unreachable(); }
 
   void
@@ -3754,6 +3963,25 @@ Function_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
 }
 
+// Generate GC symbol for a function type.
+
+void
+Function_type::do_gc_symbol(Gogo*, Expression_list** vals,
+			    Expression** offset, int)
+{
+  Location bloc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  // We use GC_APTR here because we do not currently have a way to describe the
+  // the type of the possible function closure.  FIXME.
+  mpz_t opval;
+  mpz_init_set_ui(opval, GC_APTR);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+  this->advance_gc_offset(offset);
+}
+
 // Mangled name.
 
 void
@@ -4156,6 +4384,26 @@ Pointer_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->to_type_, gogo, ret);
 }
 
+// Generate GC symbol for pointer types.
+
+void
+Pointer_type::do_gc_symbol(Gogo*, Expression_list** vals,
+			   Expression** offset, int)
+{
+  Location loc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  mpz_t opval;
+  mpz_init_set_ui(opval, this->to_type_->has_pointer() ? GC_PTR : GC_APTR);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, loc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+
+  if (this->to_type_->has_pointer())
+    (*vals)->push_back(Expression::make_gc_symbol(this->to_type_));
+  this->advance_gc_offset(offset);
+}
+
 // Mangled name.
 
 void
@@ -4236,6 +4484,10 @@ class Nil_type : public Type
   { go_unreachable(); }
 
   void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
+  { go_unreachable(); }
+
+  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('n'); }
 };
@@ -4291,6 +4543,10 @@ class Call_multiple_result_type : public Type
   void
   do_reflection(Gogo*, std::string*) const
   { go_assert(saw_errors()); }
+
+  void
+  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
+  { go_unreachable(); }
 
   void
   do_mangled_name(Gogo*, std::string*) const
@@ -5319,6 +5575,27 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->push_back('}');
 }
 
+// Generate GC symbol for struct types.
+
+void
+Struct_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
+			  Expression** offset, int stack_size)
+{
+  Location bloc = Linemap::predeclared_location();
+  const Struct_field_list* sfl = this->fields();
+  for (Struct_field_list::const_iterator p = sfl->begin();
+       p != sfl->end();
+       ++p)
+    {
+      Expression* field_offset =
+  	Expression::make_struct_field_offset(this, &*p);
+      Expression* o =
+  	Expression::make_binary(OPERATOR_PLUS, *offset, field_offset, bloc);
+      Type::gc_symbol(gogo, p->type(), vals, &o, stack_size);
+    }
+  this->advance_gc_offset(offset);
+}
+
 // Mangled name.
 
 void
@@ -6204,6 +6481,115 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->element_type_, gogo, ret);
 }
 
+// GC Symbol construction for array types.
+
+void
+Array_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
+			 Expression** offset, int stack_size)
+{
+  if (this->length_ == NULL)
+    this->slice_gc_symbol(gogo, vals, offset, stack_size);
+  else
+    this->array_gc_symbol(gogo, vals, offset, stack_size);
+}
+
+// Generate the GC Symbol for a slice.
+
+void
+Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
+			    Expression** offset, int)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  // Differentiate between slices with zero-length and non-zero-length values.
+  Type* element_type = this->element_type();
+  Btype* ebtype = element_type->get_backend(gogo);
+  size_t element_size = gogo->backend()->type_size(ebtype);
+
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  mpz_t opval;
+  mpz_init_set_ui(opval, element_size == 0 ? GC_APTR : GC_SLICE);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+
+  if (element_size != 0)
+    (*vals)->push_back(Expression::make_gc_symbol(element_type));
+  this->advance_gc_offset(offset);
+}
+
+// Generate the GC symbol for an array.
+
+void
+Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
+			    Expression** offset, int stack_size)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Numeric_constant nc;
+  unsigned long bound;
+  if (!this->length_->numeric_constant_value(&nc)
+      || nc.to_unsigned_long(&bound) == Numeric_constant::NC_UL_NOTINT)
+    go_assert(saw_errors());
+
+  Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
+  size_t pwidth = gogo->backend()->type_size(pbtype);
+  size_t iwidth = gogo->backend()->type_size(this->get_backend(gogo));
+
+  Type* element_type = this->element_type();
+  if (bound < 1 || !element_type->has_pointer())
+    this->advance_gc_offset(offset);
+  else if (bound == 1 || iwidth <= 4 * pwidth)
+    {
+      for (unsigned int i = 0; i < bound; ++i)
+	Type::gc_symbol(gogo, element_type, vals, offset, stack_size);
+    }
+  else
+    {
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+      mpz_t op;
+      if (stack_size < GC_STACK_CAPACITY)
+  	{
+  	  mpz_init_set_ui(op, GC_ARRAY_START);
+  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
+  	  mpz_clear(op);
+  	  (*vals)->push_back(*offset);
+	  Expression* uintptr_len =
+	    Expression::make_cast(uintptr_type, this->length_, bloc);
+  	  (*vals)->push_back(uintptr_len);
+
+	  Expression* width =
+	    Expression::make_type_info(element_type,
+				       Expression::TYPE_INFO_SIZE);
+  	  (*vals)->push_back(width);
+
+  	  mpz_t zero;
+  	  mpz_init_set_ui(zero, 0UL);
+  	  Expression* offset2 =
+  	    Expression::make_integer(&zero, uintptr_type, bloc);
+  	  mpz_clear(zero);
+
+	  Type::gc_symbol(gogo, element_type, vals, &offset2, stack_size + 1);
+  	  mpz_init_set_ui(op, GC_ARRAY_NEXT);
+  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
+  	}
+      else
+  	{
+  	  mpz_init_set_ui(op, GC_REGION);
+  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
+	  (*vals)->push_back(*offset);
+
+	  Expression* width =
+	    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
+  	  (*vals)->push_back(width);
+	  (*vals)->push_back(Expression::make_gc_symbol(this));
+  	}
+      mpz_clear(op);
+      this->advance_gc_offset(offset);
+    }
+}
+
 // Mangled name.
 
 void
@@ -6513,6 +6899,24 @@ Map_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->val_type_, gogo, ret);
 }
 
+// Generate GC symbol for a map.
+
+void
+Map_type::do_gc_symbol(Gogo*, Expression_list** vals,
+		       Expression** offset, int)
+{
+  // TODO(cmang): Generate GC data for the Map elements.
+  Location bloc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  mpz_t opval;
+  mpz_init_set_ui(opval, GC_APTR);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+  this->advance_gc_offset(offset);
+}
+
 // Mangled name for a map.
 
 void
@@ -6684,6 +7088,30 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->append("<-");
   ret->push_back(' ');
   this->append_reflection(this->element_type_, gogo, ret);
+}
+
+// Generate GC symbol for channels.
+
+void
+Channel_type::do_gc_symbol(Gogo*, Expression_list** vals,
+			   Expression** offset, int)
+{
+  Location bloc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  mpz_t opval;
+  mpz_init_set_ui(opval, GC_CHAN_PTR);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+ 
+  Type* unsafeptr_type = Type::make_pointer_type(Type::make_void_type());
+  Expression* type_descriptor =
+    Expression::make_type_descriptor(this, bloc);
+  type_descriptor =
+    Expression::make_unsafe_cast(unsafeptr_type, type_descriptor, bloc);
+  (*vals)->push_back(type_descriptor);
+  this->advance_gc_offset(offset);
 }
 
 // Mangled name.
@@ -7572,6 +8000,24 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back(' ');
     }
   ret->append("}");
+}
+
+// Generate GC symbol for interface types.
+
+void
+Interface_type::do_gc_symbol(Gogo*, Expression_list** vals,
+			     Expression** offset, int)
+{
+  Location bloc = Linemap::predeclared_location();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  mpz_t opval;
+  mpz_init_set_ui(opval, this->is_empty() ? GC_EFACE : GC_IFACE);
+  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type,
+					      bloc));
+  mpz_clear(opval);
+  (*vals)->push_back(*offset);
+  this->advance_gc_offset(offset);
 }
 
 // Mangled name.
@@ -8808,6 +9254,20 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back('\t');
     }
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
+}
+
+// Generate GC symbol for named types.
+
+void
+Named_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
+			 Expression** offset, int stack)
+{
+  if (!this->seen_)
+    {
+      this->seen_ = true;
+      Type::gc_symbol(gogo, this->real_type(), vals, offset, stack);
+      this->seen_ = false;
+    }
 }
 
 // Get the mangled name.

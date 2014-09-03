@@ -389,8 +389,15 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
-  implicit_variable(const std::string&, Btype*, Bexpression*, bool, bool,
+  implicit_variable(const std::string&, Btype*, bool, bool, bool,
 		    size_t);
+
+  void
+  implicit_variable_set_init(Bvariable*, const std::string&, Btype*,
+			     bool, bool, bool, Bexpression*);
+
+  Bvariable*
+  implicit_variable_reference(const std::string&, Btype*);
 
   Bvariable*
   immutable_struct(const std::string&, bool, bool, Btype*, Location);
@@ -2505,45 +2512,101 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 
 Bvariable*
 Gcc_backend::implicit_variable(const std::string& name, Btype* type,
-			       Bexpression* init, bool is_constant,
+			       bool is_hidden, bool is_constant,
 			       bool is_common, size_t alignment)
 {
   tree type_tree = type->get_tree();
-  tree init_tree;
-  if (init == NULL)
-    init_tree = NULL_TREE;
-  else
-    init_tree = init->get_tree();
-  if (type_tree == error_mark_node || init_tree == error_mark_node)
+  if (type_tree == error_mark_node)
     return this->error_variable();
 
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
                          get_identifier_from_string(name), type_tree);
   DECL_EXTERNAL(decl) = 0;
-  TREE_PUBLIC(decl) = 0;
+  TREE_PUBLIC(decl) = !is_hidden;
   TREE_STATIC(decl) = 1;
+  TREE_USED(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
   if (is_common)
     {
       DECL_COMMON(decl) = 1;
-      TREE_PUBLIC(decl) = 1;
-      gcc_assert(init_tree == NULL_TREE);
+
+      // When the initializer for one implicit_variable refers to another,
+      // it needs to know the visibility of the referenced struct so that
+      // compute_reloc_for_constant will return the right value.  On many
+      // systems calling make_decl_one_only will mark the decl as weak,
+      // which will change the return value of compute_reloc_for_constant.
+      // We can't reliably call make_decl_one_only yet, because we don't
+      // yet know the initializer.  This issue doesn't arise in C because
+      // Go initializers, unlike C initializers, can be indirectly
+      // recursive.  To ensure that compute_reloc_for_constant computes
+      // the right value if some other initializer refers to this one, we
+      // mark this symbol as weak here.  We undo that below in
+      // immutable_struct_set_init before calling mark_decl_one_only.
+      DECL_WEAK(decl) = 1;
     }
-  else if (is_constant)
+  if (is_constant)
     {
       TREE_READONLY(decl) = 1;
       TREE_CONSTANT(decl) = 1;
     }
-  DECL_INITIAL(decl) = init_tree;
-
   if (alignment != 0)
     {
       DECL_ALIGN(decl) = alignment * BITS_PER_UNIT;
       DECL_USER_ALIGN(decl) = 1;
     }
 
-  rest_of_decl_compilation(decl, 1, 0);
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
+}
 
+// Set the initalizer for a variable created by implicit_variable.
+// This is where we finish compiling the variable.
+
+void
+Gcc_backend::implicit_variable_set_init(Bvariable* var, const std::string&,
+					Btype*, bool, bool, bool is_common,
+					Bexpression* init)
+{
+  tree decl = var->get_tree();
+  tree init_tree;
+  if (init == NULL)
+    init_tree = NULL_TREE;
+  else
+    init_tree = init->get_tree();
+  if (decl == error_mark_node || init_tree == error_mark_node)
+    return;
+
+  DECL_INITIAL(decl) = init_tree;
+
+  // Now that DECL_INITIAL is set, we can't call make_decl_one_only.
+  // See the comment where DECL_WEAK is set in implicit_variable.
+  if (is_common)
+    {
+      DECL_WEAK(decl) = 0;
+      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+    }
+
+  resolve_unique_section(decl, 2, 1);
+
+  rest_of_decl_compilation(decl, 1, 0);
+}
+
+// Return a reference to an implicit variable defined in another package.
+
+Bvariable*
+Gcc_backend::implicit_variable_reference(const std::string& name, Btype* btype)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+
+  tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
+                         get_identifier_from_string(name), type_tree);
+  DECL_EXTERNAL(decl) = 0;
+  TREE_PUBLIC(decl) = 1;
+  TREE_STATIC(decl) = 1;
+  DECL_ARTIFICIAL(decl) = 1;
+  go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }
 

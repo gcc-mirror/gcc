@@ -3440,6 +3440,9 @@ class Unsafe_type_conversion_expression : public Expression
   int
   do_traverse(Traverse* traverse);
 
+  bool
+  do_is_immutable() const;
+
   Type*
   do_type()
   { return this->type_; }
@@ -3478,6 +3481,27 @@ Unsafe_type_conversion_expression::do_traverse(Traverse* traverse)
       || Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
+}
+
+// Return whether an unsafe type conversion is immutable.
+
+bool
+Unsafe_type_conversion_expression::do_is_immutable() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+
+  if (type->interface_type() != NULL
+      || expr_type->interface_type() != NULL)
+    return false;
+
+  if (!this->expr_->is_immutable())
+    return false;
+
+  if (Type::are_convertible(type, expr_type, NULL))
+    return true;
+
+  return type->is_basic_type() && expr_type->is_basic_type();
 }
 
 // Convert to backend representation.
@@ -4115,8 +4139,11 @@ Unary_expression::do_get_backend(Translate_context* context)
 			      && !context->is_const());
 	    }
 	  Bvariable* implicit =
-	    gogo->backend()->implicit_variable(buf, btype, bexpr, copy_to_heap,
+	    gogo->backend()->implicit_variable(buf, btype, true, copy_to_heap,
 					       false, 0);
+	  gogo->backend()->implicit_variable_set_init(implicit, buf, btype,
+						      true, copy_to_heap, false,
+						      bexpr);
 	  bexpr = gogo->backend()->var_expression(implicit, loc);
 	}
       else if ((this->expr_->is_composite_literal()
@@ -13985,6 +14012,65 @@ Expression*
 Expression::make_type_descriptor(Type* type, Location location)
 {
   return new Type_descriptor_expression(type, location);
+}
+
+// An expression which evaluates to a pointer to the Garbage Collection symbol
+// of a type.
+
+class GC_symbol_expression : public Expression
+{
+ public:
+  GC_symbol_expression(Type* type)
+    : Expression(EXPRESSION_GC_SYMBOL, Linemap::predeclared_location()),
+      type_(type)
+  {}
+
+ protected:
+  Type*
+  do_type()
+  { return Type::make_pointer_type(Type::make_void_type()); }
+
+  bool
+  do_is_immutable() const
+  { return true; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  { return this; }
+
+  Bexpression*
+  do_get_backend(Translate_context* context)
+  { return this->type_->gc_symbol_pointer(context->gogo()); }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The type which this gc symbol describes.
+  Type* type_;
+};
+
+// Dump ast representation for a gc symbol expression.
+
+void
+GC_symbol_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "gcdata(";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ")";
+}
+
+// Make a gc symbol expression.
+
+Expression*
+Expression::make_gc_symbol(Type* type)
+{
+  return new GC_symbol_expression(type);
 }
 
 // An expression which evaluates to some characteristic of a type.
