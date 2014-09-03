@@ -14490,7 +14490,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 			       unsigned int interleave_factor,
 			       HOST_WIDE_INT bytes_per_iter)
 {
-  rtx label, src_reg, dest_reg, final_src, test;
+  rtx src_reg, dest_reg, final_src, test;
   HOST_WIDE_INT leftover;
   
   leftover = length % bytes_per_iter;
@@ -14506,7 +14506,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 				   0, 0, OPTAB_WIDEN);
 
   /* Emit the start of the loop.  */
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
   
   /* Emit the loop body.  */
@@ -16108,7 +16108,7 @@ struct minipool_fixup
 
 static Mnode *	minipool_vector_head;
 static Mnode *	minipool_vector_tail;
-static rtx	minipool_vector_label;
+static rtx_code_label	*minipool_vector_label;
 static int	minipool_pad;
 
 /* The linked list of all minipool fixes required for this function.  */

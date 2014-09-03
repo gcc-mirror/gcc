@@ -4979,8 +4979,8 @@ expand_a_rotate (rtx operands[])
   if (GET_CODE (rotate_amount) != CONST_INT)
     {
       rtx counter = gen_reg_rtx (QImode);
-      rtx start_label = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *start_label = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
 
       /* If the rotate amount is less than or equal to 0,
 	 we go out of the loop.  */

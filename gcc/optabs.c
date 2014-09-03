@@ -1034,7 +1034,6 @@ expand_doubleword_shift (enum machine_mode op1_mode, optab binoptab,
 			 unsigned HOST_WIDE_INT shift_mask)
 {
   rtx superword_op1, tmp, cmp1, cmp2;
-  rtx subword_label, done_label;
   enum rtx_code cmp_code;
 
   /* See if word-mode shifts by BITS_PER_WORD...BITS_PER_WORD * 2 - 1 will
@@ -1119,8 +1118,8 @@ expand_doubleword_shift (enum machine_mode op1_mode, optab binoptab,
 #endif
 
   /* As a last resort, use branches to select the correct alternative.  */
-  subword_label = gen_label_rtx ();
-  done_label = gen_label_rtx ();
+  rtx_code_label *subword_label = gen_label_rtx ();
+  rtx_code_label *done_label = gen_label_rtx ();
 
   NO_DEFER_POP;
   do_compare_rtx_and_jump (cmp1, cmp2, cmp_code, false, op1_mode,
