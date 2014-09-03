@@ -215,7 +215,8 @@ nds32_compute_stack_frame (void)
                     which means we do not have to save
                     any callee-saved registers.
        condition 2: Both $lp and $fp are NOT live in this function,
-                    which means we do not need to save them.
+                    which means we do not need to save them and there
+                    is no outgoing size.
        condition 3: There is no local_size, which means
                     we do not need to adjust $sp.  */
   if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
@@ -225,8 +226,11 @@ nds32_compute_stack_frame (void)
 	  && !df_regs_ever_live_p (LP_REGNUM)
 	  && cfun->machine->local_size == 0))
     {
-      /* Set this function 'naked_p' and
-         other functions can check this flag.  */
+      /* Set this function 'naked_p' and other functions can check this flag.
+         Note that in nds32 port, the 'naked_p = 1' JUST means there is no
+         callee-saved, local size, and outgoing size.
+         The varargs space and ret instruction may still present in
+         the prologue/epilogue expanding.  */
       cfun->machine->naked_p = 1;
 
       /* No need to save $fp, $gp, and $lp.
@@ -250,8 +254,11 @@ nds32_compute_stack_frame (void)
      we need to make sure Rb is $r6 and Re is
      located on $r6, $r8, $r10, or $r14.
      Some results above will be discarded and recomputed.
-     Note that it is only available under V3/V3M ISA.  */
-  if (TARGET_V3PUSH)
+     Note that it is only available under V3/V3M ISA and we
+     DO NOT setup following stuff for isr or variadic function.  */
+  if (TARGET_V3PUSH
+      && !nds32_isr_function_p (current_function_decl)
+      && (cfun->machine->va_args_size == 0))
     {
       /* Recompute:
            cfun->machine->fp_size

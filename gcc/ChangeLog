@@ -1,5 +1,11 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Do not use
+	v3push/v3pop for variadic function.
+	* config/nds32/nds32.md (prologue, epilogue): Likewise.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push):
 	Check rtx for varargs implementation.
 	(nds32_output_stack_pop): Likewise.
