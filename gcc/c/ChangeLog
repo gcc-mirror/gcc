@@ -1,3 +1,9 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62024
+	* c-parser.c (c_parser_static_assert_declaration_no_semi): Strip no-op
+	conversions.
+
 2014-09-02  Jakub Jelinek  <jakub@redhat.com>
 	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
 	    Igor Zamyatin  <igor.zamyatin@intel.com>

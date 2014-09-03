@@ -2060,6 +2060,8 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   if (TREE_CODE (value) != INTEGER_CST)
     {
       value = c_fully_fold (value, false, NULL);
+      /* Strip no-op conversions.  */
+      STRIP_TYPE_NOPS (value);
       if (TREE_CODE (value) == INTEGER_CST)
 	pedwarn (value_loc, OPT_Wpedantic, "expression in static assertion "
 		 "is not an integer constant expression");
