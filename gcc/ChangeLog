@@ -1,3 +1,8 @@
+2014-09-03  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_call): default (NULL) value
+	is set to set uninitialized value for vnresult.
+
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_must_pass_in_stack): New implementation
