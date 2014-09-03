@@ -272,11 +272,10 @@ alloc_expression_id (pre_expr expr)
     {
       unsigned version = SSA_NAME_VERSION (PRE_EXPR_NAME (expr));
       /* vec::safe_grow_cleared allocates no headroom.  Avoid frequent
-	 re-allocations by using vec::reserve upfront.  There is no
-	 vec::quick_grow_cleared unfortunately.  */
+	 re-allocations by using vec::reserve upfront.  */
       unsigned old_len = name_to_id.length ();
       name_to_id.reserve (num_ssa_names - old_len);
-      name_to_id.safe_grow_cleared (num_ssa_names);
+      name_to_id.quick_grow_cleared (num_ssa_names);
       gcc_assert (name_to_id[version] == 0);
       name_to_id[version] = expr->id;
     }
@@ -427,10 +426,6 @@ typedef struct bb_bitmap_sets
   /* True if we have visited this block during ANTIC calculation.  */
   unsigned int visited : 1;
 
-  /* True we have deferred processing this block during ANTIC
-     calculation until its successor is processed.  */
-  unsigned int deferred : 1;
-
   /* True when the block contains a call that might not return.  */
   unsigned int contains_may_not_return_call : 1;
 } *bb_value_sets_t;
@@ -444,7 +439,6 @@ typedef struct bb_bitmap_sets
 #define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
 #define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
 #define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
-#define BB_DEFERRED(BB) ((bb_value_sets_t) ((BB)->aux))->deferred
 #define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
 
 
@@ -2085,26 +2079,6 @@ static sbitmap has_abnormal_preds;
 
 static sbitmap changed_blocks;
 
-/* Decide whether to defer a block for a later iteration, or PHI
-   translate SOURCE to DEST using phis in PHIBLOCK.  Return false if we
-   should defer the block, and true if we processed it.  */
-
-static bool
-defer_or_phi_translate_block (bitmap_set_t dest, bitmap_set_t source,
-			      basic_block block, basic_block phiblock)
-{
-  if (!BB_VISITED (phiblock))
-    {
-      bitmap_set_bit (changed_blocks, block->index);
-      BB_VISITED (block) = 0;
-      BB_DEFERRED (block) = 1;
-      return false;
-    }
-  else
-    phi_translate_set (dest, source, block, phiblock);
-  return true;
-}
-
 /* Compute the ANTIC set for BLOCK.
 
    If succs(BLOCK) > 1 then
@@ -2144,30 +2118,8 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   else if (single_succ_p (block))
     {
       basic_block succ_bb = single_succ (block);
-
-      /* We trade iterations of the dataflow equations for having to
-	 phi translate the maximal set, which is incredibly slow
-	 (since the maximal set often has 300+ members, even when you
-	 have a small number of blocks).
-	 Basically, we defer the computation of ANTIC for this block
-	 until we have processed it's successor, which will inevitably
-	 have a *much* smaller set of values to phi translate once
-	 clean has been run on it.
-	 The cost of doing this is that we technically perform more
-	 iterations, however, they are lower cost iterations.
-
-	 Timings for PRE on tramp3d-v4:
-	 without maximal set fix: 11 seconds
-	 with maximal set fix/without deferring: 26 seconds
-	 with maximal set fix/with deferring: 11 seconds
-     */
-
-      if (!defer_or_phi_translate_block (ANTIC_OUT, ANTIC_IN (succ_bb),
-					block, succ_bb))
-	{
-	  changed = true;
-	  goto maybe_dump_sets;
-	}
+      gcc_assert (BB_VISITED (succ_bb));
+      phi_translate_set (ANTIC_OUT, ANTIC_IN (succ_bb), block, succ_bb);
     }
   /* If we have multiple successors, we take the intersection of all of
      them.  Note that in the case of loop exit phi nodes, we may have
@@ -2187,20 +2139,11 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	    worklist.quick_push (e->dest);
 	}
 
-      /* Of multiple successors we have to have visited one already.  */
-      if (!first)
-	{
-	  bitmap_set_bit (changed_blocks, block->index);
-	  BB_VISITED (block) = 0;
-	  BB_DEFERRED (block) = 1;
-	  changed = true;
-	  goto maybe_dump_sets;
-	}
+      /* Of multiple successors we have to have visited one already
+         which is guaranteed by iteration order.  */
+      gcc_assert (first != NULL);
 
-      if (!gimple_seq_empty_p (phi_nodes (first)))
-	phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
-      else
-	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
+      phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
 
       FOR_EACH_VEC_ELT (worklist, i, bprime)
 	{
@@ -2248,23 +2191,14 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (!BB_DEFERRED (block) || BB_VISITED (block))
-	{
-	  if (ANTIC_OUT)
-	    print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
+      if (ANTIC_OUT)
+	print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
 
-	  print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
-			    block->index);
+      print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
+			block->index);
 
-	  if (S)
-	    print_bitmap_set (dump_file, S, "S", block->index);
-	}
-      else
-	{
-	  fprintf (dump_file,
-		   "Block %d was deferred for a future iteration.\n",
-		   block->index);
-	}
+      if (S)
+	print_bitmap_set (dump_file, S, "S", block->index);
     }
   if (old)
     bitmap_set_free (old);
@@ -2446,7 +2380,6 @@ compute_antic (void)
 	}
 
       BB_VISITED (block) = 0;
-      BB_DEFERRED (block) = 0;
 
       /* While we are here, give empty ANTIC_IN sets to each block.  */
       ANTIC_IN (block) = bitmap_set_new ();
@@ -4498,7 +4431,7 @@ eliminate (bool do_pre)
 
   el_to_remove.create (0);
   el_todo = 0;
-  el_avail.create (0);
+  el_avail.create (num_ssa_names);
   el_avail_stack.create (0);
 
   eliminate_dom_walker (CDI_DOMINATORS,

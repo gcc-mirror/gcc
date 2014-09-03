@@ -1,3 +1,14 @@
+2014-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (alloc_expression_id): Use quick_grow_cleared.
+	(struct bb_bitmap_sets): Remove deferred member.
+	(BB_DEFERRED): Remove.
+	(defer_or_phi_translate_block): Remove.
+	(compute_antic_aux): Remove deferring of blocks, assert
+	proper iteration order.
+	(compute_antic): Do not set BB_DEFERRED.
+	(eliminate): Allocate el_avail of proper size initially.
+
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (FIRST_PARM_OFFSET): Set proper location
