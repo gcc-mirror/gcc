@@ -1551,12 +1551,53 @@ nds32_warn_func_return (tree decl)
 
 /* Implementing the Varargs Macros.  */
 
+static void
+nds32_setup_incoming_varargs (cumulative_args_t ca,
+			      enum machine_mode mode,
+			      tree type,
+			      int *pretend_args_size,
+			      int second_time ATTRIBUTE_UNUSED)
+{
+  unsigned int total_args_regs;
+  unsigned int num_of_used_regs;
+  unsigned int remaining_reg_count;
+  CUMULATIVE_ARGS *cum;
+
+  /* If we are under hard float abi, we do not need to set *pretend_args_size.
+     So that all nameless arguments are pushed by caller and all situation
+     can be handled by GCC itself.  */
+  if (TARGET_HARD_FLOAT)
+    return;
+
+  /* We are using NDS32_MAX_GPR_REGS_FOR_ARGS registers,
+     counting from NDS32_GPR_ARG_FIRST_REGNUM, for saving incoming arguments.
+     However, for nameless(anonymous) arguments, we should push them on the
+     stack so that all the nameless arguments appear to have been passed
+     consecutively in the memory for accessing.  Hence, we need to check and
+     exclude the registers that are used for named arguments.  */
+
+  cum = get_cumulative_args (ca);
+
+  /* The MODE and TYPE describe the last argument.
+     We need those information to determine the remaining registers
+     for varargs.  */
+  total_args_regs
+    = NDS32_MAX_GPR_REGS_FOR_ARGS + NDS32_GPR_ARG_FIRST_REGNUM;
+  num_of_used_regs
+    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
+      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+
+  remaining_reg_count = total_args_regs - num_of_used_regs;
+  *pretend_args_size = remaining_reg_count * UNITS_PER_WORD;
+
+  return;
+}
+
 static bool
 nds32_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
-  /* Return true so that all the named arguments for FUNCTION_ARG have named=1.
-     If return false, for the variadic function, all named arguments EXCEPT
-     the last are treated as named.  */
+  /* If this hook returns true, the named argument of FUNCTION_ARG is always
+     true for named arguments, and false for unnamed arguments.  */
   return true;
 }
 
@@ -3327,6 +3368,9 @@ nds32_target_alignment (rtx label)
 
 
 /* Implementing the Varargs Macros.  */
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS nds32_setup_incoming_varargs
 
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING nds32_strict_argument_naming

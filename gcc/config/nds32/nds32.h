@@ -336,6 +336,9 @@ enum nds32_builtins
 #define TARGET_ISA_V3   (nds32_arch_option == ARCH_V3)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
 
+#define TARGET_SOFT_FLOAT 1
+#define TARGET_HARD_FLOAT 0
+
 /* ------------------------------------------------------------------------ */
 
 /* Controlling the Compilation Driver.  */
