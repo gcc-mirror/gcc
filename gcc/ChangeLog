@@ -1,3 +1,7 @@
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (PIC_OFFSET_TABLE_REGNUM): Define.
+
 2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cfgexpand.c (label_rtx_for_bb): Change type to
