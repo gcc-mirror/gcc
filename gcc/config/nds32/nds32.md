@@ -2025,12 +2025,14 @@ create_template:
      ])]
   ""
 {
-  return nds32_output_stack_push ();
+  return nds32_output_stack_push (operands[0]);
 }
   [(set_attr "type" "misc")
    (set_attr "enabled" "1")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_V3PUSH")
+	(if_then_else (match_test "TARGET_V3PUSH
+				   && !nds32_isr_function_p (cfun->decl)
+				   && (cfun->machine->va_args_size == 0)")
 		      (const_int 2)
 		      (const_int 4)))])
 
@@ -2045,12 +2047,14 @@ create_template:
      ])]
   ""
 {
-  return nds32_output_stack_pop ();
+  return nds32_output_stack_pop (operands[0]);
 }
   [(set_attr "type" "misc")
    (set_attr "enabled" "1")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_V3PUSH")
+	(if_then_else (match_test "TARGET_V3PUSH
+				   && !nds32_isr_function_p (cfun->decl)
+				   && (cfun->machine->va_args_size == 0)")
 		      (const_int 2)
 		      (const_int 4)))])
 
