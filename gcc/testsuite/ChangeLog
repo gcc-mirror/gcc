@@ -1,3 +1,8 @@
+2014-09-02  Fritz Reese  <Reese-Fritz@zai.com>
+
+	PR fortran/62174
+	* gfortran.dg/cray_pointers_11.f90: New.
+
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/62015
