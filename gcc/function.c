@@ -4661,7 +4661,7 @@ void
 stack_protect_epilogue (void)
 {
   tree guard_decl = targetm.stack_protect_guard ();
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   rtx x, y, tmp;
 
   x = expand_normal (crtl->stack_protect_guard);

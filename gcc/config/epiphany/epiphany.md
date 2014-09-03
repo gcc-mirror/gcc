@@ -976,7 +976,7 @@
       REAL_VALUE_TYPE offset;
       rtx limit;
       rtx tmp = gen_reg_rtx (SFmode);
-      rtx label = gen_label_rtx ();
+      rtx_code_label *label = gen_label_rtx ();
       rtx bit31;
       rtx cc1 = gen_rtx_REG (CC_FPmode, CCFP_REGNUM);
       rtx cmp = gen_rtx_LT (VOIDmode, cc1, CONST0_RTX (SFmode));

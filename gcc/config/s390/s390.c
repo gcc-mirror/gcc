@@ -4078,9 +4078,9 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
   else
     {
       rtx dst_addr, src_addr, count, blocks, temp;
-      rtx loop_start_label = gen_label_rtx ();
-      rtx loop_end_label = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *loop_start_label = gen_label_rtx ();
+      rtx_code_label *loop_end_label = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
       enum machine_mode mode;
 
       mode = GET_MODE (len);
@@ -4203,9 +4203,9 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
   else
     {
       rtx dst_addr, count, blocks, temp, dstp1 = NULL_RTX;
-      rtx loop_start_label = gen_label_rtx ();
-      rtx loop_end_label = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *loop_start_label = gen_label_rtx ();
+      rtx_code_label *loop_end_label = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
       enum machine_mode mode;
 
       mode = GET_MODE (len);
@@ -4329,9 +4329,9 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   else
     {
       rtx addr0, addr1, count, blocks, temp;
-      rtx loop_start_label = gen_label_rtx ();
-      rtx loop_end_label = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *loop_start_label = gen_label_rtx ();
+      rtx_code_label *loop_end_label = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
       enum machine_mode mode;
 
       mode = GET_MODE (len);
@@ -4886,7 +4886,7 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
   struct alignment_context ac;
   rtx cmpv, newv, val, cc, seq0, seq1, seq2, seq3;
   rtx res = gen_reg_rtx (SImode);
-  rtx csloop = NULL, csend = NULL;
+  rtx_code_label *csloop = NULL, *csend = NULL;
 
   gcc_assert (MEM_P (mem));
 
@@ -4969,7 +4969,7 @@ s390_expand_atomic (enum machine_mode mode, enum rtx_code code,
   rtx cmp;
   rtx new_rtx = gen_reg_rtx (SImode);
   rtx orig = gen_reg_rtx (SImode);
-  rtx csloop = gen_label_rtx ();
+  rtx_code_label *csloop = gen_label_rtx ();
 
   gcc_assert (!target || register_operand (target, VOIDmode));
   gcc_assert (MEM_P (mem));
@@ -9903,7 +9903,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
 {
   rtx retry_plus_two = gen_reg_rtx (SImode);
   rtx retry_reg = gen_reg_rtx (SImode);
-  rtx retry_label = NULL_RTX;
+  rtx_code_label *retry_label = NULL;
 
   if (retry != NULL_RTX)
     {

@@ -1,5 +1,16 @@
 2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* asan.c, cfgexpand.c, config/alpha/alpha.md, config/arm/arm.c,
+	config/epiphany/epiphany.md, config/h8300/h8300.c, config/i386/i386.md,
+	config/m32r/m32r.c, config/mcore/mcore.md, config/mips/mips.c,
+	config/mips/mips.md, config/nios2/nios2.c, config/pa/pa.c,
+	config/s390/s390.c, config/s390/s390.md, config/sh/sh-mem.cc,
+	config/sh/sh.c, config/sparc/sparc.c, dojump.c, function.c, optabs.c,
+	stmt.c: Assign the result of gen_label_rtx to rtx_code_label * instead
+	of rtx.
+
+2014-09-02  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* alloc-pool.c: Include coretypes.h.
 	* cgraph.h, dbxout.c, dwarf2out.c, except.c, except.h, function.c,
 	function.h, symtab.c, tree-cfg.c, tree-eh.c: Use hash_map and

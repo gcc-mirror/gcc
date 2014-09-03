@@ -2007,7 +2007,7 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
       return label_rtx (lab);
     }
 
-  rtx l = gen_label_rtx ();
+  rtx_code_label *l = gen_label_rtx ();
   lab_rtx_for_bb->put (bb, l);
   return l;
 }
@@ -2469,7 +2469,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
-  rtx fallthru_label = NULL_RTX;
+  rtx_code_label *fallthru_label = NULL;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
