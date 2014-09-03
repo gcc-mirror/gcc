@@ -1,5 +1,10 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (machine_function): Add some fields for variadic
+	arguments implementation.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-predicates.c
 	(nds32_valid_stack_push_pop): Rename to ...
 	(nds32_valid_stack_push_pop_p): ... this.
