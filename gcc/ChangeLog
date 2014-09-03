@@ -1,3 +1,14 @@
+2014-09-03  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/adxintrin.h (_subborrow_u32): New.
+	(_addcarry_u32): Ditto.
+	(_subborrow_u64): Ditto.
+	(_addcarry_u64): Ditto.
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_SBB32,
+	IX86_BUILTIN_SBB64.
+	(ix86_init_mmx_sse_builtins): Handle __builtin_ia32_sbb_u32,
+	__builtin_ia32_sbb_u64
+
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_function_arg): Define and rename some
