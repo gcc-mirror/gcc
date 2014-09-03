@@ -3032,6 +3032,11 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 		intersect_with_agg_replacements (cs->caller, src_idx,
 						 &inter, 0);
 	    }
+	  else
+	    {
+	      inter.release ();
+	      return vNULL;
+	    }
 	}
       else
 	{
@@ -3046,6 +3051,11 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 		inter = copy_plats_to_inter (src_plats, 0);
 	      else
 		intersect_with_plats (src_plats, &inter, 0);
+	    }
+	  else
+	    {
+	      inter.release ();
+	      return vNULL;
 	    }
 	}
     }

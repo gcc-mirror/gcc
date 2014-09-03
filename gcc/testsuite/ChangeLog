@@ -1,5 +1,10 @@
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/62015
+	* g++.dg/ipa/pr62015.C: New test.
+
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/61986
 	* gcc.dg/ipa/pr61986.c: New test.
 
