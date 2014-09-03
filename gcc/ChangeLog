@@ -1,3 +1,26 @@
+2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* output.h (get_some_local_dynamic_name): Declare.
+	* final.c (some_local_dynamic_name): New variable.
+	(get_some_local_dynamic_name): New function.
+	(final_end_function): Clear some_local_dynamic_name.
+	* config/alpha/alpha.c (machine_function): Remove some_ld_name.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): Delete.
+	(print_operand): Report an error if '%&' is used inappropriately.
+	* config/i386/i386.c (get_some_local_dynamic_name): Delete.
+	(get_some_local_dynamic_name_1): Delete.
+	* config/rs6000/rs6000.c (machine_function): Remove some_ld_name.
+	(rs6000_get_some_local_dynamic_name): Delete.
+	(rs6000_get_some_local_dynamic_name_1): Delete.
+	(print_operand): Report an error if '%&' is used inappropriately.
+	* config/s390/s390.c (machine_function): Remove some_ld_name.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): Delete.
+	(print_operand): Assert that get_some_local_dynamic_name is nonnull.
+	* config/sparc/sparc.c: Include rtl-iter.h.
+	(machine_function): Remove some_ld_name.
+	(sparc_print_operand): Report an error if '%&' is used inappropriately.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): Delete.
+
 2014-09-03  Richard Henderson  <rth@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_popwb_single_reg): Remove.

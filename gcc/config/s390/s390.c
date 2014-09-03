@@ -387,9 +387,6 @@ struct GTY(()) machine_function
   /* True if we may need to perform branch splitting.  */
   bool split_branches_pending_p;
 
-  /* Some local-dynamic TLS symbol name.  */
-  const char *some_ld_name;
-
   bool has_landing_pad_p;
 
   /* True if the current function may contain a tbegin clobbering
@@ -5197,48 +5194,6 @@ print_shift_count_operand (FILE *file, rtx op)
     fprintf (file, "(%s)", reg_names[REGNO (base)]);
 }
 
-/* See 'get_some_local_dynamic_name'.  */
-
-static int
-get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
-    {
-      x = get_pool_constant (x);
-      return for_each_rtx (&x, get_some_local_dynamic_name_1, 0);
-    }
-
-  if (GET_CODE (x) == SYMBOL_REF
-      && tls_symbolic_operand (x) == TLS_MODEL_LOCAL_DYNAMIC)
-    {
-      cfun->machine->some_ld_name = XSTR (x, 0);
-      return 1;
-    }
-
-  return 0;
-}
-
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in local-dynamic base patterns.  */
-
-static const char *
-get_some_local_dynamic_name (void)
-{
-  rtx_insn *insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-        && for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  gcc_unreachable ();
-}
-
 /* Returns -1 if the function should not be made hotpatchable.  Otherwise it
    returns a number >= 0 that is the desired size of the hotpatch trampoline
    in halfwords. */
@@ -5508,7 +5463,9 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSLDM)
 	{
 	  fprintf (file, "%s", ":tls_ldcall:");
-	  assemble_name (file, get_some_local_dynamic_name ());
+	  const char *name = get_some_local_dynamic_name ();
+	  gcc_assert (name);
+	  assemble_name (file, name);
 	}
       else
 	output_operand_lossage ("invalid reference for 'J' output modifier");

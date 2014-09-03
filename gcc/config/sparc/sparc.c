@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "wide-int.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Processor costs */
 
@@ -500,9 +501,6 @@ struct GTY(()) machine_function
   rtx frame_base_reg;
   HOST_WIDE_INT frame_base_offset;
 
-  /* Some local-dynamic TLS symbol name.  */
-  const char *some_ld_name;
-
   /* Number of global or FP registers to be saved (as 4-byte quantities).  */
   int n_global_fp_regs;
 
@@ -584,8 +582,6 @@ static struct machine_function * sparc_init_machine_status (void);
 static bool sparc_cannot_force_const_mem (enum machine_mode, rtx);
 static rtx sparc_tls_get_addr (void);
 static rtx sparc_tls_got (void);
-static const char *get_some_local_dynamic_name (void);
-static int get_some_local_dynamic_name_1 (rtx *, void *);
 static int sparc_register_move_cost (enum machine_mode,
 				     reg_class_t, reg_class_t);
 static bool sparc_rtx_costs (rtx, int, int, int, int *, bool);
@@ -8790,7 +8786,11 @@ sparc_print_operand (FILE *file, rtx x, int code)
       return;
     case '&':
       /* Print some local dynamic TLS name.  */
-      assemble_name (file, get_some_local_dynamic_name ());
+      if (const char *name = get_some_local_dynamic_name ())
+	assemble_name (file, name);
+      else
+	output_operand_lossage ("'%%&' used without any "
+				"local dynamic TLS references");
       return;
 
     case 'Y':
@@ -11482,41 +11482,6 @@ static struct machine_function *
 sparc_init_machine_status (void)
 {
   return ggc_cleared_alloc<machine_function> ();
-}
-
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in local-dynamic base patterns.  */
-
-static const char *
-get_some_local_dynamic_name (void)
-{
-  rtx_insn *insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  gcc_unreachable ();
-}
-
-static int
-get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (x
-      && GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
-    {
-      cfun->machine->some_ld_name = XSTR (x, 0);
-      return 1;
-    }
-
-  return 0;
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
