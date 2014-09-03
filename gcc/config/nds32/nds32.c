@@ -2788,6 +2788,35 @@ nds32_expand_prologue (void)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
+  /* If this is a variadic function, first we need to push argument
+     registers that hold the unnamed argument value.  */
+  if (cfun->machine->va_args_size != 0)
+    {
+      Rb = gen_rtx_REG (SImode, cfun->machine->va_args_first_regno);
+      Re = gen_rtx_REG (SImode, cfun->machine->va_args_last_regno);
+      /* No need to push $fp, $gp, or $lp, so use GEN_INT(0).  */
+      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (0));
+
+      /* We may also need to adjust stack pointer for padding bytes
+         because varargs may cause $sp not 8-byte aligned.  */
+      if (cfun->machine->va_args_area_padding_bytes)
+	{
+	  /* Generate sp adjustment instruction.  */
+	  sp_adjust = cfun->machine->va_args_area_padding_bytes;
+	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       GEN_INT (-1 * sp_adjust));
+
+	  /* Emit rtx into instructions list and receive INSN rtx form.  */
+	  sp_adjust_insn = emit_insn (sp_adjust_insn);
+
+	  /* The insn rtx 'sp_adjust_insn' will change frame layout.
+	     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+	     generate CFI (Call Frame Information) stuff.  */
+	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	}
+    }
+
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
   if (cfun->machine->naked_p)
@@ -2887,9 +2916,32 @@ nds32_expand_epilogue (void)
   emit_insn (gen_blockage ());
 
   /* If the function is 'naked', we do not have to generate
-     epilogue code fragment BUT 'ret' instruction.  */
+     epilogue code fragment BUT 'ret' instruction.
+     However, if this function is also a variadic function,
+     we need to create adjust stack pointer before 'ret' instruction.  */
   if (cfun->machine->naked_p)
     {
+      /* If this is a variadic function, we do not have to restore argument
+         registers but need to adjust stack pointer back to previous stack
+         frame location before return.  */
+      if (cfun->machine->va_args_size != 0)
+	{
+	  /* Generate sp adjustment instruction.
+	     We  need to consider padding bytes here.  */
+	  sp_adjust = cfun->machine->va_args_size
+		      + cfun->machine->va_args_area_padding_bytes;
+	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       GEN_INT (sp_adjust));
+	  /* Emit rtx into instructions list and receive INSN rtx form.  */
+	  sp_adjust_insn = emit_insn (sp_adjust_insn);
+
+	  /* The insn rtx 'sp_adjust_insn' will change frame layout.
+	     We need to use RTX_FRAME_RELATED_P so that GCC is able to
+	     generate CFI (Call Frame Information) stuff.  */
+	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	}
+
       /* Generate return instruction by using
          unspec_volatile_func_return pattern.
          Make sure this instruction is after gen_blockage().
@@ -2916,6 +2968,9 @@ nds32_expand_epilogue (void)
 				   GEN_INT (-1 * sp_adjust));
       /* Emit rtx into instructions list and receive INSN rtx form.  */
       sp_adjust_insn = emit_insn (sp_adjust_insn);
+
+      /* The insn rtx 'sp_adjust_insn' will change frame layout.  */
+      RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
     }
   else
     {
@@ -2944,6 +2999,9 @@ nds32_expand_epilogue (void)
 				       GEN_INT (sp_adjust));
 	  /* Emit rtx into instructions list and receive INSN rtx form.  */
 	  sp_adjust_insn = emit_insn (sp_adjust_insn);
+
+	  /* The insn rtx 'sp_adjust_insn' will change frame layout.  */
+	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
 	}
     }
 
@@ -2970,6 +3028,27 @@ nds32_expand_epilogue (void)
     {
       /* Create multiple pop instruction rtx.  */
       nds32_emit_stack_pop_multiple (Rb, Re, GEN_INT (en4_const));
+    }
+
+  /* If this is a variadic function, we do not have to restore argument
+     registers but need to adjust stack pointer back to previous stack
+     frame location before return.  */
+  if (cfun->machine->va_args_size != 0)
+    {
+      /* Generate sp adjustment instruction.
+         We  need to consider padding bytes here.  */
+      sp_adjust = cfun->machine->va_args_size
+		  + cfun->machine->va_args_area_padding_bytes;
+      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   GEN_INT (sp_adjust));
+      /* Emit rtx into instructions list and receive INSN rtx form.  */
+      sp_adjust_insn = emit_insn (sp_adjust_insn);
+
+      /* The insn rtx 'sp_adjust_insn' will change frame layout.
+         We need to use RTX_FRAME_RELATED_P so that GCC is able to
+         generate CFI (Call Frame Information) stuff.  */
+      RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
     }
 
   /* Generate return instruction by using
