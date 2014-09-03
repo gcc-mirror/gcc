@@ -1,3 +1,18 @@
+2014-09-03  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_popwb_single_reg): Remove.
+	(aarch64_popwb_pair_reg): Remove.
+	(aarch64_set_frame_expr): Remove.
+	(aarch64_restore_callee_saves): Add CFI_OPS argument; fill it with
+	the restore ops performed by the insns generated.
+	(aarch64_expand_epilogue): Attach CFI_OPS to the stack deallocation
+	insn.  Perform the calls_eh_return addition later; do not attempt to
+	preserve the CFA in that case.  Don't use aarch64_set_frame_expr.
+	(aarch64_expand_prologue): Use REG_CFA_ADJUST_CFA directly, or no
+	special markup at all.  Load cfun->machine->frame.hard_fp_offset
+	into a local variable.
+	(aarch64_frame_pointer_required): Don't check calls_alloca.
+
 2014-09-03  Richard Biener  <rguenther@suse.de>
 
 	* opts.c (default_options_optimization): Adjust
