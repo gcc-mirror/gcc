@@ -1352,6 +1352,50 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
   return NULL_RTX;
 }
 
+static int
+nds32_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
+			 tree type, bool named ATTRIBUTE_UNUSED)
+{
+  /* Returns the number of bytes at the beginning of an argument that
+     must be put in registers.  The value must be zero for arguments that are
+     passed entirely in registers or that are entirely pushed on the stack.
+     Besides, TARGET_FUNCTION_ARG for these arguments should return the
+     first register to be used by the caller for this argument.  */
+  unsigned int needed_reg_count;
+  unsigned int remaining_reg_count;
+  CUMULATIVE_ARGS *cum;
+
+  cum = get_cumulative_args (ca);
+
+  /* Under hard float abi, we better have argument entirely passed in
+     registers or pushed on the stack so that we can reduce the complexity
+     of dealing with cum->gpr_offset and cum->fpr_offset.  */
+  if (TARGET_HARD_FLOAT)
+    return 0;
+
+  /* If we have already runned out of argument registers, return zero
+     so that the argument will be entirely pushed on the stack.  */
+  if (NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
+      >= NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS)
+    return 0;
+
+  /* Calculate how many registers do we need for this argument.  */
+  needed_reg_count = NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+
+  /* Calculate how many argument registers have left for passing argument.
+     Note that we should count it from next available register number.  */
+  remaining_reg_count
+    = NDS32_MAX_GPR_REGS_FOR_ARGS
+      - (NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
+         - NDS32_GPR_ARG_FIRST_REGNUM);
+
+  /* Note that we have to return the nubmer of bytes, not registers count.  */
+  if (needed_reg_count > remaining_reg_count)
+    return remaining_reg_count * UNITS_PER_WORD;
+
+  return 0;
+}
+
 static void
 nds32_function_arg_advance (cumulative_args_t ca, enum machine_mode mode,
 			    const_tree type, bool named)
@@ -3453,6 +3497,9 @@ nds32_target_alignment (rtx label)
 
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG nds32_function_arg
+
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES nds32_arg_partial_bytes
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE nds32_function_arg_advance
