@@ -1,5 +1,12 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_expand_prologue): Emit stack push
+	instructions for varargs implementation.
+	(nds32_expand_epilogue): Emit stack adjustment instructions for
+	varargs implementation.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_expand_prologue): Suppress fp-as-gp
 	optimization detection.
 
