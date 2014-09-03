@@ -1,5 +1,11 @@
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/62015
+	* ipa-cp.c (intersect_aggregates_with_edge): Handle impermissible
+	pass-trough jump functions correctly.
+
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/61986
 	* ipa-cp.c (find_aggregate_values_for_callers_subset): Chain
 	created replacements in ascending order of offsets.
