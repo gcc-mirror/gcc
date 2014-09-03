@@ -1,5 +1,10 @@
 2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_expand_prologue): Suppress fp-as-gp
+	optimization detection.
+
+2014-09-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_function_arg): Deal with nameless
 	arguments.
 	(nds32_function_arg_advance): Deal with nameless arguments.
