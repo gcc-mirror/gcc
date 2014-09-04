@@ -1,0 +1,12 @@
+2014-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (struct die_struct): Add dumped_early field.
+	(reparent_child): New.
+	(splice_child_die): Use reparent_child.
+	(gen_subprogram_die): Do not regenerate parameters if previously
+	dumped.
+	(gen_variable_die): Fix parent of decls that have been dumped
+	early to reflect correct context.
+	Do not regenerate decls if previously dumped.
+	(dwarf2out_decl): Add return value.
+	(dwarf2out_early_decl): Set dumped_early bit.
