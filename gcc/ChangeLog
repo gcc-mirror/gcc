@@ -1,3 +1,7 @@
+2014-09-04  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/rx/rx.h (HARD_REGNO_MODE_OK): Add braces.
+
 2014-09-04  Alan Modra  <amodra@gmail.com>
 
 	PR debug/60655
