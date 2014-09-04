@@ -1,5 +1,14 @@
 2014-09-04  David Malcolm  <dmalcolm@redhat.com>
 
+	* genattr.c (main): Within the prototype of insn_latency written
+	out to insn-attr.h, strengthen both params from rtx to rtx_insn *.
+	* genautomata.c (output_internal_maximal_insn_latency_func):
+	Within the implementation of insn_latency written out to
+	insn-automata.c, strengthen both params from rtx to rtx_insn *,
+	eliminating a pair of checked casts.
+
+2014-09-04  David Malcolm  <dmalcolm@redhat.com>
+
 	* jump.c (eh_returnjump_p): Strengthen param "insn" from rtx to
 	rtx_insn *.
 

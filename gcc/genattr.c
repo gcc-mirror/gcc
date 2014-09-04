@@ -248,7 +248,7 @@ main (int argc, char **argv)
       printf ("/* Insn latency time on data consumed by the 2nd insn.\n");
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
-      printf ("extern int insn_latency (rtx, rtx);\n\n");
+      printf ("extern int insn_latency (rtx_insn *, rtx_insn *);\n\n");
       printf ("/* Maximal insn latency time possible of all bypasses for this insn.\n");
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
