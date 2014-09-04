@@ -12699,7 +12699,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
 					VAR_INIT_STATUS_INITIALIZED);
 	      if (op1 == 0)
-		break;
+		return NULL;
 	      add_loc_descr (&mem_loc_result, op1);
 	      add_loc_descr (&mem_loc_result,
 			     new_loc_descr (DW_OP_plus, 0, 0));
