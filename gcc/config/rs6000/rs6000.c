@@ -33523,7 +33523,8 @@ enum special_handling_values {
   SH_CONST_VECTOR,
   SH_SUBREG,
   SH_NOSWAP_LD,
-  SH_NOSWAP_ST
+  SH_NOSWAP_ST,
+  SH_EXTRACT
 };
 
 /* Union INSN with all insns containing definitions that reach USE.
@@ -33665,6 +33666,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 {
   enum rtx_code code = GET_CODE (op);
   int i, j;
+  rtx parallel;
 
   switch (code)
     {
@@ -33675,7 +33677,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
       return 1;
 
     case VEC_CONCAT:
-    case VEC_SELECT:
     case ASM_INPUT:
     case ASM_OPERANDS:
       return 0;
@@ -33693,6 +33694,28 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	 handling.  */
       if (GET_CODE (XEXP (op, 0)) == CONST_INT)
 	return 1;
+      else if (GET_CODE (XEXP (op, 0)) == REG
+	       && GET_MODE_INNER (GET_MODE (op)) == GET_MODE (XEXP (op, 0)))
+	/* This catches V2DF and V2DI splat, at a minimum.  */
+	return 1;
+      else if (GET_CODE (XEXP (op, 0)) == VEC_SELECT)
+	/* If the duplicated item is from a select, defer to the select
+	   processing to see if we can change the lane for the splat.  */
+	return rtx_is_swappable_p (XEXP (op, 0), special);
+      else
+	return 0;
+
+    case VEC_SELECT:
+      /* A vec_extract operation is ok if we change the lane.  */
+      if (GET_CODE (XEXP (op, 0)) == REG
+	  && GET_MODE_INNER (GET_MODE (XEXP (op, 0))) == GET_MODE (op)
+	  && GET_CODE ((parallel = XEXP (op, 1))) == PARALLEL
+	  && XVECLEN (parallel, 0) == 1
+	  && GET_CODE (XVECEXP (parallel, 0, 0)) == CONST_INT)
+	{
+	  *special = SH_EXTRACT;
+	  return 1;
+	}
       else
 	return 0;
 
@@ -33738,7 +33761,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	    || val == UNSPEC_VSX_CVSPDPN
 	    || val == UNSPEC_VSX_SET
 	    || val == UNSPEC_VSX_SLDWI
-	    || val == UNSPEC_VSX_XXSPLTW
 	    || val == UNSPEC_VUNPACK_HI_SIGN
 	    || val == UNSPEC_VUNPACK_HI_SIGN_DIRECT
 	    || val == UNSPEC_VUNPACK_LO_SIGN
@@ -34076,6 +34098,27 @@ permute_store (rtx_insn *insn)
 	     INSN_UID (insn));
 }
 
+/* Given OP that contains a vector extract operation, change the index
+   of the extracted lane to count from the other side of the vector.  */
+static void
+adjust_extract (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+  /* The vec_select may be wrapped in a vec_duplicate for a splat, so
+     account for that.  */
+  rtx sel = (GET_CODE (body) == VEC_DUPLICATE
+	     ? XEXP (XEXP (body, 0), 1)
+	     : XEXP (body, 1));
+  rtx par = XEXP (sel, 1);
+  int nunits = GET_MODE_NUNITS (GET_MODE (XEXP (sel, 0)));
+  XVECEXP (par, 0, 0) = GEN_INT (nunits - 1 - INTVAL (XVECEXP (par, 0, 0)));
+  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Changing lane for extract %d\n", INSN_UID (insn));
+}
+
 /* The insn described by INSN_ENTRY[I] can be swapped, but only
    with special handling.  Take care of that here.  */
 static void
@@ -34086,6 +34129,8 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
 
   switch (insn_entry[i].special_handling)
     {
+    default:
+      gcc_unreachable ();
     case SH_CONST_VECTOR:
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
@@ -34112,6 +34157,9 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       /* Convert a non-permuting store to a permuting one.  */
       permute_store (insn);
       break;
+    case SH_EXTRACT:
+      /* Change the lane on an extract operation.  */
+      adjust_extract (insn);
     }
 }
 
@@ -34180,6 +34228,8 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
 	      fputs ("special:load ", dump_file);
 	    else if (insn_entry[i].special_handling == SH_NOSWAP_ST)
 	      fputs ("special:store ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_EXTRACT)
+	      fputs ("special:extract ", dump_file);
 	  }
 	if (insn_entry[i].web_not_optimizable)
 	  fputs ("unoptimizable ", dump_file);

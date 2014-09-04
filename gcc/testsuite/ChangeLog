@@ -1,5 +1,11 @@
 2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* gcc.target/powerpc/swaps-p8-13.c: New test.
+	* gcc.target/powerpc/swaps-p8-14.c: New test.
+	* gcc.target/powerpc/swaps-p8-15.c: New test.
+
+2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* gcc.target/powerpc/vsx-extract-1.c:  Test 0th doubleword
 	regardless of endianness.
 

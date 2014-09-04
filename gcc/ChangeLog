@@ -1,5 +1,19 @@
 2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (special_handling_values): Add
+	SH_EXTRACT.
+	(rtx_is_swappable_p): Look for patterns with a VEC_SELECT, perhaps
+	wrapped in a VEC_DUPLICATE, representing an extract.  Mark these
+	as swappable with special handling SH_EXTRACT.  Remove
+	UNSPEC_VSX_XXSPLTW from the list of disallowed unspecs for the
+	optimization.
+	(adjust_extract): New function.
+	(handle_special_swappables): Add default to case statement; add
+	case for SH_EXTRACT that calls adjust_extract.
+	(dump_swap_insn_table): Handle SH_EXTRACT.
+
+2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/vsx.md (*vsx_extract_<mode>_load): Always match
 	selection of 0th memory doubleword, regardless of endianness.
 
