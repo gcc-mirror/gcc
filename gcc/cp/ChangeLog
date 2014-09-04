@@ -1,3 +1,9 @@
+2014-09-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61659
+	* decl.c (duplicate_decls): Check DECL_DECLARED_INLINE_P on
+	newdecl, not olddecl.
+
 2014-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1453
