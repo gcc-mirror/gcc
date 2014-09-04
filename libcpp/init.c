@@ -185,6 +185,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
+  CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
   CPP_OPTION (pfile, cpp_warn_long_long) = 0;
   CPP_OPTION (pfile, dollars_in_ident) = 1;

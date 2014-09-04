@@ -485,6 +485,7 @@ to determine if a precompiled header file matches.
 
 @item CPP(@var{var})
 The state of this option should be kept in sync with the preprocessor
-option @var{var}.
+option @var{var}.  If this property is set, then properties @code{Var}
+and @code{Init} must be set as well.
 
 @end table

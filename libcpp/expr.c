@@ -1880,8 +1880,8 @@ num_binary_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
     default: /* case CPP_COMMA: */
       if (CPP_PEDANTIC (pfile) && (!CPP_OPTION (pfile, c99)
 				   || !pfile->state.skip_eval))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "comma operator in operand of #if");
+	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			"comma operator in operand of #if");
       lhs = rhs;
       break;
     }

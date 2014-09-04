@@ -9676,6 +9676,7 @@ struct reason_option_codes_t
 
 static const struct reason_option_codes_t option_codes[] = {
   {CPP_W_BUILTIN_MACRO_REDEFINED,	OPT_Wbuiltin_macro_redefined},
+  {CPP_W_C90_C99_COMPAT,                OPT_Wc90_c99_compat},
   {CPP_W_COMMENTS,			OPT_Wcomment},
   {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
   {CPP_W_DATE_TIME,			OPT_Wdate_time},
@@ -9687,6 +9688,7 @@ static const struct reason_option_codes_t option_codes[] = {
   {CPP_W_MISSING_INCLUDE_DIRS,          OPT_Wmissing_include_dirs},
   {CPP_W_MULTICHAR,			OPT_Wmultichar},
   {CPP_W_NORMALIZE,			OPT_Wnormalized_},
+  {CPP_W_PEDANTIC,                      OPT_Wpedantic},
   {CPP_W_TRADITIONAL,			OPT_Wtraditional},
   {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
   {CPP_W_UNDEF,				OPT_Wundef},

@@ -500,11 +500,20 @@ for (i = 0; i < n_opts; i++) {
     }
 
     cpp_option = nth_arg(0, opt_args("CPP", flags[i]));
-    opt_var_name = var_name(flags[i]);
-    if (cpp_option != "" && opt_var_name != "") {
-        print "    case " opt_enum(opts[i]) ":"
-        print "      cpp_opts->" cpp_option " = opts->x_" opt_var_name ";"
-        print "      break;"
+    if (cpp_option != "") {
+        opt_var_name = var_name(flags[i]);
+        init = opt_args("Init", flags[i])
+        if (opt_var_name != "" && init != "") {
+            print "    case " opt_enum(opts[i]) ":"
+            print "      cpp_opts->" cpp_option " = opts->x_" opt_var_name ";"
+            print "      break;"
+        } else if (opt_var_name == "" && init == "") {
+            print "#error CPP() requires setting Init() and Var() for " opts[i]
+        } else if (opt_var_name != "") {
+            print "#error CPP() requires setting Init() for " opts[i]
+        } else {
+            print "#error CPP() requires setting Var() for " opts[i]
+        }
     }
 }
 print "    default:    "
