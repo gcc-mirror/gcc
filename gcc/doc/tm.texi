@@ -8871,6 +8871,13 @@ register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
 If not defined, the default is to return @code{NULL_RTX}.
 @end deftypefn
 
+@deftypefn {Target Hook} {enum machine_mode} TARGET_DWARF_FRAME_REG_MODE (int @var{regno})
+Given a register, this hook should return the mode which the
+corresponding Dwarf frame register should have.  This is normally
+used to return a smaller mode than the raw mode to prevent call
+clobbered parts of a register altering the frame register size
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_INIT_DWARF_REG_SIZES_EXTRA (tree @var{address})
 If some registers are represented in Dwarf-2 unwind information in
 multiple pieces, define this hook to fill in information about the

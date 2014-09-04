@@ -6594,6 +6594,8 @@ the target supports DWARF 2 frame unwind information.
 
 @hook TARGET_DWARF_REGISTER_SPAN
 
+@hook TARGET_DWARF_FRAME_REG_MODE
+
 @hook TARGET_INIT_DWARF_REG_SIZES_EXTRA
 
 @hook TARGET_ASM_TTYPE

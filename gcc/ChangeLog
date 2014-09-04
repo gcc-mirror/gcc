@@ -1,3 +1,13 @@
+2014-09-03  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* target.def (TARGET_DWARF_FRAME_REG_MODE): New target hook.
+	* targhooks.c (default_dwarf_frame_reg_mode): New function.
+	* targhooks.h (default_dwarf_frame_reg_mode): New prototype.
+	* doc/tm.texi.in (TARGET_DWARF_FRAME_REG_MODE): Document.
+	* doc/tm.texi: Regenerate.
+	* dwarf2cfi.c (expand_builtin_init_dwarf_reg_sizes): Abstract mode
+	selection logic to default_dwarf_frame_reg_mode.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document that -Wlogical-not-parentheses is enabled
