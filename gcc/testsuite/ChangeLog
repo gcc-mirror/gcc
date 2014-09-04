@@ -1,3 +1,8 @@
+2014-09-04  Guozhi Wei  <carrot@google.com>
+
+	PR target/62040
+	* gcc.target/aarch64/pr62040.c: New test.
+
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/62015
