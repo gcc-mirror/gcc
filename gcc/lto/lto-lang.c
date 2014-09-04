@@ -1093,7 +1093,7 @@ lto_write_globals (void)
   varpool_node *vnode;
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (!decl_function_context (vnode->decl))
-      debug_hooks->global_decl (vnode->decl, /*early=*/false);
+      debug_hooks->global_decl (vnode->decl);
 }
 
 static tree

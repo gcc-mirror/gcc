@@ -103,7 +103,7 @@ along with GCC; see the file COPYING3.  If not see
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
-static dw_die_ref dwarf2out_decl (tree);
+static void dwarf2out_decl (tree);
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -2430,7 +2430,7 @@ static void dwarf2out_function_decl (tree);
 static void dwarf2out_begin_block (unsigned, unsigned);
 static void dwarf2out_end_block (unsigned, unsigned);
 static bool dwarf2out_ignore_block (const_tree);
-static void dwarf2out_global_decl (tree, bool);
+static void dwarf2out_global_decl (tree);
 static void dwarf2out_type_decl (tree, int);
 static void dwarf2out_imported_module_or_decl (tree, tree, tree, bool);
 static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
@@ -2609,8 +2609,6 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
   /* Die is used and must not be pruned as unused.  */
   BOOL_BITFIELD die_perennial_p : 1;
   BOOL_BITFIELD comdat_type_p : 1; /* DIE has a type signature */
-  /* Die was generated early via dwarf2out_early_decl.  */
-  BOOL_BITFIELD dumped_early : 1;
   /* Lots of spare bits.  */
 }
 die_node;
@@ -3681,7 +3679,7 @@ decl_ultimate_origin (const_tree decl)
   /* output_inline_function sets DECL_ABSTRACT_ORIGIN for all the
      nodes in the function to point to themselves; ignore that if
      we're trying to output the abstract instance of this function.  */
-  if (/*DECL_ABSTRACT (decl) &&*/ DECL_ABSTRACT_ORIGIN (decl) == decl)
+  if (DECL_ABSTRACT (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
     return NULL_TREE;
 
   /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
@@ -4781,7 +4779,6 @@ remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
     while (c->die_tag == tag)
       {
 	remove_child_with_prev (c, prev);
-	c->die_parent = NULL;
 	/* Might have removed every child.  */
 	if (c == c->die_sib)
 	  return;
@@ -4811,21 +4808,6 @@ add_child_die (dw_die_ref die, dw_die_ref child_die)
   die->die_child = child_die;
 }
 
-/* Unassociate CHILD from its parent, and make its parent be
-   NEW_PARENT.  */
-
-static void
-reparent_child (dw_die_ref child, dw_die_ref new_parent)
-{
-  for (dw_die_ref p = child->die_parent->die_child; ; p = p->die_sib)
-    if (p->die_sib == child)
-      {
-	remove_child_with_prev (child, p);
-	break;
-      }
-  add_child_die (new_parent, child);
-}
-
 /* Move CHILD, which must be a child of PARENT or the DIE for which PARENT
    is the specification, to the end of PARENT's list of children.
    This is done by removing and re-adding it.  */
@@ -4833,6 +4815,8 @@ reparent_child (dw_die_ref child, dw_die_ref new_parent)
 static void
 splice_child_die (dw_die_ref parent, dw_die_ref child)
 {
+  dw_die_ref p;
+
   /* We want the declaration DIE from inside the class, not the
      specification DIE at toplevel.  */
   if (child->die_parent != parent)
@@ -4847,7 +4831,14 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 	      || (child->die_parent
 		  == get_AT_ref (parent, DW_AT_specification)));
 
-  reparent_child (child, parent);
+  for (p = child->die_parent->die_child; ; p = p->die_sib)
+    if (p->die_sib == child)
+      {
+	remove_child_with_prev (child, p);
+	break;
+      }
+
+  add_child_die (parent, child);
 }
 
 /* Return a pointer to a newly created DIE node.  */
@@ -5526,49 +5517,6 @@ debug_dwarf (void)
   print_indent = 0;
   print_die (comp_unit_die (), stderr);
 }
-
-/* Perform some sanity checks on DIEs after they have been generated
-   earlier in the compilation process.  */
-
-static void
-check_die (dw_die_ref die, unsigned level)
-{
-  static unsigned long mark = 1;
-  dw_die_ref c, p;
-  /* Check that all our childs have their parent set to us.  */
-  c = die->die_child;
-  if (c) do {
-      c = c->die_sib;
-      gcc_assert (c->die_parent == die);
-    } while (c != die->die_child);
-
-  /* Check the we are part of our parent's child list.  */
-  mark++;
-  p = die->die_parent;
-  if (p)
-    {
-      c = p->die_child;
-      gcc_assert (c);
-      do {
-	c = c->die_sib;
-	/* Found it.  */
-	if (c == die)
-	  break;
-	/* If we're at start --> not found.  */
-	gcc_assert (c != p->die_child);
-	/* If we've seen this node already the circular list doesn't
-	   even go back to start.  */
-	gcc_assert (c->die_abbrev != mark);
-	c->die_abbrev = mark;
-      } while (1);
-    }
-
-  if (!level)
-    return;
-
-  FOR_EACH_CHILD (die, c, check_die (c, level - 1));
-}
-
 
 /* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
    for the enclosing include file, if any.  BINCL_DIE is the DW_TAG_GNU_BINCL
@@ -8711,11 +8659,9 @@ output_die (dw_die_ref die)
   if (! die->comdat_type_p && die->die_id.die_symbol)
     output_die_symbol (die);
 
-  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s (parent DIE=%#lx) early=%d)",
+  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
 			       (unsigned long)die->die_offset,
-			       dwarf_tag_name (die->die_tag),
-			       die->die_parent ? die->die_parent->die_offset : 0,
-			       die->dumped_early);
+			       dwarf_tag_name (die->die_tag));
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
@@ -17657,40 +17603,8 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 {
   tree node_or_origin = node ? node : origin;
   tree ultimate_origin;
-  dw_die_ref parm_die = NULL;
-  
-  if (TREE_CODE_CLASS (TREE_CODE (node_or_origin)) == tcc_declaration)
-    {
-      parm_die = lookup_decl_die (node);
-
-      if (parm_die && parm_die->die_parent == NULL)
-	{
-	  /* Check that parm_die already has the right attributes that
-	     we would have added below.  If any attributes are
-	     missing, fall through to add them.
-
-	     ?? Add more checks here.  */
-	  if (! DECL_ABSTRACT (node_or_origin)
-	      && !get_AT (parm_die, DW_AT_location)
-	      && !get_AT (parm_die, DW_AT_const_value))
-	    /* We are missing  location info, and are about to add it.  */
-	    ;
-	  else
-	    {
-	      add_child_die (context_die, parm_die);
-	      return parm_die;
-	    }
-	}
-    }
-
-  bool reusing_die;
-  if (parm_die)
-    reusing_die = true;
-  else
-    {
-      parm_die = new_die (DW_TAG_formal_parameter, context_die, node);
-      reusing_die = false;
-    }
+  dw_die_ref parm_die
+    = new_die (DW_TAG_formal_parameter, context_die, node);
 
   switch (TREE_CODE_CLASS (TREE_CODE (node_or_origin)))
     {
@@ -17698,11 +17612,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       ultimate_origin = decl_ultimate_origin (node_or_origin);
       if (node || ultimate_origin)
 	origin = ultimate_origin;
-
-      if (reusing_die)
-	goto add_location;
-
-      if (origin != NULL && node != origin)
+      if (origin != NULL)
 	add_abstract_origin_attribute (parm_die, origin);
       else if (emit_name_p)
 	add_name_and_src_coords_attributes (parm_die, node);
@@ -17726,7 +17636,6 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
-    add_location:
       if (! DECL_ABSTRACT (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
 					       node == NULL, DW_AT_location);
@@ -18241,7 +18150,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       && debug_info_level > DINFO_LEVEL_TERSE)
     old_die = force_decl_die (decl);
 
-  if (origin != NULL && origin != decl)
+  if (origin != NULL)
     {
       gcc_assert (!declaration || local_scope_p (context_die));
 
@@ -18271,13 +18180,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  && !get_AT (old_die, DW_AT_inline))
 	{
 	  /* Detect and ignore this case, where we are trying to output
-	     something we have already output.
-
-	     If we have no location information, this must be a
-	     partially generated DIE from early dwarf generation.
-	     Fall through and generate it.  */
-	  if (get_AT (old_die, DW_AT_low_pc)
-	      || get_AT (old_die, DW_AT_ranges))
+	     something we have already output.  */
 	  return;
 	}
 
@@ -18296,20 +18199,14 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  subr_die = old_die;
 
-	  /* ??? Hmmm, early dwarf generation happened earlier, so no
-	     sense in removing the parameters.  Let's keep them and
-	     augment them with location information later.  */
-	  if (!old_die->dumped_early)
-	    {
-	      /* Clear out the declaration attribute and the formal parameters.
-		 Do not remove all children, because it is possible that this
-		 declaration die was forced using force_decl_die(). In such
-		 cases die that forced declaration die (e.g. TAG_imported_module)
-		 is one of the children that we do not want to remove.  */
-	      remove_AT (subr_die, DW_AT_declaration);
-	      remove_AT (subr_die, DW_AT_object_pointer);
-	      remove_child_TAG (subr_die, DW_TAG_formal_parameter);
-	    }
+	  /* Clear out the declaration attribute and the formal parameters.
+	     Do not remove all children, because it is possible that this
+	     declaration die was forced using force_decl_die(). In such
+	     cases die that forced declaration die (e.g. TAG_imported_module)
+	     is one of the children that we do not want to remove.  */
+	  remove_AT (subr_die, DW_AT_declaration);
+	  remove_AT (subr_die, DW_AT_object_pointer);
+	  remove_child_TAG (subr_die, DW_TAG_formal_parameter);
 	}
       else
 	{
@@ -18400,12 +18297,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
       equate_decl_number_to_die (decl, subr_die);
     }
-  else if (!DECL_EXTERNAL (decl)
-	   && (!DECL_STRUCT_FUNCTION (decl)
-	       || DECL_STRUCT_FUNCTION (decl)->gimple_df))
+  else if (!DECL_EXTERNAL (decl))
     {
       HOST_WIDE_INT cfa_fb_offset;
-
       struct function *fun = DECL_STRUCT_FUNCTION (decl);
 
       if (!old_die || !get_AT (old_die, DW_AT_inline))
@@ -18568,20 +18462,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	add_AT_location_description (subr_die, DW_AT_static_link,
 		 loc_list_from_tree (fun->static_chain_decl, 2));
     }
-  else if (!DECL_EXTERNAL (decl))
-    {
-      if (!old_die || !get_AT (old_die, DW_AT_inline))
-	equate_decl_number_to_die (decl, subr_die);
-    }
 
   /* Generate child dies for template paramaters.  */
   if (debug_info_level > DINFO_LEVEL_TERSE)
-    {
-      /* XXX */
-      if (!lookup_decl_die (decl))
-	equate_decl_number_to_die (decl, subr_die);
-      gen_generic_params_dies (decl);
-    }
+    gen_generic_params_dies (decl);
 
   /* Now output descriptions of the arguments for this function. This gets
      (unnecessarily?) complex because of the fact that the DECL_ARGUMENT list
@@ -18685,9 +18569,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      a BLOCK node representing the function's outermost pair of curly braces,
      and any blocks used for the base and member initializers of a C++
      constructor function.  */
-  if (! declaration && outer_scope && TREE_CODE (outer_scope) != ERROR_MARK
-      && (!DECL_STRUCT_FUNCTION (decl)
-	  || DECL_STRUCT_FUNCTION (decl)->gimple_df))
+  if (! declaration && outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
     {
       int call_site_note_count = 0;
       int tail_call_site_note_count = 0;
@@ -19007,18 +18889,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
      and if we already emitted a DIE for it, don't emit a second
      DIE for it again. Allow re-declarations of DECLs that are
      inside functions, though.  */
-  if (old_die && !declaration && !local_scope_p (context_die))
+  if (old_die && declaration && !local_scope_p (context_die))
     return;
-
-  /* If a DIE was dumped early, it still needs location info.  Skip to
-     the part where we fill the location bits.  */
-  if (old_die && old_die->dumped_early)
-    {
-      gcc_assert (old_die->die_parent == context_die);
-      var_die = old_die;
-      old_die = NULL;
-      goto gen_variable_die_location;
-    }
 
   /* For static data members, the declaration in the class is supposed
      to have DW_TAG_member tag; the specification should still be
@@ -19103,7 +18975,6 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (decl && (DECL_ABSTRACT (decl) || declaration || old_die == NULL))
     equate_decl_number_to_die (decl, var_die);
 
- gen_variable_die_location:
   if (! declaration
       && (! DECL_ABSTRACT (decl_or_origin)
 	  /* Local static vars are shared between all clones/inlines,
@@ -20817,29 +20688,12 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
   return NULL;
 }
 
-/* Output debug information for global decl DECL.  Called from
-   toplev.c after compilation proper has finished.
-
-   dwarf2out_decl() will be called twice on each global symbol: once
-   immediately after parsing (EARLY=true), and once after the full
-   compilation has finished (EARLY=false).  There are checks in
-   dwarf2out_decl() to make sure that if we have a DECL DIE upon
-   entry, that the previously created DIE is reused.  No new DECL DIEs
-   should be created when EARLY=false.
-
-   The second time dwarf2out_decl() is called (or for that matter, the
-   second time any DECL DIE is seen throughout dwarf2out), only
-   information not previously available (e.g. location) is tacked onto
-   the early dumped DIE.  That's the plan anyhow ;-).  */
+/* Output debug information for global decl DECL.  Called from toplev.c after
+   compilation proper has finished.  */
 
 static void
-dwarf2out_global_decl (tree decl, bool early)
+dwarf2out_global_decl (tree decl)
 {
-  if (early)
-    {
-      dwarf2out_early_decl (decl);
-      return;
-    }
   /* Output DWARF2 information for file-scope tentative data object
      declarations, file-scope (extern) function declarations (which
      had no corresponding body) and file-scope tagged type declarations
@@ -21028,30 +20882,17 @@ gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
 }
 
 
-/* Write the debugging output for DECL and return the DIE.  */
+/* Write the debugging output for DECL.  */
 
-static dw_die_ref
+static void
 dwarf2out_decl (tree decl)
 {
   dw_die_ref context_die = comp_unit_die ();
 
-#ifdef ENABLE_CHECKING
-  /* Save some info so we can later determine if we erroneously
-     created a DIE for something we had already created a DIE for.
-     We should always be reusing DIEs created early.  */
-  dw_die_ref early_die = NULL;
-  if (decl_die_table)
-    {
-      early_die = lookup_decl_die (decl);
-      if (early_die && !early_die->dumped_early)
-	early_die = NULL;
-    }
-#endif
-
   switch (TREE_CODE (decl))
     {
     case ERROR_MARK:
-      return NULL;
+      return;
 
     case FUNCTION_DECL:
       /* What we would really like to do here is to filter out all mere
@@ -21088,7 +20929,7 @@ dwarf2out_decl (tree decl)
 	 or not at all.  */
       if (DECL_INITIAL (decl) == NULL_TREE
 	  && ! DECL_ABSTRACT (decl))
-	return NULL;
+	return;
 
       /* If we're a nested function, initially use a parent of NULL; if we're
 	 a plain function, this will be fixed up in decls_for_scope.  If
@@ -21109,7 +20950,7 @@ dwarf2out_decl (tree decl)
 	 would screw-up the debugger's name lookup mechanism and cause it to
 	 miss things which really ought to be in scope at a given point.  */
       if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
-	return NULL;
+	return;
 
       /* For local statics lookup proper context die.  */
       if (TREE_STATIC (decl)
@@ -21120,14 +20961,14 @@ dwarf2out_decl (tree decl)
       /* If we are in terse mode, don't generate any DIEs to represent any
 	 variable declarations or definitions.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	return NULL;
+	return;
       break;
 
     case CONST_DECL:
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	return NULL;
+	return;
       if (!is_fortran () && !is_ada ())
-	return NULL;
+	return;
       if (TREE_STATIC (decl) && decl_function_context (decl))
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
       break;
@@ -21135,24 +20976,24 @@ dwarf2out_decl (tree decl)
     case NAMESPACE_DECL:
     case IMPORTED_DECL:
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	return NULL;
+	return;
       if (lookup_decl_die (decl) != NULL)
-	return NULL;
+	return;
       break;
 
     case TYPE_DECL:
       /* Don't emit stubs for types unless they are needed by other DIEs.  */
       if (TYPE_DECL_SUPPRESS_DEBUG (decl))
-	return NULL;
+	return;
 
       /* Don't bother trying to generate any DIEs to represent any of the
 	 normal built-in types for the language we are compiling.  */
       if (DECL_IS_BUILTIN (decl))
-	return NULL;
+	return;
 
       /* If we are in terse mode, don't generate any DIEs for types.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	return NULL;
+	return;
 
       /* If we're a function-scope tag, initially use a parent of NULL;
 	 this will be fixed up in decls_for_scope.  */
@@ -21165,66 +21006,10 @@ dwarf2out_decl (tree decl)
       break;
 
     default:
-      return NULL;
+      return;
     }
 
   gen_decl_die (decl, NULL, context_die);
-
-  dw_die_ref die = lookup_decl_die (decl);
-  if (die)
-    check_die (die, 0);
-#ifdef ENABLE_CHECKING
-  /* If we early created a DIE, make sure it didn't get re-created by
-     mistake.  */
-  gcc_assert (!early_die || early_die == die);
-#endif
-  return die;
-}
-
-/* Early dumping of DECLs before we lose language data.  */
-
-void
-dwarf2out_early_decl (tree decl)
-{
-  /* gen_decl_die() will set DECL_ABSTRACT because
-     cgraph_function_possibly_inlined_p() returns true.  This is in
-     turn will cause DW_AT_inline attributes to be set.
-
-     This happens because at early dwarf generation, there is no
-     cgraph information, causing cgraph_function_possibly_inlined_p()
-     to return true.  Trick cgraph_function_possibly_inlined_p()
-     while we generate dwarf early.  */
-  bool save = symtab->global_info_ready;
-  symtab->global_info_ready = true;
-
-  /* We don't handle TYPE_DECLs.  If required, they'll be reached via
-     other DECLs and they can point to template types or other things
-     that dwarf2out can't handle when done via dwarf2out_decl.  */
-  if (TREE_CODE (decl) != TYPE_DECL
-      && TREE_CODE (decl) != PARM_DECL)
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* A missing cfun means the symbol is unused and was removed
-	     from the callgraph.  */
-	  if (!DECL_STRUCT_FUNCTION (decl))
-	    goto early_decl_exit;
-
-	  push_cfun (DECL_STRUCT_FUNCTION (decl));
-	  current_function_decl = decl;
-	}
-      dw_die_ref die = dwarf2out_decl (decl);
-      if (die)
-	die->dumped_early = true;
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  pop_cfun ();
-	  current_function_decl = NULL;
-	}
-    }
- early_decl_exit:
-  symtab->global_info_ready = save;
-  return;
 }
 
 /* Write the debugging output for DECL.  */

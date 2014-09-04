@@ -10308,10 +10308,7 @@ c_write_global_declarations_1 (tree globals)
   while (reconsider);
 
   for (decl = globals; decl; decl = DECL_CHAIN (decl))
-    {
-      check_global_declaration_1 (decl);
-      debug_hooks->global_decl (decl, /*early=*/true);
-    }
+    check_global_declaration_1 (decl);
 }
 
 /* A subroutine of c_write_global_declarations Emit debug information for each
@@ -10323,7 +10320,7 @@ c_write_global_declarations_2 (tree globals)
   tree decl;
 
   for (decl = globals; decl ; decl = DECL_CHAIN (decl))
-    debug_hooks->global_decl (decl, /*early=*/false);
+    debug_hooks->global_decl (decl);
 }
 
 /* Callback to collect a source_ref from a DECL.  */
