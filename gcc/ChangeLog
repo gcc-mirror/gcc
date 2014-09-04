@@ -1,3 +1,7 @@
+2014-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (TAGS): Handle constructs in timevar.def.
+
 2014-09-04  Guozhi Wei  <carrot@google.com>
 
 	PR target/62040
