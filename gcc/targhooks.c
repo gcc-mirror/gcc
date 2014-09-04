@@ -1456,6 +1456,19 @@ default_debug_unwind_info (void)
   return UI_NONE;
 }
 
+/* Determine the correct mode for a Dwarf frame register that represents
+   register REGNO.  */
+
+enum machine_mode
+default_dwarf_frame_reg_mode (int regno)
+{
+  enum machine_mode save_mode = reg_raw_mode[regno];
+
+  if (HARD_REGNO_CALL_PART_CLOBBERED (regno, save_mode))
+    save_mode = choose_hard_reg_mode (regno, 1, true);
+  return save_mode;
+}
+
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
