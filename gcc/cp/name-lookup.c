@@ -3859,7 +3859,7 @@ do_namespace_alias (tree alias, tree name_space)
 
   /* Emit debug info for namespace alias.  */
   if (!building_stmt_list_p ())
-    (*debug_hooks->global_decl) (alias);
+    (*debug_hooks->global_decl) (alias, /*early=*/false);
 }
 
 /* Like pushdecl, only it places X in the current namespace,

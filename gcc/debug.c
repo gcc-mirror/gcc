@@ -43,7 +43,7 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_tree,		         /* begin_function */
   debug_nothing_int,		         /* end_function */
   debug_nothing_tree,		         /* function_decl */
-  debug_nothing_tree,		         /* global_decl */
+  debug_nothing_tree_bool,	         /* global_decl */
   debug_nothing_tree_int,		 /* type_decl */
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
@@ -67,6 +67,12 @@ debug_nothing_void (void)
 
 void
 debug_nothing_tree (tree decl ATTRIBUTE_UNUSED)
+{
+}
+
+void
+debug_nothing_tree_bool (tree decl ATTRIBUTE_UNUSED,
+			 bool early ATTRIBUTE_UNUSED)
 {
 }
 

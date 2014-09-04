@@ -496,9 +496,9 @@ go_function_decl (tree decl)
 /* A global variable decl.  */
 
 static void
-go_global_decl (tree decl)
+go_global_decl (tree decl, bool early)
 {
-  real_debug_hooks->global_decl (decl);
+  real_debug_hooks->global_decl (decl, early);
   go_decl (decl);
 }
 
