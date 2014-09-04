@@ -1835,7 +1835,7 @@
   [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,wv,wr")
 	(vec_select:<VS_scalar>
 	 (match_operand:VSX_D 1 "memory_operand" "m,Z,m")
-	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
+	 (parallel [(const_int 0)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    lfd%U1%X1 %0,%1

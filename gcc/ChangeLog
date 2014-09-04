@@ -1,3 +1,8 @@
+2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_load): Always match
+	selection of 0th memory doubleword, regardless of endianness.
+
 2014-09-04  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/rx/rx.h (HARD_REGNO_MODE_OK): Add braces.
