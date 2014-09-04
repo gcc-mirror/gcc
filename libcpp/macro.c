@@ -1776,35 +1776,32 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	    paste_flag =
 	      (const cpp_token **) tokens_buff_last_token_ptr (buff);
 	}
-      else if (CPP_PEDANTIC (pfile) && ! macro->syshdr
-	       && ! CPP_OPTION (pfile, c99)
-	       && ! cpp_in_system_header (pfile))
+      else if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99)
+	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "invoking macro %s argument %d: "
-		       "empty macro arguments are undefined"
-		       " in ISO C++98",
-		       NODE_NAME (node),
-		       src->val.macro_arg.arg_no);
+	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			    "invoking macro %s argument %d: "
+			    "empty macro arguments are undefined"
+			    " in ISO C++98",
+			    NODE_NAME (node), src->val.macro_arg.arg_no);
 	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "invoking macro %s argument %d: "
-		       "empty macro arguments are undefined"
-		       " in ISO C90",
-		       NODE_NAME (node),
-		       src->val.macro_arg.arg_no);
+	    cpp_pedwarning (pfile, 
+			    CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+			    ? CPP_W_C90_C99_COMPAT : CPP_W_PEDANTIC,
+			    "invoking macro %s argument %d: "
+			    "empty macro arguments are undefined"
+			    " in ISO C90",
+			    NODE_NAME (node), src->val.macro_arg.arg_no);
 	}
       else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
-	       && ! macro->syshdr
-	       && ! cpp_in_system_header (pfile)
-	       && ! CPP_OPTION (pfile, cplusplus))
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "invoking macro %s argument %d: "
-		   "empty macro arguments are undefined"
-		   " in ISO C90",
-		   NODE_NAME (node),
-		   src->val.macro_arg.arg_no);
+	       && ! CPP_OPTION (pfile, cplusplus)
+	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	cpp_warning (pfile, CPP_W_C90_C99_COMPAT,
+		     "invoking macro %s argument %d: "
+		     "empty macro arguments are undefined"
+		     " in ISO C90",
+		     NODE_NAME (node), src->val.macro_arg.arg_no);
 
       /* Avoid paste on RHS (even case count == 0).  */
       if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))

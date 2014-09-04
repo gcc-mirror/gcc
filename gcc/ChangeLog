@@ -1,3 +1,10 @@
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/options.texi: Document that Var and Init are required if CPP
+	is given.
+	* optc-gen.awk: Require Var and Init if CPP is given.
+	* common.opt (Wpedantic): Use Init.
+
 2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (special_handling_values): Add

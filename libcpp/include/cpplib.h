@@ -939,7 +939,9 @@ enum {
   CPP_W_INVALID_PCH,
   CPP_W_WARNING_DIRECTIVE,
   CPP_W_LITERAL_SUFFIX,
-  CPP_W_DATE_TIME
+  CPP_W_DATE_TIME,
+  CPP_W_PEDANTIC,
+  CPP_W_C90_C99_COMPAT
 };
 
 /* Output a diagnostic of some kind.  */

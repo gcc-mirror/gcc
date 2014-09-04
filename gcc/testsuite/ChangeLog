@@ -1,3 +1,8 @@
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/endif-pedantic2.c: More general options do not
+	override specific ones, but specific ones do.
+
 2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-13.c: New test.
