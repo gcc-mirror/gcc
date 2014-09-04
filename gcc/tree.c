@@ -5032,10 +5032,6 @@ free_lang_data_in_decl (tree decl)
 {
   gcc_assert (DECL_P (decl));
 
-  /* Early dumping of DECLs before we lose language data.  */
-  if (debug_info_level > DINFO_LEVEL_NONE)
-    dwarf2out_early_decl (decl);
-
   /* Give the FE a chance to remove its own data first.  */
   lang_hooks.free_lang_data (decl);
 
@@ -5634,7 +5630,8 @@ free_lang_data (void)
   unsigned i;
 
   /* If we are the LTO frontend we have freed lang-specific data already.  */
-  if (in_lto_p)
+  if (in_lto_p
+      || !flag_generate_lto)
     return 0;
 
   /* Allocate and assign alias sets to the standard integer types

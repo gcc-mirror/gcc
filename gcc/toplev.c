@@ -532,7 +532,7 @@ emit_debug_global_declarations (tree *vec, int len)
 
   timevar_push (TV_SYMOUT);
   for (i = 0; i < len; i++)
-    debug_hooks->global_decl (vec[i], /*early=*/false);
+    debug_hooks->global_decl (vec[i]);
   timevar_pop (TV_SYMOUT);
 }
 
