@@ -954,7 +954,7 @@ returnjump_p (rtx insn)
 /* Return true if INSN is a (possibly conditional) return insn.  */
 
 int
-eh_returnjump_p (rtx insn)
+eh_returnjump_p (rtx_insn *insn)
 {
   if (JUMP_P (insn))
     {

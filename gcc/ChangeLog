@@ -1,3 +1,10 @@
+2014-09-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jump.c (eh_returnjump_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+
+	* rtl.h (eh_returnjump_p): Likewise.
+
 2014-09-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (TAGS): Handle constructs in timevar.def.

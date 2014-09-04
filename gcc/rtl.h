@@ -3235,7 +3235,7 @@ extern rtx pc_set (const_rtx);
 extern rtx condjump_label (const_rtx);
 extern int simplejump_p (const_rtx);
 extern int returnjump_p (rtx);
-extern int eh_returnjump_p (rtx);
+extern int eh_returnjump_p (rtx_insn *);
 extern int onlyjump_p (const_rtx);
 extern int only_sets_cc0_p (const_rtx);
 extern int sets_cc0_p (const_rtx);
