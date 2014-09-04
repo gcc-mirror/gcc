@@ -2915,7 +2915,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   basic_block then_bb = if_info->then_bb;
   basic_block else_bb = if_info->else_bb;
   basic_block join_bb = if_info->join_bb;
-  rtx jump = if_info->jump;
+  rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *seq, *loc_insn;
   rtx reg;

@@ -3443,7 +3443,8 @@ hwloop_optimize (hwloop_info loop)
   rtx loop_init, start_label, end_label;
   rtx iter_reg, scratchreg, scratch_init, scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
-  rtx seq, seq_end;
+  rtx seq_end;
+  rtx_insn *seq;
   int length;
   bool clobber0, clobber1;
 

@@ -4739,7 +4739,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
     }
   if (TARGET_FMOVD && TARGET_ALIGN_DOUBLE && have_df)
     {
-      rtx align_insn = NULL_RTX;
+      rtx_insn *align_insn = NULL;
 
       scan = emit_label_after (gen_label_rtx (), scan);
       scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
@@ -4768,7 +4768,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 					align_insn);
 		    }
 		  delete_insn (align_insn);
-		  align_insn = NULL_RTX;
+		  align_insn = NULL;
 		  continue;
 		}
 	      else
@@ -5737,7 +5737,7 @@ enum mdep_reorg_phase_e mdep_reorg_phase;
 static void
 gen_far_branch (struct far_branch *bp)
 {
-  rtx insn = bp->insert_place;
+  rtx_insn *insn = bp->insert_place;
   rtx_insn *jump;
   rtx_code_label *label = gen_label_rtx ();
   int ok;

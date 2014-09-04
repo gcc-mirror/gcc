@@ -3169,7 +3169,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 
   if (LABEL_NUSES (label) > 1)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* This label is used both as an entry point to the loop
 	 and as a loop-back point for the loop.  We need to separate
