@@ -1899,7 +1899,7 @@ get_label_before (rtx_insn *insn, rtx sibling)
 
   if (label == 0 || !LABEL_P (label))
     {
-      rtx prev = PREV_INSN (insn);
+      rtx_insn *prev = PREV_INSN (insn);
 
       label = gen_label_rtx ();
       emit_label_after (label, prev);

@@ -3819,7 +3819,8 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	 undefined to skip one of the comparisons.  */
 
       rtx count;
-      rtx label, insn, tempvar;
+      rtx label, tempvar;
+      rtx_insn *insn;
 
       emit_move_insn (operands[0], operands[1]);
 

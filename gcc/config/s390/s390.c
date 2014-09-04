@@ -11039,7 +11039,7 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
 {
   rtx set = single_set (insn);
   rtx code_label, label_ref, new_label;
-  rtx uncond_jump;
+  rtx_insn *uncond_jump;
   rtx_insn *cur_insn;
   rtx tmp;
   int distance;

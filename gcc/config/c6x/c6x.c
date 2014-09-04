@@ -4726,10 +4726,10 @@ c6x_gen_bundles (void)
 
 /* Emit a NOP instruction for CYCLES cycles after insn AFTER.  Return it.  */
 
-static rtx
+static rtx_insn *
 emit_nop_after (int cycles, rtx after)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* mpydp has 9 delay slots, and we may schedule a stall for a cross-path
      operation.  We don't need the extra NOP since in this case, the hardware
@@ -5030,10 +5030,11 @@ static void
 reorg_emit_nops (rtx *call_labels)
 {
   bool first;
-  rtx prev, last_call;
+  rtx last_call;
+  rtx_insn *prev;
   int prev_clock, earliest_bb_end;
   int prev_implicit_nops;
-  rtx insn = get_insns ();
+  rtx_insn *insn = get_insns ();
 
   /* We look at one insn (or bundle inside a sequence) in each iteration, storing
      its issue time in PREV_CLOCK for the next iteration.  If there is a gap in
@@ -5045,7 +5046,7 @@ reorg_emit_nops (rtx *call_labels)
      a multi-cycle nop.  The code is scheduled such that subsequent insns will
      show the cycle gap, but we needn't insert a real NOP instruction.  */
   insn = next_real_insn (insn);
-  last_call = prev = NULL_RTX;
+  last_call = prev = NULL;
   prev_clock = -1;
   earliest_bb_end = 0;
   prev_implicit_nops = 0;
@@ -5053,7 +5054,7 @@ reorg_emit_nops (rtx *call_labels)
   while (insn)
     {
       int this_clock = -1;
-      rtx next;
+      rtx_insn *next;
       int max_cycles = 0;
 
       next = next_real_insn (insn);

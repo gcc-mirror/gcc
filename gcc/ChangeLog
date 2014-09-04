@@ -1,5 +1,11 @@
 2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* config/bfin/bfin.c, config/c6x/c6x.c, config/m32c/m32c.c,
+	config/mn10300/mn10300.c, config/s390/s390.c, config/sh/sh.c,
+	ifcvt.c, reorg.c: Change types of variables from rtx to rtx_insn *.
+
+2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* emit-rtl.c (get_first_nonnote_insn): Return rtx_insn * instead of
 	rtx.
 	(get_last_nonnote_insn): Likewise.
