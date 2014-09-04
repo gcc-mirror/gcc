@@ -1,3 +1,31 @@
+2014-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c/c-decl.c (write_global_declarations_1): Call global_decl()
+	with early=true.
+	(write_global_declarations_2): Call global_decl() with
+	early=false.
+	* dbxout.c (dbxout_global_decl): New argument.
+	* debug.c (do_nothing_debug_hooks): Use debug_nothing_tree_bool
+	for global_decl hook.
+	(debug_nothing_tree_bool): New.
+	(struct gcc_debug_hooks): New argument to global_decl.
+	* dwarf2out.c (output_die): Add misc debugging information.
+	(gen_variable_die): Do not reparent children.
+	(dwarf2out_global_decl): Add new documentation.  Add EARLY
+	argument.
+	(dwarf2out_decl): Make sure we don't generate new DIEs if we
+	already have a DIE.
+	* cp/name-lookup.c (do_namespace_alias): New argument to
+	global_decl debug hook.
+	* fortran/trans-decl.c (gfc_emit_parameter_debug_info): Same.
+	* godump.c (go_global_decl): Same.
+	* lto/lto-lang.c (lto_write_globals): Same.
+	* sdbout.c (sdbout_global_decl): Same.
+	* toplev.c (emit_debug_global_declarations): Same.
+	* vmsdbgout.c (vmsdbgout_global_decl): Same.
+	* tree.c (free_lang_data_in_decl): Do not call
+	dwarf2out_early_decl from here.
+
 2014-08-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c (struct die_struct): Add dumped_early field.

@@ -5032,10 +5032,6 @@ free_lang_data_in_decl (tree decl)
 {
   gcc_assert (DECL_P (decl));
 
-  /* Early dumping of DECLs before we lose language data.  */
-  if (debug_info_level > DINFO_LEVEL_NONE)
-    dwarf2out_early_decl (decl);
-
   /* Give the FE a chance to remove its own data first.  */
   lang_hooks.free_lang_data (decl);
 

@@ -119,7 +119,7 @@ static void sdbout_begin_block		(unsigned int, unsigned int);
 static void sdbout_end_block		(unsigned int, unsigned int);
 static void sdbout_source_line		(unsigned int, const char *, int, bool);
 static void sdbout_end_epilogue		(unsigned int, const char *);
-static void sdbout_global_decl		(tree);
+static void sdbout_global_decl		(tree, bool);
 static void sdbout_begin_prologue	(unsigned int, const char *);
 static void sdbout_end_prologue		(unsigned int, const char *);
 static void sdbout_begin_function	(tree);
@@ -142,7 +142,6 @@ static void sdbout_field_types		(tree);
 static void sdbout_one_type		(tree);
 static void sdbout_parms		(tree);
 static void sdbout_reg_parms		(tree);
-static void sdbout_global_decl		(tree);
 
 /* Random macros describing parts of SDB data.  */
 
@@ -1422,7 +1421,7 @@ sdbout_reg_parms (tree parms)
    after compilation proper has finished.  */
 
 static void
-sdbout_global_decl (tree decl)
+sdbout_global_decl (tree decl, bool early ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (decl) == VAR_DECL
       && !DECL_EXTERNAL (decl)

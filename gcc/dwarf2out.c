@@ -2430,7 +2430,7 @@ static void dwarf2out_function_decl (tree);
 static void dwarf2out_begin_block (unsigned, unsigned);
 static void dwarf2out_end_block (unsigned, unsigned);
 static bool dwarf2out_ignore_block (const_tree);
-static void dwarf2out_global_decl (tree);
+static void dwarf2out_global_decl (tree, bool);
 static void dwarf2out_type_decl (tree, int);
 static void dwarf2out_imported_module_or_decl (tree, tree, tree, bool);
 static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
@@ -8711,10 +8711,11 @@ output_die (dw_die_ref die)
   if (! die->comdat_type_p && die->die_id.die_symbol)
     output_die_symbol (die);
 
-  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s (parent DIE=%#lx))",
+  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s (parent DIE=%#lx) early=%d)",
 			       (unsigned long)die->die_offset,
 			       dwarf_tag_name (die->die_tag),
-			       die->die_parent ? die->die_parent->die_offset : 0);
+			       die->die_parent ? die->die_parent->die_offset : 0,
+			       die->dumped_early);
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
@@ -19009,13 +19010,11 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (old_die && !declaration && !local_scope_p (context_die))
     return;
 
-  /* When DIEs are created early, the context is the compilation unit.
-     Adjust the context when we know what it is the second time
-     around.  */
+  /* If a DIE was dumped early, it still needs location info.  Skip to
+     the part where we fill the location bits.  */
   if (old_die && old_die->dumped_early)
     {
-      if (old_die->die_parent != context_die)
-	reparent_child (old_die, context_die);
+      gcc_assert (old_die->die_parent == context_die);
       var_die = old_die;
       old_die = NULL;
       goto gen_variable_die_location;
@@ -20818,12 +20817,29 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
   return NULL;
 }
 
-/* Output debug information for global decl DECL.  Called from toplev.c after
-   compilation proper has finished.  */
+/* Output debug information for global decl DECL.  Called from
+   toplev.c after compilation proper has finished.
+
+   dwarf2out_decl() will be called twice on each global symbol: once
+   immediately after parsing (EARLY=true), and once after the full
+   compilation has finished (EARLY=false).  There are checks in
+   dwarf2out_decl() to make sure that if we have a DECL DIE upon
+   entry, that the previously created DIE is reused.  No new DECL DIEs
+   should be created when EARLY=false.
+
+   The second time dwarf2out_decl() is called (or for that matter, the
+   second time any DECL DIE is seen throughout dwarf2out), only
+   information not previously available (e.g. location) is tacked onto
+   the early dumped DIE.  That's the plan anyhow ;-).  */
 
 static void
-dwarf2out_global_decl (tree decl)
+dwarf2out_global_decl (tree decl, bool early)
 {
+  if (early)
+    {
+      dwarf2out_early_decl (decl);
+      return;
+    }
   /* Output DWARF2 information for file-scope tentative data object
      declarations, file-scope (extern) function declarations (which
      had no corresponding body) and file-scope tagged type declarations
@@ -21019,6 +21035,19 @@ dwarf2out_decl (tree decl)
 {
   dw_die_ref context_die = comp_unit_die ();
 
+#ifdef ENABLE_CHECKING
+  /* Save some info so we can later determine if we erroneously
+     created a DIE for something we had already created a DIE for.
+     We should always be reusing DIEs created early.  */
+  dw_die_ref early_die = NULL;
+  if (decl_die_table)
+    {
+      early_die = lookup_decl_die (decl);
+      if (early_die && !early_die->dumped_early)
+	early_die = NULL;
+    }
+#endif
+
   switch (TREE_CODE (decl))
     {
     case ERROR_MARK:
@@ -21144,6 +21173,11 @@ dwarf2out_decl (tree decl)
   dw_die_ref die = lookup_decl_die (decl);
   if (die)
     check_die (die, 0);
+#ifdef ENABLE_CHECKING
+  /* If we early created a DIE, make sure it didn't get re-created by
+     mistake.  */
+  gcc_assert (!early_die || early_die == die);
+#endif
   return die;
 }
 

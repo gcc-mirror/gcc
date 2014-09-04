@@ -325,7 +325,7 @@ static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
 static void dbxout_common_name (tree, const char *, stab_code_type);
 static const char *dbxout_common_check (tree, int *);
-static void dbxout_global_decl (tree);
+static void dbxout_global_decl (tree, bool);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
 static void debug_free_queue (void);
@@ -1320,7 +1320,7 @@ dbxout_function_decl (tree decl)
 /* Debug information for a global DECL.  Called from toplev.c after
    compilation proper has finished.  */
 static void
-dbxout_global_decl (tree decl)
+dbxout_global_decl (tree decl, bool early ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {

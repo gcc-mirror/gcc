@@ -163,7 +163,7 @@ static void vmsdbgout_begin_epilogue (unsigned int, const char *);
 static void vmsdbgout_end_epilogue (unsigned int, const char *);
 static void vmsdbgout_begin_function (tree);
 static void vmsdbgout_decl (tree);
-static void vmsdbgout_global_decl (tree);
+static void vmsdbgout_global_decl (tree, bool);
 static void vmsdbgout_type_decl (tree, int);
 static void vmsdbgout_abstract_function (tree);
 
@@ -1510,10 +1510,10 @@ vmsdbgout_decl (tree decl)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_global_decl (tree decl)
+vmsdbgout_global_decl (tree decl, bool early)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.global_decl) (decl);
+    (*dwarf2_debug_hooks.global_decl) (decl, early);
 }
 
 /* Not implemented in VMS Debug.  */

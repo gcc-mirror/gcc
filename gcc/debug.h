@@ -93,8 +93,11 @@ struct gcc_debug_hooks
   void (* function_decl) (tree decl);
 
   /* Debug information for a global DECL.  Called from toplev.c after
-     compilation proper has finished.  */
-  void (* global_decl) (tree decl);
+     compilation proper has finished.  EARLY is true if global_decl()
+     is being called early on in the compilation process (i.e., before
+     cgraph information is available and before code is
+     generated).  */
+  void (* global_decl) (tree decl, bool early);
 
   /* Debug information for a type DECL.  Called from toplev.c after
      compilation proper, also from various language front ends to
@@ -156,6 +159,7 @@ extern void debug_nothing_int_charstar_int_bool (unsigned int, const char *,
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
+extern void debug_nothing_tree_bool (tree, bool);
 extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
