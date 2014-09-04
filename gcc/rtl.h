@@ -2530,8 +2530,8 @@ extern rtx convert_memory_address_addr_space (enum machine_mode, rtx,
 	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
 extern const char *get_insn_name (int);
 extern rtx_insn *get_last_insn_anywhere (void);
-extern rtx get_first_nonnote_insn (void);
-extern rtx get_last_nonnote_insn (void);
+extern rtx_insn *get_first_nonnote_insn (void);
+extern rtx_insn *get_last_nonnote_insn (void);
 extern void start_sequence (void);
 extern void push_to_sequence (rtx_insn *);
 extern void push_to_sequence2 (rtx_insn *, rtx_insn *);
@@ -2625,7 +2625,7 @@ extern rtx_insn *next_insn (rtx_insn *);
 extern rtx_insn *prev_nonnote_insn (rtx);
 extern rtx_insn *prev_nonnote_insn_bb (rtx);
 extern rtx_insn *next_nonnote_insn (rtx);
-extern rtx_insn *next_nonnote_insn_bb (rtx);
+extern rtx_insn *next_nonnote_insn_bb (rtx_insn *);
 extern rtx_insn *prev_nondebug_insn (rtx);
 extern rtx_insn *next_nondebug_insn (rtx);
 extern rtx_insn *prev_nonnote_nondebug_insn (rtx);
@@ -2830,7 +2830,7 @@ extern void remove_node_from_expr_list (const_rtx, rtx_expr_list **);
 extern void remove_node_from_insn_list (const rtx_insn *, rtx_insn_list **);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
-extern bool keep_with_call_p (const_rtx);
+extern bool keep_with_call_p (const rtx_insn *);
 extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
 extern int insn_rtx_cost (rtx, bool);
 

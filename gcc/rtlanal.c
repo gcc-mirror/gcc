@@ -3800,7 +3800,7 @@ find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
    call instruction.  */
 
 bool
-keep_with_call_p (const_rtx insn)
+keep_with_call_p (const rtx_insn *insn)
 {
   rtx set;
 
@@ -3824,7 +3824,8 @@ keep_with_call_p (const_rtx insn)
 	  /* This CONST_CAST is okay because next_nonnote_insn just
 	     returns its argument and we assign it to a const_rtx
 	     variable.  */
-	  const rtx_insn *i2 = next_nonnote_insn (CONST_CAST_RTX (insn));
+	  const rtx_insn *i2
+	    = next_nonnote_insn (const_cast<rtx_insn *> (insn));
 	  if (i2 && keep_with_call_p (i2))
 	    return true;
 	}

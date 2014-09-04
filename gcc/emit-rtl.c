@@ -3141,7 +3141,7 @@ get_last_insn_anywhere (void)
 /* Return the first nonnote insn emitted in current sequence or current
    function.  This routine looks inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 get_first_nonnote_insn (void)
 {
   rtx_insn *insn = get_insns ();
@@ -3167,7 +3167,7 @@ get_first_nonnote_insn (void)
 /* Return the last nonnote insn emitted in current sequence or current
    function.  This routine looks inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 get_last_nonnote_insn (void)
 {
   rtx_insn *insn = get_last_insn ();
@@ -3267,10 +3267,8 @@ next_nonnote_insn (rtx uncast_insn)
    look inside SEQUENCEs.  */
 
 rtx_insn *
-next_nonnote_insn_bb (rtx uncast_insn)
+next_nonnote_insn_bb (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = NEXT_INSN (insn);

@@ -1,3 +1,14 @@
+2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* emit-rtl.c (get_first_nonnote_insn): Return rtx_insn * instead of
+	rtx.
+	(get_last_nonnote_insn): Likewise.
+	(next_nonnote_insn_bb): Take rtx_insn * instead of rtx.
+	* resource.c (find_basic_block): Likewise.
+	* rtl.h: Adjust.
+	* rtlanal.c (keep_with_call_p): Take const rtx_insn * instead of
+	const_rtx.
+
 2014-09-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* genattr.c (main): Within the prototype of insn_latency written
