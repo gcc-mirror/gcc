@@ -17647,7 +17647,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 {
   tree node_or_origin = node ? node : origin;
   tree ultimate_origin;
-  dw_die_ref parm_die;
+  dw_die_ref parm_die = NULL;
   
   if (TREE_CODE_CLASS (TREE_CODE (node_or_origin)) == tcc_declaration)
     {
@@ -17655,14 +17655,32 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       if (parm_die && parm_die->die_parent == NULL)
 	{
-	  add_child_die (context_die, parm_die);
-	  /* XXX check that parm_die already has all the right attributes
-	     that we would add below?  */
-	  return parm_die;
+	  /* Check that parm_die already has the right attributes that
+	     we would have added below.  If any attributes are
+	     missing, fall through to add them.
+
+	     ?? Add more checks here.  */
+	  if (! DECL_ABSTRACT (node_or_origin)
+	      && !get_AT (parm_die, DW_AT_location)
+	      && !get_AT (parm_die, DW_AT_const_value))
+	    /* We are missing  location info, and are about to add it.  */
+	    ;
+	  else
+	    {
+	      add_child_die (context_die, parm_die);
+	      return parm_die;
+	    }
 	}
     }
 
-  parm_die = new_die (DW_TAG_formal_parameter, context_die, node);
+  bool reusing_die;
+  if (parm_die)
+    reusing_die = true;
+  else
+    {
+      parm_die = new_die (DW_TAG_formal_parameter, context_die, node);
+      reusing_die = false;
+    }
 
   switch (TREE_CODE_CLASS (TREE_CODE (node_or_origin)))
     {
@@ -17670,6 +17688,10 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       ultimate_origin = decl_ultimate_origin (node_or_origin);
       if (node || ultimate_origin)
 	origin = ultimate_origin;
+
+      if (reusing_die)
+	goto add_location;
+
       if (origin != NULL && node != origin)
 	add_abstract_origin_attribute (parm_die, origin);
       else if (emit_name_p)
@@ -17694,6 +17716,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
+    add_location:
       if (! DECL_ABSTRACT (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
 					       node == NULL, DW_AT_location);
@@ -18238,7 +18261,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  && !get_AT (old_die, DW_AT_inline))
 	{
 	  /* Detect and ignore this case, where we are trying to output
-	     something we have already output.  */
+	     something we have already output.
+
+	     If we have no location information, this must be a
+	     partially generated DIE from early dwarf generation.
+	     Fall through and generate it.  */
+	  if (get_AT (old_die, DW_AT_low_pc)
+	      || get_AT (old_die, DW_AT_ranges))
 	  return;
 	}
 
@@ -18257,6 +18286,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  subr_die = old_die;
 
+	  /* ??? Hmmm, early dwarf generation happened earlier, so no
+	     sense in removing the parameters.  Let's keep them and
+	     augment them with location information later.  */
+#if 0
 	  /* Clear out the declaration attribute and the formal parameters.
 	     Do not remove all children, because it is possible that this
 	     declaration die was forced using force_decl_die(). In such
@@ -18265,6 +18298,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  remove_AT (subr_die, DW_AT_declaration);
 	  remove_AT (subr_die, DW_AT_object_pointer);
 	  remove_child_TAG (subr_die, DW_TAG_formal_parameter);
+#endif
 	}
       else
 	{
@@ -21094,6 +21128,17 @@ dwarf2out_decl (tree decl)
 void
 dwarf2out_early_decl (tree decl)
 {
+  /* gen_decl_die() will set DECL_ABSTRACT because
+     cgraph_function_possibly_inlined_p() returns true.  This is in
+     turn will cause DW_AT_inline attributes to be set.
+
+     This happens because at early dwarf generation, there is no
+     cgraph information, causing cgraph_function_possibly_inlined_p()
+     to return true.  Trick cgraph_function_possibly_inlined_p()
+     while we generate dwarf early.  */
+  bool save = cgraph_global_info_ready;
+  cgraph_global_info_ready = true;
+
   /* We don't handle TYPE_DECLs.  If required, they'll be reached via
      other DECLs and they can point to template types or other things
      that dwarf2out can't handle when done via dwarf2out_decl.  */
@@ -21102,6 +21147,11 @@ dwarf2out_early_decl (tree decl)
     {
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+	  /* A missing cfun means the symbol is unused and was removed
+	     from the callgraph.  */
+	  if (!DECL_STRUCT_FUNCTION (decl))
+	    goto early_decl_exit;
+
 	  push_cfun (DECL_STRUCT_FUNCTION (decl));
 	  current_function_decl = decl;
 	}
@@ -21112,6 +21162,9 @@ dwarf2out_early_decl (tree decl)
 	  current_function_decl = NULL;
 	}
     }
+ early_decl_exit:
+  cgraph_global_info_ready = save;
+  return;
 }
 
 /* Write the debugging output for DECL.  */
