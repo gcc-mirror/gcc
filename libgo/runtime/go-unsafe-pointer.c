@@ -39,7 +39,7 @@ static const String reflection_string =
   sizeof REFLECTION - 1
 };
 
-const uintptr unsafe_Pointer_gc[] = {8, GC_APTR, 0, GC_END};
+const uintptr unsafe_Pointer_gc[] = {sizeof(void*), GC_APTR, 0, GC_END};
 
 const struct __go_type_descriptor unsafe_Pointer =
 {
