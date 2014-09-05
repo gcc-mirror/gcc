@@ -1,5 +1,14 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* emit-rtl.c (try_split): Update NULL_RTX to NULL in call to
+	fixup_args_size_notes.
+	* expr.c (fixup_args_size_notes): Strengthen first two params from
+	rtx to rtx_insn *, eliminating a checked cast.
+	* rtl.h (fixup_args_size_notes): Strengthen first two params from
+	rtx to rtx_insn *.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* haifa-sched.c (get_ready_element): Strengthen return type from
 	rtx to rtx_insn *.
 	* sched-int.h (get_ready_element): Likewise.
