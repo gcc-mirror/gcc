@@ -1,5 +1,10 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vget_high_1.c: New test.
+	* gcc.target/aarch64/vget_low_1.c: Likewise.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/int_comparisons.x: New file.
 	* gcc.target/aarch64/simd/int_comparisons_1.c: New test.
 	* gcc.target/aarch64/simd/int_comparisons_2.c: Ditto.
