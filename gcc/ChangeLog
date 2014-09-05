@@ -1,5 +1,10 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* cse.c (cse_insn): Strengthen local "new_rtx" from rtx to
+	rtx_insn *, eliminating a checked cast.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (modified_between_p): Strengthen params 2 and 3 from
 	const_rtx to const rtx_insn *.
 	* rtlanal.c (modified_between_p): Likewise, eliminating a checked
