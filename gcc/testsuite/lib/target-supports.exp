@@ -2294,8 +2294,8 @@ proc check_effective_target_arm_little_endian { } {
 proc check_effective_target_arm_vect_no_misalign { } {
     return [check_no_compiler_messages arm_vect_no_misalign assembly {
 	#if !defined(__arm__) \
-	    || (defined(__ARMEL__) \
-	        && (!defined(__thumb__) || defined(__thumb2__)))
+	    || (defined(__ARM_FEATURE_UNALIGNED) \
+	        && defined(__ARMEL__))
 	#error FOO
 	#endif
     }]
