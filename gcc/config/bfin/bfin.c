@@ -3411,7 +3411,7 @@ bfin_hardware_loop (void)
 /* Estimate the length of INSN conservatively.  */
 
 static int
-length_for_loop (rtx insn)
+length_for_loop (rtx_insn *insn)
 {
   int length = 0;
   if (JUMP_P (insn) && any_condjump_p (insn) && !optimize_size)

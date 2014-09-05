@@ -4605,7 +4605,7 @@ in_current_region_p (basic_block bb)
 
 /* Return the block which is a fallthru bb of a conditional jump JUMP.  */
 basic_block
-fallthru_bb_of_jump (rtx jump)
+fallthru_bb_of_jump (const rtx_insn *jump)
 {
   if (!JUMP_P (jump))
     return NULL;

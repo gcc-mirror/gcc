@@ -217,10 +217,10 @@ static void note_delay_statistics (int, int);
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
 static rtx_insn_list *optimize_skip (rtx_insn *);
 #endif
-static int get_jump_flags (rtx, rtx);
+static int get_jump_flags (const rtx_insn *, rtx);
 static int mostly_true_jump (rtx);
-static rtx get_branch_condition (rtx, rtx);
-static int condition_dominates_p (rtx, rtx);
+static rtx get_branch_condition (const rtx_insn *, rtx);
+static int condition_dominates_p (rtx, const rtx_insn *);
 static int redirect_with_delay_slots_safe_p (rtx_insn *, rtx, rtx);
 static int redirect_with_delay_list_safe_p (rtx_insn *, rtx, rtx_insn_list *);
 static int check_annul_list_true_false (int, rtx);
@@ -272,7 +272,8 @@ static bool
 simplejump_or_return_p (rtx insn)
 {
   return (JUMP_P (insn)
-	  && (simplejump_p (insn) || ANY_RETURN_P (PATTERN (insn))));
+	  && (simplejump_p (as_a <rtx_insn *> (insn))
+	      || ANY_RETURN_P (PATTERN (insn))));
 }
 
 /* Return TRUE if this insn should stop the search for insn to fill delay
@@ -845,7 +846,7 @@ optimize_skip (rtx_insn *insn)
     are predicted as very likely taken.  */
 
 static int
-get_jump_flags (rtx insn, rtx label)
+get_jump_flags (const rtx_insn *insn, rtx label)
 {
   int flags;
 
@@ -907,7 +908,7 @@ mostly_true_jump (rtx jump_insn)
    type of jump, or it doesn't go to TARGET, return 0.  */
 
 static rtx
-get_branch_condition (rtx insn, rtx target)
+get_branch_condition (const rtx_insn *insn, rtx target)
 {
   rtx pat = PATTERN (insn);
   rtx src;
@@ -953,7 +954,7 @@ get_branch_condition (rtx insn, rtx target)
    INSN, i.e., if INSN will always branch if CONDITION is true.  */
 
 static int
-condition_dominates_p (rtx condition, rtx insn)
+condition_dominates_p (rtx condition, const rtx_insn *insn)
 {
   rtx other_condition = get_branch_condition (insn, JUMP_LABEL (insn));
   enum rtx_code code = GET_CODE (condition);
@@ -3579,18 +3580,23 @@ make_return_insns (rtx_insn *first)
 
       /* Only look at filled JUMP_INSNs that go to the end of function
 	 label.  */
-      if (!NONJUMP_INSN_P (insn)
-	  || GET_CODE (PATTERN (insn)) != SEQUENCE
-	  || !jump_to_label_p (XVECEXP (PATTERN (insn), 0, 0)))
+      if (!NONJUMP_INSN_P (insn))
 	continue;
 
-      if (JUMP_LABEL (XVECEXP (PATTERN (insn), 0, 0)) == function_return_label)
+      if (GET_CODE (PATTERN (insn)) != SEQUENCE)
+	continue;
+
+      rtx_sequence *pat = as_a <rtx_sequence *> (PATTERN (insn));
+
+      if (!jump_to_label_p (pat->insn (0)))
+	continue;
+
+      if (JUMP_LABEL (pat->insn (0)) == function_return_label)
 	{
 	  kind = ret_rtx;
 	  real_label = real_return_label;
 	}
-      else if (JUMP_LABEL (XVECEXP (PATTERN (insn), 0, 0))
-	       == function_simple_return_label)
+      else if (JUMP_LABEL (pat->insn (0)) == function_simple_return_label)
 	{
 	  kind = simple_return_rtx;
 	  real_label = real_simple_return_label;
@@ -3598,7 +3604,6 @@ make_return_insns (rtx_insn *first)
       else
 	continue;
 
-      rtx_sequence *pat = as_a <rtx_sequence *> (PATTERN (insn));
       jump_insn = pat->insn (0);
 
       /* If we can't make the jump into a RETURN, try to redirect it to the best

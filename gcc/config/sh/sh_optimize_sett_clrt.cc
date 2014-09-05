@@ -118,7 +118,7 @@ private:
   // Given a cbranch insn, its basic block and another basic block, determine
   // the value to which the ccreg will be set after jumping/falling through to
   // the specified target basic block.
-  bool sh_cbranch_ccreg_value (rtx cbranch_insn,
+  bool sh_cbranch_ccreg_value (rtx_insn *cbranch_insn,
 			       basic_block cbranch_insn_bb,
 			       basic_block branch_target_bb) const;
 
@@ -276,7 +276,7 @@ sh_optimize_sett_clrt::const_setcc_value (rtx pat) const
 
 bool
 sh_optimize_sett_clrt
-::sh_cbranch_ccreg_value (rtx cbranch_insn, basic_block cbranch_insn_bb,
+::sh_cbranch_ccreg_value (rtx_insn *cbranch_insn, basic_block cbranch_insn_bb,
 			  basic_block branch_target_bb) const
 {
   rtx pc_set_rtx = pc_set (cbranch_insn);

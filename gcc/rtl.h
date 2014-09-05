@@ -2772,7 +2772,7 @@ extern int dead_or_set_regno_p (const_rtx, unsigned int);
 extern rtx find_reg_note (const_rtx, enum reg_note, const_rtx);
 extern rtx find_regno_note (const_rtx, enum reg_note, unsigned int);
 extern rtx find_reg_equal_equiv_note (const_rtx);
-extern rtx find_constant_src (const_rtx);
+extern rtx find_constant_src (const rtx_insn *);
 extern int find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
@@ -3232,20 +3232,20 @@ extern bool check_for_inc_dec (rtx_insn *insn);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
-extern bool jump_to_label_p (rtx);
-extern int condjump_p (const_rtx);
-extern int any_condjump_p (const_rtx);
-extern int any_uncondjump_p (const_rtx);
-extern rtx pc_set (const_rtx);
-extern rtx condjump_label (const_rtx);
-extern int simplejump_p (const_rtx);
-extern int returnjump_p (rtx);
+extern bool jump_to_label_p (const rtx_insn *);
+extern int condjump_p (const rtx_insn *);
+extern int any_condjump_p (const rtx_insn *);
+extern int any_uncondjump_p (const rtx_insn *);
+extern rtx pc_set (const rtx_insn *);
+extern rtx condjump_label (const rtx_insn *);
+extern int simplejump_p (const rtx_insn *);
+extern int returnjump_p (const rtx_insn *);
 extern int eh_returnjump_p (rtx_insn *);
-extern int onlyjump_p (const_rtx);
+extern int onlyjump_p (const rtx_insn *);
 extern int only_sets_cc0_p (const_rtx);
 extern int sets_cc0_p (const_rtx);
-extern int invert_jump_1 (rtx, rtx);
-extern int invert_jump (rtx, rtx, int);
+extern int invert_jump_1 (rtx_insn *, rtx);
+extern int invert_jump (rtx_insn *, rtx, int);
 extern int rtx_renumbered_equal_p (const_rtx, const_rtx);
 extern int true_regnum (const_rtx);
 extern unsigned int reg_or_subregno (const_rtx);
@@ -3259,7 +3259,7 @@ extern enum rtx_code reversed_comparison_code (const_rtx, const_rtx);
 extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, const_rtx,
 						     const_rtx, const_rtx);
 extern void delete_for_peephole (rtx_insn *, rtx_insn *);
-extern int condjump_in_parallel_p (const_rtx);
+extern int condjump_in_parallel_p (const rtx_insn *);
 
 /* In emit-rtl.c.  */
 extern int max_reg_num (void);

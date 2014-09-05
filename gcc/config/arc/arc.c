@@ -2849,8 +2849,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  /* Is this insn in a delay slot sequence?  */
 	  if (!final_sequence || XVECLEN (final_sequence, 0) < 2
 	      || current_insn_predicate
-	      || CALL_P (XVECEXP (final_sequence, 0, 0))
-	      || simplejump_p (XVECEXP (final_sequence, 0, 0)))
+	      || CALL_P (final_sequence->insn (0))
+	      || simplejump_p (final_sequence->insn (0)))
 	    {
 	      /* This insn isn't in a delay slot sequence, or conditionalized
 		 independently of its position in a delay slot.  */

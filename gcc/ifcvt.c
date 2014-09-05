@@ -92,7 +92,7 @@ static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
 static basic_block block_fallthru (basic_block);
 static int cond_exec_process_insns (ce_if_block *, rtx_insn *, rtx, rtx, int,
 				    int);
-static rtx cond_exec_get_condition (rtx);
+static rtx cond_exec_get_condition (rtx_insn *);
 static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block *);
@@ -429,7 +429,7 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 /* Return the condition for a jump.  Do not do any special processing.  */
 
 static rtx
-cond_exec_get_condition (rtx jump)
+cond_exec_get_condition (rtx_insn *jump)
 {
   rtx test_if, cond;
 
