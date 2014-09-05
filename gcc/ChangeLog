@@ -1,3 +1,7 @@
+2014-09-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Handle REG explicitly.
+
 2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* valtrack.c (dead_debug_insert_temp): Take an rtx_insn * instead of

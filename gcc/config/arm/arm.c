@@ -18555,6 +18555,20 @@ output_move_neon (rtx *operands)
       /* FIXME: Not currently enabled in neon_vector_mem_operand.  */
       gcc_unreachable ();
 
+    case REG:
+      /* We have to use vldm / vstm for too-large modes.  */
+      if (nregs > 1)
+	{
+	  if (nregs > 4)
+	    templ = "v%smia%%?\t%%m0, %%h1";
+	  else
+	    templ = "v%s1.64\t%%h1, %%A0";
+
+	  ops[0] = mem;
+	  ops[1] = reg;
+	  break;
+	}
+      /* Fall through.  */
     case LABEL_REF:
     case PLUS:
       {
@@ -18588,14 +18602,7 @@ output_move_neon (rtx *operands)
       }
 
     default:
-      /* We have to use vldm / vstm for too-large modes.  */
-      if (nregs > 4)
-	templ = "v%smia%%?\t%%m0, %%h1";
-      else
-	templ = "v%s1.64\t%%h1, %%A0";
-
-      ops[0] = mem;
-      ops[1] = reg;
+      gcc_unreachable ();
     }
 
   sprintf (buff, templ, load ? "ld" : "st");
