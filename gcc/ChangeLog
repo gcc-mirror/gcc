@@ -1,5 +1,9 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.md (adddi3_aarch64): set type to neon_add.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Replace
 	varargs with pointer parameter.
 	(aarch64_simd_expand_builtin): pass pointer into previous.
