@@ -1,3 +1,17 @@
+2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* emit-rtl.c (emit_insn_before_noloc): Take an rtx_insn * instead of
+	an rtx.
+	(emit_jump_insn_before_noloc): Likewise.
+	(emit_call_insn_before_noloc): Likewise.
+	(emit_label_before): Likewise.
+	(emit_label_after): Likewise.
+	(emit_insn_before_setloc): Likewise.
+	(emit_jump_insn_before_setloc): Likewise.
+	(emit_call_insn_before_setloc): Likewise.
+	(emit_call_insn_before): Likewise.
+	* rtl.h: Adjust.
+
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* cse.c (cse_insn): Strengthen local "new_rtx" from rtx to
