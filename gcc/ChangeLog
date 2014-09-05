@@ -1,5 +1,32 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-deps.c (sched_get_condition_with_rev_uncached): Strengthen
+	param "insn" from const_rtx to const rtx_insn *.
+	(sched_get_reverse_condition_uncached): Likewise.
+	(sched_get_condition_with_rev): Likewise.
+	(sched_has_condition_p): Likewise.
+	(sched_insns_conditions_mutex_p): Likewise for both params.
+	(sched_insn_is_legitimate_for_speculation_p): Likewise for param
+	"insn"; conver use of CONST_CAST_RTX to CONST_CAST_RTX_INSN.
+	(setup_insn_reg_uses): Move local "list" to be more tightly
+	scoped, strengthening it from an rtx to an rtx_insn_list *.  Use
+	its methods for clarity and type-safety.
+	(sched_analyze_1): Strengthen local "pending" from rtx to
+	rtx_insn_list *, and local "pending_mem" from rtx to
+	rtx_expr_list *.  Use methods of each for clarity and type-safety.
+	(sched_analyze_2): Likewise.
+	(sched_analyze_insn): Likewise.
+
+	* sched-int.h (sched_get_reverse_condition_uncached): Strengthen
+	param from const_rtx to const rtx_insn *.
+	(sched_insns_conditions_mutex_p): Likewise for both params.
+	(sched_insn_is_legitimate_for_speculation_p): Likewise for first
+	param.
+
+	* system.h (CONST_CAST_RTX_INSN): New macro.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* recog.c (peep2_attempt): Strengthen return type from rtx to
 	rtx_insn *.
 	(peep2_update_life): Likewise for params "last", "prev", removing
