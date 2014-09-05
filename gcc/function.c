@@ -5460,7 +5460,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 
   FOR_EACH_VEC_ELT (src_bbs, i, bb)
     {
-      rtx jump = BB_END (bb);
+      rtx_insn *jump = BB_END (bb);
 
       if (!JUMP_P (jump) || JUMP_LABEL (jump) != label)
 	continue;

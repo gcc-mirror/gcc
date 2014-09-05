@@ -5718,14 +5718,14 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
 int
 same_cmp_preceding_p (rtx i3)
 {
-  rtx i1, i2;
+  rtx_insn *i1, *i2;
 
   /* Make sure we have a sequence of three insns.  */
   i2 = prev_nonnote_insn (i3);
-  if (i2 == NULL_RTX)
+  if (i2 == NULL)
     return 0;
   i1 = prev_nonnote_insn (i2);
-  if (i1 == NULL_RTX)
+  if (i1 == NULL)
     return 0;
 
   return (INSN_P (i1) && rtx_equal_p (PATTERN (i1), PATTERN (i3))
@@ -5738,14 +5738,14 @@ same_cmp_preceding_p (rtx i3)
 int
 same_cmp_following_p (rtx i1)
 {
-  rtx i2, i3;
+  rtx_insn *i2, *i3;
 
   /* Make sure we have a sequence of three insns.  */
   i2 = next_nonnote_insn (i1);
-  if (i2 == NULL_RTX)
+  if (i2 == NULL)
     return 0;
   i3 = next_nonnote_insn (i2);
-  if (i3 == NULL_RTX)
+  if (i3 == NULL)
     return 0;
 
   return (INSN_P (i3) && rtx_equal_p (PATTERN (i1), PATTERN (i3))

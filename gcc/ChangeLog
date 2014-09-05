@@ -1,5 +1,68 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/arc/arc.c (arc_print_operand): Use insn method of
+	final_sequence for type-safety.
+	* config/bfin/bfin.c (bfin_hardware_loop): Strengthen param
+	"insn" from rtx to rtx_insn *.
+	* config/frv/frv.c (frv_print_operand_jump_hint): Likewise.
+	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc):
+	Likewise for locals "branch", "label".
+	* config/h8300/h8300.c (same_cmp_preceding_p): Likewise for
+	locals "i1", "i2".  Use NULL rather than NULL_RTX in comparisons.
+	(same_cmp_following_p): Likewise for locals "i2", "i3".
+	* config/sh/sh_optimize_sett_clrt.cc
+	(sh_optimize_sett_clrt::sh_cbranch_ccreg_value): Likewise for
+	param "cbranch_insn".
+	* function.c (convert_jumps_to_returns): Likewis for local "jump".
+	* ifcvt.c (cond_exec_get_condition): Likewise for param "jump".
+	* jump.c (simplejump_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(condjump_p): Likewise.
+	(condjump_in_parallel_p): Likewise.
+	(pc_set): Likewise.
+	(any_uncondjump_p): Likewise.
+	(any_condjump_p): Likewise.
+	(condjump_label): Likewise.
+	(returnjump_p): Strengthen param "insn" from rtx to
+	const rtx_insn *.
+	(onlyjump_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(jump_to_label_p): Likewise.
+	(invert_jump_1): Strengthen param "jump" from rtx to rtx_insn *.
+	(invert_jump): Likewise.
+	* reorg.c (simplejump_or_return_p): Add checked cast when calling
+	simplejump_p.
+	(get_jump_flags): Strengthen param "insn" from rtx to
+	const rtx_insn *.
+	(get_branch_condition): Likewise.
+	(condition_dominates_p): Likewise.
+	(make_return_insns): Move declaration of local "pat" earlier, to
+	after we've handled NONJUMP_INSN_P and non-sequences, using its
+	methods to simplify the code and for type-safety.
+	* rtl.h (find_constant_src): Strengthen param from const_rtx to
+	const rtx_insn *.
+	(jump_to_label_p): Strengthen param from rtx to const rtx_insn *.
+	(condjump_p): Strengthen param from const_rtx to
+	const rtx_insn *.
+	(any_condjump_p): Likewise.
+	(any_uncondjump_p): Likewise.
+	(pc_set): Likewise.
+	(condjump_label): Likewise.
+	(simplejump_p): Likewise.
+	(returnjump_p): Likewise.
+	(onlyjump_p): Likewise.
+	(invert_jump_1): Strengthen param 1 from rtx to rtx_insn *.
+	(invert_jump): Likewise.
+	(condjump_in_parallel_p): Strengthen param from const_rtx to
+	const rtx_insn *.
+	* rtlanal.c (find_constant_src): Strengthen param from const_rtx
+	to const rtx_insn *.
+	* sel-sched-ir.c (fallthru_bb_of_jump): Strengthen param from rtx
+	to const rtx_insn *.
+	* sel-sched-ir.h (fallthru_bb_of_jump): Likewise.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* reorg.c (relax_delay_slots): Move declaration of "trial_seq"
 	above the conditional, and convert the check on GET_CODE to a
 	dyn_cast, so that "trial_seq" is available as an rtx_sequence * in

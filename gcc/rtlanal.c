@@ -1918,7 +1918,7 @@ find_reg_equal_equiv_note (const_rtx insn)
    return null.  */
 
 rtx
-find_constant_src (const_rtx insn)
+find_constant_src (const rtx_insn *insn)
 {
   rtx note, set, x;
 

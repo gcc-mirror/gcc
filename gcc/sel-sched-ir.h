@@ -1619,7 +1619,7 @@ extern bool sel_bb_end_p (insn_t);
 extern bool sel_bb_empty_p (basic_block);
 
 extern bool in_current_region_p (basic_block);
-extern basic_block fallthru_bb_of_jump (rtx);
+extern basic_block fallthru_bb_of_jump (const rtx_insn *);
 
 extern void sel_init_bbs (bb_vec_t);
 extern void sel_finish_bbs (void);
