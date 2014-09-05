@@ -1,5 +1,11 @@
 2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* valtrack.c (dead_debug_insert_temp): Take an rtx_insn * instead of
+	an rtx.
+	* valtrack.h: Adjust.
+
+2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* emit-rtl.c (emit_insn_before_noloc): Take an rtx_insn * instead of
 	an rtx.
 	(emit_jump_insn_before_noloc): Likewise.
