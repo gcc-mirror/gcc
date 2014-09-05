@@ -496,7 +496,7 @@ static void sched_analyze_1 (struct deps_desc *, rtx, rtx_insn *);
 static void sched_analyze_2 (struct deps_desc *, rtx, rtx_insn *);
 static void sched_analyze_insn (struct deps_desc *, rtx, rtx_insn *);
 
-static bool sched_has_condition_p (const_rtx);
+static bool sched_has_condition_p (const rtx_insn *);
 static int conditions_mutex_p (const_rtx, const_rtx, bool, bool);
 
 static enum DEPS_ADJUST_RESULT maybe_add_or_update_dep_1 (dep_t, bool,
@@ -528,7 +528,7 @@ deps_may_trap_p (const_rtx mem)
    it is set to TRUE when the returned comparison should be reversed
    to get the actual condition.  */
 static rtx
-sched_get_condition_with_rev_uncached (const_rtx insn, bool *rev)
+sched_get_condition_with_rev_uncached (const rtx_insn *insn, bool *rev)
 {
   rtx pat = PATTERN (insn);
   rtx src;
@@ -567,7 +567,7 @@ sched_get_condition_with_rev_uncached (const_rtx insn, bool *rev)
    find such a condition.  The caller should make a copy of the condition
    before using it.  */
 rtx
-sched_get_reverse_condition_uncached (const_rtx insn)
+sched_get_reverse_condition_uncached (const rtx_insn *insn)
 {
   bool rev;
   rtx cond = sched_get_condition_with_rev_uncached (insn, &rev);
@@ -587,7 +587,7 @@ sched_get_reverse_condition_uncached (const_rtx insn)
    We only do actual work the first time we come here for an insn; the
    results are cached in INSN_CACHED_COND and INSN_REVERSE_COND.  */
 static rtx
-sched_get_condition_with_rev (const_rtx insn, bool *rev)
+sched_get_condition_with_rev (const rtx_insn *insn, bool *rev)
 {
   bool tmp;
 
@@ -620,7 +620,7 @@ sched_get_condition_with_rev (const_rtx insn, bool *rev)
 
 /* True when we can find a condition under which INSN is executed.  */
 static bool
-sched_has_condition_p (const_rtx insn)
+sched_has_condition_p (const rtx_insn *insn)
 {
   return !! sched_get_condition_with_rev (insn, NULL);
 }
@@ -646,7 +646,7 @@ conditions_mutex_p (const_rtx cond1, const_rtx cond2, bool rev1, bool rev2)
 /* Return true if insn1 and insn2 can never depend on one another because
    the conditions under which they are executed are mutually exclusive.  */
 bool
-sched_insns_conditions_mutex_p (const_rtx insn1, const_rtx insn2)
+sched_insns_conditions_mutex_p (const rtx_insn *insn1, const rtx_insn *insn2)
 {
   rtx cond1, cond2;
   bool rev1 = false, rev2 = false;
@@ -673,7 +673,7 @@ sched_insns_conditions_mutex_p (const_rtx insn1, const_rtx insn2)
 
 /* Return true if INSN can potentially be speculated with type DS.  */
 bool
-sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
+sched_insn_is_legitimate_for_speculation_p (const rtx_insn *insn, ds_t ds)
 {
   if (HAS_INTERNAL_DEP (insn))
     return false;
@@ -684,7 +684,7 @@ sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
   if (SCHED_GROUP_P (insn))
     return false;
 
-  if (IS_SPECULATION_CHECK_P (CONST_CAST_RTX (insn)))
+  if (IS_SPECULATION_CHECK_P (CONST_CAST_RTX_INSN (insn)))
     return false;
 
   if (side_effects_p (PATTERN (insn)))
@@ -1970,7 +1970,6 @@ setup_insn_reg_uses (struct deps_desc *deps, rtx_insn *insn)
 {
   unsigned i;
   reg_set_iterator rsi;
-  rtx list;
   struct reg_use_data *use, *use2, *next;
   struct deps_reg *reg_last;
 
@@ -1991,9 +1990,9 @@ setup_insn_reg_uses (struct deps_desc *deps, rtx_insn *insn)
       reg_last = &deps->reg_last[i];
 
       /* Create the cycle list of uses.  */
-      for (list = reg_last->uses; list; list = XEXP (list, 1))
+      for (rtx_insn_list *list = reg_last->uses; list; list = list->next ())
 	{
-	  use2 = create_insn_reg_use (i, as_a <rtx_insn *> (XEXP (list, 0)));
+	  use2 = create_insn_reg_use (i, list->insn ());
 	  next = use->next_regno_use;
 	  use->next_regno_use = use2;
 	  use2->next_regno_use = next;
@@ -2506,33 +2505,34 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	}
       else
 	{
-	  rtx pending, pending_mem;
+	  rtx_insn_list *pending;
+	  rtx_expr_list *pending_mem;
 
 	  pending = deps->pending_read_insns;
 	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
-	      if (anti_dependence (XEXP (pending_mem, 0), t)
-		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		note_mem_dep (t, XEXP (pending_mem, 0), as_a <rtx_insn *> (XEXP (pending, 0)),
+	      if (anti_dependence (pending_mem->element (), t)
+		  && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
+		note_mem_dep (t, pending_mem->element (), pending->insn (),
 			      DEP_ANTI);
 
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
+	      pending = pending->next ();
+	      pending_mem = pending_mem->next ();
 	    }
 
 	  pending = deps->pending_write_insns;
 	  pending_mem = deps->pending_write_mems;
 	  while (pending)
 	    {
-	      if (output_dependence (XEXP (pending_mem, 0), t)
-		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		note_mem_dep (t, XEXP (pending_mem, 0),
-			      as_a <rtx_insn *> (XEXP (pending, 0)),
+	      if (output_dependence (pending_mem->element (), t)
+		  && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
+		note_mem_dep (t, pending_mem->element (),
+			      pending->insn (),
 			      DEP_OUTPUT);
 
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
+	      pending = pending->next ();
+	      pending_mem = pending_mem-> next ();
 	    }
 
 	  add_dependence_list (insn, deps->last_pending_memory_flush, 1,
@@ -2635,7 +2635,8 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
       {
 	/* Reading memory.  */
 	rtx u;
-	rtx pending, pending_mem;
+	rtx_insn_list *pending;
+	rtx_expr_list *pending_mem;
 	rtx t = x;
 
 	if (sched_deps_info->use_cselib)
@@ -2657,31 +2658,31 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	    pending_mem = deps->pending_read_mems;
 	    while (pending)
 	      {
-		if (read_dependence (XEXP (pending_mem, 0), t)
+		if (read_dependence (pending_mem->element (), t)
 		    && ! sched_insns_conditions_mutex_p (insn,
-							 XEXP (pending, 0)))
-		  note_mem_dep (t, XEXP (pending_mem, 0),
-				as_a <rtx_insn *> (XEXP (pending, 0)),
+							 pending->insn ()))
+		  note_mem_dep (t, pending_mem->element (),
+				pending->insn (),
 				DEP_ANTI);
 
-		pending = XEXP (pending, 1);
-		pending_mem = XEXP (pending_mem, 1);
+		pending = pending->next ();
+		pending_mem = pending_mem->next ();
 	      }
 
 	    pending = deps->pending_write_insns;
 	    pending_mem = deps->pending_write_mems;
 	    while (pending)
 	      {
-		if (true_dependence (XEXP (pending_mem, 0), VOIDmode, t)
+		if (true_dependence (pending_mem->element (), VOIDmode, t)
 		    && ! sched_insns_conditions_mutex_p (insn,
-							 XEXP (pending, 0)))
-		  note_mem_dep (t, XEXP (pending_mem, 0),
-				as_a <rtx_insn *> (XEXP (pending, 0)),
+							 pending->insn ()))
+		  note_mem_dep (t, pending_mem->element (),
+				pending->insn (),
 				sched_deps_info->generate_spec_deps
 				? BEGIN_DATA | DEP_TRUE : DEP_TRUE);
 
-		pending = XEXP (pending, 1);
-		pending_mem = XEXP (pending_mem, 1);
+		pending = pending->next ();
+		pending_mem = pending_mem->next ();
 	      }
 
 	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
@@ -2998,7 +2999,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	reg_pending_barrier = MOVE_BARRIER;
       else
 	{
-	  rtx pending, pending_mem;
+	  rtx_insn_list *pending;
+	  rtx_expr_list *pending_mem;
 
           if (sched_deps_info->compute_jump_reg_dependencies)
             {
@@ -3026,23 +3028,23 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  pending_mem = deps->pending_write_mems;
 	  while (pending)
 	    {
-	      if (! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		add_dependence (insn, as_a <rtx_insn *> (XEXP (pending, 0)),
+	      if (! sched_insns_conditions_mutex_p (insn, pending->insn ()))
+		add_dependence (insn, pending->insn (),
 				REG_DEP_OUTPUT);
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
+	      pending = pending->next ();
+	      pending_mem = pending_mem->next ();
 	    }
 
 	  pending = deps->pending_read_insns;
 	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
-	      if (MEM_VOLATILE_P (XEXP (pending_mem, 0))
-		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		add_dependence (insn, as_a <rtx_insn *> (XEXP (pending, 0)),
+	      if (MEM_VOLATILE_P (pending_mem->element ())
+		  && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
+		add_dependence (insn, pending->insn (),
 				REG_DEP_OUTPUT);
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
+	      pending = pending->next ();
+	      pending_mem = pending_mem->next ();
 	    }
 
 	  add_dependence_list (insn, deps->last_pending_memory_flush, 1,
