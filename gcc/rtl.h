@@ -3363,7 +3363,7 @@ extern void emit_jump (rtx);
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
 extern HOST_WIDE_INT find_args_size_adjust (rtx);
-extern int fixup_args_size_notes (rtx, rtx, int);
+extern int fixup_args_size_notes (rtx_insn *, rtx_insn *, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const rtx_insn *, int);
