@@ -1,5 +1,12 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (set_block_for_insn): Eliminate this macro in
+	favor of...
+	* rtl.h (set_block_for_insn): New inline function, imposing the
+	requirement that the "insn" param is an rtx_insn *.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* caller-save.c (setup_save_areas): Strengthen local "insn" from
 	rtx to rtx_insn *.
 	* final.c (get_call_reg_set_usage): Likewise for first param,
