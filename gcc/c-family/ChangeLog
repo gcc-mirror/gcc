@@ -1,3 +1,9 @@
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63148
+	* c-format.c (check_format_arg): Properly handle
+	effectively signed POINTER_PLUS_EXPR offset.
+
 2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (Wc90-c99-compat,Wc++-compat,Wcomment,Wendif-labels,
