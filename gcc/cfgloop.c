@@ -1921,3 +1921,13 @@ bb_loop_depth (const_basic_block bb)
 {
   return bb->loop_father ? loop_depth (bb->loop_father) : 0;
 }
+
+/* Marks LOOP for removal and sets LOOPS_NEED_FIXUP.  */
+
+void
+mark_loop_for_removal (loop_p loop)
+{
+  loop->header = NULL;
+  loop->latch = NULL;
+  loops_state_set (LOOPS_NEED_FIXUP);
+}

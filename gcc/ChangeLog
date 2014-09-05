@@ -1,5 +1,17 @@
 2014-09-05  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.c (mark_loop_for_removal): New function.
+	* cfgloop.h (mark_loop_for_removal): Declare.
+	* cfghooks.c (delete_basic_block): Use mark_loop_for_removal.
+	(merge_blocks): Likewise.
+	(duplicate_block): Likewise.
+	* except.c (sjlj_emit_dispatch_table): Likewise.
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Likewise.
+	* tree-ssa-threadupdate.c (ssa_redirect_edges): Likewise.
+	(thread_through_loop_header): Likewise.
+
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/63148
 	* fold-const.c (try_move_mult_to_index): Remove.
 	(fold_binary_loc): Do not call it.

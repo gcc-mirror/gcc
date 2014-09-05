@@ -4171,10 +4171,9 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	   and mark the other loop as possibly having multiple latches.  */
 	if (e->dest == e->dest->loop_father->header)
 	  {
-	    e->dest->loop_father->header = NULL;
-	    e->dest->loop_father->latch = NULL;
+	    mark_loop_for_removal (e->dest->loop_father);
 	    new_bb->loop_father->latch = NULL;
-	    loops_state_set (LOOPS_NEED_FIXUP|LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	    loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
 	  }
 	redirect_eh_edge_1 (e, new_bb, change_region);
 	redirect_edge_succ (e, new_bb);
