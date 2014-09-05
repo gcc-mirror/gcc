@@ -987,10 +987,8 @@ reg_set_p (const_rtx reg, const_rtx insn)
    X contains a MEM; this routine does use memory aliasing.  */
 
 int
-modified_between_p (const_rtx x, const_rtx uncast_start, const_rtx end)
+modified_between_p (const_rtx x, const rtx_insn *start, const rtx_insn *end)
 {
-  const rtx_insn *start =
-    safe_as_a <const rtx_insn *> (uncast_start);
   const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;

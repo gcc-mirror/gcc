@@ -2743,7 +2743,7 @@ extern int reg_used_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int reg_set_between_p (const_rtx, const_rtx, const_rtx);
 extern int commutative_operand_precedence (rtx);
 extern bool swap_commutative_operands_p (rtx, rtx);
-extern int modified_between_p (const_rtx, const_rtx, const_rtx);
+extern int modified_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern int modified_in_p (const_rtx, const_rtx);
 extern int reg_set_p (const_rtx, const_rtx);

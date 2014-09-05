@@ -1,5 +1,12 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (modified_between_p): Strengthen params 2 and 3 from
+	const_rtx to const rtx_insn *.
+	* rtlanal.c (modified_between_p): Likewise, eliminating a checked
+	cast.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.c (try_split): Update NULL_RTX to NULL in call to
 	fixup_args_size_notes.
 	* expr.c (fixup_args_size_notes): Strengthen first two params from
