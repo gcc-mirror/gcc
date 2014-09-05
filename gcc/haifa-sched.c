@@ -8731,7 +8731,7 @@ number_in_ready (void)
 
 /* Get number of ready's in the ready list.  */
 
-rtx
+rtx_insn *
 get_ready_element (int i)
 {
   return ready_element (&ready, i);
