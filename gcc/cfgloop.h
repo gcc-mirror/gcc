@@ -336,6 +336,8 @@ struct loop * loop_version (struct loop *, void *,
 extern bool remove_path (edge);
 extern void unloop (struct loop *, bool *, bitmap);
 extern void scale_loop_frequencies (struct loop *, int, int);
+void mark_loop_for_removal (loop_p);
+
 
 /* Induction variable analysis.  */
 

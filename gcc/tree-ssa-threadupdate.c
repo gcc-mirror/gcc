@@ -766,11 +766,7 @@ ssa_redirect_edges (struct redirection_data **slot,
 
 	  /* If we redirect a loop latch edge cancel its loop.  */
 	  if (e->src == e->src->loop_father->latch)
-	    {
-	      e->src->loop_father->header = NULL;
-	      e->src->loop_father->latch = NULL;
-	      loops_state_set (LOOPS_NEED_FIXUP);
-	    }
+	    mark_loop_for_removal (e->src->loop_father);
 
 	  /* Redirect the incoming edge (possibly to the joiner block) to the
 	     appropriate duplicate block.  */
@@ -1304,9 +1300,7 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
     {
       /* If the loop ceased to exist, mark it as such, and thread through its
 	 original header.  */
-      loop->header = NULL;
-      loop->latch = NULL;
-      loops_state_set (LOOPS_NEED_FIXUP);
+      mark_loop_for_removal (loop);
       return thread_block (header, false);
     }
 
