@@ -4328,6 +4328,85 @@ vget_low_u64 (uint64x2_t __a)
 
 #undef __GET_LOW
 
+#define __GET_HIGH(__TYPE)					\
+  uint64x2_t tmp = vreinterpretq_u64_##__TYPE (__a);		\
+  uint64x1_t hi = vcreate_u64 (vgetq_lane_u64 (tmp, 1));	\
+  return vreinterpret_##__TYPE##_u64 (hi);
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vget_high_f32 (float32x4_t __a)
+{
+  __GET_HIGH (f32);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vget_high_f64 (float64x2_t __a)
+{
+  __GET_HIGH (f64);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vget_high_p8 (poly8x16_t __a)
+{
+  __GET_HIGH (p8);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vget_high_p16 (poly16x8_t __a)
+{
+  __GET_HIGH (p16);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vget_high_s8 (int8x16_t __a)
+{
+  __GET_HIGH (s8);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vget_high_s16 (int16x8_t __a)
+{
+  __GET_HIGH (s16);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vget_high_s32 (int32x4_t __a)
+{
+  __GET_HIGH (s32);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vget_high_s64 (int64x2_t __a)
+{
+  __GET_HIGH (s64);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vget_high_u8 (uint8x16_t __a)
+{
+  __GET_HIGH (u8);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vget_high_u16 (uint16x8_t __a)
+{
+  __GET_HIGH (u16);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vget_high_u32 (uint32x4_t __a)
+{
+  __GET_HIGH (u32);
+}
+
+#undef __GET_HIGH
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vget_high_u64 (uint64x2_t __a)
+{
+  return vcreate_u64 (vgetq_lane_u64 (__a, 1));
+}
+
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vcombine_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -5766,138 +5845,6 @@ vfmsq_f64 (float64x2_t a, float64x2_t b, float64x2_t c)
   __asm__ ("fmls %0.2d,%2.2d,%3.2d"
            : "=w"(result)
            : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vget_high_f32 (float32x4_t a)
-{
-  float32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
-vget_high_f64 (float64x2_t a)
-{
-  float64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vget_high_p8 (poly8x16_t a)
-{
-  poly8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vget_high_p16 (poly16x8_t a)
-{
-  poly16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vget_high_s8 (int8x16_t a)
-{
-  int8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vget_high_s16 (int16x8_t a)
-{
-  int16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vget_high_s32 (int32x4_t a)
-{
-  int32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vget_high_s64 (int64x2_t a)
-{
-  int64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vget_high_u8 (uint8x16_t a)
-{
-  uint8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vget_high_u16 (uint16x8_t a)
-{
-  uint16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vget_high_u32 (uint32x4_t a)
-{
-  uint32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vget_high_u64 (uint64x2_t a)
-{
-  uint64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
            : /* No clobbers */);
   return result;
 }
