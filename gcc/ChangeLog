@@ -1,5 +1,19 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* caller-save.c (setup_save_areas): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	* final.c (get_call_reg_set_usage): Likewise for first param,
+	eliminating a checked cast.
+	* regs.h (get_call_reg_set_usage): Likewise for first param.
+	* resource.c (mark_set_resources): Introduce local rtx_call_insn *
+	"call_insn" for the case of a MARK_SRC_DEST_CALL via a checked
+	cast, replacing references to "x" with "call_insn" where
+	appropriate.
+	(mark_target_live_regs): Strengthen local "real_insn" from rtx to
+	rtx_insn *, adding a checked cast.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* output.h (final_scan_insn): Strengthen first param from rtx to
 	rtx_insn *.
 

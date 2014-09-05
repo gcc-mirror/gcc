@@ -4879,10 +4879,9 @@ get_call_cgraph_rtl_info (rtx_insn *insn)
    in REG_SET.  Return DEFAULT_SET in REG_SET if not found.  */
 
 bool
-get_call_reg_set_usage (rtx uncast_insn, HARD_REG_SET *reg_set,
+get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 			HARD_REG_SET default_set)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   if (flag_use_caller_save)
     {
       struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);
