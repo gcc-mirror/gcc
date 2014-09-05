@@ -1,3 +1,8 @@
+2014-09-05  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/62245
+	* intrinsic.texi (INT): clarify result.
+
 2014-09-03  Fritz Reese  <Reese-Fritz@zai.com>
 
 	PR fortran/62174
