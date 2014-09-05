@@ -1,5 +1,29 @@
 2014-09-05  Bin Cheng  <bin.cheng@arm.com>
 
+	PR target/55701
+	* config/arm/arm.md (setmem): New pattern.
+	* config/arm/arm-protos.h (struct tune_params): New fields.
+	(arm_gen_setmem): New prototype.
+	* config/arm/arm.c (arm_slowmul_tune): Initialize new fields.
+	(arm_fastmul_tune, arm_strongarm_tune, arm_xscale_tune): Ditto.
+	(arm_9e_tune, arm_v6t2_tune, arm_cortex_tune): Ditto.
+	(arm_cortex_a8_tune, arm_cortex_a7_tune): Ditto.
+	(arm_cortex_a15_tune, arm_cortex_a53_tune): Ditto.
+	(arm_cortex_a57_tune, arm_cortex_a5_tune): Ditto.
+	(arm_cortex_a9_tune, arm_cortex_a12_tune): Ditto.
+	(arm_v7m_tune, arm_v6m_tune, arm_fa726te_tune): Ditto.
+	(arm_const_inline_cost): New function.
+	(arm_block_set_max_insns): New function.
+	(arm_block_set_non_vect_profit_p): New function.
+	(arm_block_set_vect_profit_p): New function.
+	(arm_block_set_unaligned_vect): New function.
+	(arm_block_set_aligned_vect): New function.
+	(arm_block_set_unaligned_non_vect): New function.
+	(arm_block_set_aligned_non_vect): New function.
+	(arm_block_set_vect, arm_gen_setmem): New functions.
+
+2014-09-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* config/arm/arm.md (arm_movqi_insn): Use Uh instead of m constraint.
 
 2014-09-05  Bin Cheng  <bin.cheng@arm.com>

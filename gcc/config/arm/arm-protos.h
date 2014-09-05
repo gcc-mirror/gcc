@@ -278,6 +278,10 @@ struct tune_params
   /* Prefer 32-bit encoding instead of 16-bit encoding where subset of flags
      would be set.  */
   bool disparage_partial_flag_setting_t16_encodings;
+  /* Prefer to inline string operations like memset by using Neon.  */
+  bool string_ops_prefer_neon;
+  /* Maximum number of instructions to inline calls to memset.  */
+  int max_insns_inline_memset;
 };
 
 extern const struct tune_params *current_tune;
@@ -290,6 +294,7 @@ extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 #endif /* RTX_CODE */
 
+extern bool arm_gen_setmem (rtx *);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 

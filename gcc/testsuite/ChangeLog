@@ -1,3 +1,17 @@
+2014-09-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/55701
+	* gcc.target/arm/memset-inline-1.c: New test.
+	* gcc.target/arm/memset-inline-2.c: New test.
+	* gcc.target/arm/memset-inline-3.c: New test.
+	* gcc.target/arm/memset-inline-4.c: New test.
+	* gcc.target/arm/memset-inline-5.c: New test.
+	* gcc.target/arm/memset-inline-6.c: New test.
+	* gcc.target/arm/memset-inline-7.c: New test.
+	* gcc.target/arm/memset-inline-8.c: New test.
+	* gcc.target/arm/memset-inline-9.c: New test.
+	* gcc.target/arm/memset-inline-10.c: New test.
+
 2014-09-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/pr44683.c: Remove dg-options for sh*-*-*.
