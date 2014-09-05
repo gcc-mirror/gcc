@@ -1,5 +1,14 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/scalar_intrinsics.c (*): Replace all
+	int{32,16,8}x1_t with int{32,16,8}_t.
+	* gcc.target/aarch64/simd/vqdmlalh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmullh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulls_lane_s32.c: Likewise.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vget_high_1.c: New test.
 	* gcc.target/aarch64/vget_low_1.c: Likewise.
 
