@@ -5435,7 +5435,8 @@ cse_insn (rtx_insn *insn)
 	     and hope for the best.  */
 	  if (n_sets == 1)
 	    {
-	      rtx new_rtx, note;
+	      rtx_insn *new_rtx;
+	      rtx note;
 
 	      new_rtx = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
 	      JUMP_LABEL (new_rtx) = XEXP (src, 0);
@@ -5450,7 +5451,7 @@ cse_insn (rtx_insn *insn)
 		}
 
 	      delete_insn_and_edges (insn);
-	      insn = as_a <rtx_insn *> (new_rtx);
+	      insn = new_rtx;
 	    }
 	  else
 	    INSN_CODE (insn) = -1;
