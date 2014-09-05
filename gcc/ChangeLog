@@ -1,3 +1,10 @@
+2014-09-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/63187
+	* config/rs6000/rs6000.md (*and<mode>3_imm_dot, *and<mode>3_imm_dot2):
+	Do not allow any_mask_operand for operands[2].
+	(*and<mode>3_imm_mask_dot, *and<mode>3_imm_mask_dot2): New.
+
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/arc/arc.c (arc_print_operand): Use insn method of
