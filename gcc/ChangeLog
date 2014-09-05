@@ -1,5 +1,13 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* reorg.c (relax_delay_slots): Move declaration of "trial_seq"
+	above the conditional, and convert the check on GET_CODE to a
+	dyn_cast, so that "trial_seq" is available as an rtx_sequence * in
+	the conditional.  Simplify the conditional by using methods of
+	"trial_seq".
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* haifa-sched.c (check_clobbered_conditions): Strengthen local
 	"link" from rtx to rtx_insn_list *, and use its methods for
 	clarity and type-safety.
