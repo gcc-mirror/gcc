@@ -1,5 +1,18 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_fold_builtin): Remove code
+	handling cmge, cmgt, cmeq, cmtst.
+
+	* config/aarch64/aarch64-simd-builtins.def (cmeq, cmge, cmgt, cmle,
+	cmlt, cmgeu, cmgtu, cmtst): Remove.
+
+	* config/aarch64/arm_neon.h (vceq_*, vceqq_*, vceqz_*, vceqzq_*,
+	vcge_*, vcgeq_*, vcgez_*, vcgezq_*, vcgt_*, vcgtq_*, vcgtz_*,
+	vcgtzq_*, vcle_*, vcleq_*, vclez_*, vclezq_*, vclt_*, vcltq_*,
+	vcltz_*, vcltzq_*, vtst_*, vtstq_*): Use gcc vector extensions.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (aarch64_types_cmtst_qualifiers,
 	TYPES_TST): Define.
 	(aarch64_fold_builtin): Update pattern for cmtst.

@@ -237,17 +237,6 @@
   BUILTIN_VSDQ_I (SHIFTIMM, sqshl_n, 0)
   BUILTIN_VSDQ_I (USHIFTIMM, uqshl_n, 0)
 
-  /* Implemented by aarch64_cm<cmp><mode>.  */
-  BUILTIN_VALLDI (BINOP, cmeq, 0)
-  BUILTIN_VALLDI (BINOP, cmge, 0)
-  BUILTIN_VALLDI (BINOP, cmgt, 0)
-  BUILTIN_VALLDI (BINOP, cmle, 0)
-  BUILTIN_VALLDI (BINOP, cmlt, 0)
-  /* Implemented by aarch64_cm<cmp><mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, cmgeu, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmgtu, 0)
-  BUILTIN_VSDQ_I_DI (TST, cmtst, 0)
-
   /* Implemented by reduc_<sur>plus_<mode>.  */
   BUILTIN_VALL (UNOP, reduc_splus_, 10)
   BUILTIN_VDQ (UNOP, reduc_uplus_, 10)

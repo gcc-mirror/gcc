@@ -1281,22 +1281,6 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VALLDI (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
-      BUILTIN_VALLDI (BINOP, cmge, 0)
-	return fold_build2 (GE_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VALLDI (BINOP, cmgt, 0)
-	return fold_build2 (GT_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VALLDI (BINOP, cmeq, 0)
-	return fold_build2 (EQ_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VSDQ_I_DI (TST, cmtst, 0)
-	{
-	  tree and_node = fold_build2 (BIT_AND_EXPR, type, args[0], args[1]);
-	  tree vec_zero_node = build_zero_cst (type);
-	  return fold_build2 (NE_EXPR, type, and_node, vec_zero_node);
-	  break;
-	}
       VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
       VAR1 (REINTERP_SS, reinterpretv8qi, 0, v1df)
       VAR1 (REINTERP_SS, reinterpretv4hi, 0, v1df)
