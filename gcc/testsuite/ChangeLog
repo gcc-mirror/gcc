@@ -1,3 +1,11 @@
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63148
+	* gcc.dg/vect/pr63148.c: New testcase.
+	* c-c++-common/pr19807-1.c: Likewise.
+	* g++.dg/tree-ssa/pr19807.C: Adjust.
+	* g++.dg/tree-ssa/tmmti-2.C: Remove.
+
 2014-09-05  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/55701

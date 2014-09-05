@@ -962,6 +962,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	  orig_type = TREE_TYPE (base);
 	  STRIP_USELESS_TYPE_CONVERSION (base);
 	  split_constant_offset (base, &base, &off);
+	  STRIP_USELESS_TYPE_CONVERSION (base);
 	  /* Fold the MEM_REF offset into the evolutions initial
 	     value to make more bases comparable.  */
 	  if (!integer_zerop (memoff))
