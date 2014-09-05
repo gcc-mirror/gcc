@@ -1,5 +1,13 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* recog.c (peep2_attempt): Strengthen return type from rtx to
+	rtx_insn *.
+	(peep2_update_life): Likewise for params "last", "prev", removing
+	a checked cast made redundant by this.
+	(peephole2_optimize): Likewise for local "last".
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (set_block_for_insn): Eliminate this macro in
 	favor of...
 	* rtl.h (set_block_for_insn): New inline function, imposing the
