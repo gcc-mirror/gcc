@@ -1,3 +1,7 @@
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vrbit_1.c: New test.
+
 2014-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63148
