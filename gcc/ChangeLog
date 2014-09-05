@@ -1,5 +1,23 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* output.h (final_scan_insn): Strengthen first param from rtx to
+	rtx_insn *.
+
+	* final.c (final_scan_insn): Likewise, renaming it back from
+	"uncast_insn" to "insn", eliminating the checked cast.
+
+	* config/h8300/h8300.md (define_insn "jump"): Replace local rtx
+	"vec" with an rtx_sequence * "seq", taking a copy of
+	"final_sequence", and using methods of "seq" for clarity, and for
+	type-safety in the calls to final_scan_insn.
+	* config/mips/mips.c (mips_output_conditional_branch): Use methods
+	of "final_sequence" for clarity, and for type-safety in the call to
+	final_scan_insn.
+	* config/sh/sh.c (print_slot): Strengthen param from rtx to
+	rtx_sequence * and rename from "insn" to "seq".
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* jump.c (delete_related_insns): Introduce a new local "table" by
 	replacing JUMP_TABLE_DATA_P with a dyn_cast, then use the
 	get_labels method of "table" to simplify access to the labels in

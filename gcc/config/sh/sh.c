@@ -184,7 +184,7 @@ static bool shmedia_space_reserved_for_target_registers;
 
 static void split_branches (rtx_insn *);
 static int branch_dest (rtx);
-static void print_slot (rtx);
+static void print_slot (rtx_sequence *);
 static rtx_code_label *add_constant (rtx, enum machine_mode, rtx);
 static void dump_table (rtx_insn *, rtx_insn *);
 static bool broken_move (rtx_insn *);
@@ -2641,11 +2641,11 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
    another instruction, but couldn't because the other instruction expanded
    into a sequence where putting the slot insn at the end wouldn't work.  */
 static void
-print_slot (rtx insn)
+print_slot (rtx_sequence *seq)
 {
-  final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file, optimize, 1, NULL);
+  final_scan_insn (seq->insn (1), asm_out_file, optimize, 1, NULL);
 
-  INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
+  INSN_DELETED_P (seq->insn (1)) = 1;
 }
 
 const char *

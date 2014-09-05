@@ -2171,15 +2171,13 @@ call_from_call_insn (rtx_call_insn *insn)
    both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
 
 rtx_insn *
-final_scan_insn (rtx uncast_insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
+final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
 #endif
   rtx_insn *next;
-
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
 
   insn_counter++;
 

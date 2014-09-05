@@ -12496,9 +12496,9 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	 delay slot if is not annulled.  */
       if (!INSN_ANNULLED_BRANCH_P (insn))
 	{
-	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -12521,9 +12521,9 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	 Use INSN's delay slot if is annulled.  */
       if (INSN_ANNULLED_BRANCH_P (insn))
 	{
-	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
 	}
       else
 	output_asm_insn ("nop", 0);
