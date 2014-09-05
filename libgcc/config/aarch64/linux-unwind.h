@@ -81,7 +81,7 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 
   new_cfa = (_Unwind_Ptr) sc;
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
   for (i = 0; i < AARCH64_DWARF_NUMBER_R; i++)
@@ -144,11 +144,12 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 
   fs->signal_frame = 1;
 
-  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].how = REG_SAVED_VAL_OFFSET;
-  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].loc.offset =
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how =
+    REG_SAVED_VAL_OFFSET;
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset =
     (_Unwind_Ptr) (sc->pc) - new_cfa;
 
-  fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
+  fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
 
   return _URC_NO_REASON;
 }

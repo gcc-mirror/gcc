@@ -175,8 +175,8 @@ ucontext_for (struct _Unwind_Context *context)
 
 /* The fallback proper.  */
 
-#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
-#define RETURN_COLUMN DWARF_ALT_FRAME_RETURN_COLUMN
+#ifdef __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__
+#define RETURN_COLUMN __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__
 #else
 #define RETURN_COLUMN ARG_POINTER_REGNUM
 #endif
@@ -204,17 +204,17 @@ ppc_aix_fallback_frame_state (struct _Unwind_Context *context,
 
   /* The "kernel" frame cfa is the stack pointer at the signal occurrence
      point.  */
-  new_cfa = mctx->gpr[STACK_POINTER_REGNUM];
+  new_cfa = mctx->gpr[__LIBGCC_STACK_POINTER_REGNUM__];
 
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   /* And we state how to find the various registers it has saved with
      relative offset rules from there.  */
 
   for (i = 0; i < 32; i++)
-    if (i != STACK_POINTER_REGNUM)
+    if (i != __LIBGCC_STACK_POINTER_REGNUM__)
       REGISTER_CFA_OFFSET_FOR (fs, i, &mctx->gpr[i], new_cfa);
 
   REGISTER_CFA_OFFSET_FOR (fs, CR2_REGNO, &mctx->cr, new_cfa);

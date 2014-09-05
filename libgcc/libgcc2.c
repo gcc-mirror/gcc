@@ -2209,7 +2209,8 @@ TRANSFER_FROM_TRAMPOLINE
 #define SYMBOL__MAIN __main
 #endif
 
-#if defined (INIT_SECTION_ASM_OP) || defined (INIT_ARRAY_SECTION_ASM_OP)
+#if defined (__LIBGCC_INIT_SECTION_ASM_OP__) \
+    || defined (__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__)
 #undef HAS_INIT_SECTION
 #define HAS_INIT_SECTION
 #endif
@@ -2219,7 +2220,7 @@ TRANSFER_FROM_TRAMPOLINE
 /* Some ELF crosses use crtstuff.c to provide __CTOR_LIST__, but use this
    code to run constructors.  In that case, we need to handle EH here, too.  */
 
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef __LIBGCC_EH_FRAME_SECTION_NAME__
 #include "unwind-dw2-fde.h"
 extern unsigned char __EH_FRAME_BEGIN__[];
 #endif
@@ -2239,7 +2240,7 @@ __do_global_dtors (void)
       (*(p-1)) ();
     }
 #endif
-#if defined (EH_FRAME_SECTION_NAME) && !defined (HAS_INIT_SECTION)
+#if defined (__LIBGCC_EH_FRAME_SECTION_NAME__) && !defined (HAS_INIT_SECTION)
   {
     static int completed = 0;
     if (! completed)
@@ -2258,7 +2259,7 @@ __do_global_dtors (void)
 void
 __do_global_ctors (void)
 {
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef __LIBGCC_EH_FRAME_SECTION_NAME__
   {
     static struct object object;
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
@@ -2312,7 +2313,8 @@ SYMBOL__MAIN (void)
    must be in the bss/common section.
 
    Long term no port should use those extensions.  But many still do.  */
-#if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
+#if !defined(__LIBGCC_INIT_SECTION_ASM_OP__) \
+    && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
 #if defined (TARGET_ASM_CONSTRUCTOR) || defined (USE_COLLECT2)
 func_ptr __CTOR_LIST__[2] = {0, 0};
 func_ptr __DTOR_LIST__[2] = {0, 0};
@@ -2320,6 +2322,6 @@ func_ptr __DTOR_LIST__[2] = {0, 0};
 func_ptr __CTOR_LIST__[2];
 func_ptr __DTOR_LIST__[2];
 #endif
-#endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
+#endif /* no __LIBGCC_INIT_SECTION_ASM_OP__ and not CTOR_LISTS_DEFINED_EXTERNALLY */
 #endif /* L_ctors */
 #endif /* LIBGCC2_UNITS_PER_WORD <= MIN_UNITS_PER_WORD */
