@@ -1,5 +1,11 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/simd/int_comparisons.x: New file.
+	* gcc.target/aarch64/simd/int_comparisons_1.c: New test.
+	* gcc.target/aarch64/simd/int_comparisons_2.c: Ditto.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/vrbit_1.c: New test.
 
 2014-09-05  Richard Biener  <rguenther@suse.de>

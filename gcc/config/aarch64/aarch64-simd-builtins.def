@@ -246,7 +246,7 @@
   /* Implemented by aarch64_cm<cmp><mode>.  */
   BUILTIN_VSDQ_I_DI (BINOP, cmgeu, 0)
   BUILTIN_VSDQ_I_DI (BINOP, cmgtu, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
+  BUILTIN_VSDQ_I_DI (TST, cmtst, 0)
 
   /* Implemented by reduc_<sur>plus_<mode>.  */
   BUILTIN_VALL (UNOP, reduc_splus_, 10)

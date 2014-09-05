@@ -1,5 +1,28 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_types_cmtst_qualifiers,
+	TYPES_TST): Define.
+	(aarch64_fold_builtin): Update pattern for cmtst.
+
+	* config/aarch64/aarch64-protos.h (aarch64_const_vec_all_same_int_p):
+	Declare.
+
+	* config/aarch64/aarch64-simd-builtins.def (cmtst): Update qualifiers.
+
+	* config/aarch64/aarch64-simd.md (aarch64_vcond_internal<mode><mode>):
+	Switch operands, separate out more cases, refactor.
+
+	(aarch64_cmtst<mode>): Rewrite pattern to match (plus ... -1).
+
+	* config/aarch64.c (aarch64_const_vec_all_same_int_p): Take single
+	argument; rename old version to...
+	(aarch64_const_vec_all_same_in_range_p): ...this.
+	(aarch64_print_operand, aarch64_simd_shift_imm_p): Follow renaming.
+
+	* config/aarch64/predicates.md (aarch64_simd_imm_minus_one): Define.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers):
 	Remove qualifier_const_pointer, update comment.
 

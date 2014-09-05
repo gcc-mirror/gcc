@@ -137,9 +137,6 @@ static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (enum machine_mode);
 static unsigned bit_count (unsigned HOST_WIDE_INT);
-static bool aarch64_const_vec_all_same_int_p (rtx,
-					      HOST_WIDE_INT, HOST_WIDE_INT);
-
 static bool aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 						 const unsigned char *sel);
 static int aarch64_address_cost (rtx, enum machine_mode, addr_space_t, bool);
@@ -3576,6 +3573,36 @@ aarch64_get_condition_code (rtx x)
     }
 }
 
+bool
+aarch64_const_vec_all_same_in_range_p (rtx x,
+				  HOST_WIDE_INT minval,
+				  HOST_WIDE_INT maxval)
+{
+  HOST_WIDE_INT firstval;
+  int count, i;
+
+  if (GET_CODE (x) != CONST_VECTOR
+      || GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_INT)
+    return false;
+
+  firstval = INTVAL (CONST_VECTOR_ELT (x, 0));
+  if (firstval < minval || firstval > maxval)
+    return false;
+
+  count = CONST_VECTOR_NUNITS (x);
+  for (i = 1; i < count; i++)
+    if (INTVAL (CONST_VECTOR_ELT (x, i)) != firstval)
+      return false;
+
+  return true;
+}
+
+bool
+aarch64_const_vec_all_same_int_p (rtx x, HOST_WIDE_INT val)
+{
+  return aarch64_const_vec_all_same_in_range_p (x, val, val);
+}
+
 static unsigned
 bit_count (unsigned HOST_WIDE_INT value)
 {
@@ -3827,9 +3854,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	case CONST_VECTOR:
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
 	    {
-	      gcc_assert (aarch64_const_vec_all_same_int_p (x,
-							    HOST_WIDE_INT_MIN,
-							    HOST_WIDE_INT_MAX));
+	      gcc_assert (
+		  aarch64_const_vec_all_same_in_range_p (x,
+							 HOST_WIDE_INT_MIN,
+							 HOST_WIDE_INT_MAX));
 	      asm_fprintf (f, "%wd", INTVAL (CONST_VECTOR_ELT (x, 0)));
 	    }
 	  else if (aarch64_simd_imm_zero_p (x, GET_MODE (x)))
@@ -7732,39 +7760,15 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
 #undef CHECK
 }
 
-static bool
-aarch64_const_vec_all_same_int_p (rtx x,
-				  HOST_WIDE_INT minval,
-				  HOST_WIDE_INT maxval)
-{
-  HOST_WIDE_INT firstval;
-  int count, i;
-
-  if (GET_CODE (x) != CONST_VECTOR
-      || GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_INT)
-    return false;
-
-  firstval = INTVAL (CONST_VECTOR_ELT (x, 0));
-  if (firstval < minval || firstval > maxval)
-    return false;
-
-  count = CONST_VECTOR_NUNITS (x);
-  for (i = 1; i < count; i++)
-    if (INTVAL (CONST_VECTOR_ELT (x, i)) != firstval)
-      return false;
-
-  return true;
-}
-
 /* Check of immediate shift constants are within range.  */
 bool
 aarch64_simd_shift_imm_p (rtx x, enum machine_mode mode, bool left)
 {
   int bit_width = GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT;
   if (left)
-    return aarch64_const_vec_all_same_int_p (x, 0, bit_width - 1);
+    return aarch64_const_vec_all_same_in_range_p (x, 0, bit_width - 1);
   else
-    return aarch64_const_vec_all_same_int_p (x, 1, bit_width);
+    return aarch64_const_vec_all_same_in_range_p (x, 1, bit_width);
 }
 
 /* Return true if X is a uniform vector where all elements

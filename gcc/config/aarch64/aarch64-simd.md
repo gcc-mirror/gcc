@@ -1912,70 +1912,100 @@
 	  (match_operand:VDQ 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
-  int inverse = 0, has_zero_imm_form = 0;
   rtx op1 = operands[1];
   rtx op2 = operands[2];
   rtx mask = gen_reg_rtx (<MODE>mode);
+  enum rtx_code code = GET_CODE (operands[3]);
 
-  switch (GET_CODE (operands[3]))
+  /* Switching OP1 and OP2 is necessary for NE (to output a cmeq insn),
+     and desirable for other comparisons if it results in FOO ? -1 : 0
+     (this allows direct use of the comparison result without a bsl).  */
+  if (code == NE
+      || (code != EQ
+	  && op1 == CONST0_RTX (<V_cmp_result>mode)
+	  && op2 == CONSTM1_RTX (<V_cmp_result>mode)))
     {
+      op1 = operands[2];
+      op2 = operands[1];
+      switch (code)
+        {
+        case LE: code = GT; break;
+        case LT: code = GE; break;
+        case GE: code = LT; break;
+        case GT: code = LE; break;
+        /* No case EQ.  */
+        case NE: code = EQ; break;
+        case LTU: code = GEU; break;
+        case LEU: code = GTU; break;
+        case GTU: code = LEU; break;
+        case GEU: code = LTU; break;
+        default: gcc_unreachable ();
+        }
+    }
+
+  /* Make sure we can handle the last operand.  */
+  switch (code)
+    {
+    case NE:
+      /* Normalized to EQ above.  */
+      gcc_unreachable ();
+
     case LE:
     case LT:
-    case NE:
-      inverse = 1;
-      /* Fall through.  */
     case GE:
     case GT:
     case EQ:
-      has_zero_imm_form = 1;
-      break;
-    case LEU:
-    case LTU:
-      inverse = 1;
-      break;
+      /* These instructions have a form taking an immediate zero.  */
+      if (operands[5] == CONST0_RTX (<MODE>mode))
+        break;
+      /* Fall through, as may need to load into register.  */
     default:
+      if (!REG_P (operands[5]))
+        operands[5] = force_reg (<MODE>mode, operands[5]);
       break;
     }
 
-  if (!REG_P (operands[5])
-      && (operands[5] != CONST0_RTX (<MODE>mode) || !has_zero_imm_form))
-    operands[5] = force_reg (<MODE>mode, operands[5]);
-
-  switch (GET_CODE (operands[3]))
+  switch (code)
     {
     case LT:
+      emit_insn (gen_aarch64_cmlt<mode> (mask, operands[4], operands[5]));
+      break;
+
     case GE:
       emit_insn (gen_aarch64_cmge<mode> (mask, operands[4], operands[5]));
       break;
 
     case LE:
+      emit_insn (gen_aarch64_cmle<mode> (mask, operands[4], operands[5]));
+      break;
+
     case GT:
       emit_insn (gen_aarch64_cmgt<mode> (mask, operands[4], operands[5]));
       break;
 
     case LTU:
+      emit_insn (gen_aarch64_cmgtu<mode> (mask, operands[5], operands[4]));
+      break;
+
     case GEU:
       emit_insn (gen_aarch64_cmgeu<mode> (mask, operands[4], operands[5]));
       break;
 
     case LEU:
+      emit_insn (gen_aarch64_cmgeu<mode> (mask, operands[5], operands[4]));
+      break;
+
     case GTU:
       emit_insn (gen_aarch64_cmgtu<mode> (mask, operands[4], operands[5]));
       break;
 
-    case NE:
+    /* NE has been normalized to EQ above.  */
     case EQ:
       emit_insn (gen_aarch64_cmeq<mode> (mask, operands[4], operands[5]));
       break;
 
     default:
       gcc_unreachable ();
-    }
-
-  if (inverse)
-    {
-      op1 = operands[2];
-      op2 = operands[1];
     }
 
     /* If we have (a = (b CMP c) ? -1 : 0);
@@ -3932,14 +3962,22 @@
 
 ;; cmtst
 
+;; Although neg (ne (and x y) 0) is the natural way of expressing a cmtst,
+;; we don't have any insns using ne, and aarch64_vcond_internal outputs
+;; not (neg (eq (and x y) 0))
+;; which is rewritten by simplify_rtx as
+;; plus (eq (and x y) 0) -1.
+
 (define_insn "aarch64_cmtst<mode>"
   [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w")
-	(neg:<V_cmp_result>
-	  (ne:<V_cmp_result>
+	(plus:<V_cmp_result>
+	  (eq:<V_cmp_result>
 	    (and:VDQ
 	      (match_operand:VDQ 1 "register_operand" "w")
 	      (match_operand:VDQ 2 "register_operand" "w"))
-	    (vec_duplicate:<V_cmp_result> (const_int 0)))))]
+	    (match_operand:VDQ 3 "aarch64_simd_imm_zero"))
+	  (match_operand:<V_cmp_result> 4 "aarch64_simd_imm_minus_one")))
+  ]
   "TARGET_SIMD"
   "cmtst\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_tst<q>")]
