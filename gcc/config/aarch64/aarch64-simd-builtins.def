@@ -344,6 +344,8 @@
 
   VAR5 (UNOPU, bswap, 10, v4hi, v8hi, v2si, v4si, v2di)
 
+  BUILTIN_VB (UNOP, rbit, 0)
+
   /* Implemented by
      aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */
   BUILTIN_VALL (BINOP, zip1, 0)

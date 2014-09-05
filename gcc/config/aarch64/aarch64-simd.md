@@ -294,6 +294,15 @@
   [(set_attr "type" "neon_rev<q>")]
 )
 
+(define_insn "aarch64_rbit<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:VB 1 "register_operand" "w")]
+		   UNSPEC_RBIT))]
+  "TARGET_SIMD"
+  "rbit\\t%0.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "neon_rbit")]
+)
+
 (define_insn "*aarch64_mul3_elt<mode>"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
     (mult:VMUL

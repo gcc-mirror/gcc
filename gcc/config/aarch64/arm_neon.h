@@ -10407,50 +10407,6 @@ vqrdmulhq_n_s32 (int32x4_t a, int32_t b)
        result;                                                          \
      })
 
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vrbit_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("rbit %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vrbit_u8 (uint8x8_t a)
-{
-  uint8x8_t result;
-  __asm__ ("rbit %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vrbitq_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("rbit %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vrbitq_u8 (uint8x16_t a)
-{
-  uint8x16_t result;
-  __asm__ ("rbit %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vrecpe_u32 (uint32x2_t a)
 {
@@ -20779,6 +20735,44 @@ __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vqsubd_u64 (uint64_t __a, uint64_t __b)
 {
   return __builtin_aarch64_uqsubdi_uuu (__a, __b);
+}
+
+/* vrbit  */
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vrbit_p8 (poly8x8_t __a)
+{
+  return (poly8x8_t) __builtin_aarch64_rbitv8qi ((int8x8_t) __a);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vrbit_s8 (int8x8_t __a)
+{
+  return __builtin_aarch64_rbitv8qi (__a);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vrbit_u8 (uint8x8_t __a)
+{
+  return (uint8x8_t) __builtin_aarch64_rbitv8qi ((int8x8_t) __a);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vrbitq_p8 (poly8x16_t __a)
+{
+  return (poly8x16_t) __builtin_aarch64_rbitv16qi ((int8x16_t)__a);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vrbitq_s8 (int8x16_t __a)
+{
+  return __builtin_aarch64_rbitv16qi (__a);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vrbitq_u8 (uint8x16_t __a)
+{
+  return (uint8x16_t) __builtin_aarch64_rbitv16qi ((int8x16_t) __a);
 }
 
 /* vrecpe  */
