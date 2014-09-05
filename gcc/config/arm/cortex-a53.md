@@ -216,7 +216,8 @@
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fmov, fmuls,\
                         f_cvt,f_cvtf2i,f_cvti2f,\
-			fcmps, fcmpd, fcsel"))
+                        fcmps, fcmpd, fcsel, f_rints, f_rintd, f_minmaxs,\
+                        f_minmaxd"))
   "cortex_a53_slot0+cortex_a53_fpadd_pipe")
 
 (define_insn_reservation "cortex_a53_fconst" 2
