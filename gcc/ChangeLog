@@ -1,3 +1,8 @@
+2014-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/cortex-a53.md (cortex_a53_fpalu): Add f_rints, f_rintd,
+	f_minmaxs, f_minmaxd types.
+
 2014-09-05  Richard Biener  <rguenther@suse.de>
 
 	* cfgloop.c (mark_loop_for_removal): Record former header
