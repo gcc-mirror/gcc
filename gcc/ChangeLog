@@ -1,3 +1,12 @@
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.c (mark_loop_for_removal): Record former header
+	when ENABLE_CHECKING.
+	* cfgloop.h (strut loop): Add former_header member when
+	ENABLE_CHECKING.
+	* loop-init.c (fix_loop_structure): Sanity check loops
+	marked for removal if they re-appeared.
+
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (int32x1_t, int16x1_t, int8x1_t,
