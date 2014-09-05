@@ -43,16 +43,16 @@
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
 
-#ifndef STACK_GROWS_DOWNWARD
-#define STACK_GROWS_DOWNWARD 0
+#ifndef __LIBGCC_STACK_GROWS_DOWNWARD__
+#define __LIBGCC_STACK_GROWS_DOWNWARD__ 0
 #else
-#undef STACK_GROWS_DOWNWARD
-#define STACK_GROWS_DOWNWARD 1
+#undef __LIBGCC_STACK_GROWS_DOWNWARD__
+#define __LIBGCC_STACK_GROWS_DOWNWARD__ 1
 #endif
 
 /* Dwarf frame registers used for pre gcc 3.0 compiled glibc.  */
 #ifndef PRE_GCC3_DWARF_FRAME_REGISTERS
-#define PRE_GCC3_DWARF_FRAME_REGISTERS DWARF_FRAME_REGISTERS
+#define PRE_GCC3_DWARF_FRAME_REGISTERS __LIBGCC_DWARF_FRAME_REGISTERS__
 #endif
 
 #ifndef DWARF_REG_TO_UNWIND_COLUMN
@@ -86,7 +86,7 @@
    ignore unwind data for unknown columns.  */
 
 #define UNWIND_COLUMN_IN_RANGE(x) \
-    __builtin_expect((x) <= DWARF_FRAME_REGISTERS, 1)
+    __builtin_expect((x) <= __LIBGCC_DWARF_FRAME_REGISTERS__, 1)
 
 #ifdef REG_VALUE_IN_UNWIND_CONTEXT
 typedef _Unwind_Word _Unwind_Context_Reg_Val;
@@ -131,7 +131,7 @@ _Unwind_Get_Unwind_Context_Reg_Val (_Unwind_Word val)
    to its caller.  */
 struct _Unwind_Context
 {
-  _Unwind_Context_Reg_Val reg[DWARF_FRAME_REGISTERS+1];
+  _Unwind_Context_Reg_Val reg[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
   void *cfa;
   void *ra;
   void *lsda;
@@ -145,11 +145,11 @@ struct _Unwind_Context
      struct _Unwind_Context.  */
   _Unwind_Word version;
   _Unwind_Word args_size;
-  char by_value[DWARF_FRAME_REGISTERS+1];
+  char by_value[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
 };
 
 /* Byte size of every register managed by these routines.  */
-static unsigned char dwarf_reg_size_table[DWARF_FRAME_REGISTERS+1];
+static unsigned char dwarf_reg_size_table[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
 
 
 /* Read unaligned data from the instruction buffer.  */
@@ -1190,7 +1190,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 
 	case DW_CFA_GNU_window_save:
 	  /* ??? Hardcoded for SPARC register window configuration.  */
-	  if (DWARF_FRAME_REGISTERS >= 32)
+	  if (__LIBGCC_DWARF_FRAME_REGISTERS__ >= 32)
 	    for (reg = 16; reg < 32; ++reg)
 	      {
 		fs->regs.reg[reg].how = REG_SAVED_OFFSET;
@@ -1384,7 +1384,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   void *cfa;
   long i;
 
-#ifdef EH_RETURN_STACKADJ_RTX
+#ifdef __LIBGCC_EH_RETURN_STACKADJ_RTX__
   /* Special handling here: Many machines do not use a frame pointer,
      and track the CFA only through offsets from the stack pointer from
      one frame to the next.  In this case, the stack pointer is never
@@ -1432,7 +1432,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   context->cfa = cfa;
 
   /* Compute the addresses of all registers saved in this frame.  */
-  for (i = 0; i < DWARF_FRAME_REGISTERS + 1; ++i)
+  for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__ + 1; ++i)
     switch (fs->regs.reg[i].how)
       {
       case REG_UNSAVED:
@@ -1638,7 +1638,7 @@ uw_install_context_1 (struct _Unwind_Context *current,
   if (!_Unwind_GetGRPtr (target, __builtin_dwarf_sp_column ()))
     _Unwind_SetSpColumn (target, target->cfa, &sp_slot);
 
-  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
+  for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__; ++i)
     {
       void *c = (void *) (_Unwind_Internal_Ptr) current->reg[i];
       void *t = (void *) (_Unwind_Internal_Ptr)target->reg[i];
@@ -1674,7 +1674,7 @@ uw_install_context_1 (struct _Unwind_Context *current,
       target_cfa = _Unwind_GetPtr (target, __builtin_dwarf_sp_column ());
 
       /* We adjust SP by the difference between CURRENT and TARGET's CFA.  */
-      if (STACK_GROWS_DOWNWARD)
+      if (__LIBGCC_STACK_GROWS_DOWNWARD__)
 	return target_cfa - current->cfa + target->args_size;
       else
 	return current->cfa - target_cfa - target->args_size;
@@ -1688,7 +1688,7 @@ uw_identify_context (struct _Unwind_Context *context)
   /* The CFA is not sufficient to disambiguate the context of a function
      interrupted by a signal before establishing its frame and the context
      of the signal itself.  */
-  if (STACK_GROWS_DOWNWARD)
+  if (__LIBGCC_STACK_GROWS_DOWNWARD__)
     return _Unwind_GetCFA (context) - _Unwind_IsSignalFrame (context);
   else
     return _Unwind_GetCFA (context) + _Unwind_IsSignalFrame (context);

@@ -78,7 +78,7 @@ tile_fallback_frame_state (struct _Unwind_Context *context,
 
   new_cfa = sc->sp;
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   for (i = 0; i < 56; ++i)

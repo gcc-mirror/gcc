@@ -1,3 +1,21 @@
+2014-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Also define
+	__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__,
+	__LIBGCC_EH_FRAME_SECTION_NAME__, __LIBGCC_JCR_SECTION_NAME__,
+	__LIBGCC_CTORS_SECTION_ASM_OP__, __LIBGCC_DTORS_SECTION_ASM_OP__,
+	__LIBGCC_TEXT_SECTION_ASM_OP__, __LIBGCC_INIT_SECTION_ASM_OP__,
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__,
+	__LIBGCC_STACK_GROWS_DOWNWARD__,
+	__LIBGCC_DONT_USE_BUILTIN_SETJMP__,
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__,
+	__LIBGCC_DWARF_FRAME_REGISTERS__,
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__, __LIBGCC_JMP_BUF_SIZE__,
+	__LIBGCC_STACK_POINTER_REGNUM__ and
+	__LIBGCC_VTABLE_USES_DESCRIPTORS__ for -fbuilding-libgcc.
+	(builtin_define_with_value): Handle backslash-escaping in string
+	macro values.
+
 2014-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63148

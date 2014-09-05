@@ -1,3 +1,91 @@
+2014-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add -fbuilding-libgcc.
+	* config/aarch64/linux-unwind.h (STACK_POINTER_REGNUM): Change all
+	uses to __LIBGCC_STACK_POINTER_REGNUM__.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Change all uses to
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/alpha/vms-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN):
+	Change use to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/cr16/unwind-cr16.c (STACK_GROWS_DOWNWARD): Change all
+	uses to __LIBGCC_STACK_GROWS_DOWNWARD__.
+	(DWARF_FRAME_REGISTERS): Change all uses to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.
+	(EH_RETURN_STACKADJ_RTX): Change all uses to
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__.
+	* config/cr16/unwind-dw2.h (DWARF_FRAME_REGISTERS): Change use to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.  Remove conditional definition.
+	* config/i386/cygming-crtbegin.c (EH_FRAME_SECTION_NAME): Change
+	use to __LIBGCC_EH_FRAME_SECTION_NAME__.
+	(JCR_SECTION_NAME): Change use to __LIBGCC_JCR_SECTION_NAME__.
+	* config/i386/cygming-crtend.c (EH_FRAME_SECTION_NAME): Change use
+	to __LIBGCC_EH_FRAME_SECTION_NAME__.
+	(JCR_SECTION_NAME): Change use to __LIBGCC_JCR_SECTION_NAME__
+	* config/mips/linux-unwind.h (STACK_POINTER_REGNUM): Change use to
+	__LIBGCC_STACK_POINTER_REGNUM__.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Change all uses to
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/nios2/linux-unwind.h (STACK_POINTER_REGNUM): Change use
+	to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/pa/hpux-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN): Change
+	all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/pa/linux-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN): Change
+	all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/rs6000/aix-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN):
+	Change all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	(STACK_POINTER_REGNUM): Change all uses to
+	__LIBGCC_STACK_POINTER_REGNUM__.
+	* config/rs6000/darwin-fallback.c (STACK_POINTER_REGNUM): Change
+	use to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/rs6000/linux-unwind.h (STACK_POINTER_REGNUM): Change all
+	uses to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/sparc/linux-unwind.h (DWARF_FRAME_REGISTERS): Change use
+	to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* config/sparc/sol2-unwind.h (DWARF_FRAME_REGISTERS): Change use
+	to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* config/tilepro/linux-unwind.h (STACK_POINTER_REGNUM): Change use
+	to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/xtensa/unwind-dw2-xtensa.h (DWARF_FRAME_REGISTERS):
+	Remove conditional definition.
+	* crtstuff.c (TEXT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_TEXT_SECTION_ASM_OP__.
+	(EH_FRAME_SECTION_NAME): Change all uses to
+	__LIBGCC_EH_FRAME_SECTION_NAME__.
+	(EH_TABLES_CAN_BE_READ_ONLY): Change all uses to
+	__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__.
+	(CTORS_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_CTORS_SECTION_ASM_OP__.
+	(DTORS_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_DTORS_SECTION_ASM_OP__.
+	(JCR_SECTION_NAME): Change all uses to
+	__LIBGCC_JCR_SECTION_NAME__.
+	(INIT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_SECTION_ASM_OP__.
+	(INIT_ARRAY_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__.
+	* generic-morestack.c (STACK_GROWS_DOWNWARD): Change all uses to
+	__LIBGCC_STACK_GROWS_DOWNWARD__.
+	* libgcc2.c (INIT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_SECTION_ASM_OP__.
+	(INIT_ARRAY_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__.
+	(EH_FRAME_SECTION_NAME): Change all uses to
+	__LIBGCC_EH_FRAME_SECTION_NAME__.
+	* libgcov-profiler.c (VTABLE_USES_DESCRIPTORS): Remove conditional
+	definitions.  Change all uses to
+	__LIBGCC_VTABLE_USES_DESCRIPTORS__.
+	* unwind-dw2.c (STACK_GROWS_DOWNWARD): Change all uses to
+	__LIBGCC_STACK_GROWS_DOWNWARD__.
+	(DWARF_FRAME_REGISTERS): Change all uses to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.
+	(EH_RETURN_STACKADJ_RTX): Change all uses to
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__.
+	* unwind-dw2.h (DWARF_FRAME_REGISTERS): Remove conditional
+	definition.  Change use to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* unwind-sjlj.c (DONT_USE_BUILTIN_SETJMP): Change all uses to
+	__LIBGCC_DONT_USE_BUILTIN_SETJMP__.
+	(JMP_BUF_SIZE): Change use to __LIBGCC_JMP_BUF_SIZE__.
+
 2014-09-02  Nathan sidwell  <nathan@acm.org>
 
 	* libgcov-interface.c (STRONG_ALIAS): New.
