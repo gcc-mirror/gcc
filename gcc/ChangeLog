@@ -1,5 +1,32 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/arm_neon.h (int32x1_t, int16x1_t, int8x1_t,
+	uint32x1_t, uint16x1_t, uint8x1_t): Remove typedefs.
+
+	(vqabsb_s8, vqabsh_s16, vqabss_s32, vqaddb_s8, vqaddh_s16, vqadds_s32,
+	vqaddb_u8, vqaddh_u16, vqadds_u32, vqdmlalh_s16, vqdmlalh_lane_s16,
+	vqdmlals_s32, vqdmlslh_s16, vqdmlslh_lane_s16, vqdmlsls_s32,
+	vqdmulhh_s16, vqdmulhh_lane_s16, vqdmulhs_s32, vqdmulhs_lane_s32,
+	vqdmullh_s16, vqdmullh_lane_s16, vqdmulls_s32, vqdmulls_lane_s32,
+	vqmovnh_s16, vqmovns_s32, vqmovnd_s64, vqmovnh_u16, vqmovns_u32,
+	vqmovnd_u64, vqmovunh_s16, vqmovuns_s32, vqmovund_s64, vqnegb_s8,
+	vqnegh_s16, vqnegs_s32, vqrdmulhh_s16, vqrdmulhh_lane_s16,
+	vqrdmulhs_s32, vqrdmulhs_lane_s32, vqrshlb_s8, vqrshlh_s16,
+	vqrshls_s32, vqrshlb_u8, vqrshlh_u16, vqrshls_u32, vqrshrnh_n_s16,
+	vqrshrns_n_s32, vqrshrnd_n_s64, vqrshrnh_n_u16, vqrshrns_n_u32,
+	vqrshrnd_n_u64, vqrshrunh_n_s16, vqrshruns_n_s32, vqrshrund_n_s64,
+	vqshlb_s8, vqshlh_s16, vqshls_s32, vqshlb_u8, vqshlh_u16, vqshls_u32,
+	vqshlb_n_s8, vqshlh_n_s16, vqshls_n_s32, vqshlb_n_u8, vqshlh_n_u16,
+	vqshls_n_u32, vqshlub_n_s8, vqshluh_n_s16, vqshlus_n_s32,
+	vqshrnh_n_s16, vqshrns_n_s32, vqshrnd_n_s64, vqshrnh_n_u16,
+	vqshrns_n_u32, vqshrnd_n_u64, vqshrunh_n_s16, vqshruns_n_s32,
+	vqshrund_n_s64, vqsubb_s8, vqsubh_s16, vqsubs_s32, vqsubb_u8,
+	vqsubh_u16, vqsubs_u32, vsqaddb_u8, vsqaddh_u16, vsqadds_u32,
+	vuqaddb_s8, vuqaddh_s16, vuqadds_s32): Replace all int{32,16,8}x1_t
+	with int{32,16,8}_t.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/arm_neon.h (__GET_HIGH): New macro.
 	(vget_high_f32, vget_high_f64, vget_high_p8, vget_high_p16,
 	vget_high_s8, vget_high_s16, vget_high_s32, vget_high_s64,
