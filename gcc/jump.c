@@ -1314,15 +1314,15 @@ delete_related_insns (rtx uncast_insn)
 
   /* Likewise if we're deleting a dispatch table.  */
 
-  if (JUMP_TABLE_DATA_P (insn))
+  if (rtx_jump_table_data *table = dyn_cast <rtx_jump_table_data *> (insn))
     {
-      rtx pat = PATTERN (insn);
-      int i, diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
-      int len = XVECLEN (pat, diff_vec_p);
+      rtvec labels = table->get_labels ();
+      int i;
+      int len = GET_NUM_ELEM (labels);
 
       for (i = 0; i < len; i++)
-	if (LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0)) == 0)
-	  delete_related_insns (XEXP (XVECEXP (pat, diff_vec_p, i), 0));
+	if (LABEL_NUSES (XEXP (RTVEC_ELT (labels, i), 0)) == 0)
+	  delete_related_insns (XEXP (RTVEC_ELT (labels, i), 0));
       while (next && INSN_DELETED_P (next))
 	next = NEXT_INSN (next);
       return next;
