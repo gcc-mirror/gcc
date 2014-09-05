@@ -1,3 +1,10 @@
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* jump.c (delete_related_insns): Introduce a new local "table" by
+	replacing JUMP_TABLE_DATA_P with a dyn_cast, then use the
+	get_labels method of "table" to simplify access to the labels in
+	the jump table.
+
 2014-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/cortex-a53.md (cortex_a53_fpalu): Add f_rints, f_rintd,
