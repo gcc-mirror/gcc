@@ -1,5 +1,10 @@
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers):
+	Remove qualifier_const_pointer, update comment.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.md (adddi3_aarch64): set type to neon_add.
 
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
