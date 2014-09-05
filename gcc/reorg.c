@@ -3385,13 +3385,14 @@ relax_delay_slots (rtx_insn *first)
 
       /* Similarly, if it is an unconditional jump with one insn in its
 	 delay list and that insn is redundant, thread the jump.  */
-      if (trial && GET_CODE (PATTERN (trial)) == SEQUENCE
-	  && XVECLEN (PATTERN (trial), 0) == 2
-	  && JUMP_P (XVECEXP (PATTERN (trial), 0, 0))
-	  && simplejump_or_return_p (XVECEXP (PATTERN (trial), 0, 0))
-	  && redundant_insn (XVECEXP (PATTERN (trial), 0, 1), insn, 0))
+      rtx_sequence *trial_seq =
+	trial ? dyn_cast <rtx_sequence *> (PATTERN (trial)) : NULL;
+      if (trial_seq
+	  && trial_seq->len () == 2
+	  && JUMP_P (trial_seq->insn (0))
+	  && simplejump_or_return_p (trial_seq->insn (0))
+	  && redundant_insn (trial_seq->insn (1), insn, 0))
 	{
-	  rtx_sequence *trial_seq = as_a <rtx_sequence *> (PATTERN (trial));
 	  target_label = JUMP_LABEL (trial_seq->insn (0));
 	  if (ANY_RETURN_P (target_label))
 	    target_label = find_end_label (target_label);
