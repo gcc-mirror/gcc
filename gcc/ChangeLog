@@ -1,5 +1,9 @@
 2014-09-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* config/arm/arm.md (arm_movqi_insn): Use Uh instead of m constraint.
+
+2014-09-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* config/arm/arm.c (output_move_neon): Handle REG explicitly.
 
 2014-09-04  Trevor Saunders  <tsaunders@mozilla.com>
