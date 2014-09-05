@@ -1,3 +1,7 @@
+2014-09-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr44683.c: Remove dg-options for sh*-*-*.
+
 2014-09-04  Guozhi Wei  <carrot@google.com>
 
 	PR target/62040
