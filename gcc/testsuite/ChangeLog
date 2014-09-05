@@ -1,3 +1,8 @@
+2014-09-05  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/62146
+	* testsuite/g++.dg/opt/pr62146.C: New.
+
 2014-09-05  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* gcc.dg/vect/vect-109.c: Skip predicate added.
