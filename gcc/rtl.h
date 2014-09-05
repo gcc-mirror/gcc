@@ -1353,6 +1353,11 @@ inline basic_block& BLOCK_FOR_INSN (rtx insn)
   return XBBDEF (insn, 2);
 }
 
+inline void set_block_for_insn (rtx_insn *insn, basic_block bb)
+{
+  BLOCK_FOR_INSN (insn) = bb;
+}
+
 /* The body of an insn.  */
 inline rtx PATTERN (const_rtx insn)
 {
