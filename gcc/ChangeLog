@@ -1,5 +1,16 @@
 2014-09-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* haifa-sched.c (check_clobbered_conditions): Strengthen local
+	"link" from rtx to rtx_insn_list *, and use its methods for
+	clarity and type-safety.
+	(toggle_cancelled_flags): Likewise.
+	(restore_last_backtrack_point): Likewise.
+	(queue_to_ready): Use insn method of "link" in one place.
+	(schedule_block): Strengthen local "link" from rtx to
+	rtx_insn_list *, and use its methods for clarity and type-safety.
+
+2014-09-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-deps.c (sched_get_condition_with_rev_uncached): Strengthen
 	param "insn" from const_rtx to const rtx_insn *.
 	(sched_get_reverse_condition_uncached): Likewise.
