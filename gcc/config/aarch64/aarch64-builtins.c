@@ -862,9 +862,8 @@ typedef enum
 
 static rtx
 aarch64_simd_expand_args (rtx target, int icode, int have_retval,
-			  tree exp, ...)
+			  tree exp, builtin_simd_arg *args)
 {
-  va_list ap;
   rtx pat;
   tree arg[SIMD_MAX_BUILTIN_ARGS];
   rtx op[SIMD_MAX_BUILTIN_ARGS];
@@ -878,11 +877,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
     target = gen_reg_rtx (tmode);
 
-  va_start (ap, exp);
-
   for (;;)
     {
-      builtin_simd_arg thisarg = (builtin_simd_arg) va_arg (ap, int);
+      builtin_simd_arg thisarg = args[argc];
 
       if (thisarg == SIMD_ARG_STOP)
 	break;
@@ -917,8 +914,6 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	  argc++;
 	}
     }
-
-  va_end (ap);
 
   if (have_retval)
     switch (argc)
@@ -1033,12 +1028,7 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
   /* The interface to aarch64_simd_expand_args expects a 0 if
      the function is void, and a 1 if it is not.  */
   return aarch64_simd_expand_args
-	  (target, icode, !is_void, exp,
-	   args[1],
-	   args[2],
-	   args[3],
-	   args[4],
-	   SIMD_ARG_STOP);
+	  (target, icode, !is_void, exp, &args[1]);
 }
 
 rtx

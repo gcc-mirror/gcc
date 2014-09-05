@@ -1,3 +1,9 @@
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Replace
+	varargs with pointer parameter.
+	(aarch64_simd_expand_builtin): pass pointer into previous.
+
 2014-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Add alu_ext,
