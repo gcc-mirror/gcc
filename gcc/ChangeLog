@@ -1,3 +1,8 @@
+2014-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Add alu_ext,
+	alus_ext.
+
 2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_rbit<mode>): New pattern.
