@@ -273,3 +273,9 @@
 {
   return aarch64_simd_imm_zero_p (op, mode);
 })
+
+(define_special_predicate "aarch64_simd_imm_minus_one"
+  (match_code "const_vector")
+{
+  return aarch64_const_vec_all_same_int_p (op, -1);
+})

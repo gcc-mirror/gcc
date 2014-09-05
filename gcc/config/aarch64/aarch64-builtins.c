@@ -144,6 +144,11 @@ aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define TYPES_BINOP (aarch64_types_binop_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_cmtst_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_internal, qualifier_internal };
+#define TYPES_TST (aarch64_types_cmtst_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binopv_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_none, qualifier_none };
 #define TYPES_BINOPV (aarch64_types_binopv_qualifiers)
@@ -1285,7 +1290,7 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VALLDI (BINOP, cmeq, 0)
 	return fold_build2 (EQ_EXPR, type, args[0], args[1]);
 	break;
-      BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
+      BUILTIN_VSDQ_I_DI (TST, cmtst, 0)
 	{
 	  tree and_node = fold_build2 (BIT_AND_EXPR, type, args[0], args[1]);
 	  tree vec_zero_node = build_zero_cst (type);
