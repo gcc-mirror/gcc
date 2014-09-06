@@ -1,3 +1,9 @@
+2014-09-06  Tom de Vries  <tom@codesourcery.com>
+
+	* ira-costs.c (ira_tune_allocno_costs): Don't conditionalize
+	IRA_HARD_REGNO_ADD_COST_MULTIPLIER code on
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+
 2014-09-05  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	PR target/63188
