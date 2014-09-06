@@ -2976,10 +2976,10 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  split_double (x, &first, &second);
 
 	  if((WORDS_BIG_ENDIAN) == 0)
-	      fprintf (file, "0x%08lx",
+	      fprintf (file, "0x%08" PRIx64,
 		       code == 'L' ? INTVAL (first) : INTVAL (second));
 	  else
-	      fprintf (file, "0x%08lx",
+	      fprintf (file, "0x%08" PRIx64,
 		       code == 'L' ? INTVAL (second) : INTVAL (first));
 
 
@@ -5520,7 +5520,7 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	 add this,this,r12        --> this+ = *(*this + vcall_offset) */
       asm_fprintf (file, "\tld\t%s, [%s]\n",
 		   ARC_TEMP_SCRATCH_REG, reg_names[this_regno]);
-      asm_fprintf (file, "\tadd\t%s, %s, %ld\n",
+      asm_fprintf (file, "\tadd\t%s, %s, " HOST_WIDE_INT_PRINT_DEC "\n",
 		   ARC_TEMP_SCRATCH_REG, ARC_TEMP_SCRATCH_REG, vcall_offset);
       asm_fprintf (file, "\tld\t%s, [%s]\n",
 		   ARC_TEMP_SCRATCH_REG, ARC_TEMP_SCRATCH_REG);
