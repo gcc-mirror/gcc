@@ -1,5 +1,6 @@
 /* PR ipa/61800 */
 /* { dg-do compile } */
+/* { dg-require-visibility "" } */
 /* { dg-options "-O2" } */
 
 #pragma GCC visibility push(hidden)
