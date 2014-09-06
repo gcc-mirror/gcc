@@ -1,3 +1,8 @@
+2014-09-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/56194
+	* g++.dg/init/const9.C: Skip scan-assembler-not "rodata" on hppa*-*-*.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
