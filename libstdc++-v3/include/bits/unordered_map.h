@@ -128,15 +128,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //construct/destroy/copy
 
+      /// Default constructor.
+      unordered_map() = default;
+
       /**
        *  @brief  Default constructor creates no elements.
-       *  @param __n  Initial number of buckets.
+       *  @param __n  Minimal initial number of buckets.
        *  @param __hf  A hash functor.
        *  @param __eql  A key equality functor.
        *  @param __a  An allocator object.
        */
       explicit
-      unordered_map(size_type __n = 10,
+      unordered_map(size_type __n,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -840,15 +843,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //construct/destroy/copy
 
+      /// Default constructor.
+      unordered_multimap() = default;
+
       /**
        *  @brief  Default constructor creates no elements.
-       *  @param __n  Initial number of buckets.
+       *  @param __n  Mnimal initial number of buckets.
        *  @param __hf  A hash functor.
        *  @param __eql  A key equality functor.
        *  @param __a  An allocator object.
        */
       explicit
-      unordered_multimap(size_type __n = 10,
+      unordered_multimap(size_type __n,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())

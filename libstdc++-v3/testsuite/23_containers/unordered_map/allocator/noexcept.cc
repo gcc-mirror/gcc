@@ -76,3 +76,10 @@ void test03()
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
   static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
 }
+
+void test04()
+{
+  typedef std::unordered_map<int, int> test_type;
+  static_assert( noexcept( test_type() ), "Default constructor do not throw" );
+  static_assert( noexcept( test_type(test_type()) ), "Move constructor do not throw" );
+}

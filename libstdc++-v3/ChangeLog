@@ -1,3 +1,28 @@
+2014-09-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy): Constructor
+	noexcept qualified.
+	(_Hash_code_base<>): All specialization default constructible if
+	possible.
+	(_Hashtable_base<>): Likewise.
+	* include/bits/hashtable.h (_Hashtable<>()): Implementation defaulted.
+	* include/bits/unordered_map.h (unordered_map<>::unordered_map()): New,
+	implementation defaulted.
+	(unordered_multimap<>::unordered_multimap()): Likewise.
+	* include/bits/unordered_set.h
+	(unordered_set<>::unordered_set()): Likewise.
+	(unordered_multiset<>::unordered_multiset()): Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc
+	(test04()): New.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc
+	(test04()): New.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc
+	(test04()): New.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc
+	(test04()): New.
+
 2014-08-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
