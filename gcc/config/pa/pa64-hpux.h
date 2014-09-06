@@ -336,7 +336,7 @@ do {								\
    the sections are not actually used.  However, we still must provide
    defines to select the proper code path.  */
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP ""
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP
 

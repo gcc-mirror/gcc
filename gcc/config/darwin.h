@@ -499,7 +499,7 @@ extern GTY(()) int darwin_ms_struct;
 #define NO_PROFILE_COUNTERS	1
 
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP ""
 
 #undef	INVOKE__main
 

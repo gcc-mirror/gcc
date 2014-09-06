@@ -1,3 +1,9 @@
+2014-09-05  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR target/63188
+	* config/darwin.h (INIT_SECTION_ASM_OP): Define to "".
+	* config/pa/pa64-hpux.h (INIT_SECTION_ASM_OP): Likewise.
+
 2014-09-05  Easwaran Raman  <eraman@google.com>
 
 	PR rtl-optimization/62146
