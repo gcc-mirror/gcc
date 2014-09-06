@@ -1,7 +1,10 @@
 2014-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_print_operand): Fix format for HOST_WIDE_INT.
-	* arc_output_mi_thunk: Likewise.
+	(arc_output_mi_thunk): Likewise.
+
+	* config/arc/arc.c (arc_predicate_delay_insns): Swap comparison
+	arguments to silence bogus warning.
 
 2014-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
 

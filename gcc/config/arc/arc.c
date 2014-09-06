@@ -8401,7 +8401,7 @@ arc_predicate_delay_insns (void)
 	reverse = 1;
       else
 	gcc_unreachable ();
-      if (!INSN_FROM_TARGET_P (dlay) != reverse)
+      if (reverse != !INSN_FROM_TARGET_P (dlay))
 	{
 	  enum machine_mode ccm = GET_MODE (XEXP (cond, 0));
 	  enum rtx_code code = reverse_condition (GET_CODE (cond));
