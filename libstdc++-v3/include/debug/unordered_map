@@ -82,8 +82,10 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_const_local_iterator, unordered_map>	const_local_iterator;
 
+      unordered_map() = default;
+
       explicit
-      unordered_map(size_type __n = 10,
+      unordered_map(size_type __n,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -495,8 +497,10 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_const_local_iterator, unordered_multimap> const_local_iterator;
 
+      unordered_multimap() = default;
+
       explicit
-      unordered_multimap(size_type __n = 10,
+      unordered_multimap(size_type __n,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
