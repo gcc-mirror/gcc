@@ -1,5 +1,8 @@
 2014-09-06  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/56194
+	* g++.dg/init/const9.C: Skip scan-assembler-not "rodata" on hppa*-*-*.
+
 	* g++.dg/ipa/pr61800.C: Require visibility.
 
 	* gcc.dg/pr61868.c: Require lto.
