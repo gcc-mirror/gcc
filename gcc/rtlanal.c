@@ -6072,7 +6072,7 @@ tls_referenced_p (const_rtx x)
     return false;
 
   subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
     if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
       return true;
   return false;
