@@ -1,3 +1,8 @@
+2014-09-07  Nathan sidwell  <nathan@acm.org>
+
+	* libgcov-interface.c (STRONG_ALIAS): Rename to ...
+	(ALIAS_weak): ... here. Use forwarding function.  Adjust uses.
+
 2014-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add -fbuilding-libgcc.
