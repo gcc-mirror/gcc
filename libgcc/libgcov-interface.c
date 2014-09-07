@@ -42,11 +42,14 @@ void __gcov_dump (void) {}
 
 #else
 
-
 /* Some functions we want to bind in this dynamic object, but have an
-   overridable global alias.  */
-#define STRONG_ALIAS(src,dst) \
-  extern __typeof (src) dst __attribute__((alias (#src)))
+   overridable global alias.  Unfortunately not all targets support
+   aliases, so we just have a forwarding function.  That'll be tail
+   called, so the cost is a single jump instruction.*/
+
+#define ALIAS_void_fn(src,dst) \
+  void dst (void)	    \
+  { src (); }
 
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
@@ -133,7 +136,7 @@ __gcov_reset_int (void)
   __gcov_root.dumped = 0;
 }
 
-STRONG_ALIAS (__gcov_reset_int, __gcov_reset);
+ALIAS_void_fn (__gcov_reset_int, __gcov_reset);
 
 #endif /* L_gcov_reset */
 
