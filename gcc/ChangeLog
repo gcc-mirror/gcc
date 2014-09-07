@@ -1,3 +1,9 @@
+2014-09-07 Venkataramanan Kumar <venkataramanan.kumar@linaro.org>
+
+	PR target/63190
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>) Add register
+	constraint for operand0 and remove write only modifier from operand3.
+
 2014-09-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/62208
