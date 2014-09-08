@@ -1,3 +1,8 @@
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* fp-bit.c (pack_d, unpack_d): Remove LARGEST_EXPONENT_IS_NORMAL
+	and ROUND_TOWARDS_ZERO conditionals.
+
 2014-09-07  Nathan sidwell  <nathan@acm.org>
 
 	* libgcov-interface.c (STRONG_ALIAS): Rename to ...

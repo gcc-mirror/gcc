@@ -440,9 +440,6 @@ extern int arm_fpu_attr;
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 #endif
 
-#define LARGEST_EXPONENT_IS_NORMAL(bits) \
-    ((bits) == 16 && arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
-
 #ifndef ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
 #endif

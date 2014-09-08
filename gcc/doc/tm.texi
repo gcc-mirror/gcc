@@ -1341,27 +1341,6 @@ Return machine mode to be used for @code{_Unwind_Word} type.
 The default is to use @code{word_mode}.
 @end deftypefn
 
-@defmac ROUND_TOWARDS_ZERO
-If defined, this macro should be true if the prevailing rounding
-mode is towards zero.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-Not defining this macro is equivalent to returning zero.
-@end defmac
-
-@defmac LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should return true if floats with @var{size}
-bits do not have a NaN or infinity representation, but use the largest
-exponent for normal numbers instead.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-The default definition of this macro returns false for all sizes.
-@end defmac
-
 @deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (const_tree @var{record_type})
 This target hook returns @code{true} if bit-fields in the given
 @var{record_type} are to be laid out following the rules of Microsoft

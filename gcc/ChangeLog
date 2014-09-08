@@ -1,3 +1,15 @@
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* defaults.h (LARGEST_EXPONENT_IS_NORMAL, ROUND_TOWARDS_ZERO):
+	Remove.
+	* doc/tm.texi.in (ROUND_TOWARDS_ZERO, LARGEST_EXPONENT_IS_NORMAL):
+	Remove.
+	* doc/tm.texi: Regenerate.
+	* system.h (LARGEST_EXPONENT_IS_NORMAL, ROUND_TOWARDS_ZERO):
+	Poison.
+	* config/arm/arm.h (LARGEST_EXPONENT_IS_NORMAL): Remove.
+	* config/cris/cris.h (__make_dp): Remove.
+
 2014-09-08  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/63204

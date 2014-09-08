@@ -1255,27 +1255,6 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_UNWIND_WORD_MODE
 
-@defmac ROUND_TOWARDS_ZERO
-If defined, this macro should be true if the prevailing rounding
-mode is towards zero.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-Not defining this macro is equivalent to returning zero.
-@end defmac
-
-@defmac LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should return true if floats with @var{size}
-bits do not have a NaN or infinity representation, but use the largest
-exponent for normal numbers instead.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-The default definition of this macro returns false for all sizes.
-@end defmac
-
 @hook TARGET_MS_BITFIELD_LAYOUT_P
 
 @hook TARGET_DECIMAL_FLOAT_SUPPORTED_P
