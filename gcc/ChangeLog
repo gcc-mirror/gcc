@@ -1,5 +1,20 @@
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/cygming.h (TF_SIZE): Remove.
+	* config/i386/darwin.h (TF_SIZE): Remove.
+	* config/i386/dragonfly.h (TF_SIZE): Remove.
+	* config/i386/freebsd.h (TF_SIZE): Remove.
+	* config/i386/gnu-user-common.h (TF_SIZE): Remove.
+	* config/i386/openbsdelf.h (TF_SIZE): Remove.
+	* config/i386/sol2.h (TF_SIZE): Remove.
+	* config/ia64/hpux.h (XF_SIZE, TF_SIZE): Remove.
+	* config/ia64/linux.h (TF_SIZE): Remove.
+	* doc/tm.texi.in (SF_SIZE, DF_SIZE, XF_SIZE, TF_SIZE): Remove.
+	* doc/tm.texi: Regenerate.
+	* system.h (SF_SIZE, DF_SIZE, XF_SIZE, TF_SIZE): Poison.
+
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
 	* defaults.h (LARGEST_EXPONENT_IS_NORMAL, ROUND_TOWARDS_ZERO):
 	Remove.
 	* doc/tm.texi.in (ROUND_TOWARDS_ZERO, LARGEST_EXPONENT_IS_NORMAL):

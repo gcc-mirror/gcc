@@ -1506,7 +1506,7 @@ __fixsfdi (SFtype a)
 XFtype
 __floatdixf (DWtype u)
 {
-#if W_TYPE_SIZE > XF_SIZE
+#if W_TYPE_SIZE > __LIBGCC_XF_MANT_DIG__
 # error
 #endif
   XFtype d = (Wtype) (u >> W_TYPE_SIZE);
@@ -1520,7 +1520,7 @@ __floatdixf (DWtype u)
 XFtype
 __floatundixf (UDWtype u)
 {
-#if W_TYPE_SIZE > XF_SIZE
+#if W_TYPE_SIZE > __LIBGCC_XF_MANT_DIG__
 # error
 #endif
   XFtype d = (UWtype) (u >> W_TYPE_SIZE);
@@ -1534,7 +1534,7 @@ __floatundixf (UDWtype u)
 TFtype
 __floatditf (DWtype u)
 {
-#if W_TYPE_SIZE > TF_SIZE
+#if W_TYPE_SIZE > __LIBGCC_TF_MANT_DIG__
 # error
 #endif
   TFtype d = (Wtype) (u >> W_TYPE_SIZE);
@@ -1548,7 +1548,7 @@ __floatditf (DWtype u)
 TFtype
 __floatunditf (UDWtype u)
 {
-#if W_TYPE_SIZE > TF_SIZE
+#if W_TYPE_SIZE > __LIBGCC_TF_MANT_DIG__
 # error
 #endif
   TFtype d = (UWtype) (u >> W_TYPE_SIZE);
@@ -1568,11 +1568,11 @@ __floatunditf (UDWtype u)
 #if defined(L_floatdisf)
 #define FUNC __floatdisf
 #define FSTYPE SFtype
-#define FSSIZE SF_SIZE
+#define FSSIZE __LIBGCC_SF_MANT_DIG__
 #else
 #define FUNC __floatdidf
 #define FSTYPE DFtype
-#define FSSIZE DF_SIZE
+#define FSSIZE __LIBGCC_DF_MANT_DIG__
 #endif
 
 FSTYPE
@@ -1584,18 +1584,18 @@ FUNC (DWtype u)
   f *= Wtype_MAXp1_F;
   f += (UWtype)u;
   return f;
-#elif (LIBGCC2_HAS_DF_MODE && F_MODE_OK (DF_SIZE))	\
-     || (LIBGCC2_HAS_XF_MODE && F_MODE_OK (XF_SIZE))	\
-     || (LIBGCC2_HAS_TF_MODE && F_MODE_OK (TF_SIZE))
+#elif (LIBGCC2_HAS_DF_MODE && F_MODE_OK (__LIBGCC_DF_MANT_DIG__))	\
+     || (LIBGCC2_HAS_XF_MODE && F_MODE_OK (__LIBGCC_XF_MANT_DIG__))	\
+     || (LIBGCC2_HAS_TF_MODE && F_MODE_OK (__LIBGCC_TF_MANT_DIG__))
 
-#if (LIBGCC2_HAS_DF_MODE && F_MODE_OK (DF_SIZE))
-# define FSIZE DF_SIZE
+#if (LIBGCC2_HAS_DF_MODE && F_MODE_OK (__LIBGCC_DF_MANT_DIG__))
+# define FSIZE __LIBGCC_DF_MANT_DIG__
 # define FTYPE DFtype
-#elif (LIBGCC2_HAS_XF_MODE && F_MODE_OK (XF_SIZE))
-# define FSIZE XF_SIZE
+#elif (LIBGCC2_HAS_XF_MODE && F_MODE_OK (__LIBGCC_XF_MANT_DIG__))
+# define FSIZE __LIBGCC_XF_MANT_DIG__
 # define FTYPE XFtype
-#elif (LIBGCC2_HAS_TF_MODE && F_MODE_OK (TF_SIZE))
-# define FSIZE TF_SIZE
+#elif (LIBGCC2_HAS_TF_MODE && F_MODE_OK (__LIBGCC_TF_MANT_DIG__))
+# define FSIZE __LIBGCC_TF_MANT_DIG__
 # define FTYPE TFtype
 #else
 # error
@@ -1684,11 +1684,11 @@ FUNC (DWtype u)
 #if defined(L_floatundisf)
 #define FUNC __floatundisf
 #define FSTYPE SFtype
-#define FSSIZE SF_SIZE
+#define FSSIZE __LIBGCC_SF_MANT_DIG__
 #else
 #define FUNC __floatundidf
 #define FSTYPE DFtype
-#define FSSIZE DF_SIZE
+#define FSSIZE __LIBGCC_DF_MANT_DIG__
 #endif
 
 FSTYPE
@@ -1700,18 +1700,18 @@ FUNC (UDWtype u)
   f *= Wtype_MAXp1_F;
   f += (UWtype)u;
   return f;
-#elif (LIBGCC2_HAS_DF_MODE && F_MODE_OK (DF_SIZE))	\
-     || (LIBGCC2_HAS_XF_MODE && F_MODE_OK (XF_SIZE))	\
-     || (LIBGCC2_HAS_TF_MODE && F_MODE_OK (TF_SIZE))
+#elif (LIBGCC2_HAS_DF_MODE && F_MODE_OK (__LIBGCC_DF_MANT_DIG__))	\
+     || (LIBGCC2_HAS_XF_MODE && F_MODE_OK (__LIBGCC_XF_MANT_DIG__))	\
+     || (LIBGCC2_HAS_TF_MODE && F_MODE_OK (__LIBGCC_TF_MANT_DIG__))
 
-#if (LIBGCC2_HAS_DF_MODE && F_MODE_OK (DF_SIZE))
-# define FSIZE DF_SIZE
+#if (LIBGCC2_HAS_DF_MODE && F_MODE_OK (__LIBGCC_DF_MANT_DIG__))
+# define FSIZE __LIBGCC_DF_MANT_DIG__
 # define FTYPE DFtype
-#elif (LIBGCC2_HAS_XF_MODE && F_MODE_OK (XF_SIZE))
-# define FSIZE XF_SIZE
+#elif (LIBGCC2_HAS_XF_MODE && F_MODE_OK (__LIBGCC_XF_MANT_DIG__))
+# define FSIZE __LIBGCC_XF_MANT_DIG__
 # define FTYPE XFtype
-#elif (LIBGCC2_HAS_TF_MODE && F_MODE_OK (TF_SIZE))
-# define FSIZE TF_SIZE
+#elif (LIBGCC2_HAS_TF_MODE && F_MODE_OK (__LIBGCC_TF_MANT_DIG__))
+# define FSIZE __LIBGCC_TF_MANT_DIG__
 # define FTYPE TFtype
 #else
 # error

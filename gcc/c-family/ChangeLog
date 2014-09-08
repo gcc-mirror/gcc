@@ -1,3 +1,8 @@
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define macros for mantissa
+	digits of floating-point modes if -fbuilding-libgcc.
+
 2014-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Also define

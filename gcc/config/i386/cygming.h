@@ -343,7 +343,6 @@ do {						\
 #undef LIBGCC2_HAS_TF_MODE
 #define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q
-#define TF_SIZE 113
 
 /* Output function declarations at the end of the file.  */
 #undef TARGET_ASM_FILE_END

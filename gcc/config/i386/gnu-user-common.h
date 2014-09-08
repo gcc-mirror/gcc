@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIBGCC2_HAS_TF_MODE
 #define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q
-#define TF_SIZE 113
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 

@@ -1,5 +1,20 @@
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
+	* libgcc2.c (SF_SIZE): Change all uses to __LIBGCC_SF_MANT_DIG__.
+	(DF_SIZE): Change all uses to __LIBGCC_DF_MANT_DIG__.
+	(XF_SIZE): Change all uses to __LIBGCC_XF_MANT_DIG__.
+	(TF_SIZE): Change all uses to __LIBGCC_TF_MANT_DIG__.
+	* libgcc2.h (SF_SIZE): Change to __LIBGCC_SF_MANT_DIG__.  Give
+	error if not defined and LIBGCC2_HAS_SF_MODE is defined.
+	(DF_SIZE): Change to __LIBGCC_DF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_DF_MODE is defined.
+	(XF_SIZE): Change to __LIBGCC_XF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_XF_MODE is defined.
+	(TF_SIZE): Change to __LIBGCC_TF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_TF_MODE is defined.
+
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
 	* fp-bit.c (pack_d, unpack_d): Remove LARGEST_EXPONENT_IS_NORMAL
 	and ROUND_TOWARDS_ZERO conditionals.
 
