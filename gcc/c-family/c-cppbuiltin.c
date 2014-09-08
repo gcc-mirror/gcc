@@ -944,6 +944,20 @@ c_cpp_builtins (cpp_reader *pfile)
   /* For libgcc-internal use only.  */
   if (flag_building_libgcc)
     {
+      /* Properties of floating-point modes for libgcc2.c.  */
+      for (enum machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	{
+	  const char *name = GET_MODE_NAME (mode);
+	  char *macro_name
+	    = (char *) alloca (strlen (name)
+			       + sizeof ("__LIBGCC__MANT_DIG__"));
+	  sprintf (macro_name, "__LIBGCC_%s_MANT_DIG__", name);
+	  builtin_define_with_int_value (macro_name,
+					 REAL_MODE_FORMAT (mode)->p);
+	}
+
       /* For libgcc crtstuff.c and libgcc2.c.  */
       builtin_define_with_int_value ("__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__",
 				     EH_TABLES_CAN_BE_READ_ONLY);
