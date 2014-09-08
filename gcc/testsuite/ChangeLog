@@ -1,3 +1,11 @@
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/61923
+	* gcc.target/i386/pr61923.c: New test.
+
 2014-09-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/56194

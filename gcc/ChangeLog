@@ -1,3 +1,13 @@
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/61923
+	* haifa-sched.c (advance_one_cycle): Fix dump.
+	(schedule_block): Don't advance cycle if we are already at the
+	beginning of the cycle.
+
 2014-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/62015
