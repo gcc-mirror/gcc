@@ -245,12 +245,10 @@ fix_loop_structure (bitmap changed_bbs)
 	}
 
       /* Remove the loop.  */
-#ifdef ENABLE_CHECKING
       if (loop->header)
 	loop->former_header = loop->header;
       else
 	gcc_assert (loop->former_header != NULL);
-#endif
       loop->header = NULL;
       flow_loop_tree_node_remove (loop);
     }
@@ -278,7 +276,6 @@ fix_loop_structure (bitmap changed_bbs)
   FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
     if (loop && loop->header == NULL)
       {
-#ifdef ENABLE_CHECKING
 	if (dump_file
 	    && ((unsigned) loop->former_header->index
 		< basic_block_info_for_fn (cfun)->length ()))
@@ -306,7 +303,6 @@ fix_loop_structure (bitmap changed_bbs)
 			   former_header->loop_father->header->index);
 	      }
 	  }
-#endif
 	(*get_loops (cfun))[i] = NULL;
 	flow_loop_free (loop);
       }

@@ -194,13 +194,11 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* Number of iteration analysis data for RTL.  */
   struct niter_desc *simple_loop_desc;
 
-#ifdef ENABLE_CHECKING
   /* For sanity checking during loop fixup we record here the former
      loop header for loops marked for removal.  Note that this prevents
      the basic-block from being collected but its index can still be
      reused.  */
   basic_block former_header;
-#endif
 };
 
 /* Flags for state of loop structure.  */
