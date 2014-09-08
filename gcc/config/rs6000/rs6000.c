@@ -33524,7 +33524,8 @@ enum special_handling_values {
   SH_SUBREG,
   SH_NOSWAP_LD,
   SH_NOSWAP_ST,
-  SH_EXTRACT
+  SH_EXTRACT,
+  SH_SPLAT
 };
 
 /* Union INSN with all insns containing definitions that reach USE.
@@ -33735,43 +33736,50 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	   vector splat are element-order sensitive.  A few of these
 	   cases might be workable with special handling if required.  */
 	int val = XINT (op, 1);
-	if (val == UNSPEC_VMRGH_DIRECT
-	    || val == UNSPEC_VMRGL_DIRECT
-	    || val == UNSPEC_VPACK_SIGN_SIGN_SAT
-	    || val == UNSPEC_VPACK_SIGN_UNS_SAT
-	    || val == UNSPEC_VPACK_UNS_UNS_MOD
-	    || val == UNSPEC_VPACK_UNS_UNS_MOD_DIRECT
-	    || val == UNSPEC_VPACK_UNS_UNS_SAT
-	    || val == UNSPEC_VPERM
-	    || val == UNSPEC_VPERM_UNS
-	    || val == UNSPEC_VPERMHI
-	    || val == UNSPEC_VPERMSI
-	    || val == UNSPEC_VPKPX
-	    || val == UNSPEC_VSLDOI
-	    || val == UNSPEC_VSLO
-	    || val == UNSPEC_VSPLT_DIRECT
-	    || val == UNSPEC_VSRO
-	    || val == UNSPEC_VSUM2SWS
-	    || val == UNSPEC_VSUM4S
-	    || val == UNSPEC_VSUM4UBS
-	    || val == UNSPEC_VSUMSWS
-	    || val == UNSPEC_VSUMSWS_DIRECT
-	    || val == UNSPEC_VSX_CONCAT
-	    || val == UNSPEC_VSX_CVSPDP
-	    || val == UNSPEC_VSX_CVSPDPN
-	    || val == UNSPEC_VSX_SET
-	    || val == UNSPEC_VSX_SLDWI
-	    || val == UNSPEC_VUNPACK_HI_SIGN
-	    || val == UNSPEC_VUNPACK_HI_SIGN_DIRECT
-	    || val == UNSPEC_VUNPACK_LO_SIGN
-	    || val == UNSPEC_VUNPACK_LO_SIGN_DIRECT
-	    || val == UNSPEC_VUPKHPX
-	    || val == UNSPEC_VUPKHS_V4SF
-	    || val == UNSPEC_VUPKHU_V4SF
-	    || val == UNSPEC_VUPKLPX
-	    || val == UNSPEC_VUPKLS_V4SF
-	    || val == UNSPEC_VUPKHU_V4SF)
-	  return 0;
+	switch (val)
+	  {
+	  default:
+	    break;
+	  case UNSPEC_VMRGH_DIRECT:
+	  case UNSPEC_VMRGL_DIRECT:
+	  case UNSPEC_VPACK_SIGN_SIGN_SAT:
+	  case UNSPEC_VPACK_SIGN_UNS_SAT:
+	  case UNSPEC_VPACK_UNS_UNS_MOD:
+	  case UNSPEC_VPACK_UNS_UNS_MOD_DIRECT:
+	  case UNSPEC_VPACK_UNS_UNS_SAT:
+	  case UNSPEC_VPERM:
+	  case UNSPEC_VPERM_UNS:
+	  case UNSPEC_VPERMHI:
+	  case UNSPEC_VPERMSI:
+	  case UNSPEC_VPKPX:
+	  case UNSPEC_VSLDOI:
+	  case UNSPEC_VSLO:
+	  case UNSPEC_VSRO:
+	  case UNSPEC_VSUM2SWS:
+	  case UNSPEC_VSUM4S:
+	  case UNSPEC_VSUM4UBS:
+	  case UNSPEC_VSUMSWS:
+	  case UNSPEC_VSUMSWS_DIRECT:
+	  case UNSPEC_VSX_CONCAT:
+	  case UNSPEC_VSX_CVSPDP:
+	  case UNSPEC_VSX_CVSPDPN:
+	  case UNSPEC_VSX_SET:
+	  case UNSPEC_VSX_SLDWI:
+	  case UNSPEC_VUNPACK_HI_SIGN:
+	  case UNSPEC_VUNPACK_HI_SIGN_DIRECT:
+	  case UNSPEC_VUNPACK_LO_SIGN:
+	  case UNSPEC_VUNPACK_LO_SIGN_DIRECT:
+	  case UNSPEC_VUPKHPX:
+	  case UNSPEC_VUPKHS_V4SF:
+	  case UNSPEC_VUPKHU_V4SF:
+	  case UNSPEC_VUPKLPX:
+	  case UNSPEC_VUPKLS_V4SF:
+	  case UNSPEC_VUPKLU_V4SF:
+	    return 0;
+	  case UNSPEC_VSPLT_DIRECT:
+	    *special = SH_SPLAT;
+	    return 1;
+	  }
       }
 
     default:
@@ -34098,25 +34106,43 @@ permute_store (rtx_insn *insn)
 	     INSN_UID (insn));
 }
 
-/* Given OP that contains a vector extract operation, change the index
-   of the extracted lane to count from the other side of the vector.  */
+/* Given OP that contains a vector extract operation, adjust the index
+   of the extracted lane to account for the doubleword swap.  */
 static void
 adjust_extract (rtx_insn *insn)
 {
-  rtx body = PATTERN (insn);
+  rtx src = SET_SRC (PATTERN (insn));
   /* The vec_select may be wrapped in a vec_duplicate for a splat, so
      account for that.  */
-  rtx sel = (GET_CODE (body) == VEC_DUPLICATE
-	     ? XEXP (XEXP (body, 0), 1)
-	     : XEXP (body, 1));
+  rtx sel = GET_CODE (src) == VEC_DUPLICATE ? XEXP (src, 0) : src;
   rtx par = XEXP (sel, 1);
-  int nunits = GET_MODE_NUNITS (GET_MODE (XEXP (sel, 0)));
-  XVECEXP (par, 0, 0) = GEN_INT (nunits - 1 - INTVAL (XVECEXP (par, 0, 0)));
+  int half_elts = GET_MODE_NUNITS (GET_MODE (XEXP (sel, 0))) >> 1;
+  int lane = INTVAL (XVECEXP (par, 0, 0));
+  lane = lane >= half_elts ? lane - half_elts : lane + half_elts;
+  XVECEXP (par, 0, 0) = GEN_INT (lane);
   INSN_CODE (insn) = -1; /* Force re-recognition.  */
   df_insn_rescan (insn);
 
   if (dump_file)
     fprintf (dump_file, "Changing lane for extract %d\n", INSN_UID (insn));
+}
+
+/* Given OP that contains a vector direct-splat operation, adjust the index
+   of the source lane to account for the doubleword swap.  */
+static void
+adjust_splat (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+  rtx unspec = XEXP (body, 1);
+  int half_elts = GET_MODE_NUNITS (GET_MODE (unspec)) >> 1;
+  int lane = INTVAL (XVECEXP (unspec, 0, 1));
+  lane = lane >= half_elts ? lane - half_elts : lane + half_elts;
+  XVECEXP (unspec, 0, 1) = GEN_INT (lane);
+  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Changing lane for splat %d\n", INSN_UID (insn));
 }
 
 /* The insn described by INSN_ENTRY[I] can be swapped, but only
@@ -34160,6 +34186,11 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
     case SH_EXTRACT:
       /* Change the lane on an extract operation.  */
       adjust_extract (insn);
+      break;
+    case SH_SPLAT:
+      /* Change the lane on a direct-splat operation.  */
+      adjust_splat (insn);
+      break;
     }
 }
 
@@ -34230,6 +34261,8 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
 	      fputs ("special:store ", dump_file);
 	    else if (insn_entry[i].special_handling == SH_EXTRACT)
 	      fputs ("special:extract ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_SPLAT)
+	      fputs ("special:splat ", dump_file);
 	  }
 	if (insn_entry[i].web_not_optimizable)
 	  fputs ("unoptimizable ", dump_file);
