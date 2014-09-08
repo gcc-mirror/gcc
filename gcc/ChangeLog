@@ -1,3 +1,15 @@
+2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (special_handling_values):  Add SH_SPLAT.
+	(rtx_is_swappable_p): Convert UNSPEC cascading ||s to a switch
+	statement; allow optimization of UNSPEC_VSPLT_DIRECT with special
+	handling SH_SPLAT.
+	(adjust_extract): Fix test for VEC_DUPLICATE case; fix adjustment
+	of extracted lane.
+	(adjust_splat): New function.
+	(handle_special_swappables): Call adjust_splat for SH_SPLAT.
+	(dump_swap_insn_table): Add case for SH_SPLAT.
+
 2014-09-08  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/63196
