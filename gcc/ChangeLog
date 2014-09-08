@@ -1,3 +1,7 @@
+2014-09-08  DJ Delorie  <dj@redhat.com>
+
+	* doc/invoke.texi (MSP430 Options): Add -minrt.
+
 2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (special_handling_values):  Add SH_SPLAT.
