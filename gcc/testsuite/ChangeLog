@@ -1,3 +1,11 @@
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60196
+	PR tree-optimization/63189
+	* gcc.dg/vect/pr63189.c: New test.
+	* gcc.dg/vect/pr60196-1.c: New test.
+	* gcc.dg/vect/pr60196-2.c: New test.
+
 2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-16.c: New test.
