@@ -1,3 +1,8 @@
+2014-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_cmtst_qualifiers, TYPES_TST): Remove as unused.
+
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/cygming.h (TF_SIZE): Remove.
