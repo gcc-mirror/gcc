@@ -73,7 +73,7 @@ inside_basic_block_p (const rtx_insn *insn)
    the basic block.  */
 
 bool
-control_flow_insn_p (const_rtx insn)
+control_flow_insn_p (const rtx_insn *insn)
 {
   switch (GET_CODE (insn))
     {
