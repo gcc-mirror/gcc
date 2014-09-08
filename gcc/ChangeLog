@@ -1,5 +1,16 @@
 2014-09-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60196
+	PR tree-optimization/63189
+	Backported from mainline
+	2013-09-17  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Fix a bug
+	when checking the dot production pattern. The type of rhs operand
+	of multiply is now checked correctly.
+
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
 	Backported from mainline
 	2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
 

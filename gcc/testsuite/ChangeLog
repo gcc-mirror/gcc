@@ -1,5 +1,20 @@
 2014-09-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60196
+	PR tree-optimization/63189
+	* gcc.dg/vect/pr63189.c: New test.
+	* gcc.dg/vect/pr60196-1.c: New test.
+	* gcc.dg/vect/pr60196-2.c: New test.
+
+	Backported from mainline
+	2013-09-17  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-reduc-dot-s16c.c: Add a test case with dot product 
+	on two arrays with short and int types. This should not be recognized
+	as a dot product pattern.
+
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
 	Backported from mainline
 	2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
 
