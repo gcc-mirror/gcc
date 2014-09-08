@@ -2376,11 +2376,8 @@ copy_loops (copy_body_data *id,
 
 	  /* Assign the new loop its header and latch and associate
 	     those with the new loop.  */
-	  if (src_loop->header != NULL)
-	    {
-	      dest_loop->header = (basic_block)src_loop->header->aux;
-	      dest_loop->header->loop_father = dest_loop;
-	    }
+	  dest_loop->header = (basic_block)src_loop->header->aux;
+	  dest_loop->header->loop_father = dest_loop;
 	  if (src_loop->latch != NULL)
 	    {
 	      dest_loop->latch = (basic_block)src_loop->latch->aux;
@@ -5536,6 +5533,11 @@ tree_function_versioning (tree old_decl, tree new_decl,
   delete_unreachable_blocks_update_callgraph (&id);
   if (id.dst_node->definition)
     cgraph_edge::rebuild_references ();
+  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+      fix_loop_structure (NULL);
+    }
   update_ssa (TODO_update_ssa);
 
   /* After partial cloning we need to rescale frequencies, so they are
