@@ -1,3 +1,7 @@
+2014-09-08  DJ Delorie  <dj@redhat.com>
+
+	* doc/invoke.texi (MSP430 Options): Add -minrt.
+
 2014-09-05  Easwaran Raman  <eraman@google.com>
 
 	Backport from mainline
