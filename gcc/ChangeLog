@@ -1,3 +1,13 @@
+2014-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/63196
+	* tree-inline.c (copy_loops): The source loop header should
+	always be non-NULL.
+	(tree_function_versioning): If loops need fixup after removing
+	unreachable blocks fix them.
+	* omp-low.c (simd_clone_adjust): Do not add incr block to
+	loop under construction.
+
 2014-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
