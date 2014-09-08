@@ -1,3 +1,15 @@
+2014-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcse.c (modify_mem_list): Strengthen this variable from
+	vec<rtx> * to vec<rtx_insn *> *.
+	(vec_rtx_heap): Strengthen this typedef from vec<rtx> to
+	vec<rtx_insn *>.
+	(load_killed_in_block_p): Strengthen local "list" from vec<rtx> to
+	vec<rtx_insn *>, and local "setter" from rtx to rtx_insn *.
+	(record_last_mem_set_info): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(record_last_set_info): Likewise for local "last_set_insn".
+
 2014-09-08  DJ Delorie  <dj@redhat.com>
 
 	* doc/invoke.texi (MSP430 Options): Add -minrt.
