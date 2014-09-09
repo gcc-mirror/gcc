@@ -1,3 +1,7 @@
+2014-09-09  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/vect-copysignf.c: New testcase.
+
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/vfp-1.c: Updated expected assembly.
