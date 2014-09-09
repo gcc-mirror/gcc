@@ -424,6 +424,17 @@ gen_rtx_INSN_LIST (enum machine_mode mode, rtx insn, rtx insn_list)
 						 insn_list));
 }
 
+rtx_insn *
+gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
+	      basic_block bb, rtx pattern, int location, int code,
+	      rtx reg_notes)
+{
+  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeiie (INSN, mode,
+						 prev_insn, next_insn,
+						 bb, pattern, location, code,
+						 reg_notes));
+}
+
 rtx
 gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 {
