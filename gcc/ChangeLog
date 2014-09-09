@@ -1,5 +1,11 @@
 2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* opth-gen.awk: Generate mapping from cpp message reasons to the
+	options that enable them.
+	* doc/options.texi (CppReason): Document.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* doc/invoke.texi (Wnormalized=): Update.
 
 2014-09-09  Segher Boessenkool  <segher@kernel.crashing.org>

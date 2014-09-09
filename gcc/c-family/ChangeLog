@@ -1,5 +1,14 @@
 2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* c.opt: Add CppReason to various flags.
+	(Wdate-time): Re-sort.
+	* c-common.c: Include c-common.h earlier.
+	(struct reason_option_codes_t): Delete.
+	(c_option_controlling_cpp_error): Prefix global type and struct
+	with cpp_.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* c.opt	(Wnormalized): New.
 	(Wnormalized=): Use Enum and Reject Negative.
 	* c-opts.c (c_common_handle_option): Do not handle Wnormalized here.
