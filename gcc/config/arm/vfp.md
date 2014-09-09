@@ -1082,7 +1082,7 @@
   [(set (match_operand:SF	   0 "s_register_operand" "=&t,t")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "t,t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fsqrts%?\\t%0, %1"
+  "vsqrt%?.f32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "arch" "*,armv6_or_vfpv3")
@@ -1093,7 +1093,7 @@
   [(set (match_operand:DF	   0 "s_register_operand" "=&w,w")
 	(sqrt:DF (match_operand:DF 1 "s_register_operand" "w,w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fsqrtd%?\\t%P0, %P1"
+  "vsqrt%?.f64\\t%P0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "arch" "*,armv6_or_vfpv3")
@@ -1175,14 +1175,17 @@
 
 ;; Comparison patterns
 
+;; In the compare with FP zero case the ARM Architecture Reference Manual
+;; specifies the immediate to be #0.0.  However, some buggy assemblers only
+;; accept #0.  We don't want to autodetect broken assemblers, so output #0.
 (define_insn "*cmpsf_vfp"
   [(set (reg:CCFP VFPCC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "t,t")
 		      (match_operand:SF 1 "vfp_compare_operand" "t,G")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
-   fcmps%?\\t%0, %1
-   fcmpzs%?\\t%0"
+   vcmp%?.f32\\t%0, %1
+   vcmp%?.f32\\t%0, #0"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fcmps")]
@@ -1194,8 +1197,8 @@
 		       (match_operand:SF 1 "vfp_compare_operand" "t,G")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
-   fcmpes%?\\t%0, %1
-   fcmpezs%?\\t%0"
+   vcmpe%?.f32\\t%0, %1
+   vcmpe%?.f32\\t%0, #0"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fcmps")]
@@ -1207,8 +1210,8 @@
 		      (match_operand:DF 1 "vfp_compare_operand" "w,G")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "@
-   fcmpd%?\\t%P0, %P1
-   fcmpzd%?\\t%P0"
+   vcmp%?.f64\\t%P0, %P1
+   vcmp%?.f64\\t%P0, #0"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fcmpd")]
@@ -1220,8 +1223,8 @@
 		       (match_operand:DF 1 "vfp_compare_operand" "w,G")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "@
-   fcmped%?\\t%P0, %P1
-   fcmpezd%?\\t%P0"
+   vcmpe%?.f64\\t%P0, %P1
+   vcmpe%?.f64\\t%P0, #0"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fcmpd")]

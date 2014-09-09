@@ -44,7 +44,7 @@ void test_sf() {
   /* { dg-final { scan-assembler "vnmla.f32" } } */
   f1 = -f2 * f3 - f1;
   /* sqrtsf2_vfp */
-  /* { dg-final { scan-assembler "fsqrts" } } */
+  /* { dg-final { scan-assembler "vsqrt.f32" } } */
   f1 = sqrtf (f1);
 }
 
@@ -85,7 +85,7 @@ void test_df() {
   /* { dg-final { scan-assembler "vnmla.f64" } } */
   d1 = -d2 * d3 - d1;
   /* sqrtdf2_vfp */
-  /* { dg-final { scan-assembler "fsqrtd" } } */
+  /* { dg-final { scan-assembler "vsqrt.f64" } } */
   d1 = sqrt (d1);
 }
 
