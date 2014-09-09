@@ -11,19 +11,19 @@ volatile float f1, f2, f3;
 
 void test_sf() {
   /* abssf2_vfp */
-  /* { dg-final { scan-assembler "fabss" } } */
+  /* { dg-final { scan-assembler "vabs.f32" } } */
   f1 = fabsf (f1);
   /* negsf2_vfp */
-  /* { dg-final { scan-assembler "fnegs" } } */
+  /* { dg-final { scan-assembler "vneg.f32" } } */
   f1 = -f1;
   /* addsf3_vfp */
-  /* { dg-final { scan-assembler "fadds" } } */
+  /* { dg-final { scan-assembler "vadd.f32" } } */
   f1 = f2 + f3;
   /* subsf3_vfp */
-  /* { dg-final { scan-assembler "fsubs" } } */
+  /* { dg-final { scan-assembler "vsub.f32" } } */
   f1 = f2 - f3;
   /* divsf3_vfp */
-  /* { dg-final { scan-assembler "fdivs" } } */
+  /* { dg-final { scan-assembler "vdiv.f32" } } */
   f1 = f2 / f3;
   /* mulsf3_vfp */
   /* { dg-final { scan-assembler "fmuls" } } */
@@ -52,19 +52,19 @@ volatile double d1, d2, d3;
 
 void test_df() {
   /* absdf2_vfp */
-  /* { dg-final { scan-assembler "fabsd" } } */
+  /* { dg-final { scan-assembler "vabs.f64" } } */
   d1 = fabs (d1);
   /* negdf2_vfp */
-  /* { dg-final { scan-assembler "fnegd" } } */
+  /* { dg-final { scan-assembler "vneg.f64" } } */
   d1 = -d1;
   /* adddf3_vfp */
-  /* { dg-final { scan-assembler "faddd" } } */
+  /* { dg-final { scan-assembler "vadd.f64" } } */
   d1 = d2 + d3;
   /* subdf3_vfp */
-  /* { dg-final { scan-assembler "fsubd" } } */
+  /* { dg-final { scan-assembler "vsub.f64" } } */
   d1 = d2 - d3;
   /* divdf3_vfp */
-  /* { dg-final { scan-assembler "fdivd" } } */
+  /* { dg-final { scan-assembler "vdiv.f64" } } */
   d1 = d2 / d3;
   /* muldf3_vfp */
   /* { dg-final { scan-assembler "fmuld" } } */
