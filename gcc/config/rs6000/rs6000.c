@@ -33761,8 +33761,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSUMSWS:
 	  case UNSPEC_VSUMSWS_DIRECT:
 	  case UNSPEC_VSX_CONCAT:
-	  case UNSPEC_VSX_CVSPDP:
-	  case UNSPEC_VSX_CVSPDPN:
 	  case UNSPEC_VSX_SET:
 	  case UNSPEC_VSX_SLDWI:
 	  case UNSPEC_VUNPACK_HI_SIGN:
@@ -33775,6 +33773,15 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VUPKLPX:
 	  case UNSPEC_VUPKLS_V4SF:
 	  case UNSPEC_VUPKLU_V4SF:
+	  /* The following could be handled as an idiom with XXSPLTW.
+	     These place a scalar in BE element zero, but the XXSPLTW
+	     will currently expect it in BE element 2 in a swapped
+	     region.  When one of these feeds an XXSPLTW with no other
+	     defs/uses either way, we can avoid the lane change for
+	     XXSPLTW and things will be correct.  TBD.  */
+	  case UNSPEC_VSX_CVDPSPN:
+	  case UNSPEC_VSX_CVSPDP:
+	  case UNSPEC_VSX_CVSPDPN:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	    *special = SH_SPLAT;

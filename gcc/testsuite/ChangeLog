@@ -1,3 +1,9 @@
+2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-15.c: Remove scan-assembler-not for
+	xxpermdi and add commentary about adding it back later; remove
+	unused typedef.
+
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/vect-lceilf_1.c: Make input and output arrays global

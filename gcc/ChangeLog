@@ -1,3 +1,9 @@
+2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Add
+	UNSPEC_VSX_CVDPSPN as an unswappable operand, and add commentary
+	on how to make it legal in future.
+
 2014-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* caller-save.c (rtx saveinsn): Strengthen this variable from rtx
