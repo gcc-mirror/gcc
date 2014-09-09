@@ -1,5 +1,18 @@
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/vfp.md (*extendsfdf2_vfp): Use UAL assembly syntax.
+	(*truncdfsf2_vfp): Likewise.
+	(*truncsisf2_vfp): Likewise.
+	(*truncsidf2_vfp): Likewise.
+	(fixuns_truncsfsi2): Likewise.
+	(fixuns_truncdfsi2): Likewise.
+	(*floatsisf2_vfp): Likewise.
+	(*floatsidf2_vfp): Likewise.
+	(floatunssisf2): Likewise.
+	(floatunssidf2): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/vfp.md (*mulsf3_vfp): Use UAL assembly syntax.
 	(*muldf3_vfp): Likewise.
 	(*mulsf3negsf_vfp): Likewise.

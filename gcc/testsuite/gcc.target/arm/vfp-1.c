@@ -94,34 +94,34 @@ volatile unsigned int u1;
 
 void test_convert () {
   /* extendsfdf2_vfp */
-  /* { dg-final { scan-assembler "fcvtds" } } */
+  /* { dg-final { scan-assembler "vcvt.f64.f32" } } */
   d1 = f1;
   /* truncdfsf2_vfp */
-  /* { dg-final { scan-assembler "fcvtsd" } } */
+  /* { dg-final { scan-assembler "vcvt.f32.f64" } } */
   f1 = d1;
   /* truncsisf2_vfp */
-  /* { dg-final { scan-assembler "ftosizs" } } */
+  /* { dg-final { scan-assembler "vcvt.s32.f32" } } */
   i1 = f1;
   /* truncsidf2_vfp */
-  /* { dg-final { scan-assembler "ftosizd" } } */
+  /* { dg-final { scan-assembler "vcvt.s32.f64" } } */
   i1 = d1;
   /* fixuns_truncsfsi2 */
-  /* { dg-final { scan-assembler "ftouizs" } } */
+  /* { dg-final { scan-assembler "vcvt.u32.f32" } } */
   u1 = f1;
   /* fixuns_truncdfsi2 */
-  /* { dg-final { scan-assembler "ftouizd" } } */
+  /* { dg-final { scan-assembler "vcvt.u32.f64" } } */
   u1 = d1;
   /* floatsisf2_vfp */
-  /* { dg-final { scan-assembler "fsitos" } } */
+  /* { dg-final { scan-assembler "vcvt.f32.s32" } } */
   f1 = i1;
   /* floatsidf2_vfp */
-  /* { dg-final { scan-assembler "fsitod" } } */
+  /* { dg-final { scan-assembler "vcvt.f64.s32" } } */
   d1 = i1;
   /* floatunssisf2 */
-  /* { dg-final { scan-assembler "fuitos" } } */
+  /* { dg-final { scan-assembler "vcvt.f32.u32" } } */
   f1 = u1;
   /* floatunssidf2 */
-  /* { dg-final { scan-assembler "fuitod" } } */
+  /* { dg-final { scan-assembler "vcvt.f64.u32" } } */
   d1 = u1;
 }
 
