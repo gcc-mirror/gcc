@@ -1,3 +1,26 @@
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* ira.c (ira_update_equiv_info_by_shuffle_insn): Use NULL rather
+	than NULL_RTX.
+	(no_equiv): Likewise.
+	(update_equiv_regs): Likewise.
+	(setup_reg_equiv): Likewise.  Strengthen locals "elem",
+	"prev_elem", "next_elem" from rtx to rtx_insn_list *, and "insn"
+	from rtx to rtx_insn *.  Use methods of "elem" for typesafety and
+	clarity.
+	* ira.h (struct ira_reg_equiv_s): Strengthen field "init_insns"
+	from rtx to rtx_insn_list *.
+	* lra-assigns.c (spill_for): Strengthen local "x" from rtx to
+	rtx_insn_list * and use methods for clarity and typesafety.
+	* lra-constraints.c (contains_deleted_insn_p): Likewise for param
+	"list".
+	(init_insn_rhs_dead_pseudo_p): Likewise for local "insns".  Remove
+	redundant check on INSN_P (insns): this cannot hold, as "insns" is
+	an INSN_LIST, not an insn.
+	(reverse_equiv_p): Strengthen local "insns" from rtx to
+	rtx_insn_list * and use methods for clarity and typesafety.
+	(contains_reloaded_insn_p): Likewise for local "list".
+
 2014-09-09  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/arm/arm.c (NEON_COPYSIGNF): New enum.
