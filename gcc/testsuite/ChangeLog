@@ -1,5 +1,9 @@
 2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vld1-vst1_1.c: Rewrite to test all variants.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vldN_1.c: New test.
 
 2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
