@@ -1,5 +1,18 @@
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/vfp.md (*abssf2_vfp): Use UAL assembly syntax.
+	(*absdf2_vfp): Likewise.
+	(*negsf2_vfp): Likewise.
+	(*negdf2_vfp): Likewise.
+	(*addsf3_vfp): Likewise.
+	(*adddf3_vfp): Likewise.
+	(*subsf3_vfp): Likewise.
+	(*subdf3_vfp): Likewise.
+	(*divsf3_vfp): Likewise.
+	(*divdf3_vfp): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (output_move_vfp): Use UAL syntax for load/store
 	multiple.
 	(arm_print_operand): Don't convert real values to decimal

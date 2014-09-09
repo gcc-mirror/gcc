@@ -588,7 +588,7 @@
   [(set (match_operand:SF	  0 "s_register_operand" "=t")
 	(abs:SF (match_operand:SF 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fabss%?\\t%0, %1"
+  "vabs%?.f32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "ffariths")]
@@ -598,7 +598,7 @@
   [(set (match_operand:DF	  0 "s_register_operand" "=w")
 	(abs:DF (match_operand:DF 1 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fabsd%?\\t%P0, %P1"
+  "vabs%?.f64\\t%P0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "ffarithd")]
@@ -609,7 +609,7 @@
 	(neg:SF (match_operand:SF 1 "s_register_operand" "t,r")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
-   fnegs%?\\t%0, %1
+   vneg%?.f32\\t%0, %1
    eor%?\\t%0, %1, #-2147483648"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
@@ -621,7 +621,7 @@
 	(neg:DF (match_operand:DF 1 "s_register_operand" "w,0,r")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "@
-   fnegd%?\\t%P0, %P1
+   vneg%?.f64\\t%P0, %P1
    #
    #"
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE && reload_completed
@@ -671,7 +671,7 @@
 	(plus:SF (match_operand:SF 1 "s_register_operand" "t")
 		 (match_operand:SF 2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fadds%?\\t%0, %1, %2"
+  "vadd%?.f32\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fadds")]
@@ -682,7 +682,7 @@
 	(plus:DF (match_operand:DF 1 "s_register_operand" "w")
 		 (match_operand:DF 2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "faddd%?\\t%P0, %P1, %P2"
+  "vadd%?.f64\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "faddd")]
@@ -694,7 +694,7 @@
 	(minus:SF (match_operand:SF 1 "s_register_operand" "t")
 		  (match_operand:SF 2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fsubs%?\\t%0, %1, %2"
+  "vsub%?.f32\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fadds")]
@@ -705,7 +705,7 @@
 	(minus:DF (match_operand:DF 1 "s_register_operand" "w")
 		  (match_operand:DF 2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fsubd%?\\t%P0, %P1, %P2"
+  "vsub%?.f64\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "faddd")]
@@ -722,7 +722,7 @@
 	(div:SF (match_operand:SF 1 "s_register_operand" "t,t")
 		(match_operand:SF 2 "s_register_operand" "t,t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fdivs%?\\t%0, %1, %2"
+  "vdiv%?.f32\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "arch" "*,armv6_or_vfpv3")
@@ -734,7 +734,7 @@
 	(div:DF (match_operand:DF 1 "s_register_operand" "w,w")
 		(match_operand:DF 2 "s_register_operand" "w,w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fdivd%?\\t%P0, %P1, %P2"
+  "vdiv%?.f64\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "arch" "*,armv6_or_vfpv3")
