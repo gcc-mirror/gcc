@@ -21435,7 +21435,8 @@ dwarf2out_var_location (rtx_insn *loc_note)
     {
       struct call_arg_loc_node *ca_loc
 	= ggc_cleared_alloc<call_arg_loc_node> ();
-      rtx prev = prev_real_insn (loc_note), x;
+      rtx_insn *prev = prev_real_insn (loc_note);
+      rtx x;
       ca_loc->call_arg_loc_note = loc_note;
       ca_loc->next = NULL;
       ca_loc->label = last_label;
@@ -21445,7 +21446,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 			  && GET_CODE (PATTERN (prev)) == SEQUENCE
 			  && CALL_P (XVECEXP (PATTERN (prev), 0, 0)))));
       if (!CALL_P (prev))
-	prev = XVECEXP (PATTERN (prev), 0, 0);
+	prev = as_a <rtx_sequence *> (PATTERN (prev))->insn (0);
       ca_loc->tail_call_p = SIBLING_CALL_P (prev);
       x = get_call_rtx_from (PATTERN (prev));
       if (x)

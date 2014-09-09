@@ -3297,7 +3297,7 @@ relax_delay_slots (rtx_insn *first)
 	  && JUMP_P (next)
 	  && PATTERN (next) == PATTERN (delay_insn))
 	{
-	  rtx after;
+	  rtx_insn *after;
 	  int i;
 
 	  /* Delete the RETURN and just execute the delay list insns.
@@ -3321,8 +3321,8 @@ relax_delay_slots (rtx_insn *first)
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  add_insn_after (delay_insn, trial, NULL);
 	  after = delay_insn;
-	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
+	  for (i = 1; i < pat->len (); i++)
+	    after = emit_copy_of_insn_after (pat->insn (i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}
@@ -3424,7 +3424,7 @@ relax_delay_slots (rtx_insn *first)
 #endif
 	  )
 	{
-	  rtx after;
+	  rtx_insn *after;
 	  int i;
 
 	  /* All this insn does is execute its delay list and jump to the
@@ -3450,8 +3450,8 @@ relax_delay_slots (rtx_insn *first)
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  add_insn_after (delay_insn, trial, NULL);
 	  after = delay_insn;
-	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
+	  for (i = 1; i < pat->len (); i++)
+	    after = emit_copy_of_insn_after (pat->insn (i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}

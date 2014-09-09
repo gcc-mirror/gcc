@@ -1,5 +1,41 @@
 2014-09-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (INSN_LOCATION): Strengthen param from const_rtx to
+	const rtx_insn *, and from rtx to rtx_insn * for the other
+	overloaded variant.
+	(RTL_LOCATION): Add a checked cast to rtx_insn * when invoking
+	INSN_LOCATION, since we know INSN_P holds.
+	(insn_line): Strengthen param from const_rtx to const rtx_insn *.
+	(insn_file): Likewise.
+	(insn_scope): Likewise.
+	(insn_location): Likewise.
+
+	* config/mips/mips.c (mips16_gp_pseudo_reg): Strengthen local
+	"insn" from rtx to rtx_insn *, introducing a new local rtx "set"
+	for the result of gen_load_const_gp.
+	* config/rs6000/rs6000-protos.h (output_call): Strengthen first
+	param from rtx to rtx_insn *.
+	* config/rs6000/rs6000.c (output_call): Likewise.
+	* dwarf2out.c (dwarf2out_var_location): Likewise for local "prev",
+	introducing a checked cast to rtx_sequence * and use of the insn
+	method.
+	* emit-rtl.c (emit_copy_of_insn_after): Strengthen both params
+	from rtx to rtx_insn *.
+	(insn_scope): Strengthen param from const_rtx to const rtx_insn *.
+	(insn_line): Likewise.
+	(insn_file): Likewise.
+	(insn_location): Likewise.
+	* emit-rtl.h (emit_copy_of_insn_after): Strengthen both params
+	from rtx to rtx_insn *.
+	* print-rtl.c (print_rtx): Introduce local "in_insn" via a checked
+	cast, using it for calls to INSN_HAS_LOCATION and insn_location.
+	* recog.c (peep2_attempt): Introduce local rtx_insn * "peepinsn"
+	via a checked cast.
+	* reorg.c (relax_delay_slots): Strengthen locals named "after"
+	from rtx to rtx_insn *; use methods of "pat" for type-safety.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* combine.c (try_combine): Eliminate checked cast on result of
 	gen_rtx_INSN.
 	* emit-rtl.c (gen_rtx_INSN): New function, improving over the prior

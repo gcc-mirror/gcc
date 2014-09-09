@@ -1369,12 +1369,12 @@ inline rtx& PATTERN (rtx insn)
   return XEXP (insn, 3);
 }
 
-inline unsigned int INSN_LOCATION (const_rtx insn)
+inline unsigned int INSN_LOCATION (const rtx_insn *insn)
 {
   return XUINT (insn, 4);
 }
 
-inline unsigned int& INSN_LOCATION (rtx insn)
+inline unsigned int& INSN_LOCATION (rtx_insn *insn)
 {
   return XUINT (insn, 4);
 }
@@ -1386,7 +1386,8 @@ inline bool INSN_HAS_LOCATION (const rtx_insn *insn)
 
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \
-			 INSN_LOCATION (X) : UNKNOWN_LOCATION)
+			 INSN_LOCATION (as_a <rtx_insn *> (X)) \
+			 : UNKNOWN_LOCATION)
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
@@ -2644,10 +2645,10 @@ extern rtx_insn *next_cc0_user (rtx);
 extern rtx_insn *prev_cc0_setter (rtx);
 
 /* In emit-rtl.c  */
-extern int insn_line (const_rtx);
-extern const char * insn_file (const_rtx);
-extern tree insn_scope (const_rtx);
-extern expanded_location insn_location (const_rtx);
+extern int insn_line (const rtx_insn *);
+extern const char * insn_file (const rtx_insn *);
+extern tree insn_scope (const rtx_insn *);
+extern expanded_location insn_location (const rtx_insn *);
 extern location_t prologue_location, epilogue_location;
 
 /* In jump.c */
