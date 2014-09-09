@@ -960,7 +960,7 @@ extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (enum machine_mode);
-extern void ira_setup_alts (rtx insn, HARD_REG_SET &alts);
+extern void ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts);
 extern int ira_get_dup_out_num (int op_num, HARD_REG_SET &alts);
 
 /* ira-build.c */

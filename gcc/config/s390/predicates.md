@@ -374,7 +374,7 @@
   (match_code "parallel")
 {
   rtx pattern = op;
-  rtx insn;
+  rtx_insn *insn;
   int icode;
 
   /* This is redundant but since this predicate is evaluated

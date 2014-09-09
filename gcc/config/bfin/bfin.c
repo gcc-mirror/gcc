@@ -3865,7 +3865,7 @@ hwloop_fail (hwloop_info loop)
    loop counter.  Otherwise, return NULL_RTX.  */
 
 static rtx
-hwloop_pattern_reg (rtx insn)
+hwloop_pattern_reg (rtx_insn *insn)
 {
   rtx reg;
 
@@ -4287,7 +4287,7 @@ static void
 workaround_speculation (void)
 {
   rtx_insn *insn, *next;
-  rtx last_condjump = NULL_RTX;
+  rtx_insn *last_condjump = NULL;
   int cycles_since_jump = INT_MAX;
   int delay_added = 0;
 

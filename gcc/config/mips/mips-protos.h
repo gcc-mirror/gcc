@@ -299,7 +299,7 @@ extern unsigned int mips_sync_loop_insns (rtx, rtx *);
 extern const char *mips_output_division (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern unsigned int mips_hard_regno_nregs (int, enum machine_mode);
-extern bool mips_linked_madd_p (rtx, rtx);
+extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx, rtx);
 extern int mips_dspalu_bypass_p (rtx, rtx);
 extern rtx mips_prefetch_cookie (rtx, rtx);
@@ -315,7 +315,7 @@ extern bool mips16e_save_restore_pattern_p (rtx, HOST_WIDE_INT,
 extern bool mask_low_and_shift_p (enum machine_mode, rtx, rtx, int);
 extern int mask_low_and_shift_len (enum machine_mode, rtx, rtx);
 extern bool and_operands_ok (enum machine_mode, rtx, rtx);
-extern bool mips_fmadd_bypass (rtx, rtx);
+extern bool mips_fmadd_bypass (rtx_insn *, rtx_insn *);
 
 union mips_gen_fn_ptrs
 {

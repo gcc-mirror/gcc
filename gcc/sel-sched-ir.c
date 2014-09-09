@@ -1309,7 +1309,7 @@ vinsn_cond_branch_p (vinsn_t vi)
 
 /* Return latency of INSN.  */
 static int
-sel_insn_rtx_cost (rtx insn)
+sel_insn_rtx_cost (rtx_insn *insn)
 {
   int cost;
 

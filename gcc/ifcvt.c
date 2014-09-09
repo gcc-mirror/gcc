@@ -861,20 +861,18 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
   if ((if_info->cond_earliest == if_info->jump || cond_complex)
       && (normalize == 0 || STORE_FLAG_VALUE == normalize))
     {
-      rtx tmp;
-
-      tmp = gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (cond, 0),
+      rtx src = gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (cond, 0),
 			    XEXP (cond, 1));
-      tmp = gen_rtx_SET (VOIDmode, x, tmp);
+      rtx set = gen_rtx_SET (VOIDmode, x, src);
 
       start_sequence ();
-      tmp = emit_insn (tmp);
+      rtx_insn *insn = emit_insn (set);
 
-      if (recog_memoized (tmp) >= 0)
+      if (recog_memoized (insn) >= 0)
 	{
-	  tmp = get_insns ();
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
-	  emit_insn (tmp);
+	  emit_insn (seq);
 
 	  if_info->cond_earliest = if_info->jump;
 
@@ -906,7 +904,8 @@ noce_emit_move_insn (rtx x, rtx y)
 
   if (GET_CODE (x) != STRICT_LOW_PART)
     {
-      rtx seq, insn, target;
+      rtx_insn *seq, *insn;
+      rtx target;
       optab ot;
 
       start_sequence ();
@@ -1417,20 +1416,19 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 
   if (if_info->cond_earliest == if_info->jump)
     {
-      rtx tmp;
-
-      tmp = gen_rtx_fmt_ee (code, GET_MODE (if_info->cond), cmp_a, cmp_b);
-      tmp = gen_rtx_IF_THEN_ELSE (GET_MODE (x), tmp, vtrue, vfalse);
-      tmp = gen_rtx_SET (VOIDmode, x, tmp);
+      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (if_info->cond), cmp_a, cmp_b);
+      rtx if_then_else = gen_rtx_IF_THEN_ELSE (GET_MODE (x),
+					       cond, vtrue, vfalse);
+      rtx set = gen_rtx_SET (VOIDmode, x, if_then_else);
 
       start_sequence ();
-      tmp = emit_insn (tmp);
+      rtx_insn *insn = emit_insn (set);
 
-      if (recog_memoized (tmp) >= 0)
+      if (recog_memoized (insn) >= 0)
 	{
-	  tmp = get_insns ();
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
-	  emit_insn (tmp);
+	  emit_insn (seq);
 
 	  return x;
 	}
@@ -1563,11 +1561,12 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   rtx b = if_info->b;
   rtx x = if_info->x;
   rtx orig_a, orig_b;
-  rtx insn_a, insn_b;
-  rtx tmp, target;
+  rtx_insn *insn_a, *insn_b;
+  rtx target;
   int is_mem = 0;
   int insn_cost;
   enum rtx_code code;
+  rtx_insn *ifcvt_seq;
 
   /* A conditional move from two memory sources is equivalent to a
      conditional on their addresses followed by a load.  Don't do this
@@ -1637,9 +1636,11 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
       if (reversep)
 	{
+	  rtx tmp;
+	  rtx_insn *tmp_insn;
 	  code = reversed_comparison_code (if_info->cond, if_info->jump);
 	  tmp = a, a = b, b = tmp;
-	  tmp = insn_a, insn_a = insn_b, insn_b = tmp;
+	  tmp_insn = insn_a, insn_a = insn_b, insn_b = tmp_insn;
 	}
     }
 
@@ -1654,44 +1655,46 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
      This is of course not possible in the IS_MEM case.  */
   if (! general_operand (a, GET_MODE (a)))
     {
-      rtx set;
+      rtx_insn *insn;
 
       if (is_mem)
 	{
-	  tmp = gen_reg_rtx (GET_MODE (a));
-	  tmp = emit_insn (gen_rtx_SET (VOIDmode, tmp, a));
+	  rtx reg = gen_reg_rtx (GET_MODE (a));
+	  insn = emit_insn (gen_rtx_SET (VOIDmode, reg, a));
 	}
       else if (! insn_a)
 	goto end_seq_and_fail;
       else
 	{
 	  a = gen_reg_rtx (GET_MODE (a));
-	  tmp = copy_rtx (insn_a);
-	  set = single_set (tmp);
+	  rtx_insn *copy_of_a = as_a <rtx_insn *> (copy_rtx (insn_a));
+	  rtx set = single_set (copy_of_a);
 	  SET_DEST (set) = a;
-	  tmp = emit_insn (PATTERN (tmp));
+	  insn = emit_insn (PATTERN (copy_of_a));
 	}
-      if (recog_memoized (tmp) < 0)
+      if (recog_memoized (insn) < 0)
 	goto end_seq_and_fail;
     }
   if (! general_operand (b, GET_MODE (b)))
     {
-      rtx set, last;
+      rtx pat;
+      rtx_insn *last;
+      rtx_insn *new_insn;
 
       if (is_mem)
 	{
-          tmp = gen_reg_rtx (GET_MODE (b));
-	  tmp = gen_rtx_SET (VOIDmode, tmp, b);
+          rtx reg = gen_reg_rtx (GET_MODE (b));
+	  pat = gen_rtx_SET (VOIDmode, reg, b);
 	}
       else if (! insn_b)
 	goto end_seq_and_fail;
       else
 	{
           b = gen_reg_rtx (GET_MODE (b));
-	  tmp = copy_rtx (insn_b);
-	  set = single_set (tmp);
+	  rtx_insn *copy_of_insn_b = as_a <rtx_insn *> (copy_rtx (insn_b));
+	  rtx set = single_set (copy_of_insn_b);
 	  SET_DEST (set) = b;
-	  tmp = PATTERN (tmp);
+	  pat = PATTERN (copy_of_insn_b);
 	}
 
       /* If insn to set up A clobbers any registers B depends on, try to
@@ -1700,14 +1703,14 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       last = get_last_insn ();
       if (last && modified_in_p (orig_b, last))
 	{
-	  tmp = emit_insn_before (tmp, get_insns ());
-	  if (modified_in_p (orig_a, tmp))
+	  new_insn = emit_insn_before (pat, get_insns ());
+	  if (modified_in_p (orig_a, new_insn))
 	    goto end_seq_and_fail;
 	}
       else
-	tmp = emit_insn (tmp);
+	new_insn = emit_insn (pat);
 
-      if (recog_memoized (tmp) < 0)
+      if (recog_memoized (new_insn) < 0)
 	goto end_seq_and_fail;
     }
 
@@ -1720,29 +1723,30 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   /* If we're handling a memory for above, emit the load now.  */
   if (is_mem)
     {
-      tmp = gen_rtx_MEM (GET_MODE (if_info->x), target);
+      rtx mem = gen_rtx_MEM (GET_MODE (if_info->x), target);
 
       /* Copy over flags as appropriate.  */
       if (MEM_VOLATILE_P (if_info->a) || MEM_VOLATILE_P (if_info->b))
-	MEM_VOLATILE_P (tmp) = 1;
+	MEM_VOLATILE_P (mem) = 1;
       if (MEM_ALIAS_SET (if_info->a) == MEM_ALIAS_SET (if_info->b))
-	set_mem_alias_set (tmp, MEM_ALIAS_SET (if_info->a));
-      set_mem_align (tmp,
+	set_mem_alias_set (mem, MEM_ALIAS_SET (if_info->a));
+      set_mem_align (mem,
 		     MIN (MEM_ALIGN (if_info->a), MEM_ALIGN (if_info->b)));
 
       gcc_assert (MEM_ADDR_SPACE (if_info->a) == MEM_ADDR_SPACE (if_info->b));
-      set_mem_addr_space (tmp, MEM_ADDR_SPACE (if_info->a));
+      set_mem_addr_space (mem, MEM_ADDR_SPACE (if_info->a));
 
-      noce_emit_move_insn (if_info->x, tmp);
+      noce_emit_move_insn (if_info->x, mem);
     }
   else if (target != x)
     noce_emit_move_insn (x, target);
 
-  tmp = end_ifcvt_sequence (if_info);
-  if (!tmp)
+  ifcvt_seq = end_ifcvt_sequence (if_info);
+  if (!ifcvt_seq)
     return FALSE;
 
-  emit_insn_before_setloc (tmp, if_info->jump, INSN_LOCATION (if_info->insn_a));
+  emit_insn_before_setloc (ifcvt_seq, if_info->jump,
+			   INSN_LOCATION (if_info->insn_a));
   return TRUE;
 
  end_seq_and_fail:

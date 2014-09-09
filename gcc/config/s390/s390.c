@@ -1693,7 +1693,7 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 /* Return attribute type of insn.  */
 
 static enum attr_type
-s390_safe_attr_type (rtx insn)
+s390_safe_attr_type (rtx_insn *insn)
 {
   if (recog_memoized (insn) >= 0)
     return get_attr_type (insn);
@@ -5753,7 +5753,7 @@ reg_used_in_mem_p (int regno, rtx x)
    used by instruction INSN to address memory.  */
 
 static bool
-addr_generation_dependency_p (rtx dep_rtx, rtx insn)
+addr_generation_dependency_p (rtx dep_rtx, rtx_insn *insn)
 {
   rtx target, pat;
 
@@ -5793,7 +5793,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx insn)
 /* Return 1, if dep_insn sets register used in insn in the agen unit.  */
 
 int
-s390_agen_dep_p (rtx dep_insn, rtx insn)
+s390_agen_dep_p (rtx_insn *dep_insn, rtx_insn *insn)
 {
   rtx dep_rtx = PATTERN (dep_insn);
   int i;
@@ -11405,7 +11405,7 @@ s390_reorg (void)
 
 /* Return true if INSN is a fp load insn writing register REGNO.  */
 static inline bool
-s390_fpload_toreg (rtx insn, unsigned int regno)
+s390_fpload_toreg (rtx_insn *insn, unsigned int regno)
 {
   rtx set;
   enum attr_type flag = s390_safe_attr_type (insn);

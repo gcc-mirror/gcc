@@ -8562,12 +8562,12 @@ emit_reload_insns (struct insn_chain *chain)
    Return the emitted insn if valid, else return NULL.  */
 
 static rtx_insn *
-emit_insn_if_valid_for_reload (rtx insn)
+emit_insn_if_valid_for_reload (rtx pat)
 {
   rtx_insn *last = get_last_insn ();
   int code;
 
-  insn = emit_insn (insn);
+  rtx_insn *insn = emit_insn (pat);
   code = recog_memoized (insn);
 
   if (code >= 0)
@@ -8577,7 +8577,7 @@ emit_insn_if_valid_for_reload (rtx insn)
 	 validity determination, i.e., the way it would after reload has
 	 completed.  */
       if (constrain_operands (1))
-	return as_a <rtx_insn *> (insn);
+	return insn;
     }
 
   delete_insns_since (last);

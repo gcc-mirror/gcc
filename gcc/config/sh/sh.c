@@ -5965,9 +5965,9 @@ barrier_align (rtx_insn *barrier_or_label)
    Applying loop alignment to small constant or switch tables is a waste
    of space, so we suppress this too.  */
 int
-sh_loop_align (rtx label)
+sh_loop_align (rtx_insn *label)
 {
-  rtx next = label;
+  rtx_insn *next = label;
 
   if (! optimize || optimize_size)
     return 0;

@@ -178,7 +178,7 @@ main (int argc, char **argv)
 	    {
 	      printf ("extern int num_delay_slots (rtx);\n");
 	      printf ("extern int eligible_for_delay (rtx_insn *, int, rtx_insn *, int);\n\n");
-	      printf ("extern int const_num_delay_slots (rtx);\n\n");
+	      printf ("extern int const_num_delay_slots (rtx_insn *);\n\n");
 	      have_delay = 1;
 	    }
 

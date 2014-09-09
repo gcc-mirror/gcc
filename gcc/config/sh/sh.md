@@ -1566,7 +1566,8 @@
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
 {
-  rtx set1, set2, insn2;
+  rtx set1, set2;
+  rtx_insn *insn2;
   rtx replacements[4];
 
   /* We want to replace occurrences of operands[0] with operands[1] and

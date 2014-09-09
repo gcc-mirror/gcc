@@ -2290,7 +2290,7 @@ avr_print_operand (FILE *file, rtx x, int code)
 /* Update the condition code in the INSN.  */
 
 void
-avr_notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
+avr_notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx_insn *insn)
 {
   rtx set;
   enum attr_cc cc = get_attr_cc (insn);

@@ -2978,7 +2978,7 @@ shadow_type_p (enum attr_type type)
 
 /* Return true iff INSN is a shadow pattern.  */
 static bool
-shadow_p (rtx insn)
+shadow_p (rtx_insn *insn)
 {
   if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) < 0)
     return false;
@@ -2987,7 +2987,7 @@ shadow_p (rtx insn)
 
 /* Return true iff INSN is a shadow or blockage pattern.  */
 static bool
-shadow_or_blockage_p (rtx insn)
+shadow_or_blockage_p (rtx_insn *insn)
 {
   enum attr_type type;
   if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) < 0)
@@ -3227,7 +3227,7 @@ unit_req_factor (enum unitreqs r)
    instructions reservation, e.g. UNIT_REQ_DL.  REQ2 is used to either
    describe a cross path, or for loads/stores, the T unit.  */
 static int
-get_unit_reqs (rtx insn, int *req1, int *side1, int *req2, int *side2)
+get_unit_reqs (rtx_insn *insn, int *req1, int *side1, int *req2, int *side2)
 {
   enum attr_units units;
   enum attr_cross cross;
@@ -3362,7 +3362,8 @@ res_mii (unit_req_table reqs)
    found by get_unit_reqs.  Return true if we did this successfully, false
    if we couldn't identify what to do with INSN.  */
 static bool
-get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
+get_unit_operand_masks (rtx_insn *insn, unsigned int *pmask1,
+			unsigned int *pmask2)
 {
   enum attr_op_pattern op_pat;
 
@@ -4046,7 +4047,7 @@ c6x_mark_reg_written (rtx reg, int cycles)
    next cycle.  */
 
 static bool
-c6x_registers_update (rtx insn)
+c6x_registers_update (rtx_insn *insn)
 {
   enum attr_cross cross;
   enum attr_dest_regfile destrf;
@@ -4749,7 +4750,7 @@ emit_nop_after (int cycles, rtx after)
    placed.  */
 
 static bool
-returning_call_p (rtx insn)
+returning_call_p (rtx_insn *insn)
 {
   if (CALL_P (insn))
     return (!SIBLING_CALL_P (insn)
@@ -4764,7 +4765,7 @@ returning_call_p (rtx insn)
 
 /* Determine whether INSN's pattern can be converted to use callp.  */
 static bool
-can_use_callp (rtx insn)
+can_use_callp (rtx_insn *insn)
 {
   int icode = recog_memoized (insn);
   if (!TARGET_INSNS_64PLUS
@@ -4780,7 +4781,7 @@ can_use_callp (rtx insn)
 
 /* Convert the pattern of INSN, which must be a CALL_INSN, into a callp.  */
 static void
-convert_to_callp (rtx insn)
+convert_to_callp (rtx_insn *insn)
 {
   rtx lab;
   extract_insn (insn);
@@ -4835,7 +4836,7 @@ static rtx
 find_last_same_clock (rtx insn)
 {
   rtx retval = insn;
-  rtx t = next_real_insn (insn);
+  rtx_insn *t = next_real_insn (insn);
 
   while (t && GET_MODE (t) != TImode)
     {
@@ -4942,7 +4943,8 @@ reorg_split_calls (rtx *call_labels)
 		  /* Find the first insn of the next execute packet.  If it
 		     is the shadow insn corresponding to this call, we may
 		     use a CALLP insn.  */
-		  rtx shadow = next_nonnote_nondebug_insn (last_same_clock);
+		  rtx_insn *shadow =
+		    next_nonnote_nondebug_insn (last_same_clock);
 
 		  if (CALL_P (shadow)
 		      && insn_get_clock (shadow) == this_clock + 5)
@@ -5413,7 +5415,7 @@ conditionalize_after_sched (void)
    loop counter.  Otherwise, return NULL_RTX.  */
 
 static rtx
-hwloop_pattern_reg (rtx insn)
+hwloop_pattern_reg (rtx_insn *insn)
 {
   rtx pat, reg;
 

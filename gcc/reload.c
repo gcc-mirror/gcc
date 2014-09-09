@@ -885,7 +885,8 @@ reload_inner_reg_of_subreg (rtx x, enum machine_mode mode, bool output)
 static int
 can_reload_into (rtx in, int regno, enum machine_mode mode)
 {
-  rtx dst, test_insn;
+  rtx dst;
+  rtx_insn *test_insn;
   int r = 0;
   struct recog_data_d save_recog_data;
 

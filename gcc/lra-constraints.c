@@ -3000,7 +3000,7 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
 	      || GET_CODE (value) == POST_MODIFY);
   rtx_insn *last;
   rtx inc;
-  rtx add_insn;
+  rtx_insn *add_insn;
   int code;
   rtx real_in = in == value ? incloc : in;
   rtx result;
