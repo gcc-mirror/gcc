@@ -1,3 +1,129 @@
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (single_set_2): Strengthen first param from const_rtx to
+	const rtx_insn *, and move prototype to above...
+	(single_set): ...this.  Convert this from a macro to an inline
+	function, enforcing the requirement that the param is a const
+	rtx_insn *.
+	(find_args_size_adjust): Strengthen param from rtx to rtx_insn *.
+
+	* config/arm/aarch-common-protos.h (aarch_crypto_can_dual_issue):
+	Strengthen both params from rtx to rtx_insn *.
+	* config/arm/aarch-common.c (aarch_crypto_can_dual_issue):
+	Likewise; introduce locals "producer_set", "consumer_set", using
+	them in place of "producer" and "consumer" when dealing with SET
+	rather than insn.
+	* config/avr/avr.c (avr_out_plus): Add checked cast to rtx_insn *
+	when invoking single_set in region guarded by INSN_P.
+	(avr_out_bitop): Likewise.
+	(_reg_unused_after): Introduce local rtx_sequence * "seq" in
+	region guarded by GET_CODE check, using methods to strengthen
+	local "this_insn" from rtx to rtx_insn *, and for clarity.
+	* config/avr/avr.md (define_insn_and_split "xload8<mode>_A"):
+	Strengthen local "insn" from rtx to rtx_insn *.
+	(define_insn_and_split "xload<mode>_A"): Likewise.
+	* config/bfin/bfin.c (trapping_loads_p): Likewise for param
+	"insn".
+	(find_load): Likewise for return type.
+	(workaround_speculation): Likewise for both locals named
+	"load_insn".
+	* config/cris/cris.c (cris_cc0_user_requires_cmp): Likewise for
+	local "cc0_user".
+	* config/cris/cris.md (define_peephole2 ; moversideqi): Likewise
+	for local "prev".
+	* config/h8300/h8300-protos.h (notice_update_cc): Likewise for
+	param 2.
+	* config/h8300/h8300.c (notice_update_cc): Likewise.
+	* config/i386/i386.c (ix86_flags_dependent): Likewise for params
+	"insn" and "dep_insn".
+	(exact_store_load_dependency): Likewise for both params.
+	(ix86_macro_fusion_pair_p): Eliminate local named "single_set"
+	since this now clashes with inline function.  Instead, delay
+	calling single_set until the point where its needed, and then
+	assign the result to "compare_set" and rework the conditional that
+	follows.
+	* config/ia64/ia64.md (define_expand "tablejump"): Strengthen
+	local "last" from rtx to rtx_insn *.
+	* config/mips/mips-protos.h (mips_load_store_insns): Likewise for
+	second param.
+	(mips_store_data_bypass_p): Likewise for both params.
+	* config/mips/mips.c (mips_load_store_insns): Likewise for second
+	param.
+	(mips_store_data_bypass_p): Likewise for both params.
+	(mips_orphaned_high_part_p): Likewise for param "insn".
+	* config/mn10300/mn10300.c (extract_bundle): Likewise.
+	(mn10300_bundle_liw): Likewise for locals "r", "insn1", "insn2".
+	Introduce local rtx "insn2_pat".
+	* config/rl78/rl78.c (move_elim_pass): Likewise for locals "insn",
+	"ninsn".
+	(rl78_remove_unused_sets): Likewise for locals "insn", "ninsn".
+	Introduce local rtx "set", using it in place of "insn" for the
+	result of single_set.  This appears to fix a bug, since the call
+	to find_regno_note on a SET does nothing.
+	* config/rs6000/rs6000.c (set_to_load_agen): Strengthen both
+	params from rtx to rtx_insn *.
+	(set_to_load_agen): Likewise.
+	* config/s390/s390.c (s390_label_align): Likewise for local
+	"prev_insn".  Introduce new rtx locals "set" and "src", using
+	them in place of "prev_insn" for the results of single_set
+	and SET_SRC respectively.
+	(s390_swap_cmp): Strengthen local "jump" from rtx to rtx_insn *.
+	Introduce new rtx local "set" using in place of "jump" for the
+	result of single_set.  Use SET_SRC (set) rather than plain
+	XEXP (set, 1).
+	* config/sh/sh.c (noncall_uses_reg): Strengthen param 2from
+	rtx to rtx_insn *.
+	(noncall_uses_reg): Likewise.
+	(reg_unused_after): Introduce local rtx_sequence * "seq" in region
+	guarded by GET_CODE check, using its methods for clarity, and to
+	enable strengthening local "this_insn" from rtx to rtx_insn *.
+	* config/sh/sh.md (define_expand "mulhisi3"): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(define_expand "umulhisi3"): Likewise.
+	(define_expand "smulsi3_highpart"): Likewise.
+	(define_expand "umulsi3_highpart"): Likewise.
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Likewise for
+	local "after".  Replace GET_CODE check with a dyn_cast,
+	introducing new local rtx_sequence * "seq", using insn method for
+	typesafety.
+
+	* dwarf2cfi.c (dwarf2out_frame_debug): Strengthen param "insn"
+	from rtx to rtx_insn *.  Introduce local rtx "pat", using it in
+	place of "insn" once we're dealing with patterns rather than the
+	input insn.
+	(scan_insn_after): Strengthen param "insn" from rtx to rtx_insn *.
+	(scan_trace): Likewise for local "elt", updating lookups within
+	sequence to use insn method rather than element method.
+	* expr.c (find_args_size_adjust): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	* gcse.c (gcse_emit_move_after): Likewise for local "new_rtx".
+	* ifcvt.c (noce_try_abs): Likewise for local "insn".
+	* ira.c (fix_reg_equiv_init): Add checked cast to rtx_insn * when
+	invoking single_set.
+	* lra-constraints.c (insn_rhs_dead_pseudo_p): Strengthen param
+	"insn" from rtx to rtx_insn *.
+	(skip_usage_debug_insns): Likewise for return type, adding a
+	checked cast.
+	(check_secondary_memory_needed_p): Likewise for local "insn".
+	(inherit_reload_reg): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise for local "count_init".
+	* recog.c (peep2_attempt): Likewise for local "old_insn", adding
+	checked casts.
+	(store_data_bypass_p): Likewise for both params.
+	(if_test_bypass_p): Likewise.
+	* recog.h (store_data_bypass_p): Likewise for both params.
+	(if_test_bypass_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise for local "where".
+	* reorg.c (delete_jump): Likewise for param "insn".
+	* rtlanal.c (single_set_2): Strenghen param "insn" from const_rtx
+	to const rtx_insn *.
+	* store-motion.c (replace_store_insn): Likewise for param "del".
+	(delete_store): Strengthen local "i" from rtx to rtx_insn_list *,
+	and use its methods for clarity, and to strengthen local "del"
+	from rtx to rtx_insn *.
+	(build_store_vectors): Use insn method of "st" when calling
+	replace_store_insn for typesafety and clarity.
+
 2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rtx_is_swappable_p): Add

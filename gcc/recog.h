@@ -149,8 +149,8 @@ extern rtx peep2_find_free_register (int, int, const char *,
 #endif
 extern rtx peephole2_insns (rtx, rtx, int *);
 
-extern int store_data_bypass_p (rtx, rtx);
-extern int if_test_bypass_p (rtx, rtx);
+extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
+extern int if_test_bypass_p (rtx_insn *, rtx_insn *);
 
 #ifndef GENERATOR_FILE
 /* Try recognizing the instruction INSN,

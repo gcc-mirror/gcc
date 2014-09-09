@@ -2689,7 +2689,7 @@ fix_reg_equiv_init (void)
 	  {
 	    next = XEXP (x, 1);
 	    insn = XEXP (x, 0);
-	    set = single_set (insn);
+	    set = single_set (as_a <rtx_insn *> (insn));
 	    ira_assert (set != NULL_RTX
 			&& (REG_P (SET_DEST (set)) || REG_P (SET_SRC (set))));
 	    if (REG_P (SET_DEST (set))

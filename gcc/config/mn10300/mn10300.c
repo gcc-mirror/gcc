@@ -2974,14 +2974,14 @@ struct liw_data
    cannot be bundled.  */
 
 static bool
-extract_bundle (rtx insn, struct liw_data * pdata)
+extract_bundle (rtx_insn *insn, struct liw_data * pdata)
 {
   bool allow_consts = true;
   rtx p;
 
   gcc_assert (pdata != NULL);
 
-  if (insn == NULL_RTX)
+  if (insn == NULL)
     return false;
   /* Make sure that we are dealing with a simple SET insn.  */
   p = single_set (insn);
@@ -3100,11 +3100,11 @@ check_liw_constraints (struct liw_data * pliw1, struct liw_data * pliw2)
 static void
 mn10300_bundle_liw (void)
 {
-  rtx r;
+  rtx_insn *r;
 
-  for (r = get_insns (); r != NULL_RTX; r = next_nonnote_nondebug_insn (r))
+  for (r = get_insns (); r != NULL; r = next_nonnote_nondebug_insn (r))
     {
-      rtx insn1, insn2;
+      rtx_insn *insn1, *insn2;
       struct liw_data liw1, liw2;
 
       insn1 = r;
@@ -3130,17 +3130,18 @@ mn10300_bundle_liw (void)
 
       delete_insn (insn2);
 
+      rtx insn2_pat;
       if (liw1.op == LIW_OP_CMP)
-	insn2 = gen_cmp_liw (liw2.dest, liw2.src, liw1.dest, liw1.src,
-			     GEN_INT (liw2.op));
+	insn2_pat = gen_cmp_liw (liw2.dest, liw2.src, liw1.dest, liw1.src,
+				 GEN_INT (liw2.op));
       else if (liw2.op == LIW_OP_CMP)
-	insn2 = gen_liw_cmp (liw1.dest, liw1.src, liw2.dest, liw2.src,
-			     GEN_INT (liw1.op));
+	insn2_pat = gen_liw_cmp (liw1.dest, liw1.src, liw2.dest, liw2.src,
+				 GEN_INT (liw1.op));
       else
-	insn2 = gen_liw (liw1.dest, liw2.dest, liw1.src, liw2.src,
-			 GEN_INT (liw1.op), GEN_INT (liw2.op));
+	insn2_pat = gen_liw (liw1.dest, liw2.dest, liw1.src, liw2.src,
+			     GEN_INT (liw1.op), GEN_INT (liw2.op));
 
-      insn2 = emit_insn_after (insn2, insn1);
+      insn2 = emit_insn_after (insn2_pat, insn1);
       delete_insn (insn1);
       r = insn2;
     }

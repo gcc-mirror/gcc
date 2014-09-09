@@ -3167,13 +3167,13 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   int i;
   rtx_insn *last, *before_try, *x;
   rtx eh_note, as_note;
-  rtx old_insn;
+  rtx_insn *old_insn;
   rtx_insn *new_insn;
   bool was_call = false;
 
   /* If we are splitting an RTX_FRAME_RELATED_P insn, do not allow it to
      match more than one insn, or to be split into more than one insn.  */
-  old_insn = peep2_insn_data[peep2_current].insn;
+  old_insn = as_a <rtx_insn *> (peep2_insn_data[peep2_current].insn);
   if (RTX_FRAME_RELATED_P (old_insn))
     {
       bool any_note = false;
@@ -3261,7 +3261,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       rtx note;
 
       j = peep2_buf_position (peep2_current + i);
-      old_insn = peep2_insn_data[j].insn;
+      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
       if (!CALL_P (old_insn))
 	continue;
       was_call = true;
@@ -3300,7 +3300,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       while (++i <= match_len)
 	{
 	  j = peep2_buf_position (peep2_current + i);
-	  old_insn = peep2_insn_data[j].insn;
+	  old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
 	  gcc_assert (!CALL_P (old_insn));
 	}
       break;
@@ -3312,7 +3312,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   for (i = match_len; i >= 0; --i)
     {
       int j = peep2_buf_position (peep2_current + i);
-      old_insn = peep2_insn_data[j].insn;
+      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
 
       as_note = find_reg_note (old_insn, REG_ARGS_SIZE, NULL);
       if (as_note)
@@ -3572,7 +3572,7 @@ peephole2_optimize (void)
    must be either a single_set or a PARALLEL with SETs inside.  */
 
 int
-store_data_bypass_p (rtx out_insn, rtx in_insn)
+store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   rtx out_set, in_set;
   rtx out_pat, in_pat;
@@ -3665,7 +3665,7 @@ store_data_bypass_p (rtx out_insn, rtx in_insn)
    of insn categorization may be any JUMP or CALL insn.  */
 
 int
-if_test_bypass_p (rtx out_insn, rtx in_insn)
+if_test_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   rtx out_set, in_set;
 

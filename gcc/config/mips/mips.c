@@ -2678,7 +2678,7 @@ mips_split_const_insns (rtx x)
    BASE_INSN_LENGTH is the length of one instruction.  */
 
 int
-mips_load_store_insns (rtx mem, rtx insn)
+mips_load_store_insns (rtx mem, rtx_insn *insn)
 {
   enum machine_mode mode;
   bool might_split_p;
@@ -13084,7 +13084,7 @@ mips_linked_madd_p (rtx_insn *out_insn, rtx_insn *in_insn)
    for that case.  */
 
 bool
-mips_store_data_bypass_p (rtx out_insn, rtx in_insn)
+mips_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   if (GET_CODE (PATTERN (in_insn)) == UNSPEC_VOLATILE)
     return false;
@@ -16083,7 +16083,7 @@ mips_record_lo_sum (rtx *loc, void *data)
    LO_SUMs in the current function.  */
 
 static bool
-mips_orphaned_high_part_p (mips_offset_table *htab, rtx insn)
+mips_orphaned_high_part_p (mips_offset_table *htab, rtx_insn *insn)
 {
   enum mips_symbol_type type;
   rtx x, set;

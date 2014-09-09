@@ -2723,12 +2723,21 @@ extern void set_insn_deleted (rtx);
 
 /* Functions in rtlanal.c */
 
-/* Single set is implemented as macro for performance reasons.  */
-#define single_set(I) (INSN_P (I) \
-		       ? (GET_CODE (PATTERN (I)) == SET \
-			  ? PATTERN (I) : single_set_1 (I)) \
-		       : NULL_RTX)
-#define single_set_1(I) single_set_2 (I, PATTERN (I))
+extern rtx single_set_2 (const rtx_insn *, const_rtx);
+
+/* Handle the cheap and common cases inline for performance.  */
+
+inline rtx single_set (const rtx_insn *insn)
+{
+  if (!INSN_P (insn))
+    return NULL_RTX;
+
+  if (GET_CODE (PATTERN (insn)) == SET)
+    return PATTERN (insn);
+
+  /* Defer to the more expensive case.  */
+  return single_set_2 (insn, PATTERN (insn));
+}
 
 extern enum machine_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);
@@ -2753,7 +2762,6 @@ extern int modified_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern int modified_in_p (const_rtx, const_rtx);
 extern int reg_set_p (const_rtx, const_rtx);
-extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
 extern int set_noop_p (const_rtx);
 extern int noop_move_p (const_rtx);
@@ -3372,7 +3380,7 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
-extern HOST_WIDE_INT find_args_size_adjust (rtx);
+extern HOST_WIDE_INT find_args_size_adjust (rtx_insn *);
 extern int fixup_args_size_notes (rtx_insn *, rtx_insn *, int);
 
 /* In cfgrtl.c */

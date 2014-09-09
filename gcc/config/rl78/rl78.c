@@ -167,7 +167,8 @@ make_pass_rl78_devirt (gcc::context *ctxt)
 static unsigned int
 move_elim_pass (void)
 {
-  rtx insn, ninsn, prev = NULL_RTX;
+  rtx_insn *insn, *ninsn;
+  rtx prev = NULL_RTX;
 
   for (insn = get_insns (); insn; insn = ninsn)
     {
@@ -3586,17 +3587,18 @@ rl78_propogate_register_origins (void)
 static void
 rl78_remove_unused_sets (void)
 {
-  rtx insn, ninsn = NULL_RTX;
+  rtx_insn *insn, *ninsn = NULL;
   rtx dest;
 
   for (insn = get_insns (); insn; insn = ninsn)
     {
       ninsn = next_nonnote_nondebug_insn (insn);
 
-      if ((insn = single_set (insn)) == NULL_RTX)
+      rtx set = single_set (insn);
+      if (set == NULL)
 	continue;
 
-      dest = SET_DEST (insn);
+      dest = SET_DEST (set);
 
       if (GET_CODE (dest) != REG || REGNO (dest) > 23)
 	continue;
