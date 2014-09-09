@@ -40,18 +40,20 @@ extern struct target_lower_subreg *this_target_lower_subreg;
 #endif
 
 struct GTY(()) target_globals {
+  ~target_globals ();
+
   struct target_flag_state *GTY((skip)) flag_state;
-  void *GTY((atomic)) regs;
+  struct target_regs *GTY((skip)) regs;
   struct target_rtl *rtl;
-  void *GTY((atomic)) recog;
-  void *GTY((atomic)) hard_regs;
-  void *GTY((atomic)) reload;
-  void *GTY((atomic)) expmed;
+  struct target_recog *GTY((skip)) recog;
+  struct target_hard_regs *GTY((skip)) hard_regs;
+  struct target_reload *GTY((skip)) reload;
+  struct target_expmed *GTY((skip)) expmed;
   struct target_optabs *GTY((skip)) optabs;
   struct target_libfuncs *libfuncs;
   struct target_cfgloop *GTY((skip)) cfgloop;
-  void *GTY((atomic)) ira;
-  void *GTY((atomic)) ira_int;
+  struct target_ira *GTY((skip)) ira;
+  struct target_ira_int *GTY((skip)) ira_int;
   struct target_builtins *GTY((skip)) builtins;
   struct target_gcse *GTY((skip)) gcse;
   struct target_bb_reorder *GTY((skip)) bb_reorder;
@@ -68,17 +70,17 @@ static inline void
 restore_target_globals (struct target_globals *g)
 {
   this_target_flag_state = g->flag_state;
-  this_target_regs = (struct target_regs *) g->regs;
+  this_target_regs = g->regs;
   this_target_rtl = g->rtl;
-  this_target_recog = (struct target_recog *) g->recog;
-  this_target_hard_regs = (struct target_hard_regs *) g->hard_regs;
-  this_target_reload = (struct target_reload *) g->reload;
-  this_target_expmed = (struct target_expmed *) g->expmed;
+  this_target_recog = g->recog;
+  this_target_hard_regs = g->hard_regs;
+  this_target_reload = g->reload;
+  this_target_expmed = g->expmed;
   this_target_optabs = g->optabs;
   this_target_libfuncs = g->libfuncs;
   this_target_cfgloop = g->cfgloop;
-  this_target_ira = (struct target_ira *) g->ira;
-  this_target_ira_int = (struct target_ira_int *) g->ira_int;
+  this_target_ira = g->ira;
+  this_target_ira_int = g->ira_int;
   this_target_builtins = g->builtins;
   this_target_gcse = g->gcse;
   this_target_bb_reorder = g->bb_reorder;

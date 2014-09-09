@@ -32,7 +32,7 @@ struct target_gcse {
   bool x_can_copy_init_p;
 };
 
-extern GTY(()) struct target_gcse default_target_gcse;
+extern struct target_gcse default_target_gcse;
 #if SWITCHABLE_TARGET
 extern struct target_gcse *this_target_gcse;
 #else
