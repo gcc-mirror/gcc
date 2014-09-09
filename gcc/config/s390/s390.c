@@ -495,21 +495,22 @@ static const struct attribute_spec s390_attribute_table[] = {
 int
 s390_label_align (rtx label)
 {
-  rtx prev_insn = prev_active_insn (label);
+  rtx_insn *prev_insn = prev_active_insn (label);
+  rtx set, src;
 
   if (prev_insn == NULL_RTX)
     goto old;
 
-  prev_insn = single_set (prev_insn);
+  set = single_set (prev_insn);
 
-  if (prev_insn == NULL_RTX)
+  if (set == NULL_RTX)
     goto old;
 
-  prev_insn = SET_SRC (prev_insn);
+  src = SET_SRC (set);
 
   /* Don't align literal pool base labels.  */
-  if (GET_CODE (prev_insn) == UNSPEC
-      && XINT (prev_insn, 1) == UNSPEC_MAIN_BASE)
+  if (GET_CODE (src) == UNSPEC
+      && XINT (src, 1) == UNSPEC_MAIN_BASE)
     return 0;
 
  old:
@@ -11155,13 +11156,13 @@ s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx_insn *insn)
 
   if (cond == NULL_RTX)
     {
-      rtx jump = find_cond_jump (NEXT_INSN (insn));
-      jump = jump ? single_set (jump) : NULL_RTX;
+      rtx_insn *jump = find_cond_jump (NEXT_INSN (insn));
+      rtx set = jump ? single_set (jump) : NULL_RTX;
 
-      if (jump == NULL_RTX)
+      if (set == NULL_RTX)
 	return;
 
-      cond = XEXP (XEXP (jump, 1), 0);
+      cond = XEXP (SET_SRC (set), 0);
     }
 
   *op0 = *op1;

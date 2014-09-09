@@ -1539,7 +1539,8 @@ sms_schedule (void)
   FOR_EACH_LOOP (loop, 0)
     {
       rtx_insn *head, *tail;
-      rtx count_reg, count_init;
+      rtx count_reg;
+      rtx_insn *count_init;
       int mii, rec_mii, stage_count, min_cycle;
       int64_t loop_count = 0;
       bool opt_sc_p;
@@ -1589,7 +1590,7 @@ sms_schedule (void)
 
       /* In case of th loop have doloop register it gets special
 	 handling.  */
-      count_init = NULL_RTX;
+      count_init = NULL;
       if ((count_reg = doloop_register_get (head, tail)))
 	{
 	  basic_block pre_header;

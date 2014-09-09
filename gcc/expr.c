@@ -3830,7 +3830,7 @@ mem_autoinc_base (rtx mem)
    cannot be trivially extracted, the return value is INT_MIN.  */
 
 HOST_WIDE_INT
-find_args_size_adjust (rtx insn)
+find_args_size_adjust (rtx_insn *insn)
 {
   rtx dest, set, pat;
   int i;

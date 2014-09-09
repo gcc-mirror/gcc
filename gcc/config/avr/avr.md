@@ -477,7 +477,8 @@
        ; in not able to allocate segment registers and reload the resulting
        ; expressions.  Notice that no address register can hold a PSImode.  */
 
-    rtx insn, addr = XEXP (operands[1], 0);
+    rtx_insn *insn;
+    rtx addr = XEXP (operands[1], 0);
     rtx hi8 = gen_reg_rtx (QImode);
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
 
@@ -512,7 +513,7 @@
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
     rtx addr_hi8 = simplify_gen_subreg (QImode, addr, PSImode, 2);
     addr_space_t as = MEM_ADDR_SPACE (operands[1]);
-    rtx insn;
+    rtx_insn *insn;
 
     /* Split the address to R21:Z */
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));

@@ -1183,7 +1183,7 @@ record_hard_reg_uses (rtx *px, void *data)
    will not be used, which we ignore.  */
 
 rtx
-single_set_2 (const_rtx insn, const_rtx pat)
+single_set_2 (const rtx_insn *insn, const_rtx pat)
 {
   rtx set = NULL;
   int set_verified = 1;

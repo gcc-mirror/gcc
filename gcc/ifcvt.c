@@ -2063,7 +2063,8 @@ noce_try_abs (struct noce_if_info *if_info)
      REG_EQUAL note or a simple source if necessary.  */
   if (REG_P (c))
     {
-      rtx set, insn = prev_nonnote_insn (earliest);
+      rtx set;
+      rtx_insn *insn = prev_nonnote_insn (earliest);
       if (insn
 	  && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (earliest)
 	  && (set = single_set (insn))

@@ -3336,7 +3336,8 @@ label:
 	(reg:SI MACL_REG))]
   "TARGET_SH1"
 {
-  rtx insn, macl;
+  rtx_insn *insn;
+  rtx macl;
 
   macl = gen_rtx_REG (SImode, MACL_REG);
   start_sequence ();
@@ -3365,7 +3366,8 @@ label:
 	(reg:SI MACL_REG))]
   "TARGET_SH1"
 {
-  rtx insn, macl;
+  rtx_insn *insn;
+  rtx macl;
 
   macl = gen_rtx_REG (SImode, MACL_REG);
   start_sequence ();
@@ -3613,7 +3615,8 @@ label:
 	(reg:SI MACH_REG))]
   "TARGET_SH2"
 {
-  rtx insn, mach;
+  rtx_insn *insn;
+  rtx mach;
 
   mach = gen_rtx_REG (SImode, MACH_REG);
   start_sequence ();
@@ -3659,7 +3662,8 @@ label:
 	(reg:SI MACH_REG))]
   "TARGET_SH2"
 {
-  rtx insn, mach;
+  rtx_insn *insn;
+  rtx mach;
 
   mach = gen_rtx_REG (SImode, MACH_REG);
   start_sequence ();

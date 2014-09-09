@@ -4217,7 +4217,7 @@ harmless_null_pointer_p (rtx mem, int np_reg)
 /* Return nonzero if INSN contains any loads that may trap.  */
 
 static bool
-trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
+trapping_loads_p (rtx_insn *insn, int np_reg, bool after_np_branch)
 {
   rtx mem = SET_SRC (single_set (insn));
 
@@ -4229,23 +4229,23 @@ trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
 
 /* Return INSN if it is of TYPE_MCLD.  Alternatively, if INSN is the start of
    a three-insn bundle, see if one of them is a load and return that if so.
-   Return NULL_RTX if the insn does not contain loads.  */
-static rtx
+   Return NULL if the insn does not contain loads.  */
+static rtx_insn *
 find_load (rtx_insn *insn)
 {
   if (!NONDEBUG_INSN_P (insn))
-    return NULL_RTX;
+    return NULL;
   if (get_attr_type (insn) == TYPE_MCLD)
     return insn;
   if (GET_MODE (insn) != SImode)
-    return NULL_RTX;
+    return NULL;
   do {
     insn = NEXT_INSN (insn);
     if ((GET_MODE (insn) == SImode || GET_MODE (insn) == QImode)
 	&& get_attr_type (insn) == TYPE_MCLD)
       return insn;
   } while (GET_MODE (insn) != QImode);
-  return NULL_RTX;
+  return NULL;
 }
 
 /* Determine whether PAT is an indirect call pattern.  */
@@ -4359,7 +4359,7 @@ workaround_speculation (void)
 	}
       else if (NONDEBUG_INSN_P (insn))
 	{
-	  rtx load_insn = find_load (insn);
+	  rtx_insn *load_insn = find_load (insn);
 	  enum attr_type type = type_for_anomaly (insn);
 
 	  if (cycles_since_jump < INT_MAX)
@@ -4475,7 +4475,7 @@ workaround_speculation (void)
 
 	      if (NONDEBUG_INSN_P (target))
 		{
-		  rtx load_insn = find_load (target);
+		  rtx_insn *load_insn = find_load (target);
 		  enum attr_type type = type_for_anomaly (target);
 		  int delay_needed = 0;
 		  if (cycles_since_jump < INT_MAX)

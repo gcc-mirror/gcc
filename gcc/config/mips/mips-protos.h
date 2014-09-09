@@ -197,7 +197,7 @@ extern bool mips_stack_address_p (rtx, enum machine_mode);
 extern int mips_address_insns (rtx, enum machine_mode, bool);
 extern int mips_const_insns (rtx);
 extern int mips_split_const_insns (rtx);
-extern int mips_load_store_insns (rtx, rtx);
+extern int mips_load_store_insns (rtx, rtx_insn *);
 extern int mips_idiv_insns (void);
 extern rtx_insn *mips_emit_move (rtx, rtx);
 #ifdef RTX_CODE
@@ -300,7 +300,7 @@ extern const char *mips_output_division (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern unsigned int mips_hard_regno_nregs (int, enum machine_mode);
 extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
-extern bool mips_store_data_bypass_p (rtx, rtx);
+extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int mips_dspalu_bypass_p (rtx, rtx);
 extern rtx mips_prefetch_cookie (rtx, rtx);
 

@@ -3135,7 +3135,7 @@ delete_computation (rtx insn)
    if that's what the previous thing was.  */
 
 static void
-delete_jump (rtx insn)
+delete_jump (rtx_insn *insn)
 {
   rtx set = single_set (insn);
 

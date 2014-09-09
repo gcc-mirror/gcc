@@ -6677,7 +6677,8 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		short *reload_reg_p, int goalreg, enum machine_mode mode)
 {
   rtx_insn *p = insn;
-  rtx goaltry, valtry, value, where;
+  rtx goaltry, valtry, value;
+  rtx_insn *where;
   rtx pat;
   int regno = -1;
   int valueno;

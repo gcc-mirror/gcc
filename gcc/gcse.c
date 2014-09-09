@@ -2573,7 +2573,7 @@ single_set_gcse (rtx_insn *insn)
 static rtx
 gcse_emit_move_after (rtx dest, rtx src, rtx_insn *insn)
 {
-  rtx new_rtx;
+  rtx_insn *new_rtx;
   const_rtx set = single_set_gcse (insn);
   rtx set2;
   rtx note;

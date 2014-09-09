@@ -35,7 +35,7 @@ extern unsigned int compute_a_rotate_length (rtx *);
 extern const char *output_simode_bld (int, rtx[]);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
-extern void notice_update_cc (rtx, rtx);
+extern void notice_update_cc (rtx, rtx_insn *);
 extern const char *output_logical_op (enum machine_mode, rtx *);
 extern unsigned int compute_logical_op_length (enum machine_mode,
 					       rtx *);

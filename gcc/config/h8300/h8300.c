@@ -2022,7 +2022,7 @@ h8300_return_addr_rtx (int count, rtx frame)
 /* Update the condition code from the insn.  */
 
 void
-notice_update_cc (rtx body, rtx insn)
+notice_update_cc (rtx body, rtx_insn *insn)
 {
   rtx set;
 

@@ -23,7 +23,7 @@
 #ifndef GCC_AARCH_COMMON_PROTOS_H
 #define GCC_AARCH_COMMON_PROTOS_H
 
-extern int aarch_crypto_can_dual_issue (rtx, rtx);
+extern int aarch_crypto_can_dual_issue (rtx_insn *, rtx_insn *);
 extern bool aarch_rev16_p (rtx);
 extern bool aarch_rev16_shleft_mask_imm_p (rtx, enum machine_mode);
 extern bool aarch_rev16_shright_mask_imm_p (rtx, enum machine_mode);
