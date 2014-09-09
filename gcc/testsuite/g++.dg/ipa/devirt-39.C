@@ -1,5 +1,5 @@
 // PR c++/61214
-/* { dg-options "-O2 -fdump-tree-optimized"  } */
+/* { dg-options "-O2"  } */
 
 struct Base
 {
@@ -24,5 +24,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* { dg-final { scan-assembler-not "_ZN3Foo5cloneEv" } } */

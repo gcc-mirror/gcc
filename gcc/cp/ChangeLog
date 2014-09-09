@@ -1,3 +1,9 @@
+2014-09-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61214
+	PR c++/62224
+	* decl2.c (decl_needed_p): Revert virtual functions change.
+
 2014-09-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62659

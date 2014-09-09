@@ -1,3 +1,10 @@
+2014-09-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61214
+	PR c++/62224
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Don't allow
+	reference to a DECL_EXTERNAL COMDAT.
+
 2014-09-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

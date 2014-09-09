@@ -1934,11 +1934,6 @@ decl_needed_p (tree decl)
   if (flag_keep_inline_dllexport
       && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
-  /* Virtual functions might be needed for devirtualization.  */
-  if (flag_devirtualize
-      && TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_VIRTUAL_P (decl))
-    return true;
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */
   return false;
