@@ -393,6 +393,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dce.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "shrink-wrap.h"
 
 struct target_ira default_target_ira;
 struct target_ira_int default_target_ira_int;
@@ -4780,7 +4781,7 @@ split_live_ranges_for_shrink_wrap (void)
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
 
-  if (!flag_shrink_wrap)
+  if (!SHRINK_WRAPPING_ENABLED)
     return false;
 
   bitmap_initialize (&need_new, 0);

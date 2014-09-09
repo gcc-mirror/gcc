@@ -1,3 +1,7 @@
+2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c: New test.
+
 2014-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60196
