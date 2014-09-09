@@ -1,3 +1,9 @@
+2014-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62255
+	* pt.c (instantiate_decl): Handle recursive instantiation of
+	static data member.
+
 2014-09-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62659
