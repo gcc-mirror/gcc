@@ -1,3 +1,9 @@
+2014-09-09  Tony Wang  <tony.wang@arm.com>
+
+	* gcc.target/arm/xordi3-opt.c: Disable this
+	test case for thumb1 target.
+	* gcc.target/arm/iordi3-opt.c: Ditto.
+
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/61749
