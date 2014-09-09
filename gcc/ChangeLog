@@ -1,3 +1,11 @@
+2014-09-09  Bill Schmidt  <wschmidt@us.ibm.com>
+
+	Backported from mainline
+	2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_load): Always match
+	selection of 0th memory doubleword, regardless of endianness.
+
 2014-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline
