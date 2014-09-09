@@ -3897,11 +3897,11 @@ multi_block_pseudo_p (int regno)
 
 /* Return true if LIST contains a deleted insn.  */
 static bool
-contains_deleted_insn_p (rtx list)
+contains_deleted_insn_p (rtx_insn_list *list)
 {
-  for (; list != NULL_RTX; list = XEXP (list, 1))
-    if (NOTE_P (XEXP (list, 0))
-	&& NOTE_KIND (XEXP (list, 0)) == NOTE_INSN_DELETED)
+  for (; list != NULL_RTX; list = list->next ())
+    if (NOTE_P (list->insn ())
+	&& NOTE_KIND (list->insn ()) == NOTE_INSN_DELETED)
       return true;
   return false;
 }
@@ -3952,14 +3952,12 @@ insn_rhs_dead_pseudo_p (rtx insn)
 static bool
 init_insn_rhs_dead_pseudo_p (int regno)
 {
-  rtx insns = ira_reg_equiv[regno].init_insns;
+  rtx_insn_list *insns = ira_reg_equiv[regno].init_insns;
 
   if (insns == NULL)
     return false;
-  if (INSN_P (insns))
-    return insn_rhs_dead_pseudo_p (insns);
-  for (; insns != NULL_RTX; insns = XEXP (insns, 1))
-    if (insn_rhs_dead_pseudo_p (XEXP (insns, 0)))
+  for (; insns != NULL_RTX; insns = insns->next ())
+    if (insn_rhs_dead_pseudo_p (insns->insn ()))
       return true;
   return false;
 }
@@ -3970,14 +3968,15 @@ init_insn_rhs_dead_pseudo_p (int regno)
 static bool
 reverse_equiv_p (int regno)
 {
-  rtx insns, set;
+  rtx_insn_list *insns = ira_reg_equiv[regno].init_insns;
+  rtx set;
 
-  if ((insns = ira_reg_equiv[regno].init_insns) == NULL_RTX)
+  if (insns == NULL)
     return false;
-  if (! INSN_P (XEXP (insns, 0))
-      || XEXP (insns, 1) != NULL_RTX)
+  if (! INSN_P (insns->insn ())
+      || insns->next () != NULL)
     return false;
-  if ((set = single_set (XEXP (insns, 0))) == NULL_RTX)
+  if ((set = single_set (insns->insn ())) == NULL_RTX)
     return false;
   return REG_P (SET_SRC (set)) && (int) REGNO (SET_SRC (set)) == regno;
 }
@@ -3988,10 +3987,10 @@ static bool
 contains_reloaded_insn_p (int regno)
 {
   rtx set;
-  rtx list = ira_reg_equiv[regno].init_insns;
+  rtx_insn_list *list = ira_reg_equiv[regno].init_insns;
 
-  for (; list != NULL_RTX; list = XEXP (list, 1))
-    if ((set = single_set (XEXP (list, 0))) == NULL_RTX
+  for (; list != NULL; list = list->next ())
+    if ((set = single_set (list->insn ())) == NULL_RTX
 	|| ! REG_P (SET_DEST (set))
 	|| (int) REGNO (SET_DEST (set)) != regno)
       return true;

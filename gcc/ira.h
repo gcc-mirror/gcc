@@ -166,7 +166,7 @@ struct ira_reg_equiv_s
   rtx constant;
   rtx invariant;
   /* Always NULL_RTX if defined_p is false.  */
-  rtx init_insns;
+  rtx_insn_list *init_insns;
 };
 
 /* The length of the following array.  */
