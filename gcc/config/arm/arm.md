@@ -10528,7 +10528,7 @@
     int num_regs = XVECLEN (operands[0], 0);
     char pattern[100];
     rtx op_list[2];
-    strcpy (pattern, \"fldmfdd\\t\");
+    strcpy (pattern, \"vldm\\t\");
     strcat (pattern, reg_names[REGNO (SET_DEST (XVECEXP (operands[0], 0, 0)))]);
     strcat (pattern, \"!, {\");
     op_list[0] = XEXP (XVECEXP (operands[0], 0, 1), 0);

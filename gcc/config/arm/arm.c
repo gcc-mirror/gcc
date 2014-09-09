@@ -17630,14 +17630,22 @@ arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
 /* Output the assembly for a store multiple.  */
 
 const char *
-vfp_output_fstmd (rtx * operands)
+vfp_output_vstmd (rtx * operands)
 {
   char pattern[100];
   int p;
   int base;
   int i;
+  rtx addr_reg = REG_P (XEXP (operands[0], 0))
+		   ? XEXP (operands[0], 0)
+		   : XEXP (XEXP (operands[0], 0), 0);
+  bool push_p =  REGNO (addr_reg) == SP_REGNUM;
 
-  strcpy (pattern, "fstmfdd%?\t%m0!, {%P1");
+  if (push_p)
+    strcpy (pattern, "vpush%?.64\t{%P1");
+  else
+    strcpy (pattern, "vstmdb%?.64\t%m0!, {%P1");
+
   p = strlen (pattern);
 
   gcc_assert (REG_P (operands[1]));

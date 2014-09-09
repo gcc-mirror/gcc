@@ -1,5 +1,17 @@
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (vfp_pop_multiple_with_writeback): Use vldm
+	mnemonic instead of fldmfdd.
+	* config/arm/arm.c (vfp_output_fstmd): Rename to...
+	(vfp_output_vstmd): ... This.  Convert output to UAL syntax.
+	Output vpush when address register is SP.
+	* config/arm/arm-protos.h (vfp_output_fstmd): Rename to...
+	(vfp_output_vstmd): ... This.
+	* config/arm/vfp.md (push_multi_vfp): Update call to
+	vfp_output_vstmd.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/vfp.md (*movcc_vfp): Use UAL syntax.
 
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>

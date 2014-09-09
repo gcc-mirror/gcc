@@ -1285,7 +1285,7 @@
 	  (unspec:BLK [(match_operand:DF 1 "vfp_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "* return vfp_output_fstmd (operands);"
+  "* return vfp_output_vstmd (operands);"
   [(set_attr "type" "f_stored")]
 )
 
