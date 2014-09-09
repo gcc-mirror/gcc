@@ -1,3 +1,9 @@
+2014-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/invoke.texi (-march): Use GNU/Linux rather than Linux.
+	(-mtune): Likewise.
+	(-mcpu): Likewise.
+
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/61749
