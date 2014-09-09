@@ -1,3 +1,14 @@
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vect-lceilf_1.c: Make input and output arrays global
+	and 16-byte aligned.
+	* gcc.target/arm/vect-lfloorf_1.c: Likewise.
+	* gcc.target/arm/vect-lroundf_1.c: Likewise.
+	* gcc.target/arm/vect-rounding-btruncf.c: Likewise.
+	* gcc.target/arm/vect-rounding-ceilf.c: Likewise.
+	* gcc.target/arm/vect-rounding-floorf.c: Likewise.
+	* gcc.target/arm/vect-rounding-roundf.c: Likewise.
+
 2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vldN_dup_1.c: New test.
