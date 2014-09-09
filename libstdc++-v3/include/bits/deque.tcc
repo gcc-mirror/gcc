@@ -92,9 +92,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     deque<_Tp, _Alloc>::
     operator=(const deque& __x)
     {
-      const size_type __len = size();
       if (&__x != this)
 	{
+#if __cplusplus >= 201103L
+	  if (_Alloc_traits::_S_propagate_on_copy_assign())
+	    {
+	      if (!_Alloc_traits::_S_always_equal()
+	          && _M_get_Tp_allocator() != __x._M_get_Tp_allocator())
+	        {
+		  // Replacement allocator cannot free existing storage,
+		  // so deallocate everything and take copy of __x's data.
+		  _M_replace_map(__x, __x.get_allocator());
+		  std::__alloc_on_copy(_M_get_Tp_allocator(),
+				       __x._M_get_Tp_allocator());
+		  return *this;
+		}
+	      std::__alloc_on_copy(_M_get_Tp_allocator(),
+				   __x._M_get_Tp_allocator());
+	    }
+#endif
+	  const size_type __len = size();
 	  if (__len >= __x.size())
 	    _M_erase_at_end(std::copy(__x.begin(), __x.end(),
 				      this->_M_impl._M_start));
@@ -117,8 +134,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
 	  {
-	    this->_M_impl.construct(this->_M_impl._M_start._M_cur - 1,
-				    std::forward<_Args>(__args)...);
+	    _Alloc_traits::construct(this->_M_impl,
+	                             this->_M_impl._M_start._M_cur - 1,
+			             std::forward<_Args>(__args)...);
 	    --this->_M_impl._M_start._M_cur;
 	  }
 	else
@@ -134,8 +152,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (this->_M_impl._M_finish._M_cur
 	    != this->_M_impl._M_finish._M_last - 1)
 	  {
-	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
-				    std::forward<_Args>(__args)...);
+	    _Alloc_traits::construct(this->_M_impl,
+	                             this->_M_impl._M_finish._M_cur,
+			             std::forward<_Args>(__args)...);
 	    ++this->_M_impl._M_finish._M_cur;
 	  }
 	else
@@ -453,8 +472,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__try
 	  {
 #if __cplusplus >= 201103L
-	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
-				    std::forward<_Args>(__args)...);
+	    _Alloc_traits::construct(this->_M_impl,
+	                             this->_M_impl._M_finish._M_cur,
+			             std::forward<_Args>(__args)...);
 #else
 	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur, __t);
 #endif
@@ -490,8 +510,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					       - 1);
 	    this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_last - 1;
 #if __cplusplus >= 201103L
-	    this->_M_impl.construct(this->_M_impl._M_start._M_cur,
-				    std::forward<_Args>(__args)...);
+	    _Alloc_traits::construct(this->_M_impl,
+	                             this->_M_impl._M_start._M_cur,
+			             std::forward<_Args>(__args)...);
 #else
 	    this->_M_impl.construct(this->_M_impl._M_start._M_cur, __t);
 #endif
@@ -512,7 +533,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_deallocate_node(this->_M_impl._M_finish._M_first);
       this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node - 1);
       this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_last - 1;
-      this->_M_impl.destroy(this->_M_impl._M_finish._M_cur);
+      _Alloc_traits::destroy(_M_get_Tp_allocator(),
+			     this->_M_impl._M_finish._M_cur);
     }
 
   // Called only if _M_impl._M_start._M_cur == _M_impl._M_start._M_last - 1.
@@ -524,7 +546,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void deque<_Tp, _Alloc>::
     _M_pop_front_aux()
     {
-      this->_M_impl.destroy(this->_M_impl._M_start._M_cur);
+      _Alloc_traits::destroy(_M_get_Tp_allocator(),
+			     this->_M_impl._M_start._M_cur);
       _M_deallocate_node(this->_M_impl._M_start._M_first);
       this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node + 1);
       this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_first;
