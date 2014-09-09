@@ -953,7 +953,7 @@
   [(set (match_operand:DF		   0 "s_register_operand" "=w")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fcvtds%?\\t%P0, %1"
+  "vcvt%?.f64.f32\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvt")]
@@ -963,7 +963,7 @@
   [(set (match_operand:SF		   0 "s_register_operand" "=t")
 	(float_truncate:SF (match_operand:DF 1 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fcvtsd%?\\t%0, %P1"
+  "vcvt%?.f32.f64\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvt")]
@@ -993,7 +993,7 @@
   [(set (match_operand:SI		  0 "s_register_operand" "=t")
 	(fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "t"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "ftosizs%?\\t%0, %1"
+  "vcvt%?.s32.f32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvtf2i")]
@@ -1003,7 +1003,7 @@
   [(set (match_operand:SI		  0 "s_register_operand" "=t")
 	(fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "w"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "ftosizd%?\\t%0, %P1"
+  "vcvt%?.s32.f64\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvtf2i")]
@@ -1014,7 +1014,7 @@
   [(set (match_operand:SI		  0 "s_register_operand" "=t")
 	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "t"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "ftouizs%?\\t%0, %1"
+  "vcvt%?.u32.f32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvtf2i")]
@@ -1024,7 +1024,7 @@
   [(set (match_operand:SI		  0 "s_register_operand" "=t")
 	(unsigned_fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "t"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "ftouizd%?\\t%0, %P1"
+  "vcvt%?.u32.f64\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvtf2i")]
@@ -1035,7 +1035,7 @@
   [(set (match_operand:SF	    0 "s_register_operand" "=t")
 	(float:SF (match_operand:SI 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fsitos%?\\t%0, %1"
+  "vcvt%?.f32.s32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvti2f")]
@@ -1045,7 +1045,7 @@
   [(set (match_operand:DF	    0 "s_register_operand" "=w")
 	(float:DF (match_operand:SI 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fsitod%?\\t%P0, %1"
+  "vcvt%?.f64.s32\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvti2f")]
@@ -1056,7 +1056,7 @@
   [(set (match_operand:SF	    0 "s_register_operand" "=t")
 	(unsigned_float:SF (match_operand:SI 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fuitos%?\\t%0, %1"
+  "vcvt%?.f32.u32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvti2f")]
@@ -1066,7 +1066,7 @@
   [(set (match_operand:DF	    0 "s_register_operand" "=w")
 	(unsigned_float:DF (match_operand:SI 1 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fuitod%?\\t%P0, %1"
+  "vcvt%?.f64.u32\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvti2f")]
