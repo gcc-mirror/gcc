@@ -60,6 +60,12 @@ namespace __profile
       deque(const deque&) = default;
       deque(deque&&) = default;
 
+      deque(const deque& __d, const _Allocator& __a)
+      : _Base(__d, __a) { }
+
+      deque(deque&& __d, const _Allocator& __a)
+      : _Base(std::move(__d), __a) { }
+
       ~deque() = default;
 
       deque(initializer_list<value_type> __l,
@@ -73,8 +79,8 @@ namespace __profile
 
 #if __cplusplus >= 201103L
       explicit
-      deque(size_type __n)
-      : _Base(__n) { }
+      deque(size_type __n, const _Allocator& __a = _Allocator())
+      : _Base(__n, __a) { }
 
       deque(size_type __n, const _Tp& __value,
 	    const _Allocator& __a = _Allocator())

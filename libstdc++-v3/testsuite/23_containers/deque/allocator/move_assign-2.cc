@@ -16,15 +16,16 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11 -fno-access-control" }
 
 // libstdc++/52591
 
-#include <vector>
+#include <deque>
 #include <memory>
 #include <type_traits>
 
-// As an extension we allow move-assignment of std::vector when the element
+
+// As an extension we allow move-assignment of std::deque when the element
 // type is not MoveAssignable, as long as the allocator type propagates or
 // is known to always compare equal.
 
@@ -46,15 +47,15 @@ struct A1 : std::allocator<T>
 
 void test01()
 {
-  using test_type = std::vector<C, A1<C>>;
-  static_assert(std::is_nothrow_move_assignable<test_type>::value,
-      "vector is nothrow move-assignable if allocator propagates");
+  using test_type = std::deque<C, A1<C>>;
+  static_assert(std::is_move_assignable<test_type>::value,
+      "deque is move-assignable if allocator propagates");
 }
 
 template<typename T>
 struct A2 : std::allocator<T>
 {
-  template<typename U> struct rebind { typedef A1<U> other; };
+  template<typename U> struct rebind { typedef A2<U> other; };
 
   A2() = default;
   template<typename U> A2(const A2<U>&) { }
@@ -71,7 +72,7 @@ namespace __gnu_cxx
 
 void test02()
 {
-  using test_type = std::vector<C, A2<C>>;
+  using test_type = std::deque<C, A2<C>>;
   static_assert(std::is_nothrow_move_assignable<test_type>::value,
-      "vector is nothrow move-assignable if allocator is always equal");
+      "deque is nothrow move-assignable if allocator is always equal");
 }
