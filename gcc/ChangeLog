@@ -1,3 +1,26 @@
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61749
+	* config/aarch64/aarch64-builtins.c (aarch64_types_quadop_qualifiers):
+	Use qualifier_immediate for last operand.  Rename to...
+	(aarch64_types_ternop_lane_qualifiers): ... This.
+	(TYPES_QUADOP): Rename to...
+	(TYPES_TERNOP_LANE): ... This.
+	(aarch64_simd_expand_args): Return const0_rtx when encountering user
+	error.  Change return of 0 to return of NULL_RTX.
+	(aarch64_crc32_expand_builtin): Likewise.
+	(aarch64_expand_builtin): Return NULL_RTX instead of 0.
+	ICE when expanding unknown builtin.
+	* config/aarch64/aarch64-simd-builtins.def (sqdmlal_lane): Use
+	TERNOP_LANE qualifiers.
+	(sqdmlsl_lane): Likewise.
+	(sqdmlal_laneq): Likewise.
+	(sqdmlsl_laneq): Likewise.
+	(sqdmlal2_lane): Likewise.
+	(sqdmlsl2_lane): Likewise.
+	(sqdmlal2_laneq): Likewise.
+	(sqdmlsl2_laneq): Likewise.
+
 2014-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (Optimization Options): Add missing @gol to the

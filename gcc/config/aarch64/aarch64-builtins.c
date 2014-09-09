@@ -175,10 +175,10 @@ aarch64_types_ternopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_TERNOPU (aarch64_types_ternopu_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_quadop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+aarch64_types_ternop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
-      qualifier_none, qualifier_none };
-#define TYPES_QUADOP (aarch64_types_quadop_qualifiers)
+      qualifier_none, qualifier_immediate };
+#define TYPES_TERNOP_LANE (aarch64_types_ternop_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -901,8 +901,11 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	    case SIMD_ARG_CONSTANT:
 	      if (!(*insn_data[icode].operand[argc + have_retval].predicate)
 		  (op[argc], mode[argc]))
+	      {
 		error_at (EXPR_LOCATION (exp), "incompatible type for argument %d, "
 		       "expected %<const int%>", argc + 1);
+		return const0_rtx;
+	      }
 	      break;
 
 	    case SIMD_ARG_STOP:
@@ -967,7 +970,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
       }
 
   if (!pat)
-    return 0;
+    return NULL_RTX;
 
   emit_insn (pat);
 
@@ -1058,8 +1061,9 @@ aarch64_crc32_expand_builtin (int fcode, tree exp, rtx target)
     op1 = copy_to_mode_reg (mode1, op1);
 
   pat = GEN_FCN (icode) (target, op0, op1);
-  if (! pat)
-    return 0;
+  if (!pat)
+    return NULL_RTX;
+
   emit_insn (pat);
   return target;
 }
@@ -1111,7 +1115,7 @@ aarch64_expand_builtin (tree exp,
   else if (fcode >= AARCH64_CRC32_BUILTIN_BASE && fcode <= AARCH64_CRC32_BUILTIN_MAX)
     return aarch64_crc32_expand_builtin (fcode, exp, target);
 
-  return NULL_RTX;
+  gcc_unreachable ();
 }
 
 tree
