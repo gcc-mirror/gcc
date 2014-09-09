@@ -633,9 +633,32 @@ Wnonnull
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
+Wnormalized
+C ObjC C++ ObjC++ Alias(Wnormalized=,nfc,none)
+;
+
 Wnormalized=
-C ObjC C++ ObjC++ Joined Warning
--Wnormalized=<id|nfc|nfkc>	Warn about non-normalised Unicode strings
+C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(warn_normalize) Init(normalized_C) Var(cpp_warn_normalize) Enum(cpp_normalize_level)
+-Wnormalized=<none|id|nfc|nfkc>	Warn about non-normalised Unicode strings
+
+; Required for these enum values.
+SourceInclude
+cpplib.h
+
+Enum
+Name(cpp_normalize_level) Type(int) UnknownError(argument %qs to %<-Wnormalized%> not recognized)
+
+EnumValue
+Enum(cpp_normalize_level) String(none) Value(normalized_none)
+
+EnumValue
+Enum(cpp_normalize_level) String(nfkc) Value(normalized_KC)
+
+EnumValue
+Enum(cpp_normalize_level) String(id) Value(normalized_identifier_C)
+
+EnumValue
+Enum(cpp_normalize_level) String(nfc) Value(normalized_C)
 
 Wold-style-cast
 C++ ObjC++ Var(warn_old_style_cast) Warning

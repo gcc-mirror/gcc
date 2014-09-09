@@ -384,29 +384,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_num_sign_change = value;
       break;
 
-    case OPT_Wnormalized_:
-      /* FIXME: Move all this to c.opt.  */
-      if (kind == DK_ERROR)
-	{
-	  gcc_assert (!arg);
-	  inform (input_location, "-Werror=normalized=: set -Wnormalized=nfc");
-	  cpp_opts->warn_normalize = normalized_C;
-	}
-      else
-	{
-	  if (!value || (arg && strcasecmp (arg, "none") == 0))
-	    cpp_opts->warn_normalize = normalized_none;
-	  else if (!arg || strcasecmp (arg, "nfkc") == 0)
-	    cpp_opts->warn_normalize = normalized_KC;
-	  else if (strcasecmp (arg, "id") == 0)
-	    cpp_opts->warn_normalize = normalized_identifier_C;
-	  else if (strcasecmp (arg, "nfc") == 0)
-	    cpp_opts->warn_normalize = normalized_C;
-	  else
-	    error ("argument %qs to %<-Wnormalized%> not recognized", arg);
-	  break;
-	}
-
     case OPT_Wunknown_pragmas:
       /* Set to greater than 1, so that even unknown pragmas in
 	 system headers will be warned about.  */

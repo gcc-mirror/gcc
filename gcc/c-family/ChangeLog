@@ -1,3 +1,9 @@
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt	(Wnormalized): New.
+	(Wnormalized=): Use Enum and Reject Negative.
+	* c-opts.c (c_common_handle_option): Do not handle Wnormalized here.
+
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define macros for mantissa
