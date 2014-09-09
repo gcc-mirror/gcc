@@ -1,6 +1,17 @@
 2014-09-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2014-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61452
+	* tree-ssa-sccvn.c (visit_phi): Remove pointless setting of
+	expr and has_constants in case we found a leader.
+	(simplify_binary_expression): Always valueize operands first.
+	(simplify_unary_expression): Likewise.
+
+2014-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2014-05-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61010
