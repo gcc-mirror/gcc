@@ -1,3 +1,18 @@
+2014-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* bb-reorder.h (default_target_bb_reorder): Remove redundant GTY.
+	* builtins.h (default_target_builtins): Likewise.
+	* gcse.h (default_target_gcse): Likewise.
+	* target-globals.h (target_globals): Add a destructor.  Convert
+	void-pointer fields back to their real type and change from
+	GTY((atomic)) to GTY((skip)).
+	(restore_target_globals): Remove casts accordingly.
+	* target-globals.c (save_target_globals): Use XCNEW rather than
+	ggc_internal_cleared_alloc to allocate non-GC structures.
+	Use ggc_cleared_alloc to allocate the target_globals structure
+	itself.
+	(target_globals::~target_globals): Define.
+
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (vfp_pop_multiple_with_writeback): Use vldm

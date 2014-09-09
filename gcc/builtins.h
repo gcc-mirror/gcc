@@ -39,7 +39,7 @@ struct target_builtins {
   enum machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
 };
 
-extern GTY(()) struct target_builtins default_target_builtins;
+extern struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
 extern struct target_builtins *this_target_builtins;
 #else
