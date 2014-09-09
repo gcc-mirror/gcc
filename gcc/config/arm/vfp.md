@@ -1107,7 +1107,7 @@
   [(set (reg CC_REGNUM)
 	(reg VFPCC_REGNUM))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fmstat%?"
+  "vmrs%?\\tAPSR_nzcv, FPSCR"
   [(set_attr "conds" "set")
    (set_attr "type" "f_flag")]
 )
