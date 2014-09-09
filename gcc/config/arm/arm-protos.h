@@ -126,7 +126,6 @@ extern int arm_max_const_double_inline_cost (void);
 extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
-extern const char *fp_immediate_constant (rtx);
 extern void arm_emit_call_insn (rtx, rtx, bool);
 extern const char *output_call (rtx *);
 extern const char *output_call_mem (rtx *);
