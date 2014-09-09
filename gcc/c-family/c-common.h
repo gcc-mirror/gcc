@@ -152,7 +152,7 @@ enum rid
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
   /* Cilk Plus keywords.  */
-  RID_CILK_SPAWN, RID_CILK_SYNC,
+  RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
   
   /* Objective-C ("AT" reserved words - they are only keywords when
      they follow '@')  */
@@ -1455,4 +1455,5 @@ extern tree create_cilk_function_exit (tree, bool, bool);
 extern tree cilk_install_body_pedigree_operations (tree);
 extern void cilk_outline (tree, tree *, void *);
 extern bool contains_cilk_spawn_stmt (tree);
+extern tree cilk_for_number_of_iterations (tree);
 #endif /* ! GCC_C_COMMON_H */

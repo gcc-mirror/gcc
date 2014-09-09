@@ -636,6 +636,12 @@ default_options_optimization (struct gcc_options *opts,
 			   default_param_value (PARAM_MIN_CROSSJUMP_INSNS),
 			   opts->x_param_values, opts_set->x_param_values);
 
+  /* Restrict the amount of work combine does at -Og while retaining
+     most of its useful transforms.  */
+  if (opts->x_optimize_debug)
+    maybe_set_param_value (PARAM_MAX_COMBINE_INSNS, 2,
+			   opts->x_param_values, opts_set->x_param_values);
+
   /* Allow default optimizations to be specified on a per-machine basis.  */
   maybe_default_options (opts, opts_set,
 			 targetm_common.option_optimization_table,

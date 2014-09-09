@@ -1719,6 +1719,38 @@ reemit_insn_block_notes (void)
   reorder_blocks ();
 }
 
+static const char *some_local_dynamic_name;
+
+/* Locate some local-dynamic symbol still in use by this function
+   so that we can print its name in local-dynamic base patterns.
+   Return null if there are no local-dynamic references.  */
+
+const char *
+get_some_local_dynamic_name ()
+{
+  subrtx_iterator::array_type array;
+  rtx_insn *insn;
+
+  if (some_local_dynamic_name)
+    return some_local_dynamic_name;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+	{
+	  const_rtx x = *iter;
+	  if (GET_CODE (x) == SYMBOL_REF)
+	    {
+	      if (SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
+		return some_local_dynamic_name = XSTR (x, 0);
+	      if (CONSTANT_POOL_ADDRESS_P (x))
+		iter.substitute (get_pool_constant (x));
+	    }
+	}
+
+  return 0;
+}
+
 /* Output assembler code for the start of a function,
    and initialize some of the variables in this file
    for the new function.  The label for the function and associated
@@ -1904,6 +1936,8 @@ final_end_function (void)
   if (!dwarf2_debug_info_emitted_p (current_function_decl)
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue (last_linenum, last_filename);
+
+  some_local_dynamic_name = 0;
 }
 
 
@@ -2137,15 +2171,13 @@ call_from_call_insn (rtx_call_insn *insn)
    both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
 
 rtx_insn *
-final_scan_insn (rtx uncast_insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
+final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
 #endif
   rtx_insn *next;
-
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
 
   insn_counter++;
 
@@ -4847,10 +4879,9 @@ get_call_cgraph_rtl_info (rtx_insn *insn)
    in REG_SET.  Return DEFAULT_SET in REG_SET if not found.  */
 
 bool
-get_call_reg_set_usage (rtx uncast_insn, HARD_REG_SET *reg_set,
+get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 			HARD_REG_SET default_set)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   if (flag_use_caller_save)
     {
       struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);

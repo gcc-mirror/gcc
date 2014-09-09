@@ -80,14 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Which CPU version this is.  The parsed and adjusted cris_cpu_str.  */
 extern int cris_cpu_version;
 
-/* Changing the order used to be necessary to put the fourth __make_dp
-   argument (a DImode parameter) in registers, to fit with the libfunc
-   parameter passing scheme used for intrinsic functions.  FIXME: Check
-   performance.  */
-#ifdef IN_LIBGCC2
-#define __make_dp(a,b,c,d) __cris_make_dp(d,a,b,c)
-#endif
-
 
 /* Node: Driver */
 

@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
 #include "alloc-pool.h"
 #include "hash-table.h"
 #include "hash-map.h"

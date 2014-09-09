@@ -204,7 +204,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 	   rtx if_false_label, rtx if_true_label, int prob)
 {
   enum machine_mode mode;
-  rtx drop_through_label = 0;
+  rtx_code_label *drop_through_label = 0;
 
   switch (code)
     {
@@ -426,7 +426,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
   int i;
   tree type;
   enum machine_mode mode;
-  rtx drop_through_label = 0;
+  rtx_code_label *drop_through_label = 0;
 
   switch (code)
     {
@@ -480,7 +480,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
 
     case COND_EXPR:
       {
-	rtx label1 = gen_label_rtx ();
+	rtx_code_label *label1 = gen_label_rtx ();
 	if (!if_true_label || !if_false_label)
 	  {
 	    drop_through_label = gen_label_rtx ();
@@ -945,7 +945,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 			 rtx if_true_label, int prob)
 {
   rtx tem;
-  rtx dummy_label = NULL_RTX;
+  rtx dummy_label = NULL;
 
   /* Reverse the comparison if that is safe and we want to jump if it is
      false.  Also convert to the reverse comparison if the target can

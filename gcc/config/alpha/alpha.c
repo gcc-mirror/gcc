@@ -4858,9 +4858,6 @@ struct GTY(()) alpha_links;
 
 struct GTY(()) machine_function
 {
-  /* For OSF.  */
-  const char *some_ld_name;
-
   /* For flag_reorder_blocks_and_partition.  */
   rtx gp_save_rtx;
 
@@ -5120,40 +5117,6 @@ get_round_mode_suffix (void)
   gcc_unreachable ();
 }
 
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in some movdi_er_tlsldm pattern.  */
-
-static int
-get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
-    {
-      cfun->machine->some_ld_name = XSTR (x, 0);
-      return 1;
-    }
-
-  return 0;
-}
-
-static const char *
-get_some_local_dynamic_name (void)
-{
-  rtx_insn *insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  gcc_unreachable ();
-}
-
 /* Print an operand.  Recognize special options, documented below.  */
 
 void
@@ -5169,7 +5132,11 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case '&':
-      assemble_name (file, get_some_local_dynamic_name ());
+      if (const char *name = get_some_local_dynamic_name ())
+	assemble_name (file, name);
+      else
+	output_operand_lossage ("'%%&' used without any "
+				"local dynamic TLS references");
       break;
 
     case '/':

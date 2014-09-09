@@ -1,3 +1,20 @@
+2014-09-05  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/62245
+	* intrinsic.texi (INT): clarify result.
+
+2014-09-03  Fritz Reese  <Reese-Fritz@zai.com>
+
+	PR fortran/62174
+	* decl.c (variable_decl): Don't overwrite typespecs of Cray pointees
+	when matching a component declaration.
+
+2014-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/62270
+	* interface.c (compare_parameter): Fix condition.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise.
+
 2014-08-31  Fritz Reese  <Reese-Fritz@zai.com>
 
 	PR fortran/62309

@@ -78,7 +78,7 @@ static HARD_REG_SET current_live_regs;
 static HARD_REG_SET pending_dead_regs;
 
 static void update_live_status (rtx, const_rtx, void *);
-static int find_basic_block (rtx, int);
+static int find_basic_block (rtx_insn *, int);
 static rtx_insn *next_insn_no_annul (rtx_insn *);
 static rtx_insn *find_dead_or_set_registers (rtx_insn *, struct resources*,
 					     rtx *, int, struct resources,
@@ -132,7 +132,7 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
    correct.  */
 
 static int
-find_basic_block (rtx insn, int search_limit)
+find_basic_block (rtx_insn *insn, int search_limit)
 {
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
@@ -659,15 +659,16 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
       if (mark_type == MARK_SRC_DEST_CALL)
 	{
+	  rtx_call_insn *call_insn = as_a <rtx_call_insn *> (x);
 	  rtx link;
 	  HARD_REG_SET regs;
 
 	  res->cc = res->memory = 1;
 
-	  get_call_reg_set_usage (x, &regs, regs_invalidated_by_call);
+	  get_call_reg_set_usage (call_insn, &regs, regs_invalidated_by_call);
 	  IOR_HARD_REG_SET (res->regs, regs);
 
-	  for (link = CALL_INSN_FUNCTION_USAGE (x);
+	  for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
 	       link; link = XEXP (link, 1))
 	    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
@@ -675,7 +676,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
 	  /* Check for a REG_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
-	  if (find_reg_note (x, REG_SETJMP, NULL))
+	  if (find_reg_note (call_insn, REG_SETJMP, NULL))
 	    SET_HARD_REG_SET (res->regs);
 	}
 
@@ -995,7 +996,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	   insn = next_insn_no_annul (insn))
 	{
 	  rtx link;
-	  rtx real_insn = insn;
+	  rtx_insn *real_insn = insn;
 	  enum rtx_code code = GET_CODE (insn);
 
 	  if (DEBUG_INSN_P (insn))
@@ -1013,7 +1014,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	  if (code == INSN
 	      && GET_CODE (PATTERN (insn)) == USE
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
-	    real_insn = XEXP (PATTERN (insn), 0);
+	    real_insn = as_a <rtx_insn *> (XEXP (PATTERN (insn), 0));
 
 	  if (CALL_P (real_insn))
 	    {

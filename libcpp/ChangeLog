@@ -1,3 +1,11 @@
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* macro.c (replace_args): Use cpp_pedwarning, cpp_warning and
+	CPP_W flags.
+	* include/cpplib.h: Add CPP_W_C90_C99_COMPAT and CPP_W_PEDANTIC.
+	* init.c (cpp_create_reader): Do not init to -1 here.
+	* expr.c (num_binary_op): Use cpp_pedwarning.
+
 2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* directives.c (check_eol_1): New.

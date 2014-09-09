@@ -149,8 +149,13 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 static GTY(()) int call_site_base;
-static GTY ((param_is (union tree_node)))
-  htab_t type_to_runtime_map;
+
+struct tree_hash_traits : default_hashmap_traits
+{
+  static hashval_t hash (tree t) { return TREE_HASH (t); }
+};
+
+static GTY (()) hash_map<tree, tree, tree_hash_traits> *type_to_runtime_map;
 
 /* Describe the SjLj_Function_Context structure.  */
 static GTY(()) tree sjlj_fc_type_node;
@@ -213,9 +218,6 @@ typedef hash_table<action_record_hasher> action_hash_type;
 static bool get_eh_region_and_lp_from_rtx (const_rtx, eh_region *,
 					   eh_landing_pad *);
 
-static int t2r_eq (const void *, const void *);
-static hashval_t t2r_hash (const void *);
-
 static void dw2_build_landing_pads (void);
 
 static int collect_one_action_chain (action_hash_type *, eh_region);
@@ -237,7 +239,8 @@ init_eh (void)
   if (! flag_exceptions)
     return;
 
-  type_to_runtime_map = htab_create_ggc (31, t2r_hash, t2r_eq, NULL);
+  type_to_runtime_map
+    = hash_map<tree, tree, tree_hash_traits>::create_ggc (31);
 
   /* Create the SjLj_Function_Context structure.  This should match
      the definition in unwind-sjlj.c.  */
@@ -671,54 +674,28 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
   return region_a;
 }
 
-static int
-t2r_eq (const void *pentry, const void *pdata)
-{
-  const_tree const entry = (const_tree) pentry;
-  const_tree const data = (const_tree) pdata;
-
-  return TREE_PURPOSE (entry) == data;
-}
-
-static hashval_t
-t2r_hash (const void *pentry)
-{
-  const_tree const entry = (const_tree) pentry;
-  return TREE_HASH (TREE_PURPOSE (entry));
-}
-
 void
 add_type_for_runtime (tree type)
 {
-  tree *slot;
-
   /* If TYPE is NOP_EXPR, it means that it already is a runtime type.  */
   if (TREE_CODE (type) == NOP_EXPR)
     return;
 
-  slot = (tree *) htab_find_slot_with_hash (type_to_runtime_map, type,
-					    TREE_HASH (type), INSERT);
-  if (*slot == NULL)
-    {
-      tree runtime = lang_hooks.eh_runtime_type (type);
-      *slot = tree_cons (type, runtime, NULL_TREE);
-    }
+  bool existed = false;
+  tree *slot = &type_to_runtime_map->get_or_insert (type, &existed);
+  if (!existed)
+    *slot = lang_hooks.eh_runtime_type (type);
 }
 
 tree
 lookup_type_for_runtime (tree type)
 {
-  tree *slot;
-
   /* If TYPE is NOP_EXPR, it means that it already is a runtime type.  */
   if (TREE_CODE (type) == NOP_EXPR)
     return type;
 
-  slot = (tree *) htab_find_slot_with_hash (type_to_runtime_map, type,
-					    TREE_HASH (type), NO_INSERT);
-
   /* We should have always inserted the data earlier.  */
-  return TREE_VALUE (*slot);
+  return *type_to_runtime_map->get (type);
 }
 
 
@@ -1398,10 +1375,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	      {
 		for (loop = bb->loop_father;
 		     loop_outer (loop); loop = loop_outer (loop))
-		  {
-		    loop->header = NULL;
-		    loop->latch = NULL;
-		  }
+		  mark_loop_for_removal (loop);
 	      }
 	  }
 
@@ -3150,12 +3124,12 @@ output_function_exception_table (const char *fnname)
 }
 
 void
-set_eh_throw_stmt_table (struct function *fun, struct htab *table)
+set_eh_throw_stmt_table (function *fun, hash_map<gimple, int> *table)
 {
   fun->eh->throw_stmt_table = table;
 }
 
-htab_t
+hash_map<gimple, int> *
 get_eh_throw_stmt_table (struct function *fun)
 {
   return fun->eh->throw_stmt_table;

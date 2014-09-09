@@ -1638,6 +1638,11 @@ init_pragma (void)
   if (!flag_preprocess_only)
     cpp_register_deferred_pragma (parse_in, "GCC", "ivdep", PRAGMA_IVDEP, false,
 				  false);
+
+  if (flag_cilkplus && !flag_preprocess_only)
+    cpp_register_deferred_pragma (parse_in, "cilk", "grainsize",
+				  PRAGMA_CILK_GRAINSIZE, true, false);
+
 #ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION
   c_register_pragma_with_expansion (0, "pack", handle_pragma_pack);
 #else

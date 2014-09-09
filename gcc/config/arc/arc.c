@@ -2849,8 +2849,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  /* Is this insn in a delay slot sequence?  */
 	  if (!final_sequence || XVECLEN (final_sequence, 0) < 2
 	      || current_insn_predicate
-	      || CALL_P (XVECEXP (final_sequence, 0, 0))
-	      || simplejump_p (XVECEXP (final_sequence, 0, 0)))
+	      || CALL_P (final_sequence->insn (0))
+	      || simplejump_p (final_sequence->insn (0)))
 	    {
 	      /* This insn isn't in a delay slot sequence, or conditionalized
 		 independently of its position in a delay slot.  */
@@ -2976,10 +2976,10 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  split_double (x, &first, &second);
 
 	  if((WORDS_BIG_ENDIAN) == 0)
-	      fprintf (file, "0x%08lx",
+	      fprintf (file, "0x%08" PRIx64,
 		       code == 'L' ? INTVAL (first) : INTVAL (second));
 	  else
-	      fprintf (file, "0x%08lx",
+	      fprintf (file, "0x%08" PRIx64,
 		       code == 'L' ? INTVAL (second) : INTVAL (first));
 
 
@@ -5520,7 +5520,7 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	 add this,this,r12        --> this+ = *(*this + vcall_offset) */
       asm_fprintf (file, "\tld\t%s, [%s]\n",
 		   ARC_TEMP_SCRATCH_REG, reg_names[this_regno]);
-      asm_fprintf (file, "\tadd\t%s, %s, %ld\n",
+      asm_fprintf (file, "\tadd\t%s, %s, " HOST_WIDE_INT_PRINT_DEC "\n",
 		   ARC_TEMP_SCRATCH_REG, ARC_TEMP_SCRATCH_REG, vcall_offset);
       asm_fprintf (file, "\tld\t%s, [%s]\n",
 		   ARC_TEMP_SCRATCH_REG, ARC_TEMP_SCRATCH_REG);
@@ -8401,7 +8401,7 @@ arc_predicate_delay_insns (void)
 	reverse = 1;
       else
 	gcc_unreachable ();
-      if (!INSN_FROM_TARGET_P (dlay) != reverse)
+      if (reverse != !INSN_FROM_TARGET_P (dlay))
 	{
 	  enum machine_mode ccm = GET_MODE (XEXP (cond, 0));
 	  enum rtx_code code = reverse_condition (GET_CODE (cond));

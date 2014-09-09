@@ -90,7 +90,7 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
 
   new_cfa = (_Unwind_Ptr) sc;
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
   /* On o32 Linux, the register save slots in the sigcontext are
@@ -115,10 +115,11 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
      Note that setting fs->signal_frame would not work.  As the comment
      above MASK_RETURN_ADDR explains, MIPS unwinders must earch for an
      odd-valued address.  */
-  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].how = REG_SAVED_VAL_OFFSET;
-  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].loc.offset
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how
+    = REG_SAVED_VAL_OFFSET;
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset
     = (_Unwind_Ptr)(sc->sc_pc) + 2 - new_cfa;
-  fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
+  fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
 
   return _URC_NO_REASON;
 }

@@ -1,3 +1,7 @@
+2014-09-01  Andi Kleen  <ak@linux.intel.com>
+
+	* bootstrap-lto.mk: Implement slim bootstrap.
+
 2014-08-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* isl.m4 (ISL_CHECK_VERSION): Check link of isl library

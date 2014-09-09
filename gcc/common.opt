@@ -604,7 +604,7 @@ Common Var(warn_padded) Warning
 Warn when padding is required to align structure members
 
 Wpedantic
-Common Var(pedantic) Warning
+Common Var(pedantic) Init(0) Warning
 Issue warnings needed for strict compliance to the standard
 
 Wreturn-local-addr

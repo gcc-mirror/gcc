@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32plus } */
+
 #define E0 ((type *)10000000)
 #define reg0 r0
 #define indreg0 (*p0)

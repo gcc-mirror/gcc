@@ -7455,7 +7455,7 @@ mips_expand_synci_loop (rtx begin, rtx end)
   length = mips_force_binary (Pmode, MINUS, end, begin);
 
   /* Loop back to here.  */
-  label = gen_label_rtx ();
+    label = gen_label_rtx ();
   emit_label (label);
 
   emit_insn (gen_synci (begin));
@@ -12465,7 +12465,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 				const char *branch_if_false)
 {
   unsigned int length;
-  rtx taken, not_taken;
+  rtx taken;
 
   gcc_assert (LABEL_P (operands[0]));
 
@@ -12480,7 +12480,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
   /* Generate a reversed branch around a direct jump.  This fallback does
      not use branch-likely instructions.  */
   mips_branch_likely = false;
-  not_taken = gen_label_rtx ();
+  rtx_code_label *not_taken = gen_label_rtx ();
   taken = operands[0];
 
   /* Generate the reversed branch to NOT_TAKEN.  */
@@ -12496,9 +12496,9 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	 delay slot if is not annulled.  */
       if (!INSN_ANNULLED_BRANCH_P (insn))
 	{
-	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -12521,9 +12521,9 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	 Use INSN's delay slot if is annulled.  */
       if (INSN_ANNULLED_BRANCH_P (insn))
 	{
-	  final_scan_insn (XVECEXP (final_sequence, 0, 1),
+	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (XVECEXP (final_sequence, 0, 1)) = 1;
+	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -16436,7 +16436,8 @@ mips16_split_long_branches (void)
 	    && get_attr_length (insn) > 4
 	    && (any_condjump_p (insn) || any_uncondjump_p (insn)))
 	  {
-	    rtx old_label, new_label, temp, saved_temp;
+	    rtx old_label, temp, saved_temp;
+	    rtx_code_label *new_label;
 	    rtx target;
 	    rtx_insn *jump, *jump_sequence;
 
@@ -16465,7 +16466,7 @@ mips16_split_long_branches (void)
 
 	    if (simplejump_p (insn))
 	      /* We're going to replace INSN with a longer form.  */
-	      new_label = NULL_RTX;
+	      new_label = NULL;
 	    else
 	      {
 		/* Create a branch-around label for the original

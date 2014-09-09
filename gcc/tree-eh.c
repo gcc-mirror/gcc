@@ -77,23 +77,12 @@ typedef union {tree *tp; tree t; gimple g;} treemple;
 static void
 add_stmt_to_eh_lp_fn (struct function *ifun, gimple t, int num)
 {
-  struct throw_stmt_node *n;
-  void **slot;
-
   gcc_assert (num != 0);
 
-  n = ggc_alloc<throw_stmt_node> ();
-  n->stmt = t;
-  n->lp_nr = num;
-
   if (!get_eh_throw_stmt_table (ifun))
-    set_eh_throw_stmt_table (ifun, htab_create_ggc (31, struct_ptr_hash,
-						    struct_ptr_eq,
-						    ggc_free));
+    set_eh_throw_stmt_table (ifun, hash_map<gimple, int>::create_ggc (31));
 
-  slot = htab_find_slot (get_eh_throw_stmt_table (ifun), n, INSERT);
-  gcc_assert (!*slot);
-  *slot = n;
+  gcc_assert (!get_eh_throw_stmt_table (ifun)->put (t, num));
 }
 
 /* Add statement T in the current function (cfun) to EH landing pad NUM.  */
@@ -130,22 +119,14 @@ record_stmt_eh_region (eh_region region, gimple t)
 bool
 remove_stmt_from_eh_lp_fn (struct function *ifun, gimple t)
 {
-  struct throw_stmt_node dummy;
-  void **slot;
-
   if (!get_eh_throw_stmt_table (ifun))
     return false;
 
-  dummy.stmt = t;
-  slot = htab_find_slot (get_eh_throw_stmt_table (ifun), &dummy,
-                        NO_INSERT);
-  if (slot)
-    {
-      htab_clear_slot (get_eh_throw_stmt_table (ifun), slot);
-      return true;
-    }
-  else
+  if (!get_eh_throw_stmt_table (ifun)->get (t))
     return false;
+
+  get_eh_throw_stmt_table (ifun)->remove (t);
+      return true;
 }
 
 
@@ -166,14 +147,11 @@ remove_stmt_from_eh_lp (gimple t)
 int
 lookup_stmt_eh_lp_fn (struct function *ifun, gimple t)
 {
-  struct throw_stmt_node *p, n;
-
   if (ifun->eh->throw_stmt_table == NULL)
     return 0;
 
-  n.stmt = t;
-  p = (struct throw_stmt_node *) htab_find (ifun->eh->throw_stmt_table, &n);
-  return p ? p->lp_nr : 0;
+  int *lp_nr = ifun->eh->throw_stmt_table->get (t);
+  return lp_nr ? *lp_nr : 0;
 }
 
 /* Likewise, but always use the current function.  */
@@ -4193,10 +4171,9 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	   and mark the other loop as possibly having multiple latches.  */
 	if (e->dest == e->dest->loop_father->header)
 	  {
-	    e->dest->loop_father->header = NULL;
-	    e->dest->loop_father->latch = NULL;
+	    mark_loop_for_removal (e->dest->loop_father);
 	    new_bb->loop_father->latch = NULL;
-	    loops_state_set (LOOPS_NEED_FIXUP|LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	    loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
 	  }
 	redirect_eh_edge_1 (e, new_bb, change_region);
 	redirect_edge_succ (e, new_bb);

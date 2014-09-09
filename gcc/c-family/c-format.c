@@ -1473,12 +1473,13 @@ check_format_arg (void *ctx, tree format_tree,
 	  res->number_non_literal++;
 	  return;
 	}
-      if (!tree_fits_shwi_p (arg1)
-	  || (offset = tree_to_shwi (arg1)) < 0)
+      /* POINTER_PLUS_EXPR offsets are to be interpreted signed.  */
+      if (!cst_and_fits_in_hwi (arg1))
 	{
 	  res->number_non_literal++;
 	  return;
 	}
+      offset = int_cst_value (arg1);
     }
   if (TREE_CODE (format_tree) != ADDR_EXPR)
     {
@@ -1524,6 +1525,11 @@ check_format_arg (void *ctx, tree format_tree,
       && tree_fits_shwi_p (TREE_OPERAND (format_tree, 1))
       && (offset += tree_to_shwi (TREE_OPERAND (format_tree, 1))) >= 0)
     format_tree = TREE_OPERAND (format_tree, 0);
+  if (offset < 0)
+    {
+      res->number_non_literal++;
+      return;
+    }
   if (TREE_CODE (format_tree) == VAR_DECL
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
       && (array_init = decl_constant_value (format_tree)) != format_tree

@@ -95,7 +95,7 @@ _Jv_RegisterClasses (__attribute__((unused)) const void *p)
    register/deregister it with the exception handling library code.  */
 #if DWARF2_UNWIND_INFO
 static EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
-  __attribute__((used, section(EH_FRAME_SECTION_NAME), aligned(4)))
+  __attribute__((used, section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
   = { };
 
 static struct object obj;
@@ -107,7 +107,7 @@ static void *  (*deregister_frame_fn) (const void *) = NULL;
 
 #if TARGET_USE_JCR_SECTION
 static void *__JCR_LIST__[]
-  __attribute__ ((used, section(JCR_SECTION_NAME), aligned(4)))
+  __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__), aligned(4)))
   = { };
 #endif
 

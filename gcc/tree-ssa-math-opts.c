@@ -1600,11 +1600,10 @@ make_pass_cse_sincos (gcc::context *ctxt)
 
 /* A symbolic number is used to detect byte permutation and selection
    patterns.  Therefore the field N contains an artificial number
-   consisting of byte size markers:
+   consisting of octet sized markers:
 
-   0    - byte has the value 0
-   1..size - byte contains the content of the byte
-   number indexed with that value minus one.
+   0    - target byte has the value 0
+   1..size - marker value is the target byte index minus one.
 
    To detect permutations on memory sources (arrays and structures), a symbolic
    number is also associated a base address (the array or structure the load is
@@ -1629,6 +1628,8 @@ struct symbolic_number {
   unsigned HOST_WIDE_INT range;
 };
 
+#define BITS_PER_MARKER 8
+
 /* The number which the find_bswap_or_nop_1 result should match in
    order to have a nop.  The number is masked according to the size of
    the symbolic number before using it.  */
@@ -1650,15 +1651,16 @@ do_shift_rotate (enum tree_code code,
 		 struct symbolic_number *n,
 		 int count)
 {
-  int bitsize = TYPE_PRECISION (n->type);
+  int size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
 
-  if (count % 8 != 0)
+  if (count % BITS_PER_UNIT != 0)
     return false;
+  count = (count / BITS_PER_UNIT) * BITS_PER_MARKER;
 
   /* Zero out the extra bits of N in order to avoid them being shifted
      into the significant bits.  */
-  if (bitsize < 8 * (int)sizeof (int64_t))
-    n->n &= ((uint64_t)1 << bitsize) - 1;
+  if (size < 64 / BITS_PER_MARKER)
+    n->n &= ((uint64_t) 1 << (size * BITS_PER_MARKER)) - 1;
 
   switch (code)
     {
@@ -1668,22 +1670,22 @@ do_shift_rotate (enum tree_code code,
     case RSHIFT_EXPR:
       /* Arithmetic shift of signed type: result is dependent on the value.  */
       if (!TYPE_UNSIGNED (n->type)
-	  && (n->n & ((uint64_t) 0xff << (bitsize - 8))))
+	  && (n->n & ((uint64_t) 0xff << ((size - 1) * BITS_PER_MARKER))))
 	return false;
       n->n >>= count;
       break;
     case LROTATE_EXPR:
-      n->n = (n->n << count) | (n->n >> (bitsize - count));
+      n->n = (n->n << count) | (n->n >> ((size * BITS_PER_MARKER) - count));
       break;
     case RROTATE_EXPR:
-      n->n = (n->n >> count) | (n->n << (bitsize - count));
+      n->n = (n->n >> count) | (n->n << ((size * BITS_PER_MARKER) - count));
       break;
     default:
       return false;
     }
   /* Zero unused bits for size.  */
-  if (bitsize < 8 * (int)sizeof (int64_t))
-    n->n &= ((uint64_t)1 << bitsize) - 1;
+  if (size < 64 / BITS_PER_MARKER)
+    n->n &= ((uint64_t) 1 << (size * BITS_PER_MARKER)) - 1;
   return true;
 }
 
@@ -1724,13 +1726,13 @@ init_symbolic_number (struct symbolic_number *n, tree src)
   if (size % BITS_PER_UNIT != 0)
     return false;
   size /= BITS_PER_UNIT;
-  if (size > (int)sizeof (uint64_t))
+  if (size > 64 / BITS_PER_MARKER)
     return false;
   n->range = size;
   n->n = CMPNOP;
 
-  if (size < (int)sizeof (int64_t))
-    n->n &= ((uint64_t)1 << (size * BITS_PER_UNIT)) - 1;
+  if (size < 64 / BITS_PER_MARKER)
+    n->n &= ((uint64_t) 1 << (size * BITS_PER_MARKER)) - 1;
 
   return true;
 }
@@ -1868,15 +1870,17 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	case BIT_AND_EXPR:
 	  {
 	    int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-	    uint64_t val = int_cst_value (rhs2);
-	    uint64_t tmp = val;
+	    uint64_t val = int_cst_value (rhs2), mask = 0;
+	    uint64_t tmp = (1 << BITS_PER_UNIT) - 1;
 
 	    /* Only constants masking full bytes are allowed.  */
-	    for (i = 0; i < size; i++, tmp >>= BITS_PER_UNIT)
-	      if ((tmp & 0xff) != 0 && (tmp & 0xff) != 0xff)
+	    for (i = 0; i < size; i++, tmp <<= BITS_PER_UNIT)
+	      if ((val & tmp) != 0 && (val & tmp) != tmp)
 		return NULL;
+	      else if (val & tmp)
+		mask |= (uint64_t) 0xff << (i * BITS_PER_MARKER);
 
-	    n->n &= val;
+	    n->n &= mask;
 	  }
 	  break;
 	case LSHIFT_EXPR:
@@ -1895,25 +1899,27 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
 	      return NULL;
-	    if (type_size > (int)sizeof (uint64_t) * 8)
+	    type_size /= BITS_PER_UNIT;
+	    if (type_size > 64 / BITS_PER_MARKER)
 	      return NULL;
 
 	    /* Sign extension: result is dependent on the value.  */
-	    old_type_size = TYPE_PRECISION (n->type);
+	    old_type_size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
 	    if (!TYPE_UNSIGNED (n->type)
 		&& type_size > old_type_size
-		&& n->n & ((uint64_t) 0xff << (old_type_size - 8)))
+		&& n->n & ((uint64_t) 0xff << ((old_type_size - 1)
+					       * BITS_PER_MARKER)))
 	      return NULL;
 
-	    if (type_size / BITS_PER_UNIT < (int)(sizeof (int64_t)))
+	    if (type_size < 64 / BITS_PER_MARKER)
 	      {
 		/* If STMT casts to a smaller type mask out the bits not
 		   belonging to the target type.  */
-		n->n &= ((uint64_t)1 << type_size) - 1;
+		n->n &= ((uint64_t) 1 << (type_size * BITS_PER_MARKER)) - 1;
 	      }
 	    n->type = type;
 	    if (!n->base_addr)
-	      n->range = type_size / BITS_PER_UNIT;
+	      n->range = type_size;
 	  }
 	  break;
 	default:
@@ -1963,7 +1969,6 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      != gimple_assign_rhs1 (source_stmt2))
 	    {
 	      int64_t inc, mask;
-	      unsigned i;
 	      HOST_WIDE_INT off_sub;
 	      struct symbolic_number *n_ptr;
 
@@ -1987,21 +1992,23 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
 	      off_sub = n2.bytepos - n1.bytepos;
 
-	      /* Check that the range of memory covered < biggest int size.  */
-	      if (off_sub + n2.range > (int) sizeof (int64_t))
+	      /* Check that the range of memory covered can be represented by
+		 a symbolic number.  */
+	      if (off_sub + n2.range > 64 / BITS_PER_MARKER)
 		return NULL;
 	      n->range = n2.range + off_sub;
 
 	      /* Reinterpret byte marks in symbolic number holding the value of
 		 bigger weight according to target endianness.  */
 	      inc = BYTES_BIG_ENDIAN ? off_sub + n2.range - n1.range : off_sub;
-	      mask = 0xFF;
+	      size = TYPE_PRECISION (n1.type) / BITS_PER_UNIT;
+	      mask = 0xff;
 	      if (BYTES_BIG_ENDIAN)
 		n_ptr = &n1;
 	      else
 		n_ptr = &n2;
-	      for (i = 0; i < sizeof (int64_t); i++, inc <<= 8,
-		   mask <<= 8)
+	      for (i = 0; i < size; i++, inc <<= BITS_PER_MARKER,
+					 mask <<= BITS_PER_MARKER)
 		{
 		  if (n_ptr->n & mask)
 		    n_ptr->n += inc;
@@ -2021,7 +2028,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  n->bytepos = n1.bytepos;
 	  n->type = n1.type;
 	  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-	  for (i = 0, mask = 0xff; i < size; i++, mask <<= BITS_PER_UNIT)
+	  for (i = 0, mask = 0xff; i < size; i++, mask <<= BITS_PER_MARKER)
 	    {
 	      uint64_t masked1, masked2;
 
@@ -2082,17 +2089,17 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
       int rsize;
       uint64_t tmpn;
 
-      for (tmpn = n->n, rsize = 0; tmpn; tmpn >>= BITS_PER_UNIT, rsize++);
+      for (tmpn = n->n, rsize = 0; tmpn; tmpn >>= BITS_PER_MARKER, rsize++);
       n->range = rsize;
     }
 
   /* Zero out the extra bits of N and CMP*.  */
-  if (n->range < (int)sizeof (int64_t))
+  if (n->range < (int) sizeof (int64_t))
     {
       uint64_t mask;
 
-      mask = ((uint64_t)1 << (n->range * BITS_PER_UNIT)) - 1;
-      cmpxchg >>= (sizeof (int64_t) - n->range) * BITS_PER_UNIT;
+      mask = ((uint64_t) 1 << (n->range * BITS_PER_MARKER)) - 1;
+      cmpxchg >>= (64 / BITS_PER_MARKER - n->range) * BITS_PER_MARKER;
       cmpnop &= mask;
     }
 

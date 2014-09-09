@@ -2014,7 +2014,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (formal->ts.type == BT_CLASS && formal->attr.class_ok
       && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
-	   && !formal->attr.intent == INTENT_IN)
+	   && formal->attr.intent != INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
     {
       if (actual->ts.type != BT_CLASS)

@@ -14012,6 +14012,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OMP_FOR:
     case OMP_SIMD:
     case CILK_SIMD:
+    case CILK_FOR:
     case OMP_DISTRIBUTE:
       {
 	tree clauses, body, pre_body;

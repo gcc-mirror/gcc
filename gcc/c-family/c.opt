@@ -296,7 +296,7 @@ C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) Var(cpp_warn_builtin_macro_r
 Warn when a built-in preprocessor macro is undefined or redefined
 
 Wc90-c99-compat
-C ObjC Var(warn_c90_c99_compat) Init(-1) Warning
+C ObjC CPP(cpp_warn_c90_c99_compat) Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99
 
 Wc99-c11-compat
@@ -304,7 +304,7 @@ C ObjC Var(warn_c99_c11_compat) Init(-1) Warning
 Warn about features not present in ISO C99, but present in ISO C11
 
 Wc++-compat
-C ObjC Var(warn_cxx_compat) Warning
+C ObjC Var(warn_cxx_compat) CPP(warn_cxx_operator_names) Init(0) Warning
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
@@ -328,7 +328,7 @@ C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
 
 Wcomment
-C ObjC C++ ObjC++ CPP(warn_comments) Var(cpp_warn_comment) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ CPP(warn_comments) Var(cpp_warn_comment) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
@@ -392,7 +392,7 @@ C ObjC C++ ObjC++ Var(warn_empty_body) Warning EnabledBy(Wextra)
 Warn about an empty body in an if or else statement
 
 Wendif-labels
-C ObjC C++ ObjC++ CPP(warn_endif_labels) Var(cpp_warn_endif_labels) Init(1) Warning
+C ObjC C++ ObjC++ CPP(warn_endif_labels) Var(cpp_warn_endif_labels) Init(1) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
@@ -503,7 +503,7 @@ C++ ObjC++ Var(warn_invalid_offsetof) Init(1) Warning
 Warn about invalid uses of the \"offsetof\" macro
 
 Winvalid-pch
-C ObjC C++ ObjC++ CPP(warn_invalid_pch) Var(cpp_warn_invalid_pch) Warning
+C ObjC C++ ObjC++ CPP(warn_invalid_pch) Var(cpp_warn_invalid_pch) Init(0) Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
@@ -519,11 +519,11 @@ C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning
 Warn when a logical operator is suspiciously always evaluating to true or false
 
 Wlogical-not-parentheses
-C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning
+C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when logical not is used on the left hand side operand of a comparison
 
 Wlong-long
-C ObjC C++ ObjC++ Var(warn_long_long) Init(-1) Warning
+C ObjC C++ ObjC++ CPP(cpp_warn_long_long) Var(warn_long_long) Init(-1) Warning LangEnabledBy(C ObjC,Wc90-c99-compat)
 Do not warn about using \"long long\" when -pedantic
 
 Wmain
@@ -583,7 +583,7 @@ C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
 ;
 
 Wmissing-include-dirs
-C ObjC C++ ObjC++ CPP(warn_missing_include_dirs) Var(cpp_warn_missing_include_dirs) Warning
+C ObjC C++ ObjC++ CPP(warn_missing_include_dirs) Var(cpp_warn_missing_include_dirs) Init(0) Warning
 Warn about user-specified include directories that do not exist
 
 Wmissing-parameter-type
@@ -598,7 +598,7 @@ Wmudflap
 C ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 Wmultichar
-C ObjC C++ ObjC++ CPP(warn_multichar) Var(cpp_warn_multichar) Warning
+C ObjC C++ ObjC++ CPP(warn_multichar) Var(cpp_warn_multichar) Init(0) Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
@@ -674,7 +674,7 @@ C ObjC C++ ObjC++ Var(warn_parentheses) Warning LangEnabledBy(C ObjC C++ ObjC++,
 Warn about possibly missing parentheses
 
 Wpedantic
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(cpp_pedantic) Warning
 ; Documented in common.opt
 
 Wpmf-conversions
@@ -702,7 +702,7 @@ C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
 Wdate-time
-C ObjC C++ ObjC++ CPP(warn_date_time) Var(cpp_warn_date_time) Warning
+C ObjC C++ ObjC++ CPP(warn_date_time) Var(cpp_warn_date_time) Init(0) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage
 
 Wproperty-assign-default
@@ -786,7 +786,7 @@ C ObjC C++ ObjC++ Warning
 ; Documented in common.opt
 
 Wtraditional
-C ObjC Var(warn_traditional) Warning
+C ObjC CPP(cpp_warn_traditional) Var(warn_traditional) Init(0) Warning
 Warn about features not present in traditional C
 
 Wtraditional-conversion
@@ -802,7 +802,7 @@ ObjC ObjC++ Var(warn_undeclared_selector) Warning
 Warn about @selector()s without previously declared methods
 
 Wundef
-C ObjC C++ ObjC++ CPP(warn_undef) Var(cpp_warn_undef) Warning
+C ObjC C++ ObjC++ CPP(warn_undef) Var(cpp_warn_undef) Init(0) Warning
 Warn if an undefined macro is used in an #if directive
 
 Wuninitialized
@@ -838,7 +838,7 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ CPP(warn_variadic_macros) Var(cpp_warn_variadic_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
+C ObjC C++ ObjC++ CPP(warn_variadic_macros) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn about using variadic macros
 
 Wvariadic-macros

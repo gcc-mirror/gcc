@@ -629,6 +629,17 @@
   [(set_attr "type" "neon_fp_round_<V_elem_ch><q>")]
 )
 
+(define_insn "neon_vcvt<NEON_VCVT:nvrint_variant><su_optab><VCVTF:mode><v_cmp_result>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w")
+	(FIXUORS:<V_cmp_result> (unspec:VCVTF
+			       [(match_operand:VCVTF 1 "register_operand" "w")]
+			       NEON_VCVT)))]
+  "TARGET_NEON && TARGET_FPU_ARMV8"
+  "vcvt<nvrint_variant>.<su>32.f32\\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "type" "neon_fp_to_int_<V_elem_ch><q>")
+   (set_attr "predicable" "no")]
+)
+
 (define_insn "ior<mode>3"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")

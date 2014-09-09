@@ -132,8 +132,51 @@ main (int ac, char **av)
   const char **nargv;
   bool is_ar = !strcmp (PERSONALITY, "ar");
   int exit_code = FATAL_EXIT_CODE;
+  int i;
 
   setup_prefixes (av[0]);
+
+  /* Not using getopt for now.  */
+  for (i = 0; i < ac; i++)
+      if (!strncmp (av[i], "-B", 2))
+	{
+	  const char *arg = av[i] + 2;
+	  const char *end;
+	  size_t len;
+
+	  memmove (av + i, av + i + 1, sizeof (char *) * ((ac + 1) - i));
+	  ac--;
+	  if (*arg == 0)
+	    {
+	      arg = av[i];
+	      if (!arg)
+		{
+		  fprintf (stderr, "Usage: gcc-ar [-B prefix] ar arguments ...\n");
+		  exit (EXIT_FAILURE);
+		}
+	      memmove (av + i, av + i + 1, sizeof (char *) * ((ac + 1) - i));
+	      ac--;
+	      i++;
+	    }
+	  /* else it's a joined argument  */
+
+	  len = strlen (arg);
+	  if (len > 0)
+		  len--;
+	  end = arg + len;
+
+	  /* Always add a dir separator for the prefix list.  */
+	  if (end > arg && !IS_DIR_SEPARATOR (*end))
+	    {
+	      static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
+	      arg = concat (arg, dir_separator_str, NULL);
+	    }
+
+	  add_prefix_begin (&path, arg);
+	  add_prefix_begin (&target_path, arg);
+	  break;
+	}
+
 
   /* Find the GCC LTO plugin */
   plugin = find_a_file (&target_path, LTOPLUGINSONAME, R_OK);

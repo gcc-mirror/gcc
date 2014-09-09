@@ -81,7 +81,7 @@ nios2_fallback_frame_state (struct _Unwind_Context *context,
       /* The CFA is the user's incoming stack pointer value.  */
       new_cfa = (_Unwind_Ptr)regs->gregs[28];
       fs->regs.cfa_how = CFA_REG_OFFSET;
-      fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+      fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
       fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
       /* The sequential registers.  */

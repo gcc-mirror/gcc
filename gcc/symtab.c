@@ -407,15 +407,7 @@ symtab_node::unregister (void)
   if (!is_a <varpool_node *> (this) || !DECL_HARD_REGISTER (decl))
     symtab->unlink_from_assembler_name_hash (this, false);
   if (in_init_priority_hash)
-    {
-      symbol_priority_map in;
-      void **slot;
-      in.symbol = this;
-
-      slot = htab_find_slot (symtab->init_priority_hash, &in, NO_INSERT);
-      if (slot)
-	htab_clear_slot (symtab->init_priority_hash, slot);
-    }
+    symtab->init_priority_hash->remove (this);
 }
 
 
@@ -1455,14 +1447,10 @@ symtab_node::set_section (const char *section)
 priority_type
 symtab_node::get_init_priority ()
 {
-  symbol_priority_map *h;
-  symbol_priority_map in;
-
   if (!this->in_init_priority_hash)
     return DEFAULT_INIT_PRIORITY;
-  in.symbol = this;
-  h = (symbol_priority_map *) htab_find (symtab->init_priority_hash,
-						&in);
+
+  symbol_priority_map *h = symtab->init_priority_hash->get (this);
   return h ? h->init : DEFAULT_INIT_PRIORITY;
 }
 
@@ -1481,33 +1469,10 @@ enum availability symtab_node::get_availability (void)
 priority_type
 cgraph_node::get_fini_priority ()
 {
-  symbol_priority_map *h;
-  symbol_priority_map in;
-
   if (!this->in_init_priority_hash)
     return DEFAULT_INIT_PRIORITY;
-  in.symbol = this;
-  h = (symbol_priority_map *) htab_find (symtab->init_priority_hash,
-						&in);
+  symbol_priority_map *h = symtab->init_priority_hash->get (this);
   return h ? h->fini : DEFAULT_INIT_PRIORITY;
-}
-
-/* Return true if the from tree in both priority maps are equal.  */
-
-int
-symbol_priority_map_eq (const void *va, const void *vb)
-{
-  const symbol_priority_map *const a = (const symbol_priority_map *) va,
-    *const b = (const symbol_priority_map *) vb;
-  return (a->symbol == b->symbol);
-}
-
-/* Hash a from symbol in a symbol_priority_map.  */
-
-unsigned int
-symbol_priority_map_hash (const void *item)
-{
-  return htab_hash_pointer (((const symbol_priority_map *)item)->symbol);
 }
 
 /* Return the initialization and finalization priority information for
@@ -1517,23 +1482,14 @@ symbol_priority_map_hash (const void *item)
 symbol_priority_map *
 symtab_node::priority_info (void)
 {
-  symbol_priority_map in;
-  symbol_priority_map *h;
-  void **loc;
-
-  in.symbol = this;
   if (!symtab->init_priority_hash)
-    symtab->init_priority_hash = htab_create_ggc (512,
-						  symbol_priority_map_hash,
-						  symbol_priority_map_eq, 0);
+    symtab->init_priority_hash = hash_map<symtab_node *, symbol_priority_map>::create_ggc (13);
 
-  loc = htab_find_slot (symtab->init_priority_hash, &in, INSERT);
-  h = (symbol_priority_map *) *loc;
-  if (!h)
+  bool existed;
+  symbol_priority_map *h
+    = &symtab->init_priority_hash->get_or_insert (this, &existed);
+  if (!existed)
     {
-      h = ggc_cleared_alloc<symbol_priority_map> ();
-      *loc = h;
-      h->symbol = this;
       h->init = DEFAULT_INIT_PRIORITY;
       h->fini = DEFAULT_INIT_PRIORITY;
       in_init_priority_hash = true;

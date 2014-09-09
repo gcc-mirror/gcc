@@ -4445,7 +4445,7 @@ hppa_profile_hook (int label_no)
      64-bit code to avoid having to provide DImode versions of the
      lcla2 and load_offset_label_address insn patterns.  */
   rtx reg = gen_reg_rtx (SImode);
-  rtx label_rtx = gen_label_rtx ();
+  rtx_code_label *label_rtx = gen_label_rtx ();
   rtx begin_label_rtx, call_insn;
   char begin_label_name[16];
 

@@ -168,8 +168,8 @@
 
 ; FX Unit
 (define_insn_reservation "power8-1cyc" 1
-  (and (ior (eq_attr "type" "integer,insert,trap,exts,isel")
-	    (and (eq_attr "type" "add,logical,shift")
+  (and (ior (eq_attr "type" "integer,insert,trap,isel")
+	    (and (eq_attr "type" "add,logical,shift,exts")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
@@ -216,7 +216,7 @@
 ; shift with dot : rlwinm./slwi./rlwnm./slw./etc
 (define_insn_reservation "power8-compare" 2
   (and (ior (eq_attr "type" "compare")
-	    (and (eq_attr "type" "shift")
+	    (and (eq_attr "type" "shift,exts")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8,FXU_power8")

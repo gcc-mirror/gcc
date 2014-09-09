@@ -184,7 +184,7 @@ static bool shmedia_space_reserved_for_target_registers;
 
 static void split_branches (rtx_insn *);
 static int branch_dest (rtx);
-static void print_slot (rtx);
+static void print_slot (rtx_sequence *);
 static rtx_code_label *add_constant (rtx, enum machine_mode, rtx);
 static void dump_table (rtx_insn *, rtx_insn *);
 static bool broken_move (rtx_insn *);
@@ -2641,18 +2641,18 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
    another instruction, but couldn't because the other instruction expanded
    into a sequence where putting the slot insn at the end wouldn't work.  */
 static void
-print_slot (rtx insn)
+print_slot (rtx_sequence *seq)
 {
-  final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file, optimize, 1, NULL);
+  final_scan_insn (seq->insn (1), asm_out_file, optimize, 1, NULL);
 
-  INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
+  INSN_DELETED_P (seq->insn (1)) = 1;
 }
 
 const char *
 output_far_jump (rtx_insn *insn, rtx op)
 {
   struct { rtx lab, reg, op; } this_jmp;
-  rtx braf_base_lab = NULL_RTX;
+  rtx_code_label *braf_base_lab = NULL;
   const char *jump;
   int far;
   int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
@@ -4739,7 +4739,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
     }
   if (TARGET_FMOVD && TARGET_ALIGN_DOUBLE && have_df)
     {
-      rtx align_insn = NULL_RTX;
+      rtx_insn *align_insn = NULL;
 
       scan = emit_label_after (gen_label_rtx (), scan);
       scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
@@ -4768,7 +4768,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 					align_insn);
 		    }
 		  delete_insn (align_insn);
-		  align_insn = NULL_RTX;
+		  align_insn = NULL;
 		  continue;
 		}
 	      else
@@ -4944,7 +4944,7 @@ fixup_mova (rtx_insn *mova)
   else
     {
       rtx_insn *worker = mova;
-      rtx lab = gen_label_rtx ();
+      rtx_code_label *lab = gen_label_rtx ();
       rtx wpat, wpat0, wpat1, wsrc, target, base, diff;
 
       do
@@ -5737,9 +5737,9 @@ enum mdep_reorg_phase_e mdep_reorg_phase;
 static void
 gen_far_branch (struct far_branch *bp)
 {
-  rtx insn = bp->insert_place;
+  rtx_insn *insn = bp->insert_place;
   rtx_insn *jump;
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   int ok;
 
   emit_label_after (label, insn);
@@ -6035,7 +6035,8 @@ sh_reorg (void)
 
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
-	  rtx pattern, reg, set, dies, label;
+	  rtx pattern, reg, set, dies;
+	  rtx_code_label *label;
 	  rtx_insn *link, *scan;
 	  int rescan = 0, foundinsn = 0;
 

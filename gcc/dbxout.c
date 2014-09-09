@@ -2484,12 +2484,9 @@ dbxout_expand_expr (tree expr)
 /* Helper function for output_used_types.  Queue one entry from the
    used types hash to be output.  */
 
-static int
-output_used_types_helper (void **slot, void *data)
+bool
+output_used_types_helper (tree const &type, vec<tree> *types_p)
 {
-  tree type = (tree) *slot;
-  vec<tree> *types_p = (vec<tree> *) data;
-
   if ((TREE_CODE (type) == RECORD_TYPE
        || TREE_CODE (type) == UNION_TYPE
        || TREE_CODE (type) == QUAL_UNION_TYPE
@@ -2502,7 +2499,7 @@ output_used_types_helper (void **slot, void *data)
 	   && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
     types_p->quick_push (TYPE_NAME (type));
 
-  return 1;
+  return true;
 }
 
 /* This is a qsort callback which sorts types and declarations into a
@@ -2544,8 +2541,9 @@ output_used_types (void)
       int i;
       tree type;
 
-      types.create (htab_elements (cfun->used_types_hash));
-      htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
+      types.create (cfun->used_types_hash->elements ());
+      cfun->used_types_hash->traverse<vec<tree> *, output_used_types_helper>
+       	(&types);
 
       /* Sort by UID to prevent dependence on hash table ordering.  */
       types.qsort (output_types_sort);

@@ -1,4 +1,3 @@
-/* { dg-options "-mieee" { target sh*-*-* } } */
 int __attribute__((noinline,noclone))
 copysign_bug (double x)
 {

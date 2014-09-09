@@ -3,7 +3,7 @@
 // itself call malloc(), and will fail if there is no more
 // memory available.
 // { dg-do run { xfail { { xstormy16-*-* *-*-darwin[3-7]* } || vxworks_rtp } } }
-// Copyright (C) 2000, 2002, 2003, 2010, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003, 2010, 2012, 2014 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 
 // Check we can throw a bad_alloc exception when malloc dies.
@@ -23,7 +23,10 @@ const int arena_size = 256;
 // FreeBSD 5 now requires over 131072 bytes.
 const int arena_size = 262144;
 #else
-const int arena_size = 32768;
+// Because pointers make up the bulk of our exception-initialization
+// allocations, we scale by the pointer size from the original
+// 32-bit-systems-based estimate.
+const int arena_size = 32768 * ((sizeof (void *) + 3)/4);
 #endif
 #endif
 

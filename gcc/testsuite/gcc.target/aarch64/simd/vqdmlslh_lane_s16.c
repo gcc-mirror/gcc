@@ -5,8 +5,8 @@
 
 #include "arm_neon.h"
 
-int32x1_t
-t_vqdmlslh_lane_s16 (int32x1_t a, int16x1_t b, int16x4_t c)
+int32_t
+t_vqdmlslh_lane_s16 (int32_t a, int16_t b, int16x4_t c)
 {
   return vqdmlslh_lane_s16 (a, b, c, 0);
 }

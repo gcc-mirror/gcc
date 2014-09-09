@@ -1,3 +1,60 @@
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define macros for mantissa
+	digits of floating-point modes if -fbuilding-libgcc.
+
+2014-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Also define
+	__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__,
+	__LIBGCC_EH_FRAME_SECTION_NAME__, __LIBGCC_JCR_SECTION_NAME__,
+	__LIBGCC_CTORS_SECTION_ASM_OP__, __LIBGCC_DTORS_SECTION_ASM_OP__,
+	__LIBGCC_TEXT_SECTION_ASM_OP__, __LIBGCC_INIT_SECTION_ASM_OP__,
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__,
+	__LIBGCC_STACK_GROWS_DOWNWARD__,
+	__LIBGCC_DONT_USE_BUILTIN_SETJMP__,
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__,
+	__LIBGCC_DWARF_FRAME_REGISTERS__,
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__, __LIBGCC_JMP_BUF_SIZE__,
+	__LIBGCC_STACK_POINTER_REGNUM__ and
+	__LIBGCC_VTABLE_USES_DESCRIPTORS__ for -fbuilding-libgcc.
+	(builtin_define_with_value): Handle backslash-escaping in string
+	macro values.
+
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63148
+	* c-format.c (check_format_arg): Properly handle
+	effectively signed POINTER_PLUS_EXPR offset.
+
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wc90-c99-compat,Wc++-compat,Wcomment,Wendif-labels,
+	Winvalid-pch,Wlong-long,Wmissing-include-dirs,Wmultichar,Wpedantic,
+	(Wdate-time,Wtraditional,Wundef,Wvariadic-macros): Add CPP, Var
+	and Init.
+	* c-opts.c (c_common_handle_option): Do not handle here.
+	(sanitize_cpp_opts): Likewise.
+	* c-common.c (struct reason_option_codes_t): Handle
+	CPP_W_C90_C99_COMPAT and CPP_W_PEDANTIC.
+
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wlogical-not-parentheses): Enable by -Wall.
+
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-cilkplus.c (cilk_for_number_of_iterations): New function.
+	* c-common.c (c_common_reswords): Added _Cilk_for.
+	* c-common.h (enum rid): Added RID_CILK_FOR.
+	(cilk_for_number_of_iterations): Add declaration.
+	* c-omp.c (c_finish_omp_for): Added checks for CILK_SIMD and
+	CILK_FOR.
+	* c-pragma.c (init_pragma): Register "grainsize" pragma.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_CILK_GRAINSIZE.
+
 2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (Wbuiltin-macro-redefined,Wdeprecated,Wendif-labels,

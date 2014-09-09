@@ -271,7 +271,7 @@ static bool frv_print_operand_punct_valid_p	(unsigned char code);
 static void frv_print_operand_memory_reference_reg
 						(FILE *, rtx);
 static void frv_print_operand_memory_reference	(FILE *, rtx, int);
-static int frv_print_operand_jump_hint		(rtx);
+static int frv_print_operand_jump_hint		(rtx_insn *);
 static const char *comparison_string		(enum rtx_code, rtx);
 static rtx frv_function_value			(const_tree, const_tree,
 						 bool);
@@ -2623,7 +2623,7 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
 #define FRV_JUMP_NOT_LIKELY 0
 
 static int
-frv_print_operand_jump_hint (rtx insn)
+frv_print_operand_jump_hint (rtx_insn *insn)
 {
   rtx note;
   rtx labelref;

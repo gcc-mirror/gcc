@@ -1016,9 +1016,88 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* For libgcc-internal use only.  */
   if (flag_building_libgcc)
-    /* For libgcc enable-execute-stack.c.  */
-    builtin_define_with_int_value ("__LIBGCC_TRAMPOLINE_SIZE__",
-				   TRAMPOLINE_SIZE);
+    {
+      /* Properties of floating-point modes for libgcc2.c.  */
+      for (enum machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	{
+	  const char *name = GET_MODE_NAME (mode);
+	  char *macro_name
+	    = (char *) alloca (strlen (name)
+			       + sizeof ("__LIBGCC__MANT_DIG__"));
+	  sprintf (macro_name, "__LIBGCC_%s_MANT_DIG__", name);
+	  builtin_define_with_int_value (macro_name,
+					 REAL_MODE_FORMAT (mode)->p);
+	}
+
+      /* For libgcc crtstuff.c and libgcc2.c.  */
+      builtin_define_with_int_value ("__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__",
+				     EH_TABLES_CAN_BE_READ_ONLY);
+#ifdef EH_FRAME_SECTION_NAME
+      builtin_define_with_value ("__LIBGCC_EH_FRAME_SECTION_NAME__",
+				 EH_FRAME_SECTION_NAME, 1);
+#endif
+#ifdef JCR_SECTION_NAME
+      builtin_define_with_value ("__LIBGCC_JCR_SECTION_NAME__",
+				 JCR_SECTION_NAME, 1);
+#endif
+#ifdef CTORS_SECTION_ASM_OP
+      builtin_define_with_value ("__LIBGCC_CTORS_SECTION_ASM_OP__",
+				 CTORS_SECTION_ASM_OP, 1);
+#endif
+#ifdef DTORS_SECTION_ASM_OP
+      builtin_define_with_value ("__LIBGCC_DTORS_SECTION_ASM_OP__",
+				 DTORS_SECTION_ASM_OP, 1);
+#endif
+#ifdef TEXT_SECTION_ASM_OP
+      builtin_define_with_value ("__LIBGCC_TEXT_SECTION_ASM_OP__",
+				 TEXT_SECTION_ASM_OP, 1);
+#endif
+#ifdef INIT_SECTION_ASM_OP
+      builtin_define_with_value ("__LIBGCC_INIT_SECTION_ASM_OP__",
+				 INIT_SECTION_ASM_OP, 1);
+#endif
+#ifdef INIT_ARRAY_SECTION_ASM_OP
+      /* Despite the name of this target macro, the expansion is not
+	 actually used, and may be empty rather than a string
+	 constant.  */
+      cpp_define (pfile, "__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__");
+#endif
+
+      /* For libgcc enable-execute-stack.c.  */
+      builtin_define_with_int_value ("__LIBGCC_TRAMPOLINE_SIZE__",
+				     TRAMPOLINE_SIZE);
+
+      /* For libgcc generic-morestack.c and unwinder code.  */
+#ifdef STACK_GROWS_DOWNWARD
+      cpp_define (pfile, "__LIBGCC_STACK_GROWS_DOWNWARD__");
+#endif
+
+      /* For libgcc unwinder code.  */
+#ifdef DONT_USE_BUILTIN_SETJMP
+      cpp_define (pfile, "__LIBGCC_DONT_USE_BUILTIN_SETJMP__");
+#endif
+#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
+      builtin_define_with_int_value ("__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__",
+				     DWARF_ALT_FRAME_RETURN_COLUMN);
+#endif
+      builtin_define_with_int_value ("__LIBGCC_DWARF_FRAME_REGISTERS__",
+				     DWARF_FRAME_REGISTERS);
+#ifdef EH_RETURN_STACKADJ_RTX
+      cpp_define (pfile, "__LIBGCC_EH_RETURN_STACKADJ_RTX__");
+#endif
+#ifdef JMP_BUF_SIZE
+      builtin_define_with_int_value ("__LIBGCC_JMP_BUF_SIZE__",
+				     JMP_BUF_SIZE);
+#endif
+      builtin_define_with_int_value ("__LIBGCC_STACK_POINTER_REGNUM__",
+				     STACK_POINTER_REGNUM);
+
+      /* For libgcov.  */
+      builtin_define_with_int_value ("__LIBGCC_VTABLE_USES_DESCRIPTORS__",
+				     TARGET_VTABLE_USES_DESCRIPTORS);
+    }
 
   /* For use in assembly language.  */
   builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
@@ -1164,7 +1243,49 @@ builtin_define_with_value (const char *macro, const char *expansion, int is_str)
   size_t extra = 2;  /* space for an = and a NUL */
 
   if (is_str)
-    extra += 2;  /* space for two quote marks */
+    {
+      char *quoted_expansion = (char *) alloca (elen * 4 + 1);
+      const char *p;
+      char *q;
+      extra += 2;  /* space for two quote marks */
+      for (p = expansion, q = quoted_expansion; *p; p++)
+	{
+	  switch (*p)
+	    {
+	    case '\n':
+	      *q++ = '\\';
+	      *q++ = 'n';
+	      break;
+
+	    case '\t':
+	      *q++ = '\\';
+	      *q++ = 't';
+	      break;
+
+	    case '\\':
+	      *q++ = '\\';
+	      *q++ = '\\';
+	      break;
+
+	    case '"':
+	      *q++ = '\\';
+	      *q++ = '"';
+	      break;
+
+	    default:
+	      if (ISPRINT ((unsigned char) *p))
+		*q++ = *p;
+	      else
+		{
+		  sprintf (q, "\\%03o", (unsigned char) *p);
+		  q += 4;
+		}
+	    }
+	}
+      *q = '\0';
+      expansion = quoted_expansion;
+      elen = q - expansion;
+    }
 
   buf = (char *) alloca (mlen + elen + extra);
   if (is_str)

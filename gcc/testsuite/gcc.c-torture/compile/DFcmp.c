@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 #define type double
 
 type glob0, glob1;

@@ -934,7 +934,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	REG_CLASS_FROM_CONSTRAINT REG_CLASS_FOR_CONSTRAINT		   \
 	EXTRA_CONSTRAINT_STR EXTRA_MEMORY_CONSTRAINT			   \
 	EXTRA_ADDRESS_CONSTRAINT CONST_DOUBLE_OK_FOR_CONSTRAINT_P	   \
-	CALLER_SAVE_PROFITABLE
+	CALLER_SAVE_PROFITABLE LARGEST_EXPONENT_IS_NORMAL		   \
+	ROUND_TOWARDS_ZERO SF_SIZE DF_SIZE XF_SIZE TF_SIZE
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1034,6 +1035,7 @@ helper_const_non_const_cast (const char *p)
 #define CONST_CAST(TYPE,X) CONST_CAST2 (TYPE, const TYPE, (X))
 #define CONST_CAST_TREE(X) CONST_CAST (union tree_node *, (X))
 #define CONST_CAST_RTX(X) CONST_CAST (struct rtx_def *, (X))
+#define CONST_CAST_RTX_INSN(X) CONST_CAST (struct rtx_insn *, (X))
 #define CONST_CAST_BB(X) CONST_CAST (struct basic_block_def *, (X))
 #define CONST_CAST_GIMPLE(X) CONST_CAST (struct gimple_statement_base *, (X))
 

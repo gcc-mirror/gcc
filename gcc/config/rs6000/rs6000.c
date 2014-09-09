@@ -81,6 +81,7 @@
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "real.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -142,8 +143,6 @@ typedef struct rs6000_stack {
    This is added to the cfun structure.  */
 typedef struct GTY(()) machine_function
 {
-  /* Some local-dynamic symbol.  */
-  const char *some_ld_name;
   /* Whether the instruction chain has been scanned already.  */
   int insn_chain_scanned_p;
   /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
@@ -1103,7 +1102,6 @@ static void is_altivec_return_reg (rtx, void *);
 int easy_vector_constant (rtx, enum machine_mode);
 static rtx rs6000_debug_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
-static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
 #if TARGET_MACHO
@@ -17953,46 +17951,6 @@ extract_ME (rtx op)
   return i;
 }
 
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in some tls_ld pattern.  */
-
-static const char *
-rs6000_get_some_local_dynamic_name (void)
-{
-  rtx_insn *insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& for_each_rtx (&PATTERN (insn),
-			 rs6000_get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  gcc_unreachable ();
-}
-
-/* Helper function for rs6000_get_some_local_dynamic_name.  */
-
-static int
-rs6000_get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (GET_CODE (x) == SYMBOL_REF)
-    {
-      const char *str = XSTR (x, 0);
-      if (SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
-	{
-	  cfun->machine->some_ld_name = str;
-	  return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Write out a function code label.  */
 
 void
@@ -18668,7 +18626,11 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case '&':
-      assemble_name (file, rs6000_get_some_local_dynamic_name ());
+      if (const char *name = get_some_local_dynamic_name ())
+	assemble_name (file, name);
+      else
+	output_operand_lossage ("'%%&' used without any "
+				"local dynamic TLS references");
       return;
 
     default:
@@ -26461,6 +26423,7 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                 case TYPE_CR_LOGICAL:
                 case TYPE_DELAYED_CR:
 		  return cost + 2;
+                case TYPE_EXTS:
                 case TYPE_MUL:
 		  if (get_attr_dot (dep_insn) == DOT_YES)
 		    return cost + 2;
@@ -26753,6 +26716,8 @@ is_cracked_insn (rtx insn)
 	      && get_attr_update (insn) == UPDATE_YES)
 	  || type == TYPE_DELAYED_CR
 	  || type == TYPE_COMPARE
+	  || (type == TYPE_EXTS
+	      && get_attr_dot (insn) == DOT_YES)
 	  || (type == TYPE_SHIFT
 	      && get_attr_dot (insn) == DOT_YES
 	      && get_attr_var_shift (insn) == VAR_SHIFT_NO)
@@ -27641,6 +27606,7 @@ insn_must_be_first_in_group (rtx insn)
           return true;
         case TYPE_MUL:
         case TYPE_SHIFT:
+        case TYPE_EXTS:
           if (get_attr_dot (insn) == DOT_YES)
             return true;
           else
@@ -27682,6 +27648,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MTJMPR:
           return true;
         case TYPE_SHIFT:
+        case TYPE_EXTS:
         case TYPE_MUL:
           if (get_attr_dot (insn) == DOT_YES)
             return true;
@@ -31262,6 +31229,23 @@ rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
   rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
 }
 
+/* Scale a V2DF vector SRC by two to the SCALE and place in TGT.  */
+void
+rs6000_scale_v2df (rtx tgt, rtx src, int scale)
+{
+  HOST_WIDE_INT hwi_scale (scale);
+  REAL_VALUE_TYPE r_pow;
+  rtvec v = rtvec_alloc (2);
+  rtx elt;
+  rtx scale_vec = gen_reg_rtx (V2DFmode);
+  (void)real_powi (&r_pow, DFmode, &dconst2, hwi_scale);
+  elt = CONST_DOUBLE_FROM_REAL_VALUE (r_pow, DFmode);
+  RTVEC_ELT (v, 0) = elt;
+  RTVEC_ELT (v, 1) = elt;
+  rs6000_expand_vector_init (scale_vec, gen_rtx_PARALLEL (V2DFmode, v));
+  emit_insn (gen_mulv2df3 (tgt, src, scale_vec));
+}
+
 /* Return an RTX representing where to find the function value of a
    function returning MODE.  */
 static rtx
@@ -33556,7 +33540,8 @@ enum special_handling_values {
   SH_CONST_VECTOR,
   SH_SUBREG,
   SH_NOSWAP_LD,
-  SH_NOSWAP_ST
+  SH_NOSWAP_ST,
+  SH_EXTRACT
 };
 
 /* Union INSN with all insns containing definitions that reach USE.
@@ -33698,6 +33683,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 {
   enum rtx_code code = GET_CODE (op);
   int i, j;
+  rtx parallel;
 
   switch (code)
     {
@@ -33708,7 +33694,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
       return 1;
 
     case VEC_CONCAT:
-    case VEC_SELECT:
     case ASM_INPUT:
     case ASM_OPERANDS:
       return 0;
@@ -33726,6 +33711,28 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	 handling.  */
       if (GET_CODE (XEXP (op, 0)) == CONST_INT)
 	return 1;
+      else if (GET_CODE (XEXP (op, 0)) == REG
+	       && GET_MODE_INNER (GET_MODE (op)) == GET_MODE (XEXP (op, 0)))
+	/* This catches V2DF and V2DI splat, at a minimum.  */
+	return 1;
+      else if (GET_CODE (XEXP (op, 0)) == VEC_SELECT)
+	/* If the duplicated item is from a select, defer to the select
+	   processing to see if we can change the lane for the splat.  */
+	return rtx_is_swappable_p (XEXP (op, 0), special);
+      else
+	return 0;
+
+    case VEC_SELECT:
+      /* A vec_extract operation is ok if we change the lane.  */
+      if (GET_CODE (XEXP (op, 0)) == REG
+	  && GET_MODE_INNER (GET_MODE (XEXP (op, 0))) == GET_MODE (op)
+	  && GET_CODE ((parallel = XEXP (op, 1))) == PARALLEL
+	  && XVECLEN (parallel, 0) == 1
+	  && GET_CODE (XVECEXP (parallel, 0, 0)) == CONST_INT)
+	{
+	  *special = SH_EXTRACT;
+	  return 1;
+	}
       else
 	return 0;
 
@@ -33771,7 +33778,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	    || val == UNSPEC_VSX_CVSPDPN
 	    || val == UNSPEC_VSX_SET
 	    || val == UNSPEC_VSX_SLDWI
-	    || val == UNSPEC_VSX_XXSPLTW
 	    || val == UNSPEC_VUNPACK_HI_SIGN
 	    || val == UNSPEC_VUNPACK_HI_SIGN_DIRECT
 	    || val == UNSPEC_VUNPACK_LO_SIGN
@@ -34109,6 +34115,27 @@ permute_store (rtx_insn *insn)
 	     INSN_UID (insn));
 }
 
+/* Given OP that contains a vector extract operation, change the index
+   of the extracted lane to count from the other side of the vector.  */
+static void
+adjust_extract (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+  /* The vec_select may be wrapped in a vec_duplicate for a splat, so
+     account for that.  */
+  rtx sel = (GET_CODE (body) == VEC_DUPLICATE
+	     ? XEXP (XEXP (body, 0), 1)
+	     : XEXP (body, 1));
+  rtx par = XEXP (sel, 1);
+  int nunits = GET_MODE_NUNITS (GET_MODE (XEXP (sel, 0)));
+  XVECEXP (par, 0, 0) = GEN_INT (nunits - 1 - INTVAL (XVECEXP (par, 0, 0)));
+  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Changing lane for extract %d\n", INSN_UID (insn));
+}
+
 /* The insn described by INSN_ENTRY[I] can be swapped, but only
    with special handling.  Take care of that here.  */
 static void
@@ -34119,6 +34146,8 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
 
   switch (insn_entry[i].special_handling)
     {
+    default:
+      gcc_unreachable ();
     case SH_CONST_VECTOR:
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
@@ -34145,6 +34174,9 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       /* Convert a non-permuting store to a permuting one.  */
       permute_store (insn);
       break;
+    case SH_EXTRACT:
+      /* Change the lane on an extract operation.  */
+      adjust_extract (insn);
     }
 }
 
@@ -34213,6 +34245,8 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
 	      fputs ("special:load ", dump_file);
 	    else if (insn_entry[i].special_handling == SH_NOSWAP_ST)
 	      fputs ("special:store ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_EXTRACT)
+	      fputs ("special:extract ", dump_file);
 	  }
 	if (insn_entry[i].web_not_optimizable)
 	  fputs ("unoptimizable ", dump_file);

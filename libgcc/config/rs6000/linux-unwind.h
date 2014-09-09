@@ -205,9 +205,9 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   if (regs == NULL)
     return _URC_END_OF_STACK;
 
-  new_cfa = regs->gpr[STACK_POINTER_REGNUM];
+  new_cfa = regs->gpr[__LIBGCC_STACK_POINTER_REGNUM__];
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
 #ifdef __powerpc64__

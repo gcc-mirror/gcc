@@ -79,7 +79,7 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target vect_no_align } } } */
 
 /* in main: */
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail { vect_no_align } } } } */
 
 /* { dg-final { cleanup-tree-dump "vect" } } */

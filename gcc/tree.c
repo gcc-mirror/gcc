@@ -283,6 +283,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_SECTIONS  */
   0, /* OMP_CLAUSE_TASKGROUP  */
   1, /* OMP_CLAUSE__SIMDUID_  */
+  1, /* OMP_CLAUSE__CILK_FOR_COUNT_  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -326,7 +327,8 @@ const char * const omp_clause_code_name[] =
   "parallel",
   "sections",
   "taskgroup",
-  "_simduid_"
+  "_simduid_",
+  "_Cilk_for_count_"
 };
 
 
@@ -11107,6 +11109,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
 

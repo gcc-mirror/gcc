@@ -983,7 +983,8 @@ rtx_insn *
 asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 			    HOST_WIDE_INT *offsets, tree *decls, int length)
 {
-  rtx shadow_base, shadow_mem, ret, mem, orig_base, lab;
+  rtx shadow_base, shadow_mem, ret, mem, orig_base;
+  rtx_code_label *lab;
   rtx_insn *insns;
   char buf[30];
   unsigned char shadow_bytes[4];
@@ -1174,10 +1175,10 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   /* Construct epilogue sequence.  */
   start_sequence ();
 
-  lab = NULL_RTX;  
+  lab = NULL;
   if (use_after_return_class != -1)
     {
-      rtx lab2 = gen_label_rtx ();
+      rtx_code_label *lab2 = gen_label_rtx ();
       char c = (char) ASAN_STACK_MAGIC_USE_AFTER_RET;
       int very_likely = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
       emit_cmp_and_jump_insns (orig_base, base, EQ, NULL_RTX,

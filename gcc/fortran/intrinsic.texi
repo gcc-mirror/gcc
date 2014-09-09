@@ -7370,9 +7370,10 @@ the following rules:
 @item (A)
 If @var{A} is of type @code{INTEGER}, @code{INT(A) = A} 
 @item (B)
-If @var{A} is of type @code{REAL} and @math{|A| < 1}, @code{INT(A)} equals @code{0}. 
-If @math{|A| \geq 1}, then @code{INT(A)} equals the largest integer that does not exceed 
-the range of @var{A} and whose sign is the same as the sign of @var{A}.
+If @var{A} is of type @code{REAL} and @math{|A| < 1}, @code{INT(A)}
+equals @code{0}. If @math{|A| \geq 1}, then @code{INT(A)} is the integer
+whose magnitude is the largest integer that does not exceed the magnitude
+of @var{A} and whose sign is the same as the sign of @var{A}.
 @item (C)
 If @var{A} is of type @code{COMPLEX}, rule B is applied to the real part of @var{A}.
 @end table

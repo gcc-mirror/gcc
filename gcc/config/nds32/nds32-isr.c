@@ -574,4 +574,28 @@ nds32_asm_file_end_for_isr (void)
     }
 }
 
+/* Return true if FUNC is a isr function.  */
+bool
+nds32_isr_function_p (tree func)
+{
+  tree t_intr;
+  tree t_excp;
+  tree t_reset;
+
+  tree attrs;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    abort ();
+
+  attrs = DECL_ATTRIBUTES (func);
+
+  t_intr  = lookup_attribute ("interrupt", attrs);
+  t_excp  = lookup_attribute ("exception", attrs);
+  t_reset = lookup_attribute ("reset", attrs);
+
+  return ((t_intr != NULL_TREE)
+	  || (t_excp != NULL_TREE)
+	  || (t_reset != NULL_TREE));
+}
+
 /* ------------------------------------------------------------------------ */

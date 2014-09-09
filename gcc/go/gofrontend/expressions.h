@@ -103,6 +103,7 @@ class Expression
     EXPRESSION_HEAP,
     EXPRESSION_RECEIVE,
     EXPRESSION_TYPE_DESCRIPTOR,
+    EXPRESSION_GC_SYMBOL,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_SLICE_INFO,
     EXPRESSION_SLICE_VALUE,
@@ -348,6 +349,11 @@ class Expression
   // descriptor for TYPE.
   static Expression*
   make_type_descriptor(Type* type, Location);
+
+  // Make an expression which evaluates to the address of the gc
+  // symbol for TYPE.
+  static Expression*
+  make_gc_symbol(Type* type);
 
   // Make an expression which evaluates to some characteristic of a
   // type.  These are only used for type descriptors, so there is no
@@ -1511,6 +1517,10 @@ class Binary_expression : public Expression
   bool
   do_is_constant() const
   { return this->left_->is_constant() && this->right_->is_constant(); }
+
+  bool
+  do_is_immutable() const
+  { return this->left_->is_immutable() && this->right_->is_immutable(); }
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;

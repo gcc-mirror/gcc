@@ -55,6 +55,9 @@ typedef enum pragma_kind {
   /* Top level clause to handle all Cilk Plus pragma simd clauses.  */
   PRAGMA_CILK_SIMD,
 
+  /* This pragma handles setting of grainsize for a _Cilk_for.  */
+  PRAGMA_CILK_GRAINSIZE,
+
   PRAGMA_GCC_PCH_PREPROCESS,
   PRAGMA_IVDEP,
 

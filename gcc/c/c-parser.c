@@ -1286,9 +1286,11 @@ static bool c_parser_objc_diagnose_bad_element_prefix
 
 /* Cilk Plus supporting routines.  */
 static void c_parser_cilk_simd (c_parser *);
+static void c_parser_cilk_for (c_parser *, tree);
 static bool c_parser_cilk_verify_simd (c_parser *, enum pragma_context);
 static tree c_parser_array_notation (location_t, c_parser *, tree, tree);
 static tree c_parser_cilk_clause_vectorlength (c_parser *, tree, bool);
+static void c_parser_cilk_grainsize (c_parser *);
 
 /* These UPC parser functions are only ever called when
    compiling UPC.  */
@@ -2088,6 +2090,8 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   if (TREE_CODE (value) != INTEGER_CST)
     {
       value = c_fully_fold (value, false, NULL);
+      /* Strip no-op conversions.  */
+      STRIP_TYPE_NOPS (value);
       if (TREE_CODE (value) == INTEGER_CST)
 	pedwarn (value_loc, OPT_Wpedantic, "expression in static assertion "
 		 "is not an integer constant expression");
@@ -4949,6 +4953,16 @@ c_parser_statement_after_labels (c_parser *parser)
 	  break;
 	case RID_FOR:
 	  c_parser_for_statement (parser, false);
+	  break;
+	case RID_CILK_FOR:
+	  if (!flag_cilkplus)
+	    {
+	      error_at (c_parser_peek_token (parser)->location,
+			"-fcilkplus must be enabled to use %<_Cilk_for%>");
+	      c_parser_skip_to_end_of_block_or_statement (parser);
+	    }
+	  else
+	    c_parser_cilk_for (parser, integer_zero_node);
 	  break;
 	case RID_CILK_SYNC:
 	  c_parser_consume_token (parser);
@@ -10134,6 +10148,23 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
       c_parser_consume_pragma (parser);
       c_parser_cilk_simd (parser);
       return false;
+    case PRAGMA_CILK_GRAINSIZE:
+      if (!flag_cilkplus)
+	{
+	  warning (0, "%<#pragma grainsize%> ignored because -fcilkplus is not"
+		   " enabled");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
+      if (context == pragma_external)
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "%<#pragma grainsize%> must be inside a function");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
+      c_parser_cilk_grainsize (parser);
+      return false;
 
     default:
       if (id < PRAGMA_FIRST_EXTERNAL)
@@ -12267,9 +12298,16 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   condv = make_tree_vec (collapse);
   incrv = make_tree_vec (collapse);
 
-  if (!c_parser_next_token_is_keyword (parser, RID_FOR))
+  if (code != CILK_FOR
+      && !c_parser_next_token_is_keyword (parser, RID_FOR))
     {
       c_parser_error (parser, "for statement expected");
+      return NULL;
+    }
+  if (code == CILK_FOR
+      && !c_parser_next_token_is_keyword (parser, RID_CILK_FOR))
+    {
+      c_parser_error (parser, "_Cilk_for statement expected");
       return NULL;
     }
   for_loc = c_parser_peek_token (parser)->location;
@@ -12349,7 +12387,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	    case LE_EXPR:
 	      break;
 	    case NE_EXPR:
-	      if (code == CILK_SIMD)
+	      if (code == CILK_SIMD || code == CILK_FOR)
 		break;
 	      /* FALLTHRU.  */
 	    default:
@@ -14442,8 +14480,48 @@ c_parser_cilk_all_clauses (c_parser *parser)
   return c_finish_cilk_clauses (clauses);
 }
 
-/* Main entry point for parsing Cilk Plus <#pragma simd> for
-   loops.  */
+/* This function helps parse the grainsize pragma for a _Cilk_for statement.
+   Here is the correct syntax of this pragma:
+	    #pragma cilk grainsize = <EXP>
+ */
+
+static void
+c_parser_cilk_grainsize (c_parser *parser)
+{
+  extern tree convert_to_integer (tree, tree);
+
+  /* consume the 'grainsize' keyword.  */
+  c_parser_consume_pragma (parser);
+
+  if (c_parser_require (parser, CPP_EQ, "expected %<=%>") != 0)
+    {
+      struct c_expr g_expr = c_parser_binary_expression (parser, NULL, NULL);
+      if (g_expr.value == error_mark_node)
+	{
+	  c_parser_skip_to_pragma_eol (parser);
+	  return;
+	}
+      tree grain = convert_to_integer (long_integer_type_node,
+				       c_fully_fold (g_expr.value, false,
+						     NULL));
+      c_parser_skip_to_pragma_eol (parser);
+      c_token *token = c_parser_peek_token (parser);
+      if (token && token->type == CPP_KEYWORD
+	  && token->keyword == RID_CILK_FOR)
+	{
+	  if (grain == NULL_TREE || grain == error_mark_node)
+	    grain = integer_zero_node;
+	  c_parser_cilk_for (parser, grain);
+	}
+      else
+	warning (0, "%<#pragma cilk grainsize%> is not followed by "
+		    "%<_Cilk_for%>");
+    }
+  else
+    c_parser_skip_to_pragma_eol (parser);
+}
+
+/* Main entry point for parsing Cilk Plus <#pragma simd> for loops.  */
 
 static void
 c_parser_cilk_simd (c_parser *parser)
@@ -14455,6 +14533,105 @@ c_parser_cilk_simd (c_parser *parser)
   block = c_end_compound_stmt (loc, block, true);
   add_stmt (block);
 }
+
+/* Create an artificial decl with TYPE and emit initialization of it with
+   INIT.  */
+
+static tree
+c_get_temp_regvar (tree type, tree init)
+{
+  location_t loc = EXPR_LOCATION (init);
+  tree decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  pushdecl (decl);
+  tree t = build2 (INIT_EXPR, type, decl, init);
+  add_stmt (t);
+  return decl;
+}
+
+/* Main entry point for parsing Cilk Plus _Cilk_for loops.
+  GRAIN is the grain value passed in through pragma or 0.  */
+
+static void
+c_parser_cilk_for (c_parser *parser, tree grain)
+{
+  tree clauses = build_omp_clause (EXPR_LOCATION (grain), OMP_CLAUSE_SCHEDULE);
+  OMP_CLAUSE_SCHEDULE_KIND (clauses) = OMP_CLAUSE_SCHEDULE_CILKFOR;
+  OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clauses) = grain;
+  clauses = c_finish_omp_clauses (clauses);
+
+  tree block = c_begin_compound_stmt (true);
+  tree sb = push_stmt_list ();
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree omp_for = c_parser_omp_for_loop (loc, parser, CILK_FOR, clauses, NULL);
+  sb = pop_stmt_list (sb);
+
+  if (omp_for)
+    {
+      tree omp_par = make_node (OMP_PARALLEL);
+      TREE_TYPE (omp_par) = void_type_node;
+      OMP_PARALLEL_CLAUSES (omp_par) = NULL_TREE;
+      tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      BIND_EXPR_BODY (bind) = sb;
+      OMP_PARALLEL_BODY (omp_par) = bind;
+      if (OMP_FOR_PRE_BODY (omp_for))
+	{
+	  add_stmt (OMP_FOR_PRE_BODY (omp_for));
+	  OMP_FOR_PRE_BODY (omp_for) = NULL_TREE;
+	}
+      tree init = TREE_VEC_ELT (OMP_FOR_INIT (omp_for), 0);
+      tree decl = TREE_OPERAND (init, 0);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (omp_for), 0);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), 0);
+      tree t = TREE_OPERAND (cond, 1), c, clauses = NULL_TREE;
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  TREE_OPERAND (cond, 1) = c_get_temp_regvar (TREE_TYPE (t), t);
+	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (cond, 1);
+	  OMP_CLAUSE_CHAIN (c) = clauses;
+	  clauses = c;
+	}
+      if (TREE_CODE (incr) == MODIFY_EXPR)
+	{
+	  t = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
+	  if (TREE_CODE (t) != INTEGER_CST)
+	    {
+	      TREE_OPERAND (TREE_OPERAND (incr, 1), 1)
+		= c_get_temp_regvar (TREE_TYPE (t), t);
+	      c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
+	      OMP_CLAUSE_CHAIN (c) = clauses;
+	      clauses = c;
+	    }
+	}
+      t = TREE_OPERAND (init, 1);
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  TREE_OPERAND (init, 1) = c_get_temp_regvar (TREE_TYPE (t), t);
+	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (init, 1);
+	  OMP_CLAUSE_CHAIN (c) = clauses;
+	  clauses = c;
+	}
+      c = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+      OMP_CLAUSE_DECL (c) = decl;
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+      c = build_omp_clause (input_location, OMP_CLAUSE__CILK_FOR_COUNT_);
+      OMP_CLAUSE_OPERAND (c, 0)
+	= cilk_for_number_of_iterations (omp_for);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      OMP_PARALLEL_CLAUSES (omp_par) = c_finish_omp_clauses (c);
+      add_stmt (omp_par);
+    }
+
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (block);
+}
+
 
 /* Parse a transaction attribute (GCC Extension).
 

@@ -1,3 +1,22 @@
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62024
+	* c-parser.c (c_parser_static_assert_declaration_no_semi): Strip no-op
+	conversions.
+
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-parser.c (c_parser_cilk_for): New function.
+	(c_parser_cilk_grainsize): Likewise.
+	(c_get_temp_regvar): Likewise.
+	(c_parser_statement_after_labels): Added RID_CILK_FOR case.
+	(c_parser_pragma): Added PRAGMA_CILK_GRAINSIZE case.
+	(c_parser_omp_for_loop): Added CILK_FOR and CILK_SIMD checks.
+	* c-typeck.c (c_finish_omp_clauses): Added OMP_CLAUSE__CILK_FOR_COUNT_
+	case.
+
 2014-08-27  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* c-aux-info.c (gen_type): Resize 'buff' from 10 to 23 bytes,

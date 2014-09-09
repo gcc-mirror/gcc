@@ -3160,7 +3160,7 @@ peep2_reinit_state (regset live)
    replacing them with ATTEMPT.  Returns the last insn emitted, or NULL
    if the replacement is rejected.  */
 
-static rtx
+static rtx_insn *
 peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt)
 {
   rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
@@ -3396,7 +3396,8 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
    matched, and which now need to be replaced in the buffer.  */
 
 static void
-peep2_update_life (basic_block bb, int match_len, rtx last, rtx prev)
+peep2_update_life (basic_block bb, int match_len, rtx_insn *last,
+		   rtx_insn *prev)
 {
   int i = peep2_buf_position (peep2_current + match_len + 1);
   rtx_insn *x;
@@ -3408,7 +3409,7 @@ peep2_update_life (basic_block bb, int match_len, rtx last, rtx prev)
   gcc_assert (peep2_current_count >= match_len + 1);
   peep2_current_count -= match_len + 1;
 
-  x = as_a <rtx_insn *> (last);
+  x = last;
   do
     {
       if (INSN_P (x))
@@ -3538,7 +3539,7 @@ peephole2_optimize (void)
 		      peephole2_insns (PATTERN (head), head, &match_len));
 	  if (attempt != NULL)
 	    {
-	      rtx last = peep2_attempt (bb, head, match_len, attempt);
+	      rtx_insn *last = peep2_attempt (bb, head, match_len, attempt);
 	      if (last)
 		{
 		  peep2_update_life (bb, match_len, last, PREV_INSN (attempt));

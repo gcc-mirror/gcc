@@ -2539,7 +2539,7 @@ m32r_expand_block_move (rtx operands[])
   /* If necessary, generate a loop to handle the bulk of the copy.  */
   if (bytes)
     {
-      rtx label = NULL_RTX;
+      rtx_code_label *label = NULL;
       rtx final_src = NULL_RTX;
       rtx at_a_time = GEN_INT (MAX_MOVE_BYTES);
       rtx rounded_total = GEN_INT (bytes);

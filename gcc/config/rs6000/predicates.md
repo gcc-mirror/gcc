@@ -1022,6 +1022,9 @@
     return true;
   if (!memory_operand (inner, mode))
     return false;
+  if (!rs6000_gen_cell_microcode)
+    return false;
+
   addr = XEXP (inner, 0);
   if (GET_CODE (addr) == PRE_INC
       || GET_CODE (addr) == PRE_DEC

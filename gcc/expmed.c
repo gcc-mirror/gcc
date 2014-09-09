@@ -1057,16 +1057,17 @@ store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   if (CONST_INT_P (value))
     {
-      HOST_WIDE_INT v = INTVAL (value);
+      unsigned HOST_WIDE_INT v = UINTVAL (value);
 
       if (bitsize < HOST_BITS_PER_WIDE_INT)
-	v &= ((HOST_WIDE_INT) 1 << bitsize) - 1;
+	v &= ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1;
 
       if (v == 0)
 	all_zero = 1;
       else if ((bitsize < HOST_BITS_PER_WIDE_INT
-		&& v == ((HOST_WIDE_INT) 1 << bitsize) - 1)
-	       || (bitsize == HOST_BITS_PER_WIDE_INT && v == -1))
+		&& v == ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1)
+	       || (bitsize == HOST_BITS_PER_WIDE_INT
+		   && v == (unsigned HOST_WIDE_INT) -1))
 	all_one = 1;
 
       value = lshift_value (mode, v, bitnum);

@@ -12748,7 +12748,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
 					VAR_INIT_STATUS_INITIALIZED);
 	      if (op1 == 0)
-		break;
+		return NULL;
 	      add_loc_descr (&mem_loc_result, op1);
 	      add_loc_descr (&mem_loc_result,
 			     new_loc_descr (DW_OP_plus, 0, 0));
@@ -18069,17 +18069,15 @@ dwarf2out_abstract_function (tree decl)
    Marks the DIE of a given type in *SLOT as perennial, so it never gets
    marked as unused by prune_unused_types.  */
 
-static int
-premark_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
+bool
+premark_used_types_helper (tree const &type, void *)
 {
-  tree type;
   dw_die_ref die;
 
-  type = (tree) *slot;
   die = lookup_type_die (type);
   if (die != NULL)
     die->die_perennial_p = 1;
-  return 1;
+  return true;
 }
 
 /* Helper function of premark_types_used_by_global_vars which gets called
@@ -18122,7 +18120,7 @@ static void
 premark_used_types (struct function *fun)
 {
   if (fun && fun->used_types_hash)
-    htab_traverse (fun->used_types_hash, premark_used_types_helper, NULL);
+    fun->used_types_hash->traverse<void *, premark_used_types_helper> (NULL);
 }
 
 /* Mark all members of types_used_by_vars_entry as perennial.  */

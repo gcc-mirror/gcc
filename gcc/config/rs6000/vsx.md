@@ -264,6 +264,10 @@
    UNSPEC_VSX_DIVSD
    UNSPEC_VSX_DIVUD
    UNSPEC_VSX_MULSD
+   UNSPEC_VSX_XVCVSXDDP
+   UNSPEC_VSX_XVCVUXDDP
+   UNSPEC_VSX_XVCVDPSXDS
+   UNSPEC_VSX_XVCVDPUXDS
   ])
 
 ;; VSX moves
@@ -1356,6 +1360,102 @@
   "xscvspdpn %x0,%x1"
   [(set_attr "type" "fp")])
 
+;; Convert and scale (used by vec_ctf, vec_cts, vec_ctu for double/long long)
+
+(define_expand "vsx_xvcvsxddp_scale"
+  [(match_operand:V2DF 0 "vsx_register_operand" "")
+   (match_operand:V2DI 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  int scale = INTVAL(operands[2]);
+  emit_insn (gen_vsx_xvcvsxddp (op0, op1));
+  if (scale != 0)
+    rs6000_scale_v2df (op0, op0, -scale);
+  DONE;
+})
+
+(define_insn "vsx_xvcvsxddp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVSXDDP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvsxddp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvuxddp_scale"
+  [(match_operand:V2DF 0 "vsx_register_operand" "")
+   (match_operand:V2DI 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  int scale = INTVAL(operands[2]);
+  emit_insn (gen_vsx_xvcvuxddp (op0, op1));
+  if (scale != 0)
+    rs6000_scale_v2df (op0, op0, -scale);
+  DONE;
+})
+
+(define_insn "vsx_xvcvuxddp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVUXDDP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvuxddp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvdpsxds_scale"
+  [(match_operand:V2DI 0 "vsx_register_operand" "")
+   (match_operand:V2DF 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  int scale = INTVAL(operands[2]);
+  if (scale != 0)
+    rs6000_scale_v2df (tmp, op1, scale);
+  emit_insn (gen_vsx_xvcvdpsxds (op0, tmp));
+  DONE;
+})
+
+(define_insn "vsx_xvcvdpsxds"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVDPSXDS))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpsxds %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvdpuxds_scale"
+  [(match_operand:V2DI 0 "vsx_register_operand" "")
+   (match_operand:V2DF 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  int scale = INTVAL(operands[2]);
+  if (scale != 0)
+    rs6000_scale_v2df (tmp, op1, scale);
+  emit_insn (gen_vsx_xvcvdpuxds (op0, tmp));
+  DONE;
+})
+
+(define_insn "vsx_xvcvdpuxds"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVDPUXDS))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpuxds %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
 ;; Convert from 64-bit to 32-bit types
 ;; Note, favor the Altivec registers since the usual use of these instructions
 ;; is in vector converts and we need to use the Altivec vperm instruction.
@@ -1735,7 +1835,7 @@
   [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,wv,wr")
 	(vec_select:<VS_scalar>
 	 (match_operand:VSX_D 1 "memory_operand" "m,Z,m")
-	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
+	 (parallel [(const_int 0)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    lfd%U1%X1 %0,%1

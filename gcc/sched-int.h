@@ -1291,9 +1291,10 @@ extern struct sched_deps_info_def *sched_deps_info;
 
 
 /* Functions in sched-deps.c.  */
-extern rtx sched_get_reverse_condition_uncached (const_rtx);
-extern bool sched_insns_conditions_mutex_p (const_rtx, const_rtx);
-extern bool sched_insn_is_legitimate_for_speculation_p (const_rtx, ds_t);
+extern rtx sched_get_reverse_condition_uncached (const rtx_insn *);
+extern bool sched_insns_conditions_mutex_p (const rtx_insn *,
+					    const rtx_insn *);
+extern bool sched_insn_is_legitimate_for_speculation_p (const rtx_insn *, ds_t);
 extern void add_dependence (rtx_insn *, rtx_insn *, enum reg_note);
 extern void sched_analyze (struct deps_desc *, rtx_insn *, rtx_insn *);
 extern void init_deps (struct deps_desc *, bool);
@@ -1370,7 +1371,7 @@ extern void add_block (basic_block, basic_block);
 extern rtx_note *bb_note (basic_block);
 extern void concat_note_lists (rtx_insn *, rtx_insn **);
 extern rtx_insn *sched_emit_insn (rtx);
-extern rtx get_ready_element (int);
+extern rtx_insn *get_ready_element (int);
 extern int number_in_ready (void);
 
 /* Types and functions in sched-ebb.c.  */

@@ -1,3 +1,50 @@
+2014-09-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62659
+	* semantics.c (potential_constant_expression_1): Handle un-folded
+	pointer to member constants.
+
+2014-09-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61659
+	* decl.c (duplicate_decls): Check DECL_DECLARED_INLINE_P on
+	newdecl, not olddecl.
+
+2014-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1453
+	* class.c (check_field_decls): A class of literal type cannot have
+	volatile non-static data members and base classes.
+	(explain_non_literal_class): Update.
+
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* cp-cilkplus.c (cpp_validate_cilk_plus_loop_aux): Loc definition
+	simplified.
+	* parser.c (cp_parser_cilk_for): New function.
+	(cp_parser_cilk_grainsize): Likewise.
+	(cp_parser_statement): Added RID_CILK_FOR case.
+	(cp_parser_omp_for_cond): Added CILK_FOR check.
+	(cp_parser_omp_for_loop_init): Change function argument to accept
+	tree_code instead just a bool flag; change the check to use that
+	tree_code; check for initialization declaration in case of Cilk_for.
+	(cp_parser_omp_for_loop): Added checks for CILK_FOR and RID_CILK_FOR;
+	changed call to cp_parser_omp_for_loop_init according new arguments'
+	list.
+	(cp_parser_pragma): Added PRAGMA_CILK_GRAINSIZE case.
+	* pt.c (tsubst_expr): Added CILK_FOR case.
+	* semantics.c: Include convert.h.
+	(finish_omp_clauses): Properly handle OMP_CLAUSE_SCHEDULE_CILKFOR
+	case; added OMP_CLAUSE__CILK_FOR_COUNT_.
+	(handle_omp_for_class_iterator): New argument lastp and its usage;
+	added NE_EXPR case.
+	(finish_omp_for): Changed call to handle_omp_for_class_iterator
+	according new arguments' list; in case of Cilk_for save very first
+	decl and create empty stmt_list block; use block to build correct
+	statement tree.
+
 2014-08-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62302

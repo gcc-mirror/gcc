@@ -412,7 +412,7 @@ range_in_hard_reg_set_p (const HARD_REG_SET set, unsigned regno, int nregs)
 }
 
 /* Get registers used by given function call instruction.  */
-extern bool get_call_reg_set_usage (rtx insn, HARD_REG_SET *reg_set,
+extern bool get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 				    HARD_REG_SET default_set);
 
 #endif /* GCC_REGS_H */

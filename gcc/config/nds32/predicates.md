@@ -77,16 +77,16 @@
   (match_code "parallel")
 {
   /* To verify 'push' operation, pass 'true' for the second argument.
-     See the implementation in nds32.c for details.  */
-  return nds32_valid_stack_push_pop (op, true);
+     See the implementation in nds32-predicates.c for details.  */
+  return nds32_valid_stack_push_pop_p (op, true);
 })
 
 (define_special_predicate "nds32_stack_pop_operation"
   (match_code "parallel")
 {
   /* To verify 'pop' operation, pass 'false' for the second argument.
-     See the implementation in nds32.c for details.  */
-  return nds32_valid_stack_push_pop (op, false);
+     See the implementation in nds32-predicates.c for details.  */
+  return nds32_valid_stack_push_pop_p (op, false);
 })
 
 ;; ------------------------------------------------------------------------

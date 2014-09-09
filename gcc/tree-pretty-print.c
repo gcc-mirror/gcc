@@ -362,6 +362,13 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_right_paren (buffer);
       break;
 
+    case OMP_CLAUSE__CILK_FOR_COUNT_:
+      pp_string (buffer, "_Cilk_for_count_(");
+      dump_generic_node (buffer, OMP_CLAUSE_OPERAND (clause, 0),
+			 spc, flags, false);
+      pp_right_paren (buffer);
+      break;
+
     case OMP_CLAUSE_NOWAIT:
       pp_string (buffer, "nowait");
       break;
@@ -411,6 +418,9 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 	  break;
 	case OMP_CLAUSE_SCHEDULE_AUTO:
 	  pp_string (buffer, "auto");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_CILKFOR:
+	  pp_string (buffer, "cilk-for grain");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -2458,6 +2468,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma simd");
       goto dump_omp_loop;
 
+    case CILK_FOR:
+      /* This label points one line after dumping the clauses.
+	 For _Cilk_for the clauses are dumped after the _Cilk_for (...)
+	 parameters are printed out.  */
+      goto dump_omp_loop_cilk_for;
+
     case OMP_DISTRIBUTE:
       pp_string (buffer, "#pragma omp distribute");
       goto dump_omp_loop;
@@ -2486,18 +2502,22 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     dump_omp_loop:
       dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 
+    dump_omp_loop_cilk_for:
       if (!(flags & TDF_SLIM))
 	{
 	  int i;
 
 	  if (OMP_FOR_PRE_BODY (node))
 	    {
-	      newline_and_indent (buffer, spc + 2);
+	      if (TREE_CODE (node) == CILK_FOR)
+		pp_string (buffer, "  ");
+	      else
+		newline_and_indent (buffer, spc + 2);
 	      pp_left_brace (buffer);
 	      spc += 4;
 	      newline_and_indent (buffer, spc);
 	      dump_generic_node (buffer, OMP_FOR_PRE_BODY (node),
-		  spc, flags, false);
+				 spc, flags, false);
 	    }
 	  if (OMP_FOR_INIT (node))
 	    {
@@ -2505,8 +2525,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	      for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (node)); i++)
 		{
 		  spc += 2;
-		  newline_and_indent (buffer, spc);
-		  pp_string (buffer, "for (");
+		  if (TREE_CODE (node) != CILK_FOR || OMP_FOR_PRE_BODY (node))
+		    newline_and_indent (buffer, spc);
+		  if (TREE_CODE (node) == CILK_FOR)
+		    pp_string (buffer, "_Cilk_for (");
+		  else
+		    pp_string (buffer, "for (");
 		  dump_generic_node (buffer,
 				     TREE_VEC_ELT (OMP_FOR_INIT (node), i),
 				     spc, flags, false);
@@ -2520,6 +2544,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 				     spc, flags, false);
 		  pp_right_paren (buffer);
 		}
+	      if (TREE_CODE (node) == CILK_FOR)
+		dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 	    }
 	  if (OMP_FOR_BODY (node))
 	    {

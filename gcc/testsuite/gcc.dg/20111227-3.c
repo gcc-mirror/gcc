@@ -1,5 +1,6 @@
 /* Testcase derived from 20111227-1.c to ensure that REE is combining
    redundant sign extends with sign extend to wider mode.  */
+/* { dg-do compile  { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fdump-rtl-ree -O -free" } */
 
 extern void abort (void);

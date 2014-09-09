@@ -300,8 +300,8 @@ proc set-target-env-var { } {
     foreach env_var $set_target_env_var {
 	set var [lindex $env_var 0]
 	set value [lindex $env_var 1]
-	if [info exists env($var)] {
-	    lappend saved_target_env_var [list $var 1 $env($var)]
+	if [info exists ::env($var)] {
+	    lappend saved_target_env_var [list $var 1 $::env($var)]
 	} else {
 	    lappend saved_target_env_var [list $var 0]
 	}

@@ -4723,19 +4723,17 @@ verify_node_sharing (tree *tp, int *walk_subtrees, void *data)
 }
 
 static bool eh_error_found;
-static int
-verify_eh_throw_stmt_node (void **slot, void *data)
+bool
+verify_eh_throw_stmt_node (const gimple &stmt, const int &,
+			   hash_set<gimple> *visited)
 {
-  struct throw_stmt_node *node = (struct throw_stmt_node *)*slot;
-  hash_set<void *> *visited = (hash_set<void *> *) data;
-
-  if (!visited->contains (node->stmt))
+  if (!visited->contains (stmt))
     {
       error ("dead STMT in EH table");
-      debug_gimple_stmt (node->stmt);
+      debug_gimple_stmt (stmt);
       eh_error_found = true;
     }
-  return 1;
+  return true;
 }
 
 /* Verify if the location LOCs block is in BLOCKS.  */
@@ -4996,10 +4994,10 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
     }
 
   eh_error_found = false;
-  if (get_eh_throw_stmt_table (cfun))
-    htab_traverse (get_eh_throw_stmt_table (cfun),
-		   verify_eh_throw_stmt_node,
-		   &visited_stmts);
+  hash_map<gimple, int> *eh_table = get_eh_throw_stmt_table (cfun);
+  if (eh_table)
+    eh_table->traverse<hash_set<gimple> *, verify_eh_throw_stmt_node>
+      (&visited_stmts);
 
   if (err || eh_error_found)
     internal_error ("verify_gimple failed");

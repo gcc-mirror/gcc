@@ -608,7 +608,7 @@ vn_reference_op_compute_hash (const vn_reference_op_t vro1, inchash::hash &hstat
 
 /* Compute a hash for the reference operation VR1 and return it.  */
 
-hashval_t
+static hashval_t
 vn_reference_compute_hash (const vn_reference_t vr1)
 {
   inchash::hash hstate;
@@ -756,7 +756,7 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 /* Copy the operations present in load/store REF into RESULT, a vector of
    vn_reference_op_s's.  */
 
-void
+static void
 copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 {
   if (TREE_CODE (ref) == TARGET_MEM_REF)
@@ -1118,7 +1118,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 /* Copy the operations present in load/store/call REF into RESULT, a vector of
    vn_reference_op_s's.  */
 
-void
+static void
 copy_reference_ops_from_call (gimple call,
 			      vec<vn_reference_op_s> *result)
 {
@@ -1158,18 +1158,6 @@ copy_reference_ops_from_call (gimple call,
       tree callarg = gimple_call_arg (call, i);
       copy_reference_ops_from_ref (callarg, result);
     }
-}
-
-/* Create a vector of vn_reference_op_s structures from CALL, a
-   call statement.  The vector is not shared.  */
-
-static vec<vn_reference_op_s> 
-create_reference_ops_from_call (gimple call)
-{
-  vec<vn_reference_op_s> result = vNULL;
-
-  copy_reference_ops_from_call (call, &result);
-  return result;
 }
 
 /* Fold *& at position *I_P in a vn_reference_op_s vector *OPS.  Updates
@@ -1864,19 +1852,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       /* Now re-write REF to be based on the rhs of the assignment.  */
       copy_reference_ops_from_ref (gimple_assign_rhs1 (def_stmt), &rhs);
       /* We need to pre-pend vr->operands[0..i] to rhs.  */
+      vec<vn_reference_op_s> old = vr->operands;
       if (i + 1 + rhs.length () > vr->operands.length ())
 	{
-	  vec<vn_reference_op_s> old = vr->operands;
 	  vr->operands.safe_grow (i + 1 + rhs.length ());
-	  if (old == shared_lookup_references
-	      && vr->operands != old)
-	    shared_lookup_references = vNULL;
+	  if (old == shared_lookup_references)
+	    shared_lookup_references = vr->operands;
 	}
       else
 	vr->operands.truncate (i + 1 + rhs.length ());
       FOR_EACH_VEC_ELT (rhs, j, vro)
 	vr->operands[i + 1 + j] = *vro;
       vr->operands = valueize_refs (vr->operands);
+      if (old == shared_lookup_references)
+	shared_lookup_references = vr->operands;
       vr->hashcode = vn_reference_compute_hash (vr);
 
       /* Adjust *ref from the new operands.  */
@@ -2001,7 +1990,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  vr->operands.safe_grow_cleared (2);
 	  if (old == shared_lookup_references
 	      && vr->operands != old)
-	    shared_lookup_references.create (0);
+	    shared_lookup_references = vr->operands;
 	}
       else
 	vr->operands.truncate (2);
@@ -2084,8 +2073,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						  vn_reference_lookup_2,
 						  vn_reference_lookup_3, &vr1);
-      if (vr1.operands != operands)
-	vr1.operands.release ();
+      gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
   if (*vnresult)
@@ -2137,8 +2125,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						vn_reference_lookup_2,
 						vn_reference_lookup_3, &vr1);
-      if (vr1.operands != operands)
-	vr1.operands.release ();
+      gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
 	  if (vnresult)
@@ -2152,11 +2139,30 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   return vn_reference_lookup_1 (&vr1, vnresult);
 }
 
+/* Lookup CALL in the current hash table and return the entry in
+   *VNRESULT if found.  Populates *VR for the hashtable lookup.  */
+
+void
+vn_reference_lookup_call (gimple call, vn_reference_t *vnresult,
+			  vn_reference_t vr)
+{
+  if (vnresult)
+    *vnresult = NULL;
+
+  tree vuse = gimple_vuse (call);
+
+  vr->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
+  vr->operands = valueize_shared_reference_ops_from_call (call);
+  vr->type = gimple_expr_type (call);
+  vr->set = 0;
+  vr->hashcode = vn_reference_compute_hash (vr);
+  vn_reference_lookup_1 (vr, vnresult);
+}
 
 /* Insert OP into the current hash table with a value number of
    RESULT, and return the resulting reference structure we created.  */
 
-vn_reference_t
+static vn_reference_t
 vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
 {
   vn_reference_s **slot;
@@ -2235,7 +2241,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
 
 /* Compute and return the hash value for nary operation VBO1.  */
 
-hashval_t
+static hashval_t
 vn_nary_op_compute_hash (const vn_nary_op_t vno1)
 {
   inchash::hash hstate;
@@ -2845,20 +2851,13 @@ visit_reference_op_call (tree lhs, gimple stmt)
   bool changed = false;
   struct vn_reference_s vr1;
   vn_reference_t vnresult = NULL;
-  tree vuse = gimple_vuse (stmt);
   tree vdef = gimple_vdef (stmt);
 
   /* Non-ssa lhs is handled in copy_reference_ops_from_call.  */
   if (lhs && TREE_CODE (lhs) != SSA_NAME)
     lhs = NULL_TREE;
 
-  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = valueize_shared_reference_ops_from_call (stmt);
-  vr1.type = gimple_expr_type (stmt);
-  vr1.set = 0;
-  vr1.hashcode = vn_reference_compute_hash (&vr1);
-  vn_reference_lookup_1 (&vr1, &vnresult);
-
+  vn_reference_lookup_call (stmt, &vnresult, &vr1);
   if (vnresult)
     {
       if (vnresult->result_vdef && vdef)
@@ -2877,15 +2876,18 @@ visit_reference_op_call (tree lhs, gimple stmt)
     }
   else
     {
-      vn_reference_s **slot;
       vn_reference_t vr2;
+      vn_reference_s **slot;
       if (vdef)
 	changed |= set_ssa_val_to (vdef, vdef);
       if (lhs)
 	changed |= set_ssa_val_to (lhs, lhs);
       vr2 = (vn_reference_t) pool_alloc (current_info->references_pool);
       vr2->vuse = vr1.vuse;
-      vr2->operands = valueize_refs (create_reference_ops_from_call (stmt));
+      /* As we are not walking the virtual operand chain we know the
+	 shared_lookup_references are still original so we can re-use
+	 them here.  */
+      vr2->operands = vr1.operands.copy ();
       vr2->type = vr1.type;
       vr2->set = vr1.set;
       vr2->hashcode = vr1.hashcode;
@@ -2893,8 +2895,7 @@ visit_reference_op_call (tree lhs, gimple stmt)
       vr2->result_vdef = vdef;
       slot = current_info->references->find_slot_with_hash (vr2, vr2->hashcode,
 							    INSERT);
-      if (*slot)
-	free_reference (*slot);
+      gcc_assert (!*slot);
       *slot = vr2;
     }
 
@@ -2916,12 +2917,6 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
   result = vn_reference_lookup (op, gimple_vuse (stmt),
 				default_vn_walk_kind, NULL);
   last_vuse_ptr = NULL;
-
-  /* If we have a VCE, try looking up its operand as it might be stored in
-     a different type.  */
-  if (!result && TREE_CODE (op) == VIEW_CONVERT_EXPR)
-    result = vn_reference_lookup (TREE_OPERAND (op, 0), gimple_vuse (stmt),
-    				  default_vn_walk_kind, NULL);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -3047,7 +3042,10 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
       resultsame = expressions_equal_p (result, op);
     }
 
-  if (!result || !resultsame)
+  if ((!result || !resultsame)
+      /* Only perform the following when being called from PRE
+	 which embeds tail merging.  */
+      && default_vn_walk_kind == VN_WALK)
     {
       assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
       vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult);
@@ -3081,8 +3079,13 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
 	  || is_gimple_reg (op))
         vn_reference_insert (lhs, op, vdef, NULL);
 
-      assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-      vn_reference_insert (assign, lhs, vuse, vdef);
+      /* Only perform the following when being called from PRE
+	 which embeds tail merging.  */
+      if (default_vn_walk_kind == VN_WALK)
+	{
+	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
+	  vn_reference_insert (assign, lhs, vuse, vdef);
+	}
     }
   else
     {
@@ -3663,7 +3666,10 @@ visit_use (tree use)
 		         not alias with anything else.  In which case the
 			 information that the values are distinct are encoded
 			 in the IL.  */
-		      && !(gimple_call_return_flags (stmt) & ERF_NOALIAS))))
+		      && !(gimple_call_return_flags (stmt) & ERF_NOALIAS)
+		      /* Only perform the following when being called from PRE
+			 which embeds tail merging.  */
+		      && default_vn_walk_kind == VN_WALK)))
 	    changed = visit_reference_op_call (lhs, stmt);
 	  else
 	    changed = defs_to_varying (stmt);

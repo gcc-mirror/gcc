@@ -578,6 +578,10 @@ gen_split (rtx split)
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     output_peephole2_scratches (split);
 
+  printf ("  if (dump_file)\n");
+  printf ("    fprintf (dump_file, \"Splitting with gen_%s_%d\\n\");\n",
+	  name, insn_code_number);
+
   printf ("  start_sequence ();\n");
 
   /* The fourth operand of DEFINE_SPLIT is some code to be executed
@@ -813,6 +817,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"basic-block.h\"\n");
+  printf ("#include \"dumpfile.h\"\n");
   printf ("#include \"target.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
   printf ("#define DONE return (_val = get_insns (), end_sequence (), _val)\n\n");

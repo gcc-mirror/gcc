@@ -628,7 +628,8 @@
 
 (define_insn "*sibcall_value_insn"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand 1 "aarch64_call_insn_operand" "Ucs, Usf"))
+	(call (mem:DI
+		(match_operand:DI 1 "aarch64_call_insn_operand" "Ucs, Usf"))
 	      (match_operand 2 "" "")))
    (return)
    (use (match_operand 3 "" ""))]
@@ -1237,7 +1238,7 @@
   add\\t%x0, %x1, %x2
   sub\\t%x0, %x1, #%n2
   add\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,alu_sreg")
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,neon_add")
    (set_attr "simd" "*,*,*,yes")]
 )
 
@@ -2598,9 +2599,8 @@
 
 (define_insn "*csinc2<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (plus:GPI (match_operator:GPI 2 "aarch64_comparison_operator"
-		  [(match_operand:CC 3 "cc_register" "") (const_int 0)])
-		 (match_operand:GPI 1 "register_operand" "r")))]
+        (plus:GPI (match_operand 2 "aarch64_comparison_operation" "")
+                  (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "csinc\\t%<w>0, %<w>1, %<w>1, %M2"
   [(set_attr "type" "csel")]
@@ -2609,37 +2609,34 @@
 (define_insn "csinc3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (if_then_else:GPI
-	  (match_operator:GPI 1 "aarch64_comparison_operator"
-	   [(match_operand:CC 2 "cc_register" "") (const_int 0)])
-	  (plus:GPI (match_operand:GPI 3 "register_operand" "r")
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (plus:GPI (match_operand:GPI 2 "register_operand" "r")
 		    (const_int 1))
-	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
+	  (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")))]
   ""
-  "csinc\\t%<w>0, %<w>4, %<w>3, %M1"
+  "csinc\\t%<w>0, %<w>3, %<w>2, %M1"
   [(set_attr "type" "csel")]
 )
 
 (define_insn "*csinv3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (if_then_else:GPI
-	  (match_operator:GPI 1 "aarch64_comparison_operator"
-	   [(match_operand:CC 2 "cc_register" "") (const_int 0)])
-	  (not:GPI (match_operand:GPI 3 "register_operand" "r"))
-	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (not:GPI (match_operand:GPI 2 "register_operand" "r"))
+	  (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")))]
   ""
-  "csinv\\t%<w>0, %<w>4, %<w>3, %M1"
+  "csinv\\t%<w>0, %<w>3, %<w>2, %M1"
   [(set_attr "type" "csel")]
 )
 
 (define_insn "*csneg3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (if_then_else:GPI
-	  (match_operator:GPI 1 "aarch64_comparison_operator"
-	   [(match_operand:CC 2 "cc_register" "") (const_int 0)])
-	  (neg:GPI (match_operand:GPI 3 "register_operand" "r"))
-	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (neg:GPI (match_operand:GPI 2 "register_operand" "r"))
+	  (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")))]
   ""
-  "csneg\\t%<w>0, %<w>4, %<w>3, %M1"
+  "csneg\\t%<w>0, %<w>3, %<w>2, %M1"
   [(set_attr "type" "csel")]
 )
 
@@ -2896,7 +2893,7 @@
 
     emit_insn (gen_rbit<mode>2 (operands[0], operands[1]));
     emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
-    emit_insn (gen_csinc3<mode>_insn (operands[0], x, ccreg, operands[0], const0_rtx));
+    emit_insn (gen_csinc3<mode>_insn (operands[0], x, operands[0], const0_rtx));
     DONE;
   }
 )
@@ -4030,11 +4027,11 @@
 })
 
 (define_insn "stack_protect_test_<mode>"
-  [(set (match_operand:PTR 0 "register_operand")
+  [(set (match_operand:PTR 0 "register_operand" "=r")
 	(unspec:PTR [(match_operand:PTR 1 "memory_operand" "m")
 		     (match_operand:PTR 2 "memory_operand" "m")]
 	 UNSPEC_SP_TEST))
-   (clobber (match_scratch:PTR 3 "=&r"))]
+   (clobber (match_scratch:PTR 3 "&r"))]
   ""
   "ldr\t%<w>3, %x1\;ldr\t%<w>0, %x2\;eor\t%<w>0, %<w>3, %<w>0"
   [(set_attr "length" "12")

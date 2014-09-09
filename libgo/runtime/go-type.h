@@ -59,7 +59,7 @@ struct String;
 #define GO_CODE_MASK 0x7f
 
 /* For each Go type the compiler constructs one of these structures.
-   This is used for type reflectin, interfaces, maps, and reference
+   This is used for type reflection, interfaces, maps, and reference
    counting.  */
 
 struct __go_type_descriptor
@@ -92,6 +92,9 @@ struct __go_type_descriptor
   /* This function takes two pointers to values of this type, and the
      size of this type, and returns whether the values are equal.  */
   _Bool (*__equalfn) (const void *, const void *, uintptr_t);
+
+  /* The garbage collection data. */
+  const uintptr *__gc;
 
   /* A string describing this type.  This is only used for
      debugging.  */

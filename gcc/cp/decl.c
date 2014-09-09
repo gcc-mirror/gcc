@@ -2215,7 +2215,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
-	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (olddecl);
+	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (newdecl);
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if

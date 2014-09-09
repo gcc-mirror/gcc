@@ -3169,7 +3169,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 
   if (LABEL_NUSES (label) > 1)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* This label is used both as an entry point to the loop
 	 and as a loop-back point for the loop.  We need to separate
@@ -3274,7 +3274,7 @@ mn10300_scan_for_setlb_lcc (void)
 	reason = "it contains CALL insns";
       else
 	{
-	  rtx branch = BB_END (loop->latch);
+	  rtx_insn *branch = BB_END (loop->latch);
 
 	  gcc_assert (JUMP_P (branch));
 	  if (single_set (branch) == NULL_RTX || ! any_condjump_p (branch))
@@ -3283,7 +3283,7 @@ mn10300_scan_for_setlb_lcc (void)
 	    reason = "it is not a simple loop";
 	  else
 	    {
-	      rtx label;
+	      rtx_insn *label;
 
 	      if (dump_file)
 		flow_loop_dump (loop, dump_file, NULL, 0);

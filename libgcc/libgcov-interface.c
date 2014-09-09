@@ -42,6 +42,15 @@ void __gcov_dump (void) {}
 
 #else
 
+/* Some functions we want to bind in this dynamic object, but have an
+   overridable global alias.  Unfortunately not all targets support
+   aliases, so we just have a forwarding function.  That'll be tail
+   called, so the cost is a single jump instruction.*/
+
+#define ALIAS_void_fn(src,dst) \
+  void dst (void)	    \
+  { src (); }
+
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 
@@ -77,7 +86,7 @@ __gcov_flush (void)
   __gthread_mutex_lock (&__gcov_flush_mx);
 
   __gcov_dump_one (&__gcov_root);
-  __gcov_reset ();
+  __gcov_reset_int ();
 
   __gthread_mutex_unlock (&__gcov_flush_mx);
 }
@@ -121,11 +130,13 @@ gcov_clear (const struct gcov_info *list)
    in order to collect profile in region of interest.  */
 
 void
-__gcov_reset (void)
+__gcov_reset_int (void)
 {
   gcov_clear (__gcov_root.list);
   __gcov_root.dumped = 0;
 }
+
+ALIAS_void_fn (__gcov_reset_int, __gcov_reset);
 
 #endif /* L_gcov_reset */
 

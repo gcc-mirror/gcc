@@ -4129,8 +4129,8 @@ static bool
 find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 {
   tree fndecl = gimple_call_fndecl (t);
-  vec<ce_s> lhsc = vNULL;
-  vec<ce_s> rhsc = vNULL;
+  auto_vec<ce_s, 2> lhsc;
+  auto_vec<ce_s, 4> rhsc;
   varinfo_t fi;
 
   if (gimple_call_builtin_p (t, BUILT_IN_NORMAL))
@@ -4183,16 +4183,14 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	      else
 		get_constraint_for (dest, &rhsc);
 	      process_all_all_constraints (lhsc, rhsc);
-	      lhsc.release ();
-	      rhsc.release ();
+	      lhsc.truncate (0);
+	      rhsc.truncate (0);
 	    }
 	  get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
 	  get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
 	  do_deref (&lhsc);
 	  do_deref (&rhsc);
 	  process_all_all_constraints (lhsc, rhsc);
-	  lhsc.release ();
-	  rhsc.release ();
 	  return true;
 	}
       case BUILT_IN_MEMSET:
@@ -4209,8 +4207,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	      get_constraint_for (res, &lhsc);
 	      get_constraint_for (dest, &rhsc);
 	      process_all_all_constraints (lhsc, rhsc);
-	      lhsc.release ();
-	      rhsc.release ();
+	      lhsc.truncate (0);
 	    }
 	  get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
 	  do_deref (&lhsc);
@@ -4228,7 +4225,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	  ac.offset = 0;
 	  FOR_EACH_VEC_ELT (lhsc, i, lhsp)
 	      process_constraint (new_constraint (*lhsp, ac));
-	  lhsc.release ();
 	  return true;
 	}
       case BUILT_IN_POSIX_MEMALIGN:
@@ -4247,8 +4243,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	  tmpc.type = ADDRESSOF;
 	  rhsc.safe_push (tmpc);
 	  process_all_all_constraints (lhsc, rhsc);
-	  lhsc.release ();
-	  rhsc.release ();
 	  return true;
 	}
       case BUILT_IN_ASSUME_ALIGNED:
@@ -4260,8 +4254,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	      get_constraint_for (res, &lhsc);
 	      get_constraint_for (dest, &rhsc);
 	      process_all_all_constraints (lhsc, rhsc);
-	      lhsc.release ();
-	      rhsc.release ();
 	    }
 	  return true;
 	}
@@ -4303,8 +4295,8 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	    do_deref (&lhsc);
 	    do_deref (&rhsc);
 	    process_all_all_constraints (lhsc, rhsc);
-	    lhsc.release ();
-	    rhsc.release ();
+	    lhsc.truncate (0);
+	    rhsc.truncate (0);
 	    /* For realloc the resulting pointer can be equal to the
 	       argument as well.  But only doing this wouldn't be
 	       correct because with ptr == 0 realloc behaves like malloc.  */
@@ -4313,8 +4305,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 		get_constraint_for (gimple_call_lhs (t), &lhsc);
 		get_constraint_for (gimple_call_arg (t, 0), &rhsc);
 		process_all_all_constraints (lhsc, rhsc);
-		lhsc.release ();
-		rhsc.release ();
 	      }
 	    return true;
 	  }
@@ -4338,8 +4328,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	    rhsc.safe_push (nul);
 	    get_constraint_for (gimple_call_lhs (t), &lhsc);
 	    process_all_all_constraints (lhsc, rhsc);
-	    lhsc.release ();
-	    rhsc.release ();
 	  }
 	return true;
       /* Trampolines are special - they set up passing the static
@@ -4361,8 +4349,8 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 		  lhs = get_function_part_constraint (nfi, fi_static_chain);
 		  get_constraint_for (frame, &rhsc);
 		  FOR_EACH_VEC_ELT (rhsc, i, rhsp)
-		      process_constraint (new_constraint (lhs, *rhsp));
-		  rhsc.release ();
+		    process_constraint (new_constraint (lhs, *rhsp));
+		  rhsc.truncate (0);
 
 		  /* Make the frame point to the function for
 		     the trampoline adjustment call.  */
@@ -4370,8 +4358,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 		  do_deref (&lhsc);
 		  get_constraint_for (nfunc, &rhsc);
 		  process_all_all_constraints (lhsc, rhsc);
-		  rhsc.release ();
-		  lhsc.release ();
 
 		  return true;
 		}
@@ -4390,8 +4376,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	      get_constraint_for (tramp, &rhsc);
 	      do_deref (&rhsc);
 	      process_all_all_constraints (lhsc, rhsc);
-	      rhsc.release ();
-	      lhsc.release ();
 	    }
 	  return true;
 	}
@@ -4413,8 +4397,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	  do_deref (&lhsc);
 	  get_constraint_for (src, &rhsc);
 	  process_all_all_constraints (lhsc, rhsc);
-	  lhsc.release ();
-	  rhsc.release ();
 	  return true;
 	}
       CASE_BUILT_IN_TM_LOAD (1):
@@ -4435,8 +4417,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	  get_constraint_for (addr, &rhsc);
 	  do_deref (&rhsc);
 	  process_all_all_constraints (lhsc, rhsc);
-	  lhsc.release ();
-	  rhsc.release ();
 	  return true;
 	}
       /* Variadic argument handling needs to be handled in IPA
@@ -4465,7 +4445,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	    }
 	  FOR_EACH_VEC_ELT (lhsc, i, lhsp)
 	    process_constraint (new_constraint (*lhsp, rhs));
-	  lhsc.release ();
 	  /* va_list is clobbered.  */
 	  make_constraint_to (get_call_clobber_vi (t)->id, valist);
 	  return true;
@@ -4508,8 +4487,6 @@ static void
 find_func_aliases_for_call (struct function *fn, gimple t)
 {
   tree fndecl = gimple_call_fndecl (t);
-  vec<ce_s> lhsc = vNULL;
-  vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
   if (fndecl != NULL_TREE
@@ -4521,7 +4498,7 @@ find_func_aliases_for_call (struct function *fn, gimple t)
   if (!in_ipa_mode
       || (fndecl && !fi->is_fn_info))
     {
-      vec<ce_s> rhsc = vNULL;
+      auto_vec<ce_s, 16> rhsc;
       int flags = gimple_call_flags (t);
 
       /* Const functions can return their arguments and addresses
@@ -4541,10 +4518,10 @@ find_func_aliases_for_call (struct function *fn, gimple t)
       if (gimple_call_lhs (t))
 	handle_lhs_call (t, gimple_call_lhs (t),
 			 gimple_call_return_flags (t), rhsc, fndecl);
-      rhsc.release ();
     }
   else
     {
+      auto_vec<ce_s, 2> rhsc;
       tree lhsop;
       unsigned j;
 
@@ -4570,6 +4547,7 @@ find_func_aliases_for_call (struct function *fn, gimple t)
       lhsop = gimple_call_lhs (t);
       if (lhsop)
 	{
+	  auto_vec<ce_s, 2> lhsc;
 	  struct constraint_expr rhs;
 	  struct constraint_expr *lhsp;
 
@@ -4579,11 +4557,11 @@ find_func_aliases_for_call (struct function *fn, gimple t)
 	      && DECL_RESULT (fndecl)
 	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
 	    {
-	      vec<ce_s> tem = vNULL;
-	      tem.safe_push (rhs);
+	      auto_vec<ce_s, 2> tem;
+	      tem.quick_push (rhs);
 	      do_deref (&tem);
+	      gcc_checking_assert (tem.length () == 1);
 	      rhs = tem[0];
-	      tem.release ();
 	    }
 	  FOR_EACH_VEC_ELT (lhsc, j, lhsp)
 	    process_constraint (new_constraint (*lhsp, rhs));
@@ -4602,7 +4580,7 @@ find_func_aliases_for_call (struct function *fn, gimple t)
 	  lhs = get_function_part_constraint (fi, fi_result);
 	  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
 	    process_constraint (new_constraint (lhs, *rhsp));
-	  rhsc.release ();
+	  rhsc.truncate (0);
 	}
 
       /* If we use a static chain, pass it along.  */
@@ -4628,8 +4606,8 @@ static void
 find_func_aliases (struct function *fn, gimple origt)
 {
   gimple t = origt;
-  vec<ce_s> lhsc = vNULL;
-  vec<ce_s> rhsc = vNULL;
+  auto_vec<ce_s, 16> lhsc;
+  auto_vec<ce_s, 16> rhsc;
   struct constraint_expr *c;
   varinfo_t fi;
 
@@ -4715,14 +4693,13 @@ find_func_aliases (struct function *fn, gimple origt)
 	  else if (code == COND_EXPR)
 	    {
 	      /* The result is a merge of both COND_EXPR arms.  */
-	      vec<ce_s> tmp = vNULL;
+	      auto_vec<ce_s, 2> tmp;
 	      struct constraint_expr *rhsp;
 	      unsigned i;
 	      get_constraint_for_rhs (gimple_assign_rhs2 (t), &rhsc);
 	      get_constraint_for_rhs (gimple_assign_rhs3 (t), &tmp);
 	      FOR_EACH_VEC_ELT (tmp, i, rhsp)
 		rhsc.safe_push (*rhsp);
-	      tmp.release ();
 	    }
 	  else if (truth_value_p (code))
 	    /* Truth value results are not pointer (parts).  Or at least
@@ -4731,7 +4708,7 @@ find_func_aliases (struct function *fn, gimple origt)
 	  else
 	    {
 	      /* All other operations are merges.  */
-	      vec<ce_s> tmp = vNULL;
+	      auto_vec<ce_s, 4> tmp;
 	      struct constraint_expr *rhsp;
 	      unsigned i, j;
 	      get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
@@ -4742,7 +4719,6 @@ find_func_aliases (struct function *fn, gimple origt)
 		    rhsc.safe_push (*rhsp);
 		  tmp.truncate (0);
 		}
-	      tmp.release ();
 	    }
 	  process_all_all_constraints (lhsc, rhsc);
 	}
@@ -4804,7 +4780,7 @@ find_func_aliases (struct function *fn, gimple origt)
 	     any global memory.  */
 	  if (op)
 	    {
-	      vec<ce_s> lhsc = vNULL;
+	      auto_vec<ce_s, 2> lhsc;
 	      struct constraint_expr rhsc, *lhsp;
 	      unsigned j;
 	      get_constraint_for (op, &lhsc);
@@ -4813,7 +4789,6 @@ find_func_aliases (struct function *fn, gimple origt)
 	      rhsc.type = SCALAR;
 	      FOR_EACH_VEC_ELT (lhsc, j, lhsp)
 		process_constraint (new_constraint (*lhsp, rhsc));
-	      lhsc.release ();
 	    }
 	}
       for (i = 0; i < gimple_asm_ninputs (t); ++i)
@@ -4836,9 +4811,6 @@ find_func_aliases (struct function *fn, gimple origt)
 	    make_escape_constraint (op);
 	}
     }
-
-  rhsc.release ();
-  lhsc.release ();
 }
 
 
@@ -4866,8 +4838,8 @@ static void
 find_func_clobbers (struct function *fn, gimple origt)
 {
   gimple t = origt;
-  vec<ce_s> lhsc = vNULL;
-  auto_vec<ce_s> rhsc;
+  auto_vec<ce_s, 16> lhsc;
+  auto_vec<ce_s, 16> rhsc;
   varinfo_t fi;
 
   /* Add constraints for clobbered/used in IPA mode.
@@ -4906,7 +4878,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 	  get_constraint_for_address_of (lhs, &rhsc);
 	  FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 	    process_constraint (new_constraint (lhsc, *rhsp));
-	  rhsc.release ();
+	  rhsc.truncate (0);
 	}
     }
 
@@ -4934,7 +4906,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 	  get_constraint_for_address_of (rhs, &rhsc);
 	  FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 	    process_constraint (new_constraint (lhs, *rhsp));
-	  rhsc.release ();
+	  rhsc.truncate (0);
 	}
     }
 
@@ -4982,12 +4954,10 @@ find_func_clobbers (struct function *fn, gimple origt)
 	      lhs = get_function_part_constraint (fi, fi_clobbers);
 	      FOR_EACH_VEC_ELT (lhsc, i, lhsp)
 		process_constraint (new_constraint (lhs, *lhsp));
-	      lhsc.release ();
 	      get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
 	      lhs = get_function_part_constraint (fi, fi_uses);
 	      FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 		process_constraint (new_constraint (lhs, *rhsp));
-	      rhsc.release ();
 	      return;
 	    }
 	  /* The following function clobbers memory pointed to by
@@ -5003,7 +4973,6 @@ find_func_clobbers (struct function *fn, gimple origt)
 	      lhs = get_function_part_constraint (fi, fi_clobbers);
 	      FOR_EACH_VEC_ELT (lhsc, i, lhsp)
 		process_constraint (new_constraint (lhs, *lhsp));
-	      lhsc.release ();
 	      return;
 	    }
 	  /* The following functions clobber their second and third
@@ -5073,7 +5042,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 	  get_constraint_for_address_of (arg, &rhsc);
 	  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
 	    process_constraint (new_constraint (lhs, *rhsp));
-	  rhsc.release ();
+	  rhsc.truncate (0);
 	}
 
       /* Build constraints for propagating clobbers/uses along the

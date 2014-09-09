@@ -536,7 +536,7 @@ dead_debug_add (struct dead_debug_local *debug, df_ref use, unsigned int uregno)
 
 int
 dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
-			rtx insn, enum debug_temp_where where)
+			rtx_insn *insn, enum debug_temp_where where)
 {
   struct dead_debug_use **tailp = &debug->head;
   struct dead_debug_use *cur;

@@ -40,6 +40,9 @@ enum cilk_tree_index  {
   CILK_TI_F_POP,                      /* __cilkrts_pop_frame (...).  */
   CILK_TI_F_RETHROW,                  /* __cilkrts_rethrow (...).  */
   CILK_TI_F_SAVE_FP,                  /* __cilkrts_save_fp_ctrl_state (...).  */
+  CILK_TI_F_LOOP_32,                  /* __cilkrts_cilk_for_32 (...).  */
+  CILK_TI_F_LOOP_64,                  /* __cilkrts_cilk_for_64 (...).  */
+
   /* __cilkrts_stack_frame struct fields.  */
   CILK_TI_FRAME_FLAGS,                /* stack_frame->flags.  */
   CILK_TI_FRAME_PARENT,               /* stack_frame->parent.  */
@@ -77,6 +80,8 @@ extern GTY (()) tree cilk_trees[CILK_TI_MAX];
 #define cilk_rethrow_fndecl           cilk_trees[CILK_TI_F_RETHROW]
 #define cilk_pop_fndecl               cilk_trees[CILK_TI_F_POP]
 #define cilk_save_fp_fndecl           cilk_trees[CILK_TI_F_SAVE_FP]
+#define cilk_for_32_fndecl            cilk_trees[CILK_TI_F_LOOP_32]
+#define cilk_for_64_fndecl            cilk_trees[CILK_TI_F_LOOP_64]
 
 #define cilk_worker_type_fndecl       cilk_trees[CILK_TI_WORKER_TYPE]
 #define cilk_frame_type_decl          cilk_trees[CILK_TI_FRAME_TYPE]

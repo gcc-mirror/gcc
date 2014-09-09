@@ -59,41 +59,35 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
   (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128)
 #endif
 
-#ifndef SF_SIZE
+#ifndef __LIBGCC_SF_MANT_DIG__
 #if LIBGCC2_HAS_SF_MODE
-#define SF_SIZE FLT_MANT_DIG
+#error __LIBGCC_SF_MANT_DIG__ not defined
 #else
-#define SF_SIZE 0
+#define __LIBGCC_SF_MANT_DIG__ 0
 #endif
 #endif
 
-#ifndef DF_SIZE
+#ifndef __LIBGCC_DF_MANT_DIG__
 #if LIBGCC2_HAS_DF_MODE
-#if __SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64
-#define DF_SIZE DBL_MANT_DIG
-#elif LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
-#define DF_SIZE LDBL_MANT_DIG
+#error __LIBGCC_DF_MANT_DIG__ not defined
 #else
-#define DF_SIZE 0
-#endif
-#else
-#define DF_SIZE 0
+#define __LIBGCC_DF_MANT_DIG__ 0
 #endif
 #endif
 
-#ifndef XF_SIZE
+#ifndef __LIBGCC_XF_MANT_DIG__
 #if LIBGCC2_HAS_XF_MODE
-#define XF_SIZE LDBL_MANT_DIG
+#error __LIBGCC_XF_MANT_DIG__ not defined
 #else
-#define XF_SIZE 0
+#define __LIBGCC_XF_MANT_DIG__ 0
 #endif
 #endif
 
-#ifndef TF_SIZE
+#ifndef __LIBGCC_TF_MANT_DIG__
 #if LIBGCC2_HAS_TF_MODE
-#define TF_SIZE LDBL_MANT_DIG
+#error __LIBGCC_TF_MANT_DIG__ not defined
 #else
-#define TF_SIZE 0
+#define __LIBGCC_TF_MANT_DIG__ 0
 #endif
 #endif
 

@@ -82,8 +82,6 @@ enum aarch64_type_qualifiers
   qualifier_const = 0x2, /* 1 << 1  */
   /* T *foo.  */
   qualifier_pointer = 0x4, /* 1 << 2  */
-  /* const T *foo.  */
-  qualifier_const_pointer = 0x6, /* qualifier_const | qualifier_pointer  */
   /* Used when expanding arguments if an operand could
      be an immediate.  */
   qualifier_immediate = 0x8, /* 1 << 3  */
@@ -98,7 +96,7 @@ enum aarch64_type_qualifiers
   qualifier_map_mode = 0x80, /* 1 << 7  */
   /* qualifier_pointer | qualifier_map_mode  */
   qualifier_pointer_map_mode = 0x84,
-  /* qualifier_const_pointer | qualifier_map_mode  */
+  /* qualifier_const | qualifier_pointer | qualifier_map_mode  */
   qualifier_const_pointer_map_mode = 0x86,
   /* Polynomial types.  */
   qualifier_poly = 0x100
@@ -145,6 +143,11 @@ static enum aarch64_type_qualifiers
 aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define TYPES_BINOP (aarch64_types_binop_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_cmtst_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_internal, qualifier_internal };
+#define TYPES_TST (aarch64_types_cmtst_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_binopv_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_none, qualifier_none };
@@ -862,9 +865,8 @@ typedef enum
 
 static rtx
 aarch64_simd_expand_args (rtx target, int icode, int have_retval,
-			  tree exp, ...)
+			  tree exp, builtin_simd_arg *args)
 {
-  va_list ap;
   rtx pat;
   tree arg[SIMD_MAX_BUILTIN_ARGS];
   rtx op[SIMD_MAX_BUILTIN_ARGS];
@@ -878,11 +880,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
     target = gen_reg_rtx (tmode);
 
-  va_start (ap, exp);
-
   for (;;)
     {
-      builtin_simd_arg thisarg = (builtin_simd_arg) va_arg (ap, int);
+      builtin_simd_arg thisarg = args[argc];
 
       if (thisarg == SIMD_ARG_STOP)
 	break;
@@ -917,8 +917,6 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	  argc++;
 	}
     }
-
-  va_end (ap);
 
   if (have_retval)
     switch (argc)
@@ -1033,12 +1031,7 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
   /* The interface to aarch64_simd_expand_args expects a 0 if
      the function is void, and a 1 if it is not.  */
   return aarch64_simd_expand_args
-	  (target, icode, !is_void, exp,
-	   args[1],
-	   args[2],
-	   args[3],
-	   args[4],
-	   SIMD_ARG_STOP);
+	  (target, icode, !is_void, exp, &args[1]);
 }
 
 rtx
@@ -1288,22 +1281,6 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VALLDI (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
-      BUILTIN_VALLDI (BINOP, cmge, 0)
-	return fold_build2 (GE_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VALLDI (BINOP, cmgt, 0)
-	return fold_build2 (GT_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VALLDI (BINOP, cmeq, 0)
-	return fold_build2 (EQ_EXPR, type, args[0], args[1]);
-	break;
-      BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
-	{
-	  tree and_node = fold_build2 (BIT_AND_EXPR, type, args[0], args[1]);
-	  tree vec_zero_node = build_zero_cst (type);
-	  return fold_build2 (NE_EXPR, type, and_node, vec_zero_node);
-	  break;
-	}
       VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
       VAR1 (REINTERP_SS, reinterpretv8qi, 0, v1df)
       VAR1 (REINTERP_SS, reinterpretv4hi, 0, v1df)

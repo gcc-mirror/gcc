@@ -1256,27 +1256,6 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_UNWIND_WORD_MODE
 
-@defmac ROUND_TOWARDS_ZERO
-If defined, this macro should be true if the prevailing rounding
-mode is towards zero.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-Not defining this macro is equivalent to returning zero.
-@end defmac
-
-@defmac LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should return true if floats with @var{size}
-bits do not have a NaN or infinity representation, but use the largest
-exponent for normal numbers instead.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-The default definition of this macro returns false for all sizes.
-@end defmac
-
 @hook TARGET_MS_BITFIELD_LAYOUT_P
 
 @hook TARGET_DECIMAL_FLOAT_SUPPORTED_P
@@ -1443,20 +1422,6 @@ causes function names in libgcc to be changed to use a @code{__gnu_}
 prefix for their name rather than the default @code{__}.  A port which
 uses this macro should also arrange to use @file{t-gnu-prefix} in
 the libgcc @file{config.host}.
-@end defmac
-
-@defmac SF_SIZE
-@defmacx DF_SIZE
-@defmacx XF_SIZE
-@defmacx TF_SIZE
-Define these macros to be the size in bits of the mantissa of
-@code{SFmode}, @code{DFmode}, @code{XFmode} and @code{TFmode} values,
-if the defaults in @file{libgcc2.h} are inappropriate.  By default,
-@code{FLT_MANT_DIG} is used for @code{SF_SIZE}, @code{LDBL_MANT_DIG}
-for @code{XF_SIZE} and @code{TF_SIZE}, and @code{DBL_MANT_DIG} or
-@code{LDBL_MANT_DIG} for @code{DF_SIZE} according to whether
-@code{DOUBLE_TYPE_SIZE} or
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64.
 @end defmac
 
 @defmac TARGET_FLT_EVAL_METHOD
@@ -6594,6 +6559,8 @@ the target supports DWARF 2 frame unwind information.
 @hook TARGET_TERMINATE_DW2_EH_FRAME_INFO
 
 @hook TARGET_DWARF_REGISTER_SPAN
+
+@hook TARGET_DWARF_FRAME_REG_MODE
 
 @hook TARGET_INIT_DWARF_REG_SIZES_EXTRA
 

@@ -1303,6 +1303,18 @@
    (set_attr "conds" "<vrint_conds>")]
 )
 
+;; Implements the lround, lfloor and lceil optabs.
+(define_insn "l<vrint_pattern><su_optab><mode>si2"
+  [(set (match_operand:SI 0 "register_operand" "=t")
+        (FIXUORS:SI (unspec:SDF
+                        [(match_operand:SDF 1
+                           "register_operand" "<F_constraint>")] VCVT)))]
+  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "vcvt<vrint_variant>%?.<su>32.<V_if_elem>\\t%0, %<V_reg>1"
+  [(set_attr "predicable" "no")
+   (set_attr "type" "f_cvtf2i")]
+)
+
 ;; MIN_EXPR and MAX_EXPR eventually map to 'smin' and 'smax' in RTL.
 ;; The 'smax' and 'smin' RTL standard pattern names do not specify which
 ;; operand will be returned when both operands are zero (i.e. they may not
