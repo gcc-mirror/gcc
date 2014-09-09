@@ -3089,6 +3089,10 @@ get_mem_attrs (const_rtx x)
 
 extern rtx_expr_list *gen_rtx_EXPR_LIST (enum machine_mode, rtx, rtx);
 extern rtx_insn_list *gen_rtx_INSN_LIST (enum machine_mode, rtx, rtx);
+extern rtx_insn *
+gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
+	      basic_block bb, rtx pattern, int location, int code,
+	      rtx reg_notes);
 extern rtx gen_rtx_CONST_INT (enum machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (enum machine_mode, rtvec);
 extern rtx gen_raw_REG (enum machine_mode, int);
