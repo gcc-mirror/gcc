@@ -1,3 +1,10 @@
+2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config.host (aarch64*): Include crtfastmath.o and
+	t-crtfm.
+	* config/aarch64/crtfastmath.c: New file.
+
 2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config.host: Remove picochip support.

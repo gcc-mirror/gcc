@@ -23,7 +23,9 @@
 #define GCC_AARCH64_ELF_RAW_H
 
 #define STARTFILE_SPEC " crti%O%s crtbegin%O%s crt0%O%s"
-#define ENDFILE_SPEC " crtend%O%s crtn%O%s"
+#define ENDFILE_SPEC \
+  " crtend%O%s crtn%O%s " \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X \
