@@ -1,5 +1,9 @@
 2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vldN_1.c: New test.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/int_comparisons_1.c: Tighten regexp.
 
 2014-09-09  Jiong Wang  <jiong.wang@arm.com>
