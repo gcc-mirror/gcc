@@ -1,3 +1,33 @@
+2014-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61672
+	* emit-rtl.h (mem_attrs_eq_p): Declare.
+	* emit-rtl.c (mem_attrs_eq_p): Export.  Handle NULL mem-attrs.
+	* cse.c (exp_equiv_p): Use mem_attrs_eq_p.
+	* cfgcleanup.c (merge_memattrs): Likewise.
+	Include emit-rtl.h.
+
+	2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62075
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Properly
+	handle uses in patterns.
+
+	2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/62079
+	* recog.c (peephole2_optimize): If peep2_do_cleanup_cfg
+	run cleanup_cfg.
+
+	2014-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62175
+	* tree-ssa-loop-niter.c (expand_simple_operations): Do not
+	expand possibly trapping operations.
+
 2014-09-08  DJ Delorie  <dj@redhat.com>
 
 	* doc/invoke.texi (MSP430 Options): Add -minrt.

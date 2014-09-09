@@ -1,3 +1,21 @@
+2014-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62075
+	* gcc.dg/vect/pr62075.c: New testcase.
+
+	2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/62079
+	* g++.dg/pr62079.C: New testcase.
+
+	2014-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62175
+	* g++.dg/torture/pr62175.C: New testcase.
+
 2014-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60196

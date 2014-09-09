@@ -1636,6 +1636,9 @@ expand_simple_operations (tree expr)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
+      if (TYPE_OVERFLOW_TRAPS (TREE_TYPE (expr)))
+	return expr;
+      /* Fallthru.  */
     case POINTER_PLUS_EXPR:
       /* And increments and decrements by a constant are simple.  */
       e1 = gimple_assign_rhs2 (stmt);

@@ -3659,6 +3659,8 @@ peephole2_optimize (void)
   BITMAP_FREE (live);
   if (peep2_do_rebuild_jump_labels)
     rebuild_jump_labels (get_insns ());
+  if (peep2_do_cleanup_cfg)
+    cleanup_cfg (CLEANUP_CFG_CHANGED);
 }
 #endif /* HAVE_peephole2 */
 

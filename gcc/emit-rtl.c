@@ -248,6 +248,10 @@ const_fixed_htab_eq (const void *x, const void *y)
 bool
 mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
 {
+  if (p == q)
+    return true;
+  if (!p || !q)
+    return false;
   return (p->alias == q->alias
 	  && p->offset_known_p == q->offset_known_p
 	  && (!p->offset_known_p || p->offset == q->offset)
