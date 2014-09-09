@@ -262,7 +262,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wodr  -Wno-overflow  -Wopenmp-simd @gol
+-Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
+ -Wodr  -Wno-overflow  -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -4921,8 +4922,10 @@ Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
 Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
-@item -Wnormalized=<none|id|nfc|nfkc>
+@item -Wnormalized@r{[}=@r{<}none@r{|}id@r{|}nfc@r{|}nfkc@r{>]}
 @opindex Wnormalized=
+@opindex Wnormalized
+@opindex Wno-normalized
 @cindex NFC
 @cindex NFKC
 @cindex character set, input normalization
@@ -4938,7 +4941,8 @@ have not been normalized; this option controls that warning.
 There are four levels of warning supported by GCC@.  The default is
 @option{-Wnormalized=nfc}, which warns about any identifier that is
 not in the ISO 10646 ``C'' normalized form, @dfn{NFC}.  NFC is the
-recommended form for most uses.
+recommended form for most uses.  It is equivalent to
+@option{-Wnormalized}.
 
 Unfortunately, there are some characters allowed in identifiers by
 ISO C and ISO C++ that, when turned into NFC, are not allowed in 
@@ -4949,9 +4953,10 @@ It is hoped that future versions of the standards involved will correct
 this, which is why this option is not the default.
 
 You can switch the warning off for all characters by writing
-@option{-Wnormalized=none}.  You should only do this if you
-are using some other normalization scheme (like ``D''), because
-otherwise you can easily create bugs that are literally impossible to see.
+@option{-Wnormalized=none} or @option{-Wno-normalized}.  You should
+only do this if you are using some other normalization scheme (like
+``D''), because otherwise you can easily create bugs that are
+literally impossible to see.
 
 Some characters in ISO 10646 have distinct meanings but look identical
 in some fonts or display methodologies, especially once formatting has

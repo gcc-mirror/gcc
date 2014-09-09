@@ -1,3 +1,8 @@
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/cpplib.h (struct cpp_options): Declare warn_normalize as
+	int instead of enum.
+
 2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* macro.c (replace_args): Use cpp_pedwarning, cpp_warning and

@@ -1,3 +1,7 @@
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/warn-normalized-3.c: Delete useless dg-prune-output.
+
 2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-15.c: Remove scan-assembler-not for

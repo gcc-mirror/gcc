@@ -1,3 +1,7 @@
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wnormalized=): Update.
+
 2014-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/63195
