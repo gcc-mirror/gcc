@@ -1,3 +1,8 @@
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61749
+	* gcc.target/aarch64/vqdml_lane_intrinsics-bad_1.c: New test.
+
 2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c: New test.
