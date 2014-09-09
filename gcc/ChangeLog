@@ -1,3 +1,10 @@
+2014-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/63195
+	* config/rs6000/rs6000.md (*bool<mode>3): Allow only register
+	operands.  Split off the constant operand alternative to ...
+	(*bool<mode>3_imm): New.
+
 2014-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (single_set_2): Strengthen first param from const_rtx to
