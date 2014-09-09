@@ -749,7 +749,7 @@
 	(mult:SF (match_operand:SF 1 "s_register_operand" "t")
 		 (match_operand:SF 2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fmuls%?\\t%0, %1, %2"
+  "vmul%?.f32\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmuls")]
@@ -760,7 +760,7 @@
 	(mult:DF (match_operand:DF 1 "s_register_operand" "w")
 		 (match_operand:DF 2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fmuld%?\\t%P0, %P1, %P2"
+  "vmul%?.f64\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmuld")]
@@ -771,7 +771,7 @@
 	(mult:SF (neg:SF (match_operand:SF 1 "s_register_operand" "t"))
 		 (match_operand:SF	   2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fnmuls%?\\t%0, %1, %2"
+  "vnmul%?.f32\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmuls")]
@@ -782,7 +782,7 @@
 	(mult:DF (neg:DF (match_operand:DF 1 "s_register_operand" "w"))
 		 (match_operand:DF	   2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fnmuld%?\\t%P0, %P1, %P2"
+  "vnmul%?.f64\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmuld")]
@@ -798,7 +798,7 @@
 			  (match_operand:SF 3 "s_register_operand" "t"))
 		 (match_operand:SF	    1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fmacs%?\\t%0, %2, %3"
+  "vmla%?.f32\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacs")]
@@ -810,7 +810,7 @@
 			  (match_operand:DF 3 "s_register_operand" "w"))
 		 (match_operand:DF	    1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fmacd%?\\t%P0, %P2, %P3"
+  "vmla%?.f64\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacd")]
@@ -823,7 +823,7 @@
 			   (match_operand:SF 3 "s_register_operand" "t"))
 		  (match_operand:SF	     1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fmscs%?\\t%0, %2, %3"
+  "vnmls%?.f32\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacs")]
@@ -835,7 +835,7 @@
 			   (match_operand:DF 3 "s_register_operand" "w"))
 		  (match_operand:DF	     1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fmscd%?\\t%P0, %P2, %P3"
+  "vnmls%?.f64\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacd")]
@@ -848,7 +848,7 @@
 		  (mult:SF (match_operand:SF 2 "s_register_operand" "t")
 			   (match_operand:SF 3 "s_register_operand" "t"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fnmacs%?\\t%0, %2, %3"
+  "vmls%?.f32\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacs")]
@@ -860,7 +860,7 @@
 		  (mult:DF (match_operand:DF 2 "s_register_operand" "w")
 			   (match_operand:DF 3 "s_register_operand" "w"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fnmacd%?\\t%P0, %P2, %P3"
+  "vmls%?.f64\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacd")]
@@ -875,7 +875,7 @@
 		    (match_operand:SF	      3 "s_register_operand" "t"))
 		  (match_operand:SF	      1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fnmscs%?\\t%0, %2, %3"
+  "vnmla%?.f32\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacs")]
@@ -888,7 +888,7 @@
 		    (match_operand:DF	      3 "s_register_operand" "w"))
 		  (match_operand:DF	      1 "s_register_operand" "0")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
-  "fnmscd%?\\t%P0, %P2, %P3"
+  "vnmla%?.f64\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmacd")]
