@@ -1,3 +1,8 @@
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-all-tests: Don't test picochip.
+	* config-list.mk: Likewise.
+
 2014-08-11  Mingjie Xing <mingjie.xing@gmail.com>
 
 	* texi2pod.pl (postprocess): Move command process for '@sc' to the

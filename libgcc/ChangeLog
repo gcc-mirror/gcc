@@ -1,3 +1,29 @@
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config.host: Remove picochip support.
+	* config/picochip/adddi3.S: Remove.
+	* config/picochip/ashlsi3.S: Remove.
+	* config/picochip/ashlsi3.c: Remove.
+	* config/picochip/ashrsi3.S: Remove.
+	* config/picochip/ashrsi3.c: Remove.
+	* config/picochip/clzsi2.S: Remove.
+	* config/picochip/cmpsi2.S: Remove.
+	* config/picochip/divmod15.S: Remove.
+	* config/picochip/divmodhi4.S: Remove.
+	* config/picochip/divmodsi4.S: Remove.
+	* config/picochip/lib1funcs.S: Remove.
+	* config/picochip/longjmp.S: Remove.
+	* config/picochip/lshrsi3.S: Remove.
+	* config/picochip/lshrsi3.c: Remove.
+	* config/picochip/parityhi2.S: Remove.
+	* config/picochip/popcounthi2.S: Remove.
+	* config/picochip/setjmp.S: Remove.
+	* config/picochip/subdi3.S: Remove.
+	* config/picochip/t-picochip: Remove.
+	* config/picochip/ucmpsi2.S: Remove.
+	* config/picochip/udivmodhi4.S: Remove.
+	* config/picochip/udivmodsi4.S: Remove.
+
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* libgcc2.c (SF_SIZE): Change all uses to __LIBGCC_SF_MANT_DIG__.

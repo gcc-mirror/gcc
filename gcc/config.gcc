@@ -236,8 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   picochip-*				\
- | score-*				\
+ score-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -420,9 +419,6 @@ nios2-*-*)
 	cpu_type=nios2
 	extra_options="${extra_options} g.opt"
 	;;
-picochip-*-*)
-        cpu_type=picochip
-        ;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
@@ -2154,11 +2150,6 @@ pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
 	;;
-picochip-*)
-	tm_file="${tm_file} newlib-stdint.h"
-	use_gcc_stdint=wrap
-	tmake_file="picochip/t-picochip t-pnt16-warn"
-        ;;
 # port not yet contributed
 #powerpc-*-openbsd*)
 #	tmake_file="${tmake_file} rs6000/t-fprules"
