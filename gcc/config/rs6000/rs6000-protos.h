@@ -211,7 +211,7 @@ extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
 
 #if TARGET_MACHO
-char *output_call (rtx, rtx *, int, int);
+char *output_call (rtx_insn *, rtx *, int, int);
 #endif
 
 #ifdef NO_DOLLAR_IN_LABEL

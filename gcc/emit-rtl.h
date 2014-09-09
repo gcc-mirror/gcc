@@ -66,7 +66,7 @@ extern rtx copy_insn_1 (rtx);
 extern rtx copy_insn (rtx);
 extern rtx_insn *copy_delay_slot_insn (rtx_insn *);
 extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
-extern rtx_insn *emit_copy_of_insn_after (rtx, rtx);
+extern rtx_insn *emit_copy_of_insn_after (rtx_insn *, rtx_insn *);
 extern void set_reg_attrs_from_value (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
 extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);

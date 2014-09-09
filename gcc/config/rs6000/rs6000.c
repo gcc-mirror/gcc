@@ -28929,7 +28929,7 @@ get_prev_label (tree function_name)
    CALL_DEST is the routine we are calling.  */
 
 char *
-output_call (rtx insn, rtx *operands, int dest_operand_number,
+output_call (rtx_insn *insn, rtx *operands, int dest_operand_number,
 	     int cookie_operand_number)
 {
   static char buf[256];
