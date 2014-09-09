@@ -1,3 +1,11 @@
+2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	 * config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Add crtfastmath.o.
+         * config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
+	Define.
+        (ENDFILE_SPEC): Define and use GNU_USER_TARGET_MATH_ENDFILE_SPEC.
+
 2014-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (INSN_LOCATION): Strengthen param from const_rtx to

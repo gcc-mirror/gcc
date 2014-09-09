@@ -37,6 +37,14 @@
 
 #define LINK_SPEC LINUX_TARGET_LINK_SPEC
 
+#define GNU_USER_TARGET_MATHFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC   \
+  GNU_USER_TARGET_MATHFILE_SPEC " " \
+  GNU_USER_TARGET_ENDFILE_SPEC
+
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
