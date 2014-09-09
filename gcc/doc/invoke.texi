@@ -386,7 +386,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
--fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute
+-fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
@@ -879,7 +879,8 @@ Objective-C and Objective-C++ Dialects}.
 See RS/6000 and PowerPC Options.
 
 @emph{RL78 Options}
-@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 -m64bit-doubles -m32bit-doubles}
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 @gol
+-m64bit-doubles -m32bit-doubles}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -9896,11 +9897,11 @@ constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alignment in the vectorizer. 
+doing loop versioning for alignment in the vectorizer.
 
 @item vect-max-version-for-alias-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alias in the vectorizer. 
+doing loop versioning for alias in the vectorizer.
 
 @item vect-max-peeling-for-alignment
 The maximum number of loop peels to enhance access alignment
@@ -20634,7 +20635,7 @@ The funtion label is prepended with the given number of two-byte
 Nop instructions (@var{halfwords}, maximum 1000000) or 12 Nop
 instructions if no argument is present.  Functions with a
 hot-patching prologue are never inlined automatically, and a
-hot-patching prologue is never generated for functions functions
+hot-patching prologue is never generated for functions
 that are explicitly inline.
 
 This option can be overridden for individual functions with the

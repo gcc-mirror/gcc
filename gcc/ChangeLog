@@ -1,3 +1,10 @@
+2014-09-09  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (Optimization Options): Add missing @gol to the
+	end of a line.
+	(S/390 and zSeries Options): Remove superfluous word from the
+	description of the -mhotpatch option.
+
 2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* shrink-wrap.h: #define SHRINK_WRAPPING_ENABLED.
