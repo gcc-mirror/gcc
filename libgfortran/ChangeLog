@@ -1,3 +1,8 @@
+2014-09-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/transfer.c (read_block_form): Fix pad status check (found by
+	Thomas Schwinge with -Wlogical-not-parentheses).
+
 2014-08-31  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (_gfortran_caf_send, _gfortran_caf_get,
