@@ -23289,6 +23289,7 @@ typedef enum {
   NEON_SETLANE,
   NEON_CREATE,
   NEON_RINT,
+  NEON_COPYSIGNF,
   NEON_DUP,
   NEON_DUPLANE,
   NEON_COMBINE,
@@ -24283,6 +24284,22 @@ arm_init_neon_builtins (void)
 	    ftype = build_function_type_list (eltype, eltype, NULL);
 	    break;
 	}
+	case NEON_COPYSIGNF:
+	  {
+	    tree eltype = NULL_TREE;
+	    switch (insn_data[d->code].operand[1].mode)
+	      {
+	      case V2SFmode:
+		eltype = V2SF_type_node;
+		break;
+	      case V4SFmode:
+		eltype = V4SF_type_node;
+		break;
+	      default: gcc_unreachable ();
+	      }
+	    ftype = build_function_type_list (eltype, eltype, NULL);
+	    break;
+	  }
 	default:
 	  gcc_unreachable ();
 	}
@@ -25486,6 +25503,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
+    case NEON_COPYSIGNF:
     case NEON_COMBINE:
     case NEON_VTBL:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
@@ -30063,27 +30081,34 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
                      : ARM_FIND_VCVT_VARIANT (vcvtm);
 #undef ARM_CHECK_BUILTIN_MODE
 #define ARM_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Imode && out_n == C \
-   && in_mode == N##Imode && in_n == C)
+  (out_mode == N##mode && out_n == C \
+   && in_mode == N##mode && in_n == C)
           case BUILT_IN_BSWAP16:
-            if (ARM_CHECK_BUILTIN_MODE (4, H))
+            if (ARM_CHECK_BUILTIN_MODE (4, HI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4hi, false);
-            else if (ARM_CHECK_BUILTIN_MODE (8, H))
+            else if (ARM_CHECK_BUILTIN_MODE (8, HI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv8hi, false);
             else
               return NULL_TREE;
           case BUILT_IN_BSWAP32:
-            if (ARM_CHECK_BUILTIN_MODE (2, S))
+            if (ARM_CHECK_BUILTIN_MODE (2, SI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2si, false);
-            else if (ARM_CHECK_BUILTIN_MODE (4, S))
+            else if (ARM_CHECK_BUILTIN_MODE (4, SI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4si, false);
             else
               return NULL_TREE;
           case BUILT_IN_BSWAP64:
-            if (ARM_CHECK_BUILTIN_MODE (2, D))
+            if (ARM_CHECK_BUILTIN_MODE (2, DI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2di, false);
             else
               return NULL_TREE;
+	  case BUILT_IN_COPYSIGNF:
+	    if (ARM_CHECK_BUILTIN_MODE (2, SF))
+              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv2sf, false);
+	    else if (ARM_CHECK_BUILTIN_MODE (4, SF))
+              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv4sf, false);
+	    else
+	      return NULL_TREE;
 
           default:
             return NULL_TREE;

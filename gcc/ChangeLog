@@ -1,3 +1,11 @@
+2014-09-09  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm.c (NEON_COPYSIGNF): New enum.
+	(arm_init_neon_builtins): Support NEON_COPYSIGNF.
+	(arm_builtin_vectorized_function): Likewise.
+	* config/arm/arm_neon_builtins.def: New macro for copysignf.
+	* config/arm/neon.md (neon_copysignf<mode>): New pattern for vector copysignf.
+
 2014-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* bb-reorder.h (default_target_bb_reorder): Remove redundant GTY.
