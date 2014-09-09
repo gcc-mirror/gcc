@@ -8577,6 +8577,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   /* Consume the opening `('.  */
   cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
   /* Parse the type-id.  */
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   type = cp_parser_type_id (parser);
   /* Look for the `,'.  */
   cp_parser_require (parser, CPP_COMMA, RT_COMMA);
@@ -8633,9 +8634,12 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   /* If we're processing a template, we can't finish the semantics yet.
      Otherwise we can fold the entire expression now.  */
   if (processing_template_decl)
-    expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+    {
+      expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+      SET_EXPR_LOCATION (expr, loc);
+    }
   else
-    expr = finish_offsetof (expr);
+    expr = finish_offsetof (expr, loc);
 
  failure:
   parser->integral_constant_expression_p = save_ice_p;

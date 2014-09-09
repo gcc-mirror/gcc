@@ -1,5 +1,12 @@
 2014-09-08  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (build_class_member_access_expr): Move
+	-Winvalid-offsetof code...
+	* semantics.c (finish_offsetof): ...here.
+	* parser.c (cp_parser_builtin_offsetof): Remember the location of
+	the type argument.
+	* pt.c (tsubst_copy_and_build) [OFFSETOF_EXPR]: Preserve it.
+
 	PR c++/62255
 	* pt.c (instantiate_decl): Handle recursive instantiation of
 	static data member.

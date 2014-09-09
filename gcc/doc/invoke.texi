@@ -5098,12 +5098,10 @@ warnings produced by @option{-Winline} to appear or disappear.
 @opindex Wno-invalid-offsetof
 @opindex Winvalid-offsetof
 Suppress warnings from applying the @samp{offsetof} macro to a non-POD
-type.  According to the 1998 ISO C++ standard, applying @samp{offsetof}
-to a non-POD type is undefined.  In existing C++ implementations,
-however, @samp{offsetof} typically gives meaningful results even when
-applied to certain kinds of non-POD types (such as a simple
-@samp{struct} that fails to be a POD type only by virtue of having a
-constructor).  This flag is for users who are aware that they are
+type.  According to the 2014 ISO C++ standard, applying @samp{offsetof}
+to a non-standard-layout type is undefined.  In existing C++ implementations,
+however, @samp{offsetof} typically gives meaningful results.
+This flag is for users who are aware that they are
 writing nonportable code and who have deliberately chosen to ignore the
 warning about it.
 

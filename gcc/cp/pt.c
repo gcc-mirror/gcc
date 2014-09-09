@@ -15440,7 +15440,8 @@ tsubst_copy_and_build (tree t,
       }
 
     case OFFSETOF_EXPR:
-      RETURN (finish_offsetof (RECUR (TREE_OPERAND (t, 0))));
+      RETURN (finish_offsetof (RECUR (TREE_OPERAND (t, 0)),
+			       EXPR_LOCATION (t)));
 
     case TRAIT_EXPR:
       {
