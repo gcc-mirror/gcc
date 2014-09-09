@@ -6,7 +6,7 @@
 	* config/arm/arm_neon_builtins.def: New macro for copysignf.
 	* config/arm/neon.md (neon_copysignf<mode>): New pattern for vector copysignf.
 
-2014-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* bb-reorder.h (default_target_bb_reorder): Remove redundant GTY.
 	* builtins.h (default_target_builtins): Likewise.
@@ -262,7 +262,7 @@
 	* config/aarch64/aarch64.md (stack_protect_test_<mode>) Add register
 	constraint for operand0 and remove write only modifier from operand3.
 
-2014-09-07  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/62208
 	* simplify-rtx.c (simplify_relational_operation_1): Use CONST0_RTX
@@ -276,7 +276,7 @@
 	* config/arc/arc.c (arc_predicate_delay_insns): Swap comparison
 	arguments to silence bogus warning.
 
-2014-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63171
 	* rtlanal.c (tls_referenced_p): Don't skip constant subrtxes.
@@ -789,12 +789,12 @@
 	* doc/invoke.texi: Document that -Wlogical-not-parentheses is enabled
 	by -Wall.
 
-2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/rtl.texi (RTX_AUTOINC): Document that the first operand is
 	the automodified register.
 
-2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* output.h (get_some_local_dynamic_name): Declare.
 	* final.c (some_local_dynamic_name): New variable.
