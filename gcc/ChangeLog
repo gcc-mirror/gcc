@@ -1,3 +1,27 @@
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (output_move_vfp): Use UAL syntax for load/store
+	multiple.
+	(arm_print_operand): Don't convert real values to decimal
+	representation in default case.
+	(fp_immediate_constant): Delete.
+	* config/arm/arm-protos.h (fp_immediate_constant): Likewise.
+	* config/arm/vfp.md (*arm_movsi_vfp): Convert to VFP moves to UAL
+	syntax.
+	(*thumb2_movsi_vfp): Likewise.
+	(*movdi_vfp): Likewise.
+	(*movdi_vfp_cortexa8): Likewise.
+	(*movhf_vfp_neon): Likewise.
+	(*movhf_vfp): Likewise.
+	(*movsf_vfp): Likewise.
+	(*thumb2_movsf_vfp): Likewise.
+	(*movdf_vfp): Likewise.
+	(*thumb2_movdf_vfp): Likewise.
+	(*movsfcc_vfp): Likewise.
+	(*thumb2_movsfcc_vfp): Likewise.
+	(*movdfcc_vfp): Likewise.
+	(*thumb2_movdfcc_vfp): Likewise.
+
 2014-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi (-march): Use GNU/Linux rather than Linux.

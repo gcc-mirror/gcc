@@ -41,11 +41,11 @@
     case 5:
       return \"str%?\\t%1, %0\";
     case 6:
-      return \"fmsr%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?\\t%0, %1\\t%@ int\";
     case 7:
-      return \"fmrs%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?\\t%0, %1\\t%@ int\";
     case 8:
-      return \"fcpys%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?.f32\\t%0, %1\\t%@ int\";
     case 9: case 10:
       return output_move_vfp (operands);
     default:
@@ -87,11 +87,11 @@
     case 8:
       return \"str%?\\t%1, %0\";
     case 9:
-      return \"fmsr%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?\\t%0, %1\\t%@ int\";
     case 10:
-      return \"fmrs%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?\\t%0, %1\\t%@ int\";
     case 11:
-      return \"fcpys%?\\t%0, %1\\t%@ int\";
+      return \"vmov%?.f32\\t%0, %1\\t%@ int\";
     case 12: case 13:
       return output_move_vfp (operands);
     default:
@@ -130,14 +130,14 @@
     case 6:
       return output_move_double (operands, true, NULL);
     case 7:
-      return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
+      return \"vmov%?\\t%P0, %Q1, %R1\\t%@ int\";
     case 8:
-      return \"fmrrd%?\\t%Q0, %R0, %P1\\t%@ int\";
+      return \"vmov%?\\t%Q0, %R0, %P1\\t%@ int\";
     case 9:
       if (TARGET_VFP_SINGLE)
-	return \"fcpys%?\\t%0, %1\\t%@ int\;fcpys%?\\t%p0, %p1\\t%@ int\";
+	return \"vmov%?.f32\\t%0, %1\\t%@ int\;vmov%?.f32\\t%p0, %p1\\t%@ int\";
       else
-	return \"fcpyd%?\\t%P0, %P1\\t%@ int\";
+	return \"vmov%?.f64\\t%P0, %P1\\t%@ int\";
     case 10: case 11:
       return output_move_vfp (operands);
     default:
@@ -181,11 +181,11 @@
     case 6:
       return output_move_double (operands, true, NULL);
     case 7:
-      return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
+      return \"vmov%?\\t%P0, %Q1, %R1\\t%@ int\";
     case 8:
-      return \"fmrrd%?\\t%Q0, %R0, %P1\\t%@ int\";
+      return \"vmov%?\\t%Q0, %R0, %P1\\t%@ int\";
     case 9:
-      return \"fcpyd%?\\t%P0, %P1\\t%@ int\";
+      return \"vmov%?.f64\\t%P0, %P1\\t%@ int\";
     case 10: case 11:
       return output_move_vfp (operands);
     default:
@@ -229,13 +229,13 @@
     case 3:     /* memory from ARM register */
       return \"strh\\t%1, %0\\t%@ __fp16\";
     case 4:	/* S register from S register */
-      return \"fcpys\\t%0, %1\";
+      return \"vmov.f32\\t%0, %1\";
     case 5:	/* ARM register from ARM register */
       return \"mov\\t%0, %1\\t%@ __fp16\";
     case 6:	/* S register from ARM register */
-      return \"fmsr\\t%0, %1\";
+      return \"vmov\\t%0, %1\";
     case 7:	/* ARM register from S register */
-      return \"fmrs\\t%0, %1\";
+      return \"vmov\\t%0, %1\";
     case 8:	/* ARM register from constant */
       {
         REAL_VALUE_TYPE r;
@@ -280,13 +280,13 @@
     case 1:     /* memory from ARM register */
       return \"strh\\t%1, %0\\t%@ __fp16\";
     case 2:	/* S register from S register */
-      return \"fcpys\\t%0, %1\";
+      return \"vmov.f32\\t%0, %1\";
     case 3:	/* ARM register from ARM register */
       return \"mov\\t%0, %1\\t%@ __fp16\";
     case 4:	/* S register from ARM register */
-      return \"fmsr\\t%0, %1\";
+      return \"vmov\\t%0, %1\";
     case 5:	/* ARM register from S register */
-      return \"fmrs\\t%0, %1\";
+      return \"vmov\\t%0, %1\";
     case 6:	/* ARM register from constant */
       {
         REAL_VALUE_TYPE r;
@@ -322,7 +322,7 @@
 
 (define_insn "*movsf_vfp"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=t,?r,t ,t  ,Uv,r ,m,t,r")
-	(match_operand:SF 1 "general_operand"	   " ?r,t,Dv,UvE,t, mE,r,t,r"))]
+        (match_operand:SF 1 "general_operand"	   " ?r,t,Dv,UvE,t, mE,r,t,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
@@ -330,11 +330,11 @@
   switch (which_alternative)
     {
     case 0:
-      return \"fmsr%?\\t%0, %1\";
+      return \"vmov%?\\t%0, %1\";
     case 1:
-      return \"fmrs%?\\t%0, %1\";
+      return \"vmov%?\\t%0, %1\";
     case 2:
-      return \"fconsts%?\\t%0, #%G1\";
+      return \"vmov%?.f32\\t%0, %1\";
     case 3: case 4:
       return output_move_vfp (operands);
     case 5:
@@ -342,7 +342,7 @@
     case 6:
       return \"str%?\\t%1, %0\\t%@ float\";
     case 7:
-      return \"fcpys%?\\t%0, %1\";
+      return \"vmov%?.f32\\t%0, %1\";
     case 8:
       return \"mov%?\\t%0, %1\\t%@ float\";
     default:
@@ -366,11 +366,11 @@
   switch (which_alternative)
     {
     case 0:
-      return \"fmsr%?\\t%0, %1\";
+      return \"vmov%?\\t%0, %1\";
     case 1:
-      return \"fmrs%?\\t%0, %1\";
+      return \"vmov%?\\t%0, %1\";
     case 2:
-      return \"fconsts%?\\t%0, #%G1\";
+      return \"vmov%?.f32\\t%0, %1\";
     case 3: case 4:
       return output_move_vfp (operands);
     case 5:
@@ -378,7 +378,7 @@
     case 6:
       return \"str%?\\t%1, %0\\t%@ float\";
     case 7:
-      return \"fcpys%?\\t%0, %1\";
+      return \"vmov%?.f32\\t%0, %1\";
     case 8:
       return \"mov%?\\t%0, %1\\t%@ float\";
     default:
@@ -406,21 +406,21 @@
     switch (which_alternative)
       {
       case 0:
-	return \"fmdrr%?\\t%P0, %Q1, %R1\";
+	return \"vmov%?\\t%P0, %Q1, %R1\";
       case 1:
-	return \"fmrrd%?\\t%Q0, %R0, %P1\";
+	return \"vmov%?\\t%Q0, %R0, %P1\";
       case 2:
 	gcc_assert (TARGET_VFP_DOUBLE);
-        return \"fconstd%?\\t%P0, #%G1\";
+        return \"vmov%?.f64\\t%P0, %1\";
       case 3: case 4:
 	return output_move_vfp (operands);
       case 5: case 6:
 	return output_move_double (operands, true, NULL);
       case 7:
 	if (TARGET_VFP_SINGLE)
-	  return \"fcpys%?\\t%0, %1\;fcpys%?\\t%p0, %p1\";
+	  return \"vmov%?.f32\\t%0, %1\;vmov%?.f32\\t%p0, %p1\";
 	else
-	  return \"fcpyd%?\\t%P0, %P1\";
+	  return \"vmov%?.f64\\t%P0, %P1\";
       case 8:
         return \"#\";
       default:
@@ -453,21 +453,21 @@
     switch (which_alternative)
       {
       case 0:
-	return \"fmdrr%?\\t%P0, %Q1, %R1\";
+	return \"vmov%?\\t%P0, %Q1, %R1\";
       case 1:
-	return \"fmrrd%?\\t%Q0, %R0, %P1\";
+	return \"vmov%?\\t%Q0, %R0, %P1\";
       case 2:
 	gcc_assert (TARGET_VFP_DOUBLE);
-	return \"fconstd%?\\t%P0, #%G1\";
+	return \"vmov%?.f64\\t%P0, %1\";
       case 3: case 4:
 	return output_move_vfp (operands);
       case 5: case 6: case 8:
 	return output_move_double (operands, true, NULL);
       case 7:
 	if (TARGET_VFP_SINGLE)
-	  return \"fcpys%?\\t%0, %1\;fcpys%?\\t%p0, %p1\";
+	  return \"vmov%?.f32\\t%0, %1\;vmov%?.f32\\t%p0, %p1\";
 	else
-	  return \"fcpyd%?\\t%P0, %P1\";
+	  return \"vmov%?.f64\\t%P0, %P1\";
       default:
 	abort ();
       }
@@ -498,15 +498,15 @@
 	  (match_operand:SF 2 "s_register_operand" "t,0,t,?r,0,?r,t,0,t")))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
-   fcpys%D3\\t%0, %2
-   fcpys%d3\\t%0, %1
-   fcpys%D3\\t%0, %2\;fcpys%d3\\t%0, %1
-   fmsr%D3\\t%0, %2
-   fmsr%d3\\t%0, %1
-   fmsr%D3\\t%0, %2\;fmsr%d3\\t%0, %1
-   fmrs%D3\\t%0, %2
-   fmrs%d3\\t%0, %1
-   fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
+   vmov%D3.f32\\t%0, %2
+   vmov%d3.f32\\t%0, %1
+   vmov%D3.f32\\t%0, %2\;vmov%d3.f32\\t%0, %1
+   vmov%D3\\t%0, %2
+   vmov%d3\\t%0, %1
+   vmov%D3\\t%0, %2\;vmov%d3\\t%0, %1
+   vmov%D3\\t%0, %2
+   vmov%d3\\t%0, %1
+   vmov%D3\\t%0, %2\;vmov%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
     (set_attr "type" "fmov,fmov,fmov,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
@@ -521,15 +521,15 @@
 	  (match_operand:SF 2 "s_register_operand" "t,0,t,?r,0,?r,t,0,t")))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP && !arm_restrict_it"
   "@
-   it\\t%D3\;fcpys%D3\\t%0, %2
-   it\\t%d3\;fcpys%d3\\t%0, %1
-   ite\\t%D3\;fcpys%D3\\t%0, %2\;fcpys%d3\\t%0, %1
-   it\\t%D3\;fmsr%D3\\t%0, %2
-   it\\t%d3\;fmsr%d3\\t%0, %1
-   ite\\t%D3\;fmsr%D3\\t%0, %2\;fmsr%d3\\t%0, %1
-   it\\t%D3\;fmrs%D3\\t%0, %2
-   it\\t%d3\;fmrs%d3\\t%0, %1
-   ite\\t%D3\;fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
+   it\\t%D3\;vmov%D3.f32\\t%0, %2
+   it\\t%d3\;vmov%d3.f32\\t%0, %1
+   ite\\t%D3\;vmov%D3.f32\\t%0, %2\;vmov%d3.f32\\t%0, %1
+   it\\t%D3\;vmov%D3\\t%0, %2
+   it\\t%d3\;vmov%d3\\t%0, %1
+   ite\\t%D3\;vmov%D3\\t%0, %2\;vmov%d3\\t%0, %1
+   it\\t%D3\;vmov%D3\\t%0, %2
+   it\\t%d3\;vmov%d3\\t%0, %1
+   ite\\t%D3\;vmov%D3\\t%0, %2\;vmov%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
     (set_attr "type" "fmov,fmov,fmov,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
@@ -544,15 +544,15 @@
 	  (match_operand:DF 2 "s_register_operand" "w,0,w,?r,0,?r,w,0,w")))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "@
-   fcpyd%D3\\t%P0, %P2
-   fcpyd%d3\\t%P0, %P1
-   fcpyd%D3\\t%P0, %P2\;fcpyd%d3\\t%P0, %P1
-   fmdrr%D3\\t%P0, %Q2, %R2
-   fmdrr%d3\\t%P0, %Q1, %R1
-   fmdrr%D3\\t%P0, %Q2, %R2\;fmdrr%d3\\t%P0, %Q1, %R1
-   fmrrd%D3\\t%Q0, %R0, %P2
-   fmrrd%d3\\t%Q0, %R0, %P1
-   fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
+   vmov%D3.f64\\t%P0, %P2
+   vmov%d3.f64\\t%P0, %P1
+   vmov%D3.f64\\t%P0, %P2\;vmov%d3.f64\\t%P0, %P1
+   vmov%D3\\t%P0, %Q2, %R2
+   vmov%d3\\t%P0, %Q1, %R1
+   vmov%D3\\t%P0, %Q2, %R2\;vmov%d3\\t%P0, %Q1, %R1
+   vmov%D3\\t%Q0, %R0, %P2
+   vmov%d3\\t%Q0, %R0, %P1
+   vmov%D3\\t%Q0, %R0, %P2\;vmov%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
     (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcr,f_mrrc,f_mrrc,f_mrrc")]
@@ -567,15 +567,15 @@
 	  (match_operand:DF 2 "s_register_operand" "w,0,w,?r,0,?r,w,0,w")))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE && !arm_restrict_it"
   "@
-   it\\t%D3\;fcpyd%D3\\t%P0, %P2
-   it\\t%d3\;fcpyd%d3\\t%P0, %P1
-   ite\\t%D3\;fcpyd%D3\\t%P0, %P2\;fcpyd%d3\\t%P0, %P1
-   it\t%D3\;fmdrr%D3\\t%P0, %Q2, %R2
-   it\t%d3\;fmdrr%d3\\t%P0, %Q1, %R1
-   ite\\t%D3\;fmdrr%D3\\t%P0, %Q2, %R2\;fmdrr%d3\\t%P0, %Q1, %R1
-   it\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2
-   it\t%d3\;fmrrd%d3\\t%Q0, %R0, %P1
-   ite\\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
+   it\\t%D3\;vmov%D3.f64\\t%P0, %P2
+   it\\t%d3\;vmov%d3.f64\\t%P0, %P1
+   ite\\t%D3\;vmov%D3.f64\\t%P0, %P2\;vmov%d3.f64\\t%P0, %P1
+   it\t%D3\;vmov%D3\\t%P0, %Q2, %R2
+   it\t%d3\;vmov%d3\\t%P0, %Q1, %R1
+   ite\\t%D3\;vmov%D3\\t%P0, %Q2, %R2\;vmov%d3\\t%P0, %Q1, %R1
+   it\t%D3\;vmov%D3\\t%Q0, %R0, %P2
+   it\t%d3\;vmov%d3\\t%Q0, %R0, %P1
+   ite\\t%D3\;vmov%D3\\t%Q0, %R0, %P2\;vmov%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
     (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcrr,f_mrrc,f_mrrc,f_mrrc")]

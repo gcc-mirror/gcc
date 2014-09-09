@@ -126,14 +126,14 @@ void test_convert () {
 }
 
 void test_ldst (float f[], double d[]) {
-  /* { dg-final { scan-assembler "flds.+ \\\[r0, #1020\\\]" } } */
-  /* { dg-final { scan-assembler "flds.+ \\\[r\[0-9\], #-1020\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
+  /* { dg-final { scan-assembler "vldr.32.+ \\\[r0, #1020\\\]" } } */
+  /* { dg-final { scan-assembler "vldr.32.+ \\\[r\[0-9\], #-1020\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
   /* { dg-final { scan-assembler "add.+ r0, #1024" } } */
-  /* { dg-final { scan-assembler "fsts.+ \\\[r\[0-9\]\\\]\n" } } */
+  /* { dg-final { scan-assembler "vstr.32.+ \\\[r\[0-9\]\\\]\n" } } */
   f[256] = f[255] + f[-255];
 
-  /* { dg-final { scan-assembler "fldd.+ \\\[r1, #1016\\\]" } } */
-  /* { dg-final { scan-assembler "fldd.+ \\\[r\[1-9\], #-1016\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
-  /* { dg-final { scan-assembler "fstd.+ \\\[r1, #256\\\]" } } */
+  /* { dg-final { scan-assembler "vldr.64.+ \\\[r1, #1016\\\]" } } */
+  /* { dg-final { scan-assembler "vldr.64.+ \\\[r\[1-9\], #-1016\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
+  /* { dg-final { scan-assembler "vstr.64.+ \\\[r1, #256\\\]" } } */
   d[32] = d[127] + d[-127];
 }

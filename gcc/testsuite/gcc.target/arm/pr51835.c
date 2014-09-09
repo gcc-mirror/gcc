@@ -13,5 +13,5 @@ unsigned int func2 (double d)
   return (unsigned int)d;
 }
 
-/* { dg-final { scan-assembler-times "fmrrd\[\\t \]+r0,\[\\t \]*r1,\[\\t \]*d0" 2 { target { arm_little_endian } } } } */
-/* { dg-final { scan-assembler-times "fmrrd\[\\t \]+r1,\[\\t \]*r0,\[\\t \]*d0" 2 { target { ! arm_little_endian } } } } */
+/* { dg-final { scan-assembler-times "vmov\[\\t \]+r0,\[\\t \]*r1,\[\\t \]*d0" 2 { target { arm_little_endian } } } } */
+/* { dg-final { scan-assembler-times "vmov\[\\t \]+r1,\[\\t \]*r0,\[\\t \]*d0" 2 { target { ! arm_little_endian } } } } */

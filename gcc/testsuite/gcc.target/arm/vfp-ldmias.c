@@ -13,4 +13,4 @@ foo (float *p, float a, int n)
   while (n--);
 }
 
-/* { dg-final { scan-assembler "fldmias" } } */
+/* { dg-final { scan-assembler "vldmia.32" } } */
