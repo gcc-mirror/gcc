@@ -1,3 +1,11 @@
+2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* shrink-wrap.h: #define SHRINK_WRAPPING_ENABLED.
+	* ira.c: #include "shrink-wrap.h"
+	(split_live_ranges_for_shrink_wrap): Use SHRINK_WRAPPING_ENABLED.
+	* ifcvt.c: #include "shrink-wrap.h"
+	(dead_or_predicable): Use SHRINK_WRAPPING_ENABLED.
+
 2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* common/config/picochip/picochip-common.c: Remove.
