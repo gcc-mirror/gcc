@@ -1,3 +1,226 @@
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* caller-save.c (rtx saveinsn): Strengthen this variable from rtx
+	to rtx_insn *.
+	(restinsn): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_move):
+	Likewise for param.
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move):
+	Likewise.
+	* config/arc/arc-protos.h (arc_adjust_insn_length): Likewise for
+	first param.
+	(arc_hazard): Likewise for both params.
+	* config/arc/arc.c (arc600_corereg_hazard): Likewise, adding
+	checked casts to rtx_sequence * and uses of the insn method for
+	type-safety.
+	(arc_hazard): Strengthen both params from rtx to rtx_insn *.
+	(arc_adjust_insn_length): Likewise for param "insn".
+	(struct insn_length_parameters_s): Likewise for first param of
+	"get_variants" callback field.
+	(arc_get_insn_variants): Likewise for first param and local
+	"inner".  Replace a check of GET_CODE with a dyn_cast to
+	rtx_sequence *, using methods for type-safety and clarity.
+	* config/arc/arc.h (ADJUST_INSN_LENGTH): Use casts to
+	rtx_sequence * and uses of the insn method for type-safety when
+	invoking arc_adjust_insn_length.
+	* config/arm/arm-protos.h (arm_attr_length_move_neon): Likewise
+	for param.
+	(arm_address_offset_is_imm): Likewise.
+	(struct tune_params): Likewise for params 1 and 3 of the
+	"sched_adjust_cost" callback field.
+	* config/arm/arm.c (cortex_a9_sched_adjust_cost): Likewise for
+	params 1 and 3 ("insn" and "dep").
+	(xscale_sched_adjust_cost): Likewise.
+	(fa726te_sched_adjust_cost): Likewise.
+	(cortexa7_older_only): Likewise for param "insn".
+	(cortexa7_younger): Likewise.
+	(arm_attr_length_move_neon): Likewise.
+	(arm_address_offset_is_imm): Likewise.
+	* config/avr/avr-protos.h (avr_notice_update_cc): Likewise.
+	* config/avr/avr.c (avr_notice_update_cc): Likewise.
+	* config/bfin/bfin.c (hwloop_pattern_reg): Likewise.
+	(workaround_speculation): Likewise for local "last_condjump".
+	* config/c6x/c6x.c (shadow_p): Likewise for param "insn".
+	(shadow_or_blockage_p): Likewise.
+	(get_unit_reqs): Likewise.
+	(get_unit_operand_masks): Likewise.
+	(c6x_registers_update): Likewise.
+	(returning_call_p): Likewise.
+	(can_use_callp): Likewise.
+	(convert_to_callp): Likewise.
+	(find_last_same_clock): Likwise for local "t".
+	(reorg_split_calls): Likewise for local "shadow".
+	(hwloop_pattern_reg): Likewise for param "insn".
+	* config/frv/frv-protos.h (frv_final_prescan_insn): Likewise.
+	* config/frv/frv.c (frv_final_prescan_insn): Likewise.
+	(frv_extract_membar): Likewise.
+	(frv_optimize_membar_local): Strengthen param "last_membar" from
+	rtx * to rtx_insn **.
+	(frv_optimize_membar_global): Strengthen param "membar" from rtx
+	to rtx_insn *.
+	(frv_optimize_membar): Strengthen local "last_membar" from rtx *
+	to rtx_insn **.
+	* config/ia64/ia64-protos.h (ia64_st_address_bypass_p): Strengthen
+	both params from rtx to rtx_insn *.
+	(ia64_ld_address_bypass_p): Likewise.
+	* config/ia64/ia64.c (ia64_safe_itanium_class): Likewise for param
+	"insn".
+	(ia64_safe_type): Likewise.
+	(group_barrier_needed): Likewise.
+	(safe_group_barrier_needed): Likewise.
+	(ia64_single_set): Likewise.
+	(is_load_p): Likewise.
+	(record_memory_reference): Likewise.
+	(get_mode_no_for_insn): Likewise.
+	(important_for_bundling_p): Likewise.
+	(unknown_for_bundling_p): Likewise.
+	(ia64_st_address_bypass_p): Likewise for both params.
+	(ia64_ld_address_bypass_p): Likewise.
+	(expand_vselect): Introduce new local rtx_insn * "insn", using it
+	in place of rtx "x" after the emit_insn call.
+	* config/i386/i386-protos.h (x86_extended_QIreg_mentioned_p):
+	Strengthen param from rtx to rtx_insn *.
+	(ix86_agi_dependent): Likewise for both params.
+	(ix86_attr_length_immediate_default): Likewise for param 1.
+	(ix86_attr_length_address_default): Likewise for param.
+	(ix86_attr_length_vex_default): Likewise for param 1.
+	* config/i386/i386.c (ix86_attr_length_immediate_default):
+	Likewise for param "insn".
+	(ix86_attr_length_address_default): Likewise.
+	(ix86_attr_length_vex_default): Likewise.
+	(ix86_agi_dependent): Likewise for both params.
+	(x86_extended_QIreg_mentioned_p): Likewise for param "insn".
+	(vselect_insn): Likewise for this variable.
+	* config/m68k/m68k-protos.h (m68k_sched_attr_opx_type): Likewise
+	for param 1.
+	(m68k_sched_attr_opy_type): Likewise.
+	* config/m68k/m68k.c (sched_get_operand): Likewise.
+	(sched_attr_op_type): Likewise.
+	(m68k_sched_attr_opx_type): Likewise.
+	(m68k_sched_attr_opy_type): Likewise.
+	(sched_get_reg_operand): Likewise.
+	(sched_get_mem_operand): Likewise.
+	(m68k_sched_address_bypass_p): Likewise for both params.
+	(sched_get_indexed_address_scale): Likewise.
+	(m68k_sched_indexed_address_bypass_p): Likewise.
+	* config/m68k/m68k.h (m68k_sched_address_bypass_p): Likewise.
+	(m68k_sched_indexed_address_bypass_p): Likewise.
+	* config/mep/mep.c (mep_jmp_return_reorg): Strengthen locals
+	"label", "ret" from rtx to rtx_insn *, adding a checked cast and
+	removing another.
+	* config/mips/mips-protos.h (mips_linked_madd_p): Strengthen both
+	params from rtx to rtx_insn *.
+	(mips_fmadd_bypass): Likewise.
+	* config/mips/mips.c (mips_fmadd_bypass): Likewise.
+	(mips_linked_madd_p): Likewise.
+	(mips_macc_chains_last_hilo): Likewise for this variable.
+	(mips_macc_chains_record): Likewise for param.
+	(vr4130_last_insn): Likewise for this variable.
+	(vr4130_swap_insns_p): Likewise for both params.
+	(mips_ls2_variable_issue): Likewise for param.
+	(mips_need_noat_wrapper_p): Likewise for param "insn".
+	(mips_expand_vselect): Add a new local rtx_insn * "insn", using it
+	in place of "x" after the emit_insn.
+	* config/pa/pa-protos.h (pa_fpstore_bypass_p): Strengthen both
+	params from rtx to rtx_insn *.
+	* config/pa/pa.c (pa_fpstore_bypass_p): Likewise.
+	(pa_combine_instructions): Introduce local "par" for result of
+	gen_rtx_PARALLEL, moving decl and usage of new_rtx for after call
+	to make_insn_raw.
+	(pa_can_combine_p): Strengthen param "new_rtx" from rtx to rtx_insn *.
+	* config/rl78/rl78.c (insn_ok_now): Likewise for param "insn".
+	(rl78_alloc_physical_registers_op1): Likewise.
+	(rl78_alloc_physical_registers_op2): Likewise.
+	(rl78_alloc_physical_registers_ro1): Likewise.
+	(rl78_alloc_physical_registers_cmp): Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	(rl78_alloc_address_registers_macax): Likewise.
+	(rl78_alloc_physical_registers): Likewise for locals "insn", "curr".
+	* config/s390/predicates.md (execute_operation): Likewise for
+	local "insn".
+	* config/s390/s390-protos.h (s390_agen_dep_p): Likewise for both
+	params.
+	* config/s390/s390.c (s390_safe_attr_type): Likewise for param.
+	(addr_generation_dependency_p): Likewise for param "insn".
+	(s390_agen_dep_p): Likewise for both params.
+	(s390_fpload_toreg): Likewise for param "insn".
+	* config/sh/sh-protos.h (sh_loop_align): Likewise for param.
+	* config/sh/sh.c (sh_loop_align): Likewise for param and local
+	"next".
+	* config/sh/sh.md (define_peephole2): Likewise for local "insn2".
+	* config/sh/sh_treg_combine.cc
+	(sh_treg_combine::make_inv_ccreg_insn): Likewise for return type
+	and local "i".
+	(sh_treg_combine::try_eliminate_cstores): Likewise for local "i".
+	* config/stormy16/stormy16.c (combine_bnp): Likewise for locals
+	"and_insn", "load", "shift".
+	* config/tilegx/tilegx.c (match_pcrel_step2): Likewise for param
+	"insn".
+	* final.c (final_scan_insn): Introduce local rtx_insn * "other"
+	for XEXP (note, 0) of the REG_CC_SETTER note.
+	(cleanup_subreg_operands): Strengthen param "insn" from rtx to
+	rtx_insn *, eliminating a checked cast made redundant by this.
+	* gcse.c (process_insert_insn): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	* genattr.c (main): When writing out the prototype to
+	const_num_delay_slots, strengthen the param from rtx to
+	rtx_insn *.
+	* genattrtab.c (write_const_num_delay_slots): Likewise when
+	writing out the implementation of const_num_delay_slots.
+	* hw-doloop.h (struct hw_doloop_hooks): Strengthen the param
+	"insn" of callback field "end_pattern_reg" from rtx to rtx_insn *.
+	* ifcvt.c (noce_emit_store_flag): Eliminate local rtx "tmp" in
+	favor of new rtx locals "src" and "set" and new local rtx_insn *
+	"insn" and "seq".
+	(noce_emit_move_insn): Strengthen locals "seq" and "insn" from rtx
+	to rtx_insn *.
+	(noce_emit_cmove): Eliminate local rtx "tmp" in favor of new rtx
+	locals "cond", "if_then_else", "set" and new rtx_insn * locals
+	"insn" and "seq".
+	(noce_try_cmove_arith): Strengthen locals "insn_a" and "insn_b",
+	"last" from rtx to rtx_insn *.  Likewise for a local "tmp",
+	renaming to "tmp_insn".  Eliminate the other local rtx "tmp" from
+	the top-level scope, replacing with new more tightly-scoped rtx
+	locals "reg", "pat", "mem" and rtx_insn * "insn", "copy_of_a",
+	"new_insn", "copy_of_insn_b", and make local rtx "set" more
+	tightly-scoped.
+	* ira-int.h (ira_setup_alts): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise for local
+	"move_insn".
+	(ira_setup_alts): Likewise for param "insn".
+	* lra-constraints.c (emit_inc): Likewise for local "add_insn".
+	* lra.c (emit_add3_insn): Split local rtx "insn" in two, an rtx
+	and an rtx_insn *.
+	(lra_emit_add): Eliminate top-level local rtx "insn" in favor of
+	new more-tightly scoped rtx locals "add3_insn", "insn",
+	"add2_insn" and rtx_insn * "move_insn".
+	* postreload-gcse.c (eliminate_partially_redundant_load): Add
+	checked cast on result of gen_move_insn when invoking
+	extract_insn.
+	* recog.c (insn_invalid_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(verify_changes): Add a checked cast on "object" when invoking
+	insn_invalid_p.
+	(extract_insn_cached): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(extract_constrain_insn_cached): Likewise.
+	(extract_insn): Likewise.
+	* recog.h (insn_invalid_p): Likewise for param 1.
+	(recog_memoized): Likewise for param.
+	(extract_insn): Likewise.
+	(extract_constrain_insn_cached): Likewise.
+	(extract_insn_cached): Likewise.
+	* reload.c (can_reload_into): Likewise for local "test_insn".
+	* reload.h (cleanup_subreg_operands): Likewise for param.
+	* reload1.c (emit_insn_if_valid_for_reload): Rename param from
+	"insn" to "pat", reintroducing "insn" as an rtx_insn * on the
+	result of emit_insn.  Remove a checked cast made redundant by this
+	change.
+	* sel-sched-ir.c (sel_insn_rtx_cost): Strengthen param "insn" from
+	rtx to rtx_insn *.
+	* sel-sched.c (get_reg_class): Likewise.
+
 2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 

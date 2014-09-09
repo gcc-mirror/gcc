@@ -57,7 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return nonzero if there is a bypass for the output of 
    OUT_INSN and the fp store IN_INSN.  */
 int
-pa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
+pa_fpstore_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   enum machine_mode store_mode;
   enum machine_mode other_mode;
@@ -99,7 +99,8 @@ static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
 static inline rtx force_mode (enum machine_mode, rtx);
 static void pa_reorg (void);
 static void pa_combine_instructions (void);
-static int pa_can_combine_p (rtx, rtx_insn *, rtx_insn *, int, rtx, rtx, rtx);
+static int pa_can_combine_p (rtx_insn *, rtx_insn *, rtx_insn *, int, rtx,
+			     rtx, rtx);
 static bool forward_branch_p (rtx_insn *);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static void compute_zdepdi_operands (unsigned HOST_WIDE_INT, unsigned *);
@@ -8996,7 +8997,6 @@ static void
 pa_combine_instructions (void)
 {
   rtx_insn *anchor;
-  rtx new_rtx;
 
   /* This can get expensive since the basic algorithm is on the
      order of O(n^2) (or worse).  Only do it for -O2 or higher
@@ -9008,8 +9008,8 @@ pa_combine_instructions (void)
      may be combined with "floating" insns.  As the name implies,
      "anchor" instructions don't move, while "floating" insns may
      move around.  */
-  new_rtx = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, NULL_RTX, NULL_RTX));
-  new_rtx = make_insn_raw (new_rtx);
+  rtx par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, NULL_RTX, NULL_RTX));
+  rtx_insn *new_rtx = make_insn_raw (par);
 
   for (anchor = get_insns (); anchor; anchor = NEXT_INSN (anchor))
     {
@@ -9178,7 +9178,7 @@ pa_combine_instructions (void)
 }
 
 static int
-pa_can_combine_p (rtx new_rtx, rtx_insn *anchor, rtx_insn *floater,
+pa_can_combine_p (rtx_insn *new_rtx, rtx_insn *anchor, rtx_insn *floater,
 		  int reversed, rtx dest,
 		  rtx src1, rtx src2)
 {

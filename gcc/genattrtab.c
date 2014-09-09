@@ -4694,7 +4694,7 @@ write_const_num_delay_slots (FILE *outf)
 
   if (attr)
     {
-      fprintf (outf, "int\nconst_num_delay_slots (rtx insn)\n");
+      fprintf (outf, "int\nconst_num_delay_slots (rtx_insn *insn)\n");
       fprintf (outf, "{\n");
       fprintf (outf, "  switch (recog_memoized (insn))\n");
       fprintf (outf, "    {\n");

@@ -446,7 +446,7 @@ extern void setup_save_areas (void);
 extern void save_call_clobbered_regs (void);
 
 /* Replace (subreg (reg)) with the appropriate (reg) for any operands.  */
-extern void cleanup_subreg_operands (rtx);
+extern void cleanup_subreg_operands (rtx_insn *);
 
 /* Debugging support.  */
 extern void debug_reload_to_stream (FILE *);

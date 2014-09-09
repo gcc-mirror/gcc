@@ -8009,7 +8009,7 @@ aarch64_simd_disambiguate_copy (rtx *operands, rtx *dest,
 /* Compute and return the length of aarch64_simd_mov<mode>, where <mode> is
    one of VSTRUCT modes: OI, CI or XI.  */
 int
-aarch64_simd_attr_length_move (rtx insn)
+aarch64_simd_attr_length_move (rtx_insn *insn)
 {
   enum machine_mode mode;
 

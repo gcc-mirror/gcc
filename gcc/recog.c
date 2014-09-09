@@ -316,7 +316,7 @@ canonicalize_change_group (rtx insn, rtx x)
    Otherwise the changes will take effect immediately.  */
 
 int
-insn_invalid_p (rtx insn, bool in_group)
+insn_invalid_p (rtx_insn *insn, bool in_group)
 {
   rtx pat = PATTERN (insn);
   int num_clobbers = 0;
@@ -424,7 +424,7 @@ verify_changes (int num)
 	}
       else if (DEBUG_INSN_P (object))
 	continue;
-      else if (insn_invalid_p (object, true))
+      else if (insn_invalid_p (as_a <rtx_insn *> (object), true))
 	{
 	  rtx pat = PATTERN (object);
 
@@ -2100,7 +2100,7 @@ get_enabled_alternatives (rtx insn)
    valid information.  This is used primary by gen_attr infrastructure that
    often does extract insn again and again.  */
 void
-extract_insn_cached (rtx insn)
+extract_insn_cached (rtx_insn *insn)
 {
   if (recog_data.insn == insn && INSN_CODE (insn) >= 0)
     return;
@@ -2111,7 +2111,7 @@ extract_insn_cached (rtx insn)
 /* Do cached extract_insn, constrain_operands and complain about failures.
    Used by insn_attrtab.  */
 void
-extract_constrain_insn_cached (rtx insn)
+extract_constrain_insn_cached (rtx_insn *insn)
 {
   extract_insn_cached (insn);
   if (which_alternative == -1
@@ -2132,7 +2132,7 @@ constrain_operands_cached (int strict)
 /* Analyze INSN and fill in recog_data.  */
 
 void
-extract_insn (rtx insn)
+extract_insn (rtx_insn *insn)
 {
   int i;
   int icode;

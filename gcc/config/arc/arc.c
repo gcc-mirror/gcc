@@ -7739,7 +7739,7 @@ arc600_corereg_hazard_1 (rtx *xp, void *data)
    between PRED and SUCC to prevent a hazard.  */
 
 static int
-arc600_corereg_hazard (rtx pred, rtx succ)
+arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   if (!TARGET_ARC600)
     return 0;
@@ -7752,9 +7752,9 @@ arc600_corereg_hazard (rtx pred, rtx succ)
   if (recog_memoized (succ) == CODE_FOR_doloop_begin_i)
     return 0;
   if (GET_CODE (PATTERN (pred)) == SEQUENCE)
-    pred = XVECEXP (PATTERN (pred), 0, 1);
+    pred = as_a <rtx_sequence *> (PATTERN (pred))->insn (1);
   if (GET_CODE (PATTERN (succ)) == SEQUENCE)
-    succ = XVECEXP (PATTERN (succ), 0, 0);
+    succ = as_a <rtx_sequence *> (PATTERN (succ))->insn (0);
   if (recog_memoized (pred) == CODE_FOR_mulsi_600
       || recog_memoized (pred) == CODE_FOR_umul_600
       || recog_memoized (pred) == CODE_FOR_mac_600
@@ -7773,7 +7773,7 @@ arc600_corereg_hazard (rtx pred, rtx succ)
    between PRED and SUCC to prevent a hazard.  */
 
 int
-arc_hazard (rtx pred, rtx succ)
+arc_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   if (!TARGET_ARC600)
     return 0;
@@ -7793,7 +7793,7 @@ arc_hazard (rtx pred, rtx succ)
 /* Return length adjustment for INSN.  */
 
 int
-arc_adjust_insn_length (rtx insn, int len, bool)
+arc_adjust_insn_length (rtx_insn *insn, int len, bool)
 {
   if (!INSN_P (insn))
     return len;
@@ -7889,7 +7889,7 @@ typedef struct insn_length_parameters_s
   int align_unit_log;
   int align_base_log;
   int max_variants;
-  int (*get_variants) (rtx, int, bool, bool, insn_length_variant_t *);
+  int (*get_variants) (rtx_insn *, int, bool, bool, insn_length_variant_t *);
 } insn_length_parameters_t;
 
 static void
@@ -7897,7 +7897,7 @@ arc_insn_length_parameters (insn_length_parameters_t *ilp) ATTRIBUTE_UNUSED;
 #endif
 
 static int
-arc_get_insn_variants (rtx insn, int len, bool, bool target_p,
+arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
 		       insn_length_variant_t *ilv)
 {
   if (!NONDEBUG_INSN_P (insn))
@@ -7907,15 +7907,15 @@ arc_get_insn_variants (rtx insn, int len, bool, bool target_p,
      get_variants mechanism, so turn this off for now.  */
   if (optimize_size)
     return 0;
-  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (rtx_sequence *pat = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {
       /* The interaction of a short delay slot insn with a short branch is
 	 too weird for shorten_branches to piece together, so describe the
 	 entire SEQUENCE.  */
-      rtx pat, inner;
+      rtx_insn *inner;
       if (TARGET_UPSIZE_DBR
-	  && get_attr_length (XVECEXP ((pat = PATTERN (insn)), 0, 1)) <= 2
-	  && (((type = get_attr_type (inner = XVECEXP (pat, 0, 0)))
+	  && get_attr_length (XVECEXP (pat, 0, 1)) <= 2
+	  && (((type = get_attr_type (inner = pat->insn (0)))
 	       == TYPE_UNCOND_BRANCH)
 	      || type == TYPE_BRANCH)
 	  && get_attr_delay_slot_filled (inner) == DELAY_SLOT_FILLED_YES)

@@ -1737,7 +1737,8 @@ static void
 setup_prohibited_mode_move_regs (void)
 {
   int i, j;
-  rtx test_reg1, test_reg2, move_pat, move_insn;
+  rtx test_reg1, test_reg2, move_pat;
+  rtx_insn *move_insn;
 
   if (ira_prohibited_mode_move_regs_initialized_p)
     return;
@@ -1773,7 +1774,7 @@ setup_prohibited_mode_move_regs (void)
 
 /* Setup possible alternatives in ALTS for INSN.  */
 void
-ira_setup_alts (rtx insn, HARD_REG_SET &alts)
+ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 {
   /* MAP nalt * nop -> start of constraints for given operand and
      alternative */

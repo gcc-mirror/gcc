@@ -4594,7 +4594,7 @@ replace_mov_pcrel_step1 (rtx_insn *insn)
 /* Returns true if INSN is the second instruction of a pc-relative
    address compuatation.  */
 static bool
-match_pcrel_step2 (rtx insn)
+match_pcrel_step2 (rtx_insn *insn)
 {
   rtx unspec;
   rtx addr;

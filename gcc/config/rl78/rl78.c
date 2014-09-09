@@ -2145,7 +2145,7 @@ rl78_es_base (rtx addr)
    carefully to ensure that all the constraint information is accurate
    for the newly matched insn.  */
 static bool
-insn_ok_now (rtx insn)
+insn_ok_now (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   int i;
@@ -2617,7 +2617,7 @@ move_to_de (int opno, rtx before)
 
 /* Devirtualize an insn of the form (SET (op) (unop (op))).  */
 static void
-rl78_alloc_physical_registers_op1 (rtx insn)
+rl78_alloc_physical_registers_op1 (rtx_insn *insn)
 {
   /* op[0] = func op[1] */
 
@@ -2696,7 +2696,7 @@ has_constraint (unsigned int opnum, enum constraint_num constraint)
 
 /* Devirtualize an insn of the form (SET (op) (binop (op) (op))).  */
 static void
-rl78_alloc_physical_registers_op2 (rtx insn)
+rl78_alloc_physical_registers_op2 (rtx_insn *insn)
 {
   rtx prev;
   rtx first;
@@ -2850,7 +2850,7 @@ rl78_alloc_physical_registers_op2 (rtx insn)
 
 /* Devirtualize an insn of the form SET (PC) (MEM/REG).  */
 static void
-rl78_alloc_physical_registers_ro1 (rtx insn)
+rl78_alloc_physical_registers_ro1 (rtx_insn *insn)
 {
   OP (0) = transcode_memory_rtx (OP (0), BC, insn);
 
@@ -2863,7 +2863,7 @@ rl78_alloc_physical_registers_ro1 (rtx insn)
 
 /* Devirtualize a compare insn.  */
 static void
-rl78_alloc_physical_registers_cmp (rtx insn)
+rl78_alloc_physical_registers_cmp (rtx_insn *insn)
 {
   int tmp_id;
   rtx saved_op1;
@@ -2956,7 +2956,7 @@ rl78_alloc_physical_registers_cmp (rtx insn)
 
 /* Like op2, but AX = A * X.  */
 static void
-rl78_alloc_physical_registers_umul (rtx insn)
+rl78_alloc_physical_registers_umul (rtx_insn *insn)
 {
   rtx prev = prev_nonnote_nondebug_insn (insn);
   rtx first;
@@ -3020,7 +3020,7 @@ rl78_alloc_physical_registers_umul (rtx insn)
 }
 
 static void
-rl78_alloc_address_registers_macax (rtx insn)
+rl78_alloc_address_registers_macax (rtx_insn *insn)
 {
   int which, op;
   bool replace_in_op0 = false;
@@ -3085,7 +3085,7 @@ rl78_alloc_physical_registers (void)
      registers.  At this point, we need to assign physical registers
      to the vitual ones, and copy in/out as needed.  */
 
-  rtx insn, curr;
+  rtx_insn *insn, *curr;
   enum attr_valloc valloc_method;
 
   for (insn = get_insns (); insn; insn = curr)

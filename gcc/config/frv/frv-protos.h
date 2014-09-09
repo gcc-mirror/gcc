@@ -45,7 +45,7 @@ extern rtx frv_return_addr_rtx			(int, rtx);
 extern rtx frv_index_memory			(rtx, enum machine_mode, int);
 extern const char *frv_asm_output_opcode
 				 	(FILE *, const char *);
-extern void frv_final_prescan_insn	(rtx, rtx *, int);
+extern void frv_final_prescan_insn	(rtx_insn *, rtx *, int);
 extern void frv_emit_move		(enum machine_mode, rtx, rtx);
 extern int frv_emit_movsi		(rtx, rtx);
 extern const char *output_move_single	(rtx *, rtx);

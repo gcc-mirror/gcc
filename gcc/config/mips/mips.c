@@ -13032,7 +13032,7 @@ mips_output_division (const char *division, rtx *operands)
    madd.s a, dst, b, c  */
 
 bool
-mips_fmadd_bypass (rtx out_insn, rtx in_insn)
+mips_fmadd_bypass (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   int dst_reg, src_reg;
   
@@ -13055,7 +13055,7 @@ mips_fmadd_bypass (rtx out_insn, rtx in_insn)
    instruction and if OUT_INSN assigns to the accumulator operand.  */
 
 bool
-mips_linked_madd_p (rtx out_insn, rtx in_insn)
+mips_linked_madd_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   enum attr_accum_in accum_in;
   int accum_in_opnum;
@@ -13364,13 +13364,13 @@ mips_maybe_swap_ready (rtx_insn **ready, int pos1, int pos2, int limit)
 
 /* Used by TUNE_MACC_CHAINS to record the last scheduled instruction
    that may clobber hi or lo.  */
-static rtx mips_macc_chains_last_hilo;
+static rtx_insn *mips_macc_chains_last_hilo;
 
 /* A TUNE_MACC_CHAINS helper function.  Record that instruction INSN has
    been scheduled, updating mips_macc_chains_last_hilo appropriately.  */
 
 static void
-mips_macc_chains_record (rtx insn)
+mips_macc_chains_record (rtx_insn *insn)
 {
   if (get_attr_may_clobber_hilo (insn))
     mips_macc_chains_last_hilo = insn;
@@ -13403,7 +13403,7 @@ mips_macc_chains_reorder (rtx_insn **ready, int nready)
 }
 
 /* The last instruction to be scheduled.  */
-static rtx vr4130_last_insn;
+static rtx_insn *vr4130_last_insn;
 
 /* A note_stores callback used by vr4130_true_reg_dependence_p.  DATA
    points to an rtx that is initially an instruction.  Nullify the rtx
@@ -13441,7 +13441,7 @@ vr4130_true_reg_dependence_p (rtx insn)
    alignment than (INSN1, INSN2).  See 4130.md for more details.  */
 
 static bool
-vr4130_swap_insns_p (rtx insn1, rtx insn2)
+vr4130_swap_insns_p (rtx_insn *insn1, rtx_insn *insn2)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -13637,7 +13637,7 @@ mips_sched_reorder2 (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 /* Update round-robin counters for ALU1/2 and FALU1/2.  */
 
 static void
-mips_ls2_variable_issue (rtx insn)
+mips_ls2_variable_issue (rtx_insn *insn)
 {
   if (mips_ls2.alu1_turn_p)
     {
@@ -17567,7 +17567,7 @@ mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
    INSN has NOPERANDS operands, stored in OPVEC.  */
 
 static bool
-mips_need_noat_wrapper_p (rtx insn, rtx *opvec, int noperands)
+mips_need_noat_wrapper_p (rtx_insn *insn, rtx *opvec, int noperands)
 {
   int i;
 
@@ -18186,6 +18186,7 @@ mips_expand_vselect (rtx target, rtx op0,
 		     const unsigned char *perm, unsigned nelt)
 {
   rtx rperm[MAX_VECT_LEN], x;
+  rtx_insn *insn;
   unsigned i;
 
   for (i = 0; i < nelt; ++i)
@@ -18195,10 +18196,10 @@ mips_expand_vselect (rtx target, rtx op0,
   x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
   x = gen_rtx_SET (VOIDmode, target, x);
 
-  x = emit_insn (x);
-  if (recog_memoized (x) < 0)
+  insn = emit_insn (x);
+  if (recog_memoized (insn) < 0)
     {
-      remove_insn (x);
+      remove_insn (insn);
       return false;
     }
   return true;

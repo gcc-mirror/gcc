@@ -5638,20 +5638,19 @@ mep_reorg_erepeat (rtx_insn *insns)
 static void
 mep_jmp_return_reorg (rtx_insn *insns)
 {
-  rtx_insn *insn;
-  rtx label, ret;
+  rtx_insn *insn, *label, *ret;
   int ret_code;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (simplejump_p (insn))
     {
       /* Find the fist real insn the jump jumps to.  */
-      label = ret = JUMP_LABEL (insn);
+      label = ret = safe_as_a <rtx_insn *> (JUMP_LABEL (insn));
       while (ret
 	     && (NOTE_P (ret)
 		 || LABEL_P (ret)
 		 || GET_CODE (PATTERN (ret)) == USE))
-	ret = NEXT_INSN (as_a <rtx_insn *> (ret));
+	ret = NEXT_INSN (ret);
 
       if (ret)
 	{

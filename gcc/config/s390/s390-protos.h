@@ -103,7 +103,7 @@ extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, enum machine_mode, unsigned int);
 extern int s390_label_align (rtx);
-extern int s390_agen_dep_p (rtx, rtx);
+extern int s390_agen_dep_p (rtx_insn *, rtx_insn *);
 extern rtx_insn *s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
 extern void s390_emit_tpf_eh_return (rtx);

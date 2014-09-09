@@ -136,8 +136,8 @@ extern const char *output_move_quad (rtx *);
 extern int arm_count_output_move_double_insns (rtx *);
 extern const char *output_move_vfp (rtx *operands);
 extern const char *output_move_neon (rtx *operands);
-extern int arm_attr_length_move_neon (rtx);
-extern int arm_address_offset_is_imm (rtx);
+extern int arm_attr_length_move_neon (rtx_insn *);
+extern int arm_address_offset_is_imm (rtx_insn *);
 extern const char *output_add_immediate (rtx *);
 extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);
@@ -253,7 +253,7 @@ struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   const struct cpu_cost_table *insn_extra_cost;
-  bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
+  bool (*sched_adjust_cost) (rtx_insn *, rtx, rtx_insn *, int *);
   int constant_limit;
   /* Maximum number of instructions to conditionalise.  */
   int max_insns_skipped;

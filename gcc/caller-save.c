@@ -103,8 +103,8 @@ static GTY(()) rtx savepat;
 static GTY(()) rtx restpat;
 static GTY(()) rtx test_reg;
 static GTY(()) rtx test_mem;
-static GTY(()) rtx saveinsn;
-static GTY(()) rtx restinsn;
+static GTY(()) rtx_insn *saveinsn;
+static GTY(()) rtx_insn *restinsn;
 
 /* Return the INSN_CODE used to save register REG in mode MODE.  */
 static int

@@ -2142,7 +2142,7 @@ process_insert_insn (struct expr *expr)
      insn will be recognized (this also adds any needed CLOBBERs).  */
   else
     {
-      rtx insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
+      rtx_insn *insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
 
       if (insn_invalid_p (insn, false))
 	gcc_unreachable ();

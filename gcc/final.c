@@ -2491,7 +2491,8 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 	  if (note)
 	    {
-	      NOTICE_UPDATE_CC (PATTERN (XEXP (note, 0)), XEXP (note, 0));
+	      rtx_insn *other = as_a <rtx_insn *> (XEXP (note, 0));
+	      NOTICE_UPDATE_CC (PATTERN (other), other);
 	      cc_prev_status = cc_status;
 	    }
 	}
@@ -3103,7 +3104,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
    directly to the desired hard register.  */
 
 void
-cleanup_subreg_operands (rtx insn)
+cleanup_subreg_operands (rtx_insn *insn)
 {
   int i;
   bool changed = false;
@@ -3139,7 +3140,7 @@ cleanup_subreg_operands (rtx insn)
 	*recog_data.dup_loc[i] = walk_alter_subreg (recog_data.dup_loc[i], &changed);
     }
   if (changed)
-    df_insn_rescan (as_a <rtx_insn *> (insn));
+    df_insn_rescan (insn);
 }
 
 /* If X is a SUBREG, try to replace it with a REG or a MEM, based on

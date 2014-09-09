@@ -255,9 +255,9 @@ static void arm_asm_trampoline_template (FILE *);
 static void arm_trampoline_init (rtx, tree, rtx);
 static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
-static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
-static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
-static bool fa726te_sched_adjust_cost (rtx, rtx, rtx, int *);
+static bool cortex_a9_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
+static bool xscale_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
+static bool fa726te_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
 static bool arm_array_mode_supported_p (enum machine_mode,
 					unsigned HOST_WIDE_INT);
 static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
@@ -11440,7 +11440,7 @@ arm_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Adjust cost hook for XScale.  */
 static bool
-xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+xscale_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   /* Some true dependencies can have a higher cost depending
      on precisely how certain input operands are used.  */
@@ -11501,7 +11501,7 @@ xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
 /* Adjust cost hook for Cortex A9.  */
 static bool
-cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   switch (REG_NOTE_KIND (link))
     {
@@ -11574,7 +11574,7 @@ cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
 /* Adjust cost hook for FA726TE.  */
 static bool
-fa726te_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+fa726te_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   /* For FA726TE, true dependency on CPSR (i.e. set cond followed by predicated)
      have penalty of 3.  */
@@ -11743,7 +11743,7 @@ arm_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Return true if and only if this insn can dual-issue only as older.  */
 static bool
-cortexa7_older_only (rtx insn)
+cortexa7_older_only (rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     return false;
@@ -11795,7 +11795,7 @@ cortexa7_older_only (rtx insn)
 
 /* Return true if and only if this insn can dual-issue as younger.  */
 static bool
-cortexa7_younger (FILE *file, int verbose, rtx insn)
+cortexa7_younger (FILE *file, int verbose, rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     {
@@ -18649,7 +18649,7 @@ output_move_neon (rtx *operands)
 /* Compute and return the length of neon_mov<mode>, where <mode> is
    one of VSTRUCT modes: EI, OI, CI or XI.  */
 int
-arm_attr_length_move_neon (rtx insn)
+arm_attr_length_move_neon (rtx_insn *insn)
 {
   rtx reg, mem, addr;
   int load;
@@ -18700,7 +18700,7 @@ arm_attr_length_move_neon (rtx insn)
    return zero.  */
 
 int
-arm_address_offset_is_imm (rtx insn)
+arm_address_offset_is_imm (rtx_insn *insn)
 {
   rtx mem, addr;
 

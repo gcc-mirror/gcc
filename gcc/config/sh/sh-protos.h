@@ -104,7 +104,7 @@ extern const char *output_far_jump (rtx_insn *, rtx);
 
 extern rtx sfunc_uses_reg (rtx);
 extern int barrier_align (rtx_insn *);
-extern int sh_loop_align (rtx);
+extern int sh_loop_align (rtx_insn *);
 extern bool fp_zero_operand (rtx);
 extern bool fp_one_operand (rtx);
 extern rtx get_fpscr_rtx (void);

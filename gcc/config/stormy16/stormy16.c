@@ -2393,10 +2393,11 @@ combine_bnp (rtx_insn *insn)
 {
   int insn_code, regno, need_extend;
   unsigned int mask;
-  rtx cond, reg, and_insn, load, qireg, mem;
+  rtx cond, reg, qireg, mem;
+  rtx_insn *and_insn, *load;
   enum machine_mode load_mode = QImode;
   enum machine_mode and_mode = QImode;
-  rtx shift = NULL_RTX;
+  rtx_insn *shift = NULL;
 
   insn_code = recog_memoized (insn);
   if (insn_code != CODE_FOR_cbranchhi
@@ -2501,7 +2502,7 @@ combine_bnp (rtx_insn *insn)
 	      if (reg_mentioned_p (reg, shift)
 		  || (! NOTE_P (shift) && ! NONJUMP_INSN_P (shift)))
 		{
-		  shift = NULL_RTX;
+		  shift = NULL;
 		  break;
 		}
 	    }
