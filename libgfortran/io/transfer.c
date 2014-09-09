@@ -475,7 +475,7 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
   if (norig != *nbytes)
     {
       /* Short read, this shouldn't happen.  */
-      if (!dtp->u.p.current_unit->pad_status == PAD_YES)
+      if (dtp->u.p.current_unit->pad_status == PAD_NO)
 	{
 	  generate_error (&dtp->common, LIBERROR_EOR, NULL);
 	  source = NULL;
