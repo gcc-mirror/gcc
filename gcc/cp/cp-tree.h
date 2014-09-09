@@ -5879,7 +5879,7 @@ extern tree finish_underlying_type	        (tree);
 extern tree calculate_bases                     (tree);
 extern tree finish_bases                        (tree, bool);
 extern tree calculate_direct_bases              (tree);
-extern tree finish_offsetof			(tree);
+extern tree finish_offsetof			(tree, location_t);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);
 extern void emit_associated_thunks		(tree);

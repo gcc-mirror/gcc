@@ -2359,10 +2359,8 @@ build_class_member_access_expr (tree object, tree member,
 	    {
 	      if (complain & tf_error)
 		{
-		  error ("invalid access to non-static data member %qD of "
-			 "NULL object",
-			 member);
-		  error ("(perhaps the %<offsetof%> macro was used incorrectly)");
+		  error ("invalid access to non-static data member %qD in "
+			 "virtual base of NULL object", member);
 		}
 	      return error_mark_node;
 	    }
@@ -2373,27 +2371,6 @@ build_class_member_access_expr (tree object, tree member,
 	  /* If we found the base successfully then we should be able
 	     to convert to it successfully.  */
 	  gcc_assert (object != error_mark_node);
-	}
-
-      /* Complain about other invalid uses of offsetof, even though they will
-	 give the right answer.  Note that we complain whether or not they
-	 actually used the offsetof macro, since there's no way to know at this
-	 point.  So we just give a warning, instead of a pedwarn.  */
-      /* Do not produce this warning for base class field references, because
-	 we know for a fact that didn't come from offsetof.  This does occur
-	 in various testsuite cases where a null object is passed where a
-	 vtable access is required.  */
-      if (null_object_p && warn_invalid_offsetof
-	  && CLASSTYPE_NON_STD_LAYOUT (object_type)
-	  && !DECL_FIELD_IS_BASE (member)
-	  && cp_unevaluated_operand == 0
-	  && (complain & tf_warning))
-	{
-	  warning (OPT_Winvalid_offsetof, 
-                   "invalid access to non-static data member %qD "
-                   " of NULL object", member);
-	  warning (OPT_Winvalid_offsetof, 
-                   "(perhaps the %<offsetof%> macro was used incorrectly)");
 	}
 
       /* If MEMBER is from an anonymous aggregate, we have converted
