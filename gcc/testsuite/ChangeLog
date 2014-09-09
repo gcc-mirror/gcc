@@ -4,6 +4,10 @@
 
 2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/arm/pr51835.c: Update expected assembly.
 	* gcc.target/arm/vfp-1.c: Likewise.
 	* gcc.target/arm/vfp-ldmdbd.c: Likewise.

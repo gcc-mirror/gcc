@@ -26,22 +26,22 @@ void test_sf() {
   /* { dg-final { scan-assembler "vdiv.f32" } } */
   f1 = f2 / f3;
   /* mulsf3_vfp */
-  /* { dg-final { scan-assembler "fmuls" } } */
+  /* { dg-final { scan-assembler "vmul.f32" } } */
   f1 = f2 * f3;
   /* mulsf3negsf_vfp */
-  /* { dg-final { scan-assembler "fnmuls" } } */
+  /* { dg-final { scan-assembler "vnmul.f32" } } */
   f1 = -f2 * f3;
   /* mulsf3addsf_vfp */
-  /* { dg-final { scan-assembler "fmacs" } } */
+  /* { dg-final { scan-assembler "vmla.f32" } } */
   f1 = f2 * f3 + f1;
   /* mulsf3subsf_vfp */
-  /* { dg-final { scan-assembler "fmscs" } } */
+  /* { dg-final { scan-assembler "vnmls.f32" } } */
   f1 = f2 * f3 - f1;
   /* mulsf3negsfaddsf_vfp */
-  /* { dg-final { scan-assembler "fnmacs" } } */
+  /* { dg-final { scan-assembler "vmls.f32" } } */
   f1 = f2 - f3 * f1;
   /* mulsf3negsfsubsf_vfp */
-  /* { dg-final { scan-assembler "fnmscs" } } */
+  /* { dg-final { scan-assembler "vnmla.f32" } } */
   f1 = -f2 * f3 - f1;
   /* sqrtsf2_vfp */
   /* { dg-final { scan-assembler "fsqrts" } } */
@@ -67,22 +67,22 @@ void test_df() {
   /* { dg-final { scan-assembler "vdiv.f64" } } */
   d1 = d2 / d3;
   /* muldf3_vfp */
-  /* { dg-final { scan-assembler "fmuld" } } */
+  /* { dg-final { scan-assembler "vmul.f64" } } */
   d1 = d2 * d3;
   /* muldf3negdf_vfp */
-  /* { dg-final { scan-assembler "fnmuld" } } */
+  /* { dg-final { scan-assembler "vnmul.f64" } } */
   d1 = -d2 * d3;
   /* muldf3adddf_vfp */
-  /* { dg-final { scan-assembler "fmacd" } } */
+  /* { dg-final { scan-assembler "vmla.f64" } } */
   d1 = d2 * d3 + d1;
   /* muldf3subdf_vfp */
-  /* { dg-final { scan-assembler "fmscd" } } */
+  /* { dg-final { scan-assembler "vnmls.f64" } } */
   d1 = d2 * d3 - d1;
   /* muldf3negdfadddf_vfp */
-  /* { dg-final { scan-assembler "fnmacd" } } */
+  /* { dg-final { scan-assembler "vmls.f64" } } */
   d1 = d2 - d3 * d1;
   /* muldf3negdfsubdf_vfp */
-  /* { dg-final { scan-assembler "fnmscd" } } */
+  /* { dg-final { scan-assembler "vnmla.f64" } } */
   d1 = -d2 * d3 - d1;
   /* sqrtdf2_vfp */
   /* { dg-final { scan-assembler "fsqrtd" } } */
