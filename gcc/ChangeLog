@@ -1,3 +1,19 @@
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* common/config/picochip/picochip-common.c: Remove.
+	* config.gcc: Remove support for picochip.
+	* config/picochip/constraints.md: Remove.
+	* config/picochip/dfa_space.md: Remove.
+	* config/picochip/dfa_speed.md: Remove.
+	* config/picochip/picochip-protos.h: Remove.
+	* config/picochip/picochip.c: Remove.
+	* config/picochip/picochip.h: Remove.
+	* config/picochip/picochip.md: Remove.
+	* config/picochip/picochip.opt: Remove.
+	* config/picochip/predicates.md: Remove.
+	* config/picochip/t-picochip: Remove.
+	* doc/md.texi: Don't document picochi.
+
 2014-09-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (control_flow_insn_p): Strengthen param from

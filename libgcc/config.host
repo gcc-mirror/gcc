@@ -928,9 +928,6 @@ nios2-*-*)
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"
 	;;
-picochip-*-*)
-	tmake_file="picochip/t-picochip t-fpbit"
-        ;;
 powerpc-*-darwin*)
 	case ${host} in
 	*-*-darwin9* | *-*-darwin[12][0-9]*)

@@ -532,7 +532,6 @@ proc check_profiling_available { test_what } {
 	     || [istarget msp430-*-*]
 	     || [istarget nds32*-*-elf]
 	     || [istarget nios2-*-elf]
-	     || [istarget picochip-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
 	     || [istarget rx-*-*]	
@@ -554,11 +553,7 @@ proc check_profiling_available { test_what } {
 # in Section 4 of C99 standard. Effectively, it is a target which supports no
 # extra headers or libraries other than what is considered essential.
 proc check_effective_target_freestanding { } {
-    if { [istarget picochip-*-*] } then {
-        return 1
-    } else {
-        return 0
-    }
+	return 0
 }
 
 # Return 1 if target has packed layout of structure members by
