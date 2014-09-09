@@ -3,12 +3,13 @@
 /* { dg-final { scan-assembler "lxvd2x" } } */
 /* { dg-final { scan-assembler "stxvd2x" } } */
 /* { dg-final { scan-assembler "xxspltw" } } */
-/* { dg-final { scan-assembler-not "xxpermdi" } } */
 
+/* Currently the analyze_swaps phase cannot optimize this loop because
+   of the presence of an UNSPEC_VSX_CVDPSPN.  At such time as this is 
+   handled, we need to add a 'scan-assembler-not "xxpermdi"' directive to
+   this test.  */
 #include <altivec.h>
 void abort();
-
-typedef struct xx {vector double l; vector double h;} xx;
 
 #define N 4096
 #define M 10000000
