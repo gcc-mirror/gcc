@@ -1,5 +1,23 @@
 2014-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* flag-types.h (enum sanitize_code): Add SANITIZE_NONNULL_ATTRIBUTE
+	and SANITIZE_RETURNS_NONNULL_ATTRIBUTE, or them into SANITIZE_UNDEFINED.
+	* opts.c (common_handle_option): Handle SANITIZE_NONNULL_ATTRIBUTE and
+	SANITIZE_RETURNS_NONNULL_ATTRIBUTE and disable
+	flag_delete_null_pointer_checks for them.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_ARG_ABORT,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_ABORT): New.
+	* ubsan.c (instrument_bool_enum_load): Set *gsi back to
+	stmt's iterator.
+	(instrument_nonnull_arg, instrument_nonnull_return): New functions.
+	(pass_ubsan::gate): Return true even for SANITIZE_NONNULL_ATTRIBUTE
+	or SANITIZE_RETURNS_NONNULL_ATTRIBUTE.
+	(pass_ubsan::execute): Call instrument_nonnull_{arg,return}.
+	* doc/invoke.texi (-fsanitize=nonnull-attribute,
+	-fsanitize=returns-nonnull-attribute): Document.
+
 	* ubsan.h (struct ubsan_mismatch_data): Removed.
 	(ubsan_create_data): Remove MISMATCH argument, add LOCCNT argument.
 	* ubsan.c (ubsan_source_location): For unknown locations,

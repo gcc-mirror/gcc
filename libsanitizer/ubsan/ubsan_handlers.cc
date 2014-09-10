@@ -277,3 +277,43 @@ void __ubsan::__ubsan_handle_function_type_mismatch_abort(
   __ubsan_handle_function_type_mismatch(Data, Function);
   Die();
 }
+
+static void handleNonnullReturn(NonNullReturnData *Data) {
+  SourceLocation Loc = Data->Loc.acquire();
+  if (Loc.isDisabled())
+    return;
+
+  Diag(Loc, DL_Error, "null pointer returned from function declared to never "
+                      "return null");
+  if (!Data->AttrLoc.isInvalid())
+    Diag(Data->AttrLoc, DL_Note, "returns_nonnull attribute specified here");
+}
+
+void __ubsan::__ubsan_handle_nonnull_return(NonNullReturnData *Data) {
+  handleNonnullReturn(Data);
+}
+
+void __ubsan::__ubsan_handle_nonnull_return_abort(NonNullReturnData *Data) {
+  handleNonnullReturn(Data);
+  Die();
+}
+
+static void handleNonNullArg(NonNullArgData *Data) {
+  SourceLocation Loc = Data->Loc.acquire();
+  if (Loc.isDisabled())
+    return;
+
+  Diag(Loc, DL_Error, "null pointer passed as argument %0, which is declared to "
+       "never be null") << Data->ArgIndex;
+  if (!Data->AttrLoc.isInvalid())
+    Diag(Data->AttrLoc, DL_Note, "nonnull attribute specified here");
+}
+
+void __ubsan::__ubsan_handle_nonnull_arg(NonNullArgData *Data) {
+  handleNonNullArg(Data);
+}
+
+void __ubsan::__ubsan_handle_nonnull_arg_abort(NonNullArgData *Data) {
+  handleNonNullArg(Data);
+  Die();
+}

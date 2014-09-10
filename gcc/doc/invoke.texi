@@ -5582,6 +5582,20 @@ This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
 
+@item -fsanitize=nonnull-attribute
+@opindex fsanitize=nonnull-attribute
+
+This option enables instrumentation of calls, checking whether null values
+are not passed to arguments marked as requiring a non-null value by the
+@code{nonnull} function attribute.
+
+@item -fsanitize=returns-nonnull-attribute
+@opindex fsanitize=returns-nonnull-attribute
+
+This option enables instrumentation of return statements in functions
+marked with @code{returns_nonnull} function attribute, to detect returning
+of null values from such functions.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
