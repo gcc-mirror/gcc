@@ -1,3 +1,9 @@
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61654
+	* cgraphclones.c (duplicate_thunk_for_node): Copy arguments of the
+	new decl properly.  Analyze the new thunk if it is expanded.
+
 2014-09-10  Andreas Schwab  <schwab@suse.de>
 
 	* coretypes.h (struct _dont_use_rtx_insn_here_, rtx_insn)
