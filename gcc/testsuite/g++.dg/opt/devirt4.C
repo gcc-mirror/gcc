@@ -1,8 +1,7 @@
 // PR lto/53808
-// Devirtualization + inlining should produce a non-virtual
-// call to ~foo.
-// { dg-options "-O -fdevirtualize" }
-// { dg-final { scan-assembler "_ZN3fooD2Ev" } }
+// Devirtualization should not produce an external ref to ~bar.
+// { dg-options "-O2" }
+// { dg-final { scan-assembler-not "_ZN3barD0Ev" } }
 
 struct foo {
  virtual ~foo();

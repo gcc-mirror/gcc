@@ -10677,6 +10677,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		 the type earlier (template/friend54.C).  */
 	      RETURN (new_r);
 
+	    if (!DECL_FRIEND_P (r))
+	      note_comdat_fn (r);
+
 	    /* We're not supposed to instantiate default arguments
 	       until they are called, for a template.  But, for a
 	       declaration like:

@@ -1773,6 +1773,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_EXTERNAL (fn) = true;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  note_comdat_fn (fn);
   gcc_assert (!TREE_USED (fn));
 
   /* Restore PROCESSING_TEMPLATE_DECL.  */
