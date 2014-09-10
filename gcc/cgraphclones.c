@@ -371,9 +371,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 						  CGRAPH_FREQ_BASE);
   e->call_stmt_cannot_inline_p = true;
   symtab->call_edge_duplication_hooks (thunk->callees, e);
-  if (!new_thunk->expand_thunk (false, false))
-    new_thunk->analyzed = true;
-  else
+  if (new_thunk->expand_thunk (false, false))
     {
       new_thunk->thunk.thunk_p = false;
       new_thunk->analyze ();
