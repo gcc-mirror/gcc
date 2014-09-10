@@ -1,3 +1,17 @@
+2014-09-10  Siva Chandra Reddy  <sivachandra@google.com>
+
+	* python/hook.in: Load the xmethods.
+	* python/Makefile.am (nobase_python_DATA): Add xmethods.py.
+	* python/Makefile.in: Regenerated.
+	* python/libstdcxx/v6/xmethods.py: New file.
+	* testsuite/lib/gdb-test.exp (gdb_version_check_xmethods): New
+	function.
+	(gdb-test): New optional argument LOAD_XMETHODS.  Load xmethods
+	python script if LOAD_XMETHODS is true.
+	* testsuite/libstdc++-xmethods/unique_ptr.cc: New file.
+	* testsuite/libstdc++-xmethods/vector.cc: New file.
+	* testsuite/libstdc++-xmethods/xmethods.exp: New file.
+
 2014-09-10  Tony Wang  <tony.wang@arm.com>
 
 	PR target/56846

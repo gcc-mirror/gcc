@@ -79,7 +79,7 @@ proc whatis-test {var result} {
 #
 # Argument 0 is the marker on which to put a breakpoint
 # Argument 2 handles expected failures and the like
-proc gdb-test { marker {selector {}} } {
+proc gdb-test { marker {selector {}} {load_xmethods 0} } {
     if { ![isnative] || [is_remote target] } { return }
 
     if {[string length $selector] > 0} {
@@ -111,7 +111,8 @@ proc gdb-test { marker {selector {}} } {
     set cmd_file "[file rootname [file tail $prog]].gdb"
 
     global srcdir
-    set pycode [file join $srcdir .. python libstdcxx v6 printers.py]
+    set printer_code [file join $srcdir .. python libstdcxx v6 printers.py]
+    set xmethod_code [file join $srcdir .. python libstdcxx v6 xmethods.py]
 
     global gdb_tests
 
@@ -121,8 +122,13 @@ proc gdb-test { marker {selector {}} } {
     # Now that we've disabled auto-load, it's safe to set the target file
     puts $fd "file ./$output_file"
     # Load & register *our* copy of the pretty-printers
-    puts $fd "source $pycode"
+    puts $fd "source $printer_code"
     puts $fd "python register_libstdcxx_printers(None)"
+    if { $load_xmethods } {
+	# Load a& register xmethods.
+	puts $fd "source $xmethod_code"
+	puts $fd "python register_libstdcxx_xmethods(None)"
+    }
     # And start the program
     puts $fd "break $line"
     puts $fd "run"
@@ -261,4 +267,13 @@ proc gdb_batch_check {command pattern} {
 proc gdb_version_check {} {
     return [gdb_batch_check "python print(gdb.lookup_global_symbol)" \
 	      "<built-in function lookup_global_symbol>"]
+}
+
+# Check for a version of gdb which supports xmethod tests.  It is done
+# in a manner similar to the check for a version of gdb which supports the
+# pretty-printer tests below.
+proc gdb_version_check_xmethods {} {
+    return [gdb_batch_check \
+	      "python import gdb.xmethod; print(gdb.xmethod.XMethod)" \
+	      "<class 'gdb\\.xmethod\\.XMethod'>"]
 }
