@@ -1,5 +1,12 @@
 2014-09-10  Martin Jambor  <mjambor@suse.cz>
 
+	* cgraphunit.c (expand_thunk): If not expanding, set analyzed flag.
+	(analyze): Do not set analyze flag if expand_thunk returns false;.
+	(create_wrapper): Likewise.
+	* cgraphclones.c (duplicate_thunk_for_node): Likewise.
+
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/61654
 	* cgraphclones.c (duplicate_thunk_for_node): Copy arguments of the
 	new decl properly.  Analyze the new thunk if it is expanded.
