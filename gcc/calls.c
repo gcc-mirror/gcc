@@ -1486,10 +1486,7 @@ precompute_arguments (int num_actuals, struct arg_data *args)
 	      args[i].initial_value
 		= gen_lowpart_SUBREG (mode, args[i].value);
 	      SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
-	      if (promoted_for_signed_and_unsigned_p (args[i].tree_value, mode))
-		SUBREG_PROMOTED_SET (args[i].initial_value, SRP_SIGNED_AND_UNSIGNED);
-	      else
-		SUBREG_PROMOTED_SET (args[i].initial_value, args[i].unsignedp);
+	      SUBREG_PROMOTED_SET (args[i].initial_value, args[i].unsignedp);
 	    }
 	}
     }

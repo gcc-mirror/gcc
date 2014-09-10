@@ -1,3 +1,15 @@
+2014-09-10  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Revert r213751:
+	* calls.c (precompute_arguments): Check
+	 promoted_for_signed_and_unsigned_p and set the promoted mode.
+	(promoted_for_signed_and_unsigned_p): New function.
+	(expand_expr_real_1): Check promoted_for_signed_and_unsigned_p
+	and set the promoted mode.
+	* expr.h (promoted_for_signed_and_unsigned_p): New function definition.
+	* cfgexpand.c (expand_gimple_stmt_1): Call emit_move_insn if
+	SUBREG is promoted with SRP_SIGNED_AND_UNSIGNED.
+
 2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* opth-gen.awk: Generate mapping from cpp message reasons to the
