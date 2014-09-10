@@ -119,6 +119,23 @@ RECOVERABLE(function_type_mismatch,
             FunctionTypeMismatchData *Data,
             ValueHandle Val)
 
+struct NonNullReturnData {
+  SourceLocation Loc;
+  SourceLocation AttrLoc;
+};
+
+/// \brief Handle returning null from function with returns_nonnull attribute.
+RECOVERABLE(nonnull_return, NonNullReturnData *Data)
+
+struct NonNullArgData {
+  SourceLocation Loc;
+  SourceLocation AttrLoc;
+  int ArgIndex;
+};
+
+/// \brief Handle passing null pointer to function with nonnull attribute.
+RECOVERABLE(nonnull_arg, NonNullArgData *Data)
+
 }
 
 #endif // UBSAN_HANDLERS_H

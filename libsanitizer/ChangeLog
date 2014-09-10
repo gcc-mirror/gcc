@@ -1,3 +1,8 @@
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan/ubsan_handlers.cc, ubsan/ubsan_handlers.h: Cherry pick
+	upstream r215485, r217389, r217391 and r217400.
+
 2014-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* sanitizer_common/sanitizer_common_interceptors.inc:

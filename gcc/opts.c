@@ -1499,6 +1499,11 @@ common_handle_option (struct gcc_options *opts,
 		sizeof "float-cast-overflow" - 1 },
 	      { "bounds", SANITIZE_BOUNDS, sizeof "bounds" - 1 },
 	      { "alignment", SANITIZE_ALIGNMENT, sizeof "alignment" - 1 },
+	      { "nonnull-attribute", SANITIZE_NONNULL_ATTRIBUTE,
+		sizeof "nonnull-attribute" - 1 },
+	      { "returns-nonnull-attribute",
+		SANITIZE_RETURNS_NONNULL_ATTRIBUTE,
+		sizeof "returns-nonnull-attribute" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;
@@ -1542,7 +1547,8 @@ common_handle_option (struct gcc_options *opts,
 
 	/* When instrumenting the pointers, we don't want to remove
 	   the null pointer checks.  */
-	if (flag_sanitize & SANITIZE_NULL)
+	if (flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
+			     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
 	  opts->x_flag_delete_null_pointer_checks = 0;
 
 	/* Kernel ASan implies normal ASan but does not yet support
