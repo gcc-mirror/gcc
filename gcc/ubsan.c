@@ -242,17 +242,24 @@ ubsan_source_location (location_t loc)
   tree type = ubsan_source_location_type ();
 
   xloc = expand_location (loc);
+  tree str;
   if (xloc.file == NULL)
-    xloc.file = "<unknown>";
-
-  /* Fill in the values from LOC.  */
-  size_t len = strlen (xloc.file);
-  tree str = build_string (len + 1, xloc.file);
-  TREE_TYPE (str) = build_array_type (char_type_node,
-				      build_index_type (size_int (len)));
-  TREE_READONLY (str) = 1;
-  TREE_STATIC (str) = 1;
-  str = build_fold_addr_expr (str);
+    {
+      str = build_int_cst (ptr_type_node, 0);
+      xloc.line = 0;
+      xloc.column = 0;
+    }
+  else
+    {
+      /* Fill in the values from LOC.  */
+      size_t len = strlen (xloc.file);
+      str = build_string (len + 1, xloc.file);
+      TREE_TYPE (str) = build_array_type (char_type_node,
+					  build_index_type (size_int (len)));
+      TREE_READONLY (str) = 1;
+      TREE_STATIC (str) = 1;
+      str = build_fold_addr_expr (str);
+    }
   tree ctor = build_constructor_va (type, 3, NULL_TREE, str, NULL_TREE,
 				    build_int_cst (unsigned_type_node,
 						   xloc.line), NULL_TREE,
@@ -451,20 +458,20 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 }
 
 /* Create a structure for the ubsan library.  NAME is a name of the new
-   structure.  The arguments in ... are of __ubsan_type_descriptor type
-   and there are at most two of them.  MISMATCH are data used by ubsan
-   pointer checking.  */
+   structure.  LOCCNT is number of locations, PLOC points to array of
+   locations.  The arguments in ... are of __ubsan_type_descriptor type
+   and there are at most two of them, followed by NULL_TREE, followed
+   by optional extra arguments and another NULL_TREE.  */
 
 tree
-ubsan_create_data (const char *name, const location_t *ploc,
-		   const struct ubsan_mismatch_data *mismatch, ...)
+ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
 {
   va_list args;
   tree ret, t;
-  tree fields[5];
+  tree fields[6];
   vec<tree, va_gc> *saved_args = NULL;
   size_t i = 0;
-  location_t loc = UNKNOWN_LOCATION;
+  int j;
 
   /* Firstly, create a pointer to type descriptor type.  */
   tree td_type = ubsan_type_descriptor_type ();
@@ -473,20 +480,22 @@ ubsan_create_data (const char *name, const location_t *ploc,
 
   /* Create the structure type.  */
   ret = make_node (RECORD_TYPE);
-  if (ploc != NULL)
+  for (j = 0; j < loccnt; j++)
     {
-      loc = LOCATION_LOCUS (*ploc);
+      gcc_checking_assert (i < 2);
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
 			      ubsan_source_location_type ());
       DECL_CONTEXT (fields[i]) = ret;
+      if (i)
+	DECL_CHAIN (fields[i - 1]) = fields[i];
       i++;
     }
 
-  va_start (args, mismatch);
+  va_start (args, ploc);
   for (t = va_arg (args, tree); t != NULL_TREE;
        i++, t = va_arg (args, tree))
     {
-      gcc_checking_assert (i < 3);
+      gcc_checking_assert (i < 4);
       /* Save the tree arguments for later use.  */
       vec_safe_push (saved_args, t);
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
@@ -495,23 +504,20 @@ ubsan_create_data (const char *name, const location_t *ploc,
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
-  va_end (args);
 
-  if (mismatch != NULL)
+  for (t = va_arg (args, tree); t != NULL_TREE;
+       i++, t = va_arg (args, tree))
     {
-      /* We have to add two more decls.  */
+      gcc_checking_assert (i < 6);
+      /* Save the tree arguments for later use.  */
+      vec_safe_push (saved_args, t);
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			      pointer_sized_int_node);
+			      TREE_TYPE (t));
       DECL_CONTEXT (fields[i]) = ret;
-      DECL_CHAIN (fields[i - 1]) = fields[i];
-      i++;
-
-      fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			      unsigned_char_type_node);
-      DECL_CONTEXT (fields[i]) = ret;
-      DECL_CHAIN (fields[i - 1]) = fields[i];
-      i++;
+      if (i)
+	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
+  va_end (args);
 
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = get_identifier (name);
@@ -534,21 +540,17 @@ ubsan_create_data (const char *name, const location_t *ploc,
   tree ctor = build_constructor (ret, v);
 
   /* If desirable, set the __ubsan_source_location element.  */
-  if (ploc != NULL)
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, ubsan_source_location (loc));
+  for (j = 0; j < loccnt; j++)
+    {
+      location_t loc = LOCATION_LOCUS (ploc[j]);
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, ubsan_source_location (loc));
+    } 
 
   size_t nelts = vec_safe_length (saved_args);
   for (i = 0; i < nelts; i++)
     {
       t = (*saved_args)[i];
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, t);
-    }
-
-  if (mismatch != NULL)
-    {
-      /* Append the pointer data.  */
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, mismatch->align);
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, mismatch->ckind);
     }
 
   TREE_CONSTANT (ctor) = 1;
@@ -569,7 +571,7 @@ ubsan_instrument_unreachable (location_t loc)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
   initialize_sanitizer_builtins ();
-  tree data = ubsan_create_data ("__ubsan_unreachable_data", &loc, NULL,
+  tree data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc, NULL_TREE,
 				 NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
@@ -622,10 +624,10 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
   else
     {
       tree data
-	= ubsan_create_data ("__ubsan_out_of_bounds_data", &loc, NULL,
+	= ubsan_create_data ("__ubsan_out_of_bounds_data", 1, &loc,
 			     ubsan_type_descriptor (type, UBSAN_PRINT_ARRAY),
 			     ubsan_type_descriptor (orig_index_type),
-			     NULL_TREE);
+			     NULL_TREE, NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -735,12 +737,13 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 	  ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
 	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
       tree fn = builtin_decl_implicit (bcode);
-      const struct ubsan_mismatch_data m
-	= { align, fold_convert (unsigned_char_type_node, ckind) };
       tree data
-	= ubsan_create_data ("__ubsan_null_data", &loc, &m,
+	= ubsan_create_data ("__ubsan_null_data", 1, &loc,
 			     ubsan_type_descriptor (TREE_TYPE (ckind),
 						    UBSAN_PRINT_POINTER),
+			     NULL_TREE,
+			     align,
+			     fold_convert (unsigned_char_type_node, ckind),
 			     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       g = gimple_build_call (fn, 2, data,
@@ -875,8 +878,9 @@ ubsan_build_overflow_builtin (tree_code code, location_t loc, tree lhstype,
   if (flag_sanitize_undefined_trap_on_error)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
-  tree data = ubsan_create_data ("__ubsan_overflow_data", &loc, NULL,
-				 ubsan_type_descriptor (lhstype), NULL_TREE);
+  tree data = ubsan_create_data ("__ubsan_overflow_data", 1, &loc,
+				 ubsan_type_descriptor (lhstype), NULL_TREE,
+				 NULL_TREE);
   enum built_in_function fn_code;
 
   switch (code)
@@ -1069,8 +1073,9 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
     g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_invalid_value_data", &loc, NULL,
-				     ubsan_type_descriptor (type), NULL_TREE);
+      tree data = ubsan_create_data ("__ubsan_invalid_value_data", 1, &loc,
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -1189,9 +1194,10 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
   else
     {
       /* Create the __ubsan_handle_float_cast_overflow fn call.  */
-      tree data = ubsan_create_data ("__ubsan_float_cast_overflow_data", NULL,
+      tree data = ubsan_create_data ("__ubsan_float_cast_overflow_data", 0,
 				     NULL, ubsan_type_descriptor (expr_type),
-				     ubsan_type_descriptor (type), NULL_TREE);
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       enum built_in_function bcode
 	= flag_sanitize_recover
 	  ? BUILT_IN_UBSAN_HANDLE_FLOAT_CAST_OVERFLOW

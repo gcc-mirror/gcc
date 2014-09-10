@@ -1,3 +1,17 @@
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan.h (struct ubsan_mismatch_data): Removed.
+	(ubsan_create_data): Remove MISMATCH argument, add LOCCNT argument.
+	* ubsan.c (ubsan_source_location): For unknown locations,
+	pass { NULL, 0, 0 } instead of { "<unknown>", x, y }.
+	(ubsan_create_data): Remove MISMATCH argument, add LOCCNT argument.
+	Allow more than one location and arbitrary extra arguments passed
+	in ... instead of through MISMATCH pointer.
+	(ubsan_instrument_unreachable, ubsan_expand_bounds_ifn,
+	ubsan_expand_null_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load, ubsan_instrument_float_cast): Adjust
+	callers.
+
 2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
