@@ -440,7 +440,6 @@ extern rtx expand_expr_real_1 (tree, rtx, enum machine_mode,
 			       enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_2 (sepops, rtx, enum machine_mode,
 			       enum expand_modifier);
-extern bool promoted_for_signed_and_unsigned_p (tree, enum machine_mode);
 
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
