@@ -1,3 +1,10 @@
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* genextract.c (print_header): When writing out insn_extract to
+	insn-extract.c, strengthen the param "insn" from rtx to rtx_insn *.
+	* recog.h (insn_extract): Strengthen the param from rtx to
+	rtx_insn *.
+
 2014-09-10  Mike Stump  <mikestump@comcast.net>
 
 	* doc/install.texi (Prerequisites): Note Tcl 8.6 bug fixed in
