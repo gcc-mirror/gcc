@@ -128,6 +128,11 @@
   UNSPEC_SHA256MSG1
   UNSPEC_SHA256MSG2
   UNSPEC_SHA256RNDS2
+
+  ;; For AVX512DQ support
+  UNSPEC_REDUCE
+  UNSPEC_FPCLASS
+  UNSPEC_RANGE
 ])
 
 (define_c_enum "unspecv" [
@@ -2329,6 +2334,34 @@
   ix86_expand_reduc (gen_uminv8hi3, operands[0], operands[1]);
   DONE;
 })
+
+(define_insn "<mask_codefor>reducep<mode><mask_name>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
+	(unspec:VF_AVX512VL
+	  [(match_operand:VF_AVX512VL 1 "nonimmediate_operand" "vm")
+	   (match_operand:SI 2 "const_0_to_255_operand")]
+	  UNSPEC_REDUCE))]
+  "TARGET_AVX512DQ"
+  "vreduce<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "reduces<mode>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (unspec:VF_128
+	    [(match_operand:VF_128 1 "register_operand" "v")
+	     (match_operand:VF_128 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "const_0_to_255_operand")]
+	    UNSPEC_REDUCE)
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512DQ"
+  "vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -16753,6 +16786,63 @@
    (set_attr "prefix" "evex")
    (set_attr "memory" "none,load")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx512dq_rangep<mode><mask_name><round_saeonly_name>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
+	(unspec:VF_AVX512VL
+	  [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VF_AVX512VL 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	   (match_operand:SI 3 "const_0_to_15_operand")]
+	  UNSPEC_RANGE))]
+  "TARGET_AVX512DQ && <round_saeonly_mode512bit_condition>"
+  "vrange<ssemodesuffix>\t{<round_saeonly_mask_op4>%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3<round_saeonly_mask_op4>}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512dq_ranges<mode><round_saeonly_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (unspec:VF_128
+	    [(match_operand:VF_128 1 "register_operand" "v")
+	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	     (match_operand:SI 3 "const_0_to_15_operand")]
+	    UNSPEC_RANGE)
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512DQ"
+  "vrange<ssescalarmodesuffix>\t{<round_saeonly_op4>%3, %2, %1, %0|%0, %1, %2, %3<round_saeonly_op4>}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
+          (unspec:<avx512fmaskmode>
+            [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+             (match_operand:QI 2 "const_0_to_255_operand" "n")]
+             UNSPEC_FPCLASS))]
+   "TARGET_AVX512DQ"
+   "vfpclass<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
+  [(set_attr "type" "sse")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512dq_vmfpclass<mode>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
+	(and:<avx512fmaskmode>
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VF_128 1 "register_operand" "v")
+             (match_operand:QI 2 "const_0_to_255_operand" "n")]
+	    UNSPEC_FPCLASS)
+	  (const_int 1)))]
+   "TARGET_AVX512DQ"
+   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}";
+  [(set_attr "type" "sse")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_getmant<mode><mask_name><round_saeonly_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")

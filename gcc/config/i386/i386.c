@@ -34090,6 +34090,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx512vl_getmantv4df_mask:
 	      case CODE_FOR_avx512vl_getmantv4sf_mask:
 	      case CODE_FOR_avx512vl_getmantv2df_mask:
+	      case CODE_FOR_avx512dq_rangepv8df_mask_round:
+	      case CODE_FOR_avx512dq_rangepv16sf_mask_round:
+	      case CODE_FOR_avx512dq_rangepv4df_mask:
+	      case CODE_FOR_avx512dq_rangepv8sf_mask:
+	      case CODE_FOR_avx512dq_rangepv2df_mask:
+	      case CODE_FOR_avx512dq_rangepv4sf_mask:
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 

@@ -8,6 +8,31 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/i386.c
+	(ix86_expand_args_builtin): Handle avx512dq_rangepv8df_mask_round,
+	avx512dq_rangepv16sf_mask_round, avx512dq_rangepv4df_mask,
+	avx512dq_rangepv8sf_mask, avx512dq_rangepv2df_mask,
+	avx512dq_rangepv4sf_mask.
+	* config/i386/sse.md
+	(define_c_enum "unspec"): Add UNSPEC_REDUCE, UNSPEC_FPCLASS,
+	UNSPEC_RANGE.
+	(define_insn "<mask_codefor>reducep<mode><mask_name>"): New.
+	(define_insn "reduces<mode>"): Ditto.
+	(define_insn "avx512dq_rangep<mode><mask_name><round_saeonly_name>"):
+	Ditto.
+	(define_insn "avx512dq_ranges<mode><round_saeonly_name>"): Ditto.
+	(define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"): Ditto.
+	(define_insn "avx512dq_vmfpclass<mode>"): Ditto..
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
 	(avx512f_vgetmantv2df_round): Rename from "avx512f_getmantv2df_round".
 	(avx512f_vgetmantv4sf_round): Rename from "avx512f_vgetmantv4sf_round".
 	(ix86_expand_args_builtin): Handle avx512vl_getmantv8sf_mask,
