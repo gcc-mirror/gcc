@@ -904,11 +904,11 @@
 ;; multiply.
 
 (define_insn "*vsx_fmav4sf4"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ws,ws,?wa,?wa,v")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wf,wf,?wa,?wa,v")
 	(fma:V4SF
-	  (match_operand:V4SF 1 "vsx_register_operand" "%ws,ws,wa,wa,v")
-	  (match_operand:V4SF 2 "vsx_register_operand" "ws,0,wa,0,v")
-	  (match_operand:V4SF 3 "vsx_register_operand" "0,ws,0,wa,v")))]
+	  (match_operand:V4SF 1 "vsx_register_operand" "%wf,wf,wa,wa,v")
+	  (match_operand:V4SF 2 "vsx_register_operand" "wf,0,wa,0,v")
+	  (match_operand:V4SF 3 "vsx_register_operand" "0,wf,0,wa,v")))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "@
    xvmaddasp %x0,%x1,%x2
@@ -919,11 +919,11 @@
   [(set_attr "type" "vecfloat")])
 
 (define_insn "*vsx_fmav2df4"
-  [(set (match_operand:V2DF 0 "vsx_register_operand" "=ws,ws,?wa,?wa")
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wd,wd,?wa,?wa")
 	(fma:V2DF
-	  (match_operand:V2DF 1 "vsx_register_operand" "%ws,ws,wa,wa")
-	  (match_operand:V2DF 2 "vsx_register_operand" "ws,0,wa,0")
-	  (match_operand:V2DF 3 "vsx_register_operand" "0,ws,0,wa")))]
+	  (match_operand:V2DF 1 "vsx_register_operand" "%wd,wd,wa,wa")
+	  (match_operand:V2DF 2 "vsx_register_operand" "wd,0,wa,0")
+	  (match_operand:V2DF 3 "vsx_register_operand" "0,wd,0,wa")))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "@
    xvmaddadp %x0,%x1,%x2
@@ -1359,8 +1359,8 @@
 (define_insn "vsx_concat_<mode>"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSr>,?<VSa>")
 	(vec_concat:VSX_D
-	 (match_operand:<VS_scalar> 1 "vsx_register_operand" "ws,<VSa>")
-	 (match_operand:<VS_scalar> 2 "vsx_register_operand" "ws,<VSa>")))]
+	 (match_operand:<VS_scalar> 1 "vsx_register_operand" "<VS_64reg>,<VSa>")
+	 (match_operand:<VS_scalar> 2 "vsx_register_operand" "<VS_64reg>,<VSa>")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   if (BYTES_BIG_ENDIAN)
@@ -1964,7 +1964,7 @@
 ;; to the top element of the V2DF array without doing an extract.
 
 (define_insn_and_split "*vsx_reduc_<VEC_reduc_name>_v2df_scalar"
-  [(set (match_operand:DF 0 "vfloat_operand" "=&ws,&?wa,ws,?wa")
+  [(set (match_operand:DF 0 "vfloat_operand" "=&ws,&?ws,ws,?ws")
 	(vec_select:DF
 	 (VEC_reduc:V2DF
 	  (vec_concat:V2DF
