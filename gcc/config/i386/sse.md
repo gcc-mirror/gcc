@@ -517,6 +517,12 @@
   (V16SI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
   (V8DI  "TARGET_AVX512F") (V8DF  "TARGET_AVX512F")])
 (define_mode_iterator VI48F_512 [V16SI V16SF V8DI V8DF])
+(define_mode_iterator VI48F
+  [V16SI V16SF V8DI V8DF
+   (V8SI "TARGET_AVX512VL") (V8SF "TARGET_AVX512VL")
+   (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
+   (V4SI "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
+   (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse
@@ -16736,11 +16742,11 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx512f_compress<mode>_mask"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=v")
-	(unspec:VI48F_512
-	  [(match_operand:VI48F_512 1 "register_operand" "v")
-	   (match_operand:VI48F_512 2 "vector_move_operand" "0C")
+(define_insn "<avx512>_compress<mode>_mask"
+  [(set (match_operand:VI48F 0 "register_operand" "=v")
+	(unspec:VI48F
+	  [(match_operand:VI48F 1 "register_operand" "v")
+	   (match_operand:VI48F 2 "vector_move_operand" "0C")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")]
 	  UNSPEC_COMPRESS))]
   "TARGET_AVX512F"
@@ -16749,10 +16755,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx512f_compressstore<mode>_mask"
-  [(set (match_operand:VI48F_512 0 "memory_operand" "=m")
-	(unspec:VI48F_512
-	  [(match_operand:VI48F_512 1 "register_operand" "x")
+(define_insn "<avx512>_compressstore<mode>_mask"
+  [(set (match_operand:VI48F 0 "memory_operand" "=m")
+	(unspec:VI48F
+	  [(match_operand:VI48F 1 "register_operand" "x")
 	   (match_dup 0)
 	   (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")]
 	  UNSPEC_COMPRESS_STORE))]
@@ -16763,21 +16769,21 @@
    (set_attr "memory" "store")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512f_expand<mode>_maskz"
-  [(set (match_operand:VI48F_512 0 "register_operand")
-	(unspec:VI48F_512
-	  [(match_operand:VI48F_512 1 "nonimmediate_operand")
-	   (match_operand:VI48F_512 2 "vector_move_operand")
+(define_expand "<avx512>_expand<mode>_maskz"
+  [(set (match_operand:VI48F 0 "register_operand")
+	(unspec:VI48F
+	  [(match_operand:VI48F 1 "nonimmediate_operand")
+	   (match_operand:VI48F 2 "vector_move_operand")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand")]
 	  UNSPEC_EXPAND))]
   "TARGET_AVX512F"
   "operands[2] = CONST0_RTX (<MODE>mode);")
 
-(define_insn "avx512f_expand<mode>_mask"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=v,v")
-	(unspec:VI48F_512
-	  [(match_operand:VI48F_512 1 "nonimmediate_operand" "v,m")
-	   (match_operand:VI48F_512 2 "vector_move_operand" "0C,0C")
+(define_insn "<avx512>_expand<mode>_mask"
+  [(set (match_operand:VI48F 0 "register_operand" "=v,v")
+	(unspec:VI48F
+	  [(match_operand:VI48F 1 "nonimmediate_operand" "v,m")
+	   (match_operand:VI48F 2 "vector_move_operand" "0C,0C")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")]
 	  UNSPEC_EXPAND))]
   "TARGET_AVX512F"
