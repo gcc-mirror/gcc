@@ -1,3 +1,53 @@
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(avx512f_vgetmantv2df_round): Rename from "avx512f_getmantv2df_round".
+	(avx512f_vgetmantv4sf_round): Rename from "avx512f_vgetmantv4sf_round".
+	(ix86_expand_args_builtin): Handle avx512vl_getmantv8sf_mask,
+	avx512vl_getmantv4df_mask, avx512vl_getmantv4sf_mask,
+	avx512vl_getmantv2df_mask.
+	(ix86_expand_round_builtin): Handle avx512f_vgetmantv2df_round,
+	avx512f_vgetmantv4sf_round.
+	* config/i386/sse.md
+	(define_insn "<avx512>_storeu<ssemodesuffix><avxsizesuffix>_mask"):
+	Rename from "avx512f_storeu<ssemodesuffix>512_mask" and update
+	mode iterator.
+	(define_insn "<mask_codefor>rcp14<mode><mask_name>"): Use VF_AVX512VL.
+	(define_insn "<mask_codefor>rsqrt14<mode><mask_name>"): Ditto.
+	(define_insn "<avx512>_scalef<mode><mask_name><round_name>"): Rename
+	from "avx512f_scalef<mode><mask_name><round_name>" and update mode
+	iterator..
+	(define_insn "<avx512>_getexp<mode><mask_name><round_saeonly_name>"):
+	Rename from "avx512f_getexp<mode><mask_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_expand
+	"<avx512>_fixupimm<mode>_maskz<round_saeonly_expand_name>"): Rename from
+	"avx512f_fixupimm<mode>_maskz<round_saeonly_expand_name>" and update
+	mode iterator.
+	(define_insn
+	"<avx512>_fixupimm<mode><sd_maskz_name><round_saeonly_name>"): Rename
+	from "avx512f_fixupimm<mode><sd_maskz_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_insn "<avx512>_fixupimm<mode>_mask<round_saeonly_name>"): Rename
+	from "avx512f_fixupimm<mode>_mask<round_saeonly_name>" and update mode
+	iterator..
+	(define_insn
+	"<avx512>_rndscale<mode><mask_name><round_saeonly_name>"): rename from
+	"avx512f_rndscale<mode><mask_name><round_saeonly_name>" and update
+	mode iterator..
+	(define_insn "<avx512>_getmant<mode><mask_name><round_saeonly_name>"):
+	Rename from "avx512f_getmant<mode><mask_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_insn "avx512f_vgetmant<mode><round_saeonly_name>"): Rename from
+	"avx512f_getmant<mode><round_saeonly_name>".
+
 2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63166
