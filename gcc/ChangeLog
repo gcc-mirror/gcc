@@ -1,3 +1,8 @@
+2014-09-10  Robert Suchanek   <robert.suchanek@imgtec.com>
+
+	* lra-lives.c (process_bb_lives): Replace assignment with bitwise OR
+	assignment.
+
 2014-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* flag-types.h (enum sanitize_code): Add SANITIZE_NONNULL_ATTRIBUTE
