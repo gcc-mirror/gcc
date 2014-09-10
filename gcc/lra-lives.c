@@ -680,9 +680,9 @@ process_bb_lives (basic_block bb, int &curr_point)
       /* Mark early clobber outputs dead.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT && reg->early_clobber && ! reg->subreg_p)
-	  need_curr_point_incr = mark_regno_dead (reg->regno,
-						  reg->biggest_mode,
-						  curr_point);
+	  need_curr_point_incr |= mark_regno_dead (reg->regno,
+						   reg->biggest_mode,
+						   curr_point);
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT && reg->early_clobber && ! reg->subreg_p)
