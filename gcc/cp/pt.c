@@ -2813,7 +2813,8 @@ check_explicit_specialization (tree declarator,
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
 	  else if (TREE_CODE (decl) == FUNCTION_DECL)
 	    /* A specialization is not necessarily COMDAT.  */
-	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
+				  && DECL_DECLARED_INLINE_P (decl));
 	  else if (TREE_CODE (decl) == VAR_DECL)
 	    DECL_COMDAT (decl) = false;
 
@@ -5059,6 +5060,7 @@ template arguments to %qD do not match original template %qD",
 
   if (flag_implicit_templates
       && !is_friend
+      && TREE_PUBLIC (decl)
       && VAR_OR_FUNCTION_DECL_P (decl))
     /* Set DECL_COMDAT on template instantiations; if we force
        them to be emitted by explicit instantiation or -frepo,

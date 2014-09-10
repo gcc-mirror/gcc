@@ -1,3 +1,11 @@
+2014-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	* decl.c (grokfndecl): Don't set DECL_COMDAT on static inlines.
+	(duplicate_decls, start_decl): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+	(push_template_decl_real): Or static templates.
+
 2014-09-08  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_class_member_access_expr): Move
