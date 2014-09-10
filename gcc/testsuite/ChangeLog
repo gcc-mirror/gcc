@@ -1,3 +1,8 @@
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	PR target/63209
+	* gcc.c-torture/execute/pr63209.c: New test.
+
 2014-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/i386.exp: Only run vect-args.c tests

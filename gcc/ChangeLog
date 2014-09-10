@@ -1,3 +1,9 @@
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	PR target/63209
+	* config/arm/arm.md (movcond_addsi): Handle case where source
+	and target operands are the same.
+
 2014-09-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* final.c (this_is_asm_operands): Strengthen this variable from
