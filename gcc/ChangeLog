@@ -1,3 +1,92 @@
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (define_mode_iterator VF_AVX512VL): New.
+	(define_mode_iterator FMAMODEM): Allow 128/256bit EVEX version.
+	(define_mode_iterator FMAMODE_AVX512): New.
+	(define_mode_iterator FMAMODE): Remove conditions.
+	(define_expand "fma4i_fmadd_<mode>"): Use FMAMODE_AVX512 mode iterator.
+	(define_expand "<avx512>_fmadd_<mode>_maskz<round_expand_name>"): Rename
+	from "<avx512>_fmadd_<mode>_maskz<round_expand_name>" and use VF_AVX512VL
+	mode iterator.
+	(define_mode_iterator FMAMODE_NOVF512): Remove.
+	(define_insn "*fma_fmadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_mode_iterator VF_SF_AVX512VL): New.
+	(define_insn "<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fmsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fnmadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>" and
+	use FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fnmadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fnmadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fnmadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fnmadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fnmsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fnmsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fnmsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fnmsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fnmsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_expand "<avx512>_fmaddsub_<mode>_maskz<round_expand_name>"):
+	Rename from "avx512f_fmaddsub_<mode>_maskz<round_expand_name>" and
+	use VF_AVX512VL mode iterator.
+	(define_insn "*fma_fmaddsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>" and
+	remove subst usage.
+	(define_insn "<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmaddsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmaddsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmaddsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmaddsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fmsubadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>" and
+	remove usage of subst.
+	(define_insn "<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmsubadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmsubadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmsubadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmsubadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+
 2014-09-10  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	Revert r213751:
