@@ -1,3 +1,8 @@
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp: Only run vect-args.c tests
+	if runtest_file_p says they should be run.
+
 2014-09-10  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vstN_1.c: New test.
