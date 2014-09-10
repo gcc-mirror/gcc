@@ -1,5 +1,16 @@
 2014-09-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* final.c (this_is_asm_operands): Strengthen this variable from
+	rtx to const rtx_insn *.
+	* output.h (this_is_asm_operands): Likewise.
+	* rtl-error.c (location_for_asm): Strengthen param "insn" from
+	const_rtx to const rtx_insn *.
+	(diagnostic_for_asm): Likewise.
+	* rtl-error.h (error_for_asm): Likewise.
+	(warning_for_asm): Likewise.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* genextract.c (print_header): When writing out insn_extract to
 	insn-extract.c, strengthen the param "insn" from rtx to rtx_insn *.
 	* recog.h (insn_extract): Strengthen the param from rtx to
