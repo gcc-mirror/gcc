@@ -1,3 +1,8 @@
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63166
+	* ipa-prop.c (compute_known_type_jump_func): Fix conditional.
+
 2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

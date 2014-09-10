@@ -1,0 +1,108 @@
+class EIdent { };
+class Cstring { };
+template < class KEY, class VALUE, class HASHER > class HashMapIterator
+{
+public:
+  virtual ~ HashMapIterator () { }
+};
+
+class ECell;
+class ECell_ptr
+{
+  ECell *mp_element;
+public:
+    ECell * operator -> () const
+  {
+    return (mp_element);
+  }
+}
+sicat_cmd_status;
+class CellListIterator;
+class ECellList
+{
+public:
+  virtual CellListIterator * createIterator () const = 0;
+  virtual ECell_ptr Find (const EIdent & anIdent) = 0;
+};
+class Foobar_Out
+{
+  virtual int get_channel () { }
+public:
+    Foobar_Out & operator << (const char *str);
+  Foobar_Out & operator << (const Cstring & cstring);
+};
+
+class Foobar_Log:public Foobar_Out { };
+extern Foobar_Log Foobar_LOG;
+template < class KEY > class BagIterator
+{
+public:
+  inline const KEY & operator * () const;
+  inline int atEnd () const;
+};
+
+class EMaskView;
+class ECell
+{
+public:
+  virtual const EMaskView & getMaskView () const = 0;
+};
+class FoobarDatabase
+{
+public:
+  const Cstring & getName (const EIdent & id) const;
+  ECellList *getCellList ();
+};
+inline FoobarDatabase &
+DB () { }
+
+class EMaskView
+{
+public:
+  inline BagIterator < EIdent > getCallerIterator () const;
+};
+struct DBHashFunctions
+{
+};
+class CellListIterator:public HashMapIterator < EIdent, ECell *,
+  DBHashFunctions >
+{
+};
+class IdentSet
+{
+public:
+  unsigned int getSize () const { }
+  int isEmpty () const { }
+};
+class IdentSetIterator
+{
+public:
+  IdentSetIterator (const IdentSet * p_source) { }
+  int atEnd () const { }
+  EIdent operator* () const { }
+};
+void
+validate ()
+{
+  IdentSet complete_cell_ids;
+  IdentSet incomplete_cell_ids;
+  CellListIterator *p_cl_it = DB ().getCellList ()->createIterator ();
+  delete p_cl_it;
+  while (!incomplete_cell_ids.isEmpty ())
+    {
+      if (incomplete_cell_ids.getSize () < complete_cell_ids.getSize ())
+	{
+	  IdentSetIterator complete_cell_it (&complete_cell_ids);
+	  while (!complete_cell_it.atEnd ())
+	    {
+	      BagIterator < EIdent > caller_it =
+		DB ().getCellList ()->Find (*complete_cell_it)->
+		getMaskView ().getCallerIterator ();
+	      while (!caller_it.atEnd ())
+		{
+		  Foobar_LOG << DB ().getName (*caller_it) << " ";
+		}
+	    }
+	}
+    }
+}
