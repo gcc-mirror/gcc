@@ -12143,8 +12143,9 @@ mips_secondary_reload_class (enum reg_class rclass,
 
   if (reg_class_subset_p (rclass, FP_REGS))
     {
-      if (MEM_P (x)
-	  && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8))
+      if (regno < 0
+	  || (MEM_P (x)
+	      && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)))
 	/* In this case we can use lwc1, swc1, ldc1 or sdc1.  We'll use
 	   pairs of lwc1s and swc1s if ldc1 and sdc1 are not supported.  */
 	return NO_REGS;

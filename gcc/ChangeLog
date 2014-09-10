@@ -1,3 +1,8 @@
+2014-09-10  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.c (mips_secondary_reload_class): Handle
+	regno < 0 case.
+
 2014-09-10  Robert Suchanek   <robert.suchanek@imgtec.com>
 
 	* lra-lives.c (process_bb_lives): Replace assignment with bitwise OR
