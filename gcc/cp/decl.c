@@ -2215,7 +2215,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
-	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (newdecl);
+	  DECL_COMDAT (newdecl) = (TREE_PUBLIC (newdecl)
+				   && DECL_DECLARED_INLINE_P (newdecl));
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if
@@ -4718,7 +4719,8 @@ start_decl (const cp_declarator *declarator,
 	{
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
+				  && DECL_DECLARED_INLINE_P (decl));
 	  else
 	    DECL_COMDAT (decl) = false;
 
@@ -7699,7 +7701,8 @@ grokfndecl (tree ctype,
   if (inlinep)
     {
       DECL_DECLARED_INLINE_P (decl) = 1;
-      DECL_COMDAT (decl) = 1;
+      if (publicp)
+	DECL_COMDAT (decl) = 1;
     }
   if (inlinep & 2)
     DECL_DECLARED_CONSTEXPR_P (decl) = true;
