@@ -1,3 +1,8 @@
+2014-09-10  Mike Stump  <mikestump@comcast.net>
+
+	* doc/install.texi (Prerequisites): Note Tcl 8.6 bug fixed in
+	8.6.1.
+
 2014-09-10  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphunit.c (expand_thunk): If not expanding, set analyzed flag.
