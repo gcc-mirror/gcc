@@ -316,13 +316,16 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 clearcap-init
 
+global runtests
 # Special case compilation of vect-args.c so we don't have to
 # replicate it 10 times.
-foreach type { "" -mmmx -m3dnow -msse -msse2 } {
-  foreach level { "" -O } {
-    set flags "$type $level"
-    verbose -log "Testing vect-args, $flags" 1
-    dg-test $srcdir/$subdir/vect-args.c $flags ""
+if [runtest_file_p $runtests $srcdir/$subdir/vect-args.c] {
+  foreach type { "" -mmmx -m3dnow -msse -msse2 } {
+    foreach level { "" -O } {
+      set flags "$type $level"
+      verbose -log "Testing vect-args, $flags" 1
+      dg-test $srcdir/$subdir/vect-args.c $flags ""
+    }
   }
 }
 
