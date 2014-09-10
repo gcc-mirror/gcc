@@ -1,3 +1,10 @@
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	Backport from mainline
+	PR target/63209
+	* config/arm/arm.md (movcond_addsi): Handle case where source
+	and target operands are the same.
+
 2014-09-10  Alan Modra  <amodra@gmail.com>
 
 	PR debug/60655
