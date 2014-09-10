@@ -7,6 +7,26 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_mode_iterator VI48F): New.
+	(define_insn "<avx512>_compress<mode>_mask"): Rename from
+	"avx512f_compress<mode>_mask" and update mode iterator.
+	(define_insn "<avx512>_compressstore<mode>_mask"): Rename from
+	"avx512f_compressstore<mode>_mask" and update mode iterator.
+	(define_expand "<avx512>_expand<mode>_maskz"): Rename from
+	"avx512f_expand<mode>_maskz" and update mode iterator.
+	(define_insn "<avx512>_expand<mode>_mask"): Rename from
+	"avx512f_expand<mode>_mask" and update mode iterator.
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c
 	(ix86_expand_args_builtin): Handle avx512dq_rangepv8df_mask_round,
 	avx512dq_rangepv16sf_mask_round, avx512dq_rangepv4df_mask,
