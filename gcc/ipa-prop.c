@@ -1537,8 +1537,8 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
 				    call, current_function_decl)
       /* Even if the var seems to be in construction by inline call stack,
 	 we may work out the actual type by walking memory writes.  */
-      && (!is_global_var (base)
-	  && detect_type_change (op, base, expected_type, call, jfunc, offset)))
+      && (is_global_var (base)
+	  || detect_type_change (op, base, expected_type, call, jfunc, offset)))
     return;
 
   ipa_set_jf_known_type (jfunc, offset, TREE_TYPE (base),
