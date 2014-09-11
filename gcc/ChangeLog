@@ -1,3 +1,27 @@
+2014-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_mode_attr avx2_avx512): Rename from avx2_avx512bw.
+	(define_mode_iterator VI48F_256_512): Extend to AVX-512VL.
+	(define_insn "<avx2_avx512>_permvar<mode><mask_name>"): Rename from
+	"<avx2_avx512f>_permvar<mode><mask_name>".
+	(define_insn "<avx512>_permvar<mode><mask_name>"): New.
+	(define_insn "<avx2_avx512>_ashrv<VI48_AVX512F_AVX512VL:mode><mask_name>"):
+	Rename from "<avx2_avx512f>_ashrv<mode><mask_name>".
+	(define_insn "<avx2_avx512>_ashrv<VI2_AVX512VL:mode><mask_name>"):
+	Ditto.
+	(define_insn "<avx2_avx512>_<shift_insn>v<VI48_AVX512F:mode><mask_name>"):
+	Rename from "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>".
+	(define_insn "<avx2_avx512>_<shift_insn>v<VI2_AVX512VL:mode><mask_name>"):
+	Rename from "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>".
+
 2014-09-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_fmav4sf4): Use correct constraints for
