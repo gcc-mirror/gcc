@@ -1,3 +1,8 @@
+2014-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63139
+	* pt.c (tsubst_pack_expansion): Simplify substitution into T....
+
 2014-09-09  Jason Merrill  <jason@redhat.com>
 
 	PR lto/53808
