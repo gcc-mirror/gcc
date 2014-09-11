@@ -1,3 +1,11 @@
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	Partial backport r214953 from mainline
+	2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (*): Replace all
+	int{32,16,8}x1_t with int{32,16,8}_t.
+
 2014-09-10  Xinliang David Li  <davidxl@google.com>
 
 	Backport from mainline

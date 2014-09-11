@@ -6,7 +6,7 @@
 #include "arm_neon.h"
 
 int64x1_t
-t_vqdmlsls_lane_s32 (int64x1_t a, int32x1_t b, int32x2_t c)
+t_vqdmlsls_lane_s32 (int64x1_t a, int32_t b, int32x2_t c)
 {
   return vqdmlsls_lane_s32 (a, b, c, 0);
 }
