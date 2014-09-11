@@ -55,7 +55,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -81,7 +82,8 @@
 	(eq:SI (match_dup 4)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 5)))]
+	(xor:SI (match_dup 5)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[4] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -109,7 +111,8 @@
 	(eq:SI (match_dup 4)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 5)))]
+	(xor:SI (match_dup 5)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[4] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -137,7 +140,8 @@
 	(eq:SI (match_dup 4)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 5)))]
+	(xor:SI (match_dup 5)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[4] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -165,7 +169,8 @@
 	(eq:SI (match_dup 4)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 5)))]
+	(xor:SI (match_dup 5)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[4] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -209,7 +214,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -233,7 +239,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -257,7 +264,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -281,7 +289,8 @@
 	(eq:SI (match_dup 1)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 2)))]
+	(xor:SI (match_dup 2)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[1] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -305,7 +314,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
@@ -329,7 +339,8 @@
 	(eq:SI (match_dup 2)
 	       (const_int 0)))
    (set (match_operand:SI 0 "int_reg_operand" "")
-	(minus:SI (const_int 1) (match_dup 3)))]
+	(xor:SI (match_dup 3)
+		(const_int 1)))]
   "TARGET_HTM"
 {
   operands[2] = gen_rtx_REG (CCmode, CR0_REGNO);
