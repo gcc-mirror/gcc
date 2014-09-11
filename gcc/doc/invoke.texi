@@ -4912,6 +4912,14 @@ struct s @{ int f, g, h; @};
 struct s x = @{ .f = 3, .g = 4 @};
 @end smallexample
 
+In C++ this option does not warn either about the empty @{ @}
+initializer, for example:
+
+@smallexample
+struct s @{ int f, g, h; @};
+s x = @{ @};
+@end smallexample
+
 This warning is included in @option{-Wextra}.  To get other @option{-Wextra}
 warnings without this one, use @option{-Wextra -Wno-missing-field-initializers}.
 

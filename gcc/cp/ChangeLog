@@ -1,3 +1,9 @@
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* typeck2.c (process_init_constructor_record): Do not warn about
+	missing field initializer if EMPTY_CONSTRUCTOR_P (init).
+
 2014-09-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63139

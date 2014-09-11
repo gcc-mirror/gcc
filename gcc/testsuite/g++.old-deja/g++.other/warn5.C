@@ -16,4 +16,4 @@ X *foo ()
   return new X ();  // gets bogus warning
 }
 
-X x = {};           // { dg-warning "" } missing initializer
+X x = {};

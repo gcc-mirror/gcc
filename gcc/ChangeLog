@@ -1,3 +1,8 @@
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* doc/invoke.texi ([-Wmissing-field-initializers]): Update.
+
 2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_types_unop_su_qualifiers,
