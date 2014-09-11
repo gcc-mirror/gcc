@@ -785,7 +785,7 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
     return 1;
 
   if (GET_CODE (in) == LABEL_REF)
-    return reg == XEXP (in, 0);
+    return reg == LABEL_REF_LABEL (in);
 
   code = GET_CODE (in);
 
@@ -2847,7 +2847,9 @@ rtx_referenced_p (const_rtx x, const_rtx body)
     if (const_rtx y = *iter)
       {
 	/* Check if a label_ref Y refers to label X.  */
-	if (GET_CODE (y) == LABEL_REF && LABEL_P (x) && XEXP (y, 0) == x)
+	if (GET_CODE (y) == LABEL_REF
+	    && LABEL_P (x)
+	    && LABEL_REF_LABEL (y) == x)
 	  return true;
 
 	if (rtx_equal_p (x, y))
@@ -5320,7 +5322,7 @@ get_condition (rtx_insn *jump, rtx_insn **earliest, int allow_cc_mode,
      the condition.  */
   reverse
     = GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-      && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump);
+      && LABEL_REF_LABEL (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (jump);
 
   return canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX,
 				 allow_cc_mode, valid_at_insn_p);

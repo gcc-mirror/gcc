@@ -923,20 +923,20 @@ get_branch_condition (const rtx_insn *insn, rtx target)
     return 0;
 
   src = SET_SRC (pat);
-  if (GET_CODE (src) == LABEL_REF && XEXP (src, 0) == target)
+  if (GET_CODE (src) == LABEL_REF && LABEL_REF_LABEL (src) == target)
     return const_true_rtx;
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 2) == pc_rtx
 	   && ((GET_CODE (XEXP (src, 1)) == LABEL_REF
-	        && XEXP (XEXP (src, 1), 0) == target)
+	        && LABEL_REF_LABEL (XEXP (src, 1)) == target)
 	       || (ANY_RETURN_P (XEXP (src, 1)) && XEXP (src, 1) == target)))
     return XEXP (src, 0);
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 1) == pc_rtx
 	   && ((GET_CODE (XEXP (src, 2)) == LABEL_REF
-		&& XEXP (XEXP (src, 2), 0) == target)
+		&& LABEL_REF_LABEL (XEXP (src, 2)) == target)
 	       || (ANY_RETURN_P (XEXP (src, 2)) && XEXP (src, 2) == target)))
     {
       enum rtx_code rev;

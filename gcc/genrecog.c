@@ -617,10 +617,10 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
       return;
 
     case LABEL_REF:
-      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
+      if (GET_MODE (LABEL_REF_LABEL (pattern)) != VOIDmode)
 	error_with_line (pattern_lineno,
 			 "operand to label_ref %smode not VOIDmode",
-			 GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
+			 GET_MODE_NAME (GET_MODE (LABEL_REF_LABEL (pattern))));
       break;
 
     default:
