@@ -1,3 +1,9 @@
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* g++.dg/warn/Wmissing-field-initializers-1.C: New.
+	* g++.old-deja/g++.other/warn5.C: Adjust.
+
 2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vset_lane_1.c: New test.
