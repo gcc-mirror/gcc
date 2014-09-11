@@ -8249,7 +8249,7 @@ vmul_n_u32 (uint32x2_t a, uint32_t b)
 #define vmull_high_lane_s16(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
-       int16x8_t b_ = (b);                                              \
+       int16x4_t b_ = (b);                                              \
        int16x8_t a_ = (a);                                              \
        int32x4_t result;                                                \
        __asm__ ("smull2 %0.4s, %1.8h, %2.h[%3]"                         \
@@ -8262,7 +8262,7 @@ vmul_n_u32 (uint32x2_t a, uint32_t b)
 #define vmull_high_lane_s32(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
-       int32x4_t b_ = (b);                                              \
+       int32x2_t b_ = (b);                                              \
        int32x4_t a_ = (a);                                              \
        int64x2_t result;                                                \
        __asm__ ("smull2 %0.2d, %1.4s, %2.s[%3]"                         \
@@ -8275,7 +8275,7 @@ vmul_n_u32 (uint32x2_t a, uint32_t b)
 #define vmull_high_lane_u16(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
-       uint16x8_t b_ = (b);                                             \
+       uint16x4_t b_ = (b);                                             \
        uint16x8_t a_ = (a);                                             \
        uint32x4_t result;                                               \
        __asm__ ("umull2 %0.4s, %1.8h, %2.h[%3]"                         \
@@ -8288,7 +8288,7 @@ vmul_n_u32 (uint32x2_t a, uint32_t b)
 #define vmull_high_lane_u32(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
-       uint32x4_t b_ = (b);                                             \
+       uint32x2_t b_ = (b);                                             \
        uint32x4_t a_ = (a);                                             \
        uint64x2_t result;                                               \
        __asm__ ("umull2 %0.2d, %1.4s, %2.s[%3]"                         \
