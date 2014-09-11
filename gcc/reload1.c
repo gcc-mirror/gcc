@@ -2358,7 +2358,7 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
       if (LABEL_REF_NONLOCAL_P (x))
 	return;
 
-      x = XEXP (x, 0);
+      x = LABEL_REF_LABEL (x);
 
       /* ... fall through ...  */
 
@@ -2460,13 +2460,13 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
 	case IF_THEN_ELSE:
 	  tem = XEXP (SET_SRC (x), 1);
 	  if (GET_CODE (tem) == LABEL_REF)
-	    set_label_offsets (XEXP (tem, 0), insn, initial_p);
+	    set_label_offsets (LABEL_REF_LABEL (tem), insn, initial_p);
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 
 	  tem = XEXP (SET_SRC (x), 2);
 	  if (GET_CODE (tem) == LABEL_REF)
-	    set_label_offsets (XEXP (tem, 0), insn, initial_p);
+	    set_label_offsets (LABEL_REF_LABEL (tem), insn, initial_p);
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 	  return;

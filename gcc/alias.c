@@ -1521,7 +1521,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return REGNO (x) == REGNO (y);
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);

@@ -1673,6 +1673,10 @@ inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
    goes through all the LABEL_REFs that jump to that label.  The chain
    eventually winds up at the CODE_LABEL: it is circular.  */
 #define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
+
+/* Get the label that a LABEL_REF references.  */
+#define LABEL_REF_LABEL(LABREF) XCEXP (LABREF, 0, LABEL_REF)
+
 
 /* For a REG rtx, REGNO extracts the register number.  REGNO can only
    be used on RHS.  Use SET_REGNO to change the value.  */

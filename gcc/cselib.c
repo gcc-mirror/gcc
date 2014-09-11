@@ -961,7 +961,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
       return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
     case MEM:
       /* We have to compare any autoinc operations in the addresses
@@ -1167,7 +1167,7 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
 	 differences and differences between each stage's debugging dumps.  */
       hash += (((unsigned int) LABEL_REF << 7)
-	       + CODE_LABEL_NUMBER (XEXP (x, 0)));
+	       + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x)));
       return hash ? hash : (unsigned int) LABEL_REF;
 
     case SYMBOL_REF:

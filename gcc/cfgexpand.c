@@ -3624,7 +3624,7 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
 	    return SUBREG_REG (x);
 	  break;
 	case LABEL_REF:
-	  temp = gen_rtx_LABEL_REF (mode, XEXP (x, 0));
+	  temp = gen_rtx_LABEL_REF (mode, LABEL_REF_LABEL (x));
 	  LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
 	  return temp;
 	case SYMBOL_REF:

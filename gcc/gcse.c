@@ -2816,10 +2816,10 @@ add_label_notes (rtx x, rtx insn)
 	 such a LABEL_REF, so we don't have to handle REG_LABEL_TARGET
 	 notes.  */
       gcc_assert (!JUMP_P (insn));
-      add_reg_note (insn, REG_LABEL_OPERAND, XEXP (x, 0));
+      add_reg_note (insn, REG_LABEL_OPERAND, LABEL_REF_LABEL (x));
 
-      if (LABEL_P (XEXP (x, 0)))
-	LABEL_NUSES (XEXP (x, 0))++;
+      if (LABEL_P (LABEL_REF_LABEL (x)))
+	LABEL_NUSES (LABEL_REF_LABEL (x))++;
 
       return;
     }

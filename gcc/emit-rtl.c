@@ -3584,8 +3584,8 @@ mark_label_nuses (rtx x)
   const char *fmt;
 
   code = GET_CODE (x);
-  if (code == LABEL_REF && LABEL_P (XEXP (x, 0)))
-    LABEL_NUSES (XEXP (x, 0))++;
+  if (code == LABEL_REF && LABEL_P (LABEL_REF_LABEL (x)))
+    LABEL_NUSES (LABEL_REF_LABEL (x))++;
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
