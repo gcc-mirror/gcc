@@ -1,3 +1,14 @@
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (aarch64_vset_lane_any): New (*2).
+	(vset_lane_f32, vset_lane_f64, vset_lane_p8, vset_lane_p16,
+	vset_lane_s8, vset_lane_s16, vset_lane_s32, vset_lane_s64,
+	vset_lane_u8, vset_lane_u16, vset_lane_u32, vset_lane_u64,
+	vsetq_lane_f32, vsetq_lane_f64, vsetq_lane_p8, vsetq_lane_p16,
+	vsetq_lane_s8, vsetq_lane_s16, vsetq_lane_s32, vsetq_lane_s64,
+	vsetq_lane_u8, vsetq_lane_u16, vsetq_lane_u32, vsetq_lane_u64):
+	Replace inline assembler with __aarch64_vset_lane_any.
+
 2014-09-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vmull_high_lane_s16): Fix argument
