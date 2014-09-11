@@ -4931,8 +4931,9 @@
         (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r,z")]
                    UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_dup 0))]
-  ""
+   (clobber (match_dup 0))
+   (clobber (const_int 0))]
+  "!AVR_HAVE_EIJMP_EICALL"
   "@
 	ijmp
 	push %A0\;push %B0\;ret
@@ -4940,6 +4941,19 @@
   [(set_attr "length" "1,3,2")
    (set_attr "isa" "rjmp,rjmp,jmp")
    (set_attr "cc" "none,none,clobber")])
+
+(define_insn "*tablejump.3byte-pc"
+  [(set (pc)
+        (unspec:HI [(reg:HI REG_Z)]
+                   UNSPEC_INDEX_JMP))
+   (use (label_ref (match_operand 0 "" "")))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI 24))]
+  "AVR_HAVE_EIJMP_EICALL"
+  "clr r24\;subi r30,pm_lo8(-(%0))\;sbci r31,pm_hi8(-(%0))\;sbci r24,pm_hh8(-(%0))\;jmp __tablejump2__"
+  [(set_attr "length" "6")
+   (set_attr "isa" "eijmp")
+   (set_attr "cc" "clobber")])
 
 
 (define_expand "casesi"
@@ -4958,15 +4972,31 @@
                       (label_ref (match_operand 4 "" ""))
                       (pc)))
 
-   (set (match_dup 6)
-        (plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
+   (set (match_dup 10)
+        (match_dup 7))
 
-   (parallel [(set (pc) (unspec:HI [(match_dup 6)] UNSPEC_INDEX_JMP))
+   (parallel [(set (pc)
+                   (unspec:HI [(match_dup 10)] UNSPEC_INDEX_JMP))
               (use (label_ref (match_dup 3)))
-              (clobber (match_dup 6))])]
+              (clobber (match_dup 10))
+              (clobber (match_dup 8))])]
   ""
   {
     operands[6] = gen_reg_rtx (HImode);
+
+    if (AVR_HAVE_EIJMP_EICALL)
+      {
+        operands[7] = operands[6];
+        operands[8] = all_regs_rtx[24];
+        operands[10] = gen_rtx_REG (HImode, REG_Z);
+      }
+    else
+      {
+        operands[7] = gen_rtx_PLUS (HImode, operands[6], 
+                                    gen_rtx_LABEL_REF (VOIDmode, operands[3]));
+        operands[8] = const0_rtx;
+        operands[10] = operands[6];
+      }
   })
 
 
