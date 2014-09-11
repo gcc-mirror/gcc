@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _CharT                       _StrTransT;
 
       explicit
-      _RegexTranslator(const _TraitsT& __traits)
+      _RegexTranslator(const _TraitsT&)
       { }
 
       _CharT

@@ -1,3 +1,17 @@
+2014-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63219
+	* include/bits/regex.h (match_results::format): Remove stray template
+	parameter.
+	* include/bits/regex_compiler.h (_RegexTranslator::_RegexTranslator):
+	Remove parameter name to avoid -Wunused-parameter warning.
+	* include/bits/regex_executor.h (_State_info::_State_info): Reorder
+	mem-initializers to avoid -Wreorder warning.
+	* include/bits/regex_executor.tcc (_Executor::_M_word_boundary):
+	Remove parameter name to avoid -Wunused-parameter warning.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_advance): Add braces
+	to avoid -Wempty-body warning when not in debug mode.
+
 2014-09-10  Siva Chandra Reddy  <sivachandra@google.com>
 
 	* python/hook.in: Load the xmethods.
