@@ -1,3 +1,37 @@
+2014-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_expand "<avx512>_vpermi2var<VI48F:mode>3_maskz"): Rename from
+	"avx512f_vpermi2var<mode>3_maskz" and update mode iterator.
+	(define_expand "<avx512>_vpermi2var<VI2_AVX512VL:mode>3_maskz"):
+	New.
+	(define_insn "<avx512>_vpermi2var<VI48F:mode>3<sd_maskz_name>"): Rename
+	from "avx512f_vpermi2var<mode>3<sd_maskz_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_vpermi2var<VI2_AVX512VL:mode>3<sd_maskz_name>"):
+	New.
+	(define_insn "<avx512>_vpermi2var<VI48F:mode>3_mask"): Rename from
+	"avx512f_vpermi2var<mode>3_mask" and update mode iterator.
+	(define_insn "<avx512>_vpermi2var<VI2_AVX512VL:mode>3_mask"): New.
+	(define_expand "<avx512>_vpermt2var<VI48F:mode>3_maskz"): Rename from
+	"avx512f_vpermt2var<mode>3_maskz" and update mode iterator.
+	(define_expand "<avx512>_vpermt2var<VI2_AVX512VL:mode>3_maskz"): New.
+	(define_insn "<avx512>_vpermt2var<VI48F:mode>3<sd_maskz_name>"): Rename
+	from "avx512f_vpermt2var<mode>3<sd_maskz_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_vpermt2var<VI2_AVX512VL:mode>3<sd_maskz_name>"):
+	New.
+	(define_insn "<avx512>_vpermt2var<VI48F:mode>3_mask"): Rename from
+	"avx512f_vpermt2var<mode>3_mask" and update mode iterator.
+	(define_insn "<avx512>_vpermt2var<VI2_AVX512VL:mode>3_mask"): New.
+
 2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c (varpool_node::ctor_useable_for_folding_p): Do not try
