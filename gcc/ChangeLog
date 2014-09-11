@@ -1,3 +1,11 @@
+2014-09-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/htm.md (tabort, tabortdc, tabortdci, tabortwc,
+	tabortwci, tbegin, tcheck, tend, trechkpt, treclaim, tsr): Use xor
+	instead of minus.
+	* config/rs6000/vector.md (cr6_test_for_zero_reverse,
+	cr6_test_for_lt_reverse): Ditto.
+
 2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61489

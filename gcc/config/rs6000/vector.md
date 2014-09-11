@@ -686,7 +686,9 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (reg:CC 74)
 	       (const_int 0)))
-   (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
@@ -701,7 +703,9 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (reg:CC 74)
 	       (const_int 0)))
-   (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
