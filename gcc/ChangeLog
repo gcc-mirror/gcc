@@ -1,5 +1,40 @@
 2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_types_unop_su_qualifiers,
+	TYPES_REINTERP_SU, aarch64_types_unop_sp_qualifiers, TYPE_REINTERP_SP,
+	aarch64_types_unop_us_qualifiers, TYPES_REINTERP_US,
+	aarch64_types_unop_ps_qualifiers, TYPES_REINTERP_PS, BUILTIN_VD):
+	Delete.
+
+	(aarch64_fold_builtin): Remove all reinterpret cases.
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_reinterpret): Delete.
+
+	* config/aarch64/aarch64-simd-builtins.def (reinterpret*) : Delete.
+
+	* config/aarch64/aarch64-simd.md (aarch64_reinterpretv8qi<mode>,
+	aarch64_reinterpretv4hi<mode>, aarch64_reinterpretv2si<mode>,
+	aarch64_reinterpretv2sf<mode>, aarch64_reinterpretdi<mode>,
+	aarch64_reinterpretv1df<mode>, aarch64_reinterpretv16qi<mode>,
+	aarch64_reinterpretv8hi<mode>, aarch64_reinterpretv4si<mode>,
+	aarch64_reinterpretv4sf<mode>, aarch64_reinterpretv2di<mode>,
+	aarch64_reinterpretv2df<mode>): Delete.
+
+	* config/aarch64/aarch64.c (aarch64_simd_reinterpret): Delete.
+
+	* config/aarch64/arm_neon.h (vreinterpret_p8_f64,
+	vreinterpret_p16_f64, vreinterpret_f32_f64, vreinterpret_f64_f32,
+	vreinterpret_f64_p8, vreinterpret_f64_p16, vreinterpret_f64_s8,
+	vreinterpret_f64_s16, vreinterpret_f64_s32, vreinterpret_f64_u8,
+	vreinterpret_f64_u16, vreinterpret_f64_u32, vreinterpret_s64_f64,
+	vreinterpret_u64_f64, vreinterpret_s8_f64, vreinterpret_s16_f64,
+	vreinterpret_s32_f64, vreinterpret_u8_f64, vreinterpret_u16_f64,
+	vreinterpret_u32_f64): Use cast.
+
+	* config/aarch64/iterators.md (VD_RE): Delete.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/arm_neon.h (aarch64_vset_lane_any): New (*2).
 	(vset_lane_f32, vset_lane_f64, vset_lane_p8, vset_lane_p16,
 	vset_lane_s8, vset_lane_s16, vset_lane_s32, vset_lane_s64,

@@ -269,9 +269,6 @@ rtx aarch64_simd_expand_builtin (int, tree, rtx);
 
 void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 
-/* Emit code for reinterprets.  */
-void aarch64_simd_reinterpret (rtx, rtx);
-
 void aarch64_split_128bit_move (rtx, rtx);
 
 bool aarch64_split_128bit_move_p (rtx, rtx);

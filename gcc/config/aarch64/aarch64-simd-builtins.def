@@ -49,29 +49,6 @@
 
   BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
 
-  VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv2sf, 0, v1df)
-  BUILTIN_VD (REINTERP_SS, reinterpretv1df, 0)
-
-  BUILTIN_VD (REINTERP_SU, reinterpretv1df, 0)
-
-  VAR1 (REINTERP_US, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv2sf, 0, v1df)
-
-  BUILTIN_VD (REINTERP_SP, reinterpretv1df, 0)
-
-  VAR1 (REINTERP_PS, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv2sf, 0, v1df)
-
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0)

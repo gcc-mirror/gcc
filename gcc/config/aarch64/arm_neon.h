@@ -2830,7 +2830,7 @@ vgetq_lane_u64 (uint64x2_t __a, const int __b)
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vreinterpret_p8_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv8qiv1df_ps (__a);
+  return (poly8x8_t) __a;
 }
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
@@ -2962,7 +2962,7 @@ vreinterpretq_p8_p16 (poly16x8_t __a)
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vreinterpret_p16_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv4hiv1df_ps (__a);
+  return (poly16x4_t) __a;
 }
 
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
@@ -3094,7 +3094,7 @@ vreinterpretq_p16_p8 (poly8x16_t __a)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vreinterpret_f32_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv2sfv1df (__a);
+  return (float32x2_t) __a;
 }
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -3226,37 +3226,37 @@ vreinterpretq_f32_p16 (poly16x8_t __a)
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_f32 (float32x2_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv2sf (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_p8 (poly8x8_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv8qi_sp (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_p16 (poly16x4_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv4hi_sp (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_s8 (int8x8_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv8qi (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_s16 (int16x4_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv4hi (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_s32 (int32x2_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv2si (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
@@ -3268,19 +3268,19 @@ vreinterpret_f64_s64 (int64x1_t __a)
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_u8 (uint8x8_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv8qi_su (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_u16 (uint16x4_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv4hi_su (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_u32 (uint32x2_t __a)
 {
-  return __builtin_aarch64_reinterpretv1dfv2si_su (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
@@ -3358,7 +3358,7 @@ vreinterpretq_f64_u64 (uint64x2_t __a)
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vreinterpret_s64_f64 (float64x1_t __a)
 {
-  return (int64x1_t) {__builtin_aarch64_reinterpretdiv1df (__a)};
+  return (int64x1_t) __a;
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
@@ -3490,7 +3490,7 @@ vreinterpretq_s64_p16 (poly16x8_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vreinterpret_u64_f64 (float64x1_t __a)
 {
-  return (uint64x1_t) {__builtin_aarch64_reinterpretdiv1df_us (__a)};
+  return (uint64x1_t) __a;
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
@@ -3622,7 +3622,7 @@ vreinterpretq_u64_p16 (poly16x8_t __a)
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vreinterpret_s8_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv8qiv1df (__a);
+  return (int8x8_t) __a;
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -3754,7 +3754,7 @@ vreinterpretq_s8_p16 (poly16x8_t __a)
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vreinterpret_s16_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv4hiv1df (__a);
+  return (int16x4_t) __a;
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
@@ -3886,7 +3886,7 @@ vreinterpretq_s16_p16 (poly16x8_t __a)
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vreinterpret_s32_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv2siv1df (__a);
+  return (int32x2_t) __a;
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
@@ -4018,7 +4018,7 @@ vreinterpretq_s32_p16 (poly16x8_t __a)
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vreinterpret_u8_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv8qiv1df_us (__a);
+  return (uint8x8_t) __a;
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -4150,7 +4150,7 @@ vreinterpretq_u8_p16 (poly16x8_t __a)
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vreinterpret_u16_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv4hiv1df_us (__a);
+  return (uint16x4_t) __a;
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
@@ -4282,7 +4282,7 @@ vreinterpretq_u16_p16 (poly16x8_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vreinterpret_u32_f64 (float64x1_t __a)
 {
-  return __builtin_aarch64_reinterpretv2siv1df_us (__a);
+  return (uint32x2_t) __a;
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
