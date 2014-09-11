@@ -1102,7 +1102,7 @@
   add\\t%x0, %x1, %x2
   sub\\t%x0, %x1, #%n2
   add\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_imm,alu_reg,alu_imm,alu_reg")
+  [(set_attr "type" "alu_imm,alu_reg,alu_imm,neon_add")
    (set_attr "simd" "*,*,*,yes")]
 )
 

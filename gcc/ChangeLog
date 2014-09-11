@@ -1,5 +1,12 @@
 2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
 
+	Backport r214946 from mainline
+	2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.md (adddi3_aarch64): Set type to neon_add.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
 	Backport r214953 from mainline
 	2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
 
