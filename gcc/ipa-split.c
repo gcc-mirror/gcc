@@ -167,7 +167,11 @@ test_nonssa_use (gimple, tree t, tree, void *data)
       || (TREE_CODE (t) == VAR_DECL
 	  && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-      || TREE_CODE (t) == LABEL_DECL)
+	 /* Normal labels are part of CFG and will be handled gratefuly.
+	    Forced labels however can be used directly by statements and
+	    need to stay in one partition along with their uses.  */
+      || (TREE_CODE (t) == LABEL_DECL
+	  && FORCED_LABEL (t)))
     return bitmap_bit_p ((bitmap)data, DECL_UID (t));
 
   /* For DECL_BY_REFERENCE, the return value is actually a pointer.  We want
@@ -213,6 +217,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
   edge e;
   edge_iterator ei;
   bool ok = true;
+  basic_block bb;
 
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
@@ -225,8 +230,8 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
   while (!worklist.is_empty ())
     {
       gimple_stmt_iterator bsi;
-      basic_block bb = worklist.pop ();
 
+      bb = worklist.pop ();
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	    && bitmap_set_bit (seen, e->src->index))
@@ -250,10 +255,10 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	  if (gimple_code (stmt) == GIMPLE_LABEL
 	      && test_nonssa_use (stmt, gimple_label_label (stmt),
 				  NULL_TREE, non_ssa_vars))
-	  {
-	    ok = false;
-	    goto done;
-	  }
+	    {
+	      ok = false;
+	      goto done;
+	    }
 	}
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
@@ -286,6 +291,27 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	    }
 	}
     }
+
+  /* Verify that the rest of function does not define any label
+     used by the split part.  */
+  FOR_EACH_BB_FN (bb, cfun)
+    if (!bitmap_bit_p (current->split_bbs, bb->index)
+	&& !bitmap_bit_p (seen, bb->index))
+      {
+        gimple_stmt_iterator bsi;
+        for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	  if (gimple_code (gsi_stmt (bsi)) == GIMPLE_LABEL
+	      && test_nonssa_use (gsi_stmt (bsi),
+				  gimple_label_label (gsi_stmt (bsi)),
+				  NULL_TREE, non_ssa_vars))
+	    {
+	      ok = false;
+	      goto done;
+	    }
+	  else if (gimple_code (gsi_stmt (bsi)) != GIMPLE_LABEL)
+	    break;
+      }
+    
 done:
   BITMAP_FREE (seen);
   worklist.release ();
@@ -735,7 +761,8 @@ mark_nonssa_use (gimple, tree t, tree, void *data)
   if ((TREE_CODE (t) == VAR_DECL
        && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-      || TREE_CODE (t) == LABEL_DECL)
+      || (TREE_CODE (t) == LABEL_DECL
+	  && FORCED_LABEL (t)))
     bitmap_set_bit ((bitmap)data, DECL_UID (t));
 
   /* For DECL_BY_REFERENCE, the return value is actually a pointer.  We want
