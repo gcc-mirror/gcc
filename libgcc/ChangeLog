@@ -1,3 +1,14 @@
+2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/63223
+	* config/avr/libgcc.S (__tablejump2__): Rewrite to use RAMPZ, ELPM
+	and R24 as needed.  Make work for all devices and .text locations.
+	(__do_global_ctors, __do_global_dtors): Use word addresses.
+	(__tablejump__, __tablejump_elpm__): Remove functions.
+	* t-avr (LIB1ASMFUNCS): Remove _tablejump, _tablejump_elpm.
+	Add _tablejump2.
+	(XICALL, XIJMP): New macros.
+
 2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 

@@ -46,6 +46,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
            input sections together are small enough to reach every
            location with a RCALL/RJMP instruction.  */
 
+#if defined (__AVR_HAVE_EIJMP_EICALL__) && !defined (__AVR_HAVE_ELPMX__)
+#error device not supported
+#endif
+
 	.macro	mov_l  r_dest, r_src
 #if defined (__AVR_HAVE_MOVW__)
 	movw	\r_dest, \r_src
@@ -77,6 +81,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 #define XCALL rcall
 #define XJMP  rjmp
+#endif
+
+#if defined (__AVR_HAVE_EIJMP_EICALL__)
+#define XICALL eicall
+#define XIJMP  eijmp
+#else
+#define XICALL icall
+#define XIJMP  ijmp
 #endif
 
 ;; Prologue stuff
@@ -2127,11 +2139,7 @@ DEFUN __prologue_saves__
 	out	__SP_L__,r28
 #endif /* #SP = 8/16 */
 
-#if defined (__AVR_HAVE_EIJMP_EICALL__)
-	eijmp
-#else
-	ijmp
-#endif
+	XIJMP
 
 ENDF __prologue_saves__
 #endif /* defined (L_prologue) */
@@ -2213,38 +2221,54 @@ _cleanup:
 
 .section .text.libgcc, "ax", @progbits
 
-#ifdef L_tablejump
+#ifdef L_tablejump2
 DEFUN __tablejump2__
-	lsl	r30
-	rol	r31
-    ;; FALLTHRU
-ENDF __tablejump2__
-
-DEFUN __tablejump__
-#if defined (__AVR_HAVE_LPMX__)
-	lpm __tmp_reg__, Z+
-	lpm r31, Z
-	mov r30, __tmp_reg__
+    lsl     r30
+    rol     r31
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
-	eijmp
+    ;; Word address of gs() jumptable entry in R24:Z
+    rol     r24
+    out     __RAMPZ__, r24
+#elif defined (__AVR_HAVE_ELPM__)
+    ;; Word address of jumptable entry in Z
+    clr     __tmp_reg__
+    rol     __tmp_reg__
+    out     __RAMPZ__, __tmp_reg__
+#endif
+
+    ;; Read word address from jumptable and jump
+
+#if defined (__AVR_HAVE_ELPMX__)
+    elpm    __tmp_reg__, Z+
+    elpm    r31, Z
+    mov     r30, __tmp_reg__
+#ifdef __AVR_HAVE_RAMPD__
+    ;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
+    out     __RAMPZ__, __zero_reg__
+#endif /* RAMPD */
+    XIJMP
+#elif defined (__AVR_HAVE_ELPM__)
+    elpm
+    push    r0
+    adiw    r30, 1
+    elpm
+    push    r0
+    ret
+#elif defined (__AVR_HAVE_LPMX__)
+    lpm     __tmp_reg__, Z+
+    lpm     r31, Z
+    mov     r30, __tmp_reg__
+    ijmp
 #else
-	ijmp
+    lpm
+    push    r0
+    adiw    r30, 1
+    lpm
+    push    r0
+    ret
 #endif
-
-#else /* !HAVE_LPMX */
-	lpm
-	adiw r30, 1
-	push r0
-	lpm
-	push r0
-#if defined (__AVR_HAVE_EIJMP_EICALL__)
-	in   __tmp_reg__, __EIND__
-	push __tmp_reg__
-#endif
-	ret
-#endif /* !HAVE_LPMX */
-ENDF __tablejump__
-#endif /* defined (L_tablejump) */
+ENDF __tablejump2__
+#endif /* L_tablejump2 */
 
 #ifdef L_copy_data
 	.section .init4,"ax",@progbits
@@ -2336,115 +2360,64 @@ ENDF __do_clear_bss
 #ifdef L_ctors
 	.section .init6,"ax",@progbits
 DEFUN __do_global_ctors
-#if defined(__AVR_HAVE_ELPM__)
-	ldi	r17, hi8(__ctors_start)
-	ldi	r28, lo8(__ctors_end)
-	ldi	r29, hi8(__ctors_end)
-	ldi	r16, hh8(__ctors_end)
-	rjmp	.L__do_global_ctors_start
+    ldi     r17, pm_hi8(__ctors_start)
+    ldi     r28, pm_lo8(__ctors_end)
+    ldi     r29, pm_hi8(__ctors_end)
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    ldi     r16, pm_hh8(__ctors_end)
+#endif /* HAVE_EIJMP */
+    rjmp    .L__do_global_ctors_start
 .L__do_global_ctors_loop:
-	sbiw	r28, 2
-	sbc     r16, __zero_reg__
-	mov_h	r31, r29
-	mov_l	r30, r28
-	out     __RAMPZ__, r16
-	XCALL	__tablejump_elpm__
+    sbiw    r28, 1
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    sbc     r16, __zero_reg__
+    mov     r24, r16
+#endif /* HAVE_EIJMP */
+    mov_h   r31, r29
+    mov_l   r30, r28
+    XCALL   __tablejump2__
 .L__do_global_ctors_start:
-	cpi	r28, lo8(__ctors_start)
-	cpc	r29, r17
-	ldi	r24, hh8(__ctors_start)
-	cpc	r16, r24
-	brne	.L__do_global_ctors_loop
-#else
-	ldi	r17, hi8(__ctors_start)
-	ldi	r28, lo8(__ctors_end)
-	ldi	r29, hi8(__ctors_end)
-	rjmp	.L__do_global_ctors_start
-.L__do_global_ctors_loop:
-	sbiw	r28, 2
-	mov_h	r31, r29
-	mov_l	r30, r28
-	XCALL	__tablejump__
-.L__do_global_ctors_start:
-	cpi	r28, lo8(__ctors_start)
-	cpc	r29, r17
-	brne	.L__do_global_ctors_loop
-#endif /* defined(__AVR_HAVE_ELPM__) */
+    cpi     r28, pm_lo8(__ctors_start)
+    cpc     r29, r17
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    ldi     r24, pm_hh8(__ctors_start)
+    cpc     r16, r24
+#endif /* HAVE_EIJMP */
+    brne    .L__do_global_ctors_loop
 ENDF __do_global_ctors
 #endif /* L_ctors */
 
 #ifdef L_dtors
 	.section .fini6,"ax",@progbits
 DEFUN __do_global_dtors
-#if defined(__AVR_HAVE_ELPM__)
-	ldi	r17, hi8(__dtors_end)
-	ldi	r28, lo8(__dtors_start)
-	ldi	r29, hi8(__dtors_start)
-	ldi	r16, hh8(__dtors_start)
-	rjmp	.L__do_global_dtors_start
+    ldi     r17, pm_hi8(__dtors_start)
+    ldi     r28, pm_lo8(__dtors_end)
+    ldi     r29, pm_hi8(__dtors_end)
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    ldi     r16, pm_hh8(__dtors_end)
+#endif /* HAVE_EIJMP */
+    rjmp    .L__do_global_dtors_start
 .L__do_global_dtors_loop:
-	sbiw	r28, 2
-	sbc     r16, __zero_reg__
-	mov_h	r31, r29
-	mov_l	r30, r28
-	out     __RAMPZ__, r16
-	XCALL	__tablejump_elpm__
+    sbiw    r28, 1
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    sbc     r16, __zero_reg__
+    mov     r24, r16
+#endif /* HAVE_EIJMP */
+    mov_h   r31, r29
+    mov_l   r30, r28
+    XCALL   __tablejump2__
 .L__do_global_dtors_start:
-	cpi	r28, lo8(__dtors_end)
-	cpc	r29, r17
-	ldi	r24, hh8(__dtors_end)
-	cpc	r16, r24
-	brne	.L__do_global_dtors_loop
-#else
-	ldi	r17, hi8(__dtors_end)
-	ldi	r28, lo8(__dtors_start)
-	ldi	r29, hi8(__dtors_start)
-	rjmp	.L__do_global_dtors_start
-.L__do_global_dtors_loop:
-	mov_h	r31, r29
-	mov_l	r30, r28
-	XCALL	__tablejump__
-	adiw	r28, 2
-.L__do_global_dtors_start:
-	cpi	r28, lo8(__dtors_end)
-	cpc	r29, r17
-	brne	.L__do_global_dtors_loop
-#endif /* defined(__AVR_HAVE_ELPM__) */
+    cpi     r28, pm_lo8(__dtors_start)
+    cpc     r29, r17
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    ldi     r24, pm_hh8(__dtors_start)
+    cpc     r16, r24
+#endif /* HAVE_EIJMP */
+    brne    .L__do_global_dtors_loop
 ENDF __do_global_dtors
 #endif /* L_dtors */
 
 .section .text.libgcc, "ax", @progbits
-
-#ifdef L_tablejump_elpm
-DEFUN __tablejump_elpm__
-#if defined (__AVR_HAVE_ELPMX__)
-	elpm	__tmp_reg__, Z+
-	elpm	r31, Z
-	mov	r30, __tmp_reg__
-#if defined (__AVR_HAVE_RAMPD__)
-	;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
-	out	__RAMPZ__, __zero_reg__
-#endif /* RAMPD */
-#if defined (__AVR_HAVE_EIJMP_EICALL__)
-	eijmp
-#else
-	ijmp
-#endif
-
-#elif defined (__AVR_HAVE_ELPM__)
-	elpm
-	adiw	r30, 1
-	push	r0
-	elpm
-	push	r0
-#if defined (__AVR_HAVE_EIJMP_EICALL__)
-	in      __tmp_reg__, __EIND__
-	push    __tmp_reg__
-#endif
-	ret
-#endif
-ENDF __tablejump_elpm__
-#endif /* defined (L_tablejump_elpm) */
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loading n bytes from Flash; n = 3,4

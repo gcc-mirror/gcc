@@ -1,3 +1,10 @@
+2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/63223
+	* config/avr/avr.md (*tablejump.3byte-pc): New insn.
+	(*tablejump): Restrict to !AVR_HAVE_EIJMP_EICALL.  Add void clobber.
+	(casesi): Expand to *tablejump.3byte-pc if AVR_HAVE_EIJMP_EICALL.
+
 2014-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
