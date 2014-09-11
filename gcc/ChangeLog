@@ -1,3 +1,8 @@
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58678
+	* ipa-devirt.c (ipa_devirt): Don't check DECL_COMDAT.
+
 2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/63223
