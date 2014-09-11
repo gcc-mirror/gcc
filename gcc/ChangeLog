@@ -1,5 +1,10 @@
 2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* varpool.c (varpool_node::ctor_useable_for_folding_p): Do not try
+	to access removed nodes.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR tree-optimization/63186
 	* ipa-split.c (test_nonssa_use): Skip nonforced labels.
 	(mark_nonssa_use): Likewise.
