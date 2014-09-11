@@ -1,3 +1,9 @@
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63139
+	* pt.c (tsubst_pack_expansion): Simplify substitution into T....
+	(tsubst): Don't throw away PACK_EXPANSION_EXTRA_ARGS.
+
 2014-09-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61659

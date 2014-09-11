@@ -9913,6 +9913,11 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	}
     }
 
+  /* If the expansion is just T..., return the matching argument pack.  */
+  if (!unsubstituted_packs
+      && TREE_PURPOSE (packs) == pattern)
+    return ARGUMENT_PACK_ARGS (TREE_VALUE (packs));
+
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
   if (use_pack_expansion_extra_args_p (packs, len, unsubstituted_packs))
@@ -11831,7 +11836,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		   gen_elem_of_pack_expansion_instantiation will
 		   build the resulting pack expansion from it.  */
 		if (PACK_EXPANSION_P (arg))
-		  arg = PACK_EXPANSION_PATTERN (arg);
+		  {
+		    /* Make sure we aren't throwing away arg info.  */
+		    gcc_assert (!PACK_EXPANSION_EXTRA_ARGS (arg));
+		    arg = PACK_EXPANSION_PATTERN (arg);
+		  }
 	      }
 	  }
 
