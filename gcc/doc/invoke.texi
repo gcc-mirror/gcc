@@ -9019,6 +9019,12 @@ The value @code{one} specifies that exactly one partition should be
 used while the value @code{none} bypasses partitioning and executes
 the link-time optimization step directly from the WPA phase.
 
+@item -flto-odr-type-merging
+@opindex flto-odr-type-merging
+Enable streaming of mangled types names of C++ types and their unification
+at linktime.  This increases size of LTO object files, but enable
+diagnostics about One Definition Rule violations.
+
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate
 language written to LTO object files, and is only meaningful in

@@ -1,3 +1,20 @@
+2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt (flto-odr-type-merging): New flag.
+	* ipa-deivrt.c (hash_type_name): Use ODR names for hasing if availale.
+	(types_same_for_odr): Likewise.
+	(odr_subtypes_equivalent_p): Likewise.
+	(add_type_duplicate): Do not walk type variants.
+	(register_odr_type): New function.
+	* ipa-utils.h (register_odr_type): Declare.
+	(odr_type_p): New function.
+	* langhooks.c (lhd_set_decl_assembler_name): Do not compute
+	TYPE_DECLs
+	* doc/invoke.texi (-flto-odr-type-merging): Document.
+	* tree.c (need_assembler_name_p): Compute ODR names when asked
+	for it.
+	* tree.h (DECL_ASSEMBLER_NAME): Update comment.
+
 2014-09-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/63228

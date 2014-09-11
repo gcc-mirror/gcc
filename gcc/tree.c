@@ -4980,6 +4980,15 @@ free_lang_data_in_type (tree type)
 static inline bool
 need_assembler_name_p (tree decl)
 {
+  /* We use DECL_ASSEMBLER_NAME to hold mangled type names for One Definition Rule
+     merging.  */
+  if (flag_lto_odr_type_mering
+      && TREE_CODE (decl) == TYPE_DECL
+      && DECL_NAME (decl)
+      && decl == TYPE_NAME (TREE_TYPE (decl))
+      && !is_lang_specific (TREE_TYPE (decl))
+      && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
+    return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
   if (TREE_CODE (decl) != FUNCTION_DECL
       && TREE_CODE (decl) != VAR_DECL)

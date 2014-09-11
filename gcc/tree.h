@@ -2344,7 +2344,11 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
-   as DECL_NAME.  It is an IDENTIFIER_NODE.  */
+   as DECL_NAME.  It is an IDENTIFIER_NODE.
+
+   ASSEMBLER_NAME of TYPE_DECLS may store global name of type used for
+   One Definition Rule based type merging at LTO.  It is computed only for
+   LTO compilation and C++.  */
 #define DECL_ASSEMBLER_NAME(NODE) decl_assembler_name (NODE)
 
 /* Return true if NODE is a NODE that can contain a DECL_ASSEMBLER_NAME.
