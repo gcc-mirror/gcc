@@ -1,3 +1,7 @@
+2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Register ODR types.
+
 2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (read_cgraph_and_symbols): Fix symtab_remove_unreachable_nodes

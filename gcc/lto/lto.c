@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "ipa-inline.h"
 #include "params.h"
+#include "ipa-utils.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -1911,7 +1912,11 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      /* Compute the canonical type of all types.
 		 ???  Should be able to assert that !TYPE_CANONICAL.  */
 	      if (TYPE_P (t) && !TYPE_CANONICAL (t))
-		gimple_register_canonical_type (t);
+		{
+		  gimple_register_canonical_type (t);
+		  if (odr_type_p (t))
+		    register_odr_type (t);
+		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
 		 type which is also member of this SCC.  */
 	      if (TREE_CODE (t) == INTEGER_CST
