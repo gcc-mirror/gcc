@@ -2,7 +2,7 @@
    variable-length argument lists.  All struct members are of type
    _Complex long double.  */
 
-extern void struct_by_value_18_x (void);
+extern void struct_by_value_18a_x (void);
 extern void exit (int);
 int fails;
 
