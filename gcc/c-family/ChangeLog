@@ -1,3 +1,9 @@
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* c-cppbuiltin.c (builtin_define_float_constants): Correct
+	__*_DENORM_MIN__ without denormals.
+
 2014-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
