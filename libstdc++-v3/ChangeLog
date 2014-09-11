@@ -1,3 +1,9 @@
+2014-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63219
+	* include/bits/regex.h (match_results::format): Remove stray template
+	parameter.
+
 2014-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
