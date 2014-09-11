@@ -1,3 +1,9 @@
+2014-09-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/63228
+	* config/i386/i386.c (ix86_option_override_internal): Also turn
+	off OPTION_MASK_ABI_X32 for -m16.
+
 2014-09-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (rs6000_mftb_<mode>): Use mode iterator
