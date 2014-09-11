@@ -122,23 +122,6 @@ aarch64_types_unopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned };
 #define TYPES_UNOPU (aarch64_types_unopu_qualifiers)
 #define TYPES_CREATE (aarch64_types_unop_qualifiers)
-#define TYPES_REINTERP_SS (aarch64_types_unop_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_unop_su_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned };
-#define TYPES_REINTERP_SU (aarch64_types_unop_su_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_unop_sp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_poly };
-#define TYPES_REINTERP_SP (aarch64_types_unop_sp_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_unop_us_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_none };
-#define TYPES_REINTERP_US (aarch64_types_unop_us_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_unop_ps_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_none };
-#define TYPES_REINTERP_PS (aarch64_types_unop_ps_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
@@ -319,8 +302,6 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 	 v4si, v2di, v2sf, v4sf, v2df, di, df)
 #define BUILTIN_VB(T, N, MAP) \
   VAR2 (T, N, MAP, v8qi, v16qi)
-#define BUILTIN_VD(T, N, MAP) \
-  VAR4 (T, N, MAP, v8qi, v4hi, v2si, v2sf)
 #define BUILTIN_VD1(T, N, MAP) \
   VAR5 (T, N, MAP, v8qi, v4hi, v2si, v2sf, v1df)
 #define BUILTIN_VDC(T, N, MAP) \
@@ -1280,24 +1261,6 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VALLDI (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
-      VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
-      VAR1 (REINTERP_SS, reinterpretv8qi, 0, v1df)
-      VAR1 (REINTERP_SS, reinterpretv4hi, 0, v1df)
-      VAR1 (REINTERP_SS, reinterpretv2si, 0, v1df)
-      VAR1 (REINTERP_SS, reinterpretv2sf, 0, v1df)
-      BUILTIN_VD (REINTERP_SS, reinterpretv1df, 0)
-      BUILTIN_VD (REINTERP_SU, reinterpretv1df, 0)
-      VAR1 (REINTERP_US, reinterpretdi, 0, v1df)
-      VAR1 (REINTERP_US, reinterpretv8qi, 0, v1df)
-      VAR1 (REINTERP_US, reinterpretv4hi, 0, v1df)
-      VAR1 (REINTERP_US, reinterpretv2si, 0, v1df)
-      VAR1 (REINTERP_US, reinterpretv2sf, 0, v1df)
-      BUILTIN_VD (REINTERP_SP, reinterpretv1df, 0)
-      VAR1 (REINTERP_PS, reinterpretdi, 0, v1df)
-      VAR1 (REINTERP_PS, reinterpretv8qi, 0, v1df)
-      VAR1 (REINTERP_PS, reinterpretv4hi, 0, v1df)
-      VAR1 (REINTERP_PS, reinterpretv2sf, 0, v1df)
-	return fold_build1 (VIEW_CONVERT_EXPR, type, args[0]);
       VAR1 (UNOP, floatv2si, 2, v2sf)
       VAR1 (UNOP, floatv4si, 2, v4sf)
       VAR1 (UNOP, floatv2di, 2, v2df)
@@ -1489,7 +1452,6 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef BUILTIN_V2F
 #undef BUILTIN_VALL
 #undef BUILTIN_VB
-#undef BUILTIN_VD
 #undef BUILTIN_VD1
 #undef BUILTIN_VDC
 #undef BUILTIN_VDIC
