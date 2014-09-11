@@ -1,3 +1,9 @@
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* ginclude/float.h (FLT_TRUE_MIN, DBL_TRUE_MIN, LDBL_TRUE_MIN):
+	Directly forward to __*_DENORM_MIN__.
+
 2014-09-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (LABEL_REF_LABEL): New macro.

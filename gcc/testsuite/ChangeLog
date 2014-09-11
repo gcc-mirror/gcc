@@ -1,3 +1,8 @@
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* gcc.dg/c11-true_min-1.c: New testcase.
+
 2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61489
@@ -10,14 +15,14 @@
 
 2014-09-11  Bernd Schmidt  <bernds@codesourcery.com>
 
-        * gcc.dg/compat/struct-by-value-13_main.c (struct_by_value_13_x):
-        Fix declaration.
-        * gcc.dg/compat/struct-by-value-16a_main.c (struct_by_value_16a_x):
-        Fix declaration.
-        * gcc.dg/compat/struct-by-value-17a_main.c (struct_by_value_17a_x):
-        Fix declaration.
-        * gcc.dg/compat/struct-by-value-18a_main.c (struct_by_value_18a_x):
-        Fix declaration.
+	* gcc.dg/compat/struct-by-value-13_main.c (struct_by_value_13_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-16a_main.c (struct_by_value_16a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-17a_main.c (struct_by_value_17a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-18a_main.c (struct_by_value_18a_x):
+	Fix declaration.
 
 2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
 

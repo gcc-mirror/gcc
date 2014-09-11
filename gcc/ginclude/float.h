@@ -178,21 +178,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef FLT_TRUE_MIN
 #undef DBL_TRUE_MIN
 #undef LDBL_TRUE_MIN
-#if __FLT_HAS_DENORM__
 #define FLT_TRUE_MIN	__FLT_DENORM_MIN__
-#else
-#define FLT_TRUE_MIN	__FLT_MIN__
-#endif
-#if __DBL_HAS_DENORM__
 #define DBL_TRUE_MIN	__DBL_DENORM_MIN__
-#else
-#define DBL_TRUE_MIN	__DBL_MIN__
-#endif
-#if __LDBL_HAS_DENORM__
 #define LDBL_TRUE_MIN	__LDBL_DENORM_MIN__
-#else
-#define LDBL_TRUE_MIN	__LDBL_MIN__
-#endif
 
 #endif /* C11 */
 
