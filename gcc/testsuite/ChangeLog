@@ -1,3 +1,8 @@
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63186
+	* gcc.dg/pr63186.c: New testcase.
+
 2014-09-10  Xinliang David Li  <davidxl@google.com>
 
 	PR target/63209
