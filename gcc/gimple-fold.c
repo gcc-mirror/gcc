@@ -2411,6 +2411,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   tree len = get_maxval_strlen (gimple_call_arg (stmt, 0), 0);
   if (!len)
     return false;
+  len = force_gimple_operand_gsi (gsi, len, true, NULL, true, GSI_SAME_STMT);
   replace_call_with_value (gsi, len);
   return true;
 }
