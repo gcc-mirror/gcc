@@ -1,3 +1,10 @@
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63201
+	* decl.c (start_decl): Handle specialization of member variable
+	template.
+	* pt.c (check_explicit_specialization): Adjust error.
+
 2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61489

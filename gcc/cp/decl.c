@@ -4659,20 +4659,24 @@ start_decl (const cp_declarator *declarator,
 	  if (field == NULL_TREE
 	      || !(VAR_P (field) || variable_template_p (field)))
 	    error ("%q+#D is not a static data member of %q#T", decl, context);
+	  else if (variable_template_p (field) && !this_tmpl)
+	    {
+	      if (DECL_LANG_SPECIFIC (decl)
+		  && DECL_TEMPLATE_SPECIALIZATION (decl))
+		/* OK, specialization was already checked.  */;
+	      else
+		{
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "non-member-template declaration of %qD", decl);
+		  inform (DECL_SOURCE_LOCATION (field), "does not match "
+			  "member template declaration here");
+		  return error_mark_node;
+		}
+	    }
 	  else
 	    {
 	      if (variable_template_p (field))
-		{
-		  if (!this_tmpl)
-		    {
-		      error_at (DECL_SOURCE_LOCATION (decl),
-				"non-member-template declaration of %qD", decl);
-		      inform (DECL_SOURCE_LOCATION (field), "does not match "
-			      "member template declaration here");
-		      return error_mark_node;
-		    }
-		  field = DECL_TEMPLATE_RESULT (field);
-		}
+		field = DECL_TEMPLATE_RESULT (field);
 
 	      if (DECL_CONTEXT (field) != context)
 		{
