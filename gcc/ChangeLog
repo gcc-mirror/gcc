@@ -1,3 +1,8 @@
+2014-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63237
+	* gimple-fold.c (get_maxval_strlen): Gimplify string length.
+
 2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.c (integer_each_onep): New function.
