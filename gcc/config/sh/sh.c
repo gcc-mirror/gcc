@@ -6281,7 +6281,8 @@ sh_reorg (void)
 	  /* Scan ahead looking for a barrier to stick the constant table
 	     behind.  */
 	  rtx_insn *barrier = find_barrier (num_mova, mova, insn);
-	  rtx last_float_move = NULL_RTX, last_float = 0, *last_float_addr = NULL;
+	  rtx_insn *last_float_move = NULL;
+	  rtx last_float = 0, *last_float_addr = NULL;
 	  int need_aligned_label = 0;
 
 	  if (num_mova && ! mova_p (mova))
