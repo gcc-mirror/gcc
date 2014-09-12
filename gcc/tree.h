@@ -3947,6 +3947,11 @@ extern int integer_zerop (const_tree);
 
 extern int integer_onep (const_tree);
 
+/* integer_onep (tree x) is nonzero if X is an integer constant of value 1, or
+   a vector or complex where each part is 1.  */
+
+extern int integer_each_onep (const_tree);
+
 /* integer_all_onesp (tree x) is nonzero if X is an integer constant
    all of whose significant bits are 1.  */
 
