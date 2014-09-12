@@ -1,3 +1,8 @@
+2014-09-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hash-table.h (gt_pch_nx): don't call gt_pch_note_object within an
+	assert.
+
 2014-09-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* target.def (libgcc_floating_mode_supported_p): New hook.

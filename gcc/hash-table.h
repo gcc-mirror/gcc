@@ -1598,8 +1598,9 @@ template<typename D>
 static void
 gt_pch_nx (hash_table<D> *h)
 {
-  gcc_checking_assert (gt_pch_note_object (h->m_entries, h,
-					   hashtab_entry_note_pointers<D>));
+  bool success ATTRIBUTE_UNUSED
+    = gt_pch_note_object (h->m_entries, h, hashtab_entry_note_pointers<D>);
+  gcc_checking_assert (success);
   for (size_t i = 0; i < h->m_size; i++)
     {
       if (hash_table<D>::is_empty (h->m_entries[i])
