@@ -5932,6 +5932,13 @@ aarch64_register_move_cost (enum machine_mode mode,
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params->regmove_cost;
 
+  /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
+  if (to == CALLER_SAVE_REGS || to == POINTER_REGS)
+    to = GENERAL_REGS;
+
+  if (from == CALLER_SAVE_REGS || from == POINTER_REGS)
+    from = GENERAL_REGS;
+
   /* Moving between GPR and stack cost is the same as GP2GP.  */
   if ((from == GENERAL_REGS && to == STACK_REG)
       || (to == GENERAL_REGS && from == STACK_REG))

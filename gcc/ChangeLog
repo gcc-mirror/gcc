@@ -1,5 +1,10 @@
 2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Add cost
+	handling of CALLER_SAVE_REGS and POINTER_REGS.
+
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
 	* gcc/ree.c (combine_reaching_defs): Ensure inserted copy don't change
 	the number of hard registers.
 
