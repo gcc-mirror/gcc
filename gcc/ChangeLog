@@ -7,6 +7,33 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_mode_iterator VI48_AVX512VL): New.
+	(define_expand "<avx512>_vternlog<mode>_maskz"): Rename from
+	"avx512f_vternlog<mode>_maskz" and update mode iterator.
+	(define_insn "<avx512>_vternlog<mode><sd_maskz_name>"): Rename
+	from "avx512f_vternlog<mode><sd_maskz_name>" and update mode iterator.
+	(define_insn "<avx512>_vternlog<mode>_mask"): Rename from
+	"avx512f_vternlog<mode>_mask" and update mode iterator.
+	(define_insn "<mask_codefor><avx512>_align<mode><mask_name>"): Rename
+	from "<mask_codefor>avx512f_align<mode><mask_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_<rotate>v<mode><mask_name>"): Rename from
+	"avx512f_<rotate>v<mode><mask_name>" and update mode iterator.
+	(define_insn "<avx512>_<rotate><mode><mask_name>"): Rename from
+	"avx512f_<rotate><mode><mask_name>" and update mode iterator.
+	(define_insn "clz<mode>2<mask_name>"): Use VI48_AVX512VL mode iterator.
+	(define_insn "<mask_codefor>conflict<mode><mask_name>"): Ditto.
+
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (VI128_256): Delete.
 	(define_mode_iterator VI124_256): New.
 	(define_mode_iterator VI124_256_AVX512F_AVX512BW): Ditto.
