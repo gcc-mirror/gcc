@@ -43,12 +43,12 @@ namespace __debug
     class deque
     : public __gnu_debug::_Safe_container<
 	deque<_Tp, _Allocator>, _Allocator,
-	__gnu_debug::_Safe_sequence, false>,
+	__gnu_debug::_Safe_sequence>,
       public _GLIBCXX_STD_C::deque<_Tp, _Allocator>
     {
       typedef  _GLIBCXX_STD_C::deque<_Tp, _Allocator>		_Base;
       typedef __gnu_debug::_Safe_container<
-	deque, _Allocator, __gnu_debug::_Safe_sequence, false>	_Safe;
+	deque, _Allocator, __gnu_debug::_Safe_sequence>	_Safe;
 
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef typename _Base::iterator		_Base_iterator;
