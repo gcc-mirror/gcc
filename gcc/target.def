@@ -2985,6 +2985,16 @@ If this hook allows @code{val} to have a scalar mode, then\n\
  bool, (enum machine_mode mode, unsigned HOST_WIDE_INT nelems),
  hook_bool_mode_uhwi_false)
 
+DEFHOOK
+(libgcc_floating_mode_supported_p,
+ "Define this to return nonzero if libgcc provides support for the \n\
+floating-point mode @var{mode}, which is known to pass \n\
+@code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
+hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
+@code{XFmode} and @code{TFmode}, if such modes exist.",
+ bool, (enum machine_mode mode),
+ default_libgcc_floating_mode_supported_p)
+
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
 DEFHOOK

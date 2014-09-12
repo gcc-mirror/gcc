@@ -41218,6 +41218,31 @@ ix86_vector_mode_supported_p (enum machine_mode mode)
   return false;
 }
 
+/* Implement target hook libgcc_floating_mode_supported_p.  */
+static bool
+ix86_libgcc_floating_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+    case DFmode:
+    case XFmode:
+      return true;
+
+    case TFmode:
+#ifdef IX86_NO_LIBGCC_TFMODE
+      return false;
+#elif defined IX86_MAYBE_NO_LIBGCC_TFMODE
+      return TARGET_LONG_DOUBLE_128;
+#else
+      return true;
+#endif
+
+    default:
+      return false;
+    }
+}
+
 /* Target hook for c_mode_for_suffix.  */
 static enum machine_mode
 ix86_c_mode_for_suffix (char suffix)
@@ -47282,6 +47307,10 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+  ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX ix86_c_mode_for_suffix

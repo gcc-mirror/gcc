@@ -38,25 +38,28 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
 
-#ifndef LIBGCC2_HAS_SF_MODE
-#define LIBGCC2_HAS_SF_MODE (BITS_PER_UNIT == 8)
+#ifdef __LIBGCC_HAS_SF_MODE__
+#define LIBGCC2_HAS_SF_MODE 1
+#else
+#define LIBGCC2_HAS_SF_MODE 0
 #endif
 
-#ifndef LIBGCC2_HAS_DF_MODE
-#define LIBGCC2_HAS_DF_MODE \
-  (BITS_PER_UNIT == 8 \
-   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
-       || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
+#ifdef __LIBGCC_HAS_DF_MODE__
+#define LIBGCC2_HAS_DF_MODE 1
+#else
+#define LIBGCC2_HAS_DF_MODE 0
 #endif
 
-#ifndef LIBGCC2_HAS_XF_MODE
-#define LIBGCC2_HAS_XF_MODE \
-  (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80)
+#ifdef __LIBGCC_HAS_XF_MODE__
+#define LIBGCC2_HAS_XF_MODE 1
+#else
+#define LIBGCC2_HAS_XF_MODE 0
 #endif
 
-#ifndef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE \
-  (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128)
+#ifdef __LIBGCC_HAS_TF_MODE__
+#define LIBGCC2_HAS_TF_MODE 1
+#else
+#define LIBGCC2_HAS_TF_MODE 0
 #endif
 
 #ifndef __LIBGCC_SF_MANT_DIG__

@@ -424,6 +424,33 @@ default_scalar_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* Return true if libgcc supports floating-point mode MODE (known to
+   be supported as a scalar mode).  */
+
+bool
+default_libgcc_floating_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+#ifdef HAVE_SFmode
+    case SFmode:
+#endif
+#ifdef HAVE_DFmode
+    case DFmode:
+#endif
+#ifdef HAVE_XFmode
+    case XFmode:
+#endif
+#ifdef HAVE_TFmode
+    case TFmode:
+#endif
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Make some target macros useable by target-independent code.  */
 bool
 targhook_words_big_endian (void)

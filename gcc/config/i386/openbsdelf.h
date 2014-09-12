@@ -113,6 +113,4 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_ENABLE_EXECUTE_STACK
 
 /* Put all *tf routines in libgcc.  */
-#undef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q

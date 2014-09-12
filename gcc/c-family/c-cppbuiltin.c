@@ -949,6 +949,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	  sprintf (macro_name, "__LIBGCC_%s_MANT_DIG__", name);
 	  builtin_define_with_int_value (macro_name,
 					 REAL_MODE_FORMAT (mode)->p);
+	  if (!targetm.scalar_mode_supported_p (mode)
+	      || !targetm.libgcc_floating_mode_supported_p (mode))
+	    continue;
+	  macro_name = (char *) alloca (strlen (name)
+					+ sizeof ("__LIBGCC_HAS__MODE__"));
+	  sprintf (macro_name, "__LIBGCC_HAS_%s_MODE__", name);
+	  cpp_define (pfile, macro_name);
 	}
 
       /* For libgcc crtstuff.c and libgcc2.c.  */
