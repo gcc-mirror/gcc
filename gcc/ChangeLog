@@ -1,3 +1,29 @@
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_expand "<avx512>_gathersi<mode>"): Rename from
+	"avx512f_gathersi<mode>".
+	(define_insn "*avx512f_gathersi<mode>"): Use VI48F.
+	(define_insn "*avx512f_gathersi<mode>_2"): Ditto.
+	(define_expand "<avx512>_gatherdi<mode>"): Rename from
+	"avx512f_gatherdi<mode>".
+	(define_insn "*avx512f_gatherdi<mode>"): Use VI48F.
+	(define_insn "*avx512f_gatherdi<mode>_2"): Use VI48F, add 128/256-bit
+	wide versions.
+	(define_expand "<avx512>_scattersi<mode>"): Rename from
+	"avx512f_scattersi<mode>".
+	(define_insn "*avx512f_scattersi<mode>"): Use VI48F.
+	(define_expand "<avx512>_scatterdi<mode>"): Rename from
+	"avx512f_scatterdi<mode>".
+	(define_insn "*avx512f_scatterdi<mode>"): Use VI48F.
+
 2014-09-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* ira.h (ira_finish_once): Delete.

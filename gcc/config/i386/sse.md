@@ -16650,10 +16650,10 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512f_gathersi<mode>"
-  [(parallel [(set (match_operand:VI48F_512 0 "register_operand")
-		   (unspec:VI48F_512
-		     [(match_operand:VI48F_512 1 "register_operand")
+(define_expand "<avx512>_gathersi<mode>"
+  [(parallel [(set (match_operand:VI48F 0 "register_operand")
+		   (unspec:VI48F
+		     [(match_operand:VI48F 1 "register_operand")
 		      (match_operand:<avx512fmaskmode> 4 "register_operand")
 		      (mem:<ssescalarmode>
 			(match_par_dup 6
@@ -16670,9 +16670,9 @@
 })
 
 (define_insn "*avx512f_gathersi<mode>"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=&v")
-	(unspec:VI48F_512
-	  [(match_operand:VI48F_512 1 "register_operand" "0")
+  [(set (match_operand:VI48F 0 "register_operand" "=&v")
+	(unspec:VI48F
+	  [(match_operand:VI48F 1 "register_operand" "0")
 	   (match_operand:<avx512fmaskmode> 7 "register_operand" "2")
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	     [(unspec:P
@@ -16689,8 +16689,8 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*avx512f_gathersi<mode>_2"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=&v")
-	(unspec:VI48F_512
+  [(set (match_operand:VI48F 0 "register_operand" "=&v")
+	(unspec:VI48F
 	  [(pc)
 	   (match_operand:<avx512fmaskmode> 6 "register_operand" "1")
 	   (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
@@ -16708,9 +16708,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 
-(define_expand "avx512f_gatherdi<mode>"
-  [(parallel [(set (match_operand:VI48F_512 0 "register_operand")
-		   (unspec:VI48F_512
+(define_expand "<avx512>_gatherdi<mode>"
+  [(parallel [(set (match_operand:VI48F 0 "register_operand")
+		   (unspec:VI48F
 		     [(match_operand:<VEC_GATHER_SRCDI> 1 "register_operand")
 		      (match_operand:QI 4 "register_operand")
 		      (mem:<ssescalarmode>
@@ -16728,8 +16728,8 @@
 })
 
 (define_insn "*avx512f_gatherdi<mode>"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=&v")
-	(unspec:VI48F_512
+  [(set (match_operand:VI48F 0 "register_operand" "=&v")
+	(unspec:VI48F
 	  [(match_operand:<VEC_GATHER_SRCDI> 1 "register_operand" "0")
 	   (match_operand:QI 7 "register_operand" "2")
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
@@ -16747,8 +16747,8 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*avx512f_gatherdi<mode>_2"
-  [(set (match_operand:VI48F_512 0 "register_operand" "=&v")
-	(unspec:VI48F_512
+  [(set (match_operand:VI48F 0 "register_operand" "=&v")
+	(unspec:VI48F
 	  [(pc)
 	   (match_operand:QI 6 "register_operand" "1")
 	   (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
@@ -16762,22 +16762,27 @@
   "TARGET_AVX512F"
 {
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
-    return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %g5}";
+    {
+      if (GET_MODE_SIZE (<MODE>mode) != 64)
+	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%t0%{%1%}, %g5}";
+      else
+	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %g5}";
+    }
   return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %g5}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512f_scattersi<mode>"
-  [(parallel [(set (mem:VI48F_512
+(define_expand "<avx512>_scattersi<mode>"
+  [(parallel [(set (mem:VI48F
 		     (match_par_dup 5
 		       [(match_operand 0 "vsib_address_operand")
 			(match_operand:<VEC_GATHER_IDXSI> 2 "register_operand")
 			(match_operand:SI 4 "const1248_operand")]))
-		   (unspec:VI48F_512
+		   (unspec:VI48F
 		     [(match_operand:<avx512fmaskmode> 1 "register_operand")
-		      (match_operand:VI48F_512 3 "register_operand")]
+		      (match_operand:VI48F 3 "register_operand")]
 		     UNSPEC_SCATTER))
 	      (clobber (match_scratch:<avx512fmaskmode> 6))])]
   "TARGET_AVX512F"
@@ -16788,15 +16793,15 @@
 })
 
 (define_insn "*avx512f_scattersi<mode>"
-  [(set (match_operator:VI48F_512 5 "vsib_mem_operator"
+  [(set (match_operator:VI48F 5 "vsib_mem_operator"
 	  [(unspec:P
 	     [(match_operand:P 0 "vsib_address_operand" "Tv")
 	      (match_operand:<VEC_GATHER_IDXSI> 2 "register_operand" "v")
 	      (match_operand:SI 4 "const1248_operand" "n")]
 	     UNSPEC_VSIBADDR)])
-	(unspec:VI48F_512
+	(unspec:VI48F
 	  [(match_operand:<avx512fmaskmode> 6 "register_operand" "1")
-	   (match_operand:VI48F_512 3 "register_operand" "v")]
+	   (match_operand:VI48F 3 "register_operand" "v")]
 	  UNSPEC_SCATTER))
    (clobber (match_scratch:<avx512fmaskmode> 1 "=&Yk"))]
   "TARGET_AVX512F"
@@ -16805,13 +16810,13 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512f_scatterdi<mode>"
-  [(parallel [(set (mem:VI48F_512
+(define_expand "<avx512>_scatterdi<mode>"
+  [(parallel [(set (mem:VI48F
 		     (match_par_dup 5
 		       [(match_operand 0 "vsib_address_operand")
-			(match_operand:V8DI 2 "register_operand")
+			(match_operand:<VEC_GATHER_IDXDI> 2 "register_operand")
 			(match_operand:SI 4 "const1248_operand")]))
-		   (unspec:VI48F_512
+		   (unspec:VI48F
 		     [(match_operand:QI 1 "register_operand")
 		      (match_operand:<VEC_GATHER_SRCDI> 3 "register_operand")]
 		     UNSPEC_SCATTER))
@@ -16824,13 +16829,13 @@
 })
 
 (define_insn "*avx512f_scatterdi<mode>"
-  [(set (match_operator:VI48F_512 5 "vsib_mem_operator"
+  [(set (match_operator:VI48F 5 "vsib_mem_operator"
 	  [(unspec:P
 	     [(match_operand:P 0 "vsib_address_operand" "Tv")
-	      (match_operand:V8DI 2 "register_operand" "v")
+	      (match_operand:<VEC_GATHER_IDXDI> 2 "register_operand" "v")
 	      (match_operand:SI 4 "const1248_operand" "n")]
 	     UNSPEC_VSIBADDR)])
-	(unspec:VI48F_512
+	(unspec:VI48F
 	  [(match_operand:QI 6 "register_operand" "1")
 	   (match_operand:<VEC_GATHER_SRCDI> 3 "register_operand" "v")]
 	  UNSPEC_SCATTER))
