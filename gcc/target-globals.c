@@ -121,6 +121,7 @@ save_target_globals_default_opts ()
 
 target_globals::~target_globals ()
 {
+  ira_int->~target_ira_int ();
   /* default_target_globals points to static data so shouldn't be freed.  */
   if (this != &default_target_globals)
     {
