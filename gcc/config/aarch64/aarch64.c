@@ -215,10 +215,7 @@ static const struct cpu_regmove_cost generic_regmove_cost =
   NAMED_PARAM (GP2GP, 1),
   NAMED_PARAM (GP2FP, 2),
   NAMED_PARAM (FP2GP, 2),
-  /* We currently do not provide direct support for TFmode Q->Q move.
-     Therefore we need to raise the cost above 2 in order to have
-     reload handle the situation.  */
-  NAMED_PARAM (FP2FP, 4)
+  NAMED_PARAM (FP2FP, 2)
 };
 
 /* Generic costs for vector insn classes.  */
@@ -5961,7 +5958,7 @@ aarch64_register_move_cost (enum machine_mode mode,
      secondary reload.  A general register is used as a scratch to move
      the upper DI value and the lower DI value is moved directly,
      hence the cost is the sum of three moves. */
-  if (! TARGET_SIMD && GET_MODE_SIZE (mode) == 128)
+  if (! TARGET_SIMD && GET_MODE_SIZE (mode) == 16)
     return regmove_cost->GP2FP + regmove_cost->FP2GP + regmove_cost->FP2FP;
 
   return regmove_cost->FP2FP;
