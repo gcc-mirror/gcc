@@ -1,3 +1,11 @@
+2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (integer_each_onep): New function.
+	* tree.h (integer_each_onep): Declare it.
+	* fold-const.c (fold_binary_loc): Use it for ~A + 1 to -A and
+	-A - 1 to ~A.  Disable (X & 1) ^ 1, (X ^ 1) & 1 and ~X & 1 to
+	(X & 1) == 0 for vector and complex.
+
 2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* gcc/config/aarch64/aarch64.c (cortexa57_regmove_cost): New cost table

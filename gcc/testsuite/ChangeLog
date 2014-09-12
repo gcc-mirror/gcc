@@ -1,3 +1,7 @@
+2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vec-andxor1.c: New file.
+
 2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/58757

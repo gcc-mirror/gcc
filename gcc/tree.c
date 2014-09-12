@@ -2169,6 +2169,21 @@ integer_onep (const_tree expr)
     }
 }
 
+/* Return 1 if EXPR is the integer constant one.  For complex and vector,
+   return 1 if every piece is the integer constant one.  */
+
+int
+integer_each_onep (const_tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return (integer_onep (TREE_REALPART (expr))
+	    && integer_onep (TREE_IMAGPART (expr)));
+  else
+    return integer_onep (expr);
+}
+
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
    it contains, or a complex or vector whose subparts are such integers.  */
 
