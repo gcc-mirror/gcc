@@ -290,9 +290,6 @@
 (define_mode_iterator VI8_256_512
   [V8DI (V4DI "TARGET_AVX512VL")])
 
-(define_mode_iterator VI128_256
-  [V4DI V2DI V4SI (V16QI "TARGET_AVX512BW") (V8HI "TARGET_AVX512BW")])
-
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
 
@@ -499,8 +496,12 @@
 (define_mode_iterator VI48_128 [V4SI V2DI])
 
 ;; Various 256bit and 512 vector integer mode combinations
-(define_mode_iterator VI124_256_48_512
-  [V32QI V16HI V8SI (V8DI "TARGET_AVX512F") (V16SI "TARGET_AVX512F")])
+(define_mode_iterator VI124_256 [V32QI V16HI V8SI])
+(define_mode_iterator VI124_256_AVX512F_AVX512BW
+  [V32QI V16HI V8SI
+   (V64QI "TARGET_AVX512BW")
+   (V32HI "TARGET_AVX512BW")
+   (V16SI "TARGET_AVX512F")])
 (define_mode_iterator VI48_256 [V8SI V4DI])
 (define_mode_iterator VI48_512 [V16SI V8DI])
 (define_mode_iterator VI4_256_8_512 [V8SI V8DI])
@@ -9449,71 +9450,100 @@
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "<code><mode>3<mask_name><round_name>"
-  [(set (match_operand:VI124_256_48_512 0 "register_operand")
-	(maxmin:VI124_256_48_512
-	  (match_operand:VI124_256_48_512 1 "<round_nimm_predicate>")
-	  (match_operand:VI124_256_48_512 2 "<round_nimm_predicate>")))]
-  "TARGET_AVX2 && <mask_mode512bit_condition> && <round_mode512bit_condition>"
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI124_256_AVX512F_AVX512BW 0 "register_operand")
+	(maxmin:VI124_256_AVX512F_AVX512BW
+	  (match_operand:VI124_256_AVX512F_AVX512BW 1 "nonimmediate_operand")
+	  (match_operand:VI124_256_AVX512F_AVX512BW 2 "nonimmediate_operand")))]
+  "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*avx2_<code><mode>3<mask_name><round_name>"
-  [(set (match_operand:VI124_256_48_512 0 "register_operand" "=v")
-	(maxmin:VI124_256_48_512
-	  (match_operand:VI124_256_48_512 1 "<round_nimm_predicate>" "%v")
-	  (match_operand:VI124_256_48_512 2 "<round_nimm_predicate>" "<round_constraint>")))]
-  "TARGET_AVX2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)
-   && <mask_mode512bit_condition> && <round_mode512bit_condition>"
-  "vp<maxmin_int><ssemodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_mask_op3>}"
+(define_insn "*avx2_<code><mode>3"
+  [(set (match_operand:VI124_256 0 "register_operand" "=v")
+	(maxmin:VI124_256
+	  (match_operand:VI124_256 1 "nonimmediate_operand" "%v")
+	  (match_operand:VI124_256 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "OI")])
+
+(define_expand "<code><mode>3_mask"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(vec_merge:VI48_AVX512VL
+	  (maxmin:VI48_AVX512VL
+	    (match_operand:VI48_AVX512VL 1 "nonimmediate_operand")
+	    (match_operand:VI48_AVX512VL 2 "nonimmediate_operand"))
+	  (match_operand:VI48_AVX512VL 3 "vector_move_operand")
+	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
+  "TARGET_AVX512F"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*avx512bw_<code><mode>3<mask_name>"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(maxmin:VI48_AVX512VL
+	  (match_operand:VI48_AVX512VL 1 "nonimmediate_operand" "%v")
+	  (match_operand:VI48_AVX512VL 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512F && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_evex")
-   (set_attr "mode" "OI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<mask_codefor><code><mode>3<mask_name>"
-  [(set (match_operand:VI128_256 0 "register_operand" "=v")
-        (maxmin:VI128_256
-          (match_operand:VI128_256 1 "register_operand" "v")
-          (match_operand:VI128_256 2 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512VL"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+        (maxmin:VI12_AVX512VL
+          (match_operand:VI12_AVX512VL 1 "register_operand" "v")
+          (match_operand:VI12_AVX512VL 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512BW"
   "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "<code><mode>3"
-  [(set (match_operand:VI8_AVX2 0 "register_operand")
-	(maxmin:VI8_AVX2
-	  (match_operand:VI8_AVX2 1 "register_operand")
-	  (match_operand:VI8_AVX2 2 "register_operand")))]
+  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand")
+	(maxmin:VI8_AVX2_AVX512BW
+	  (match_operand:VI8_AVX2_AVX512BW 1 "register_operand")
+	  (match_operand:VI8_AVX2_AVX512BW 2 "register_operand")))]
   "TARGET_SSE4_2"
 {
-  enum rtx_code code;
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-
-  if (<CODE> == SMAX || <CODE> == UMAX)
+  if (TARGET_AVX512F
+      && (<MODE>mode == V8DImode || TARGET_AVX512VL))
+    ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);
+  else 
     {
-      xops[1] = operands[1];
-      xops[2] = operands[2];
+      enum rtx_code code;
+      rtx xops[6];
+      bool ok;
+
+
+      xops[0] = operands[0];
+
+      if (<CODE> == SMAX || <CODE> == UMAX)
+	{
+	  xops[1] = operands[1];
+	  xops[2] = operands[2];
+	}
+      else
+	{
+	  xops[1] = operands[2];
+	  xops[2] = operands[1];
+	}
+
+      code = (<CODE> == UMAX || <CODE> == UMIN) ? GTU : GT;
+
+      xops[3] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], operands[2]);
+      xops[4] = operands[1];
+      xops[5] = operands[2];
+
+      ok = ix86_expand_int_vcond (xops);
+      gcc_assert (ok);
+      DONE;
     }
-  else
-    {
-      xops[1] = operands[2];
-      xops[2] = operands[1];
-    }
-
-  code = (<CODE> == UMAX || <CODE> == UMIN) ? GTU : GT;
-
-  xops[3] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
 })
 
 (define_expand "<code><mode>3"
