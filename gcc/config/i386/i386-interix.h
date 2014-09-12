@@ -143,6 +143,8 @@ do {									\
 #undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 
+#define IX86_NO_LIBGCC_TFMODE
+
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
 

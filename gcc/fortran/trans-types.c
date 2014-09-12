@@ -31,8 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 			   BOOL_TYPE_SIZE, BITS_PER_UNIT, POINTER_SIZE,
 			   INT_TYPE_SIZE, CHAR_TYPE_SIZE, SHORT_TYPE_SIZE,
 			   LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE,
-			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE,
-			   LONG_DOUBLE_TYPE_SIZE and LIBGCC2_HAS_TF_MODE.  */
+			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE and
+			   LONG_DOUBLE_TYPE_SIZE.  */
 #include "tree.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -427,10 +427,13 @@ gfc_init_kinds (void)
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
+	if (!targetm.libgcc_floating_mode_supported_p ((enum machine_mode)
+						       mode))
+	  continue;
 	if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
 	    && (mode != TYPE_MODE (long_double_type_node))
-#if defined(LIBGCC2_HAS_TF_MODE) && defined(ENABLE_LIBQUADMATH_SUPPORT)
+#if defined(HAVE_TFmode) && defined(ENABLE_LIBQUADMATH_SUPPORT)
 	    && (mode != TFmode)
 #endif
 	   )

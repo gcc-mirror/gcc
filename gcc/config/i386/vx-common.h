@@ -31,3 +31,5 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
+
+#define IX86_MAYBE_NO_LIBGCC_TFMODE

@@ -1,3 +1,53 @@
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.def (libgcc_floating_mode_supported_p): New hook.
+	* targhooks.c (default_libgcc_floating_mode_supported_p): New
+	function.
+	* targhooks.h (default_libgcc_floating_mode_supported_p): Declare.
+	* doc/tm.texi.in (LIBGCC2_HAS_DF_MODE, LIBGCC2_HAS_XF_MODE)
+	(LIBGCC2_HAS_TF_MODE): Remove.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): New @hook.
+	* doc/tm.texi: Regenerate.
+	* genmodes.c (emit_insn_modes_h): Define HAVE_%smode for each
+	machine mode.
+	* system.h (LIBGCC2_HAS_SF_MODE, LIBGCC2_HAS_DF_MODE)
+	(LIBGCC2_HAS_XF_MODE, LIBGCC2_HAS_TF_MODE): Poison.
+	* config/i386/cygming.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/darwin.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/djgpp.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/dragonfly.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/freebsd.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/gnu-user-common.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/i386-interix.h (IX86_NO_LIBGCC_TFMODE): Define.
+	* config/i386/i386.c (ix86_libgcc_floating_mode_supported_p): New
+	function.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Define.
+	* config/i386/i386elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/lynx.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/netbsd-elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/netbsd64.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/nto.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/openbsd.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/openbsdelf.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/rtemself.h (IX86_NO_LIBGCC_TFMODE): Define.
+	* config/i386/sol2.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/vx-common.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/elf.h (IA64_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/freebsd.h (IA64_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/hpux.h (LIBGCC2_HAS_XF_MODE, LIBGCC2_HAS_TF_MODE):
+	Remove.
+	* config/ia64/ia64.c (TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P):
+	New macro.
+	(ia64_libgcc_floating_mode_supported_p): New function.
+	* config/ia64/linux.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/ia64/vms.h (IA64_NO_LIBGCC_XFMODE)
+	(IA64_NO_LIBGCC_TFMODE): Define.
+	* config/msp430/msp430.h (LIBGCC2_HAS_DF_MODE): Remove.
+	* config/pdp11/pdp11.c (TARGET_SCALAR_MODE_SUPPORTED_P): New
+	macro.
+	(pdp11_scalar_mode_supported_p): New function.
+	* config/rl78/rl78.h (LIBGCC2_HAS_DF_MODE): Remove.
+	* config/rx/rx.h (LIBGCC2_HAS_DF_MODE): Remove.
 2014-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63237

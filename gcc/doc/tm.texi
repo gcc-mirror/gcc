@@ -1549,29 +1549,6 @@ if you want routines in @file{libgcc2.a} for a size other than
 default is @code{LONG_DOUBLE_TYPE_SIZE}.
 @end defmac
 
-@defmac LIBGCC2_HAS_DF_MODE
-Define this macro if neither @code{DOUBLE_TYPE_SIZE} nor
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
-@code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and either @code{DOUBLE_TYPE_SIZE}
-or @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64 then the default is 1,
-otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_XF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{XFmode} but you want @code{XFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 80 then the default is 1, otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_TF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{TFmode} but you want @code{TFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 128 then the default is 1, otherwise it is 0.
-@end defmac
-
 @defmac LIBGCC2_GNU_PREFIX
 This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
 hook and should be defined if that hook is overriden to be true.  It
@@ -4224,6 +4201,14 @@ typedef struct int8x8x3_t
 If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t} can have the same mode.  GCC can then store
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+Define this to return nonzero if libgcc provides support for the 
+floating-point mode @var{mode}, which is known to pass 
+@code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 
+hook returns true for all of @code{SFmode}, @code{DFmode}, 
+@code{XFmode} and @code{TFmode}, if such modes exist.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (enum machine_mode @var{mode})

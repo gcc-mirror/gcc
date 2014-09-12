@@ -238,6 +238,4 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Put all *tf routines in libgcc.  */
-#undef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q

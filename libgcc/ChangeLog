@@ -1,3 +1,18 @@
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.h (LIBGCC2_HAS_SF_MODE): Define using
+	__LIBGCC_HAS_SF_MODE__.
+	(LIBGCC2_HAS_DF_MODE): Define using __LIBGCC_HAS_DF_MODE__.
+	(LIBGCC2_HAS_XF_MODE): Define using __LIBGCC_HAS_XF_MODE__.
+	(LIBGCC2_HAS_TF_MODE): Define using __LIBGCC_HAS_TF_MODE__.
+	* config/libbid/bid_gcc_intrinsics.h
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Do not define.
+	(LIBGCC2_HAS_XF_MODE): Define using __LIBGCC_HAS_XF_MODE__.
+	(LIBGCC2_HAS_TF_MODE): Define using __LIBGCC_HAS_TF_MODE__.
+	* fixed-bit.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Do not define.
+	(LIBGCC2_HAS_SF_MODE): Define using __LIBGCC_HAS_SF_MODE__.
+	(LIBGCC2_HAS_DF_MODE): Define using __LIBGCC_HAS_DF_MODE__.
+
 2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/63223
