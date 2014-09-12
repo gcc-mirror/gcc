@@ -334,6 +334,22 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 						node->clone.args_to_skip,
 						false);
     }
+
+  tree *link = &DECL_ARGUMENTS (new_decl);
+  int i = 0;
+  for (tree pd = DECL_ARGUMENTS (thunk->decl); pd; pd = DECL_CHAIN (pd), i++)
+    {
+      if (!node->clone.args_to_skip
+	  || !bitmap_bit_p (node->clone.args_to_skip, i))
+	{
+	  tree nd = copy_node (pd);
+	  DECL_CONTEXT (nd) = new_decl;
+	  *link = nd;
+	  link = &DECL_CHAIN (nd);
+	}
+    }
+  *link = NULL_TREE;
+
   gcc_checking_assert (!DECL_STRUCT_FUNCTION (new_decl));
   gcc_checking_assert (!DECL_INITIAL (new_decl));
   gcc_checking_assert (!DECL_RESULT (new_decl));
@@ -358,6 +374,11 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   cgraph_call_edge_duplication_hooks (thunk->callees, e);
   if (!expand_thunk (new_thunk, false))
     new_thunk->analyzed = true;
+  else
+    {
+      new_thunk->thunk.thunk_p = false;
+      cgraph_analyze_function (new_thunk);
+    }
   cgraph_call_node_duplication_hooks (thunk, new_thunk);
   return new_thunk;
 }

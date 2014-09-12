@@ -1,3 +1,12 @@
+2014-09-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61654
+	* cgraph.h (cgraph_analyze_function): Declare.
+	* cgraphunit.c: (analyze_function): Remove forward declaration,
+	rename to cgraph_analyze_function, made external.
+	* cgraphclones.c (duplicate_thunk_for_node): Copy arguments of the
+        new decl properly.  Analyze the new thunk if it is expanded.
+
 2014-09-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

@@ -219,7 +219,6 @@ cgraph_node_set cgraph_new_nodes;
 static void expand_all_functions (void);
 static void mark_functions_to_output (void);
 static void expand_function (struct cgraph_node *);
-static void analyze_function (struct cgraph_node *);
 static void handle_alias_pairs (void);
 
 FILE *cgraph_dump_file;
@@ -331,7 +330,7 @@ cgraph_process_new_functions (void)
 
 	  gimple_register_cfg_hooks ();
 	  if (!node->analyzed)
-	    analyze_function (node);
+	    cgraph_analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  if (cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
@@ -541,7 +540,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	if (lowered)
 	  node->lowered = true;
 	node->definition = true;
-	analyze_function (node);
+	cgraph_analyze_function (node);
 	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	gimple_register_cfg_hooks ();
 	bitmap_obstack_initialize (NULL);
@@ -598,8 +597,8 @@ output_asm_statements (void)
 }
 
 /* Analyze the function scheduled to be output.  */
-static void
-analyze_function (struct cgraph_node *node)
+void
+cgraph_analyze_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
   location_t saved_loc = input_location;
@@ -1014,7 +1013,7 @@ analyze_functions (void)
 		}
 
 	      if (!cnode->analyzed)
-		analyze_function (cnode);
+		cgraph_analyze_function (cnode);
 
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition)
