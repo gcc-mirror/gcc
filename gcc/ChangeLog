@@ -1,3 +1,8 @@
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc/ree.c (combine_reaching_defs): Ensure inserted copy don't change
+	the number of hard registers.
+
 2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

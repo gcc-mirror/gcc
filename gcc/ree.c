@@ -743,6 +743,14 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (!SCALAR_INT_MODE_P (GET_MODE (SET_DEST (PATTERN (cand->insn)))))
 	return false;
 
+      enum machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
+      rtx src_reg = get_extended_src_reg (SET_SRC (PATTERN (cand->insn)));
+
+      /* Ensure the number of hard registers of the copy match.  */
+      if (HARD_REGNO_NREGS (REGNO (src_reg), dst_mode)
+	  != HARD_REGNO_NREGS (REGNO (src_reg), GET_MODE (src_reg)))
+	return false;
+
       /* There's only one reaching def.  */
       rtx_insn *def_insn = state->defs_list[0];
 
@@ -792,7 +800,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       start_sequence ();
       rtx pat = PATTERN (cand->insn);
       rtx new_dst = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
-                                 REGNO (XEXP (SET_SRC (pat), 0)));
+                                 REGNO (get_extended_src_reg (SET_SRC (pat))));
       rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
                                  REGNO (SET_DEST (pat)));
       emit_move_insn (new_dst, new_src);
