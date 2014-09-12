@@ -7,6 +7,29 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (VI128_256): Delete.
+	(define_mode_iterator VI124_256): New.
+	(define_mode_iterator VI124_256_AVX512F_AVX512BW): Ditto.
+	(define_expand "<code><mode>3<mask_name><round_name>"): Delete.
+	(define_expand "<code><VI124_256_AVX512F_AVX512BW:mode>3"): New.
+	(define_insn "*avx2_<code><VI124_256:mode>3"): Rename from
+	"*avx2_<code><mode>3<mask_name><round_name>" and update mode iterator.
+	(define_expand "<code><VI48_AVX512VL:mode>3_mask"): New.
+	(define_insn "*avx512bw_<code><VI48_AVX512VL:mode>3<mask_name>"): Ditto.
+	(define_insn "<mask_codefor><code><mode>3<mask_name>"): Update mode
+	iterator.
+	(define_expand "<code><VI8_AVX2:mode>3"): Update pettern generation
+	in presence of AVX-512.
+
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_expand "<avx512>_gathersi<mode>"): Rename from
 	"avx512f_gathersi<mode>".
