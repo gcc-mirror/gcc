@@ -1,3 +1,9 @@
+2014-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (extendhipsi2): Use 20-bit form of RLAM/RRAM.
+	(extend_and_shift1_hipsi2): Likewise.
+	(extend_and_shift2_hipsi2): Likewise.
+			
 2014-09-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61654
