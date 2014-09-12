@@ -5001,7 +5001,7 @@ alpha_ra_ever_killed (void)
   top = get_insns ();
   pop_topmost_sequence ();
 
-  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA), top, NULL_RTX);
+  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA), top, NULL);
 }
 
 

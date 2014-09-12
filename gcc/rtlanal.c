@@ -947,10 +947,9 @@ reg_referenced_p (const_rtx x, const_rtx body)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_set_between_p (const_rtx reg, const_rtx uncast_from_insn, const_rtx to_insn)
+reg_set_between_p (const_rtx reg, const rtx_insn *from_insn,
+		   const rtx_insn *to_insn)
 {
-  const rtx_insn *from_insn =
-    safe_as_a <const rtx_insn *> (uncast_from_insn);
   const rtx_insn *insn;
 
   if (from_insn == to_insn)

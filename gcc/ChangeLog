@@ -1,3 +1,13 @@
+2014-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/alpha/alpha.c (alpha_ra_ever_killed): Replace NULL_RTX
+	with NULL when dealing with an insn.
+	* config/sh/sh.c (sh_reorg): Strengthen local "last_float_move"
+	from rtx to rtx_insn *.
+	* rtl.h (reg_set_between_p): Strengthen params 2 and 3 from
+	const_rtx to const rtx_insn *.
+	* rtlanal.c (reg_set_between_p): Likewise, removing a checked cast.
+
 2014-09-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* hash-table.h (gt_pch_nx): Don't call gt_pch_note_object within an
