@@ -2047,21 +2047,21 @@ ira_init_costs_once (void)
 }
 
 /* Free allocated temporary cost vectors.  */
-static void
-free_ira_costs (void)
+void
+target_ira_int::free_ira_costs ()
 {
   int i;
 
-  free (init_cost);
-  init_cost = NULL;
+  free (x_init_cost);
+  x_init_cost = NULL;
   for (i = 0; i < MAX_RECOG_OPERANDS; i++)
     {
-      free (op_costs[i]);
-      free (this_op_costs[i]);
-      op_costs[i] = this_op_costs[i] = NULL;
+      free (x_op_costs[i]);
+      free (x_this_op_costs[i]);
+      x_op_costs[i] = x_this_op_costs[i] = NULL;
     }
-  free (temp_costs);
-  temp_costs = NULL;
+  free (x_temp_costs);
+  x_temp_costs = NULL;
 }
 
 /* This is called each time register related information is
@@ -2071,7 +2071,7 @@ ira_init_costs (void)
 {
   int i;
 
-  free_ira_costs ();
+  this_target_ira_int->free_ira_costs ();
   max_struct_costs_size
     = sizeof (struct costs) + sizeof (int) * (ira_important_classes_num - 1);
   /* Don't use ira_allocate because vectors live through several IRA
@@ -2086,13 +2086,6 @@ ira_init_costs (void)
       this_op_costs[i] = (struct costs *) xmalloc (max_struct_costs_size);
     }
   temp_costs = (struct costs *) xmalloc (max_struct_costs_size);
-}
-
-/* Function called once at the end of compiler work.  */
-void
-ira_finish_costs_once (void)
-{
-  free_ira_costs ();
 }
 
 

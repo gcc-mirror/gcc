@@ -1,3 +1,26 @@
+2014-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira.h (ira_finish_once): Delete.
+	* ira-int.h (target_ira_int::~target_ira_int): Declare.
+	(target_ira_int::free_ira_costs): Likewise.
+	(target_ira_int::free_register_move_costs): Likewise.
+	(ira_finish_costs_once): Delete.
+	* ira.c (free_register_move_costs): Replace with...
+	(target_ira_int::free_register_move_costs): ...this new function.
+	(target_ira_int::~target_ira_int): Define.
+	(ira_init): Call free_register_move_costs as a member function rather
+	than a global function.
+	(ira_finish_once): Delete.
+	* ira-costs.c (free_ira_costs): Replace with...
+	(target_ira_int::free_ira_costs): ...this new function.
+	(ira_init_costs): Call free_ira_costs as a member function rather
+	than a global function.
+	(ira_finish_costs_once): Delete.
+	* target-globals.c (target_globals::~target_globals): Call the
+	target_ira_int destructor.
+	* toplev.c: Include lra.h.
+	(finalize): Call lra_finish_once rather than ira_finish_once.
+
 2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* common.opt (flto-odr-type-merging): New flag.

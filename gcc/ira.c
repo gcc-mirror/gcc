@@ -1674,32 +1674,38 @@ ira_init_once (void)
 
 /* Free ira_max_register_move_cost, ira_may_move_in_cost and
    ira_may_move_out_cost for each mode.  */
-static void
-free_register_move_costs (void)
+void
+target_ira_int::free_register_move_costs (void)
 {
   int mode, i;
 
   /* Reset move_cost and friends, making sure we only free shared
      table entries once.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    if (ira_register_move_cost[mode])
+    if (x_ira_register_move_cost[mode])
       {
 	for (i = 0;
-	     i < mode && (ira_register_move_cost[i]
-			  != ira_register_move_cost[mode]);
+	     i < mode && (x_ira_register_move_cost[i]
+			  != x_ira_register_move_cost[mode]);
 	     i++)
 	  ;
 	if (i == mode)
 	  {
-	    free (ira_register_move_cost[mode]);
-	    free (ira_may_move_in_cost[mode]);
-	    free (ira_may_move_out_cost[mode]);
+	    free (x_ira_register_move_cost[mode]);
+	    free (x_ira_may_move_in_cost[mode]);
+	    free (x_ira_may_move_out_cost[mode]);
 	  }
       }
-  memset (ira_register_move_cost, 0, sizeof ira_register_move_cost);
-  memset (ira_may_move_in_cost, 0, sizeof ira_may_move_in_cost);
-  memset (ira_may_move_out_cost, 0, sizeof ira_may_move_out_cost);
+  memset (x_ira_register_move_cost, 0, sizeof x_ira_register_move_cost);
+  memset (x_ira_may_move_in_cost, 0, sizeof x_ira_may_move_in_cost);
+  memset (x_ira_may_move_out_cost, 0, sizeof x_ira_may_move_out_cost);
   last_mode_for_init_move_cost = -1;
+}
+
+target_ira_int::~target_ira_int ()
+{
+  free_ira_costs ();
+  free_register_move_costs ();
 }
 
 /* This is called every time when register related information is
@@ -1707,7 +1713,7 @@ free_register_move_costs (void)
 void
 ira_init (void)
 {
-  free_register_move_costs ();
+  this_target_ira_int->free_register_move_costs ();
   setup_reg_mode_hard_regset ();
   setup_alloc_regs (flag_omit_frame_pointer != 0);
   setup_class_subset_and_memory_move_costs ();
@@ -1717,15 +1723,6 @@ ira_init (void)
   clarify_prohibited_class_mode_regs ();
   setup_hard_regno_aclass ();
   ira_init_costs ();
-}
-
-/* Function called once at the end of compiler work.  */
-void
-ira_finish_once (void)
-{
-  ira_finish_costs_once ();
-  free_register_move_costs ();
-  lra_finish_once ();
 }
 
 
