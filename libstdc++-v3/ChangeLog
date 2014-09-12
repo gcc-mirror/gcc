@@ -1,3 +1,9 @@
+2014-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59603
+	* include/bits/stl_algo.h (random_shuffle): Prevent self-swapping.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: New.
+
 2014-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/63219
