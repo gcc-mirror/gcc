@@ -1,3 +1,9 @@
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60862
+	* parser.c (cp_parser_postfix_expression) <case CPP_OPEN_PAREN>: Set
+	location of a call expression.
+
 2014-09-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63201
