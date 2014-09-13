@@ -3421,7 +3421,7 @@ gfc_build_builtin_function_decls (void)
 
       gfor_fndecl_caf_unlock = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_unlock")), "R..WW",
-	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (
