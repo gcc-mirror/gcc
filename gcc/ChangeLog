@@ -1,3 +1,8 @@
+2014-09-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (need_assembler_name_p): Store C++ type mangling only
+	for aggregates.
+
 2014-09-13  Marek Polacek  <polacek@redhat.com>
 
 	* tree.c (protected_set_expr_location): Don't check whether T is
