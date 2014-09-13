@@ -1,3 +1,8 @@
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60862
+	* g++.dg/diagnostic/pr60862.C: New test.
+
 2014-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63237
