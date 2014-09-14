@@ -1,3 +1,11 @@
+2014-09-14  James Clarke  <jrtc27@jrtc27.com>
+
+	PR target/61407
+	* gcc.dg/darwin-minversion-1.c: Fixed formatting
+	* gcc.dg/darwin-minversion-2.c: Fixed formatting
+	* gcc.dg/darwin-minversion-3.c: Fixed formatting
+	* gcc.dg/darwin-minversion-4.c: Added test for OS X 10.10
+
 2014-09-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60862

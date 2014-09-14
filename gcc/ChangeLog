@@ -1,3 +1,14 @@
+2014-09-14  James Clarke  <jrtc27@jrtc27.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/61407
+	* config/darwin-c.c (version_as_macro): Added extra 0 for OS X 10.10
+	and above.
+	* config/darwin-driver.c (darwin_find_version_from_kernel): Removed
+	kernel version check to avoid incrementing it after every major OS X
+	release.
+	(darwin_default_min_version): Avoid static memory buffer.
+
 2014-09-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (need_assembler_name_p): Store C++ type mangling only
@@ -79,6 +90,7 @@
 	(pdp11_scalar_mode_supported_p): New function.
 	* config/rl78/rl78.h (LIBGCC2_HAS_DF_MODE): Remove.
 	* config/rx/rx.h (LIBGCC2_HAS_DF_MODE): Remove.
+
 2014-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63237
