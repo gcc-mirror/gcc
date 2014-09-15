@@ -1,3 +1,21 @@
+2014-09-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (define_mode_iterator VI248_AVX512BW_AVX512VL):
+	New.
+	(define_mode_iterator VI24_AVX512BW_1): Ditto.
+	(define_insn "<mask_codefor>ashr<mode>3<mask_name>"): Ditto.
+	(define_insn "<mask_codefor>ashrv2di3<mask_name>"): Ditto.
+	(define_insn "ashr<VI248_AVX512BW_AVX512VL:mode>3<mask_name>"): Enable
+	also for TARGET_AVX512VL.
+	(define_expand "ashrv2di3"): Update to enable TARGET_AVX512VL.
+
 2014-09-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/install.texi (Options specification): add 
