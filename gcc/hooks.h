@@ -36,7 +36,8 @@ extern bool hook_bool_mode_const_rtx_false (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_rtx_false (enum machine_mode, rtx);
 extern bool hook_bool_mode_rtx_true (enum machine_mode, rtx);
-extern bool hook_bool_const_rtx_const_rtx_true (const_rtx, const_rtx);
+extern bool hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *,
+							  const rtx_insn *);
 extern bool hook_bool_mode_uhwi_false (enum machine_mode,
 				       unsigned HOST_WIDE_INT);
 extern bool hook_bool_tree_false (tree);

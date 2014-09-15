@@ -116,10 +116,10 @@ hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Generic hook that takes (rtx, rtx) and returns true.  */
+/* Generic hook that takes (const rtx_insn *, const rtx_insn *) and returns true.  */
 bool
-hook_bool_const_rtx_const_rtx_true (const_rtx follower ATTRIBUTE_UNUSED,
-				    const_rtx followee ATTRIBUTE_UNUSED)
+hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *follower ATTRIBUTE_UNUSED,
+					      const rtx_insn *followee ATTRIBUTE_UNUSED)
 {
   return true;
 }

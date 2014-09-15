@@ -420,7 +420,8 @@ arc_vector_mode_supported_p (enum machine_mode mode)
 /* TARGET_PRESERVE_RELOAD_P is still awaiting patch re-evaluation / review.  */
 static bool arc_preserve_reload_p (rtx in) ATTRIBUTE_UNUSED;
 static rtx arc_delegitimize_address (rtx);
-static bool arc_can_follow_jump (const_rtx follower, const_rtx followee);
+static bool arc_can_follow_jump (const rtx_insn *follower,
+				 const rtx_insn *followee);
 
 static rtx frame_insn (rtx);
 static void arc_function_arg_advance (cumulative_args_t, enum machine_mode,
@@ -9214,10 +9215,10 @@ arc_decl_pretend_args (tree decl)
   to redirect two breqs.  */
 
 static bool
-arc_can_follow_jump (const_rtx follower, const_rtx followee)
+arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
 {
   /* ??? get_attr_type is declared to take an rtx.  */
-  union { const_rtx c; rtx r; } u;
+  union { const rtx_insn *c; rtx_insn *r; } u;
 
   u.c = follower;
   if (CROSSING_JUMP_P (followee))

@@ -2307,7 +2307,7 @@ fill_simple_delay_slots (int non_jumps_p)
    set *CROSSING to true, otherwise set it to false.  */
 
 static rtx
-follow_jumps (rtx label, rtx jump, bool *crossing)
+follow_jumps (rtx label, rtx_insn *jump, bool *crossing)
 {
   rtx_insn *insn;
   rtx_insn *next;
