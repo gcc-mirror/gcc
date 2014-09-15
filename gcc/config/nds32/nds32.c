@@ -3423,7 +3423,7 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
 int
 nds32_target_alignment (rtx label)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (optimize_size)
     return 0;

@@ -11504,7 +11504,7 @@ static int s390_sched_state;
 #define S390_OOO_SCHED_ATTR_MASK_GROUPALONE 0x8
 
 static unsigned int
-s390_get_sched_attrmask (rtx insn)
+s390_get_sched_attrmask (rtx_insn *insn)
 {
   unsigned int mask = 0;
 
@@ -11523,7 +11523,7 @@ s390_get_sched_attrmask (rtx insn)
    better.  The score is calculated from the OOO scheduling attributes
    of INSN and the scheduling state s390_sched_state.  */
 static int
-s390_sched_score (rtx insn)
+s390_sched_score (rtx_insn *insn)
 {
   unsigned int mask = s390_get_sched_attrmask (insn);
   int score = 0;

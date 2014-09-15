@@ -1061,7 +1061,7 @@ mep_vliw_jmp_match (rtx tgt)
 }
 
 bool
-mep_multi_slot (rtx x)
+mep_multi_slot (rtx_insn *x)
 {
   return get_attr_slot (x) == SLOT_MULTI;
 }

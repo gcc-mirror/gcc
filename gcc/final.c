@@ -375,9 +375,8 @@ init_insn_lengths (void)
    get its actual length.  Otherwise, use FALLBACK_FN to calculate the
    length.  */
 static int
-get_attr_length_1 (rtx uncast_insn, int (*fallback_fn) (rtx))
+get_attr_length_1 (rtx_insn *insn, int (*fallback_fn) (rtx_insn *))
 {
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   rtx body;
   int i;
   int length = 0;
@@ -428,7 +427,7 @@ get_attr_length_1 (rtx uncast_insn, int (*fallback_fn) (rtx))
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its maximum length.  */
 int
-get_attr_length (rtx insn)
+get_attr_length (rtx_insn *insn)
 {
   return get_attr_length_1 (insn, insn_default_length);
 }
@@ -436,7 +435,7 @@ get_attr_length (rtx insn)
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its minimum length.  */
 int
-get_attr_min_length (rtx insn)
+get_attr_min_length (rtx_insn *insn)
 {
   return get_attr_length_1 (insn, insn_min_length);
 }
@@ -1107,7 +1106,7 @@ shorten_branches (rtx_insn *first)
 #endif /* CASE_VECTOR_SHORTEN_MODE */
 
   /* Compute initial lengths, addresses, and varying flags for each insn.  */
-  int (*length_fun) (rtx) = increasing ? insn_min_length : insn_default_length;
+  int (*length_fun) (rtx_insn *) = increasing ? insn_min_length : insn_default_length;
 
   for (insn_current_address = 0, insn = first;
        insn != 0;
@@ -1159,7 +1158,7 @@ shorten_branches (rtx_insn *first)
 #else
 	  const_delay_slots = 0;
 #endif
-	  int (*inner_length_fun) (rtx)
+	  int (*inner_length_fun) (rtx_insn *)
 	    = const_delay_slots ? length_fun : insn_default_length;
 	  /* Inside a delay slot sequence, we do not do any branch shortening
 	     if the shortening could change the number of delay slots
@@ -1414,13 +1413,14 @@ shorten_branches (rtx_insn *first)
 
 	  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    {
+	      rtx_sequence *seqn = as_a <rtx_sequence *> (PATTERN (insn));
 	      int i;
 
 	      body = PATTERN (insn);
 	      new_length = 0;
-	      for (i = 0; i < XVECLEN (body, 0); i++)
+	      for (i = 0; i < seqn->len (); i++)
 		{
-		  rtx inner_insn = XVECEXP (body, 0, i);
+		  rtx_insn *inner_insn = seqn->insn (i);
 		  int inner_uid = INSN_UID (inner_insn);
 		  int inner_length;
 

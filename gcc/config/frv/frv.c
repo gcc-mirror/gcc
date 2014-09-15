@@ -325,8 +325,8 @@ static void frv_ifcvt_add_insn			(rtx, rtx, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, enum machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
 static int frv_acc_group_1			(rtx *, void *);
-static unsigned int frv_insn_unit		(rtx);
-static bool frv_issues_to_branch_unit_p		(rtx);
+static unsigned int frv_insn_unit		(rtx_insn *);
+static bool frv_issues_to_branch_unit_p		(rtx_insn *);
 static int frv_cond_flags 			(rtx);
 static bool frv_regstate_conflict_p 		(regstate_t, regstate_t);
 static int frv_registers_conflict_p_1 		(rtx *, void *);
@@ -336,7 +336,7 @@ static void frv_registers_update 		(rtx);
 static void frv_start_packet 			(void);
 static void frv_start_packet_block 		(void);
 static void frv_finish_packet 			(void (*) (void));
-static bool frv_pack_insn_p 			(rtx);
+static bool frv_pack_insn_p 			(rtx_insn *);
 static void frv_add_insn_to_packet		(rtx_insn *);
 static void frv_insert_nop_in_packet		(rtx_insn *);
 static bool frv_for_each_packet 		(void (*) (void));
@@ -7058,7 +7058,7 @@ frv_acc_group (rtx insn)
    type attribute, we can cache the results in FRV_TYPE_TO_UNIT[].  */
 
 static unsigned int
-frv_insn_unit (rtx insn)
+frv_insn_unit (rtx_insn *insn)
 {
   enum attr_type type;
 
@@ -7089,7 +7089,7 @@ frv_insn_unit (rtx insn)
 /* Return true if INSN issues to a branch unit.  */
 
 static bool
-frv_issues_to_branch_unit_p (rtx insn)
+frv_issues_to_branch_unit_p (rtx_insn *insn)
 {
   return frv_unit_groups[frv_insn_unit (insn)] == GROUP_B;
 }
@@ -7344,7 +7344,7 @@ frv_finish_packet (void (*handle_packet) (void))
    the DFA state on success.  */
 
 static bool
-frv_pack_insn_p (rtx insn)
+frv_pack_insn_p (rtx_insn *insn)
 {
   /* See if the packet is already as long as it can be.  */
   if (frv_packet.num_insns == frv_packet.issue_rate)
@@ -7567,8 +7567,8 @@ frv_sort_insn_group_1 (enum frv_insn_group group,
 static int
 frv_compare_insns (const void *first, const void *second)
 {
-  const rtx *const insn1 = (rtx const *) first,
-    *const insn2 = (rtx const *) second;
+  rtx_insn * const *insn1 = (rtx_insn * const *) first;
+  rtx_insn * const *insn2 = (rtx_insn * const *) second;
   return frv_insn_unit (*insn1) - frv_insn_unit (*insn2);
 }
 

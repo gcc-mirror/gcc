@@ -2058,7 +2058,7 @@ mode_dependent_address_p (rtx addr, addr_space_t addrspace)
    depend on things like the values of operands.  */
 
 alternative_mask
-get_enabled_alternatives (rtx insn)
+get_enabled_alternatives (rtx_insn *insn)
 {
   /* Quick exit for asms and for targets that don't use the "enabled"
      attribute.  */

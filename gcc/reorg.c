@@ -483,8 +483,8 @@ find_end_label (rtx kind)
 	  if (HAVE_return)
 	    {
 	      /* The return we make may have delay slots too.  */
-	      rtx insn = gen_return ();
-	      insn = emit_jump_insn (insn);
+	      rtx pat = gen_return ();
+	      rtx_insn *insn = emit_jump_insn (pat);
 	      set_return_jump_label (insn);
 	      emit_barrier ();
 	      if (num_delay_slots (insn) > 0)
@@ -1548,12 +1548,12 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	     correctly.  */
 
 #ifdef INSN_SETS_ARE_DELAYED
-	  if (INSN_SETS_ARE_DELAYED (seq->element (0)))
+	  if (INSN_SETS_ARE_DELAYED (seq->insn (0)))
 	    return 0;
 #endif
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
-	  if (INSN_REFERENCES_ARE_DELAYED (seq->element (0)))
+	  if (INSN_REFERENCES_ARE_DELAYED (seq->insn (0)))
 	    return 0;
 #endif
 
@@ -1641,7 +1641,7 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
       if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
 	{
 	  bool annul_p = false;
-          rtx control = seq->element (0);
+          rtx_insn *control = seq->insn (0);
 
 	  /* If this is a CALL_INSN and its delay slots, it is hard to track
 	     the resource needs properly, so give up.  */

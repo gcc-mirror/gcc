@@ -1989,7 +1989,7 @@ expand_epilogue (void)
 
 /* Update the condition code from the insn.  */
 void
-notice_update_cc (rtx body, rtx insn)
+notice_update_cc (rtx body, rtx_insn *insn)
 {
   switch (get_attr_cc (insn))
     {
