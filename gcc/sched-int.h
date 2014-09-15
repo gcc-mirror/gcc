@@ -1325,7 +1325,7 @@ extern void haifa_note_reg_use (int);
 
 extern void maybe_extend_reg_info_p (void);
 
-extern void deps_start_bb (struct deps_desc *, rtx);
+extern void deps_start_bb (struct deps_desc *, rtx_insn *);
 extern enum reg_note ds_to_dt (ds_t);
 
 extern bool deps_pools_are_empty_p (void);

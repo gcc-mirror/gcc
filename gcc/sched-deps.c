@@ -3773,7 +3773,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 
 /* Initialize DEPS for the new block beginning with HEAD.  */
 void
-deps_start_bb (struct deps_desc *deps, rtx head)
+deps_start_bb (struct deps_desc *deps, rtx_insn *head)
 {
   gcc_assert (!deps->readonly);
 
@@ -3782,7 +3782,7 @@ deps_start_bb (struct deps_desc *deps, rtx head)
      hard registers correct.  */
   if (! reload_completed && !LABEL_P (head))
     {
-      rtx insn = prev_nonnote_nondebug_insn (head);
+      rtx_insn *insn = prev_nonnote_nondebug_insn (head);
 
       if (insn && CALL_P (insn))
 	deps->in_post_call_group_p = post_call_initial;
