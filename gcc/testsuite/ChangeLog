@@ -1,5 +1,52 @@
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/56408
+	* gfortran.dg/dg.exp (gfortran_test_path, gfortran_aux_module_flags):
+	New global vars.
+	(dg-compile-aux-modules): New procedure.
+	* gfortran.dg/binding_label_tests_10.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_10_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_11.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_11_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_13.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_13_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_26a.f90: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_26b.f90: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/class_45a.f03: Remove keep-modules.
+	* gfortran.dg/class_45b.f03: Use dg-compile-aux-modules
+	and cleanup-modules.
+	* gfortran.dg/class_4a.f03: Use dg-do link, use
+	dg-additional-sources and cleanup-modules, remove keep-modules
+	and update comment.
+	* gfortran.dg/class_4b.f03: Don't compile anywhere, remove
+	keep-modules, adjust comment.
+	* gfortran.dg/class_4c.f03: Don't compile anywhere, remove
+	dg-additional-sources and cleanup-modules.
+	* gfortran.dg/coarray_29_1.f90: Remove keep-modules and
+	associated comment.
+	* gfortran.dg/coarray_29_2.f90: Use dg-compile-aux-modules,
+	remove comment.
+	* gfortran.dg/test_common_binding_labels_2.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/test_common_binding_labels_3.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/whole_file_28.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_29.f90: Remove comment, use
+	dg-compile-aux-modules.
+	* gfortran.dg/whole_file_30.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_31.f90: Remove comment, use
+	dg-compile-aux-modules.
+
 	* lib/gcc-defs.exp (gcc_parallel_test_run_p,
 	gcc_parallel_test_enable): New procedures.  If
 	GCC_RUNTEST_PARALLELIZE_DIR is set in environment, override

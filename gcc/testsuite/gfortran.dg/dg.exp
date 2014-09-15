@@ -28,6 +28,21 @@ if ![info exists DEFAULT_FFLAGS] then {
 # Initialize `dg'.
 dg-init
 
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags $DEFAULT_FFLAGS
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-set-target-env-var: needs one argument"
+	return
+    }
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules isn't intentionally invoked here.
+}
+
 # Main loop.
 gfortran-dg-runtest [lsort \
        [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
