@@ -8871,7 +8871,7 @@ to set the variable @var{align_jumps} in the target's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{JUMP_ALIGN}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8886,7 +8886,7 @@ to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8906,7 +8906,7 @@ to set the variable @code{align_loops} in the target's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to
 @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is
 defined.
@@ -8923,7 +8923,7 @@ to set the variable @code{align_labels} in the target's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LABEL_ALIGN}
 to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}
 is defined.

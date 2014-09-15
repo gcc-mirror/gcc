@@ -72,7 +72,7 @@ DEFHOOK
  "The maximum number of bytes to skip before @var{label} when applying\n\
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if\n\
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_label_align_after_barrier_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -82,7 +82,7 @@ DEFHOOK
  "The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to\n\
 @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is\n\
 defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_loop_align_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -92,7 +92,7 @@ DEFHOOK
  "The maximum number of bytes to skip when applying @code{LABEL_ALIGN}\n\
 to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}\n\
 is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_label_align_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -102,7 +102,7 @@ DEFHOOK
  "The maximum number of bytes to skip before @var{label} when applying\n\
 @code{JUMP_ALIGN}.  This works only if\n\
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_jump_align_max_skip)
 
 /* Try to output the assembler code for an integer object whose
