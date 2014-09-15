@@ -1,3 +1,7 @@
+2014-09-14  David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/vdup_lane_2.c (force_simd): Emit simd mov.
+
 2014-09-14  James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/61407
