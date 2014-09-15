@@ -1,3 +1,9 @@
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* sched-deps.c (deps_start_bb): Strengthen param "head" and local
+	"insn" from rtx to rtx_insn *.
+	* sched-int.h (deps_start_bb): Likewise for 2nd param.
+
 2014-09-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
