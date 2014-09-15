@@ -2278,8 +2278,8 @@ DEFHOOK
   false, if it can't.\
   For example, on some targets, certain kinds of branches can't be made to\
   follow through a hot/cold partitioning.",
- bool, (const_rtx follower, const_rtx followee),
- hook_bool_const_rtx_const_rtx_true)
+ bool, (const rtx_insn *follower, const rtx_insn *followee),
+ hook_bool_const_rtx_insn_const_rtx_insn_true)
 
 /* Return a register class for which branch target register
    optimizations should be applied.  */

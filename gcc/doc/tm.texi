@@ -10827,7 +10827,7 @@ filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const_rtx @var{follower}, const_rtx @var{followee})
+@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const rtx_insn *@var{follower}, const rtx_insn *@var{followee})
 FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
 @end deftypefn
 
