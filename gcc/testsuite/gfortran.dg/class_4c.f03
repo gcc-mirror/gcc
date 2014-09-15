@@ -1,5 +1,5 @@
-! { dg-do link }
-! { dg-additional-sources class_4a.f03 class_4b.f03 }
+! Don't compile this anywhere.
+! { dg-do compile { target { lp64 && { ! lp64 } } } }
 !
 ! Test the fix for PR41583, in which the different source files
 ! would generate the same 'vindex' for different class declared
@@ -27,4 +27,3 @@
   end select
   print *, i
 end
-! { dg-final { cleanup-modules "m m2" } }
