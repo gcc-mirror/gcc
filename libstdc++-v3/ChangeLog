@@ -1,3 +1,8 @@
+2014-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex): Rename _Ch_typeraits template
+	parameters to _Ch_traits.
+
 2014-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/deque (__gnu_debug::deque): Make base class C++11
