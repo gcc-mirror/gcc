@@ -862,7 +862,18 @@ check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 
-check_acats_targets = $(patsubst %,check-acats%, 0 1 2)
+check_acats_numbers0:=1 2 3 4 5 6 7 8 9
+check_acats_numbers1:=0 $(check_acats_numbers0)
+check_acats_numbers2:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers1)))
+check_acats_numbers3:=$(addprefix 0,$(check_acats_numbers1)) $(check_acats_numbers2)
+check_acats_numbers4:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers3)))
+check_acats_numbers5:=$(addprefix 0,$(check_acats_numbers3)) $(check_acats_numbers4)
+check_acats_numbers6:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers5)))
+check_acats_numbers:=$(check_acats_numbers0) $(check_acats_numbers2) $(check_acats_numbers4) $(check_acats_numbers6)
+check_acats_subdirs=$(wordlist 1, \
+		    $(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),128), \
+		    $(check_acats_numbers))
+check_acats_targets = $(addprefix check-acats, $(check_acats_subdirs))
 
 check-acats:
 	@test -d $(ACATSDIR) || mkdir -p $(ACATSDIR); \
@@ -870,35 +881,45 @@ check-acats:
 	EXPECT=$(EXPECT); export EXPECT; \
 	if [ -z "$(CHAPTERS)" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; \
 	then \
+	  rm -rf $(ACATSDIR)-parallel; \
+	  mkdir $(ACATSDIR)-parallel; \
+	  ( testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
+	    export testdir; \
+	    cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats NONE ) \
+	    || exit 1; \
+	  GCC_RUNTEST_PARALLELIZE_DIR=$$rootme/$(ACATSDIR)-parallel; \
+	  export GCC_RUNTEST_PARALLELIZE_DIR; \
 	  $(MAKE) $(check_acats_targets); \
-	  for idx in 0 1 2; do \
+	  rm -rf $(ACATSDIR)-parallel; \
+	  acats_sums= ; acats_logs= ; \
+	  for idx in "" $(check_acats_subdirs); do \
+	    [ -d $(ACATSDIR)$$idx ] || continue; \
 	    mv -f $(ACATSDIR)$$idx/acats.sum $(ACATSDIR)$$idx/acats.sum.sep; \
 	    mv -f $(ACATSDIR)$$idx/acats.log $(ACATSDIR)$$idx/acats.log.sep; \
+	    acats_sums="$$acats_sums $(ACATSDIR)$$idx/acats.sum.sep"; \
+	    acats_logs="$$acats_logs $(ACATSDIR)$$idx/acats.log.sep"; \
 	  done; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh \
-	    $(ACATSDIR)0/acats.sum.sep $(ACATSDIR)1/acats.sum.sep \
-	    $(ACATSDIR)2/acats.sum.sep > $(ACATSDIR)/acats.sum; \
+	    $$acats_sums > $(ACATSDIR)/acats.sum; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L \
-	    $(ACATSDIR)0/acats.log.sep $(ACATSDIR)1/acats.log.sep \
-	    $(ACATSDIR)2/acats.log.sep > $(ACATSDIR)/acats.log; \
+	    $$acats_logs > $(ACATSDIR)/acats.log; \
 	  exit 0; \
 	fi; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
 	export testdir; cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats $(CHAPTERS)
 
 check-acats-subtargets:
-	@echo $(check_acats_targets)
+	@echo check-acats
 
 # Parallelized check-acats
 $(check_acats_targets): check-acats%:
+	if [ -f $$GCC_RUNTEST_PARALLELIZE_DIR/finished ]; then \
+	  rm -rf $(ACATSDIR)$*; exit 0; \
+	fi; \
 	test -d $(ACATSDIR)$* || mkdir -p $(ACATSDIR)$*; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
-	case "$*" in \
-	  0) chapters="`cd $$testdir/tests; echo [a-b]* c[0-4]*`";; \
-	  1) chapters="`cd $$testdir/tests; echo c[5-9ab]*`";; \
-	  2) chapters="`cd $$testdir/tests; echo c[c-z]* [d-z]*`";; \
-	esac; \
-	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats $$chapters
+	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats
+	touch $$GCC_RUNTEST_PARALLELIZE_DIR/finished
 
 .PHONY: check-acats $(check_acats_targets)
 

@@ -16,6 +16,12 @@
 
 load_lib gdb-test.exp
 
+# Only run whole xmethods.exp in one instance, serially.
+if ![gcc_parallel_test_run_p xmethods] {
+    return
+}
+gcc_parallel_test_enable 0
+
 dg-init
 v3-build_support
 
@@ -30,7 +36,9 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
 }
 
 if {! [gdb_version_check_xmethods]} {
+    dg-finish
     unsupported "xmethods.exp"
+    gcc_parallel_test_enable 1
     return
 }
 
@@ -49,3 +57,4 @@ if [info exists guality_gdb_name] {
 }
 
 dg-finish
+gcc_parallel_test_enable 1

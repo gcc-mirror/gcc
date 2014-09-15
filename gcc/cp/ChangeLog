@@ -1,3 +1,8 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (check_g++_parallelize): Change to just an upper bound
+	number.
+
 2014-09-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60862

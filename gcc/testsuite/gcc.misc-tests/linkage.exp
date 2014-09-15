@@ -18,6 +18,17 @@
 # was written by Rob Savoye. (rob@cygnus.com)
 # All the other tests driven by that file have since been moved elsewhere.
 
+load_lib gcc-defs.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p linkage] {
+    return
+}
+gcc_parallel_test_enable 0
+
 if { [isnative] && ![is_remote host] } then {
     set lines [gcc_target_compile "$srcdir/$subdir/linkage-x.c" "linkage-x.o" object {additional_flags="-w"}]
     if ![string match "" $lines] then {
@@ -117,3 +128,5 @@ if { [isnative] && ![is_remote host] } then {
 	file delete "linkage-x.o"
     }
 }
+
+gcc_parallel_test_enable 1

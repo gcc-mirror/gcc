@@ -1,3 +1,20 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (dg_target_exps): Remove.
+	(check_gcc_parallelize): Change to just an upper bound number.
+	(check-%-subtargets): Always print the non-parallelized goals.
+	(check_p_vars, check_p_comma, check_p_subwork): Remove.
+	(check_p_count, check_p_numbers0, check_p_numbers1, check_p_numbers2,
+	check_p_numbers3, check_p_numbers4, check_p_numbers5,
+	check_p_numbers6): New variables.
+	(check_p_numbers): Set to sequence from 1 to 9999.
+	(check_p_subdirs): Set to sequence from 1 to minimum of
+	$(check_p_count) and either GCC_TEST_PARALLEL_SLOTS env var if set,
+	or 128.
+	(check-%, check-parallel-%): Rewritten so that for parallelized
+	testing each job runs all the *.exp files, with
+	GCC_RUNTEST_PARALLELIZE_DIR set in environment.
+
 2014-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/arc/arc-protos.h (arc_attr_type): Strengthen param from

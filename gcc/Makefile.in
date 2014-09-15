@@ -513,34 +513,10 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-dg_target_exps:=aarch64.exp,alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp
-dg_target_exps:=$(dg_target_exps),epiphany.exp,frv.exp,i386.exp,ia64.exp
-dg_target_exps:=$(dg_target_exps),m68k.exp,microblaze.exp,mips.exp,powerpc.exp
-dg_target_exps:=$(dg_target_exps),rx.exp,s390.exp,sh.exp,sparc.exp,spu.exp
-dg_target_exps:=$(dg_target_exps),tic6x.exp,xstormy16.exp
-# This lists a couple of test files that take most time during check-gcc.
-# When doing parallelized check-gcc, these can run in parallel with the
-# remaining tests.  Each word in this variable stands for work for one
-# make goal and one extra make goal is added to handle all the *.exp
-# files not handled explicitly already.  If multiple *.exp files
-# should be run in the same runtest invocation (usually if they aren't
-# very long running, but still should be split of from the check-parallel-$lang
-# remaining tests runtest invocation), they should be concatenated with commas.
-# Note that [a-zA-Z] wildcards need to have []s prefixed with \ (needed
-# by tcl) and as the *.exp arguments are mached both as is and with
-# */ prefixed to it in runtest_file_p, it is usually desirable to include
-# a subdirectory name.
-check_gcc_parallelize=execute.exp=execute/2* \
-		      execute.exp=execute/\[013-9a-fA-F\]* \
-		      execute.exp=execute/\[pP\]*,dg.exp \
-		      execute.exp=execute/\[g-oq-zG-OQ-Z\]*,compile.exp=compile/2* \
-		      compile.exp=compile/\[9pP\]*,builtins.exp \
-		      compile.exp=compile/\[013-8a-oq-zA-OQ-Z\]* \
-		      dg-torture.exp,ieee.exp \
-		      vect.exp,unsorted.exp \
-		      guality.exp \
-		      struct-layout-1.exp,stackalign.exp \
-		      $(dg_target_exps)
+# Upper limit to which it is useful to parallelize this lang target.
+# It doesn't make sense to try e.g. 128 goals for small testsuites
+# like objc or go.
+check_gcc_parallelize=10000
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -3631,27 +3607,34 @@ $(filter-out $(lang_checks_parallelized),$(lang_checks)): check-% : site.exp
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool $* $(RUNTESTFLAGS))
 
-$(patsubst %,%-subtargets,$(filter-out $(lang_checks_parallelized),$(lang_checks))): check-%-subtargets:
+$(patsubst %,%-subtargets,$(lang_checks)): check-%-subtargets:
 	@echo check-$*
 
 check_p_tool=$(firstword $(subst _, ,$*))
-check_p_vars=$(check_$(check_p_tool)_parallelize)
+check_p_count=$(check_$(check_p_tool)_parallelize)
 check_p_subno=$(word 2,$(subst _, ,$*))
-check_p_comma=,
-check_p_subwork=$(subst $(check_p_comma), ,$(if $(check_p_subno),$(word $(check_p_subno),$(check_p_vars))))
-check_p_numbers=1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+check_p_numbers0:=1 2 3 4 5 6 7 8 9
+check_p_numbers1:=0 $(check_p_numbers0)
+check_p_numbers2:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers1)))
+check_p_numbers3:=$(addprefix 0,$(check_p_numbers1)) $(check_p_numbers2)
+check_p_numbers4:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers3)))
+check_p_numbers5:=$(addprefix 0,$(check_p_numbers3)) $(check_p_numbers4)
+check_p_numbers6:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers5)))
+check_p_numbers:=$(check_p_numbers0) $(check_p_numbers2) $(check_p_numbers4) $(check_p_numbers6)
 check_p_subdir=$(subst _,,$*)
-check_p_subdirs=$(wordlist 1,$(words $(check_$*_parallelize)),$(check_p_numbers))
+check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
+		$(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),128), \
+		$(check_p_numbers)))
 
 # For parallelized check-% targets, this decides whether parallelization
 # is desirable (if -jN is used and RUNTESTFLAGS doesn't contain anything
 # but optional --target_board or --extra_opts arguments).  If desirable,
 # recursive make is run with check-parallel-$lang{,1,2,3,4,5} etc. goals,
 # which can be executed in parallel, as they are run in separate directories.
-# check-parallel-$lang{1,2,3,4,5} etc. goals invoke runtest with the longest
-# running *.exp files from the testsuite, as determined by check_$lang_parallelize
-# variable.  The check-parallel-$lang goal in that case invokes runtest with
-# all the remaining *.exp files not handled by the separate goals.
+# check-parallel-$lang{,1,2,3,4,5} etc. goals invoke runtest with
+# GCC_RUNTEST_PARALLELIZE_DIR var in the environment and runtest_file_p
+# dejaGNU procedure is overridden to additionally synchronize through
+# a $lang-parallel directory which tests will be run by which runtest instance.
 # Afterwards contrib/dg-extract-results.sh is used to merge the sum and log
 # files.  If parallelization isn't desirable, only one recursive make
 # is run with check-parallel-$lang goal and check_$lang_parallelize variable
@@ -3662,76 +3645,60 @@ check_p_subdirs=$(wordlist 1,$(words $(check_$*_parallelize)),$(check_p_numbers)
 # to lang_checks_parallelized variable and define check_$lang_parallelize
 # variable (see above check_gcc_parallelize description).
 $(lang_checks_parallelized): check-% : site.exp
-	@if [ -z "$(filter-out --target_board=%,$(filter-out --extra_opts%,$(RUNTESTFLAGS)))" ] \
-	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	-rm -rf $(TESTSUITEDIR)/$*-parallel
+	@if [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	  test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR) || true; \
+	  test -d $(TESTSUITEDIR)/$*-parallel || mkdir $(TESTSUITEDIR)/$*-parallel || true; \
+	  GCC_RUNTEST_PARALLELIZE_DIR=`${PWD_COMMAND}`/$(TESTSUITEDIR)/$(check_p_tool)-parallel ; \
+	  export GCC_RUNTEST_PARALLELIZE_DIR ; \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
 	    check-parallel-$* \
 	    $(patsubst %,check-parallel-$*_%, $(check_p_subdirs)); \
-	  for file in $(TESTSUITEDIR)/$*/$* \
-		      $(patsubst %,$(TESTSUITEDIR)/$*%/$*,$(check_p_subdirs));\
+	  sums= ; logs= ; \
+	  for dir in $(TESTSUITEDIR)/$* \
+		     $(patsubst %,$(TESTSUITEDIR)/$*%,$(check_p_subdirs));\
 	  do \
-	    mv -f $$file.sum $$file.sum.sep; mv -f $$file.log $$file.log.sep; \
+	    if [ -d $$dir ]; then \
+	      mv -f $$dir/$*.sum $$dir/$*.sum.sep; mv -f $$dir/$*.log $$dir/$*.log.sep; \
+	      sums="$$sums $$dir/$*.sum.sep"; logs="$$logs $$dir/$*.log.sep"; \
+	    fi; \
 	  done; \
-	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh \
-	    $(TESTSUITEDIR)/$*/$*.sum.sep \
-	    $(patsubst %,$(TESTSUITEDIR)/$*%/$*.sum.sep,$(check_p_subdirs)) \
+	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh $$sums \
 	    > $(TESTSUITEDIR)/$*/$*.sum; \
-	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L \
-	    $(TESTSUITEDIR)/$*/$*.log.sep \
-	    $(patsubst %,$(TESTSUITEDIR)/$*%/$*.log.sep,$(check_p_subdirs)) \
+	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L $$logs \
 	    > $(TESTSUITEDIR)/$*/$*.log; \
+	  rm -rf $(TESTSUITEDIR)/$*-parallel || true; \
 	else \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
 	    check_$*_parallelize= check-parallel-$*; \
 	fi
 
-# Just print the parallelized subtargets for those that want to split
-# the testing across machines.
-$(patsubst %,%-subtargets,$(lang_checks_parallelized)): check-%-subtargets:
-	@echo check-parallel-$* \
-	  $(patsubst %,check-parallel-$*_%, $(check_p_subdirs))
-
-# In the if [ -n "$(check_p_subno)" ] case runtest should be given the name of
-# the given *.exp file(s).  See comment above check_gcc_parallelize variable
-# for details on the content of these variables.
-#
-# In the elif [ -n "$(check_p_vars)" ] case runtest should be given
-# names of all the *.exp files for this tool that aren't already handled by
-# other goals.  First it finds all the *.exp files for this tool, then
-# prunes those already specified in check_$lang_parallelize or duplicates.
-#
-# Otherwise check-$lang isn't parallelized and runtest is invoked just with
-# the $(RUNTESTFLAGS) arguments.
 check-parallel-% : site.exp
 	-test -d plugin || mkdir plugin
 	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	test -d $(TESTSUITEDIR)/$(check_p_subdir) || mkdir $(TESTSUITEDIR)/$(check_p_subdir)
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
-	cd $(TESTSUITEDIR)/$(check_p_subdir); \
-	rm -f tmp-site.exp; \
-	sed '/set tmpdir/ s|testsuite$$|$(TESTSUITEDIR)/$(check_p_subdir)|' \
+	if [ -n "$(check_p_subno)" ] \
+	   && [ -n "$$GCC_RUNTEST_PARALLELIZE_DIR" ] \
+	   && [ -f $(TESTSUITEDIR)/$(check_p_tool)-parallel/finished ]; then \
+	  rm -rf $(TESTSUITEDIR)/$(check_p_subdir); \
+	else \
+	  cd $(TESTSUITEDIR)/$(check_p_subdir); \
+	  rm -f tmp-site.exp; \
+	  sed '/set tmpdir/ s|testsuite$$|$(TESTSUITEDIR)/$(check_p_subdir)|' \
 		< ../../site.exp > tmp-site.exp; \
-	$(SHELL) $${srcdir}/../move-if-change tmp-site.exp site.exp; \
-	EXPECT=${EXPECT} ; export EXPECT ; \
-	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
-	    export TCL_LIBRARY ; fi ; \
-	runtestflags= ; \
-	if [ -n "$(check_p_subno)" ] ; then \
-	  runtestflags="$(check_p_subwork)"; \
-	elif [ -n "$(check_p_vars)" ] ; then \
-	  parts="`echo ' $(strip $(subst $(check_p_comma), ,$(check_p_vars))) ' \
-		  | sed 's/=[^ ]* / /g'`"; \
-	  for part in `find $$srcdir/testsuite/$(check_p_tool)* -name \*.exp` ; do \
-	    part=`basename $$part` ; \
-	    case " $$parts $$runtestflags " in \
-	      *" $$part "*) ;; \
-	      *) runtestflags="$$runtestflags $$part" ;; \
-	    esac ; \
-	  done ; \
-	fi ; \
-	$(RUNTEST) --tool $(check_p_tool) $(RUNTESTFLAGS) $$runtestflags)
+	  $(SHELL) $${srcdir}/../move-if-change tmp-site.exp site.exp; \
+	  EXPECT=${EXPECT} ; export EXPECT ; \
+	  if [ -f $${rootme}/../expect/expect ] ; then  \
+	    TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	    export TCL_LIBRARY ; \
+	  fi ; \
+	  $(RUNTEST) --tool $(check_p_tool) $(RUNTESTFLAGS); \
+	  if [ -n "$$GCC_RUNTEST_PARALLELIZE_DIR" ] ; then \
+	    touch $${rootme}/$(TESTSUITEDIR)/$(check_p_tool)-parallel/finished; \
+	  fi ; \
+	fi )
 
 # QMTest targets
 

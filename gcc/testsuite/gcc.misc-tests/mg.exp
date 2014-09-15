@@ -17,8 +17,20 @@
 # Test the -MG flag.
 
 load_lib mike-gcc.exp
+load_lib gcc-defs.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p mg] {
+    return
+}
+gcc_parallel_test_enable 0
 
 prebase
 set actions none-of-the-above
 set compiler_output "mg.o ?: .*mg.c \[ \\\\\n\]*nonexist.h"
 postbase mg.c "" "" "-MM -MG"
+
+gcc_parallel_test_enable 1
