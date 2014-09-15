@@ -1451,6 +1451,10 @@ be built.  This can be useful for debugging, or for compatibility with
 previous Ada build procedures, when it was required to explicitly
 do a @samp{make -C gcc gnatlib_and_tools}.
 
+@item --disable-libsanitizer
+Specify that the run-time libraries for the various sanitizers should
+not be built.
+
 @item --disable-libssp
 Specify that the run-time libraries for stack smashing protection
 should not be built.

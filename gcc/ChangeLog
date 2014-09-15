@@ -1,3 +1,8 @@
+2014-09-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* doc/install.texi (Options specification): add 
+	--disable-libsanitizer item.
+
 2014-09-14  James Clarke  <jrtc27@jrtc27.com>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
