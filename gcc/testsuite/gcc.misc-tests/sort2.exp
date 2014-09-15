@@ -20,9 +20,21 @@ if { ![info exists PERF_TEST] || "$PERF_TEST" != "yes" } {
 }
 
 load_lib mike-gcc.exp
+load_lib gcc-defs.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p sort2] {
+    return
+}
+gcc_parallel_test_enable 0
 
 prebase
 set actions run
 set compiler_output "^$"
 set program_output "^$"
 postbase sort2.c $run $groups
+
+gcc_parallel_test_enable 1

@@ -18,6 +18,21 @@ target_run () {
 
 # End of customization section.
 
+# Perform arithmetic evaluation on the ARGs, and store the result in the
+# global $as_val. Take advantage of shells that can avoid forks. The arguments
+# must be portable across $(()) and expr.
+if (eval "test \$(( 1 + 1 )) = 2") 2>/dev/null; then :
+  eval 'as_fn_arith ()
+  {
+    as_val=$(( $* ))
+  }'
+else
+  as_fn_arith ()
+  {
+    as_val=`expr "$@" || test $? -eq 1`
+  }
+fi # as_fn_arith
+
 display_noeol () {
   printf "$@"
   printf "$@" >> $dir/acats.sum
@@ -89,6 +104,18 @@ display target=$target
 display `type gnatmake`
 gnatls -v >> $dir/acats.log
 display ""
+
+if [ -n "$GCC_RUNTEST_PARALLELIZE_DIR" ]; then
+  dir_support=$dir/../acats/support
+
+  rm -rf $dir/run
+  mv $dir/tests $dir/tests.$$ 2> /dev/null
+  rm -rf $dir/tests.$$ &
+  mkdir -p $dir/run
+
+  cp -pr $dir/../acats/tests $dir/
+else
+  dir_support=$dir/support
 
 display "		=== acats support ==="
 display_noeol "Generating support files..."
@@ -186,6 +213,9 @@ target_gnatmake -c -gnato -gnatE *.adb >> $dir/acats.log 2>&1
 
 display " done."
 display ""
+
+fi
+
 display "		=== acats tests ==="
 
 if [ $# -eq 0 ]; then
@@ -197,8 +227,14 @@ fi
 glob_countn=0
 glob_countok=0
 glob_countu=0
+par_count=0
+par_countm=0
+par_last=
 
 for chapter in $chapters; do
+   # Used to generate support once and finish after that.
+   [ "$chapter" = "NONE" ] && continue
+
    display Running chapter $chapter ...
 
    if [ ! -d $dir/tests/$chapter ]; then
@@ -209,13 +245,43 @@ for chapter in $chapters; do
 
    cd $dir/tests/$chapter
    ls *.a *.ada *.adt *.am *.dep 2> /dev/null | sed -e 's/\(.*\)\..*/\1/g' | \
-   cut -c1-7 | sort | uniq | comm -23 - $dir/support/norun.lst \
+   cut -c1-7 | sort | uniq | comm -23 - $dir_support/norun.lst \
      > $dir/tests/$chapter/${chapter}.lst 
    countn=`wc -l < $dir/tests/$chapter/${chapter}.lst`
-   glob_countn=`expr $glob_countn + $countn`
-   counti=0
+   as_fn_arith $glob_countn + $countn
+   glob_countn=$as_val
    for i in `cat $dir/tests/$chapter/${chapter}.lst`; do 
-      counti=`expr $counti + 1`
+
+      # If running multiple run_all.sh jobs in parallel, decide
+      # if we should run this test in the current instance.
+      if [ -n "$GCC_RUNTEST_PARALLELIZE_DIR" ]; then
+	 case "$i" in
+	    # Ugh, some tests have inter-test dependencies, those
+	    # tests have to be scheduled on the same parallel instance
+	    # as previous test.
+	    ce2108f | ce2108h | ce3112d) ;;
+	    # All others can be hopefully scheduled freely.
+	    *)
+	       as_fn_arith $par_countm + 1
+	       par_countm=$as_val
+	       [ $par_countm -eq 10 ] && par_countm=0
+	       if [ $par_countm -eq 1 ]; then
+		  as_fn_arith $par_count + 1
+		  par_count=$as_val
+		  if mkdir $GCC_RUNTEST_PARALLELIZE_DIR/$par_count; then
+		     par_last=1
+		  else
+		     par_last=
+		  fi
+	       fi;;
+	 esac
+	 if [ -z "$par_last" ]; then
+	    as_fn_arith $glob_countn - 1
+	    glob_countn=$as_val
+	    continue
+	 fi
+      fi
+
       extraflags="-gnat95"
       grep $i $testdir/overflow.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
@@ -254,7 +320,7 @@ for chapter in $chapters; do
       echo "BUILD $main" >> $dir/acats.log
       EXTERNAL_OBJECTS=""
       case $i in
-        cxb30*) EXTERNAL_OBJECTS="$dir/support/cxb30040.o $dir/support/cxb30060.o $dir/support/cxb30130.o $dir/support/cxb30131.o";;
+        cxb30*) EXTERNAL_OBJECTS="$dir_support/cxb30040.o $dir_support/cxb30060.o $dir_support/cxb30130.o $dir_support/cxb30131.o";;
         ca1020e) rm -f ca1020e_func1.adb ca1020e_func2.adb ca1020e_proc1.adb ca1020e_proc2.adb > /dev/null 2>&1;;
         ca14028) rm -f ca14028_func2.ads ca14028_func3.ads ca14028_proc1.ads ca14028_proc3.ads > /dev/null 2>&1;;
       esac
@@ -265,7 +331,7 @@ for chapter in $chapters; do
          continue
       fi
 
-      target_gnatmake $extraflags -I$dir/support $main >> $dir/acats.log 2>&1
+      target_gnatmake $extraflags -I$dir_support $main >> $dir/acats.log 2>&1
       if [ $? -ne 0 ]; then
          display "FAIL:	$i"
          failed="${failed}${i} "
@@ -290,12 +356,15 @@ for chapter in $chapters; do
             failed="${failed}${i} "
          else
             log "UNSUPPORTED:	$i"
-            glob_countn=`expr $glob_countn - 1`
-            glob_countu=`expr $glob_countu + 1`
+            as_fn_arith $glob_countn - 1
+            glob_countn=$as_val
+            as_fn_arith $glob_countu + 1
+            glob_countu=$as_val
          fi
       else
          log "PASS:	$i"
-         glob_countok=`expr $glob_countok + 1`
+         as_fn_arith $glob_countok + 1
+         glob_countok=$as_val
       fi
       clean_dir
    done

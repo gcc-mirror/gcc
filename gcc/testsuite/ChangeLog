@@ -1,3 +1,33 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-defs.exp (gcc_parallel_test_run_p,
+	gcc_parallel_test_enable): New procedures.  If
+	GCC_RUNTEST_PARALLELIZE_DIR is set in environment, override
+	runtest_file_p to invoke also gcc_parallel_test_run_p.
+	* g++.dg/guality/guality.exp (check_guality): Save/restore
+	test_counts array around the body of the procedure.
+	* gcc.dg/guality/guality.exp (check_guality): Likewise.
+	* g++.dg/plugin/plugin.exp: Run all the tests serially
+	by the first parallel runtest encountering it.
+	* gcc.dg/plugin/plugin.exp: Likewise.
+	* gcc.misc-tests/matrix1.exp: Likewise.
+	* gcc.misc-tests/dhry.exp: Likewise.
+	* gcc.misc-tests/acker1.exp: Likewise.
+	* gcc.misc-tests/linkage.exp: Likewise.
+	* gcc.misc-tests/mg.exp: Likewise.
+	* gcc.misc-tests/mg-2.exp: Likewise.
+	* gcc.misc-tests/sort2.exp: Likewise.
+	* gcc.misc-tests/sieve.exp: Likewise.
+	* gcc.misc-tests/options.exp: Likewise.
+	* gcc.misc-tests/help.exp: Likewise.
+	* go.test/go-test.exp (go-gc-tests): Use
+	gcc_parallel_test_enable {0, 1} around all handling of
+	each test.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Likewise.
+	* ada/acats/run_all.sh: Parallelize using mkdir inside of
+	a shared directory.  Avoid forking and expr uses if
+	shell supports $(()).
+
 2014-09-14  David Sherwood  <david.sherwood@arm.com>
 
 	* gcc.target/aarch64/vdup_lane_2.c (force_simd): Emit simd mov.

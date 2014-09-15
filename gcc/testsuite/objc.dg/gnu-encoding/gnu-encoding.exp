@@ -58,7 +58,9 @@ if { $status == 0 } then {
                 continue
             }
 
+	    gcc_parallel_test_enable 0
             dg-runtest $src "" $DEFAULT_CFLAGS
+	    gcc_parallel_test_enable 1
         }
     } else {
         warning "Could not execute objc.dg/gnu-encoding/struct-layout-encoding-1 generator"

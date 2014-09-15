@@ -1,3 +1,25 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (check_p_numbers0, check_p_numbers1,
+	check_p_numbers2, check_p_numbers3, check_p_numbers4,
+	check_p_numbers5, check_p_numbers6, check_p_numbers,
+	check_p_subdirs): New variables.
+	(check_DEJAGNU_normal_targets): Use check_p_subdirs.
+	(check-DEJAGNU): Rewritten so that for parallelized
+	testing each job runs all the *.exp files, with
+	GCC_RUNTEST_PARALLELIZE_DIR set in environment.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/lib/libstdc++.exp (gcc_parallel_test_run_p,
+	gcc_parallel_test_enable): New procedures.  If
+	GCC_RUNTEST_PARALLELIZE_DIR is set in environment, override
+	runtest_file_p to invoke also gcc_parallel_test_run_p.
+	* testsuite/libstdc++-abi/abi.exp: Run all the tests serially
+	by the first parallel runtest encountering it.  Fix up path
+	of the extract_symvers script.
+	* testsuite/libstdc++-xmethods/xmethods.exp: Run all the tests
+	serially by the first parallel runtest encountering it.  Run
+	dg-finish even in case of error.
+
 2014-09-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (basic_regex): Rename _Ch_typeraits template

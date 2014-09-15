@@ -1,3 +1,16 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/Make-lang.in (check_acats_numbers0,
+	check_acats_numbers1, check_acats_numbers2, check_acats_numbers3,
+	check_acats_numbers4, check_acats_numbers5, check_acats_numbers6,
+	check_acats_numbers, check_acats_subdirs): New variables.
+	(check_acats_targets): Use $(check_acats_subdirs).
+	(check-acats, check-acats%): Rewritten so that for parallelized
+	testing each job runs all the chapters files, with
+	GCC_RUNTEST_PARALLELIZE_DIR set in environment.  Prepare the support
+	directory sequentially and share it.
+	(check-acats-subtargets): Always print just check-acats.
+
 2014-08-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Adjust to
