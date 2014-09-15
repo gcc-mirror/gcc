@@ -16423,35 +16423,35 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vcvtph2ps"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
+(define_insn "vcvtph2ps<mask_name>"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_select:V4SF
-	  (unspec:V8SF [(match_operand:V8HI 1 "register_operand" "x")]
+	  (unspec:V8SF [(match_operand:V8HI 1 "register_operand" "v")]
 		       UNSPEC_VCVTPH2PS)
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_F16C"
-  "vcvtph2ps\t{%1, %0|%0, %1}"
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtph2ps\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "*vcvtph2ps_load"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
+(define_insn "*vcvtph2ps_load<mask_name>"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(unspec:V4SF [(match_operand:V4HI 1 "memory_operand" "m")]
 		     UNSPEC_VCVTPH2PS))]
-  "TARGET_F16C"
-  "vcvtph2ps\t{%1, %0|%0, %1}"
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtph2ps\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "vcvtph2ps256"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
-	(unspec:V8SF [(match_operand:V8HI 1 "nonimmediate_operand" "xm")]
+(define_insn "vcvtph2ps256<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
+	(unspec:V8SF [(match_operand:V8HI 1 "nonimmediate_operand" "vm")]
 		     UNSPEC_VCVTPH2PS))]
-  "TARGET_F16C"
-  "vcvtph2ps\t{%1, %0|%0, %1}"
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtph2ps\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
    (set_attr "btver2_decode" "double")
@@ -16468,6 +16468,19 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])
 
+(define_expand "vcvtps2ph_mask"
+  [(set (match_operand:V8HI 0 "register_operand")
+	(vec_merge:V8HI
+	  (vec_concat:V8HI
+	    (unspec:V4HI [(match_operand:V4SF 1 "register_operand")
+			  (match_operand:SI 2 "const_0_to_255_operand")]
+			  UNSPEC_VCVTPS2PH)
+	    (match_dup 5))
+	   (match_operand:V8HI 3 "vector_move_operand")
+	   (match_operand:QI 4 "register_operand")))]
+  "TARGET_AVX512VL"
+  "operands[5] = CONST0_RTX (V4HImode);")
+
 (define_expand "vcvtps2ph"
   [(set (match_operand:V8HI 0 "register_operand")
 	(vec_concat:V8HI
@@ -16478,39 +16491,39 @@
   "TARGET_F16C"
   "operands[3] = CONST0_RTX (V4HImode);")
 
-(define_insn "*vcvtps2ph"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
+(define_insn "*vcvtps2ph<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(vec_concat:V8HI
-	  (unspec:V4HI [(match_operand:V4SF 1 "register_operand" "x")
+	  (unspec:V4HI [(match_operand:V4SF 1 "register_operand" "v")
 			(match_operand:SI 2 "const_0_to_255_operand" "N")]
 		       UNSPEC_VCVTPS2PH)
 	  (match_operand:V4HI 3 "const0_operand")))]
-  "TARGET_F16C"
-  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_F16C && <mask_avx512vl_condition>"
+  "vcvtps2ph\t{%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2}"
   [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "*vcvtps2ph_store"
+(define_insn "*vcvtps2ph_store<mask_name>"
   [(set (match_operand:V4HI 0 "memory_operand" "=m")
 	(unspec:V4HI [(match_operand:V4SF 1 "register_operand" "x")
 		      (match_operand:SI 2 "const_0_to_255_operand" "N")]
 		     UNSPEC_VCVTPS2PH))]
-  "TARGET_F16C"
-  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "vcvtps2ph256"
+(define_insn "vcvtps2ph256<mask_name>"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "=xm")
 	(unspec:V8HI [(match_operand:V8SF 1 "register_operand" "x")
 		      (match_operand:SI 2 "const_0_to_255_operand" "N")]
 		     UNSPEC_VCVTPS2PH))]
-  "TARGET_F16C"
-  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V8SF")])
 

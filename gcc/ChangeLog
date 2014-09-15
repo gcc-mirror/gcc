@@ -7,6 +7,24 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_insn "vcvtph2ps<mask_name>"): Add masking.
+	(define_insn "*vcvtph2ps_load<mask_name>"): Ditto.
+	(define_insn "vcvtph2ps256<mask_name>"): Ditto.
+	(define_expand "vcvtps2ph_mask"): New.
+	(define_insn "*vcvtps2ph<mask_name>"): Add masking.
+	(define_insn "*vcvtps2ph_store<mask_name>"): Ditto.
+	(define_insn "vcvtps2ph256<mask_name>"): Ditto.
+
+2014-09-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (define_mode_iterator VI248_AVX512BW_AVX512VL):
 	New.
 	(define_mode_iterator VI24_AVX512BW_1): Ditto.
