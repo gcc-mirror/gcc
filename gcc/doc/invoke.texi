@@ -262,7 +262,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wodr  -Wno-overflow  -Wopenmp-simd @gol
+-Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
+ -Wodr  -Wno-overflow  -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -386,7 +387,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
--fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute
+-fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
@@ -837,7 +838,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
--mhwmult=}
+-mhwmult= -minrt}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian -mlittle-endian @gol
@@ -879,7 +880,8 @@ Objective-C and Objective-C++ Dialects}.
 See RS/6000 and PowerPC Options.
 
 @emph{RL78 Options}
-@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 -m64bit-doubles -m32bit-doubles}
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 @gol
+-m64bit-doubles -m32bit-doubles}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -4910,6 +4912,14 @@ struct s @{ int f, g, h; @};
 struct s x = @{ .f = 3, .g = 4 @};
 @end smallexample
 
+In C++ this option does not warn either about the empty @{ @}
+initializer, for example:
+
+@smallexample
+struct s @{ int f, g, h; @};
+s x = @{ @};
+@end smallexample
+
 This warning is included in @option{-Wextra}.  To get other @option{-Wextra}
 warnings without this one, use @option{-Wextra -Wno-missing-field-initializers}.
 
@@ -4920,8 +4930,10 @@ Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
 Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
-@item -Wnormalized=<none|id|nfc|nfkc>
+@item -Wnormalized@r{[}=@r{<}none@r{|}id@r{|}nfc@r{|}nfkc@r{>]}
 @opindex Wnormalized=
+@opindex Wnormalized
+@opindex Wno-normalized
 @cindex NFC
 @cindex NFKC
 @cindex character set, input normalization
@@ -4937,7 +4949,8 @@ have not been normalized; this option controls that warning.
 There are four levels of warning supported by GCC@.  The default is
 @option{-Wnormalized=nfc}, which warns about any identifier that is
 not in the ISO 10646 ``C'' normalized form, @dfn{NFC}.  NFC is the
-recommended form for most uses.
+recommended form for most uses.  It is equivalent to
+@option{-Wnormalized}.
 
 Unfortunately, there are some characters allowed in identifiers by
 ISO C and ISO C++ that, when turned into NFC, are not allowed in 
@@ -4948,9 +4961,10 @@ It is hoped that future versions of the standards involved will correct
 this, which is why this option is not the default.
 
 You can switch the warning off for all characters by writing
-@option{-Wnormalized=none}.  You should only do this if you
-are using some other normalization scheme (like ``D''), because
-otherwise you can easily create bugs that are literally impossible to see.
+@option{-Wnormalized=none} or @option{-Wno-normalized}.  You should
+only do this if you are using some other normalization scheme (like
+``D''), because otherwise you can easily create bugs that are
+literally impossible to see.
 
 Some characters in ISO 10646 have distinct meanings but look identical
 in some fonts or display methodologies, especially once formatting has
@@ -5097,12 +5111,10 @@ warnings produced by @option{-Winline} to appear or disappear.
 @opindex Wno-invalid-offsetof
 @opindex Winvalid-offsetof
 Suppress warnings from applying the @samp{offsetof} macro to a non-POD
-type.  According to the 1998 ISO C++ standard, applying @samp{offsetof}
-to a non-POD type is undefined.  In existing C++ implementations,
-however, @samp{offsetof} typically gives meaningful results even when
-applied to certain kinds of non-POD types (such as a simple
-@samp{struct} that fails to be a POD type only by virtue of having a
-constructor).  This flag is for users who are aware that they are
+type.  According to the 2014 ISO C++ standard, applying @samp{offsetof}
+to a non-standard-layout type is undefined.  In existing C++ implementations,
+however, @samp{offsetof} typically gives meaningful results.
+This flag is for users who are aware that they are
 writing nonportable code and who have deliberately chosen to ignore the
 warning about it.
 
@@ -5577,6 +5589,20 @@ be a legitimate way of obtaining infinities and NaNs.
 This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
+
+@item -fsanitize=nonnull-attribute
+@opindex fsanitize=nonnull-attribute
+
+This option enables instrumentation of calls, checking whether null values
+are not passed to arguments marked as requiring a non-null value by the
+@code{nonnull} function attribute.
+
+@item -fsanitize=returns-nonnull-attribute
+@opindex fsanitize=returns-nonnull-attribute
+
+This option enables instrumentation of return statements in functions
+marked with @code{returns_nonnull} function attribute, to detect returning
+of null values from such functions.
 
 @end table
 
@@ -8993,6 +9019,12 @@ The value @code{one} specifies that exactly one partition should be
 used while the value @code{none} bypasses partitioning and executes
 the link-time optimization step directly from the WPA phase.
 
+@item -flto-odr-type-merging
+@opindex flto-odr-type-merging
+Enable streaming of mangled types names of C++ types and their unification
+at linktime.  This increases size of LTO object files, but enable
+diagnostics about One Definition Rule violations.
+
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate
 language written to LTO object files, and is only meaningful in
@@ -9896,11 +9928,11 @@ constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alignment in the vectorizer. 
+doing loop versioning for alignment in the vectorizer.
 
 @item vect-max-version-for-alias-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alias in the vectorizer. 
+doing loop versioning for alias in the vectorizer.
 
 @item vect-max-peeling-for-alignment
 The maximum number of loop peels to enhance access alignment
@@ -12566,8 +12598,8 @@ architecture together with the optional CRC32 extensions.
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognized.  If the auto-detect is
-unsuccessful the option has no effect.
+GNU/Linux, and not all architectures are recognized.  If the auto-detect
+is unsuccessful the option has no effect.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -12618,7 +12650,7 @@ this option may change in future GCC versions as CPU models come and go.
 
 @option{-mtune=native} causes the compiler to auto-detect the CPU
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognized.  If the auto-detect is
+GNU/Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
 @item -mcpu=@var{name}
@@ -12639,8 +12671,8 @@ See @option{-mtune} for more information.
 
 @option{-mcpu=native} causes the compiler to auto-detect the CPU
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognized.  If the auto-detect is
-unsuccessful the option has no effect.
+GNU/Linux, and not all architectures are recognized.  If the auto-detect
+is unsuccessful the option has no effect.
 
 @item -mfpu=@var{name}
 @opindex mfpu
@@ -18586,6 +18618,13 @@ The hardware multiply routines disable interrupts whilst running and
 restore the previous interrupt state when they finish.  This makes
 them safe to use inside interrupt handlers as well as in normal code.
 
+@item -minrt
+@opindex minrt
+Enable the use of a minimum runtime environment - no static
+initializers or constructors.  This is intended for memory-constrained
+devices.  The compiler will include special symbols in some objects
+that tell the linker and runtime which code fragments are required.
+
 @end table
 
 @node NDS32 Options
@@ -20627,7 +20666,7 @@ The funtion label is prepended with the given number of two-byte
 Nop instructions (@var{halfwords}, maximum 1000000) or 12 Nop
 instructions if no argument is present.  Functions with a
 hot-patching prologue are never inlined automatically, and a
-hot-patching prologue is never generated for functions functions
+hot-patching prologue is never generated for functions
 that are explicitly inline.
 
 This option can be overridden for individual functions with the

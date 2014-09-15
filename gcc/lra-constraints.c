@@ -735,7 +735,7 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
       return false;
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
@@ -3000,7 +3000,7 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
 	      || GET_CODE (value) == POST_MODIFY);
   rtx_insn *last;
   rtx inc;
-  rtx add_insn;
+  rtx_insn *add_insn;
   int code;
   rtx real_in = in == value ? incloc : in;
   rtx result;
@@ -3897,11 +3897,11 @@ multi_block_pseudo_p (int regno)
 
 /* Return true if LIST contains a deleted insn.  */
 static bool
-contains_deleted_insn_p (rtx list)
+contains_deleted_insn_p (rtx_insn_list *list)
 {
-  for (; list != NULL_RTX; list = XEXP (list, 1))
-    if (NOTE_P (XEXP (list, 0))
-	&& NOTE_KIND (XEXP (list, 0)) == NOTE_INSN_DELETED)
+  for (; list != NULL_RTX; list = list->next ())
+    if (NOTE_P (list->insn ())
+	&& NOTE_KIND (list->insn ()) == NOTE_INSN_DELETED)
       return true;
   return false;
 }
@@ -3939,7 +3939,7 @@ dead_pseudo_p (rtx x, rtx insn)
 /* Return true if INSN contains a dying pseudo in INSN right hand
    side.  */
 static bool
-insn_rhs_dead_pseudo_p (rtx insn)
+insn_rhs_dead_pseudo_p (rtx_insn *insn)
 {
   rtx set = single_set (insn);
 
@@ -3952,14 +3952,12 @@ insn_rhs_dead_pseudo_p (rtx insn)
 static bool
 init_insn_rhs_dead_pseudo_p (int regno)
 {
-  rtx insns = ira_reg_equiv[regno].init_insns;
+  rtx_insn_list *insns = ira_reg_equiv[regno].init_insns;
 
   if (insns == NULL)
     return false;
-  if (INSN_P (insns))
-    return insn_rhs_dead_pseudo_p (insns);
-  for (; insns != NULL_RTX; insns = XEXP (insns, 1))
-    if (insn_rhs_dead_pseudo_p (XEXP (insns, 0)))
+  for (; insns != NULL_RTX; insns = insns->next ())
+    if (insn_rhs_dead_pseudo_p (insns->insn ()))
       return true;
   return false;
 }
@@ -3970,14 +3968,15 @@ init_insn_rhs_dead_pseudo_p (int regno)
 static bool
 reverse_equiv_p (int regno)
 {
-  rtx insns, set;
+  rtx_insn_list *insns = ira_reg_equiv[regno].init_insns;
+  rtx set;
 
-  if ((insns = ira_reg_equiv[regno].init_insns) == NULL_RTX)
+  if (insns == NULL)
     return false;
-  if (! INSN_P (XEXP (insns, 0))
-      || XEXP (insns, 1) != NULL_RTX)
+  if (! INSN_P (insns->insn ())
+      || insns->next () != NULL)
     return false;
-  if ((set = single_set (XEXP (insns, 0))) == NULL_RTX)
+  if ((set = single_set (insns->insn ())) == NULL_RTX)
     return false;
   return REG_P (SET_SRC (set)) && (int) REGNO (SET_SRC (set)) == regno;
 }
@@ -3988,10 +3987,10 @@ static bool
 contains_reloaded_insn_p (int regno)
 {
   rtx set;
-  rtx list = ira_reg_equiv[regno].init_insns;
+  rtx_insn_list *list = ira_reg_equiv[regno].init_insns;
 
-  for (; list != NULL_RTX; list = XEXP (list, 1))
-    if ((set = single_set (XEXP (list, 0))) == NULL_RTX
+  for (; list != NULL; list = list->next ())
+    if ((set = single_set (list->insn ())) == NULL_RTX
 	|| ! REG_P (SET_DEST (set))
 	|| (int) REGNO (SET_DEST (set)) != regno)
       return true;
@@ -4391,7 +4390,7 @@ substitute_pseudo_within_insn (rtx_insn *insn, int old_regno, rtx new_reg)
 }
 
 /* Return first non-debug insn in list USAGE_INSNS.  */
-static rtx
+static rtx_insn *
 skip_usage_debug_insns (rtx usage_insns)
 {
   rtx insn;
@@ -4401,7 +4400,7 @@ skip_usage_debug_insns (rtx usage_insns)
        insn != NULL_RTX && GET_CODE (insn) == INSN_LIST;
        insn = XEXP (insn, 1))
     ;
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return true if we need secondary memory moves for insn in
@@ -4414,7 +4413,8 @@ check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
 #ifndef SECONDARY_MEMORY_NEEDED
   return false;
 #else
-  rtx insn, set, dest;
+  rtx_insn *insn;
+  rtx set, dest;
   enum reg_class cl;
 
   if (inher_cl == ALL_REGS
@@ -4509,7 +4509,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 	 transformation will be unprofitable.  */
       if (lra_dump_file != NULL)
 	{
-	  rtx insn = skip_usage_debug_insns (next_usage_insns);
+	  rtx_insn *insn = skip_usage_debug_insns (next_usage_insns);
 	  rtx set = single_set (insn);
 
 	  lra_assert (set != NULL_RTX);

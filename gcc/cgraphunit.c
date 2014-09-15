@@ -576,7 +576,6 @@ cgraph_node::analyze (void)
       if (!expand_thunk (false, false))
 	{
 	  thunk.alias = NULL;
-	  analyzed = true;
 	  return;
 	}
       thunk.alias = NULL;
@@ -1451,7 +1450,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
 
       if (!output_asm_thunks)
-	return false;
+	{
+	  analyzed = true;
+	  return false;
+	}
 
       if (in_lto_p)
 	get_body ();
@@ -2313,9 +2315,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
     cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
 
-    if (!expand_thunk (false, true))
-      analyzed = true;
-
+    expand_thunk (false, true);
     e->call_stmt_cannot_inline_p = true;
 
     /* Inline summary set-up.  */

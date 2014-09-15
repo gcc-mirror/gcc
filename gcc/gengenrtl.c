@@ -125,6 +125,7 @@ special_rtx (int idx)
 {
   return (strcmp (defs[idx].enumname, "EXPR_LIST") == 0
 	  || strcmp (defs[idx].enumname, "INSN_LIST") == 0
+	  || strcmp (defs[idx].enumname, "INSN") == 0
 	  || strcmp (defs[idx].enumname, "CONST_INT") == 0
 	  || strcmp (defs[idx].enumname, "REG") == 0
 	  || strcmp (defs[idx].enumname, "SUBREG") == 0

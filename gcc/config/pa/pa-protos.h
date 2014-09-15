@@ -64,7 +64,7 @@ extern int pa_emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern int pa_emit_hpdiv_const (rtx *, int);
 extern int pa_is_function_label_plus_const (rtx);
 extern int pa_jump_in_call_delay (rtx_insn *);
-extern int pa_fpstore_bypass_p (rtx, rtx);
+extern int pa_fpstore_bypass_p (rtx_insn *, rtx_insn *);
 extern int pa_attr_length_millicode_call (rtx_insn *);
 extern int pa_attr_length_call (rtx_insn *, int);
 extern int pa_attr_length_indirect_call (rtx_insn *);

@@ -2410,7 +2410,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 bool
 cris_cc0_user_requires_cmp (rtx insn)
 {
-  rtx cc0_user = NULL;
+  rtx_insn *cc0_user = NULL;
   rtx body;
   rtx set;
 

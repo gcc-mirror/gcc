@@ -920,7 +920,8 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 /* This routine will replace a store with a SET to a specified register.  */
 
 static void
-replace_store_insn (rtx reg, rtx del, basic_block bb, struct st_expr *smexpr)
+replace_store_insn (rtx reg, rtx_insn *del, basic_block bb,
+		    struct st_expr *smexpr)
 {
   rtx_insn *insn;
   rtx mem, note, set, ptr;
@@ -984,16 +985,16 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct st_expr *smexpr)
 static void
 delete_store (struct st_expr * expr, basic_block bb)
 {
-  rtx reg, i, del;
+  rtx reg;
 
   if (expr->reaching_reg == NULL_RTX)
     expr->reaching_reg = gen_reg_rtx_and_attrs (expr->pattern);
 
   reg = expr->reaching_reg;
 
-  for (i = expr->avail_stores; i; i = XEXP (i, 1))
+  for (rtx_insn_list *i = expr->avail_stores; i; i = i->next ())
     {
-      del = XEXP (i, 0);
+      rtx_insn *del = i->insn ();
       if (BLOCK_FOR_INSN (del) == bb)
 	{
 	  /* We know there is only one since we deleted redundant
@@ -1042,7 +1043,7 @@ build_store_vectors (void)
 	      rtx r = gen_reg_rtx_and_attrs (ptr->pattern);
 	      if (dump_file)
 		fprintf (dump_file, "Removing redundant store:\n");
-	      replace_store_insn (r, XEXP (st, 0), bb, ptr);
+	      replace_store_insn (r, st->insn (), bb, ptr);
 	      continue;
 	    }
 	  bitmap_set_bit (st_avloc[bb->index], ptr->index);

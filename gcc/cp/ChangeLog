@@ -1,3 +1,49 @@
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60862
+	* parser.c (cp_parser_postfix_expression) <case CPP_OPEN_PAREN>: Set
+	location of a call expression.
+
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63201
+	* decl.c (start_decl): Handle specialization of member variable
+	template.
+	* pt.c (check_explicit_specialization): Adjust error.
+
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* typeck2.c (process_init_constructor_record): Do not warn about
+	missing field initializer if EMPTY_CONSTRUCTOR_P (init).
+
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63139
+	* pt.c (tsubst_pack_expansion): Simplify substitution into T....
+	(tsubst): Don't throw away PACK_EXPANSION_EXTRA_ARGS.
+
+2014-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	* decl.c (grokfndecl): Don't set DECL_COMDAT on static inlines.
+	(duplicate_decls, start_decl): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+	(push_template_decl_real): Or static templates.
+
+2014-09-08  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (build_class_member_access_expr): Move
+	-Winvalid-offsetof code...
+	* semantics.c (finish_offsetof): ...here.
+	* parser.c (cp_parser_builtin_offsetof): Remember the location of
+	the type argument.
+	* pt.c (tsubst_copy_and_build) [OFFSETOF_EXPR]: Preserve it.
+
+	PR c++/62255
+	* pt.c (instantiate_decl): Handle recursive instantiation of
+	static data member.
+
 2014-09-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62659

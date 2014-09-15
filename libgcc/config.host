@@ -322,13 +322,15 @@ esac
 case ${host} in
 aarch64*-*-elf)
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
+	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
 aarch64*-*-linux*)
+	extra_parts="$extra_parts crtfastmath.o"
 	md_unwind_header=aarch64/linux-unwind.h
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee t-crtfm alpha/t-linux"
@@ -928,9 +930,6 @@ nios2-*-*)
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"
 	;;
-picochip-*-*)
-	tmake_file="picochip/t-picochip t-fpbit"
-        ;;
 powerpc-*-darwin*)
 	case ${host} in
 	*-*-darwin9* | *-*-darwin[12][0-9]*)

@@ -90,8 +90,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_96_ROUND_53_LONG_DOUBLE (!TARGET_64BIT)
 
 /* Put all *tf routines in libgcc.  */
-#undef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q
 
 /* Static stack checking is supported by means of probes.  */

@@ -89,7 +89,7 @@ extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
 extern bool canonicalize_change_group (rtx insn, rtx x);
-extern int insn_invalid_p (rtx, bool);
+extern int insn_invalid_p (rtx_insn *, bool);
 extern int verify_changes (int);
 extern void confirm_change_group (void);
 extern int apply_change_group (void);
@@ -128,14 +128,14 @@ extern bool mode_dependent_address_p (rtx, addr_space_t);
 
 extern int recog (rtx, rtx, int *);
 #ifndef GENERATOR_FILE
-static inline int recog_memoized (rtx insn);
+static inline int recog_memoized (rtx_insn *insn);
 #endif
 extern void add_clobbers (rtx, int);
 extern int added_clobbers_hard_reg_p (int);
-extern void insn_extract (rtx);
-extern void extract_insn (rtx);
-extern void extract_constrain_insn_cached (rtx);
-extern void extract_insn_cached (rtx);
+extern void insn_extract (rtx_insn *);
+extern void extract_insn (rtx_insn *);
+extern void extract_constrain_insn_cached (rtx_insn *);
+extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *);
 extern const operand_alternative *preprocess_insn_constraints (int);
@@ -149,8 +149,8 @@ extern rtx peep2_find_free_register (int, int, const char *,
 #endif
 extern rtx peephole2_insns (rtx, rtx, int *);
 
-extern int store_data_bypass_p (rtx, rtx);
-extern int if_test_bypass_p (rtx, rtx);
+extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
+extern int if_test_bypass_p (rtx_insn *, rtx_insn *);
 
 #ifndef GENERATOR_FILE
 /* Try recognizing the instruction INSN,
@@ -163,7 +163,7 @@ extern int if_test_bypass_p (rtx, rtx);
    through this one.  */
 
 static inline int
-recog_memoized (rtx insn)
+recog_memoized (rtx_insn *insn)
 {
   if (INSN_CODE (insn) < 0)
     INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);

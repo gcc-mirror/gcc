@@ -83,7 +83,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_state == _S_state_in_brace)
 	_M_scan_in_brace();
       else
-	_GLIBCXX_DEBUG_ASSERT(false);
+	{
+	  _GLIBCXX_DEBUG_ASSERT(false);
+	}
     }
 
   // Differences between styles:

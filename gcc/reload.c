@@ -885,7 +885,8 @@ reload_inner_reg_of_subreg (rtx x, enum machine_mode mode, bool output)
 static int
 can_reload_into (rtx in, int regno, enum machine_mode mode)
 {
-  rtx dst, test_insn;
+  rtx dst;
+  rtx_insn *test_insn;
   int r = 0;
   struct recog_data_d save_recog_data;
 
@@ -2320,7 +2321,7 @@ operands_match_p (rtx x, rtx y)
       return 0;
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
@@ -4220,16 +4221,17 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	     this instruction.  */
 	  if (GET_CODE (substitution) == LABEL_REF
 	      && !find_reg_note (insn, REG_LABEL_OPERAND,
-				 XEXP (substitution, 0))
+				 LABEL_REF_LABEL (substitution))
 	      /* For a JUMP_P, if it was a branch target it must have
 		 already been recorded as such.  */
 	      && (!JUMP_P (insn)
-		  || !label_is_jump_target_p (XEXP (substitution, 0),
+		  || !label_is_jump_target_p (LABEL_REF_LABEL (substitution),
 					      insn)))
 	    {
-	      add_reg_note (insn, REG_LABEL_OPERAND, XEXP (substitution, 0));
-	      if (LABEL_P (XEXP (substitution, 0)))
-		++LABEL_NUSES (XEXP (substitution, 0));
+	      add_reg_note (insn, REG_LABEL_OPERAND,
+			    LABEL_REF_LABEL (substitution));
+	      if (LABEL_P (LABEL_REF_LABEL (substitution)))
+		++LABEL_NUSES (LABEL_REF_LABEL (substitution));
 	    }
 
 	}
@@ -6676,7 +6678,8 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		short *reload_reg_p, int goalreg, enum machine_mode mode)
 {
   rtx_insn *p = insn;
-  rtx goaltry, valtry, value, where;
+  rtx goaltry, valtry, value;
+  rtx_insn *where;
   rtx pat;
   int regno = -1;
   int valueno;

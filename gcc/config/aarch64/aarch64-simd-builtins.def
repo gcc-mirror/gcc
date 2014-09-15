@@ -49,29 +49,6 @@
 
   BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
 
-  VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_SS, reinterpretv2sf, 0, v1df)
-  BUILTIN_VD (REINTERP_SS, reinterpretv1df, 0)
-
-  BUILTIN_VD (REINTERP_SU, reinterpretv1df, 0)
-
-  VAR1 (REINTERP_US, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_US, reinterpretv2sf, 0, v1df)
-
-  BUILTIN_VD (REINTERP_SP, reinterpretv1df, 0)
-
-  VAR1 (REINTERP_PS, reinterpretdi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv8qi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv4hi, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv2si, 0, v1df)
-  VAR1 (REINTERP_PS, reinterpretv2sf, 0, v1df)
-
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0)
@@ -157,16 +134,16 @@
   BUILTIN_VSDQ_I (UNOP, sqabs, 0)
   BUILTIN_VSDQ_I (UNOP, sqneg, 0)
 
-  BUILTIN_VSD_HSI (QUADOP, sqdmlal_lane, 0)
-  BUILTIN_VSD_HSI (QUADOP, sqdmlsl_lane, 0)
-  BUILTIN_VSD_HSI (QUADOP, sqdmlal_laneq, 0)
-  BUILTIN_VSD_HSI (QUADOP, sqdmlsl_laneq, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlal_lane, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlsl_lane, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlal_laneq, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlsl_laneq, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmlal2, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmlsl2, 0)
-  BUILTIN_VQ_HSI (QUADOP, sqdmlal2_lane, 0)
-  BUILTIN_VQ_HSI (QUADOP, sqdmlsl2_lane, 0)
-  BUILTIN_VQ_HSI (QUADOP, sqdmlal2_laneq, 0)
-  BUILTIN_VQ_HSI (QUADOP, sqdmlsl2_laneq, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlal2_lane, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlsl2_lane, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlal2_laneq, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlsl2_laneq, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmlal2_n, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmlsl2_n, 0)
   /* Implemented by aarch64_sqdml<SBINQOPS:as>l<mode>.  */

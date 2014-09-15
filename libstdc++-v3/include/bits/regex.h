@@ -1814,7 +1814,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @pre   ready() == true
        */
-      template<typename _Out_iter, typename _St, typename _Sa>
+      template<typename _St, typename _Sa>
 	basic_string<char_type, _St, _Sa>
 	format(const basic_string<char_type, _St, _Sa>& __fmt,
 	       match_flag_type __flags = regex_constants::format_default) const

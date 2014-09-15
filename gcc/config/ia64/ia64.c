@@ -281,8 +281,8 @@ static int get_max_pos (state_t);
 static int get_template (state_t, int);
 
 static rtx_insn *get_next_important_insn (rtx_insn *, rtx_insn *);
-static bool important_for_bundling_p (rtx);
-static bool unknown_for_bundling_p (rtx);
+static bool important_for_bundling_p (rtx_insn *);
+static bool unknown_for_bundling_p (rtx_insn *);
 static void bundling (FILE *, int, rtx_insn *, rtx_insn *);
 
 static void ia64_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -319,6 +319,7 @@ static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
+static bool ia64_libgcc_floating_mode_supported_p (enum machine_mode mode);
 static bool ia64_legitimate_constant_p (enum machine_mode, rtx);
 static bool ia64_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool ia64_cannot_force_const_mem (enum machine_mode, rtx);
@@ -597,6 +598,10 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ia64_vector_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+  ia64_libgcc_floating_mode_supported_p
 
 /* ia64 architecture manual 4.4.7: ... reads, writes, and flushes may occur
    in an order different from the specified program order.  */
@@ -6050,11 +6055,11 @@ ia64_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-static enum attr_itanium_class ia64_safe_itanium_class (rtx);
-static enum attr_type ia64_safe_type (rtx);
+static enum attr_itanium_class ia64_safe_itanium_class (rtx_insn *);
+static enum attr_type ia64_safe_type (rtx_insn *);
 
 static enum attr_itanium_class
-ia64_safe_itanium_class (rtx insn)
+ia64_safe_itanium_class (rtx_insn *insn)
 {
   if (recog_memoized (insn) >= 0)
     return get_attr_itanium_class (insn);
@@ -6065,7 +6070,7 @@ ia64_safe_itanium_class (rtx insn)
 }
 
 static enum attr_type
-ia64_safe_type (rtx insn)
+ia64_safe_type (rtx_insn *insn)
 {
   if (recog_memoized (insn) >= 0)
     return get_attr_type (insn);
@@ -6191,8 +6196,8 @@ static void update_set_flags (rtx, struct reg_flags *);
 static int set_src_needs_barrier (rtx, struct reg_flags, int);
 static int rtx_needs_barrier (rtx, struct reg_flags, int);
 static void init_insn_group_barriers (void);
-static int group_barrier_needed (rtx);
-static int safe_group_barrier_needed (rtx);
+static int group_barrier_needed (rtx_insn *);
+static int safe_group_barrier_needed (rtx_insn *);
 static int in_safe_group_barrier;
 
 /* Update *RWS for REGNO, which is being written by the current instruction,
@@ -6820,7 +6825,7 @@ init_insn_group_barriers (void)
    include the effects of INSN as a side-effect.  */
 
 static int
-group_barrier_needed (rtx insn)
+group_barrier_needed (rtx_insn *insn)
 {
   rtx pat;
   int need_barrier = 0;
@@ -6929,7 +6934,7 @@ group_barrier_needed (rtx insn)
 /* Like group_barrier_needed, but do not clobber the current state.  */
 
 static int
-safe_group_barrier_needed (rtx insn)
+safe_group_barrier_needed (rtx_insn *insn)
 {
   int saved_first_instruction;
   int t;
@@ -7123,7 +7128,7 @@ static char mem_ops_in_group[4];
 /* Number of current processor cycle (from scheduler's point of view).  */
 static int current_cycle;
 
-static rtx ia64_single_set (rtx);
+static rtx ia64_single_set (rtx_insn *);
 static void ia64_emit_insn_before (rtx, rtx);
 
 /* Map a bundle number to its pseudo-op.  */
@@ -7146,7 +7151,7 @@ ia64_issue_rate (void)
 /* Helper function - like single_set, but look inside COND_EXEC.  */
 
 static rtx
-ia64_single_set (rtx insn)
+ia64_single_set (rtx_insn *insn)
 {
   rtx x = PATTERN (insn), ret;
   if (GET_CODE (x) == COND_EXEC)
@@ -7331,7 +7336,7 @@ ia64_sched_finish_global (FILE *dump ATTRIBUTE_UNUSED,
 /* Return TRUE if INSN is a load (either normal or speculative, but not a
    speculation check), FALSE otherwise.  */
 static bool
-is_load_p (rtx insn)
+is_load_p (rtx_insn *insn)
 {
   enum attr_itanium_class insn_class = ia64_safe_itanium_class (insn);
 
@@ -7345,7 +7350,7 @@ is_load_p (rtx insn)
    Itanium 2 Reference Manual for Software Development and Optimization,
    6.7.3.1).  */
 static void
-record_memory_reference (rtx insn)
+record_memory_reference (rtx_insn *insn)
 {
   enum attr_itanium_class insn_class = ia64_safe_itanium_class (insn);
 
@@ -7963,7 +7968,7 @@ ia64_set_sched_flags (spec_info_t spec_info)
 /* If INSN is an appropriate load return its mode.
    Return -1 otherwise.  */
 static int
-get_mode_no_for_insn (rtx insn)
+get_mode_no_for_insn (rtx_insn *insn)
 {
   rtx reg, mem, mode_rtx;
   int mode_no;
@@ -8905,7 +8910,7 @@ get_template (state_t state, int pos)
 /* True when INSN is important for bundling.  */
 
 static bool
-important_for_bundling_p (rtx insn)
+important_for_bundling_p (rtx_insn *insn)
 {
   return (INSN_P (insn)
 	  && ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
@@ -8928,7 +8933,7 @@ get_next_important_insn (rtx_insn *insn, rtx_insn *tail)
 /* True when INSN is unknown, but important, for bundling.  */
 
 static bool
-unknown_for_bundling_p (rtx insn)
+unknown_for_bundling_p (rtx_insn *insn)
 {
   return (INSN_P (insn)
 	  && ia64_safe_itanium_class (insn) == ITANIUM_CLASS_UNKNOWN
@@ -9516,7 +9521,7 @@ ia64_dfa_pre_cycle_insn (void)
    ld) produces address for CONSUMER (of type st or stf). */
 
 int
-ia64_st_address_bypass_p (rtx producer, rtx consumer)
+ia64_st_address_bypass_p (rtx_insn *producer, rtx_insn *consumer)
 {
   rtx dest, reg, mem;
 
@@ -9540,7 +9545,7 @@ ia64_st_address_bypass_p (rtx producer, rtx consumer)
    ld) produces address for CONSUMER (of type ld or fld). */
 
 int
-ia64_ld_address_bypass_p (rtx producer, rtx consumer)
+ia64_ld_address_bypass_p (rtx_insn *producer, rtx_insn *consumer)
 {
   rtx dest, src, reg, mem;
 
@@ -10939,6 +10944,36 @@ ia64_vector_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* Implement TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P.  */
+
+static bool
+ia64_libgcc_floating_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+    case DFmode:
+      return true;
+
+    case XFmode:
+#ifdef IA64_NO_LIBGCC_XFMODE
+      return false;
+#else
+      return true;
+#endif
+
+    case TFmode:
+#ifdef IA64_NO_LIBGCC_TFMODE
+      return false;
+#else
+      return true;
+#endif
+
+    default:
+      return false;
+    }
+}
+
 /* Implement the FUNCTION_PROFILER macro.  */
 
 void
@@ -11212,10 +11247,10 @@ expand_vselect (rtx target, rtx op0, const unsigned char *perm, unsigned nelt)
   x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
   x = gen_rtx_SET (VOIDmode, target, x);
 
-  x = emit_insn (x);
-  if (recog_memoized (x) < 0)
+  rtx_insn *insn = emit_insn (x);
+  if (recog_memoized (insn) < 0)
     {
-      remove_insn (x);
+      remove_insn (insn);
       return false;
     }
   return true;

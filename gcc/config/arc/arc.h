@@ -1657,12 +1657,12 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
   ((LENGTH) \
    = (GET_CODE (PATTERN (X)) == SEQUENCE \
       ? ((LENGTH) \
-	 + arc_adjust_insn_length (XVECEXP (PATTERN (X), 0, 0), \
+	 + arc_adjust_insn_length (as_a <rtx_sequence *> (PATTERN (X))->insn (0), \
 				   get_attr_length (XVECEXP (PATTERN (X), \
 						    0, 0)), \
 				   true) \
 	 - get_attr_length (XVECEXP (PATTERN (X), 0, 0)) \
-	 + arc_adjust_insn_length (XVECEXP (PATTERN (X), 0, 1), \
+	 + arc_adjust_insn_length (as_a <rtx_sequence *> (PATTERN (X))->insn (1), \
 				   get_attr_length (XVECEXP (PATTERN (X), \
 						    0, 1)), \
 				   true) \

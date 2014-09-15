@@ -923,20 +923,20 @@ get_branch_condition (const rtx_insn *insn, rtx target)
     return 0;
 
   src = SET_SRC (pat);
-  if (GET_CODE (src) == LABEL_REF && XEXP (src, 0) == target)
+  if (GET_CODE (src) == LABEL_REF && LABEL_REF_LABEL (src) == target)
     return const_true_rtx;
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 2) == pc_rtx
 	   && ((GET_CODE (XEXP (src, 1)) == LABEL_REF
-	        && XEXP (XEXP (src, 1), 0) == target)
+	        && LABEL_REF_LABEL (XEXP (src, 1)) == target)
 	       || (ANY_RETURN_P (XEXP (src, 1)) && XEXP (src, 1) == target)))
     return XEXP (src, 0);
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 1) == pc_rtx
 	   && ((GET_CODE (XEXP (src, 2)) == LABEL_REF
-		&& XEXP (XEXP (src, 2), 0) == target)
+		&& LABEL_REF_LABEL (XEXP (src, 2)) == target)
 	       || (ANY_RETURN_P (XEXP (src, 2)) && XEXP (src, 2) == target)))
     {
       enum rtx_code rev;
@@ -3135,7 +3135,7 @@ delete_computation (rtx insn)
    if that's what the previous thing was.  */
 
 static void
-delete_jump (rtx insn)
+delete_jump (rtx_insn *insn)
 {
   rtx set = single_set (insn);
 
@@ -3297,7 +3297,7 @@ relax_delay_slots (rtx_insn *first)
 	  && JUMP_P (next)
 	  && PATTERN (next) == PATTERN (delay_insn))
 	{
-	  rtx after;
+	  rtx_insn *after;
 	  int i;
 
 	  /* Delete the RETURN and just execute the delay list insns.
@@ -3321,8 +3321,8 @@ relax_delay_slots (rtx_insn *first)
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  add_insn_after (delay_insn, trial, NULL);
 	  after = delay_insn;
-	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
+	  for (i = 1; i < pat->len (); i++)
+	    after = emit_copy_of_insn_after (pat->insn (i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}
@@ -3424,7 +3424,7 @@ relax_delay_slots (rtx_insn *first)
 #endif
 	  )
 	{
-	  rtx after;
+	  rtx_insn *after;
 	  int i;
 
 	  /* All this insn does is execute its delay list and jump to the
@@ -3450,8 +3450,8 @@ relax_delay_slots (rtx_insn *first)
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  add_insn_after (delay_insn, trial, NULL);
 	  after = delay_insn;
-	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
+	  for (i = 1; i < pat->len (); i++)
+	    after = emit_copy_of_insn_after (pat->insn (i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}

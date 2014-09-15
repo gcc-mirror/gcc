@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "c-common.h"
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
@@ -33,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "flags.h"
 #include "c-pragma.h"
-#include "c-common.h"
 #include "c-objc.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -9778,47 +9778,15 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
 #undef catenate_messages
 }
 
-/* Mapping for cpp message reasons to the options that enable them.  */
-
-struct reason_option_codes_t
-{
-  const int reason;		/* cpplib message reason.  */
-  const int option_code;	/* gcc option that controls this message.  */
-};
-
-static const struct reason_option_codes_t option_codes[] = {
-  {CPP_W_BUILTIN_MACRO_REDEFINED,	OPT_Wbuiltin_macro_redefined},
-  {CPP_W_C90_C99_COMPAT,                OPT_Wc90_c99_compat},
-  {CPP_W_COMMENTS,			OPT_Wcomment},
-  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
-  {CPP_W_DATE_TIME,			OPT_Wdate_time},
-  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
-  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
-  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
-  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
-  {CPP_W_LONG_LONG,			OPT_Wlong_long},
-  {CPP_W_MISSING_INCLUDE_DIRS,          OPT_Wmissing_include_dirs},
-  {CPP_W_MULTICHAR,			OPT_Wmultichar},
-  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
-  {CPP_W_PEDANTIC,                      OPT_Wpedantic},
-  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
-  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
-  {CPP_W_UNDEF,				OPT_Wundef},
-  {CPP_W_UNUSED_MACROS,			OPT_Wunused_macros},
-  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
-  {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
-  {CPP_W_NONE,				0}
-};
-
 /* Return the gcc option code associated with the reason for a cpp
    message, or 0 if none.  */
 
 static int
 c_option_controlling_cpp_error (int reason)
 {
-  const struct reason_option_codes_t *entry;
+  const struct cpp_reason_option_codes_t *entry;
 
-  for (entry = option_codes; entry->reason != CPP_W_NONE; entry++)
+  for (entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE; entry++)
     {
       if (entry->reason == reason)
 	return entry->option_code;

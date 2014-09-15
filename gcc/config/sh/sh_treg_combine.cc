@@ -563,7 +563,7 @@ private:
   rtx make_not_reg_insn (rtx dst_reg, rtx src_reg) const;
 
   // Create an insn rtx that inverts the ccreg.
-  rtx make_inv_ccreg_insn (void) const;
+  rtx_insn *make_inv_ccreg_insn (void) const;
 
   // Adds the specified insn to the set of modified or newly added insns that
   // might need splitting at the end of the pass.
@@ -899,13 +899,13 @@ sh_treg_combine::make_not_reg_insn (rtx dst_reg, rtx src_reg) const
   return i;
 }
 
-rtx
+rtx_insn *
 sh_treg_combine::make_inv_ccreg_insn (void) const
 {
   start_sequence ();
-  rtx i = emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
-				  gen_rtx_fmt_ee (XOR, GET_MODE (m_ccreg),
-						  m_ccreg, const1_rtx)));
+  rtx_insn *i = emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
+                                        gen_rtx_fmt_ee (XOR, GET_MODE (m_ccreg),
+                                                        m_ccreg, const1_rtx)));
   end_sequence ();
   return i;
 }
@@ -1222,7 +1222,7 @@ sh_treg_combine::try_eliminate_cstores (cbranch_trace& trace,
   // invert the ccreg as a replacement for one of them.
   if (cstore_count != 0 && inv_cstore_count != 0)
     {
-      rtx i = make_inv_ccreg_insn ();
+      rtx_insn *i = make_inv_ccreg_insn ();
       if (recog_memoized (i) < 0)
 	{
 	  log_msg ("failed to match ccreg inversion insn:\n");

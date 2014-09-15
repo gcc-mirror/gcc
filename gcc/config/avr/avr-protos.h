@@ -101,7 +101,7 @@ extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
 extern const char* avr_out_lpm (rtx_insn *, rtx*, int*);
-extern void avr_notice_update_cc (rtx body, rtx insn);
+extern void avr_notice_update_cc (rtx body, rtx_insn *insn);
 extern int reg_unused_after (rtx_insn *insn, rtx reg);
 extern int _reg_unused_after (rtx_insn *insn, rtx reg);
 extern int avr_jump_mode (rtx x, rtx_insn *insn);

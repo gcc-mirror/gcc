@@ -1560,6 +1560,10 @@ flto-compression-level=
 Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
 
+flto-odr-type-merging
+Common Report Var(flag_lto_odr_type_mering) Init(1)
+Merge C++ types using One Definition Rule
+
 flto-report
 Common Report Var(flag_lto_report) Init(0)
 Report various link-time optimization statistics

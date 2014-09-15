@@ -468,7 +468,7 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_printf (pp, "`%s'", XSTR (x, 0));
       break;
     case LABEL_REF:
-      pp_printf (pp, "L%d", INSN_UID (XEXP (x, 0)));
+      pp_printf (pp, "L%d", INSN_UID (LABEL_REF_LABEL (x)));
       break;
     case CONST:
     case HIGH:

@@ -151,7 +151,7 @@ extern const int length_unit_log; /* This is defined in insn-attrtab.c.  */
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't die.
    The precise value is the insn being output, to pass to error_for_asm.  */
-rtx this_is_asm_operands;
+const rtx_insn *this_is_asm_operands;
 
 /* Number of operands of this insn, for an `asm' with operands.  */
 static unsigned int insn_noperands;
@@ -2491,7 +2491,8 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 	  if (note)
 	    {
-	      NOTICE_UPDATE_CC (PATTERN (XEXP (note, 0)), XEXP (note, 0));
+	      rtx_insn *other = as_a <rtx_insn *> (XEXP (note, 0));
+	      NOTICE_UPDATE_CC (PATTERN (other), other);
 	      cc_prev_status = cc_status;
 	    }
 	}
@@ -3103,7 +3104,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
    directly to the desired hard register.  */
 
 void
-cleanup_subreg_operands (rtx insn)
+cleanup_subreg_operands (rtx_insn *insn)
 {
   int i;
   bool changed = false;
@@ -3139,7 +3140,7 @@ cleanup_subreg_operands (rtx insn)
 	*recog_data.dup_loc[i] = walk_alter_subreg (recog_data.dup_loc[i], &changed);
     }
   if (changed)
-    df_insn_rescan (as_a <rtx_insn *> (insn));
+    df_insn_rescan (insn);
 }
 
 /* If X is a SUBREG, try to replace it with a REG or a MEM, based on
@@ -3801,7 +3802,7 @@ output_asm_label (rtx x)
   char buf[256];
 
   if (GET_CODE (x) == LABEL_REF)
-    x = XEXP (x, 0);
+    x = LABEL_REF_LABEL (x);
   if (LABEL_P (x)
       || (NOTE_P (x)
 	  && NOTE_KIND (x) == NOTE_INSN_DELETED_LABEL))
@@ -3891,7 +3892,7 @@ output_addr_const (FILE *file, rtx x)
       break;
 
     case LABEL_REF:
-      x = XEXP (x, 0);
+      x = LABEL_REF_LABEL (x);
       /* Fall through.  */
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));

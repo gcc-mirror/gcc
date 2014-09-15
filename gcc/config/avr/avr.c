@@ -2290,7 +2290,7 @@ avr_print_operand (FILE *file, rtx x, int code)
 /* Update the condition code in the INSN.  */
 
 void
-avr_notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
+avr_notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx_insn *insn)
 {
   rtx set;
   enum attr_cc cc = get_attr_cc (insn);
@@ -6769,7 +6769,7 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
   int cc_plus, cc_minus, cc_dummy;
   int len_plus, len_minus;
   rtx op[4];
-  rtx xpattern = INSN_P (insn) ? single_set (insn) : insn;
+  rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   rtx xdest = SET_DEST (xpattern);
   enum machine_mode mode = GET_MODE (xdest);
   enum machine_mode imode = int_mode_for_mode (mode);
@@ -6864,7 +6864,7 @@ const char*
 avr_out_bitop (rtx insn, rtx *xop, int *plen)
 {
   /* CODE and MODE of the operation.  */
-  rtx xpattern = INSN_P (insn) ? single_set (insn) : insn;
+  rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   enum rtx_code code = GET_CODE (SET_SRC (xpattern));
   enum machine_mode mode = GET_MODE (xop[0]);
 
@@ -7922,12 +7922,13 @@ _reg_unused_after (rtx_insn *insn, rtx reg)
 	 we must return 0.  */
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
+	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
 	  int i;
 	  int retval = 0;
 
-	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	  for (i = 0; i < seq->len (); i++)
 	    {
-	      rtx this_insn = XVECEXP (PATTERN (insn), 0, i);
+	      rtx_insn *this_insn = seq->insn (i);
 	      rtx set = single_set (this_insn);
 
 	      if (CALL_P (this_insn))

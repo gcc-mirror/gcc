@@ -770,6 +770,11 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_next (&(ITER)))
 
 struct target_ira_int {
+  ~target_ira_int ();
+
+  void free_ira_costs ();
+  void free_register_move_costs ();
+
   /* Initialized once.  It is a maximal possible size of the allocated
      struct costs.  */
   int x_max_struct_costs_size;
@@ -960,7 +965,7 @@ extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (enum machine_mode);
-extern void ira_setup_alts (rtx insn, HARD_REG_SET &alts);
+extern void ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts);
 extern int ira_get_dup_out_num (int op_num, HARD_REG_SET &alts);
 
 /* ira-build.c */
@@ -1025,7 +1030,6 @@ extern void ira_destroy (void);
 /* ira-costs.c */
 extern void ira_init_costs_once (void);
 extern void ira_init_costs (void);
-extern void ira_finish_costs_once (void);
 extern void ira_costs (void);
 extern void ira_tune_allocno_costs (void);
 

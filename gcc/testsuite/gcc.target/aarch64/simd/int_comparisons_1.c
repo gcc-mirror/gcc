@@ -44,4 +44,4 @@
 /* { dg-final { scan-assembler-times "\[ \t\](?:cmlt|sshr)\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?(?:0|63)" 4 } } */
 
 // All should have been compiled into single insns without inverting result:
-/* { dg-final { scan-assembler-not "not" } } */
+/* { dg-final { scan-assembler-not "\[ \t\]not\[ \t\]" } } */

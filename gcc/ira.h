@@ -166,7 +166,7 @@ struct ira_reg_equiv_s
   rtx constant;
   rtx invariant;
   /* Always NULL_RTX if defined_p is false.  */
-  rtx init_insns;
+  rtx_insn_list *init_insns;
 };
 
 /* The length of the following array.  */
@@ -177,7 +177,6 @@ extern struct ira_reg_equiv_s *ira_reg_equiv;
 
 extern void ira_init_once (void);
 extern void ira_init (void);
-extern void ira_finish_once (void);
 extern void ira_setup_eliminable_regset (void);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);

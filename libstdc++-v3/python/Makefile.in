@@ -316,6 +316,7 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 @ENABLE_PYTHONDIR_TRUE@pythondir = $(prefix)/$(python_mod_dir)
 nobase_python_DATA = \
     libstdcxx/v6/printers.py \
+    libstdcxx/v6/xmethods.py \
     libstdcxx/v6/__init__.py \
     libstdcxx/__init__.py
 

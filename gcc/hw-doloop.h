@@ -140,7 +140,7 @@ struct hw_doloop_hooks
   /* Examine INSN.  If it is a suitable doloop_end pattern, return the
      iteration register, which should be a single hard register.
      Otherwise, return NULL_RTX.  */
-  rtx (*end_pattern_reg) (rtx insn);
+  rtx (*end_pattern_reg) (rtx_insn *insn);
   /* Optimize LOOP.  The target should perform any additional analysis
      (e.g. checking that the loop isn't too long), and then perform
      its transformations.  Return true if successful, false if the

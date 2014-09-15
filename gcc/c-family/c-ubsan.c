@@ -99,8 +99,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_overflow_data", &loc, NULL,
-				     ubsan_type_descriptor (type), NULL_TREE);
+      tree data = ubsan_create_data ("__ubsan_overflow_data", 1, &loc,
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -191,9 +192,10 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_shift_data", &loc, NULL,
+      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc,
 				     ubsan_type_descriptor (type0),
-				     ubsan_type_descriptor (type1), NULL_TREE);
+				     ubsan_type_descriptor (type1), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
 
       enum built_in_function bcode
@@ -222,8 +224,9 @@ ubsan_instrument_vla (location_t loc, tree size)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_vla_data", &loc, NULL,
-				     ubsan_type_descriptor (type), NULL_TREE);
+      tree data = ubsan_create_data ("__ubsan_vla_data", 1, &loc,
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -248,8 +251,8 @@ ubsan_instrument_return (location_t loc)
      builtins.  Reinitialize them if needed.  */
   initialize_sanitizer_builtins ();
 
-  tree data = ubsan_create_data ("__ubsan_missing_return_data", &loc,
-				 NULL, NULL_TREE);
+  tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
+				 NULL_TREE, NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN);
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
 }
@@ -304,6 +307,19 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 	   -fsanitize=bounds mode.  */
         return NULL_TREE;
     }
+
+  /* Don't emit instrumentation in the most common cases.  */
+  tree idx = NULL_TREE;
+  if (TREE_CODE (*index) == INTEGER_CST)
+    idx = *index;
+  else if (TREE_CODE (*index) == BIT_AND_EXPR
+	   && TREE_CODE (TREE_OPERAND (*index, 1)) == INTEGER_CST)
+    idx = TREE_OPERAND (*index, 1);
+  if (idx
+      && TREE_CODE (bound) == INTEGER_CST
+      && tree_int_cst_sgn (idx) >= 0
+      && tree_int_cst_le (idx, bound))
+    return NULL_TREE;
 
   *index = save_expr (*index);
   /* Create a "(T *) 0" tree node to describe the array type.  */

@@ -144,9 +144,6 @@
 ;; Double vector modes for combines.
 (define_mode_iterator VDIC [V8QI V4HI V2SI])
 
-;; Double vector modes, inc. V1DF and the DI "vector" mode, for VREINTERPRET.
-(define_mode_iterator VD_RE [V8QI V4HI V2SI DI V1DF V2SF])
-
 ;; Double vector modes inc V1DF
 (define_mode_iterator VD1 [V8QI V4HI V2SI V2SF V1DF])
 

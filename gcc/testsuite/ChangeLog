@@ -1,3 +1,190 @@
+2014-09-14  James Clarke  <jrtc27@jrtc27.com>
+
+	PR target/61407
+	* gcc.dg/darwin-minversion-1.c: Fixed formatting
+	* gcc.dg/darwin-minversion-2.c: Fixed formatting
+	* gcc.dg/darwin-minversion-3.c: Fixed formatting
+	* gcc.dg/darwin-minversion-4.c: Added test for OS X 10.10
+
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60862
+	* g++.dg/diagnostic/pr60862.C: New test.
+
+2014-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63237
+	* g++.dg/torture/pr63237.C: New testcase.
+
+2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vec-andxor1.c: New file.
+
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* gcc.dg/c11-true_min-1.c: New testcase.
+
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* g++.dg/warn/Wmissing-field-initializers-1.C: New.
+	* g++.old-deja/g++.other/warn5.C: Adjust.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vset_lane_1.c: New test.
+
+2014-09-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.dg/compat/struct-by-value-13_main.c (struct_by_value_13_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-16a_main.c (struct_by_value_16a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-17a_main.c (struct_by_value_17a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-18a_main.c (struct_by_value_18a_x):
+	Fix declaration.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63186
+	* gcc.dg/pr63186.c: New testcase.
+
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	PR target/63209
+	* gcc.c-torture/execute/pr63209.c: New test.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp: Only run vect-args.c tests
+	if runtest_file_p says they should be run.
+
+2014-09-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vstN_1.c: New test.
+
+2014-09-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_lane_1.c: New test.
+
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61654
+	* g++.dg/ipa/pr61654.C: New test.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/attrib-3.c: New test.
+	* c-c++-common/ubsan/nonnull-1.c: New test.
+	* c-c++-common/ubsan/nonnull-2.c: New test.
+	* c-c++-common/ubsan/nonnull-3.c: New test.
+	* c-c++-common/ubsan/nonnull-4.c: New test.
+	* c-c++-common/ubsan/nonnull-5.c: New test.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr63166_0.ii: New testcase.
+	* g++.dg/lto/pr63166_1.ii: New testcase.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/warn-normalized-3.c: Delete useless dg-prune-output.
+
+2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-15.c: Remove scan-assembler-not for
+	xxpermdi and add commentary about adding it back later; remove
+	unused typedef.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vect-lceilf_1.c: Make input and output arrays global
+	and 16-byte aligned.
+	* gcc.target/arm/vect-lfloorf_1.c: Likewise.
+	* gcc.target/arm/vect-lroundf_1.c: Likewise.
+	* gcc.target/arm/vect-rounding-btruncf.c: Likewise.
+	* gcc.target/arm/vect-rounding-ceilf.c: Likewise.
+	* gcc.target/arm/vect-rounding-floorf.c: Likewise.
+	* gcc.target/arm/vect-rounding-roundf.c: Likewise.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_dup_1.c: New test.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vld1-vst1_1.c: Rewrite to test all variants.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_1.c: New test.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/int_comparisons_1.c: Tighten regexp.
+
+2014-09-09  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/vect-copysignf.c: New testcase.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr51835.c: Update expected assembly.
+	* gcc.target/arm/vfp-1.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbs.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-ldmias.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmdbs.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmias.c: Likewise.
+
+2014-09-09  Tony Wang  <tony.wang@arm.com>
+
+	* gcc.target/arm/xordi3-opt.c: Disable this
+	test case for thumb1 target.
+	* gcc.target/arm/iordi3-opt.c: Ditto.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61749
+	* gcc.target/aarch64/vqdml_lane_intrinsics-bad_1.c: New test.
+
+2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c: New test.
+
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60196
+	PR tree-optimization/63189
+	* gcc.dg/vect/pr63189.c: New test.
+	* gcc.dg/vect/pr60196-1.c: New test.
+	* gcc.dg/vect/pr60196-2.c: New test.
+
+2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-16.c: New test.
+
 2014-09-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/i386/pr62208.c: New test.

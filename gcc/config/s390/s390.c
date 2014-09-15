@@ -495,21 +495,22 @@ static const struct attribute_spec s390_attribute_table[] = {
 int
 s390_label_align (rtx label)
 {
-  rtx prev_insn = prev_active_insn (label);
+  rtx_insn *prev_insn = prev_active_insn (label);
+  rtx set, src;
 
   if (prev_insn == NULL_RTX)
     goto old;
 
-  prev_insn = single_set (prev_insn);
+  set = single_set (prev_insn);
 
-  if (prev_insn == NULL_RTX)
+  if (set == NULL_RTX)
     goto old;
 
-  prev_insn = SET_SRC (prev_insn);
+  src = SET_SRC (set);
 
   /* Don't align literal pool base labels.  */
-  if (GET_CODE (prev_insn) == UNSPEC
-      && XINT (prev_insn, 1) == UNSPEC_MAIN_BASE)
+  if (GET_CODE (src) == UNSPEC
+      && XINT (src, 1) == UNSPEC_MAIN_BASE)
     return 0;
 
  old:
@@ -1693,7 +1694,7 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 /* Return attribute type of insn.  */
 
 static enum attr_type
-s390_safe_attr_type (rtx insn)
+s390_safe_attr_type (rtx_insn *insn)
 {
   if (recog_memoized (insn) >= 0)
     return get_attr_type (insn);
@@ -5753,7 +5754,7 @@ reg_used_in_mem_p (int regno, rtx x)
    used by instruction INSN to address memory.  */
 
 static bool
-addr_generation_dependency_p (rtx dep_rtx, rtx insn)
+addr_generation_dependency_p (rtx dep_rtx, rtx_insn *insn)
 {
   rtx target, pat;
 
@@ -5793,7 +5794,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx insn)
 /* Return 1, if dep_insn sets register used in insn in the agen unit.  */
 
 int
-s390_agen_dep_p (rtx dep_insn, rtx insn)
+s390_agen_dep_p (rtx_insn *dep_insn, rtx_insn *insn)
 {
   rtx dep_rtx = PATTERN (dep_insn);
   int i;
@@ -11155,13 +11156,13 @@ s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx_insn *insn)
 
   if (cond == NULL_RTX)
     {
-      rtx jump = find_cond_jump (NEXT_INSN (insn));
-      jump = jump ? single_set (jump) : NULL_RTX;
+      rtx_insn *jump = find_cond_jump (NEXT_INSN (insn));
+      rtx set = jump ? single_set (jump) : NULL_RTX;
 
-      if (jump == NULL_RTX)
+      if (set == NULL_RTX)
 	return;
 
-      cond = XEXP (XEXP (jump, 1), 0);
+      cond = XEXP (SET_SRC (set), 0);
     }
 
   *op0 = *op1;
@@ -11405,7 +11406,7 @@ s390_reorg (void)
 
 /* Return true if INSN is a fp load insn writing register REGNO.  */
 static inline bool
-s390_fpload_toreg (rtx insn, unsigned int regno)
+s390_fpload_toreg (rtx_insn *insn, unsigned int regno)
 {
   rtx set;
   enum attr_type flag = s390_safe_attr_type (insn);

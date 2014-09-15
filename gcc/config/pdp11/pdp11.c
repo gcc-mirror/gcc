@@ -157,6 +157,8 @@ static void pdp11_function_arg_advance (cumulative_args_t,
 					enum machine_mode, const_tree, bool);
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
+
+static bool pdp11_scalar_mode_supported_p (enum machine_mode);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -223,6 +225,9 @@ static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P pdp11_legitimate_constant_p
+
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P pdp11_scalar_mode_supported_p
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1899,6 +1904,17 @@ static bool
 pdp11_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return GET_CODE (x) != CONST_DOUBLE || legitimate_const_double_p (x);
+}
+
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
+
+static bool
+pdp11_scalar_mode_supported_p (enum machine_mode mode)
+{
+  /* Support SFmode even with -mfloat64.  */
+  if (mode == SFmode)
+    return true;
+  return default_scalar_mode_supported_p (mode);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -38,17 +38,10 @@ enum ubsan_print_style {
   UBSAN_PRINT_ARRAY
 };
 
-/* An extra data used by ubsan pointer checking.  */
-struct ubsan_mismatch_data {
-  tree align;
-  tree ckind;
-};
-
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern tree ubsan_instrument_unreachable (location_t);
-extern tree ubsan_create_data (const char *, const location_t *,
-			       const struct ubsan_mismatch_data *, ...);
+extern tree ubsan_create_data (const char *, int, const location_t *, ...);
 extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);
 extern tree ubsan_encode_value (tree, bool = false);
 extern bool is_ubsan_builtin_p (tree);

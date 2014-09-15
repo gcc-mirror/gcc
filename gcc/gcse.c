@@ -395,7 +395,7 @@ static regset reg_set_bitmap;
 
 /* Array, indexed by basic block number for a list of insns which modify
    memory within that block.  */
-static vec<rtx> *modify_mem_list;
+static vec<rtx_insn *> *modify_mem_list;
 static bitmap modify_mem_list_set;
 
 typedef struct modify_pair_s
@@ -474,7 +474,7 @@ static void insert_expr_in_table (rtx, enum machine_mode, rtx_insn *, int, int,
 				  int, struct hash_table_d *);
 static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
 static void record_last_reg_set_info (rtx, int);
-static void record_last_mem_set_info (rtx);
+static void record_last_mem_set_info (rtx_insn *);
 static void record_last_set_info (rtx, const_rtx, void *);
 static void compute_hash_table (struct hash_table_d *);
 static void alloc_hash_table (struct hash_table_d *);
@@ -631,7 +631,7 @@ alloc_gcse_mem (void)
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  The two typedefs are needed to work around the
      pre-processor limitation with template types in macro arguments.  */
-  typedef vec<rtx> vec_rtx_heap;
+  typedef vec<rtx_insn *> vec_rtx_heap;
   typedef vec<modify_pair> vec_modify_pair_heap;
   modify_mem_list = GCNEWVEC (vec_rtx_heap, last_basic_block_for_fn (cfun));
   canon_modify_mem_list = GCNEWVEC (vec_modify_pair_heap,
@@ -1031,8 +1031,8 @@ static int
 load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
 			int avail_p)
 {
-  vec<rtx> list = modify_mem_list[bb->index];
-  rtx setter;
+  vec<rtx_insn *> list = modify_mem_list[bb->index];
+  rtx_insn *setter;
   unsigned ix;
 
   /* If this is a readonly then we aren't going to be changing it.  */
@@ -1502,7 +1502,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
    a CALL_INSN).  We merely need to record which insns modify memory.  */
 
 static void
-record_last_mem_set_info (rtx insn)
+record_last_mem_set_info (rtx_insn *insn)
 {
   int bb;
 
@@ -1528,7 +1528,7 @@ record_last_mem_set_info (rtx insn)
 static void
 record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
-  rtx last_set_insn = (rtx) data;
+  rtx_insn *last_set_insn = (rtx_insn *) data;
 
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
@@ -2142,7 +2142,7 @@ process_insert_insn (struct expr *expr)
      insn will be recognized (this also adds any needed CLOBBERs).  */
   else
     {
-      rtx insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
+      rtx_insn *insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
 
       if (insn_invalid_p (insn, false))
 	gcc_unreachable ();
@@ -2573,7 +2573,7 @@ single_set_gcse (rtx_insn *insn)
 static rtx
 gcse_emit_move_after (rtx dest, rtx src, rtx_insn *insn)
 {
-  rtx new_rtx;
+  rtx_insn *new_rtx;
   const_rtx set = single_set_gcse (insn);
   rtx set2;
   rtx note;
@@ -2816,10 +2816,10 @@ add_label_notes (rtx x, rtx insn)
 	 such a LABEL_REF, so we don't have to handle REG_LABEL_TARGET
 	 notes.  */
       gcc_assert (!JUMP_P (insn));
-      add_reg_note (insn, REG_LABEL_OPERAND, XEXP (x, 0));
+      add_reg_note (insn, REG_LABEL_OPERAND, LABEL_REF_LABEL (x));
 
-      if (LABEL_P (XEXP (x, 0)))
-	LABEL_NUSES (XEXP (x, 0))++;
+      if (LABEL_P (LABEL_REF_LABEL (x)))
+	LABEL_NUSES (LABEL_REF_LABEL (x))++;
 
       return;
     }

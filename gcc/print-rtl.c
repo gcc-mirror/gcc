@@ -392,12 +392,14 @@ print_rtx (const_rtx in_rtx)
 	if (i == 4 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
+	    const rtx_insn *in_insn = as_a <const rtx_insn *> (in_rtx);
+
 	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
-	    if (INSN_HAS_LOCATION (as_a <const rtx_insn *> (in_rtx)))
+	    if (INSN_HAS_LOCATION (in_insn))
 	      {
-		expanded_location xloc = insn_location (in_rtx);
+		expanded_location xloc = insn_location (in_insn);
 		fprintf (outfile, " %s:%i", xloc.file, xloc.line);
 	      }
 #endif

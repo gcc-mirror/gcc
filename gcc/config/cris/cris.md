@@ -4732,7 +4732,7 @@
      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])]
   ;; Checking the previous insn is a bit too awkward for the condition.
 {
-  rtx prev = prev_nonnote_insn (curr_insn);
+  rtx_insn *prev = prev_nonnote_insn (curr_insn);
   if (prev != NULL_RTX)
     {
       rtx set = single_set (prev);

@@ -393,6 +393,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dce.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "shrink-wrap.h"
 
 struct target_ira default_target_ira;
 struct target_ira_int default_target_ira_int;
@@ -1673,32 +1674,38 @@ ira_init_once (void)
 
 /* Free ira_max_register_move_cost, ira_may_move_in_cost and
    ira_may_move_out_cost for each mode.  */
-static void
-free_register_move_costs (void)
+void
+target_ira_int::free_register_move_costs (void)
 {
   int mode, i;
 
   /* Reset move_cost and friends, making sure we only free shared
      table entries once.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    if (ira_register_move_cost[mode])
+    if (x_ira_register_move_cost[mode])
       {
 	for (i = 0;
-	     i < mode && (ira_register_move_cost[i]
-			  != ira_register_move_cost[mode]);
+	     i < mode && (x_ira_register_move_cost[i]
+			  != x_ira_register_move_cost[mode]);
 	     i++)
 	  ;
 	if (i == mode)
 	  {
-	    free (ira_register_move_cost[mode]);
-	    free (ira_may_move_in_cost[mode]);
-	    free (ira_may_move_out_cost[mode]);
+	    free (x_ira_register_move_cost[mode]);
+	    free (x_ira_may_move_in_cost[mode]);
+	    free (x_ira_may_move_out_cost[mode]);
 	  }
       }
-  memset (ira_register_move_cost, 0, sizeof ira_register_move_cost);
-  memset (ira_may_move_in_cost, 0, sizeof ira_may_move_in_cost);
-  memset (ira_may_move_out_cost, 0, sizeof ira_may_move_out_cost);
+  memset (x_ira_register_move_cost, 0, sizeof x_ira_register_move_cost);
+  memset (x_ira_may_move_in_cost, 0, sizeof x_ira_may_move_in_cost);
+  memset (x_ira_may_move_out_cost, 0, sizeof x_ira_may_move_out_cost);
   last_mode_for_init_move_cost = -1;
+}
+
+target_ira_int::~target_ira_int ()
+{
+  free_ira_costs ();
+  free_register_move_costs ();
 }
 
 /* This is called every time when register related information is
@@ -1706,7 +1713,7 @@ free_register_move_costs (void)
 void
 ira_init (void)
 {
-  free_register_move_costs ();
+  this_target_ira_int->free_register_move_costs ();
   setup_reg_mode_hard_regset ();
   setup_alloc_regs (flag_omit_frame_pointer != 0);
   setup_class_subset_and_memory_move_costs ();
@@ -1718,15 +1725,6 @@ ira_init (void)
   ira_init_costs ();
 }
 
-/* Function called once at the end of compiler work.  */
-void
-ira_finish_once (void)
-{
-  ira_finish_costs_once ();
-  free_register_move_costs ();
-  lra_finish_once ();
-}
-
 
 #define ira_prohibited_mode_move_regs_initialized_p \
   (this_target_ira_int->x_ira_prohibited_mode_move_regs_initialized_p)
@@ -1736,7 +1734,8 @@ static void
 setup_prohibited_mode_move_regs (void)
 {
   int i, j;
-  rtx test_reg1, test_reg2, move_pat, move_insn;
+  rtx test_reg1, test_reg2, move_pat;
+  rtx_insn *move_insn;
 
   if (ira_prohibited_mode_move_regs_initialized_p)
     return;
@@ -1772,7 +1771,7 @@ setup_prohibited_mode_move_regs (void)
 
 /* Setup possible alternatives in ALTS for INSN.  */
 void
-ira_setup_alts (rtx insn, HARD_REG_SET &alts)
+ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 {
   /* MAP nalt * nop -> start of constraints for given operand and
      alternative */
@@ -2604,7 +2603,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx_insn *i
       ira_reg_equiv[to_regno].memory
 	= ira_reg_equiv[to_regno].constant
 	= ira_reg_equiv[to_regno].invariant
-	= ira_reg_equiv[to_regno].init_insns = NULL_RTX;
+	= ira_reg_equiv[to_regno].init_insns = NULL;
       if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	fprintf (ira_dump_file,
 		 "      Invalidating equiv info for reg %d\n", to_regno);
@@ -2687,7 +2686,7 @@ fix_reg_equiv_init (void)
 	  {
 	    next = XEXP (x, 1);
 	    insn = XEXP (x, 0);
-	    set = single_set (insn);
+	    set = single_set (as_a <rtx_insn *> (insn));
 	    ira_assert (set != NULL_RTX
 			&& (REG_P (SET_DEST (set)) || REG_P (SET_SRC (set))));
 	    if (REG_P (SET_DEST (set))
@@ -3258,7 +3257,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
   if (reg_equiv[regno].is_arg_equivalence)
     return;
   ira_reg_equiv[regno].defined_p = false;
-  ira_reg_equiv[regno].init_insns = NULL_RTX;
+  ira_reg_equiv[regno].init_insns = NULL;
   for (; list; list =  XEXP (list, 1))
     {
       rtx insn = XEXP (list, 0);
@@ -3731,7 +3730,7 @@ update_equiv_regs (void)
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
 
-		      ira_reg_equiv[regno].init_insns = NULL_RTX;
+		      ira_reg_equiv[regno].init_insns = NULL;
 		      bitmap_set_bit (cleared_regs, regno);
 		    }
 		  /* Move the initialization of the register to just before
@@ -3819,15 +3818,17 @@ static void
 setup_reg_equiv (void)
 {
   int i;
-  rtx elem, prev_elem, next_elem, insn, set, x;
+  rtx_insn_list *elem, *prev_elem, *next_elem;
+  rtx_insn *insn;
+  rtx set, x;
 
   for (i = FIRST_PSEUDO_REGISTER; i < ira_reg_equiv_len; i++)
     for (prev_elem = NULL, elem = ira_reg_equiv[i].init_insns;
 	 elem;
 	 prev_elem = elem, elem = next_elem)
       {
-	next_elem = XEXP (elem, 1);
-	insn = XEXP (elem, 0);
+	next_elem = elem->next ();
+	insn = elem->insn ();
 	set = single_set (insn);
 	
 	/* Init insns can set up equivalence when the reg is a destination or
@@ -3896,7 +3897,7 @@ setup_reg_equiv (void)
 			if (ira_reg_equiv[i].memory == NULL_RTX)
 			  {
 			    ira_reg_equiv[i].defined_p = false;
-			    ira_reg_equiv[i].init_insns = NULL_RTX;
+			    ira_reg_equiv[i].init_insns = NULL;
 			    break;
 			  }
 		      }
@@ -3906,7 +3907,7 @@ setup_reg_equiv (void)
 	      }
 	  }
 	ira_reg_equiv[i].defined_p = false;
-	ira_reg_equiv[i].init_insns = NULL_RTX;
+	ira_reg_equiv[i].init_insns = NULL;
 	break;
       }
 }
@@ -4780,7 +4781,7 @@ split_live_ranges_for_shrink_wrap (void)
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
 
-  if (!flag_shrink_wrap)
+  if (!SHRINK_WRAPPING_ENABLED)
     return false;
 
   bitmap_initialize (&need_new, 0);

@@ -1,3 +1,15 @@
+2014-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/63252
+	* trans-decl.c (gfc_build_builtin_function_decls): Fix
+	caf_unlock declaration.
+
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-types.c (gfc_init_kinds): Check
+	targetm.libgcc_floating_mode_supported_p for floating-point
+	modes.  Check HAVE_TFmode instead of LIBGCC2_HAS_TF_MODE.
+
 2014-09-05  Joost VandeVondele  <vondele@gcc.gnu.org>
 
 	PR fortran/62245

@@ -1,3 +1,1439 @@
+2014-09-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* doc/install.texi (Options specification): add 
+	--disable-libsanitizer item.
+
+2014-09-14  James Clarke  <jrtc27@jrtc27.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/61407
+	* config/darwin-c.c (version_as_macro): Added extra 0 for OS X 10.10
+	and above.
+	* config/darwin-driver.c (darwin_find_version_from_kernel): Removed
+	kernel version check to avoid incrementing it after every major OS X
+	release.
+	(darwin_default_min_version): Avoid static memory buffer.
+
+2014-09-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (need_assembler_name_p): Store C++ type mangling only
+	for aggregates.
+
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	* tree.c (protected_set_expr_location): Don't check whether T is
+	non-null here.
+
+2014-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (extendhipsi2): Use 20-bit form of RLAM/RRAM.
+	(extend_and_shift1_hipsi2): Likewise.
+	(extend_and_shift2_hipsi2): Likewise.
+
+2014-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/alpha/alpha.c (alpha_ra_ever_killed): Replace NULL_RTX
+	with NULL when dealing with an insn.
+	* config/sh/sh.c (sh_reorg): Strengthen local "last_float_move"
+	from rtx to rtx_insn *.
+	* rtl.h (reg_set_between_p): Strengthen params 2 and 3 from
+	const_rtx to const rtx_insn *.
+	* rtlanal.c (reg_set_between_p): Likewise, removing a checked cast.
+
+2014-09-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hash-table.h (gt_pch_nx): Don't call gt_pch_note_object within an
+	assert.
+
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.def (libgcc_floating_mode_supported_p): New hook.
+	* targhooks.c (default_libgcc_floating_mode_supported_p): New
+	function.
+	* targhooks.h (default_libgcc_floating_mode_supported_p): Declare.
+	* doc/tm.texi.in (LIBGCC2_HAS_DF_MODE, LIBGCC2_HAS_XF_MODE)
+	(LIBGCC2_HAS_TF_MODE): Remove.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): New @hook.
+	* doc/tm.texi: Regenerate.
+	* genmodes.c (emit_insn_modes_h): Define HAVE_%smode for each
+	machine mode.
+	* system.h (LIBGCC2_HAS_SF_MODE, LIBGCC2_HAS_DF_MODE)
+	(LIBGCC2_HAS_XF_MODE, LIBGCC2_HAS_TF_MODE): Poison.
+	* config/i386/cygming.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/darwin.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/djgpp.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/dragonfly.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/freebsd.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/gnu-user-common.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/i386-interix.h (IX86_NO_LIBGCC_TFMODE): Define.
+	* config/i386/i386.c (ix86_libgcc_floating_mode_supported_p): New
+	function.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Define.
+	* config/i386/i386elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/lynx.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/netbsd-elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/netbsd64.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/nto.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/openbsd.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/i386/openbsdelf.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/rtemself.h (IX86_NO_LIBGCC_TFMODE): Define.
+	* config/i386/sol2.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/i386/vx-common.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/elf.h (IA64_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/freebsd.h (IA64_NO_LIBGCC_TFMODE): Define.
+	* config/ia64/hpux.h (LIBGCC2_HAS_XF_MODE, LIBGCC2_HAS_TF_MODE):
+	Remove.
+	* config/ia64/ia64.c (TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P):
+	New macro.
+	(ia64_libgcc_floating_mode_supported_p): New function.
+	* config/ia64/linux.h (LIBGCC2_HAS_TF_MODE): Remove.
+	* config/ia64/vms.h (IA64_NO_LIBGCC_XFMODE)
+	(IA64_NO_LIBGCC_TFMODE): Define.
+	* config/msp430/msp430.h (LIBGCC2_HAS_DF_MODE): Remove.
+	* config/pdp11/pdp11.c (TARGET_SCALAR_MODE_SUPPORTED_P): New
+	macro.
+	(pdp11_scalar_mode_supported_p): New function.
+	* config/rl78/rl78.h (LIBGCC2_HAS_DF_MODE): Remove.
+	* config/rx/rx.h (LIBGCC2_HAS_DF_MODE): Remove.
+
+2014-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63237
+	* gimple-fold.c (get_maxval_strlen): Gimplify string length.
+
+2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (integer_each_onep): New function.
+	* tree.h (integer_each_onep): Declare it.
+	* fold-const.c (fold_binary_loc): Use it for ~A + 1 to -A and
+	-A - 1 to ~A.  Disable (X & 1) ^ 1, (X ^ 1) & 1 and ~X & 1 to
+	(X & 1) == 0 for vector and complex.
+
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc/config/aarch64/aarch64.c (cortexa57_regmove_cost): New cost table
+	for A57.
+	(cortexa53_regmove_cost): New cost table for A53.  Increase GP2FP/FP2GP
+	cost to spilling from integer to FP registers.
+
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Fix Q register
+	move handling.
+	(generic_regmove_cost): Undo raised FP2FP move cost as Q register moves
+	are now handled correctly.
+
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Add cost
+	handling of CALLER_SAVE_REGS and POINTER_REGS.
+
+2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc/ree.c (combine_reaching_defs): Ensure inserted copy don't change
+	the number of hard registers.
+
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_mode_iterator VI48_AVX512VL): New.
+	(define_expand "<avx512>_vternlog<mode>_maskz"): Rename from
+	"avx512f_vternlog<mode>_maskz" and update mode iterator.
+	(define_insn "<avx512>_vternlog<mode><sd_maskz_name>"): Rename
+	from "avx512f_vternlog<mode><sd_maskz_name>" and update mode iterator.
+	(define_insn "<avx512>_vternlog<mode>_mask"): Rename from
+	"avx512f_vternlog<mode>_mask" and update mode iterator.
+	(define_insn "<mask_codefor><avx512>_align<mode><mask_name>"): Rename
+	from "<mask_codefor>avx512f_align<mode><mask_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_<rotate>v<mode><mask_name>"): Rename from
+	"avx512f_<rotate>v<mode><mask_name>" and update mode iterator.
+	(define_insn "<avx512>_<rotate><mode><mask_name>"): Rename from
+	"avx512f_<rotate><mode><mask_name>" and update mode iterator.
+	(define_insn "clz<mode>2<mask_name>"): Use VI48_AVX512VL mode iterator.
+	(define_insn "<mask_codefor>conflict<mode><mask_name>"): Ditto.
+
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (VI128_256): Delete.
+	(define_mode_iterator VI124_256): New.
+	(define_mode_iterator VI124_256_AVX512F_AVX512BW): Ditto.
+	(define_expand "<code><mode>3<mask_name><round_name>"): Delete.
+	(define_expand "<code><VI124_256_AVX512F_AVX512BW:mode>3"): New.
+	(define_insn "*avx2_<code><VI124_256:mode>3"): Rename from
+	"*avx2_<code><mode>3<mask_name><round_name>" and update mode iterator.
+	(define_expand "<code><VI48_AVX512VL:mode>3_mask"): New.
+	(define_insn "*avx512bw_<code><VI48_AVX512VL:mode>3<mask_name>"): Ditto.
+	(define_insn "<mask_codefor><code><mode>3<mask_name>"): Update mode
+	iterator.
+	(define_expand "<code><VI8_AVX2:mode>3"): Update pettern generation
+	in presence of AVX-512.
+
+2014-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_expand "<avx512>_gathersi<mode>"): Rename from
+	"avx512f_gathersi<mode>".
+	(define_insn "*avx512f_gathersi<mode>"): Use VI48F.
+	(define_insn "*avx512f_gathersi<mode>_2"): Ditto.
+	(define_expand "<avx512>_gatherdi<mode>"): Rename from
+	"avx512f_gatherdi<mode>".
+	(define_insn "*avx512f_gatherdi<mode>"): Use VI48F.
+	(define_insn "*avx512f_gatherdi<mode>_2"): Use VI48F, add 128/256-bit
+	wide versions.
+	(define_expand "<avx512>_scattersi<mode>"): Rename from
+	"avx512f_scattersi<mode>".
+	(define_insn "*avx512f_scattersi<mode>"): Use VI48F.
+	(define_expand "<avx512>_scatterdi<mode>"): Rename from
+	"avx512f_scatterdi<mode>".
+	(define_insn "*avx512f_scatterdi<mode>"): Use VI48F.
+
+2014-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira.h (ira_finish_once): Delete.
+	* ira-int.h (target_ira_int::~target_ira_int): Declare.
+	(target_ira_int::free_ira_costs): Likewise.
+	(target_ira_int::free_register_move_costs): Likewise.
+	(ira_finish_costs_once): Delete.
+	* ira.c (free_register_move_costs): Replace with...
+	(target_ira_int::free_register_move_costs): ...this new function.
+	(target_ira_int::~target_ira_int): Define.
+	(ira_init): Call free_register_move_costs as a member function rather
+	than a global function.
+	(ira_finish_once): Delete.
+	* ira-costs.c (free_ira_costs): Replace with...
+	(target_ira_int::free_ira_costs): ...this new function.
+	(ira_init_costs): Call free_ira_costs as a member function rather
+	than a global function.
+	(ira_finish_costs_once): Delete.
+	* target-globals.c (target_globals::~target_globals): Call the
+	target_ira_int destructor.
+	* toplev.c: Include lra.h.
+	(finalize): Call lra_finish_once rather than ira_finish_once.
+
+2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt (flto-odr-type-merging): New flag.
+	* ipa-deivrt.c (hash_type_name): Use ODR names for hasing if availale.
+	(types_same_for_odr): Likewise.
+	(odr_subtypes_equivalent_p): Likewise.
+	(add_type_duplicate): Do not walk type variants.
+	(register_odr_type): New function.
+	* ipa-utils.h (register_odr_type): Declare.
+	(odr_type_p): New function.
+	* langhooks.c (lhd_set_decl_assembler_name): Do not compute
+	TYPE_DECLs
+	* doc/invoke.texi (-flto-odr-type-merging): Document.
+	* tree.c (need_assembler_name_p): Compute ODR names when asked
+	for it.
+	* tree.h (DECL_ASSEMBLER_NAME): Update comment.
+
+2014-09-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/63228
+	* config/i386/i386.c (ix86_option_override_internal): Also turn
+	off OPTION_MASK_ABI_X32 for -m16.
+
+2014-09-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (rs6000_mftb_<mode>): Use mode iterator
+	GPR instead of P.
+
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* ginclude/float.h (FLT_TRUE_MIN, DBL_TRUE_MIN, LDBL_TRUE_MIN):
+	Directly forward to __*_DENORM_MIN__.
+
+2014-09-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (LABEL_REF_LABEL): New macro.
+
+	* alias.c (rtx_equal_for_memref_p): Use LABEL_REF_LABEL in place
+	of XEXP (, 0), where we know that we have a LABEL_REF.
+	* cfgbuild.c (make_edges): Likewise.
+	(purge_dead_tablejump_edges): Likewise.
+	* cfgexpand.c (convert_debug_memory_address): Likewise.
+	* cfgrtl.c (patch_jump_insn): Likewise.
+	* combine.c (distribute_notes): Likewise.
+	* cse.c (hash_rtx_cb): Likewise.
+	(exp_equiv_p): Likewise.
+	(fold_rtx): Likewise.
+	(check_for_label_ref): Likewise.
+	* cselib.c (rtx_equal_for_cselib_1): Likewise.
+	(cselib_hash_rtx): Likewise.
+	* emit-rtl.c (mark_label_nuses): Likewise.
+	* explow.c (convert_memory_address_addr_space): Likewise.
+	* final.c (output_asm_label): Likewise.
+	(output_addr_const): Likewise.
+	* gcse.c (add_label_notes): Likewise.
+	* genconfig.c (walk_insn_part): Likewise.
+	* genrecog.c (validate_pattern): Likewise.
+	* ifcvt.c (cond_exec_get_condition): Likewise.
+	(noce_emit_store_flag): Likewise.
+	(noce_get_alt_condition): Likewise.
+	(noce_get_condition): Likewise.
+	* jump.c (maybe_propagate_label_ref): Likewise.
+	(mark_jump_label_1): Likewise.
+	(redirect_exp_1): Likewise.
+	(rtx_renumbered_equal_p): Likewise.
+	* lra-constraints.c (operands_match_p): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	(find_reloads): Likewise.
+	* reload1.c (set_label_offsets): Likewise.
+	* reorg.c (get_branch_condition): Likewise.
+	* rtl.c (rtx_equal_p_cb): Likewise.
+	(rtx_equal_p): Likewise.
+	* rtlanal.c (reg_mentioned_p): Likewise.
+	(rtx_referenced_p): Likewise.
+	(get_condition): Likewise.
+	* sched-vis.c (print_value): Likewise.
+	* varasm.c (const_hash_1): Likewise.
+	(compare_constant): Likewise.
+	(const_rtx_hash_1): Likewise.
+	(output_constant_pool_1): Likewise.
+
+2014-09-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/htm.md (tabort, tabortdc, tabortdci, tabortwc,
+	tabortwci, tbegin, tcheck, tend, trechkpt, treclaim, tsr): Use xor
+	instead of minus.
+	* config/rs6000/vector.md (cr6_test_for_zero_reverse,
+	cr6_test_for_lt_reverse): Ditto.
+
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* doc/invoke.texi ([-Wmissing-field-initializers]): Update.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_types_unop_su_qualifiers,
+	TYPES_REINTERP_SU, aarch64_types_unop_sp_qualifiers, TYPE_REINTERP_SP,
+	aarch64_types_unop_us_qualifiers, TYPES_REINTERP_US,
+	aarch64_types_unop_ps_qualifiers, TYPES_REINTERP_PS, BUILTIN_VD):
+	Delete.
+
+	(aarch64_fold_builtin): Remove all reinterpret cases.
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_reinterpret): Delete.
+
+	* config/aarch64/aarch64-simd-builtins.def (reinterpret*) : Delete.
+
+	* config/aarch64/aarch64-simd.md (aarch64_reinterpretv8qi<mode>,
+	aarch64_reinterpretv4hi<mode>, aarch64_reinterpretv2si<mode>,
+	aarch64_reinterpretv2sf<mode>, aarch64_reinterpretdi<mode>,
+	aarch64_reinterpretv1df<mode>, aarch64_reinterpretv16qi<mode>,
+	aarch64_reinterpretv8hi<mode>, aarch64_reinterpretv4si<mode>,
+	aarch64_reinterpretv4sf<mode>, aarch64_reinterpretv2di<mode>,
+	aarch64_reinterpretv2df<mode>): Delete.
+
+	* config/aarch64/aarch64.c (aarch64_simd_reinterpret): Delete.
+
+	* config/aarch64/arm_neon.h (vreinterpret_p8_f64,
+	vreinterpret_p16_f64, vreinterpret_f32_f64, vreinterpret_f64_f32,
+	vreinterpret_f64_p8, vreinterpret_f64_p16, vreinterpret_f64_s8,
+	vreinterpret_f64_s16, vreinterpret_f64_s32, vreinterpret_f64_u8,
+	vreinterpret_f64_u16, vreinterpret_f64_u32, vreinterpret_s64_f64,
+	vreinterpret_u64_f64, vreinterpret_s8_f64, vreinterpret_s16_f64,
+	vreinterpret_s32_f64, vreinterpret_u8_f64, vreinterpret_u16_f64,
+	vreinterpret_u32_f64): Use cast.
+
+	* config/aarch64/iterators.md (VD_RE): Delete.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (aarch64_vset_lane_any): New (*2).
+	(vset_lane_f32, vset_lane_f64, vset_lane_p8, vset_lane_p16,
+	vset_lane_s8, vset_lane_s16, vset_lane_s32, vset_lane_s64,
+	vset_lane_u8, vset_lane_u16, vset_lane_u32, vset_lane_u64,
+	vsetq_lane_f32, vsetq_lane_f64, vsetq_lane_p8, vsetq_lane_p16,
+	vsetq_lane_s8, vsetq_lane_s16, vsetq_lane_s32, vsetq_lane_s64,
+	vsetq_lane_u8, vsetq_lane_u16, vsetq_lane_u32, vsetq_lane_u64):
+	Replace inline assembler with __aarch64_vset_lane_any.
+
+2014-09-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h (vmull_high_lane_s16): Fix argument
+	types.
+	(vmull_high_lane_s32): Likewise.
+	(vmull_high_lane_u16): Likewise.
+	(vmull_high_lane_u32): Likewise.
+
+2014-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58678
+	* ipa-devirt.c (ipa_devirt): Don't check DECL_COMDAT.
+
+2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/63223
+	* config/avr/avr.md (*tablejump.3byte-pc): New insn.
+	(*tablejump): Restrict to !AVR_HAVE_EIJMP_EICALL.  Add void clobber.
+	(casesi): Expand to *tablejump.3byte-pc if AVR_HAVE_EIJMP_EICALL.
+
+2014-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_expand "<avx512>_vpermi2var<VI48F:mode>3_maskz"): Rename from
+	"avx512f_vpermi2var<mode>3_maskz" and update mode iterator.
+	(define_expand "<avx512>_vpermi2var<VI2_AVX512VL:mode>3_maskz"):
+	New.
+	(define_insn "<avx512>_vpermi2var<VI48F:mode>3<sd_maskz_name>"): Rename
+	from "avx512f_vpermi2var<mode>3<sd_maskz_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_vpermi2var<VI2_AVX512VL:mode>3<sd_maskz_name>"):
+	New.
+	(define_insn "<avx512>_vpermi2var<VI48F:mode>3_mask"): Rename from
+	"avx512f_vpermi2var<mode>3_mask" and update mode iterator.
+	(define_insn "<avx512>_vpermi2var<VI2_AVX512VL:mode>3_mask"): New.
+	(define_expand "<avx512>_vpermt2var<VI48F:mode>3_maskz"): Rename from
+	"avx512f_vpermt2var<mode>3_maskz" and update mode iterator.
+	(define_expand "<avx512>_vpermt2var<VI2_AVX512VL:mode>3_maskz"): New.
+	(define_insn "<avx512>_vpermt2var<VI48F:mode>3<sd_maskz_name>"): Rename
+	from "avx512f_vpermt2var<mode>3<sd_maskz_name>" and update mode
+	iterator.
+	(define_insn "<avx512>_vpermt2var<VI2_AVX512VL:mode>3<sd_maskz_name>"):
+	New.
+	(define_insn "<avx512>_vpermt2var<VI48F:mode>3_mask"): Rename from
+	"avx512f_vpermt2var<mode>3_mask" and update mode iterator.
+	(define_insn "<avx512>_vpermt2var<VI2_AVX512VL:mode>3_mask"): New.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varpool.c (varpool_node::ctor_useable_for_folding_p): Do not try
+	to access removed nodes.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63186
+	* ipa-split.c (test_nonssa_use): Skip nonforced labels.
+	(mark_nonssa_use): Likewise.
+	(verify_non_ssa_vars): Verify all header blocks for label
+	definitions.
+
+2014-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_mode_attr avx2_avx512): Rename from avx2_avx512bw.
+	(define_mode_iterator VI48F_256_512): Extend to AVX-512VL.
+	(define_insn "<avx2_avx512>_permvar<mode><mask_name>"): Rename from
+	"<avx2_avx512f>_permvar<mode><mask_name>".
+	(define_insn "<avx512>_permvar<mode><mask_name>"): New.
+	(define_insn "<avx2_avx512>_ashrv<VI48_AVX512F_AVX512VL:mode><mask_name>"):
+	Rename from "<avx2_avx512f>_ashrv<mode><mask_name>".
+	(define_insn "<avx2_avx512>_ashrv<VI2_AVX512VL:mode><mask_name>"):
+	Ditto.
+	(define_insn "<avx2_avx512>_<shift_insn>v<VI48_AVX512F:mode><mask_name>"):
+	Rename from "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>".
+	(define_insn "<avx2_avx512>_<shift_insn>v<VI2_AVX512VL:mode><mask_name>"):
+	Rename from "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>".
+
+2014-09-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_fmav4sf4): Use correct constraints for
+	V2DF, V4SF, DF, and DI modes.
+	(vsx_fmav2df2): Likewise.
+	(vsx_float_fix_<mode>2): Likewise.
+	(vsx_reduc_<VEC_reduc_name>_v2df_scalar): Likewise.
+
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	PR target/63209
+	* config/arm/arm.md (movcond_addsi): Handle case where source
+	and target operands are the same.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* final.c (this_is_asm_operands): Strengthen this variable from
+	rtx to const rtx_insn *.
+	* output.h (this_is_asm_operands): Likewise.
+	* rtl-error.c (location_for_asm): Strengthen param "insn" from
+	const_rtx to const rtx_insn *.
+	(diagnostic_for_asm): Likewise.
+	* rtl-error.h (error_for_asm): Likewise.
+	(warning_for_asm): Likewise.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* genextract.c (print_header): When writing out insn_extract to
+	insn-extract.c, strengthen the param "insn" from rtx to rtx_insn *.
+	* recog.h (insn_extract): Strengthen the param from rtx to
+	rtx_insn *.
+
+2014-09-10  Mike Stump  <mikestump@comcast.net>
+
+	* doc/install.texi (Prerequisites): Note Tcl 8.6 bug fixed in
+	8.6.1.
+
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (expand_thunk): If not expanding, set analyzed flag.
+	(analyze): Do not set analyze flag if expand_thunk returns false;.
+	(create_wrapper): Likewise.
+	* cgraphclones.c (duplicate_thunk_for_node): Likewise.
+
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61654
+	* cgraphclones.c (duplicate_thunk_for_node): Copy arguments of the
+	new decl properly.  Analyze the new thunk if it is expanded.
+
+2014-09-10  Andreas Schwab  <schwab@suse.de>
+
+	* coretypes.h (struct _dont_use_rtx_insn_here_, rtx_insn)
+	[USED_FOR_TARGET]: Define.
+
+2014-09-10  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.c (mips_secondary_reload_class): Handle
+	regno < 0 case.
+
+2014-09-10  Robert Suchanek   <robert.suchanek@imgtec.com>
+
+	* lra-lives.c (process_bb_lives): Replace assignment with bitwise OR
+	assignment.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* flag-types.h (enum sanitize_code): Add SANITIZE_NONNULL_ATTRIBUTE
+	and SANITIZE_RETURNS_NONNULL_ATTRIBUTE, or them into SANITIZE_UNDEFINED.
+	* opts.c (common_handle_option): Handle SANITIZE_NONNULL_ATTRIBUTE and
+	SANITIZE_RETURNS_NONNULL_ATTRIBUTE and disable
+	flag_delete_null_pointer_checks for them.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_ARG_ABORT,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_ABORT): New.
+	* ubsan.c (instrument_bool_enum_load): Set *gsi back to
+	stmt's iterator.
+	(instrument_nonnull_arg, instrument_nonnull_return): New functions.
+	(pass_ubsan::gate): Return true even for SANITIZE_NONNULL_ATTRIBUTE
+	or SANITIZE_RETURNS_NONNULL_ATTRIBUTE.
+	(pass_ubsan::execute): Call instrument_nonnull_{arg,return}.
+	* doc/invoke.texi (-fsanitize=nonnull-attribute,
+	-fsanitize=returns-nonnull-attribute): Document.
+
+	* ubsan.h (struct ubsan_mismatch_data): Removed.
+	(ubsan_create_data): Remove MISMATCH argument, add LOCCNT argument.
+	* ubsan.c (ubsan_source_location): For unknown locations,
+	pass { NULL, 0, 0 } instead of { "<unknown>", x, y }.
+	(ubsan_create_data): Remove MISMATCH argument, add LOCCNT argument.
+	Allow more than one location and arbitrary extra arguments passed
+	in ... instead of through MISMATCH pointer.
+	(ubsan_instrument_unreachable, ubsan_expand_bounds_ifn,
+	ubsan_expand_null_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load, ubsan_instrument_float_cast): Adjust
+	callers.
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_mode_iterator VI48F): New.
+	(define_insn "<avx512>_compress<mode>_mask"): Rename from
+	"avx512f_compress<mode>_mask" and update mode iterator.
+	(define_insn "<avx512>_compressstore<mode>_mask"): Rename from
+	"avx512f_compressstore<mode>_mask" and update mode iterator.
+	(define_expand "<avx512>_expand<mode>_maskz"): Rename from
+	"avx512f_expand<mode>_maskz" and update mode iterator.
+	(define_insn "<avx512>_expand<mode>_mask"): Rename from
+	"avx512f_expand<mode>_mask" and update mode iterator.
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_expand_args_builtin): Handle avx512dq_rangepv8df_mask_round,
+	avx512dq_rangepv16sf_mask_round, avx512dq_rangepv4df_mask,
+	avx512dq_rangepv8sf_mask, avx512dq_rangepv2df_mask,
+	avx512dq_rangepv4sf_mask.
+	* config/i386/sse.md
+	(define_c_enum "unspec"): Add UNSPEC_REDUCE, UNSPEC_FPCLASS,
+	UNSPEC_RANGE.
+	(define_insn "<mask_codefor>reducep<mode><mask_name>"): New.
+	(define_insn "reduces<mode>"): Ditto.
+	(define_insn "avx512dq_rangep<mode><mask_name><round_saeonly_name>"):
+	Ditto.
+	(define_insn "avx512dq_ranges<mode><round_saeonly_name>"): Ditto.
+	(define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"): Ditto.
+	(define_insn "avx512dq_vmfpclass<mode>"): Ditto..
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(avx512f_vgetmantv2df_round): Rename from "avx512f_getmantv2df_round".
+	(avx512f_vgetmantv4sf_round): Rename from "avx512f_vgetmantv4sf_round".
+	(ix86_expand_args_builtin): Handle avx512vl_getmantv8sf_mask,
+	avx512vl_getmantv4df_mask, avx512vl_getmantv4sf_mask,
+	avx512vl_getmantv2df_mask.
+	(ix86_expand_round_builtin): Handle avx512f_vgetmantv2df_round,
+	avx512f_vgetmantv4sf_round.
+	* config/i386/sse.md
+	(define_insn "<avx512>_storeu<ssemodesuffix><avxsizesuffix>_mask"):
+	Rename from "avx512f_storeu<ssemodesuffix>512_mask" and update
+	mode iterator.
+	(define_insn "<mask_codefor>rcp14<mode><mask_name>"): Use VF_AVX512VL.
+	(define_insn "<mask_codefor>rsqrt14<mode><mask_name>"): Ditto.
+	(define_insn "<avx512>_scalef<mode><mask_name><round_name>"): Rename
+	from "avx512f_scalef<mode><mask_name><round_name>" and update mode
+	iterator..
+	(define_insn "<avx512>_getexp<mode><mask_name><round_saeonly_name>"):
+	Rename from "avx512f_getexp<mode><mask_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_expand
+	"<avx512>_fixupimm<mode>_maskz<round_saeonly_expand_name>"): Rename from
+	"avx512f_fixupimm<mode>_maskz<round_saeonly_expand_name>" and update
+	mode iterator.
+	(define_insn
+	"<avx512>_fixupimm<mode><sd_maskz_name><round_saeonly_name>"): Rename
+	from "avx512f_fixupimm<mode><sd_maskz_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_insn "<avx512>_fixupimm<mode>_mask<round_saeonly_name>"): Rename
+	from "avx512f_fixupimm<mode>_mask<round_saeonly_name>" and update mode
+	iterator..
+	(define_insn
+	"<avx512>_rndscale<mode><mask_name><round_saeonly_name>"): rename from
+	"avx512f_rndscale<mode><mask_name><round_saeonly_name>" and update
+	mode iterator..
+	(define_insn "<avx512>_getmant<mode><mask_name><round_saeonly_name>"):
+	Rename from "avx512f_getmant<mode><mask_name><round_saeonly_name>" and
+	update mode iterator.
+	(define_insn "avx512f_vgetmant<mode><round_saeonly_name>"): Rename from
+	"avx512f_getmant<mode><round_saeonly_name>".
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63166
+	* ipa-prop.c (compute_known_type_jump_func): Fix conditional.
+
+2014-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (define_mode_iterator VF_AVX512VL): New.
+	(define_mode_iterator FMAMODEM): Allow 128/256bit EVEX version.
+	(define_mode_iterator FMAMODE_AVX512): New.
+	(define_mode_iterator FMAMODE): Remove conditions.
+	(define_expand "fma4i_fmadd_<mode>"): Use FMAMODE_AVX512 mode iterator.
+	(define_expand "<avx512>_fmadd_<mode>_maskz<round_expand_name>"): Rename
+	from "<avx512>_fmadd_<mode>_maskz<round_expand_name>" and use VF_AVX512VL
+	mode iterator.
+	(define_mode_iterator FMAMODE_NOVF512): Remove.
+	(define_insn "*fma_fmadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_mode_iterator VF_SF_AVX512VL): New.
+	(define_insn "<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fmsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fnmadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>" and
+	use FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fnmadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fnmadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fnmadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fnmadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fnmsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>" and use
+	FMAMODE mode iterator.
+	(define_insn "<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fnmsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fnmsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fnmsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fnmsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_expand "<avx512>_fmaddsub_<mode>_maskz<round_expand_name>"):
+	Rename from "avx512f_fmaddsub_<mode>_maskz<round_expand_name>" and
+	use VF_AVX512VL mode iterator.
+	(define_insn "*fma_fmaddsub_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>" and
+	remove subst usage.
+	(define_insn "<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmaddsub_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmaddsub_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmaddsub_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmaddsub_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "*fma_fmsubadd_<mode>"): Rename from
+	"<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>" and
+	remove usage of subst.
+	(define_insn "<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>"):
+	Use VF_SF_AVX512VL mode iterator.
+	(define_insn "<avx512>_fmsubadd_<mode>_mask<round_name>"): Rename from
+	"avx512f_fmsubadd_<mode>_mask<round_name>" and use VF_AVX512VL mode
+	iterator.
+	(define_insn "<avx512>_fmsubadd_<mode>_mask3<round_name>"): Rename from
+	"avx512f_fmsubadd_<mode>_mask3<round_name>" and use VF_AVX512VL mode
+	iterator.
+
+2014-09-10  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Revert r213751:
+	* calls.c (precompute_arguments): Check
+	 promoted_for_signed_and_unsigned_p and set the promoted mode.
+	(promoted_for_signed_and_unsigned_p): New function.
+	(expand_expr_real_1): Check promoted_for_signed_and_unsigned_p
+	and set the promoted mode.
+	* expr.h (promoted_for_signed_and_unsigned_p): New function definition.
+	* cfgexpand.c (expand_gimple_stmt_1): Call emit_move_insn if
+	SUBREG is promoted with SRP_SIGNED_AND_UNSIGNED.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* opth-gen.awk: Generate mapping from cpp message reasons to the
+	options that enable them.
+	* doc/options.texi (CppReason): Document.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wnormalized=): Update.
+
+2014-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/63195
+	* config/rs6000/rs6000.md (*bool<mode>3): Allow only register
+	operands.  Split off the constant operand alternative to ...
+	(*bool<mode>3_imm): New.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (single_set_2): Strengthen first param from const_rtx to
+	const rtx_insn *, and move prototype to above...
+	(single_set): ...this.  Convert this from a macro to an inline
+	function, enforcing the requirement that the param is a const
+	rtx_insn *.
+	(find_args_size_adjust): Strengthen param from rtx to rtx_insn *.
+
+	* config/arm/aarch-common-protos.h (aarch_crypto_can_dual_issue):
+	Strengthen both params from rtx to rtx_insn *.
+	* config/arm/aarch-common.c (aarch_crypto_can_dual_issue):
+	Likewise; introduce locals "producer_set", "consumer_set", using
+	them in place of "producer" and "consumer" when dealing with SET
+	rather than insn.
+	* config/avr/avr.c (avr_out_plus): Add checked cast to rtx_insn *
+	when invoking single_set in region guarded by INSN_P.
+	(avr_out_bitop): Likewise.
+	(_reg_unused_after): Introduce local rtx_sequence * "seq" in
+	region guarded by GET_CODE check, using methods to strengthen
+	local "this_insn" from rtx to rtx_insn *, and for clarity.
+	* config/avr/avr.md (define_insn_and_split "xload8<mode>_A"):
+	Strengthen local "insn" from rtx to rtx_insn *.
+	(define_insn_and_split "xload<mode>_A"): Likewise.
+	* config/bfin/bfin.c (trapping_loads_p): Likewise for param
+	"insn".
+	(find_load): Likewise for return type.
+	(workaround_speculation): Likewise for both locals named
+	"load_insn".
+	* config/cris/cris.c (cris_cc0_user_requires_cmp): Likewise for
+	local "cc0_user".
+	* config/cris/cris.md (define_peephole2 ; moversideqi): Likewise
+	for local "prev".
+	* config/h8300/h8300-protos.h (notice_update_cc): Likewise for
+	param 2.
+	* config/h8300/h8300.c (notice_update_cc): Likewise.
+	* config/i386/i386.c (ix86_flags_dependent): Likewise for params
+	"insn" and "dep_insn".
+	(exact_store_load_dependency): Likewise for both params.
+	(ix86_macro_fusion_pair_p): Eliminate local named "single_set"
+	since this now clashes with inline function.  Instead, delay
+	calling single_set until the point where its needed, and then
+	assign the result to "compare_set" and rework the conditional that
+	follows.
+	* config/ia64/ia64.md (define_expand "tablejump"): Strengthen
+	local "last" from rtx to rtx_insn *.
+	* config/mips/mips-protos.h (mips_load_store_insns): Likewise for
+	second param.
+	(mips_store_data_bypass_p): Likewise for both params.
+	* config/mips/mips.c (mips_load_store_insns): Likewise for second
+	param.
+	(mips_store_data_bypass_p): Likewise for both params.
+	(mips_orphaned_high_part_p): Likewise for param "insn".
+	* config/mn10300/mn10300.c (extract_bundle): Likewise.
+	(mn10300_bundle_liw): Likewise for locals "r", "insn1", "insn2".
+	Introduce local rtx "insn2_pat".
+	* config/rl78/rl78.c (move_elim_pass): Likewise for locals "insn",
+	"ninsn".
+	(rl78_remove_unused_sets): Likewise for locals "insn", "ninsn".
+	Introduce local rtx "set", using it in place of "insn" for the
+	result of single_set.  This appears to fix a bug, since the call
+	to find_regno_note on a SET does nothing.
+	* config/rs6000/rs6000.c (set_to_load_agen): Strengthen both
+	params from rtx to rtx_insn *.
+	(set_to_load_agen): Likewise.
+	* config/s390/s390.c (s390_label_align): Likewise for local
+	"prev_insn".  Introduce new rtx locals "set" and "src", using
+	them in place of "prev_insn" for the results of single_set
+	and SET_SRC respectively.
+	(s390_swap_cmp): Strengthen local "jump" from rtx to rtx_insn *.
+	Introduce new rtx local "set" using in place of "jump" for the
+	result of single_set.  Use SET_SRC (set) rather than plain
+	XEXP (set, 1).
+	* config/sh/sh.c (noncall_uses_reg): Strengthen param 2from
+	rtx to rtx_insn *.
+	(noncall_uses_reg): Likewise.
+	(reg_unused_after): Introduce local rtx_sequence * "seq" in region
+	guarded by GET_CODE check, using its methods for clarity, and to
+	enable strengthening local "this_insn" from rtx to rtx_insn *.
+	* config/sh/sh.md (define_expand "mulhisi3"): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(define_expand "umulhisi3"): Likewise.
+	(define_expand "smulsi3_highpart"): Likewise.
+	(define_expand "umulsi3_highpart"): Likewise.
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Likewise for
+	local "after".  Replace GET_CODE check with a dyn_cast,
+	introducing new local rtx_sequence * "seq", using insn method for
+	typesafety.
+
+	* dwarf2cfi.c (dwarf2out_frame_debug): Strengthen param "insn"
+	from rtx to rtx_insn *.  Introduce local rtx "pat", using it in
+	place of "insn" once we're dealing with patterns rather than the
+	input insn.
+	(scan_insn_after): Strengthen param "insn" from rtx to rtx_insn *.
+	(scan_trace): Likewise for local "elt", updating lookups within
+	sequence to use insn method rather than element method.
+	* expr.c (find_args_size_adjust): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	* gcse.c (gcse_emit_move_after): Likewise for local "new_rtx".
+	* ifcvt.c (noce_try_abs): Likewise for local "insn".
+	* ira.c (fix_reg_equiv_init): Add checked cast to rtx_insn * when
+	invoking single_set.
+	* lra-constraints.c (insn_rhs_dead_pseudo_p): Strengthen param
+	"insn" from rtx to rtx_insn *.
+	(skip_usage_debug_insns): Likewise for return type, adding a
+	checked cast.
+	(check_secondary_memory_needed_p): Likewise for local "insn".
+	(inherit_reload_reg): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise for local "count_init".
+	* recog.c (peep2_attempt): Likewise for local "old_insn", adding
+	checked casts.
+	(store_data_bypass_p): Likewise for both params.
+	(if_test_bypass_p): Likewise.
+	* recog.h (store_data_bypass_p): Likewise for both params.
+	(if_test_bypass_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise for local "where".
+	* reorg.c (delete_jump): Likewise for param "insn".
+	* rtlanal.c (single_set_2): Strenghen param "insn" from const_rtx
+	to const rtx_insn *.
+	* store-motion.c (replace_store_insn): Likewise for param "del".
+	(delete_store): Strengthen local "i" from rtx to rtx_insn_list *,
+	and use its methods for clarity, and to strengthen local "del"
+	from rtx to rtx_insn *.
+	(build_store_vectors): Use insn method of "st" when calling
+	replace_store_insn for typesafety and clarity.
+
+2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Add
+	UNSPEC_VSX_CVDPSPN as an unswappable operand, and add commentary
+	on how to make it legal in future.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* caller-save.c (rtx saveinsn): Strengthen this variable from rtx
+	to rtx_insn *.
+	(restinsn): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_move):
+	Likewise for param.
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move):
+	Likewise.
+	* config/arc/arc-protos.h (arc_adjust_insn_length): Likewise for
+	first param.
+	(arc_hazard): Likewise for both params.
+	* config/arc/arc.c (arc600_corereg_hazard): Likewise, adding
+	checked casts to rtx_sequence * and uses of the insn method for
+	type-safety.
+	(arc_hazard): Strengthen both params from rtx to rtx_insn *.
+	(arc_adjust_insn_length): Likewise for param "insn".
+	(struct insn_length_parameters_s): Likewise for first param of
+	"get_variants" callback field.
+	(arc_get_insn_variants): Likewise for first param and local
+	"inner".  Replace a check of GET_CODE with a dyn_cast to
+	rtx_sequence *, using methods for type-safety and clarity.
+	* config/arc/arc.h (ADJUST_INSN_LENGTH): Use casts to
+	rtx_sequence * and uses of the insn method for type-safety when
+	invoking arc_adjust_insn_length.
+	* config/arm/arm-protos.h (arm_attr_length_move_neon): Likewise
+	for param.
+	(arm_address_offset_is_imm): Likewise.
+	(struct tune_params): Likewise for params 1 and 3 of the
+	"sched_adjust_cost" callback field.
+	* config/arm/arm.c (cortex_a9_sched_adjust_cost): Likewise for
+	params 1 and 3 ("insn" and "dep").
+	(xscale_sched_adjust_cost): Likewise.
+	(fa726te_sched_adjust_cost): Likewise.
+	(cortexa7_older_only): Likewise for param "insn".
+	(cortexa7_younger): Likewise.
+	(arm_attr_length_move_neon): Likewise.
+	(arm_address_offset_is_imm): Likewise.
+	* config/avr/avr-protos.h (avr_notice_update_cc): Likewise.
+	* config/avr/avr.c (avr_notice_update_cc): Likewise.
+	* config/bfin/bfin.c (hwloop_pattern_reg): Likewise.
+	(workaround_speculation): Likewise for local "last_condjump".
+	* config/c6x/c6x.c (shadow_p): Likewise for param "insn".
+	(shadow_or_blockage_p): Likewise.
+	(get_unit_reqs): Likewise.
+	(get_unit_operand_masks): Likewise.
+	(c6x_registers_update): Likewise.
+	(returning_call_p): Likewise.
+	(can_use_callp): Likewise.
+	(convert_to_callp): Likewise.
+	(find_last_same_clock): Likwise for local "t".
+	(reorg_split_calls): Likewise for local "shadow".
+	(hwloop_pattern_reg): Likewise for param "insn".
+	* config/frv/frv-protos.h (frv_final_prescan_insn): Likewise.
+	* config/frv/frv.c (frv_final_prescan_insn): Likewise.
+	(frv_extract_membar): Likewise.
+	(frv_optimize_membar_local): Strengthen param "last_membar" from
+	rtx * to rtx_insn **.
+	(frv_optimize_membar_global): Strengthen param "membar" from rtx
+	to rtx_insn *.
+	(frv_optimize_membar): Strengthen local "last_membar" from rtx *
+	to rtx_insn **.
+	* config/ia64/ia64-protos.h (ia64_st_address_bypass_p): Strengthen
+	both params from rtx to rtx_insn *.
+	(ia64_ld_address_bypass_p): Likewise.
+	* config/ia64/ia64.c (ia64_safe_itanium_class): Likewise for param
+	"insn".
+	(ia64_safe_type): Likewise.
+	(group_barrier_needed): Likewise.
+	(safe_group_barrier_needed): Likewise.
+	(ia64_single_set): Likewise.
+	(is_load_p): Likewise.
+	(record_memory_reference): Likewise.
+	(get_mode_no_for_insn): Likewise.
+	(important_for_bundling_p): Likewise.
+	(unknown_for_bundling_p): Likewise.
+	(ia64_st_address_bypass_p): Likewise for both params.
+	(ia64_ld_address_bypass_p): Likewise.
+	(expand_vselect): Introduce new local rtx_insn * "insn", using it
+	in place of rtx "x" after the emit_insn call.
+	* config/i386/i386-protos.h (x86_extended_QIreg_mentioned_p):
+	Strengthen param from rtx to rtx_insn *.
+	(ix86_agi_dependent): Likewise for both params.
+	(ix86_attr_length_immediate_default): Likewise for param 1.
+	(ix86_attr_length_address_default): Likewise for param.
+	(ix86_attr_length_vex_default): Likewise for param 1.
+	* config/i386/i386.c (ix86_attr_length_immediate_default):
+	Likewise for param "insn".
+	(ix86_attr_length_address_default): Likewise.
+	(ix86_attr_length_vex_default): Likewise.
+	(ix86_agi_dependent): Likewise for both params.
+	(x86_extended_QIreg_mentioned_p): Likewise for param "insn".
+	(vselect_insn): Likewise for this variable.
+	* config/m68k/m68k-protos.h (m68k_sched_attr_opx_type): Likewise
+	for param 1.
+	(m68k_sched_attr_opy_type): Likewise.
+	* config/m68k/m68k.c (sched_get_operand): Likewise.
+	(sched_attr_op_type): Likewise.
+	(m68k_sched_attr_opx_type): Likewise.
+	(m68k_sched_attr_opy_type): Likewise.
+	(sched_get_reg_operand): Likewise.
+	(sched_get_mem_operand): Likewise.
+	(m68k_sched_address_bypass_p): Likewise for both params.
+	(sched_get_indexed_address_scale): Likewise.
+	(m68k_sched_indexed_address_bypass_p): Likewise.
+	* config/m68k/m68k.h (m68k_sched_address_bypass_p): Likewise.
+	(m68k_sched_indexed_address_bypass_p): Likewise.
+	* config/mep/mep.c (mep_jmp_return_reorg): Strengthen locals
+	"label", "ret" from rtx to rtx_insn *, adding a checked cast and
+	removing another.
+	* config/mips/mips-protos.h (mips_linked_madd_p): Strengthen both
+	params from rtx to rtx_insn *.
+	(mips_fmadd_bypass): Likewise.
+	* config/mips/mips.c (mips_fmadd_bypass): Likewise.
+	(mips_linked_madd_p): Likewise.
+	(mips_macc_chains_last_hilo): Likewise for this variable.
+	(mips_macc_chains_record): Likewise for param.
+	(vr4130_last_insn): Likewise for this variable.
+	(vr4130_swap_insns_p): Likewise for both params.
+	(mips_ls2_variable_issue): Likewise for param.
+	(mips_need_noat_wrapper_p): Likewise for param "insn".
+	(mips_expand_vselect): Add a new local rtx_insn * "insn", using it
+	in place of "x" after the emit_insn.
+	* config/pa/pa-protos.h (pa_fpstore_bypass_p): Strengthen both
+	params from rtx to rtx_insn *.
+	* config/pa/pa.c (pa_fpstore_bypass_p): Likewise.
+	(pa_combine_instructions): Introduce local "par" for result of
+	gen_rtx_PARALLEL, moving decl and usage of new_rtx for after call
+	to make_insn_raw.
+	(pa_can_combine_p): Strengthen param "new_rtx" from rtx to rtx_insn *.
+	* config/rl78/rl78.c (insn_ok_now): Likewise for param "insn".
+	(rl78_alloc_physical_registers_op1): Likewise.
+	(rl78_alloc_physical_registers_op2): Likewise.
+	(rl78_alloc_physical_registers_ro1): Likewise.
+	(rl78_alloc_physical_registers_cmp): Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	(rl78_alloc_address_registers_macax): Likewise.
+	(rl78_alloc_physical_registers): Likewise for locals "insn", "curr".
+	* config/s390/predicates.md (execute_operation): Likewise for
+	local "insn".
+	* config/s390/s390-protos.h (s390_agen_dep_p): Likewise for both
+	params.
+	* config/s390/s390.c (s390_safe_attr_type): Likewise for param.
+	(addr_generation_dependency_p): Likewise for param "insn".
+	(s390_agen_dep_p): Likewise for both params.
+	(s390_fpload_toreg): Likewise for param "insn".
+	* config/sh/sh-protos.h (sh_loop_align): Likewise for param.
+	* config/sh/sh.c (sh_loop_align): Likewise for param and local
+	"next".
+	* config/sh/sh.md (define_peephole2): Likewise for local "insn2".
+	* config/sh/sh_treg_combine.cc
+	(sh_treg_combine::make_inv_ccreg_insn): Likewise for return type
+	and local "i".
+	(sh_treg_combine::try_eliminate_cstores): Likewise for local "i".
+	* config/stormy16/stormy16.c (combine_bnp): Likewise for locals
+	"and_insn", "load", "shift".
+	* config/tilegx/tilegx.c (match_pcrel_step2): Likewise for param
+	"insn".
+	* final.c (final_scan_insn): Introduce local rtx_insn * "other"
+	for XEXP (note, 0) of the REG_CC_SETTER note.
+	(cleanup_subreg_operands): Strengthen param "insn" from rtx to
+	rtx_insn *, eliminating a checked cast made redundant by this.
+	* gcse.c (process_insert_insn): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	* genattr.c (main): When writing out the prototype to
+	const_num_delay_slots, strengthen the param from rtx to
+	rtx_insn *.
+	* genattrtab.c (write_const_num_delay_slots): Likewise when
+	writing out the implementation of const_num_delay_slots.
+	* hw-doloop.h (struct hw_doloop_hooks): Strengthen the param
+	"insn" of callback field "end_pattern_reg" from rtx to rtx_insn *.
+	* ifcvt.c (noce_emit_store_flag): Eliminate local rtx "tmp" in
+	favor of new rtx locals "src" and "set" and new local rtx_insn *
+	"insn" and "seq".
+	(noce_emit_move_insn): Strengthen locals "seq" and "insn" from rtx
+	to rtx_insn *.
+	(noce_emit_cmove): Eliminate local rtx "tmp" in favor of new rtx
+	locals "cond", "if_then_else", "set" and new rtx_insn * locals
+	"insn" and "seq".
+	(noce_try_cmove_arith): Strengthen locals "insn_a" and "insn_b",
+	"last" from rtx to rtx_insn *.  Likewise for a local "tmp",
+	renaming to "tmp_insn".  Eliminate the other local rtx "tmp" from
+	the top-level scope, replacing with new more tightly-scoped rtx
+	locals "reg", "pat", "mem" and rtx_insn * "insn", "copy_of_a",
+	"new_insn", "copy_of_insn_b", and make local rtx "set" more
+	tightly-scoped.
+	* ira-int.h (ira_setup_alts): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise for local
+	"move_insn".
+	(ira_setup_alts): Likewise for param "insn".
+	* lra-constraints.c (emit_inc): Likewise for local "add_insn".
+	* lra.c (emit_add3_insn): Split local rtx "insn" in two, an rtx
+	and an rtx_insn *.
+	(lra_emit_add): Eliminate top-level local rtx "insn" in favor of
+	new more-tightly scoped rtx locals "add3_insn", "insn",
+	"add2_insn" and rtx_insn * "move_insn".
+	* postreload-gcse.c (eliminate_partially_redundant_load): Add
+	checked cast on result of gen_move_insn when invoking
+	extract_insn.
+	* recog.c (insn_invalid_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(verify_changes): Add a checked cast on "object" when invoking
+	insn_invalid_p.
+	(extract_insn_cached): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(extract_constrain_insn_cached): Likewise.
+	(extract_insn): Likewise.
+	* recog.h (insn_invalid_p): Likewise for param 1.
+	(recog_memoized): Likewise for param.
+	(extract_insn): Likewise.
+	(extract_constrain_insn_cached): Likewise.
+	(extract_insn_cached): Likewise.
+	* reload.c (can_reload_into): Likewise for local "test_insn".
+	* reload.h (cleanup_subreg_operands): Likewise for param.
+	* reload1.c (emit_insn_if_valid_for_reload): Rename param from
+	"insn" to "pat", reintroducing "insn" as an rtx_insn * on the
+	result of emit_insn.  Remove a checked cast made redundant by this
+	change.
+	* sel-sched-ir.c (sel_insn_rtx_cost): Strengthen param "insn" from
+	rtx to rtx_insn *.
+	* sel-sched.c (get_reg_class): Likewise.
+
+2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	 * config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Add crtfastmath.o.
+         * config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
+	Define.
+        (ENDFILE_SPEC): Define and use GNU_USER_TARGET_MATH_ENDFILE_SPEC.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (INSN_LOCATION): Strengthen param from const_rtx to
+	const rtx_insn *, and from rtx to rtx_insn * for the other
+	overloaded variant.
+	(RTL_LOCATION): Add a checked cast to rtx_insn * when invoking
+	INSN_LOCATION, since we know INSN_P holds.
+	(insn_line): Strengthen param from const_rtx to const rtx_insn *.
+	(insn_file): Likewise.
+	(insn_scope): Likewise.
+	(insn_location): Likewise.
+
+	* config/mips/mips.c (mips16_gp_pseudo_reg): Strengthen local
+	"insn" from rtx to rtx_insn *, introducing a new local rtx "set"
+	for the result of gen_load_const_gp.
+	* config/rs6000/rs6000-protos.h (output_call): Strengthen first
+	param from rtx to rtx_insn *.
+	* config/rs6000/rs6000.c (output_call): Likewise.
+	* dwarf2out.c (dwarf2out_var_location): Likewise for local "prev",
+	introducing a checked cast to rtx_sequence * and use of the insn
+	method.
+	* emit-rtl.c (emit_copy_of_insn_after): Strengthen both params
+	from rtx to rtx_insn *.
+	(insn_scope): Strengthen param from const_rtx to const rtx_insn *.
+	(insn_line): Likewise.
+	(insn_file): Likewise.
+	(insn_location): Likewise.
+	* emit-rtl.h (emit_copy_of_insn_after): Strengthen both params
+	from rtx to rtx_insn *.
+	* print-rtl.c (print_rtx): Introduce local "in_insn" via a checked
+	cast, using it for calls to INSN_HAS_LOCATION and insn_location.
+	* recog.c (peep2_attempt): Introduce local rtx_insn * "peepinsn"
+	via a checked cast.
+	* reorg.c (relax_delay_slots): Strengthen locals named "after"
+	from rtx to rtx_insn *; use methods of "pat" for type-safety.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* combine.c (try_combine): Eliminate checked cast on result of
+	gen_rtx_INSN.
+	* emit-rtl.c (gen_rtx_INSN): New function, improving over the prior
+	autogenerated one by strengthening the return type and params 2 and 3
+	from rtx to rtx_insn *, and by naming the params.
+	* gengenrtl.c (special_rtx): Add INSN to those that are
+	special-cased.
+	* rtl.h (gen_rtx_INSN): New prototype.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* ira.c (ira_update_equiv_info_by_shuffle_insn): Use NULL rather
+	than NULL_RTX.
+	(no_equiv): Likewise.
+	(update_equiv_regs): Likewise.
+	(setup_reg_equiv): Likewise.  Strengthen locals "elem",
+	"prev_elem", "next_elem" from rtx to rtx_insn_list *, and "insn"
+	from rtx to rtx_insn *.  Use methods of "elem" for typesafety and
+	clarity.
+	* ira.h (struct ira_reg_equiv_s): Strengthen field "init_insns"
+	from rtx to rtx_insn_list *.
+	* lra-assigns.c (spill_for): Strengthen local "x" from rtx to
+	rtx_insn_list * and use methods for clarity and typesafety.
+	* lra-constraints.c (contains_deleted_insn_p): Likewise for param
+	"list".
+	(init_insn_rhs_dead_pseudo_p): Likewise for local "insns".  Remove
+	redundant check on INSN_P (insns): this cannot hold, as "insns" is
+	an INSN_LIST, not an insn.
+	(reverse_equiv_p): Strengthen local "insns" from rtx to
+	rtx_insn_list * and use methods for clarity and typesafety.
+	(contains_reloaded_insn_p): Likewise for local "list".
+
+2014-09-09  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm.c (NEON_COPYSIGNF): New enum.
+	(arm_init_neon_builtins): Support NEON_COPYSIGNF.
+	(arm_builtin_vectorized_function): Likewise.
+	* config/arm/arm_neon_builtins.def: New macro for copysignf.
+	* config/arm/neon.md (neon_copysignf<mode>): New pattern for vector copysignf.
+
+2014-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* bb-reorder.h (default_target_bb_reorder): Remove redundant GTY.
+	* builtins.h (default_target_builtins): Likewise.
+	* gcse.h (default_target_gcse): Likewise.
+	* target-globals.h (target_globals): Add a destructor.  Convert
+	void-pointer fields back to their real type and change from
+	GTY((atomic)) to GTY((skip)).
+	(restore_target_globals): Remove casts accordingly.
+	* target-globals.c (save_target_globals): Use XCNEW rather than
+	ggc_internal_cleared_alloc to allocate non-GC structures.
+	Use ggc_cleared_alloc to allocate the target_globals structure
+	itself.
+	(target_globals::~target_globals): Define.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (vfp_pop_multiple_with_writeback): Use vldm
+	mnemonic instead of fldmfdd.
+	* config/arm/arm.c (vfp_output_fstmd): Rename to...
+	(vfp_output_vstmd): ... This.  Convert output to UAL syntax.
+	Output vpush when address register is SP.
+	* config/arm/arm-protos.h (vfp_output_fstmd): Rename to...
+	(vfp_output_vstmd): ... This.
+	* config/arm/vfp.md (push_multi_vfp): Update call to
+	vfp_output_vstmd.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/vfp.md (*movcc_vfp): Use UAL syntax.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/vfp.md (*sqrtsf2_vfp): Use UAL assembly syntax.
+	(*sqrtdf2_vfp): Likewise.
+	(*cmpsf_vfp): Likewise.
+	(*cmpsf_trap_vfp): Likewise.
+	(*cmpdf_vfp): Likewise.
+	(*cmpdf_trap_vfp): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/vfp.md (*extendsfdf2_vfp): Use UAL assembly syntax.
+	(*truncdfsf2_vfp): Likewise.
+	(*truncsisf2_vfp): Likewise.
+	(*truncsidf2_vfp): Likewise.
+	(fixuns_truncsfsi2): Likewise.
+	(fixuns_truncdfsi2): Likewise.
+	(*floatsisf2_vfp): Likewise.
+	(*floatsidf2_vfp): Likewise.
+	(floatunssisf2): Likewise.
+	(floatunssidf2): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/vfp.md (*mulsf3_vfp): Use UAL assembly syntax.
+	(*muldf3_vfp): Likewise.
+	(*mulsf3negsf_vfp): Likewise.
+	(*muldf3negdf_vfp): Likewise.
+	(*mulsf3addsf_vfp): Likewise.
+	(*muldf3adddf_vfp): Likewise.
+	(*mulsf3subsf_vfp): Likewise.
+	(*muldf3subdf_vfp): Likewise.
+	(*mulsf3negsfaddsf_vfp): Likewise.
+	(*fmuldf3negdfadddf_vfp): Likewise.
+	(*mulsf3negsfsubsf_vfp): Likewise.
+	(*muldf3negdfsubdf_vfp): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/vfp.md (*abssf2_vfp): Use UAL assembly syntax.
+	(*absdf2_vfp): Likewise.
+	(*negsf2_vfp): Likewise.
+	(*negdf2_vfp): Likewise.
+	(*addsf3_vfp): Likewise.
+	(*adddf3_vfp): Likewise.
+	(*subsf3_vfp): Likewise.
+	(*subdf3_vfp): Likewise.
+	(*divsf3_vfp): Likewise.
+	(*divdf3_vfp): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (output_move_vfp): Use UAL syntax for load/store
+	multiple.
+	(arm_print_operand): Don't convert real values to decimal
+	representation in default case.
+	(fp_immediate_constant): Delete.
+	* config/arm/arm-protos.h (fp_immediate_constant): Likewise.
+	* config/arm/vfp.md (*arm_movsi_vfp): Convert to VFP moves to UAL
+	syntax.
+	(*thumb2_movsi_vfp): Likewise.
+	(*movdi_vfp): Likewise.
+	(*movdi_vfp_cortexa8): Likewise.
+	(*movhf_vfp_neon): Likewise.
+	(*movhf_vfp): Likewise.
+	(*movsf_vfp): Likewise.
+	(*thumb2_movsf_vfp): Likewise.
+	(*movdf_vfp): Likewise.
+	(*thumb2_movdf_vfp): Likewise.
+	(*movsfcc_vfp): Likewise.
+	(*thumb2_movsfcc_vfp): Likewise.
+	(*movdfcc_vfp): Likewise.
+	(*thumb2_movdfcc_vfp): Likewise.
+
+2014-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/invoke.texi (-march): Use GNU/Linux rather than Linux.
+	(-mtune): Likewise.
+	(-mcpu): Likewise.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61749
+	* config/aarch64/aarch64-builtins.c (aarch64_types_quadop_qualifiers):
+	Use qualifier_immediate for last operand.  Rename to...
+	(aarch64_types_ternop_lane_qualifiers): ... This.
+	(TYPES_QUADOP): Rename to...
+	(TYPES_TERNOP_LANE): ... This.
+	(aarch64_simd_expand_args): Return const0_rtx when encountering user
+	error.  Change return of 0 to return of NULL_RTX.
+	(aarch64_crc32_expand_builtin): Likewise.
+	(aarch64_expand_builtin): Return NULL_RTX instead of 0.
+	ICE when expanding unknown builtin.
+	* config/aarch64/aarch64-simd-builtins.def (sqdmlal_lane): Use
+	TERNOP_LANE qualifiers.
+	(sqdmlsl_lane): Likewise.
+	(sqdmlal_laneq): Likewise.
+	(sqdmlsl_laneq): Likewise.
+	(sqdmlal2_lane): Likewise.
+	(sqdmlsl2_lane): Likewise.
+	(sqdmlal2_laneq): Likewise.
+	(sqdmlsl2_laneq): Likewise.
+
+2014-09-09  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (Optimization Options): Add missing @gol to the
+	end of a line.
+	(S/390 and zSeries Options): Remove superfluous word from the
+	description of the -mhotpatch option.
+
+2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* shrink-wrap.h: #define SHRINK_WRAPPING_ENABLED.
+	* ira.c: #include "shrink-wrap.h"
+	(split_live_ranges_for_shrink_wrap): Use SHRINK_WRAPPING_ENABLED.
+	* ifcvt.c: #include "shrink-wrap.h"
+	(dead_or_predicable): Use SHRINK_WRAPPING_ENABLED.
+
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* common/config/picochip/picochip-common.c: Remove.
+	* config.gcc: Remove support for picochip.
+	* config/picochip/constraints.md: Remove.
+	* config/picochip/dfa_space.md: Remove.
+	* config/picochip/dfa_speed.md: Remove.
+	* config/picochip/picochip-protos.h: Remove.
+	* config/picochip/picochip.c: Remove.
+	* config/picochip/picochip.h: Remove.
+	* config/picochip/picochip.md: Remove.
+	* config/picochip/picochip.opt: Remove.
+	* config/picochip/predicates.md: Remove.
+	* config/picochip/t-picochip: Remove.
+	* doc/md.texi: Don't document picochi.
+
+2014-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (control_flow_insn_p): Strengthen param from
+	const_rtx to const rtx_insn *.
+	* cfgbuild.c (control_flow_insn_p): Likewise.
+
+2014-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcse.c (modify_mem_list): Strengthen this variable from
+	vec<rtx> * to vec<rtx_insn *> *.
+	(vec_rtx_heap): Strengthen this typedef from vec<rtx> to
+	vec<rtx_insn *>.
+	(load_killed_in_block_p): Strengthen local "list" from vec<rtx> to
+	vec<rtx_insn *>, and local "setter" from rtx to rtx_insn *.
+	(record_last_mem_set_info): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(record_last_set_info): Likewise for local "last_set_insn".
+
+2014-09-08  DJ Delorie  <dj@redhat.com>
+
+	* doc/invoke.texi (MSP430 Options): Add -minrt.
+
+2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (special_handling_values):  Add SH_SPLAT.
+	(rtx_is_swappable_p): Convert UNSPEC cascading ||s to a switch
+	statement; allow optimization of UNSPEC_VSPLT_DIRECT with special
+	handling SH_SPLAT.
+	(adjust_extract): Fix test for VEC_DUPLICATE case; fix adjustment
+	of extracted lane.
+	(adjust_splat): New function.
+	(handle_special_swappables): Call adjust_splat for SH_SPLAT.
+	(dump_swap_insn_table): Add case for SH_SPLAT.
+
+2014-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/63196
+	* tree-inline.c (copy_loops): The source loop header should
+	always be non-NULL.
+	(tree_function_versioning): If loops need fixup after removing
+	unreachable blocks fix them.
+	* omp-low.c (simd_clone_adjust): Do not add incr block to
+	loop under construction.
+
+2014-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_cmtst_qualifiers, TYPES_TST): Remove as unused.
+
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/cygming.h (TF_SIZE): Remove.
@@ -40,7 +1476,7 @@
 	* config/aarch64/aarch64.md (stack_protect_test_<mode>) Add register
 	constraint for operand0 and remove write only modifier from operand3.
 
-2014-09-07  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/62208
 	* simplify-rtx.c (simplify_relational_operation_1): Use CONST0_RTX
@@ -54,7 +1490,7 @@
 	* config/arc/arc.c (arc_predicate_delay_insns): Swap comparison
 	arguments to silence bogus warning.
 
-2014-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63171
 	* rtlanal.c (tls_referenced_p): Don't skip constant subrtxes.
@@ -567,12 +2003,12 @@
 	* doc/invoke.texi: Document that -Wlogical-not-parentheses is enabled
 	by -Wall.
 
-2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/rtl.texi (RTX_AUTOINC): Document that the first operand is
 	the automodified register.
 
-2014-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-09-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* output.h (get_some_local_dynamic_name): Declare.
 	* final.c (some_local_dynamic_name): New variable.

@@ -316,6 +316,11 @@ varpool_node::ctor_useable_for_folding_p (void)
       && !real_node->lto_file_data)
     return false;
 
+  /* Avoid attempts to load constructors that was not streamed.  */
+  if (flag_ltrans && DECL_INITIAL (real_node->decl) == error_mark_node
+      && real_node->body_removed)
+    return false;
+
   /* Vtables are defined by their types and must match no matter of interposition
      rules.  */
   if (DECL_VIRTUAL_P (decl))

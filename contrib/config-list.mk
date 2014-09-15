@@ -49,7 +49,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   msp430-elf \
   nds32le-elf nds32be-elf \
   nios2-elf nios2-linux-gnu \
-  pdp11-aout picochip-elfOPT-enable-obsolete \
+  pdp11-aout \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \

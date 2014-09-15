@@ -328,7 +328,7 @@ extern rtx_insn *current_output_insn;
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't die.
    The precise value is the insn being output, to pass to error_for_asm.  */
-extern rtx this_is_asm_operands;
+extern const rtx_insn *this_is_asm_operands;
 
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */

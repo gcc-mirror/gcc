@@ -407,7 +407,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_word_boundary(_State<_TraitsT> __state) const
+    _M_word_boundary(_State<_TraitsT>) const
     {
       // By definition.
       bool __ans = false;

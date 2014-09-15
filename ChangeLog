@@ -1,3 +1,7 @@
+2014-09-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself to reviewers (Fortran).
+
 2014-09-01  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Add LTO_EXPORTS.

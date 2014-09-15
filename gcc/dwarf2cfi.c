@@ -1935,16 +1935,16 @@ dwarf2out_frame_debug_expr (rtx expr)
    register to the stack.  */
 
 static void
-dwarf2out_frame_debug (rtx insn)
+dwarf2out_frame_debug (rtx_insn *insn)
 {
-  rtx note, n;
+  rtx note, n, pat;
   bool handled_one = false;
 
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     switch (REG_NOTE_KIND (note))
       {
       case REG_FRAME_RELATED_EXPR:
-	insn = XEXP (note, 0);
+	pat = XEXP (note, 0);
 	goto do_frame_expr;
 
       case REG_CFA_DEF_CFA:
@@ -2036,14 +2036,14 @@ dwarf2out_frame_debug (rtx insn)
 
   if (!handled_one)
     {
-      insn = PATTERN (insn);
+      pat = PATTERN (insn);
     do_frame_expr:
-      dwarf2out_frame_debug_expr (insn);
+      dwarf2out_frame_debug_expr (pat);
 
       /* Check again.  A parallel can save and update the same register.
          We could probably check just once, here, but this is safer than
          removing the check at the start of the function.  */
-      if (clobbers_queued_reg_save (insn))
+      if (clobbers_queued_reg_save (pat))
 	dwarf2out_flush_queued_reg_saves ();
     }
 }
@@ -2362,7 +2362,7 @@ create_trace_edges (rtx_insn *insn)
 /* A subroutine of scan_trace.  Do what needs to be done "after" INSN.  */
 
 static void
-scan_insn_after (rtx insn)
+scan_insn_after (rtx_insn *insn)
 {
   if (RTX_FRAME_RELATED_P (insn))
     dwarf2out_frame_debug (insn);
@@ -2423,7 +2423,7 @@ scan_trace (dw_trace_info *trace)
 	 handling for the positioning of the notes.  */
       if (rtx_sequence *pat = dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	{
-	  rtx elt;
+	  rtx_insn *elt;
 	  int i, n = pat->len ();
 
 	  control = pat->insn (0);
@@ -2438,7 +2438,7 @@ scan_trace (dw_trace_info *trace)
 	      gcc_assert (!RTX_FRAME_RELATED_P (control));
 	      gcc_assert (!find_reg_note (control, REG_ARGS_SIZE, NULL));
 
-	      elt = pat->element (1);
+	      elt = pat->insn (1);
 
 	      if (INSN_FROM_TARGET_P (elt))
 		{
@@ -2493,7 +2493,7 @@ scan_trace (dw_trace_info *trace)
 
 	  for (i = 1; i < n; ++i)
 	    {
-	      elt = pat->element (i);
+	      elt = pat->insn (i);
 	      scan_insn_after (elt);
 	    }
 

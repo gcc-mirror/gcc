@@ -1369,12 +1369,12 @@ inline rtx& PATTERN (rtx insn)
   return XEXP (insn, 3);
 }
 
-inline unsigned int INSN_LOCATION (const_rtx insn)
+inline unsigned int INSN_LOCATION (const rtx_insn *insn)
 {
   return XUINT (insn, 4);
 }
 
-inline unsigned int& INSN_LOCATION (rtx insn)
+inline unsigned int& INSN_LOCATION (rtx_insn *insn)
 {
   return XUINT (insn, 4);
 }
@@ -1386,7 +1386,8 @@ inline bool INSN_HAS_LOCATION (const rtx_insn *insn)
 
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \
-			 INSN_LOCATION (X) : UNKNOWN_LOCATION)
+			 INSN_LOCATION (as_a <rtx_insn *> (X)) \
+			 : UNKNOWN_LOCATION)
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
@@ -1672,6 +1673,10 @@ inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
    goes through all the LABEL_REFs that jump to that label.  The chain
    eventually winds up at the CODE_LABEL: it is circular.  */
 #define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
+
+/* Get the label that a LABEL_REF references.  */
+#define LABEL_REF_LABEL(LABREF) XCEXP (LABREF, 0, LABEL_REF)
+
 
 /* For a REG rtx, REGNO extracts the register number.  REGNO can only
    be used on RHS.  Use SET_REGNO to change the value.  */
@@ -2644,10 +2649,10 @@ extern rtx_insn *next_cc0_user (rtx);
 extern rtx_insn *prev_cc0_setter (rtx);
 
 /* In emit-rtl.c  */
-extern int insn_line (const_rtx);
-extern const char * insn_file (const_rtx);
-extern tree insn_scope (const_rtx);
-extern expanded_location insn_location (const_rtx);
+extern int insn_line (const rtx_insn *);
+extern const char * insn_file (const rtx_insn *);
+extern tree insn_scope (const rtx_insn *);
+extern expanded_location insn_location (const rtx_insn *);
 extern location_t prologue_location, epilogue_location;
 
 /* In jump.c */
@@ -2722,12 +2727,21 @@ extern void set_insn_deleted (rtx);
 
 /* Functions in rtlanal.c */
 
-/* Single set is implemented as macro for performance reasons.  */
-#define single_set(I) (INSN_P (I) \
-		       ? (GET_CODE (PATTERN (I)) == SET \
-			  ? PATTERN (I) : single_set_1 (I)) \
-		       : NULL_RTX)
-#define single_set_1(I) single_set_2 (I, PATTERN (I))
+extern rtx single_set_2 (const rtx_insn *, const_rtx);
+
+/* Handle the cheap and common cases inline for performance.  */
+
+inline rtx single_set (const rtx_insn *insn)
+{
+  if (!INSN_P (insn))
+    return NULL_RTX;
+
+  if (GET_CODE (PATTERN (insn)) == SET)
+    return PATTERN (insn);
+
+  /* Defer to the more expensive case.  */
+  return single_set_2 (insn, PATTERN (insn));
+}
 
 extern enum machine_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);
@@ -2745,14 +2759,13 @@ extern int reg_mentioned_p (const_rtx, const_rtx);
 extern int count_occurrences (const_rtx, const_rtx, int);
 extern int reg_referenced_p (const_rtx, const_rtx);
 extern int reg_used_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
-extern int reg_set_between_p (const_rtx, const_rtx, const_rtx);
+extern int reg_set_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int commutative_operand_precedence (rtx);
 extern bool swap_commutative_operands_p (rtx, rtx);
 extern int modified_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern int no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern int modified_in_p (const_rtx, const_rtx);
 extern int reg_set_p (const_rtx, const_rtx);
-extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
 extern int set_noop_p (const_rtx);
 extern int noop_move_p (const_rtx);
@@ -3089,6 +3102,10 @@ get_mem_attrs (const_rtx x)
 
 extern rtx_expr_list *gen_rtx_EXPR_LIST (enum machine_mode, rtx, rtx);
 extern rtx_insn_list *gen_rtx_INSN_LIST (enum machine_mode, rtx, rtx);
+extern rtx_insn *
+gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
+	      basic_block bb, rtx pattern, int location, int code,
+	      rtx reg_notes);
 extern rtx gen_rtx_CONST_INT (enum machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (enum machine_mode, rtvec);
 extern rtx gen_raw_REG (enum machine_mode, int);
@@ -3367,7 +3384,7 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
-extern HOST_WIDE_INT find_args_size_adjust (rtx);
+extern HOST_WIDE_INT find_args_size_adjust (rtx_insn *);
 extern int fixup_args_size_notes (rtx_insn *, rtx_insn *, int);
 
 /* In cfgrtl.c */

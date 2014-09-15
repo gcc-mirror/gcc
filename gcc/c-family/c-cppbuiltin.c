@@ -271,21 +271,14 @@ builtin_define_float_constants (const char *name_prefix,
       sprintf (buf, "0x1p%d", 1 - fmt->p);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
-  /* For C++ std::numeric_limits<T>::denorm_min.  The minimum denormalized
-     positive floating-point number, b**(emin-p).  Zero for formats that
-     don't support denormals.  */
+  /* For C++ std::numeric_limits<T>::denorm_min and C11 *_TRUE_MIN.
+     The minimum denormalized positive floating-point number, b**(emin-p).
+     The minimum normalized positive floating-point number for formats
+     that don't support denormals.  */
   sprintf (name, "__%s_DENORM_MIN__", name_prefix);
-  if (fmt->has_denorm)
-    {
-      sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
-      builtin_define_with_hex_fp_value (name, type, decimal_dig,
-					buf, fp_suffix, fp_cast);
-    }
-  else
-    {
-      sprintf (buf, "0.0%s", fp_suffix);
-      builtin_define_with_value (name, buf, 0);
-    }
+  sprintf (buf, "0x1p%d", fmt->emin - (fmt->has_denorm ? fmt->p : 1));
+  builtin_define_with_hex_fp_value (name, type, decimal_dig,
+				    buf, fp_suffix, fp_cast);
 
   sprintf (name, "__%s_HAS_DENORM__", name_prefix);
   builtin_define_with_value (name, fmt->has_denorm ? "1" : "0", 0);
@@ -1029,6 +1022,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	  sprintf (macro_name, "__LIBGCC_%s_MANT_DIG__", name);
 	  builtin_define_with_int_value (macro_name,
 					 REAL_MODE_FORMAT (mode)->p);
+	  if (!targetm.scalar_mode_supported_p (mode)
+	      || !targetm.libgcc_floating_mode_supported_p (mode))
+	    continue;
+	  macro_name = (char *) alloca (strlen (name)
+					+ sizeof ("__LIBGCC_HAS__MODE__"));
+	  sprintf (macro_name, "__LIBGCC_HAS_%s_MODE__", name);
+	  cpp_define (pfile, macro_name);
 	}
 
       /* For libgcc crtstuff.c and libgcc2.c.  */

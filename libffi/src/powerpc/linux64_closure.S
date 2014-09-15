@@ -381,7 +381,8 @@ ffi_closure_LINUX64:
 	.align 3
 .LEFDE1:
 
-# if defined __ELF__ && defined __linux__
+#endif
+
+#if (defined __ELF__ && defined __linux__) || _CALL_ELF == 2
 	.section	.note.GNU-stack,"",@progbits
-# endif
 #endif

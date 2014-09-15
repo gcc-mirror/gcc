@@ -50,7 +50,7 @@ extern int standard_sse_constant_p (rtx);
 extern const char *standard_sse_constant_opcode (rtx, rtx);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
-extern bool x86_extended_QIreg_mentioned_p (rtx);
+extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern bool x86_maybe_negate_const_int (rtx *, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
@@ -100,7 +100,7 @@ extern void ix86_split_lea_for_addr (rtx_insn *, rtx[], enum machine_mode);
 extern bool ix86_lea_for_add_ok (rtx_insn *, rtx[]);
 extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
-extern bool ix86_agi_dependent (rtx set_insn, rtx use_insn);
+extern bool ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
@@ -145,9 +145,9 @@ extern void ix86_split_idivmod (enum machine_mode, rtx[], bool);
 extern bool ix86_emit_cfi ();
 
 extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
-extern int ix86_attr_length_immediate_default (rtx, bool);
-extern int ix86_attr_length_address_default (rtx);
-extern int ix86_attr_length_vex_default (rtx, bool, bool);
+extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
+extern int ix86_attr_length_address_default (rtx_insn *);
+extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 

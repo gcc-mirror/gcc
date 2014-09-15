@@ -24,8 +24,8 @@ extern enum unwind_info_type ia64_except_unwind_info (struct gcc_options *);
 
 extern int bundling_p;
 #ifdef RTX_CODE
-extern int ia64_st_address_bypass_p (rtx, rtx);
-extern int ia64_ld_address_bypass_p (rtx, rtx);
+extern int ia64_st_address_bypass_p (rtx_insn *, rtx_insn *);
+extern int ia64_ld_address_bypass_p (rtx_insn *, rtx_insn *);
 extern int ia64_produce_address_p (rtx);
 
 extern rtx ia64_expand_move (rtx, rtx);

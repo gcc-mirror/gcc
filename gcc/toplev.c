@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "reload.h"
 #include "ira.h"
+#include "lra.h"
 #include "dwarf2asm.h"
 #include "debug.h"
 #include "target.h"
@@ -1887,7 +1888,7 @@ finalize (bool no_backend)
 
       g->get_passes ()->finish_optimization_passes ();
 
-      ira_finish_once ();
+      lra_finish_once ();
     }
 
   if (mem_report)

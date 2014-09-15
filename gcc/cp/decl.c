@@ -2215,7 +2215,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
-	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (newdecl);
+	  DECL_COMDAT (newdecl) = (TREE_PUBLIC (newdecl)
+				   && DECL_DECLARED_INLINE_P (newdecl));
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if
@@ -4658,20 +4659,24 @@ start_decl (const cp_declarator *declarator,
 	  if (field == NULL_TREE
 	      || !(VAR_P (field) || variable_template_p (field)))
 	    error ("%q+#D is not a static data member of %q#T", decl, context);
+	  else if (variable_template_p (field) && !this_tmpl)
+	    {
+	      if (DECL_LANG_SPECIFIC (decl)
+		  && DECL_TEMPLATE_SPECIALIZATION (decl))
+		/* OK, specialization was already checked.  */;
+	      else
+		{
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "non-member-template declaration of %qD", decl);
+		  inform (DECL_SOURCE_LOCATION (field), "does not match "
+			  "member template declaration here");
+		  return error_mark_node;
+		}
+	    }
 	  else
 	    {
 	      if (variable_template_p (field))
-		{
-		  if (!this_tmpl)
-		    {
-		      error_at (DECL_SOURCE_LOCATION (decl),
-				"non-member-template declaration of %qD", decl);
-		      inform (DECL_SOURCE_LOCATION (field), "does not match "
-			      "member template declaration here");
-		      return error_mark_node;
-		    }
-		  field = DECL_TEMPLATE_RESULT (field);
-		}
+		field = DECL_TEMPLATE_RESULT (field);
 
 	      if (DECL_CONTEXT (field) != context)
 		{
@@ -4718,7 +4723,8 @@ start_decl (const cp_declarator *declarator,
 	{
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
+				  && DECL_DECLARED_INLINE_P (decl));
 	  else
 	    DECL_COMDAT (decl) = false;
 
@@ -7699,7 +7705,8 @@ grokfndecl (tree ctype,
   if (inlinep)
     {
       DECL_DECLARED_INLINE_P (decl) = 1;
-      DECL_COMDAT (decl) = 1;
+      if (publicp)
+	DECL_COMDAT (decl) = 1;
     }
   if (inlinep & 2)
     DECL_DECLARED_CONSTEXPR_P (decl) = true;

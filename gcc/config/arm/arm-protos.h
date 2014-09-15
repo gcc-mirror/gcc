@@ -126,7 +126,6 @@ extern int arm_max_const_double_inline_cost (void);
 extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
-extern const char *fp_immediate_constant (rtx);
 extern void arm_emit_call_insn (rtx, rtx, bool);
 extern const char *output_call (rtx *);
 extern const char *output_call_mem (rtx *);
@@ -137,8 +136,8 @@ extern const char *output_move_quad (rtx *);
 extern int arm_count_output_move_double_insns (rtx *);
 extern const char *output_move_vfp (rtx *operands);
 extern const char *output_move_neon (rtx *operands);
-extern int arm_attr_length_move_neon (rtx);
-extern int arm_address_offset_is_imm (rtx);
+extern int arm_attr_length_move_neon (rtx_insn *);
+extern int arm_address_offset_is_imm (rtx_insn *);
 extern const char *output_add_immediate (rtx *);
 extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);
@@ -150,7 +149,7 @@ extern bool arm_is_long_call_p (tree);
 extern int    arm_emit_vector_const (FILE *, rtx);
 extern void arm_emit_fp16_const (rtx c);
 extern const char * arm_output_load_gr (rtx *);
-extern const char *vfp_output_fstmd (rtx *);
+extern const char *vfp_output_vstmd (rtx *);
 extern void arm_output_multireg_pop (rtx *, bool, rtx, bool, bool);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
@@ -254,7 +253,7 @@ struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   const struct cpu_cost_table *insn_extra_cost;
-  bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
+  bool (*sched_adjust_cost) (rtx_insn *, rtx, rtx_insn *, int *);
   int constant_limit;
   /* Maximum number of instructions to conditionalise.  */
   int max_insns_skipped;

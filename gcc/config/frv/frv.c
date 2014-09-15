@@ -2402,7 +2402,7 @@ frv_asm_output_opcode (FILE *f, const char *ptr)
    function is not called for asm insns.  */
 
 void
-frv_final_prescan_insn (rtx insn, rtx *opvec,
+frv_final_prescan_insn (rtx_insn *insn, rtx *opvec,
 			int noperands ATTRIBUTE_UNUSED)
 {
   if (INSN_P (insn))
@@ -7788,7 +7788,7 @@ frv_io_union (struct frv_io *x, const struct frv_io *y)
    membar instruction INSN.  */
 
 static void
-frv_extract_membar (struct frv_io *io, rtx insn)
+frv_extract_membar (struct frv_io *io, rtx_insn *insn)
 {
   extract_insn (insn);
   io->type = (enum frv_io_type) INTVAL (recog_data.operand[2]);
@@ -7867,7 +7867,7 @@ frv_io_handle_use (rtx *x, void *data)
 
 static void
 frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
-			   rtx *last_membar)
+			   rtx_insn **last_membar)
 {
   HARD_REG_SET used_regs;
   rtx next_membar, set;
@@ -8001,7 +8001,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 
 static void
 frv_optimize_membar_global (basic_block bb, struct frv_io *first_io,
-			    rtx membar)
+			    rtx_insn *membar)
 {
   struct frv_io this_io, next_io;
   edge succ;
@@ -8047,11 +8047,11 @@ frv_optimize_membar (void)
 {
   basic_block bb;
   struct frv_io *first_io;
-  rtx *last_membar;
+  rtx_insn **last_membar;
 
   compute_bb_for_insn ();
   first_io = XCNEWVEC (struct frv_io, last_basic_block_for_fn (cfun));
-  last_membar = XCNEWVEC (rtx, last_basic_block_for_fn (cfun));
+  last_membar = XCNEWVEC (rtx_insn *, last_basic_block_for_fn (cfun));
 
   FOR_EACH_BB_FN (bb, cfun)
     frv_optimize_membar_local (bb, &first_io[bb->index],

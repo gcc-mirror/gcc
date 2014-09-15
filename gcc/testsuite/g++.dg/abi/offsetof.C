@@ -4,7 +4,6 @@
 // implementation thereof.
 
 // Yes, this is bad, naughty, evil code.  But it seems to be well-formed.
-// So we'll just warn.
 
 // { dg-do run }
 
@@ -18,5 +17,5 @@ struct C: public B { };
 
 int main ()
 {
-  return ((__SIZE_TYPE__) &((C*)0)->i) != sizeof(void*); // { dg-warning "offsetof|invalid" "" }
+  return ((__SIZE_TYPE__) &((C*)0)->i) != sizeof(void*);
 }

@@ -821,7 +821,7 @@ extern bool delete_unreachable_blocks (void);
 
 extern void update_br_prob_note (basic_block);
 extern bool inside_basic_block_p (const rtx_insn *);
-extern bool control_flow_insn_p (const_rtx);
+extern bool control_flow_insn_p (const rtx_insn *);
 extern rtx_insn *get_last_bb_insn (basic_block);
 
 /* In dominance.c */

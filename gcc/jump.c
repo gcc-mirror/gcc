@@ -264,7 +264,7 @@ maybe_propagate_label_ref (rtx_insn *jump_insn, rtx_insn *prev_nonjump_insn)
 	     CODE_LABEL in the LABEL_REF of the "set".  We can
 	     conveniently use it for the marker function, which
 	     requires a LABEL_REF wrapping.  */
-	  gcc_assert (XEXP (label_note, 0) == XEXP (SET_SRC (label_set), 0));
+	  gcc_assert (XEXP (label_note, 0) == LABEL_REF_LABEL (SET_SRC (label_set)));
 
 	  mark_jump_label_1 (label_set, jump_insn, false, true);
 
@@ -1141,7 +1141,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 
     case LABEL_REF:
       {
-	rtx label = XEXP (x, 0);
+	rtx label = LABEL_REF_LABEL (x);
 
 	/* Ignore remaining references to unreachable labels that
 	   have been deleted.  */
@@ -1155,7 +1155,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 	if (LABEL_REF_NONLOCAL_P (x))
 	  break;
 
-	XEXP (x, 0) = label;
+	LABEL_REF_LABEL (x) = label;
 	if (! insn || ! INSN_DELETED_P (insn))
 	  ++LABEL_NUSES (label);
 
@@ -1454,7 +1454,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   int i;
   const char *fmt;
 
-  if ((code == LABEL_REF && XEXP (x, 0) == olabel)
+  if ((code == LABEL_REF && LABEL_REF_LABEL (x) == olabel)
       || x == olabel)
     {
       x = redirect_target (nlabel);
@@ -1467,7 +1467,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   if (code == SET && SET_DEST (x) == pc_rtx
       && ANY_RETURN_P (nlabel)
       && GET_CODE (SET_SRC (x)) == LABEL_REF
-      && XEXP (SET_SRC (x), 0) == olabel)
+      && LABEL_REF_LABEL (SET_SRC (x)) == olabel)
     {
       validate_change (insn, loc, nlabel, 1);
       return;
@@ -1791,12 +1791,12 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */
       if (LABEL_REF_NONLOCAL_P (x) || LABEL_REF_NONLOCAL_P (y))
-	return XEXP (x, 0) == XEXP (y, 0);
+	return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
       /* Two label-refs are equivalent if they point at labels
 	 in the same position in the instruction stream.  */
-      return (next_real_insn (XEXP (x, 0))
-	      == next_real_insn (XEXP (y, 0)));
+      return (next_real_insn (LABEL_REF_LABEL (x))
+	      == next_real_insn (LABEL_REF_LABEL (y)));
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);

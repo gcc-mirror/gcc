@@ -38,3 +38,5 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
 #endif
+
+#define IX86_NO_LIBGCC_TFMODE

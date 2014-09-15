@@ -1,3 +1,40 @@
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __LIBGCC_HAS_%s_MODE__
+	macros for floating-point modes.
+
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* c-cppbuiltin.c (builtin_define_float_constants): Correct
+	__*_DENORM_MIN__ without denormals.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla, ubsan_instrument_return): Adjust
+	ubsan_create_data callers.
+	(ubsan_instrument_bounds): Don't emit UBSAN_BOUNDS at all if
+	index is constant or BIT_AND_EXPR with constant mask and is
+	small enough for the bound.
+	* c-gimplify.c (ubsan_walk_array_refs_r): For ADDR_EXPR of
+	ARRAY_REF, make sure the inner ARRAY_REF is not walked again.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt: Add CppReason to various flags.
+	(Wdate-time): Re-sort.
+	* c-common.c: Include c-common.h earlier.
+	(struct reason_option_codes_t): Delete.
+	(c_option_controlling_cpp_error): Prefix global type and struct
+	with cpp_.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt	(Wnormalized): New.
+	(Wnormalized=): Use Enum and Reject Negative.
+	* c-opts.c (c_common_handle_option): Do not handle Wnormalized here.
+
 2014-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define macros for mantissa

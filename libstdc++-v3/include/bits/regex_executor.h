@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  explicit
 	  _State_info(_StateIdT __start, size_t __n)
-	  : _M_start(__start), _M_visited_states(new bool[__n]())
+	  : _M_visited_states(new bool[__n]()), _M_start(__start)
 	  { }
 
 	  bool _M_visited(_StateIdT __i)

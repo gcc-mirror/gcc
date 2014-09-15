@@ -3346,8 +3346,9 @@ ix86_option_override_internal (bool main_args_p,
       /* When TARGET_BI_ARCH == 2, by default, OPTION_MASK_ABI_X32 is
 	 on and OPTION_MASK_ABI_64 is off.  We turn off
 	 OPTION_MASK_ABI_X32 if OPTION_MASK_ABI_64 is turned on by
-	 -m64.  */
-      if (TARGET_LP64_P (opts->x_ix86_isa_flags))
+	 -m64 or OPTION_MASK_CODE16 is turned on by -m16.  */
+      if (TARGET_LP64_P (opts->x_ix86_isa_flags)
+	  || TARGET_16BIT_P (opts->x_ix86_isa_flags))
 	opts->x_ix86_isa_flags &= ~OPTION_MASK_ABI_X32;
 #endif
     }
@@ -25227,7 +25228,7 @@ memory_address_length (rtx addr, bool lea)
 /* Compute default value for "length_immediate" attribute.  When SHORTFORM
    is set, expect that insn have 8bit immediate alternative.  */
 int
-ix86_attr_length_immediate_default (rtx insn, bool shortform)
+ix86_attr_length_immediate_default (rtx_insn *insn, bool shortform)
 {
   int len = 0;
   int i;
@@ -25286,7 +25287,7 @@ ix86_attr_length_immediate_default (rtx insn, bool shortform)
 
 /* Compute default value for "length_address" attribute.  */
 int
-ix86_attr_length_address_default (rtx insn)
+ix86_attr_length_address_default (rtx_insn *insn)
 {
   int i;
 
@@ -25332,7 +25333,8 @@ ix86_attr_length_address_default (rtx insn)
    2 or 3 byte VEX prefix and 1 opcode byte.  */
 
 int
-ix86_attr_length_vex_default (rtx insn, bool has_0f_opcode, bool has_vex_w)
+ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
+			      bool has_vex_w)
 {
   int i;
 
@@ -25410,7 +25412,7 @@ ix86_issue_rate (void)
    by DEP_INSN and nothing set by DEP_INSN.  */
 
 static bool
-ix86_flags_dependent (rtx insn, rtx dep_insn, enum attr_type insn_type)
+ix86_flags_dependent (rtx_insn *insn, rtx_insn *dep_insn, enum attr_type insn_type)
 {
   rtx set, set2;
 
@@ -25455,7 +25457,7 @@ ix86_flags_dependent (rtx insn, rtx dep_insn, enum attr_type insn_type)
    SET_INSN.  */
 
 bool
-ix86_agi_dependent (rtx set_insn, rtx use_insn)
+ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn)
 {
   int i;
   extract_insn_cached (use_insn);
@@ -25518,7 +25520,7 @@ exact_dependency_1 (rtx addr, rtx insn)
 /* Return true if there exists exact dependency for store & load, i.e.
    the same memory address is used in them.  */
 static bool
-exact_store_load_dependency (rtx store, rtx load)
+exact_store_load_dependency (rtx_insn *store, rtx_insn *load)
 {
   rtx set1, set2;
 
@@ -25817,7 +25819,6 @@ static bool
 ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 {
   rtx src, dest;
-  rtx single_set = single_set (condgen);
   enum rtx_code ccode;
   rtx compare_set = NULL_RTX, test_if, cond;
   rtx alu_set = NULL_RTX, addr = NULL_RTX;
@@ -25831,13 +25832,12 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
       && get_attr_type (condgen) != TYPE_ALU)
     return false;
 
-  if (single_set == NULL_RTX
+  compare_set = single_set (condgen);
+  if (compare_set == NULL_RTX
       && !TARGET_FUSE_ALU_AND_BRANCH)
     return false;
 
-  if (single_set != NULL_RTX)
-    compare_set = single_set;
-  else
+  if (compare_set == NULL_RTX)
     {
       int i;
       rtx pat = PATTERN (condgen);
@@ -30301,8 +30301,8 @@ static const struct builtin_description bdesc_round_args[] =
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_sgetexpv4sf_round, "__builtin_ia32_getexpss128_round", IX86_BUILTIN_GETEXPSS128, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_getmantv8df_mask_round, "__builtin_ia32_getmantpd512_mask", IX86_BUILTIN_GETMANTPD512, UNKNOWN, (int) V8DF_FTYPE_V8DF_INT_V8DF_QI_INT },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_getmantv16sf_mask_round, "__builtin_ia32_getmantps512_mask", IX86_BUILTIN_GETMANTPS512, UNKNOWN, (int) V16SF_FTYPE_V16SF_INT_V16SF_HI_INT },
-  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_getmantv2df_round, "__builtin_ia32_getmantsd_round", IX86_BUILTIN_GETMANTSD128, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT_INT },
-  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_getmantv4sf_round, "__builtin_ia32_getmantss_round", IX86_BUILTIN_GETMANTSS128, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT_INT },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_vgetmantv2df_round, "__builtin_ia32_getmantsd_round", IX86_BUILTIN_GETMANTSD128, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT_INT },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_vgetmantv4sf_round, "__builtin_ia32_getmantss_round", IX86_BUILTIN_GETMANTSS128, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT_INT },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_smaxv8df3_mask_round, "__builtin_ia32_maxpd512_mask", IX86_BUILTIN_MAXPD512, UNKNOWN, (int) V8DF_FTYPE_V8DF_V8DF_V8DF_QI_INT },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_smaxv16sf3_mask_round, "__builtin_ia32_maxps512_mask", IX86_BUILTIN_MAXPS512, UNKNOWN, (int) V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_sse2_vmsmaxv2df3_round, "__builtin_ia32_maxsd_round", IX86_BUILTIN_MAXSD_ROUND, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
@@ -34102,6 +34102,16 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vpermilv4df:
 	      case CODE_FOR_avx512f_getmantv8df_mask:
 	      case CODE_FOR_avx512f_getmantv16sf_mask:
+	      case CODE_FOR_avx512vl_getmantv8sf_mask:
+	      case CODE_FOR_avx512vl_getmantv4df_mask:
+	      case CODE_FOR_avx512vl_getmantv4sf_mask:
+	      case CODE_FOR_avx512vl_getmantv2df_mask:
+	      case CODE_FOR_avx512dq_rangepv8df_mask_round:
+	      case CODE_FOR_avx512dq_rangepv16sf_mask_round:
+	      case CODE_FOR_avx512dq_rangepv4df_mask:
+	      case CODE_FOR_avx512dq_rangepv8sf_mask:
+	      case CODE_FOR_avx512dq_rangepv2df_mask:
+	      case CODE_FOR_avx512dq_rangepv4sf_mask:
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 
@@ -34508,8 +34518,8 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		{
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
-		case CODE_FOR_avx512f_getmantv2df_round:
-		case CODE_FOR_avx512f_getmantv4sf_round:
+		case CODE_FOR_avx512f_vgetmantv2df_round:
+		case CODE_FOR_avx512f_vgetmantv4sf_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:
@@ -39479,7 +39489,7 @@ ix86_reorg (void)
 /* Return nonzero when QImode register that must be represented via REX prefix
    is used.  */
 bool
-x86_extended_QIreg_mentioned_p (rtx insn)
+x86_extended_QIreg_mentioned_p (rtx_insn *insn)
 {
   int i;
   extract_insn_cached (insn);
@@ -41223,6 +41233,31 @@ ix86_vector_mode_supported_p (enum machine_mode mode)
   return false;
 }
 
+/* Implement target hook libgcc_floating_mode_supported_p.  */
+static bool
+ix86_libgcc_floating_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+    case DFmode:
+    case XFmode:
+      return true;
+
+    case TFmode:
+#ifdef IX86_NO_LIBGCC_TFMODE
+      return false;
+#elif defined IX86_MAYBE_NO_LIBGCC_TFMODE
+      return TARGET_LONG_DOUBLE_128;
+#else
+      return true;
+#endif
+
+    default:
+      return false;
+    }
+}
+
 /* Target hook for c_mode_for_suffix.  */
 static enum machine_mode
 ix86_c_mode_for_suffix (char suffix)
@@ -42514,7 +42549,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
    insn, so that expand_vselect{,_vconcat} doesn't have to create a fresh
    insn every time.  */
 
-static GTY(()) rtx vselect_insn;
+static GTY(()) rtx_insn *vselect_insn;
 
 /* Initialize vselect_insn.  */
 
@@ -47287,6 +47322,10 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+  ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX ix86_c_mode_for_suffix

@@ -177,3 +177,5 @@ while (0)
 /* Support for C++ templates.  */
 #undef MAKE_DECL_ONE_ONLY
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+
+#define IX86_MAYBE_NO_LIBGCC_TFMODE

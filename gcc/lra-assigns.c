@@ -951,15 +951,15 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	    }
 	  EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	    {
-	      rtx x;
+	      rtx_insn_list *x;
 
 	      cost += lra_reg_info[spill_regno].freq;
 	      if (ira_reg_equiv[spill_regno].memory != NULL
 		  || ira_reg_equiv[spill_regno].constant != NULL)
 		for (x = ira_reg_equiv[spill_regno].init_insns;
 		     x != NULL;
-		     x = XEXP (x, 1))
-		  cost -= REG_FREQ_FROM_BB (BLOCK_FOR_INSN (XEXP (x, 0)));
+		     x = x->next ())
+		  cost -= REG_FREQ_FROM_BB (BLOCK_FOR_INSN (x->insn ()));
 	    }
 	  if (best_insn_pseudos_num > insn_pseudos_num
 	      || (best_insn_pseudos_num == insn_pseudos_num

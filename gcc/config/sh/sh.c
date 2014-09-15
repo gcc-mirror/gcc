@@ -190,7 +190,7 @@ static void dump_table (rtx_insn *, rtx_insn *);
 static bool broken_move (rtx_insn *);
 static bool mova_p (rtx_insn *);
 static rtx_insn *find_barrier (int, rtx_insn *, rtx_insn *);
-static bool noncall_uses_reg (rtx, rtx, rtx *);
+static bool noncall_uses_reg (rtx, rtx_insn *, rtx *);
 static rtx_insn *gen_block_redirect (rtx_insn *, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
@@ -5405,7 +5405,7 @@ sfunc_uses_reg (rtx insn)
    setting it while calling it.  Set *SET to a SET rtx if the register
    is set by INSN.  */
 static bool
-noncall_uses_reg (rtx reg, rtx insn, rtx *set)
+noncall_uses_reg (rtx reg, rtx_insn *insn, rtx *set)
 {
   rtx pattern, reg2;
 
@@ -5965,9 +5965,9 @@ barrier_align (rtx_insn *barrier_or_label)
    Applying loop alignment to small constant or switch tables is a waste
    of space, so we suppress this too.  */
 int
-sh_loop_align (rtx label)
+sh_loop_align (rtx_insn *label)
 {
-  rtx next = label;
+  rtx_insn *next = label;
 
   if (! optimize || optimize_size)
     return 0;
@@ -6281,7 +6281,8 @@ sh_reorg (void)
 	  /* Scan ahead looking for a barrier to stick the constant table
 	     behind.  */
 	  rtx_insn *barrier = find_barrier (num_mova, mova, insn);
-	  rtx last_float_move = NULL_RTX, last_float = 0, *last_float_addr = NULL;
+	  rtx_insn *last_float_move = NULL;
+	  rtx last_float = 0, *last_float_addr = NULL;
 	  int need_aligned_label = 0;
 
 	  if (num_mova && ! mova_p (mova))
@@ -9953,12 +9954,13 @@ reg_unused_after (rtx reg, rtx_insn *insn)
 	 we must return 0.  */
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
+	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
 	  int i;
 	  int retval = 0;
 
-	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	  for (i = 0; i < seq->len (); i++)
 	    {
-	      rtx this_insn = XVECEXP (PATTERN (insn), 0, i);
+	      rtx_insn *this_insn = seq->insn (i);
 	      rtx set = single_set (this_insn);
 
 	      if (CALL_P (this_insn))

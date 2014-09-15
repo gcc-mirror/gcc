@@ -424,6 +424,17 @@ gen_rtx_INSN_LIST (enum machine_mode mode, rtx insn, rtx insn_list)
 						 insn_list));
 }
 
+rtx_insn *
+gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
+	      basic_block bb, rtx pattern, int location, int code,
+	      rtx reg_notes)
+{
+  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeiie (INSN, mode,
+						 prev_insn, next_insn,
+						 bb, pattern, location, code,
+						 reg_notes));
+}
+
 rtx
 gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 {
@@ -3573,8 +3584,8 @@ mark_label_nuses (rtx x)
   const char *fmt;
 
   code = GET_CODE (x);
-  if (code == LABEL_REF && LABEL_P (XEXP (x, 0)))
-    LABEL_NUSES (XEXP (x, 0))++;
+  if (code == LABEL_REF && LABEL_P (LABEL_REF_LABEL (x)))
+    LABEL_NUSES (LABEL_REF_LABEL (x))++;
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -6133,7 +6144,7 @@ init_emit_once (void)
    Care updating of libcall regions if present.  */
 
 rtx_insn *
-emit_copy_of_insn_after (rtx insn, rtx after)
+emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
 {
   rtx_insn *new_rtx;
   rtx link;
@@ -6247,28 +6258,28 @@ curr_insn_location (void)
 
 /* Return lexical scope block insn belongs to.  */
 tree
-insn_scope (const_rtx insn)
+insn_scope (const rtx_insn *insn)
 {
   return LOCATION_BLOCK (INSN_LOCATION (insn));
 }
 
 /* Return line number of the statement that produced this insn.  */
 int
-insn_line (const_rtx insn)
+insn_line (const rtx_insn *insn)
 {
   return LOCATION_LINE (INSN_LOCATION (insn));
 }
 
 /* Return source file of the statement that produced this insn.  */
 const char *
-insn_file (const_rtx insn)
+insn_file (const rtx_insn *insn)
 {
   return LOCATION_FILE (INSN_LOCATION (insn));
 }
 
 /* Return expanded location of the statement that produced this insn.  */
 expanded_location
-insn_location (const_rtx insn)
+insn_location (const rtx_insn *insn)
 {
   return expand_location (INSN_LOCATION (insn));
 }

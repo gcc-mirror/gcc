@@ -152,6 +152,7 @@ tree vtable_pointer_value_to_binfo (const_tree);
 bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
 void compare_virtual_tables (varpool_node *, varpool_node *);
 bool contains_polymorphic_type_p (const_tree);
+void register_odr_type (tree);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 
@@ -238,6 +239,23 @@ possible_polymorphic_call_target_p (tree call,
 					       (OBJ_TYPE_REF_TOKEN (call)),
 					     context,
 					     n);
+}
+
+/* Return true of T is type with One Definition Rule info attached. 
+   It means that either it is anonymous type or it has assembler name
+   set.  */
+
+static inline bool
+odr_type_p (const_tree t)
+{
+  if (type_in_anonymous_namespace_p (t))
+    return true;
+  /* We do not have this information when not in LTO, but we do not need
+     to care, since it is used only for type merging.  */
+  gcc_assert (in_lto_p || flag_lto);
+
+  return (TYPE_NAME (t)
+          && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))));
 }
 #endif  /* GCC_IPA_UTILS_H  */
 

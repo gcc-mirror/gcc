@@ -162,6 +162,11 @@ lhd_set_decl_assembler_name (tree decl)
 {
   tree id;
 
+  /* set_decl_assembler_name may be called on TYPE_DECL to record ODR
+     name for C++ types.  By default types have no ODR names.  */
+  if (TREE_CODE (decl) == TYPE_DECL)
+    return;
+
   /* The language-independent code should never use the
      DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
      VAR_DECLs for variables with static storage duration need a real

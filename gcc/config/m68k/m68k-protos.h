@@ -78,8 +78,8 @@ extern rtx m68k_unwrap_symbol (rtx, bool);
 extern enum attr_cpu m68k_sched_cpu;
 extern enum attr_mac m68k_sched_mac;
 
-extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
-extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);
+extern enum attr_opx_type m68k_sched_attr_opx_type (rtx_insn *, int);
+extern enum attr_opy_type m68k_sched_attr_opy_type (rtx_insn *, int);
 extern enum attr_size m68k_sched_attr_size (rtx);
 extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
 #endif /* HAVE_ATTR_cpu */

@@ -287,7 +287,13 @@ hash_type_name (tree t)
   if (type_in_anonymous_namespace_p (t))
     return htab_hash_pointer (t);
 
-  /* For polymorphic types, we can simply hash the virtual table.  */
+  /* ODR types have name specified.  */
+  if (TYPE_NAME (t)
+      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
+    return IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (TYPE_NAME (t)));
+
+  /* For polymorphic types that was compiled with -fno-lto-odr-type-merging
+     we can simply hash the virtual table.  */
   if (TREE_CODE (t) == RECORD_TYPE
       && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)))
     {
@@ -305,8 +311,14 @@ hash_type_name (tree t)
       return hash;
     }
 
-  /* Rest is not implemented yet.  */
-  gcc_unreachable ();
+  /* Builtin types may appear as main variants of ODR types and are unique.
+     Sanity check we do not get anything that looks non-builtin.  */
+  gcc_checking_assert (TREE_CODE (t) == INTEGER_TYPE
+		       || TREE_CODE (t) == VOID_TYPE
+		       || TREE_CODE (t) == COMPLEX_TYPE
+		       || TREE_CODE (t) == REAL_TYPE
+		       || TREE_CODE (t) == POINTER_TYPE);
+  return htab_hash_pointer (t);
 }
 
 /* Return the computed hashcode for ODR_TYPE.  */
@@ -347,42 +359,61 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || type_in_anonymous_namespace_p (type2))
     return false;
 
-  /* See if types are obvoiusly different (i.e. different codes
-     or polymorphis wrt non-polymorphic).  This is not strictly correct
-     for ODR violating programs, but we can't do better without streaming
-     ODR names.  */
-  if (TREE_CODE (type1) != TREE_CODE (type2))
-    return false;
-  if (TREE_CODE (type1) == RECORD_TYPE
-      && (TYPE_BINFO (type1) == NULL_TREE) != (TYPE_BINFO (type1) == NULL_TREE))
-    return false;
-  if (TREE_CODE (type1) == RECORD_TYPE && TYPE_BINFO (type1)
-      && (BINFO_VTABLE (TYPE_BINFO (type1)) == NULL_TREE)
-	 != (BINFO_VTABLE (TYPE_BINFO (type2)) == NULL_TREE))
-    return false;
 
-  /* At the moment we have no way to establish ODR equivlaence at LTO
-     other than comparing virtual table pointrs of polymorphic types.
-     Eventually we should start saving mangled names in TYPE_NAME.
-     Then this condition will become non-trivial.  */
+  /* ODR name of the type is set in DECL_ASSEMBLER_NAME of its TYPE_NAME.
 
-  if (TREE_CODE (type1) == RECORD_TYPE
-      && TYPE_BINFO (type1) && TYPE_BINFO (type2)
-      && BINFO_VTABLE (TYPE_BINFO (type1))
-      && BINFO_VTABLE (TYPE_BINFO (type2)))
+     Ideally we should never meed types without ODR names here.  It can however
+     happen in two cases:
+
+       1) for builtin types that are not streamed but rebuilt in lto/lto-lang.c
+          Here testing for equivalence is safe, since their MAIN_VARIANTs are
+          unique.
+       2) for units streamed with -fno-lto-odr-type-merging.  Here we can't
+	  establish precise ODR equivalency, but for correctness we care only
+	  about equivalency on complete polymorphic types.  For these we can
+	  compare assembler names of their virtual tables.  */
+  if ((!TYPE_NAME (type1) || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type1)))
+      || (!TYPE_NAME (type2) || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type2))))
     {
-      tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
-      tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
-      gcc_assert (TREE_CODE (v1) == POINTER_PLUS_EXPR
-		  && TREE_CODE (v2) == POINTER_PLUS_EXPR);
-      return (operand_equal_p (TREE_OPERAND (v1, 1),
-			       TREE_OPERAND (v2, 1), 0)
-	      && DECL_ASSEMBLER_NAME
-		     (TREE_OPERAND (TREE_OPERAND (v1, 0), 0))
-		 == DECL_ASSEMBLER_NAME
-		     (TREE_OPERAND (TREE_OPERAND (v2, 0), 0)));
+      /* See if types are obvoiusly different (i.e. different codes
+	 or polymorphis wrt non-polymorphic).  This is not strictly correct
+	 for ODR violating programs, but we can't do better without streaming
+	 ODR names.  */
+      if (TREE_CODE (type1) != TREE_CODE (type2))
+	return false;
+      if (TREE_CODE (type1) == RECORD_TYPE
+	  && (TYPE_BINFO (type1) == NULL_TREE) != (TYPE_BINFO (type1) == NULL_TREE))
+	return false;
+      if (TREE_CODE (type1) == RECORD_TYPE && TYPE_BINFO (type1)
+	  && (BINFO_VTABLE (TYPE_BINFO (type1)) == NULL_TREE)
+	     != (BINFO_VTABLE (TYPE_BINFO (type2)) == NULL_TREE))
+	return false;
+
+      /* At the moment we have no way to establish ODR equivlaence at LTO
+	 other than comparing virtual table pointrs of polymorphic types.
+	 Eventually we should start saving mangled names in TYPE_NAME.
+	 Then this condition will become non-trivial.  */
+
+      if (TREE_CODE (type1) == RECORD_TYPE
+	  && TYPE_BINFO (type1) && TYPE_BINFO (type2)
+	  && BINFO_VTABLE (TYPE_BINFO (type1))
+	  && BINFO_VTABLE (TYPE_BINFO (type2)))
+	{
+	  tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
+	  tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
+	  gcc_assert (TREE_CODE (v1) == POINTER_PLUS_EXPR
+		      && TREE_CODE (v2) == POINTER_PLUS_EXPR);
+	  return (operand_equal_p (TREE_OPERAND (v1, 1),
+				   TREE_OPERAND (v2, 1), 0)
+		  && DECL_ASSEMBLER_NAME
+			 (TREE_OPERAND (TREE_OPERAND (v1, 0), 0))
+		     == DECL_ASSEMBLER_NAME
+			 (TREE_OPERAND (TREE_OPERAND (v2, 0), 0)));
+	}
+      gcc_unreachable ();
     }
-  gcc_unreachable ();
+  return (DECL_ASSEMBLER_NAME (TYPE_NAME (type1))
+	  == DECL_ASSEMBLER_NAME (TYPE_NAME (type2)));
 }
 
 
@@ -451,12 +482,6 @@ odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
   t2 = main_odr_variant (t2);
   if (t1 == t2)
     return true;
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return false;
-  if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
-    return false;
-  if (TYPE_NAME (t1) && DECL_NAME (TYPE_NAME (t1)) != DECL_NAME (TYPE_NAME (t2)))
-    return false;
 
   /* Anonymous namespace types must match exactly.  */
   an1 = type_in_anonymous_namespace_p (t1);
@@ -464,13 +489,20 @@ odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
   if (an1 != an2 || an1)
     return false;
 
-  /* For types where we can not establish ODR equivalency, recurse and deeply
-     compare.  */
-  if (TREE_CODE (t1) != RECORD_TYPE
-      || !TYPE_BINFO (t1) || !TYPE_BINFO (t2)
-      || !polymorphic_type_binfo_p (TYPE_BINFO (t1))
-      || !polymorphic_type_binfo_p (TYPE_BINFO (t2)))
+  /* For types where we can not establish ODR equivalency (either by ODR names
+     or by virtual tables), recurse and deeply compare.  */
+  if ((!odr_type_p (t1) || !odr_type_p (t2))
+      && (TREE_CODE (t1) != RECORD_TYPE || TREE_CODE (t2) != RECORD_TYPE
+          || !TYPE_BINFO (t1) || !TYPE_BINFO (t2)
+          || !polymorphic_type_binfo_p (TYPE_BINFO (t1))
+          || !polymorphic_type_binfo_p (TYPE_BINFO (t2))))
     {
+      if (TREE_CODE (t1) != TREE_CODE (t2))
+	return false;
+      if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
+	return false;
+      if (TYPE_NAME (t1) && DECL_NAME (TYPE_NAME (t1)) != DECL_NAME (TYPE_NAME (t2)))
+	return false;
       /* This should really be a pair hash, but for the moment we do not need
 	 100% reliability and it would be better to compare all ODR types so
 	 recursion here is needed only for component types.  */
@@ -478,6 +510,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
 	return true;
       return odr_types_equivalent_p (t1, t2, false, NULL, visited);
     }
+
   return types_same_for_odr (t1, t2);
 }
 
@@ -1148,8 +1181,14 @@ add_type_duplicate (odr_type val, tree type)
 	 to external declarations of methods that may be defined in the
 	 merged LTO unit.  For this reason we absolutely need to remove
 	 them and replace by internal variants. Not doing so will lead
-         to incomplete answers from possible_polymorphic_call_targets.  */
+         to incomplete answers from possible_polymorphic_call_targets.
+
+	 FIXME: disable for now; because ODR types are now build during
+	 streaming in, the variants do not need to be linked to the type,
+	 yet.  We need to do the merging in cleanup pass to be implemented
+	 soon.  */
       if (!flag_ltrans && merge
+	  && 0
 	  && TREE_CODE (val->type) == RECORD_TYPE
 	  && TREE_CODE (type) == RECORD_TYPE
 	  && TYPE_BINFO (val->type) && TYPE_BINFO (type)
@@ -1279,6 +1318,20 @@ get_odr_type (tree type, bool insert)
       vec_safe_push (odr_types_ptr, val);
     }
   return val;
+}
+
+/* Add TYPE od ODR type hash.  */
+
+void
+register_odr_type (tree type)
+{
+  if (!odr_hash)
+    odr_hash = new odr_hash_type (23);
+  /* Arrange things to be nicer and insert main variants first.  */
+  if (odr_type_p (TYPE_MAIN_VARIANT (type)))
+    get_odr_type (TYPE_MAIN_VARIANT (type), true);
+  if (TYPE_MAIN_VARIANT (type) != type)
+    get_odr_type (type, true);
 }
 
 /* Dump ODR type T and all its derrived type.  INDENT specify indentation for
@@ -3952,8 +4005,7 @@ ipa_devirt (void)
 	    /* Don't use an implicitly-declared destructor (c++/58678).  */
 	    struct cgraph_node *non_thunk_target
 	      = likely_target->function_symbol ();
-	    if (DECL_ARTIFICIAL (non_thunk_target->decl)
-		&& DECL_COMDAT (non_thunk_target->decl))
+	    if (DECL_ARTIFICIAL (non_thunk_target->decl))
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Target is artificial\n\n");
