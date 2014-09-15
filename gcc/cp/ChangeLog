@@ -1,3 +1,9 @@
+2014-09-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Do not diagnose lambda default arguments in c++14 modes.
+	* parser.c (cp_parser_lambda_declarator_opt): Make the pedwarn
+	conditional.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check_g++_parallelize): Change to just an upper bound

@@ -9222,7 +9222,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       /* Default arguments shall not be specified in the
 	 parameter-declaration-clause of a lambda-declarator.  */
       for (tree t = param_list; t; t = TREE_CHAIN (t))
-	if (TREE_PURPOSE (t))
+	if (TREE_PURPOSE (t) && cxx_dialect < cxx14)
 	  pedwarn (DECL_SOURCE_LOCATION (TREE_VALUE (t)), OPT_Wpedantic,
 		   "default argument specified for lambda parameter");
 
