@@ -8992,7 +8992,7 @@ standard_sse_constant_p (rtx x)
    the constant X.  */
 
 const char *
-standard_sse_constant_opcode (rtx insn, rtx x)
+standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 {
   switch (standard_sse_constant_p (x))
     {
@@ -16461,7 +16461,7 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
    operand may be [SDX]Fmode.  */
 
 const char *
-output_fix_trunc (rtx insn, rtx *operands, bool fisttp)
+output_fix_trunc (rtx_insn *insn, rtx *operands, bool fisttp)
 {
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
   int dimode_p = GET_MODE (operands[0]) == DImode;
@@ -26374,7 +26374,7 @@ core2i7_dfa_post_advance_cycle (void)
   data->ifetch_block_n_insns = 0;
 }
 
-static int min_insn_size (rtx);
+static int min_insn_size (rtx_insn *);
 
 /* Filter out insns from ready_try that the core will not be able to issue
    on current cycle due to decoder.  */
@@ -26385,7 +26385,7 @@ core2i7_first_cycle_multipass_filter_ready_try
 {
   while (n_ready--)
     {
-      rtx insn;
+      rtx_insn *insn;
       int insn_size;
 
       if (ready_try[n_ready])
@@ -39082,7 +39082,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
    99% of cases.  */
 
 static int
-min_insn_size (rtx insn)
+min_insn_size (rtx_insn *insn)
 {
   int l = 0, len;
 
@@ -45836,7 +45836,7 @@ static dispatch_windows *dispatch_window_list1;
 /* Get dispatch group of insn.  */
 
 static enum dispatch_group
-get_mem_group (rtx insn)
+get_mem_group (rtx_insn *insn)
 {
   enum attr_memory memory;
 
@@ -45858,7 +45858,7 @@ get_mem_group (rtx insn)
 /* Return true if insn is a compare instruction.  */
 
 static bool
-is_cmp (rtx insn)
+is_cmp (rtx_insn *insn)
 {
   enum attr_type type;
 
@@ -46095,7 +46095,7 @@ has_immediate (rtx insn)
 /* Return single or double path for instructions.  */
 
 static enum insn_path
-get_insn_path (rtx insn)
+get_insn_path (rtx_insn *insn)
 {
   enum attr_amdfam10_decode path = get_attr_amdfam10_decode (insn);
 
@@ -46111,7 +46111,7 @@ get_insn_path (rtx insn)
 /* Return insn dispatch group.  */
 
 static enum dispatch_group
-get_insn_group (rtx insn)
+get_insn_group (rtx_insn *insn)
 {
   enum dispatch_group group = get_mem_group (insn);
   if (group)
@@ -46136,7 +46136,7 @@ get_insn_group (rtx insn)
    window WINDOW_LIST.  */
 
 static int
-count_num_restricted (rtx insn, dispatch_windows *window_list)
+count_num_restricted (rtx_insn *insn, dispatch_windows *window_list)
 {
   enum dispatch_group group = get_insn_group (insn);
   int imm_size;
@@ -46186,7 +46186,7 @@ count_num_restricted (rtx insn, dispatch_windows *window_list)
    last window scheduled.  */
 
 static bool
-fits_dispatch_window (rtx insn)
+fits_dispatch_window (rtx_insn *insn)
 {
   dispatch_windows *window_list = dispatch_window_list;
   dispatch_windows *window_list_next = dispatch_window_list->next;
@@ -46243,7 +46243,7 @@ fits_dispatch_window (rtx insn)
    dispatch window WINDOW_LIST.  */
 
 static void
-add_insn_window (rtx insn, dispatch_windows *window_list, int num_uops)
+add_insn_window (rtx_insn *insn, dispatch_windows *window_list, int num_uops)
 {
   int byte_len = min_insn_size (insn);
   int num_insn = window_list->num_insn;
@@ -46294,7 +46294,7 @@ add_insn_window (rtx insn, dispatch_windows *window_list, int num_uops)
    the window exceed allowable, it allocates a new window.  */
 
 static void
-add_to_dispatch_window (rtx insn)
+add_to_dispatch_window (rtx_insn *insn)
 {
   int byte_len;
   dispatch_windows *window_list;
@@ -46429,7 +46429,7 @@ debug_dispatch_window (int window_num)
 /* Print INSN dispatch information to FILE.  */
 
 DEBUG_FUNCTION static void
-debug_insn_dispatch_info_file (FILE *file, rtx insn)
+debug_insn_dispatch_info_file (FILE *file, rtx_insn *insn)
 {
   int byte_len;
   enum insn_path path;

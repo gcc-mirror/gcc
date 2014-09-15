@@ -386,7 +386,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
       if (! include_delayed_effects
-	  && INSN_REFERENCES_ARE_DELAYED (x))
+	  && INSN_REFERENCES_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
 #endif
 
@@ -690,7 +690,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
 #ifdef INSN_SETS_ARE_DELAYED
       if (mark_type != MARK_SRC_DEST_CALL
-	  && INSN_SETS_ARE_DELAYED (x))
+	  && INSN_SETS_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
 #endif
 

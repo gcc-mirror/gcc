@@ -1922,7 +1922,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
     check-cc-attribute methods.  */
 
 void
-cris_notice_update_cc (rtx exp, rtx insn)
+cris_notice_update_cc (rtx exp, rtx_insn *insn)
 {
   enum attr_cc attrval = get_attr_cc (insn);
 

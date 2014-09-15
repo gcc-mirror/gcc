@@ -4176,16 +4176,16 @@ workaround_rts_anomaly (void)
    SEQUENCEs.  */
 
 static enum attr_type
-type_for_anomaly (rtx insn)
+type_for_anomaly (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
-  if (GET_CODE (pat) == SEQUENCE)
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
     {
       enum attr_type t;
-      t = get_attr_type (XVECEXP (pat, 0, 1));
+      t = get_attr_type (seq->insn (1));
       if (t == TYPE_MCLD)
 	return t;
-      t = get_attr_type (XVECEXP (pat, 0, 2));
+      t = get_attr_type (seq->insn (2));
       if (t == TYPE_MCLD)
 	return t;
       return TYPE_MCST;
@@ -4572,7 +4572,7 @@ add_sched_insns_for_speculation (void)
 	  && (cbranch_predicted_taken_p (insn)))
 	{
 	  rtx target = JUMP_LABEL (insn);
-	  rtx next = next_real_insn (target);
+	  rtx_insn *next = next_real_insn (target);
 
 	  if (GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE
 	      && get_attr_type (next) == TYPE_STALL)

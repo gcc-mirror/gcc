@@ -5640,7 +5640,7 @@ m68k_sched_attr_opy_type (rtx_insn *insn, int address_p)
 
 /* Return size of INSN as int.  */
 static int
-sched_get_attr_size_int (rtx insn)
+sched_get_attr_size_int (rtx_insn *insn)
 {
   int size;
 
@@ -5725,7 +5725,7 @@ sched_get_attr_size_int (rtx insn)
 
 /* Return size of INSN as attribute enum value.  */
 enum attr_size
-m68k_sched_attr_size (rtx insn)
+m68k_sched_attr_size (rtx_insn *insn)
 {
   switch (sched_get_attr_size_int (insn))
     {
@@ -5746,7 +5746,7 @@ m68k_sched_attr_size (rtx insn)
 /* Return operand X or Y (depending on OPX_P) of INSN,
    if it is a MEM, or NULL overwise.  */
 static enum attr_op_type
-sched_get_opxy_mem_type (rtx insn, bool opx_p)
+sched_get_opxy_mem_type (rtx_insn *insn, bool opx_p)
 {
   if (opx_p)
     {
@@ -5802,7 +5802,7 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 /* Implement op_mem attribute.  */
 enum attr_op_mem
-m68k_sched_attr_op_mem (rtx insn)
+m68k_sched_attr_op_mem (rtx_insn *insn)
 {
   enum attr_op_type opx;
   enum attr_op_type opy;
@@ -6322,7 +6322,7 @@ sched_get_reg_operand (rtx_insn *insn, bool opx_p)
 /* Return true, if X or Y (depending on OPX_P) operand of INSN
    is a MEM.  */
 static bool
-sched_mem_operand_p (rtx insn, bool opx_p)
+sched_mem_operand_p (rtx_insn *insn, bool opx_p)
 {
   switch (sched_get_opxy_mem_type (insn, opx_p))
     {

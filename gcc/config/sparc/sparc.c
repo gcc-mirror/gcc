@@ -3479,7 +3479,7 @@ emit_cbcond_nop (rtx insn)
 /* Return nonzero if TRIAL can go into the call delay slot.  */
 
 int
-eligible_for_call_delay (rtx trial)
+eligible_for_call_delay (rtx_insn *trial)
 {
   rtx pat;
 
@@ -3605,7 +3605,7 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 /* Return nonzero if TRIAL can go into the function return's delay slot.  */
 
 int
-eligible_for_return_delay (rtx trial)
+eligible_for_return_delay (rtx_insn *trial)
 {
   int regno;
   rtx pat;
@@ -3671,7 +3671,7 @@ eligible_for_return_delay (rtx trial)
 /* Return nonzero if TRIAL can go into the sibling call's delay slot.  */
 
 int
-eligible_for_sibcall_delay (rtx trial)
+eligible_for_sibcall_delay (rtx_insn *trial)
 {
   rtx pat;
 

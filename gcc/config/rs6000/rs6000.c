@@ -1076,15 +1076,15 @@ static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, enum machine_mode, addr_space_t,
 				      bool);
 static int rs6000_debug_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
-static bool is_microcoded_insn (rtx);
-static bool is_nonpipeline_insn (rtx);
-static bool is_cracked_insn (rtx);
+static bool is_microcoded_insn (rtx_insn *);
+static bool is_nonpipeline_insn (rtx_insn *);
+static bool is_cracked_insn (rtx_insn *);
 static bool is_load_insn (rtx, rtx *);
 static bool is_store_insn (rtx, rtx *);
 static bool set_to_load_agen (rtx_insn *,rtx_insn *);
-static bool insn_terminates_group_p (rtx , enum group_termination);
-static bool insn_must_be_first_in_group (rtx);
-static bool insn_must_be_last_in_group (rtx);
+static bool insn_terminates_group_p (rtx_insn *, enum group_termination);
+static bool insn_must_be_first_in_group (rtx_insn *);
+static bool insn_must_be_last_in_group (rtx_insn *);
 static void altivec_init_builtins (void);
 static tree builtin_function_type (enum machine_mode, enum machine_mode,
 				   enum machine_mode, enum machine_mode,
@@ -26643,7 +26643,7 @@ rs6000_debug_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
    Return false otherwise.  */
 
 static bool
-is_microcoded_insn (rtx insn)
+is_microcoded_insn (rtx_insn *insn)
 {
   if (!insn || !NONDEBUG_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == USE
@@ -26674,7 +26674,7 @@ is_microcoded_insn (rtx insn)
    by the processor (and therefore occupies 2 issue slots).  */
 
 static bool
-is_cracked_insn (rtx insn)
+is_cracked_insn (rtx_insn *insn)
 {
   if (!insn || !NONDEBUG_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == USE
@@ -26719,7 +26719,7 @@ is_cracked_insn (rtx insn)
    the branch slot.  */
 
 static bool
-is_branch_slot_insn (rtx insn)
+is_branch_slot_insn (rtx_insn *insn)
 {
   if (!insn || !NONDEBUG_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == USE
@@ -26907,7 +26907,7 @@ rs6000_adjust_priority (rtx_insn *insn ATTRIBUTE_UNUSED, int priority)
 
 /* Return true if the instruction is nonpipelined on the Cell. */
 static bool
-is_nonpipeline_insn (rtx insn)
+is_nonpipeline_insn (rtx_insn *insn)
 {
   enum attr_type type;
   if (!insn || !NONDEBUG_INSN_P (insn)
@@ -27460,7 +27460,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
    the first insn in the group it belongs to).  */
 
 static bool
-insn_terminates_group_p (rtx insn, enum group_termination which_group)
+insn_terminates_group_p (rtx_insn *insn, enum group_termination which_group)
 {
   bool first, last;
 
@@ -27483,7 +27483,7 @@ insn_terminates_group_p (rtx insn, enum group_termination which_group)
 
 
 static bool
-insn_must_be_first_in_group (rtx insn)
+insn_must_be_first_in_group (rtx_insn *insn)
 {
   enum attr_type type;
 
@@ -27661,7 +27661,7 @@ insn_must_be_first_in_group (rtx insn)
 }
 
 static bool
-insn_must_be_last_in_group (rtx insn)
+insn_must_be_last_in_group (rtx_insn *insn)
 {
   enum attr_type type;
 
@@ -27823,7 +27823,7 @@ is_costly_group (rtx *group_insns, rtx next_insn)
 
 static int
 force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
-		 rtx next_insn, bool *group_end, int can_issue_more,
+		 rtx_insn *next_insn, bool *group_end, int can_issue_more,
 		 int *group_count)
 {
   rtx nop;

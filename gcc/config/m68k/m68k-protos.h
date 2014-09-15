@@ -80,8 +80,8 @@ extern enum attr_mac m68k_sched_mac;
 
 extern enum attr_opx_type m68k_sched_attr_opx_type (rtx_insn *, int);
 extern enum attr_opy_type m68k_sched_attr_opy_type (rtx_insn *, int);
-extern enum attr_size m68k_sched_attr_size (rtx);
-extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
+extern enum attr_size m68k_sched_attr_size (rtx_insn *);
+extern enum attr_op_mem m68k_sched_attr_op_mem (rtx_insn *);
 #endif /* HAVE_ATTR_cpu */
 
 #endif /* RTX_CODE */

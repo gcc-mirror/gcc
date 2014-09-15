@@ -40,8 +40,8 @@ extern void xstormy16_initialize_trampoline (rtx, rtx, rtx);
 
 #ifdef RTX_CODE
 extern void xstormy16_emit_cbranch (enum rtx_code, rtx, rtx, rtx);
-extern char *xstormy16_output_cbranch_hi (rtx, const char *, int, rtx);
-extern char *xstormy16_output_cbranch_si (rtx, const char *, int, rtx);
+extern char *xstormy16_output_cbranch_hi (rtx, const char *, int, rtx_insn *);
+extern char *xstormy16_output_cbranch_si (rtx, const char *, int, rtx_insn *);
 
 extern void xstormy16_expand_casesi (rtx, rtx, rtx, rtx, rtx);
 extern void xstormy16_output_addr_vec (FILE *, rtx, rtx);

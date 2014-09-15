@@ -94,7 +94,7 @@ extern rtx sh_fsca_int2sf (void);
 
 /* Declare functions defined in sh.c and used in templates.  */
 
-extern const char *output_branch (int, rtx, rtx *);
+extern const char *output_branch (int, rtx_insn *, rtx *);
 extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
 extern const char *output_branchy_insn (enum rtx_code, const char *,
 					rtx_insn *, rtx *);
@@ -102,7 +102,7 @@ extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
 extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
 extern const char *output_far_jump (rtx_insn *, rtx);
 
-extern rtx sfunc_uses_reg (rtx);
+extern rtx sfunc_uses_reg (rtx_insn *);
 extern int barrier_align (rtx_insn *);
 extern int sh_loop_align (rtx_insn *);
 extern bool fp_zero_operand (rtx);

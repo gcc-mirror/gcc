@@ -2817,10 +2817,10 @@ arc_print_operand (FILE *file, rtx x, int code)
       /* Unconditional branches / branches not depending on condition codes.
 	 This could also be a CALL_INSN.
 	 Output the appropriate delay slot suffix.  */
-      if (final_sequence && XVECLEN (final_sequence, 0) != 1)
+      if (final_sequence && final_sequence->len () != 1)
 	{
-	  rtx jump = XVECEXP (final_sequence, 0, 0);
-	  rtx delay = XVECEXP (final_sequence, 0, 1);
+	  rtx_insn *jump = final_sequence->insn (0);
+	  rtx_insn *delay = final_sequence->insn (1);
 
 	  /* For TARGET_PAD_RETURN we might have grabbed the delay insn.  */
 	  if (INSN_DELETED_P (delay))
@@ -7828,12 +7828,13 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
       && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
       && get_attr_type (insn) == TYPE_RETURN)
     {
-      rtx prev = prev_active_insn (insn);
+      rtx_insn *prev = prev_active_insn (insn);
 
       if (!prev || !(prev = prev_active_insn (prev))
 	  || ((NONJUMP_INSN_P (prev)
 	       && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	      ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	      ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+			   NON_SIBCALL)
 	      : CALL_ATTR (prev, NON_SIBCALL)))
 	return len + 4;
     }
@@ -7915,7 +7916,7 @@ arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
 	 entire SEQUENCE.  */
       rtx_insn *inner;
       if (TARGET_UPSIZE_DBR
-	  && get_attr_length (XVECEXP (pat, 0, 1)) <= 2
+	  && get_attr_length (pat->insn (1)) <= 2
 	  && (((type = get_attr_type (inner = pat->insn (0)))
 	       == TYPE_UNCOND_BRANCH)
 	      || type == TYPE_BRANCH)
@@ -7961,7 +7962,8 @@ arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
   rtx_insn *prev = prev_active_insn (insn);
   if (prev && arc_next_active_insn (prev, 0) == insn
       && ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+		       NON_SIBCALL)
 	  : (CALL_ATTR (prev, NON_SIBCALL)
 	     && NEXT_INSN (PREV_INSN (prev)) == prev)))
     force_target = true;
@@ -8678,7 +8680,8 @@ arc_pad_return (void)
     }
   if (!prev
       || ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+		       NON_SIBCALL)
 	  : CALL_ATTR (prev, NON_SIBCALL)))
     {
       if (want_long)
@@ -9078,7 +9081,7 @@ arc_regno_use_in (unsigned int regno, rtx x)
    INSN can't have attributes.  */
 
 int
-arc_attr_type (rtx insn)
+arc_attr_type (rtx_insn *insn)
 {
   if (NONJUMP_INSN_P (insn)
       ? (GET_CODE (PATTERN (insn)) == USE
@@ -9094,10 +9097,11 @@ arc_attr_type (rtx insn)
 /* Return true if insn sets the condition codes.  */
 
 bool
-arc_sets_cc_p (rtx insn)
+arc_sets_cc_p (rtx_insn *insn)
 {
-  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
+  if (NONJUMP_INSN_P (insn))
+    if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+      insn = seq->insn (seq->len () - 1);
   return arc_attr_type (insn) == TYPE_COMPARE;
 }
 

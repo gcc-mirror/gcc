@@ -1205,8 +1205,8 @@ sh_print_operand (FILE *stream, rtx x, int code)
 
     case '.':
       if (final_sequence
-	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
-	  && get_attr_length (XVECEXP (final_sequence, 0, 1)))
+	  && ! INSN_ANNULLED_BRANCH_P (final_sequence->insn (0))
+	  && get_attr_length (final_sequence->insn (1)))
 	fprintf (stream, ASSEMBLER_DIALECT ? "/s" : ".s");
       break;
     case ',':
@@ -2754,7 +2754,7 @@ static int lf = 100;
 
 /* Output code for ordinary branches.  */
 const char *
-output_branch (int logic, rtx insn, rtx *operands)
+output_branch (int logic, rtx_insn *insn, rtx *operands)
 {
   switch (get_attr_length (insn))
     {
@@ -2777,8 +2777,8 @@ output_branch (int logic, rtx insn, rtx *operands)
 	     place for it is after the label.  final will do that by default.  */
 
 	  if (final_sequence
-	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
-	      && get_attr_length (XVECEXP (final_sequence, 0, 1)))
+	      && ! INSN_ANNULLED_BRANCH_P (final_sequence->insn (0))
+	      && get_attr_length (final_sequence->insn (1)))
 	    {
 	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
 	                   ASSEMBLER_DIALECT ? "/" : ".", label);
@@ -5368,7 +5368,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
    register is not used anywhere else in this instruction - except as the
    destination of a set, return this register; else, return 0.  */
 rtx
-sfunc_uses_reg (rtx insn)
+sfunc_uses_reg (rtx_insn *insn)
 {
   int i;
   rtx pattern, part, reg_part, reg;

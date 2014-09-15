@@ -42,11 +42,11 @@ extern void init_insn_lengths (void);
 
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its maximum length.  */
-extern int get_attr_length (rtx);
+extern int get_attr_length (rtx_insn *);
 
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its minimum length.  */
-extern int get_attr_min_length (rtx);
+extern int get_attr_min_length (rtx_insn *);
 
 /* Make a pass over all insns and compute their actual lengths by shortening
    any branches of variable length if possible.  */

@@ -3385,7 +3385,7 @@ rl78_propogate_register_origins (void)
   int origins[FIRST_PSEUDO_REGISTER];
   int age[FIRST_PSEUDO_REGISTER];
   int i;
-  rtx insn, ninsn = NULL_RTX;
+  rtx_insn *insn, *ninsn = NULL;
   rtx pat;
 
   reset_origins (origins, age);

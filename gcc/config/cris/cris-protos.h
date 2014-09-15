@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);
-extern void cris_notice_update_cc (rtx, rtx);
+extern void cris_notice_update_cc (rtx, rtx_insn *);
 extern bool cris_reload_address_legitimized (rtx, enum machine_mode, int, int, int);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);

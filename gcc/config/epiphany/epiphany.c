@@ -2692,7 +2692,7 @@ epiphany_expand_set_fp_mode (rtx *operands)
 }
 
 void
-epiphany_insert_mode_switch_use (rtx insn,
+epiphany_insert_mode_switch_use (rtx_insn *insn,
 				 int entity ATTRIBUTE_UNUSED,
 				 int mode ATTRIBUTE_UNUSED)
 {

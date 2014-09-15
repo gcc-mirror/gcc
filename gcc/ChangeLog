@@ -1,5 +1,207 @@
 2014-09-15  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/arc/arc-protos.h (arc_attr_type): Strengthen param from
+	rtx to rtx_insn *.
+	(arc_sets_cc_p): Likewise.
+	* config/arc/arc.c (arc_print_operand): Use methods of
+	"final_sequence" for clarity, and to enable strengthening of
+	locals "jump" and "delay" from rtx to rtx_insn *.
+	(arc_adjust_insn_length): Strengthen local "prev" from rtx to
+	rtx_insn *; use method of rtx_sequence for typesafety.
+	(arc_get_insn_variants): Use insn method of rtx_sequence for
+	typesafety.
+	(arc_pad_return): Likewise.
+	(arc_attr_type): Strengthen param from rtx to rtx_insn *.
+	(arc_sets_cc_p): Likewise.  Also, convert a GET_CODE check to a
+	dyn_cast to rtx_sequence *, using insn method for typesafety.
+	* config/arc/arc.h (ADJUST_INSN_LENGTH): Add checked casts to
+	rtx_sequence * and use insn method when invoking get_attr_length.
+	* config/bfin/bfin.c (type_for_anomaly): Strengthen param from rtx
+	to rtx_insn *.  Replace a GET_CODE check with a dyn_cast to
+	rtx_sequence *, introducing a local "seq", using its insn method
+	from typesafety and clarity.
+	(add_sched_insns_for_speculation): Strengthen local "next" from
+	rtx to rtx_insn *.
+	* config/c6x/c6x.c (get_insn_side): Likewise for param "insn".
+	(predicate_insn): Likewise.
+	* config/cris/cris-protos.h (cris_notice_update_cc): Likewise for
+	second param.
+	* config/cris/cris.c (cris_notice_update_cc): Likewise.
+	* config/epiphany/epiphany-protos.h
+	(extern void epiphany_insert_mode_switch_use): Likewise for param
+	"insn".
+	(get_attr_sched_use_fpu): Likewise for param.
+	* config/epiphany/epiphany.c (epiphany_insert_mode_switch_use):
+	Likewise for param "insn".
+	* config/epiphany/mode-switch-use.c (insert_uses): Likewise for
+	param "insn" of "target_insert_mode_switch_use" callback.
+	* config/frv/frv.c (frv_insn_unit): Likewise for param "insn".
+	(frv_issues_to_branch_unit_p): Likewise.
+	(frv_pack_insn_p): Likewise.
+	(frv_compare_insns): Strengthen locals "insn1" and "insn2" from
+	const rtx * (i.e. mutable rtx_def * const *) to
+	rtx_insn * const *.
+	* config/i386/i386-protos.h (standard_sse_constant_opcode):
+	Strengthen first param from rtx to rtx_insn *.
+	(output_fix_trunc): Likewise.
+	* config/i386/i386.c (standard_sse_constant_opcode): Likewise.
+	(output_fix_trunc): Likewise.
+	(core2i7_first_cycle_multipass_filter_ready_try): Likewise for
+	local "insn".
+	(min_insn_size): Likewise for param "insn".
+	(get_mem_group): Likewise.
+	(is_cmp): Likewise.
+	(get_insn_path): Likewise.
+	(get_insn_group): Likewise.
+	(count_num_restricted): Likewise.
+	(fits_dispatch_window): Likewise.
+	(add_insn_window): Likewise.
+	(add_to_dispatch_window): Likewise.
+	(debug_insn_dispatch_info_file): Likewise.
+	* config/m32c/m32c-protos.h (m32c_output_compare): Likewise for
+	first param.
+	* config/m32c/m32c.c (m32c_compare_redundant): Likewise for param
+	"cmp" and local "prev".
+	(m32c_output_compare): Likewise for param "insn".
+	* config/m32r/predicates.md (define_predicate "small_insn_p"): Add
+	a checked cast to rtx_insn * on "op" after we know it's an INSN_P.
+	(define_predicate "large_insn_p"): Likewise.
+	* config/m68k/m68k-protos.h (m68k_sched_attr_size): Strengthen
+	param from rtx to rtx_insn *.
+	(attr_op_mem m68k_sched_attr_op_mem): Likewise.
+	* config/m68k/m68k.c (sched_get_attr_size_int): Likewise.
+	(m68k_sched_attr_size): Likewise.
+	(sched_get_opxy_mem_type): Likewise for param "insn".
+	(m68k_sched_attr_op_mem): Likewise.
+	(sched_mem_operand_p): Likewise.
+	* config/mep/mep-protos.h (mep_multi_slot): Likewise for param.
+	* config/mep/mep.c (mep_multi_slot): Likewise.
+	* config/mips/mips-protos.h (mips_output_sync_loop): Likewise for
+	first param.
+	(mips_sync_loop_insns): Likewise.
+	* config/mips/mips.c (mips_print_operand_punctuation): Use insn
+	method of "final_sequence" for typesafety.
+	(mips_process_sync_loop): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mips_output_sync_loop): Likewise.
+	(mips_sync_loop_insns): Likewise.
+	(mips_74k_agen_init): Likewise.
+	(mips_sched_init): Use NULL rather than NULL_RTX when working with
+	insns.
+	* config/nds32/nds32-fp-as-gp.c (nds32_symbol_load_store_p):
+	Strengthen param "insn" from rtx to rtx_insn *.
+	* config/nds32/nds32.c (nds32_target_alignment): Likewise for
+	local "insn".
+	* config/pa/pa-protos.h (pa_insn_refs_are_delayed): Likewise for
+	param.
+	* config/pa/pa.c (pa_output_function_epilogue): Likewise for local
+	"insn".  Use method of rtx_sequence for typesafety.
+	(branch_to_delay_slot_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(branch_needs_nop_p): Likewise.
+	(use_skip_p): Likewise.
+	(pa_insn_refs_are_delayed): Likewise.
+	* config/rl78/rl78.c (rl78_propogate_register_origins): Likewise
+	for locals "insn", "ninsn".
+	* config/rs6000/rs6000.c (is_microcoded_insn): Likewise for param
+	"insn".
+	(is_cracked_insn): Likewise.
+	(is_branch_slot_insn): Likewise.
+	(is_nonpipeline_insn): Likewise.
+	(insn_terminates_group_p): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise for param "next_insn".
+	* config/s390/s390.c (s390_get_sched_attrmask): Likewise for param
+	"insn".
+	(s390_sched_score): Likewise.
+	* config/sh/sh-protos.h (output_branch): Likewise for param 2.
+	(rtx sfunc_uses_reg): Likewise for sole param.
+	* config/sh/sh.c (sh_print_operand): Use insn method of
+	final_sequence for typesafety.
+	(output_branch): Strengthen param "insn" from rtx to rtx_insn *.
+	Use insn method of final_sequence for typesafety.
+	(sfunc_uses_reg): Strengthen param "insn" from rtx to rtx_insn *.
+	* config/sparc/sparc-protos.h (eligible_for_call_delay): Likewise
+	for param.
+	(eligible_for_return_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	* config/sparc/sparc.c (eligible_for_call_delay): Likewise.
+	(eligible_for_return_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	* config/stormy16/stormy16-protos.h
+	(xstormy16_output_cbranch_hi): Likewise for final param.
+	(xstormy16_output_cbranch_si): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_output_cbranch_hi): LIkewise.
+	(xstormy16_output_cbranch_si): Likewise.
+	* config/v850/v850-protos.h (notice_update_cc): Likewise.
+	* config/v850/v850.c (notice_update_cc): Likewise.
+
+	* final.c (get_attr_length_1): Strengthen param "insn" and param
+	of "fallback_fn" from rtx to rtx_insn *, eliminating a checked cast.
+	(get_attr_length): Strengthen param "insn" from rtx to rtx_insn *.
+	(get_attr_min_length): Likewise.
+	(shorten_branches): Likewise for signature of locals "length_fun"
+	and "inner_length_fun".  Introduce local rtx_sequence * "seqn"
+	from a checked cast and use its methods for clarity and to enable
+	strengthening local "inner_insn" from rtx to rtx_insn *.
+	* genattr.c (gen_attr): When writing out the prototypes of the
+	various generated "get_attr_" functions, strengthen the params of
+	the non-const functions from rtx to rtx_insn *.
+	Similarly, strengthen the params of insn_default_length,
+	insn_min_length, insn_variable_length_p, insn_current_length.
+	(main): Similarly, strengthen the param of num_delay_slots,
+	internal_dfa_insn_code, insn_default_latency, bypass_p,
+	insn_latency, min_issue_delay, print_reservation,
+	insn_has_dfa_reservation_p and of the "internal_dfa_insn_code" and
+	"insn_default_latency" callbacks.  Rename hook_int_rtx_unreachable
+	to hook_int_rtx_insn_unreachable.
+	* genattrtab.c (write_attr_get): When writing out the generated
+	"get_attr_" functions, strengthen the param "insn" from rtx to
+	rtx_insn *, eliminating a checked cast.
+	(make_automaton_attrs): When writing out prototypes of
+	"internal_dfa_insn_code_", "insn_default_latency_" functions
+	and the "internal_dfa_insn_code" and "insn_default_latency"
+	callbacks, strengthen their params from rtx to rtx_insn *
+	* genautomata.c (output_internal_insn_code_evaluation): When
+	writing out code, add a checked cast from rtx to rtx_insn * when
+	invoking DFA_INSN_CODE_FUNC_NAME aka dfa_insn_code.
+	(output_dfa_insn_code_func): Strengthen param of generated
+	function "dfa_insn_code_enlarge" from rtx to rtx_insn *.
+	(output_trans_func): Likewise for generated function
+	"state_transition".
+	(output_internal_insn_latency_func): When writing out generated
+	function "internal_insn_latency", rename params from "insn" and
+	"insn2" to "insn_or_const0" and "insn2_or_const0".  Reintroduce
+	locals "insn" and "insn2" as rtx_insn * with checked casts once
+	we've proven that we're not dealing with const0_rtx.
+	(output_insn_latency_func):  Strengthen param of generated
+	function "insn_latency" from rtx to rtx_insn *.
+	(output_print_reservation_func): Likewise for generated function
+	"print_reservation".
+	(output_insn_has_dfa_reservation_p): Likewise for generated
+	function "insn_has_dfa_reservation_p".
+	* hooks.c (hook_int_rtx_unreachable): Rename to...
+	(hook_int_rtx_insn_unreachable): ...this, and strengthen param
+	from rtx to rtx_insn *.
+	* hooks.h (hook_int_rtx_unreachable): Likewise.
+	(extern int hook_int_rtx_insn_unreachable): Likewise.
+	* output.h (get_attr_length): Strengthen param from rtx to rtx_insn *.
+	(get_attr_min_length): Likewise.
+	* recog.c (get_enabled_alternatives): Likewise.
+	* recog.h (alternative_mask get_enabled_alternatives): Likewise.
+	* reorg.c (find_end_label): Introduce local rtx "pat" and
+	strengthen local "insn" from rtx to rtx_insn *.
+	(redundant_insn): Use insn method of "seq" rather than element for
+	typesafety; strengthen local "control" from rtx to rtx_insn *.
+	* resource.c (mark_referenced_resources): Add checked cast to
+	rtx_insn * within INSN/JUMP_INSN case.
+	(mark_set_resources): Likewise.
+	* sel-sched.c (estimate_insn_cost): Strengthen param "insn" from
+	rtx to rtx_insn *.
+
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/rs6000/rs6000.c (rs6000_loop_align_max_skip): Strengthen
 	param "label" from rtx to rtx_insn *.
 	* config/rx/rx.c (rx_max_skip_for_label): Likewise for param "lab"
