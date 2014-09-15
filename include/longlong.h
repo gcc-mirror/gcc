@@ -1687,7 +1687,8 @@ extern UHItype __stormy16_count_leading_zeros (UHItype);
 #if !defined (udiv_qrnnd) && defined (sdiv_qrnnd)
 #define udiv_qrnnd(q, r, nh, nl, d) \
   do {									\
-    USItype __r;							\
+    extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);	\
+    UWtype __r;								\
     (q) = __udiv_w_sdiv (&__r, nh, nl, d);				\
     (r) = __r;								\
   } while (0)
