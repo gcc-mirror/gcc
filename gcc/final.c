@@ -499,25 +499,25 @@ get_attr_min_length (rtx insn)
 #endif
 
 int
-default_label_align_after_barrier_max_skip (rtx insn ATTRIBUTE_UNUSED)
+default_label_align_after_barrier_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 int
-default_loop_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+default_loop_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return align_loops_max_skip;
 }
 
 int
-default_label_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+default_label_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return align_labels_max_skip;
 }
 
 int
-default_jump_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+default_jump_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return align_jumps_max_skip;
 }

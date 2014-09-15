@@ -4134,7 +4134,7 @@ rs6000_loop_align (rtx label)
 
 /* Implement TARGET_LOOP_ALIGN_MAX_SKIP. */
 static int
-rs6000_loop_align_max_skip (rtx label)
+rs6000_loop_align_max_skip (rtx_insn *label)
 {
   return (1 << rs6000_loop_align (label)) - 1;
 }
