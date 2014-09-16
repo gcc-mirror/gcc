@@ -1,3 +1,8 @@
+2014-09-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* gfortran.dg/filename_null.f90: New test.
+
 2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/pg-override.c: Fix a typo.
