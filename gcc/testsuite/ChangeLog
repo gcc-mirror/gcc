@@ -1,3 +1,10 @@
+2014-09-15  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: New test.
+	* gcc.dg/pg.c: New test.
+	* gcc.target/i386/fentry-override.c: New test.
+	* gcc.target/i386/fentry.c: New test.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/56408
