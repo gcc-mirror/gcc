@@ -7823,9 +7823,18 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       if (OVERLOAD_TYPE_P (t)
 	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
-	if (tree attributes
-	    = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (template_type)))
-	  TYPE_ATTRIBUTES (t) = attributes;
+	{
+	  if (tree attributes
+	      = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (template_type)))
+	    {
+	      if (!TREE_CHAIN (attributes))
+		TYPE_ATTRIBUTES (t) = attributes;
+	      else
+		TYPE_ATTRIBUTES (t)
+		  = build_tree_list (TREE_PURPOSE (attributes),
+				     TREE_VALUE (attributes));
+	    }
+	}
 
       /* Let's consider the explicit specialization of a member
          of a class template specialization that is implicitly instantiated,
@@ -7949,6 +7958,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* Possibly limit visibility based on template args.  */
       TREE_PUBLIC (type_decl) = 1;
       determine_visibility (type_decl);
+
+      inherit_targ_abi_tags (t);
 
       return t;
     }

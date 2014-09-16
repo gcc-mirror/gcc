@@ -1,3 +1,11 @@
+2014-09-15  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (lookup_template_class_1): Splice out abi_tag attribute if
+	necessary.  Call inherit_targ_abi_tags here.
+	* class.c (check_bases_and_members): Not here.
+	(inherit_targ_abi_tags): Check CLASS_TYPE_P.
+	* cp-tree.h: Declare inherit_targ_abi_tags.
+
 2014-09-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Do not diagnose lambda default arguments in c++14 modes.
