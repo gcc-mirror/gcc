@@ -4555,6 +4555,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
       cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
+
+      if (!profile_flag && !flag_instrument_function_entry_exit)
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl) = 1;
     }
 }
 
