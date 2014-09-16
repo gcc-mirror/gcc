@@ -1,3 +1,9 @@
+2014-09-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/61853
+	* config/pa/pa.c (pa_function_value): Directly handle aggregates
+	that fit exactly in a word or double word.
+
 2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Detect lack of
