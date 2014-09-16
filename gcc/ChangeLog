@@ -1,3 +1,13 @@
+2014-09-16  Kito Cheng  <kito@0xlab.org>
+
+	* ira.c (ira): Don't initialize ira_spilled_reg_stack_slots and
+	ira_spilled_reg_stack_slots_num if using lra.
+	(do_reload): Remove release ira_spilled_reg_stack_slots part.
+	* ira-color.c (ira_sort_regnos_for_alter_reg): Add assertion to
+	make sure not using lra.
+	(ira_reuse_stack_slot): Likewise.
+	(ira_mark_new_stack_slot): Likewise.
+
 2014-09-15  Andi Kleen  <ak@linux.intel.com>
 
 	* function.c (allocate_struct_function): Force
