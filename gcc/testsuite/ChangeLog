@@ -1,3 +1,7 @@
+2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pg.c: Fix a typo.
+
 2014-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/63258
