@@ -792,10 +792,13 @@ v850_output_addr_const_extra (FILE * file, rtx x)
      nothing, since the table will not be used.
      (cf gcc.c-torture/compile/990801-1.c).  */
   if (GET_CODE (x) == MINUS
-      && GET_CODE (XEXP (x, 0)) == LABEL_REF
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == CODE_LABEL
-      && INSN_DELETED_P (XEXP (XEXP (x, 0), 0)))
-    return true;
+      && GET_CODE (XEXP (x, 0)) == LABEL_REF)
+    {
+      rtx_code_label *label
+	= dyn_cast<rtx_code_label *> (XEXP (XEXP (x, 0), 0));
+      if (label && label->deleted ())
+	return true;
+    }
 
   output_addr_const (file, x);
   return true;

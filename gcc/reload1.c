@@ -8847,7 +8847,7 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
 
   /* It is possible that this reload has been only used to set another reload
      we eliminated earlier and thus deleted this instruction too.  */
-  if (INSN_DELETED_P (output_reload_insn))
+  if (output_reload_insn->deleted ())
     return;
 
   /* Get the raw pseudo-register referred to.  */

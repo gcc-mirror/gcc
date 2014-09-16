@@ -2341,7 +2341,7 @@ subst_stack_regs (rtx_insn *insn, stack_ptr regstack)
   /* subst_stack_regs_pat may have deleted a no-op insn.  If so, any
      REG_UNUSED will already have been dealt with, so just return.  */
 
-  if (NOTE_P (insn) || INSN_DELETED_P (insn))
+  if (NOTE_P (insn) || insn->deleted ())
     return control_flow_insn_deleted;
 
   /* If this a noreturn call, we can't insert pop insns after it.

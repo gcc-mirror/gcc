@@ -536,7 +536,7 @@ emit_delay_sequence (rtx_insn *insn, rtx_insn_list *list, int length)
       rtx note, next;
 
       /* Show that this copy of the insn isn't deleted.  */
-      INSN_DELETED_P (tem) = 0;
+      tem->set_undeleted ();
 
       /* Unlink insn from its original place, and re-emit it into
 	 the sequence.  */
@@ -1426,7 +1426,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 
 		  update_block (dtrial, thread);
 		  new_rtx = delete_from_delay_slot (dtrial);
-	          if (INSN_DELETED_P (thread))
+	          if (thread->deleted ())
 		    thread = new_rtx;
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
@@ -1464,7 +1464,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 
 	      update_block (merged_insns->insn (), thread);
 	      new_rtx = delete_from_delay_slot (merged_insns->insn ());
-	      if (INSN_DELETED_P (thread))
+	      if (thread->deleted ())
 		thread = new_rtx;
 	    }
 	  else
@@ -1947,7 +1947,7 @@ fill_simple_delay_slots (int non_jumps_p)
 
       insn = unfilled_slots_base[i];
       if (insn == 0
-	  || INSN_DELETED_P (insn)
+	  || insn->deleted ()
 	  || (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	  || (JUMP_P (insn) && non_jumps_p)
@@ -2861,7 +2861,7 @@ fill_eager_delay_slots (void)
 
       insn = unfilled_slots_base[i];
       if (insn == 0
-	  || INSN_DELETED_P (insn)
+	  || insn->deleted ()
 	  || !JUMP_P (insn)
 	  || ! (condjump_p (insn) || condjump_in_parallel_p (insn)))
 	continue;
@@ -3837,7 +3837,7 @@ dbr_schedule (rtx_insn *first)
       memset (total_annul_slots, 0, sizeof total_annul_slots);
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
-	  if (! INSN_DELETED_P (insn)
+	  if (! insn->deleted ()
 	      && NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && GET_CODE (PATTERN (insn)) != CLOBBER)

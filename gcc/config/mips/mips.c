@@ -12498,7 +12498,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	{
 	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
+	  final_sequence->insn (1)->set_deleted ();
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -12523,7 +12523,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	{
 	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
+	  final_sequence->insn (1)->set_deleted ();
 	}
       else
 	output_asm_insn ("nop", 0);

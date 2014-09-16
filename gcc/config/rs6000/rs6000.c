@@ -34222,7 +34222,7 @@ replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
 
   df_insn_delete (insn);
   remove_insn (insn);
-  INSN_DELETED_P (insn) = 1;
+  insn->set_deleted ();
 }
 
 /* Dump the swap table to DUMP_FILE.  */

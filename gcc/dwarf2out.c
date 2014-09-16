@@ -19051,7 +19051,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	     represent source-level labels which were explicitly declared by
 	     the user.  This really shouldn't be happening though, so catch
 	     it if it ever does happen.  */
-	  gcc_assert (!INSN_DELETED_P (insn));
+	  gcc_assert (!as_a<rtx_insn *> (insn)->deleted ());
 
 	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
           add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
@@ -21328,7 +21328,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 
   next_note = NEXT_INSN (loc_note);
   if (! next_note
-      || INSN_DELETED_P (next_note)
+      || next_note->deleted ()
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
 	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))

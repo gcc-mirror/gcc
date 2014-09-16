@@ -1238,7 +1238,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	    continue;
 
 	  while (last_combined_insn
-		 && INSN_DELETED_P (last_combined_insn))
+		 && last_combined_insn->deleted ())
 	    last_combined_insn = PREV_INSN (last_combined_insn);
 	  if (last_combined_insn == NULL_RTX
 	      || BARRIER_P (last_combined_insn)

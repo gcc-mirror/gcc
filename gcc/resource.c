@@ -931,8 +931,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	 information, we can get it from there unless the insn at the
 	 start of the basic block has been deleted.  */
       if (tinfo && tinfo->block != -1
-	  && ! INSN_DELETED_P (BB_HEAD (BASIC_BLOCK_FOR_FN (cfun,
-							    tinfo->block))))
+	  && ! BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, tinfo->block))->deleted ())
 	b = tinfo->block;
     }
 

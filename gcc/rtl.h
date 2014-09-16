@@ -490,6 +490,7 @@ is_a_helper <const rtx_sequence *>::test (const_rtx rt)
 
 class GTY(()) rtx_insn : public rtx_def
 {
+public:
   /* No extra fields, but adds the invariant:
 
      (INSN_P (X)
@@ -505,6 +506,18 @@ class GTY(()) rtx_insn : public rtx_def
     i.e. we have an rtx that has an INSN_UID field and can be part of
     a linked list of insns.
   */
+
+  /* Returns true if this insn has been deleted.  */
+
+  bool deleted () const { return volatil; }
+
+  /* Mark this insn as deleted.  */
+
+  void set_deleted () { volatil = true; }
+
+  /* Mark this insn as not deleted.  */
+
+  void set_undeleted () { volatil = false; }
 };
 
 /* Subclasses of rtx_insn.  */
@@ -1405,10 +1418,6 @@ inline rtvec rtx_jump_table_data::get_labels () const
 #define RTX_FRAME_RELATED_P(RTX)					\
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\
 		    CALL_INSN, JUMP_INSN, BARRIER, SET)->frame_related)
-
-/* 1 if RTX is an insn that has been deleted.  */
-#define INSN_DELETED_P(RTX)						\
-  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_DELETED_P", (RTX))->volatil)
 
 /* 1 if JUMP RTX is a crossing jump.  */
 #define CROSSING_JUMP_P(RTX) \

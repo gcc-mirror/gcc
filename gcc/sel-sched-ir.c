@@ -1069,7 +1069,7 @@ return_nop_to_pool (insn_t nop, bool full_tidying)
   sel_remove_insn (nop, false, full_tidying);
 
   /* We'll recycle this nop.  */
-  INSN_DELETED_P (nop) = 0;
+  nop->set_undeleted ();
 
   if (nop_pool.n == nop_pool.s)
     nop_pool.v = XRESIZEVEC (rtx_insn *, nop_pool.v,
@@ -1404,7 +1404,7 @@ sel_gen_insn_from_expr_after (expr_t expr, vinsn_t vinsn, int seqno,
 
   /* The insn may come from the transformation cache, which may hold already
      deleted insns, so mark it as not deleted.  */
-  INSN_DELETED_P (insn) = 0;
+  insn->set_undeleted ();
 
   add_insn_after (insn, after, BLOCK_FOR_INSN (insn));
 
