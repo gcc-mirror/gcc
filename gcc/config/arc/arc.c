@@ -2823,7 +2823,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  rtx_insn *delay = final_sequence->insn (1);
 
 	  /* For TARGET_PAD_RETURN we might have grabbed the delay insn.  */
-	  if (INSN_DELETED_P (delay))
+	  if (delay->deleted ())
 	    return;
 	  if (JUMP_P (jump) && INSN_ANNULLED_BRANCH_P (jump))
 	    fputs (INSN_FROM_TARGET_P (delay) ? ".d"
@@ -3748,7 +3748,7 @@ arc_ccfsm_record_condition (rtx cond, bool reverse, rtx_insn *jump,
     {
       rtx insn = XVECEXP (PATTERN (seq_insn), 0, 1);
 
-      if (!INSN_DELETED_P (insn)
+      if (!as_a<rtx_insn *> (insn)->deleted ()
 	  && INSN_ANNULLED_BRANCH_P (jump)
 	  && (TARGET_AT_DBR_CONDEXEC || INSN_FROM_TARGET_P (insn)))
 	{
@@ -8627,7 +8627,7 @@ arc_unalign_branch_p (rtx branch)
     return 0;
   /* Do not do this if we have a filled delay slot.  */
   if (get_attr_delay_slot_filled (branch) == DELAY_SLOT_FILLED_YES
-      && !INSN_DELETED_P (NEXT_INSN (branch)))
+      && !NEXT_INSN (branch)->deleted ())
     return 0;
   note = find_reg_note (branch, REG_BR_PROB, 0);
   return (!note
@@ -8709,7 +8709,7 @@ arc_pad_return (void)
 	  rtx save_pred = current_insn_predicate;
 	  final_scan_insn (prev, asm_out_file, optimize, 1, NULL);
 	  cfun->machine->force_short_suffix = -1;
-	  INSN_DELETED_P (prev) = 1;
+	  prev->set_deleted ();
 	  current_output_insn = insn;
 	  current_insn_predicate = save_pred;
 	}

@@ -165,11 +165,11 @@ delete_insn (rtx uncast_insn)
   if (really_delete)
     {
       /* If this insn has already been deleted, something is very wrong.  */
-      gcc_assert (!INSN_DELETED_P (insn));
+      gcc_assert (!insn->deleted ());
       if (INSN_P (insn))
 	df_insn_delete (insn);
       remove_insn (insn);
-      INSN_DELETED_P (insn) = 1;
+      insn->set_deleted ();
     }
 
   /* If deleting a jump, decrement the use count of the label.  Deleting
@@ -254,7 +254,7 @@ delete_insn_chain (rtx start, rtx finish, bool clear_bb)
       else
 	delete_insn (current);
 
-      if (clear_bb && !INSN_DELETED_P (current))
+      if (clear_bb && !current->deleted ())
 	set_block_for_insn (current, NULL);
 
       if (current == start)
@@ -3278,7 +3278,7 @@ fixup_abnormal_edges (void)
 		      if (GET_CODE (PATTERN (insn)) != USE)
 			{
 			  /* We're not deleting it, we're moving it.  */
-			  INSN_DELETED_P (insn) = 0;
+			  insn->set_undeleted ();
 			  SET_PREV_INSN (insn) = NULL_RTX;
 			  SET_NEXT_INSN (insn) = NULL_RTX;
 

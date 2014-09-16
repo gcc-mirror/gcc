@@ -1,4 +1,16 @@
 2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
+    
+    	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
+    	config/rs6000/rs6000.c, config/sh/sh.c, cprop.c, dwarf2out.c,
+    	emit-rtl.c, final.c, function.c, gcse.c, jump.c, reg-stack.c,
+    	reload1.c, reorg.c, resource.c, sel-sched-ir.c: Replace INSN_DELETED_P
+    	macro with statically checked member functions.
+    	* rtl.h (rtx_insn::deleted): New method.
+    	(rtx_insn::set_deleted): Likewise.
+    	(rtx_insn::set_undeleted): Likewise.
+    	(INSN_DELETED_P): Remove.
+
+2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Assign the
 	result of emit_jump_insn_before to a new variable.

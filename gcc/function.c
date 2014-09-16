@@ -1933,7 +1933,7 @@ instantiate_virtual_regs (void)
 	else
 	  instantiate_virtual_regs_in_insn (insn);
 
-	if (INSN_DELETED_P (insn))
+	if (insn->deleted ())
 	  continue;
 
 	instantiate_virtual_regs_in_rtx (&REG_NOTES (insn));

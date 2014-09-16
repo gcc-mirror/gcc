@@ -1132,7 +1132,7 @@ shorten_branches (rtx_insn *first)
       if (NOTE_P (insn) || BARRIER_P (insn)
 	  || LABEL_P (insn) || DEBUG_INSN_P (insn))
 	continue;
-      if (INSN_DELETED_P (insn))
+      if (insn->deleted ())
 	continue;
 
       body = PATTERN (insn);
@@ -2183,7 +2183,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
   /* Ignore deleted insns.  These can occur when we split insns (due to a
      template of "#") while not optimizing.  */
-  if (INSN_DELETED_P (insn))
+  if (insn->deleted ())
     return NEXT_INSN (insn);
 
   switch (GET_CODE (insn))

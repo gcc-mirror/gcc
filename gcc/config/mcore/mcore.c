@@ -2536,7 +2536,7 @@ conditionalize_block (rtx_insn *first)
     {
       rtx_insn *newinsn;
 
-      if (INSN_DELETED_P (insn))
+      if (insn->deleted ())
 	continue;
       
       /* Try to form a conditional variant of the instruction and emit it.  */

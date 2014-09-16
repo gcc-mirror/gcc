@@ -1071,7 +1071,7 @@ retry:
 		  print_rtl (dump_file, src);
 		  fprintf (dump_file, "\n");
 		}
-	      if (INSN_DELETED_P (insn))
+	      if (insn->deleted ())
 		return 1;
 	    }
 	}
@@ -1257,7 +1257,7 @@ local_cprop_pass (void)
 			  break;
 			}
 		    }
-		  if (INSN_DELETED_P (insn))
+		  if (insn->deleted ())
 		    break;
 		}
 	      while (i < reg_use_count);
@@ -1854,7 +1854,7 @@ one_cprop_pass (void)
 		/* ??? Need to be careful w.r.t. mods done to INSN.
 		       Don't call mark_oprs_set if we turned the
 		       insn into a NOTE, or deleted the insn.  */
-		if (! NOTE_P (insn) && ! INSN_DELETED_P (insn))
+		if (! NOTE_P (insn) && ! insn->deleted ())
 		  mark_oprs_set (insn);
 	      }
 	}

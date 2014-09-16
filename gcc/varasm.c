@@ -3823,7 +3823,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
      CODE_LABEL into a NOTE.  */
   /* ??? This seems completely and utterly wrong.  Certainly it's
      not true for NOTE_INSN_DELETED_LABEL, but I disbelieve proper
-     functioning even with INSN_DELETED_P and friends.  */
+     functioning even with rtx_insn::deleted and friends.  */
 
   tmp = x;
   switch (GET_CODE (tmp))
@@ -3837,7 +3837,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
 
     case LABEL_REF:
       tmp = LABEL_REF_LABEL (tmp);
-      gcc_assert (!INSN_DELETED_P (tmp));
+      gcc_assert (!as_a<rtx_insn *> (tmp)->deleted ());
       gcc_assert (!NOTE_P (tmp)
 		  || NOTE_KIND (tmp) != NOTE_INSN_DELETED);
       break;
