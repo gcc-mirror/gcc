@@ -2661,7 +2661,7 @@ extern enum rtx_code reverse_condition_maybe_unordered (enum rtx_code);
 extern enum rtx_code swap_condition (enum rtx_code);
 extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
-extern void mark_jump_label (rtx, rtx, int);
+extern void mark_jump_label (rtx, rtx_insn *, int);
 
 /* In jump.c */
 extern rtx_insn *delete_related_insns (rtx);

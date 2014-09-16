@@ -65,8 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static void init_label_info (rtx_insn *);
 static void mark_all_labels (rtx_insn *);
-static void mark_jump_label_1 (rtx, rtx, bool, bool);
-static void mark_jump_label_asm (rtx, rtx);
+static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
+static void mark_jump_label_asm (rtx, rtx_insn *);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
 
@@ -1066,7 +1066,7 @@ sets_cc0_p (const_rtx x)
    that loop-optimization is done with.  */
 
 void
-mark_jump_label (rtx x, rtx insn, int in_mem)
+mark_jump_label (rtx x, rtx_insn *insn, int in_mem)
 {
   rtx asmop = extract_asm_operands (x);
   if (asmop)
@@ -1083,7 +1083,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
    note.  */
 
 static void
-mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
+mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
 {
   RTX_CODE code = GET_CODE (x);
   int i;
@@ -1192,7 +1192,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 	  int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
 	  for (i = 0; i < XVECLEN (x, eltnum); i++)
-	    mark_jump_label_1 (XVECEXP (x, eltnum, i), NULL_RTX, in_mem,
+	    mark_jump_label_1 (XVECEXP (x, eltnum, i), NULL, in_mem,
 			       is_target);
 	}
       return;
@@ -1227,7 +1227,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
    need to be considered targets.  */
 
 static void
-mark_jump_label_asm (rtx asmop, rtx insn)
+mark_jump_label_asm (rtx asmop, rtx_insn *insn)
 {
   int i;
 

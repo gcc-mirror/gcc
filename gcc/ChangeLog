@@ -1,3 +1,13 @@
+2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Assign the
+	result of emit_jump_insn_before to a new variable.
+	* jump.c (mark_jump_label): Change the type of insn to rtx_insn *.
+	(mark_jump_label_1): Likewise.
+	(mark_jump_label_asm): Likewise.
+	* reload1.c (gen_reload): Change type of tem to rtx_insn *.
+	* rtl.h (mark_jump_label): Adjust.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (dg_target_exps): Remove.

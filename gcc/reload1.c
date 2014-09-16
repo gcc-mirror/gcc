@@ -8594,7 +8594,7 @@ static rtx_insn *
 gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx_insn *last = get_last_insn ();
-  rtx tem;
+  rtx_insn *tem;
 #ifdef SECONDARY_MEMORY_NEEDED
   rtx tem1, tem2;
 #endif
