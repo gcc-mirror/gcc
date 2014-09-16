@@ -1,3 +1,53 @@
+2014-09-16  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_expand_vector_extract): Handle V32HI and V64QI modes.
+	* config/i386/sse.md
+	(define_mode_iterator VI48F_256): New.
+	(define_mode_attr extract_type): Ditto.
+	(define_mode_attr extract_suf): Ditto.
+	(define_mode_iterator AVX512_VEC): Ditto.
+	(define_expand
+	"<extract_type>_vextract<shuffletype><extract_suf>_mask"): Use
+	AVX512_VEC.
+	(define_insn "avx512dq_vextract<shuffletype>64x2_1_maskm"): New.
+	(define_insn
+	"<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>"):
+	Ditto.
+	(define_mode_attr extract_type_2): Ditto.
+	(define_mode_attr extract_suf_2): Ditto.
+	(define_mode_iterator AVX512_VEC_2): Ditto.
+	(define_expand
+	"<extract_type_2>_vextract<shuffletype><extract_suf_2>_mask"): Use
+	AVX512_VEC_2 mode iterator.
+	(define_insn "vec_extract_hi_<mode>_maskm"): Ditto.
+	(define_expand "avx512vl_vextractf128<mode>"): Ditto.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for V16FI mode): Ditto.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for VI8F_256 mode): Ditto.
+	(define_insn "vec_extract_hi_<mode><mask_name>"): Add masking.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for VI4F_256 mode): Ditto.
+	(define_insn "vec_extract_lo_<mode>_maskm"): Ditto.
+	(define_insn "vec_extract_hi_<mode>_maskm"): Ditto.
+	(define_insn "vec_extract_hi_<mode><mask_name>"): Add masking.
+	(define_mode_iterator VEC_EXTRACT_MODE): Add V64QI and V32HI modes.
+	(define_insn "vcvtph2ps<mask_name>"): Fix pattern condition.
+	(define_insn "avx512f_vextract<shuffletype>32x4_1_maskm"): Ditto.
+	(define_insn "<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>"):
+	Update `type' attribute, remove explicit `memory' attribute calculation.
+
 2014-09-16  Kito Cheng  <kito@0xlab.org>
 
 	* ira.c (ira): Don't initialize ira_spilled_reg_stack_slots and

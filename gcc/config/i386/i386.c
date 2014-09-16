@@ -40979,6 +40979,32 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	}
       break;
 
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (V16HImode);
+	  if (elt < 16)
+	    emit_insn (gen_vec_extract_lo_v32hi (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v32hi (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 15);
+	  return;
+	}
+      break;
+
+    case V64QImode:
+      if (TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (V32QImode);
+	  if (elt < 32)
+	    emit_insn (gen_vec_extract_lo_v64qi (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v64qi (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 31);
+	  return;
+	}
+      break;
+
     case V16SFmode:
       tmp = gen_reg_rtx (V8SFmode);
       if (elt < 8)
