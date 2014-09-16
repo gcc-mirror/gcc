@@ -1,3 +1,9 @@
+2014-09-15  Andi Kleen  <ak@linux.intel.com>
+
+	* function.c (allocate_struct_function): Force
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT to one when
+	profiling is disabled.
+
 2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
     
     	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
