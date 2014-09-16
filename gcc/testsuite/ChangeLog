@@ -1,3 +1,9 @@
+2014-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56408
+	* gfortran.dg/dg.exp (dg-compile-aux-modules): Workaround
+	missing nexted dg-test call support in dejaGNU 1.4.4.
+
 2014-09-15  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.dg/pg-override.c: New test.

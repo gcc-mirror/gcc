@@ -39,8 +39,18 @@ proc dg-compile-aux-modules { args } {
 	error "dg-set-target-env-var: needs one argument"
 	return
     }
+
+    set level [info level]
+    if { [info procs dg-save-unknown] != [list] } {
+	rename dg-save-unknown dg-save-unknown-level-$level
+    }
+
     dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
-    # cleanup-modules isn't intentionally invoked here.
+    # cleanup-modules is intentionally not invoked here.
+
+    if { [info procs dg-save-unknown-level-$level] != [list] } {
+	rename dg-save-unknown-level-$level dg-save-unknown
+    }
 }
 
 # Main loop.
