@@ -57,6 +57,7 @@
 (define_subst_attr "mask_mode512bit_condition" "mask" "1" "(<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 (define_subst_attr "mask_avx512vl_condition" "mask" "1" "TARGET_AVX512VL")
 (define_subst_attr "mask_avx512bw_condition" "mask" "1" "TARGET_AVX512BW")
+(define_subst_attr "mask_avx512dq_condition" "mask" "1" "TARGET_AVX512DQ")
 (define_subst_attr "store_mask_constraint" "mask" "vm" "v")
 (define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
