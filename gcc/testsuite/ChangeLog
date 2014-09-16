@@ -1,3 +1,7 @@
+2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-os-support.h: Remove magic number.
+
 2014-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/56408
