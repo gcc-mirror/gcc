@@ -541,7 +541,6 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   /* Create the unit structure.  */
 
-  u->file = xmalloc (opp->file_len);
   if (u->unit_number != opp->common.unit)
     internal_error (&opp->common, "Unit number changed");
   u->s = s;
@@ -618,8 +617,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
       u->strm_pos = stell (u->s) + 1;
     }
 
-  memmove (u->file, opp->file, opp->file_len);
-  u->file_len = opp->file_len;
+  u->filename = fc_strdup (opp->file, opp->file_len);
 
   /* Curiously, the standard requires that the
      position specifier be ignored for new files so a newly connected
@@ -685,20 +683,13 @@ already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 	}
 
       u->s = NULL;
-      free (u->file);
-      u->file = NULL;
-      u->file_len = 0;
-
+ 
 #if !HAVE_UNLINK_OPEN_FILE
-      char *path = NULL;
-      if (u->file && u->flags.status == STATUS_SCRATCH)
-	path = fc_strdup (u->file, u->file_len);
-      if (path != NULL)
-	{
-	  unlink (path);
-	  free (path);
-	}
+      if (u->filename && u->flags.status == STATUS_SCRATCH)
+	unlink (u->filename);
 #endif
+     free (u->filename);
+     u->filename = NULL;
 
       u = new_unit (opp, u, flags);
       if (u != NULL)

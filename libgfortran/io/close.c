@@ -72,7 +72,7 @@ st_close (st_parameter_close *clp)
 	    generate_error (&clp->common, LIBERROR_BAD_OPTION,
 			    "Can't KEEP a scratch file on CLOSE");
 #if !HAVE_UNLINK_OPEN_FILE
-	  path = fc_strdup (u->file, u->file_len);
+	  path = strdup (u->filename);
 #endif
 	}
       else
@@ -82,7 +82,7 @@ st_close (st_parameter_close *clp)
 #if HAVE_UNLINK_OPEN_FILE
 	      delete_file (u);
 #else
-	      path = fc_strdup (u->file, u->file_len);
+	      path = strdup (u->filename);
 #endif
             }
 	}
