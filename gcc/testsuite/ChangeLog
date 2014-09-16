@@ -1,3 +1,9 @@
+2014-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63258
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-33.c: Remove scan
+	for "vectorization not profitable".
+
 2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512f-os-support.h: Remove magic number.
