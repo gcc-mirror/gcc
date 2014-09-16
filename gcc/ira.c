@@ -5260,14 +5260,16 @@ ira (FILE *f)
 #ifdef ENABLE_IRA_CHECKING
       print_redundant_copies ();
 #endif
-
-      ira_spilled_reg_stack_slots_num = 0;
-      ira_spilled_reg_stack_slots
-	= ((struct ira_spilled_reg_stack_slot *)
-	   ira_allocate (max_regno
-			 * sizeof (struct ira_spilled_reg_stack_slot)));
-      memset (ira_spilled_reg_stack_slots, 0,
-	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
+      if (! ira_use_lra_p)
+	{
+	  ira_spilled_reg_stack_slots_num = 0;
+	  ira_spilled_reg_stack_slots
+	    = ((struct ira_spilled_reg_stack_slot *)
+	       ira_allocate (max_regno
+			     * sizeof (struct ira_spilled_reg_stack_slot)));
+	  memset (ira_spilled_reg_stack_slots, 0,
+		  max_regno * sizeof (struct ira_spilled_reg_stack_slot));
+	}
     }
   allocate_initial_values ();
 
@@ -5303,9 +5305,6 @@ do_reload (void)
       FOR_ALL_BB_FN (bb, cfun)
 	bb->loop_father = NULL;
       current_loops = NULL;
-      
-      if (ira_conflicts_p)
-	ira_free (ira_spilled_reg_stack_slots);
 
       ira_destroy ();
 

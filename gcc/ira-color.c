@@ -4067,6 +4067,8 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
   ira_allocno_iterator ai;
   ira_allocno_t *spilled_coalesced_allocnos;
 
+  ira_assert (! ira_use_lra_p);
+
   /* Set up allocnos can be coalesced.  */
   coloring_allocno_bitmap = ira_allocate_bitmap ();
   for (i = 0; i < n; i++)
@@ -4416,6 +4418,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
   bitmap_iterator bi;
   struct ira_spilled_reg_stack_slot *slot = NULL;
 
+  ira_assert (! ira_use_lra_p);
+
   ira_assert (inherent_size == PSEUDO_REGNO_BYTES (regno)
 	      && inherent_size <= total_size
 	      && ALLOCNO_HARD_REGNO (allocno) < 0);
@@ -4527,6 +4531,8 @@ ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
   struct ira_spilled_reg_stack_slot *slot;
   int slot_num;
   ira_allocno_t allocno;
+
+  ira_assert (! ira_use_lra_p);
 
   ira_assert (PSEUDO_REGNO_BYTES (regno) <= total_size);
   allocno = ira_regno_allocno_map[regno];
