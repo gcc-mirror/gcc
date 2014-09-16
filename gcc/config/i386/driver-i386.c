@@ -533,6 +533,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 #define XSTATE_FP			0x1
 #define XSTATE_SSE			0x2
 #define XSTATE_YMM			0x4
+#define XSTATE_OPMASK			0x20
+#define XSTATE_ZMM			0x40
+#define XSTATE_HI_ZMM			0x80
   if (has_osxsave)
     asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
 	 : "=a" (eax), "=d" (edx)
@@ -552,6 +555,20 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xsaveopt = 0;
       has_xsaves = 0;
       has_xsavec = 0;
+    }
+
+  if (!has_osxsave
+      || (eax &
+	  (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
+	  != (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
+    {
+      has_avx512f = 0;
+      has_avx512er = 0;
+      has_avx512pf = 0;
+      has_avx512cd = 0;
+      has_avx512dq = 0;
+      has_avx512bw = 0;
+      has_avx512vl = 0;
     }
 
   if (!arch)
