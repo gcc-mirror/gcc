@@ -92,9 +92,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
       else if (u->unit_number == options.stderr_unit)
 	fstrcpy (iqp->name, iqp->name_len, "CONERR$", sizeof("CONERR$"));
       else
-	fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+	cf_strcpy (iqp->name, iqp->name_len, u->filename);
 #else
-    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+    cf_strcpy (iqp->name, iqp->name_len, u->filename);
 #endif
     }
 

@@ -1,3 +1,9 @@
+2014-09-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* io/inquire.c (inquire_via_unit): Use gfc_unit.filename also when
+	HAVE_TTYNAME{_R} is not defined.
+
 2014-09-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/62768
