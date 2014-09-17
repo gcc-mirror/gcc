@@ -785,7 +785,13 @@ case ${target} in
   ;;
 *-*-rtems*)
   case ${enable_threads} in
-    yes) thread_file='rtems' ;;
+    "" | yes | rtems) thread_file='rtems' ;;
+    posix) thread_file='posix' ;;
+    no) ;;
+    *)
+      echo 'Unknown thread configuration for RTEMS'
+      exit 1
+      ;;
   esac
   tmake_file="${tmake_file} t-rtems"
   extra_options="${extra_options} rtems.opt"
