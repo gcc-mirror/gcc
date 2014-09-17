@@ -212,9 +212,20 @@ struct gcov_root
   struct gcov_info *list;
   unsigned dumped : 1;	/* counts have been dumped.  */
   unsigned run_counted : 1;  /* run has been accounted for.  */
+  struct gcov_root *next;
+  struct gcov_root *prev;
 };
 
 extern struct gcov_root __gcov_root ATTRIBUTE_HIDDEN;
+
+struct gcov_master
+{
+  gcov_unsigned_t version;
+  struct gcov_root *root;
+};
+  
+/* Exactly one of these will be active in the process.  */
+extern struct gcov_master __gcov_master;
 
 /* Dump a set of gcov objects.  */
 extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
@@ -230,8 +241,9 @@ extern void __gcov_flush (void) ATTRIBUTE_HIDDEN;
 extern void __gcov_reset (void);
 extern void __gcov_reset_int (void) ATTRIBUTE_HIDDEN;
 
-/* Function to enable early write of profile information so far.  */
+/* User function to enable early write of profile information so far.  */
 extern void __gcov_dump (void);
+extern void __gcov_dump_int (void) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just sums the counters.  */
 extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
