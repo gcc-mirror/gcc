@@ -1,3 +1,8 @@
+2014-09-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (arm_option_override): Reject -mfpu=neon
+	when architecture is older than ARMv7.
+
 2014-09-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/61853
