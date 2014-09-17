@@ -1,5 +1,8 @@
 2014-09-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/63284
+	* gcc.dg/pr63284.c: New test.
+
 	* ada/acats/run_all.sh: Redirect mkdir stderr to /dev/null.
 
 2014-09-17  Paolo Carlini  <paolo.carlini@oracle.com>

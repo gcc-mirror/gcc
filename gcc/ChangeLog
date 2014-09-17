@@ -1,3 +1,10 @@
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* tree-cfgcleanup.c (fixup_noreturn_call): Don't split block
+	if there are only debug stmts after the noreturn call, instead
+	remove the debug stmts.
+
 2014-09-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (type_pair, default_hashset_traits): New types.
