@@ -1,3 +1,10 @@
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* tree-cfgcleanup.c (fixup_noreturn_call): Don't split block
+	if there are only debug stmts after the noreturn call, instead
+	remove the debug stmts.
+
 2014-09-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_fmav4sf4): Use correct constraints for

@@ -1,3 +1,8 @@
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* gcc.dg/pr63284.c: New test.
+
 2014-09-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

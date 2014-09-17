@@ -498,7 +498,20 @@ fixup_noreturn_call (gimple stmt)
 
   /* First split basic block if stmt is not last.  */
   if (stmt != gsi_stmt (gsi_last_bb (bb)))
-    split_block (bb, stmt);
+    {
+      if (stmt == gsi_stmt (gsi_last_nondebug_bb (bb)))
+	{
+	  /* Don't split if there are only debug stmts
+	     after stmt, that can result in -fcompare-debug
+	     failures.  Remove the debug stmts instead,
+	     they should be all unreachable anyway.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  for (gsi_next (&gsi); !gsi_end_p (gsi); )
+	    gsi_remove (&gsi, true);
+	}
+      else
+	split_block (bb, stmt);
+    }
 
   changed |= remove_fallthru_edge (bb->succs);
 
