@@ -136,8 +136,44 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "hash-map.h"
 
+/* Hash based set of pairs of types.  */
+typedef struct
+{
+  tree first;
+  tree second;
+} type_pair;
+
+struct pair_traits : default_hashset_traits
+{
+  static hashval_t
+  hash (type_pair p)
+  {
+    return TYPE_UID (p.first) ^ TYPE_UID (p.second);
+  }
+  static bool
+  is_empty (type_pair p)
+  {
+    return p.first == NULL;
+  }
+  static bool
+  is_deleted (type_pair p ATTRIBUTE_UNUSED)
+    {
+      return false;
+    }
+  static bool
+  equal (const type_pair &a, const type_pair &b)
+    {
+      return a.first==b.first && a.second == b.second;
+    }
+  static void
+  mark_empty (type_pair &e)
+    {
+      e.first = NULL;
+    }
+};
+
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
-				    hash_set<tree> *);
+				    hash_set<type_pair,pair_traits> *);
 
 static bool odr_violation_reported = false;
 
@@ -471,7 +507,7 @@ set_type_binfo (tree type, tree binfo)
 /* Compare T2 and T2 based on name or structure.  */
 
 static bool
-odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
+odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<type_pair,pair_traits> *visited)
 {
   bool an1, an2;
 
@@ -489,29 +525,39 @@ odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
   if (an1 != an2 || an1)
     return false;
 
-  /* For types where we can not establish ODR equivalency (either by ODR names
-     or by virtual tables), recurse and deeply compare.  */
-  if ((!odr_type_p (t1) || !odr_type_p (t2))
-      && (TREE_CODE (t1) != RECORD_TYPE || TREE_CODE (t2) != RECORD_TYPE
-          || !TYPE_BINFO (t1) || !TYPE_BINFO (t2)
-          || !polymorphic_type_binfo_p (TYPE_BINFO (t1))
-          || !polymorphic_type_binfo_p (TYPE_BINFO (t2))))
+  /* For ODR types be sure to compare their names.  */
+  if ((odr_type_p (t1) && !odr_type_p (t2))
+      || (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE
+          && TYPE_BINFO (t1) && TYPE_BINFO (t2)
+          && polymorphic_type_binfo_p (TYPE_BINFO (t1))
+          && polymorphic_type_binfo_p (TYPE_BINFO (t2))))
     {
-      if (TREE_CODE (t1) != TREE_CODE (t2))
-	return false;
-      if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
-	return false;
-      if (TYPE_NAME (t1) && DECL_NAME (TYPE_NAME (t1)) != DECL_NAME (TYPE_NAME (t2)))
-	return false;
-      /* This should really be a pair hash, but for the moment we do not need
-	 100% reliability and it would be better to compare all ODR types so
-	 recursion here is needed only for component types.  */
-      if (visited->add (t1))
-	return true;
-      return odr_types_equivalent_p (t1, t2, false, NULL, visited);
+      if (!types_same_for_odr (t1, t2))
+        return false;
+      /* Limit recursion: If subtypes are ODR types and we know
+         that they are same, be happy.  */
+      if (!get_odr_type (t1, true)->odr_violated)
+        return true;
     }
 
-  return types_same_for_odr (t1, t2);
+  /* Component types, builtins and possibly vioalting ODR types
+     have to be compared structurally.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+  if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
+    return false;
+  if (TYPE_NAME (t1) && DECL_NAME (TYPE_NAME (t1)) != DECL_NAME (TYPE_NAME (t2)))
+    return false;
+
+  type_pair pair={t1,t2};
+  if (TYPE_UID (t1) > TYPE_UID (t2))
+    {
+      pair.first = t2;
+      pair.second = t1;
+    }
+  if (visited->add (pair))
+    return true;
+  return odr_types_equivalent_p (t1, t2, false, NULL, visited);
 }
 
 /* Compare two virtual tables, PREVAILING and VTABLE and output ODR
@@ -646,16 +692,25 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
 		   "type %qT violates one definition rule",
 		   t1))
     return;
-  if (!st1)
+  if (!st1 && !st2)
     ;
-  else if (TREE_CODE (st1) == FIELD_DECL)
+  /* For FIELD_DECL support also case where one of fields is
+     NULL - this is used when the structures have mismatching number of
+     elements.  */
+  else if (!st1 || TREE_CODE (st1) == FIELD_DECL)
     {
       inform (DECL_SOURCE_LOCATION (decl2),
 	      "a different type is defined in another translation unit");
+      if (!st1)
+	{
+	  st1 = st2;
+	  st2 = NULL;
+	}
       inform (DECL_SOURCE_LOCATION (st1),
 	      "the first difference of corresponding definitions is field %qD",
 	      st1);
-      decl2 = st2;
+      if (st2)
+        decl2 = st2;
     }
   else if (TREE_CODE (st1) == FUNCTION_DECL)
     {
@@ -710,7 +765,7 @@ warn_types_mismatch (tree t1, tree t2)
    gimple_canonical_types_compatible_p.  */
 
 static bool
-odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree> *visited)
+odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<type_pair,pair_traits> *visited)
 {
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
@@ -834,7 +889,6 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree
 	    }
 	}
 
-      /* Tail-recurse to components.  */
       if ((TREE_CODE (t1) == VECTOR_TYPE || TREE_CODE (t1) == COMPLEX_TYPE)
 	  && !odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2), visited))
 	{
@@ -846,17 +900,9 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree
 	    warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
 	  return false;
 	}
-
-      gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
-      gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
-				   TYPE_SIZE_UNIT (t2), 0));
-      gcc_assert (TYPE_MODE (t1) == TYPE_MODE (t2));
-
-      return true;
     }
-
   /* Do type-specific comparisons.  */
-  switch (TREE_CODE (t1))
+  else switch (TREE_CODE (t1))
     {
     case ARRAY_TYPE:
       {
@@ -896,11 +942,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree
 			 "in another translation unit"));
 	    return false;
 	  }
-	gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
-	gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
-				     TYPE_SIZE_UNIT (t2), 0));
       }
-      return true;
+    break;
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
@@ -1013,9 +1056,20 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree
 	       are not the same.  */
 	    if (f1 || f2)
 	      {
-		warn_odr (t1, t2, NULL, NULL, warn, warned,
-			  G_("a type with different number of fields "
-			     "is defined in another translation unit"));
+		if (f1 && DECL_ARTIFICIAL (f1))
+		  f1 = NULL;
+		if (f2 && DECL_ARTIFICIAL (f2))
+		  f2 = NULL;
+		if (f1 || f2)
+		  warn_odr (t1, t2, f1, f2, warn, warned,
+			    G_("a type with different number of fields "
+			       "is defined in another translation unit"));
+		/* Ideally we should never get this generic message.  */
+		else
+		  warn_odr (t1, t2, f1, f2, warn, warned,
+			    G_("a type with different memory representation "
+			       "is defined in another translation unit"));
+		
 		return false;
 	      }
 	    if ((TYPE_MAIN_VARIANT (t1) == t1 || TYPE_MAIN_VARIANT (t2) == t2)
@@ -1063,17 +1117,38 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree
 		    return false;
 		  }
 	      }
-	    gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
-	    gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
-					 TYPE_SIZE_UNIT (t2), 0));
 	  }
-
-	return true;
+	break;
       }
+    case VOID_TYPE:
+      break;
 
     default:
+      debug_tree (t1);
       gcc_unreachable ();
     }
+
+  /* Those are better to come last as they are utterly uninformative.  */
+  if (TYPE_SIZE (t1) && TYPE_SIZE (t2)
+      && !operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("a type with different size "
+		   "is defined in another translation unit"));
+      return false;
+    }
+  if (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2)
+      && TYPE_ALIGN (t1) != TYPE_ALIGN (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("a type with different alignment "
+		   "is defined in another translation unit"));
+      return false;
+    }
+  gcc_assert (!TYPE_SIZE_UNIT (t1) || !TYPE_SIZE_UNIT (t2)
+	      || operand_equal_p (TYPE_SIZE_UNIT (t1),
+				  TYPE_SIZE_UNIT (t2), 0));
+  return true;
 }
 
 /* TYPE is equivalent to VAL by ODR, but its tree representation differs
@@ -1106,7 +1181,7 @@ add_type_duplicate (odr_type val, tree type)
       bool base_mismatch = false;
       unsigned int i,j;
       bool warned = false;
-      hash_set<tree> visited;
+      hash_set<type_pair,pair_traits> visited;
 
       gcc_assert (in_lto_p);
       vec_safe_push (val->types, type);
