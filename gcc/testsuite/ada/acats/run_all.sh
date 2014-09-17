@@ -268,7 +268,7 @@ for chapter in $chapters; do
 	       if [ $par_countm -eq 1 ]; then
 		  as_fn_arith $par_count + 1
 		  par_count=$as_val
-		  if mkdir $GCC_RUNTEST_PARALLELIZE_DIR/$par_count; then
+		  if mkdir $GCC_RUNTEST_PARALLELIZE_DIR/$par_count 2>/dev/null; then
 		     par_last=1
 		  else
 		     par_last=
