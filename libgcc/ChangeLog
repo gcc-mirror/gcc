@@ -1,3 +1,8 @@
+2014-09-17  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (x86_64-*-mingw*): Add i386/t-cygming to tmake_file
+	and crtbegin.o + crtend.o to extra_parts.
+
 2014-09-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* libgcc2.h (LIBGCC2_HAS_SF_MODE): Define using

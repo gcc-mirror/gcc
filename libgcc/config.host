@@ -694,8 +694,8 @@ x86_64-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
-	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtfastmath.o"
 	;;
 i[34567]86-*-interix[3-9]*)
 	tmake_file="$tmake_file i386/t-interix i386/t-chkstk"
