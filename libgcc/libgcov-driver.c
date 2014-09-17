@@ -777,13 +777,23 @@ __gcov_dump_one (struct gcov_root *root)
   root->run_counted = 1;
 }
 
-/* Per-program/shared-object gcov state.  */
+/* Per-dynamic-object gcov state.  */
 struct gcov_root __gcov_root;
+
+/* Exactly one of these will be live in the process image.  */
+struct gcov_master __gcov_master = 
+  {GCOV_VERSION, 0};
 
 static void
 gcov_exit (void)
 {
   __gcov_dump_one (&__gcov_root);
+  if (__gcov_root.next)
+    __gcov_root.next->prev = __gcov_root.prev;
+  if (__gcov_root.prev)
+    __gcov_root.prev->next = __gcov_root.next;
+  else
+    __gcov_master.root = __gcov_root.next;
 }
 
 /* Add a new object file onto the bb chain.  Invoked automatically
@@ -797,12 +807,21 @@ __gcov_init (struct gcov_info *info)
   if (gcov_version (info, info->version, 0))
     {
       if (!__gcov_root.list)
-        atexit (gcov_exit);
+	{
+	  /* Add to master list and at exit function.  */
+	  if (gcov_version (NULL, __gcov_master.version, "<master>"))
+	    {
+	      __gcov_root.next = __gcov_master.root;
+	      if (__gcov_master.root)
+		__gcov_master.root->prev = &__gcov_root;
+	      __gcov_master.root = &__gcov_root;
+	    }
+	  atexit (gcov_exit);
+	}
 
       info->next = __gcov_root.list;
       __gcov_root.list = info;
     }
-  info->version = 0;
 }
 #endif /* !IN_GCOV_TOOL */
 #endif /* L_gcov */

@@ -85,7 +85,7 @@ __gcov_flush (void)
   init_mx_once ();
   __gthread_mutex_lock (&__gcov_flush_mx);
 
-  __gcov_dump_one (&__gcov_root);
+  __gcov_dump_int ();
   __gcov_reset_int ();
 
   __gthread_mutex_unlock (&__gcov_flush_mx);
@@ -132,8 +132,16 @@ gcov_clear (const struct gcov_info *list)
 void
 __gcov_reset_int (void)
 {
-  gcov_clear (__gcov_root.list);
-  __gcov_root.dumped = 0;
+  struct gcov_root *root;
+
+  /* If we're compatible with the master, iterate over everything,
+     otherise just do us.  */
+  for (root = __gcov_master.version == GCOV_VERSION
+	 ? __gcov_master.root : &__gcov_root; root; root = root->next)
+    {
+      gcov_clear (root->list);
+      root->dumped = 0;
+    }
 }
 
 ALIAS_void_fn (__gcov_reset_int, __gcov_reset);
@@ -145,10 +153,18 @@ ALIAS_void_fn (__gcov_reset_int, __gcov_reset);
    so far, in order to collect profile in region of interest.  */
 
 void
-__gcov_dump (void)
+__gcov_dump_int (void)
 {
-  __gcov_dump_one (&__gcov_root);
+  struct gcov_root *root;
+
+  /* If we're compatible with the master, iterate over everything,
+     otherise just do us.  */
+  for (root = __gcov_master.version == GCOV_VERSION
+	 ? __gcov_master.root : &__gcov_root; root; root = root->next)
+    __gcov_dump_one (root);
 }
+
+ALIAS_void_fn (__gcov_dump_int, __gcov_dump);
 
 #endif /* L_gcov_dump */
 
@@ -169,8 +185,8 @@ __gcov_fork (void)
 #endif
 
 #ifdef L_gcov_execl
-/* A wrapper for the execl function.  Flushes the accumulated profiling data, so
-   that they are not lost.  */
+/* A wrapper for the execl function.  Flushes the accumulated
+   profiling data, so that they are not lost.  */
 
 int
 __gcov_execl (const char *path, char *arg, ...)
