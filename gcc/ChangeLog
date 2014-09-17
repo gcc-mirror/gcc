@@ -1,3 +1,8 @@
+2014-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (*-*-rtems*): Default to 'rtems' thread model.
+	Enable selection of 'posix' or no thread model.
+
 2014-09-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/61853
