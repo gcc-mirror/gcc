@@ -94,7 +94,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
       else
 	cf_strcpy (iqp->name, iqp->name_len, u->filename);
 #else
-    cf_strcpy (iqp->name, iqp->name_len, u->filename);
+      cf_strcpy (iqp->name, iqp->name_len, u->filename);
 #endif
     }
 
