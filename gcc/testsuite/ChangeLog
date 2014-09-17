@@ -1,3 +1,7 @@
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* ada/acats/run_all.sh: Redirect mkdir stderr to /dev/null.
+
 2014-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63241
