@@ -1,3 +1,14 @@
+2014-09-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (type_pair, default_hashset_traits): New types.
+	(odr_types_equivalent_p): Use pair hash.
+	(odr_subtypes_equivalent_p): Likewise, do structural compare
+	on ODR types that may be mismatched.
+	(warn_odr): Support warning when only one field is given.
+	(odr_types_equivalent_p): Strenghten comparsions made;
+	support VOIDtype.
+	(add_type_duplicate): Update VISITED hash set.
+
 2014-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (*-*-rtems*): Default to 'rtems' thread model.
