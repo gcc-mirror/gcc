@@ -83,7 +83,6 @@ struct lang_flags
   char extended_identifiers;
   char c11_identifiers;
   char std;
-  char cplusplus_comments;
   char digraphs;
   char uliterals;
   char rliterals;
@@ -94,23 +93,23 @@ struct lang_flags
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid c11 std // digr ulit rlit udlit bincst digsep trig */
-  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,  1,  0,   0,   0,    0,     0,     0 },
-  /* GNUC99   */  { 1,  0,  1,  0,  0,  0,  1,  1,  1,   1,   0,    0,     0,     0 },
-  /* GNUC11   */  { 1,  0,  1,  0,  1,  0,  1,  1,  1,   1,   0,    0,     0,     0 },
-  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,  0,  0,   0,   0,    0,     0,     1 },
-  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  0,  1,  0,   0,   0,    0,     0,     1 },
-  /* STDC99   */  { 1,  0,  1,  0,  0,  1,  1,  1,  0,   0,   0,    0,     0,     1 },
-  /* STDC11   */  { 1,  0,  1,  0,  1,  1,  1,  1,  1,   0,   0,    0,     0,     1 },
-  /* GNUCXX   */  { 0,  1,  1,  0,  0,  0,  1,  1,  0,   0,   0,    0,     0,     0 },
-  /* CXX98    */  { 0,  1,  0,  0,  0,  1,  1,  1,  0,   0,   0,    0,     0,     1 },
-  /* GNUCXX11 */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    0,     0,     0 },
-  /* CXX11    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    0,     0,     1 },
-  /* GNUCXX14 */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    1,     1,     0 },
-  /* CXX14    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    1,     1,     1 },
-  /* GNUCXX1Z */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    1,     1,     0 },
-  /* CXX1Z    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    1,     1,     0 },
-  /* ASM      */  { 0,  0,  1,  0,  0,  0,  1,  0,  0,   0,   0,    0,     0,     0 }
+{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig */
+  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0 },
+  /* GNUC99   */  { 1,  0,  1,  0,  0,  0,  1,   1,   1,   0,    0,     0,     0 },
+  /* GNUC11   */  { 1,  0,  1,  0,  1,  0,  1,   1,   1,   0,    0,     0,     0 },
+  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1 },
+  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
+  /* STDC99   */  { 1,  0,  1,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
+  /* STDC11   */  { 1,  0,  1,  0,  1,  1,  1,   1,   0,   0,    0,     0,     1 },
+  /* GNUCXX   */  { 0,  1,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0 },
+  /* CXX98    */  { 0,  1,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
+  /* GNUCXX11 */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    0,     0,     0 },
+  /* CXX11    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    0,     0,     1 },
+  /* GNUCXX14 */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
+  /* CXX14    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    1,     1,     1 },
+  /* GNUCXX1Z */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
+  /* CXX1Z    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    1,     1,     0 },
+  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, CXX11,
      GNUCXX14, and CXX14 when no longer experimental (when all uses of
      identifiers in the compiler have been audited for correct handling
@@ -131,7 +130,6 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, extended_identifiers)	 = l->extended_identifiers;
   CPP_OPTION (pfile, c11_identifiers)		 = l->c11_identifiers;
   CPP_OPTION (pfile, std)			 = l->std;
-  CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
   CPP_OPTION (pfile, rliterals)			 = l->rliterals;
@@ -775,8 +773,6 @@ post_options (cpp_reader *pfile)
 
   if (CPP_OPTION (pfile, traditional))
     {
-      CPP_OPTION (pfile, cplusplus_comments) = 0;
-
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
     }

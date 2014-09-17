@@ -1,3 +1,17 @@
+2014-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61854
+	* gcc.dg/cpp/pr61854-1.c: New test.
+	* gcc.dg/cpp/pr61854-2.c: New test.
+	* gcc.dg/cpp/pr61854-3.c: New test.
+	* gcc.dg/cpp/pr61854-3.h: New test.
+	* gcc.dg/cpp/pr61854-4.c: New test.
+	* gcc.dg/cpp/pr61854-5.c: New test.
+	* gcc.dg/cpp/pr61854-6.c: New test.
+	* gcc.dg/cpp/pr61854-7.c: New test.
+	* gcc.dg/cpp/pr61854-c90.c: New test.
+	* gcc.dg/cpp/pr61854-c94.c: New test.
+
 2014-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63284

@@ -1,3 +1,11 @@
+2014-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61854
+	* init.c (struct lang_flags): Remove cplusplus_comments.
+	(cpp_set_lang): Likewise.
+	(post_options): Likewise.
+	* lex.c (_cpp_lex_direct): Disallow C++ style comments in C90/C94.
+
 2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* include/cpplib.h (struct cpp_options): Declare warn_normalize as
