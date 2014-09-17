@@ -1,4 +1,4 @@
-// { dg-do run { target c++14 } }
+// { dg-do compile { target c++14 } }
 
 template<int A, int B>
   struct S1
@@ -12,10 +12,7 @@ template<typename T>
 
 int main ()
 {
-  int v = var<S1<199, 23>>/2;
-  return !(
-       var<S1<11, 100>> == v
-    && var<S1<50, 120>> == var<S1<150, var<S1<10, 10>>>>
-    && var<S1<53, 23>> != 222
-  );
+  static_assert(var<S1<11, 100>> == var<S1<199, 23>>/2
+		&& var<S1<50, 120>> == var<S1<150, var<S1<10, 10>>>>
+		&& var<S1<53, 23>> != 222, "");
 }
