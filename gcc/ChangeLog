@@ -1,3 +1,8 @@
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/62017
+	* asan.c (transform_statements): Don't instrument clobber statements.
+
 2014-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.md (*movmisalign<mode>_neon_load): Change type
