@@ -1,3 +1,8 @@
+2014-09-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config-list.mk (LIST): Add arm-rtems.
+	Add nios2-rtems.  Remove extra option from powerpc-rtems.
+
 2014-07-16  Release Manager
 
 	* GCC 4.9.1 released.
