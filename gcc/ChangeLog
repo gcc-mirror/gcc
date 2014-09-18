@@ -1,3 +1,8 @@
+2014-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.md (*movmisalign<mode>_neon_load): Change type
+	to neon_load1_1reg<q>.
+
 2014-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63284

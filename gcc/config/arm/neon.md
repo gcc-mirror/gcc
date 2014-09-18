@@ -296,7 +296,7 @@
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
-  [(set_attr "type" "neon_store1_1reg<q>")])
+  [(set_attr "type" "neon_load1_1reg<q>")])
 
 (define_insn "vec_set<mode>_internal"
   [(set (match_operand:VD 0 "s_register_operand" "=w,w")
