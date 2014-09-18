@@ -5627,7 +5627,9 @@ finish_omp_clauses (tree clauses)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
-		  if (!cp_omp_mappable_type (TREE_TYPE (t)))
+		  if (TREE_CODE (t) != TREE_LIST
+		      && !type_dependent_expression_p (t)
+		      && !cp_omp_mappable_type (TREE_TYPE (t)))
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"array section does not have mappable type "
@@ -5667,6 +5669,7 @@ finish_omp_clauses (tree clauses)
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		     && OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER)
+		   && !type_dependent_expression_p (t)
 		   && !cp_omp_mappable_type ((TREE_CODE (TREE_TYPE (t))
 					      == REFERENCE_TYPE)
 					     ? TREE_TYPE (TREE_TYPE (t))

@@ -1,3 +1,15 @@
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63248
+	* semantics.c (finish_omp_clauses): Don't call cp_omp_mappable_type
+	on type of type dependent expressions, and don't call it if
+	handle_omp_array_sections has kept TREE_LIST because something
+	was type dependent.
+	* pt.c (tsubst_expr) <case OMP_TARGET, case OMP_TARGET_DATA>:
+	Use keep_next_level, begin_omp_structured_block and
+	finish_omp_structured_block instead of push_stmt_list and
+	pop_stmt_list.
+
 2014-09-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63139
