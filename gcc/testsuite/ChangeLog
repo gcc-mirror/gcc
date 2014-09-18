@@ -1,3 +1,10 @@
+2014-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr61053.c: Updated for x32.
+
 2014-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/62017
