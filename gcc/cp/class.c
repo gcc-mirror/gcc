@@ -6506,7 +6506,8 @@ finish_struct_1 (tree t)
   /* This warning does not make sense for Java classes, since they
      cannot have destructors.  */
   if (!TYPE_FOR_JAVA (t) && warn_nonvdtor
-      && TYPE_POLYMORPHIC_P (t) && accessible_nvdtor_p (t))
+      && TYPE_POLYMORPHIC_P (t) && accessible_nvdtor_p (t)
+      && !CLASSTYPE_FINAL (t))
     warning (OPT_Wnon_virtual_dtor,
 	     "%q#T has virtual functions and accessible"
 	     " non-virtual destructor", t);

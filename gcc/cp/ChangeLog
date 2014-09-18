@@ -1,3 +1,9 @@
+2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62232
+	* class.c (finish_struct_1): Do not -Wnon-virtual-dtor warn
+	for final class types.
+
 2014-09-15  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (lookup_template_class_1): Splice out abi_tag attribute if
