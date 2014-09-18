@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
    MODE_BASE_REG_REG_CLASS, MODE_BASE_REG_CLASS and BASE_REG_CLASS.
    Arguments as for the MODE_CODE_BASE_REG_CLASS macro.  */
 
+#ifndef GCC_ADDRESSES_H
+#define GCC_ADDRESSES_H
+
 static inline enum reg_class
 base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
 		addr_space_t as ATTRIBUTE_UNUSED,
@@ -82,3 +85,5 @@ regno_ok_for_base_p (unsigned regno, enum machine_mode mode, addr_space_t as,
 
   return ok_for_base_p_1 (regno, mode, as, outer_code, index_code);
 }
+
+#endif /* GCC_ADDRESSES_H */

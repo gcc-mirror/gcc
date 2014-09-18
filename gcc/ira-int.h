@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IRA_INT_H
+#define GCC_IRA_INT_H
+
 #include "cfgloop.h"
 #include "ira.h"
 #include "alloc-pool.h"
@@ -1507,3 +1510,5 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 
 extern rtx ira_create_new_reg (rtx);
 extern int first_moveable_pseudo, last_moveable_pseudo;
+
+#endif /* GCC_IRA_INT_H */

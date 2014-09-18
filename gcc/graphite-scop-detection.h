@@ -19,7 +19,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_GRAPHITE_SCOP_DETECTION_H
+#define GCC_GRAPHITE_SCOP_DETECTION_H
 
 extern void build_scops (vec<scop_p> *);
 extern void dot_all_scops (vec<scop_p> );
 extern void dot_scop (scop_p);
+
+#endif /* GCC_GRAPHITE_SCOP_DETECTION_H */

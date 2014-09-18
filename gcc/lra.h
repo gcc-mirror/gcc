@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.	If not see
 <http://www.gnu.org/licenses/>.	 */
 
+#ifndef GCC_LRA_H
+#define GCC_LRA_H
+
 extern bool lra_simple_p;
 
 /* Return the allocno reg class of REGNO.  If it is a reload pseudo,
@@ -37,3 +40,5 @@ extern rtx lra_eliminate_regs (rtx, enum machine_mode, rtx);
 extern void lra (FILE *);
 extern void lra_init_once (void);
 extern void lra_finish_once (void);
+
+#endif /* GCC_LRA_H */
