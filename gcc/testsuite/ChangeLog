@@ -1,5 +1,10 @@
 2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR debug/63285
+	* gcc.target/i386/pr63285.c: New test.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR target/61360
 	* gcc.target/i386/pr61360.c: New.
 
