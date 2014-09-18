@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_LTO_SECTION_NAMES_H
+#define GCC_LTO_SECTION_NAMES_H
+
 /* The string that is the prefix on the section names we make for lto.
    For decls the DECL_ASSEMBLER_NAME is appended to make the section
    name for the functions and static_initializers.  For other types of
@@ -26,3 +29,5 @@ along with GCC; see the file COPYING3.  If not see
 /* Segment name for LTO sections.  This is only used for Mach-O.  */
 
 #define LTO_SEGMENT_NAME "__GNU_LTO"
+
+#endif /* GCC_LTO_SECTION_NAMES_H */

@@ -15,6 +15,9 @@
    along with this program; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_INCPATH_H
+#define GCC_INCPATH_H
+
 extern void split_quote_chain (void);
 extern void add_path (char *, int, int, bool);
 extern void register_include_chains (cpp_reader *, const char *,
@@ -32,3 +35,5 @@ struct target_c_incpath_s {
 extern struct target_c_incpath_s target_c_incpath;
 
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
+
+#endif /* GCC_INCPATH_H */

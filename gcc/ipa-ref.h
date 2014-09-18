@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IPA_REF_H
+#define GCC_IPA_REF_H
+
 struct cgraph_node;
 class varpool_node;
 class symtab_node;
@@ -127,3 +130,5 @@ public:
      or GGC will try to mark middle of references vectors.  */
   vec<ipa_ref_ptr>  GTY((skip)) referring;
 };
+
+#endif /* GCC_IPA_REF_H */

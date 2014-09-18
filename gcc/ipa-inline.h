@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IPA_INLINE_H
+#define GCC_IPA_INLINE_H
+
 #include "ipa-prop.h"
 
 /* Representation of inline parameters that do depend on context function is
@@ -347,3 +350,5 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
       edge_growth_cache[edge->uid] = zero;
     }
 }
+
+#endif /* GCC_IPA_INLINE_H */

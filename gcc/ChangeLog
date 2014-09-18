@@ -1,3 +1,34 @@
+2014-09-19  Kito Cheng  <kito@0xlab.org>
+
+	* except.h: Fix header guard.
+	* addresses.h: Add missing header guard.
+	* cfghooks.h: Likewise.
+	* collect-utils.h: Likewise.
+	* collect2-aix.h: Likewise.
+	* conditions.h: Likewise.
+	* cselib.h: Likewise.
+	* dwarf2asm.h: Likewise.
+	* graphds.h: Likewise.
+	* graphite-scop-detection.h: Likewise.
+	* gsyms.h: Likewise.
+	* hw-doloop.h: Likewise.
+	* incpath.h: Likewise.
+	* ipa-inline.h: Likewise.
+	* ipa-ref.h: Likewise.
+	* ira-int.h: Likewise.
+	* ira.h: Likewise.
+	* lra-int.h: Likewise.
+	* lra.h: Likewise.
+	* lto-section-names.h: Likewise.
+	* read-md.h: Likewise.
+	* reload.h: Likewise.
+	* rtl-error.h: Likewise.
+	* sdbout.h: Likewise.
+	* targhooks.h: Likewise.
+	* tree-affine.h: Likewise.
+	* xcoff.h: Likewise.
+	* xcoffout.h: Likewise.
+
 2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/63285

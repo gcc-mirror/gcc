@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
    to make things simpler; this is sufficient in most cases.  */
 
+#ifndef GCC_TREE_AFFINE_H
+#define GCC_TREE_AFFINE_H
+
 #include "hash-map.h"
 #include "wide-int.h"
 
@@ -99,3 +102,5 @@ aff_combination_zero_p (aff_tree *aff)
 
   return false;
 }
+
+#endif /* GCC_TREE_AFFINE_H */

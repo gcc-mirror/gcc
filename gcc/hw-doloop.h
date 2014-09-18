@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_HW_DOLOOP_H
+#define GCC_HW_DOLOOP_H
+
 /* We need to keep a vector of loops */
 typedef struct hwloop_info_d *hwloop_info;
 
@@ -153,3 +156,5 @@ struct hw_doloop_hooks
 };
 
 extern void reorg_loops (bool, struct hw_doloop_hooks *);
+
+#endif /* GCC_HW_DOLOOP_H */
