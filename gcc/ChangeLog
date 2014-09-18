@@ -1,3 +1,16 @@
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* system.h (LIBGCC2_TF_CEXT): Poison.
+	* config/i386/cygming.h (LIBGCC2_TF_CEXT): Remove.
+	* config/i386/darwin.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/dragonfly.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/freebsd.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/gnu-user-common.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/openbsdelf.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/sol2.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/ia64/ia64.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/ia64/linux.h (LIBGCC2_TF_CEXT): Likewise.
+
 2014-09-19  Kito Cheng  <kito@0xlab.org>
 
 	* except.h: Fix header guard.

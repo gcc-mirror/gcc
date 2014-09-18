@@ -956,6 +956,28 @@ c_cpp_builtins (cpp_reader *pfile)
 					+ sizeof ("__LIBGCC_HAS__MODE__"));
 	  sprintf (macro_name, "__LIBGCC_HAS_%s_MODE__", name);
 	  cpp_define (pfile, macro_name);
+	  macro_name = (char *) alloca (strlen (name)
+					+ sizeof ("__LIBGCC__FUNC_EXT__"));
+	  sprintf (macro_name, "__LIBGCC_%s_FUNC_EXT__", name);
+	  const char *suffix;
+	  if (mode == TYPE_MODE (double_type_node))
+	    suffix = "";
+	  else if (mode == TYPE_MODE (float_type_node))
+	    suffix = "f";
+	  else if (mode == TYPE_MODE (long_double_type_node))
+	    suffix = "l";
+	  /* ??? The following assumes the built-in functions (defined
+	     in target-specific code) match the suffixes used for
+	     constants.  Because in fact such functions are not
+	     defined for the 'w' suffix, 'l' is used there
+	     instead.  */
+	  else if (mode == targetm.c.mode_for_suffix ('q'))
+	    suffix = "q";
+	  else if (mode == targetm.c.mode_for_suffix ('w'))
+	    suffix = "l";
+	  else
+	    gcc_unreachable ();
+	  builtin_define_with_value (macro_name, suffix, 0);
 	}
 
       /* For libgcc crtstuff.c and libgcc2.c.  */

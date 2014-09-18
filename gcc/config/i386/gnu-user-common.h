@@ -57,9 +57,6 @@ along with GCC; see the file COPYING3.  If not see
   GNU_USER_TARGET_MATHFILE_SPEC " " \
   GNU_USER_TARGET_ENDFILE_SPEC
 
-/* Put all *tf routines in libgcc.  */
-#define LIBGCC2_TF_CEXT q
-
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 /* The stack pointer needs to be moved while checking the stack.  */

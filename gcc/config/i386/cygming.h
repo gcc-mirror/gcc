@@ -339,9 +339,6 @@ do {						\
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
-/* Put all *tf routines in libgcc.  */
-#define LIBGCC2_TF_CEXT q
-
 /* Output function declarations at the end of the file.  */
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END i386_pe_file_end

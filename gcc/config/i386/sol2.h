@@ -236,6 +236,3 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef USE_GLD
 #define USE_HIDDEN_LINKONCE 0
 #endif
-
-/* Put all *tf routines in libgcc.  */
-#define LIBGCC2_TF_CEXT q
