@@ -1,3 +1,7 @@
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-exact-underflow.c: New test.
+
 2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61745

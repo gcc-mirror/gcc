@@ -1,3 +1,8 @@
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/sfp-machine.h (FP_TRAPPING_EXCEPTIONS): Treat clear
+	bits not set bits as indicating trapping exceptions.
+
 2014-09-17  Nathan sidwell  <nathan@acm.org>
 
 	* Makefile.in (LIBGCOV_INTERFACE): Add _gcov_dump from ...
