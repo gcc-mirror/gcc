@@ -1,5 +1,8 @@
 2014-09-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/62017
+	* g++.dg/asan/pr62017.C: New test.
+
 	PR testsuite/63292
 	* gcc.dg/vect/pr59594.c (b): Increase size to N + 2 elements.
 
