@@ -2135,6 +2135,11 @@ lra (FILE *f)
 
   lra_in_progress = 1;
 
+  /* The enable attributes can change their values as LRA starts
+     although it is a bad practice.  To prevent reuse of the outdated
+     values, clear them.  */
+  recog_init ();
+
   lra_live_range_iter = lra_coalesce_iter = 0;
   lra_constraint_iter = lra_constraint_iter_after_spill = 0;
   lra_inheritance_iter = lra_undo_inheritance_iter = 0;
