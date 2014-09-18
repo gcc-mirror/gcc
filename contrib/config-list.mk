@@ -17,7 +17,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
   arm-wrs-vxworks arm-netbsdelf \
-  arm-linux-androideabi arm-uclinux_eabi arm-eabi \
+  arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
   arm-symbianelf avr-rtems avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
@@ -48,13 +48,13 @@ LIST = aarch64-elf aarch64-linux-gnu \
   moxie-uclinux moxie-rtems \
   msp430-elf \
   nds32le-elf nds32be-elf \
-  nios2-elf nios2-linux-gnu \
+  nios2-elf nios2-linux-gnu nios2-rtems \
   pdp11-aout \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
-  powerpc-rtems4.11OPT-enable-threads=yes powerpc-linux_spe \
+  powerpc-rtems powerpc-linux_spe \
   powerpc-linux_paired powerpc64-linux_altivec \
   powerpc-wrs-vxworks powerpc-wrs-vxworksae powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi rs6000-ibm-aix4.3 rs6000-ibm-aix5.1.0 \
