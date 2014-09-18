@@ -1,3 +1,8 @@
+2014-09-17  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Handle mid-destruction
+	dynamic_cast more gracefully.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/Makefile.am (check_p_numbers0, check_p_numbers1,
