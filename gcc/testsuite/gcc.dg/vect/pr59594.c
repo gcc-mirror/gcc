@@ -3,7 +3,7 @@
 #include "tree-vect.h"
 
 #define N 1024
-int b[N + 1];
+int b[N + 2];
 
 int
 main ()
