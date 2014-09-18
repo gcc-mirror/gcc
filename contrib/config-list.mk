@@ -68,7 +68,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd spu-elf \
   tilegx-linux-gnu tilegxbe-linux-gnu tilepro-linux-gnu \
-  v850e-elf v850-elf vax-linux-gnu \
+  v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf vax-openbsd x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \

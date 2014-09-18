@@ -1,3 +1,7 @@
+2014-09-18  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config-list.mk (LIST): Add v850-rtems.
+
 2014-09-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config-list.mk (LIST): Add arm-rtems.
