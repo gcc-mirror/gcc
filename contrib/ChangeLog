@@ -1,3 +1,8 @@
+2014-09-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config-list.mk (LIST): Add arm-rtems.
+	Add nios2-rtems.  Remove extra option from powerpc-rtems.
+
 2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* compare-all-tests: Don't test picochip.
