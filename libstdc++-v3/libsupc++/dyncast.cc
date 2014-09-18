@@ -55,6 +55,18 @@ __dynamic_cast (const void *src_ptr,    // object started from
       adjust_pointer <void> (src_ptr, prefix->whole_object);
   const __class_type_info *whole_type = prefix->whole_type;
   __class_type_info::__dyncast_result result;
+
+  // If the whole object vptr doesn't refer to the whole object type, we're
+  // in the middle of constructing a primary base, and src is a separate
+  // base.  This has undefined behavior and we can't find anything outside
+  // of the base we're actually constructing, so fail now rather than
+  // segfault later trying to use a vbase offset that doesn't exist.
+  const void *whole_vtable = *static_cast <const void *const *> (whole_ptr);
+  const vtable_prefix *whole_prefix =
+    adjust_pointer <vtable_prefix> (whole_vtable,
+				    -offsetof (vtable_prefix, origin));
+  if (whole_prefix->whole_type != whole_type)
+    return NULL;
   
   whole_type->__do_dyncast (src2dst, __class_type_info::__contained_public,
                             dst_type, whole_ptr, src_type, src_ptr, result);
