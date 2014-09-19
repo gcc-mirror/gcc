@@ -5230,6 +5230,12 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 static void
 mark_weak (tree decl)
 {
+  if (DECL_WEAK (decl))
+    return;
+
+  struct symtab_node *n = symtab_node::get (decl);
+  if (n && n->refuse_visibility_changes)
+    error ("%+D declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)

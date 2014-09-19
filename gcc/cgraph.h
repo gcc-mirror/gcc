@@ -346,6 +346,10 @@ public:
     return decl->decl_with_vis.symtab_node;
   }
 
+  /* Try to find a symtab node for declaration DECL and if it does not
+     exist or if it corresponds to an inline clone, create a new one.  */
+  static inline symtab_node * get_create (tree node);
+
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
      Return NULL if there's no such node.  */
   static symtab_node *get_for_asmname (const_tree asmname);
@@ -394,7 +398,9 @@ public:
   unsigned analyzed : 1;
   /* Set for write-only variables.  */
   unsigned writeonly : 1;
-
+  /* Visibility of symbol was used for further optimization; do not
+     permit further changes.  */
+  unsigned refuse_visibility_changes : 1;
 
   /*** Visibility and linkage flags.  ***/
 
@@ -2517,6 +2523,14 @@ cgraph_node::mark_force_output (void)
 {
   force_output = 1;
   gcc_checking_assert (!global.inlined_to);
+}
+
+inline symtab_node * symtab_node::get_create (tree node)
+{
+  if (TREE_CODE (node) == VAR_DECL)
+    return varpool_node::get_create (node);
+  else
+    return cgraph_node::get_create (node);
 }
 
 #endif  /* GCC_CGRAPH_H  */
