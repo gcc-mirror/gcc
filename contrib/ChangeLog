@@ -1,3 +1,7 @@
+2014-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* dg-extract-results.py (Prog.result_re): Include options in test name.
+
 2014-09-19  Olivier Hainque  <hainque@adacore.com>
 
 	* config-list.mk (LIST): Add powerpc-wrs-vxworksmils.
