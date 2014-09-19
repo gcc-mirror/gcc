@@ -8647,8 +8647,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       type = TREE_TYPE (descriptor);
     }
 
-  /* NULLIFY the data pointer.  */
-  if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save)
+  /* NULLIFY the data pointer, for non-saved allocatables.  */
+  if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save && sym->attr.allocatable)
     gfc_conv_descriptor_data_set (&init, descriptor, null_pointer_node);
 
   gfc_restore_backend_locus (&loc);

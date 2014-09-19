@@ -1,3 +1,8 @@
+2014-09-19  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/63152
+	* trans-array.c (gfc_trans_deferred_array): Only nullify allocatables.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check_gfortran_parallelize): Change to just an upper
