@@ -1,3 +1,7 @@
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config-list.mk (LIST): Add powerpc-wrs-vxworksmils.
+
 2014-09-18  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config-list.mk (LIST): Add v850-rtems.
