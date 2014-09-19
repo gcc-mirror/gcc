@@ -1,3 +1,8 @@
+2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* asan.c (build_check_stmt): Alignment arg was added.
+	(asan_expand_check_ifn): Optimization for alignment >= 8.
+
 2014-09-19  Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/vxworksae.h: Remove obsolete definitions.
