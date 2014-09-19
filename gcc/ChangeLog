@@ -1,3 +1,11 @@
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/62662
+	* config/s390/s390.c (s390_emit_epilogue): When doing the return
+	address load optimization force s390_optimize_prologue to leave it
+	that way.  Only do the optimization if we already decided to push
+	r14 into a stack slot.
+
 2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* asan.c (build_check_stmt): Alignment arg was added.
