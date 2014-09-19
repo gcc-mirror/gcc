@@ -5939,7 +5939,7 @@ rs6000_special_adjust_field_align_p (tree field, unsigned int computed)
 	      warned = true;
 	      inform (input_location,
 		      "the layout of aggregates containing vectors with"
-		      " %d-byte alignment has changed in GCC 4.10",
+		      " %d-byte alignment has changed in GCC 5",
 		      computed / BITS_PER_UNIT);
 	    }
 	}
@@ -9307,7 +9307,7 @@ rs6000_function_arg_boundary (enum machine_mode mode, const_tree type)
 	      warned = true;
 	      inform (input_location,
 		      "the ABI of passing aggregates with %d-byte alignment"
-		      " has changed in GCC 4.10",
+		      " has changed in GCC 5",
 		      (int) TYPE_ALIGN (type) / BITS_PER_UNIT);
 	    }
 	}
@@ -10428,7 +10428,7 @@ rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		  warned = true;
 		  inform (input_location,
 			  "the ABI of passing homogeneous float aggregates"
-			  " has changed in GCC 4.10");
+			  " has changed in GCC 5");
 		}
 	    }
 
