@@ -1,3 +1,16 @@
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/61825
+	* c-family/c-common.c (handle_alias_ifunc_attribute): Check
+	that visibility change is possible
+	(handle_weakref_attribute): Likewise.
+	* cgraph.h (symtab_node): Add method get_create and
+	field refuse_visibility_changes.
+	(symtab_node::get_create): New method.
+	* fold-const.c (tree_single_nonzero_warnv_p): Use get_create.
+	* varasm.c (mark_weak): Verify that visibility change is
+	possible.
+
 2014-09-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/predicates.md (fusion_gpr_mem_load): Move testing

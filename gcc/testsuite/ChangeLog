@@ -1,3 +1,8 @@
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/61825
+	* gcc.dg/tree-ssa/nonzero-1.c: Require error to be output.
+
 2014-09-19  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.dg/pg-override.c: Only run on x86 Linux.
