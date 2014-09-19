@@ -461,6 +461,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	/* If a MATCH_SCRATCH is used in a context requiring an write-only
 	   or read/write register, validate that.  */
 	if (set_code == '='
+	    && constraints0
 	    && constraints0 != '='
 	    && constraints0 != '+')
 	  {

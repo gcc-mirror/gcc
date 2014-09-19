@@ -1,3 +1,8 @@
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* genrecog.c (validate_pattern): Allow empty constraints in
+	a match_scratch.
+
 2014-09-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c (decl_ultimate_origin): Update comment.
