@@ -1,3 +1,10 @@
+2014-09-19  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: Only run on x86 Linux.
+	* gcc.dg/pg.c: Dito.
+	* gcc.target/i386/fentry-override.c: Exclude for PIC.
+	* gcc.target/i386/fentry.c: Dito.
+
 2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/61998

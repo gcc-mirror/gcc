@@ -1,5 +1,5 @@
 /* Test -mfentry override */
-/* { dg-do compile } */
+/* { dg-do compile { target { *-*-linux* } && { nonpic || ! { ia32 } } } } */
 /* { dg-options "-mfentry" } */
 /* { dg-final { scan-assembler-not "__fentry__" } } */
 /* Origin: Andi Kleen */
