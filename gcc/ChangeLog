@@ -1,3 +1,10 @@
+2014-09-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p):
+	Update GCC version name to GCC 5.
+	(rs6000_function_arg_boundary): Likewise.
+	(rs6000_function_arg): Likewise.
+
 2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/sh/sh.md: Fix use of constraints in define_split.
