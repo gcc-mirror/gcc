@@ -1,5 +1,10 @@
 2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_emit_epilogue): Remove bogus
+	assignment.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.md ("trunctdsd2", "extendsdtd2"): New
 	expanders.
 
