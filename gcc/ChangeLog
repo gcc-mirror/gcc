@@ -1,3 +1,8 @@
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* varasm.c (default_section_type_flags): Flag .persistent.bss
+	sections as SECTION_BSS.
+
 2014-09-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_expand_epilogue): Generate a USE of the
