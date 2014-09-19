@@ -1,5 +1,14 @@
 2014-09-19  Olivier Hainque  <hainque@adacore.com>
 
+	* config/i386/vxworksae.h: Remove obsolete definitions.
+	(STACK_CHECK_PROTECT): Define.
+	* config/i386/vx-common.h: Remove.  Merge contents within
+	config/i386/vxworks.h.
+	* config.gcc (i?86-vxworks*): Use i386/vxworks.h instead of
+	i386/vx-common.h.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
 	* config.gcc (powerpc-wrs-vxworksmils): New configuration.
 	* config/rs6000/t-vxworksmils: New file.
 	* config/rs6000/vxworksmils.h: New file.

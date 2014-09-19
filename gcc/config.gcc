@@ -1556,11 +1556,11 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
-	    tm_file="${tm_file} vxworksae.h i386/vx-common.h i386/vxworksae.h"
+	    tm_file="${tm_file} vxworksae.h i386/vxworks.h i386/vxworksae.h"
 	    tmake_file="${tmake_file} i386/t-vxworks i386/t-vxworksae"
 	    ;;
 	  *)
-	    tm_file="${tm_file} vxworks.h i386/vx-common.h i386/vxworks.h"
+	    tm_file="${tm_file} vxworks.h i386/vxworks.h"
 	    tmake_file="${tmake_file} i386/t-vxworks"
 	    ;;
 	esac
