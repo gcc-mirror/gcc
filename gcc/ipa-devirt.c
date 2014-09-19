@@ -525,8 +525,10 @@ odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<type_pair,pair_traits> *vi
   if (an1 != an2 || an1)
     return false;
 
-  /* For ODR types be sure to compare their names.  */
-  if ((odr_type_p (t1) && !odr_type_p (t2))
+  /* For ODR types be sure to compare their names.
+     To support -wno-odr-type-merging we allow one type to be non-ODR
+     and other ODR even though it is a violation.  */
+  if ((odr_type_p (t1) && odr_type_p (t2))
       || (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE
           && TYPE_BINFO (t1) && TYPE_BINFO (t2)
           && polymorphic_type_binfo_p (TYPE_BINFO (t1))

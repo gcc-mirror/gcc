@@ -1,3 +1,8 @@
+2014-09-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/63298
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix thinko in a condition.
+
 2014-09-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* system.h (LIBGCC2_TF_CEXT): Poison.
