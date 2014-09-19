@@ -1,3 +1,8 @@
+2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61998
+	* g++.dg/warn/Wsuggest-final-2.C: New testcase.
+
 2014-09-19  Joost VandeVondele  <vondele@gcc.gnu.org>
 
 	PR fortran/63152

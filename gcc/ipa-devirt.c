@@ -3952,6 +3952,9 @@ ipa_devirt (void)
   int nmultiple = 0, noverwritable = 0, ndevirtualized = 0, nnotdefined = 0;
   int nwrong = 0, nok = 0, nexternal = 0, nartificial = 0;
 
+  if (!odr_types_ptr)
+    return 0;
+
   /* We can output -Wsuggest-final-methods and -Wsuggest-final-types warnings.
      This is implemented by setting up final_warning_records that are updated
      by get_polymorphic_call_targets.

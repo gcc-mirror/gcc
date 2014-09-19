@@ -1,3 +1,8 @@
+2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61998
+	* ipa-devirt.c (ipa_devirt): Bail out if odr_types_ptr is NULL.
+
 2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/md.texi (Modifiers): Consistently use "read/write"
