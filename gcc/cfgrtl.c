@@ -696,8 +696,8 @@ first_insn_after_basic_block_note (basic_block block)
   return NEXT_INSN (insn);
 }
 
-/* Creates a new basic block just after basic block B by splitting
-   everything after specified instruction I.  */
+/* Creates a new basic block just after basic block BB by splitting
+   everything after specified instruction INSNP.  */
 
 static basic_block
 rtl_split_block (basic_block bb, void *insnp)
@@ -4928,7 +4928,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   seq = get_insns ();
   end_sequence ();
 
-  /* Add the new cond , in the new head.  */
+  /* Add the new cond, in the new head.  */
   emit_insn_after (seq, BB_END (cond_bb));
 }
 

@@ -1323,7 +1323,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       curr_point++;
 
     }
-  /* Propagate register pressure to upper loop tree nodes: */
+  /* Propagate register pressure to upper loop tree nodes.  */
   if (loop_tree_node != ira_loop_tree_root)
     for (i = 0; i < ira_pressure_classes_num; i++)
       {

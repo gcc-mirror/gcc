@@ -1,3 +1,8 @@
+2014-09-19  Felix Yang  <felix.yang@huawei.com>
+
+	* cfgrtl.c ira.c ira-color.c ira-conflicts ira-lives.c: Update
+	comments and fix spacing to conform to coding style.
+
 2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* genrecog.c (validate_pattern): Allow empty constraints in
