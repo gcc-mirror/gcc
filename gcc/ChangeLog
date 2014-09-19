@@ -1,5 +1,11 @@
 2014-09-19  Olivier Hainque  <hainque@adacore.com>
 
+	* config.gcc (powerpc-wrs-vxworksmils): New configuration.
+	* config/rs6000/t-vxworksmils: New file.
+	* config/rs6000/vxworksmils.h: New file.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
 	* varasm.c (default_section_type_flags): Flag .persistent.bss
 	sections as SECTION_BSS.
 

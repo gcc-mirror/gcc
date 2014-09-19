@@ -1,3 +1,8 @@
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworksmils): New configuration,
+	same as vxworksae.
+
 2014-09-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* libgcc2.c (CEXT): Define using __LIBGCC_*_FUNC_EXT__.
