@@ -1,3 +1,8 @@
+2014-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (decl_ultimate_origin): Update comment.
+	* tree.c (block_ultimate_origin): Same.
+
 2014-09-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p):
