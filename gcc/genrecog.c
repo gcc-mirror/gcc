@@ -415,6 +415,18 @@ find_matching_operand (rtx pattern, int n)
   return NULL;
 }
 
+/* In DEFINE_EXPAND, DEFINE_SPLIT, and DEFINE_PEEPHOLE2, we
+   don't use the MATCH_OPERAND constraint, only the predicate.
+   This is confusing to folks doing new ports, so help them
+   not make the mistake.  */
+
+static bool
+constraints_supported_in_insn_p (rtx insn)
+{
+  return !(GET_CODE (insn) == DEFINE_EXPAND
+	   || GET_CODE (insn) == DEFINE_SPLIT
+	   || GET_CODE (insn) == DEFINE_PEEPHOLE2);
+}
 
 /* Check for various errors in patterns.  SET is nonnull for a destination,
    and is the complete set pattern.  SET_CODE is '=' for normal sets, and
@@ -432,7 +444,32 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
   switch (code)
     {
     case MATCH_SCRATCH:
-      return;
+      {
+	const char constraints0 = XSTR (pattern, 1)[0];
+
+	if (!constraints_supported_in_insn_p (insn))
+	  {
+	    if (constraints0)
+	      {
+		error_with_line (pattern_lineno,
+				 "constraints not supported in %s",
+				 rtx_name[GET_CODE (insn)]);
+	      }
+	    return;
+	  }
+
+	/* If a MATCH_SCRATCH is used in a context requiring an write-only
+	   or read/write register, validate that.  */
+	if (set_code == '='
+	    && constraints0 != '='
+	    && constraints0 != '+')
+	  {
+	    error_with_line (pattern_lineno,
+			     "operand %d missing output reload",
+			     XINT (pattern, 0));
+	  }
+	return;
+      }
     case MATCH_DUP:
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
@@ -467,18 +504,14 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	  {
 	    const char constraints0 = XSTR (pattern, 2)[0];
 
-	    /* In DEFINE_EXPAND, DEFINE_SPLIT, and DEFINE_PEEPHOLE2, we
-	       don't use the MATCH_OPERAND constraint, only the predicate.
-	       This is confusing to folks doing new ports, so help them
-	       not make the mistake.  */
-	    if (GET_CODE (insn) == DEFINE_EXPAND
-		|| GET_CODE (insn) == DEFINE_SPLIT
-		|| GET_CODE (insn) == DEFINE_PEEPHOLE2)
+	    if (!constraints_supported_in_insn_p (insn))
 	      {
 		if (constraints0)
-		  error_with_line (pattern_lineno,
-				   "constraints not supported in %s",
-				   rtx_name[GET_CODE (insn)]);
+		  {
+		    error_with_line (pattern_lineno,
+				     "constraints not supported in %s",
+				     rtx_name[GET_CODE (insn)]);
+		  }
 	      }
 
 	    /* A MATCH_OPERAND that is a SET should have an output reload.  */

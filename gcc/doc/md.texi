@@ -1546,18 +1546,18 @@ Here are constraint modifier characters.
 @table @samp
 @cindex @samp{=} in constraint
 @item =
-Means that this operand is write-only for this instruction: the previous
-value is discarded and replaced by output data.
+Means that this operand is written to by this instruction:
+the previous value is discarded and replaced by new data.
 
 @cindex @samp{+} in constraint
 @item +
 Means that this operand is both read and written by the instruction.
 
 When the compiler fixes up the operands to satisfy the constraints,
-it needs to know which operands are inputs to the instruction and
-which are outputs from it.  @samp{=} identifies an output; @samp{+}
-identifies an operand that is both input and output; all other operands
-are assumed to be input only.
+it needs to know which operands are read by the instruction and
+which are written by it.  @samp{=} identifies an operand which is only
+written; @samp{+} identifies an operand that is both read and written; all
+other operands are assumed to only be read.
 
 If you specify @samp{=} or @samp{+} in a constraint, you put it in the
 first character of the constraint string.
@@ -1566,9 +1566,9 @@ first character of the constraint string.
 @cindex earlyclobber operand
 @item &
 Means (in a particular alternative) that this operand is an
-@dfn{earlyclobber} operand, which is modified before the instruction is
+@dfn{earlyclobber} operand, which is written before the instruction is
 finished using the input operands.  Therefore, this operand may not lie
-in a register that is used as an input operand or as part of any memory
+in a register that is read by the instruction or as part of any memory
 address.
 
 @samp{&} applies only to the alternative in which it is written.  In
@@ -1576,16 +1576,19 @@ constraints with multiple alternatives, sometimes one alternative
 requires @samp{&} while others do not.  See, for example, the
 @samp{movdf} insn of the 68000.
 
-An input operand can be tied to an earlyclobber operand if its only
-use as an input occurs before the early result is written.  Adding
-alternatives of this form often allows GCC to produce better code
-when only some of the inputs can be affected by the earlyclobber.
-See, for example, the @samp{mulsi3} insn of the ARM@.
+A operand which is read by the instruction can be tied to an earlyclobber
+operand if its only use as an input occurs before the early result is
+written.  Adding alternatives of this form often allows GCC to produce
+better code when only some of the read operands can be affected by the
+earlyclobber. See, for example, the @samp{mulsi3} insn of the ARM@.
 
-Furthermore, if the @dfn{earlyclobber} operand is also read/write operand, then
-that operand is modified only after it's used.
+Furthermore, if the @dfn{earlyclobber} operand is also a read/write
+operand, then that operand is written only after it's used.
 
-@samp{&} does not obviate the need to write @samp{=} or @samp{+}.
+@samp{&} does not obviate the need to write @samp{=} or @samp{+}.  As
+@dfn{earlyclobber} operands are always written, a read-only
+@dfn{earlyclobber} operand is ill-formed and will be rejected by the
+compiler.
 
 @cindex @samp{%} in constraint
 @item %
@@ -1593,7 +1596,7 @@ Declares the instruction to be commutative for this operand and the
 following operand.  This means that the compiler may interchange the
 two operands if that is the cheapest way to make all operands fit the
 constraints.  @samp{%} applies to all alternatives and must appear as
-the first character in the constraint.  Only input operands can use
+the first character in the constraint.  Only read-only operands can use
 @samp{%}.
 
 @ifset INTERNALS
