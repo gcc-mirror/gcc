@@ -9111,7 +9111,6 @@ s390_emit_epilogue (bool sibcall)
 		 store of r14 since we will not be able to find the
 		 load issued here.  */
 	      cfun_frame_layout.save_return_addr_p = true;
-	      cfun_gpr_save_slot (RETURN_REGNUM) = -1;
 	    }
 	}
 
