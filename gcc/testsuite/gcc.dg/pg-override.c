@@ -1,6 +1,6 @@
 /* Test -fprofile override */
 /* { dg-do compile } */
-/* { dg-options "-fprofile" { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-fprofile" { target i?86-*-linux* x86_64-*-linux* } } */
 /* { dg-final { scan-assembler-not "mcount" } } */
 /* Origin: Andi Kleen */
 extern void foobar(const char *);

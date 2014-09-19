@@ -1,5 +1,5 @@
 /* Test -mfentry */
-/* { dg-do compile } */
+/* { dg-do compile { target { *-*-linux* } && { nonpic || ! { ia32 } } } } */
 /* { dg-options "-fprofile -mfentry" } */
 /* { dg-final { scan-assembler "__fentry__" } } */
 /* Origin: Andi Kleen */
