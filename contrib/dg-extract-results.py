@@ -117,7 +117,7 @@ class Prog:
         self.tool_re = re.compile (r'^\t\t=== (.*) tests ===$')
         self.result_re = re.compile (r'^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED'
                                      r'|WARNING|ERROR|UNSUPPORTED|UNTESTED'
-                                     r'|KFAIL):\s*(\S+)')
+                                     r'|KFAIL):\s*(.+)')
         self.completed_re = re.compile (r'.* completed at (.*)')
         # Pieces of text to write at the head of the output.
         # start_line is a pair in which the first element is a datetime
