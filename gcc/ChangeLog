@@ -1,3 +1,7 @@
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/sh/sh.md: Fix use of constraints in define_split.
+
 2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/61998

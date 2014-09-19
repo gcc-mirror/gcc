@@ -7709,10 +7709,10 @@ label:
 ;; use that will prevent scheduling of other stack accesses beyond this
 ;; instruction.
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 "=X"))]
+  [(set (match_operand:DF 0 "register_operand")
+	(match_operand:DF 1 "register_operand"))
+   (use (match_operand:PSI 2 "fpscr_operand"))
+   (clobber (match_scratch:SI 3))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
   [(const_int 0)]
