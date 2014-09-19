@@ -1,3 +1,8 @@
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/63286
+	* tree.c (need_assembler_name_p): Do not mangle variadic types.
+
 2014-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* recog.c (scratch_operand): Do not simply allow all hard registers:

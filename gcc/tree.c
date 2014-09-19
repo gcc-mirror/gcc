@@ -5003,6 +5003,7 @@ need_assembler_name_p (tree decl)
       && decl == TYPE_NAME (TREE_TYPE (decl))
       && !is_lang_specific (TREE_TYPE (decl))
       && AGGREGATE_TYPE_P (TREE_TYPE (decl))
+      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE)
       && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
     return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
