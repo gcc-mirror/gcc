@@ -4031,7 +4031,7 @@
 	(unspec:PTR [(match_operand:PTR 1 "memory_operand" "m")
 		     (match_operand:PTR 2 "memory_operand" "m")]
 	 UNSPEC_SP_TEST))
-   (clobber (match_scratch:PTR 3 "&r"))]
+   (clobber (match_scratch:PTR 3 "=&r"))]
   ""
   "ldr\t%<w>3, %x1\;ldr\t%<w>0, %x2\;eor\t%<w>0, %<w>3, %<w>0"
   [(set_attr "length" "12")

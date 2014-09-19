@@ -1,3 +1,8 @@
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/ssp-3.c: New.
+	* gcc.dg/ssp-4.c: Likewise.
+
 2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/dfp-conv1.c: New testcase.
