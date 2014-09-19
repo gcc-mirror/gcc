@@ -32755,25 +32755,14 @@ rs6000_split_logical (rtx operands[3],
 
 /* Return true if the peephole2 can combine a load involving a combination of
    an addis instruction and a load with an offset that can be fused together on
-   a power8.
-
-   The operands are:
-	operands[0]	register set with addis
-	operands[1]	value set via addis
-	operands[2]	target register being loaded
-	operands[3]	D-form memory reference using operands[0].
-
-   In addition, we are passed a boolean that is true if this is a peephole2,
-   and we can use see if the addis_reg is dead after the insn and can be
-   replaced by the target register.  */
+   a power8.  */
 
 bool
-fusion_gpr_load_p (rtx *operands, bool peep2_p)
+fusion_gpr_load_p (rtx addis_reg,	/* register set via addis.  */
+		   rtx addis_value,	/* addis value.  */
+		   rtx target,		/* target register that is loaded.  */
+		   rtx mem)		/* bottom part of the memory addr. */
 {
-  rtx addis_reg = operands[0];
-  rtx addis_value = operands[1];
-  rtx target = operands[2];
-  rtx mem = operands[3];
   rtx addr;
   rtx base_reg;
 
@@ -32787,9 +32776,6 @@ fusion_gpr_load_p (rtx *operands, bool peep2_p)
   if (!fusion_gpr_addis (addis_value, GET_MODE (addis_value)))
     return false;
 
-  if (!fusion_gpr_mem_load (mem, GET_MODE (mem)))
-    return false;
-
   /* Allow sign/zero extension.  */
   if (GET_CODE (mem) == ZERO_EXTEND
       || (GET_CODE (mem) == SIGN_EXTEND && TARGET_P8_FUSION_SIGN))
@@ -32798,22 +32784,22 @@ fusion_gpr_load_p (rtx *operands, bool peep2_p)
   if (!MEM_P (mem))
     return false;
 
+  if (!fusion_gpr_mem_load (mem, GET_MODE (mem)))
+    return false;
+
   addr = XEXP (mem, 0);			/* either PLUS or LO_SUM.  */
   if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
     return false;
 
   /* Validate that the register used to load the high value is either the
-     register being loaded, or we can safely replace its use in a peephole2.
+     register being loaded, or we can safely replace its use.
 
-     If this is a peephole2, we assume that there are 2 instructions in the
-     peephole (addis and load), so we want to check if the target register was
-     not used in the memory address and the register to hold the addis result
-     is dead after the peephole.  */
+     This function is only called from the peephole2 pass and we assume that
+     there are 2 instructions in the peephole (addis and load), so we want to
+     check if the target register was not used in the memory address and the
+     register to hold the addis result is dead after the peephole.  */
   if (REGNO (addis_reg) != REGNO (target))
     {
-      if (!peep2_p)
-	return false;
-
       if (reg_mentioned_p (target, mem))
 	return false;
 
@@ -32854,9 +32840,6 @@ expand_fusion_gpr_load (rtx *operands)
   enum machine_mode extend_mode = target_mode;
   enum machine_mode ptr_mode = Pmode;
   enum rtx_code extend = UNKNOWN;
-  rtx addis_reg = ((ptr_mode == target_mode)
-		   ? target
-		   : simplify_subreg (ptr_mode, target, target_mode, 0));
 
   if (GET_CODE (orig_mem) == ZERO_EXTEND
       || (TARGET_P8_FUSION_SIGN && GET_CODE (orig_mem) == SIGN_EXTEND))
@@ -32873,13 +32856,14 @@ expand_fusion_gpr_load (rtx *operands)
   gcc_assert (plus_or_lo_sum == PLUS || plus_or_lo_sum == LO_SUM);
 
   offset = XEXP (orig_addr, 1);
-  new_addr = gen_rtx_fmt_ee (plus_or_lo_sum, ptr_mode, addis_reg, offset);
-  new_mem = change_address (orig_mem, target_mode, new_addr);
+  new_addr = gen_rtx_fmt_ee (plus_or_lo_sum, ptr_mode, addis_value, offset);
+  new_mem = replace_equiv_address_nv (orig_mem, new_addr);
 
   if (extend != UNKNOWN)
     new_mem = gen_rtx_fmt_e (ZERO_EXTEND, extend_mode, new_mem);
 
-  emit_insn (gen_rtx_SET (VOIDmode, addis_reg, addis_value));
+  new_mem = gen_rtx_UNSPEC (extend_mode, gen_rtvec (1, new_mem),
+			    UNSPEC_FUSION_GPR);
   emit_insn (gen_rtx_SET (VOIDmode, target, new_mem));
 
   if (extend == SIGN_EXTEND)
@@ -32898,55 +32882,40 @@ expand_fusion_gpr_load (rtx *operands)
 }
 
 /* Return a string to fuse an addis instruction with a gpr load to the same
-   register that we loaded up the addis instruction.  The code is complicated,
-   so we call output_asm_insn directly, and just return "".
+   register that we loaded up the addis instruction.  The address that is used
+   is the logical address that was formed during peephole2:
+	(lo_sum (high) (low-part))
 
-   The operands are:
-	operands[0]	register set with addis (must be same reg as target).
-	operands[1]	value set via addis
-	operands[2]	target register being loaded
-	operands[3]	D-form memory reference using operands[0].  */
+   The code is complicated, so we call output_asm_insn directly, and just
+   return "".  */
 
 const char *
-emit_fusion_gpr_load (rtx *operands)
+emit_fusion_gpr_load (rtx target, rtx mem)
 {
-  rtx addis_reg = operands[0];
-  rtx addis_value = operands[1];
-  rtx target = operands[2];
-  rtx mem = operands[3];
+  rtx addis_value;
   rtx fuse_ops[10];
   rtx addr;
   rtx load_offset;
   const char *addis_str = NULL;
   const char *load_str = NULL;
-  const char *extend_insn = NULL;
   const char *mode_name = NULL;
   char insn_template[80];
   enum machine_mode mode;
   const char *comment_str = ASM_COMMENT_START;
-  bool sign_p = false;
 
-  gcc_assert (REG_P (addis_reg) && REG_P (target));
-  gcc_assert (REGNO (addis_reg) == REGNO (target));
+  if (GET_CODE (mem) == ZERO_EXTEND)
+    mem = XEXP (mem, 0);
+
+  gcc_assert (REG_P (target) && MEM_P (mem));
 
   if (*comment_str == ' ')
     comment_str++;
 
-  /* Allow sign/zero extension.  */
-  if (GET_CODE (mem) == ZERO_EXTEND)
-    mem = XEXP (mem, 0);
-
-  else if (GET_CODE (mem) == SIGN_EXTEND && TARGET_P8_FUSION_SIGN)
-    {
-      sign_p = true;
-      mem = XEXP (mem, 0);
-    }
-
-  gcc_assert (MEM_P (mem));
   addr = XEXP (mem, 0);
   if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
     gcc_unreachable ();
 
+  addis_value = XEXP (addr, 0);
   load_offset = XEXP (addr, 1);
 
   /* Now emit the load instruction to the same register.  */
@@ -32956,29 +32925,22 @@ emit_fusion_gpr_load (rtx *operands)
     case QImode:
       mode_name = "char";
       load_str = "lbz";
-      extend_insn = "extsb %0,%0";
       break;
 
     case HImode:
       mode_name = "short";
       load_str = "lhz";
-      extend_insn = "extsh %0,%0";
       break;
 
     case SImode:
       mode_name = "int";
       load_str = "lwz";
-      extend_insn = "extsw %0,%0";
       break;
 
     case DImode:
-      if (TARGET_POWERPC64)
-	{
-	  mode_name = "long";
-	  load_str = "ld";
-	}
-      else
-	gcc_unreachable ();
+      gcc_assert (TARGET_POWERPC64);
+      mode_name = "long";
+      load_str = "ld";
       break;
 
     default:
@@ -33121,14 +33083,6 @@ emit_fusion_gpr_load (rtx *operands)
 
   else
     fatal_insn ("Unable to generate load offset for fusion", load_offset);
-
-  /* Handle sign extension.  The peephole2 pass generates this as a separate
-     insn, but we handle it just in case it got reattached.  */
-  if (sign_p)
-    {
-      gcc_assert (extend_insn != NULL);
-      output_asm_insn (extend_insn, fuse_ops);
-    }
 
   return "";
 }
