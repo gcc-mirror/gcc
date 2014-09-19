@@ -1,5 +1,15 @@
 2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* doc/md.texi (Modifiers): Consistently use "read/write"
+	nomenclature rather than "input/output".
+	* genrecog.c (constraints_supported_in_insn_p): New.
+	(validate_pattern): If needed, also check constraints on
+	MATCH_SCRATCH operands.
+	* genoutput.c (validate_insn_alternatives): Catch earlyclobber
+	operands with no '=' or '+' modifier.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Mark
 	scratch register as written.
 

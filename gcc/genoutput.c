@@ -769,6 +769,7 @@ validate_insn_alternatives (struct data *d)
 	char c;
 	int which_alternative = 0;
 	int alternative_count_unsure = 0;
+	bool seen_write = false;
 
 	for (p = d->operand[start].constraint; (c = *p); p += len)
 	  {
@@ -777,6 +778,18 @@ validate_insn_alternatives (struct data *d)
 	      error_with_line (d->lineno,
 			       "character '%c' can only be used at the"
 			       " beginning of a constraint string", c);
+
+	    if (c == '=' || c == '+')
+	      seen_write = true;
+
+	    /* Earlyclobber operands must always be marked write-only
+	       or read/write.  */
+	    if (!seen_write && c == '&')
+	      error_with_line (d->lineno,
+			       "earlyclobber operands may not be"
+			       " read-only in alternative %d",
+			       which_alternative);
+
 	    if (ISSPACE (c) || strchr (indep_constraints, c))
 	      len = 1;
 	    else if (ISDIGIT (c))
