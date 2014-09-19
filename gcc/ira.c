@@ -1078,7 +1078,7 @@ setup_allocno_and_important_classes (void)
    containing a given class.  If allocatable hard register set of a
    given class is not a subset of any corresponding set of a class
    from CLASSES, we use the cheapest (with load/store point of view)
-   class from CLASSES whose set intersects with given class set */
+   class from CLASSES whose set intersects with given class set.  */
 static void
 setup_class_translate_array (enum reg_class *class_translate,
 			     int classes_num, enum reg_class *classes)
@@ -1774,7 +1774,7 @@ void
 ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 {
   /* MAP nalt * nop -> start of constraints for given operand and
-     alternative */
+     alternative.  */
   static vec<const char *> insn_constraints;
   int nop, nalt;
   bool curr_swapped;
@@ -2728,7 +2728,7 @@ print_redundant_copies (void)
   FOR_EACH_ALLOCNO (a, ai)
     {
       if (ALLOCNO_CAP_MEMBER (a) != NULL)
-	/* It is a cap. */
+	/* It is a cap.  */
 	continue;
       hard_regno = ALLOCNO_HARD_REGNO (a);
       if (hard_regno >= 0)
@@ -3463,7 +3463,7 @@ update_equiv_regs (void)
 	    note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
 
 	  /* Don't bother considering a REG_EQUAL note containing an EXPR_LIST
-	     since it represents a function call */
+	     since it represents a function call.  */
 	  if (note && GET_CODE (XEXP (note, 0)) == EXPR_LIST)
 	    note = NULL_RTX;
 
@@ -4137,7 +4137,7 @@ build_insn_chain (void)
 		       to a multiword reg.  Here, we only model the
 		       subreg case that is not wrapped in ZERO_EXTRACT
 		       precisely so we do not need to look at the
-		       fabricated use. */
+		       fabricated use.  */
 		    if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE)
 			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT)
 			&& DF_REF_FLAGS_IS_SET (use, DF_REF_SUBREG))

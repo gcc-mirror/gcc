@@ -135,7 +135,7 @@ struct allocno_color_data
      and all its subnodes in the tree (forest) of allocno hard
      register nodes (see comments above).  */
   int hard_regs_subnodes_start;
-  /* The length of the previous array. */
+  /* The length of the previous array.  */
   int hard_regs_subnodes_num;
   /* Records about updating allocno hard reg costs from copies.  If
      the allocno did not get expected hard register, these records are
@@ -1864,7 +1864,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   if (best_hard_regno >= 0)
     update_costs_from_copies (a, true, ! retry_p);
   ira_assert (ALLOCNO_CLASS (a) == aclass);
-  /* We don't need updated costs anymore: */
+  /* We don't need updated costs anymore.  */
   ira_free_allocno_updated_costs (a);
   return best_hard_regno >= 0;
 }
@@ -3069,7 +3069,7 @@ color_allocnos (void)
 
 
 
-/* Output information about the loop given by its LOOP_TREE_NODE. */
+/* Output information about the loop given by its LOOP_TREE_NODE.  */
 static void
 print_loop_title (ira_loop_tree_node_t loop_tree_node)
 {
@@ -3205,7 +3205,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 	    if (hard_regno >= 0)
 	      update_costs_from_copies (subloop_allocno, true, true);
-	    /* We don't need updated costs anymore: */
+	    /* We don't need updated costs anymore.  */
 	    ira_free_allocno_updated_costs (subloop_allocno);
 	  }
       }
@@ -3249,7 +3249,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
 		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore: */
+		  /* We don't need updated costs anymore.  */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
 	      continue;
@@ -3265,7 +3265,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
 		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore: */
+		  /* We don't need updated costs anymore.  */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
 	    }
