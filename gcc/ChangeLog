@@ -1,3 +1,8 @@
+2014-09-20  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (sub_f_add_imm): Change constraint of
+	operand 3 to "CnL".
+
 2014-09-20  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md: Remove constraints from define_split
