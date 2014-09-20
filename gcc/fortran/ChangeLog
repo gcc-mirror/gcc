@@ -1,3 +1,9 @@
+2014-09-20  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Fix issue with
+	generating temporary for value argument.
+
 2014-09-20  Joost VandeVondele  <vondele@gcc.gnu.org>
 
 	* trans-expr.c (gfc_reset_vptr): Fix comment whitespace.
