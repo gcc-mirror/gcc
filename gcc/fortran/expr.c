@@ -4560,7 +4560,7 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
   for (ref = expr->ref; ref; ref = ref->next)
     {
       if (ar)
-	return false; /* Array shall be last part-ref. */
+	return false; /* Array shall be last part-ref.  */
 
       if (ref->type == REF_COMPONENT)
 	part_ref  = ref;

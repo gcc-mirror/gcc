@@ -1031,7 +1031,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
     {
       pp_newline (context->printer);
       /* If the caret line was shown, the prefix does not contain the
-	 locus. */
+	 locus.  */
       pp_set_prefix (context->printer, prefix);
     }
   else 

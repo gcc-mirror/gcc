@@ -975,7 +975,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   block->ext.actual->next = gfc_get_actual_arglist ();
   block->ext.actual->next->expr = gfc_get_int_expr (gfc_index_integer_kind,
 						    NULL, 0);
-  block->ext.actual->next->next = gfc_get_actual_arglist (); /* SIZE. */
+  block->ext.actual->next->next = gfc_get_actual_arglist (); /* SIZE.  */
 
   /* The <addr> part: TRANSFER (C_LOC (array), c_intptr_t).  */
 
@@ -1363,7 +1363,7 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   block2->expr1 = gfc_lval_expr_from_sym (ptr2);
   block2->expr2 = gfc_lval_expr_from_sym (ptr);
 
-  /* Call now the user's final subroutine. */
+  /* Call now the user's final subroutine.  */
   block->next  = gfc_get_code (EXEC_CALL);
   block = block->next;
   block->symtree = fini->proc_tree;
@@ -1447,7 +1447,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
       return;
     }
 
-  /* Search for the ancestor's finalizers. */
+  /* Search for the ancestor's finalizers.  */
   if (derived->attr.extension && derived->components
       && (!derived->components->ts.u.derived->attr.abstract
 	  || has_finalizer_component (derived)))
@@ -1504,7 +1504,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
      3. Call the ancestor's finalizer.  */
 
   /* Declare the wrapper function; it takes an assumed-rank array
-     and a VALUE logical as arguments. */
+     and a VALUE logical as arguments.  */
 
   /* Set up the namespace.  */
   sub_ns = gfc_get_namespace (ns, 0);
@@ -1706,7 +1706,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   last_code->ext.iterator = iter;
   last_code->block = gfc_get_code (EXEC_DO);
 
-  /* strides(idx) = _F._stride(array,dim=idx). */
+  /* strides(idx) = _F._stride(array,dim=idx).  */
   last_code->block->next = gfc_get_code (EXEC_ASSIGN);
   block = last_code->block->next;
 
@@ -1724,11 +1724,11 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 					   gfc_lval_expr_from_sym (array),
 					   gfc_lval_expr_from_sym (idx));
 
-  /* sizes(idx) = sizes(idx-1) * size(array,dim=idx, kind=index_kind). */
+  /* sizes(idx) = sizes(idx-1) * size(array,dim=idx, kind=index_kind).  */
   block->next = gfc_get_code (EXEC_ASSIGN);
   block = block->next;
 
-  /* sizes(idx) = ... */
+  /* sizes(idx) = ...  */
   block->expr1 = gfc_lval_expr_from_sym (sizes);
   block->expr1->ref = gfc_get_ref ();
   block->expr1->ref->type = REF_ARRAY;
@@ -1742,7 +1742,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   block->expr2->expr_type = EXPR_OP;
   block->expr2->value.op.op = INTRINSIC_TIMES;
 
-  /* sizes(idx-1). */
+  /* sizes(idx-1).  */
   block->expr2->value.op.op1 = gfc_lval_expr_from_sym (sizes);
   block->expr2->value.op.op1->ref = gfc_get_ref ();
   block->expr2->value.op.op1->ref->type = REF_ARRAY;
@@ -2499,7 +2499,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->attr.access = ACCESS_PRIVATE;
 
 	      /* Build a minimal expression to make use of
-		 target-memory.c/gfc_element_size for 'size'. */
+		 target-memory.c/gfc_element_size for 'size'.  */
 	      e = gfc_get_expr ();
 	      e->ts = *ts;
 	      e->expr_type = EXPR_VARIABLE;

@@ -72,7 +72,7 @@ gfc_init_options_struct (struct gcc_options *opts)
 }
 
 /* Get ready for options handling. Keep in sync with
-   libgfortran/runtime/compile_options.c (init_compile_options). */
+   libgfortran/runtime/compile_options.c (init_compile_options).  */
 
 void
 gfc_init_options (unsigned int decoded_options_count,
@@ -284,7 +284,7 @@ gfc_post_options (const char **pfilename)
     gfc_option.flag_stack_arrays = optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
-     and enable it for F2003/F2008/GNU/Legacy. */
+     and enable it for F2003/F2008/GNU/Legacy.  */
   if (gfc_option.flag_realloc_lhs == -1)
     {
       if (gfc_option.allow_std & GFC_STD_F2003)
@@ -511,7 +511,7 @@ gfc_handle_fpe_option (const char *arg, bool trap)
 				       GFC_FPE_INEXACT,
 				       0 };
 
-  /* As the default for -ffpe-summary= is nonzero, set it to 0. */
+  /* As the default for -ffpe-summary= is nonzero, set it to 0.  */
   if (!trap)
     gfc_option.fpe_summary = 0;
 
@@ -1189,7 +1189,7 @@ gfc_get_option_string (void)
           /* Ignore these.  */
           break;
 	default:
-	  /* Ignore file names. */
+	  /* Ignore file names.  */
 	  if (save_decoded_options[j].orig_option_with_args_text[0] == '-')
 	    len += 1
 		 + strlen (save_decoded_options[j].orig_option_with_args_text);
@@ -1221,7 +1221,7 @@ gfc_get_option_string (void)
 	  break;
 
         default:
-	  /* Ignore file names. */
+	  /* Ignore file names.  */
 	  if (save_decoded_options[j].orig_option_with_args_text[0] != '-')
 	    continue;
 

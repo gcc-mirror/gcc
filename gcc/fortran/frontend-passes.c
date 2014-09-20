@@ -91,7 +91,7 @@ struct my_struct *evec;
 
 static bool in_assoc_list;
 
-/* Entry point - run all passes for a namespace. */
+/* Entry point - run all passes for a namespace.  */
 
 void
 gfc_run_passes (gfc_namespace *ns)
@@ -500,7 +500,7 @@ create_var (gfc_expr * e)
       if (e->shape == NULL)
 	{
 	  /* We don't know the shape at compile time, so we use an
-	     allocatable. */
+	     allocatable.  */
 	  symbol->as->type = AS_DEFERRED;
 	  symbol->attr.allocatable = 1;
 	}
@@ -589,7 +589,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
   gfc_expr *newvar;
   gfc_expr **ei, **ej;
 
-  /* Don't do this optimization within OMP workshare. */
+  /* Don't do this optimization within OMP workshare.  */
 
   if (in_omp_workshare)
     {

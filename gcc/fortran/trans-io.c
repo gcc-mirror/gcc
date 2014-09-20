@@ -2135,7 +2135,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  return;
 	}
-      /* Fall through. */
+      /* Fall through.  */
     case BT_HOLLERITH:
       if (se->string_length)
 	arg2 = se->string_length;

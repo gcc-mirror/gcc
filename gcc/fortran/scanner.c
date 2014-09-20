@@ -1788,7 +1788,7 @@ preprocessor_line (gfc_char_t *c)
     {
        /* FIXME: we leak the old filename because a pointer to it may be stored
           in the linemap.  Alternative could be using GC or updating linemap to
-          point to the new name, but there is no API for that currently. */
+          point to the new name, but there is no API for that currently.  */
       current_file->filename = xstrdup (filename);
     }
 

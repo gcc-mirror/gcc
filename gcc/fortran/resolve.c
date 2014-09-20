@@ -5114,7 +5114,7 @@ check_host_association (gfc_expr *e)
   	    {
 	      /* Original was function so point to the new symbol, since
 		 the actual argument list is already attached to the
-		 expression. */
+		 expression.  */
 	      e->value.function.esym = NULL;
 	      e->symtree = st;
 	    }
@@ -10017,7 +10017,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    break;
 
 	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
-	     the LHS. */
+	     the LHS.  */
 	  if (code->expr1->expr_type == EXPR_FUNCTION
 	      && code->expr1->value.function.isym
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
@@ -12314,7 +12314,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   super_type = gfc_get_derived_super_type (sym);
 
-  /* F2008, C432. */
+  /* F2008, C432.  */
   if (super_type && sym->attr.coarray_comp && !super_type->attr.coarray_comp)
     {
       gfc_error ("As extending type '%s' at %L has a coarray component, "
@@ -13124,7 +13124,7 @@ resolve_symbol (gfc_symbol *sym)
       as = sym->as;
     }
 
-  /* F2008, C530. */
+  /* F2008, C530.  */
   if (sym->attr.contiguous
       && (!class_attr.dimension
 	  || (as->type != AS_ASSUMED_SHAPE && as->type != AS_ASSUMED_RANK

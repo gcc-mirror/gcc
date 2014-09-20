@@ -3238,7 +3238,7 @@ gfc_match_import (void)
 	    {
 	      /* The actual derived type is stored in a symtree with the first
 		 letter of the name capitalized; the symtree with the all
-		 lower-case name contains the associated generic function. */
+		 lower-case name contains the associated generic function.  */
 	      st = gfc_new_symtree (&gfc_current_ns->sym_root,
 			gfc_get_string ("%c%s",
 				(char) TOUPPER ((unsigned char) name[0]),
@@ -4857,7 +4857,7 @@ match_procedure_decl (void)
   int num;
   gfc_expr *initializer = NULL;
 
-  /* Parse interface (with brackets). */
+  /* Parse interface (with brackets).  */
   m = match_procedure_interface (&proc_if);
   if (m != MATCH_YES)
     return m;
@@ -5698,7 +5698,7 @@ gfc_match_subroutine (void)
     return MATCH_ERROR;
 
   /* Set declared_at as it might point to, e.g., a PUBLIC statement, if
-     the symbol existed before. */
+     the symbol existed before.  */
   sym->declared_at = gfc_current_locus;
 
   if (add_hidden_procptr_result (sym))
@@ -5943,7 +5943,7 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
       /* No binding label, but if symbol isn't null, we
 	 can set the label for it here.
 	 If name="" or allow_binding_name is false, no C binding name is
-	 created. */
+	 created.  */
       if (sym != NULL && sym->name != NULL && has_name_equals == 0)
 	sym->binding_label = IDENTIFIER_POINTER (get_identifier (sym->name));
     }
@@ -7233,7 +7233,7 @@ gfc_match_volatile (void)
   for(;;)
     {
       /* VOLATILE is special because it can be added to host-associated
-	 symbols locally. Except for coarrays. */
+	 symbols locally.  Except for coarrays.  */
       m = gfc_match_symbol (&sym, 1);
       switch (m)
 	{
