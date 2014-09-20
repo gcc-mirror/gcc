@@ -1,5 +1,12 @@
 2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* diagnostic.c (warning_n): New function.
+	* diagnostic-core.h (warning_n): Declare.
+	* ipa-devirt.c (ipa_devirt): Handle singulars correctly;
+	output dynamic counts when available.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR tree-optimization/63255
 	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering
 	issue in setting body_removed flag.

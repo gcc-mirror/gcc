@@ -4137,12 +4137,31 @@ ipa_devirt (void)
 	    if (final_warning_records->type_warnings[i].count)
 	      {
 	        tree type = final_warning_records->type_warnings[i].type;
-		warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
-			    OPT_Wsuggest_final_types,
-			    "Declaring type %qD final "
-			    "would enable devirtualization of %i calls",
-			    type,
-			    final_warning_records->type_warnings[i].count);
+	        int count = final_warning_records->type_warnings[i].count;
+	        long long dyn_count
+		  = final_warning_records->type_warnings[i].dyn_count;
+
+		if (!dyn_count)
+		  warning_n (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
+			     OPT_Wsuggest_final_types, count,
+			     "Declaring type %qD final "
+			     "would enable devirtualization of %i call",
+			     "Declaring type %qD final "
+			     "would enable devirtualization of %i calls",
+			     type,
+			     count);
+		else
+		  warning_n (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
+			     OPT_Wsuggest_final_types, count,
+			     "Declaring type %qD final "
+			     "would enable devirtualization of %i call "
+			     "executed %lli times",
+			     "Declaring type %qD final "
+			     "would enable devirtualization of %i calls "
+			     "executed %lli times",
+			     type,
+			     count,
+			     dyn_count);
 	      }
 	}
 
@@ -4157,19 +4176,45 @@ ipa_devirt (void)
 	    {
 	      tree decl = decl_warnings_vec[i]->decl;
 	      int count = decl_warnings_vec[i]->count;
+	      long long dyn_count = decl_warnings_vec[i]->dyn_count;
 
-	      if (DECL_CXX_DESTRUCTOR_P (decl))
-		warning_at (DECL_SOURCE_LOCATION (decl),
-			    OPT_Wsuggest_final_methods,
-			    "Declaring virtual destructor of %qD final "
-			    "would enable devirtualization of %i calls",
-			    DECL_CONTEXT (decl), count);
-	      else
-		warning_at (DECL_SOURCE_LOCATION (decl),
-			    OPT_Wsuggest_final_methods,
-			    "Declaring method %qD final "
-			    "would enable devirtualization of %i calls",
-			    decl, count);
+	      if (!dyn_count)
+		if (DECL_CXX_DESTRUCTOR_P (decl))
+		  warning_n (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wsuggest_final_methods, count,
+			      "Declaring virtual destructor of %qD final "
+			      "would enable devirtualization of %i call",
+			      "Declaring virtual destructor of %qD final "
+			      "would enable devirtualization of %i calls",
+			      DECL_CONTEXT (decl), count);
+		else
+		  warning_n (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wsuggest_final_methods, count,
+			      "Declaring method %qD final "
+			      "would enable devirtualization of %i call",
+			      "Declaring method %qD final "
+			      "would enable devirtualization of %i calls",
+			      decl, count);
+	       else if (DECL_CXX_DESTRUCTOR_P (decl))
+		  warning_n (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wsuggest_final_methods, count,
+			      "Declaring virtual destructor of %qD final "
+			      "would enable devirtualization of %i call "
+			      "executed %lli times",
+			      "Declaring virtual destructor of %qD final "
+			      "would enable devirtualization of %i calls "
+			      "executed %lli times",
+			      DECL_CONTEXT (decl), count, dyn_count);
+		else
+		  warning_n (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wsuggest_final_methods, count,
+			      "Declaring method %qD final "
+			      "would enable devirtualization of %i call "
+			      "executed %lli times",
+			      "Declaring method %qD final "
+			      "would enable devirtualization of %i calls "
+			      "executed %lli times",
+			      decl, count, dyn_count);
 	    }
 	}
 	
