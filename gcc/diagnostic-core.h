@@ -58,6 +58,8 @@ extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern bool warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern bool warning_n (location_t, int, int, const char *, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(4,6) ATTRIBUTE_GCC_DIAG(5,6);
 extern bool warning_at (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);

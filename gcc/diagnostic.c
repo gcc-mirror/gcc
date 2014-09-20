@@ -997,6 +997,28 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
   return ret;
 }
 
+/* A warning at LOCATION.  Use this for code which is correct according to the
+   relevant language specification but is likely to be buggy anyway.
+   Returns true if the warning was printed, false if it was inhibited.  */
+
+bool
+warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
+	   const char *plural_gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+  bool ret;
+
+  va_start (ap, plural_gmsgid);
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  &ap, location, DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
+  va_end (ap);
+  return ret;
+}
+
 /* A "pedantic" warning at LOCATION: issues a warning unless
    -pedantic-errors was given on the command line, in which case it
    issues an error.  Use this for diagnostics required by the relevant
