@@ -1,5 +1,10 @@
 2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (varpool_node::externally_visible_p): Do not
+	privatize dynamic TLS variables.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* diagnostic.c (warning_n): New function.
 	* diagnostic-core.h (warning_n): Declare.
 	* ipa-devirt.c (ipa_devirt): Handle singulars correctly;
