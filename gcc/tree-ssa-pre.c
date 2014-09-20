@@ -4277,15 +4277,10 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      && flag_devirtualize
 	      && virtual_method_call_p (fn))
 	    {
-	      tree otr_type;
-	      HOST_WIDE_INT otr_token;
-	      ipa_polymorphic_call_context context;
+	      tree otr_type = obj_type_ref_class (fn);
 	      tree instance;
+	      ipa_polymorphic_call_context context (current_function_decl, fn, stmt, &instance);
 	      bool final;
-
-	      instance = get_polymorphic_call_info (current_function_decl,
-						    fn,
-						    &otr_type, &otr_token, &context, stmt);
 
 	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
 

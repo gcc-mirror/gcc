@@ -2347,14 +2347,13 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
     {
       tree otr_type;
       HOST_WIDE_INT otr_token;
-      ipa_polymorphic_call_context context;
       tree instance;
       tree target = gimple_call_fn (call);
+      ipa_polymorphic_call_context context (current_function_decl,
+					    target, call, &instance);
 
-      instance = get_polymorphic_call_info (current_function_decl,
-					    target,
-					    &otr_type, &otr_token,
-					    &context, call);
+      otr_type = obj_type_ref_class (target);
+      otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
 
       if (context.get_dynamic_type (instance,
 				    OBJ_TYPE_REF_OBJECT (target),
@@ -2609,7 +2608,7 @@ ipa_intraprocedural_devirtualization (gimple call)
 #ifdef ENABLE_CHECKING
   if (fndecl)
     gcc_assert (possible_polymorphic_call_target_p
-		  (otr, cgraph_node::get (fndecl)));
+		  (otr, call, cgraph_node::get (fndecl)));
 #endif
   return fndecl;
 }
@@ -3121,14 +3120,12 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   if (TREE_CODE (binfo) != TREE_BINFO)
     {
-      ipa_polymorphic_call_context context;
+      ipa_polymorphic_call_context context (binfo,
+					    ie->indirect_info->otr_type,
+					    ie->indirect_info->offset);
       vec <cgraph_node *>targets;
       bool final;
 
-      if (!get_polymorphic_call_info_from_invariant
-	     (&context, binfo, ie->indirect_info->otr_type,
-	      ie->indirect_info->offset))
-	return NULL;
       targets = possible_polymorphic_call_targets
 		 (ie->indirect_info->otr_type,
 		  ie->indirect_info->otr_token,
