@@ -1,5 +1,11 @@
 2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR tree-optimization/63255
+	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering
+	issue in setting body_removed flag.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR c++/61825
 	* c-family/c-common.c (handle_alias_ifunc_attribute): Check
 	that visibility change is possible
