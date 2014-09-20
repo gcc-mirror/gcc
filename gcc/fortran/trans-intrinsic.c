@@ -8396,7 +8396,7 @@ conv_intrinsic_atomic_op (gfc_code *code)
       else
 	image_index = integer_zero_node;
 
-      if (TREE_TYPE (TREE_TYPE (atom)) != TREE_TYPE (TREE_TYPE (value)))
+      if (!POINTER_TYPE_P (TREE_TYPE (value)))
 	{
 	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (atom)), "value");
 	  gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), value));
