@@ -4207,7 +4207,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	  || tmp_symtree->n.sym->intmod_sym_id != s))
     tmp_symtree = NULL;
 
-  /* Already exists in this scope so don't re-add it. */
+  /* Already exists in this scope so don't re-add it.  */
   if (tmp_symtree != NULL && (tmp_sym = tmp_symtree->n.sym) != NULL
       && (!tmp_sym->attr.generic
 	  || (tmp_sym = gfc_find_dt_in_generic (tmp_sym)) != NULL)

@@ -542,7 +542,7 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 	  return true;
 	}
 
-      /* Case 3: (c1 + X) - X = c1. */
+      /* Case 3: (c1 + X) - X = c1.  */
       if (e1_op1->expr_type == EXPR_CONSTANT
 	  && gfc_dep_compare_expr (e1_op2, e2) == 0)
 	{
@@ -1555,7 +1555,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
 
 #undef IS_CONSTANT_INTEGER
 
-  /* Check for forward dependencies x:y vs. x+1:z and x:y:z vs. x:y:z+1. */
+  /* Check for forward dependencies x:y vs. x+1:z and x:y:z vs. x:y:z+1.  */
 
   if (l_dir == 1 && r_dir == 1 &&
       (start_comparison == 0 || start_comparison == -1)

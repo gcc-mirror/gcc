@@ -3357,7 +3357,7 @@ gfc_check_rank (gfc_expr *a ATTRIBUTE_UNUSED)
 
   bool is_variable = true;
 
-  /* Functions returning pointers are regarded as variable, cf. F2008, R602. */
+  /* Functions returning pointers are regarded as variable, cf. F2008, R602.  */
   if (a->expr_type == EXPR_FUNCTION)
     is_variable = a->value.function.esym
 		  ? a->value.function.esym->result->attr.pointer
@@ -3936,7 +3936,7 @@ gfc_check_sizeof (gfc_expr *arg)
    If c_loc is true, character with len > 1 are allowed (cf. Fortran
    2003corr5); additionally, assumed-shape/assumed-rank/deferred-shape
    arrays are permitted. And if c_f_ptr is true, deferred-shape arrays
-   are permitted. */
+   are permitted.  */
 
 static bool
 is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
@@ -3983,7 +3983,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
     if (expr->ts.deferred)
       {
 	/* TS 29113 allows deferred-length strings as dummy arguments,
-	   but it is not an interoperable type. */
+	   but it is not an interoperable type.  */
 	*msg = "Expression shall not be a deferred-length string";
 	return false;
       }
