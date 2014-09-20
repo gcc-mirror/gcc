@@ -2563,8 +2563,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
           if (dump_file && virtual_method_call_p (callee)
 	      && !possible_polymorphic_call_target_p
-		    (callee, cgraph_node::get (gimple_call_addr_fndecl
-					       (OBJ_TYPE_REF_EXPR (callee)))))
+		    (callee, stmt, cgraph_node::get (gimple_call_addr_fndecl
+						     (OBJ_TYPE_REF_EXPR (callee)))))
 	    {
 	      fprintf (dump_file,
 		       "Type inheritance inconsistent devirtualization of ");

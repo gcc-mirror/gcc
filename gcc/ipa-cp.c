@@ -1618,14 +1618,11 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   if (TREE_CODE (t) != TREE_BINFO)
     {
-      ipa_polymorphic_call_context context;
+      ipa_polymorphic_call_context context (t, ie->indirect_info->otr_type,
+					    anc_offset);
       vec <cgraph_node *>targets;
       bool final;
 
-      if (!get_polymorphic_call_info_from_invariant
-	     (&context, t, ie->indirect_info->otr_type,
-	      anc_offset))
-	return NULL_TREE;
       targets = possible_polymorphic_call_targets
 		 (ie->indirect_info->otr_type,
 		  ie->indirect_info->otr_token,

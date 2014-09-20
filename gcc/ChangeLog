@@ -1,5 +1,22 @@
 2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-utils.h (ipa_polymorphic_call_context): Turn into class; add ctors.
+	(possible_polymorphic_call_targets, dump_possible_polymorphic_call_targets,
+	possible_polymorphic_call_target_p, possible_polymorphic_call_target_p): Simplify.
+	(get_dynamic_type): Remove.
+	* ipa-devirt.c (ipa_dummy_polymorphic_call_context): Remove.
+	(clear_speculation): Bring to ipa-deivrt.h
+	(get_class_context): Rename to ...
+	(ipa_polymorphic_call_context::restrict_to_inner_class): ... this one.
+	(contains_type_p): Update.
+	(get_dynamic_type): Rename to ...
+	ipa_polymorphic_call_context::get_dynamic_type(): ... this one.
+	(possible_polymorphic_call_targets): UPdate.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Update.
+	* ipa-prop.c (ipa_analyze_call_uses): Update.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-visibility.c (varpool_node::externally_visible_p): Do not
 	privatize dynamic TLS variables.
 

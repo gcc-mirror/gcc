@@ -884,21 +884,15 @@ cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
       && (target = gimple_call_fn (call_stmt))
       && virtual_method_call_p (target))
     {
-      tree otr_type;
-      HOST_WIDE_INT otr_token;
-      ipa_polymorphic_call_context context;
-
-      get_polymorphic_call_info (decl,
-				 target,
-				 &otr_type, &otr_token,
-				 &context, call_stmt);
+      ipa_polymorphic_call_context context (decl, target, call_stmt);
 
       /* Only record types can have virtual calls.  */
-      gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);
       edge->indirect_info->polymorphic = true;
       edge->indirect_info->param_index = -1;
-      edge->indirect_info->otr_token = otr_token;
-      edge->indirect_info->otr_type = otr_type;
+      edge->indirect_info->otr_token
+	 = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
+      edge->indirect_info->otr_type = obj_type_ref_class (target);
+      gcc_assert (TREE_CODE (edge->indirect_info->otr_type) == RECORD_TYPE);
       edge->indirect_info->outer_type = context.outer_type;
       edge->indirect_info->speculative_outer_type
 	 = context.speculative_outer_type;
