@@ -1,3 +1,9 @@
+2014-09-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62017
+	* decl.c (begin_destructor_body): Only clobber the as-base part of
+	*this.
+
 2014-09-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61392
