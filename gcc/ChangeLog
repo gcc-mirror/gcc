@@ -1,5 +1,12 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (ashr<mode>3, *ashr<mode>3, *ashrsi3_64,
+	*ashr<mode>3_dot, *ashr<mode>3_dot2): Clobber CA_REGNO.
+	(floatdisf2_internal2): Ditto.
+	(ashrdi3_no_power): Ditto.  Fix formatting.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ctz<mode>2, ffs<mode>2, popcount<mode>2,
 	popcntb<mode>2, popcntd<mode>2, parity<mode>2, parity<mode>2_cmpb):
 	Tidy.
