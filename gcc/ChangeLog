@@ -1,5 +1,11 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (ctz<mode>2, ffs<mode>2, popcount<mode>2,
+	popcntb<mode>2, popcntd<mode>2, parity<mode>2, parity<mode>2_cmpb):
+	Tidy.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (strlensi): Don't use subsi3 with a
 	constant, use addsi3 directly.
 	(three anonymous define_insn, two define_split): Delete.
