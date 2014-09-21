@@ -1,3 +1,11 @@
+2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-final): Remove check
+	for call_value_rex64_ms_sysv.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-final): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-final): Remove check
+	for call_rex64_ms_sysv.
+
 2014-09-20  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

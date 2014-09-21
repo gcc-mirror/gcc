@@ -1,3 +1,12 @@
+2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_call): Generate MS->SYSV extra
+	clobbered registers using clobber_reg.  Remove UNSPEC decoration.
+	* config/i386/i386.md (unspec) <UNSPEC_MS_TO_SYSV_CALL>: Remove.
+	(*call_rex64_ms_sysv): Remove.
+	(*call_value_rex64_ms_sysv): Ditto.
+	* config/i386/predicates.md (call_rex64_ms_sysv_operation): Remove.
+
 2014-09-20  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.md (sub_f_add_imm): Change constraint of
