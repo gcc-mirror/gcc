@@ -1,5 +1,13 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (div<mode>3): Fix comment.  Use a different
+	insn for divides by integer powers of two.
+	(div<mode>3_sra, *div<mode>3_sra_dot, *div<mode>3_sra_dot2): New.
+	(mod<mode>3): Fix formatting.
+	(three anonymous define_insn and two define_split): Delete.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ashr<mode>3, *ashr<mode>3, *ashrsi3_64,
 	*ashr<mode>3_dot, *ashr<mode>3_dot2): Clobber CA_REGNO.
 	(floatdisf2_internal2): Ditto.
