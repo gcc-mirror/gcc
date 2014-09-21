@@ -30111,6 +30111,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	}
       break;
 
+    case NE:
     case EQ:
     case GTU:
     case LTU:

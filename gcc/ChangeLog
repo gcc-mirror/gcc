@@ -1,5 +1,9 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <NE>: New.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicates.md (ca_operand): Allow subregs.
 	(input_operand): Do not allow ca_operand.
 	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): For the
