@@ -1,5 +1,11 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*one_cmpl<mode>2): Generate "not" insn.
+	(two anonymous define_insn and two define_split): Delete.
+	(*one_cmpl<mode>2_dot, *one_cmpl<mode>2_dot2): New.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (rs6000_rtx_costs) <NE>: New.
 
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
