@@ -1,5 +1,18 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (iorxor): New code_iterator.
+	(iorxor): New code_attr.
+	(IORXOR): New code_attr.
+	(*and<mode>3, *and<mode>3_dot, *and<mode>3_dot2): Delete.
+	(ior<mode>3, xor<mode>3): Delete.
+	(<iorxor><mode>3): New.
+	(splitter for "big" integer ior, xor): New.
+	(*bool<mode>3): Move.  Also handle AND.
+	(*bool<mode>3_dot, *bool<mode>3_dot2): Also handle AND.
+	(splitter for "big" integer ior, xor): Delete.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (*neg<mode>2_internal): Delete.
 	(two anonymous define_insn and two define_split): Delete.
 	(*neg<mode>2, *neg<mode>2_dot, *neg<mode>2_dot2): New.
