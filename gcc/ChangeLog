@@ -1,5 +1,20 @@
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (strlensi): Don't use subsi3 with a
+	constant, use addsi3 directly.
+	(three anonymous define_insn, two define_split): Delete.
+	(sub<mode>3): Move.  Do not allow constant second operand.
+	Generate different insn for constant first operand.
+	(*subf<mode>3, *subf<mode>3_dot, *subf<mode>3_dot2): New.
+	(subf<mode>3_imm): New.
+	(ctz<mode>2, ffs<mode>2): Clobber CA_REGNO where required.
+	(*plus_ltu<mode>): Only handle registers.
+	(*plus_ltu<mode>_1): New.  Handle integer third operand.
+	(*plus_gtu<mode>): Only handle registers.
+	(*plus_gtu<mode>_1): New.  Handle integer third operand.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (iorxor): New code_iterator.
 	(iorxor): New code_attr.
 	(IORXOR): New code_attr.
