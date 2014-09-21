@@ -1780,7 +1780,7 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return GET_MODE_CLASS (mode) == MODE_CC;
 
   if (CA_REGNO_P (regno))
-    return mode == BImode;
+    return mode == Pmode || mode == SImode;
 
   /* AltiVec only in AldyVec registers.  */
   if (ALTIVEC_REGNO_P (regno))
@@ -2475,7 +2475,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   rs6000_regno_regclass[LR_REGNO] = LINK_REGS;
   rs6000_regno_regclass[CTR_REGNO] = CTR_REGS;
-  rs6000_regno_regclass[CA_REGNO] = CA_REGS;
+  rs6000_regno_regclass[CA_REGNO] = NO_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[SPE_ACC_REGNO] = SPE_ACC_REGS;

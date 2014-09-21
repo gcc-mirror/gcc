@@ -116,8 +116,16 @@
 
 ;; Return 1 if op is the carry register.
 (define_predicate "ca_operand"
-  (and (match_code "reg")
-       (match_test "CA_REGNO_P (REGNO (op))")))
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (!REG_P (op))
+    return 0;
+
+  return CA_REGNO_P (REGNO (op));
+})
 
 ;; Return 1 if op is a signed 5-bit constant integer.
 (define_predicate "s5bit_cint_operand"
@@ -1120,6 +1128,10 @@
   if (SCALAR_FLOAT_MODE_P (mode)
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return register_operand (op, mode);
+
+  /* We don't allow moving the carry bit around.  */
+  if (ca_operand (op, mode))
+    return 0;
 
   /* The only cases left are integral modes one word or smaller (we
      do not get called for MODE_CC values).  These can be in any

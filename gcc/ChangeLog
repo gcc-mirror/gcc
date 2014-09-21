@@ -1,3 +1,11 @@
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (ca_operand): Allow subregs.
+	(input_operand): Do not allow ca_operand.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): For the
+	carry bit, allow SImode and Pmode.
+	(rs6000_init_hard_regno_mode_ok): Make the carry bit class NO_REGS.
+
 2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_call): Generate MS->SYSV extra
