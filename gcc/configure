@@ -6607,7 +6607,35 @@ fi
 if test $enable_werror_always = yes; then :
   strict_warn="$strict_warn${strict_warn:+ }-Werror"
 fi
+ if test "xmanual" != xmanual; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC is GCC >=manual" >&5
+$as_echo_n "checking whether $CC is GCC >=manual... " >&6; }
+if test "${acx_cv_prog_cc_gcc_manual_or_newer+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  set fnord `echo manual | tr '.' ' '`
+     shift
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if __GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__ \
+  < $1 * 10000 + $2 * 100 + $3
+#error insufficient
+#endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  acx_cv_prog_cc_gcc_manual_or_newer=yes
+else
+  acx_cv_prog_cc_gcc_manual_or_newer=no
+fi
+rm -f conftest.err conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_prog_cc_gcc_manual_or_newer" >&5
+$as_echo "$acx_cv_prog_cc_gcc_manual_or_newer" >&6; }
+ if test $acx_cv_prog_cc_gcc_manual_or_newer = yes; then :
+  strict_warn="$strict_warn${strict_warn:+ }-Werror"
+fi
 
+fi
 
 
 # The above macros do nothing if the compiler is not GCC.  However, the
@@ -11869,6 +11897,22 @@ elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir
 fi
 
+if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+  if test "x$with_headers" != x; then
+    target_header_dir=$with_headers
+  elif test "x$with_sysroot" = x; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
+  elif test "x$with_build_sysroot" != "x"; then
+    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
+  elif test "x$with_sysroot" = xyes; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+  else
+    target_header_dir="${with_sysroot}${native_system_header_dir}"
+  fi
+else
+  target_header_dir=${native_system_header_dir}
+fi
+
 # If this is a cross-compiler that does not
 # have its own set of headers then define
 # inhibit_libc
@@ -11880,7 +11924,7 @@ fi
 : ${inhibit_libc=false}
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
-     { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
+     { test "x$with_headers" = xno || test ! -f "$target_header_dir/stdio.h"; } ; then
        inhibit_libc=true
 fi
 
@@ -18033,7 +18077,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18036 "configure"
+#line 18080 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18139,7 +18183,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18142 "configure"
+#line 18186 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26625,22 +26669,6 @@ cat >>confdefs.h <<_ACEOF
 #define PREFIX_INCLUDE_DIR "$prefix/include"
 _ACEOF
 
-fi
-
-if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-  if test "x$with_headers" != x; then
-    target_header_dir=$with_headers
-  elif test "x$with_sysroot" = x; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
-  elif test "x$with_build_sysroot" != "x"; then
-    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
-  elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
-  else
-    target_header_dir="${with_sysroot}${native_system_header_dir}"
-  fi
-else
-  target_header_dir=${native_system_header_dir}
 fi
 
 # Determine the version of glibc, if any, used on the target.

@@ -1,3 +1,13 @@
+2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac (target_header_dir): Move block defining
+	this to before the block setting inhibit_libc.
+	(inhibit_libc): When considering $with_headers, just
+	check it it's explicitly "no".  If not, also check if
+	$target_header_dir/stdio.h is present.  If not, set
+	inhibit_libc=true.
+	* configure: Regenerate.
+
 2014-09-21  Patrick Oppenlander  <pattyo.lists@gmail.com>
 
 	* config/rs6000/t-spe (MULTILIB_EXCEPTIONS): Allow isel without SPE.
