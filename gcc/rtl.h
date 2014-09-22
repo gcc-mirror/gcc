@@ -1831,6 +1831,64 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
   c->size += COSTS_N_INSNS (n);
 }
 
+/* Describes the shape of a subreg:
+
+   inner_mode == the mode of the SUBREG_REG
+   offset     == the SUBREG_BYTE
+   outer_mode == the mode of the SUBREG itself.  */
+struct subreg_shape {
+  subreg_shape (enum machine_mode, unsigned int, enum machine_mode);
+  bool operator == (const subreg_shape &) const;
+  bool operator != (const subreg_shape &) const;
+  unsigned int unique_id () const;
+
+  enum machine_mode inner_mode;
+  unsigned int offset;
+  enum machine_mode outer_mode;
+};
+
+inline
+subreg_shape::subreg_shape (enum machine_mode inner_mode_in,
+			    unsigned int offset_in,
+			    enum machine_mode outer_mode_in)
+  : inner_mode (inner_mode_in), offset (offset_in), outer_mode (outer_mode_in)
+{}
+
+inline bool
+subreg_shape::operator == (const subreg_shape &other) const
+{
+  return (inner_mode == other.inner_mode
+	  && offset == other.offset
+	  && outer_mode == other.outer_mode);
+}
+
+inline bool
+subreg_shape::operator != (const subreg_shape &other) const
+{
+  return !operator == (other);
+}
+
+/* Return an integer that uniquely identifies this shape.  Structures
+   like rtx_def assume that a mode can fit in an 8-bit bitfield and no
+   current mode is anywhere near being 65536 bytes in size, so the
+   id comfortably fits in an int.  */
+
+inline unsigned int
+subreg_shape::unique_id () const
+{
+  STATIC_ASSERT (MAX_MACHINE_MODE <= 256);
+  return (int) inner_mode + ((int) outer_mode << 8) + (offset << 16);
+}
+
+/* Return the shape of a SUBREG rtx.  */
+
+static inline subreg_shape
+shape_of_subreg (const_rtx x)
+{
+  return subreg_shape (GET_MODE (SUBREG_REG (x)),
+		       SUBREG_BYTE (x), GET_MODE (x));
+}
+
 /* Information about an address.  This structure is supposed to be able
    to represent all supported target addresses.  Please extend it if it
    is not yet general enough.  */
@@ -2727,6 +2785,9 @@ extern bool val_signbit_known_clear_p (enum machine_mode,
 /* In reginfo.c  */
 extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
+#ifdef HARD_CONST
+extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
+#endif
 
 /* In emit-rtl.c  */
 extern rtx set_for_reg_notes (rtx);
