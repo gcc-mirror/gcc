@@ -3324,6 +3324,22 @@ proc check_effective_target_vect_shift { } {
     return $et_vect_shift_saved
 }
 
+proc check_effective_target_whole_vector_shift { } {
+    if { [istarget x86_64-*-*]
+	 || [istarget ia64-*-*]
+	 || ([check_effective_target_arm32]
+	     && [check_effective_target_arm_little_endian])
+	 || ([istarget mips*-*-*]
+	     && [check_effective_target_mips_loongson]) } {
+	set answer 1
+    } else {
+	set answer 0
+    }
+
+    verbose "check_effective_target_vect_long: returning $answer" 2
+    return $answer
+}
+
 # Return 1 if the target supports vector bswap operations.
 
 proc check_effective_target_vect_bswap { } {
