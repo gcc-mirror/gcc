@@ -1,5 +1,10 @@
 2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.dg/vect/vect-reduc-or_1.c: New test.
+	* gcc.dg/vect/vect-reduc-or_2.c: Likewise.
+
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_whole_vector_shift):
 	New.
 
