@@ -76,11 +76,10 @@ along with GCC; see the file COPYING3.  If not see
    When visiting a statement or PHI node the lattice value for an
    SSA name can transition from UNDEFINED to COPY to VARYING.  */
 
-struct prop_value_d {
+struct prop_value_t {
     /* Copy-of value.  */
     tree value;
 };
-typedef struct prop_value_d prop_value_t;
 
 static prop_value_t *copy_of;
 static unsigned n_copy_of;

@@ -2496,7 +2496,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
 
-typedef struct block_info_def
+struct block_info
 {
   /* Estimated frequency of execution of basic_block.  */
   sreal frequency;
@@ -2506,10 +2506,10 @@ typedef struct block_info_def
 
   /* Number of predecessors we need to visit first.  */
   int npredecessors;
-} *block_info;
+};
 
 /* Similar information for edges.  */
-typedef struct edge_info_def
+struct edge_prob_info
 {
   /* In case edge is a loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
@@ -2517,10 +2517,10 @@ typedef struct edge_info_def
   sreal back_edge_prob;
   /* True if the edge is a loopback edge in the natural loop.  */
   unsigned int back_edge:1;
-} *edge_info;
+};
 
-#define BLOCK_INFO(B)	((block_info) (B)->aux)
-#define EDGE_INFO(E)	((edge_info) (E)->aux)
+#define BLOCK_INFO(B)	((block_info *) (B)->aux)
+#define EDGE_INFO(E)	((edge_prob_info *) (E)->aux)
 
 /* Helper function for estimate_bb_frequencies.
    Propagate the frequencies in blocks marked in
@@ -2935,8 +2935,8 @@ estimate_bb_frequencies (bool force)
 	 REG_BR_PROB_BASE;
 
       /* Set up block info for each basic block.  */
-      alloc_aux_for_blocks (sizeof (struct block_info_def));
-      alloc_aux_for_edges (sizeof (struct edge_info_def));
+      alloc_aux_for_blocks (sizeof (block_info));
+      alloc_aux_for_edges (sizeof (edge_prob_info));
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
 	  edge e;

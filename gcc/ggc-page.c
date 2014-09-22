@@ -378,7 +378,7 @@ struct free_object
 #endif
 
 /* The rest of the global variables.  */
-static struct globals
+static struct ggc_globals
 {
   /* The Nth element in this array is a page with objects of size 2^N.
      If there are any pages with free objects, they will be at the

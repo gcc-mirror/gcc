@@ -421,7 +421,7 @@ static alloc_pool insn_info_pool;
 static insn_info_t active_local_stores;
 static int active_local_stores_len;
 
-struct bb_info
+struct dse_bb_info
 {
 
   /* Pointer to the insn info for the last insn in the block.  These
@@ -479,7 +479,7 @@ struct bb_info
   bitmap regs_live;
 };
 
-typedef struct bb_info *bb_info_t;
+typedef struct dse_bb_info *bb_info_t;
 static alloc_pool bb_info_pool;
 
 /* Table to hold all bb_infos.  */
@@ -757,7 +757,7 @@ dse_step0 (void)
 			 sizeof (struct insn_info), 100);
   bb_info_pool
     = create_alloc_pool ("bb_info_pool",
-			 sizeof (struct bb_info), 100);
+			 sizeof (struct dse_bb_info), 100);
   rtx_group_info_pool
     = create_alloc_pool ("rtx_group_info_pool",
 			 sizeof (struct group_info), 100);
@@ -2700,7 +2700,7 @@ dse_step1 (void)
       insn_info_t ptr;
       bb_info_t bb_info = (bb_info_t) pool_alloc (bb_info_pool);
 
-      memset (bb_info, 0, sizeof (struct bb_info));
+      memset (bb_info, 0, sizeof (struct dse_bb_info));
       bitmap_set_bit (all_blocks, bb->index);
       bb_info->regs_live = regs_live;
 
