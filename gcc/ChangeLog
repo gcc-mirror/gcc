@@ -1,5 +1,10 @@
 2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* combine.c (subst): Use simplify_subreg_regno rather than
+	REG_CANNOT_CHANGE_MODE_P to detect invalid mode changes.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (subreg_info): Expand commentary
 	* rtlanal.c (subreg_get_info): Likewise.
 
