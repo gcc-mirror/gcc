@@ -1,5 +1,14 @@
 2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_queue.h: Include missing header.
+	* include/bits/stl_stack.h: Likewise.
+	* testsuite/23_containers/priority_queue/requirements/
+	uses_allocator.cc: New.
+	* testsuite/23_containers/queue/requirements/uses_allocator.cc: New.
+	* testsuite/23_containers/stack/requirements/uses_allocator.cc: New.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Update C++11 status.
 	* doc/xml/manual/status_cxx2014.xml: Update TS status.
 	* doc/html/manual/status.html: Regenerate.
