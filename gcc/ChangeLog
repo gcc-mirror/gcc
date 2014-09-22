@@ -1,3 +1,7 @@
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* fold-const.c (tree_swap_operands_p): Strip only sign-preserving NOPs.
+
 2014-09-22  Richard Biener  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_init_constructor): Do not leave
