@@ -50,6 +50,8 @@ target_noncanonical = @target_noncanonical@
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PARTS = @extra_parts@
 
+FORCE_EXPLICIT_EH_REGISTRY = @force_explicit_eh_registry@
+
 extra-parts = libgcc-extra-parts
 
 # Multilib support variables.
@@ -283,7 +285,7 @@ INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
-  -fbuilding-libgcc -fno-stack-protector \
+  -fbuilding-libgcc -fno-stack-protector $(FORCE_EXPLICIT_EH_REGISTRY) \
   $(INHIBIT_LIBC_CFLAGS)
 
 # Extra flags to use when compiling crt{begin,end}.o.

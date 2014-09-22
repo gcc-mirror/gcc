@@ -131,7 +131,12 @@ call_ ## FUNC (void)					\
 # define USE_PT_GNU_EH_FRAME
 #endif
 
-#if defined(__LIBGCC_EH_FRAME_SECTION_NAME__) && !defined(USE_PT_GNU_EH_FRAME)
+#ifdef USE_EH_FRAME_REGISTRY_ALWAYS
+# ifndef __LIBGCC_EH_FRAME_SECTION_NAME__
+#  error "Can't use explicit exception-frame-registration without __LIBGCC_EH_FRAME_SECTION_NAME__"
+# endif
+#endif
+#if defined(__LIBGCC_EH_FRAME_SECTION_NAME__) && (!defined(USE_PT_GNU_EH_FRAME) || defined(USE_EH_FRAME_REGISTRY_ALWAYS))
 # define USE_EH_FRAME_REGISTRY
 #endif
 #if defined(__LIBGCC_EH_FRAME_SECTION_NAME__) \
