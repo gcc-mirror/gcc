@@ -18,7 +18,7 @@ template<class F, class T> void bindb(F (T::*f)(void)) {} // { dg-message "note"
 
 struct foo {
   static int baist;
-  int bait;			// { dg-error "non-static data member" }
+  int bait;			// { dg-message "" }
   void barf ();
   static void barf (int);
 
@@ -31,7 +31,7 @@ struct foo {
     bar() {
       bind (&baist);
       bind (&foo::baist);
-      bind (&bait); // { dg-error "from this location" }
+      bind (&bait); // { dg-error "non-static data member" }
       bind (&foo::bait);
 
       bind (&baikst);
@@ -83,7 +83,7 @@ struct foo {
     barT() {
       bind (&baist);
       bind (&foo::baist);
-      bind (&bait); // { dg-error "from this location" }
+      bind (&bait); // { dg-error "non-static data member" }
       bind (&foo::bait);
 
       bind (&baikst);

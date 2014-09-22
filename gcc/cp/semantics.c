@@ -1692,10 +1692,10 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       if (current_function_decl
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
-	error ("invalid use of member %q+D in static member function", decl);
+	error ("invalid use of member %qD in static member function", decl);
       else
-	error ("invalid use of non-static data member %q+D", decl);
-      error ("from this location");
+	error ("invalid use of non-static data member %qD", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "declared here");
 
       return error_mark_node;
     }

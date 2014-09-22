@@ -3,18 +3,18 @@
 
 template <int> struct A
 {
-  int i;		// { dg-error "invalid use of non-static data member" }
+  int i;		// { dg-message "" }
   friend void foo ()
   {
-    int x[i];		// { dg-error "from this location" }
+    int x[i];		// { dg-error "non-static data member" }
   }
 };
 
 struct B
 {
-  int j;		// { dg-error "invalid use of non-static data member" }
+  int j;		// { dg-message "" }
   friend int bar ()
   {
-    return j;		// { dg-error "from this location" }
+    return j;		// { dg-error "non-static data member" }
   }
 };
