@@ -3,12 +3,12 @@
 int x;
 class enclose {
 public:
-  int x;			// { dg-error "non-static" }
+  int x;			// { dg-message "" }
 
   class inner {
   public:
     void f (int i) {
-      x = i;// { dg-error "" } .*
+      x = i;// { dg-error "non-static" } .*
     }
   };
 };

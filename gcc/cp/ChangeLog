@@ -1,5 +1,8 @@
 2014-09-22  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_non_static_data_member): In diagnostic, give
+	error at point of use and note at point of declaration.
+
 	PR c++/63320
 	PR c++/60463
 	PR c++/60755

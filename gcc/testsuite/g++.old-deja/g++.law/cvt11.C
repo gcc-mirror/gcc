@@ -6,15 +6,11 @@
 // Message-Id: <9211101908.AA13557@tera.com>
 // Subject: type cast of qualified const member breaks g++2.3.1
 
-// Ignore extra errors in C++0x mode.
-// { dg-prune-output "non-static data member initializers" }
-// { dg-prune-output "from this location" }
-// { dg-prune-output "uninitialized" }
 #include <stdio.h>
 
 class Thing{
 private: int x;
-   public: const int N = -1; // { dg-error "" } bad initialization
+public: const int N = -1; // { dg-error "" "" { target { ! c++11 } } } bad initialization
   Thing(int y);
 };
 
@@ -23,10 +19,10 @@ class Bar{ public: void doit(void); };
 void Bar::doit(void)
 {
   int i, j;
-  i = Thing::N;
+  i = Thing::N;			// { dg-error "non-static" }
   printf("i = %d\n", i);
 
-  j = (int)Thing::N;
+  j = (int)Thing::N;		// { dg-error "non-static" }
   printf("i = %d\n", j);
 }
 Thing::Thing(int y) { x = y; }

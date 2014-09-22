@@ -3,7 +3,7 @@
 
 class Klass
 {
-  unsigned int local;		// { dg-error "non-static" }
+  unsigned int local;
 public:
   bool dostuff();
 };
@@ -11,7 +11,7 @@ public:
 bool Klass::dostuff()
 {
   auto f = []() -> bool {
-    if (local & 1) { return true; } // { dg-error "not captured|this location" }
+    if (local & 1) { return true; } // { dg-error "not captured|non-static" }
     return false;
   };
 }
