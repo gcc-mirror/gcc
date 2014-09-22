@@ -1,3 +1,8 @@
+2014-09-22  Peter A. Bigot  <pab@pabigot.com>
+
+	* config/msp430/msp430.h (LIB_SPEC): Remove automatic addition of
+	-lnosys when -msim absent.
+
 2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* fold-const.c (tree_swap_operands_p): Strip only sign-preserving NOPs.

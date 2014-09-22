@@ -70,7 +70,6 @@ extern bool msp430x;
 -lgcc							\
 -lcrt							\
 %{msim:-lsim}						\
-%{!msim:-lnosys}					\
 --end-group					   	\
 %{!T*:%{!msim:%{mmcu=*:--script=%*.ld}}}		\
 %{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}}			\
