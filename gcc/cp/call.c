@@ -6078,7 +6078,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	return expr;
       }
     case ck_identity:
-      expr = mark_rvalue_use (expr);
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
 	{
 	  int nelts = CONSTRUCTOR_NELTS (expr);
@@ -6089,6 +6088,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else
 	    gcc_unreachable ();
 	}
+      expr = mark_rvalue_use (expr);
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
