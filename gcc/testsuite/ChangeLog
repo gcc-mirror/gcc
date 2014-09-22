@@ -1,3 +1,8 @@
+2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62219
+	* g++.dg/cpp0x/lambda/lambda-template14.C: New.
+
 2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/vect/vect-reduc-or_1.c: New test.
