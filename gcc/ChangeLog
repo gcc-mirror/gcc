@@ -1,3 +1,10 @@
+2014-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63328
+	* omp-low.c (ipa_simd_modify_stmt_ops): For debug stmts
+	insert a debug source bind stmt setting DEBUG_EXPR_DECL
+	instead of a normal gimple assignment stmt.
+
 2014-09-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk:
