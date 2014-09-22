@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_HARD_REG_SET_H
 #define GCC_HARD_REG_SET_H
 
+#include "hash-table.h"
+
 /* Define the type of a set of hard registers.  */
 
 /* HARD_REG_ELT_TYPE is a typedef of the unsigned integral type which
@@ -613,7 +615,11 @@ hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
 
 extern char global_regs[FIRST_PSEUDO_REGISTER];
 
+struct simplifiable_subregs_hasher;
+
 struct target_hard_regs {
+  void finalize ();
+
   /* The set of registers that actually exist on the current target.  */
   HARD_REG_SET x_accessible_reg_set;
 
@@ -688,6 +694,10 @@ struct target_hard_regs {
 
   /* Vector indexed by hardware reg giving its name.  */
   const char *x_reg_names[FIRST_PSEUDO_REGISTER];
+
+  /* Records which registers can form a particular subreg, with the subreg
+     being identified by its outer mode, inner mode and offset.  */
+  hash_table <simplifiable_subregs_hasher> *x_simplifiable_subregs;
 };
 
 extern struct target_hard_regs default_target_hard_regs;

@@ -1,5 +1,35 @@
 2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h: Include hash-table.h.
+	(target_hard_regs): Add a finalize method and a x_simplifiable_subregs
+	field.
+	* target-globals.c (target_globals::~target_globals): Call
+	hard_regs->finalize.
+	* rtl.h (subreg_shape): New structure.
+	(shape_of_subreg): New function.
+	(simplifiable_subregs): Declare.
+	* reginfo.c (simplifiable_subreg): New structure.
+	(simplifiable_subregs_hasher): Likewise.
+	(simplifiable_subregs): New function.
+	(invalid_mode_changes): Delete.
+	(alid_mode_changes, valid_mode_changes_obstack): New variables.
+	(record_subregs_of_mode): Remove subregs_of_mode parameter.
+	Record valid mode changes in valid_mode_changes.
+	(find_subregs_of_mode): Remove subregs_of_mode parameter.
+	Update calls to record_subregs_of_mode.
+	(init_subregs_of_mode): Remove invalid_mode_changes and bitmap
+	handling.  Initialize new variables.  Update call to
+	find_subregs_of_mode.
+	(invalid_mode_change_p): Check new variables instead of
+	invalid_mode_changes.
+	(finish_subregs_of_mode): Finalize new variables instead of
+	invalid_mode_changes.
+	(target_hard_regs::finalize): New function.
+	* ira-costs.c (print_allocno_costs): Call invalid_mode_change_p
+	even when CLASS_CANNOT_CHANGE_MODE is undefined.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* combine.c (subst): Use simplify_subreg_regno rather than
 	REG_CANNOT_CHANGE_MODE_P to detect invalid mode changes.
 

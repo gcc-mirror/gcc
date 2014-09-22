@@ -54,6 +54,24 @@ along with GCC; see the file COPYING3.  If not see
 
 int max_regno;
 
+/* Used to cache the results of simplifiable_subregs.  SHAPE is the input
+   parameter and SIMPLIFIABLE_REGS is the result.  */
+struct simplifiable_subreg
+{
+  simplifiable_subreg (const subreg_shape &);
+
+  subreg_shape shape;
+  HARD_REG_SET simplifiable_regs;
+};
+
+struct simplifiable_subregs_hasher : typed_noop_remove <simplifiable_subreg>
+{
+  typedef simplifiable_subreg value_type;
+  typedef subreg_shape compare_type;
+
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 struct target_hard_regs default_target_hard_regs;
 struct target_regs default_target_regs;
@@ -1193,64 +1211,102 @@ reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 }
 
 
+inline hashval_t
+simplifiable_subregs_hasher::hash (const value_type *value)
+{
+  return value->shape.unique_id ();
+}
+
+inline bool
+simplifiable_subregs_hasher::equal (const value_type *value,
+				    const compare_type *compare)
+{
+  return value->shape == *compare;
+}
+
+inline simplifiable_subreg::simplifiable_subreg (const subreg_shape &shape_in)
+  : shape (shape_in)
+{
+  CLEAR_HARD_REG_SET (simplifiable_regs);
+}
+
+/* Return the set of hard registers that are able to form the subreg
+   described by SHAPE.  */
+
+const HARD_REG_SET &
+simplifiable_subregs (const subreg_shape &shape)
+{
+  if (!this_target_hard_regs->x_simplifiable_subregs)
+    this_target_hard_regs->x_simplifiable_subregs
+      = new hash_table <simplifiable_subregs_hasher> (30);
+  simplifiable_subreg **slot
+    = (this_target_hard_regs->x_simplifiable_subregs
+       ->find_slot_with_hash (&shape, shape.unique_id (), INSERT));
+
+  if (!*slot)
+    {
+      simplifiable_subreg *info = new simplifiable_subreg (shape);
+      for (unsigned int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+	if (HARD_REGNO_MODE_OK (i, shape.inner_mode)
+	    && simplify_subreg_regno (i, shape.inner_mode, shape.offset,
+				      shape.outer_mode) >= 0)
+	  SET_HARD_REG_BIT (info->simplifiable_regs, i);
+      *slot = info;
+    }
+  return (*slot)->simplifiable_regs;
+}
 
 /* Passes for keeping and updating info about modes of registers
    inside subregisters.  */
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
-
-static bitmap invalid_mode_changes;
+static HARD_REG_SET **valid_mode_changes;
+static obstack valid_mode_changes_obstack;
 
 static void
-record_subregs_of_mode (rtx subreg, bitmap subregs_of_mode)
+record_subregs_of_mode (rtx subreg)
 {
-  enum machine_mode mode;
   unsigned int regno;
 
   if (!REG_P (SUBREG_REG (subreg)))
     return;
 
   regno = REGNO (SUBREG_REG (subreg));
-  mode = GET_MODE (subreg);
-
   if (regno < FIRST_PSEUDO_REGISTER)
     return;
 
-  if (bitmap_set_bit (subregs_of_mode,
-		      regno * NUM_MACHINE_MODES + (unsigned int) mode))
+  if (valid_mode_changes[regno])
+    AND_HARD_REG_SET (*valid_mode_changes[regno],
+		      simplifiable_subregs (shape_of_subreg (subreg)));
+  else
     {
-      unsigned int rclass;
-      for (rclass = 0; rclass < N_REG_CLASSES; rclass++)
-	if (!bitmap_bit_p (invalid_mode_changes,
-			   regno * N_REG_CLASSES + rclass)
-	    && CANNOT_CHANGE_MODE_CLASS (PSEUDO_REGNO_MODE (regno),
-					 mode, (enum reg_class) rclass))
-	  bitmap_set_bit (invalid_mode_changes,
-			  regno * N_REG_CLASSES + rclass);
+      valid_mode_changes[regno]
+	= XOBNEW (&valid_mode_changes_obstack, HARD_REG_SET);
+      COPY_HARD_REG_SET (*valid_mode_changes[regno],
+			 simplifiable_subregs (shape_of_subreg (subreg)));
     }
 }
 
 /* Call record_subregs_of_mode for all the subregs in X.  */
 static void
-find_subregs_of_mode (rtx x, bitmap subregs_of_mode)
+find_subregs_of_mode (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char * const fmt = GET_RTX_FORMAT (code);
   int i;
 
   if (code == SUBREG)
-    record_subregs_of_mode (x, subregs_of_mode);
+    record_subregs_of_mode (x);
 
   /* Time for some deep diving.  */
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	find_subregs_of_mode (XEXP (x, i), subregs_of_mode);
+	find_subregs_of_mode (XEXP (x, i));
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    find_subregs_of_mode (XVECEXP (x, i, j), subregs_of_mode);
+	    find_subregs_of_mode (XVECEXP (x, i, j));
 	}
     }
 }
@@ -1260,46 +1316,38 @@ init_subregs_of_mode (void)
 {
   basic_block bb;
   rtx_insn *insn;
-  bitmap_obstack srom_obstack;
-  bitmap subregs_of_mode;
 
-  gcc_assert (invalid_mode_changes == NULL);
-  invalid_mode_changes = BITMAP_ALLOC (NULL);
-  bitmap_obstack_initialize (&srom_obstack);
-  subregs_of_mode = BITMAP_ALLOC (&srom_obstack);
+  gcc_obstack_init (&valid_mode_changes_obstack);
+  valid_mode_changes = XCNEWVEC (HARD_REG_SET *, max_reg_num ());
 
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
-        find_subregs_of_mode (PATTERN (insn), subregs_of_mode);
-
-  BITMAP_FREE (subregs_of_mode);
-  bitmap_obstack_release (&srom_obstack);
+        find_subregs_of_mode (PATTERN (insn));
 }
 
 /* Return 1 if REGNO has had an invalid mode change in CLASS from FROM
    mode.  */
 bool
-invalid_mode_change_p (unsigned int regno,
-		       enum reg_class rclass)
+invalid_mode_change_p (unsigned int regno, enum reg_class rclass)
 {
-  return bitmap_bit_p (invalid_mode_changes,
-		       regno * N_REG_CLASSES + (unsigned) rclass);
+  return (valid_mode_changes[regno]
+	  && !hard_reg_set_intersect_p (reg_class_contents[rclass],
+					*valid_mode_changes[regno]));
 }
 
 void
 finish_subregs_of_mode (void)
 {
-  BITMAP_FREE (invalid_mode_changes);
-}
-#else
-void
-init_subregs_of_mode (void)
-{
-}
-void
-finish_subregs_of_mode (void)
-{
+  XDELETEVEC (valid_mode_changes);
+  obstack_finish (&valid_mode_changes_obstack);
 }
 
-#endif /* CANNOT_CHANGE_MODE_CLASS */
+/* Free all data attached to the structure.  This isn't a destructor because
+   we don't want to run on exit.  */
+
+void
+target_hard_regs::finalize ()
+{
+  delete x_simplifiable_subregs;
+}
