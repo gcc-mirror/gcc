@@ -1,3 +1,9 @@
+2014-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/63312
+	* config/ia64/sfp-machine.h (FE_EX_ALL, FP_TRAPPING_EXCEPTIONS):
+	New macros.
+
 2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* crtstuff.c (USE_EH_FRAME_REGISTRY): Let USE_EH_FRAME_REGISTRY_ALWAYS
