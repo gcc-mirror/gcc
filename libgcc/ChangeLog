@@ -1,3 +1,17 @@
+2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* crtstuff.c (USE_EH_FRAME_REGISTRY): Let USE_EH_FRAME_REGISTRY_ALWAYS
+	override USE_PT_GNU_EH_FRAME.
+	[__LIBGCC_EH_FRAME_SECTION_NAME__ && !USE_PT_GNU_EH_FRAME]: Sanity-
+	check USE_EH_FRAME_REGISTRY_ALWAYS against
+	__LIBGCC_EH_FRAME_SECTION_NAME__, emit error if unsane.
+	* Makefile.in (FORCE_EXPLICIT_EH_REGISTRY): New
+	variable for substituted force_explicit_eh_registry.
+	(CRTSTUFF_CFLAGS): Add FORCE_EXPLICIT_EH_REGISTRY.
+	* configure.ac (explicit-exception-frame-registration):
+	New AC_ARG_ENABLE.
+	* configure: Regenerate.
+
 2014-09-19  Olivier Hainque  <hainque@adacore.com>
 
 	* config.host (powerpc-wrs-vxworksmils): New configuration,
