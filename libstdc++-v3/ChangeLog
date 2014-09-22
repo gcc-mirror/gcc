@@ -1,5 +1,10 @@
 2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/mutex (try_lock): Do not swallow exceptions.
+	* testsuite/30_threads/try_lock/4.cc: Fix test.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/54316
 	PR libstdc++/53626
 	* config/abi/pre/gnu.ver: Add new exports.

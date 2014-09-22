@@ -133,8 +133,15 @@ void test03()
       while (unreliable_lock::throw_on < 3)
       {
         unreliable_lock::count = 0;
-        int failed = std::try_lock(l1, l2, l3);
-        VERIFY( failed == unreliable_lock::throw_on );
+        try
+          {
+            std::try_lock(l1, l2, l3);
+            VERIFY( false );
+          }
+        catch (int e)
+          {
+            VERIFY( e == unreliable_lock::throw_on );
+          }
         ++unreliable_lock::throw_on;
       }
     }
