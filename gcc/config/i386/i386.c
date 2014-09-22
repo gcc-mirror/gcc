@@ -37522,13 +37522,6 @@ ix86_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
 	 the vec_dupv4hi pattern.  */
       if (GET_MODE_SIZE (from) < 4)
 	return true;
-
-      /* Vector registers do not support subreg with nonzero offsets, which
-	 are otherwise valid for integer registers.  Since we can't see
-	 whether we have a nonzero offset from here, prohibit all
-         nonparadoxical subregs changing size.  */
-      if (GET_MODE_SIZE (to) < GET_MODE_SIZE (from))
-	return true;
     }
 
   return false;

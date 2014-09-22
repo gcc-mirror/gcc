@@ -1,5 +1,10 @@
 2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Remove
+	GET_MODE_SIZE (to) < GET_MODE_SIZE (from) test.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h: Include hash-table.h.
 	(target_hard_regs): Add a finalize method and a x_simplifiable_subregs
 	field.
