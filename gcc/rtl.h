@@ -2875,10 +2875,13 @@ struct subreg_info
 {
   /* Offset of first hard register involved in the subreg.  */
   int offset;
-  /* Number of hard registers involved in the subreg.  */
+  /* Number of hard registers involved in the subreg.  In the case of
+     a paradoxical subreg, this is the number of registers that would
+     be modified by writing to the subreg; some of them may be don't-care
+     when reading from the subreg.  */
   int nregs;
   /* Whether this subreg can be represented as a hard reg with the new
-     mode.  */
+     mode (by adding OFFSET to the original hard register).  */
   bool representable_p;
 };
 

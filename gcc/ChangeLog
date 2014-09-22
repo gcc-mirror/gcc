@@ -1,5 +1,10 @@
 2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (subreg_info): Expand commentary
+	* rtlanal.c (subreg_get_info): Likewise.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (COPY_HARD_REG_SET, COMPL_HARD_REG_SET)
 	(AND_HARD_REG_SET, AND_COMPL_HARD_REG_SET, IOR_HARD_REG_SET)
 	(IOR_COMPL_HARD_REG_SET): Allow the "from" set to be constant.
