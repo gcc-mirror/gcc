@@ -62,6 +62,7 @@
 #include "dumpfile.h"
 #include "gimple-expr.h"
 #include "builtins.h"
+#include "tm-constrs.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -8927,9 +8928,11 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       /* A SET doesn't have a mode, so let's look at the SET_DEST to get
 	 the mode.  */
       words = ARM_NUM_INTS (GET_MODE_SIZE (GET_MODE (SET_DEST (x))));
-      return (COSTS_N_INSNS (words)
-              + 4 * ((MEM_P (SET_SRC (x)))
-                     + MEM_P (SET_DEST (x))));
+      return COSTS_N_INSNS (words)
+	     + COSTS_N_INSNS (1) * (satisfies_constraint_J (SET_SRC (x))
+				    || satisfies_constraint_K (SET_SRC (x))
+				       /* thumb1_movdi_insn.  */
+				    || ((words > 1) && MEM_P (SET_SRC (x))));
 
     case CONST_INT:
       if (outer == SET)
@@ -8982,16 +8985,14 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     case AND:
     case XOR:
     case IOR:
-      /* XXX guess.  */
-      return 8;
+      return COSTS_N_INSNS (1);
 
     case MEM:
-      /* XXX another guess.  */
-      /* Memory costs quite a lot for the first word, but subsequent words
-         load at the equivalent of a single insn each.  */
-      return (10 + 4 * ((GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD)
+      return (COSTS_N_INSNS (1)
+	      + COSTS_N_INSNS (1)
+		* ((GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD)
               + ((GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
-                 ? 4 : 0));
+                 ? COSTS_N_INSNS (1) : 0));
 
     case IF_THEN_ELSE:
       /* XXX a guess.  */

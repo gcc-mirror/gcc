@@ -1,3 +1,8 @@
+2014-09-22  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* config/arm/arm.c: #include "tm-constrs.h"
+	(thumb1_size_rtx_costs): Adjust rtx costs.
+
 2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac (target_header_dir): Move block defining
