@@ -11196,30 +11196,6 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		}
 	     }
 	}
-
-      /* PUBLIC interfaces may expose PRIVATE procedures that take types
-	 PRIVATE to the containing module.  */
-      for (iface = sym->generic; iface; iface = iface->next)
-	{
-	  for (arg = gfc_sym_get_dummy_args (iface->sym); arg; arg = arg->next)
-	    {
-	      if (arg->sym
-		  && arg->sym->ts.type == BT_DERIVED
-		  && !arg->sym->ts.u.derived->attr.use_assoc
-		  && !gfc_check_symbol_access (arg->sym->ts.u.derived)
-		  && !gfc_notify_std (GFC_STD_F2003, "Procedure '%s' in "
-				      "PUBLIC interface '%s' at %L takes "
-				      "dummy arguments of '%s' which is "
-				      "PRIVATE", iface->sym->name, 
-				      sym->name, &iface->sym->declared_at, 
-				      gfc_typename(&arg->sym->ts)))
-		{
-		  /* Stop this message from recurring.  */
-		  arg->sym->ts.u.derived->attr.access = ACCESS_PUBLIC;
-		  return false;
-		}
-	     }
-	}
     }
 
   if (sym->attr.function && sym->value && sym->attr.proc != PROC_ST_FUNCTION
