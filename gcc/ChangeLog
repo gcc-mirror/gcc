@@ -1,3 +1,9 @@
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h (COPY_HARD_REG_SET, COMPL_HARD_REG_SET)
+	(AND_HARD_REG_SET, AND_COMPL_HARD_REG_SET, IOR_HARD_REG_SET)
+	(IOR_COMPL_HARD_REG_SET): Allow the "from" set to be constant.
+
 2014-09-22  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* config/arm/arm.c: #include "tm-constrs.h"

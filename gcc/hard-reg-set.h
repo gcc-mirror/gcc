@@ -168,32 +168,38 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
      scan_tp_[1] = -1; } while (0)
 
 #define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM);	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = scan_fp_[0];					\
      scan_tp_[1] = scan_fp_[1]; } while (0)
 
 #define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = ~ scan_fp_[0];				\
      scan_tp_[1] = ~ scan_fp_[1]; } while (0)
 
 #define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= scan_fp_[0];				\
      scan_tp_[1] &= scan_fp_[1]; } while (0)
 
 #define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= ~ scan_fp_[0];				\
      scan_tp_[1] &= ~ scan_fp_[1]; } while (0)
 
 #define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= scan_fp_[0];				\
      scan_tp_[1] |= scan_fp_[1]; } while (0)
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= ~ scan_fp_[0];				\
      scan_tp_[1] |= ~ scan_fp_[1]; } while (0)
 
@@ -236,37 +242,43 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
      scan_tp_[2] = -1; } while (0)
 
 #define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM);	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = scan_fp_[0];					\
      scan_tp_[1] = scan_fp_[1];					\
      scan_tp_[2] = scan_fp_[2]; } while (0)
 
 #define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = ~ scan_fp_[0];				\
      scan_tp_[1] = ~ scan_fp_[1];				\
      scan_tp_[2] = ~ scan_fp_[2]; } while (0)
 
 #define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= scan_fp_[0];				\
      scan_tp_[1] &= scan_fp_[1];				\
      scan_tp_[2] &= scan_fp_[2]; } while (0)
 
 #define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= ~ scan_fp_[0];				\
      scan_tp_[1] &= ~ scan_fp_[1];				\
      scan_tp_[2] &= ~ scan_fp_[2]; } while (0)
 
 #define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= scan_fp_[0];				\
      scan_tp_[1] |= scan_fp_[1];				\
      scan_tp_[2] |= scan_fp_[2]; } while (0)
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= ~ scan_fp_[0];				\
      scan_tp_[1] |= ~ scan_fp_[1];				\
      scan_tp_[2] |= ~ scan_fp_[2]; } while (0)
@@ -316,42 +328,48 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
      scan_tp_[3] = -1; } while (0)
 
 #define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM);	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = scan_fp_[0];					\
      scan_tp_[1] = scan_fp_[1];					\
      scan_tp_[2] = scan_fp_[2];					\
      scan_tp_[3] = scan_fp_[3]; } while (0)
 
 #define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] = ~ scan_fp_[0];				\
      scan_tp_[1] = ~ scan_fp_[1];				\
      scan_tp_[2] = ~ scan_fp_[2];				\
      scan_tp_[3] = ~ scan_fp_[3]; } while (0)
 
 #define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= scan_fp_[0];				\
      scan_tp_[1] &= scan_fp_[1];				\
      scan_tp_[2] &= scan_fp_[2];				\
      scan_tp_[3] &= scan_fp_[3]; } while (0)
 
 #define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] &= ~ scan_fp_[0];				\
      scan_tp_[1] &= ~ scan_fp_[1];				\
      scan_tp_[2] &= ~ scan_fp_[2];				\
      scan_tp_[3] &= ~ scan_fp_[3]; } while (0)
 
 #define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= scan_fp_[0];				\
      scan_tp_[1] |= scan_fp_[1];				\
      scan_tp_[2] |= scan_fp_[2];				\
      scan_tp_[3] |= scan_fp_[3]; } while (0)
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      scan_tp_[0] |= ~ scan_fp_[0];				\
      scan_tp_[1] |= ~ scan_fp_[1];				\
      scan_tp_[2] |= ~ scan_fp_[2];				\
@@ -402,37 +420,43 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
        *scan_tp_++ = -1; } while (0)
 
 #define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = *scan_fp_++; } while (0)
 
 #define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = ~ *scan_fp_++; } while (0)
 
 #define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ &= *scan_fp_++; } while (0)
 
 #define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ &= ~ *scan_fp_++; } while (0)
 
 #define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ |= *scan_fp_++; } while (0)
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
+do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
+     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
      int i;							\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ |= ~ *scan_fp_++; } while (0)
