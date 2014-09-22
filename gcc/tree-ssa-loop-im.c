@@ -116,7 +116,7 @@ typedef struct mem_ref_loc
 
 /* Description of a memory reference.  */
 
-typedef struct mem_ref
+typedef struct im_mem_ref
 {
   unsigned id;			/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
@@ -153,15 +153,15 @@ typedef struct mem_ref
 
 /* Mem_ref hashtable helpers.  */
 
-struct mem_ref_hasher : typed_noop_remove <mem_ref>
+struct mem_ref_hasher : typed_noop_remove <im_mem_ref>
 {
-  typedef mem_ref value_type;
+  typedef im_mem_ref value_type;
   typedef tree_node compare_type;
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
 };
 
-/* A hash function for struct mem_ref object OBJ.  */
+/* A hash function for struct im_mem_ref object OBJ.  */
 
 inline hashval_t
 mem_ref_hasher::hash (const value_type *mem)
@@ -169,7 +169,7 @@ mem_ref_hasher::hash (const value_type *mem)
   return mem->hash;
 }
 
-/* An equality function for struct mem_ref object MEM1 with
+/* An equality function for struct im_mem_ref object MEM1 with
    memory reference OBJ2.  */
 
 inline bool
@@ -1395,7 +1395,7 @@ force_move_till (tree ref, tree *index, void *data)
 /* A function to free the mem_ref object OBJ.  */
 
 static void
-memref_free (struct mem_ref *mem)
+memref_free (struct im_mem_ref *mem)
 {
   mem->accesses_in_loop.release ();
 }
@@ -1406,7 +1406,7 @@ memref_free (struct mem_ref *mem)
 static mem_ref_p
 mem_ref_alloc (tree mem, unsigned hash, unsigned id)
 {
-  mem_ref_p ref = XOBNEW (&mem_ref_obstack, struct mem_ref);
+  mem_ref_p ref = XOBNEW (&mem_ref_obstack, struct im_mem_ref);
   ao_ref_init (&ref->mem, mem);
   ref->id = id;
   ref->hash = hash;
@@ -1461,7 +1461,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
 {
   tree *mem = NULL;
   hashval_t hash;
-  mem_ref **slot;
+  im_mem_ref **slot;
   mem_ref_p ref;
   bool is_stored;
   unsigned id;
@@ -1578,7 +1578,7 @@ analyze_memory_references (void)
 
   /* Sort the location list of gathered memory references after their
      loop postorder number.  */
-  mem_ref *ref;
+  im_mem_ref *ref;
   FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
     ref->accesses_in_loop.qsort (sort_locs_in_loop_postorder_cmp);
 

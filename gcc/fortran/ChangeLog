@@ -1,3 +1,8 @@
+2014-09-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* openmp.c (omp_context): Rename to ...
+	(fortran_omp_context): ... this one.
+
 2014-09-21  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* resolve.c (resolve_fl_procedure): Remove duplicated lines.

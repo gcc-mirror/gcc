@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "profile.h"
 
-struct bb_info {
+struct bb_profile_info {
   unsigned int count_valid : 1;
 
   /* Number of successor and predecessor edges.  */
@@ -82,7 +82,7 @@ struct bb_info {
   gcov_type pred_count;
 };
 
-#define BB_INFO(b)  ((struct bb_info *) (b)->aux)
+#define BB_INFO(b)  ((struct bb_profile_info *) (b)->aux)
 
 
 /* Counter summary from the last set of coverage counts read.  */
@@ -128,7 +128,7 @@ instrument_edges (struct edge_list *el)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  struct edge_info *inf = EDGE_INFO (e);
+	  struct edge_profile_info *inf = EDGE_INFO (e);
 
 	  if (!inf->ignore && !inf->on_tree)
 	    {
@@ -542,7 +542,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
     }
 
   /* Attach extra info block to each bb.  */
-  alloc_aux_for_blocks (sizeof (struct bb_info));
+  alloc_aux_for_blocks (sizeof (struct bb_profile_info));
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
       edge e;
@@ -590,7 +590,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       changes = 0;
       FOR_BB_BETWEEN (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), NULL, prev_bb)
 	{
-	  struct bb_info *bi = BB_INFO (bb);
+	  struct bb_profile_info *bi = BB_INFO (bb);
 	  if (! bi->count_valid)
 	    {
 	      if (bi->succ_count == 0)
@@ -1129,7 +1129,7 @@ branch_prob (void)
 
   el = create_edge_list ();
   num_edges = NUM_EDGES (el);
-  alloc_aux_for_edges (sizeof (struct edge_info));
+  alloc_aux_for_edges (sizeof (struct edge_profile_info));
 
   /* The basic blocks are expected to be numbered sequentially.  */
   compact_blocks ();
@@ -1161,7 +1161,7 @@ branch_prob (void)
   for (num_instrumented = i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      struct edge_info *inf = EDGE_INFO (e);
+      struct edge_profile_info *inf = EDGE_INFO (e);
 
       if (inf->ignore || inf->on_tree)
 	/*NOP*/;
@@ -1221,7 +1221,7 @@ branch_prob (void)
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      struct edge_info *i = EDGE_INFO (e);
+	      struct edge_profile_info *i = EDGE_INFO (e);
 	      if (!i->ignore)
 		{
 		  unsigned flag_bits = 0;
