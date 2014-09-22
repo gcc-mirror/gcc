@@ -1,3 +1,9 @@
+2014-09-22  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/Makefile.am (%/site.exp): Add @.
+	(check-DEJAGNU): Likewise.
+	* testsuite/Makefile.in: Regenerate.
+
 2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_queue.h: Include missing header.

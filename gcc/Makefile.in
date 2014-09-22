@@ -3674,10 +3674,10 @@ $(lang_checks_parallelized): check-% : site.exp
 	fi
 
 check-parallel-% : site.exp
-	-test -d plugin || mkdir plugin
-	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
-	test -d $(TESTSUITEDIR)/$(check_p_subdir) || mkdir $(TESTSUITEDIR)/$(check_p_subdir)
-	-(rootme=`${PWD_COMMAND}`; export rootme; \
+	-@test -d plugin || mkdir plugin
+	-@test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
+	@test -d $(TESTSUITEDIR)/$(check_p_subdir) || mkdir $(TESTSUITEDIR)/$(check_p_subdir)
+	-$(if $(check_p_subno),@)(rootme=`${PWD_COMMAND}`; export rootme; \
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	if [ -n "$(check_p_subno)" ] \
 	   && [ -n "$$GCC_RUNTEST_PARALLELIZE_DIR" ] \
