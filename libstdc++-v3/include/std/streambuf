@@ -798,24 +798,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus < 201103L
     private:
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // Side effect of DR 50.
-      basic_streambuf(const basic_streambuf& __sb)
-      : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur),
-      _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg),
-      _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_end),
-      _M_buf_locale(__sb._M_buf_locale)
-      { }
-
-      basic_streambuf&
-      operator=(const basic_streambuf&) { return *this; }
 #else
     protected:
-      basic_streambuf(const basic_streambuf&) = default;
+#endif
+      basic_streambuf(const basic_streambuf&);
 
       basic_streambuf&
-      operator=(const basic_streambuf&) = default;
+      operator=(const basic_streambuf&);
 
+#if __cplusplus >= 201103L
       void
       swap(basic_streambuf& __sb)
       {
@@ -829,6 +820,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
     };
+
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Traits>
+    std::basic_streambuf<_CharT, _Traits>::
+    basic_streambuf(const basic_streambuf&) = default;
+
+  template<typename _CharT, typename _Traits>
+    std::basic_streambuf<_CharT, _Traits>&
+    std::basic_streambuf<_CharT, _Traits>::
+    operator=(const basic_streambuf&) = default;
+#endif
 
   // Explicit specialization declarations, defined in src/streambuf.cc.
   template<>

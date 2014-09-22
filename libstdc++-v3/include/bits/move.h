@@ -135,6 +135,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }
 
+  // C++11 version of std::exchange for internal use.
+  template <typename _Tp, typename _Up = _Tp>
+    inline _Tp
+    __exchange(_Tp& __obj, _Up&& __new_val)
+    {
+      _Tp __old_val = std::move(__obj);
+      __obj = std::forward<_Up>(__new_val);
+      return __old_val;
+    }
+
   /// @} group utilities
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

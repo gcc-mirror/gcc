@@ -36,6 +36,7 @@
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
 #include <bits/streambuf_iterator.h>
+#include <bits/move.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -464,6 +465,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       void
       init(basic_streambuf<_CharT, _Traits>* __sb);
+
+#if __cplusplus >= 201103L
+      basic_ios(const basic_ios&) = delete;
+      basic_ios& operator=(const basic_ios&) = delete;
+
+      void
+      move(basic_ios& __rhs)
+      {
+	ios_base::_M_move(__rhs);
+	_M_cache_locale(_M_ios_locale);
+	this->tie(__rhs.tie(nullptr));
+	_M_fill = __rhs._M_fill;
+	_M_fill_init = __rhs._M_fill_init;
+	_M_streambuf = nullptr;
+      }
+
+      void
+      move(basic_ios&& __rhs)
+      { this->move(__rhs); }
+
+      void
+      swap(basic_ios& __rhs) noexcept
+      {
+	ios_base::_M_swap(__rhs);
+	_M_cache_locale(_M_ios_locale);
+	__rhs._M_cache_locale(__rhs._M_ios_locale);
+	std::swap(_M_tie, __rhs._M_tie);
+	std::swap(_M_fill, __rhs._M_fill);
+	std::swap(_M_fill_init, __rhs._M_fill_init);
+      }
+
+      void
+      set_rdbuf(basic_streambuf<_CharT, _Traits>* __sb)
+      { _M_streambuf = __sb; }
+#endif
 
       void
       _M_cache_locale(const locale& __loc);

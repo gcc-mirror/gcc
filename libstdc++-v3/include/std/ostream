@@ -384,6 +384,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_ostream()
       { this->init(0); }
 
+#if __cplusplus >= 201103L
+      // Non-standard constructor that does not call init()
+      basic_ostream(basic_iostream<_CharT, _Traits>*) { }
+
+      basic_ostream(const basic_ostream&) = delete;
+
+      basic_ostream(basic_ostream&& __rhs)
+      : __ios_type()
+      { __ios_type::move(__rhs); }
+
+      // 27.7.3.3 Assign/swap
+
+      basic_ostream& operator=(const basic_ostream&) = delete;
+
+      basic_ostream&
+      operator=(basic_ostream&& __rhs)
+      {
+	swap(__rhs);
+	return *this;
+      }
+
+      void
+      swap(basic_ostream& __rhs)
+      { __ios_type::swap(__rhs); }
+#endif
+
       template<typename _ValueT>
 	__ostream_type&
 	_M_insert(_ValueT __v);
