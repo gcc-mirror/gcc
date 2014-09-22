@@ -1,3 +1,10 @@
+2014-09-22  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_init_constructor): Do not leave
+	non-GIMPLE vector constructors around.
+	* tree-cfg.c (verify_gimple_assign_single): Verify that
+	CONSTRUCTORs have gimple elements.
+
 2014-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63328
