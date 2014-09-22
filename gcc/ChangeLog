@@ -1,3 +1,10 @@
+2014-09-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/geniterators.sh: New.
+	* config/aarch64/iterators.md (VDQF_DF): New.
+	* config/aarch64/t-aarch64: Generate aarch64-builtin-iterators.h.
+	* config/aarch64/aarch64-builtins.c (BUILTIN_*) Remove.
+
 2014-09-22  Peter A. Bigot  <pab@pabigot.com>
 
 	* config/msp430/msp430.h (LIB_SPEC): Remove automatic addition of
