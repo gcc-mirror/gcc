@@ -87,14 +87,8 @@ inst_sources = \
 	allocator-inst.cc \
 	concept-inst.cc \
 	ext-inst.cc \
-	ios-inst.cc \
-	iostream-inst.cc \
-	istream-inst.cc \
 	locale-inst.cc \
 	misc-inst.cc \
-	ostream-inst.cc \
-	sstream-inst.cc \
-	streambuf-inst.cc \
 	wlocale-inst.cc
 else
 # XTEMPLATE_FLAGS =
@@ -114,7 +108,6 @@ sources = \
 	globals_io.cc \
 	hash_tr1.cc \
 	hashtable_tr1.cc \
-	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
 	ios_locale.cc \

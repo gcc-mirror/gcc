@@ -69,11 +69,15 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__11convenience_la_LIBADD =
 am__objects_1 = chrono.lo condition_variable.lo debug.lo \
 	functexcept.lo functional.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo limits.lo mutex.lo placeholders.lo \
+	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
 	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
 	system_error.lo thread.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = fstream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo wstring-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = ext11-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo
 am_libc__11convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -319,6 +323,7 @@ sources = \
 	future.cc \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \
+	ios.cc \
 	limits.cc \
 	mutex.cc \
 	placeholders.cc \
@@ -334,7 +339,14 @@ sources = \
 
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
 

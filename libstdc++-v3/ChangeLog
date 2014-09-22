@@ -1,3 +1,69 @@
+2014-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/54316
+	PR libstdc++/53626
+	* config/abi/pre/gnu.ver: Add new exports.
+	* config/io/basic_file_stdio.h (__basic_file): Support moving and
+	swapping.
+	* include/bits/basic_ios.h (basic_ios::move, basic_ios::swap):
+	Likewise.
+	* include/bits/ios_base.h (ios_base::_M_move, ios_base::_M_swap):
+	Likewise.
+	* include/bits/fstream.tcc (basic_filebuf): Likewise.
+	* include/bits/move.h (__exchange): Define for C++11 mode.
+	* include/ext/stdio_filebuf.h (stdio_filebuf): Support moving and
+	swapping.
+	* include/ext/stdio_sync_filebuf.h (stdio_sync_filebuf): Likewise.
+	* include/std/fstream (basic_filebuf, basic_ifstream, basic_ofstream,
+	basic_fstream): Likewise.
+	* include/std/ios: Remove whitespace.
+	* include/std/istream (basic_istream, basic_iostream): Support moving
+	and swapping.
+	* include/std/ostream (basic_ostream): Likewise.
+	* include/std/sstream (basic_stringbuf, basic_istringstream,
+	basic_ostringstream, basic_stringstream): Likewise.
+	* include/std/streambuf (basic_streambuf): Do not default copy
+	constructor and assignment on first declaration.
+	* include/std/utility (exchange): Forward to __exchange.
+	* testsuite/27_io/basic_filebuf/cons/char/copy_neg.cc: New.
+	* src/c++11/Makefile.am: Add stream-related files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/ext11-inst.cc (stdio_filebuf, stdio_sync_filebuf):
+	New file for explicit instantiation definitions.
+	* src/c++11/ios.cc: Move from src/c++98 to here.
+	(ios_base::_M_move, ios_base::_M_swap): Define.
+	* src/c++11/ios-inst.cc: Move from src/c++98 to here.
+	* src/c++11/iostream-inst.cc: Likewise.
+	* src/c++11/istream-inst.cc: Likewise.
+	* src/c++11/ostream-inst.cc: Likewise.
+	* src/c++11/sstream-inst.cc: Likewise.
+	* src/c++11/streambuf-inst.cc: Likewise.
+	* src/c++98/Makefile.am: Remove stream-related files.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/ext-inst.cc (stdio_filebuf): Remove explicit
+	instantiations.
+	* src/c++98/misc-inst.cc (stdio_sync_filebuf): Likewise.
+	* src/c++98/ios-inst.cc: Move to src/c++11/.
+	* src/c++98/ios.cc: Move to src/c++11/.
+	* src/c++98/iostream-inst.cc: Likewise.
+	* src/c++98/istream-inst.cc: Likewise.
+	* src/c++98/ostream-inst.cc: Likewise.
+	* src/c++98/sstream-inst.cc: Likewise.
+	* src/c++98/streambuf-inst.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/char/copy_neg.cc: New.
+	* testsuite/27_io/basic_fstream/cons/move.cc: New.
+	* testsuite/27_io/basic_fstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ifstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ifstream/assign/1.cc: New.
+	* testsuite/27_io/basic_istringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_istringstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ofstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ofstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ostringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ostringstream/cons/move.cc: New.
+	* testsuite/27_io/basic_stringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_stringstream/cons/move.cc: New.
+
 2014-09-17  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/dyncast.cc (__dynamic_cast): Handle mid-destruction

@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __state_type		_M_state_last;
 
       /// Pointer to the beginning of internal buffer.
-      char_type*		_M_buf; 	
+      char_type*		_M_buf;
 
       /**
        *  Actual size of internal buffer. This number is equal to the size
@@ -226,12 +226,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       basic_filebuf();
 
+#if __cplusplus >= 201103L
+      basic_filebuf(const basic_filebuf&) = delete;
+      basic_filebuf(basic_filebuf&&);
+#endif
+
       /**
        *  @brief  The destructor closes the file first.
        */
       virtual
       ~basic_filebuf()
       { this->close(); }
+
+#if __cplusplus >= 201103L
+      basic_filebuf& operator=(const basic_filebuf&) = delete;
+      basic_filebuf& operator=(basic_filebuf&&);
+      void swap(basic_filebuf&);
+#endif
 
       // Members:
       /**
@@ -504,6 +515,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+      basic_ifstream(const basic_ifstream&) = delete;
+
+      basic_ifstream(basic_ifstream&& __rhs)
+      : __istream_type(std::move(__rhs)),
+      _M_filebuf(std::move(__rhs._M_filebuf))
+      { __istream_type::set_rdbuf(&_M_filebuf); }
 #endif
 
       /**
@@ -514,6 +532,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       ~basic_ifstream()
       { }
+
+#if __cplusplus >= 201103L
+      // 27.8.3.2 Assign and swap:
+
+      basic_ifstream&
+      operator=(const basic_ifstream&) = delete;
+
+      basic_ifstream&
+      operator=(basic_ifstream&& __rhs)
+      {
+	__istream_type::operator=(std::move(__rhs));
+	_M_filebuf = std::move(__rhs._M_filebuf);
+	return *this;
+      }
+
+      void
+      swap(basic_ifstream& __rhs)
+      {
+	__istream_type::swap(__rhs);
+	_M_filebuf.swap(__rhs._M_filebuf);
+      }
+#endif
 
       // Members:
       /**
@@ -679,6 +719,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+      basic_ofstream(const basic_ofstream&) = delete;
+
+      basic_ofstream(basic_ofstream&& __rhs)
+      : __ostream_type(std::move(__rhs)),
+      _M_filebuf(std::move(__rhs._M_filebuf))
+      { __ostream_type::set_rdbuf(&_M_filebuf); }
 #endif
 
       /**
@@ -689,6 +736,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       ~basic_ofstream()
       { }
+
+#if __cplusplus >= 201103L
+      // 27.8.3.2 Assign and swap:
+
+      basic_ofstream&
+      operator=(const basic_ofstream&) = delete;
+
+      basic_ofstream&
+      operator=(basic_ofstream&& __rhs)
+      {
+	__ostream_type::operator=(std::move(__rhs));
+	_M_filebuf = std::move(__rhs._M_filebuf);
+	return *this;
+      }
+
+      void
+      swap(basic_ofstream& __rhs)
+      {
+	__ostream_type::swap(__rhs);
+	_M_filebuf.swap(__rhs._M_filebuf);
+      }
+#endif
 
       // Members:
       /**
@@ -852,6 +921,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+      basic_fstream(const basic_fstream&) = delete;
+
+      basic_fstream(basic_fstream&& __rhs)
+      : __iostream_type(std::move(__rhs)),
+      _M_filebuf(std::move(__rhs._M_filebuf))
+      { __iostream_type::set_rdbuf(&_M_filebuf); }
 #endif
 
       /**
@@ -862,6 +938,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       ~basic_fstream()
       { }
+
+#if __cplusplus >= 201103L
+      // 27.8.3.2 Assign and swap:
+
+      basic_fstream&
+      operator=(const basic_fstream&) = delete;
+
+      basic_fstream&
+      operator=(basic_fstream&& __rhs)
+      {
+	__iostream_type::operator=(std::move(__rhs));
+	_M_filebuf = std::move(__rhs._M_filebuf);
+	return *this;
+      }
+
+      void
+      swap(basic_fstream& __rhs)
+      {
+	__iostream_type::swap(__rhs);
+	_M_filebuf.swap(__rhs._M_filebuf);
+      }
+#endif
 
       // Members:
       /**
@@ -946,6 +1044,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->setstate(ios_base::failbit);
       }
     };
+
+#if __cplusplus >= 201103L
+  /// Swap specialization for filebufs.
+  template <class _CharT, class _Traits>
+    inline void
+    swap(basic_filebuf<_CharT, _Traits>& __x,
+	 basic_filebuf<_CharT, _Traits>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for ifstreams.
+  template <class _CharT, class _Traits>
+    inline void
+    swap(basic_ifstream<_CharT, _Traits>& __x,
+	 basic_ifstream<_CharT, _Traits>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for ofstreams.
+  template <class _CharT, class _Traits>
+    inline void
+    swap(basic_ofstream<_CharT, _Traits>& __x,
+	 basic_ofstream<_CharT, _Traits>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for fstreams.
+  template <class _CharT, class _Traits>
+    inline void
+    swap(basic_fstream<_CharT, _Traits>& __x,
+	 basic_fstream<_CharT, _Traits>& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

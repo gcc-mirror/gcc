@@ -113,6 +113,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : __streambuf_type(), _M_mode(), _M_string(__str.data(), __str.size())
       { _M_stringbuf_init(__mode); }
 
+#if __cplusplus >= 201103L
+      basic_stringbuf(const basic_stringbuf&) = delete;
+
+      basic_stringbuf(basic_stringbuf&& __rhs)
+      : __streambuf_type(static_cast<const __streambuf_type&>(__rhs)),
+      _M_mode(__rhs._M_mode), _M_string(std::move(__rhs._M_string))
+      { __rhs._M_stringbuf_init(__rhs._M_mode); }
+
+      // 27.8.2.2 Assign and swap:
+
+      basic_stringbuf&
+      operator=(const basic_stringbuf&) = delete;
+
+      basic_stringbuf&
+      operator=(basic_stringbuf&& __rhs)
+      {
+	const __streambuf_type& __base = __rhs;
+	__streambuf_type::operator=(__base);
+	this->pubimbue(__rhs.getloc());
+	_M_mode = __rhs._M_mode;
+	_M_string = std::move(__rhs._M_string);
+	__rhs._M_stringbuf_init(__rhs._M_mode);
+	return *this;
+      }
+
+      void
+      swap(basic_stringbuf& __rhs)
+      {
+	__streambuf_type& __base = __rhs;
+	__streambuf_type::swap(__base);
+	__rhs.pubimbue(this->pubimbue(__rhs.getloc()));
+	std::swap(_M_mode, __rhs._M_mode);
+	std::swap(_M_string, __rhs._M_string);
+      }
+#endif
+
       // Get and set:
       /**
        *  @brief  Copying out the string buffer.
@@ -337,6 +373,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~basic_istringstream()
       { }
 
+#if __cplusplus >= 201103L
+      basic_istringstream(const basic_istringstream&) = delete;
+
+      basic_istringstream(basic_istringstream&& __rhs)
+      : __istream_type(std::move(__rhs)),
+      _M_stringbuf(std::move(__rhs._M_stringbuf))
+      { __istream_type::set_rdbuf(&_M_stringbuf); }
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_istringstream&
+      operator=(const basic_istringstream&) = delete;
+
+      basic_istringstream&
+      operator=(basic_istringstream&& __rhs)
+      {
+	__istream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_istringstream& __rhs)
+      {
+	__istream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif
+
       // Members:
       /**
        *  @brief  Accessing the underlying buffer.
@@ -452,6 +517,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~basic_ostringstream()
       { }
 
+#if __cplusplus >= 201103L
+      basic_ostringstream(const basic_ostringstream&) = delete;
+
+      basic_ostringstream(basic_ostringstream&& __rhs)
+      : __ostream_type(std::move(__rhs)),
+      _M_stringbuf(std::move(__rhs._M_stringbuf))
+      { __ostream_type::set_rdbuf(&_M_stringbuf); }
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_ostringstream&
+      operator=(const basic_ostringstream&) = delete;
+
+      basic_ostringstream&
+      operator=(basic_ostringstream&& __rhs)
+      {
+	__ostream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_ostringstream& __rhs)
+      {
+	__ostream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif
+
       // Members:
       /**
        *  @brief  Accessing the underlying buffer.
@@ -564,6 +658,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~basic_stringstream()
       { }
 
+#if __cplusplus >= 201103L
+      basic_stringstream(const basic_stringstream&) = delete;
+
+      basic_stringstream(basic_stringstream&& __rhs)
+      : __iostream_type(std::move(__rhs)),
+      _M_stringbuf(std::move(__rhs._M_stringbuf))
+      { __iostream_type::set_rdbuf(&_M_stringbuf); }
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_stringstream&
+      operator=(const basic_stringstream&) = delete;
+
+      basic_stringstream&
+      operator=(basic_stringstream&& __rhs)
+      {
+	__iostream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_stringstream& __rhs)
+      {
+	__iostream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif
+
       // Members:
       /**
        *  @brief  Accessing the underlying buffer.
@@ -593,6 +716,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       str(const __string_type& __s)
       { _M_stringbuf.str(__s); }
     };
+
+#if __cplusplus >= 201103L
+  /// Swap specialization for stringbufs.
+  template <class _CharT, class _Traits, class _Allocator>
+    inline void
+    swap(basic_stringbuf<_CharT, _Traits, _Allocator>& __x,
+	 basic_stringbuf<_CharT, _Traits, _Allocator>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for istringstreams.
+  template <class _CharT, class _Traits, class _Allocator>
+    inline void
+    swap(basic_istringstream<_CharT, _Traits, _Allocator>& __x,
+	 basic_istringstream<_CharT, _Traits, _Allocator>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for ostringstreams.
+  template <class _CharT, class _Traits, class _Allocator>
+    inline void
+    swap(basic_ostringstream<_CharT, _Traits, _Allocator>& __x,
+	 basic_ostringstream<_CharT, _Traits, _Allocator>& __y)
+    { __x.swap(__y); }
+
+  /// Swap specialization for stringstreams.
+  template <class _CharT, class _Traits, class _Allocator>
+    inline void
+    swap(basic_stringstream<_CharT, _Traits, _Allocator>& __x,
+	 basic_stringstream<_CharT, _Traits, _Allocator>& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -989,7 +989,8 @@ GLIBCXX_3.4.10 {
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
-    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9C]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEC[12]EP*;
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EED[^2]*;
 
 } GLIBCXX_3.4.9;
@@ -1374,6 +1375,47 @@ GLIBCXX_3.4.21 {
 
     # void std::thread::_M_start_thread(__shared_base_type, void(*)())
     _ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEEPFvvE;
+
+    # Move/swap functions for iostreams
+    _ZNSt8ios_base7_M_swapERS_;
+    _ZNSt8ios_base7_M_moveERS_;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE4moveE[OR]S2_;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE4swapERS2_;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE9set_rdbuf*;
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE4swapERS2_;
+    _ZNS[dio]4swapERS[dio];
+    _ZNS[dio]aSEOS[dio];
+    _ZNS[dio]C[12]EOS[dio];
+    _ZNSt13basic_[io]streamIwSt11char_traitsIwEE4swapERS2_;
+    _ZNSt13basic_[io]streamIwSt11char_traitsIwEEaSEOS2_;
+    _ZNSt13basic_[io]streamIwSt11char_traitsIwEEC[12]EOS2_;
+    _ZNSt14basic_iostreamIwSt11char_traitsIwEE4swapERS2_;
+    _ZNSt14basic_iostreamIwSt11char_traitsIwEEaSEOS2_;
+    _ZNSt14basic_iostreamIwSt11char_traitsIwEEC[12]EOS2_;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4swapERS2_;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EEaSEOS2_;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EEC[12]EOS2_;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4swapERS2_;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEaSEOS2_;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]EOS2_;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EE4swapERS2_;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEaSEOS2_;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC[12]EOS2_;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE4swapERS3_;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEaSEOS3_;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS3_;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4swapERS3_;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEaSEOS3_;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS3_;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4swapERS3_;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEaSEOS3_;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS3_;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEaSEOS3_;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEC[12]EOS3_;
+
+    # basic_ostream<C,T>::basic_ostream(basic_iostream<C,T>*)
+    _ZNSoC[12]EPSd;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEEC[12]EPSt14basic_iostreamIwS1_E;
 
 } GLIBCXX_3.4.20;
 
