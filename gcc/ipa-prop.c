@@ -592,7 +592,7 @@ ipa_get_bb_info (struct func_body_info *fbi, basic_block bb)
 /* Structure to be passed in between detect_type_change and
    check_stmt_for_type_change.  */
 
-struct type_change_info
+struct prop_type_change_info
 {
   /* Offset into the object where there is the virtual method pointer we are
      looking for.  */
@@ -680,7 +680,7 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
    identified, return the type.  Otherwise return NULL_TREE.  */
 
 static tree
-extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
+extr_type_from_vtbl_ptr_store (gimple stmt, struct prop_type_change_info *tci)
 {
   HOST_WIDE_INT offset, size, max_size;
   tree lhs, rhs, base, binfo;
@@ -726,13 +726,13 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
    detect_type_change to check whether a particular statement may modify
    the virtual table pointer, and if possible also determine the new type of
    the (sub-)object.  It stores its result into DATA, which points to a
-   type_change_info structure.  */
+   prop_type_change_info structure.  */
 
 static bool
 check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 {
   gimple stmt = SSA_NAME_DEF_STMT (vdef);
-  struct type_change_info *tci = (struct type_change_info *) data;
+  struct prop_type_change_info *tci = (struct prop_type_change_info *) data;
 
   if (stmt_may_be_vtbl_ptr_store (stmt))
     {
@@ -830,7 +830,7 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
 				       gimple call, struct ipa_jump_func *jfunc,
 				       HOST_WIDE_INT offset)
 {
-  struct type_change_info tci;
+  struct prop_type_change_info tci;
   ao_ref ao;
   bool entry_reached = false;
 

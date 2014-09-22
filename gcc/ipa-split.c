@@ -117,9 +117,9 @@ typedef struct
 {
   unsigned int size;
   unsigned int time;
-} bb_info;
+} split_bb_info;
 
-static vec<bb_info> bb_info_vec;
+static vec<split_bb_info> bb_info_vec;
 
 /* Description of split point.  */
 

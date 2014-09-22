@@ -573,7 +573,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 /* Arrays representing a topological ordering of call graph nodes and a stack
    of noes used during constant propagation.  */
 
-struct topo_info
+struct ipa_topo_info
 {
   struct cgraph_node **order;
   struct cgraph_node **stack;
@@ -583,7 +583,7 @@ struct topo_info
 /* Allocate the arrays in TOPO and topologically sort the nodes into order.  */
 
 static void
-build_toporder_info (struct topo_info *topo)
+build_toporder_info (struct ipa_topo_info *topo)
 {
   topo->order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   topo->stack = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
@@ -596,7 +596,7 @@ build_toporder_info (struct topo_info *topo)
    TOPO.  */
 
 static void
-free_toporder_info (struct topo_info *topo)
+free_toporder_info (struct ipa_topo_info *topo)
 {
   ipa_free_postorder_info ();
   free (topo->order);
@@ -606,7 +606,7 @@ free_toporder_info (struct topo_info *topo)
 /* Add NODE to the stack in TOPO, unless it is already there.  */
 
 static inline void
-push_node_to_stack (struct topo_info *topo, struct cgraph_node *node)
+push_node_to_stack (struct ipa_topo_info *topo, struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
   if (info->node_enqueued)
@@ -619,7 +619,7 @@ push_node_to_stack (struct topo_info *topo, struct cgraph_node *node)
    is empty.  */
 
 static struct cgraph_node *
-pop_node_from_stack (struct topo_info *topo)
+pop_node_from_stack (struct ipa_topo_info *topo)
 {
   if (topo->stack_top)
     {
@@ -2198,7 +2198,7 @@ add_all_node_vals_to_toposort (struct cgraph_node *node)
    connected components.  */
 
 static void
-propagate_constants_topo (struct topo_info *topo)
+propagate_constants_topo (struct ipa_topo_info *topo)
 {
   int i;
 
@@ -2297,7 +2297,7 @@ propagate_effects (void)
    interprocedurally.  */
 
 static void
-ipcp_propagate_stage (struct topo_info *topo)
+ipcp_propagate_stage (struct ipa_topo_info *topo)
 {
   struct cgraph_node *node;
 
@@ -3658,7 +3658,7 @@ identify_dead_nodes (struct cgraph_node *node)
    TOPO and make specialized clones if deemed beneficial.  */
 
 static void
-ipcp_decision_stage (struct topo_info *topo)
+ipcp_decision_stage (struct ipa_topo_info *topo)
 {
   int i;
 
@@ -3693,7 +3693,7 @@ ipcp_driver (void)
 {
   struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
   struct cgraph_edge_hook_list *edge_removal_hook_holder;
-  struct topo_info topo;
+  struct ipa_topo_info topo;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();

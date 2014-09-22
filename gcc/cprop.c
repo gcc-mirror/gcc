@@ -55,19 +55,19 @@ static struct obstack cprop_obstack;
    There is one per basic block.  If a pattern appears more than once the
    last appearance is used.  */
 
-struct occr
+struct cprop_occr
 {
   /* Next occurrence of this expression.  */
-  struct occr *next;
+  struct cprop_occr *next;
   /* The insn that computes the expression.  */
   rtx_insn *insn;
 };
 
-typedef struct occr *occr_t;
+typedef struct cprop_occr *occr_t;
 
 /* Hash table entry for assignment expressions.  */
 
-struct expr
+struct cprop_expr
 {
   /* The expression (DEST := SRC).  */
   rtx dest;
@@ -76,12 +76,12 @@ struct expr
   /* Index in the available expression bitmaps.  */
   int bitmap_index;
   /* Next entry with the same hash.  */
-  struct expr *next_same_hash;
+  struct cprop_expr *next_same_hash;
   /* List of available occurrence in basic blocks in the function.
      An "available occurrence" is one that is the last occurrence in the
      basic block and whose operands are not modified by following statements
      in the basic block [including this insn].  */
-  struct occr *avail_occr;
+  struct cprop_occr *avail_occr;
 };
 
 /* Hash table for copy propagation expressions.
@@ -97,7 +97,7 @@ struct hash_table_d
 {
   /* The table itself.
      This is an array of `set_hash_table_size' elements.  */
-  struct expr **table;
+  struct cprop_expr **table;
 
   /* Size of the hash table, in elements.  */
   unsigned int size;
@@ -184,8 +184,8 @@ insert_set_in_table (rtx dest, rtx src, rtx_insn *insn,
 {
   bool found = false;
   unsigned int hash;
-  struct expr *cur_expr, *last_expr = NULL;
-  struct occr *cur_occr;
+  struct cprop_expr *cur_expr, *last_expr = NULL;
+  struct cprop_occr *cur_occr;
 
   hash = hash_mod (REGNO (dest), table->size);
 
@@ -203,8 +203,8 @@ insert_set_in_table (rtx dest, rtx src, rtx_insn *insn,
 
   if (! found)
     {
-      cur_expr = GOBNEW (struct expr);
-      bytes_used += sizeof (struct expr);
+      cur_expr = GOBNEW (struct cprop_expr);
+      bytes_used += sizeof (struct cprop_expr);
       if (table->table[hash] == NULL)
 	/* This is the first pattern that hashed to this index.  */
 	table->table[hash] = cur_expr;
@@ -237,8 +237,8 @@ insert_set_in_table (rtx dest, rtx src, rtx_insn *insn,
   else
     {
       /* First occurrence of this expression in this basic block.  */
-      cur_occr = GOBNEW (struct occr);
-      bytes_used += sizeof (struct occr);
+      cur_occr = GOBNEW (struct cprop_occr);
+      bytes_used += sizeof (struct cprop_occr);
       cur_occr->insn = insn;
       cur_occr->next = cur_expr->avail_occr;
       cur_expr->avail_occr = cur_occr;
@@ -335,11 +335,11 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
 {
   int i;
   /* Flattened out table, so it's printed in proper order.  */
-  struct expr **flat_table;
+  struct cprop_expr **flat_table;
   unsigned int *hash_val;
-  struct expr *expr;
+  struct cprop_expr *expr;
 
-  flat_table = XCNEWVEC (struct expr *, table->n_elems);
+  flat_table = XCNEWVEC (struct cprop_expr *, table->n_elems);
   hash_val = XNEWVEC (unsigned int, table->n_elems);
 
   for (i = 0; i < (int) table->size; i++)
@@ -451,8 +451,8 @@ alloc_hash_table (struct hash_table_d *table)
      Making it an odd number is simplest for now.
      ??? Later take some measurements.  */
   table->size |= 1;
-  n = table->size * sizeof (struct expr *);
-  table->table = XNEWVAR (struct expr *, n);
+  n = table->size * sizeof (struct cprop_expr *);
+  table->table = XNEWVAR (struct cprop_expr *, n);
 }
 
 /* Free things allocated by alloc_hash_table.  */
@@ -471,7 +471,7 @@ compute_hash_table (struct hash_table_d *table)
 {
   /* Initialize count of number of entries in hash table.  */
   table->n_elems = 0;
-  memset (table->table, 0, table->size * sizeof (struct expr *));
+  memset (table->table, 0, table->size * sizeof (struct cprop_expr *));
 
   compute_hash_table_work (table);
 }
@@ -481,11 +481,11 @@ compute_hash_table (struct hash_table_d *table)
 /* Lookup REGNO in the set TABLE.  The result is a pointer to the
    table entry, or NULL if not found.  */
 
-static struct expr *
+static struct cprop_expr *
 lookup_set (unsigned int regno, struct hash_table_d *table)
 {
   unsigned int hash = hash_mod (regno, table->size);
-  struct expr *expr;
+  struct cprop_expr *expr;
 
   expr = table->table[hash];
 
@@ -497,8 +497,8 @@ lookup_set (unsigned int regno, struct hash_table_d *table)
 
 /* Return the next entry for REGNO in list EXPR.  */
 
-static struct expr *
-next_set (unsigned int regno, struct expr *expr)
+static struct cprop_expr *
+next_set (unsigned int regno, struct cprop_expr *expr)
 {
   do
     expr = expr->next_same_hash;
@@ -599,13 +599,13 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
 
   for (i = 0; i < table->size; i++)
     {
-      struct expr *expr;
+      struct cprop_expr *expr;
 
       for (expr = table->table[i]; expr != NULL; expr = expr->next_same_hash)
 	{
 	  int indx = expr->bitmap_index;
 	  df_ref def;
-	  struct occr *occr;
+	  struct cprop_occr *occr;
 
 	  /* For each definition of the destination pseudo-reg, the expression
 	     is killed in the block where the definition is.  */
@@ -799,12 +799,12 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 /* Find a set of REGNOs that are available on entry to INSN's block.  Return
    NULL no such set is found.  */
 
-static struct expr *
+static struct cprop_expr *
 find_avail_set (int regno, rtx_insn *insn)
 {
   /* SET1 contains the last set found that can be returned to the caller for
      use in a substitution.  */
-  struct expr *set1 = 0;
+  struct cprop_expr *set1 = 0;
 
   /* Loops are not possible here.  To get a loop we would need two sets
      available at the start of the block containing INSN.  i.e. we would
@@ -818,7 +818,7 @@ find_avail_set (int regno, rtx_insn *insn)
   while (1)
     {
       rtx src;
-      struct expr *set = lookup_set (regno, &set_hash_table);
+      struct cprop_expr *set = lookup_set (regno, &set_hash_table);
 
       /* Find a set that is available at the start of the block
 	 which contains INSN.  */
@@ -1040,7 +1040,7 @@ retry:
       rtx reg_used = reg_use_table[i];
       unsigned int regno = REGNO (reg_used);
       rtx src;
-      struct expr *set;
+      struct cprop_expr *set;
 
       /* If the register has already been set in this block, there's
 	 nothing we can do.  */
@@ -1429,15 +1429,15 @@ static int bypass_last_basic_block;
    block BB.  Return NULL if no such set is found.  Based heavily upon
    find_avail_set.  */
 
-static struct expr *
+static struct cprop_expr *
 find_bypass_set (int regno, int bb)
 {
-  struct expr *result = 0;
+  struct cprop_expr *result = 0;
 
   for (;;)
     {
       rtx src;
-      struct expr *set = lookup_set (regno, &set_hash_table);
+      struct cprop_expr *set = lookup_set (regno, &set_hash_table);
 
       while (set)
 	{
@@ -1561,7 +1561,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  rtx reg_used = reg_use_table[i];
 	  unsigned int regno = REGNO (reg_used);
 	  basic_block dest, old_dest;
-	  struct expr *set;
+	  struct cprop_expr *set;
 	  rtx src, new_rtx;
 
 	  set = find_bypass_set (regno, e->src->index);
