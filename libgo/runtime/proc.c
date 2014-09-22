@@ -1894,6 +1894,7 @@ runtime_gosched0(G *gp)
 // Need to mark it as nosplit, because it runs with sp > stackbase (as runtime_lessstack).
 // Since it does not return it does not matter.  But if it is preempted
 // at the split stack check, GC will complain about inconsistent sp.
+void runtime_goexit(void) __attribute__ ((noinline));
 void
 runtime_goexit(void)
 {
