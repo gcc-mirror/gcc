@@ -1,3 +1,8 @@
+2014-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63328
+	* c-c++-common/gomp/pr63328.c: New test.
+
 2014-09-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/63270
