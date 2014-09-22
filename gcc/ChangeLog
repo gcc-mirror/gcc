@@ -1,3 +1,7 @@
+2014-09-22  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (check-parallel-%): Add @.
+
 2014-09-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/geniterators.sh: New.

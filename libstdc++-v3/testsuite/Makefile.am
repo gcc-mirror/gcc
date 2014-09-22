@@ -91,9 +91,9 @@ new-abi-baseline:
 	  ${extract_symvers} ../src/.libs/libstdc++.so $${output})
 
 %/site.exp: site.exp
-	-test -d $* || mkdir $*
+	-@test -d $* || mkdir $*
 	@srcdir=`cd $(srcdir); ${PWD_COMMAND}`;
-	objdir=`${PWD_COMMAND}`/$*; \
+	@objdir=`${PWD_COMMAND}`/$*; \
 	sed -e "s|^set srcdir .*$$|set srcdir $$srcdir|" \
 	    -e "s|^set objdir .*$$|set objdir $$objdir|" \
 	    site.exp > $*/site.exp.tmp
@@ -115,7 +115,7 @@ $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 
 # Run the testsuite in normal mode.
 check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
-	AR="$(AR)"; export AR; \
+	$(if $*,@)AR="$(AR)"; export AR; \
 	RANLIB="$(RANLIB)"; export RANLIB; \
 	if [ -z "$*" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
 	  rm -rf normal-parallel || true; \
