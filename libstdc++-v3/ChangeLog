@@ -1,5 +1,11 @@
 2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status.
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/std/mutex (try_lock): Do not swallow exceptions.
 	* testsuite/30_threads/try_lock/4.cc: Fix test.
 
