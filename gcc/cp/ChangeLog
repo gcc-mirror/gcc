@@ -1,3 +1,11 @@
+2014-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63320
+	PR c++/60463
+	PR c++/60755
+	* lambda.c (maybe_resolve_dummy, lambda_expr_this_capture): Handle
+	not finding 'this'.
+
 2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62219

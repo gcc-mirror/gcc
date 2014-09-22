@@ -724,7 +724,8 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
 
   if (!this_capture)
     {
-      error ("%<this%> was not captured for this lambda function");
+      if (add_capture_p)
+	error ("%<this%> was not captured for this lambda function");
       result = error_mark_node;
     }
   else
@@ -768,8 +769,9 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
       /* In a lambda, need to go through 'this' capture.  */
       tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
       tree cap = lambda_expr_this_capture (lam, add_capture_p);
-      object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
-				     RO_NULL, tf_warning_or_error);
+      if (cap != error_mark_node)
+	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
+				       RO_NULL, tf_warning_or_error);
     }
 
   return object;
