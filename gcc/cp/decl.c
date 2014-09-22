@@ -624,6 +624,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
+      && current_binding_level->kind != sk_template_parms
       && !processing_template_decl)
     for (tree d = getdecls (); d; d = TREE_CHAIN (d))
       {

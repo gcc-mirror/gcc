@@ -1,3 +1,8 @@
+2014-09-22  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (poplevel): Don't warn about unused vars in template scope.
+	* error.c (dump_decl): Handle variable templates.
+
 2014-09-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62017
