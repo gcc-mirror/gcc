@@ -1044,6 +1044,18 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
     case FIELD_DECL:
     case PARM_DECL:
       dump_simple_decl (pp, t, TREE_TYPE (t), flags);
+
+      /* Handle variable template specializations.  */
+      if (TREE_CODE (t) == VAR_DECL
+	  && DECL_LANG_SPECIFIC (t)
+	  && DECL_TEMPLATE_INFO (t)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)))
+	{
+	  pp_cxx_begin_template_argument_list (pp);
+	  tree args = INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (t));
+	  dump_template_argument_list (pp, args, flags);
+	  pp_cxx_end_template_argument_list (pp);
+	}
       break;
 
     case RESULT_DECL:
