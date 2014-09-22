@@ -95,6 +95,9 @@
 ;; Vector Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
 
+;; Vector Float modes, and DF.
+(define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
+
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
 
