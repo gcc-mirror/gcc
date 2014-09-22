@@ -402,18 +402,6 @@ not in any particular release.
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3923.pdf">
-	  N3923
-	</link>
-      </entry>
-      <entry>A SFINAE-Friendly std::iterator_traits</entry>
-      <entry>N</entry>
-      <entry>Library Fundamentals TS</entry>
-    </row>
-
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3925.pdf">
 	  N3925
 	</link>
