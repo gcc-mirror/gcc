@@ -4430,9 +4430,11 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
        local scope.  */
     return true;
 
-  if (TREE_CODE (decl) == TYPE_DECL
-      && TREE_TYPE (decl)
-      && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+  if ((TREE_CODE (decl) == TYPE_DECL
+       && TREE_TYPE (decl)
+       && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+      || (TREE_CODE (decl) == FUNCTION_DECL
+	  && LAMBDA_FUNCTION_P (decl)))
     /* A lambda doesn't have an explicit declaration; don't complain
        about the parms of the enclosing class.  */
     return true;

@@ -1,3 +1,8 @@
+2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62219
+	* pt.c (check_default_tmpl_args): Check LAMBDA_FUNCTION_P.
+
 2014-09-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61465
