@@ -26,6 +26,9 @@
 # Author: Diego Novillo <dnovillo@google.com> and
 #         Cary Coutant <ccoutant@google.com>
 
+use File::Temp;
+use File::Copy qw(cp mv);
+
 # Change these settings to reflect your profile.
 $username = $ENV{'USER'};
 $name = `finger $username | grep -o 'Name: .*'`;
@@ -56,14 +59,22 @@ if (-d "$gcc_root/.git") {
 # Program starts here. You should not need to edit anything below this
 # line.
 #-----------------------------------------------------------------------------
-if ($#ARGV != 0) {
+$inline = 0;
+if ($#ARGV == 1 && ("$ARGV[0]" eq "-i" || "$ARGV[0]" eq "--inline")) {
+	shift;
+	$inline = 1;
+} elsif ($#ARGV != 0) {
     $prog = `basename $0`; chop ($prog);
     print <<EOF;
-usage: $prog file.diff
+usage: $prog [ -i | --inline ] file.diff
 
 Generate ChangeLog template for file.diff.
 It assumes that patch has been created with -up or -cp.
+When -i is used, the ChangeLog template is followed by the contents of
+file.diff.
 When file.diff is -, read standard input.
+When -i is used and file.diff is not -, it writes to file.diff, otherwise it
+writes to stdout.
 EOF
     exit 1;
 }
@@ -273,8 +284,39 @@ foreach (@diff_lines) {
 # functions.
 $cl_entries{$clname} .= $change_msg ? "$change_msg\n" : ":\n";
 
+if ($inline && $diff ne "-") {
+	# Get a temp filename, rather than an open filehandle, because we use
+	# the open to truncate.
+	$tmp = mktemp("tmp.XXXXXXXX") or die "Could not create temp file: $!";
+
+	# Copy the permissions to the temp file (in File::Copy module version
+	# 2.15 and later).
+	cp $diff, $tmp or die "Could not copy patch file to temp file: $!";
+
+	# Open the temp file, clearing contents.
+	open (OUTPUTFILE, '>', $tmp) or die "Could not open temp file: $!";
+} else {
+	*OUTPUTFILE = STDOUT;
+}
+
+# Print the log
 foreach my $clname (keys %cl_entries) {
-	print "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
+	print OUTPUTFILE "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
+}
+
+if ($inline) {
+	# Append the patch to the log
+	foreach (@diff_lines) {
+		print OUTPUTFILE "$_\n";
+	}
+}
+
+if ($inline && $diff ne "-") {
+	# Close $tmp
+	close(OUTPUTFILE);
+
+	# Write new contents to $diff atomically
+	mv $tmp, $diff or die "Could not move temp file to patch file: $!";
 }
 
 exit 0;
