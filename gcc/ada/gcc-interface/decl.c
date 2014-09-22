@@ -2374,7 +2374,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 we can just use the high bound of the index type.  */
 	      else if ((Nkind (gnat_index) == N_Range
 		        && cannot_be_superflat_p (gnat_index))
-		       /* Bit-Packed Array Types are never superflat.  */
+		       /* Bit-Packed Array Impl. Types are never superflat.  */
 		       || (Is_Packed_Array_Impl_Type (gnat_entity)
 			   && Is_Bit_Packed_Array
 			      (Original_Array_Type (gnat_entity))))
