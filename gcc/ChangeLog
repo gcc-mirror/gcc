@@ -1,3 +1,7 @@
+2014-09-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/bfin/bfin.md: Fix use of constraints in define_split.
+
 2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/i386/i386.c (ix86_cannot_change_mode_class): Remove
