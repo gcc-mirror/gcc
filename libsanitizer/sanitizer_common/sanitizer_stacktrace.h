@@ -50,9 +50,12 @@ struct StackTrace {
 
   static bool WillUseFastUnwind(bool request_fast_unwind) {
     // Check if fast unwind is available. Fast unwind is the only option on Mac.
+    // It is also the only option on FreeBSD as the slow unwinding that
+    // leverages _Unwind_Backtrace() yields the call stack of the signal's
+    // handler and not of the code that raised the signal (as it does on Linux).
     if (!SANITIZER_CAN_FAST_UNWIND)
       return false;
-    else if (SANITIZER_MAC)
+    else if (SANITIZER_MAC != 0 || SANITIZER_FREEBSD != 0)
       return true;
     return request_fast_unwind;
   }
@@ -82,6 +85,10 @@ struct StackTrace {
   uptr pc = GET_CALLER_PC();                  \
   uptr local_stack;                           \
   uptr sp = (uptr)&local_stack
+
+#define GET_CALLER_PC_BP \
+  uptr bp = GET_CURRENT_FRAME();              \
+  uptr pc = GET_CALLER_PC();
 
 // Use this macro if you want to print stack trace with the current
 // function in the top frame.

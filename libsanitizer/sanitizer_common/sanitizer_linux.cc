@@ -44,15 +44,16 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <unwind.h>
 
 #if SANITIZER_FREEBSD
+#include <sys/sysctl.h>
 #include <machine/atomic.h>
 extern "C" {
 // <sys/umtx.h> must be included after <errno.h> and <sys/types.h> on
 // FreeBSD 9.2 and 10.0.
 #include <sys/umtx.h>
 }
+extern char **environ;  // provided by crt1
 #endif  // SANITIZER_FREEBSD
 
 #if !SANITIZER_ANDROID
@@ -132,7 +133,7 @@ uptr internal_open(const char *filename, int flags, u32 mode) {
 
 uptr OpenFile(const char *filename, bool write) {
   return internal_open(filename,
-      write ? O_WRONLY | O_CREAT /*| O_CLOEXEC*/ : O_RDONLY, 0660);
+      write ? O_RDWR | O_CREAT /*| O_CLOEXEC*/ : O_RDONLY, 0660);
 }
 
 uptr internal_read(fd_t fd, void *buf, uptr count) {
@@ -146,6 +147,12 @@ uptr internal_write(fd_t fd, const void *buf, uptr count) {
   sptr res;
   HANDLE_EINTR(res, (sptr)internal_syscall(SYSCALL(write), fd, (uptr)buf,
                count));
+  return res;
+}
+
+uptr internal_ftruncate(fd_t fd, uptr size) {
+  sptr res;
+  HANDLE_EINTR(res, (sptr)internal_syscall(SYSCALL(ftruncate), fd, size));
   return res;
 }
 
@@ -244,6 +251,15 @@ uptr internal_unlink(const char *path) {
 #endif
 }
 
+uptr internal_rename(const char *oldpath, const char *newpath) {
+#if SANITIZER_USES_CANONICAL_LINUX_SYSCALLS
+  return internal_syscall(SYSCALL(renameat), AT_FDCWD, (uptr)oldpath, AT_FDCWD,
+                          (uptr)newpath);
+#else
+  return internal_syscall(SYSCALL(rename), (uptr)oldpath, (uptr)newpath);
+#endif
+}
+
 uptr internal_sched_yield() {
   return internal_syscall(SYSCALL(sched_yield));
 }
@@ -297,9 +313,20 @@ u64 NanoTime() {
   return (u64)tv.tv_sec * 1000*1000*1000 + tv.tv_usec * 1000;
 }
 
-// Like getenv, but reads env directly from /proc and does not use libc.
-// This function should be called first inside __asan_init.
+// Like getenv, but reads env directly from /proc (on Linux) or parses the
+// 'environ' array (on FreeBSD) and does not use libc. This function should be
+// called first inside __asan_init.
 const char *GetEnv(const char *name) {
+#if SANITIZER_FREEBSD
+  if (::environ != 0) {
+    uptr NameLen = internal_strlen(name);
+    for (char **Env = ::environ; *Env != 0; Env++) {
+      if (internal_strncmp(*Env, name, NameLen) == 0 && (*Env)[NameLen] == '=')
+        return (*Env) + NameLen + 1;
+    }
+  }
+  return 0;  // Not found.
+#elif SANITIZER_LINUX
   static char *environ;
   static uptr len;
   static bool inited;
@@ -323,6 +350,9 @@ const char *GetEnv(const char *name) {
     p = endp + 1;
   }
   return 0;  // Not found.
+#else
+#error "Unsupported platform"
+#endif
 }
 
 extern "C" {
@@ -387,20 +417,6 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
   *tls_size = 0;
 }
 #endif  // SANITIZER_GO
-
-void PrepareForSandboxing(__sanitizer_sandbox_arguments *args) {
-  // Some kinds of sandboxes may forbid filesystem access, so we won't be able
-  // to read the file mappings from /proc/self/maps. Luckily, neither the
-  // process will be able to load additional libraries, so it's fine to use the
-  // cached mappings.
-  MemoryMappingLayout::CacheMemoryMappings();
-  // Same for /proc/self/exe in the symbolizer.
-#if !SANITIZER_GO
-  if (Symbolizer *sym = Symbolizer::GetOrNull())
-    sym->PrepareForSandboxing();
-  CovPrepareForSandboxing(args);
-#endif
-}
 
 enum MutexState {
   MtxUnlocked = 0,
@@ -506,7 +522,11 @@ uptr internal_sigaltstack(const struct sigaltstack *ss,
 }
 
 int internal_fork() {
+#if SANITIZER_USES_CANONICAL_LINUX_SYSCALLS
+  return internal_syscall(SYSCALL(clone), SIGCHLD, 0);
+#else
   return internal_syscall(SYSCALL(fork));
+#endif
 }
 
 #if SANITIZER_LINUX
@@ -660,24 +680,32 @@ static char proc_self_exe_cache_str[kMaxPathLength];
 static uptr proc_self_exe_cache_len = 0;
 
 uptr ReadBinaryName(/*out*/char *buf, uptr buf_len) {
+  if (proc_self_exe_cache_len > 0) {
+    // If available, use the cached module name.
+    uptr module_name_len =
+        internal_snprintf(buf, buf_len, "%s", proc_self_exe_cache_str);
+    CHECK_LT(module_name_len, buf_len);
+    return module_name_len;
+  }
+#if SANITIZER_FREEBSD
+  const int Mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
+  size_t Size = buf_len;
+  bool IsErr = (sysctl(Mib, 4, buf, &Size, NULL, 0) != 0);
+  int readlink_error = IsErr ? errno : 0;
+  uptr module_name_len = Size;
+#else
   uptr module_name_len = internal_readlink(
       "/proc/self/exe", buf, buf_len);
   int readlink_error;
-  if (internal_iserror(module_name_len, &readlink_error)) {
-    if (proc_self_exe_cache_len) {
-      // If available, use the cached module name.
-      CHECK_LE(proc_self_exe_cache_len, buf_len);
-      internal_strncpy(buf, proc_self_exe_cache_str, buf_len);
-      module_name_len = internal_strlen(proc_self_exe_cache_str);
-    } else {
-      // We can't read /proc/self/exe for some reason, assume the name of the
-      // binary is unknown.
-      Report("WARNING: readlink(\"/proc/self/exe\") failed with errno %d, "
-             "some stack frames may not be symbolized\n", readlink_error);
-      module_name_len = internal_snprintf(buf, buf_len, "/proc/self/exe");
-    }
+  bool IsErr = internal_iserror(module_name_len, &readlink_error);
+#endif
+  if (IsErr) {
+    // We can't read /proc/self/exe for some reason, assume the name of the
+    // binary is unknown.
+    Report("WARNING: readlink(\"/proc/self/exe\") failed with errno %d, "
+           "some stack frames may not be symbolized\n", readlink_error);
+    module_name_len = internal_snprintf(buf, buf_len, "/proc/self/exe");
     CHECK_LT(module_name_len, buf_len);
-    buf[module_name_len] = '\0';
   }
   return module_name_len;
 }
@@ -806,11 +834,19 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
 #endif  // defined(__x86_64__) && SANITIZER_LINUX
 
 #if SANITIZER_ANDROID
+static atomic_uint8_t android_log_initialized;
+
+void AndroidLogInit() {
+  atomic_store(&android_log_initialized, 1, memory_order_release);
+}
 // This thing is not, strictly speaking, async signal safe, but it does not seem
 // to cause any issues. Alternative is writing to log devices directly, but
 // their location and message format might change in the future, so we'd really
 // like to avoid that.
 void AndroidLogWrite(const char *buffer) {
+  if (!atomic_load(&android_log_initialized, memory_order_acquire))
+    return;
+
   char *copy = internal_strdup(buffer);
   char *p = copy;
   char *q;

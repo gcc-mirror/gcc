@@ -23,16 +23,6 @@ bool lsan_init_is_running;
 
 namespace __lsan {
 
-static void InitializeCommonFlags() {
-  CommonFlags *cf = common_flags();
-  SetCommonFlagsDefaults(cf);
-  cf->external_symbolizer_path = GetEnv("LSAN_SYMBOLIZER_PATH");
-  cf->malloc_context_size = 30;
-  cf->detect_leaks = true;
-
-  ParseCommonFlagsFromString(cf, GetEnv("LSAN_OPTIONS"));
-}
-
 ///// Interface to the common LSan module. /////
 bool WordIsPoisoned(uptr addr) {
   return false;
@@ -48,7 +38,7 @@ extern "C" void __lsan_init() {
     return;
   lsan_init_is_running = true;
   SanitizerToolName = "LeakSanitizer";
-  InitializeCommonFlags();
+  InitCommonLsan(true);
   InitializeAllocator();
   InitTlsSize();
   InitializeInterceptors();
@@ -58,11 +48,14 @@ extern "C" void __lsan_init() {
   ThreadStart(tid, GetTid());
   SetCurrentThread(tid);
 
-  Symbolizer::Init(common_flags()->external_symbolizer_path);
-
-  InitCommonLsan();
   if (common_flags()->detect_leaks && common_flags()->leak_check_at_exit)
     Atexit(DoLeakCheck);
   lsan_inited = true;
   lsan_init_is_running = false;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+void __sanitizer_print_stack_trace() {
+  GET_STACK_TRACE_FATAL;
+  stack.Print();
 }

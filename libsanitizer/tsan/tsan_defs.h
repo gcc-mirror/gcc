@@ -52,6 +52,7 @@ const uptr kShadowCnt = TSAN_SHADOW_COUNT;
 # endif
 #else
 // Count of shadow values in a shadow cell.
+#define TSAN_SHADOW_COUNT 4
 const uptr kShadowCnt = 4;
 #endif
 
@@ -63,6 +64,13 @@ const uptr kShadowSize = 8;
 
 // Shadow memory is kShadowMultiplier times larger than user memory.
 const uptr kShadowMultiplier = kShadowSize * kShadowCnt / kShadowCell;
+
+// That many user bytes are mapped onto a single meta shadow cell.
+// Must be less or equal to minimal memory allocator alignment.
+const uptr kMetaShadowCell = 8;
+
+// Size of a single meta shadow value (u32).
+const uptr kMetaShadowSize = 4;
 
 #if defined(TSAN_NO_HISTORY) && TSAN_NO_HISTORY
 const bool kCollectHistory = false;
@@ -165,7 +173,15 @@ struct ReportStack;
 class ReportDesc;
 class RegionAlloc;
 class StackTrace;
-struct MBlock;
+
+// Descriptor of user's memory block.
+struct MBlock {
+  u64  siz;
+  u32  stk;
+  u16  tid;
+};
+
+COMPILER_CHECK(sizeof(MBlock) == 16);
 
 }  // namespace __tsan
 

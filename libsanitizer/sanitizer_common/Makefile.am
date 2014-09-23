@@ -21,7 +21,8 @@ sanitizer_common_files = \
 	sanitizer_allocator.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
-	sanitizer_coverage.cc \
+	sanitizer_coverage_libcdep.cc \
+	sanitizer_coverage_mapping_libcdep.cc \
 	sanitizer_deadlock_detector1.cc \
 	sanitizer_deadlock_detector2.cc \
 	sanitizer_flags.cc \
@@ -30,11 +31,14 @@ sanitizer_common_files = \
 	sanitizer_linux.cc \
 	sanitizer_linux_libcdep.cc \
 	sanitizer_mac.cc \
+	sanitizer_persistent_allocator.cc \
 	sanitizer_platform_limits_linux.cc \
 	sanitizer_platform_limits_posix.cc \
 	sanitizer_posix.cc \
 	sanitizer_posix_libcdep.cc \
 	sanitizer_printf.cc \
+	sanitizer_procmaps_common.cc \
+	sanitizer_procmaps_freebsd.cc \
 	sanitizer_procmaps_linux.cc \
 	sanitizer_procmaps_mac.cc \
 	sanitizer_stackdepot.cc \
@@ -49,7 +53,9 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_win.cc \
 	sanitizer_thread_registry.cc \
 	sanitizer_tls_get_addr.cc \
+	sanitizer_unwind_posix_libcdep.cc \
 	sanitizer_win.cc
+
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
 
