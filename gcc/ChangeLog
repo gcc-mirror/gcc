@@ -1,3 +1,30 @@
+2014-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* doc/tm.texi: Regenerate.
+	* system.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Poison.
+	* config/alpha/alpha.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/i386/i386-interix.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE):
+	Remove.
+	* config/i386/i386.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/i386/rtemself.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/ia64/ia64.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/m68k/m68k.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/m68k/netbsd-elf.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE):
+	Remove.
+	* config/mips/mips.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/mips/n32-elf.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/msp430/msp430.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/rl78/rl78.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/rs6000/rs6000.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/rx/rx.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/s390/s390.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/freebsd.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/linux.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/linux64.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/netbsd-elf.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE):
+	Remove.
+
 2014-09-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-ccp.c (prop_value_d): Rename to ...

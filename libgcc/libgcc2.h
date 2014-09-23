@@ -34,10 +34,6 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
-#ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
-#endif
-
 #ifdef __LIBGCC_HAS_SF_MODE__
 #define LIBGCC2_HAS_SF_MODE 1
 #else

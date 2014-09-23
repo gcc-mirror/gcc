@@ -34,19 +34,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tm.h"
 #include "libgcc_tm.h"
 
-#ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
-#endif
-
 /* We need to know the size of long double that the C library supports.
    Don't use LIBGCC2_HAS_XF_MODE or LIBGCC2_HAS_TF_MODE here because
    some targets set both of those.  */
 
+#ifndef __LIBGCC_XF_MANT_DIG__
+#define __LIBGCC_XF_MANT_DIG__ 0
+#endif
 #define LONG_DOUBLE_HAS_XF_MODE \
-  (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80)
+  (__LDBL_MANT_DIG__ == __LIBGCC_XF_MANT_DIG__)
 
+#ifndef __LIBGCC_TF_MANT_DIG__
+#define __LIBGCC_TF_MANT_DIG__ 0
+#endif
 #define LONG_DOUBLE_HAS_TF_MODE \
-  (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128)
+  (__LDBL_MANT_DIG__ == __LIBGCC_TF_MANT_DIG__)
 
 /* Depending on WIDTH, define a number of macros:
 

@@ -1542,13 +1542,6 @@ the target machine.  If you don't define this, the default is
 @code{BITS_PER_UNIT * 16}.
 @end defmac
 
-@defmac LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-Define this macro if @code{LONG_DOUBLE_TYPE_SIZE} is not constant or
-if you want routines in @file{libgcc2.a} for a size other than
-@code{LONG_DOUBLE_TYPE_SIZE}.  If you don't define this, the
-default is @code{LONG_DOUBLE_TYPE_SIZE}.
-@end defmac
-
 @defmac LIBGCC2_GNU_PREFIX
 This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
 hook and should be defined if that hook is overriden to be true.  It

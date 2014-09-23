@@ -253,10 +253,6 @@ while (0)
    : TARGET_ABI_OPEN_VMS ? 64 \
    : 80)
 
-/* We always want the XFmode operations from libgcc2.c, except on VMS
-   where this yields references to unimplemented "insns".  */
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE  (TARGET_ABI_OPEN_VMS ? 64 : 80)
-
 
 #define DEFAULT_SIGNED_CHAR 1
 
