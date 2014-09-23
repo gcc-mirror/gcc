@@ -1,3 +1,13 @@
+2014-09-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (CFILES): Add d-demangle.c.
+	(REQUIRED_OFILES): Add d-demangle.o.
+	* cplus-dem.c (libiberty_demanglers): Add dlang_demangling case.
+	(cplus_demangle): Likewise.
+	* d-demangle.c: New file.
+	* testsuite/Makefile.in (really-check): Add check-d-demangle.
+	* testsuite/d-demangle-expected: New file.
+
 2014-09-19  Ian Lance Taylor  <iant@google.com>
 
 	* simple-object-elf.c (simple_object_elf_write_ehdr): Correctly
