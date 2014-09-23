@@ -2701,6 +2701,7 @@ try_optimize_cfg (int mode)
 		  && (single_pred_edge (b)->flags & EDGE_FALLTHRU)
 		  && !(single_pred_edge (b)->flags & EDGE_COMPLEX)
 		  && LABEL_P (BB_HEAD (b))
+		  && !LABEL_PRESERVE_P (BB_HEAD (b))
 		  /* If the previous block ends with a branch to this
 		     block, we can't delete the label.  Normally this
 		     is a condjump that is yet to be simplified, but

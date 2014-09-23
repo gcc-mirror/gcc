@@ -1,3 +1,8 @@
+2014-09-23  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* cfgcleanup.c (try_optimize_cfg): Do not remove label
+	with LABEL_PRESERVE_P flag set.
+
 2014-09-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
