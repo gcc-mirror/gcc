@@ -5805,7 +5805,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])
 
-(define_expand "avx_shufps256"
+(define_expand "avx_shufps256<mask_expand4_name>"
   [(match_operand:V8SF 0 "register_operand")
    (match_operand:V8SF 1 "register_operand")
    (match_operand:V8SF 2 "nonimmediate_operand")
@@ -5813,25 +5813,28 @@
   "TARGET_AVX"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_avx_shufps256_1 (operands[0], operands[1], operands[2],
-				  GEN_INT ((mask >> 0) & 3),
-				  GEN_INT ((mask >> 2) & 3),
-				  GEN_INT (((mask >> 4) & 3) + 8),
-				  GEN_INT (((mask >> 6) & 3) + 8),
-				  GEN_INT (((mask >> 0) & 3) + 4),
-				  GEN_INT (((mask >> 2) & 3) + 4),
-				  GEN_INT (((mask >> 4) & 3) + 12),
-				  GEN_INT (((mask >> 6) & 3) + 12)));
+  emit_insn (gen_avx_shufps256_1<mask_expand4_name> (operands[0],
+						     operands[1],
+						     operands[2],
+						     GEN_INT ((mask >> 0) & 3),
+						     GEN_INT ((mask >> 2) & 3),
+						     GEN_INT (((mask >> 4) & 3) + 8),
+						     GEN_INT (((mask >> 6) & 3) + 8),
+						     GEN_INT (((mask >> 0) & 3) + 4),
+						     GEN_INT (((mask >> 2) & 3) + 4),
+						     GEN_INT (((mask >> 4) & 3) + 12),
+						     GEN_INT (((mask >> 6) & 3) + 12)
+						     <mask_expand4_args>));
   DONE;
 })
 
 ;; One bit in mask selects 2 elements.
-(define_insn "avx_shufps256_1"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
+(define_insn "avx_shufps256_1<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
 	(vec_select:V8SF
 	  (vec_concat:V16SF
-	    (match_operand:V8SF 1 "register_operand" "x")
-	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V8SF 1 "register_operand" "v")
+	    (match_operand:V8SF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(match_operand 3  "const_0_to_3_operand"  )
 		     (match_operand 4  "const_0_to_3_operand"  )
 		     (match_operand 5  "const_8_to_11_operand" )
@@ -5841,6 +5844,7 @@
 		     (match_operand 9  "const_12_to_15_operand")
 		     (match_operand 10 "const_12_to_15_operand")])))]
   "TARGET_AVX
+   && <mask_avx512vl_condition>
    && (INTVAL (operands[3]) == (INTVAL (operands[7]) - 4)
        && INTVAL (operands[4]) == (INTVAL (operands[8]) - 4)
        && INTVAL (operands[5]) == (INTVAL (operands[9]) - 4)
@@ -5853,14 +5857,14 @@
   mask |= (INTVAL (operands[6]) - 8) << 6;
   operands[3] = GEN_INT (mask);
 
-  return "vshufps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+  return "vshufps\t{%3, %2, %1, %0<mask_operand11>|%0<mask_operand11>, %1, %2, %3}";
 }
   [(set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "V8SF")])
 
-(define_expand "sse_shufps"
+(define_expand "sse_shufps<mask_expand4_name>"
   [(match_operand:V4SF 0 "register_operand")
    (match_operand:V4SF 1 "register_operand")
    (match_operand:V4SF 2 "nonimmediate_operand")
@@ -5868,13 +5872,45 @@
   "TARGET_SSE"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_sse_shufps_v4sf (operands[0], operands[1], operands[2],
-			       GEN_INT ((mask >> 0) & 3),
-			       GEN_INT ((mask >> 2) & 3),
-			       GEN_INT (((mask >> 4) & 3) + 4),
-			       GEN_INT (((mask >> 6) & 3) + 4)));
+  emit_insn (gen_sse_shufps_v4sf<mask_expand4_name> (operands[0],
+						     operands[1],
+						     operands[2],
+						     GEN_INT ((mask >> 0) & 3),
+						     GEN_INT ((mask >> 2) & 3),
+						     GEN_INT (((mask >> 4) & 3) + 4),
+						     GEN_INT (((mask >> 6) & 3) + 4)
+						     <mask_expand4_args>));
   DONE;
 })
+
+(define_insn "sse_shufps_v4sf_mask"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+    (vec_merge:V4SF
+	  (vec_select:V4SF
+	    (vec_concat:V8SF
+	      (match_operand:V4SF 1 "register_operand" "v")
+	      (match_operand:V4SF 2 "nonimmediate_operand" "vm"))
+	    (parallel [(match_operand 3 "const_0_to_3_operand")
+	               (match_operand 4 "const_0_to_3_operand")
+	               (match_operand 5 "const_4_to_7_operand")
+	               (match_operand 6 "const_4_to_7_operand")]))
+      (match_operand:V4SF 7 "vector_move_operand" "0C")
+      (match_operand:QI 8 "register_operand" "Yk")))]
+  "TARGET_AVX512VL"
+{
+  int mask = 0;
+  mask |= INTVAL (operands[3]) << 0;
+  mask |= INTVAL (operands[4]) << 2;
+  mask |= (INTVAL (operands[5]) - 4) << 4;
+  mask |= (INTVAL (operands[6]) - 4) << 6;
+  operands[3] = GEN_INT (mask);
+
+  return "vshufps\t{%3, %2, %1, %0%{%8%}%N7|%0%{%8%}%N7, %1, %2, %3}";
+}
+  [(set_attr "type" "sseshuf")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V4SF")])
 
 (define_insn "sse_shufps_<mode>"
   [(set (match_operand:VI4F_128 0 "register_operand" "=x,x")
