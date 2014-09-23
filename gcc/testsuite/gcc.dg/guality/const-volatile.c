@@ -2,17 +2,17 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-int i;
-const int ci;
+int i __attribute__((used));
+const int ci __attribute__((used));
 volatile int vi;
 const volatile int cvi;
 
 int *pi __attribute__((used));
-const int *pci;
-volatile int *pvi;
-const volatile int *pcvi;
+const int *pci __attribute__((used));
+volatile int *pvi __attribute__((used));
+const volatile int *pcvi __attribute__((used));
 
-int * const cip;
+int * const cip __attribute__((used));
 int * volatile vip;
 int * const volatile cvip;
 
@@ -38,8 +38,8 @@ struct bar
 };
 
 struct bar bar __attribute__((used));
-struct foo foo;
-const struct foo cfoo;
+struct foo foo __attribute__((used));
+const struct foo cfoo __attribute__((used));
 volatile struct foo vfoo;
 const volatile struct foo cvfoo;
 
