@@ -30,18 +30,16 @@
 /* Comparisons against immediate zero, on the 8 signed integer types only.  */
 
 /* { dg-final { scan-assembler-times "\[ \t\]cmge\[ \t\]+v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*#?0" 7 } } */
-/*  For int64_t and int64x1_t, combine_simplify_rtx failure of
-    https://gcc.gnu.org/ml/gcc/2014-06/msg00253.html
-    prevents generation of cmge....#0, instead producing mvn + sshr.  */
-/* { #dg-final { scan-assembler-times "\[ \t\]cmge\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?0" 2 } } */
+/* { dg-final { scan-assembler-times "\[ \t\]cmge\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?0" 2 } } */
 /* { dg-final { scan-assembler-times "\[ \t\]cmgt\[ \t\]+v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*#?0" 7 } } */
 /* { dg-final { scan-assembler-times "\[ \t\]cmgt\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?0" 2 } } */
 /* { dg-final { scan-assembler-times "\[ \t\]cmle\[ \t\]+v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*#?0" 7 } } */
 /* { dg-final { scan-assembler-times "\[ \t\]cmle\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?0" 2 } } */
 /* { dg-final { scan-assembler-times "\[ \t\]cmlt\[ \t\]+v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*v\[0-9\]+\.\[0-9\]+\[bshd\],\[ \t\]*#?0" 7 } } */
 /* For int64_t and int64x1_t, cmlt ... #0 and sshr ... #63 are equivalent,
-   so allow either.  cmgez issue above results in extra 2 * sshr....63.  */
-/* { dg-final { scan-assembler-times "\[ \t\](?:cmlt|sshr)\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?(?:0|63)" 4 } } */
+   so allow either.  */
+/* { dg-final { scan-assembler-times "\[ \t\](?:cmlt|sshr)\[ \t\]+d\[0-9\]+,\[ \t\]*d\[0-9\]+,\[ \t\]*#?(?:0|63)" 2 } } */
 
 // All should have been compiled into single insns without inverting result:
 /* { dg-final { scan-assembler-not "\[ \t\]not\[ \t\]" } } */
+/* { dg-final { scan-assembler-not "\[ \t\]mvn\[ \t\]" } } */
