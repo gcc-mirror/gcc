@@ -1,3 +1,9 @@
+2014-09-24  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Enable aarch64.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+	* gcc.dg/pr10474.c: Likewise.
+
 2014-09-20  Mark Wielaard  <mjw@redhat.com>
 
 	* gcc.dg/guality/const-volatile.c (i): Mark as used.

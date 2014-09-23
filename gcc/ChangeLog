@@ -1,3 +1,10 @@
+2014-09-23  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.md (return): New.
+	(simple_return): Likewise.
+	* config/aarch64/aarch64.c (aarch64_use_return_insn_p): New.
+	* config/aarch64/aarch64-protos.h (aarch64_use_return_insn_p): New.
+
 2014-09-23  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* common/config/aarch64/aarch64-common.c:

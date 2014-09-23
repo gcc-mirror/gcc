@@ -2340,6 +2340,26 @@ aarch64_expand_prologue (void)
     }
 }
 
+/* Return TRUE if we can use a simple_return insn.
+
+   This function checks whether the callee saved stack is empty, which
+   means no restore actions are need. The pro_and_epilogue will use
+   this to check whether shrink-wrapping opt is feasible.  */
+
+bool
+aarch64_use_return_insn_p (void)
+{
+  if (!reload_completed)
+    return false;
+
+  if (crtl->profile)
+    return false;
+
+  aarch64_layout_frame ();
+
+  return cfun->machine->frame.frame_size == 0;
+}
+
 /* Generate the epilogue instructions for returning from a function.  */
 void
 aarch64_expand_epilogue (bool for_sibcall)

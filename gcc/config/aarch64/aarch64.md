@@ -360,6 +360,19 @@
   [(set_attr "type" "branch")]
 )
 
+(define_expand "return"
+  [(simple_return)]
+  "aarch64_use_return_insn_p ()"
+  ""
+)
+
+(define_insn "simple_return"
+  [(simple_return)]
+  ""
+  "ret"
+  [(set_attr "type" "branch")]
+)
+
 (define_insn "eh_return"
   [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")]
     UNSPECV_EH_RETURN)]

@@ -213,6 +213,7 @@ bool aarch64_simd_valid_immediate (rtx, enum machine_mode, bool,
 				   struct simd_immediate_info *);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
+bool aarch64_use_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 
