@@ -1,3 +1,9 @@
+2014-09-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.h (int_bit_position): Turn into inline function;
+	implement using wide int.
+	* tree.c (int_bit_position): Remove.
+
 2014-09-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR bootstrap/63280
