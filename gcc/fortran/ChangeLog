@@ -1,3 +1,9 @@
+2014-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63331
+	* trans-types.c (gfc_get_array_descr_info): Build DEBUG_EXPR_DECL
+	instead of VAR_DECL for base_decl.
+
 2014-09-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* openmp.c (omp_context): Rename to ...
