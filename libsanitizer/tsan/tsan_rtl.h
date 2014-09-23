@@ -42,6 +42,7 @@
 #include "tsan_platform.h"
 #include "tsan_mutexset.h"
 #include "tsan_ignoreset.h"
+#include "tsan_stack_trace.h"
 
 #if SANITIZER_WORDSIZE != 64
 # error "ThreadSanitizer is supported only on 64-bit platforms"
@@ -49,87 +50,12 @@
 
 namespace __tsan {
 
-// Descriptor of user's memory block.
-struct MBlock {
-  /*
-  u64 mtx : 1;  // must be first
-  u64 lst : 44;
-  u64 stk : 31;  // on word boundary
-  u64 tid : kTidBits;
-  u64 siz : 128 - 1 - 31 - 44 - kTidBits;  // 39
-  */
-  u64 raw[2];
-
-  void Init(uptr siz, u32 tid, u32 stk) {
-    raw[0] = raw[1] = 0;
-    raw[1] |= (u64)siz << ((1 + 44 + 31 + kTidBits) % 64);
-    raw[1] |= (u64)tid << ((1 + 44 + 31) % 64);
-    raw[0] |= (u64)stk << (1 + 44);
-    raw[1] |= (u64)stk >> (64 - 44 - 1);
-    DCHECK_EQ(Size(), siz);
-    DCHECK_EQ(Tid(), tid);
-    DCHECK_EQ(StackId(), stk);
-  }
-
-  u32 Tid() const {
-    return GetLsb(raw[1] >> ((1 + 44 + 31) % 64), kTidBits);
-  }
-
-  uptr Size() const {
-    return raw[1] >> ((1 + 31 + 44 + kTidBits) % 64);
-  }
-
-  u32 StackId() const {
-    return (raw[0] >> (1 + 44)) | GetLsb(raw[1] << (64 - 44 - 1), 31);
-  }
-
-  SyncVar *ListHead() const {
-    return (SyncVar*)(GetLsb(raw[0] >> 1, 44) << 3);
-  }
-
-  void ListPush(SyncVar *v) {
-    SyncVar *lst = ListHead();
-    v->next = lst;
-    u64 x = (u64)v ^ (u64)lst;
-    x = (x >> 3) << 1;
-    raw[0] ^= x;
-    DCHECK_EQ(ListHead(), v);
-  }
-
-  SyncVar *ListPop() {
-    SyncVar *lst = ListHead();
-    SyncVar *nxt = lst->next;
-    lst->next = 0;
-    u64 x = (u64)lst ^ (u64)nxt;
-    x = (x >> 3) << 1;
-    raw[0] ^= x;
-    DCHECK_EQ(ListHead(), nxt);
-    return lst;
-  }
-
-  void ListReset() {
-    SyncVar *lst = ListHead();
-    u64 x = (u64)lst;
-    x = (x >> 3) << 1;
-    raw[0] ^= x;
-    DCHECK_EQ(ListHead(), 0);
-  }
-
-  void Lock();
-  void Unlock();
-  typedef GenericScopedLock<MBlock> ScopedLock;
-};
-
 #ifndef TSAN_GO
-#if defined(TSAN_COMPAT_SHADOW) && TSAN_COMPAT_SHADOW
 const uptr kAllocatorSpace = 0x7d0000000000ULL;
-#else
-const uptr kAllocatorSpace = 0x7d0000000000ULL;
-#endif
 const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
 
 struct MapUnmapCallback;
-typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, sizeof(MBlock),
+typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, 0,
     DefaultSizeClassMap, MapUnmapCallback> PrimaryAllocator;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<MapUnmapCallback> SecondaryAllocator;
@@ -146,14 +72,14 @@ const u64 kShadowRodata = (u64)-1;  // .rodata shadow marker
 // FastState (from most significant bit):
 //   ignore          : 1
 //   tid             : kTidBits
-//   epoch           : kClkBits
 //   unused          : -
 //   history_size    : 3
+//   epoch           : kClkBits
 class FastState {
  public:
   FastState(u64 tid, u64 epoch) {
     x_ = tid << kTidShift;
-    x_ |= epoch << kClkShift;
+    x_ |= epoch;
     DCHECK_EQ(tid, this->tid());
     DCHECK_EQ(epoch, this->epoch());
     DCHECK_EQ(GetIgnoreBit(), false);
@@ -178,13 +104,13 @@ class FastState {
   }
 
   u64 epoch() const {
-    u64 res = (x_ << (kTidBits + 1)) >> (64 - kClkBits);
+    u64 res = x_ & ((1ull << kClkBits) - 1);
     return res;
   }
 
   void IncrementEpoch() {
     u64 old_epoch = epoch();
-    x_ += 1 << kClkShift;
+    x_ += 1;
     DCHECK_EQ(old_epoch + 1, epoch());
     (void)old_epoch;
   }
@@ -196,17 +122,19 @@ class FastState {
   void SetHistorySize(int hs) {
     CHECK_GE(hs, 0);
     CHECK_LE(hs, 7);
-    x_ = (x_ & ~7) | hs;
+    x_ = (x_ & ~(kHistoryMask << kHistoryShift)) | (u64(hs) << kHistoryShift);
   }
 
+  ALWAYS_INLINE
   int GetHistorySize() const {
-    return (int)(x_ & 7);
+    return (int)((x_ >> kHistoryShift) & kHistoryMask);
   }
 
   void ClearHistorySize() {
-    x_ &= ~7;
+    SetHistorySize(0);
   }
 
+  ALWAYS_INLINE
   u64 GetTracePos() const {
     const int hs = GetHistorySize();
     // When hs == 0, the trace consists of 2 parts.
@@ -217,20 +145,21 @@ class FastState {
  private:
   friend class Shadow;
   static const int kTidShift = 64 - kTidBits - 1;
-  static const int kClkShift = kTidShift - kClkBits;
   static const u64 kIgnoreBit = 1ull << 63;
   static const u64 kFreedBit = 1ull << 63;
+  static const u64 kHistoryShift = kClkBits;
+  static const u64 kHistoryMask = 7;
   u64 x_;
 };
 
 // Shadow (from most significant bit):
 //   freed           : 1
 //   tid             : kTidBits
-//   epoch           : kClkBits
 //   is_atomic       : 1
 //   is_read         : 1
 //   size_log        : 2
 //   addr0           : 3
+//   epoch           : kClkBits
 class Shadow : public FastState {
  public:
   explicit Shadow(u64 x)
@@ -243,10 +172,10 @@ class Shadow : public FastState {
   }
 
   void SetAddr0AndSizeLog(u64 addr0, unsigned kAccessSizeLog) {
-    DCHECK_EQ(x_ & 31, 0);
+    DCHECK_EQ((x_ >> kClkBits) & 31, 0);
     DCHECK_LE(addr0, 7);
     DCHECK_LE(kAccessSizeLog, 3);
-    x_ |= (kAccessSizeLog << 3) | addr0;
+    x_ |= ((kAccessSizeLog << 3) | addr0) << kClkBits;
     DCHECK_EQ(kAccessSizeLog, size_log());
     DCHECK_EQ(addr0, this->addr0());
   }
@@ -279,47 +208,34 @@ class Shadow : public FastState {
     return shifted_xor == 0;
   }
 
-  static inline bool Addr0AndSizeAreEqual(const Shadow s1, const Shadow s2) {
-    u64 masked_xor = (s1.x_ ^ s2.x_) & 31;
+  static ALWAYS_INLINE
+  bool Addr0AndSizeAreEqual(const Shadow s1, const Shadow s2) {
+    u64 masked_xor = ((s1.x_ ^ s2.x_) >> kClkBits) & 31;
     return masked_xor == 0;
   }
 
-  static inline bool TwoRangesIntersect(Shadow s1, Shadow s2,
+  static ALWAYS_INLINE bool TwoRangesIntersect(Shadow s1, Shadow s2,
       unsigned kS2AccessSize) {
     bool res = false;
     u64 diff = s1.addr0() - s2.addr0();
     if ((s64)diff < 0) {  // s1.addr0 < s2.addr0  // NOLINT
       // if (s1.addr0() + size1) > s2.addr0()) return true;
-      if (s1.size() > -diff)  res = true;
+      if (s1.size() > -diff)
+        res = true;
     } else {
       // if (s2.addr0() + kS2AccessSize > s1.addr0()) return true;
-      if (kS2AccessSize > diff) res = true;
+      if (kS2AccessSize > diff)
+        res = true;
     }
-    DCHECK_EQ(res, TwoRangesIntersectSLOW(s1, s2));
-    DCHECK_EQ(res, TwoRangesIntersectSLOW(s2, s1));
+    DCHECK_EQ(res, TwoRangesIntersectSlow(s1, s2));
+    DCHECK_EQ(res, TwoRangesIntersectSlow(s2, s1));
     return res;
   }
 
-  // The idea behind the offset is as follows.
-  // Consider that we have 8 bool's contained within a single 8-byte block
-  // (mapped to a single shadow "cell"). Now consider that we write to the bools
-  // from a single thread (which we consider the common case).
-  // W/o offsetting each access will have to scan 4 shadow values at average
-  // to find the corresponding shadow value for the bool.
-  // With offsetting we start scanning shadow with the offset so that
-  // each access hits necessary shadow straight off (at least in an expected
-  // optimistic case).
-  // This logic works seamlessly for any layout of user data. For example,
-  // if user data is {int, short, char, char}, then accesses to the int are
-  // offsetted to 0, short - 4, 1st char - 6, 2nd char - 7. Hopefully, accesses
-  // from a single thread won't need to scan all 8 shadow values.
-  unsigned ComputeSearchOffset() {
-    return x_ & 7;
-  }
-  u64 addr0() const { return x_ & 7; }
-  u64 size() const { return 1ull << size_log(); }
-  bool IsWrite() const { return !IsRead(); }
-  bool IsRead() const { return x_ & kReadBit; }
+  u64 ALWAYS_INLINE addr0() const { return (x_ >> kClkBits) & 7; }
+  u64 ALWAYS_INLINE size() const { return 1ull << size_log(); }
+  bool ALWAYS_INLINE IsWrite() const { return !IsRead(); }
+  bool ALWAYS_INLINE IsRead() const { return x_ & kReadBit; }
 
   // The idea behind the freed bit is as follows.
   // When the memory is freed (or otherwise unaccessible) we write to the shadow
@@ -344,15 +260,14 @@ class Shadow : public FastState {
     return res;
   }
 
-  bool IsBothReadsOrAtomic(bool kIsWrite, bool kIsAtomic) const {
-    // analyzes 5-th bit (is_read) and 6-th bit (is_atomic)
-    bool v = x_ & u64(((kIsWrite ^ 1) << kReadShift)
-        | (kIsAtomic << kAtomicShift));
+  bool ALWAYS_INLINE IsBothReadsOrAtomic(bool kIsWrite, bool kIsAtomic) const {
+    bool v = x_ & ((u64(kIsWrite ^ 1) << kReadShift)
+        | (u64(kIsAtomic) << kAtomicShift));
     DCHECK_EQ(v, (!IsWrite() && !kIsWrite) || (IsAtomic() && kIsAtomic));
     return v;
   }
 
-  bool IsRWNotWeaker(bool kIsWrite, bool kIsAtomic) const {
+  bool ALWAYS_INLINE IsRWNotWeaker(bool kIsWrite, bool kIsAtomic) const {
     bool v = ((x_ >> kReadShift) & 3)
         <= u64((kIsWrite ^ 1) | (kIsAtomic << 1));
     DCHECK_EQ(v, (IsAtomic() < kIsAtomic) ||
@@ -360,7 +275,7 @@ class Shadow : public FastState {
     return v;
   }
 
-  bool IsRWWeakerOrEqual(bool kIsWrite, bool kIsAtomic) const {
+  bool ALWAYS_INLINE IsRWWeakerOrEqual(bool kIsWrite, bool kIsAtomic) const {
     bool v = ((x_ >> kReadShift) & 3)
         >= u64((kIsWrite ^ 1) | (kIsAtomic << 1));
     DCHECK_EQ(v, (IsAtomic() > kIsAtomic) ||
@@ -369,14 +284,14 @@ class Shadow : public FastState {
   }
 
  private:
-  static const u64 kReadShift   = 5;
+  static const u64 kReadShift   = 5 + kClkBits;
   static const u64 kReadBit     = 1ull << kReadShift;
-  static const u64 kAtomicShift = 6;
+  static const u64 kAtomicShift = 6 + kClkBits;
   static const u64 kAtomicBit   = 1ull << kAtomicShift;
 
-  u64 size_log() const { return (x_ >> 3) & 3; }
+  u64 size_log() const { return (x_ >> (3 + kClkBits)) & 3; }
 
-  static bool TwoRangesIntersectSLOW(const Shadow s1, const Shadow s2) {
+  static bool TwoRangesIntersectSlow(const Shadow s1, const Shadow s2) {
     if (s1.addr0() == s2.addr0()) return true;
     if (s1.addr0() < s2.addr0() && s1.addr0() + s1.size() > s2.addr0())
       return true;
@@ -391,6 +306,9 @@ struct SignalContext;
 struct JmpBuf {
   uptr sp;
   uptr mangled_sp;
+  int int_signal_send;
+  bool in_blocking_func;
+  uptr in_signal_handler;
   uptr *shadow_stack_pos;
 };
 
@@ -439,7 +357,7 @@ struct ThreadState {
   const int unique_id;
   bool in_symbolizer;
   bool in_ignored_lib;
-  bool is_alive;
+  bool is_dead;
   bool is_freeing;
   bool is_vptr_access;
   const uptr stk_addr;
@@ -452,8 +370,12 @@ struct ThreadState {
   DDPhysicalThread *dd_pt;
   DDLogicalThread *dd_lt;
 
-  bool in_signal_handler;
+  atomic_uintptr_t in_signal_handler;
   SignalContext *signal_ctx;
+
+  DenseSlabAllocCache block_cache;
+  DenseSlabAllocCache sync_cache;
+  DenseSlabAllocCache clock_cache;
 
 #ifndef TSAN_GO
   u32 last_sleep_stack_id;
@@ -498,6 +420,7 @@ class ThreadContext : public ThreadContextBase {
   void OnStarted(void *arg);
   void OnCreated(void *arg);
   void OnReset();
+  void OnDetached(void *arg);
 };
 
 struct RacyStacks {
@@ -528,7 +451,7 @@ struct Context {
   bool initialized;
   bool after_multithreaded_fork;
 
-  SyncTab synctab;
+  MetaMap metamap;
 
   Mutex report_mtx;
   int nreported;
@@ -545,6 +468,8 @@ struct Context {
   // Number of fired suppressions may be large enough.
   InternalMmapVector<FiredSuppression> fired_suppressions;
   DDetector *dd;
+
+  ClockAlloc clock_alloc;
 
   Flags flags;
 
@@ -574,11 +499,11 @@ class ScopedReport {
   explicit ScopedReport(ReportType typ);
   ~ScopedReport();
 
-  void AddStack(const StackTrace *stack);
   void AddMemoryAccess(uptr addr, Shadow s, const StackTrace *stack,
                        const MutexSet *mset);
-  void AddThread(const ThreadContext *tctx);
-  void AddThread(int unique_tid);
+  void AddStack(const StackTrace *stack, bool suppressable = false);
+  void AddThread(const ThreadContext *tctx, bool suppressable = false);
+  void AddThread(int unique_tid, bool suppressable = false);
   void AddUniqueTid(int unique_tid);
   void AddMutex(const SyncVar *s);
   u64 AddMutex(u64 id);
@@ -626,11 +551,7 @@ void ForkParentAfter(ThreadState *thr, uptr pc);
 void ForkChildAfter(ThreadState *thr, uptr pc);
 
 void ReportRace(ThreadState *thr);
-bool OutputReport(Context *ctx,
-                  const ScopedReport &srep,
-                  const ReportStack *suppress_stack1,
-                  const ReportStack *suppress_stack2 = 0,
-                  const ReportLocation *suppress_loc = 0);
+bool OutputReport(ThreadState *thr, const ScopedReport &srep);
 bool IsFiredSuppression(Context *ctx,
                         const ScopedReport &srep,
                         const StackTrace &trace);
@@ -659,9 +580,8 @@ void PrintCurrentStackSlow();  // uses libunwind
 void Initialize(ThreadState *thr);
 int Finalize(ThreadState *thr);
 
-SyncVar* GetJavaSync(ThreadState *thr, uptr pc, uptr addr,
-                     bool write_lock, bool create);
-SyncVar* GetAndRemoveJavaSync(ThreadState *thr, uptr pc, uptr addr);
+void OnUserAlloc(ThreadState *thr, uptr pc, uptr p, uptr sz, bool write);
+void OnUserFree(ThreadState *thr, uptr pc, uptr p, bool write);
 
 void MemoryAccess(ThreadState *thr, uptr pc, uptr addr,
     int kAccessSizeLog, bool kAccessIsWrite, bool kIsAtomic);

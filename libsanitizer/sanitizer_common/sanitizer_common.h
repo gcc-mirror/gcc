@@ -163,6 +163,9 @@ uptr ReadFileToBuffer(const char *file_name, char **buff,
 // (or NULL if the mapping failes). Stores the size of mmaped region
 // in '*buff_size'.
 void *MapFileToMemory(const char *file_name, uptr *buff_size);
+void *MapWritableFileToMemory(void *addr, uptr size, uptr fd, uptr offset);
+
+bool IsAccessibleMemoryRange(uptr beg, uptr size);
 
 // Error report formatting.
 const char *StripPathPrefix(const char *filepath,
@@ -173,7 +176,7 @@ void PrintModuleAndOffset(InternalScopedString *buffer,
                           const char *module, uptr offset);
 
 // OS
-void DisableCoreDumper();
+void DisableCoreDumperIfNecessary();
 void DumpProcessMap();
 bool FileExists(const char *filename);
 const char *GetEnv(const char *name);
@@ -184,10 +187,16 @@ u32 GetUid();
 void ReExec();
 bool StackSizeIsUnlimited();
 void SetStackSizeLimitInBytes(uptr limit);
+bool AddressSpaceIsUnlimited();
+void SetAddressSpaceUnlimited();
 void AdjustStackSize(void *attr);
 void PrepareForSandboxing(__sanitizer_sandbox_arguments *args);
 void CovPrepareForSandboxing(__sanitizer_sandbox_arguments *args);
 void SetSandboxingCallback(void (*f)());
+
+void CovUpdateMapping(uptr caller_pc = 0);
+void CovBeforeFork();
+void CovAfterFork(int child_pid);
 
 void InitTlsSize();
 uptr GetTlsSize();
@@ -239,7 +248,7 @@ const int kMaxSummaryLength = 1024;
 // and pass it to __sanitizer_report_error_summary.
 void ReportErrorSummary(const char *error_message);
 // Same as above, but construct error_message as:
-//   error_type: file:line function
+//   error_type file:line function
 void ReportErrorSummary(const char *error_type, const char *file,
                         int line, const char *function);
 void ReportErrorSummary(const char *error_type, StackTrace *trace);
@@ -475,11 +484,16 @@ uptr InternalBinarySearch(const Container &v, uptr first, uptr last,
 class LoadedModule {
  public:
   LoadedModule(const char *module_name, uptr base_address);
-  void addAddressRange(uptr beg, uptr end);
+  void addAddressRange(uptr beg, uptr end, bool executable);
   bool containsAddress(uptr address) const;
 
   const char *full_name() const { return full_name_; }
   uptr base_address() const { return base_address_; }
+
+  uptr n_ranges() const { return n_ranges_; }
+  uptr address_range_start(int i) const { return ranges_[i].beg; }
+  uptr address_range_end(int i) const { return ranges_[i].end; }
+  bool address_range_executable(int i) const { return exec_[i]; }
 
  private:
   struct AddressRange {
@@ -490,6 +504,7 @@ class LoadedModule {
   uptr base_address_;
   static const uptr kMaxNumberOfAddressRanges = 6;
   AddressRange ranges_[kMaxNumberOfAddressRanges];
+  bool exec_[kMaxNumberOfAddressRanges];
   uptr n_ranges_;
 };
 
@@ -529,10 +544,13 @@ F IndirectExternCall(F f) {
 #endif
 
 #if SANITIZER_ANDROID
+// Initialize Android logging. Any writes before this are silently lost.
+void AndroidLogInit();
 void AndroidLogWrite(const char *buffer);
 void GetExtraActivationFlags(char *buf, uptr size);
 void SanitizerInitializeUnwinder();
 #else
+INLINE void AndroidLogInit() {}
 INLINE void AndroidLogWrite(const char *buffer_unused) {}
 INLINE void GetExtraActivationFlags(char *buf, uptr size) { *buf = '\0'; }
 INLINE void SanitizerInitializeUnwinder() {}
@@ -543,5 +561,10 @@ inline void *operator new(__sanitizer::operator_new_size_type size,
                           __sanitizer::LowLevelAllocator &alloc) {
   return alloc.Allocate(size);
 }
+
+struct StackDepotStats {
+  uptr n_uniq_ids;
+  uptr allocated;
+};
 
 #endif  // SANITIZER_COMMON_H

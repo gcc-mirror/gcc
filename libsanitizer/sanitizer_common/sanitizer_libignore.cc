@@ -6,7 +6,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
-#if SANITIZER_LINUX
+#if SANITIZER_FREEBSD || SANITIZER_LINUX
 
 #include "sanitizer_libignore.h"
 #include "sanitizer_flags.h"
@@ -101,4 +101,4 @@ void LibIgnore::OnLibraryUnloaded() {
 
 }  // namespace __sanitizer
 
-#endif  // #if SANITIZER_LINUX
+#endif  // #if SANITIZER_FREEBSD || SANITIZER_LINUX

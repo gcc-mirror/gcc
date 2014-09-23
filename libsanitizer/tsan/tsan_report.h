@@ -40,6 +40,7 @@ struct ReportStack {
   char *file;
   int line;
   int col;
+  bool suppressable;
 };
 
 struct ReportMopMutex {
@@ -78,6 +79,7 @@ struct ReportLocation {
   char *name;
   char *file;
   int line;
+  bool suppressable;
   ReportStack *stack;
 };
 

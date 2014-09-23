@@ -1,3 +1,12 @@
+2014-09-23  Kostya Serebryany  <kcc@google.com>
+
+	Update to match the changed asan API.
+	* asan.c (asan_global_struct): Update the __asan_global definition
+	to match the new API.
+	(asan_add_global): Ditto.
+	* sanitizer.def (BUILT_IN_ASAN_INIT): Rename __asan_init_v3
+	to __asan_init_v4.
+
 2014-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (f32_vsx): New mode attributes to

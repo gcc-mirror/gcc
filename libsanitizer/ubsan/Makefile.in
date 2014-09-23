@@ -84,8 +84,9 @@ am__DEPENDENCIES_1 =
 libubsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
-am__objects_1 = ubsan_diag.lo ubsan_handlers.lo ubsan_handlers_cxx.lo \
-	ubsan_type_hash.lo ubsan_value.lo
+am__objects_1 = ubsan_diag.lo ubsan_flags.lo ubsan_handlers.lo \
+	ubsan_handlers_cxx.lo ubsan_init.lo ubsan_type_hash.lo \
+	ubsan_value.lo
 am_libubsan_la_OBJECTS = $(am__objects_1)
 libubsan_la_OBJECTS = $(am_libubsan_la_OBJECTS)
 libubsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -260,8 +261,10 @@ ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libubsan.la
 ubsan_files = \
 	ubsan_diag.cc \
+	ubsan_flags.cc \
 	ubsan_handlers.cc \
 	ubsan_handlers_cxx.cc \
+	ubsan_init.cc \
 	ubsan_type_hash.cc \
 	ubsan_value.cc
 
@@ -385,8 +388,10 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_diag.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers_cxx.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_value.Plo@am__quote@
 

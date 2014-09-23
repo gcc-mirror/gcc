@@ -25,33 +25,23 @@
 
 using namespace __tsan;  // NOLINT
 
-#define SCOPED_ATOMIC(func, ...) \
-    const uptr callpc = (uptr)__builtin_return_address(0); \
-    uptr pc = __sanitizer::StackTrace::GetCurrentPc(); \
-    mo = flags()->force_seq_cst_atomics ? (morder)mo_seq_cst : mo; \
-    ThreadState *const thr = cur_thread(); \
-    if (thr->ignore_interceptors) \
-      return NoTsanAtomic##func(__VA_ARGS__); \
-    AtomicStatInc(thr, sizeof(*a), mo, StatAtomic##func); \
-    ScopedAtomic sa(thr, callpc, a, mo, __func__); \
-    return Atomic##func(thr, pc, __VA_ARGS__); \
-/**/
-
 // These should match declarations from public tsan_interface_atomic.h header.
 typedef unsigned char      a8;
 typedef unsigned short     a16;  // NOLINT
 typedef unsigned int       a32;
 typedef unsigned long long a64;  // NOLINT
-#if defined(__SIZEOF_INT128__) \
-    || (__clang_major__ * 100 + __clang_minor__ >= 302)
+#if !defined(TSAN_GO) && (defined(__SIZEOF_INT128__) \
+    || (__clang_major__ * 100 + __clang_minor__ >= 302))
 __extension__ typedef __int128 a128;
 # define __TSAN_HAS_INT128 1
 #else
 # define __TSAN_HAS_INT128 0
 #endif
 
+#ifndef TSAN_GO
 // Protects emulation of 128-bit atomic operations.
 static StaticSpinMutex mutex128;
+#endif
 
 // Part of ABI, do not change.
 // http://llvm.org/viewvc/llvm-project/libcxx/trunk/include/atomic?view=markup
@@ -63,38 +53,6 @@ typedef enum {
   mo_acq_rel,
   mo_seq_cst
 } morder;
-
-class ScopedAtomic {
- public:
-  ScopedAtomic(ThreadState *thr, uptr pc, const volatile void *a,
-               morder mo, const char *func)
-      : thr_(thr) {
-    FuncEntry(thr_, pc);
-    DPrintf("#%d: %s(%p, %d)\n", thr_->tid, func, a, mo);
-  }
-  ~ScopedAtomic() {
-    ProcessPendingSignals(thr_);
-    FuncExit(thr_);
-  }
- private:
-  ThreadState *thr_;
-};
-
-static void AtomicStatInc(ThreadState *thr, uptr size, morder mo, StatType t) {
-  StatInc(thr, StatAtomic);
-  StatInc(thr, t);
-  StatInc(thr, size == 1 ? StatAtomic1
-             : size == 2 ? StatAtomic2
-             : size == 4 ? StatAtomic4
-             : size == 8 ? StatAtomic8
-             :             StatAtomic16);
-  StatInc(thr, mo == mo_relaxed ? StatAtomicRelaxed
-             : mo == mo_consume ? StatAtomicConsume
-             : mo == mo_acquire ? StatAtomicAcquire
-             : mo == mo_release ? StatAtomicRelease
-             : mo == mo_acq_rel ? StatAtomicAcq_Rel
-             :                    StatAtomicSeq_Cst);
-}
 
 static bool IsLoadOrder(morder mo) {
   return mo == mo_relaxed || mo == mo_consume
@@ -165,7 +123,7 @@ template<typename T> T func_cas(volatile T *v, T cmp, T xch) {
 // Atomic ops are executed under tsan internal mutex,
 // here we assume that the atomic variables are not accessed
 // from non-instrumented code.
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+#if !defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16) && !defined(TSAN_GO)
 a128 func_xchg(volatile a128 *v, a128 op) {
   SpinMutexLock lock(&mutex128);
   a128 cmp = *v;
@@ -238,6 +196,7 @@ static int SizeLog() {
   // this leads to false negatives only in very obscure cases.
 }
 
+#ifndef TSAN_GO
 static atomic_uint8_t *to_atomic(const volatile a8 *a) {
   return (atomic_uint8_t*)a;
 }
@@ -245,6 +204,7 @@ static atomic_uint8_t *to_atomic(const volatile a8 *a) {
 static atomic_uint16_t *to_atomic(const volatile a16 *a) {
   return (atomic_uint16_t*)a;
 }
+#endif
 
 static atomic_uint32_t *to_atomic(const volatile a32 *a) {
   return (atomic_uint32_t*)a;
@@ -272,10 +232,12 @@ static T NoTsanAtomicLoad(const volatile T *a, morder mo) {
   return atomic_load(to_atomic(a), to_mo(mo));
 }
 
+#if __TSAN_HAS_INT128 && !defined(TSAN_GO)
 static a128 NoTsanAtomicLoad(const volatile a128 *a, morder mo) {
   SpinMutexLock lock(&mutex128);
   return *a;
 }
+#endif
 
 template<typename T>
 static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
@@ -287,7 +249,7 @@ static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
     MemoryReadAtomic(thr, pc, (uptr)a, SizeLog<T>());
     return NoTsanAtomicLoad(a, mo);
   }
-  SyncVar *s = ctx->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, false);
+  SyncVar *s = ctx->metamap.GetOrCreateAndLock(thr, pc, (uptr)a, false);
   AcquireImpl(thr, pc, &s->clock);
   T v = NoTsanAtomicLoad(a, mo);
   s->mtx.ReadUnlock();
@@ -300,10 +262,12 @@ static void NoTsanAtomicStore(volatile T *a, T v, morder mo) {
   atomic_store(to_atomic(a), v, to_mo(mo));
 }
 
+#if __TSAN_HAS_INT128 && !defined(TSAN_GO)
 static void NoTsanAtomicStore(volatile a128 *a, a128 v, morder mo) {
   SpinMutexLock lock(&mutex128);
   *a = v;
 }
+#endif
 
 template<typename T>
 static void AtomicStore(ThreadState *thr, uptr pc, volatile T *a, T v,
@@ -319,7 +283,7 @@ static void AtomicStore(ThreadState *thr, uptr pc, volatile T *a, T v,
     return;
   }
   __sync_synchronize();
-  SyncVar *s = ctx->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, true);
+  SyncVar *s = ctx->metamap.GetOrCreateAndLock(thr, pc, (uptr)a, true);
   thr->fast_state.IncrementEpoch();
   // Can't increment epoch w/o writing to the trace as well.
   TraceAddEvent(thr, thr->fast_state, EventTypeMop, 0);
@@ -333,7 +297,7 @@ static T AtomicRMW(ThreadState *thr, uptr pc, volatile T *a, T v, morder mo) {
   MemoryWriteAtomic(thr, pc, (uptr)a, SizeLog<T>());
   SyncVar *s = 0;
   if (mo != mo_relaxed) {
-    s = ctx->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, true);
+    s = ctx->metamap.GetOrCreateAndLock(thr, pc, (uptr)a, true);
     thr->fast_state.IncrementEpoch();
     // Can't increment epoch w/o writing to the trace as well.
     TraceAddEvent(thr, thr->fast_state, EventTypeMop, 0);
@@ -432,6 +396,7 @@ static bool NoTsanAtomicCAS(volatile T *a, T *c, T v, morder mo, morder fmo) {
   return atomic_compare_exchange_strong(to_atomic(a), c, v, to_mo(mo));
 }
 
+#if __TSAN_HAS_INT128
 static bool NoTsanAtomicCAS(volatile a128 *a, a128 *c, a128 v,
     morder mo, morder fmo) {
   a128 old = *c;
@@ -441,10 +406,12 @@ static bool NoTsanAtomicCAS(volatile a128 *a, a128 *c, a128 v,
   *c = cur;
   return false;
 }
+#endif
 
 template<typename T>
-static bool NoTsanAtomicCAS(volatile T *a, T c, T v, morder mo, morder fmo) {
-  return NoTsanAtomicCAS(a, &c, v, mo, fmo);
+static T NoTsanAtomicCAS(volatile T *a, T c, T v, morder mo, morder fmo) {
+  NoTsanAtomicCAS(a, &c, v, mo, fmo);
+  return c;
 }
 
 template<typename T>
@@ -455,7 +422,7 @@ static bool AtomicCAS(ThreadState *thr, uptr pc,
   SyncVar *s = 0;
   bool write_lock = mo != mo_acquire && mo != mo_consume;
   if (mo != mo_relaxed) {
-    s = ctx->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, write_lock);
+    s = ctx->metamap.GetOrCreateAndLock(thr, pc, (uptr)a, write_lock);
     thr->fast_state.IncrementEpoch();
     // Can't increment epoch w/o writing to the trace as well.
     TraceAddEvent(thr, thr->fast_state, EventTypeMop, 0);
@@ -487,6 +454,7 @@ static T AtomicCAS(ThreadState *thr, uptr pc,
   return c;
 }
 
+#ifndef TSAN_GO
 static void NoTsanAtomicFence(morder mo) {
   __sync_synchronize();
 }
@@ -494,6 +462,56 @@ static void NoTsanAtomicFence(morder mo) {
 static void AtomicFence(ThreadState *thr, uptr pc, morder mo) {
   // FIXME(dvyukov): not implemented.
   __sync_synchronize();
+}
+#endif
+
+// Interface functions follow.
+#ifndef TSAN_GO
+
+// C/C++
+
+#define SCOPED_ATOMIC(func, ...) \
+    const uptr callpc = (uptr)__builtin_return_address(0); \
+    uptr pc = __sanitizer::StackTrace::GetCurrentPc(); \
+    mo = flags()->force_seq_cst_atomics ? (morder)mo_seq_cst : mo; \
+    ThreadState *const thr = cur_thread(); \
+    if (thr->ignore_interceptors) \
+      return NoTsanAtomic##func(__VA_ARGS__); \
+    AtomicStatInc(thr, sizeof(*a), mo, StatAtomic##func); \
+    ScopedAtomic sa(thr, callpc, a, mo, __func__); \
+    return Atomic##func(thr, pc, __VA_ARGS__); \
+/**/
+
+class ScopedAtomic {
+ public:
+  ScopedAtomic(ThreadState *thr, uptr pc, const volatile void *a,
+               morder mo, const char *func)
+      : thr_(thr) {
+    FuncEntry(thr_, pc);
+    DPrintf("#%d: %s(%p, %d)\n", thr_->tid, func, a, mo);
+  }
+  ~ScopedAtomic() {
+    ProcessPendingSignals(thr_);
+    FuncExit(thr_);
+  }
+ private:
+  ThreadState *thr_;
+};
+
+static void AtomicStatInc(ThreadState *thr, uptr size, morder mo, StatType t) {
+  StatInc(thr, StatAtomic);
+  StatInc(thr, t);
+  StatInc(thr, size == 1 ? StatAtomic1
+             : size == 2 ? StatAtomic2
+             : size == 4 ? StatAtomic4
+             : size == 8 ? StatAtomic8
+             :             StatAtomic16);
+  StatInc(thr, mo == mo_relaxed ? StatAtomicRelaxed
+             : mo == mo_consume ? StatAtomicConsume
+             : mo == mo_acquire ? StatAtomicAcquire
+             : mo == mo_release ? StatAtomicRelease
+             : mo == mo_acq_rel ? StatAtomicAcq_Rel
+             :                    StatAtomicSeq_Cst);
 }
 
 extern "C" {
@@ -846,3 +864,88 @@ SANITIZER_INTERFACE_ATTRIBUTE
 void __tsan_atomic_signal_fence(morder mo) {
 }
 }  // extern "C"
+
+#else  // #ifndef TSAN_GO
+
+// Go
+
+#define ATOMIC(func, ...) \
+    if (thr->ignore_sync) { \
+      NoTsanAtomic##func(__VA_ARGS__); \
+    } else { \
+      FuncEntry(thr, cpc); \
+      Atomic##func(thr, pc, __VA_ARGS__); \
+      FuncExit(thr); \
+    } \
+/**/
+
+#define ATOMIC_RET(func, ret, ...) \
+    if (thr->ignore_sync) { \
+      (ret) = NoTsanAtomic##func(__VA_ARGS__); \
+    } else { \
+      FuncEntry(thr, cpc); \
+      (ret) = Atomic##func(thr, pc, __VA_ARGS__); \
+      FuncExit(thr); \
+    } \
+/**/
+
+extern "C" {
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic32_load(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(Load, *(a32*)(a+8), *(a32**)a, mo_acquire);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic64_load(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(Load, *(a64*)(a+8), *(a64**)a, mo_acquire);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic32_store(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC(Store, *(a32**)a, *(a32*)(a+8), mo_release);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic64_store(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC(Store, *(a64**)a, *(a64*)(a+8), mo_release);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic32_fetch_add(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(FetchAdd, *(a32*)(a+16), *(a32**)a, *(a32*)(a+8), mo_acq_rel);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic64_fetch_add(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(FetchAdd, *(a64*)(a+16), *(a64**)a, *(a64*)(a+8), mo_acq_rel);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic32_exchange(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(Exchange, *(a32*)(a+16), *(a32**)a, *(a32*)(a+8), mo_acq_rel);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic64_exchange(ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  ATOMIC_RET(Exchange, *(a64*)(a+16), *(a64**)a, *(a64*)(a+8), mo_acq_rel);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic32_compare_exchange(
+    ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  a32 cur = 0;
+  a32 cmp = *(a32*)(a+8);
+  ATOMIC_RET(CAS, cur, *(a32**)a, cmp, *(a32*)(a+12), mo_acq_rel, mo_acquire);
+  *(bool*)(a+16) = (cur == cmp);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_go_atomic64_compare_exchange(
+    ThreadState *thr, uptr cpc, uptr pc, u8 *a) {
+  a64 cur = 0;
+  a64 cmp = *(a64*)(a+8);
+  ATOMIC_RET(CAS, cur, *(a64**)a, cmp, *(a64*)(a+16), mo_acq_rel, mo_acquire);
+  *(bool*)(a+24) = (cur == cmp);
+}
+}  // extern "C"
+#endif  // #ifndef TSAN_GO

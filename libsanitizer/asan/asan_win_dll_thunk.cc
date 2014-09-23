@@ -1,4 +1,4 @@
-//===-- asan_dll_thunk.cc -------------------------------------------------===//
+//===-- asan_win_dll_thunk.cc ---------------------------------------------===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
@@ -18,9 +18,10 @@
 // Using #ifdef rather than relying on Makefiles etc.
 // simplifies the build procedure.
 #ifdef ASAN_DLL_THUNK
+#include "asan_init_version.h"
 #include "sanitizer_common/sanitizer_interception.h"
 
-// ----------------- Helper functions and macros --------------------- {{{1
+// ---------- Function interception helper functions and macros ----------- {{{1
 extern "C" {
 void *__stdcall GetModuleHandleA(const char *module_name);
 void *__stdcall GetProcAddress(void *module, const char *proc_name);
@@ -34,68 +35,143 @@ static void *getRealProcAddressOrDie(const char *name) {
   return ret;
 }
 
+// We need to intercept some functions (e.g. ASan interface, memory allocator --
+// let's call them "hooks") exported by the DLL thunk and forward the hooks to
+// the runtime in the main module.
+// However, we don't want to keep two lists of these hooks.
+// To avoid that, the list of hooks should be defined using the
+// INTERCEPT_WHEN_POSSIBLE macro. Then, all these hooks can be intercepted
+// at once by calling INTERCEPT_HOOKS().
+
+// Use macro+template magic to automatically generate the list of hooks.
+// Each hook at line LINE defines a template class with a static
+// FunctionInterceptor<LINE>::Execute() method intercepting the hook.
+// The default implementation of FunctionInterceptor<LINE> is to call
+// the Execute() method corresponding to the previous line.
+template<int LINE>
+struct FunctionInterceptor {
+  static void Execute() { FunctionInterceptor<LINE-1>::Execute(); }
+};
+
+// There shouldn't be any hooks with negative definition line number.
+template<>
+struct FunctionInterceptor<0> {
+  static void Execute() {}
+};
+
+#define INTERCEPT_WHEN_POSSIBLE(main_function, dll_function)                   \
+  template<> struct FunctionInterceptor<__LINE__> {                            \
+    static void Execute() {                                                    \
+      void *wrapper = getRealProcAddressOrDie(main_function);                  \
+      if (!__interception::OverrideFunction((uptr)dll_function,                \
+                                            (uptr)wrapper, 0))                 \
+        abort();                                                               \
+      FunctionInterceptor<__LINE__-1>::Execute();                              \
+    }                                                                          \
+  };
+
+// Special case of hooks -- ASan own interface functions.  Those are only called
+// after __asan_init, thus an empty implementation is sufficient.
+#define INTERFACE_FUNCTION(name)                                               \
+  extern "C" __declspec(noinline) void name() {                                \
+    volatile int prevent_icf = (__LINE__ << 8); (void)prevent_icf;             \
+    __debugbreak();                                                            \
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name)
+
+// INTERCEPT_HOOKS must be used after the last INTERCEPT_WHEN_POSSIBLE.
+#define INTERCEPT_HOOKS FunctionInterceptor<__LINE__>::Execute
+
+// We can't define our own version of strlen etc. because that would lead to
+// link-time or even type mismatch errors.  Instead, we can declare a function
+// just to be able to get its address.  Me may miss the first few calls to the
+// functions since it can be called before __asan_init, but that would lead to
+// false negatives in the startup code before user's global initializers, which
+// isn't a big deal.
+#define INTERCEPT_LIBRARY_FUNCTION(name)                                       \
+  extern "C" void name();                                                      \
+  INTERCEPT_WHEN_POSSIBLE(WRAPPER_NAME(name), name)
+
+// Disable compiler warnings that show up if we declare our own version
+// of a compiler intrinsic (e.g. strlen).
+#pragma warning(disable: 4391)
+#pragma warning(disable: 4392)
+
+static void InterceptHooks();
+// }}}
+
+// ---------- Function wrapping helpers ----------------------------------- {{{1
 #define WRAP_V_V(name)                                                         \
   extern "C" void name() {                                                     \
     typedef void (*fntype)();                                                  \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     fn();                                                                      \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_V_W(name)                                                         \
   extern "C" void name(void *arg) {                                            \
     typedef void (*fntype)(void *arg);                                         \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     fn(arg);                                                                   \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_V_WW(name)                                                        \
   extern "C" void name(void *arg1, void *arg2) {                               \
     typedef void (*fntype)(void *, void *);                                    \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     fn(arg1, arg2);                                                            \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_V_WWW(name)                                                       \
   extern "C" void name(void *arg1, void *arg2, void *arg3) {                   \
     typedef void *(*fntype)(void *, void *, void *);                           \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     fn(arg1, arg2, arg3);                                                      \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_V(name)                                                         \
   extern "C" void *name() {                                                    \
     typedef void *(*fntype)();                                                 \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn();                                                               \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_W(name)                                                         \
   extern "C" void *name(void *arg) {                                           \
     typedef void *(*fntype)(void *arg);                                        \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg);                                                            \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_WW(name)                                                        \
   extern "C" void *name(void *arg1, void *arg2) {                              \
     typedef void *(*fntype)(void *, void *);                                   \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg1, arg2);                                                     \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_WWW(name)                                                       \
   extern "C" void *name(void *arg1, void *arg2, void *arg3) {                  \
     typedef void *(*fntype)(void *, void *, void *);                           \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg1, arg2, arg3);                                               \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_WWWW(name)                                                      \
   extern "C" void *name(void *arg1, void *arg2, void *arg3, void *arg4) {      \
     typedef void *(*fntype)(void *, void *, void *, void *);                   \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg1, arg2, arg3, arg4);                                         \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_WWWWW(name)                                                     \
   extern "C" void *name(void *arg1, void *arg2, void *arg3, void *arg4,        \
@@ -103,7 +179,8 @@ static void *getRealProcAddressOrDie(const char *name) {
     typedef void *(*fntype)(void *, void *, void *, void *, void *);           \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg1, arg2, arg3, arg4, arg5);                                   \
-  }
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 
 #define WRAP_W_WWWWWW(name)                                                    \
   extern "C" void *name(void *arg1, void *arg2, void *arg3, void *arg4,        \
@@ -111,48 +188,8 @@ static void *getRealProcAddressOrDie(const char *name) {
     typedef void *(*fntype)(void *, void *, void *, void *, void *, void *);   \
     static fntype fn = (fntype)getRealProcAddressOrDie(#name);                 \
     return fn(arg1, arg2, arg3, arg4, arg5, arg6);                             \
-  }
-// }}}
-
-// --------- Interface interception helper functions and macros ----------- {{{1
-// We need to intercept the ASan interface exported by the DLL thunk and forward
-// all the functions to the runtime in the main module.
-// However, we don't want to keep two lists of interface functions.
-// To avoid that, the list of interface functions should be defined using the
-// INTERFACE_FUNCTION macro. Then, all the interface can be intercepted at once
-// by calling INTERCEPT_ASAN_INTERFACE().
-
-// Use macro+template magic to automatically generate the list of interface
-// functions.  Each interface function at line LINE defines a template class
-// with a static InterfaceInteceptor<LINE>::Execute() method intercepting the
-// function.  The default implementation of InterfaceInteceptor<LINE> is to call
-// the Execute() method corresponding to the previous line.
-template<int LINE>
-struct InterfaceInteceptor {
-  static void Execute() { InterfaceInteceptor<LINE-1>::Execute(); }
-};
-
-// There shouldn't be any interface function with negative line number.
-template<>
-struct InterfaceInteceptor<0> {
-  static void Execute() {}
-};
-
-#define INTERFACE_FUNCTION(name)                                               \
-  extern "C" void name() { __debugbreak(); }                                   \
-  template<> struct InterfaceInteceptor<__LINE__> {                            \
-    static void Execute() {                                                    \
-      void *wrapper = getRealProcAddressOrDie(#name);                          \
-      if (!__interception::OverrideFunction((uptr)name, (uptr)wrapper, 0))     \
-        abort();                                                               \
-      InterfaceInteceptor<__LINE__-1>::Execute();                              \
-    }                                                                          \
-  };
-
-// INTERCEPT_ASAN_INTERFACE must be used after the last INTERFACE_FUNCTION.
-#define INTERCEPT_ASAN_INTERFACE InterfaceInteceptor<__LINE__>::Execute
-
-static void InterceptASanInterface();
+  }                                                                            \
+  INTERCEPT_WHEN_POSSIBLE(#name, name);
 // }}}
 
 // ----------------- ASan own interface functions --------------------
@@ -165,17 +202,18 @@ extern "C" {
 
   // Manually wrap __asan_init as we need to initialize
   // __asan_option_detect_stack_use_after_return afterwards.
-  void __asan_init_v3() {
+  void __asan_init() {
     typedef void (*fntype)();
     static fntype fn = 0;
+    // __asan_init is expected to be called by only one thread.
     if (fn) return;
 
-    fn = (fntype)getRealProcAddressOrDie("__asan_init_v3");
+    fn = (fntype)getRealProcAddressOrDie(__asan_init_name);
     fn();
     __asan_option_detect_stack_use_after_return =
         (__asan_should_detect_stack_use_after_return() != 0);
 
-    InterceptASanInterface();
+    InterceptHooks();
   }
 }
 
@@ -195,6 +233,20 @@ INTERFACE_FUNCTION(__asan_report_load8)
 INTERFACE_FUNCTION(__asan_report_load16)
 INTERFACE_FUNCTION(__asan_report_load_n)
 
+INTERFACE_FUNCTION(__asan_store1)
+INTERFACE_FUNCTION(__asan_store2)
+INTERFACE_FUNCTION(__asan_store4)
+INTERFACE_FUNCTION(__asan_store8)
+INTERFACE_FUNCTION(__asan_store16)
+INTERFACE_FUNCTION(__asan_storeN)
+
+INTERFACE_FUNCTION(__asan_load1)
+INTERFACE_FUNCTION(__asan_load2)
+INTERFACE_FUNCTION(__asan_load4)
+INTERFACE_FUNCTION(__asan_load8)
+INTERFACE_FUNCTION(__asan_load16)
+INTERFACE_FUNCTION(__asan_loadN)
+
 INTERFACE_FUNCTION(__asan_memcpy);
 INTERFACE_FUNCTION(__asan_memset);
 INTERFACE_FUNCTION(__asan_memmove);
@@ -210,6 +262,9 @@ INTERFACE_FUNCTION(__asan_unpoison_stack_memory)
 
 INTERFACE_FUNCTION(__asan_poison_memory_region)
 INTERFACE_FUNCTION(__asan_unpoison_memory_region)
+
+INTERFACE_FUNCTION(__asan_address_is_poisoned)
+INTERFACE_FUNCTION(__asan_region_is_poisoned)
 
 INTERFACE_FUNCTION(__asan_get_current_fake_stack)
 INTERFACE_FUNCTION(__asan_addr_is_in_fake_stack)
@@ -237,6 +292,8 @@ INTERFACE_FUNCTION(__asan_stack_free_8)
 INTERFACE_FUNCTION(__asan_stack_free_9)
 INTERFACE_FUNCTION(__asan_stack_free_10)
 
+INTERFACE_FUNCTION(__sanitizer_cov_module_init)
+
 // TODO(timurrrr): Add more interface functions on the as-needed basis.
 
 // ----------------- Memory allocation functions ---------------------
@@ -263,8 +320,55 @@ WRAP_W_W(_expand_dbg)
 
 // TODO(timurrrr): Do we need to add _Crt* stuff here? (see asan_malloc_win.cc).
 
-void InterceptASanInterface() {
-  INTERCEPT_ASAN_INTERFACE();
+INTERCEPT_LIBRARY_FUNCTION(atoi);
+INTERCEPT_LIBRARY_FUNCTION(atol);
+INTERCEPT_LIBRARY_FUNCTION(_except_handler3);
+
+// _except_handler4 checks -GS cookie which is different for each module, so we
+// can't use INTERCEPT_LIBRARY_FUNCTION(_except_handler4).
+INTERCEPTOR(int, _except_handler4, void *a, void *b, void *c, void *d) {
+  __asan_handle_no_return();
+  return REAL(_except_handler4)(a, b, c, d);
 }
+
+INTERCEPT_LIBRARY_FUNCTION(frexp);
+INTERCEPT_LIBRARY_FUNCTION(longjmp);
+INTERCEPT_LIBRARY_FUNCTION(memchr);
+INTERCEPT_LIBRARY_FUNCTION(memcmp);
+INTERCEPT_LIBRARY_FUNCTION(memcpy);
+INTERCEPT_LIBRARY_FUNCTION(memmove);
+INTERCEPT_LIBRARY_FUNCTION(memset);
+INTERCEPT_LIBRARY_FUNCTION(strcat);  // NOLINT
+INTERCEPT_LIBRARY_FUNCTION(strchr);
+INTERCEPT_LIBRARY_FUNCTION(strcmp);
+INTERCEPT_LIBRARY_FUNCTION(strcpy);  // NOLINT
+INTERCEPT_LIBRARY_FUNCTION(strlen);
+INTERCEPT_LIBRARY_FUNCTION(strncat);
+INTERCEPT_LIBRARY_FUNCTION(strncmp);
+INTERCEPT_LIBRARY_FUNCTION(strncpy);
+INTERCEPT_LIBRARY_FUNCTION(strnlen);
+INTERCEPT_LIBRARY_FUNCTION(strtol);
+INTERCEPT_LIBRARY_FUNCTION(wcslen);
+
+// Must be after all the interceptor declarations due to the way INTERCEPT_HOOKS
+// is defined.
+void InterceptHooks() {
+  INTERCEPT_HOOKS();
+  INTERCEPT_FUNCTION(_except_handler4);
+}
+
+// We want to call __asan_init before C/C++ initializers/constructors are
+// executed, otherwise functions like memset might be invoked.
+// For some strange reason, merely linking in asan_preinit.cc doesn't work
+// as the callback is never called...  Is link.exe doing something too smart?
+
+// In DLLs, the callbacks are expected to return 0,
+// otherwise CRT initialization fails.
+static int call_asan_init() {
+  __asan_init();
+  return 0;
+}
+#pragma section(".CRT$XIB", long, read)  // NOLINT
+__declspec(allocate(".CRT$XIB")) int (*__asan_preinit)() = call_asan_init;
 
 #endif // ASAN_DLL_THUNK
