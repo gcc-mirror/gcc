@@ -1,3 +1,9 @@
+2014-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR bootstrap/63280
+	* target-globals.c (target_globals::~target_globals): Fix location
+	of ira_int destruction.
+
 2014-09-23  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.md (return): New.
