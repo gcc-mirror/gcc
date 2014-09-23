@@ -386,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
       // Non-standard constructor that does not call init()
-      basic_ostream(basic_iostream<_CharT, _Traits>*) { }
+      basic_ostream(basic_iostream<_CharT, _Traits>&) { }
 
       basic_ostream(const basic_ostream&) = delete;
 

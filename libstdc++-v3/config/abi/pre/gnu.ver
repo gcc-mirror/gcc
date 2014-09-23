@@ -1413,9 +1413,9 @@ GLIBCXX_3.4.21 {
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEaSEOS3_;
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEC[12]EOS3_;
 
-    # basic_ostream<C,T>::basic_ostream(basic_iostream<C,T>*)
-    _ZNSoC[12]EPSd;
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEEC[12]EPSt14basic_iostreamIwS1_E;
+    # basic_ostream<C,T>::basic_ostream(basic_iostream<C,T>&)
+    _ZNSoC[12]ERSd;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEEC[12]ERSt14basic_iostreamIwS1_E;
 
 } GLIBCXX_3.4.20;
 
