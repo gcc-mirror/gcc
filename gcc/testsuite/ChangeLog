@@ -1,5 +1,16 @@
 2014-09-20  Mark Wielaard  <mjw@redhat.com>
 
+	* gcc.dg/guality/const-volatile.c (i): Mark as used.
+	(ci): Likewise.
+	(pci): Likewise.
+	(pvi): Likewise.
+	(pcvi): Likewise.
+	(cip): Likewise.
+	(foo): Likewise.
+	(cfoo): Likewise.
+
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
 	* lib/gcc-gdb-test.exp (gdb-test): Transform gdb types "short int"
 	and "long int" to plain "short" and "long".
 	* gcc.dg/guality/const-volatile.c (struct bar): New struct
