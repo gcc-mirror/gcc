@@ -1,3 +1,11 @@
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Transform gdb types "short int"
+	and "long int" to plain "short" and "long".
+	* gcc.dg/guality/const-volatile.c (struct bar): New struct
+	containing short and long long fields.
+	(bar): New variable to test the type.
+
 2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62155
