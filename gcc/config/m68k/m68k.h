@@ -280,14 +280,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_DOUBLE_TYPE_SIZE			\
   ((TARGET_COLDFIRE || TARGET_FIDOA) ? 64 : 80)
 
-/* We need to know the size of long double at compile-time in libgcc2.  */
-
-#if defined(__mcoldfire__) || defined(__mfido__)
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
-#endif
-
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
    instructions, we get proper intermediate rounding, otherwise we
    get extended precision results.  */

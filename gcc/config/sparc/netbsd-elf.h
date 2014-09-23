@@ -168,12 +168,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
-#if defined(__arch64__) || defined(__LONG_DOUBLE_128__)
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-#endif
-
 #undef  CC1_SPEC
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC CC1_SPEC32
@@ -195,9 +189,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-#undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC64
 
@@ -209,9 +200,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-
-#undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC32

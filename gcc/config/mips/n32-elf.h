@@ -28,8 +28,3 @@ along with GCC; see the file COPYING3.  If not see
 /* Force n32 to use 64-bit long doubles.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-
-#ifdef IN_LIBGCC2
-#undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-#endif
