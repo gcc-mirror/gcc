@@ -1,3 +1,8 @@
+2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* combine.c (simplify_shift_const_1): Allow commuting (ashiftrt (xor))
+	when result_mode == shift_mode.
+
 2014-09-23  Kostya Serebryany  <kcc@google.com>
 
 	Update to match the changed asan API.

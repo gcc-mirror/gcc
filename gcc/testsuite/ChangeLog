@@ -1,3 +1,12 @@
+2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/combine_ashiftrt_1.c: New test.
+	* gcc.dg/combine_ashiftrt_2.c: Likewise.
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Remove scan-assembler
+	workarounds for cmge.
+	* gcc.target/aarch64/simd/int_comparisons_1.c: Likewise; also check for
+	absence of mvn.
+
 2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61857
