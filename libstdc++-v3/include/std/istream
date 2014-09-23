@@ -863,7 +863,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_iostream(const basic_iostream&) = delete;
 
       basic_iostream(basic_iostream&& __rhs)
-      : __istream_type(std::move(__rhs)), __ostream_type(this)
+      : __istream_type(std::move(__rhs)), __ostream_type(*this)
       { }
 
       // 27.7.3.3 Assign/swap

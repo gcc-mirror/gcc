@@ -1,3 +1,12 @@
+2014-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Adjust basic_ostream exports.
+	* include/std/istream (basic_iostream(basic_iostream&&)): Pass *this
+	to ostream constructor.
+	* include/std/ostream (basic_ostream(basic_iostream*)): Change to take
+	parameter by reference, to avoid ambiguity.
+	* testsuite/27_io/basic_ostream/cons/char/null.cc: New.
+
 2014-09-22  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/Makefile.am (%/site.exp): Add @.
