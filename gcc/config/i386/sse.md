@@ -5525,18 +5525,18 @@
    (set_attr "mode" "V16SF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
-(define_insn "avx_unpckhps256"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
+(define_insn "avx_unpckhps256<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
 	(vec_select:V8SF
 	  (vec_concat:V16SF
-	    (match_operand:V8SF 1 "register_operand" "x")
-	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V8SF 1 "register_operand" "v")
+	    (match_operand:V8SF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
-  "TARGET_AVX"
-  "vunpckhps\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vunpckhps\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
@@ -5575,18 +5575,18 @@
   operands[4] = gen_reg_rtx (V8SFmode);
 })
 
-(define_insn "vec_interleave_highv4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
+(define_insn "vec_interleave_highv4sf<mask_name>"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,v")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "register_operand" "0,x")
-	    (match_operand:V4SF 2 "nonimmediate_operand" "xm,xm"))
+	    (match_operand:V4SF 1 "register_operand" "0,v")
+	    (match_operand:V4SF 2 "nonimmediate_operand" "xm,vm"))
 	  (parallel [(const_int 2) (const_int 6)
 		     (const_int 3) (const_int 7)])))]
-  "TARGET_SSE"
+  "TARGET_SSE && <mask_avx512vl_condition>"
   "@
    unpckhps\t{%2, %0|%0, %2}
-   vunpckhps\t{%2, %1, %0|%0, %1, %2}"
+   vunpckhps\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix" "orig,vex")
@@ -5613,21 +5613,38 @@
    (set_attr "mode" "V16SF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
-(define_insn "avx_unpcklps256"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
+(define_insn "avx_unpcklps256<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
 	(vec_select:V8SF
 	  (vec_concat:V16SF
-	    (match_operand:V8SF 1 "register_operand" "x")
-	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V8SF 1 "register_operand" "v")
+	    (match_operand:V8SF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 0) (const_int 8)
 		     (const_int 1) (const_int 9)
 		     (const_int 4) (const_int 12)
 		     (const_int 5) (const_int 13)])))]
-  "TARGET_AVX"
-  "vunpcklps\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vunpcklps\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
+
+(define_insn "unpcklps128_mask"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(vec_merge:V4SF
+	  (vec_select:V4SF
+	    (vec_concat:V8SF
+	      (match_operand:V4SF 1 "register_operand" "v")
+	      (match_operand:V4SF 2 "nonimmediate_operand" "vm"))
+	    (parallel [(const_int 0) (const_int 4)
+		      (const_int 1) (const_int 5)]))
+	  (match_operand:V4SF 3 "vector_move_operand" "0C")
+	  (match_operand:QI 4 "register_operand" "Yk")))]
+  "TARGET_AVX512VL"
+  "vunpcklps\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V4SF")])
 
 (define_expand "vec_interleave_lowv8sf"
   [(set (match_dup 3)
