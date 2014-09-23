@@ -8,6 +8,21 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_expand "avx_shufps256<mask_expand4_name>"): Add masking.
+	(define_insn "avx_shufps256_1<mask_name>"): Ditto.
+	(define_expand "sse_shufps<mask_expand4_name>"): Ditto.
+	(define_insn "sse_shufps_v4sf_mask"): New.
+
+2014-09-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_insn "avx_unpckhps256<mask_name>"): Add masking.
 	(define_insn "vec_interleave_highv4sf<mask_name>"): Ditto.
 	(define_insn "avx_unpcklps256<mask_name>"): Ditto.
