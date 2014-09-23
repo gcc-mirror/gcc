@@ -1,3 +1,8 @@
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62155
+	* g++.dg/cpp0x/lambda/lambda-62155.C: New.
+
 2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62219
