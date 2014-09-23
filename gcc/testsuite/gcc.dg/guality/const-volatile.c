@@ -28,6 +28,16 @@ struct foo
   const signed char csc;
 };
 
+struct bar
+{
+  short s;
+  const short cs;
+  volatile short vs;
+  const volatile short cvs;
+  volatile long long vll;
+};
+
+struct bar bar __attribute__((used));
 struct foo foo;
 const struct foo cfoo;
 volatile struct foo vfoo;
@@ -72,6 +82,7 @@ main (int argc, char **argv)
 
 /* { dg-final { gdb-test 50 "type:cvip" "int * const volatile" } } */
 
+/* { dg-final { gdb-test 50 "type:bar" "struct bar { short s; const short cs; volatile short vs; const volatile short cvs; volatile long long vll; }" } } */
 /* { dg-final { gdb-test 50 "type:foo" "struct foo { const long cli; const signed char csc; }" } } */
 /* { dg-final { gdb-test 50 "type:cfoo" "const struct foo { const long cli; const signed char csc; }" } } */
 /* { dg-final { gdb-test 50 "type:vfoo" "volatile struct foo { const long cli; const signed char csc; }" } } */
