@@ -1,3 +1,7 @@
+2014-09-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure: Regenerate.
+
 2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* combine.c (simplify_shift_const_1): Allow commuting (ashiftrt (xor))
