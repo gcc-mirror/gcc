@@ -1,3 +1,8 @@
+2014-09-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* shrink-wrap.c (try_shrink_wrapping): Check PIC_OFFSET_TABLE_REGNUM not
+	be INVALID_REGNUM.
+
 2014-09-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure: Regenerate.
