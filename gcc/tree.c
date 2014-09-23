@@ -2831,16 +2831,6 @@ bit_position (const_tree field)
   return bit_from_pos (DECL_FIELD_OFFSET (field),
 		       DECL_FIELD_BIT_OFFSET (field));
 }
-
-/* Likewise, but return as an integer.  It must be representable in
-   that way (since it could be a signed value, we don't have the
-   option of returning -1 like int_size_in_byte can.  */
-
-HOST_WIDE_INT
-int_bit_position (const_tree field)
-{
-  return tree_to_shwi (bit_position (field));
-}
 
 /* Return the byte position of FIELD, in bytes from the start of the record.
    This is a tree of type sizetype.  */

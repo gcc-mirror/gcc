@@ -3877,7 +3877,6 @@ extern tree size_in_bytes (const_tree);
 extern HOST_WIDE_INT int_size_in_bytes (const_tree);
 extern HOST_WIDE_INT max_int_size_in_bytes (const_tree);
 extern tree bit_position (const_tree);
-extern HOST_WIDE_INT int_bit_position (const_tree);
 extern tree byte_position (const_tree);
 extern HOST_WIDE_INT int_byte_position (const_tree);
 
@@ -4797,4 +4796,14 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_low_bound (tree);
 
+/* Like bit_position, but return as an integer.  It must be representable in
+   that way (since it could be a signed value, we don't have the
+   option of returning -1 like int_size_in_byte can.  */
+
+inline HOST_WIDE_INT
+int_bit_position (const_tree field)
+{ 
+  return (wi::lshift (wi::to_offset (DECL_FIELD_OFFSET (field)), BITS_PER_UNIT_LOG)
+	  + wi::to_offset (DECL_FIELD_BIT_OFFSET (field))).to_shwi ();
+}
 #endif  /* GCC_TREE_H  */
