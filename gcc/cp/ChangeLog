@@ -1,3 +1,10 @@
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61857
+	* parser.c (cp_parser_skip_to_closing_square_bracket,
+	cp_parser_array_designator_p): New.
+	(cp_parser_initializer_list): Use the latter.
+
 2014-09-22  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_non_static_data_member): In diagnostic, give
