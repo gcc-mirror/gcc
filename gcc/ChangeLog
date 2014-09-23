@@ -1,3 +1,9 @@
+2014-09-23  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* common/config/aarch64/aarch64-common.c:
+	(default_options aarch_option_optimization_table):
+	Default to -fsched-pressure.
+
 2014-09-23  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* cfgcleanup.c (try_optimize_cfg): Do not remove label
