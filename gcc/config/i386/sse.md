@@ -7081,16 +7081,16 @@
    (set_attr "mode" "V8DF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
-(define_insn "avx_unpckhpd256"
-  [(set (match_operand:V4DF 0 "register_operand" "=x")
+(define_insn "avx_unpckhpd256<mask_name>"
+  [(set (match_operand:V4DF 0 "register_operand" "=v")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
-	    (match_operand:V4DF 1 "register_operand" "x")
-	    (match_operand:V4DF 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V4DF 1 "register_operand" "v")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))]
-  "TARGET_AVX"
-  "vunpckhpd\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vunpckhpd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
@@ -7123,6 +7123,22 @@
   operands[4] = gen_reg_rtx (V4DFmode);
 })
 
+
+(define_insn "avx512vl_unpckhpd128_mask"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(vec_merge:V2DF
+	  (vec_select:V2DF
+	    (vec_concat:V4DF
+	      (match_operand:V2DF 1 "register_operand" "v")
+	      (match_operand:V2DF 2 "nonimmediate_operand" "vm"))
+	    (parallel [(const_int 1) (const_int 3)]))
+	  (match_operand:V2DF 3 "vector_move_operand" "0C")
+	  (match_operand:QI 4 "register_operand" "Yk")))]
+  "TARGET_AVX512VL"
+  "vunpckhpd\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V2DF")])
 
 (define_expand "vec_interleave_highv2df"
   [(set (match_operand:V2DF 0 "register_operand")
@@ -7204,7 +7220,7 @@
    (set_attr "mode" "V8DF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
-(define_expand "avx_movddup256"
+(define_expand "avx_movddup256<mask_name>"
   [(set (match_operand:V4DF 0 "register_operand")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
@@ -7212,9 +7228,9 @@
 	    (match_dup 1))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
-  "TARGET_AVX")
+  "TARGET_AVX && <mask_avx512vl_condition>")
 
-(define_expand "avx_unpcklpd256"
+(define_expand "avx_unpcklpd256<mask_name>"
   [(set (match_operand:V4DF 0 "register_operand")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
@@ -7222,20 +7238,20 @@
 	    (match_operand:V4DF 2 "nonimmediate_operand"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
-  "TARGET_AVX")
+  "TARGET_AVX && <mask_avx512vl_condition>")
 
-(define_insn "*avx_unpcklpd256"
-  [(set (match_operand:V4DF 0 "register_operand"         "=x,x")
+(define_insn "*avx_unpcklpd256<mask_name>"
+  [(set (match_operand:V4DF 0 "register_operand"         "=v,v")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
-	    (match_operand:V4DF 1 "nonimmediate_operand" " x,m")
-	    (match_operand:V4DF 2 "nonimmediate_operand" "xm,1"))
+	    (match_operand:V4DF 1 "nonimmediate_operand" " v,m")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "vm,1"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && <mask_avx512vl_condition>"
   "@
-   vunpcklpd\t{%2, %1, %0|%0, %1, %2}
-   vmovddup\t{%1, %0|%0, %1}"
+   vunpcklpd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
+   vmovddup\t{%1, %0<mask_operand3>|%0<mask_operand3>, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
@@ -7267,6 +7283,22 @@
   operands[3] = gen_reg_rtx (V4DFmode);
   operands[4] = gen_reg_rtx (V4DFmode);
 })
+
+(define_insn "avx512vl_unpcklpd128_mask"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(vec_merge:V2DF
+	  (vec_select:V2DF
+	    (vec_concat:V4DF
+	      (match_operand:V2DF 1 "register_operand" "v")
+	      (match_operand:V2DF 2 "nonimmediate_operand" "vm"))
+	    (parallel [(const_int 0) (const_int 2)]))
+	  (match_operand:V2DF 3 "vector_move_operand" "0C")
+	  (match_operand:QI 4 "register_operand" "Yk")))]
+  "TARGET_AVX512VL"
+  "vunpcklpd\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V2DF")])
 
 (define_expand "vec_interleave_lowv2df"
   [(set (match_operand:V2DF 0 "register_operand")

@@ -1,3 +1,20 @@
+2014-09-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_insn "avx_unpckhpd256<mask_name>"): Add masking.
+	(define_insn "avx512vl_unpckhpd128_mask"): New.
+	(define_expand "avx_movddup256<mask_name>"): Add masking.
+	(define_expand "avx_unpcklpd256<mask_name>"): Ditto.
+	(define_insn "*avx_unpcklpd256<mask_name>"): Ditto.
+	(define_insn "avx512vl_unpcklpd128_mask"): New.
+
 2014-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
