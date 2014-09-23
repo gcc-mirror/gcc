@@ -7790,7 +7790,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V8DF")])
 
-(define_expand "avx_shufpd256"
+(define_expand "avx_shufpd256<mask_expand4_name>"
   [(match_operand:V4DF 0 "register_operand")
    (match_operand:V4DF 1 "register_operand")
    (match_operand:V4DF 2 "nonimmediate_operand")
@@ -7798,25 +7798,28 @@
   "TARGET_AVX"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_avx_shufpd256_1 (operands[0], operands[1], operands[2],
-				   GEN_INT (mask & 1),
-				   GEN_INT (mask & 2 ? 5 : 4),
-				   GEN_INT (mask & 4 ? 3 : 2),
-				   GEN_INT (mask & 8 ? 7 : 6)));
+  emit_insn (gen_avx_shufpd256_1<mask_expand4_name> (operands[0],
+						     operands[1],
+						     operands[2],
+						     GEN_INT (mask & 1),
+						     GEN_INT (mask & 2 ? 5 : 4),
+						     GEN_INT (mask & 4 ? 3 : 2),
+						     GEN_INT (mask & 8 ? 7 : 6)
+						     <mask_expand4_args>));
   DONE;
 })
 
-(define_insn "avx_shufpd256_1"
-  [(set (match_operand:V4DF 0 "register_operand" "=x")
+(define_insn "avx_shufpd256_1<mask_name>"
+  [(set (match_operand:V4DF 0 "register_operand" "=v")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
-	    (match_operand:V4DF 1 "register_operand" "x")
-	    (match_operand:V4DF 2 "nonimmediate_operand" "xm"))
+	    (match_operand:V4DF 1 "register_operand" "v")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(match_operand 3 "const_0_to_1_operand")
 		     (match_operand 4 "const_4_to_5_operand")
 		     (match_operand 5 "const_2_to_3_operand")
 		     (match_operand 6 "const_6_to_7_operand")])))]
-  "TARGET_AVX"
+  "TARGET_AVX && <mask_avx512vl_condition>"
 {
   int mask;
   mask = INTVAL (operands[3]);
@@ -7825,14 +7828,14 @@
   mask |= (INTVAL (operands[6]) - 6) << 3;
   operands[3] = GEN_INT (mask);
 
-  return "vshufpd\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+  return "vshufpd\t{%3, %2, %1, %0<mask_operand7>|%0<mask_operand7>, %1, %2, %3}";
 }
   [(set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_expand "sse2_shufpd"
+(define_expand "sse2_shufpd<mask_expand4_name>"
   [(match_operand:V2DF 0 "register_operand")
    (match_operand:V2DF 1 "register_operand")
    (match_operand:V2DF 2 "nonimmediate_operand")
@@ -7840,11 +7843,37 @@
   "TARGET_SSE2"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_sse2_shufpd_v2df (operands[0], operands[1], operands[2],
-				GEN_INT (mask & 1),
-				GEN_INT (mask & 2 ? 3 : 2)));
+  emit_insn (gen_sse2_shufpd_v2df<mask_expand4_name> (operands[0], operands[1],
+						      operands[2], GEN_INT (mask & 1),
+						      GEN_INT (mask & 2 ? 3 : 2)
+						      <mask_expand4_args>));
   DONE;
 })
+
+(define_insn "sse2_shufpd_v2df_mask"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+    (vec_merge:V2DF
+	  (vec_select:V2DF
+	    (vec_concat:V4DF
+	      (match_operand:V2DF 1 "register_operand" "v")
+	      (match_operand:V2DF 2 "nonimmediate_operand" "vm"))
+	    (parallel [(match_operand 3 "const_0_to_1_operand")
+		           (match_operand 4 "const_2_to_3_operand")]))
+      (match_operand:V2DF 5 "vector_move_operand" "0C")
+      (match_operand:QI 6 "register_operand" "Yk")))]
+  "TARGET_AVX512VL"
+{
+  int mask;
+  mask = INTVAL (operands[3]);
+  mask |= (INTVAL (operands[4]) - 2) << 1;
+  operands[3] = GEN_INT (mask);
+
+  return "vshufpd\t{%3, %2, %1, %0%{%6%}%N5|%0%{6%}%N5, %1, %2, %3}";
+}
+  [(set_attr "type" "sseshuf")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V2DF")])
 
 ;; punpcklqdq and punpckhqdq are shorter than shufpd.
 (define_insn "avx2_interleave_highv4di<mask_name>"
