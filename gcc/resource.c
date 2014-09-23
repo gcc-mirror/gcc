@@ -386,7 +386,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
       if (! include_delayed_effects
-	  && INSN_REFERENCES_ARE_DELAYED (x))
+	  && INSN_REFERENCES_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
 #endif
 
@@ -690,7 +690,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
 #ifdef INSN_SETS_ARE_DELAYED
       if (mark_type != MARK_SRC_DEST_CALL
-	  && INSN_SETS_ARE_DELAYED (x))
+	  && INSN_SETS_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
 #endif
 
@@ -931,8 +931,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	 information, we can get it from there unless the insn at the
 	 start of the basic block has been deleted.  */
       if (tinfo && tinfo->block != -1
-	  && ! INSN_DELETED_P (BB_HEAD (BASIC_BLOCK_FOR_FN (cfun,
-							    tinfo->block))))
+	  && ! BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, tinfo->block))->deleted ())
 	b = tinfo->block;
     }
 

@@ -1143,7 +1143,9 @@ scratch_operand (rtx op, enum machine_mode mode)
 
   return (GET_CODE (op) == SCRATCH
 	  || (REG_P (op)
-	      && (lra_in_progress || REGNO (op) < FIRST_PSEUDO_REGISTER)));
+	      && (lra_in_progress
+		  || (REGNO (op) < FIRST_PSEUDO_REGISTER
+		      && REGNO_REG_CLASS (REGNO (op)) != NO_REGS))));
 }
 
 /* Return 1 if OP is a valid immediate operand for mode MODE.
@@ -2058,7 +2060,7 @@ mode_dependent_address_p (rtx addr, addr_space_t addrspace)
    depend on things like the values of operands.  */
 
 alternative_mask
-get_enabled_alternatives (rtx insn)
+get_enabled_alternatives (rtx_insn *insn)
 {
   /* Quick exit for asms and for targets that don't use the "enabled"
      attribute.  */

@@ -7869,6 +7869,19 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
       *no_add_attrs = true;
     }
 
+  if (decl_in_symtab_p (*node))
+    {
+      struct symtab_node *n = symtab_node::get (decl);
+      if (n && n->refuse_visibility_changes)
+	{
+	  if (is_alias)
+	    error ("%+D declared alias after being used", decl);
+	  else
+	    error ("%+D declared ifunc after being used", decl);
+	}
+    }
+
+
   return NULL_TREE;
 }
 
@@ -7943,6 +7956,13 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	 and that isn't supported; and because it wants to add it to
 	 the list of weak decls, which isn't helpful.  */
       DECL_WEAK (*node) = 1;
+    }
+
+  if (decl_in_symtab_p (*node))
+    {
+      struct symtab_node *n = symtab_node::get (*node);
+      if (n && n->refuse_visibility_changes)
+	error ("%+D declared weakref after being used", *node);
     }
 
   return NULL_TREE;

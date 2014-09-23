@@ -8134,8 +8134,9 @@ output_internal_insn_code_evaluation (const char *insn_name,
 	       insn_code_name, COLLAPSE_NDFA_VALUE_NAME);
     }
   fprintf (output_file, "\n  else\n    {\n");
-  fprintf (output_file, "      %s = %s (%s);\n", insn_code_name,
-	   DFA_INSN_CODE_FUNC_NAME, insn_name);
+  fprintf (output_file,
+	   "      %s = %s (as_a <rtx_insn *> (%s));\n",
+	   insn_code_name, DFA_INSN_CODE_FUNC_NAME, insn_name);
   fprintf (output_file, "      if (%s > %s)\n        return %d;\n    }\n",
 	   insn_code_name, ADVANCE_CYCLE_VALUE_NAME, code);
 }
@@ -8165,7 +8166,7 @@ dfa_insn_code_enlarge (int uid)\n\
 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
 	   DFA_INSN_CODES_VARIABLE_NAME);
   fprintf (output_file, "\
-static inline int\n%s (rtx %s)\n\
+static inline int\n%s (rtx_insn *%s)\n\
 {\n\
   int uid = INSN_UID (%s);\n\
   int %s;\n\n",
@@ -8208,7 +8209,7 @@ output_trans_func (void)
 static void
 output_min_issue_delay_func (void)
 {
-  fprintf (output_file, "int\n%s (%s %s, rtx %s)\n",
+  fprintf (output_file, "int\n%s (%s %s, rtx_insn *%s)\n",
 	   MIN_ISSUE_DELAY_FUNC_NAME, STATE_TYPE_NAME, STATE_NAME,
 	   INSN_PARAMETER_NAME);
   fprintf (output_file, "{\n  int %s;\n", INTERNAL_INSN_CODE_NAME);
@@ -8360,10 +8361,10 @@ output_internal_insn_latency_func (void)
   decl_t decl;
   struct bypass_decl *bypass;
 
-  fprintf (output_file, "static int\n%s (int %s ATTRIBUTE_UNUSED,\n\tint %s ATTRIBUTE_UNUSED,\n\trtx_insn *%s ATTRIBUTE_UNUSED,\n\trtx_insn *%s ATTRIBUTE_UNUSED)\n",
+  fprintf (output_file, "static int\n%s (int %s ATTRIBUTE_UNUSED,\n\tint %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED)\n",
 	   INTERNAL_INSN_LATENCY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
-	   INTERNAL_INSN2_CODE_NAME, INSN_PARAMETER_NAME,
-	   INSN2_PARAMETER_NAME);
+	   INTERNAL_INSN2_CODE_NAME, "insn_or_const0",
+	   "insn2_or_const0");
   fprintf (output_file, "{\n");
 
   if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
@@ -8375,6 +8376,28 @@ output_internal_insn_latency_func (void)
   fprintf (output_file, "  if (%s >= %s || %s >= %s)\n    return 0;\n",
 	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME,
 	   INTERNAL_INSN2_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME);
+
+  /* We've now rejected the case that
+       INTERNAL_INSN_CODE_NAME >= ADVANCE_CYCLE_VALUE_NAME
+     i.e. that
+       insn_code >= DFA__ADVANCE_CYCLE,
+     and similarly for insn2_code.  */
+  fprintf (output_file,
+	   "  /* Within output_internal_insn_code_evaluation, the generated\n"
+	   "     code sets \"code\" to NDFA__COLLAPSE for const0_rtx, and\n"
+	   "     NDFA__COLLAPSE > DFA__ADVANCE_CYCLE.  Hence we can't be\n"
+	   "     dealing with const0_rtx instances at this point.  */\n");
+  if (collapse_flag)
+    fprintf (output_file,
+	     "  gcc_assert (NDFA__COLLAPSE > DFA__ADVANCE_CYCLE);\n");
+  fprintf (output_file,
+	   ("  gcc_assert (insn_or_const0 != const0_rtx);\n"
+	    "  rtx_insn *%s ATTRIBUTE_UNUSED = safe_as_a <rtx_insn *> (insn_or_const0);\n"),
+	   INSN_PARAMETER_NAME);
+  fprintf (output_file,
+	   ("  gcc_assert (insn2_or_const0 != const0_rtx);\n"
+	    "  rtx_insn *%s ATTRIBUTE_UNUSED = safe_as_a <rtx_insn *> (insn2_or_const0);\n"),
+	   INSN2_PARAMETER_NAME);
 
   fprintf (output_file, "  switch (%s)\n    {\n", INTERNAL_INSN_CODE_NAME);
   for (i = 0; i < description->decls_num; i++)
@@ -8477,7 +8500,7 @@ output_internal_maximal_insn_latency_func (void)
 static void
 output_insn_latency_func (void)
 {
-  fprintf (output_file, "int\n%s (rtx_insn *%s, rtx_insn *%s)\n",
+  fprintf (output_file, "int\n%s (rtx %s, rtx %s)\n",
 	   INSN_LATENCY_FUNC_NAME, INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME);
   fprintf (output_file, "{\n  int %s, %s;\n",
 	   INTERNAL_INSN_CODE_NAME, INTERNAL_INSN2_CODE_NAME);
@@ -8514,7 +8537,7 @@ output_print_reservation_func (void)
   int i, j;
 
   fprintf (output_file,
-	   "void\n%s (FILE *%s, rtx %s ATTRIBUTE_UNUSED)\n{\n",
+	   "void\n%s (FILE *%s, rtx_insn *%s ATTRIBUTE_UNUSED)\n{\n",
            PRINT_RESERVATION_FUNC_NAME, FILE_PARAMETER_NAME,
            INSN_PARAMETER_NAME);
 
@@ -8680,7 +8703,7 @@ static void
 output_insn_has_dfa_reservation_p (void)
 {
   fprintf (output_file,
-	   "bool\n%s (rtx %s ATTRIBUTE_UNUSED)\n{\n",
+	   "bool\n%s (rtx_insn *%s ATTRIBUTE_UNUSED)\n{\n",
            INSN_HAS_DFA_RESERVATION_P_FUNC_NAME,
            INSN_PARAMETER_NAME);
 

@@ -1667,9 +1667,11 @@ build_check_stmt (location_t loc, tree base, tree len,
   if (end_instrumented)
     flags |= ASAN_CHECK_END_INSTRUMENTED;
 
-  g = gimple_build_call_internal (IFN_ASAN_CHECK, 3,
+  g = gimple_build_call_internal (IFN_ASAN_CHECK, 4,
 				  build_int_cst (integer_type_node, flags),
-				  base, len);
+				  base, len,
+				  build_int_cst (integer_type_node,
+						 align / BITS_PER_UNIT));
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -2072,6 +2074,7 @@ transform_statements (void)
 	  if (has_stmt_been_instrumented_p (s))
 	    gsi_next (&i);
 	  else if (gimple_assign_single_p (s)
+		   && !gimple_clobber_p (s)
 		   && maybe_instrument_assignment (&i))
 	    /*  Nothing to do as maybe_instrument_assignment advanced
 		the iterator I.  */;
@@ -2465,6 +2468,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 
   tree base = gimple_call_arg (g, 1);
   tree len = gimple_call_arg (g, 2);
+  HOST_WIDE_INT align = tree_to_shwi (gimple_call_arg (g, 3));
 
   HOST_WIDE_INT size_in_bytes
     = is_scalar_access && tree_fits_shwi_p (len) ? tree_to_shwi (len) : -1;
@@ -2575,7 +2579,10 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	  gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
 	  gimple_seq seq = NULL;
 	  gimple_seq_add_stmt (&seq, shadow_test);
-	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, base_addr, 7));
+	  /* Aligned (>= 8 bytes) access do not need & 7.  */
+	  if (align < 8)
+	    gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
+						     base_addr, 7));
 	  gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
 						      gimple_seq_last (seq)));
 	  if (real_size_in_bytes > 1)

@@ -1,9 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-std=f2003" }
+! { dg-compile-aux-modules "test_common_binding_labels_2.f03" }
 !
-!
-! This file depends on the module test_common_binding_labels_2.  That module
-! must be compiled first and not be removed until after this test.
 module test_common_binding_labels_2_main
   use, intrinsic :: iso_c_binding, only: c_double, c_int
   implicit none

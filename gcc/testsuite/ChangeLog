@@ -1,3 +1,248 @@
+2014-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63328
+	* c-c++-common/gomp/pr63328.c: New test.
+
+2014-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/63270
+	* g++.dg/lto/pr63270_0.C: New test.
+	* g++.dg/lto/pr63270_1.C: New test.
+
+2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-final): Remove check
+	for call_value_rex64_ms_sysv.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-final): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-final): Remove check
+	for call_rex64_ms_sysv.
+
+2014-09-20  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_atomic_5.f90: New
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/61825
+	* gcc.dg/tree-ssa/nonzero-1.c: Require error to be output.
+
+2014-09-19  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: Only run on x86 Linux.
+	* gcc.dg/pg.c: Dito.
+	* gcc.target/i386/fentry-override.c: Exclude for PIC.
+	* gcc.target/i386/fentry.c: Dito.
+
+2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61998
+	* g++.dg/warn/Wsuggest-final-2.C: New testcase.
+
+2014-09-19  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/63152
+	* gfortran.dg/auto_char_dummy_array_1.f90: Fix undefined behavior.
+	* gfortran.dg/pr63152.f90: New test.
+
+2014-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58328
+	* g++.dg/cpp0x/nsdmi10.C: New.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/ssp-3.c: New.
+	* gcc.dg/ssp-4.c: Likewise.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/dfp-conv1.c: New testcase.
+
+2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* c-c++-common/asan/red-align-1.c: New test.
+	* c-c++-common/asan/red-align-2.c: New test.
+
+2014-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr61053.c: Updated for x32.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/63285
+	* gcc.target/i386/pr63285.c: New test.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/61360
+	* gcc.target/i386/pr61360.c: New.
+
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/62017
+	* g++.dg/asan/pr62017.C: New test.
+
+	PR testsuite/63292
+	* gcc.dg/vect/pr59594.c (b): Increase size to N + 2 elements.
+
+2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62232
+	* g++.dg/cpp0x/Wdtor1.C: New.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-exact-underflow.c: New test.
+
+2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61745
+	* g++.dg/template/pr61745.C: New.
+
+2014-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61854
+	* gcc.dg/cpp/pr61854-1.c: New test.
+	* gcc.dg/cpp/pr61854-2.c: New test.
+	* gcc.dg/cpp/pr61854-3.c: New test.
+	* gcc.dg/cpp/pr61854-3.h: New test.
+	* gcc.dg/cpp/pr61854-4.c: New test.
+	* gcc.dg/cpp/pr61854-5.c: New test.
+	* gcc.dg/cpp/pr61854-6.c: New test.
+	* gcc.dg/cpp/pr61854-7.c: New test.
+	* gcc.dg/cpp/pr61854-c90.c: New test.
+	* gcc.dg/cpp/pr61854-c94.c: New test.
+
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* gcc.dg/pr63284.c: New test.
+
+	* ada/acats/run_all.sh: Redirect mkdir stderr to /dev/null.
+
+2014-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63241
+	* g++.dg/cpp0x/constexpr-63241.C: New.
+
+2014-09-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* gfortran.dg/filename_null.f90: New test.
+
+2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pg-override.c: Fix a typo.
+
+2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pg.c: Fix a typo.
+
+2014-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63258
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-33.c: Remove scan
+	for "vectorization not profitable".
+
+2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-os-support.h: Remove magic number.
+
+2014-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56408
+	* gfortran.dg/dg.exp (dg-compile-aux-modules): Workaround
+	missing nexted dg-test call support in dejaGNU 1.4.4.
+
+2014-09-15  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: New test.
+	* gcc.dg/pg.c: New test.
+	* gcc.target/i386/fentry-override.c: New test.
+	* gcc.target/i386/fentry.c: New test.
+
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56408
+	* gfortran.dg/dg.exp (gfortran_test_path, gfortran_aux_module_flags):
+	New global vars.
+	(dg-compile-aux-modules): New procedure.
+	* gfortran.dg/binding_label_tests_10.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_10_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_11.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_11_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_13.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_13_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_26a.f90: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_26b.f90: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/class_45a.f03: Remove keep-modules.
+	* gfortran.dg/class_45b.f03: Use dg-compile-aux-modules
+	and cleanup-modules.
+	* gfortran.dg/class_4a.f03: Use dg-do link, use
+	dg-additional-sources and cleanup-modules, remove keep-modules
+	and update comment.
+	* gfortran.dg/class_4b.f03: Don't compile anywhere, remove
+	keep-modules, adjust comment.
+	* gfortran.dg/class_4c.f03: Don't compile anywhere, remove
+	dg-additional-sources and cleanup-modules.
+	* gfortran.dg/coarray_29_1.f90: Remove keep-modules and
+	associated comment.
+	* gfortran.dg/coarray_29_2.f90: Use dg-compile-aux-modules,
+	remove comment.
+	* gfortran.dg/test_common_binding_labels_2.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/test_common_binding_labels_3.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/whole_file_28.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_29.f90: Remove comment, use
+	dg-compile-aux-modules.
+	* gfortran.dg/whole_file_30.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_31.f90: Remove comment, use
+	dg-compile-aux-modules.
+
+	* lib/gcc-defs.exp (gcc_parallel_test_run_p,
+	gcc_parallel_test_enable): New procedures.  If
+	GCC_RUNTEST_PARALLELIZE_DIR is set in environment, override
+	runtest_file_p to invoke also gcc_parallel_test_run_p.
+	* g++.dg/guality/guality.exp (check_guality): Save/restore
+	test_counts array around the body of the procedure.
+	* gcc.dg/guality/guality.exp (check_guality): Likewise.
+	* g++.dg/plugin/plugin.exp: Run all the tests serially
+	by the first parallel runtest encountering it.
+	* gcc.dg/plugin/plugin.exp: Likewise.
+	* gcc.misc-tests/matrix1.exp: Likewise.
+	* gcc.misc-tests/dhry.exp: Likewise.
+	* gcc.misc-tests/acker1.exp: Likewise.
+	* gcc.misc-tests/linkage.exp: Likewise.
+	* gcc.misc-tests/mg.exp: Likewise.
+	* gcc.misc-tests/mg-2.exp: Likewise.
+	* gcc.misc-tests/sort2.exp: Likewise.
+	* gcc.misc-tests/sieve.exp: Likewise.
+	* gcc.misc-tests/options.exp: Likewise.
+	* gcc.misc-tests/help.exp: Likewise.
+	* go.test/go-test.exp (go-gc-tests): Use
+	gcc_parallel_test_enable {0, 1} around all handling of
+	each test.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Likewise.
+	* ada/acats/run_all.sh: Parallelize using mkdir inside of
+	a shared directory.  Avoid forking and expr uses if
+	shell supports $(()).
+
+2014-09-14  David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/vdup_lane_2.c (force_simd): Emit simd mov.
+
 2014-09-14  James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/61407

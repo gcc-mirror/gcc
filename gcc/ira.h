@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IRA_H
+#define GCC_IRA_H
+
 /* True when we use LRA instead of reload pass for the current
    function.  */
 extern bool ira_use_lra_p;
@@ -195,3 +198,5 @@ extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx);
 extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
+
+#endif /* GCC_IRA_H */

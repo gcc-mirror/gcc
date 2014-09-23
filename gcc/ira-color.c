@@ -135,7 +135,7 @@ struct allocno_color_data
      and all its subnodes in the tree (forest) of allocno hard
      register nodes (see comments above).  */
   int hard_regs_subnodes_start;
-  /* The length of the previous array. */
+  /* The length of the previous array.  */
   int hard_regs_subnodes_num;
   /* Records about updating allocno hard reg costs from copies.  If
      the allocno did not get expected hard register, these records are
@@ -1864,7 +1864,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   if (best_hard_regno >= 0)
     update_costs_from_copies (a, true, ! retry_p);
   ira_assert (ALLOCNO_CLASS (a) == aclass);
-  /* We don't need updated costs anymore: */
+  /* We don't need updated costs anymore.  */
   ira_free_allocno_updated_costs (a);
   return best_hard_regno >= 0;
 }
@@ -3069,7 +3069,7 @@ color_allocnos (void)
 
 
 
-/* Output information about the loop given by its LOOP_TREE_NODE. */
+/* Output information about the loop given by its LOOP_TREE_NODE.  */
 static void
 print_loop_title (ira_loop_tree_node_t loop_tree_node)
 {
@@ -3205,7 +3205,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 	    if (hard_regno >= 0)
 	      update_costs_from_copies (subloop_allocno, true, true);
-	    /* We don't need updated costs anymore: */
+	    /* We don't need updated costs anymore.  */
 	    ira_free_allocno_updated_costs (subloop_allocno);
 	  }
       }
@@ -3249,7 +3249,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
 		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore: */
+		  /* We don't need updated costs anymore.  */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
 	      continue;
@@ -3265,7 +3265,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
 		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore: */
+		  /* We don't need updated costs anymore.  */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
 	    }
@@ -4067,6 +4067,8 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
   ira_allocno_iterator ai;
   ira_allocno_t *spilled_coalesced_allocnos;
 
+  ira_assert (! ira_use_lra_p);
+
   /* Set up allocnos can be coalesced.  */
   coloring_allocno_bitmap = ira_allocate_bitmap ();
   for (i = 0; i < n; i++)
@@ -4416,6 +4418,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
   bitmap_iterator bi;
   struct ira_spilled_reg_stack_slot *slot = NULL;
 
+  ira_assert (! ira_use_lra_p);
+
   ira_assert (inherent_size == PSEUDO_REGNO_BYTES (regno)
 	      && inherent_size <= total_size
 	      && ALLOCNO_HARD_REGNO (allocno) < 0);
@@ -4527,6 +4531,8 @@ ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
   struct ira_spilled_reg_stack_slot *slot;
   int slot_num;
   ira_allocno_t allocno;
+
+  ira_assert (! ira_use_lra_p);
 
   ira_assert (PSEUDO_REGNO_BYTES (regno) <= total_size);
   allocno = ira_regno_allocno_map[regno];

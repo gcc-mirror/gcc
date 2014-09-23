@@ -1,3 +1,13 @@
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __LIBGCC_*_FUNC_EXT__
+	for supported floating-point modes.
+
+2014-09-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wpsabi): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not handle here.
+
 2014-09-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define __LIBGCC_HAS_%s_MODE__

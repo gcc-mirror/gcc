@@ -402,7 +402,7 @@ extern struct target_recog *this_target_recog;
 #define this_target_recog (&default_target_recog)
 #endif
 
-alternative_mask get_enabled_alternatives (rtx);
+alternative_mask get_enabled_alternatives (rtx_insn *);
 
 void recog_init ();
 #endif

@@ -1205,8 +1205,8 @@ sh_print_operand (FILE *stream, rtx x, int code)
 
     case '.':
       if (final_sequence
-	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
-	  && get_attr_length (XVECEXP (final_sequence, 0, 1)))
+	  && ! INSN_ANNULLED_BRANCH_P (final_sequence->insn (0))
+	  && get_attr_length (final_sequence->insn (1)))
 	fprintf (stream, ASSEMBLER_DIALECT ? "/s" : ".s");
       break;
     case ',':
@@ -2645,7 +2645,7 @@ print_slot (rtx_sequence *seq)
 {
   final_scan_insn (seq->insn (1), asm_out_file, optimize, 1, NULL);
 
-  INSN_DELETED_P (seq->insn (1)) = 1;
+  seq->insn (1)->set_deleted ();
 }
 
 const char *
@@ -2754,7 +2754,7 @@ static int lf = 100;
 
 /* Output code for ordinary branches.  */
 const char *
-output_branch (int logic, rtx insn, rtx *operands)
+output_branch (int logic, rtx_insn *insn, rtx *operands)
 {
   switch (get_attr_length (insn))
     {
@@ -2777,8 +2777,8 @@ output_branch (int logic, rtx insn, rtx *operands)
 	     place for it is after the label.  final will do that by default.  */
 
 	  if (final_sequence
-	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
-	      && get_attr_length (XVECEXP (final_sequence, 0, 1)))
+	      && ! INSN_ANNULLED_BRANCH_P (final_sequence->insn (0))
+	      && get_attr_length (final_sequence->insn (1)))
 	    {
 	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
 	                   ASSEMBLER_DIALECT ? "/" : ".", label);
@@ -5368,7 +5368,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
    register is not used anywhere else in this instruction - except as the
    destination of a set, return this register; else, return 0.  */
 rtx
-sfunc_uses_reg (rtx insn)
+sfunc_uses_reg (rtx_insn *insn)
 {
   int i;
   rtx pattern, part, reg_part, reg;
@@ -5572,7 +5572,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
   rtx dest;
 
   /* First, check if we already have an instruction that satisfies our need.  */
-  if (prev && NONJUMP_INSN_P (prev) && ! INSN_DELETED_P (prev))
+  if (prev && NONJUMP_INSN_P (prev) && ! prev->deleted ())
     {
       if (INSN_CODE (prev) == CODE_FOR_indirect_jump_scratch)
 	return prev;
@@ -5615,7 +5615,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 	{
 	  enum rtx_code code;
 
-	  if (INSN_DELETED_P (scan))
+	  if (scan->deleted ())
 	    continue;
 	  code = GET_CODE (scan);
 	  if (code == CODE_LABEL || code == JUMP_INSN)
@@ -5634,7 +5634,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 	{
 	  enum rtx_code code;
 
-	  if (INSN_DELETED_P (scan))
+	  if (scan->deleted ())
 	    continue;
 	  code = GET_CODE (scan);
 	  if (INSN_P (scan))
@@ -6495,7 +6495,7 @@ split_branches (rtx_insn *first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (! INSN_P (insn))
       continue;
-    else if (INSN_DELETED_P (insn))
+    else if (insn->deleted ())
       {
 	/* Shorten_branches would split this instruction again,
 	   so transform it into a note.  */
@@ -10704,7 +10704,7 @@ mark_constant_pool_use (rtx x)
     }
 
   for (rtx insn = LABEL_REFS (lab); insn; insn = LABEL_REFS (insn))
-    INSN_DELETED_P (insn) = 1;
+    as_a<rtx_insn *> (insn)->set_deleted ();
 
   /* Mark constants in a window.  */
   for (insn = NEXT_INSN (as_a <rtx_insn *> (x)); insn; insn = NEXT_INSN (insn))

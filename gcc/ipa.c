@@ -538,6 +538,11 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		fprintf (file, " %s", vnode->name ());
 	      changed = true;
 	    }
+	  /* Keep body if it may be useful for constant folding.  */
+	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
+	    vnode->remove_initializer ();
+	  else
+	    DECL_INITIAL (vnode->decl) = init;
 	  vnode->body_removed = true;
 	  vnode->definition = false;
 	  vnode->analyzed = false;
@@ -545,11 +550,6 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
 	  vnode->remove_from_same_comdat_group ();
 
-	  /* Keep body if it may be useful for constant folding.  */
-	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
-	    vnode->remove_initializer ();
-	  else
-	    DECL_INITIAL (vnode->decl) = init;
 	  vnode->remove_all_references ();
 	}
       else

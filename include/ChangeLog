@@ -1,3 +1,7 @@
+2014-09-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* longlong.h: Add __udiv_w_sdiv prototype.
+
 2014-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR lto/61334

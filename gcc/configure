@@ -12072,6 +12072,22 @@ elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir
 fi
 
+if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+  if test "x$with_headers" != x; then
+    target_header_dir=$with_headers
+  elif test "x$with_sysroot" = x; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
+  elif test "x$with_build_sysroot" != "x"; then
+    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
+  elif test "x$with_sysroot" = xyes; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+  else
+    target_header_dir="${with_sysroot}${native_system_header_dir}"
+  fi
+else
+  target_header_dir=${native_system_header_dir}
+fi
+
 # If this is a cross-compiler that does not
 # have its own set of headers then define
 # inhibit_libc
@@ -12083,7 +12099,7 @@ fi
 : ${inhibit_libc=false}
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
-     { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
+     { test "x$with_headers" = xno || test ! -f "$target_header_dir/stdio.h"; } ; then
        inhibit_libc=true
 fi
 
@@ -18236,7 +18252,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18239 "configure"
+#line 18255 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18342,7 +18358,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18345 "configure"
+#line 18361 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26828,22 +26844,6 @@ cat >>confdefs.h <<_ACEOF
 #define PREFIX_INCLUDE_DIR "$prefix/include"
 _ACEOF
 
-fi
-
-if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-  if test "x$with_headers" != x; then
-    target_header_dir=$with_headers
-  elif test "x$with_sysroot" = x; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
-  elif test "x$with_build_sysroot" != "x"; then
-    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
-  elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
-  else
-    target_header_dir="${with_sysroot}${native_system_header_dir}"
-  fi
-else
-  target_header_dir=${native_system_header_dir}
 fi
 
 # Determine the version of glibc, if any, used on the target.

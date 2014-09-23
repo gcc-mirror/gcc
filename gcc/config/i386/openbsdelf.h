@@ -111,6 +111,3 @@ along with GCC; see the file COPYING3.  If not see
 #define OBSD_HAS_CORRECT_SPECS
 
 #define HAVE_ENABLE_EXECUTE_STACK
-
-/* Put all *tf routines in libgcc.  */
-#define LIBGCC2_TF_CEXT q

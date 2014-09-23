@@ -5168,7 +5168,6 @@ gnat_write_global_declarations (void)
       TREE_STATIC (dummy_global) = 1;
       node = varpool_node::get_create (dummy_global);
       node->definition = 1;
-      node->definition = 1;
       node->force_output = 1;
 
       while (!types_used_by_cur_var_decl->is_empty ())

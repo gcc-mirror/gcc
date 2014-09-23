@@ -81,7 +81,7 @@ extern rtx pa_return_addr_rtx (int, rtx);
 extern enum direction pa_function_arg_padding (enum machine_mode, const_tree);
 #endif
 #endif /* ARGS_SIZE_RTX */
-extern int pa_insn_refs_are_delayed (rtx);
+extern int pa_insn_refs_are_delayed (rtx_insn *);
 extern rtx pa_get_deferred_plabel (rtx);
 #endif /* RTX_CODE */
 

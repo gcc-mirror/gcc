@@ -773,7 +773,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     }
 
   /* Check SYNC IMAGES(imageset) for valid image index.
-     FIXME: Add a check for image-set arrays. */
+     FIXME: Add a check for image-set arrays.  */
   if (code->expr1 && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
       && code->expr1->rank == 0)
     {
@@ -1106,7 +1106,7 @@ gfc_trans_arithmetic_if (gfc_code * code)
 }
 
 
-/* Translate a CRITICAL block. */
+/* Translate a CRITICAL block.  */
 tree
 gfc_trans_critical (gfc_code *code)
 {
@@ -1431,7 +1431,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   gfc_add_modify_loc (loc, pblock, dovar,
 		      fold_convert (TREE_TYPE(dovar), from));
 
-  /* Save value for do-tinkering checking. */
+  /* Save value for do-tinkering checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
@@ -1460,7 +1460,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
       gfc_add_expr_to_block (&body, tmp);
     }
 
-  /* Check whether someone has modified the loop variable. */
+  /* Check whether someone has modified the loop variable.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
@@ -1634,7 +1634,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (&block, dovar, from);
 
-  /* Save value for do-tinkering checking. */
+  /* Save value for do-tinkering checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
@@ -1743,7 +1743,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       gfc_add_expr_to_block (&body, tmp);
     }
 
-  /* Check whether someone has modified the loop variable. */
+  /* Check whether someone has modified the loop variable.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node, dovar,
@@ -4176,7 +4176,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
   stmtblock_t body;
   tree index, maskexpr;
 
-  /* A defined assignment. */
+  /* A defined assignment.  */
   if (cnext && cnext->resolved_sym)
     return gfc_trans_call (cnext, true, mask, count1, invert);
 

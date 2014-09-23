@@ -391,7 +391,7 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 
 
 /* Build a result expression for transformational intrinsics,
-   depending on DIM. */
+   depending on DIM.  */
 
 static gfc_expr *
 transformational_result (gfc_expr *array, gfc_expr *dim, bt type,
@@ -501,7 +501,8 @@ simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *
      REAL, PARAMETER :: array(n, m) = ...
      REAL, PARAMETER :: s(n) = PROD(array, DIM=1)
 
-  where OP == gfc_multiply(). The result might be post processed using post_op. */
+   where OP == gfc_multiply().
+   The result might be post processed using post_op.  */
 
 static gfc_expr *
 simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *dim,
@@ -6096,7 +6097,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   else
     /* FIXME: Returning here avoids a regression in array_simplify_1.f90.
        Replace NULL with gcc_unreachable() after implementing
-       gfc_simplify_cshift(). */
+       gfc_simplify_cshift().  */
     return NULL;
 
   if (source->ts.type == BT_CHARACTER)

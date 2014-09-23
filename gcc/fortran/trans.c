@@ -1085,7 +1085,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
     }
 
   /* If we have a class array, we need go back to the class
-     container. */
+     container.  */
   expr = gfc_copy_expr (expr2);
 
   if (expr->ref && expr->ref->next && !expr->ref->next->next

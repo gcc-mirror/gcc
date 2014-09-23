@@ -610,7 +610,7 @@ gfc_init_kinds (void)
 
   /* We only have two character kinds: ASCII and UCS-4.
      ASCII corresponds to a 8-bit integer type, if one is available.
-     UCS-4 corresponds to a 32-bit integer type, if one is available. */
+     UCS-4 corresponds to a 32-bit integer type, if one is available.  */
   i_index = 0;
   if ((kind = get_int_kind_from_width (8)) > 0)
     {

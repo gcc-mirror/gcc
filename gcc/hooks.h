@@ -36,7 +36,8 @@ extern bool hook_bool_mode_const_rtx_false (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_rtx_false (enum machine_mode, rtx);
 extern bool hook_bool_mode_rtx_true (enum machine_mode, rtx);
-extern bool hook_bool_const_rtx_const_rtx_true (const_rtx, const_rtx);
+extern bool hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *,
+							  const rtx_insn *);
 extern bool hook_bool_mode_uhwi_false (enum machine_mode,
 				       unsigned HOST_WIDE_INT);
 extern bool hook_bool_tree_false (tree);
@@ -81,7 +82,7 @@ extern int hook_int_const_tree_0 (const_tree);
 extern int hook_int_const_tree_const_tree_1 (const_tree, const_tree);
 extern int hook_int_rtx_0 (rtx);
 extern int hook_int_rtx_1 (rtx);
-extern int hook_int_rtx_unreachable (rtx);
+extern int hook_int_rtx_insn_unreachable (rtx_insn *);
 extern int hook_int_rtx_bool_0 (rtx, bool);
 extern int hook_int_rtx_mode_as_bool_0 (rtx, enum machine_mode, addr_space_t,
 					bool);

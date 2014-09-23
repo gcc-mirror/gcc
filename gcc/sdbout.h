@@ -17,5 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_SDBOUT_H
+#define GCC_SDBOUT_H
+
 extern void sdbout_symbol (tree, int);
 extern void sdbout_types (tree);
+
+#endif /* GCC_SDBOUT_H */

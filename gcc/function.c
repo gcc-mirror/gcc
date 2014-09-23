@@ -1933,7 +1933,7 @@ instantiate_virtual_regs (void)
 	else
 	  instantiate_virtual_regs_in_insn (insn);
 
-	if (INSN_DELETED_P (insn))
+	if (insn->deleted ())
 	  continue;
 
 	instantiate_virtual_regs_in_rtx (&REG_NOTES (insn));
@@ -4566,6 +4566,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
       cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
+
+      if (!profile_flag && !flag_instrument_function_entry_exit)
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl) = 1;
     }
 }
 

@@ -22,8 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    that the compiler can keep track of where this file is included.  This
    is e.g. used to avoid including this file in front-end specific files.  */
 #ifndef GCC_EXCEPT_H
-#  define GCC_EXCEPT_H
-#endif
+#define GCC_EXCEPT_H
 
 #include "hash-map.h"
 #include "hashtab.h"
@@ -333,3 +332,5 @@ ehr_next (eh_region r, eh_region start)
   for ((R) = (FN)->eh->region_tree; (R) != NULL; (R) = ehr_next (R, NULL))
 
 #define FOR_ALL_EH_REGION(R) FOR_ALL_EH_REGION_FN (R, cfun)
+
+#endif

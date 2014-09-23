@@ -4143,7 +4143,7 @@ update_total_code_bytes (unsigned int nbytes)
 static void
 pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  rtx insn = get_last_insn ();
+  rtx_insn *insn = get_last_insn ();
   bool extra_nop;
 
   /* pa_expand_epilogue does the dirty work now.  We just need
@@ -4161,7 +4161,7 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
   /* If it is a sequence, then look inside.  */
   if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = XVECEXP (PATTERN (insn), 0, 0);
+    insn = as_a <rtx_sequence *> (PATTERN (insn))-> insn (0);
 
   /* If insn is a CALL_INSN, then it must be a call to a volatile
      function (otherwise there would be epilogue insns).  */
@@ -6325,7 +6325,7 @@ pa_scalar_mode_supported_p (enum machine_mode mode)
    it branches into the delay slot.  Otherwise, return FALSE.  */
 
 static bool
-branch_to_delay_slot_p (rtx insn)
+branch_to_delay_slot_p (rtx_insn *insn)
 {
   rtx jump_insn;
 
@@ -6359,7 +6359,7 @@ branch_to_delay_slot_p (rtx insn)
    when this occurs.  */
 
 static bool
-branch_needs_nop_p (rtx insn)
+branch_needs_nop_p (rtx_insn *insn)
 {
   rtx jump_insn;
 
@@ -6387,7 +6387,7 @@ branch_needs_nop_p (rtx insn)
    to a mis-predicted branch when we fall through.  */
 
 static bool
-use_skip_p (rtx insn)
+use_skip_p (rtx_insn *insn)
 {
   rtx jump_insn = next_active_insn (JUMP_LABEL (insn));
 
@@ -9255,7 +9255,7 @@ pa_can_combine_p (rtx_insn *new_rtx, rtx_insn *anchor, rtx_insn *floater,
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
 int
-pa_insn_refs_are_delayed (rtx insn)
+pa_insn_refs_are_delayed (rtx_insn *insn)
 {
   return ((NONJUMP_INSN_P (insn)
 	   && GET_CODE (PATTERN (insn)) != SEQUENCE
@@ -9298,6 +9298,12 @@ pa_function_value (const_tree valtype,
       || TREE_CODE (valtype) == COMPLEX_TYPE
       || TREE_CODE (valtype) == VECTOR_TYPE)
     {
+      HOST_WIDE_INT valsize = int_size_in_bytes (valtype);
+
+      /* Handle aggregates that fit exactly in a word or double word.  */
+      if ((valsize & (UNITS_PER_WORD - 1)) == 0)
+	return gen_rtx_REG (TYPE_MODE (valtype), 28);
+
       if (TARGET_64BIT)
 	{
           /* Aggregates with a size less than or equal to 128 bits are
@@ -9306,7 +9312,7 @@ pa_function_value (const_tree valtype,
 	     memory.  */
 	  rtx loc[2];
 	  int i, offset = 0;
-	  int ub = int_size_in_bytes (valtype) <= UNITS_PER_WORD ? 1 : 2;
+	  int ub = valsize <= UNITS_PER_WORD ? 1 : 2;
 
 	  for (i = 0; i < ub; i++)
 	    {
@@ -9318,7 +9324,7 @@ pa_function_value (const_tree valtype,
 
 	  return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
 	}
-      else if (int_size_in_bytes (valtype) > UNITS_PER_WORD)
+      else if (valsize > UNITS_PER_WORD)
 	{
 	  /* Aggregates 5 to 8 bytes in size are returned in general
 	     registers r28-r29 in the same manner as other non

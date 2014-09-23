@@ -3178,7 +3178,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	      && TREE_CODE (TREE_TYPE (se->expr)) == POINTER_TYPE)
 	    se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
 
-	  /* Use the actual tree type and not the wrapped coarray. */
+	  /* Use the actual tree type and not the wrapped coarray.  */
 	  if (!se->want_pointer)
 	    se->expr = fold_convert (TYPE_MAIN_VARIANT (TREE_TYPE (se->expr)),
 				     se->expr);
@@ -5300,7 +5300,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  /* Update the array descriptors. */
+  /* Update the array descriptors.  */
   if (dimension)
     gfc_conv_descriptor_offset_set (&set_descriptor_block, se->expr, offset);
 
@@ -8478,7 +8478,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   size2 = gfc_evaluate_now (size2, &fblock);
 
   /* Realloc expression.  Note that the scalarizer uses desc.data
-     in the array reference - (*desc.data)[<element>]. */
+     in the array reference - (*desc.data)[<element>].  */
   gfc_init_block (&realloc_block);
 
   if ((expr1->ts.type == BT_DERIVED)
@@ -8647,8 +8647,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       type = TREE_TYPE (descriptor);
     }
 
-  /* NULLIFY the data pointer.  */
-  if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save)
+  /* NULLIFY the data pointer, for non-saved allocatables.  */
+  if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save && sym->attr.allocatable)
     gfc_conv_descriptor_data_set (&init, descriptor, null_pointer_node);
 
   gfc_restore_backend_locus (&loc);

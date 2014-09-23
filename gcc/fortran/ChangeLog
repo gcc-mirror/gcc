@@ -1,3 +1,81 @@
+2014-09-21  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* resolve.c (resolve_fl_procedure): Remove duplicated lines.
+
+2014-09-20  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Fix issue with
+	generating temporary for value argument.
+
+2014-09-20  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	* trans-expr.c (gfc_reset_vptr): Fix comment whitespace.
+	(gfc_conv_class_to_class): Likewise.
+	(gfc_conv_procedure_call): Likewise.
+	(arrayfunc_assign_needs_temporary): Likewise.
+	(realloc_lhs_loop_for_fcn_call): Likewise.
+	(gfc_trans_assignment_1): Likewise.
+	* trans-array.c (gfc_conv_array_ref): Likewise.
+	(gfc_array_allocate): Likewise.
+	(gfc_alloc_allocatable_for_assignment): Likewise.
+	* symbol.c (generate_isocbinding_symbol): Likewise.
+	* class.c (finalization_scalarizer): Likewise.
+	(finalizer_insert_packed_call): Likewise.
+	(generate_finalization_wrapper): Likewise.
+	(find_intrinsic_vtab): Likewise.
+	* decl.c (gfc_match_import): Likewise.
+	(match_procedure_decl): Likewise.
+	(gfc_match_subroutine): Likewise.
+	(gfc_match_bind_c): Likewise.
+	(gfc_match_volatile): Likewise.
+	* trans-common.c (create_common): Likewise.
+	* error.c (gfc_diagnostic_starter): Likewise.
+	* trans-stmt.c (gfc_trans_sync): Likewise.
+	(gfc_trans_critical): Likewise.
+	(gfc_trans_simple_do): Likewise.
+	(gfc_trans_do): Likewise.
+	(gfc_trans_where_assign): Likewise.
+	* expr.c (gfc_is_simply_contiguous): Likewise.
+	* module.c (unquote_string): Likewise.
+	* trans.c (gfc_add_finalizer_call): Likewise.
+	* trans-types.c (gfc_init_kinds): Likewise.
+	* scanner.c (preprocessor_line): Likewise.
+	* gfortranspec.c (lang_specific_driver): Likewise.
+	* frontend-passes.c (create_var): Likewise.
+	(cfe_expr_0): Likewise.
+	* resolve.c (check_host_association): Likewise.
+	(gfc_resolve_code): Likewise.
+	(resolve_fl_derived0): Likewise.
+	(resolve_symbol): Likewise.
+	* f95-lang.c (poplevel): Likewise.
+	* trans-decl.c (create_main_function): Likewise.
+	* trans-io.c (transfer_expr): Likewise.
+	* arith.c (gfc_arith_divide): Likewise.
+	* parse.c (resolve_all_program_units): Likewise.
+	* check.c (gfc_check_rank): Likewise.
+	(gfc_check_sizeof): Likewise.
+	(is_c_interoperable): Likewise.
+	* dependency.c (gfc_dep_difference): Likewise.
+	* primary.c (gfc_match_rvalue): Likewise.
+	* trans-intrinsic.c (conv_intrinsic_system_clock): Likewise.
+	(conv_isocbinding_subroutine): Likewise.
+	* options.c (gfc_post_options): Likewise.
+	(gfc_handle_fpe_option): Likewise.
+	(gfc_get_option_string): Likewise.
+	* simplify.c (simplify_transformation_to_scalar): Likewise.
+	(gfc_simplify_spread): Likewise.
+
+2014-09-19  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/63152
+	* trans-array.c (gfc_trans_deferred_array): Only nullify allocatables.
+
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (check_gfortran_parallelize): Change to just an upper
+	bound number.
+
 2014-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/63252

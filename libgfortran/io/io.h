@@ -567,8 +567,9 @@ typedef struct gfc_unit
   array_loop_spec *ls;
   int rank;
 
-  int file_len;
-  char *file;
+  /* Name of the file at the time OPEN was executed, as a
+     null-terminated C string.  */
+  char *filename;
 
   /* The format hash table.  */
   struct format_hash_entry format_hash_table[FORMAT_HASH_SIZE];

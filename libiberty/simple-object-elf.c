@@ -698,6 +698,7 @@ simple_object_elf_write_ehdr (simple_object_write *sobj, int descriptor,
   unsigned char buf[sizeof (Elf64_External_Ehdr)];
   simple_object_write_section *section;
   unsigned int shnum;
+  unsigned int shstrndx;
 
   fns = attrs->type_functions;
   cl = attrs->ei_class;
@@ -743,9 +744,17 @@ simple_object_elf_write_ehdr (simple_object_write *sobj, int descriptor,
 		 (cl == ELFCLASS32
 		  ? sizeof (Elf32_External_Shdr)
 		  : sizeof (Elf64_External_Shdr)));
-  ELF_SET_FIELD (fns, cl, Ehdr, buf, e_shnum, Elf_Half, shnum);
-  ELF_SET_FIELD (fns, cl, Ehdr, buf, e_shstrndx, Elf_Half,
-		 shnum == 0 ? 0 : shnum - 1);
+  ELF_SET_FIELD (fns, cl, Ehdr, buf, e_shnum, Elf_Half,
+		 shnum >= SHN_LORESERVE ? 0 : shnum);
+  if (shnum == 0)
+    shstrndx = 0;
+  else
+    {
+      shstrndx = shnum - 1;
+      if (shstrndx >= SHN_LORESERVE)
+	shstrndx = SHN_XINDEX;
+    }
+  ELF_SET_FIELD (fns, cl, Ehdr, buf, e_shstrndx, Elf_Half, shstrndx);
 
   return simple_object_internal_write (descriptor, 0, buf, ehdr_size,
 				       errmsg, err);
@@ -758,8 +767,8 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
 			      off_t offset, unsigned int sh_name,
 			      unsigned int sh_type, unsigned int sh_flags,
 			      unsigned int sh_offset, unsigned int sh_size,
-			      unsigned int sh_addralign, const char **errmsg,
-			      int *err)
+			      unsigned int sh_link, unsigned int sh_addralign,
+			      const char **errmsg, int *err)
 {
   struct simple_object_elf_attributes *attrs =
     (struct simple_object_elf_attributes *) sobj->data;
@@ -781,7 +790,7 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_flags, Elf_Addr, sh_flags);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_offset, Elf_Addr, sh_offset);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_size, Elf_Addr, sh_size);
-  /* sh_link left as zero.  */
+  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_link, Elf_Word, sh_link);
   /* sh_info left as zero.  */
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_addralign, Elf_Addr, sh_addralign);
   /* sh_entsize left as zero.  */
@@ -812,6 +821,8 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
   unsigned int shnum;
   size_t shdr_offset;
   size_t sh_offset;
+  unsigned int first_sh_size;
+  unsigned int first_sh_link;
   size_t sh_name;
   unsigned char zero;
 
@@ -842,8 +853,17 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
   shdr_offset = ehdr_size;
   sh_offset = shdr_offset + shnum * shdr_size;
 
+  if (shnum < SHN_LORESERVE)
+    first_sh_size = 0;
+  else
+    first_sh_size = shnum;
+  if (shnum - 1 < SHN_LORESERVE)
+    first_sh_link = 0;
+  else
+    first_sh_link = shnum - 1;
   if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
-				     0, 0, 0, 0, 0, 0, &errmsg, err))
+				     0, 0, 0, 0, first_sh_size, first_sh_link,
+				     0, &errmsg, err))
     return errmsg;
 
   shdr_offset += shdr_size;
@@ -887,7 +907,7 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 
       if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
 					 sh_name, SHT_PROGBITS, 0, sh_offset,
-					 sh_size, 1U << section->align,
+					 sh_size, 0, 1U << section->align,
 					 &errmsg, err))
 	return errmsg;
 
@@ -898,7 +918,7 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 
   if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
 				     sh_name, SHT_STRTAB, 0, sh_offset,
-				     sh_name + strlen (".shstrtab") + 1,
+				     sh_name + strlen (".shstrtab") + 1, 0,
 				     1, &errmsg, err))
     return errmsg;
 

@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.	If not see
 <http://www.gnu.org/licenses/>.	 */
 
+#ifndef GCC_LRA_INT_H
+#define GCC_LRA_INT_H
+
 #include "lra.h"
 #include "bitmap.h"
 #include "recog.h"
@@ -501,3 +504,5 @@ lra_assign_reg_val (int from, int to)
   lra_reg_info[to].val = lra_reg_info[from].val;
   lra_reg_info[to].offset = lra_reg_info[from].offset;
 }
+
+#endif /* GCC_LRA_INT_H */

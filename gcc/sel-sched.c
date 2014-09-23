@@ -4283,7 +4283,7 @@ invoke_aftermath_hooks (fence_t fence, rtx_insn *best_insn, int issue_more)
 
 /* Estimate the cost of issuing INSN on DFA state STATE.  */
 static int
-estimate_insn_cost (rtx insn, state_t state)
+estimate_insn_cost (rtx_insn *insn, state_t state)
 {
   static state_t temp = NULL;
   int cost;

@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_XCOFFOUT_H
+#define GCC_XCOFFOUT_H
 
 /* Tags and typedefs are C_DECL in XCOFF, not C_LSYM.  */
 
@@ -184,3 +186,5 @@ extern void xcoffout_end_block (unsigned, unsigned);
 extern int xcoff_assign_fundamental_type_number (tree);
 extern void xcoffout_declare_function (FILE *, tree, const char *);
 extern void xcoffout_source_line (unsigned int, const char *, int, bool);
+
+#endif /* GCC_XCOFFOUT_H */

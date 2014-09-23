@@ -1865,34 +1865,29 @@ NAME (TYPE x, int m)
 # define MTYPE	SFtype
 # define CTYPE	SCtype
 # define MODE	sc
-# define CEXT	f
+# define CEXT	__LIBGCC_SF_FUNC_EXT__
 # define NOTRUNC __FLT_EVAL_METHOD__ == 0
 #elif defined(L_muldc3) || defined(L_divdc3)
 # define MTYPE	DFtype
 # define CTYPE	DCtype
 # define MODE	dc
+# define CEXT	__LIBGCC_DF_FUNC_EXT__
 # if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
-#  define CEXT	l
 #  define NOTRUNC 1
 # else
-#  define CEXT
 #  define NOTRUNC __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 1
 # endif
 #elif defined(L_mulxc3) || defined(L_divxc3)
 # define MTYPE	XFtype
 # define CTYPE	XCtype
 # define MODE	xc
-# define CEXT	l
+# define CEXT	__LIBGCC_XF_FUNC_EXT__
 # define NOTRUNC 1
 #elif defined(L_multc3) || defined(L_divtc3)
 # define MTYPE	TFtype
 # define CTYPE	TCtype
 # define MODE	tc
-# if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
-#  define CEXT l
-# else
-#  define CEXT LIBGCC2_TF_CEXT
-# endif
+# define CEXT	__LIBGCC_TF_FUNC_EXT__
 # define NOTRUNC 1
 #else
 # error

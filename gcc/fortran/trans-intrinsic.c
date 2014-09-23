@@ -2696,7 +2696,7 @@ conv_intrinsic_system_clock (gfc_code *code)
   else if (count_max)
     arg3 = count_max_se.expr;
 
-  /* Make the function call. */
+  /* Make the function call.  */
   gfc_init_block (&block);
   tmp = build_call_expr_loc (input_location,
 			     kind == 4 ? gfor_fndecl_system_clock4
@@ -7134,7 +7134,7 @@ conv_isocbinding_subroutine (gfc_code *code)
   dim = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
 			     loop.loopvar[0], loop.from[0]);
 
-  /* Set bounds and stride. */
+  /* Set bounds and stride.  */
   gfc_conv_descriptor_lbound_set (&body, desc, dim, gfc_index_one_node);
   gfc_conv_descriptor_stride_set (&body, desc, dim, stride);
 
@@ -7143,7 +7143,7 @@ conv_isocbinding_subroutine (gfc_code *code)
   gfc_conv_descriptor_ubound_set (&body, desc, dim, shapese.expr);
   gfc_add_block_to_block (&body, &shapese.post);
 
-  /* Calculate offset. */
+  /* Calculate offset.  */
   gfc_add_modify (&body, offset,
 		  fold_build2_loc (input_location, PLUS_EXPR,
 				   gfc_array_index_type, offset, stride));
@@ -8396,7 +8396,7 @@ conv_intrinsic_atomic_op (gfc_code *code)
       else
 	image_index = integer_zero_node;
 
-      if (TREE_TYPE (TREE_TYPE (atom)) != TREE_TYPE (TREE_TYPE (value)))
+      if (!POINTER_TYPE_P (TREE_TYPE (value)))
 	{
 	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (atom)), "value");
 	  gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), value));

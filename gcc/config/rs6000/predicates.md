@@ -116,8 +116,16 @@
 
 ;; Return 1 if op is the carry register.
 (define_predicate "ca_operand"
-  (and (match_code "reg")
-       (match_test "CA_REGNO_P (REGNO (op))")))
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (!REG_P (op))
+    return 0;
+
+  return CA_REGNO_P (REGNO (op));
+})
 
 ;; Return 1 if op is a signed 5-bit constant integer.
 (define_predicate "s5bit_cint_operand"
@@ -1121,6 +1129,10 @@
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return register_operand (op, mode);
 
+  /* We don't allow moving the carry bit around.  */
+  if (ca_operand (op, mode))
+    return 0;
+
   /* The only cases left are integral modes one word or smaller (we
      do not get called for MODE_CC values).  These can be in any
      register.  */
@@ -1797,7 +1809,7 @@
 (define_predicate "fusion_gpr_mem_load"
   (match_code "mem,sign_extend,zero_extend")
 {
-  rtx addr;
+  rtx addr, base, offset;
 
   /* Handle sign/zero extend.  */
   if (GET_CODE (op) == ZERO_EXTEND
@@ -1827,24 +1839,79 @@
     }
 
   addr = XEXP (op, 0);
-  if (GET_CODE (addr) == PLUS)
-    {
-      rtx base = XEXP (addr, 0);
-      rtx offset = XEXP (addr, 1);
+  if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
+    return 0;
 
-      return (base_reg_operand (base, GET_MODE (base))
-	      && satisfies_constraint_I (offset));
-    }
+  base = XEXP (addr, 0);
+  if (!base_reg_operand (base, GET_MODE (base)))
+    return 0;
+
+  offset = XEXP (addr, 1);
+
+  if (GET_CODE (addr) == PLUS)
+    return satisfies_constraint_I (offset);
 
   else if (GET_CODE (addr) == LO_SUM)
     {
-      rtx base = XEXP (addr, 0);
-      rtx offset = XEXP (addr, 1);
+      if (TARGET_XCOFF || (TARGET_ELF && TARGET_POWERPC64))
+	return small_toc_ref (offset, GET_MODE (offset));
 
-      if (!base_reg_operand (base, GET_MODE (base)))
+      else if (TARGET_ELF && !TARGET_POWERPC64)
+	return CONSTANT_P (offset);
+    }
+
+  return 0;
+})
+
+;; Match a GPR load (lbz, lhz, lwz, ld) that uses a combined address in the
+;; memory field with both the addis and the memory offset.  Sign extension
+;; is not handled here, since lha and lwa are not fused.
+(define_predicate "fusion_gpr_mem_combo"
+  (match_code "mem,zero_extend")
+{
+  rtx addr, base, offset;
+
+  /* Handle zero extend.  */
+  if (GET_CODE (op) == ZERO_EXTEND)
+    {
+      op = XEXP (op, 0);
+      mode = GET_MODE (op);
+    }
+
+  if (!MEM_P (op))
+    return 0;
+
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+      break;
+
+    case DImode:
+      if (!TARGET_POWERPC64)
 	return 0;
+      break;
 
-      else if (TARGET_XCOFF || (TARGET_ELF && TARGET_POWERPC64))
+    default:
+      return 0;
+    }
+
+  addr = XEXP (op, 0);
+  if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
+    return 0;
+
+  base = XEXP (addr, 0);
+  if (!fusion_gpr_addis (base, GET_MODE (base)))
+    return 0;
+
+  offset = XEXP (addr, 1);
+  if (GET_CODE (addr) == PLUS)
+    return satisfies_constraint_I (offset);
+
+  else if (GET_CODE (addr) == LO_SUM)
+    {
+      if (TARGET_XCOFF || (TARGET_ELF && TARGET_POWERPC64))
 	return small_toc_ref (offset, GET_MODE (offset));
 
       else if (TARGET_ELF && !TARGET_POWERPC64)

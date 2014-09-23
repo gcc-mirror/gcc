@@ -3028,7 +3028,7 @@ get_reservation_flags (enum attr_units units)
 /* Compute the side of the machine used by INSN, which reserves UNITS.
    This must match the reservations in the scheduling description.  */
 static int
-get_insn_side (rtx insn, enum attr_units units)
+get_insn_side (rtx_insn *insn, enum attr_units units)
 {
   if (units == UNITS_D_ADDR)
     return (get_attr_addr_regfile (insn) == ADDR_REGFILE_A ? 0 : 1);
@@ -3785,7 +3785,7 @@ conditions_opposite_p (rtx cond1, rtx cond2)
    already has that predicate.  If DOIT is true, also perform the
    modification.  */
 static bool
-predicate_insn (rtx insn, rtx cond, bool doit)
+predicate_insn (rtx_insn *insn, rtx cond, bool doit)
 {
   int icode;
   if (cond == NULL_RTX)

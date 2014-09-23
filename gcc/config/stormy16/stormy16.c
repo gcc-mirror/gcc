@@ -294,7 +294,8 @@ xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
    INSN is the insn.  */
 
 char *
-xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed, rtx insn)
+xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed,
+			     rtx_insn *insn)
 {
   static char string[64];
   int need_longbranch = (op != NULL_RTX
@@ -367,7 +368,8 @@ xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed, rtx insn)
    INSN is the insn.  */
 
 char *
-xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
+xstormy16_output_cbranch_si (rtx op, const char *label, int reversed,
+			     rtx_insn *insn)
 {
   static char string[64];
   int need_longbranch = get_attr_length (insn) >= 8;

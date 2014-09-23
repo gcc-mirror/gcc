@@ -153,9 +153,6 @@ extern int darwin_emit_branch_islands;
 
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
-/* Put all *tf routines in libgcc.  */
-#define LIBGCC2_TF_CEXT q
-
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END darwin_file_end
 

@@ -23,6 +23,7 @@
 #	-mcpu=7400 -maltivec -mabi=altivec
 #	-mcpu=7400 -msoft-float
 #	-msoft-float
+#	-mno-spe -mabi=no-spe
 #	-mno-spe -mabi=no-spe -mno-isel
 # so we'll need to create exceptions later below.
 
@@ -56,7 +57,6 @@ MULTILIB_EXCEPTIONS	= maltivec mabi=altivec mno-spe mabi=no-spe mno-isel \
 			  *msoft-float/*mno-spe* \
 			  *msoft-float/*mabi=no-spe* \
 			  *msoft-float/*mno-isel* \
-			  mno-spe/mabi=no-spe \
 			  mno-spe/mno-isel \
 			  mabi=no-spe/mno-isel \
 			  mno-isel/mlittle \
@@ -67,7 +67,6 @@ MULTILIB_EXCEPTIONS	= maltivec mabi=altivec mno-spe mabi=no-spe mno-isel \
 			  mcpu=7400/maltivec/mlittle \
 			  mabi=no-spe/mlittle \
 			  mno-spe/mno-isel/mlittle \
-			  mno-spe/mabi=no-spe/mlittle \
 			  mabi=altivec/mlittle \
 			  maltivec/mlittle \
 			  maltivec/mabi=altivec/mlittle

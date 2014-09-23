@@ -4,10 +4,10 @@
 
 #include <arm_neon.h>
 
-#define force_simd(V1)   asm volatile (""	\
-          : "=w"(V1)				\
-          : "w"(V1)				\
-          : /* No clobbers */)
+#define force_simd(V1) asm volatile ("mov %d0, %1.d[0]" \
+         : "=w"(V1)                                     \
+         : "w"(V1)                                      \
+         : /* No clobbers */)
 
 extern void abort (void);
 

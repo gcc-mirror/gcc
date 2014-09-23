@@ -2322,13 +2322,16 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  if (_cpp_skip_block_comment (pfile))
 	    cpp_error (pfile, CPP_DL_ERROR, "unterminated comment");
 	}
-      else if (c == '/' && (CPP_OPTION (pfile, cplusplus_comments)
-			    || cpp_in_system_header (pfile)))
+      else if (c == '/' && ! CPP_OPTION (pfile, traditional))
 	{
+	  /* Don't warn for system headers.  */
+	  if (cpp_in_system_header (pfile))
+	    ;
 	  /* Warn about comments if pedantically GNUC89, and not
 	     in system headers.  */
-	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
-	      && ! buffer->warned_cplusplus_comments)
+	  else if (CPP_OPTION (pfile, lang) == CLK_GNUC89
+		   && CPP_PEDANTIC (pfile)
+		   && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, CPP_DL_PEDWARN,
 			 "C++ style comments are not allowed in ISO C90");
@@ -2347,7 +2350,31 @@ _cpp_lex_direct (cpp_reader *pfile)
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
-
+	  /* In C89/C94, C++ style comments are forbidden.  */
+	  else if ((CPP_OPTION (pfile, lang) == CLK_STDC89
+		    || CPP_OPTION (pfile, lang) == CLK_STDC94))
+	    {
+	      /* But don't be confused about valid code such as
+	         - // immediately followed by *,
+		 - // in a preprocessing directive,
+		 - // in an #if 0 block.  */
+	      if (buffer->cur[1] == '*'
+		  || pfile->state.in_directive
+		  || pfile->state.skipping)
+		{
+		  result->type = CPP_DIV;
+		  break;
+		}
+	      else if (! buffer->warned_cplusplus_comments)
+		{
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "C++ style comments are not allowed in ISO C90");
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "(this will be reported only once per input "
+			     "file)");
+		  buffer->warned_cplusplus_comments = 1;
+		}
+	    }
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
 	    cpp_warning (pfile, CPP_W_COMMENTS, "multi-line comment");
 	}

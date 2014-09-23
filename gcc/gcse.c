@@ -2486,7 +2486,7 @@ pre_insert_copies (void)
 		  continue;
 
 		/* Don't handle this one if it's a redundant one.  */
-		if (INSN_DELETED_P (insn))
+		if (insn->deleted ())
 		  continue;
 
 		/* Or if the expression doesn't reach the deleted one.  */

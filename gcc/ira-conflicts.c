@@ -60,7 +60,7 @@ static IRA_INT_TYPE **conflicts;
 
 /* Record a conflict between objects OBJ1 and OBJ2.  If necessary,
    canonicalize the conflict by recording it for lower-order subobjects
-   of the corresponding allocnos. */
+   of the corresponding allocnos.  */
 static void
 record_object_conflict (ira_object_t obj1, ira_object_t obj2)
 {

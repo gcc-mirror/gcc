@@ -483,8 +483,8 @@ find_end_label (rtx kind)
 	  if (HAVE_return)
 	    {
 	      /* The return we make may have delay slots too.  */
-	      rtx insn = gen_return ();
-	      insn = emit_jump_insn (insn);
+	      rtx pat = gen_return ();
+	      rtx_insn *insn = emit_jump_insn (pat);
 	      set_return_jump_label (insn);
 	      emit_barrier ();
 	      if (num_delay_slots (insn) > 0)
@@ -536,7 +536,7 @@ emit_delay_sequence (rtx_insn *insn, rtx_insn_list *list, int length)
       rtx note, next;
 
       /* Show that this copy of the insn isn't deleted.  */
-      INSN_DELETED_P (tem) = 0;
+      tem->set_undeleted ();
 
       /* Unlink insn from its original place, and re-emit it into
 	 the sequence.  */
@@ -1426,7 +1426,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 
 		  update_block (dtrial, thread);
 		  new_rtx = delete_from_delay_slot (dtrial);
-	          if (INSN_DELETED_P (thread))
+	          if (thread->deleted ())
 		    thread = new_rtx;
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
@@ -1464,7 +1464,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 
 	      update_block (merged_insns->insn (), thread);
 	      new_rtx = delete_from_delay_slot (merged_insns->insn ());
-	      if (INSN_DELETED_P (thread))
+	      if (thread->deleted ())
 		thread = new_rtx;
 	    }
 	  else
@@ -1548,12 +1548,12 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	     correctly.  */
 
 #ifdef INSN_SETS_ARE_DELAYED
-	  if (INSN_SETS_ARE_DELAYED (seq->element (0)))
+	  if (INSN_SETS_ARE_DELAYED (seq->insn (0)))
 	    return 0;
 #endif
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
-	  if (INSN_REFERENCES_ARE_DELAYED (seq->element (0)))
+	  if (INSN_REFERENCES_ARE_DELAYED (seq->insn (0)))
 	    return 0;
 #endif
 
@@ -1641,7 +1641,7 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
       if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
 	{
 	  bool annul_p = false;
-          rtx control = seq->element (0);
+          rtx_insn *control = seq->insn (0);
 
 	  /* If this is a CALL_INSN and its delay slots, it is hard to track
 	     the resource needs properly, so give up.  */
@@ -1947,7 +1947,7 @@ fill_simple_delay_slots (int non_jumps_p)
 
       insn = unfilled_slots_base[i];
       if (insn == 0
-	  || INSN_DELETED_P (insn)
+	  || insn->deleted ()
 	  || (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	  || (JUMP_P (insn) && non_jumps_p)
@@ -2307,7 +2307,7 @@ fill_simple_delay_slots (int non_jumps_p)
    set *CROSSING to true, otherwise set it to false.  */
 
 static rtx
-follow_jumps (rtx label, rtx jump, bool *crossing)
+follow_jumps (rtx label, rtx_insn *jump, bool *crossing)
 {
   rtx_insn *insn;
   rtx_insn *next;
@@ -2861,7 +2861,7 @@ fill_eager_delay_slots (void)
 
       insn = unfilled_slots_base[i];
       if (insn == 0
-	  || INSN_DELETED_P (insn)
+	  || insn->deleted ()
 	  || !JUMP_P (insn)
 	  || ! (condjump_p (insn) || condjump_in_parallel_p (insn)))
 	continue;
@@ -3837,7 +3837,7 @@ dbr_schedule (rtx_insn *first)
       memset (total_annul_slots, 0, sizeof total_annul_slots);
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
-	  if (! INSN_DELETED_P (insn)
+	  if (! insn->deleted ()
 	      && NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && GET_CODE (PATTERN (insn)) != CLOBBER)

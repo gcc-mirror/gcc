@@ -758,7 +758,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0)
       {
 	/* In Fortran, return (NaN + NaN I) for any zero divisor.  See
-	   PR 40318. */
+	   PR 40318.  */
 	mpfr_set_nan (mpc_realref (result->value.complex));
 	mpfr_set_nan (mpc_imagref (result->value.complex));
       }
@@ -2344,7 +2344,7 @@ gfc_hollerith2complex (gfc_expr *src, int kind)
 }
 
 
-/* Convert Hollerith to character. */
+/* Convert Hollerith to character.  */
 
 gfc_expr *
 gfc_hollerith2character (gfc_expr *src, int kind)

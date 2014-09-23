@@ -785,7 +785,13 @@ case ${target} in
   ;;
 *-*-rtems*)
   case ${enable_threads} in
-    yes) thread_file='rtems' ;;
+    "" | yes | rtems) thread_file='rtems' ;;
+    posix) thread_file='posix' ;;
+    no) ;;
+    *)
+      echo 'Unknown thread configuration for RTEMS'
+      exit 1
+      ;;
   esac
   tmake_file="${tmake_file} t-rtems"
   extra_options="${extra_options} rtems.opt"
@@ -1550,11 +1556,11 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
-	    tm_file="${tm_file} vxworksae.h i386/vx-common.h i386/vxworksae.h"
+	    tm_file="${tm_file} vxworksae.h i386/vxworks.h i386/vxworksae.h"
 	    tmake_file="${tmake_file} i386/t-vxworks i386/t-vxworksae"
 	    ;;
 	  *)
-	    tm_file="${tm_file} vxworks.h i386/vx-common.h i386/vxworks.h"
+	    tm_file="${tm_file} vxworks.h i386/vxworks.h"
 	    tmake_file="${tmake_file} i386/t-vxworks"
 	    ;;
 	esac
@@ -2309,12 +2315,16 @@ powerpc*-*-linux*)
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
+powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	extra_headers=ppc-asm.h
 	case ${target} in
+          *-vxworksmils*)
+            tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h rs6000/vxworksmils.h"
+            tmake_file="${tmake_file} rs6000/t-vxworksmils"
+            ;;
 	  *-vxworksae*)
 	    tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h rs6000/vxworksae.h"
 	    tmake_file="${tmake_file} rs6000/t-vxworksae"

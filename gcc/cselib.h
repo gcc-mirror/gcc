@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_CSELIB_H
+#define GCC_CSELIB_H
+
 /* Describe a value.  */
 struct cselib_val {
   /* The hash value.  */
@@ -120,3 +123,5 @@ canonical_cselib_val (cselib_val *val)
   gcc_checking_assert (canonical_cselib_val (canon) == canon);
   return canon;
 }
+
+#endif /* GCC_CSELIB_H */

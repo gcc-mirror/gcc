@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_CONDITIONS_H
+#define GCC_CONDITIONS_H
+
 /* None of the things in the files exist if we don't use CC0.  */
 
 #ifdef HAVE_cc0
@@ -115,3 +118,5 @@ extern CC_STATUS cc_status;
   CC_STATUS_MDEP_INIT)
 
 #endif
+
+#endif /* GCC_CONDITIONS_H */

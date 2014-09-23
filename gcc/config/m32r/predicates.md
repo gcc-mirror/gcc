@@ -390,7 +390,7 @@
   if (! INSN_P (op))
     return 0;
 
-  return get_attr_length (op) == 2;
+  return get_attr_length (as_a <rtx_insn *> (op)) == 2;
 })
 
 ;; Return true if op is an integer constant, less than or equal to
@@ -415,7 +415,7 @@
   if (! INSN_P (op))
     return 0;
 
-  return get_attr_length (op) != 2;
+  return get_attr_length (as_a <rtx_insn *> (op)) != 2;
 })
 
 ;; Returns 1 if OP is an acceptable operand for seth/add3.

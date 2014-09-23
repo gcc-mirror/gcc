@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_XCOFF_H
+#define GCC_XCOFF_H
+
 /* Storage classes in XCOFF object file format designed for DBX's use.
    This info is from the `Files Reference' manual for IBM's AIX version 3
    for the RS6000.  */
@@ -33,3 +36,5 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL		0x8c
 #define C_ENTRY		0x8d
 #define C_FUN		0x8e
+
+#endif /* GCC_XCOFF_H */

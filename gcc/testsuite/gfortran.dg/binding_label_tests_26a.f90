@@ -4,8 +4,6 @@
 !
 ! Contributed by Andrew Bensons <abensonca@gmail.com>
 !
-! This file must be compiled BEFORE binding_label_tests_26b.f90, which it 
-! should be because dejagnu will sort the files.  
 
 module fg
 contains
@@ -16,5 +14,3 @@ contains
     end interface
   end function
 end module
-
-! { dg-final { keep-modules "" } }

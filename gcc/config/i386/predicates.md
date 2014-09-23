@@ -609,36 +609,6 @@
        (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "sibcall_memory_operand"))))
 
-;; Return true if OP is a call from MS ABI to SYSV ABI function.
-(define_predicate "call_rex64_ms_sysv_operation"
-  (match_code "parallel")
-{
-  unsigned creg_size = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
-  unsigned i;
-
-  if ((unsigned) XVECLEN (op, 0) != creg_size + 2)
-    return false;
-
-  for (i = 0; i < creg_size; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i+2);
-      enum machine_mode mode;
-      unsigned regno;
-
-      if (GET_CODE (elt) != CLOBBER
-          || GET_CODE (SET_DEST (elt)) != REG)
-        return false;
-
-      regno = x86_64_ms_sysv_extra_clobbered_registers[i];
-      mode = SSE_REGNO_P (regno) ? TImode : DImode;
-
-      if (GET_MODE (SET_DEST (elt)) != mode
-	  || REGNO (SET_DEST (elt)) != regno)
-	return false;
-    }
-  return true;
-})
-
 ;; Match exactly zero.
 (define_predicate "const0_operand"
   (match_code "const_int,const_double,const_vector")

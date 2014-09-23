@@ -8107,7 +8107,7 @@ mips_print_operand_punctuation (FILE *file, int ch)
       /* If the delay slot instruction is short, then use the
 	 compact version.  */
       if (final_sequence == 0
-	  || get_attr_length (XVECEXP (final_sequence, 0, 1)) == 2)
+	  || get_attr_length (final_sequence->insn (1)) == 2)
 	putc ('s', file);
       break;
 
@@ -12498,7 +12498,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	{
 	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
+	  final_sequence->insn (1)->set_deleted ();
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -12523,7 +12523,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 	{
 	  final_scan_insn (final_sequence->insn (1),
 			   asm_out_file, optimize, 1, NULL);
-	  INSN_DELETED_P (final_sequence->insn (1)) = 1;
+	  final_sequence->insn (1)->set_deleted ();
 	}
       else
 	output_asm_insn ("nop", 0);
@@ -12683,7 +12683,7 @@ mips_get_sync_operand (rtx *operands, int index, rtx default_value)
    sequence for it.  */
 
 static void
-mips_process_sync_loop (rtx insn, rtx *operands)
+mips_process_sync_loop (rtx_insn *insn, rtx *operands)
 {
   rtx at, mem, oldval, newval, inclusive_mask, exclusive_mask;
   rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3, cmp;
@@ -12865,7 +12865,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
    the operands given by OPERANDS.  */
 
 const char *
-mips_output_sync_loop (rtx insn, rtx *operands)
+mips_output_sync_loop (rtx_insn *insn, rtx *operands)
 {
   mips_process_sync_loop (insn, operands);
 
@@ -12892,7 +12892,7 @@ mips_output_sync_loop (rtx insn, rtx *operands)
    which has the operands given by OPERANDS.  */
 
 unsigned int
-mips_sync_loop_insns (rtx insn, rtx *operands)
+mips_sync_loop_insns (rtx_insn *insn, rtx *operands)
 {
   mips_process_sync_loop (insn, operands);
   return mips_multi_num_insns;
@@ -13511,7 +13511,7 @@ static enum attr_type mips_last_74k_agen_insn = TYPE_UNKNOWN;
    resets to TYPE_UNKNOWN state.  */
 
 static void
-mips_74k_agen_init (rtx insn)
+mips_74k_agen_init (rtx_insn *insn)
 {
   if (!insn || CALL_P (insn) || JUMP_P (insn))
     mips_last_74k_agen_insn = TYPE_UNKNOWN;
@@ -13585,7 +13585,7 @@ mips_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 {
   mips_macc_chains_last_hilo = 0;
   vr4130_last_insn = 0;
-  mips_74k_agen_init (NULL_RTX);
+  mips_74k_agen_init (NULL);
 
   /* When scheduling for Loongson2, branch instructions go to ALU1,
      therefore basic block is most likely to start with round-robin counter

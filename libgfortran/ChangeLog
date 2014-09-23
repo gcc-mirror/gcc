@@ -1,3 +1,24 @@
+2014-09-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* io/inquire.c (inquire_via_unit): Use gfc_unit.filename also when
+	HAVE_TTYNAME{_R} is not defined.
+
+2014-09-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* io/io.h (gfc_unit): Store C string for the filename.
+	* io/close.c (st_close): Use gfc_unit.filename.
+	* io/inquire.c (inquire_via_unit): Likewise.
+	* io/open.c (new_unit): Likewise.
+	(already_open): Likewise, unlink file before freeing filename.
+	* io/unit.c (init_units): Likewise.
+	(close_unit_1): Likewise.
+	(filename_from_unit): Likewise.
+	* io/unix.c (compare_file_filename): Likewise.
+	(find_file0): Likewise.
+	(delete_file): Likewise.
+
 2014-09-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/transfer.c (read_block_form): Fix pad status check (found by

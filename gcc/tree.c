@@ -5049,6 +5049,7 @@ need_assembler_name_p (tree decl)
       && decl == TYPE_NAME (TREE_TYPE (decl))
       && !is_lang_specific (TREE_TYPE (decl))
       && AGGREGATE_TYPE_P (TREE_TYPE (decl))
+      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE)
       && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
     return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
@@ -11645,8 +11646,7 @@ block_ultimate_origin (const_tree block)
 {
   tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
 
-  /* output_inline_function sets BLOCK_ABSTRACT_ORIGIN for all the
-     nodes in the function to point to themselves; ignore that if
+  /* BLOCK_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
   if (BLOCK_ABSTRACT (block) && immediate_origin == block)
     return NULL_TREE;

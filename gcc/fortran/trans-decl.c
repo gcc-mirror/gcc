@@ -3651,7 +3651,7 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
 /* Initialize INTENT(OUT) derived type dummies.  As well as giving
    them their default initializer, if they do not have allocatable
-   components, they have their allocatable components deallocated. */
+   components, they have their allocatable components deallocated.  */
 
 static void
 init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
@@ -5350,7 +5350,7 @@ create_main_function (tree fndecl)
 
   gfc_init_block (&body);
 
-  /* Call some libgfortran initialization routines, call then MAIN__(). */
+  /* Call some libgfortran initialization routines, call then MAIN__().  */
 
   /* Call _gfortran_caf_init (*argc, ***argv).  */
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
@@ -5413,7 +5413,7 @@ create_main_function (tree fndecl)
     /* TODO: This is the -frange-check option, which no longer affects
        library behavior; when bumping the library ABI this slot can be
        reused for something else. As it is the last element in the
-       array, we can instead leave it out altogether. */
+       array, we can instead leave it out altogether.  */
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node, 0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,

@@ -8872,7 +8872,7 @@ to set the variable @var{align_jumps} in the target's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{JUMP_ALIGN}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8887,7 +8887,7 @@ to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8907,7 +8907,7 @@ to set the variable @code{align_loops} in the target's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to
 @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is
 defined.
@@ -8924,7 +8924,7 @@ to set the variable @code{align_labels} in the target's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LABEL_ALIGN}
 to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}
 is defined.
@@ -10896,7 +10896,7 @@ filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const_rtx @var{follower}, const_rtx @var{followee})
+@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const rtx_insn *@var{follower}, const rtx_insn *@var{followee})
 FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
 @end deftypefn
 

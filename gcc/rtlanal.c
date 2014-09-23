@@ -3410,7 +3410,20 @@ subreg_lsb (const_rtx x)
    xmode  - The mode of xregno.
    offset - The byte offset.
    ymode  - The mode of a top level SUBREG (or what may become one).
-   info   - Pointer to structure to fill in.  */
+   info   - Pointer to structure to fill in.
+
+   Rather than considering one particular inner register (and thus one
+   particular "outer" register) in isolation, this function really uses
+   XREGNO as a model for a sequence of isomorphic hard registers.  Thus the
+   function does not check whether adding INFO->offset to XREGNO gives
+   a valid hard register; even if INFO->offset + XREGNO is out of range,
+   there might be another register of the same type that is in range.
+   Likewise it doesn't check whether HARD_REGNO_MODE_OK accepts the new
+   register, since that can depend on things like whether the final
+   register number is even or odd.  Callers that want to check whether
+   this particular subreg can be replaced by a simple (reg ...) should
+   use simplify_subreg_regno.  */
+
 void
 subreg_get_info (unsigned int xregno, enum machine_mode xmode,
 		 unsigned int offset, enum machine_mode ymode,

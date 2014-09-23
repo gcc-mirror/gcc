@@ -277,6 +277,13 @@ varpool_node::externally_visible_p (void)
   if (used_from_object_file_p ())
     return true;
 
+  /* Bringing TLS variables local may cause dynamic linker failures
+     on limits of static TLS vars.  */
+  if (DECL_THREAD_LOCAL_P (decl)
+      && (DECL_TLS_MODEL (decl) != TLS_MODEL_EMULATED
+	  && DECL_TLS_MODEL (decl) != TLS_MODEL_INITIAL_EXEC))
+    return true;
+
   if (DECL_HARD_REGISTER (decl))
     return true;
   if (DECL_PRESERVE_P (decl))

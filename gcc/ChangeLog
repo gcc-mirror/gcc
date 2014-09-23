@@ -1,3 +1,860 @@
+2014-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63328
+	* omp-low.c (ipa_simd_modify_stmt_ops): For debug stmts
+	insert a debug source bind stmt setting DEBUG_EXPR_DECL
+	instead of a normal gimple assignment stmt.
+
+2014-09-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/bfin/bfin.md: Fix use of constraints in define_split.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Remove
+	GET_MODE_SIZE (to) < GET_MODE_SIZE (from) test.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h: Include hash-table.h.
+	(target_hard_regs): Add a finalize method and a x_simplifiable_subregs
+	field.
+	* target-globals.c (target_globals::~target_globals): Call
+	hard_regs->finalize.
+	* rtl.h (subreg_shape): New structure.
+	(shape_of_subreg): New function.
+	(simplifiable_subregs): Declare.
+	* reginfo.c (simplifiable_subreg): New structure.
+	(simplifiable_subregs_hasher): Likewise.
+	(simplifiable_subregs): New function.
+	(invalid_mode_changes): Delete.
+	(alid_mode_changes, valid_mode_changes_obstack): New variables.
+	(record_subregs_of_mode): Remove subregs_of_mode parameter.
+	Record valid mode changes in valid_mode_changes.
+	(find_subregs_of_mode): Remove subregs_of_mode parameter.
+	Update calls to record_subregs_of_mode.
+	(init_subregs_of_mode): Remove invalid_mode_changes and bitmap
+	handling.  Initialize new variables.  Update call to
+	find_subregs_of_mode.
+	(invalid_mode_change_p): Check new variables instead of
+	invalid_mode_changes.
+	(finish_subregs_of_mode): Finalize new variables instead of
+	invalid_mode_changes.
+	(target_hard_regs::finalize): New function.
+	* ira-costs.c (print_allocno_costs): Call invalid_mode_change_p
+	even when CLASS_CANNOT_CHANGE_MODE is undefined.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* combine.c (subst): Use simplify_subreg_regno rather than
+	REG_CANNOT_CHANGE_MODE_P to detect invalid mode changes.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (subreg_info): Expand commentary
+	* rtlanal.c (subreg_get_info): Likewise.
+
+2014-09-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h (COPY_HARD_REG_SET, COMPL_HARD_REG_SET)
+	(AND_HARD_REG_SET, AND_COMPL_HARD_REG_SET, IOR_HARD_REG_SET)
+	(IOR_COMPL_HARD_REG_SET): Allow the "from" set to be constant.
+
+2014-09-22  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* config/arm/arm.c: #include "tm-constrs.h"
+	(thumb1_size_rtx_costs): Adjust rtx costs.
+
+2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac (target_header_dir): Move block defining
+	this to before the block setting inhibit_libc.
+	(inhibit_libc): When considering $with_headers, just
+	check it it's explicitly "no".  If not, also check if
+	$target_header_dir/stdio.h is present.  If not, set
+	inhibit_libc=true.
+	* configure: Regenerate.
+
+2014-09-21  Patrick Oppenlander  <pattyo.lists@gmail.com>
+
+	* config/rs6000/t-spe (MULTILIB_EXCEPTIONS): Allow isel without SPE.
+	
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (div<mode>3): Fix comment.  Use a different
+	insn for divides by integer powers of two.
+	(div<mode>3_sra, *div<mode>3_sra_dot, *div<mode>3_sra_dot2): New.
+	(mod<mode>3): Fix formatting.
+	(three anonymous define_insn and two define_split): Delete.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (ashr<mode>3, *ashr<mode>3, *ashrsi3_64,
+	*ashr<mode>3_dot, *ashr<mode>3_dot2): Clobber CA_REGNO.
+	(floatdisf2_internal2): Ditto.
+	(ashrdi3_no_power): Ditto.  Fix formatting.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (ctz<mode>2, ffs<mode>2, popcount<mode>2,
+	popcntb<mode>2, popcntd<mode>2, parity<mode>2, parity<mode>2_cmpb):
+	Tidy.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (strlensi): Don't use subsi3 with a
+	constant, use addsi3 directly.
+	(three anonymous define_insn, two define_split): Delete.
+	(sub<mode>3): Move.  Do not allow constant second operand.
+	Generate different insn for constant first operand.
+	(*subf<mode>3, *subf<mode>3_dot, *subf<mode>3_dot2): New.
+	(subf<mode>3_imm): New.
+	(ctz<mode>2, ffs<mode>2): Clobber CA_REGNO where required.
+	(*plus_ltu<mode>): Only handle registers.
+	(*plus_ltu<mode>_1): New.  Handle integer third operand.
+	(*plus_gtu<mode>): Only handle registers.
+	(*plus_gtu<mode>_1): New.  Handle integer third operand.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (iorxor): New code_iterator.
+	(iorxor): New code_attr.
+	(IORXOR): New code_attr.
+	(*and<mode>3, *and<mode>3_dot, *and<mode>3_dot2): Delete.
+	(ior<mode>3, xor<mode>3): Delete.
+	(<iorxor><mode>3): New.
+	(splitter for "big" integer ior, xor): New.
+	(*bool<mode>3): Move.  Also handle AND.
+	(*bool<mode>3_dot, *bool<mode>3_dot2): Also handle AND.
+	(splitter for "big" integer ior, xor): Delete.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*neg<mode>2_internal): Delete.
+	(two anonymous define_insn and two define_split): Delete.
+	(*neg<mode>2, *neg<mode>2_dot, *neg<mode>2_dot2): New.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*one_cmpl<mode>2): Generate "not" insn.
+	(two anonymous define_insn and two define_split): Delete.
+	(*one_cmpl<mode>2_dot, *one_cmpl<mode>2_dot2): New.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <NE>: New.
+
+2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (ca_operand): Allow subregs.
+	(input_operand): Do not allow ca_operand.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): For the
+	carry bit, allow SImode and Pmode.
+	(rs6000_init_hard_regno_mode_ok): Make the carry bit class NO_REGS.
+
+2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_call): Generate MS->SYSV extra
+	clobbered registers using clobber_reg.  Remove UNSPEC decoration.
+	* config/i386/i386.md (unspec) <UNSPEC_MS_TO_SYSV_CALL>: Remove.
+	(*call_rex64_ms_sysv): Remove.
+	(*call_value_rex64_ms_sysv): Ditto.
+	* config/i386/predicates.md (call_rex64_ms_sysv_operation): Remove.
+
+2014-09-20  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (sub_f_add_imm): Change constraint of
+	operand 3 to "CnL".
+
+2014-09-20  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.md: Remove constraints from define_split
+	patterns.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.h (ipa_polymorphic_call_context): Turn into class; add ctors.
+	(possible_polymorphic_call_targets, dump_possible_polymorphic_call_targets,
+	possible_polymorphic_call_target_p, possible_polymorphic_call_target_p): Simplify.
+	(get_dynamic_type): Remove.
+	* ipa-devirt.c (ipa_dummy_polymorphic_call_context): Remove.
+	(clear_speculation): Bring to ipa-deivrt.h
+	(get_class_context): Rename to ...
+	(ipa_polymorphic_call_context::restrict_to_inner_class): ... this one.
+	(contains_type_p): Update.
+	(get_dynamic_type): Rename to ...
+	ipa_polymorphic_call_context::get_dynamic_type(): ... this one.
+	(possible_polymorphic_call_targets): UPdate.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Update.
+	* ipa-prop.c (ipa_analyze_call_uses): Update.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (varpool_node::externally_visible_p): Do not
+	privatize dynamic TLS variables.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* diagnostic.c (warning_n): New function.
+	* diagnostic-core.h (warning_n): Declare.
+	* ipa-devirt.c (ipa_devirt): Handle singulars correctly;
+	output dynamic counts when available.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63255
+	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering
+	issue in setting body_removed flag.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/61825
+	* c-family/c-common.c (handle_alias_ifunc_attribute): Check
+	that visibility change is possible
+	(handle_weakref_attribute): Likewise.
+	* cgraph.h (symtab_node): Add method get_create and
+	field refuse_visibility_changes.
+	(symtab_node::get_create): New method.
+	* fold-const.c (tree_single_nonzero_warnv_p): Use get_create.
+	* varasm.c (mark_weak): Verify that visibility change is
+	possible.
+
+2014-09-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (fusion_gpr_mem_load): Move testing
+	for base_reg_operand to be common between LO_SUM and PLUS.
+	(fusion_gpr_mem_combo): New predicate to match a fused address
+	that combines the addis and memory offset address.
+
+	* config/rs6000/rs6000-protos.h (fusion_gpr_load_p): Change
+	calling signature.
+	(emit_fusion_gpr_load): Likewise.
+
+	* config/rs6000/rs6000.c (fusion_gpr_load_p): Change calling
+	signature to pass each argument separately, rather than
+	using an operands array.  Rewrite the insns found by peephole2 to
+	be a single insn, rather than hoping the insns will still be
+	together when the peephole pass is done.  Drop being called via a
+	normal peephole.
+	(emit_fusion_gpr_load): Change calling signature to be called from
+	the fusion_gpr_load_<mode> insns with a combined memory address
+	instead of the peephole pass passing the addis and offset
+	separately.
+
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_GPR): New unspec for GPR
+	fusion.
+	(power8 fusion peephole): Drop support for doing power8 via a
+	normal peephole that was created by the peephole2 pass.
+	(power8 fusion peephole2): Create a new insn with the fused
+	address, so that the fused operation is kept together after
+	register allocation is done.
+	(fusion_gpr_load_<mode>): Likewise.
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/63286
+	* tree.c (need_assembler_name_p): Do not mangle variadic types.
+
+2014-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* recog.c (scratch_operand): Do not simply allow all hard registers:
+	only allow those that are allocatable.
+
+2014-09-19  Felix Yang  <felix.yang@huawei.com>
+
+	* cfgrtl.c ira.c ira-color.c ira-conflicts ira-lives.c: Update
+	comments and fix spacing to conform to coding style.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* genrecog.c (validate_pattern): Allow empty constraints in
+	a match_scratch.
+
+2014-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (decl_ultimate_origin): Update comment.
+	* tree.c (block_ultimate_origin): Same.
+
+2014-09-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p):
+	Update GCC version name to GCC 5.
+	(rs6000_function_arg_boundary): Likewise.
+	(rs6000_function_arg): Likewise.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/sh/sh.md: Fix use of constraints in define_split.
+
+2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61998
+	* ipa-devirt.c (ipa_devirt): Bail out if odr_types_ptr is NULL.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/md.texi (Modifiers): Consistently use "read/write"
+	nomenclature rather than "input/output".
+	* genrecog.c (constraints_supported_in_insn_p): New.
+	(validate_pattern): If needed, also check constraints on
+	MATCH_SCRATCH operands.
+	* genoutput.c (validate_insn_alternatives): Catch earlyclobber
+	operands with no '=' or '+' modifier.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Mark
+	scratch register as written.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Remove bogus
+	assignment.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("trunctdsd2", "extendsdtd2"): New
+	expanders.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/62662
+	* config/s390/s390.c (s390_emit_epilogue): When doing the return
+	address load optimization force s390_optimize_prologue to leave it
+	that way.  Only do the optimization if we already decided to push
+	r14 into a stack slot.
+
+2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* asan.c (build_check_stmt): Alignment arg was added.
+	(asan_expand_check_ifn): Optimization for alignment >= 8.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/vxworksae.h: Remove obsolete definitions.
+	(STACK_CHECK_PROTECT): Define.
+	* config/i386/vx-common.h: Remove.  Merge contents within
+	config/i386/vxworks.h.
+	* config.gcc (i?86-vxworks*): Use i386/vxworks.h instead of
+	i386/vx-common.h.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc-wrs-vxworksmils): New configuration.
+	* config/rs6000/t-vxworksmils: New file.
+	* config/rs6000/vxworksmils.h: New file.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* varasm.c (default_section_type_flags): Flag .persistent.bss
+	sections as SECTION_BSS.
+
+2014-09-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_epilogue): Generate a USE of the
+	pop'ed registers so that DCE does not eliminate them.
+
+2014-09-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/63298
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix thinko in a condition.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* system.h (LIBGCC2_TF_CEXT): Poison.
+	* config/i386/cygming.h (LIBGCC2_TF_CEXT): Remove.
+	* config/i386/darwin.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/dragonfly.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/freebsd.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/gnu-user-common.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/openbsdelf.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/i386/sol2.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/ia64/ia64.h (LIBGCC2_TF_CEXT): Likewise.
+	* config/ia64/linux.h (LIBGCC2_TF_CEXT): Likewise.
+
+2014-09-19  Kito Cheng  <kito@0xlab.org>
+
+	* except.h: Fix header guard.
+	* addresses.h: Add missing header guard.
+	* cfghooks.h: Likewise.
+	* collect-utils.h: Likewise.
+	* collect2-aix.h: Likewise.
+	* conditions.h: Likewise.
+	* cselib.h: Likewise.
+	* dwarf2asm.h: Likewise.
+	* graphds.h: Likewise.
+	* graphite-scop-detection.h: Likewise.
+	* gsyms.h: Likewise.
+	* hw-doloop.h: Likewise.
+	* incpath.h: Likewise.
+	* ipa-inline.h: Likewise.
+	* ipa-ref.h: Likewise.
+	* ira-int.h: Likewise.
+	* ira.h: Likewise.
+	* lra-int.h: Likewise.
+	* lra.h: Likewise.
+	* lto-section-names.h: Likewise.
+	* read-md.h: Likewise.
+	* reload.h: Likewise.
+	* rtl-error.h: Likewise.
+	* sdbout.h: Likewise.
+	* targhooks.h: Likewise.
+	* tree-affine.h: Likewise.
+	* xcoff.h: Likewise.
+	* xcoffout.h: Likewise.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/63285
+	* haifa-sched.c (schedule_block): Advance cycle at the end of BB
+	if advance != 0.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/61360
+	* lra.c (lra): Call recog_init.
+
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/62017
+	* asan.c (transform_statements): Don't instrument clobber statements.
+
+2014-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.md (*movmisalign<mode>_neon_load): Change type
+	to neon_load1_1reg<q>.
+
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* tree-cfgcleanup.c (fixup_noreturn_call): Don't split block
+	if there are only debug stmts after the noreturn call, instead
+	remove the debug stmts.
+
+2014-09-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (type_pair, default_hashset_traits): New types.
+	(odr_types_equivalent_p): Use pair hash.
+	(odr_subtypes_equivalent_p): Likewise, do structural compare
+	on ODR types that may be mismatched.
+	(warn_odr): Support warning when only one field is given.
+	(odr_types_equivalent_p): Strenghten comparsions made;
+	support VOIDtype.
+	(add_type_duplicate): Update VISITED hash set.
+
+2014-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (*-*-rtems*): Default to 'rtems' thread model.
+	Enable selection of 'posix' or no thread model.
+
+2014-09-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (arm_option_override): Reject -mfpu=neon
+	when architecture is older than ARMv7.
+
+2014-09-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/61853
+	* config/pa/pa.c (pa_function_value): Directly handle aggregates
+	that fit exactly in a word or double word.
+
+2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect lack of
+	zmm/k regs support.
+
+2014-09-16  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_expand_vector_extract): Handle V32HI and V64QI modes.
+	* config/i386/sse.md
+	(define_mode_iterator VI48F_256): New.
+	(define_mode_attr extract_type): Ditto.
+	(define_mode_attr extract_suf): Ditto.
+	(define_mode_iterator AVX512_VEC): Ditto.
+	(define_expand
+	"<extract_type>_vextract<shuffletype><extract_suf>_mask"): Use
+	AVX512_VEC.
+	(define_insn "avx512dq_vextract<shuffletype>64x2_1_maskm"): New.
+	(define_insn
+	"<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>"):
+	Ditto.
+	(define_mode_attr extract_type_2): Ditto.
+	(define_mode_attr extract_suf_2): Ditto.
+	(define_mode_iterator AVX512_VEC_2): Ditto.
+	(define_expand
+	"<extract_type_2>_vextract<shuffletype><extract_suf_2>_mask"): Use
+	AVX512_VEC_2 mode iterator.
+	(define_insn "vec_extract_hi_<mode>_maskm"): Ditto.
+	(define_expand "avx512vl_vextractf128<mode>"): Ditto.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for V16FI mode): Ditto.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for VI8F_256 mode): Ditto.
+	(define_insn "vec_extract_hi_<mode><mask_name>"): Add masking.
+	(define_insn_and_split "vec_extract_lo_<mode>"): Delete.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): New.
+	(define_split for VI4F_256 mode): Ditto.
+	(define_insn "vec_extract_lo_<mode>_maskm"): Ditto.
+	(define_insn "vec_extract_hi_<mode>_maskm"): Ditto.
+	(define_insn "vec_extract_hi_<mode><mask_name>"): Add masking.
+	(define_mode_iterator VEC_EXTRACT_MODE): Add V64QI and V32HI modes.
+	(define_insn "vcvtph2ps<mask_name>"): Fix pattern condition.
+	(define_insn "avx512f_vextract<shuffletype>32x4_1_maskm"): Ditto.
+	(define_insn "<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>"):
+	Update `type' attribute, remove explicit `memory' attribute calculation.
+
+2014-09-16  Kito Cheng  <kito@0xlab.org>
+
+	* ira.c (ira): Don't initialize ira_spilled_reg_stack_slots and
+	ira_spilled_reg_stack_slots_num if using lra.
+	(do_reload): Remove release ira_spilled_reg_stack_slots part.
+	* ira-color.c (ira_sort_regnos_for_alter_reg): Add assertion to
+	make sure not using lra.
+	(ira_reuse_stack_slot): Likewise.
+	(ira_mark_new_stack_slot): Likewise.
+
+2014-09-15  Andi Kleen  <ak@linux.intel.com>
+
+	* function.c (allocate_struct_function): Force
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT to one when
+	profiling is disabled.
+
+2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
+    
+    	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
+    	config/rs6000/rs6000.c, config/sh/sh.c, cprop.c, dwarf2out.c,
+    	emit-rtl.c, final.c, function.c, gcse.c, jump.c, reg-stack.c,
+    	reload1.c, reorg.c, resource.c, sel-sched-ir.c: Replace INSN_DELETED_P
+    	macro with statically checked member functions.
+    	* rtl.h (rtx_insn::deleted): New method.
+    	(rtx_insn::set_deleted): Likewise.
+    	(rtx_insn::set_undeleted): Likewise.
+    	(INSN_DELETED_P): Remove.
+
+2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Assign the
+	result of emit_jump_insn_before to a new variable.
+	* jump.c (mark_jump_label): Change the type of insn to rtx_insn *.
+	(mark_jump_label_1): Likewise.
+	(mark_jump_label_asm): Likewise.
+	* reload1.c (gen_reload): Change type of tem to rtx_insn *.
+	* rtl.h (mark_jump_label): Adjust.
+
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (dg_target_exps): Remove.
+	(check_gcc_parallelize): Change to just an upper bound number.
+	(check-%-subtargets): Always print the non-parallelized goals.
+	(check_p_vars, check_p_comma, check_p_subwork): Remove.
+	(check_p_count, check_p_numbers0, check_p_numbers1, check_p_numbers2,
+	check_p_numbers3, check_p_numbers4, check_p_numbers5,
+	check_p_numbers6): New variables.
+	(check_p_numbers): Set to sequence from 1 to 9999.
+	(check_p_subdirs): Set to sequence from 1 to minimum of
+	$(check_p_count) and either GCC_TEST_PARALLEL_SLOTS env var if set,
+	or 128.
+	(check-%, check-parallel-%): Rewritten so that for parallelized
+	testing each job runs all the *.exp files, with
+	GCC_RUNTEST_PARALLELIZE_DIR set in environment.
+
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/arc/arc-protos.h (arc_attr_type): Strengthen param from
+	rtx to rtx_insn *.
+	(arc_sets_cc_p): Likewise.
+	* config/arc/arc.c (arc_print_operand): Use methods of
+	"final_sequence" for clarity, and to enable strengthening of
+	locals "jump" and "delay" from rtx to rtx_insn *.
+	(arc_adjust_insn_length): Strengthen local "prev" from rtx to
+	rtx_insn *; use method of rtx_sequence for typesafety.
+	(arc_get_insn_variants): Use insn method of rtx_sequence for
+	typesafety.
+	(arc_pad_return): Likewise.
+	(arc_attr_type): Strengthen param from rtx to rtx_insn *.
+	(arc_sets_cc_p): Likewise.  Also, convert a GET_CODE check to a
+	dyn_cast to rtx_sequence *, using insn method for typesafety.
+	* config/arc/arc.h (ADJUST_INSN_LENGTH): Add checked casts to
+	rtx_sequence * and use insn method when invoking get_attr_length.
+	* config/bfin/bfin.c (type_for_anomaly): Strengthen param from rtx
+	to rtx_insn *.  Replace a GET_CODE check with a dyn_cast to
+	rtx_sequence *, introducing a local "seq", using its insn method
+	from typesafety and clarity.
+	(add_sched_insns_for_speculation): Strengthen local "next" from
+	rtx to rtx_insn *.
+	* config/c6x/c6x.c (get_insn_side): Likewise for param "insn".
+	(predicate_insn): Likewise.
+	* config/cris/cris-protos.h (cris_notice_update_cc): Likewise for
+	second param.
+	* config/cris/cris.c (cris_notice_update_cc): Likewise.
+	* config/epiphany/epiphany-protos.h
+	(extern void epiphany_insert_mode_switch_use): Likewise for param
+	"insn".
+	(get_attr_sched_use_fpu): Likewise for param.
+	* config/epiphany/epiphany.c (epiphany_insert_mode_switch_use):
+	Likewise for param "insn".
+	* config/epiphany/mode-switch-use.c (insert_uses): Likewise for
+	param "insn" of "target_insert_mode_switch_use" callback.
+	* config/frv/frv.c (frv_insn_unit): Likewise for param "insn".
+	(frv_issues_to_branch_unit_p): Likewise.
+	(frv_pack_insn_p): Likewise.
+	(frv_compare_insns): Strengthen locals "insn1" and "insn2" from
+	const rtx * (i.e. mutable rtx_def * const *) to
+	rtx_insn * const *.
+	* config/i386/i386-protos.h (standard_sse_constant_opcode):
+	Strengthen first param from rtx to rtx_insn *.
+	(output_fix_trunc): Likewise.
+	* config/i386/i386.c (standard_sse_constant_opcode): Likewise.
+	(output_fix_trunc): Likewise.
+	(core2i7_first_cycle_multipass_filter_ready_try): Likewise for
+	local "insn".
+	(min_insn_size): Likewise for param "insn".
+	(get_mem_group): Likewise.
+	(is_cmp): Likewise.
+	(get_insn_path): Likewise.
+	(get_insn_group): Likewise.
+	(count_num_restricted): Likewise.
+	(fits_dispatch_window): Likewise.
+	(add_insn_window): Likewise.
+	(add_to_dispatch_window): Likewise.
+	(debug_insn_dispatch_info_file): Likewise.
+	* config/m32c/m32c-protos.h (m32c_output_compare): Likewise for
+	first param.
+	* config/m32c/m32c.c (m32c_compare_redundant): Likewise for param
+	"cmp" and local "prev".
+	(m32c_output_compare): Likewise for param "insn".
+	* config/m32r/predicates.md (define_predicate "small_insn_p"): Add
+	a checked cast to rtx_insn * on "op" after we know it's an INSN_P.
+	(define_predicate "large_insn_p"): Likewise.
+	* config/m68k/m68k-protos.h (m68k_sched_attr_size): Strengthen
+	param from rtx to rtx_insn *.
+	(attr_op_mem m68k_sched_attr_op_mem): Likewise.
+	* config/m68k/m68k.c (sched_get_attr_size_int): Likewise.
+	(m68k_sched_attr_size): Likewise.
+	(sched_get_opxy_mem_type): Likewise for param "insn".
+	(m68k_sched_attr_op_mem): Likewise.
+	(sched_mem_operand_p): Likewise.
+	* config/mep/mep-protos.h (mep_multi_slot): Likewise for param.
+	* config/mep/mep.c (mep_multi_slot): Likewise.
+	* config/mips/mips-protos.h (mips_output_sync_loop): Likewise for
+	first param.
+	(mips_sync_loop_insns): Likewise.
+	* config/mips/mips.c (mips_print_operand_punctuation): Use insn
+	method of "final_sequence" for typesafety.
+	(mips_process_sync_loop): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mips_output_sync_loop): Likewise.
+	(mips_sync_loop_insns): Likewise.
+	(mips_74k_agen_init): Likewise.
+	(mips_sched_init): Use NULL rather than NULL_RTX when working with
+	insns.
+	* config/nds32/nds32-fp-as-gp.c (nds32_symbol_load_store_p):
+	Strengthen param "insn" from rtx to rtx_insn *.
+	* config/nds32/nds32.c (nds32_target_alignment): Likewise for
+	local "insn".
+	* config/pa/pa-protos.h (pa_insn_refs_are_delayed): Likewise for
+	param.
+	* config/pa/pa.c (pa_output_function_epilogue): Likewise for local
+	"insn".  Use method of rtx_sequence for typesafety.
+	(branch_to_delay_slot_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(branch_needs_nop_p): Likewise.
+	(use_skip_p): Likewise.
+	(pa_insn_refs_are_delayed): Likewise.
+	* config/rl78/rl78.c (rl78_propogate_register_origins): Likewise
+	for locals "insn", "ninsn".
+	* config/rs6000/rs6000.c (is_microcoded_insn): Likewise for param
+	"insn".
+	(is_cracked_insn): Likewise.
+	(is_branch_slot_insn): Likewise.
+	(is_nonpipeline_insn): Likewise.
+	(insn_terminates_group_p): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise for param "next_insn".
+	* config/s390/s390.c (s390_get_sched_attrmask): Likewise for param
+	"insn".
+	(s390_sched_score): Likewise.
+	* config/sh/sh-protos.h (output_branch): Likewise for param 2.
+	(rtx sfunc_uses_reg): Likewise for sole param.
+	* config/sh/sh.c (sh_print_operand): Use insn method of
+	final_sequence for typesafety.
+	(output_branch): Strengthen param "insn" from rtx to rtx_insn *.
+	Use insn method of final_sequence for typesafety.
+	(sfunc_uses_reg): Strengthen param "insn" from rtx to rtx_insn *.
+	* config/sparc/sparc-protos.h (eligible_for_call_delay): Likewise
+	for param.
+	(eligible_for_return_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	* config/sparc/sparc.c (eligible_for_call_delay): Likewise.
+	(eligible_for_return_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	* config/stormy16/stormy16-protos.h
+	(xstormy16_output_cbranch_hi): Likewise for final param.
+	(xstormy16_output_cbranch_si): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_output_cbranch_hi): LIkewise.
+	(xstormy16_output_cbranch_si): Likewise.
+	* config/v850/v850-protos.h (notice_update_cc): Likewise.
+	* config/v850/v850.c (notice_update_cc): Likewise.
+
+	* final.c (get_attr_length_1): Strengthen param "insn" and param
+	of "fallback_fn" from rtx to rtx_insn *, eliminating a checked cast.
+	(get_attr_length): Strengthen param "insn" from rtx to rtx_insn *.
+	(get_attr_min_length): Likewise.
+	(shorten_branches): Likewise for signature of locals "length_fun"
+	and "inner_length_fun".  Introduce local rtx_sequence * "seqn"
+	from a checked cast and use its methods for clarity and to enable
+	strengthening local "inner_insn" from rtx to rtx_insn *.
+	* genattr.c (gen_attr): When writing out the prototypes of the
+	various generated "get_attr_" functions, strengthen the params of
+	the non-const functions from rtx to rtx_insn *.
+	Similarly, strengthen the params of insn_default_length,
+	insn_min_length, insn_variable_length_p, insn_current_length.
+	(main): Similarly, strengthen the param of num_delay_slots,
+	internal_dfa_insn_code, insn_default_latency, bypass_p,
+	insn_latency, min_issue_delay, print_reservation,
+	insn_has_dfa_reservation_p and of the "internal_dfa_insn_code" and
+	"insn_default_latency" callbacks.  Rename hook_int_rtx_unreachable
+	to hook_int_rtx_insn_unreachable.
+	* genattrtab.c (write_attr_get): When writing out the generated
+	"get_attr_" functions, strengthen the param "insn" from rtx to
+	rtx_insn *, eliminating a checked cast.
+	(make_automaton_attrs): When writing out prototypes of
+	"internal_dfa_insn_code_", "insn_default_latency_" functions
+	and the "internal_dfa_insn_code" and "insn_default_latency"
+	callbacks, strengthen their params from rtx to rtx_insn *
+	* genautomata.c (output_internal_insn_code_evaluation): When
+	writing out code, add a checked cast from rtx to rtx_insn * when
+	invoking DFA_INSN_CODE_FUNC_NAME aka dfa_insn_code.
+	(output_dfa_insn_code_func): Strengthen param of generated
+	function "dfa_insn_code_enlarge" from rtx to rtx_insn *.
+	(output_trans_func): Likewise for generated function
+	"state_transition".
+	(output_internal_insn_latency_func): When writing out generated
+	function "internal_insn_latency", rename params from "insn" and
+	"insn2" to "insn_or_const0" and "insn2_or_const0".  Reintroduce
+	locals "insn" and "insn2" as rtx_insn * with checked casts once
+	we've proven that we're not dealing with const0_rtx.
+	(output_insn_latency_func):  Strengthen param of generated
+	function "insn_latency" from rtx to rtx_insn *.
+	(output_print_reservation_func): Likewise for generated function
+	"print_reservation".
+	(output_insn_has_dfa_reservation_p): Likewise for generated
+	function "insn_has_dfa_reservation_p".
+	* hooks.c (hook_int_rtx_unreachable): Rename to...
+	(hook_int_rtx_insn_unreachable): ...this, and strengthen param
+	from rtx to rtx_insn *.
+	* hooks.h (hook_int_rtx_unreachable): Likewise.
+	(extern int hook_int_rtx_insn_unreachable): Likewise.
+	* output.h (get_attr_length): Strengthen param from rtx to rtx_insn *.
+	(get_attr_min_length): Likewise.
+	* recog.c (get_enabled_alternatives): Likewise.
+	* recog.h (alternative_mask get_enabled_alternatives): Likewise.
+	* reorg.c (find_end_label): Introduce local rtx "pat" and
+	strengthen local "insn" from rtx to rtx_insn *.
+	(redundant_insn): Use insn method of "seq" rather than element for
+	typesafety; strengthen local "control" from rtx to rtx_insn *.
+	* resource.c (mark_referenced_resources): Add checked cast to
+	rtx_insn * within INSN/JUMP_INSN case.
+	(mark_set_resources): Likewise.
+	* sel-sched.c (estimate_insn_cost): Strengthen param "insn" from
+	rtx to rtx_insn *.
+
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_loop_align_max_skip): Strengthen
+	param "label" from rtx to rtx_insn *.
+	* config/rx/rx.c (rx_max_skip_for_label): Likewise for param "lab"
+	and local "op".
+	* doc/tm.texi (TARGET_ASM_JUMP_ALIGN_MAX_SKIP): Autogenerated changes.
+	(TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Likewise.
+	(TARGET_ASM_LOOP_ALIGN_MAX_SKIP): Likewise.
+	(TARGET_ASM_LABEL_ALIGN_MAX_SKIP): Likewise.
+	* final.c (default_label_align_after_barrier_max_skip): Strengthen
+	param from rtx to rtx_insn *.
+	(default_loop_align_max_skip): Likewise.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+	* target.def (label_align_after_barrier_max_skip): Likewise.
+	(loop_align_max_skip): Likewise.
+	(label_align_max_skip): Likewise.
+	(jump_align_max_skip): Likewise.
+	* targhooks.h (default_label_align_after_barrier_max_skip):
+	Likewise.
+	(default_loop_align_max_skip): Likewise.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/arc/arc.c (arc_can_follow_jump): Strengthen both params
+	from const_rtx to const rtx_insn *.  Update union members from rtx
+	to rtx_insn *.
+	* doc/tm.texi (TARGET_CAN_FOLLOW_JUMP): Autogenerated change.
+	* hooks.c (hook_bool_const_rtx_const_rtx_true): Rename to...
+	(hook_bool_const_rtx_insn_const_rtx_insn_true): ...this, and
+	strengthen both params from const_rtx to const rtx_insn *.
+	* hooks.h (hook_bool_const_rtx_const_rtx_true): Likewise.
+	(hook_bool_const_rtx_insn_const_rtx_insn_true): Likewise.
+	* reorg.c (follow_jumps): Strengthen param "jump" from rtx to
+	rtx_insn *.
+	* target.def (can_follow_jump): Strengthen both params from
+	const_rtx to const rtx_insn *, and update default implementation
+	from hook_bool_const_rtx_const_rtx_true to
+	hook_bool_const_rtx_insn_const_rtx_insn_true.
+
+2014-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* sched-deps.c (deps_start_bb): Strengthen param "head" and local
+	"insn" from rtx to rtx_insn *.
+	* sched-int.h (deps_start_bb): Likewise for 2nd param.
+
+2014-09-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_insn "vcvtph2ps<mask_name>"): Add masking.
+	(define_insn "*vcvtph2ps_load<mask_name>"): Ditto.
+	(define_insn "vcvtph2ps256<mask_name>"): Ditto.
+	(define_expand "vcvtps2ph_mask"): New.
+	(define_insn "*vcvtps2ph<mask_name>"): Add masking.
+	(define_insn "*vcvtps2ph_store<mask_name>"): Ditto.
+	(define_insn "vcvtps2ph256<mask_name>"): Ditto.
+
+2014-09-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (define_mode_iterator VI248_AVX512BW_AVX512VL):
+	New.
+	(define_mode_iterator VI24_AVX512BW_1): Ditto.
+	(define_insn "<mask_codefor>ashr<mode>3<mask_name>"): Ditto.
+	(define_insn "<mask_codefor>ashrv2di3<mask_name>"): Ditto.
+	(define_insn "ashr<VI248_AVX512BW_AVX512VL:mode>3<mask_name>"): Enable
+	also for TARGET_AVX512VL.
+	(define_expand "ashrv2di3"): Update to enable TARGET_AVX512VL.
+
 2014-09-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/install.texi (Options specification): add 

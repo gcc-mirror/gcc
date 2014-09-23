@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_GRAPHDS_H
+#define GCC_GRAPHDS_H
+
 /* Structure representing edge of a graph.  */
 
 struct graph_edge
@@ -59,3 +62,5 @@ void graphds_domtree (struct graph *, int, int *, int *, int *);
 typedef void (*graphds_edge_callback) (struct graph *, struct graph_edge *);
 void for_each_edge (struct graph *, graphds_edge_callback);
 void free_graph (struct graph *g);
+
+#endif /* GCC_GRAPHDS_H */

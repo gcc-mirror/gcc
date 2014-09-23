@@ -822,10 +822,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_v:
       verbose = true;
       break;
-
-    case OPT_Wabi:
-      warn_psabi = value;
-      break;
     }
 
   switch (c_language)

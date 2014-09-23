@@ -231,7 +231,7 @@ gfc_reset_vptr (stmtblock_t *block, gfc_expr *e)
   gfc_ref *ref;
 
   /* If we have a class array, we need go back to the class
-     container. */
+     container.  */
   if (lhs->ref && lhs->ref->next && !lhs->ref->next->next
       && lhs->ref->next->type == REF_ARRAY
       && lhs->ref->next->u.ar.type == AR_FULL
@@ -729,7 +729,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
   ctree = gfc_class_vptr_get (var);
 
   /* The vptr is the second field of the actual argument.
-     First we have to find the corresponding class reference. */
+     First we have to find the corresponding class reference.  */
 
   tmp = NULL_TREE;
   if (class_ref == NULL
@@ -4953,7 +4953,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  && CLASS_DATA (fsym)->attr.codimension
 		  && !CLASS_DATA (fsym)->attr.allocatable)))
 	{
-	  /* Token and offset. */
+	  /* Token and offset.  */
 	  vec_safe_push (stringargs, null_pointer_node);
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
@@ -7391,7 +7391,7 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
     {
       /* A temporary is not needed if the function is not contained and
 	 the variable is local or host associated and not a pointer or
-	 a target. */
+	 a target.  */
       if (!expr2->value.function.esym->attr.contained)
 	return false;
 
@@ -7420,7 +7420,7 @@ realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss,
 			       gfc_loopinfo *loop)
 {
   /* Signal that the function call should not be made by
-     gfc_conv_loop_setup. */
+     gfc_conv_loop_setup.  */
   se->ss->is_alloc_lhs = 1;
   gfc_init_loopinfo (loop);
   gfc_add_ss_to_loop (loop, *ss);
@@ -8252,7 +8252,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      the function call must happen before the (re)allocation of the lhs -
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
-     parameter available to the caller; gfortran saves it in the .mod files. */
+     parameter available to the caller; gfortran saves it in the .mod files.  */
   if (gfc_option.flag_realloc_lhs && expr2->ts.type == BT_CHARACTER
       && expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);

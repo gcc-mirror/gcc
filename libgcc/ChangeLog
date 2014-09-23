@@ -1,3 +1,60 @@
+2014-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/63312
+	* config/ia64/sfp-machine.h (FE_EX_ALL, FP_TRAPPING_EXCEPTIONS):
+	New macros.
+
+2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* crtstuff.c (USE_EH_FRAME_REGISTRY): Let USE_EH_FRAME_REGISTRY_ALWAYS
+	override USE_PT_GNU_EH_FRAME.
+	[__LIBGCC_EH_FRAME_SECTION_NAME__ && !USE_PT_GNU_EH_FRAME]: Sanity-
+	check USE_EH_FRAME_REGISTRY_ALWAYS against
+	__LIBGCC_EH_FRAME_SECTION_NAME__, emit error if unsane.
+	* Makefile.in (FORCE_EXPLICIT_EH_REGISTRY): New
+	variable for substituted force_explicit_eh_registry.
+	(CRTSTUFF_CFLAGS): Add FORCE_EXPLICIT_EH_REGISTRY.
+	* configure.ac (explicit-exception-frame-registration):
+	New AC_ARG_ENABLE.
+	* configure: Regenerate.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworksmils): New configuration,
+	same as vxworksae.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.c (CEXT): Define using __LIBGCC_*_FUNC_EXT__.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/sfp-machine.h (FP_TRAPPING_EXCEPTIONS): Treat clear
+	bits not set bits as indicating trapping exceptions.
+
+2014-09-17  Nathan sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_INTERFACE): Add _gcov_dump from ...
+	(LIBGCOV_DRIVER): ... here.
+	* libgcov-driver.c (gcov_master): New.
+	(gcov_exit): Remove from master chain.
+	(__gcov_init): Add to master chain if version compatible.  Don't
+	clear the version.
+	* libgcov_interface (__gcov_flust): Call gcov_dump_int.
+	(gcov_reset_int): Clear master chain, if compatible.
+	(gcov_dump_int): New internal interface.  Dump master chain, if
+	compatible.
+	(gcov_dump): Alias for gcov_dump_int.
+	* libgcov.h (struct gcov_root): Add next and prev fields.
+	(struct gcov_master): New struct.
+	(__gcov_master): New.
+	(gcov_dump_int): Declare.
+
+2014-09-17  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (x86_64-*-mingw*): Add i386/t-cygming to tmake_file
+	and crtbegin.o + crtend.o to extra_parts.
+
 2014-09-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* libgcc2.h (LIBGCC2_HAS_SF_MODE): Define using

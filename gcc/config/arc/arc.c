@@ -420,7 +420,8 @@ arc_vector_mode_supported_p (enum machine_mode mode)
 /* TARGET_PRESERVE_RELOAD_P is still awaiting patch re-evaluation / review.  */
 static bool arc_preserve_reload_p (rtx in) ATTRIBUTE_UNUSED;
 static rtx arc_delegitimize_address (rtx);
-static bool arc_can_follow_jump (const_rtx follower, const_rtx followee);
+static bool arc_can_follow_jump (const rtx_insn *follower,
+				 const rtx_insn *followee);
 
 static rtx frame_insn (rtx);
 static void arc_function_arg_advance (cumulative_args_t, enum machine_mode,
@@ -2816,13 +2817,13 @@ arc_print_operand (FILE *file, rtx x, int code)
       /* Unconditional branches / branches not depending on condition codes.
 	 This could also be a CALL_INSN.
 	 Output the appropriate delay slot suffix.  */
-      if (final_sequence && XVECLEN (final_sequence, 0) != 1)
+      if (final_sequence && final_sequence->len () != 1)
 	{
-	  rtx jump = XVECEXP (final_sequence, 0, 0);
-	  rtx delay = XVECEXP (final_sequence, 0, 1);
+	  rtx_insn *jump = final_sequence->insn (0);
+	  rtx_insn *delay = final_sequence->insn (1);
 
 	  /* For TARGET_PAD_RETURN we might have grabbed the delay insn.  */
-	  if (INSN_DELETED_P (delay))
+	  if (delay->deleted ())
 	    return;
 	  if (JUMP_P (jump) && INSN_ANNULLED_BRANCH_P (jump))
 	    fputs (INSN_FROM_TARGET_P (delay) ? ".d"
@@ -3747,7 +3748,7 @@ arc_ccfsm_record_condition (rtx cond, bool reverse, rtx_insn *jump,
     {
       rtx insn = XVECEXP (PATTERN (seq_insn), 0, 1);
 
-      if (!INSN_DELETED_P (insn)
+      if (!as_a<rtx_insn *> (insn)->deleted ()
 	  && INSN_ANNULLED_BRANCH_P (jump)
 	  && (TARGET_AT_DBR_CONDEXEC || INSN_FROM_TARGET_P (insn)))
 	{
@@ -7827,12 +7828,13 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
       && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
       && get_attr_type (insn) == TYPE_RETURN)
     {
-      rtx prev = prev_active_insn (insn);
+      rtx_insn *prev = prev_active_insn (insn);
 
       if (!prev || !(prev = prev_active_insn (prev))
 	  || ((NONJUMP_INSN_P (prev)
 	       && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	      ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	      ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+			   NON_SIBCALL)
 	      : CALL_ATTR (prev, NON_SIBCALL)))
 	return len + 4;
     }
@@ -7914,7 +7916,7 @@ arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
 	 entire SEQUENCE.  */
       rtx_insn *inner;
       if (TARGET_UPSIZE_DBR
-	  && get_attr_length (XVECEXP (pat, 0, 1)) <= 2
+	  && get_attr_length (pat->insn (1)) <= 2
 	  && (((type = get_attr_type (inner = pat->insn (0)))
 	       == TYPE_UNCOND_BRANCH)
 	      || type == TYPE_BRANCH)
@@ -7960,7 +7962,8 @@ arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
   rtx_insn *prev = prev_active_insn (insn);
   if (prev && arc_next_active_insn (prev, 0) == insn
       && ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+		       NON_SIBCALL)
 	  : (CALL_ATTR (prev, NON_SIBCALL)
 	     && NEXT_INSN (PREV_INSN (prev)) == prev)))
     force_target = true;
@@ -8624,7 +8627,7 @@ arc_unalign_branch_p (rtx branch)
     return 0;
   /* Do not do this if we have a filled delay slot.  */
   if (get_attr_delay_slot_filled (branch) == DELAY_SLOT_FILLED_YES
-      && !INSN_DELETED_P (NEXT_INSN (branch)))
+      && !NEXT_INSN (branch)->deleted ())
     return 0;
   note = find_reg_note (branch, REG_BR_PROB, 0);
   return (!note
@@ -8677,7 +8680,8 @@ arc_pad_return (void)
     }
   if (!prev
       || ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
+	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
+		       NON_SIBCALL)
 	  : CALL_ATTR (prev, NON_SIBCALL)))
     {
       if (want_long)
@@ -8705,7 +8709,7 @@ arc_pad_return (void)
 	  rtx save_pred = current_insn_predicate;
 	  final_scan_insn (prev, asm_out_file, optimize, 1, NULL);
 	  cfun->machine->force_short_suffix = -1;
-	  INSN_DELETED_P (prev) = 1;
+	  prev->set_deleted ();
 	  current_output_insn = insn;
 	  current_insn_predicate = save_pred;
 	}
@@ -9077,7 +9081,7 @@ arc_regno_use_in (unsigned int regno, rtx x)
    INSN can't have attributes.  */
 
 int
-arc_attr_type (rtx insn)
+arc_attr_type (rtx_insn *insn)
 {
   if (NONJUMP_INSN_P (insn)
       ? (GET_CODE (PATTERN (insn)) == USE
@@ -9093,10 +9097,11 @@ arc_attr_type (rtx insn)
 /* Return true if insn sets the condition codes.  */
 
 bool
-arc_sets_cc_p (rtx insn)
+arc_sets_cc_p (rtx_insn *insn)
 {
-  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
+  if (NONJUMP_INSN_P (insn))
+    if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+      insn = seq->insn (seq->len () - 1);
   return arc_attr_type (insn) == TYPE_COMPARE;
 }
 
@@ -9214,10 +9219,10 @@ arc_decl_pretend_args (tree decl)
   to redirect two breqs.  */
 
 static bool
-arc_can_follow_jump (const_rtx follower, const_rtx followee)
+arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
 {
   /* ??? get_attr_type is declared to take an rtx.  */
-  union { const_rtx c; rtx r; } u;
+  union { const rtx_insn *c; rtx_insn *r; } u;
 
   u.c = follower;
   if (CROSSING_JUMP_P (followee))

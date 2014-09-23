@@ -1238,7 +1238,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	    continue;
 
 	  while (last_combined_insn
-		 && INSN_DELETED_P (last_combined_insn))
+		 && last_combined_insn->deleted ())
 	    last_combined_insn = PREV_INSN (last_combined_insn);
 	  if (last_combined_insn == NULL_RTX
 	      || BARRIER_P (last_combined_insn)
@@ -5121,15 +5121,13 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		      )
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
 		  if (code == SUBREG
 		      && REG_P (to)
 		      && REGNO (to) < FIRST_PSEUDO_REGISTER
-		      && REG_CANNOT_CHANGE_MODE_P (REGNO (to),
-						   GET_MODE (to),
-						   GET_MODE (x)))
+		      && simplify_subreg_regno (REGNO (to), GET_MODE (to),
+						SUBREG_BYTE (x),
+						GET_MODE (x)) < 0)
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
-#endif
 
 		  new_rtx = (unique_copy && n_occurrences ? copy_rtx (to) : to);
 		  n_occurrences++;

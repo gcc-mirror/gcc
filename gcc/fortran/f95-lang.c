@@ -342,7 +342,7 @@ getdecls (void)
   return current_binding_level->names;
 }
 
-/* Enter a new binding level. */
+/* Enter a new binding level.  */
 
 void
 pushlevel (void)
@@ -410,7 +410,7 @@ poplevel (int keep, int functionbody)
   current_binding_level = current_binding_level->level_chain;
 
   if (functionbody)
-    /* This is the top level block of a function. */
+    /* This is the top level block of a function.  */
     DECL_INITIAL (current_function_decl) = block_node;
   else if (current_binding_level == global_binding_level)
     /* When using gfc_start_block/gfc_finish_block from middle-end hooks,

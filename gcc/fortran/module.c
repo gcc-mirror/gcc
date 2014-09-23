@@ -1758,7 +1758,7 @@ unquote_string (const char *s)
       if (p[1] == '\\')
 	p++;
       else if (p[1] == 'U')
-	p += 9; /* That is a "\U????????". */
+	p += 9; /* That is a "\U????????".  */
       else
 	gfc_internal_error ("unquote_string(): got bad string");
     }
@@ -6329,7 +6329,7 @@ import_iso_c_binding_module (void)
 		break;
 #include "iso-c-binding.def"
 	      default:
-		; /* Not GFC_STD_* versioned. */
+		; /* Not GFC_STD_* versioned.  */
 	    }
 
 	  switch (i)
@@ -6891,7 +6891,7 @@ gfc_use_module (gfc_use_list *module)
 }
 
 
-/* Remove duplicated intrinsic operators from the rename list. */
+/* Remove duplicated intrinsic operators from the rename list.  */
 
 static void
 rename_list_remove_duplicate (gfc_use_rename *list)

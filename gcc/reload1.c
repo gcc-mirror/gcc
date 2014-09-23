@@ -8594,7 +8594,7 @@ static rtx_insn *
 gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx_insn *last = get_last_insn ();
-  rtx tem;
+  rtx_insn *tem;
 #ifdef SECONDARY_MEMORY_NEEDED
   rtx tem1, tem2;
 #endif
@@ -8847,7 +8847,7 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
 
   /* It is possible that this reload has been only used to set another reload
      we eliminated earlier and thus deleted this instruction too.  */
-  if (INSN_DELETED_P (output_reload_insn))
+  if (output_reload_insn->deleted ())
     return;
 
   /* Get the raw pseudo-register referred to.  */

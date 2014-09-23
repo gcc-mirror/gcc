@@ -9083,11 +9083,14 @@ s390_emit_epilogue (bool sibcall)
       if (! sibcall)
 	{
 	  /* Fetch return address from stack before load multiple,
-	     this will do good for scheduling.  */
+	     this will do good for scheduling.
 
-	  if (cfun_frame_layout.save_return_addr_p
-	      || (cfun_frame_layout.first_restore_gpr < BASE_REGNUM
-		  && cfun_frame_layout.last_restore_gpr > RETURN_REGNUM))
+	     Only do this if we already decided that r14 needs to be
+	     saved to a stack slot. (And not just because r14 happens to
+	     be in between two GPRs which need saving.)  Otherwise it
+	     would be difficult to take that decision back in
+	     s390_optimize_prologue.  */
+	  if (cfun_gpr_save_slot (RETURN_REGNUM) == -1)
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
 	      if (!return_regnum)
@@ -9102,6 +9105,12 @@ s390_emit_epilogue (bool sibcall)
 	      addr = gen_rtx_MEM (Pmode, addr);
 	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (return_reg, addr);
+
+	      /* Once we did that optimization we have to make sure
+		 s390_optimize_prologue does not try to remove the
+		 store of r14 since we will not be able to find the
+		 load issued here.  */
+	      cfun_frame_layout.save_return_addr_p = true;
 	    }
 	}
 
@@ -11504,7 +11513,7 @@ static int s390_sched_state;
 #define S390_OOO_SCHED_ATTR_MASK_GROUPALONE 0x8
 
 static unsigned int
-s390_get_sched_attrmask (rtx insn)
+s390_get_sched_attrmask (rtx_insn *insn)
 {
   unsigned int mask = 0;
 
@@ -11523,7 +11532,7 @@ s390_get_sched_attrmask (rtx insn)
    better.  The score is calculated from the OOO scheduling attributes
    of INSN and the scheduling state s390_sched_state.  */
 static int
-s390_sched_score (rtx insn)
+s390_sched_score (rtx_insn *insn)
 {
   unsigned int mask = s390_get_sched_attrmask (insn);
   int score = 0;

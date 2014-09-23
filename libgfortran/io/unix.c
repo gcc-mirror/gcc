@@ -1525,11 +1525,7 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
       goto done;
     }
 # endif
-
-  if (len != u->file_len)
-    ret = 0;
-  else
-    ret = (memcmp(path, u->file, len) == 0);
+  ret = (strcmp(path, u->filename) == 0);
 #endif
  done:
   free (path);
@@ -1541,8 +1537,8 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
 # define FIND_FILE0_DECL struct stat *st
 # define FIND_FILE0_ARGS st
 #else
-# define FIND_FILE0_DECL uint64_t id, const char *file, gfc_charlen_type file_len
-# define FIND_FILE0_ARGS id, file, file_len
+# define FIND_FILE0_DECL uint64_t id, const char *path
+# define FIND_FILE0_ARGS id, path
 #endif
 
 /* find_file0()-- Recursive work function for find_file() */
@@ -1574,7 +1570,7 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
     }
   else
 # endif
-    if (compare_string (u->file_len, u->file, file_len, file) == 0)
+    if (strcmp (u->filename, path) == 0)
       return u;
 #endif
 
@@ -1718,10 +1714,7 @@ flush_all_units (void)
 int
 delete_file (gfc_unit * u)
 {
-  char *path = fc_strdup (u->file, u->file_len);
-  int err = unlink (path);
-  free (path);
-  return err;
+  return unlink (u->filename);
 }
 
 

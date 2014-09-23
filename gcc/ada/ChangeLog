@@ -1,3 +1,21 @@
+2014-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust comment.
+	* gcc-interface/utils.c (gnat_write_global_declarations): Fix typo.
+
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/Make-lang.in (check_acats_numbers0,
+	check_acats_numbers1, check_acats_numbers2, check_acats_numbers3,
+	check_acats_numbers4, check_acats_numbers5, check_acats_numbers6,
+	check_acats_numbers, check_acats_subdirs): New variables.
+	(check_acats_targets): Use $(check_acats_subdirs).
+	(check-acats, check-acats%): Rewritten so that for parallelized
+	testing each job runs all the chapters files, with
+	GCC_RUNTEST_PARALLELIZE_DIR set in environment.  Prepare the support
+	directory sequentially and share it.
+	(check-acats-subtargets): Always print just check-acats.
+
 2014-08-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Adjust to
@@ -342,20 +360,20 @@
 
 2014-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
-        * gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Deal with
-        renaming discriminants in tagged types first.
-        * gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Test
-        the underlying type of the prefix.
-        (Pragma_to_gnu, case Pragma_Warning): Ignore Reason => "..."
-        (process_freeze_entity): Reset the nodes of
-        all the view of a type, if any.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Deal with
+	renaming discriminants in tagged types first.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Test
+	the underlying type of the prefix.
+	(Pragma_to_gnu, case Pragma_Warning): Ignore Reason => "..."
+	(process_freeze_entity): Reset the nodes of all the view of a type,
+	if any.
 
 2014-08-04  Doug Rupp  <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
-        * gcc-interface/Makefile.in (x86 VxWorks): Add filter-out for vxworks7
+	* gcc-interface/Makefile.in (x86 VxWorks): Add filter-out for vxworks7
 	and remove incorrect EH_MECHANISM macros.
-        Add sigtramp.h to EXTRA_LIBGNAT_SRCS when we add sigtramp-vxworks.o to
+	Add sigtramp.h to EXTRA_LIBGNAT_SRCS when we add sigtramp-vxworks.o to
 	EXTRA_LIBGNAT_OBJS.
 
 2014-08-04  Robert Dewar  <dewar@adacore.com>
@@ -2157,8 +2175,8 @@
 2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (lookup_and_insert_pad_type): New function
-        extracted from...
-        (maybe_pad_type): ...here.  Call it to canonicalize the pad type.
+	extracted from...
+	(maybe_pad_type): ...here.  Call it to canonicalize the pad type.
 	* gcc-interface/gigi.h: Update comment.
 
 2014-07-31  Javier Miranda  <miranda@adacore.com>
@@ -7871,7 +7889,7 @@
 	* gcc-interface/misc.c (internal_error_function): Likewise.
 
 2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
-            Pierre-Marie de Rodat  <derodat@adacore.com>
+	    Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create a mere
 	scalar constant instead of a reference for renaming of scalar literal.
@@ -7932,7 +7950,7 @@
 	(gnat_gimplify_stmt) <LOOP_STMT>: Propagate loop hints.
 
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
-            Robert Dewar  <dewar@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (Suppress_Back_Annotation): Remove as unused.
 	* fe.h (Back_Annotate_Rep_Info): Likewise.

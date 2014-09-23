@@ -43,7 +43,7 @@ insert_uses (void)
   static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
 #define N_ENTITIES ARRAY_SIZE (num_modes)
   int e;
-  void (*target_insert_mode_switch_use) (rtx insn, int, int)
+  void (*target_insert_mode_switch_use) (rtx_insn *insn, int, int)
     = TARGET_INSERT_MODE_SWITCH_USE;
 
   for (e = N_ENTITIES - 1; e >= 0; e--)

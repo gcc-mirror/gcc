@@ -490,6 +490,7 @@ is_a_helper <const rtx_sequence *>::test (const_rtx rt)
 
 class GTY(()) rtx_insn : public rtx_def
 {
+public:
   /* No extra fields, but adds the invariant:
 
      (INSN_P (X)
@@ -505,6 +506,18 @@ class GTY(()) rtx_insn : public rtx_def
     i.e. we have an rtx that has an INSN_UID field and can be part of
     a linked list of insns.
   */
+
+  /* Returns true if this insn has been deleted.  */
+
+  bool deleted () const { return volatil; }
+
+  /* Mark this insn as deleted.  */
+
+  void set_deleted () { volatil = true; }
+
+  /* Mark this insn as not deleted.  */
+
+  void set_undeleted () { volatil = false; }
 };
 
 /* Subclasses of rtx_insn.  */
@@ -1406,10 +1419,6 @@ inline rtvec rtx_jump_table_data::get_labels () const
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\
 		    CALL_INSN, JUMP_INSN, BARRIER, SET)->frame_related)
 
-/* 1 if RTX is an insn that has been deleted.  */
-#define INSN_DELETED_P(RTX)						\
-  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_DELETED_P", (RTX))->volatil)
-
 /* 1 if JUMP RTX is a crossing jump.  */
 #define CROSSING_JUMP_P(RTX) \
   (RTL_FLAG_CHECK1 ("CROSSING_JUMP_P", (RTX), JUMP_INSN)->jump)
@@ -1820,6 +1829,64 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
 {
   c->speed += COSTS_N_INSNS (n);
   c->size += COSTS_N_INSNS (n);
+}
+
+/* Describes the shape of a subreg:
+
+   inner_mode == the mode of the SUBREG_REG
+   offset     == the SUBREG_BYTE
+   outer_mode == the mode of the SUBREG itself.  */
+struct subreg_shape {
+  subreg_shape (enum machine_mode, unsigned int, enum machine_mode);
+  bool operator == (const subreg_shape &) const;
+  bool operator != (const subreg_shape &) const;
+  unsigned int unique_id () const;
+
+  enum machine_mode inner_mode;
+  unsigned int offset;
+  enum machine_mode outer_mode;
+};
+
+inline
+subreg_shape::subreg_shape (enum machine_mode inner_mode_in,
+			    unsigned int offset_in,
+			    enum machine_mode outer_mode_in)
+  : inner_mode (inner_mode_in), offset (offset_in), outer_mode (outer_mode_in)
+{}
+
+inline bool
+subreg_shape::operator == (const subreg_shape &other) const
+{
+  return (inner_mode == other.inner_mode
+	  && offset == other.offset
+	  && outer_mode == other.outer_mode);
+}
+
+inline bool
+subreg_shape::operator != (const subreg_shape &other) const
+{
+  return !operator == (other);
+}
+
+/* Return an integer that uniquely identifies this shape.  Structures
+   like rtx_def assume that a mode can fit in an 8-bit bitfield and no
+   current mode is anywhere near being 65536 bytes in size, so the
+   id comfortably fits in an int.  */
+
+inline unsigned int
+subreg_shape::unique_id () const
+{
+  STATIC_ASSERT (MAX_MACHINE_MODE <= 256);
+  return (int) inner_mode + ((int) outer_mode << 8) + (offset << 16);
+}
+
+/* Return the shape of a SUBREG rtx.  */
+
+static inline subreg_shape
+shape_of_subreg (const_rtx x)
+{
+  return subreg_shape (GET_MODE (SUBREG_REG (x)),
+		       SUBREG_BYTE (x), GET_MODE (x));
 }
 
 /* Information about an address.  This structure is supposed to be able
@@ -2661,7 +2728,7 @@ extern enum rtx_code reverse_condition_maybe_unordered (enum rtx_code);
 extern enum rtx_code swap_condition (enum rtx_code);
 extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
-extern void mark_jump_label (rtx, rtx, int);
+extern void mark_jump_label (rtx, rtx_insn *, int);
 
 /* In jump.c */
 extern rtx_insn *delete_related_insns (rtx);
@@ -2718,6 +2785,9 @@ extern bool val_signbit_known_clear_p (enum machine_mode,
 /* In reginfo.c  */
 extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
+#ifdef HARD_CONST
+extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
+#endif
 
 /* In emit-rtl.c  */
 extern rtx set_for_reg_notes (rtx);
@@ -2866,10 +2936,13 @@ struct subreg_info
 {
   /* Offset of first hard register involved in the subreg.  */
   int offset;
-  /* Number of hard registers involved in the subreg.  */
+  /* Number of hard registers involved in the subreg.  In the case of
+     a paradoxical subreg, this is the number of registers that would
+     be modified by writing to the subreg; some of them may be don't-care
+     when reading from the subreg.  */
   int nregs;
   /* Whether this subreg can be represented as a hard reg with the new
-     mode.  */
+     mode (by adding OFFSET to the original hard register).  */
   bool representable_p;
 };
 

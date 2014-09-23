@@ -1136,10 +1136,19 @@ rl78_expand_epilogue (void)
   for (i = 15; i >= 0; i--)
     if (cfun->machine->need_to_push [i])
       {
+	rtx dest = gen_rtx_REG (HImode, i * 2);
+
 	if (TARGET_G10)
 	  {
-	    emit_insn (gen_pop (gen_rtx_REG (HImode, 0)));
-	    emit_move_insn (gen_rtx_REG (HImode, i*2), gen_rtx_REG (HImode, 0));
+	    rtx ax = gen_rtx_REG (HImode, 0);
+
+	    emit_insn (gen_pop (ax));
+	    if (i != 0)
+	      {
+		emit_move_insn (dest, ax);
+		/* Generate a USE of the pop'd register so that DCE will not eliminate the move.  */
+		emit_insn (gen_use (dest));
+	      }
 	  }
 	else
 	  {
@@ -1150,7 +1159,7 @@ rl78_expand_epilogue (void)
 		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
 		rb = need_bank;
 	      }
-	    emit_insn (gen_pop (gen_rtx_REG (HImode, i * 2)));
+	    emit_insn (gen_pop (dest));
 	  }
       }
 
@@ -3385,7 +3394,7 @@ rl78_propogate_register_origins (void)
   int origins[FIRST_PSEUDO_REGISTER];
   int age[FIRST_PSEUDO_REGISTER];
   int i;
-  rtx insn, ninsn = NULL_RTX;
+  rtx_insn *insn, *ninsn = NULL;
   rtx pat;
 
   reset_origins (origins, age);

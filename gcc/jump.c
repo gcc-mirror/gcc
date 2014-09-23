@@ -65,8 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static void init_label_info (rtx_insn *);
 static void mark_all_labels (rtx_insn *);
-static void mark_jump_label_1 (rtx, rtx, bool, bool);
-static void mark_jump_label_asm (rtx, rtx);
+static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
+static void mark_jump_label_asm (rtx, rtx_insn *);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
 
@@ -291,7 +291,7 @@ mark_all_labels (rtx_insn *f)
 	     handled by other optimizers using better algorithms.  */
 	  FOR_BB_INSNS (bb, insn)
 	    {
-	      gcc_assert (! INSN_DELETED_P (insn));
+	      gcc_assert (! insn->deleted ());
 	      if (NONDEBUG_INSN_P (insn))
 	        mark_jump_label (PATTERN (insn), insn, 0);
 	    }
@@ -312,7 +312,7 @@ mark_all_labels (rtx_insn *f)
       rtx_insn *prev_nonjump_insn = NULL;
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	{
-	  if (INSN_DELETED_P (insn))
+	  if (insn->deleted ())
 	    ;
 	  else if (LABEL_P (insn))
 	    prev_nonjump_insn = NULL;
@@ -1066,7 +1066,7 @@ sets_cc0_p (const_rtx x)
    that loop-optimization is done with.  */
 
 void
-mark_jump_label (rtx x, rtx insn, int in_mem)
+mark_jump_label (rtx x, rtx_insn *insn, int in_mem)
 {
   rtx asmop = extract_asm_operands (x);
   if (asmop)
@@ -1083,7 +1083,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
    note.  */
 
 static void
-mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
+mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
 {
   RTX_CODE code = GET_CODE (x);
   int i;
@@ -1156,7 +1156,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 	  break;
 
 	LABEL_REF_LABEL (x) = label;
-	if (! insn || ! INSN_DELETED_P (insn))
+	if (! insn || ! insn->deleted ())
 	  ++LABEL_NUSES (label);
 
 	if (insn)
@@ -1187,12 +1187,12 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
        ADDR_DIFF_VEC.  Don't set the JUMP_LABEL of a vector.  */
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-      if (! INSN_DELETED_P (insn))
+      if (! insn->deleted ())
 	{
 	  int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
 	  for (i = 0; i < XVECLEN (x, eltnum); i++)
-	    mark_jump_label_1 (XVECEXP (x, eltnum, i), NULL_RTX, in_mem,
+	    mark_jump_label_1 (XVECEXP (x, eltnum, i), NULL, in_mem,
 			       is_target);
 	}
       return;
@@ -1227,7 +1227,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
    need to be considered targets.  */
 
 static void
-mark_jump_label_asm (rtx asmop, rtx insn)
+mark_jump_label_asm (rtx asmop, rtx_insn *insn)
 {
   int i;
 
@@ -1254,11 +1254,11 @@ delete_related_insns (rtx uncast_insn)
   rtx note;
   rtx_insn *next = NEXT_INSN (insn), *prev = PREV_INSN (insn);
 
-  while (next && INSN_DELETED_P (next))
+  while (next && next->deleted ())
     next = NEXT_INSN (next);
 
   /* This insn is already deleted => return first following nondeleted.  */
-  if (INSN_DELETED_P (insn))
+  if (insn->deleted ())
     return next;
 
   delete_insn (insn);
@@ -1279,7 +1279,7 @@ delete_related_insns (rtx uncast_insn)
     {
       rtx_insn *p;
 
-      for (p = next && INSN_DELETED_P (next) ? NEXT_INSN (next) : next;
+      for (p = next && next->deleted () ? NEXT_INSN (next) : next;
 	   p && NOTE_P (p);
 	   p = NEXT_INSN (p))
 	if (NOTE_KIND (p) == NOTE_INSN_CALL_ARG_LOCATION)
@@ -1323,7 +1323,7 @@ delete_related_insns (rtx uncast_insn)
       for (i = 0; i < len; i++)
 	if (LABEL_NUSES (XEXP (RTVEC_ELT (labels, i), 0)) == 0)
 	  delete_related_insns (XEXP (RTVEC_ELT (labels, i), 0));
-      while (next && INSN_DELETED_P (next))
+      while (next && next->deleted ())
 	next = NEXT_INSN (next);
       return next;
     }
@@ -1339,7 +1339,7 @@ delete_related_insns (rtx uncast_insn)
 	if (LABEL_NUSES (XEXP (note, 0)) == 0)
 	  delete_related_insns (XEXP (note, 0));
 
-  while (prev && (INSN_DELETED_P (prev) || NOTE_P (prev)))
+  while (prev && (prev->deleted () || NOTE_P (prev)))
     prev = PREV_INSN (prev);
 
   /* If INSN was a label and a dispatch table follows it,
@@ -1362,7 +1362,7 @@ delete_related_insns (rtx uncast_insn)
 	  if (code == NOTE)
 	    next = NEXT_INSN (next);
 	  /* Keep going past other deleted labels to delete what follows.  */
-	  else if (code == CODE_LABEL && INSN_DELETED_P (next))
+	  else if (code == CODE_LABEL && next->deleted ())
 	    next = NEXT_INSN (next);
 	  /* Keep the (use (insn))s created by dbr_schedule, which needs
 	     them in order to track liveness relative to a previous
@@ -1386,7 +1386,7 @@ delete_related_insns (rtx uncast_insn)
      but I see no clean and sure alternative way
      to find the first insn after INSN that is not now deleted.
      I hope this works.  */
-  while (next && INSN_DELETED_P (next))
+  while (next && next->deleted ())
     next = NEXT_INSN (next);
   return next;
 }
@@ -1408,7 +1408,7 @@ delete_for_peephole (rtx_insn *from, rtx_insn *to)
 
       if (!NOTE_P (insn))
 	{
-	  INSN_DELETED_P (insn) = 1;
+	  insn->set_deleted();
 
 	  /* Patch this insn out of the chain.  */
 	  /* We don't do this all at once, because we
