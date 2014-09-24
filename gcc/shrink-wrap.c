@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "regcprop.h"
+#include "rtl-iter.h"
 
 #ifdef HAVE_simple_return
 
@@ -169,7 +170,9 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 {
   rtx set, src, dest;
   bitmap live_out, live_in, bb_uses, bb_defs;
-  unsigned int i, dregno, end_dregno, sregno, end_sregno;
+  unsigned int i, dregno, end_dregno;
+  unsigned int sregno = FIRST_PSEUDO_REGISTER;
+  unsigned int end_sregno = FIRST_PSEUDO_REGISTER;
   basic_block next_block;
   edge live_edge;
 
@@ -179,7 +182,34 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
     return false;
   src = SET_SRC (set);
   dest = SET_DEST (set);
-  if (!REG_P (dest) || !REG_P (src)
+
+  if (!REG_P (src))
+    {
+      unsigned int reg_num = 0;
+      unsigned int nonconstobj_num = 0;
+      rtx src_inner = NULL_RTX;
+
+      subrtx_var_iterator::array_type array;
+      FOR_EACH_SUBRTX_VAR (iter, array, src, ALL)
+	{
+	  rtx x = *iter;
+	  if (REG_P (x))
+	    {
+	      reg_num++;
+	      src_inner = x;
+	    }
+	  else if (!CONSTANT_P (x) && OBJECT_P (x))
+	    nonconstobj_num++;
+	}
+
+      if (nonconstobj_num > 0
+	  || reg_num > 1)
+	src = NULL_RTX;
+      else if (reg_num == 1)
+	src = src_inner;
+    }
+
+  if (!REG_P (dest) || src == NULL_RTX
       /* STACK or FRAME related adjustment might be part of prologue.
 	 So keep them in the entry block.  */
       || dest == stack_pointer_rtx
@@ -188,10 +218,13 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
     return false;
 
   /* Make sure that the source register isn't defined later in BB.  */
-  sregno = REGNO (src);
-  end_sregno = END_REGNO (src);
-  if (overlaps_hard_reg_set_p (defs, GET_MODE (src), sregno))
-    return false;
+  if (REG_P (src))
+    {
+      sregno = REGNO (src);
+      end_sregno = END_REGNO (src);
+      if (overlaps_hard_reg_set_p (defs, GET_MODE (src), sregno))
+	return false;
+    }
 
   /* Make sure that the destination register isn't referenced later in BB.  */
   dregno = REGNO (dest);

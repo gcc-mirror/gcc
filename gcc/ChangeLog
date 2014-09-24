@@ -1,3 +1,8 @@
+2014-09-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Add further check when
+	!REG_P (src) to release more instruction sink opportunities.
+
 2014-09-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_register_move_cost): Add register
