@@ -1,3 +1,7 @@
+2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/pr63210.c: New test.
+
 2014-09-23  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.dg/noreorder.c: New test.

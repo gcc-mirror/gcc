@@ -1,3 +1,9 @@
+2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	PR rtl-optimization/63210
+	* ira-color.c (assign_hard_reg): Ignore conflict cost if the
+	HARD_REGNO is not available for CONFLICT_A.
+
 2014-09-23  Andi Kleen  <ak@linux.intel.com>
 
 	* cgraph.h (symtab_node): Add no_reorder attribute.
