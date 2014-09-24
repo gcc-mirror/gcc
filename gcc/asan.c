@@ -2585,19 +2585,26 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	  gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
 	  gimple_seq seq = NULL;
 	  gimple_seq_add_stmt (&seq, shadow_test);
-	  /* Aligned (>= 8 bytes) access do not need & 7.  */
+	  /* Aligned (>= 8 bytes) can test just
+	     (real_size_in_bytes - 1 >= shadow), as base_addr & 7 is known
+	     to be 0.  */
 	  if (align < 8)
-	    gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
-						     base_addr, 7));
-	  gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
-						      gimple_seq_last (seq)));
-	  if (real_size_in_bytes > 1)
-	    gimple_seq_add_stmt (&seq,
-				 build_assign (PLUS_EXPR, gimple_seq_last (seq),
-					       real_size_in_bytes - 1));
-	  gimple_seq_add_stmt (&seq, build_assign (GE_EXPR,
+	    {
+	      gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
+						       base_addr, 7));
+	      gimple_seq_add_stmt (&seq,
+				   build_type_cast (shadow_type,
+						    gimple_seq_last (seq)));
+	      if (real_size_in_bytes > 1)
+		gimple_seq_add_stmt (&seq,
+				     build_assign (PLUS_EXPR,
 						   gimple_seq_last (seq),
-						   shadow));
+						   real_size_in_bytes - 1));
+	      t = gimple_assign_lhs (gimple_seq_last_stmt (seq));
+	    }
+	  else
+	    t = build_int_cst (shadow_type, real_size_in_bytes - 1);
+	  gimple_seq_add_stmt (&seq, build_assign (GE_EXPR, t, shadow));
 	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, shadow_test,
 						   gimple_seq_last (seq)));
 	  t = gimple_assign_lhs (gimple_seq_last (seq));
