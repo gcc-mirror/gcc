@@ -1,3 +1,8 @@
+2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Make GLIBCXX_3.4 patterns stricter so the
+	new GLIBCXX_3.4.21 symbols don't match them.
+
 2014-09-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/29988
