@@ -1,3 +1,8 @@
+2014-09-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Add register
+	move costs for 128-bit types.
+
 2014-09-24  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_edge_duplication_hook): Update controlled_use_count
