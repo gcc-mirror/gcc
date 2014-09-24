@@ -1127,7 +1127,8 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	  error ("switch quantity not an integer");
 	  cond = error_mark_node;
 	}
-      orig_type = TREE_TYPE (cond);
+      /* We want unlowered type here to handle enum bit-fields.  */
+      orig_type = unlowered_expr_type (cond);
       if (cond != error_mark_node)
 	{
 	  /* Warn if the condition has boolean value.  */

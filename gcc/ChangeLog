@@ -1,3 +1,12 @@
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* asan.c (maybe_instrument_call): Add default case.
+	* ipa-pure-const.c (special_builtin_state): Likewise.
+	* predict.c (expr_expected_value_1): Likewise.
+	* lto-streamer-out.c (write_symbol): Initialize variable.
+
 2014-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/arm_neon.h (vmuld_lane_f64): Use macro for getting

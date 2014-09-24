@@ -1902,6 +1902,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		if (predictor)
 		  *predictor = PRED_COMPARE_AND_SWAP;
 		return boolean_true_node;
+	      default:
+		break;
 	    }
 	}
 
