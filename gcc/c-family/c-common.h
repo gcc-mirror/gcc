@@ -327,9 +327,6 @@ struct c_common_resword
 
 /* Extra cpp_ttype values for C++.  */
 
-/* A token type for keywords, as opposed to ordinary identifiers.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
 /* A token type for template-ids.  If a template-id is processed while
    parsing tentatively, it is replaced with a CPP_TEMPLATE_ID token;
    the value of the CPP_TEMPLATE_ID is whatever was returned by

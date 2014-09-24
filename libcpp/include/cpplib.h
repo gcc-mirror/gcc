@@ -153,6 +153,9 @@ enum cpp_ttype
   TTYPE_TABLE
   N_TTYPES,
 
+  /* A token type for keywords, as opposed to ordinary identifiers.  */
+  CPP_KEYWORD,
+
   /* Positions in the table.  */
   CPP_LAST_EQ        = CPP_LSHIFT,
   CPP_FIRST_DIGRAPH  = CPP_HASH,

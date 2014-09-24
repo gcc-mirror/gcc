@@ -9486,10 +9486,11 @@ do_case (location_t loc, tree low_value, tree high_value)
   return label;
 }
 
-/* Finish the switch statement.  */
+/* Finish the switch statement.  TYPE is the original type of the
+   controlling expression of the switch, or NULL_TREE.  */
 
 void
-c_finish_case (tree body)
+c_finish_case (tree body, tree type)
 {
   struct c_switch *cs = c_switch_stack;
   location_t switch_location;
@@ -9499,7 +9500,7 @@ c_finish_case (tree body)
   /* Emit warnings as needed.  */
   switch_location = EXPR_LOCATION (cs->switch_expr);
   c_do_switch_warnings (cs->cases, switch_location,
-			TREE_TYPE (cs->switch_expr),
+			type ? type : TREE_TYPE (cs->switch_expr),
 			SWITCH_COND (cs->switch_expr));
 
   /* Pop the stack.  */

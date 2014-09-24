@@ -451,6 +451,8 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
 	  *looping = true;
 	  *state = IPA_CONST;
 	  return true;
+	default:
+	  break;
       }
   return false;
 }

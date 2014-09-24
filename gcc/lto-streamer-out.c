@@ -2422,7 +2422,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
 {
   const char *name;
   enum gcc_plugin_symbol_kind kind;
-  enum gcc_plugin_symbol_visibility visibility;
+  enum gcc_plugin_symbol_visibility visibility = GCCPV_DEFAULT;
   unsigned slot_num;
   uint64_t size;
   const char *comdat;

@@ -1,3 +1,13 @@
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* semantics.c (finish_switch_cond): Call unlowered_expr_type.
+	* tree.c (bot_manip): Add default case.
+	* parser.c (cp_parser_primary_expression): Cast the controlling
+	expression of a switch to an int.
+	(cp_parser_unqualified_id): Likewise.
+
 2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61857

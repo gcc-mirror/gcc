@@ -2027,6 +2027,8 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	    case BUILT_IN_TRAP:
 	      /* Don't instrument these.  */
 	      return false;
+	    default:
+	      break;
 	    }
 	}
       tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);

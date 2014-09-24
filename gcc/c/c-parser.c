@@ -126,11 +126,6 @@ c_parse_init (void)
    C++).  It would then be possible to share more of the C and C++
    lexer code, if desired.  */
 
-/* The following local token type is used.  */
-
-/* A keyword.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
 /* More information about the type of a CPP_NAME token.  */
 typedef enum c_id_kind {
   /* An ordinary identifier.  */
@@ -5232,7 +5227,7 @@ c_parser_switch_statement (c_parser *parser)
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);
-  c_finish_case (body);
+  c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
       location_t here = c_parser_peek_token (parser)->location;
