@@ -3,6 +3,11 @@
 	* config/abi/pre/gnu.ver: Make GLIBCXX_3.4 patterns stricter so the
 	new GLIBCXX_3.4.21 symbols don't match them.
 
+	PR libstdc++/56193
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/bits/basic_ios.h (basic_ios::operator bool): Define.
+	* src/c++98/ios_locale.cc (basic_ios::operator void*): Instantiate.
+
 2014-09-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/29988
