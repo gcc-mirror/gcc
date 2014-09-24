@@ -2062,7 +2062,7 @@ extern void protected_set_expr_location (tree, location_t);
    information, we mustn't try to generate any address information for nodes
    marked as "abstract instances" because we don't actually generate
    any code or allocate any data space for such instances.  */
-#define DECL_ABSTRACT(NODE) \
+#define DECL_ABSTRACT_P(NODE) \
   (DECL_COMMON_CHECK (NODE)->decl_common.abstract_flag)
 
 /* Language-specific decl information.  */

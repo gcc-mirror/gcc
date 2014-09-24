@@ -3678,7 +3678,7 @@ decl_ultimate_origin (const_tree decl)
 
   /* DECL_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
-  if (DECL_ABSTRACT (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
+  if (DECL_ABSTRACT_P (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
     return NULL_TREE;
 
   /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
@@ -17434,7 +17434,7 @@ gen_entry_point_die (tree decl, dw_die_ref context_die)
 			  TYPE_UNQUALIFIED, context_die);
     }
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, decl_die);
   else
     add_AT_lbl_id (decl_die, DW_AT_low_pc, decl_start_label (decl));
@@ -17616,7 +17616,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       else if (emit_name_p)
 	add_name_and_src_coords_attributes (parm_die, node);
       if (origin == NULL
-	  || (! DECL_ABSTRACT (node_or_origin)
+	  || (! DECL_ABSTRACT_P (node_or_origin)
 	      && variably_modified_type_p (TREE_TYPE (node_or_origin),
 					   decl_function_context
 							    (node_or_origin))))
@@ -17635,7 +17635,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
-      if (! DECL_ABSTRACT (node_or_origin))
+      if (! DECL_ABSTRACT_P (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
 					       node == NULL, DW_AT_location);
 
@@ -17920,7 +17920,7 @@ set_block_abstract_flags (tree stmt, int setting)
 }
 
 /* Given a pointer to some ..._DECL node, and a boolean value to set the
-   "abstract" flags to, set that value into the DECL_ABSTRACT flag for the
+   "abstract" flags to, set that value into the DECL_ABSTRACT_P flag for the
    given decl, and (in the case where the decl is a FUNCTION_DECL) also
    set the abstract flags for all of the parameters, local vars, local
    blocks and sub-blocks (recursively) to the same setting.  */
@@ -17928,13 +17928,13 @@ set_block_abstract_flags (tree stmt, int setting)
 static void
 set_decl_abstract_flags (tree decl, int setting)
 {
-  DECL_ABSTRACT (decl) = setting;
+  DECL_ABSTRACT_P (decl) = setting;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree arg;
 
       for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
-	DECL_ABSTRACT (arg) = setting;
+	DECL_ABSTRACT_P (arg) = setting;
       if (DECL_INITIAL (decl) != NULL_TREE
 	  && DECL_INITIAL (decl) != error_mark_node)
 	set_block_abstract_flags (DECL_INITIAL (decl), setting);
@@ -17979,7 +17979,7 @@ dwarf2out_abstract_function (tree decl)
   tail_call_site_count = -1;
 
   /* Be sure we've emitted the in-class declaration DIE (if any) first, so
-     we don't get confused by DECL_ABSTRACT.  */
+     we don't get confused by DECL_ABSTRACT_P.  */
   if (debug_info_level > DINFO_LEVEL_TERSE)
     {
       context = decl_class_context (decl);
@@ -17992,7 +17992,7 @@ dwarf2out_abstract_function (tree decl)
   save_fn = current_function_decl;
   current_function_decl = decl;
 
-  was_abstract = DECL_ABSTRACT (decl);
+  was_abstract = DECL_ABSTRACT_P (decl);
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
   if (! was_abstract)
@@ -18128,7 +18128,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
   premark_used_types (DECL_STRUCT_FUNCTION (decl));
 
-  /* It is possible to have both DECL_ABSTRACT and DECLARATION be true if we
+  /* It is possible to have both DECL_ABSTRACT_P and DECLARATION be true if we
      started to generate the abstract instance of an inline, decided to output
      its containing class, and proceeded to emit the declaration of the inline
      from the member list for the class.  If so, DECLARATION takes priority;
@@ -18273,7 +18273,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  equate_decl_number_to_die (decl, subr_die);
 	}
     }
-  else if (DECL_ABSTRACT (decl))
+  else if (DECL_ABSTRACT_P (decl))
     {
       if (DECL_DECLARED_INLINE_P (decl))
 	{
@@ -18907,7 +18907,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
      static variable, so we must test for the DW_AT_declaration flag.
 
      ??? Loop unrolling/reorder_blocks should perhaps be rewritten to
-     copy decls and set the DECL_ABSTRACT flag on them instead of
+     copy decls and set the DECL_ABSTRACT_P flag on them instead of
      sharing them.
 
      ??? Duplicated blocks have been rewritten to use .debug_ranges.
@@ -18942,7 +18942,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 
   if ((origin == NULL && !specialization_p)
       || (origin != NULL
-	  && !DECL_ABSTRACT (decl_or_origin)
+	  && !DECL_ABSTRACT_P (decl_or_origin)
 	  && variably_modified_type_p (TREE_TYPE (decl_or_origin),
 				       decl_function_context
 							(decl_or_origin))))
@@ -18971,11 +18971,11 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (declaration)
     add_AT_flag (var_die, DW_AT_declaration, 1);
 
-  if (decl && (DECL_ABSTRACT (decl) || declaration || old_die == NULL))
+  if (decl && (DECL_ABSTRACT_P (decl) || declaration || old_die == NULL))
     equate_decl_number_to_die (decl, var_die);
 
   if (! declaration
-      && (! DECL_ABSTRACT (decl_or_origin)
+      && (! DECL_ABSTRACT_P (decl_or_origin)
 	  /* Local static vars are shared between all clones/inlines,
 	     so emit DW_AT_location on the abstract DIE if DECL_RTL is
 	     already set.  */
@@ -19031,7 +19031,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
   else
     add_name_and_src_coords_attributes (lbl_die, decl);
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, lbl_die);
   else
     {
@@ -19806,7 +19806,7 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
       add_accessibility_attribute (type_die, decl);
     }
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, type_die);
 
   if (get_AT (type_die, DW_AT_name))
@@ -20538,7 +20538,7 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
       else if (cgraph_function_possibly_inlined_p (decl)
-	       && ! DECL_ABSTRACT (decl)
+	       && ! DECL_ABSTRACT_P (decl)
 	       && ! class_or_namespace_scope_p (context_die)
 	       /* dwarf2out_abstract_function won't emit a die if this is just
 		  a declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
@@ -20927,7 +20927,7 @@ dwarf2out_decl (tree decl)
 	 where the inlined function is output in a different LTRANS unit
 	 or not at all.  */
       if (DECL_INITIAL (decl) == NULL_TREE
-	  && ! DECL_ABSTRACT (decl))
+	  && ! DECL_ABSTRACT_P (decl))
 	return;
 
       /* If we're a nested function, initially use a parent of NULL; if we're

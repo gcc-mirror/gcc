@@ -1618,7 +1618,7 @@ dbxout_type_methods (tree type)
 
 	  /* Also ignore abstract methods; those are only interesting to
 	     the DWARF backends.  */
-	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT (fndecl))
+	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT_P (fndecl))
 	    continue;
 
 	  /* Redundantly output the plain name, since that's what gdb

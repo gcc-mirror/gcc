@@ -722,7 +722,7 @@ add_new_static_var (tree type)
   TREE_STATIC (new_decl) = 1;
   TREE_USED (new_decl) = 1;
   DECL_CONTEXT (new_decl) = NULL_TREE;
-  DECL_ABSTRACT (new_decl) = 0;
+  DECL_ABSTRACT_P (new_decl) = false;
   lang_hooks.dup_lang_specific_decl (new_decl);
   new_node = varpool_node::get_create (new_decl);
   varpool_node::finalize_decl (new_decl);

@@ -5008,7 +5008,7 @@ need_assembler_name_p (tree decl)
     return false;
 
   /* Abstract decls do not need an assembler name.  */
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return false;
 
   /* For VAR_DECLs, only static, public and external symbols need an
