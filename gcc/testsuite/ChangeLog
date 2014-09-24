@@ -1,3 +1,8 @@
+2014-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63316
+	* c-c++-common/asan/pr63316.c: New test.
+
 2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63266

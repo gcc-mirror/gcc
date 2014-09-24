@@ -1,3 +1,8 @@
+2014-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63316
+	* asan.c (asan_expand_check_ifn): Fix up align >= 8 optimization.
+
 2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63266
