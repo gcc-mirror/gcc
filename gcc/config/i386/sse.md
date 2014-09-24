@@ -3937,13 +3937,13 @@
 (define_mode_attr sf2simodelower
   [(V16SI "v16sf") (V8SI "v8sf") (V4SI "v4sf")])
 
-(define_insn "<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode>"
+(define_insn "<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode><mask_name>"
   [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
 	(unspec:VI4_AVX
 	  [(match_operand:<ssePSmode> 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE2"
-  "%vcvtps2dq\t{%1, %0|%0, %1}"
+  "TARGET_SSE2 && <mask_mode512bit_condition>"
+  "%vcvtps2dq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set (attr "prefix_data16")
      (if_then_else
@@ -4031,20 +4031,20 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "fix_truncv8sfv8si2"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
-	(fix:V8SI (match_operand:V8SF 1 "nonimmediate_operand" "xm")))]
-  "TARGET_AVX"
-  "vcvttps2dq\t{%1, %0|%0, %1}"
+(define_insn "fix_truncv8sfv8si2<mask_name>"
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
+	(fix:V8SI (match_operand:V8SF 1 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vcvttps2dq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "OI")])
 
-(define_insn "fix_truncv4sfv4si2"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(fix:V4SI (match_operand:V4SF 1 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE2"
-  "%vcvttps2dq\t{%1, %0|%0, %1}"
+(define_insn "fix_truncv4sfv4si2<mask_name>"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(fix:V4SI (match_operand:V4SF 1 "nonimmediate_operand" "vm")))]
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
+  "%vcvttps2dq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set (attr "prefix_rep")
      (if_then_else
@@ -4057,7 +4057,7 @@
      (const_string "*")
      (const_string "0")))
    (set_attr "prefix_data16" "0")
-   (set_attr "prefix" "maybe_vex")
+   (set_attr "prefix" "<mask_prefix2>")
    (set_attr "mode" "TI")])
 
 (define_expand "fixuns_trunc<mode><sseintvecmodelower>2"
