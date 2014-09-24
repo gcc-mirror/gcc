@@ -33793,9 +33793,10 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
     return 0;
 
   /* Loads and stores seen here are not permuting, but we can still
-     fix them up by converting them to permuting ones.  Exception:
-     UNSPEC_LVX and UNSPEC_STVX, which have a PARALLEL body instead
-     of a SET.  */
+     fix them up by converting them to permuting ones.  Exceptions:
+     UNSPEC_LVE, UNSPEC_LVX, and UNSPEC_STVX, which have a PARALLEL
+     body instead of a SET; and UNSPEC_STVE, which has an UNSPEC
+     for the SET source.  */
   rtx body = PATTERN (insn);
   int i = INSN_UID (insn);
 
@@ -33812,7 +33813,7 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 
   if (insn_entry[i].is_store)
     {
-      if (GET_CODE (body) == SET)
+      if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) != UNSPEC)
 	{
 	  *special = SH_NOSWAP_ST;
 	  return 1;

@@ -1,3 +1,9 @@
+2014-09-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (insn_is_swappable_p): Don't provide
+	special handling for stores whose SET_SRC is an UNSPEC (such as
+	UNSPEC_STVE).
+
 2014-09-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* shrink-wrap.c (move_insn_for_shrink_wrap): Add further check when
