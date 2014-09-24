@@ -1,3 +1,11 @@
+2014-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vmuld_lane_f64): Use macro for getting
+	the lane.
+	(vmuld_laneq_f64): Likewise.
+	(vmuls_lane_f32): Likewise.
+	(vmuls_laneq_f32): Likewise.
+
 2014-09-24  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR bootstrap/63235

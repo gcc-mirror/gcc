@@ -18611,13 +18611,13 @@ vmul_lane_u32 (uint32x2_t __a, uint32x2_t __b, const int __lane)
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmuld_lane_f64 (float64_t __a, float64x1_t __b, const int __lane)
 {
-  return __a * vget_lane_f64 (__b, __lane);
+  return __a * __aarch64_vget_lane_f64 (__b, __lane);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmuld_laneq_f64 (float64_t __a, float64x2_t __b, const int __lane)
 {
-  return __a * vgetq_lane_f64 (__b, __lane);
+  return __a * __aarch64_vgetq_lane_f64 (__b, __lane);
 }
 
 /* vmuls_lane  */
@@ -18625,13 +18625,13 @@ vmuld_laneq_f64 (float64_t __a, float64x2_t __b, const int __lane)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmuls_lane_f32 (float32_t __a, float32x2_t __b, const int __lane)
 {
-  return __a * vget_lane_f32 (__b, __lane);
+  return __a * __aarch64_vget_lane_f32 (__b, __lane);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmuls_laneq_f32 (float32_t __a, float32x4_t __b, const int __lane)
 {
-  return __a * vgetq_lane_f32 (__b, __lane);
+  return __a * __aarch64_vgetq_lane_f32 (__b, __lane);
 }
 
 /* vmul_laneq  */
