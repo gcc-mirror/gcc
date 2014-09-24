@@ -129,6 +129,10 @@
   UNSPEC_SHA256MSG2
   UNSPEC_SHA256RNDS2
 
+  ;; For AVX512BW support
+  UNSPEC_PSHUFHW
+  UNSPEC_PSHUFLW
+
   ;; For AVX512DQ support
   UNSPEC_REDUCE
   UNSPEC_FPCLASS
@@ -11789,6 +11793,40 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
+(define_insn "<mask_codefor>avx512bw_pshuflwv32hi<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(unspec:V32HI
+	  [(match_operand:V32HI 1 "nonimmediate_operand" "vm")
+	   (match_operand:SI 2 "const_0_to_255_operand" "n")]
+	  UNSPEC_PSHUFLW))]
+  "TARGET_AVX512BW"
+  "vpshuflw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_expand "avx512vl_pshuflwv3_mask"
+  [(match_operand:V16HI 0 "register_operand")
+   (match_operand:V16HI 1 "nonimmediate_operand")
+   (match_operand:SI 2 "const_0_to_255_operand")
+   (match_operand:V16HI 3 "register_operand")
+   (match_operand:HI 4 "register_operand")]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+{
+  int mask = INTVAL (operands[2]);
+  emit_insn (gen_avx2_pshuflw_1_mask (operands[0], operands[1],
+				 GEN_INT ((mask >> 0) & 3),
+				 GEN_INT ((mask >> 2) & 3),
+				 GEN_INT ((mask >> 4) & 3),
+				 GEN_INT ((mask >> 6) & 3),
+				 GEN_INT (((mask >> 0) & 3) + 8),
+				 GEN_INT (((mask >> 2) & 3) + 8),
+				 GEN_INT (((mask >> 4) & 3) + 8),
+				 GEN_INT (((mask >> 6) & 3) + 8),
+                 operands[3], operands[4]));
+  DONE;
+})
+
 (define_expand "avx2_pshuflwv3"
   [(match_operand:V16HI 0 "register_operand")
    (match_operand:V16HI 1 "nonimmediate_operand")
@@ -11808,10 +11846,10 @@
   DONE;
 })
 
-(define_insn "avx2_pshuflw_1"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+(define_insn "avx2_pshuflw_1<mask_name>"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(vec_select:V16HI
-	  (match_operand:V16HI 1 "nonimmediate_operand" "xm")
+	  (match_operand:V16HI 1 "nonimmediate_operand" "vm")
 	  (parallel [(match_operand 2 "const_0_to_3_operand")
 		     (match_operand 3 "const_0_to_3_operand")
 		     (match_operand 4 "const_0_to_3_operand")
@@ -11829,6 +11867,7 @@
 		     (const_int 14)
 		     (const_int 15)])))]
   "TARGET_AVX2
+   && <mask_avx512bw_condition> && <mask_avx512vl_condition>
    && INTVAL (operands[2]) + 8 == INTVAL (operands[6])
    && INTVAL (operands[3]) + 8 == INTVAL (operands[7])
    && INTVAL (operands[4]) + 8 == INTVAL (operands[8])
@@ -11841,12 +11880,30 @@
   mask |= INTVAL (operands[5]) << 6;
   operands[2] = GEN_INT (mask);
 
-  return "vpshuflw\t{%2, %1, %0|%0, %1, %2}";
+  return "vpshuflw\t{%2, %1, %0<mask_operand10>|%0<mask_operand10>, %1, %2}";
 }
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "OI")])
+
+(define_expand "avx512vl_pshuflw_mask"
+  [(match_operand:V8HI 0 "register_operand")
+   (match_operand:V8HI 1 "nonimmediate_operand")
+   (match_operand:SI 2 "const_0_to_255_operand")
+   (match_operand:V8HI 3 "register_operand")
+   (match_operand:QI 4 "register_operand")]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+{
+  int mask = INTVAL (operands[2]);
+  emit_insn (gen_sse2_pshuflw_1_mask (operands[0], operands[1],
+				 GEN_INT ((mask >> 0) & 3),
+				 GEN_INT ((mask >> 2) & 3),
+				 GEN_INT ((mask >> 4) & 3),
+				 GEN_INT ((mask >> 6) & 3),
+                 operands[3], operands[4]));
+  DONE;
+})
 
 (define_expand "sse2_pshuflw"
   [(match_operand:V8HI 0 "register_operand")
@@ -11863,10 +11920,10 @@
   DONE;
 })
 
-(define_insn "sse2_pshuflw_1"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
+(define_insn "sse2_pshuflw_1<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(vec_select:V8HI
-	  (match_operand:V8HI 1 "nonimmediate_operand" "xm")
+	  (match_operand:V8HI 1 "nonimmediate_operand" "vm")
 	  (parallel [(match_operand 2 "const_0_to_3_operand")
 		     (match_operand 3 "const_0_to_3_operand")
 		     (match_operand 4 "const_0_to_3_operand")
@@ -11875,7 +11932,7 @@
 		     (const_int 5)
 		     (const_int 6)
 		     (const_int 7)])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512bw_condition> && <mask_avx512vl_condition>"
 {
   int mask = 0;
   mask |= INTVAL (operands[2]) << 0;
@@ -11884,7 +11941,7 @@
   mask |= INTVAL (operands[5]) << 6;
   operands[2] = GEN_INT (mask);
 
-  return "%vpshuflw\t{%2, %1, %0|%0, %1, %2}";
+  return "%vpshuflw\t{%2, %1, %0<mask_operand6>|%0<mask_operand6>, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "0")
@@ -11912,10 +11969,44 @@
   DONE;
 })
 
-(define_insn "avx2_pshufhw_1"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+(define_insn "<mask_codefor>avx512bw_pshufhwv32hi<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(unspec:V32HI
+	  [(match_operand:V32HI 1 "nonimmediate_operand" "vm")
+	   (match_operand:SI 2 "const_0_to_255_operand" "n")]
+	  UNSPEC_PSHUFHW))]
+  "TARGET_AVX512BW"
+  "vpshufhw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_expand "avx512vl_pshufhwv3_mask"
+  [(match_operand:V16HI 0 "register_operand")
+   (match_operand:V16HI 1 "nonimmediate_operand")
+   (match_operand:SI 2 "const_0_to_255_operand")
+   (match_operand:V16HI 3 "register_operand")
+   (match_operand:HI 4 "register_operand")]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+{
+  int mask = INTVAL (operands[2]);
+  emit_insn (gen_avx2_pshufhw_1_mask (operands[0], operands[1],
+				 GEN_INT (((mask >> 0) & 3) + 4),
+				 GEN_INT (((mask >> 2) & 3) + 4),
+				 GEN_INT (((mask >> 4) & 3) + 4),
+				 GEN_INT (((mask >> 6) & 3) + 4),
+				 GEN_INT (((mask >> 0) & 3) + 12),
+				 GEN_INT (((mask >> 2) & 3) + 12),
+				 GEN_INT (((mask >> 4) & 3) + 12),
+				 GEN_INT (((mask >> 6) & 3) + 12),
+                 operands[3], operands[4]));
+  DONE;
+})
+
+(define_insn "avx2_pshufhw_1<mask_name>"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(vec_select:V16HI
-	  (match_operand:V16HI 1 "nonimmediate_operand" "xm")
+	  (match_operand:V16HI 1 "nonimmediate_operand" "vm")
 	  (parallel [(const_int 0)
 		     (const_int 1)
 		     (const_int 2)
@@ -11933,6 +12024,7 @@
 		     (match_operand 8 "const_12_to_15_operand")
 		     (match_operand 9 "const_12_to_15_operand")])))]
   "TARGET_AVX2
+   && <mask_avx512bw_condition> && <mask_avx512vl_condition>
    && INTVAL (operands[2]) + 8 == INTVAL (operands[6])
    && INTVAL (operands[3]) + 8 == INTVAL (operands[7])
    && INTVAL (operands[4]) + 8 == INTVAL (operands[8])
@@ -11945,12 +12037,30 @@
   mask |= (INTVAL (operands[5]) - 4) << 6;
   operands[2] = GEN_INT (mask);
 
-  return "vpshufhw\t{%2, %1, %0|%0, %1, %2}";
+  return "vpshufhw\t{%2, %1, %0<mask_operand10>|%0<mask_operand10>, %1, %2}";
 }
   [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "OI")])
+
+(define_expand "avx512vl_pshufhw_mask"
+  [(match_operand:V8HI 0 "register_operand")
+   (match_operand:V8HI 1 "nonimmediate_operand")
+   (match_operand:SI 2 "const_0_to_255_operand")
+   (match_operand:V8HI 3 "register_operand")
+   (match_operand:QI 4 "register_operand")]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+{
+  int mask = INTVAL (operands[2]);
+  emit_insn (gen_sse2_pshufhw_1_mask (operands[0], operands[1],
+				 GEN_INT (((mask >> 0) & 3) + 4),
+				 GEN_INT (((mask >> 2) & 3) + 4),
+				 GEN_INT (((mask >> 4) & 3) + 4),
+				 GEN_INT (((mask >> 6) & 3) + 4),
+                 operands[3], operands[4]));
+  DONE;
+})
 
 (define_expand "sse2_pshufhw"
   [(match_operand:V8HI 0 "register_operand")
@@ -11967,10 +12077,10 @@
   DONE;
 })
 
-(define_insn "sse2_pshufhw_1"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
+(define_insn "sse2_pshufhw_1<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(vec_select:V8HI
-	  (match_operand:V8HI 1 "nonimmediate_operand" "xm")
+	  (match_operand:V8HI 1 "nonimmediate_operand" "vm")
 	  (parallel [(const_int 0)
 		     (const_int 1)
 		     (const_int 2)
@@ -11979,7 +12089,7 @@
 		     (match_operand 3 "const_4_to_7_operand")
 		     (match_operand 4 "const_4_to_7_operand")
 		     (match_operand 5 "const_4_to_7_operand")])))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512bw_condition> && <mask_avx512vl_condition>"
 {
   int mask = 0;
   mask |= (INTVAL (operands[2]) - 4) << 0;
@@ -11988,7 +12098,7 @@
   mask |= (INTVAL (operands[5]) - 4) << 6;
   operands[2] = GEN_INT (mask);
 
-  return "%vpshufhw\t{%2, %1, %0|%0, %1, %2}";
+  return "%vpshufhw\t{%2, %1, %0<mask_operand6>|%0<mask_operand6>, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix_rep" "1")
