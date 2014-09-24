@@ -1,3 +1,9 @@
+2014-09-24  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR bootstrap/63235
+	* varpool.c (varpool_node::add): Pass decl attributes
+	to lookup_attribute.
+
 2014-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63316

@@ -449,7 +449,7 @@ varpool_node::add (tree decl)
   symtab->call_varpool_insertion_hooks (node);
   if (node->externally_visible_p ())
     node->externally_visible = true;
-  if (lookup_attribute ("no_reorder", decl))
+  if (lookup_attribute ("no_reorder", DECL_ATTRIBUTES (decl)))
     node->no_reorder = 1;
 }
 
