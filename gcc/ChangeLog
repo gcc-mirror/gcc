@@ -1,3 +1,27 @@
+2014-09-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_insn "avx2_<code>v16qiv16hi2<mask_name>"): Add masking.
+	(define_insn "avx512bw_<code>v32qiv32hi2<mask_name>"): New.
+	(define_insn "sse4_1_<code>v8qiv8hi2<mask_name>"): Add masking.
+	(define_insn "avx2_<code>v8qiv8si2<mask_name>"): Ditto.
+	(define_insn "sse4_1_<code>v4qiv4si2<mask_name>"): Ditto.
+	(define_insn "avx2_<code>v8hiv8si2<mask_name>"): Ditto.
+	(define_insn "sse4_1_<code>v4hiv4si2<mask_name>"): Ditto.
+	(define_insn "avx2_<code>v4qiv4di2<mask_name>"): Ditto.
+	(define_insn "sse4_1_<code>v2qiv2di2<mask_name>"): Ditto.
+	(define_insn "avx2_<code>v4hiv4di2<mask_name>"): Ditto.
+	(define_insn "sse4_1_<code>v2hiv2di2<mask_name>"): Ditto.
+	(define_insn "avx2_<code>v4siv4di2<mask_name>"): Ditto.
+	(define_insn "sse4_1_<code>v2siv2di2<mask_name>"): Ditto.
+
 2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	PR rtl-optimization/63210
