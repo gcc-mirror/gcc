@@ -2357,7 +2357,8 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
 
       if (context.get_dynamic_type (instance,
 				    OBJ_TYPE_REF_OBJECT (target),
-				    otr_type, call))
+				    otr_type, call)
+	  && context.offset == cs->indirect_info->offset)
 	{
 	  gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);
 	  cs->indirect_info->polymorphic = true;

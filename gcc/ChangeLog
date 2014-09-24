@@ -1,3 +1,27 @@
+2014-09-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.h (polymorphic_call_context): Add
+	metdhos dump, debug and clear_outer_type.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Simplify.
+	(ipa_polymorphic_call_context::clear_outer_type): New method.
+	* ipa-prop.c (ipa_analyze_call_uses): Do not overwrite offset.
+	* ipa-devirt.c (types_odr_comparable): New function.
+	(types_must_be_same_for_odr): New function.
+	(odr_subtypes_equivalent_p): Simplify.
+	(possible_placement_new): Break out from ...
+	(ipa_polymorphic_call_context::restrict_to_inner_type): ... here;
+	be more cuatious about returning false in cases the context may be
+	valid in derived type or via placement new.
+	(contains_type_p): Clear maybe_derived_type
+	(ipa_polymorphic_call_context::dump): New method.
+	(ipa_polymorphic_call_context::debug): New method.
+	(ipa_polymorphic_call_context::set_by_decl): Cleanup comment.
+	(ipa_polymorphic_call_context::set_by_invariant): Simplify.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Simplify.
+	(possible_polymorphic_call_targets): Trust context.restrict_to_inner_class
+	to suceed on all valid cases; remove confused sanity check.
+	(dump_possible_polymorphic_call_targets): Simplify.
+
 2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cgraph.h, dbxout.c, dwarfout2.c, gimple-fold.c,
