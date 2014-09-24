@@ -7,6 +7,48 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c
+	(CODE_FOR_avx2_extracti128): Rename to ...
+	(CODE_FOR_avx_vextractf128v4di): this.
+	(CODE_FOR_avx2_inserti128): Rename to ...
+	(CODE_FOR_avx_vinsertf128v4di): this.
+	(ix86_expand_args_builtin): Handle CODE_FOR_avx_vinsertf128v4di,
+	CODE_FOR_avx_vextractf128v4di.
+	(ix86_expand_args_builtin): Handle CODE_FOR_avx512dq_vinsertf32x8_mask,
+	CODE_FOR_avx512dq_vinserti32x8_mask, CODE_FOR_avx512vl_vinsertv4df,
+	CODE_FOR_avx512vl_vinsertv4di, CODE_FOR_avx512vl_vinsertv8sf,
+	CODE_FOR_avx512vl_vinsertv8si.
+	* config/i386/sse.md
+	(define_expand
+	"<extract_type>_vinsert<shuffletype><extract_suf>_mask"): Use
+	AVX512_VEC mode iterator.
+	(define_insn
+	"<mask_codefor><extract_type>_vinsert<shuffletype><extract_suf>_1<mask_name>"):
+	Ditto.
+	(define_expand
+	"<extract_type_2>_vinsert<shuffletype><extract_suf_2>_mask"): Use
+	AVX512_VEC_2 mode iterator.
+	(define_insn "vec_set_lo_<mode><mask_name>"): New.
+	(define_insn "vec_set_hi_<mode><mask_name>"): Ditto.
+	(define_expand "avx512vl_vinsert<mode>"): Ditto.
+	(define_insn "avx2_vec_set_lo_v4di"): Delete.
+	(define_insn "avx2_vec_set_hi_v4di"): Ditto.
+	(define_insn "vec_set_lo_<mode><mask_name>"): Add masking.
+	(define_insn "vec_set_hi_<mode><mask_name>"): Ditto.
+	(define_insn "vec_set_lo_<mode><mask_name>"): Ditto.
+	(define_insn "vec_set_hi_<mode><mask_name>"): Ditto.
+	(define_expand "avx2_extracti128"): Delete.
+	(define_expand "avx2_inserti128"): Ditto.
+
+2014-09-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_insn "avx2_<code>v16qiv16hi2<mask_name>"): Add masking.
 	(define_insn "avx512bw_<code>v32qiv32hi2<mask_name>"): New.
