@@ -1,3 +1,17 @@
+2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63266
+	* tree-ssa-math-opts.c (struct symbolic_number): Add comment about
+	marker for unknown byte value.
+	(MARKER_MASK): New macro.
+	(MARKER_BYTE_UNKNOWN): New macro.
+	(HEAD_MARKER): New macro.
+	(do_shift_rotate): Mark bytes with unknown values due to sign
+	extension when doing an arithmetic right shift. Replace hardcoded
+	mask for marker by new MARKER_MASK macro.
+	(find_bswap_or_nop_1): Likewise and adjust ORing of two symbolic
+	numbers accordingly.
+
 2014-09-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

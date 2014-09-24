@@ -1,3 +1,8 @@
+2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63266
+	* gcc.dg/optimize-bswapsi-1.c (swap32_d): New bswap pass test.
+
 2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.target/arm/pr63210.c: New test.

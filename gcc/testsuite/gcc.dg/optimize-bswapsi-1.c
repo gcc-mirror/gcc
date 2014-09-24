@@ -49,5 +49,20 @@ swap32_c (SItype u)
 	  | (((u) & 0x000000ff) << 24));
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" } } */
+/* This variant comes from gcc.target/sh/pr53568-1.c.  It requires to track
+   which bytes have an unpredictable value (eg. due to sign extension) to
+   make sure that the final expression have only well defined byte values.  */
+
+SItype
+swap32_d (SItype in)
+{
+  /* 1x swap.w
+     2x swap.b  */
+  return (((in >> 0) & 0xFF) << 24)
+	 | (((in >> 8) & 0xFF) << 16)
+	 | (((in >> 16) & 0xFF) << 8)
+	 | (((in >> 24) & 0xFF) << 0);
+}
+
+/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 4 "bswap" } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */
