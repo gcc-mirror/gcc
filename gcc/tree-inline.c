@@ -5092,7 +5092,7 @@ copy_decl_no_change (tree decl, copy_body_data *id)
   copy = copy_node (decl);
 
   /* The COPY is not abstract; it will be generated in DST_FN.  */
-  DECL_ABSTRACT (copy) = 0;
+  DECL_ABSTRACT_P (copy) = false;
   lang_hooks.dup_lang_specific_decl (copy);
 
   /* TREE_ADDRESSABLE isn't used to indicate that a label's address has

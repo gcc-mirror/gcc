@@ -270,7 +270,7 @@ maybe_thunk_body (tree fn, bool force)
      (for non-vague linkage ctors) or the COMDAT group (otherwise).  */
 
   populate_clone_array (fn, fns);
-  DECL_ABSTRACT (fn) = false;
+  DECL_ABSTRACT_P (fn) = false;
   if (!DECL_WEAK (fn))
     {
       TREE_PUBLIC (fn) = false;

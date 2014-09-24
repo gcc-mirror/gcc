@@ -1975,7 +1975,7 @@ symtab_node::real_symbol_p (void)
 {
   cgraph_node *cnode;
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return false;
   if (!is_a <cgraph_node *> (this))
     return true;

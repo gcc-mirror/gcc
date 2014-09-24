@@ -653,7 +653,7 @@ lto_symtab_merge_symbols (void)
 
 	      /* Abstract functions may have duplicated cgraph nodes attached;
 		 remove them.  */
-	      else if (cnode && DECL_ABSTRACT (cnode->decl)
+	      else if (cnode && DECL_ABSTRACT_P (cnode->decl)
 		       && (cnode2 = cgraph_node::get (node->decl))
 		       && cnode2 != cnode)
 		cnode2->remove ();
@@ -675,8 +675,8 @@ lto_symtab_prevailing_decl (tree decl)
   if ((!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl)) || is_builtin_fn (decl))
     return decl;
 
-  /* DECL_ABSTRACTs are their own prevailng decl.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT (decl))
+  /* DECL_ABSTRACT_Ps are their own prevailing decl.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT_P (decl))
     return decl;
 
   /* Likewise builtins are their own prevailing decl.  This preserves

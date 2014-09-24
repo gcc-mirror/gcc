@@ -178,7 +178,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_NONLOCAL (expr), 1);
   bp_pack_value (bp, DECL_VIRTUAL_P (expr), 1);
   bp_pack_value (bp, DECL_IGNORED_P (expr), 1);
-  bp_pack_value (bp, DECL_ABSTRACT (expr), 1);
+  bp_pack_value (bp, DECL_ABSTRACT_P (expr), 1);
   bp_pack_value (bp, DECL_ARTIFICIAL (expr), 1);
   bp_pack_value (bp, DECL_USER_ALIGN (expr), 1);
   bp_pack_value (bp, DECL_PRESERVE_P (expr), 1);

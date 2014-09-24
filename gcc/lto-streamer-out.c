@@ -817,7 +817,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (DECL_NONLOCAL (t));
       hstate.add_flag (DECL_VIRTUAL_P (t));
       hstate.add_flag (DECL_IGNORED_P (t));
-      hstate.add_flag (DECL_ABSTRACT (t));
+      hstate.add_flag (DECL_ABSTRACT_P (t));
       hstate.add_flag (DECL_ARTIFICIAL (t));
       hstate.add_flag (DECL_USER_ALIGN (t));
       hstate.add_flag (DECL_PRESERVE_P (t));
@@ -2432,7 +2432,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
      symbol table.  */
   if (!TREE_PUBLIC (t)
       || is_builtin_fn (t)
-      || DECL_ABSTRACT (t)
+      || DECL_ABSTRACT_P (t)
       || (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t)))
     return;
   gcc_assert (TREE_CODE (t) != RESULT_DECL);

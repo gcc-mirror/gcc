@@ -1766,7 +1766,7 @@ symtab_node::get_partitioning_class (void)
      This include external delcarations.   */
   cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return SYMBOL_EXTERNAL;
 
   if (cnode && cnode->global.inlined_to)

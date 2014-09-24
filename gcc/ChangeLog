@@ -1,3 +1,11 @@
+2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cgraph.h, dbxout.c, dwarfout2.c, gimple-fold.c,
+	lto-streamer-out.c, print-tree.c, symtab.c, tree-inline.c,
+	tree-streamer-in.c, tree-streamer-out.c, tree.c, tree.h,
+	varpool.c: Rename all instances of DECL_ABSTRACT to
+	DECL_ABSTRACT_P.
+
 2014-09-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (insn_is_swappable_p): Don't provide
