@@ -1470,6 +1470,9 @@ GLIBCXX_3.4.21 {
     _ZNSoC[12]ERSd;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEEC[12]ERSt14basic_iostreamIwS1_E;
 
+    # std::basic_ios::operator bool() const
+    _ZNKSt9basic_iosI[cw]St11char_traitsI[cw]EEcvbEv;
+
 } GLIBCXX_3.4.20;
 
 
