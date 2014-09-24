@@ -1,3 +1,8 @@
+2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63353
+	* src/c++11/ios.cc (ios_base::_M_swap): Fix typo.
+
 2014-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Adjust basic_ostream exports.
