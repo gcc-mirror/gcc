@@ -1,3 +1,10 @@
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/noreorder.c: New test.
+	* gcc.dg/noreorder2.c: New test.
+	* gcc.dg/noreorder3.c: New test.
+	* gcc.dg/noreorder4.c: New test.
+
 2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/combine_ashiftrt_1.c: New test.
