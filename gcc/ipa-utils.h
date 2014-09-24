@@ -83,9 +83,14 @@ public:
      containing EXPECTED_TYPE as base class.  */
   bool restrict_to_inner_class (tree expected_type);
 
+  /* Dump human readable context to F.  */
+  void dump (FILE *f) const;
+  void DEBUG_FUNCTION debug () const;
+
 private:
   void set_by_decl (tree, HOST_WIDE_INT);
   bool set_by_invariant (tree, tree, HOST_WIDE_INT);
+  void clear_outer_type (tree otr_type = NULL);
 };
 
 /* Build polymorphic call context for indirect call E.  */
@@ -110,13 +115,8 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (cgraph_edge *e)
 inline
 ipa_polymorphic_call_context::ipa_polymorphic_call_context ()
 {
-  offset = 0;
-  speculative_offset = 0;
-  outer_type = NULL;
-  speculative_outer_type = NULL;
-  maybe_in_construction = true;
-  maybe_derived_type = true;
-  speculative_maybe_derived_type = false;
+  clear_speculation ();
+  clear_outer_type ();
   invalid = false;
 }
 
@@ -128,6 +128,19 @@ ipa_polymorphic_call_context::clear_speculation ()
   speculative_outer_type = NULL;
   speculative_offset = 0;
   speculative_maybe_derived_type = false;
+}
+
+/* Produce context specifying all derrived types of OTR_TYPE.
+   If OTR_TYPE is NULL or type of the OBJ_TYPE_REF, the context is set
+   to dummy "I know nothing" setting.  */
+
+inline void
+ipa_polymorphic_call_context::clear_outer_type (tree otr_type)
+{
+  outer_type = otr_type ? TYPE_MAIN_VARIANT (otr_type) : NULL;
+  offset = 0;
+  maybe_derived_type = true;
+  maybe_in_construction = true;
 }
 
 /* In ipa-utils.c  */
