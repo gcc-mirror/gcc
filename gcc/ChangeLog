@@ -1,3 +1,29 @@
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* cgraph.h (symtab_node): Add no_reorder attribute.
+	(symbol_table::output_asm_statements): Remove.
+	* cgraphclones.c (cgraph_node::create_clone): Copy no_reorder.
+	(cgraph_node::create_version_clone): Dito.
+	(symbol_table::output_asm_statements): Remove.
+	* trans-mem.c (ipa_tm_create_version_alias): Dito.
+	* cgraphunit.c (varpool_node::finalize_decl): Check no_reorder.
+	(output_in_order): Add no_reorder flag. Only handle no_reorder
+	nodes when set.
+	(symbol_table::compile): Add separate pass for no_reorder nodes.
+	(process_common_attributes): Set no_reorder flag in symtab node.
+	Add node argument.
+	(process_function_and_variable_attributes): Pass symtab nodes to
+	process_common_attributes.
+	* doc/extend.texi (no_reorder): Document no_reorder attribute.
+	* lto-cgraph.c (lto_output_node): Serialize no_reorder.
+	(lto_output_varpool_node): Dito.
+	(input_overwrite_node): Dito.
+	(input_varpool_node): Dito.
+	* varpool.c (varpool_node::add): Set no_reorder attribute.
+	(symbol_table::remove_unreferenced_decls): Handle no_reorder.
+	(symbol_table::output_variables): Dito.
+	* symtab.c (symtab_node::dump_base): Print no_reorder.
+
 2014-09-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* shrink-wrap.c (try_shrink_wrapping): Check PIC_OFFSET_TABLE_REGNUM not

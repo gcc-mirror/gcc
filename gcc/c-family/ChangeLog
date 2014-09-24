@@ -1,3 +1,8 @@
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* c-common.c (handle_no_reorder_attribute): New function.
+	(c_common_attribute_table): Add no_reorder attribute.
+
 2014-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define

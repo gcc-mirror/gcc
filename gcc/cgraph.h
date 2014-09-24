@@ -406,6 +406,8 @@ public:
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
+  /* Don't reorder to other symbols having this set.  */
+  unsigned no_reorder : 1;
   /* The symbol will be assumed to be used in an invisible way (like
      by an toplevel asm statement).  */
   unsigned force_output : 1;
@@ -1706,9 +1708,6 @@ public:
 
   /* Output all variables enqueued to be assembled.  */
   bool output_variables (void);
-
-  /* Output all asm statements we have stored up to be output.  */
-  void output_asm_statements (void);
 
   /* Weakrefs may be associated to external decls and thus not output
      at expansion time.  Emit all necessary aliases.  */
