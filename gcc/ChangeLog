@@ -8,6 +8,33 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/i386.c
+	(ix86_expand_args_builtin): Handle CODE_FOR_sse2_shufpd,
+	CODE_FOR_sse2_sse2_shufpd_mask, CODE_FOR_sse2_avx512dq_shuf_f64x2_mask,
+	CODE_FOR_sse2_avx512dq_shuf_i64x2_mask,
+	CODE_FOR_sse2_avx512vl_shuf_i32x4_mask and
+	CODE_FOR_sse2_avx512vl_shuf_f32x4_mask.
+	* config/i386/sse.md
+	(define_expand "avx512dq_shuf_<shuffletype>64x2_mask"): New.
+	(define_insn
+	"<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>"): Ditto.
+	(define_expand "avx512vl_shuf_<shuffletype>32x4_mask"): Ditto.
+	(define_insn
+	"<mask_codefor>avx512vl_shuf_<shuffletype>32x4_1<mask_name>"): Ditto.
+	(define_expand "avx512vl_pshufdv3_mask"): Ditto.
+	(define_insn "avx2_pshufd_1<mask_name>"): Add masking.
+	(define_expand "avx512vl_pshufd_mask"): New.
+	(define_insn "sse2_pshufd_1<mask_name>"): Add masking.
+
+2014-09-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
 	(CODE_FOR_avx2_extracti128): Rename to ...
 	(CODE_FOR_avx_vextractf128v4di): this.
 	(CODE_FOR_avx2_inserti128): Rename to ...
