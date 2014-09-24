@@ -2180,7 +2180,7 @@ attributes are currently defined for functions on all targets:
 @code{returns_nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
-@code{no_sanitize_undefined},
+@code{no_sanitize_undefined}, @code{no_reorder},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -3471,6 +3471,16 @@ extern void *
 my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
+
+@item no_reorder
+@cindex @code{no_reorder} function or variable attribute
+Do not reorder functions or variables marked @code{no_reorder}
+against each other or top level assembler statements the executable.
+The actual order in the program will depend on the linker command
+line. Static variables marked like this are also not removed.
+This has a similar effect
+as the @option{-fno-toplevel-reorder} option, but only applies to the
+marked symbols.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute

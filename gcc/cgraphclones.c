@@ -437,6 +437,7 @@ cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
   new_node->definition = definition;
   new_node->local = local;
   new_node->externally_visible = false;
+  new_node->no_reorder = no_reorder;
   new_node->local.local = true;
   new_node->global = global;
   new_node->global.inlined_to = new_inlined_to;
@@ -876,6 +877,7 @@ cgraph_node::create_version_clone (tree new_decl,
    new_version->definition = definition;
    new_version->local = local;
    new_version->externally_visible = false;
+   new_version->no_reorder = no_reorder;
    new_version->local.local = new_version->definition;
    new_version->global = global;
    new_version->rtl = rtl;

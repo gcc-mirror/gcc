@@ -831,6 +831,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " forced_by_abi");
   if (externally_visible)
     fprintf (f, " externally_visible");
+  if (no_reorder)
+    fprintf (f, " no_reorder");
   if (resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
  	     ld_plugin_symbol_resolution_names[(int)resolution]);
