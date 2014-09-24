@@ -3640,6 +3640,21 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      dst_jf->value.constant.rdesc = dst_rdesc;
 	    }
 	}
+      else if (dst_jf->type == IPA_JF_PASS_THROUGH
+	       && src->caller == dst->caller)
+	{
+	  struct cgraph_node *inline_root = dst->caller->global.inlined_to
+	    ? dst->caller->global.inlined_to : dst->caller;
+	  struct ipa_node_params *root_info = IPA_NODE_REF (inline_root);
+	  int idx = ipa_get_jf_pass_through_formal_id (dst_jf);
+
+	  int c = ipa_get_controlled_uses (root_info, idx);
+	  if (c != IPA_UNDESCRIBED_USE)
+	    {
+	      c++;
+	      ipa_set_controlled_uses (root_info, idx, c);
+	    }
+	}
     }
 }
 
