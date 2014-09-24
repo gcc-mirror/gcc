@@ -229,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      std::swap(_M_local_word, __rhs._M_local_word); // array swap
     else
      {
-       if (!__lhs_local && !__lhs_local)
+       if (!__lhs_local && !__rhs_local)
 	 std::swap(_M_word, __rhs._M_word);
        else
 	 {
