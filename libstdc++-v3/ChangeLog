@@ -1,3 +1,45 @@
+2014-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/29988
+	* include/bits/stl_tree.h (_Rb_tree_reuse_or_alloc_node<>): New.
+	(_Rb_tree_alloc_node<>): New.
+	(_Rb_tree<>::operator=(_Rb_tree<>&&)): New.
+	(_Rb_tree<>::_M_assign_unique): New.
+	(_Rb_tree<>::_M_assign_equal): New.
+	(_Rb_tree<>): Adapt to reuse allocated nodes as much as possible.
+	* include/bits/stl_map.h
+	(std::map<>::operator=(std::map<>&&)): Default implementation.
+	(std::map<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_unique.
+	* include/bits/stl_multimap.h
+	(std::multimap<>::operator=(std::multimap<>&&)): Default implementation.
+	(std::multimap<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_equal.
+	* include/bits/stl_set.h
+	(std::set<>::operator=(std::set<>&&)): Default implementation.
+	(std::set<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_unique.
+	* include/bits/stl_multiset.h
+	(std::multiset<>::operator=(std::multiset<>&&)): Default implementation.
+	(std::multiset<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_equal.
+	* testsuite/23_containers/map/allocator/copy_assign.cc (test03): New.
+	* testsuite/23_containers/map/allocator/init-list.cc: New.
+	* testsuite/23_containers/map/allocator/move_assign.cc (test03): New.
+	* testsuite/23_containers/multimap/allocator/copy_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multimap/allocator/init-list.cc: New.
+	* testsuite/23_containers/multimap/allocator/move_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multiset/allocator/copy_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multiset/allocator/init-list.cc: New.
+	* testsuite/23_containers/multiset/allocator/move_assign.cc
+	(test03): New.
+	* testsuite/23_containers/set/allocator/copy_assign.cc (test03): New.
+	* testsuite/23_containers/set/allocator/init-list.cc: New.
+	* testsuite/23_containers/set/allocator/move_assign.cc (test03): New.
+
 2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/63353

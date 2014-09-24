@@ -59,9 +59,40 @@ void test02()
   VERIFY( it == v2.begin() );
 }
 
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+
+  using namespace __gnu_test;
+
+  typedef propagating_allocator<int, false, tracker_allocator<int>> alloc_type;
+  typedef std::multiset<int, std::less<int>, alloc_type> test_type;
+
+  tracker_allocator_counter::reset();
+
+  test_type v1(alloc_type(1));
+  v1 = { 0, 0 };
+
+  test_type v2(alloc_type(2));
+  v2 = { 2, 2 };
+
+  auto allocs = tracker_allocator_counter::get_allocation_count();
+  auto constructs = tracker_allocator_counter::get_construct_count();
+
+  // Check no allocation on move assignment with non propagating allocators.
+  v1 = std::move(v2);
+
+  VERIFY( 1 == v1.get_allocator().get_personality() );
+  VERIFY( 2 == v2.get_allocator().get_personality() );
+
+  VERIFY( tracker_allocator_counter::get_allocation_count() == allocs );
+  VERIFY( tracker_allocator_counter::get_construct_count() == constructs + 2 );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
