@@ -6178,7 +6178,7 @@ merge_states (automaton_t automaton, vec<state_t> equiv_classes)
 		    alt_states = new_alt_state;
 		  }
 	    }
-	  /* Its is important that alt states were sorted before and
+	  /* It is important that alt states were sorted before and
 	     after merging to have the same querying results.  */
 	  new_state->component_states = uniq_sort_alt_states (alt_states);
 	}

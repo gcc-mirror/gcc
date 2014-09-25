@@ -1,3 +1,8 @@
+2014-09-25  Felix Yang  <felix.yang@huawei.com>
+
+	* lra.c (lra_set_insn_recog_data): Fix typo in comment.
+	* genautomata.c (merge_states): Ditto.
+
 2014-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/62218
