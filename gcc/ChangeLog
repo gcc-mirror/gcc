@@ -1,5 +1,10 @@
 2014-09-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (possible_polymorphic_call_targets): Remove
+	forgotten debug output; canonicalize querries more wtih LTO.
+
+2014-09-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.h (class ipa_polymorphic_call_context): Move here from
 	ipa-utils.h; add stream_int and stream_out methods.
 	(cgraph_indirect_call_info): Remove SPECILATIVE_OFFSET,
