@@ -903,7 +903,7 @@
 	 "	and	%0,%3"			"\n"
 	 "	not	%3,%3"			"\n"
 	 "	mov.<bwl>	%3,@%1"		"\n"
-	 "	stc	%4,sr";
+	 "	ldc	%4,sr";
 }
   [(set_attr "length" "20")])
 
