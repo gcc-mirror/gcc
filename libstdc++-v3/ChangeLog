@@ -1,5 +1,21 @@
 2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	DR 1339
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* include/bits/stl_uninitialized.h (uninitialized_fill_n): Return
+	an iterator.
+	(__uninitialized_fill_n_a, __uninitialized_default_n_a): Likewise.
+	* include/bits/stl_vector.h (vector::_M_fill_initialize,
+	vector::_M_default_initialize): Use returned iterator.
+	* include/bits/vector.tcc (vector::_M_fill_assign,
+	vector::_M_fill_insert, vector::_M_default_append): Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	16505.cc: Adjust return type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	dr1339.cc: New.
+
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/vector.tcc (vector::_M_fill_assign): Use _M_swap_data.
 
 2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
