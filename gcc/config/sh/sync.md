@@ -903,7 +903,7 @@
 	 "	and	%0,%3"			"\n"
 	 "	not	%3,%3"			"\n"
 	 "	mov.<bwl>	%3,@%1"		"\n"
-	 "	stc	%4,sr";
+	 "	ldc	%4,sr";
 }
   [(set_attr "length" "20")])
 
@@ -1353,7 +1353,7 @@
 	 "	ldc	r0,sr"		"\n"
 	 "	mov.b	@%0,r0"		"\n"
 	 "	mov.b	%1,@%0"		"\n"
-	 "	stc	%2,sr"		"\n"
+	 "	ldc	%2,sr"		"\n"
 	 "	tst	r0,r0";
 }
   [(set_attr "length" "16")])
