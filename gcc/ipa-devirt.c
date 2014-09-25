@@ -135,6 +135,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "intl.h"
 #include "hash-map.h"
+#include "data-streamer.h"
+#include "lto-streamer.h"
+#include "streamer-hooks.h"
 
 /* Hash based set of pairs of types.  */
 typedef struct
@@ -2570,6 +2573,71 @@ ipa_polymorphic_call_context::debug () const
   dump (stderr);
 }
 
+/* Stream out the context to OB.  */
+
+void
+ipa_polymorphic_call_context::stream_out (struct output_block *ob) const
+{
+  struct bitpack_d bp = bitpack_create (ob->main_stream);
+
+  bp_pack_value (&bp, invalid, 1);
+  bp_pack_value (&bp, maybe_in_construction, 1);
+  bp_pack_value (&bp, maybe_derived_type, 1);
+  bp_pack_value (&bp, speculative_maybe_derived_type, 1);
+  bp_pack_value (&bp, outer_type != NULL, 1);
+  bp_pack_value (&bp, offset != 0, 1);
+  bp_pack_value (&bp, speculative_outer_type != NULL, 1);
+  streamer_write_bitpack (&bp);
+
+  if (outer_type != NULL)
+    stream_write_tree (ob, outer_type, true);
+  if (offset)
+    streamer_write_hwi (ob, offset);
+  if (speculative_outer_type != NULL)
+    {
+      stream_write_tree (ob, speculative_outer_type, true);
+      streamer_write_hwi (ob, speculative_offset);
+    }
+  else
+    gcc_assert (!speculative_offset);
+}
+
+/* Stream in the context from IB and DATA_IN.  */
+
+void
+ipa_polymorphic_call_context::stream_in (struct lto_input_block *ib,
+					 struct data_in *data_in)
+{
+  struct bitpack_d bp = streamer_read_bitpack (ib);
+
+  invalid = bp_unpack_value (&bp, 1);
+  maybe_in_construction = bp_unpack_value (&bp, 1);
+  maybe_derived_type = bp_unpack_value (&bp, 1);
+  speculative_maybe_derived_type = bp_unpack_value (&bp, 1);
+  bool outer_type_p = bp_unpack_value (&bp, 1);
+  bool offset_p = bp_unpack_value (&bp, 1);
+  bool speculative_outer_type_p = bp_unpack_value (&bp, 1);
+
+  if (outer_type_p)
+    outer_type = stream_read_tree (ib, data_in);
+  else
+    outer_type = NULL;
+  if (offset_p)
+    offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+  else
+    offset = 0;
+  if (speculative_outer_type_p)
+    {
+      speculative_outer_type = stream_read_tree (ib, data_in);
+      speculative_offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+    }
+  else
+    {
+      speculative_outer_type = NULL;
+      speculative_offset = 0;
+    }
+}
+
 /* Proudce polymorphic call context for call method of instance
    that is located within BASE (that is assumed to be a decl) at offset OFF. */
 
@@ -2894,7 +2962,7 @@ struct type_change_info
    We take advantage of fact that vtable stores must appear within constructor
    and destructor functions.  */
 
-bool
+static bool
 noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
 {
   if (is_gimple_assign (stmt))
