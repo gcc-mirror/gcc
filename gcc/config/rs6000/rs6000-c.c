@@ -4267,7 +4267,8 @@ altivec_build_resolved_builtin (tree *args, int n,
      argument) is reversed.  Patch the arguments here before building
      the resolved CALL_EXPR.  */
   if (desc->code == ALTIVEC_BUILTIN_VEC_VCMPGE_P
-      && desc->overloaded_code != ALTIVEC_BUILTIN_VCMPGEFP_P)
+      && desc->overloaded_code != ALTIVEC_BUILTIN_VCMPGEFP_P
+      && desc->overloaded_code != VSX_BUILTIN_XVCMPGEDP_P)
     {
       tree t;
       t = args[2], args[2] = args[1], args[1] = t;
