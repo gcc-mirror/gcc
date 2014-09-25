@@ -62,7 +62,7 @@ possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
 				   ipa_polymorphic_call_context,
 				   bool *copletep = NULL,
 				   void **cache_token = NULL,
-				   int *nonconstruction_targets = NULL);
+				   bool speuclative = false);
 odr_type get_odr_type (tree, bool insert = false);
 bool possible_polymorphic_call_target_p (tree ref, gimple stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
@@ -92,7 +92,7 @@ inline vec <cgraph_node *>
 possible_polymorphic_call_targets (struct cgraph_edge *e,
 				   bool *completep = NULL,
 				   void **cache_token = NULL,
-				   int *nonconstruction_targets = NULL)
+				   bool speculative = false)
 {
   ipa_polymorphic_call_context context(e);
 
@@ -100,7 +100,7 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 					    e->indirect_info->otr_token,
 					    context,
 					    completep, cache_token,
-					    nonconstruction_targets);
+					    speculative);
 }
 
 /* Same as above but taking OBJ_TYPE_REF as an parameter.  */

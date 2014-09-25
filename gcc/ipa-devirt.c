@@ -1884,10 +1884,10 @@ struct polymorphic_call_target_d
   ipa_polymorphic_call_context context;
   odr_type type;
   vec <cgraph_node *> targets;
-  int speculative_targets;
-  bool complete;
-  int type_warning;
   tree decl_warning;
+  int type_warning;
+  bool complete;
+  bool speculative;
 };
 
 /* Polymorphic call target cache helpers.  */
@@ -1917,6 +1917,7 @@ polymorphic_call_target_hasher::hash (const value_type *odr_query)
       hstate.merge_hash (TYPE_UID (odr_query->context.speculative_outer_type));
       hstate.add_wide_int (odr_query->context.speculative_offset);
     }
+  hstate.add_flag (odr_query->speculative);
   hstate.add_flag (odr_query->context.maybe_in_construction);
   hstate.add_flag (odr_query->context.maybe_derived_type);
   hstate.add_flag (odr_query->context.speculative_maybe_derived_type);
@@ -1931,6 +1932,7 @@ polymorphic_call_target_hasher::equal (const value_type *t1,
 				       const compare_type *t2)
 {
   return (t1->type == t2->type && t1->otr_token == t2->otr_token
+	  && t1->speculative == t2->speculative
 	  && t1->context.offset == t2->context.offset
 	  && t1->context.speculative_offset == t2->context.speculative_offset
 	  && t1->context.outer_type == t2->context.outer_type
@@ -3667,10 +3669,8 @@ struct final_warning_record *final_warning_records;
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
 
-   SPECULATION_TARGETS specify number of targets that are speculatively
-   likely.  These include targets specified by the speculative part
-   of polymoprhic call context and also exclude all targets for classes
-   in construction.
+   If SPECULATIVE is set, the list will not contain targets that
+   are not speculatively taken.
 
    Returned vector is placed into cache.  It is NOT caller's responsibility
    to free it.  The vector can be freed on cgraph_remove_node call if
@@ -3682,7 +3682,7 @@ possible_polymorphic_call_targets (tree otr_type,
 				   ipa_polymorphic_call_context context,
 			           bool *completep,
 			           void **cache_token,
-				   int *speculative_targetsp)
+				   bool speculative)
 {
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   vec <cgraph_node *> nodes = vNULL;
@@ -3706,13 +3706,11 @@ possible_polymorphic_call_targets (tree otr_type,
 	*completep = context.invalid;
       if (cache_token)
 	*cache_token = NULL;
-      if (speculative_targetsp)
-	*speculative_targetsp = 0;
       return nodes;
     }
 
   /* Do not bother to compute speculative info when user do not asks for it.  */
-  if (!speculative_targetsp || !context.speculative_outer_type)
+  if (!speculative || !context.speculative_outer_type)
     context.clear_speculation ();
 
   type = get_odr_type (otr_type, true);
@@ -3730,8 +3728,6 @@ possible_polymorphic_call_targets (tree otr_type,
 	*completep = true;
       if (cache_token)
 	*cache_token = NULL;
-      if (speculative_targetsp)
-	*speculative_targetsp = 0;
       return nodes;
     }
   gcc_assert (!context.invalid);
@@ -3783,6 +3779,7 @@ possible_polymorphic_call_targets (tree otr_type,
   /* Lookup cached answer.  */
   key.type = type;
   key.otr_token = otr_token;
+  key.speculative = speculative;
   key.context = context;
   slot = polymorphic_call_target_hash->find_slot (&key, INSERT);
   if (cache_token)
@@ -3791,15 +3788,13 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       if (completep)
 	*completep = (*slot)->complete;
-      if (speculative_targetsp)
-	*speculative_targetsp = (*slot)->speculative_targets;
       if ((*slot)->type_warning && final_warning_records)
 	{
 	  final_warning_records->type_warnings[(*slot)->type_warning - 1].count++;
 	  final_warning_records->type_warnings[(*slot)->type_warning - 1].dyn_count
 	    += final_warning_records->dyn_count;
 	}
-      if ((*slot)->decl_warning && final_warning_records)
+      if (!speculative && (*slot)->decl_warning && final_warning_records)
 	{
 	  struct decl_warn_count *c =
 	     final_warning_records->decl_warnings.get ((*slot)->decl_warning);
@@ -3819,7 +3814,7 @@ possible_polymorphic_call_targets (tree otr_type,
   (*slot)->type = type;
   (*slot)->otr_token = otr_token;
   (*slot)->context = context;
-  (*slot)->speculative_targets = 0;
+  (*slot)->speculative = speculative;
 
   hash_set<tree> inserted;
   hash_set<tree> matched_vtables;
@@ -3864,137 +3859,136 @@ possible_polymorphic_call_targets (tree otr_type,
 					       &speculation_complete,
 					       bases_to_consider,
 					       false);
-      (*slot)->speculative_targets = nodes.length();
     }
 
-  /* First see virtual method of type itself.  */
-  binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
-			       context.offset, otr_type);
-  if (binfo)
-    target = gimple_get_virt_method_for_binfo (otr_token, binfo,
-					       &can_refer);
-  else
+  if (!speculative || !nodes.length ())
     {
-      gcc_assert (odr_violation_reported);
-      target = NULL;
-    }
-
-  /* Destructors are never called through construction virtual tables,
-     because the type is always known.  */
-  if (target && DECL_CXX_DESTRUCTOR_P (target))
-    context.maybe_in_construction = false;
-
-  if (target)
-    {
-      /* In the case we get complete method, we don't need 
-	 to walk derivations.  */
-      if (DECL_FINAL_P (target))
-	context.maybe_derived_type = false;
-    }
-
-  /* If OUTER_TYPE is abstract, we know we are not seeing its instance.  */
-  if (type_possibly_instantiated_p (outer_type->type))
-    maybe_record_node (nodes, target, &inserted, can_refer, &complete);
-  else
-    skipped = true;
-
-  if (binfo)
-    matched_vtables.add (BINFO_VTABLE (binfo));
-
-  /* Next walk recursively all derived types.  */
-  if (context.maybe_derived_type)
-    {
-      for (i = 0; i < outer_type->derived_types.length(); i++)
-	possible_polymorphic_call_targets_1 (nodes, &inserted,
-					     &matched_vtables,
-					     otr_type,
-					     outer_type->derived_types[i],
-					     otr_token, outer_type->type,
-					     context.offset, &complete,
-					     bases_to_consider,
-					     context.maybe_in_construction);
-
-      if (!outer_type->all_derivations_known)
+      /* First see virtual method of type itself.  */
+      binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
+				   context.offset, otr_type);
+      if (binfo)
+	target = gimple_get_virt_method_for_binfo (otr_token, binfo,
+						   &can_refer);
+      else
 	{
-	  if (final_warning_records)
-	    {
-	      if (complete
-		  && nodes.length () == 1
-		  && warn_suggest_final_types
-		  && !outer_type->derived_types.length ())
-		{
-		  if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
-	            final_warning_records->type_warnings.safe_grow_cleared
-		      (odr_types.length ());
-		  final_warning_records->type_warnings[outer_type->id].count++;
-		  final_warning_records->type_warnings[outer_type->id].dyn_count
-		    += final_warning_records->dyn_count;
-		  final_warning_records->type_warnings[outer_type->id].type
-		    = outer_type->type;
-		  (*slot)->type_warning = outer_type->id + 1;
-		}
-	      if (complete
-		  && warn_suggest_final_methods
-		  && nodes.length () == 1
-		  && types_same_for_odr (DECL_CONTEXT (nodes[0]->decl),
-					 outer_type->type))
-		{
-		  bool existed;
-		  struct decl_warn_count &c =
-		     final_warning_records->decl_warnings.get_or_insert
-			(nodes[0]->decl, &existed);
+	  gcc_assert (odr_violation_reported);
+	  target = NULL;
+	}
 
-		  if (existed)
+      /* Destructors are never called through construction virtual tables,
+	 because the type is always known.  */
+      if (target && DECL_CXX_DESTRUCTOR_P (target))
+	context.maybe_in_construction = false;
+
+      if (target)
+	{
+	  /* In the case we get complete method, we don't need 
+	     to walk derivations.  */
+	  if (DECL_FINAL_P (target))
+	    context.maybe_derived_type = false;
+	}
+
+      /* If OUTER_TYPE is abstract, we know we are not seeing its instance.  */
+      if (type_possibly_instantiated_p (outer_type->type))
+	maybe_record_node (nodes, target, &inserted, can_refer, &complete);
+      else
+	skipped = true;
+
+      if (binfo)
+	matched_vtables.add (BINFO_VTABLE (binfo));
+
+      /* Next walk recursively all derived types.  */
+      if (context.maybe_derived_type)
+	{
+	  for (i = 0; i < outer_type->derived_types.length(); i++)
+	    possible_polymorphic_call_targets_1 (nodes, &inserted,
+						 &matched_vtables,
+						 otr_type,
+						 outer_type->derived_types[i],
+						 otr_token, outer_type->type,
+						 context.offset, &complete,
+						 bases_to_consider,
+						 context.maybe_in_construction);
+
+	  if (!outer_type->all_derivations_known)
+	    {
+	      if (!speculative && final_warning_records)
+		{
+		  if (complete
+		      && nodes.length () == 1
+		      && warn_suggest_final_types
+		      && !outer_type->derived_types.length ())
 		    {
-		      c.count++;
-		      c.dyn_count += final_warning_records->dyn_count;
+		      if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
+			final_warning_records->type_warnings.safe_grow_cleared
+			  (odr_types.length ());
+		      final_warning_records->type_warnings[outer_type->id].count++;
+		      final_warning_records->type_warnings[outer_type->id].dyn_count
+			+= final_warning_records->dyn_count;
+		      final_warning_records->type_warnings[outer_type->id].type
+			= outer_type->type;
+		      (*slot)->type_warning = outer_type->id + 1;
 		    }
-		  else
+		  if (complete
+		      && warn_suggest_final_methods
+		      && nodes.length () == 1
+		      && types_same_for_odr (DECL_CONTEXT (nodes[0]->decl),
+					     outer_type->type))
 		    {
-		      c.count = 1;
-		      c.dyn_count = final_warning_records->dyn_count;
-		      c.decl = nodes[0]->decl;
+		      bool existed;
+		      struct decl_warn_count &c =
+			 final_warning_records->decl_warnings.get_or_insert
+			    (nodes[0]->decl, &existed);
+
+		      if (existed)
+			{
+			  c.count++;
+			  c.dyn_count += final_warning_records->dyn_count;
+			}
+		      else
+			{
+			  c.count = 1;
+			  c.dyn_count = final_warning_records->dyn_count;
+			  c.decl = nodes[0]->decl;
+			}
+		      (*slot)->decl_warning = nodes[0]->decl;
 		    }
-		  (*slot)->decl_warning = nodes[0]->decl;
 		}
+	      complete = false;
 	    }
-	  complete = false;
+	}
+
+      if (!speculative)
+	{
+	  /* Destructors are never called through construction virtual tables,
+	     because the type is always known.  One of entries may be cxa_pure_virtual
+	     so look to at least two of them.  */
+	  if (context.maybe_in_construction)
+	    for (i =0 ; i < MIN (nodes.length (), 2); i++)
+	      if (DECL_CXX_DESTRUCTOR_P (nodes[i]->decl))
+		context.maybe_in_construction = false;
+	  if (context.maybe_in_construction)
+	    {
+	      if (type != outer_type
+		  && (!skipped
+		      || (context.maybe_derived_type
+			  && !type_all_derivations_known_p (outer_type->type))))
+		record_targets_from_bases (otr_type, otr_token, outer_type->type,
+					   context.offset, nodes, &inserted,
+					   &matched_vtables, &complete);
+	      if (skipped)
+		maybe_record_node (nodes, target, &inserted, can_refer, &complete);
+	      for (i = 0; i < bases_to_consider.length(); i++)
+		maybe_record_node (nodes, bases_to_consider[i], &inserted, can_refer, &complete);
+	    }
 	}
     }
 
-  /* Finally walk bases, if asked to.  */
-  if (!(*slot)->speculative_targets)
-    (*slot)->speculative_targets = nodes.length();
-
-  /* Destructors are never called through construction virtual tables,
-     because the type is always known.  One of entries may be cxa_pure_virtual
-     so look to at least two of them.  */
-  if (context.maybe_in_construction)
-    for (i =0 ; i < MIN (nodes.length (), 2); i++)
-      if (DECL_CXX_DESTRUCTOR_P (nodes[i]->decl))
-	context.maybe_in_construction = false;
-  if (context.maybe_in_construction)
-    {
-      if (type != outer_type
-	  && (!skipped
-	      || (context.maybe_derived_type
-	          && !type_all_derivations_known_p (outer_type->type))))
-	record_targets_from_bases (otr_type, otr_token, outer_type->type,
-				   context.offset, nodes, &inserted,
-				   &matched_vtables, &complete);
-      if (skipped)
-        maybe_record_node (nodes, target, &inserted, can_refer, &complete);
-      for (i = 0; i < bases_to_consider.length(); i++)
-        maybe_record_node (nodes, bases_to_consider[i], &inserted, can_refer, &complete);
-    }
   bases_to_consider.release();
-
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
   if (completep)
     *completep = complete;
-  if (speculative_targetsp)
-    *speculative_targetsp = (*slot)->speculative_targets;
 
   timevar_pop (TV_IPA_VIRTUAL_CALL);
   return nodes;
@@ -4008,6 +4002,29 @@ add_decl_warning (const tree &key ATTRIBUTE_UNUSED, const decl_warn_count &value
   return true;
 }
 
+/* Dump target list TARGETS into FILE.  */
+
+static void
+dump_targets (FILE *f, vec <cgraph_node *> targets)
+{
+  unsigned int i;
+
+  for (i = 0; i < targets.length (); i++)
+    {
+      char *name = NULL;
+      if (in_lto_p)
+	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
+      fprintf (f, " %s/%i", name ? name : targets[i]->name (), targets[i]->order);
+      if (in_lto_p)
+	free (name);
+      if (!targets[i]->definition)
+	fprintf (f, " (no definition%s)",
+		 DECL_DECLARED_INLINE_P (targets[i]->decl)
+		 ? " inline" : "");
+    }
+  fprintf (f, "\n");
+}
+
 /* Dump all possible targets of a polymorphic call.  */
 
 void
@@ -4019,14 +4036,13 @@ dump_possible_polymorphic_call_targets (FILE *f,
   vec <cgraph_node *> targets;
   bool final;
   odr_type type = get_odr_type (TYPE_MAIN_VARIANT (otr_type), false);
-  unsigned int i;
-  int speculative;
+  unsigned int len;
 
   if (!type)
     return;
   targets = possible_polymorphic_call_targets (otr_type, otr_token,
 					       ctx,
-					       &final, NULL, &speculative);
+					       &final, NULL, false);
   fprintf (f, "  Targets of polymorphic call of type %i:", type->id);
   print_generic_expr (f, type->type, TDF_SLIM);
   fprintf (f, " token %i\n", (int)otr_token);
@@ -4039,23 +4055,19 @@ dump_possible_polymorphic_call_targets (FILE *f,
 	   ctx.maybe_in_construction ? " (base types included)" : "",
 	   ctx.maybe_derived_type ? " (derived types included)" : "",
 	   ctx.speculative_maybe_derived_type ? " (speculative derived types included)" : "");
-  for (i = 0; i < targets.length (); i++)
+  len = targets.length ();
+  dump_targets (f, targets);
+
+  targets = possible_polymorphic_call_targets (otr_type, otr_token,
+					       ctx,
+					       &final, NULL, true);
+  gcc_assert (targets.length () <= len);
+  if (targets.length () != len)
     {
-      char *name = NULL;
-      if (i == (unsigned)speculative)
-	fprintf (f, "\n     Targets that are not likely:\n"
-		 "      ");
-      if (in_lto_p)
-	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
-      fprintf (f, " %s/%i", name ? name : targets[i]->name (), targets[i]->order);
-      if (in_lto_p)
-	free (name);
-      if (!targets[i]->definition)
-	fprintf (f, " (no definition%s)",
-		 DECL_DECLARED_INLINE_P (targets[i]->decl)
-		 ? " inline" : "");
+      fprintf (f, "  Speculative targets:");
+      dump_targets (f, targets);
     }
-  fprintf (f, "\n\n");
+  fprintf (f, "\n");
 }
 
 
@@ -4241,15 +4253,18 @@ ipa_devirt (void)
 	    struct cgraph_node *likely_target = NULL;
 	    void *cache_token;
 	    bool final;
-	    int speculative_targets;
 
 	    if (final_warning_records)
 	      final_warning_records->dyn_count = e->count;
 
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
-		    (e, &final, &cache_token, &speculative_targets);
+		    (e, &final, &cache_token, true);
 	    unsigned int i;
+
+	    /* Trigger warnings by calculating non-speculative targets.  */
+	    if (warn_suggest_final_methods || warn_suggest_final_types)
+	      possible_polymorphic_call_targets (e);
 
 	    if (dump_file)
 	      dump_possible_polymorphic_call_targets 
@@ -4289,13 +4304,10 @@ ipa_devirt (void)
 		{
 		  if (likely_target)
 		    {
-		      if (i < (unsigned) speculative_targets)
-			{
-			  likely_target = NULL;
-			  if (dump_file)
-			    fprintf (dump_file, "More than one likely target\n\n");
-			  nmultiple++;
-			}
+		      likely_target = NULL;
+		      if (dump_file)
+			fprintf (dump_file, "More than one likely target\n\n");
+		      nmultiple++;
 		      break;
 		    }
 		  likely_target = targets[i];
