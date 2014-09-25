@@ -6218,13 +6218,13 @@
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=x,x,x ,x,x,x,x  ,x  ,m ,m   ,m")
+	  "=v,v,v ,x,x,v,x  ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " x,m,*r,m,x,x,*rm,*rm,!x,!*re,!*fF"))
+	  " v,m,*r,m,x,v,*rm,*rm,!x,!*re,!*fF"))
 	  (match_operand:VI4F_128 1 "vector_move_operand"
-	  " C,C,C ,C,0,x,0  ,x  ,0 ,0   ,0")
+	  " C,C,C ,C,0,v,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
