@@ -7,6 +7,28 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_insn
+	"<fixsuffix>fix_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>"):
+	New.
+	(define_insn "<fixsuffix>fix_truncv2sfv2di2<mask_name>"): Ditto.
+	(define_insn "ufix_trunc<mode><sseintvecmodelower>2<mask_name>"): Ditto.
+	(define_insn "sse2_cvtss2sd<round_saeonly_name>"): Change
+	"nonimmediate_operand" to "<round_saeonly_nimm_predicate>".
+	(define_insn "avx_cvtpd2ps256<mask_name>"): Add masking.
+	(define_expand "sse2_cvtpd2ps_mask): New.
+	(define_insn "*sse2_cvtpd2ps<mask_name>"): Add masking.
+	(define_insn "sse2_cvtps2pd<mask_name>"): Add masking.
+
+2014-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c
 	(avx512f_ufix_notruncv8dfv8si_mask_round): Rename to ...
 	(ufix_notruncv8dfv8si2_mask_round): ... this.
