@@ -1,3 +1,9 @@
+2014-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/62218
+	* config/sh/sync.md (atomic_test_and_set_soft_imask): Fix typo
+	in instruction sequence.
+
 2014-09-25  Nick Clifton  <nickc@redhat.com>
 
 	PR target/62218
