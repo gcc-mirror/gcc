@@ -1,5 +1,38 @@
 2014-09-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.h (class ipa_polymorphic_call_context): Move here from
+	ipa-utils.h; add stream_int and stream_out methods.
+	(cgraph_indirect_call_info): Remove SPECILATIVE_OFFSET,
+	OUTER_TYPE, SPECULATIVE_OUTER_TYPE, MAYBE_IN_CONSTRUCTION
+	MAYBE_DERIVED_TYPE and SPECULATIEVE_MAYBE_DERIVED_TYPE;
+	add CONTEXT.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	ipa_polymorphic_call_context::clear_speculation,
+	ipa_polymorphic_call_context::clear_outer_type): Move here from
+	ipa-utils.h
+	* ipa-utils.h (class ipa_polymorphic_call_context): Move to cgraph.h
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	ipa_polymorphic_call_context::clear_speculation,
+	ipa_polymorphic_call_context::clear_outer_type): Likewise.
+	* ipa-devirt.c: Include data-streamer.h, lto-streamer.h and
+	streamer-hooks.h
+	(ipa_polymorphic_call_context::stream_out): New method.
+	(ipa_polymorphic_call_context::stream_in): New method.
+	(noncall_stmt_may_be_vtbl_ptr_store): Add forgotten static.
+	* ipa-prop.c (ipa_analyze_indirect_call_uses): Do not care about
+	OUTER_TYPE.
+	(ipa_analyze_call_uses): Simplify.
+	(update_indirect_edges_after_inlining): Do not care about outer_type.
+	(ipa_write_indirect_edge_info): Update.
+	(ipa_write_indirect_edge_info): Likewise.
+	* cgraph.c (cgraph_node::create_indirect_edge): Simplify.
+	(dump_edge_flags): Break out from ...
+	(cgraph_node::dump): ... here; dump indirect edges.
+
+2014-09-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.h (polymorphic_call_context): Add
 	metdhos dump, debug and clear_outer_type.
 	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Simplify.
