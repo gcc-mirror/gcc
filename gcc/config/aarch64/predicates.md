@@ -279,3 +279,56 @@
 {
   return aarch64_const_vec_all_same_int_p (op, -1);
 })
+
+;; Predicates used by the various SIMD shift operations.  These
+;; fall in to 3 categories.
+;;   Shifts with a range 0-(bit_size - 1) (aarch64_simd_shift_imm)
+;;   Shifts with a range 1-bit_size (aarch64_simd_shift_imm_offset)
+;;   Shifts with a range 0-bit_size (aarch64_simd_shift_imm_bitsize)
+(define_predicate "aarch64_simd_shift_imm_qi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
+
+(define_predicate "aarch64_simd_shift_imm_hi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+
+(define_predicate "aarch64_simd_shift_imm_si"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
+(define_predicate "aarch64_simd_shift_imm_di"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 63)")))
+
+(define_predicate "aarch64_simd_shift_imm_offset_qi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 8)")))
+
+(define_predicate "aarch64_simd_shift_imm_offset_hi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
+
+(define_predicate "aarch64_simd_shift_imm_offset_si"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 32)")))
+
+(define_predicate "aarch64_simd_shift_imm_offset_di"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 64)")))
+
+(define_predicate "aarch64_simd_shift_imm_bitsize_qi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 8)")))
+
+(define_predicate "aarch64_simd_shift_imm_bitsize_hi"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 16)")))
+
+(define_predicate "aarch64_simd_shift_imm_bitsize_si"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 32)")))
+
+(define_predicate "aarch64_simd_shift_imm_bitsize_di"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 64)")))
