@@ -1,3 +1,8 @@
+2014-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61945
+	* class.c (warn_hidden): Check for FUNCTION_DECL.
+
 2014-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/63249
