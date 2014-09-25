@@ -1,3 +1,21 @@
+2014-09-25  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63199
+	* include/bits/regex.h (basic_regex::basic_regex, basic_regex::assign,
+	basic_regex::imbue, basic_regex::getloc, basic_regex::swap): Add
+	_M_loc for basic_regex.
+	* include/bits/regex_automaton.h: Add _M_traits for _NFA.
+	* include/bits/regex_compiler.h (_Compiler::_M_get_nfa, __compile_nfa):
+	Make _Compiler::_M_nfa heap allocated.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler): Make
+	_Compiler::_M_nfa heap allocated.
+	* include/bits/regex_executor.h (_Executor::_M_is_word):
+	Fix accessing _M_traits.
+	* include/bits/regex_executor.tcc (_Executor::_M_dfs):
+	Fix accessing _M_traits.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	New testcase.
+
 2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Make GLIBCXX_3.4 patterns stricter so the

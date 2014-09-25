@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _TraitsT>
     _Compiler<_TraitsT>::
     _Compiler(_IterT __b, _IterT __e,
-	      const _TraitsT& __traits, _FlagT __flags)
+	      const typename _TraitsT::locale_type& __loc, _FlagT __flags)
     : _M_flags((__flags
 		& (regex_constants::ECMAScript
 		   | regex_constants::basic
@@ -72,21 +72,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   | regex_constants::awk))
 	       ? __flags
 	       : __flags | regex_constants::ECMAScript),
-    _M_traits(__traits),
-    _M_ctype(std::use_facet<_CtypeT>(_M_traits.getloc())),
-    _M_scanner(__b, __e, _M_flags, _M_traits.getloc()),
-    _M_nfa(_M_flags)
+      _M_scanner(__b, __e, _M_flags, __loc),
+      _M_nfa(make_shared<_RegexT>(__loc, _M_flags)),
+      _M_traits(_M_nfa->_M_traits),
+      _M_ctype(std::use_facet<_CtypeT>(__loc))
     {
-      _StateSeqT __r(_M_nfa, _M_nfa._M_start());
-      __r._M_append(_M_nfa._M_insert_subexpr_begin());
+      _StateSeqT __r(*_M_nfa, _M_nfa->_M_start());
+      __r._M_append(_M_nfa->_M_insert_subexpr_begin());
       this->_M_disjunction();
       if (!_M_match_token(_ScannerT::_S_token_eof))
 	__throw_regex_error(regex_constants::error_paren);
       __r._M_append(_M_pop());
       _GLIBCXX_DEBUG_ASSERT(_M_stack.empty());
-      __r._M_append(_M_nfa._M_insert_subexpr_end());
-      __r._M_append(_M_nfa._M_insert_accept());
-      _M_nfa._M_eliminate_dummy();
+      __r._M_append(_M_nfa->_M_insert_subexpr_end());
+      __r._M_append(_M_nfa->_M_insert_accept());
+      _M_nfa->_M_eliminate_dummy();
     }
 
   template<typename _TraitsT>
@@ -100,15 +100,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _StateSeqT __alt1 = _M_pop();
 	  this->_M_alternative();
 	  _StateSeqT __alt2 = _M_pop();
-	  auto __end = _M_nfa._M_insert_dummy();
+	  auto __end = _M_nfa->_M_insert_dummy();
 	  __alt1._M_append(__end);
 	  __alt2._M_append(__end);
 	  // __alt2 is state._M_next, __alt1 is state._M_alt. The executor
 	  // executes _M_alt before _M_next, as well as executing left
 	  // alternative before right one.
-	  _M_stack.push(_StateSeqT(_M_nfa,
-				   _M_nfa._M_insert_alt(__alt2._M_start,
-							__alt1._M_start, false),
+	  _M_stack.push(_StateSeqT(*_M_nfa,
+				   _M_nfa->_M_insert_alt(
+				     __alt2._M_start, __alt1._M_start, false),
 				   __end));
 	}
     }
@@ -126,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_stack.push(__re);
 	}
       else
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+	_M_stack.push(_StateSeqT(*_M_nfa, _M_nfa->_M_insert_dummy()));
     }
 
   template<typename _TraitsT>
@@ -150,12 +150,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_assertion()
     {
       if (_M_match_token(_ScannerT::_S_token_line_begin))
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_line_begin()));
+	_M_stack.push(_StateSeqT(*_M_nfa, _M_nfa->_M_insert_line_begin()));
       else if (_M_match_token(_ScannerT::_S_token_line_end))
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_line_end()));
+	_M_stack.push(_StateSeqT(*_M_nfa, _M_nfa->_M_insert_line_end()));
       else if (_M_match_token(_ScannerT::_S_token_word_bound))
 	// _M_value[0] == 'n' means it's negative, say "not word boundary".
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
+	_M_stack.push(_StateSeqT(*_M_nfa, _M_nfa->
 	      _M_insert_word_bound(_M_value[0] == 'n')));
       else if (_M_match_token(_ScannerT::_S_token_subexpr_lookahead_begin))
 	{
@@ -164,11 +164,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
 	    __throw_regex_error(regex_constants::error_paren);
 	  auto __tmp = _M_pop();
-	  __tmp._M_append(_M_nfa._M_insert_accept());
+	  __tmp._M_append(_M_nfa->_M_insert_accept());
 	  _M_stack.push(
 	      _StateSeqT(
-		_M_nfa,
-		_M_nfa._M_insert_lookahead(__tmp._M_start, __neg)));
+		*_M_nfa,
+		_M_nfa->_M_insert_lookahead(__tmp._M_start, __neg)));
 	}
       else
 	return false;
@@ -191,8 +191,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __init();
 	  auto __e = _M_pop();
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_repeat(_S_invalid_state_id,
-							 __e._M_start, __neg));
+	  _StateSeqT __r(*_M_nfa,
+			 _M_nfa->_M_insert_repeat(_S_invalid_state_id,
+						  __e._M_start, __neg));
 	  __e._M_append(__r);
 	  _M_stack.push(__r);
 	}
@@ -200,17 +201,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __init();
 	  auto __e = _M_pop();
-	  __e._M_append(_M_nfa._M_insert_repeat(_S_invalid_state_id,
-						__e._M_start, __neg));
+	  __e._M_append(_M_nfa->_M_insert_repeat(_S_invalid_state_id,
+						 __e._M_start, __neg));
 	  _M_stack.push(__e);
 	}
       else if (_M_match_token(_ScannerT::_S_token_opt))
 	{
 	  __init();
 	  auto __e = _M_pop();
-	  auto __end = _M_nfa._M_insert_dummy();
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_repeat(_S_invalid_state_id,
-							 __e._M_start, __neg));
+	  auto __end = _M_nfa->_M_insert_dummy();
+	  _StateSeqT __r(*_M_nfa,
+			 _M_nfa->_M_insert_repeat(_S_invalid_state_id,
+						  __e._M_start, __neg));
 	  __e._M_append(__end);
 	  __r._M_append(__end);
 	  _M_stack.push(__r);
@@ -222,7 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
 	    __throw_regex_error(regex_constants::error_badbrace);
 	  _StateSeqT __r(_M_pop());
-	  _StateSeqT __e(_M_nfa, _M_nfa._M_insert_dummy());
+	  _StateSeqT __e(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  long __min_rep = _M_cur_int_value(10);
 	  bool __infi = false;
 	  long __n;
@@ -246,9 +248,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__infi)
 	    {
 	      auto __tmp = __r._M_clone();
-	      _StateSeqT __s(_M_nfa,
-			     _M_nfa._M_insert_repeat(_S_invalid_state_id,
-						     __tmp._M_start, __neg));
+	      _StateSeqT __s(*_M_nfa,
+			     _M_nfa->_M_insert_repeat(_S_invalid_state_id,
+						      __tmp._M_start, __neg));
 	      __tmp._M_append(__s);
 	      __e._M_append(__s);
 	    }
@@ -256,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if (__n < 0)
 		__throw_regex_error(regex_constants::error_badbrace);
-	      auto __end = _M_nfa._M_insert_dummy();
+	      auto __end = _M_nfa->_M_insert_dummy();
 	      // _M_alt is the "match more" branch, and _M_next is the
 	      // "match less" one. Switch _M_alt and _M_next of all created
 	      // nodes. This is a hack but IMO works well.
@@ -264,15 +266,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      for (long __i = 0; __i < __n; ++__i)
 		{
 		  auto __tmp = __r._M_clone();
-		  auto __alt = _M_nfa._M_insert_repeat(__tmp._M_start,
-						       __end, __neg);
+		  auto __alt = _M_nfa->_M_insert_repeat(__tmp._M_start,
+							__end, __neg);
 		  __stack.push(__alt);
-		  __e._M_append(_StateSeqT(_M_nfa, __alt, __tmp._M_end));
+		  __e._M_append(_StateSeqT(*_M_nfa, __alt, __tmp._M_end));
 		}
 	      __e._M_append(__end);
 	      while (!__stack.empty())
 		{
-		  auto& __tmp = _M_nfa[__stack.top()];
+		  auto& __tmp = (*_M_nfa)[__stack.top()];
 		  __stack.pop();
 		  swap(__tmp._M_next, __tmp._M_alt);
 		}
@@ -313,13 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_try_char())
 	__INSERT_REGEX_MATCHER(_M_insert_char_matcher);
       else if (_M_match_token(_ScannerT::_S_token_backref))
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
+	_M_stack.push(_StateSeqT(*_M_nfa, _M_nfa->
 				 _M_insert_backref(_M_cur_int_value(10))));
       else if (_M_match_token(_ScannerT::_S_token_quoted_class))
 	__INSERT_REGEX_MATCHER(_M_insert_character_class_matcher);
       else if (_M_match_token(_ScannerT::_S_token_subexpr_no_group_begin))
 	{
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_dummy());
+	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
 	    __throw_regex_error(regex_constants::error_paren);
@@ -328,12 +330,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
 	{
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_subexpr_begin());
+	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_subexpr_begin());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
 	    __throw_regex_error(regex_constants::error_paren);
 	  __r._M_append(_M_pop());
-	  __r._M_append(_M_nfa._M_insert_subexpr_end());
+	  __r._M_append(_M_nfa->_M_insert_subexpr_end());
 	  _M_stack.push(__r);
 	}
       else if (!_M_bracket_expression())
@@ -361,8 +363,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_TraitsT>::
     _M_insert_any_matcher_ecma()
     {
-      _M_stack.push(_StateSeqT(_M_nfa,
-	_M_nfa._M_insert_matcher
+      _M_stack.push(_StateSeqT(*_M_nfa,
+	_M_nfa->_M_insert_matcher
 	  (_AnyMatcher<_TraitsT, true, __icase, __collate>
 	    (_M_traits))));
     }
@@ -373,8 +375,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_TraitsT>::
     _M_insert_any_matcher_posix()
     {
-      _M_stack.push(_StateSeqT(_M_nfa,
-	_M_nfa._M_insert_matcher
+      _M_stack.push(_StateSeqT(*_M_nfa,
+	_M_nfa->_M_insert_matcher
 	  (_AnyMatcher<_TraitsT, false, __icase, __collate>
 	    (_M_traits))));
     }
@@ -385,8 +387,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_TraitsT>::
     _M_insert_char_matcher()
     {
-      _M_stack.push(_StateSeqT(_M_nfa,
-	_M_nfa._M_insert_matcher
+      _M_stack.push(_StateSeqT(*_M_nfa,
+	_M_nfa->_M_insert_matcher
 	  (_CharMatcher<_TraitsT, __icase, __collate>
 	    (_M_value[0], _M_traits))));
     }
@@ -402,8 +404,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	(_M_ctype.is(_CtypeT::upper, _M_value[0]), _M_traits);
       __matcher._M_add_character_class(_M_value, false);
       __matcher._M_ready();
-      _M_stack.push(_StateSeqT(_M_nfa,
-	_M_nfa._M_insert_matcher(std::move(__matcher))));
+      _M_stack.push(_StateSeqT(*_M_nfa,
+	_M_nfa->_M_insert_matcher(std::move(__matcher))));
     }
 
   template<typename _TraitsT>
@@ -416,8 +418,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (!_M_match_token(_ScannerT::_S_token_bracket_end))
 	_M_expression_term(__matcher);
       __matcher._M_ready();
-      _M_stack.push(_StateSeqT(_M_nfa,
-			       _M_nfa._M_insert_matcher(std::move(__matcher))));
+      _M_stack.push(_StateSeqT(
+		      *_M_nfa,
+		      _M_nfa->_M_insert_matcher(std::move(__matcher))));
     }
 
   template<typename _TraitsT>
