@@ -1,3 +1,9 @@
+2014-09-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Initialize the live-in of
+	new created BB as the intersection of live-in from "old_dest" and
+	live-out from "bb".
+
 2014-09-25  Felix Yang  <felix.yang@huawei.com>
 
 	* lra.c (lra_set_insn_recog_data): Fix typo in comment.

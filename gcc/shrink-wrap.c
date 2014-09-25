@@ -250,16 +250,21 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       if (!df_live)
 	return false;
 
+      basic_block old_dest = live_edge->dest;
       next_block = split_edge (live_edge);
 
       /* We create a new basic block.  Call df_grow_bb_info to make sure
 	 all data structures are allocated.  */
       df_grow_bb_info (df_live);
-      bitmap_copy (df_get_live_in (next_block), df_get_live_out (bb));
+
+      bitmap_and (df_get_live_in (next_block), df_get_live_out (bb),
+		  df_get_live_in (old_dest));
       df_set_bb_dirty (next_block);
 
       /* We should not split more than once for a function.  */
-      gcc_assert (!(*split_p));
+      if (*split_p)
+	return false;
+
       *split_p = true;
     }
 
