@@ -1,3 +1,9 @@
+2014-09-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c++/63249
+	* c-parser.c (c_parser_omp_variable_list): Call mark_exp_read
+	on low_bound and length.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/62294

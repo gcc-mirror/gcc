@@ -1,3 +1,9 @@
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63249
+	* g++.dg/gomp/pr63249.C: New test.
+	* c-c++-common/gomp/pr63249.c: New test.
+
 2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62219
