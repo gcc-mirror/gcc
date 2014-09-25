@@ -4,6 +4,8 @@
 	* testsuite/27_io/basic_ios/conv/bool.cc: New.
 	* testsuite/27_io/basic_ios/conv/voidptr.cc: New.
 
+	* testsuite/27_io/basic_ios/conv/bool_neg.cc: Add dg-do compile.
+
 2014-09-25  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63199
