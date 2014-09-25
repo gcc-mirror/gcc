@@ -10461,6 +10461,40 @@ decl_quals (const_tree decl)
 	     ? TYPE_QUAL_VOLATILE : TYPE_UNQUALIFIED));
 }
 
+/* Determine the TYPE whose qualifiers match the largest strict subset
+   of the given TYPE_QUALS, and return its qualifiers.  Ignore all
+   qualifiers outside QUAL_MASK.  */
+
+static int
+get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
+{
+  tree t;
+  int best_rank = 0, best_qual = 0, max_rank;
+
+  type_quals &= qual_mask;
+  max_rank = popcount_hwi (type_quals) - 1;
+
+  for (t = TYPE_MAIN_VARIANT (type); t && best_rank < max_rank;
+       t = TYPE_NEXT_VARIANT (t))
+    {
+      int q = TYPE_QUALS (t) & qual_mask;
+
+      if ((q & type_quals) == q && q != type_quals
+	  && check_base_type (t, type))
+	{
+	  int rank = popcount_hwi (q);
+
+	  if (rank > best_rank)
+	    {
+	      best_rank = rank;
+	      best_qual = q;
+	    }
+	}
+    }
+
+  return best_qual;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
    entry that chains various modifiers in front of the given type.  */
 
@@ -10474,12 +10508,14 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   tree qualified_type;
   tree name, low, high;
   dw_die_ref mod_scope;
+  /* Only these cv-qualifiers are currently handled.  */
+  const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
+			    | TYPE_QUAL_RESTRICT);
 
   if (code == ERROR_MARK)
     return NULL;
 
-  /* Only these cv-qualifiers are currently handled.  */
-  cv_quals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT);
+  cv_quals &= cv_qual_mask;
 
   /* Don't emit DW_TAG_restrict_type for DWARFv2, since it is a type
      tag modifier (and not an attribute) old consumers won't be able
@@ -10530,7 +10566,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       else
 	{
 	  int dquals = TYPE_QUALS_NO_ADDR_SPACE (dtype);
-	  dquals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT);
+	  dquals &= cv_qual_mask;
 	  if ((dquals & ~cv_quals) != TYPE_UNQUALIFIED
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
 	    /* cv-unqualified version of named type.  Just use
@@ -10543,33 +10579,33 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 
   mod_scope = scope_die_for (type, context_die);
 
-  if ((cv_quals & TYPE_QUAL_CONST)
-      /* If there are multiple type modifiers, prefer a path which
-	 leads to a qualified type.  */
-      && (((cv_quals & ~TYPE_QUAL_CONST) == TYPE_UNQUALIFIED)
-	  || get_qualified_type (type, cv_quals) == NULL_TREE
-	  || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_CONST)
-	      != NULL_TREE)))
+  if (cv_quals)
     {
-      mod_type_die = new_die (DW_TAG_const_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_CONST,
-				   context_die);
-    }
-  else if ((cv_quals & TYPE_QUAL_VOLATILE)
-	   && (((cv_quals & ~TYPE_QUAL_VOLATILE) == TYPE_UNQUALIFIED)
-	       || get_qualified_type (type, cv_quals) == NULL_TREE
-	       || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_VOLATILE)
-		   != NULL_TREE)))
-    {
-      mod_type_die = new_die (DW_TAG_volatile_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_VOLATILE,
-				   context_die);
-    }
-  else if (cv_quals & TYPE_QUAL_RESTRICT)
-    {
-      mod_type_die = new_die (DW_TAG_restrict_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_RESTRICT,
-				   context_die);
+      struct qual_info { int q; enum dwarf_tag t; };
+      static const struct qual_info qual_info[] =
+	{
+	  { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
+	  { TYPE_QUAL_VOLATILE, DW_TAG_volatile_type },
+	  { TYPE_QUAL_CONST, DW_TAG_const_type },
+	};
+      int sub_quals;
+      unsigned i;
+
+      /* Determine a lesser qualified type that most closely matches
+	 this one.  Then generate DW_TAG_* entries for the remaining
+	 qualifiers.  */
+      sub_quals = get_nearest_type_subqualifiers (type, cv_quals,
+						  cv_qual_mask);
+      mod_type_die = modified_type_die (type, sub_quals, context_die);
+
+      for (i = 0; i < sizeof (qual_info) / sizeof (qual_info[0]); i++)
+	if (qual_info[i].q & cv_quals & ~sub_quals)
+	  {
+	    dw_die_ref d = new_die (qual_info[i].t, mod_scope, type);
+	    if (mod_type_die)
+	      add_AT_die_ref (d, DW_AT_type, mod_type_die);
+	    mod_type_die = d;
+	  }
     }
   else if (code == POINTER_TYPE)
     {
