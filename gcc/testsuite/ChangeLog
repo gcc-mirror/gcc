@@ -1,3 +1,7 @@
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-34.C: Update template.
+
 2014-09-25  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/simd/vqshlb_1.c: New.

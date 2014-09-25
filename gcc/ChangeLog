@@ -1,3 +1,17 @@
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (polymorphic_call_target_d): Add SPECULATIVE; reorder
+	for better storage.
+	(polymorphic_call_target_hasher::hash): Hash SPECULATIVE.
+	(possible_polymorphic_call_targets): Instead of computing both
+	speculative and non-speculative answers, do just one at a time.
+	Replace NONSPECULATIVE_TARGETSP parameter with SPECULATIVE flag.
+	(dump_targets): Break out from ...
+	(dump_possible_polymorphic_call_targets): ... here; dump both speculative
+	and non-speculative lists.
+	(ipa_devirt): Update for new possible_polymorphic_call_targets API.
+	* ipa-utils.h (possible_polymorphic_call_targets): Update.
+
 2014-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/63348
