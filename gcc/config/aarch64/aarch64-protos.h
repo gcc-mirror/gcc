@@ -256,7 +256,6 @@ void aarch64_emit_call_insn (rtx);
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
 
-void aarch64_simd_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 void aarch64_simd_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
 
 /* Emit code to place a AdvSIMD pair result in memory locations (with equal

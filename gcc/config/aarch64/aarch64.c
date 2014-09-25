@@ -7988,16 +7988,6 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
     error ("lane out of range");
 }
 
-void
-aarch64_simd_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
-{
-  gcc_assert (CONST_INT_P (operand));
-  HOST_WIDE_INT lane = INTVAL (operand);
-
-  if (lane < low || lane >= high)
-    error ("constant out of range");
-}
-
 /* Emit code to place a AdvSIMD pair result in memory locations (with equal
    registers).  */
 void

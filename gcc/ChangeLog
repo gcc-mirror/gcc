@@ -1,3 +1,29 @@
+2014-09-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_const_bounds): Delete.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>q<r>shl<mode>): Use
+	new predicates.
+	(aarch64_<sur>shll2_n<mode>): Likewise.
+	(aarch64_<sur>shr_n<mode>): Likewise.
+	(aarch64_<sur>sra_n<mode>: Likewise.
+	(aarch64_<sur>s<lr>i_n<mode>): Likewise.
+	(aarch64_<sur>qshl<u>_n<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_simd_const_bounds): Delete.
+	* config/aarch64/iterators.md (ve_mode): New.
+	(offsetlr): Remap to infix text for use in new predicates.
+	* config/aarch64/predicates.md (aarch64_simd_shift_imm_qi): New.
+	(aarch64_simd_shift_imm_hi): Likewise.
+	(aarch64_simd_shift_imm_si): Likewise.
+	(aarch64_simd_shift_imm_di): Likewise.
+	(aarch64_simd_shift_imm_offset_qi): Likewise.
+	(aarch64_simd_shift_imm_offset_hi): Likewise.
+	(aarch64_simd_shift_imm_offset_si): Likewise.
+	(aarch64_simd_shift_imm_offset_di): Likewise.
+	(aarch64_simd_shift_imm_bitsize_qi): Likewise.
+	(aarch64_simd_shift_imm_bitsize_hi): Likewise.
+	(aarch64_simd_shift_imm_bitsize_si): Likewise.
+	(aarch64_simd_shift_imm_bitsize_di): Likewise.
+
 2014-09-25  Jiong Wang  <jiong.wang@arm.com>
 
 	* shrink-wrap.c (move_insn_for_shrink_wrap): Initialize the live-in of
