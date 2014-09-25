@@ -1,3 +1,13 @@
+2014-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-09-25  Nick Clifton  <nickc@redhat.com>
+	2014-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/62218
+	* config/sh/sync.md (atomic_fetch_nand<mode>_soft_imask,
+	atomic_test_and_set_soft_imask): Fix typo in instruction sequence.
+
 2014-09-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r215559
