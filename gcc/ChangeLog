@@ -8,6 +8,24 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_expand "<avx2_avx512f>_perm<mode>"): Rename to ...
+	(define_expand "<avx2_avx512>_perm<mode>"): ... this.
+	(define_expand "avx512f_perm<mode>_mask"): Rename to ...
+	(define_expand "<avx512>_perm<mode>_mask"): ... this.
+	Use VI8F_256_512 mode iterator.
+	(define_insn "<avx2_avx512f>_perm<mode>_1<mask_name>"): Rename to ...
+	(define_insn "<avx2_avx512bw>_perm<mode>_1<mask_name>"): ... this.
+
+2014-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_insn "avx_movshdup256<mask_name>"): Add masking.
 	(define_insn "sse3_movshdup<mask_name>"): Ditto.
 	(define_insn "avx_movsldup256<mask_name>"): Ditto.

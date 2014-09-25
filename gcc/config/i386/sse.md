@@ -15921,14 +15921,14 @@
    (set_attr "prefix" "<mask_prefix2>")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "<avx2_avx512f>_perm<mode>"
+(define_expand "<avx2_avx512>_perm<mode>"
   [(match_operand:VI8F_256_512 0 "register_operand")
    (match_operand:VI8F_256_512 1 "nonimmediate_operand")
    (match_operand:SI 2 "const_0_to_255_operand")]
   "TARGET_AVX2"
 {
   int mask = INTVAL (operands[2]);
-  emit_insn (gen_<avx2_avx512f>_perm<mode>_1 (operands[0], operands[1],
+  emit_insn (gen_<avx2_avx512>_perm<mode>_1 (operands[0], operands[1],
 					      GEN_INT ((mask >> 0) & 3),
 					      GEN_INT ((mask >> 2) & 3),
 					      GEN_INT ((mask >> 4) & 3),
@@ -15936,16 +15936,16 @@
   DONE;
 })
 
-(define_expand "avx512f_perm<mode>_mask"
-  [(match_operand:V8FI 0 "register_operand")
-   (match_operand:V8FI 1 "nonimmediate_operand")
+(define_expand "<avx512>_perm<mode>_mask"
+  [(match_operand:VI8F_256_512 0 "register_operand")
+   (match_operand:VI8F_256_512 1 "nonimmediate_operand")
    (match_operand:SI 2 "const_0_to_255_operand")
-   (match_operand:V8FI 3 "vector_move_operand")
+   (match_operand:VI8F_256_512 3 "vector_move_operand")
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512F"
 {
   int mask = INTVAL (operands[2]);
-  emit_insn (gen_<avx2_avx512f>_perm<mode>_1_mask (operands[0], operands[1],
+  emit_insn (gen_<avx2_avx512>_perm<mode>_1_mask (operands[0], operands[1],
 						   GEN_INT ((mask >> 0) & 3),
 						   GEN_INT ((mask >> 2) & 3),
 						   GEN_INT ((mask >> 4) & 3),
@@ -15954,7 +15954,7 @@
   DONE;
 })
 
-(define_insn "<avx2_avx512f>_perm<mode>_1<mask_name>"
+(define_insn "<avx2_avx512>_perm<mode>_1<mask_name>"
   [(set (match_operand:VI8F_256_512 0 "register_operand" "=v")
 	(vec_select:VI8F_256_512
 	  (match_operand:VI8F_256_512 1 "nonimmediate_operand" "vm")
