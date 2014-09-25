@@ -600,11 +600,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.12.3</entry>
       <entry><code>uninitialized_fill</code></entry>
-      <entry>Partial</entry>
-      <entry>Returns <code>void</code>..</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>

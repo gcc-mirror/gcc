@@ -26,5 +26,5 @@
 struct S { };
 
 template
-  void
+  S*
   std::uninitialized_fill_n<S*, int, S>(S*, int, const S&);
