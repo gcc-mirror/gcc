@@ -2057,14 +2057,15 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree expected_type)
   tree type = outer_type;
   HOST_WIDE_INT cur_offset = offset;
   bool speculative = false;
+  bool size_unknown = false;
 
- /* Update OUTER_TYPE to match EXPECTED_TYPE if it is not set.  */
- if (!outer_type)
-   {
-     clear_outer_type (expected_type);
-     type = expected_type;
-     cur_offset = 0;
-   }
+  /* Update OUTER_TYPE to match EXPECTED_TYPE if it is not set.  */
+  if (!outer_type)
+    {
+      clear_outer_type (expected_type);
+      type = expected_type;
+      cur_offset = 0;
+    }
  /* See if OFFSET points inside OUTER_TYPE.  If it does not, we know
     that the context is either invalid, or the instance type must be
     derived from OUTER_TYPE.
@@ -2133,7 +2134,6 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree expected_type)
     {
       HOST_WIDE_INT pos, size;
       tree fld;
-      bool size_unknown;
 
       /* If we do not know size of TYPE, we need to be more conservative
          about accepting cases where we can not find EXPECTED_TYPE.
