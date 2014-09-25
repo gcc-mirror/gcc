@@ -1,3 +1,8 @@
+2014-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/63348
+	* emit-rtl.c (try_split): Do not emit extra barrier.
+
 2014-09-25  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_simd_const_bounds): Delete.
