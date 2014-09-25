@@ -8,6 +8,23 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_insn "avx_movshdup256<mask_name>"): Add masking.
+	(define_insn "sse3_movshdup<mask_name>"): Ditto.
+	(define_insn "avx_movsldup256<mask_name>"): Ditto.
+	(define_insn "sse3_movsldup<mask_name>"): Ditto.
+	(define_insn "vec_dupv2df<mask_name>"): Ditto.
+	(define_insn "*vec_concatv2df"): Add EVEX version.
+
+2014-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_insn "vec_set<mode>_0"): Add EVEX version.
 
 2014-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>

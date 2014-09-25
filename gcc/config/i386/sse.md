@@ -5735,34 +5735,34 @@
 
 ;; These are modeled with the same vec_concat as the others so that we
 ;; capture users of shufps that can use the new instructions
-(define_insn "avx_movshdup256"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
+(define_insn "avx_movshdup256<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
 	(vec_select:V8SF
 	  (vec_concat:V16SF
-	    (match_operand:V8SF 1 "nonimmediate_operand" "xm")
+	    (match_operand:V8SF 1 "nonimmediate_operand" "vm")
 	    (match_dup 1))
 	  (parallel [(const_int 1) (const_int 1)
 		     (const_int 3) (const_int 3)
 		     (const_int 5) (const_int 5)
 		     (const_int 7) (const_int 7)])))]
-  "TARGET_AVX"
-  "vmovshdup\t{%1, %0|%0, %1}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vmovshdup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "sse3_movshdup"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
+(define_insn "sse3_movshdup<mask_name>"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "nonimmediate_operand" "xm")
+	    (match_operand:V4SF 1 "nonimmediate_operand" "vm")
 	    (match_dup 1))
 	  (parallel [(const_int 1)
 		     (const_int 1)
 		     (const_int 7)
 		     (const_int 7)])))]
-  "TARGET_SSE3"
-  "%vmovshdup\t{%1, %0|%0, %1}"
+  "TARGET_SSE3 && <mask_avx512vl_condition>"
+  "%vmovshdup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
@@ -5788,34 +5788,34 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])
 
-(define_insn "avx_movsldup256"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
+(define_insn "avx_movsldup256<mask_name>"
+  [(set (match_operand:V8SF 0 "register_operand" "=v")
 	(vec_select:V8SF
 	  (vec_concat:V16SF
-	    (match_operand:V8SF 1 "nonimmediate_operand" "xm")
+	    (match_operand:V8SF 1 "nonimmediate_operand" "vm")
 	    (match_dup 1))
 	  (parallel [(const_int 0) (const_int 0)
 		     (const_int 2) (const_int 2)
 		     (const_int 4) (const_int 4)
 		     (const_int 6) (const_int 6)])))]
-  "TARGET_AVX"
-  "vmovsldup\t{%1, %0|%0, %1}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vmovsldup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "sse3_movsldup"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
+(define_insn "sse3_movsldup<mask_name>"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "nonimmediate_operand" "xm")
+	    (match_operand:V4SF 1 "nonimmediate_operand" "vm")
 	    (match_dup 1))
 	  (parallel [(const_int 0)
 		     (const_int 0)
 		     (const_int 6)
 		     (const_int 6)])))]
-  "TARGET_SSE3"
-  "%vmovsldup\t{%1, %0|%0, %1}"
+  "TARGET_SSE3 && <mask_avx512vl_condition>"
+  "%vmovsldup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
@@ -8301,24 +8301,24 @@
    (set_attr "prefix" "orig,vex,orig,vex,maybe_vex,orig,orig,vex,maybe_vex")
    (set_attr "mode" "DF,DF,V1DF,V1DF,V1DF,V2DF,V1DF,V1DF,V1DF")])
 
-(define_insn "vec_dupv2df"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,x")
+(define_insn "vec_dupv2df<mask_name>"
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,v")
 	(vec_duplicate:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,xm")))]
-  "TARGET_SSE2"
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,vm")))]
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    unpcklpd\t%0, %0
-   %vmovddup\t{%1, %0|%0, %1}"
+   %vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "isa" "noavx,sse3")
    (set_attr "type" "sselog1")
    (set_attr "prefix" "orig,maybe_vex")
    (set_attr "mode" "V2DF,DF")])
 
 (define_insn "*vec_concatv2df"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,x,x,x,x,x,x")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,v,v,x,x,v,x,x")
 	(vec_concat:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,m,0,x,m,0,0")
-	  (match_operand:DF 2 "vector_move_operand"  " x,x,1,m,m,C,x,m")))]
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,v,m,0,x,m,0,0")
+	  (match_operand:DF 2 "vector_move_operand"  " x,v,1,m,m,C,x,m")))]
   "TARGET_SSE"
   "@
    unpcklpd\t{%2, %0|%0, %2}
