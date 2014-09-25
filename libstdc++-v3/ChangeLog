@@ -1,5 +1,9 @@
 2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/vector.tcc (vector::_M_fill_assign): Use _M_swap_data.
+
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/27_io/basic_ios/conv/bool_neg.cc: New.
 	* testsuite/27_io/basic_ios/conv/bool.cc: New.
 	* testsuite/27_io/basic_ios/conv/voidptr.cc: New.

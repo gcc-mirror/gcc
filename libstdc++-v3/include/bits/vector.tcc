@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       if (__n > capacity())
 	{
 	  vector __tmp(__n, __val, _M_get_Tp_allocator());
-	  __tmp.swap(*this);
+	  __tmp._M_impl._M_swap_data(this->_M_impl);
 	}
       else if (__n > size())
 	{
