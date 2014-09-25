@@ -3294,6 +3294,14 @@ add_subroutines (void)
   make_from_module();
 
   /* Coarray collectives.  */
+  add_sym_4s ("co_broadcast", GFC_ISYM_CO_BROADCAST, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_broadcast, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      "source_image", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
   add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
 	      gfc_check_co_minmax, NULL, NULL,
@@ -3317,6 +3325,16 @@ add_subroutines (void)
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
+  add_sym_5s ("co_reduce", GFC_ISYM_CO_REDUCE, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_reduce, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
 
   /* The following subroutine is internally used for coarray libray functions.
      "make_from_module" makes it inaccessible for external users.  */

@@ -1,3 +1,8 @@
+2014-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_co_broadcast): New prototype.
+	* caf/single.c (_gfortran_caf_co_broadcast): New.
+
 2014-09-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/62768

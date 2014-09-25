@@ -1,3 +1,11 @@
+2014-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/collectives_3.f90: New.
+	* gfortran.dg/coarray_collectives_9.f90: New.
+	* gfortran.dg/coarray_collectives_10.f90: New.
+	* gfortran.dg/coarray_collectives_11.f90: New.
+	* gfortran.dg/coarray_collectives_12.f90: New.
+
 2014-09-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-17.c: New test.

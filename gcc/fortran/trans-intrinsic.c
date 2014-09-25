@@ -8173,7 +8173,7 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 
 
 static tree
-conv_co_minmaxsum (gfc_code *code)
+conv_co_collective (gfc_code *code)
 {
   gfc_se argse;
   stmtblock_t block, post_block;
@@ -8263,16 +8263,26 @@ conv_co_minmaxsum (gfc_code *code)
     }
 
   /* Generate the function call.  */
-  if (code->resolved_isym->id == GFC_ISYM_CO_MAX)
-    fndecl = gfor_fndecl_co_max;
-  else if (code->resolved_isym->id == GFC_ISYM_CO_MIN)
-    fndecl = gfor_fndecl_co_min;
-  else if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
-    fndecl = gfor_fndecl_co_sum;
-  else
-    gcc_unreachable ();
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_CO_BROADCAST:
+      fndecl = gfor_fndecl_co_broadcast;
+      break;
+    case GFC_ISYM_CO_MAX:
+      fndecl = gfor_fndecl_co_max;
+      break;
+    case GFC_ISYM_CO_MIN:
+      fndecl = gfor_fndecl_co_min;
+      break;
+    case GFC_ISYM_CO_SUM:
+      fndecl = gfor_fndecl_co_sum;
+      break;
+    default: 
+      gcc_unreachable ();
+    }
 
-  if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
+  if (code->resolved_isym->id == GFC_ISYM_CO_SUM
+      || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
     fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
 				  image_index, stat, errmsg, errmsg_len);
   else
@@ -8281,7 +8291,6 @@ conv_co_minmaxsum (gfc_code *code)
   gfc_add_expr_to_block (&block, fndecl);
   gfc_add_block_to_block (&block, &post_block);
 
-  /* Add CALL to CO_SUM/MIN/MAX: array descriptor, vector descriptor, stat, errmsg, strlen, errmsglen */
   return gfc_finish_block (&block);
 }
 
@@ -8992,10 +9001,14 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_caf_send (code);
       break;
 
+    case GFC_ISYM_CO_REDUCE:
+      gcc_unreachable ();
+      break;
+    case GFC_ISYM_CO_BROADCAST:
     case GFC_ISYM_CO_MIN:
     case GFC_ISYM_CO_MAX:
     case GFC_ISYM_CO_SUM:
-      res = conv_co_minmaxsum (code);
+      res = conv_co_collective (code);
       break;
 
     case GFC_ISYM_SYSTEM_CLOCK:

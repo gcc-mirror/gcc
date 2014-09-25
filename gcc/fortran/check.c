@@ -1414,8 +1414,8 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 
 
 static bool
-check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
-		    gfc_expr *errmsg)
+check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
+		    gfc_expr *errmsg, bool co_reduce)
 {
   if (!variable_check (a, 0, false))
     return false;
@@ -1424,6 +1424,7 @@ check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 				 "INTENT(INOUT)"))
     return false;
 
+  /* Fortran 2008, 12.5.2.4, paragraph 18.  */
   if (gfc_has_vector_subscript (a))
     {
       gfc_error ("Argument 'A' with INTENT(INOUT) at %L of the intrinsic "
@@ -1432,21 +1433,21 @@ check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
       return false;
     }
 
-  if (result_image != NULL)
+  if (image_idx != NULL)
     {
-      if (!type_check (result_image, 1, BT_INTEGER))
+      if (!type_check (image_idx, co_reduce ? 2 : 1, BT_INTEGER))
 	return false;
-      if (!scalar_check (result_image, 1))
+      if (!scalar_check (image_idx, co_reduce ? 2 : 1))
 	return false;
     }
 
   if (stat != NULL)
     {
-      if (!type_check (stat, 2, BT_INTEGER))
+      if (!type_check (stat, co_reduce ? 3 : 2, BT_INTEGER))
 	return false;
-      if (!scalar_check (stat, 2))
+      if (!scalar_check (stat, co_reduce ? 3 : 2))
 	return false;
-      if (!variable_check (stat, 2, false))
+      if (!variable_check (stat, co_reduce ? 3 : 2, false))
 	return false;
       if (stat->ts.kind != 4)
 	{
@@ -1458,11 +1459,11 @@ check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 
   if (errmsg != NULL)
     {
-      if (!type_check (errmsg, 3, BT_CHARACTER))
+      if (!type_check (errmsg, co_reduce ? 4 : 3, BT_CHARACTER))
 	return false;
-      if (!scalar_check (errmsg, 3))
+      if (!scalar_check (errmsg, co_reduce ? 4 : 3))
 	return false;
-      if (!variable_check (errmsg, 3, false))
+      if (!variable_check (errmsg, co_reduce ? 4 : 3, false))
 	return false;
       if (errmsg->ts.kind != 1)
 	{
@@ -1484,6 +1485,61 @@ check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 
 
 bool
+gfc_check_co_broadcast (gfc_expr *a, gfc_expr *source_image, gfc_expr *stat,
+			gfc_expr *errmsg)
+{
+  if (a->ts.type == BT_CLASS || gfc_expr_attr (a).alloc_comp)
+    {
+       gfc_error ("Support for the A argument at %L which is polymorphic A "
+                  "argument or has allocatable components is not yet "
+		  "implemented", &a->where);
+       return false;
+    }
+  return check_co_collective (a, source_image, stat, errmsg, false);
+}
+
+
+bool
+gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
+		     gfc_expr *stat, gfc_expr *errmsg)
+{
+  symbol_attribute attr;
+
+  if (a->ts.type == BT_CLASS)
+    {
+       gfc_error ("The A argument at %L of CO_REDUCE shall not be polymorphic",
+		  &a->where);
+       return false;
+    }
+
+  if (gfc_expr_attr (a).alloc_comp)
+    {
+       gfc_error ("Support for the A argument at %L with allocatable components"
+                  " is not yet implemented", &a->where);
+       return false;
+    }
+
+  attr = gfc_expr_attr (op);
+  if (!attr.pure || !attr.function)
+    {
+       gfc_error ("OPERATOR argument at %L must be a PURE function",
+		  &op->where);
+       return false;
+    }
+
+  if (!check_co_collective (a, result_image, stat, errmsg, true))
+    return false;
+
+  /* FIXME: After J3/WG5 has decided what they actually exactly want, more
+     checks such as same-argument checks have to be added, implemented and
+     intrinsic.texi upated.  */
+
+  gfc_error("CO_REDUCE at %L is not yet implemented", &a->where);
+  return false;
+}
+
+
+bool
 gfc_check_co_minmax (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 		     gfc_expr *errmsg)
 {
@@ -1496,7 +1552,7 @@ gfc_check_co_minmax (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 		  &a->where);
        return false;
     }
-  return check_co_minmaxsum (a, result_image, stat, errmsg);
+  return check_co_collective (a, result_image, stat, errmsg, false);
 }
 
 
@@ -1506,7 +1562,7 @@ gfc_check_co_sum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 {
   if (!numeric_check (a, 0))
     return false;
-  return check_co_minmaxsum (a, result_image, stat, errmsg);
+  return check_co_collective (a, result_image, stat, errmsg, false);
 }
 
 

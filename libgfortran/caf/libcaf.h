@@ -106,12 +106,10 @@ void _gfortran_caf_error_stop_str (const char *, int32_t)
      __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));
 
-void _gfortran_caf_co_sum (gfc_descriptor_t *, int, int *,
-			   char *, int);
-void _gfortran_caf_co_min (gfc_descriptor_t *, int, int *, char *,
-			   int, int);
-void _gfortran_caf_co_max (gfc_descriptor_t *, int, int *, char *,
-			   int, int);
+void _gfortran_caf_co_broadcast (gfc_descriptor_t *, int, int *, char *, int);
+void _gfortran_caf_co_sum (gfc_descriptor_t *, int, int *, char *, int);
+void _gfortran_caf_co_min (gfc_descriptor_t *, int, int *, char *, int, int);
+void _gfortran_caf_co_max (gfc_descriptor_t *, int, int *, char *, int, int);
 
 void _gfortran_caf_get (caf_token_t, size_t, int, gfc_descriptor_t *,
                         caf_vector_t *, gfc_descriptor_t *, int, int, bool);
