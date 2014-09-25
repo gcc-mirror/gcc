@@ -1,3 +1,9 @@
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ios/conv/bool_neg.cc: New.
+	* testsuite/27_io/basic_ios/conv/bool.cc: New.
+	* testsuite/27_io/basic_ios/conv/voidptr.cc: New.
+
 2014-09-25  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63199
