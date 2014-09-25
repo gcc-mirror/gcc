@@ -3726,7 +3726,6 @@ possible_polymorphic_call_targets (tree otr_type,
   if ((context.outer_type || context.speculative_outer_type)
       && !context.restrict_to_inner_class (otr_type))
     {
-      fprintf (stderr, "Invalid\n");
       if (completep)
 	*completep = true;
       if (cache_token)
@@ -3769,6 +3768,16 @@ possible_polymorphic_call_targets (tree otr_type,
 	  symtab->add_varpool_removal_hook (&devirt_variable_node_removal_hook,
 					 NULL);
 	}
+    }
+
+  if (in_lto_p)
+    {
+      if (context.outer_type != otr_type)
+        context.outer_type
+	  = get_odr_type (context.outer_type, true)->type;
+      if (context.speculative_outer_type)
+        context.speculative_outer_type
+	  = get_odr_type (context.speculative_outer_type, true)->type;
     }
 
   /* Lookup cached answer.  */
