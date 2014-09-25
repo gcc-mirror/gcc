@@ -1,3 +1,9 @@
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63341
+	* gcc.dg/vect/pr63341-1.c: New test.
+	* gcc.dg/vect/pr63341-2.c: New test.
+
 2014-09-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/torture/float128-exact-underflow.c: New test.

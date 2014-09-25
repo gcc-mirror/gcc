@@ -4319,6 +4319,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   int i, j, group_size;
   tree msq = NULL_TREE, lsq;
   tree offset = NULL_TREE;
+  tree byte_offset = NULL_TREE;
   tree realignment_token = NULL_TREE;
   gimple phi = NULL;
   vec<tree> dr_chain = vNULL;
@@ -4934,7 +4935,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       if (alignment_support_scheme == dr_explicit_realign_optimized)
 	{
 	  phi = SSA_NAME_DEF_STMT (msq);
-	  offset = size_int (TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	  byte_offset = size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (vectype),
+				    size_one_node);
 	}
     }
   else
@@ -4955,7 +4957,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       if (j == 0)
         dataref_ptr = vect_create_data_ref_ptr (first_stmt, aggr_type, at_loop,
 						offset, &dummy, gsi,
-						&ptr_incr, false, &inv_p);
+						&ptr_incr, false, &inv_p,
+						byte_offset);
       else
         dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
 				       TYPE_SIZE_UNIT (aggr_type));
