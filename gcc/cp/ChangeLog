@@ -1,3 +1,9 @@
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63249
+	* semantics.c (handle_omp_array_sections_1): Call mark_rvalue_use
+	on low_bound and length.
+
 2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* class.c, decl.c, optimize.c: Rename all instances of

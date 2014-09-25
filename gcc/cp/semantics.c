@@ -4291,6 +4291,10 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		length);
       return error_mark_node;
     }
+  if (low_bound)
+    low_bound = mark_rvalue_use (low_bound);
+  if (length)
+    length = mark_rvalue_use (length);
   if (low_bound
       && TREE_CODE (low_bound) == INTEGER_CST
       && TYPE_PRECISION (TREE_TYPE (low_bound))
