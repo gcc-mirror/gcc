@@ -1,3 +1,34 @@
+2014-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(avx512f_ufix_notruncv8dfv8si_mask_round): Rename to ...
+	(ufix_notruncv8dfv8si2_mask_round): ... this.
+	* config/i386/sse.md
+	(define_insn "avx512f_cvtdq2pd512_2): Update TARGET check.
+	(define_insn "avx_cvtdq2pd256_2"): Add EVEX version.
+	(define_insn "sse2_cvtdq2pd<mask_name>"): Add masking.
+	(define_insn "avx_cvtpd2dq256<mask_name>"): Ditto.
+	(define_expand "sse2_cvtpd2dq"): Delete.
+	(define_insn "sse2_cvtpd2dq<mask_name>"): Add masking and
+	make 2nd operand const0 vector.
+	(define_insn "avx512f_ufix_notruncv8dfv8si<mask_name><round_name>"):
+	Delete.
+	(define_mode_attr pd2udqsuff): New.
+	(define_insn
+	"ufix_notrunc<mode><si2dfmodelower>2<mask_name><round_name>"): Ditto.
+	(define_insn "ufix_notruncv2dfv2si2<mask_name>"): Ditto.
+	(define_insn "*avx_cvttpd2dq256_2"): Delete.
+	(define_expand "sse2_cvttpd2dq"): Ditto.
+	(define_insn "sse2_cvttpd2dq<mask_name>"): Add masking and
+	make 2nd operand const0 vector.
+
 2014-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63341
