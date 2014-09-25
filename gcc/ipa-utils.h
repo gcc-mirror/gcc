@@ -74,9 +74,14 @@ tree method_class_type (const_tree);
 bool decl_maybe_in_construction_p (tree, tree, gimple, tree);
 tree vtable_pointer_value_to_binfo (const_tree);
 bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
+tree subbinfo_with_vtable_at_offset (tree, unsigned HOST_WIDE_INT, tree);
 void compare_virtual_tables (varpool_node *, varpool_node *);
+bool type_all_derivations_known_p (const_tree);
+bool type_known_to_have_no_deriavations_p (tree);
 bool contains_polymorphic_type_p (const_tree);
 void register_odr_type (tree);
+bool types_must_be_same_for_odr (tree, tree);
+bool types_odr_comparable (tree, tree);
 
 /* Return vector containing possible targets of polymorphic call E.
    If COMPLETEP is non-NULL, store true if the list is complette. 
@@ -161,6 +166,21 @@ odr_type_p (const_tree t)
 
   return (TYPE_NAME (t)
           && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))));
+}
+
+/* Return true if BINFO corresponds to a type with virtual methods. 
+
+   Every type has several BINFOs.  One is the BINFO associated by the type
+   while other represents bases of derived types.  The BINFOs representing
+   bases do not have BINFO_VTABLE pointer set when this is the single
+   inheritance (because vtables are shared).  Look up the BINFO of type
+   and check presence of its vtable.  */
+
+inline bool
+polymorphic_type_binfo_p (const_tree binfo)
+{
+  /* See if BINFO's type has an virtual table associtated with it.  */
+  return BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo)));
 }
 #endif  /* GCC_IPA_UTILS_H  */
 

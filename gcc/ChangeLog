@@ -1,5 +1,49 @@
 2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-utils.h (subbinfo_with_vtable_at_offset, type_all_derivations_known_p,
+	type_known_to_have_no_deriavations_p, types_must_be_same_for_odr,
+	types_odr_comparable): Declare.
+	(polymorphic_type_binfo_p): Move here from ipa-devirt.c
+	* ipa-polymorphic-call.c: New file.
+	(contains_polymorphic_type_p, possible_placement_new,
+	ipa_polymorphic_call_context::restrict_to_inner_class,
+	contains_type_p, decl_maybe_in_construction_p,
+	ipa_polymorphic_call_context::stream_out,
+	ipa_polymorphic_call_context::debug,
+	ipa_polymorphic_call_context::stream_in,
+	ipa_polymorphic_call_context::set_by_decl,
+	ipa_polymorphic_call_context::set_by_invariant,
+	walk_ssa_copies,
+	ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	type_change_info, noncall_stmt_may_be_vtbl_ptr_store,
+	extr_type_from_vtbl_ptr_store, record_known_type
+	check_stmt_for_type_change,
+	ipa_polymorphic_call_context::get_dynamic_type): Move here from
+	ipa-devirt.c
+	* ipa-devirt.c: No longer include data-streamer.h, lto-streamer.h
+	and streamer-hooks.h
+	(contains_polymorphic_type_p, possible_placement_new,
+	ipa_polymorphic_call_context::restrict_to_inner_class,
+	contains_type_p, decl_maybe_in_construction_p,
+	ipa_polymorphic_call_context::stream_out,
+	ipa_polymorphic_call_context::debug,
+	ipa_polymorphic_call_context::stream_in,
+	ipa_polymorphic_call_context::set_by_decl,
+	ipa_polymorphic_call_context::set_by_invariant,
+	walk_ssa_copies,
+	ipa_polymorphic_call_context::ipa_polymorphic_call_context,
+	type_change_info, noncall_stmt_may_be_vtbl_ptr_store,
+	extr_type_from_vtbl_ptr_store, record_known_type
+	check_stmt_for_type_change,
+	ipa_polymorphic_call_context::get_dynamic_type): Move to
+	ipa-polymorphic-call.c
+	(type_all_derivations_known_p, types_odr_comparable,
+	types_must_be_same_for_odr): Export.
+	(type_known_to_have_no_deriavations_p): New function.
+	* Makefile.in: Add ipa-polymorphic-call.c
+
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (polymorphic_call_target_d): Add SPECULATIVE; reorder
 	for better storage.
 	(polymorphic_call_target_hasher::hash): Hash SPECULATIVE.

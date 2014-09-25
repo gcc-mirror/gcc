@@ -1255,6 +1255,7 @@ OBJS = \
 	internal-fn.o \
 	ipa-cp.o \
 	ipa-devirt.o \
+	ipa-polymorphic-call.o \
 	ipa-split.o \
 	ipa-inline.o \
 	ipa-comdats.o \
