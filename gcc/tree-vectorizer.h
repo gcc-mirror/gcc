@@ -1061,7 +1061,8 @@ extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *,
 				    unsigned *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
-				      gimple *, bool, bool *);
+				      gimple *, bool, bool *,
+				      tree = NULL_TREE);
 extern tree bump_vector_ptr (tree, gimple, gimple_stmt_iterator *, gimple, tree);
 extern tree vect_create_destination_var (tree, tree);
 extern bool vect_grouped_store_supported (tree, unsigned HOST_WIDE_INT);
@@ -1078,7 +1079,8 @@ extern void vect_transform_grouped_load (gimple, vec<tree> , int,
 extern void vect_record_grouped_load_vectors (gimple, vec<tree> );
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 extern tree vect_create_addr_base_for_vector_ref (gimple, gimple_seq *,
-                                                  tree, struct loop *);
+						  tree, struct loop *,
+						  tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */

@@ -1,5 +1,9 @@
 2014-09-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63341
+	* gcc.dg/vect/pr63341-1.c: New test.
+	* gcc.dg/vect/pr63341-2.c: New test.
+
 	PR c++/63249
 	* g++.dg/gomp/pr63249.C: New test.
 	* c-c++-common/gomp/pr63249.c: New test.
