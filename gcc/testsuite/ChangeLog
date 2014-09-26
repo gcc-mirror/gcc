@@ -1,3 +1,8 @@
+2014-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63335.c: Change effective target to
+	vsx_hw.
+
 2014-09-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/shrink_wrap_1.c: Skip ia32.

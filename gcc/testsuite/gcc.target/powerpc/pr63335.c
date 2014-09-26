@@ -1,5 +1,5 @@
 /* { dg-do run { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mvsx" } */
 
 #include <altivec.h>
