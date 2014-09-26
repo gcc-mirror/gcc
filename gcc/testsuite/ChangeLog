@@ -1,3 +1,23 @@
+2014-09-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/vect/pr56933.c: Don't specify "dg-do run" explicitly.
+	* gcc.dg/vect/pr57705.c: Likewise.
+	* gcc.dg/vect/pr57741-2.c: Likewise.
+	* gcc.dg/vect/pr57741-3.c: Likewise.
+	* gcc.dg/vect/pr59591-1.c: Likewise.
+	* gcc.dg/vect/pr59591-2.c: Likewise.
+	* gcc.dg/vect/pr60196-1.c: Likewise.
+	* gcc.dg/vect/pr60196-2.c: Likewise.
+	* gcc.dg/vect/pr60276.c: Likewise.
+	* gcc.dg/vect/pr61680.c: Likewise.
+	* gcc.dg/vect/pr63148.c: Likewise.
+	* gcc.dg/vect/pr63189.c: Likewise.
+	* gcc.dg/vect/vect-mask-load-1.c: Likewise.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Likewise.
+	* gcc.dg/vect/vect-nop-move.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
 2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* testsuite/g++.dg/ipa/devirt-34.C: Update template.
