@@ -2566,36 +2566,6 @@ ipa_analyze_node (struct cgraph_node *node)
   pop_cfun ();
 }
 
-/* Given a statement CALL which must be a GIMPLE_CALL calling an OBJ_TYPE_REF
-   attempt a type-based devirtualization.  If successful, return the
-   target function declaration, otherwise return NULL.  */
-
-tree
-ipa_intraprocedural_devirtualization (gimple call)
-{
-  tree binfo, token, fndecl;
-  struct ipa_jump_func jfunc;
-  tree otr = gimple_call_fn (call);
-
-  jfunc.type = IPA_JF_UNKNOWN;
-  compute_known_type_jump_func (OBJ_TYPE_REF_OBJECT (otr), &jfunc,
-				call, obj_type_ref_class (otr));
-  if (jfunc.type != IPA_JF_KNOWN_TYPE)
-    return NULL_TREE;
-  binfo = ipa_binfo_from_known_type_jfunc (&jfunc);
-  if (!binfo)
-    return NULL_TREE;
-  token = OBJ_TYPE_REF_TOKEN (otr);
-  fndecl = gimple_get_virt_method_for_binfo (tree_to_uhwi (token),
-					     binfo);
-#ifdef ENABLE_CHECKING
-  if (fndecl)
-    gcc_assert (possible_polymorphic_call_target_p
-		  (otr, call, cgraph_node::get (fndecl)));
-#endif
-  return fndecl;
-}
-
 /* Update the jump function DST when the call graph edge corresponding to SRC is
    is being inlined, knowing that DST is of type ancestor and src of known
    type.  */
