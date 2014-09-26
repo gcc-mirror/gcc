@@ -1,3 +1,20 @@
+2014-09-26  Jakub Jelinek  <jakub@redhat.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* common.opt: New option.
+	* doc/invoke.texi: Describe new option.
+	* gcc.c (execute): Don't free first string early, but at the end
+	of the function.  Call retry_ice if compiler exited with
+	ICE_EXIT_CODE.
+	(main): Factor out common code.
+	(print_configuration): New function.
+	(files_equal_p): Likewise.
+	(check_repro): Likewise.
+	(run_attempt): Likewise.
+	(do_report_bug): Likewise.
+	(append_text): Likewise.
+	(try_generate_repro): Likewise
+
 2014-09-25  Andi Kleen  <ak@linux.intel.com>
 
 	* config/i386/i386.c (x86_print_call_or_nop): New function.
