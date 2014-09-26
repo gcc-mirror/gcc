@@ -1,3 +1,8 @@
+2014-09-25  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: New file.
+	* gcc.target/i386/record-mcount.c: New file.
+
 2014-09-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/vect/pr56933.c: Don't specify "dg-do run" explicitly.

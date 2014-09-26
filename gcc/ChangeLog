@@ -1,3 +1,11 @@
+2014-09-25  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/i386.c (x86_print_call_or_nop): New function.
+	(x86_function_profiler): Support -mnop-mcount and
+	-mrecord-mcount.
+	* config/i386/i386.opt (-mnop-mcount, -mrecord-mcount): Add
+	* doc/invoke.texi: Document -mnop-mcount, -mrecord-mcount.
+
 2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (ipa_intraprocedural_devirtualization): Remove.
