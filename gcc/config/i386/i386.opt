@@ -789,6 +789,15 @@ mfentry
 Target Report Var(flag_fentry) Init(-1)
 Emit profiling counter call at function entry before prologue.
 
+mrecord-mcount
+Target Report Var(flag_record_mcount) Init(0)
+Generate __mcount_loc section with all mcount or __fentry__ calls.
+
+mnop-mcount
+Target Report Var(flag_nop_mcount) Init(0)
+Generate mcount/__fentry__ calls as nops. To activate they need to be
+patched in.
+
 m8bit-idiv
 Target Report Mask(USE_8BIT_IDIV) Save
 Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check

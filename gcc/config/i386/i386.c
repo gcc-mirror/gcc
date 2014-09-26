@@ -3975,6 +3975,13 @@ ix86_option_override_internal (bool main_args_p,
 	}
     }
 
+#ifndef NO_PROFILE_COUNTERS
+  if (flag_nop_mcount)
+    error ("-mnop-mcount is not compatible with this target");
+#endif
+  if (flag_nop_mcount && flag_pic)
+    error ("-mnop-mcount is not implemented for -fPIC");
+
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
       && ! TARGET_SSE_P (opts->x_ix86_isa_flags))
@@ -39040,6 +39047,17 @@ x86_field_alignment (tree field, int computed)
   return computed;
 }
 
+/* Print call to TARGET to FILE.  */
+
+static void
+x86_print_call_or_nop (FILE *file, const char *target)
+{
+  if (flag_nop_mcount)
+    fprintf (file, "1:\tnopl 0x00(%%eax,%%eax,1)\n"); /* 5 byte nop.  */
+  else
+    fprintf (file, "1:\tcall\t%s\n", target);
+}
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 void
@@ -39047,7 +39065,6 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
   const char *mcount_name = (flag_fentry ? MCOUNT_NAME_BEFORE_PROLOGUE
 					 : MCOUNT_NAME);
-
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
@@ -39055,9 +39072,9 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 #endif
 
       if (!TARGET_PECOFF && flag_pic)
-	fprintf (file, "\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+	fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
       else
-	fprintf (file, "\tcall\t%s\n", mcount_name);
+	x86_print_call_or_nop (file, mcount_name);
     }
   else if (flag_pic)
     {
@@ -39065,7 +39082,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\tleal\t%sP%d@GOTOFF(%%ebx),%%" PROFILE_COUNT_REGISTER "\n",
 	       LPREFIX, labelno);
 #endif
-      fprintf (file, "\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
+      fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
     }
   else
     {
@@ -39073,7 +39090,14 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\tmovl\t$%sP%d,%%" PROFILE_COUNT_REGISTER "\n",
 	       LPREFIX, labelno);
 #endif
-      fprintf (file, "\tcall\t%s\n", mcount_name);
+      x86_print_call_or_nop (file, mcount_name);
+    }
+
+  if (flag_record_mcount)
+    {
+      fprintf (file, "\t.section __mcount_loc, \"a\",@progbits\n");
+      fprintf (file, "\t.%s 1b\n", TARGET_64BIT ? "quad" : "long");
+      fprintf (file, "\t.previous\n");
     }
 }
 
