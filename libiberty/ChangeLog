@@ -1,3 +1,7 @@
+2014-09-26  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_substitution): Handle abi tags on abbreviation.
+
 2014-09-26  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* pex-common.h (struct pex_funcs): Add new parameter for open_write field.
