@@ -253,7 +253,7 @@ static void init_gcc_specs (struct obstack *, const char *, const char *,
 static const char *convert_filename (const char *, int, int);
 #endif
 
-static void try_generate_repro (const char *prog, const char **argv);
+static void try_generate_repro (const char **argv);
 static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
@@ -2918,7 +2918,7 @@ execute (void)
 		&& i == 0
 		&& (p = strrchr (commands[0].argv[0], DIR_SEPARATOR))
 		&& ! strncmp (p + 1, "cc1", 3))
-	      try_generate_repro (commands[0].prog, commands[0].argv);
+	      try_generate_repro (commands[0].argv);
 	    if (WEXITSTATUS (status) > greatest_status)
 	      greatest_status = WEXITSTATUS (status);
 	    ret_code = -1;
@@ -6332,6 +6332,16 @@ run_attempt (const char **new_argv, const char *out_temp,
   errmsg = pex_run (pex, pex_flags, new_argv[0],
 		    CONST_CAST2 (char *const *, const char **, &new_argv[1]), out_temp,
 		    err_temp, &err);
+  if (errmsg != NULL)
+    {
+      if (err == 0)
+	fatal_error (errmsg);
+      else
+	{
+	  errno = err;
+	  pfatal_with_name (errmsg);
+	}
+    }
 
   if (!pex_get_status (pex, 1, &exit_status))
     goto out;
@@ -6409,7 +6419,7 @@ append_text (char *file, const char *str)
    and preprocessed source code.  */
 
 static void
-try_generate_repro (const char *prog, const char **argv)
+try_generate_repro (const char **argv)
 {
   int i, nargs, out_arg = -1, quiet = 0, attempt;
   const char **new_argv;
