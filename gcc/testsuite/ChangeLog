@@ -1,3 +1,8 @@
+2014-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/compat/struct-layout-1_generate.c: Add -Wno-abi
+	to default options.
+
 2014-09-25  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.target/i386/nop-mcount.c: New file.
