@@ -43,7 +43,7 @@ extern int errno;
 #endif
 
 static int pex_djgpp_open_read (struct pex_obj *, const char *, int);
-static int pex_djgpp_open_write (struct pex_obj *, const char *, int);
+static int pex_djgpp_open_write (struct pex_obj *, const char *, int, int);
 static pid_t pex_djgpp_exec_child (struct pex_obj *, int, const char *,
 				  char * const *, char * const *,
 				  int, int, int, int,
@@ -90,10 +90,12 @@ pex_djgpp_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED,
 
 static int
 pex_djgpp_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED,
-		      const char *name, int binary)
+		      const char *name, int binary, int append)
 {
   /* Note that we can't use O_EXCL here because gcc may have already
      created the temporary file via make_temp_file.  */
+  if (append)
+    return -1;
   return open (name,
 	       (O_WRONLY | O_CREAT | O_TRUNC
 		| (binary ? O_BINARY : O_TEXT)),

@@ -78,7 +78,7 @@ backslashify (char *s)
 }
 
 static int pex_win32_open_read (struct pex_obj *, const char *, int);
-static int pex_win32_open_write (struct pex_obj *, const char *, int);
+static int pex_win32_open_write (struct pex_obj *, const char *, int, int);
 static pid_t pex_win32_exec_child (struct pex_obj *, int, const char *,
 				  char * const *, char * const *,
                                   int, int, int, int,
@@ -126,10 +126,12 @@ pex_win32_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
 
 static int
 pex_win32_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
-		      int binary)
+		      int binary, int append)
 {
   /* Note that we can't use O_EXCL here because gcc may have already
      created the temporary file via make_temp_file.  */
+  if (append)
+    return -1;
   return _open (name,
 		(_O_WRONLY | _O_CREAT | _O_TRUNC
 		 | (binary ? _O_BINARY : _O_TEXT)),
