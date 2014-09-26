@@ -6344,6 +6344,11 @@ feasible to use diff on debugging dumps for compiler invocations with
 different compiler binaries and/or different
 text / bss / data / heap / stack / dso start locations.
 
+@item -freport-bug
+@opindex freport-bug
+Collect and dump debug information into temporary file if ICE in C/C++
+compiler occured.
+
 @item -fdump-unnumbered
 @opindex fdump-unnumbered
 When doing debugging dumps, suppress instruction numbers and address output.
