@@ -917,7 +917,7 @@ public:
      Use this only for functions that are released before being translated to
      target code (i.e. RTL).  Functions that are compiled to RTL and beyond
      are free'd in final.c via free_after_compilation().  */
-  void release_body (void);
+  void release_body (bool keep_arguments = false);
 
   /* cgraph_node is no longer nested function; update cgraph accordingly.  */
   void unnest (void);
