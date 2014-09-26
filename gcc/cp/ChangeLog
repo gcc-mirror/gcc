@@ -1,3 +1,7 @@
+2014-09-26  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (find_substitution): Use write_abi_tags.
+
 2014-09-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/61945
