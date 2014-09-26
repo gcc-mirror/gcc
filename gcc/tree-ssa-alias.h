@@ -98,6 +98,7 @@ extern void ao_ref_init (ao_ref *, tree);
 extern void ao_ref_init_from_ptr_and_size (ao_ref *, tree, tree);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
+extern alias_set_type ao_ref_base_alias_set (ao_ref *);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool ptr_derefs_may_alias_p (tree, tree);
 extern bool ref_may_alias_global_p (tree);

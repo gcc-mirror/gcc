@@ -1,3 +1,13 @@
+2014-09-26  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::release_body): New argument keep_arguments
+	introduced.
+	* cgraph.h: Likewise.
+	* cgraphunit.c (cgraph_node::create_wrapper): Usage of new argument introduced.
+	* ipa-utils.h (polymorphic_type_binfo_p): Safe check for binfos created by Java.
+	* tree-ssa-alias.c (ao_ref_base_alias_set): Static function transformed to global.
+	* tree-ssa-alias.h: Likewise.
+
 2014-09-26  Jakub Jelinek  <jakub@redhat.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
