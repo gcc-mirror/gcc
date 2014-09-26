@@ -9777,6 +9777,14 @@ aarch64_expand_movmem (rtx *operands)
   return true;
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+aarch64_asan_shadow_offset (void)
+{
+  return (HOST_WIDE_INT_1 << 36);
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -10022,6 +10030,9 @@ aarch64_expand_movmem (rtx *operands)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET aarch64_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
