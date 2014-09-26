@@ -1,3 +1,10 @@
+2014-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/aarch64-linux.h (ASAN_CC1_SPEC): Define.
+        (CC1_SPEC): Define.
+        * config/aarch64/aarch64.c (aarch64_asan_shadow_offset): New function.
+        (TARGET_ASAN_SHADOW_OFFSET): Define.
+
 2014-09-26  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::release_body): New argument keep_arguments

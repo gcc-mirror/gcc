@@ -1,3 +1,7 @@
+2014-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* configure.tgt: Enable build on aarch64*-linux.
+
 2014-09-19  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r218156.

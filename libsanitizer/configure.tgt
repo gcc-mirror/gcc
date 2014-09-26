@@ -35,6 +35,8 @@ case "${target}" in
 	;;
   arm*-*-linux*)
 	;;
+  aarch64*-*-linux*)
+	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
 	TSAN_SUPPORTED=no
 	;;
