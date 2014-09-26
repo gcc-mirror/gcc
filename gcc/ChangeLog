@@ -1,5 +1,12 @@
 2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.c (ipa_intraprocedural_devirtualization): Remove.
+	* ipa-prop.h (ipa_intraprocedural_devirtualization): Remove.
+	* tree-ssa-prop.c (eliminate_dom_walker::before_dom_children):
+	Remove.
+
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.h (subbinfo_with_vtable_at_offset, type_all_derivations_known_p,
 	type_known_to_have_no_deriavations_p, types_must_be_same_for_odr,
 	types_odr_comparable): Declare.

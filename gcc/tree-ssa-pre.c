@@ -4314,8 +4314,6 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  gimple_call_set_fndecl (stmt, fn);
 		  gimple_set_modified (stmt, true);
 		}
-	      else
-	        gcc_assert (!ipa_intraprocedural_devirtualization (stmt));
 	    }
 	}
 

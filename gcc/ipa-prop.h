@@ -587,7 +587,6 @@ tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 				   vec<ipa_agg_jump_function_p> );
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
 tree ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *);
-tree ipa_intraprocedural_devirtualization (gimple);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */
