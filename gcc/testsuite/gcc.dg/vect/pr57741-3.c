@@ -1,5 +1,4 @@
 /* PR tree-optimization/57741 */
-/* { dg-do run } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "-ffast-math" } */

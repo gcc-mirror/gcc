@@ -1,6 +1,5 @@
 /* PR tree-optimization/63189 */
 /* { dg-additional-options "-fwrapv" } */
-/* { dg-do run } */
 
 #include "tree-vect.h"
 

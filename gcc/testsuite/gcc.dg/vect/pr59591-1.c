@@ -1,5 +1,4 @@
 /* PR tree-optimization/59591 */
-/* { dg-do run } */
 /* { dg-additional-options "-fopenmp-simd" } */
 
 #ifndef CHECK_H

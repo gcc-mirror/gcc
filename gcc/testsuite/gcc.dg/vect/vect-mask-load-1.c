@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-Ofast -fno-common" } */
 /* { dg-additional-options "-Ofast -fno-common -mavx" { target avx_runtime } } */
 
