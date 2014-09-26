@@ -1,3 +1,11 @@
+2014-09-26  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* pex-common.h (struct pex_funcs): Add new parameter for open_write field.
+	* pex-unix.c (pex_unix_open_write): Add support for new parameter.
+	* pex-djgpp.c (pex_djgpp_open_write): Likewise.
+	* pex-win32.c (pex_win32_open_write): Likewise.
+	* pex-common.c (pex_run_in_environment): Likewise.
+
 2014-09-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in (CFILES): Add d-demangle.c.
