@@ -1,3 +1,7 @@
+2014-09-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* MAINTAINERS: Put all email addresses between '<' and '>'.
+
 2014-09-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* MAINTAINERS: Move myself to reviewers (Fortran).
