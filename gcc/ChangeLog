@@ -1,5 +1,11 @@
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/62121
+	* ipa-polymorphic-call.c (ipa_polymorphic_call_context::restrict_to_inner_class):
+	fix pasto in checking array size.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR middle-end/35545
 	* passes.def (pass_tracer): Move before last dominator pass.
 
