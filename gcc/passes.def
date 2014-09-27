@@ -252,6 +252,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_strength_reduction);
+      NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_dominator);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_vrp);
@@ -262,7 +263,6 @@ along with GCC; see the file COPYING3.  If not see
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_cd_dce);
-      NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);

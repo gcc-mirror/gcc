@@ -1,3 +1,8 @@
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/35545
+	* g++.dg/tree-prof/pr35545.C: New testcase.
+
 2014-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr63335.c: Change effective target to
