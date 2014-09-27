@@ -1,3 +1,8 @@
+2014-09-27  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: Only run on Linux.
+	* gcc.target/i386/record-mcount.c: dito.
+
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/62121
