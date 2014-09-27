@@ -1,3 +1,8 @@
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/35545
+	* passes.def (pass_tracer): Move before last dominator pass.
+
 2014-09-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.c (try_generate_repro): Remove argument "prog".  Change all
