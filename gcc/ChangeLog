@@ -1,3 +1,8 @@
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>	
+	
+	PR ipa/60665
+	* ipa-devirt.c (possible_polymorphic_call_targets): Silence clang warning.
+
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/62121
