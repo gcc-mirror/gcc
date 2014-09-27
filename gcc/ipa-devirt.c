@@ -2217,7 +2217,7 @@ possible_polymorphic_call_targets (tree otr_type,
   unsigned int i;
   tree binfo, target;
   bool complete;
-  bool can_refer;
+  bool can_refer = false;
   bool skipped = false;
 
   otr_type = TYPE_MAIN_VARIANT (otr_type);
