@@ -1,5 +1,10 @@
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/62121
+	* g++.dg/torture/pr62121.C: New testcase.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR middle-end/35545
 	* g++.dg/tree-prof/pr35545.C: New testcase.
 

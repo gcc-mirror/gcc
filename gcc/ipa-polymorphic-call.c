@@ -327,7 +327,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree expected_type)
 	      && (cur_offset
 		  + (expected_type ? tree_to_uhwi (TYPE_SIZE (expected_type))
 		     : 0)
-		  > tree_to_uhwi (TYPE_SIZE (type))))
+		  > tree_to_uhwi (TYPE_SIZE (subtype))))
 	    goto no_useful_type_info;
 
 	  cur_offset = new_offset;
