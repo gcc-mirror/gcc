@@ -1,3 +1,8 @@
+2014-09-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_function_epilogue): Only update
+	last_address when a nonnote insn is found.
+
 2014-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
