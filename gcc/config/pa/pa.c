@@ -4208,9 +4208,12 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     {
       last_address = extra_nop ? 4 : 0;
       insn = get_last_nonnote_insn ();
-      last_address += INSN_ADDRESSES (INSN_UID (insn));
-      if (INSN_P (insn))
-	last_address += insn_default_length (insn);
+      if (insn)
+	{
+	  last_address += INSN_ADDRESSES (INSN_UID (insn));
+	  if (INSN_P (insn))
+	    last_address += insn_default_length (insn);
+	}
       last_address = ((last_address + FUNCTION_BOUNDARY / BITS_PER_UNIT - 1)
 		      & ~(FUNCTION_BOUNDARY / BITS_PER_UNIT - 1));
     }
