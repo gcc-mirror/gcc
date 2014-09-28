@@ -1,3 +1,7 @@
+2014-09-28  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* MAINTAINERS: Move myself to MIPS maintainers.
+
 2014-09-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* MAINTAINERS: Put all email addresses between '<' and '>'.
