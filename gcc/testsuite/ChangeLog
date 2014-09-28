@@ -1,3 +1,7 @@
+2014-09-28  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/20140928.c: New test.
+
 2014-09-27  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.target/i386/nop-mcount.c: Only run on Linux.
