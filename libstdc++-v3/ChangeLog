@@ -1,3 +1,24 @@
+2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/62313
+	* include/debug/safe_base.h
+	(_Safe_iterator_base(const _Safe_iterator_base&)): Delete declaration.
+	(_Safe_iterator_base& operator=(const _Safe_iterator_base&)): Likewise.
+	* include/debug/safe_iterator.h (_Safe_iterator<>): Move normal iterator
+	before _Safe_iterator_base in memory. Lock before modifying the iterator
+	in numerous places.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator_base(const _Safe_local_iterator_base&)): Delete
+	declaration.
+	(_Safe_local_iterator_base& operator=(const _Safe_local_iterator_base&)):
+	Likewise.
+	* include/debug/safe_unordered_base.h (_Safe_local_iterator<>):  Move
+	normal iterator before _Safe_iterator_base in memory. Lock before
+	modifying the iterator in numerous places.
+	* include/debug/forward_list (_Safe_forward_list<>::_M_swap_aux): Adapt.
+	* include/debug/safe_sequence.tcc
+	(_Safe_sequence<>::_M_transfer_from_if): Adapt.
+
 2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	DR 1339
