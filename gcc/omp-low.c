@@ -10117,6 +10117,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  continue;
 	      }
 
+	    unsigned int talign = TYPE_ALIGN_UNIT (TREE_TYPE (ovar));
+	    if (DECL_P (ovar) && DECL_ALIGN_UNIT (ovar) > talign)
+	      talign = DECL_ALIGN_UNIT (ovar);
 	    if (nc)
 	      {
 		tree var = lookup_decl_in_outer_ctx (ovar, ctx);
@@ -10131,6 +10134,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      = create_tmp_var (TREE_TYPE (TREE_TYPE (x)), NULL);
 		    mark_addressable (avar);
 		    gimplify_assign (avar, build_fold_addr_expr (var), &ilist);
+		    talign = DECL_ALIGN_UNIT (avar);
 		    avar = build_fold_addr_expr (avar);
 		    gimplify_assign (x, avar, &ilist);
 		  }
@@ -10183,9 +10187,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      default:
 		gcc_unreachable ();
 	      }
-	    unsigned int talign = TYPE_ALIGN_UNIT (TREE_TYPE (ovar));
-	    if (DECL_P (ovar) && DECL_ALIGN_UNIT (ovar) > talign)
-	      talign = DECL_ALIGN_UNIT (ovar);
 	    talign = ceil_log2 (talign);
 	    tkind |= talign << 3;
 	    CONSTRUCTOR_APPEND_ELT (vkind, purpose,

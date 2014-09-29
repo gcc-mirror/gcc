@@ -1,3 +1,10 @@
+2014-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/63247
+	* omp-low.c (lower_omp_target): For OMP_CLAUSE_MAP_POINTER
+	of ARRAY_TYPE, if not OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION
+	use the alignment of avar rather than ovar.
+
 2014-09-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_function_epilogue): Only update
