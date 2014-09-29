@@ -1,3 +1,7 @@
+2014-09-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md: Use define_c_enum for "unspec" and "unspecv".
+
 2014-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vrp.c (get_single_symbol): New function.
