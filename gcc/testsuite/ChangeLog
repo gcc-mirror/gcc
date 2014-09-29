@@ -1,3 +1,8 @@
+2014-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51385
+	* g++.dg/template/pr51385.C: New.
+
 2014-09-28  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.target/mips/20140928.c: New test.
