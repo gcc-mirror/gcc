@@ -3835,7 +3835,7 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
 static bool
 enum_cast_to_int (tree op)
 {
-  if (TREE_CODE (op) == NOP_EXPR
+  if (CONVERT_EXPR_P (op)
       && TREE_TYPE (op) == integer_type_node
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0))) == ENUMERAL_TYPE
       && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 0))))
