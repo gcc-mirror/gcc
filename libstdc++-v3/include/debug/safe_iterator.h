@@ -109,15 +109,20 @@ namespace __gnu_debug
    *  %_Safe_iterator has member functions for iterator invalidation,
    *  attaching/detaching the iterator from sequences, and querying
    *  the iterator's state.
+   *
+   *  Note that _Iterator must be the first base class so that it gets
+   *  initialized before the iterator is being attached to the container's list
+   *  of iterators and it is being detached before _Iterator get
+   *  destroyed. Otherwise it would result in a data race.
    */
   template<typename _Iterator, typename _Sequence>
-    class _Safe_iterator : public _Safe_iterator_base
+    class _Safe_iterator
+    : private _Iterator,
+      public _Safe_iterator_base
     {
-      typedef _Safe_iterator _Self;
+      typedef _Iterator _Iter_base;
+      typedef _Safe_iterator_base _Safe_base;
       typedef typename _Sequence::const_iterator _Const_iterator;
-
-      /// The underlying iterator
-      _Iterator _M_current;
 
       /// Determine if this is a constant iterator.
       bool
@@ -125,6 +130,15 @@ namespace __gnu_debug
       { return std::__are_same<_Const_iterator, _Safe_iterator>::__value; }
 
       typedef std::iterator_traits<_Iterator> _Traits;
+
+      struct _Attach_single
+      { };
+
+      _Safe_iterator(const _Iterator& __i, _Safe_sequence_base* __seq,
+		     _Attach_single)
+      _GLIBCXX_NOEXCEPT
+      : _Iter_base(__i)
+      { _M_attach_single(__seq); }
 
     public:
       typedef _Iterator					iterator_type;
@@ -135,7 +149,7 @@ namespace __gnu_debug
       typedef typename _Traits::pointer			pointer;
 
       /// @post the iterator is singular and unattached
-      _Safe_iterator() _GLIBCXX_NOEXCEPT : _M_current() { }
+      _Safe_iterator() _GLIBCXX_NOEXCEPT : _Iter_base() { }
 
       /**
        * @brief Safe iterator construction from an unsafe iterator and
@@ -144,11 +158,11 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
-      _Safe_iterator(const _Iterator& __i, const _Sequence* __seq)
+      _Safe_iterator(const _Iterator& __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
-      : _Safe_iterator_base(__seq, _M_constant()), _M_current(__i)
+      : _Iter_base(__i), _Safe_base(__seq, _M_constant())
       {
-	_GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__msg_init_singular)
 			      ._M_iterator(*this, "this"));
       }
@@ -157,15 +171,16 @@ namespace __gnu_debug
        * @brief Copy construction.
        */
       _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
-      : _Safe_iterator_base(__x, _M_constant()), _M_current(__x._M_current)
+      : _Iter_base(__x.base())
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
+	_M_attach(__x._M_sequence);
       }
 
 #if __cplusplus >= 201103L
@@ -173,16 +188,18 @@ namespace __gnu_debug
        * @brief Move construction.
        * @post __x is singular and unattached
        */
-      _Safe_iterator(_Safe_iterator&& __x) noexcept : _M_current()
+      _Safe_iterator(_Safe_iterator&& __x) noexcept
+      : _Iter_base()
       {
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
-	std::swap(_M_current, __x._M_current);
-	this->_M_attach(__x._M_sequence);
+	_Safe_sequence_base* __seq = __x._M_sequence;
 	__x._M_detach();
+	std::swap(base(), __x.base());
+	_M_attach(__seq);
       }
 #endif
 
@@ -196,7 +213,7 @@ namespace __gnu_debug
 	  typename __gnu_cxx::__enable_if<(std::__are_same<_MutableIterator,
 		      typename _Sequence::iterator::iterator_type>::__value),
 		   _Sequence>::__type>& __x) _GLIBCXX_NOEXCEPT
-	: _Safe_iterator_base(__x, _M_constant()), _M_current(__x.base())
+	: _Iter_base(__x.base())
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
@@ -205,6 +222,7 @@ namespace __gnu_debug
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
+	  _M_attach(__x._M_sequence);
 	}
 
       /**
@@ -216,12 +234,24 @@ namespace __gnu_debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
-	_M_current = __x._M_current;
-	this->_M_attach(__x._M_sequence);
+
+	if (this->_M_sequence && this->_M_sequence == __x._M_sequence)
+	  {
+	    __gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	    base() = __x.base();
+	    _M_version = __x._M_sequence->_M_version;
+	  }
+	else
+	  {
+	    _M_detach();
+	    base() = __x.base();
+	    _M_attach(__x._M_sequence);
+	  }
+
 	return *this;
       }
 
@@ -237,14 +267,26 @@ namespace __gnu_debug
 			      _M_message(__msg_self_move_assign)
 			      ._M_iterator(*this, "this"));
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
-	_M_current = __x._M_current;
-	_M_attach(__x._M_sequence);
+
+	if (this->_M_sequence && this->_M_sequence == __x._M_sequence)
+	  {
+	    __gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	    base() = __x.base();
+	    _M_version = __x._M_sequence->_M_version;
+	  }
+	else
+	  {
+	    _M_detach();
+	    base() = __x.base();
+	    _M_attach(__x._M_sequence);
+	  }
+
 	__x._M_detach();
-	__x._M_current = _Iterator();
+	__x.base() = _Iterator();
 	return *this;
       }
 #endif
@@ -259,7 +301,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
 			      _M_message(__msg_bad_deref)
 			      ._M_iterator(*this, "this"));
-	return *_M_current;
+	return *base();
       }
 
       /**
@@ -273,7 +315,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
 			      _M_message(__msg_bad_deref)
 			      ._M_iterator(*this, "this"));
-	return std::__addressof(*_M_current);
+	return std::__addressof(*base());
       }
 
       // ------ Input iterator requirements ------
@@ -287,7 +329,8 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	++_M_current;
+	__gnu_cxx::__scoped_lock(this->_M_get_mutex());
+	++base();
 	return *this;
       }
 
@@ -301,9 +344,8 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __tmp(*this);
-	++_M_current;
-	return __tmp;
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(base()++, this->_M_sequence, _Attach_single());
       }
 
       // ------ Bidirectional iterator requirements ------
@@ -317,7 +359,8 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	--_M_current;
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	--base();
 	return *this;
       }
 
@@ -331,9 +374,8 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __tmp(*this);
-	--_M_current;
-	return __tmp;
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(base()--, this->_M_sequence, _Attach_single());
       }
 
       // ------ Random access iterator requirements ------
@@ -344,8 +386,7 @@ namespace __gnu_debug
 			      && this->_M_can_advance(__n+1),
 			      _M_message(__msg_iter_subscript_oob)
 			      ._M_iterator(*this)._M_integer(__n));
-
-	return _M_current[__n];
+	return base()[__n];
       }
 
       _Safe_iterator&
@@ -354,16 +395,18 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
 			      _M_message(__msg_advance_oob)
 			      ._M_iterator(*this)._M_integer(__n));
-	_M_current += __n;
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	base() += __n;
 	return *this;
       }
 
       _Safe_iterator
       operator+(const difference_type& __n) const _GLIBCXX_NOEXCEPT
       {
-	_Safe_iterator __tmp(*this);
-	__tmp += __n;
-	return __tmp;
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
+			      _M_message(__msg_advance_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	return _Safe_iterator(base() + __n, this->_M_sequence);
       }
 
       _Safe_iterator&
@@ -372,44 +415,45 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
 			      _M_message(__msg_retreat_oob)
 			      ._M_iterator(*this)._M_integer(__n));
-	_M_current += -__n;
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	base() -= __n;
 	return *this;
       }
 
       _Safe_iterator
       operator-(const difference_type& __n) const _GLIBCXX_NOEXCEPT
       {
-	_Safe_iterator __tmp(*this);
-	__tmp -= __n;
-	return __tmp;
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
+			      _M_message(__msg_retreat_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	return _Safe_iterator(base() - __n, this->_M_sequence);
       }
 
       // ------ Utilities ------
       /**
        * @brief Return the underlying iterator
        */
-      _Iterator
-      base() const _GLIBCXX_NOEXCEPT { return _M_current; }
+      _Iterator&
+      base() _GLIBCXX_NOEXCEPT { return *this; }
+
+      const _Iterator&
+      base() const _GLIBCXX_NOEXCEPT { return *this; }
 
       /**
        * @brief Conversion to underlying non-debug iterator to allow
        * better interaction with non-debug containers.
        */
-      operator _Iterator() const _GLIBCXX_NOEXCEPT { return _M_current; }
+      operator _Iterator() const _GLIBCXX_NOEXCEPT { return *this; }
 
       /** Attach iterator to the given sequence. */
       void
       _M_attach(_Safe_sequence_base* __seq)
-      {
-	_Safe_iterator_base::_M_attach(__seq, _M_constant());
-      }
+      { _Safe_base::_M_attach(__seq, _M_constant()); }
 
       /** Likewise, but not thread-safe. */
       void
       _M_attach_single(_Safe_sequence_base* __seq)
-      {
-	_Safe_iterator_base::_M_attach_single(__seq, _M_constant());
-      }
+      { _Safe_base::_M_attach_single(__seq, _M_constant()); }
 
       /// Is the iterator dereferenceable?
       bool
