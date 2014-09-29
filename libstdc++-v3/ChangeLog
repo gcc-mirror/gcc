@@ -1,3 +1,8 @@
+2014-09-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure.host (abi_baseline_pair): If try_cpu is generic use
+	host_cpu for the default.
+
 2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/62313
