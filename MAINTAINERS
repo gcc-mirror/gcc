@@ -78,6 +78,7 @@ m68k-motorola-sysv port	Philippe De Muyter	<phdm@macqel.be>
 mcore port		Nick Clifton		<nickc@redhat.com>
 mep port		DJ Delorie		<dj@redhat.com>
 microblaze		Michael Eager		<eager@eagercon.com>
+mips port		Catherine Moore		<clm@codesourcery.com>
 mips port		Eric Christopher	<echristo@gmail.com>
 mips port		Matthew Fortune		<matthew.fortune@imgtec.com>
 mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
