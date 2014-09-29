@@ -2062,7 +2062,7 @@
   (set_attr "length"	"4")])
 
 (define_insn "call_internal1"
-  [(call (mem (match_operand:SI 0 "call_insn_simple_operand" "ri"))
+  [(call (mem (match_operand:VOID 0 "call_insn_simple_operand" "ri"))
 	 (match_operand:SI 1 "" "i"))
   (clobber (reg:SI R_SR))]
   ""

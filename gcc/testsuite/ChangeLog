@@ -1,3 +1,7 @@
+2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* gcc.c-torture/compile/calls-void.c: New test.
+
 2014-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51385

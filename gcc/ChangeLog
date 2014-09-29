@@ -1,3 +1,8 @@
+2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* config/microblaze/microblaze.md (call_internal1): Use VOID
+	instead of SI to fix "((void (*)(void)) 0)()" issue
+
 2014-09-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_expand_prologue): Return a
