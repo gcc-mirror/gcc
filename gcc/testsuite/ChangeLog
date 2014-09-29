@@ -1,3 +1,9 @@
+2014-09-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/ops.c: Remove calls to vec_splat, vec_vsplth,
+	vec_vspltw, and vec_vspltb for which the second argument is out of
+	range.
+
 2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* gcc.c-torture/compile/calls-void.c: New test.
