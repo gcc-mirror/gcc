@@ -145,6 +145,7 @@ tree gfor_fndecl_caf_atomic_cas;
 tree gfor_fndecl_caf_atomic_op;
 tree gfor_fndecl_caf_lock;
 tree gfor_fndecl_caf_unlock;
+tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_sum;
@@ -3422,6 +3423,11 @@ gfc_build_builtin_function_decls (void)
       gfor_fndecl_caf_unlock = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_unlock")), "R..WW",
 	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_co_broadcast = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_co_broadcast")), "W.WW",
+	void_type_node, 5, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (

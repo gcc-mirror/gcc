@@ -1,3 +1,208 @@
+2014-09-28  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/20140928.c: New test.
+
+2014-09-27  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: Only run on Linux.
+	* gcc.target/i386/record-mcount.c: dito.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/62121
+	* g++.dg/torture/pr62121.C: New testcase.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/35545
+	* g++.dg/tree-prof/pr35545.C: New testcase.
+
+2014-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63335.c: Change effective target to
+	vsx_hw.
+
+2014-09-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/shrink_wrap_1.c: Skip ia32.
+
+2014-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/compat/struct-layout-1_generate.c: Add -Wno-abi
+	to default options.
+
+2014-09-25  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: New file.
+	* gcc.target/i386/record-mcount.c: New file.
+
+2014-09-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/vect/pr56933.c: Don't specify "dg-do run" explicitly.
+	* gcc.dg/vect/pr57705.c: Likewise.
+	* gcc.dg/vect/pr57741-2.c: Likewise.
+	* gcc.dg/vect/pr57741-3.c: Likewise.
+	* gcc.dg/vect/pr59591-1.c: Likewise.
+	* gcc.dg/vect/pr59591-2.c: Likewise.
+	* gcc.dg/vect/pr60196-1.c: Likewise.
+	* gcc.dg/vect/pr60196-2.c: Likewise.
+	* gcc.dg/vect/pr60276.c: Likewise.
+	* gcc.dg/vect/pr61680.c: Likewise.
+	* gcc.dg/vect/pr63148.c: Likewise.
+	* gcc.dg/vect/pr63189.c: Likewise.
+	* gcc.dg/vect/vect-mask-load-1.c: Likewise.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Likewise.
+	* gcc.dg/vect/vect-nop-move.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-34.C: Update template.
+
+2014-09-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/simd/vqshlb_1.c: New.
+
+2014-09-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/i386/shrink_wrap_1.c: New test.
+
+2014-09-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/63335
+	* gcc.target/powerpc/pr63335.c: New test.
+
+2014-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61945
+	* g++.dg/warn/pr61945.C: New test.
+
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63341
+	* gcc.dg/vect/pr63341-1.c: New test.
+	* gcc.dg/vect/pr63341-2.c: New test.
+
+	PR c++/63249
+	* g++.dg/gomp/pr63249.C: New test.
+	* c-c++-common/gomp/pr63249.c: New test.
+
+2014-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/collectives_3.f90: New.
+	* gfortran.dg/coarray_collectives_9.f90: New.
+	* gfortran.dg/coarray_collectives_10.f90: New.
+	* gfortran.dg/coarray_collectives_11.f90: New.
+	* gfortran.dg/coarray_collectives_12.f90: New.
+
+2014-09-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-17.c: New test.
+
+2014-09-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/shrink_wrap_symbol_ref_1.c: New testcase.
+
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* c-c++-common/pr53874.c: New test.
+	* c-c++-common/pr61405.c: New test.
+
+2014-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vmul_lane_const_lane_1.c: New test.
+
+2014-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63316
+	* c-c++-common/asan/pr63316.c: New test.
+
+2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63266
+	* gcc.dg/optimize-bswapsi-1.c (swap32_d): New bswap pass test.
+
+2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/pr63210.c: New test.
+
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/noreorder.c: New test.
+	* gcc.dg/noreorder2.c: New test.
+	* gcc.dg/noreorder3.c: New test.
+	* gcc.dg/noreorder4.c: New test.
+
+2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/combine_ashiftrt_1.c: New test.
+	* gcc.dg/combine_ashiftrt_2.c: Likewise.
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Remove scan-assembler
+	workarounds for cmge.
+	* gcc.target/aarch64/simd/int_comparisons_1.c: Likewise; also check for
+	absence of mvn.
+
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61857
+	* g++.dg/cpp1y/lambda-init10.C: New.
+
+2014-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63331
+	* gfortran.dg/pr63331.f90: New test.
+
+2014-09-24  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Enable aarch64.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+	* gcc.dg/pr10474.c: Likewise.
+
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/const-volatile.c (i): Mark as used.
+	(ci): Likewise.
+	(pci): Likewise.
+	(pvi): Likewise.
+	(pcvi): Likewise.
+	(cip): Likewise.
+	(foo): Likewise.
+	(cfoo): Likewise.
+
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Transform gdb types "short int"
+	and "long int" to plain "short" and "long".
+	* gcc.dg/guality/const-volatile.c (struct bar): New struct
+	containing short and long long fields.
+	(bar): New variable to test the type.
+
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62155
+	* g++.dg/cpp0x/lambda/lambda-62155.C: New.
+
+2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62219
+	* g++.dg/cpp0x/lambda/lambda-template14.C: New.
+
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/vect/vect-reduc-or_1.c: New test.
+	* gcc.dg/vect/vect-reduc-or_2.c: Likewise.
+
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_whole_vector_shift):
+	New.
+
+	* gcc.dg/vect/vect-reduc-mul_1.c: New test.
+	* gcc.dg/vect/vect-reduc-mul_2.c: New test.
+
 2014-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63328

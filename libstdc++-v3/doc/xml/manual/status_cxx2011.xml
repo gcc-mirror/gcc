@@ -606,10 +606,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.12.4</entry>
       <entry><code>uninitialized_fill_n</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Returns <code>void</code>..</entry>
     </row>
     <row>
       <entry>20.6.13</entry>
@@ -1183,10 +1184,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.3.3.1</entry>
       <entry>Character classification</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>isblank</code>.</entry>
     </row>
     <row>
       <entry>22.3.3.2</entry>
@@ -1639,10 +1641,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>25.3</entry>
       <entry>Mutating sequence operations</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>rotate</code> returns <code>void</code>.</entry>
     </row>
     <row>
       <entry>25.4</entry>
@@ -2049,10 +2052,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.8</entry>
       <entry>C Library</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>&lt;ctgmath&gt;</code> doesn't include
+        <code>&lt;ccomplex&gt;</code>
+      </entry>
     </row>
     <row>
       <entry>
@@ -2129,7 +2135,6 @@ particular release.
       <entry>Iostreams base classes</entry>
       <entry>Partial</entry>
       <entry>
-        Missing move and swap operations on <code>basic_ios</code>.
         Missing <code>io_errc</code> and <code>iostream_category</code>.
         <code>ios_base::failure</code> is not derived from <code>system_error</code>.
 	Missing <code>ios_base::hexfloat</code>.
@@ -2147,23 +2152,20 @@ particular release.
       <entry>Formatting and manipulators</entry>
       <entry>Partial</entry>
       <entry>
-        Missing move and swap operations
         Missing <code>get_time</code> and <code>put_time</code> manipulators.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.8</entry>
       <entry>String-based streams</entry>
-      <entry>Partial</entry>
-      <entry>Missing move and swap operations</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.9</entry>
       <entry>File-based streams</entry>
-      <entry>Partial</entry>
-      <entry>Missing move and swap operations</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>

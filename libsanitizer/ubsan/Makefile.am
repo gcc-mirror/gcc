@@ -12,8 +12,10 @@ toolexeclib_LTLIBRARIES = libubsan.la
 
 ubsan_files = \
 	ubsan_diag.cc \
+	ubsan_flags.cc \
 	ubsan_handlers.cc \
 	ubsan_handlers_cxx.cc \
+	ubsan_init.cc \
 	ubsan_type_hash.cc \
 	ubsan_value.cc
 

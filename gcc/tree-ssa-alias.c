@@ -559,7 +559,7 @@ ao_ref_base (ao_ref *ref)
 
 /* Returns the base object alias set of the memory reference *REF.  */
 
-static alias_set_type
+alias_set_type
 ao_ref_base_alias_set (ao_ref *ref)
 {
   tree base_ref;

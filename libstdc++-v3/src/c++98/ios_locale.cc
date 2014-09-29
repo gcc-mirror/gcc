@@ -54,5 +54,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __old;
   }
 
+  // Explicit instantiations for basic_ios are done in src/c++11/ios.cc
+  // and so do not include this member, which is only defined for C++98.
+  template basic_ios<char>::operator void*() const;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template basic_ios<wchar_t>::operator void*() const;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

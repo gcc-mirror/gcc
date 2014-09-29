@@ -130,12 +130,6 @@
 #define DOUBLE_TYPE_SIZE 		(TARGET_64BIT_DOUBLES ? 64 : 32)
 #define LONG_DOUBLE_TYPE_SIZE		DOUBLE_TYPE_SIZE
 
-#ifdef __RX_32BIT_DOUBLES__
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   32
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
-#endif
-
 #define DEFAULT_SIGNED_CHAR		0
 
 /* RX load/store instructions can handle unaligned addresses.  */

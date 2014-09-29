@@ -191,11 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Up = _Tp>
     inline _Tp
     exchange(_Tp& __obj, _Up&& __new_val)
-    {
-      _Tp __old_val = std::move(__obj);
-      __obj = std::forward<_Up>(__new_val);
-      return __old_val;
-    }
+    { return std::__exchange(__obj, std::forward<_Up>(__new_val)); }
 #endif
 
   // Stores a tuple of indices.  Used by tuple and pair, and by bind() to

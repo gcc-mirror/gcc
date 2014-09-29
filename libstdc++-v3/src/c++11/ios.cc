@@ -187,5 +187,73 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_callbacks = 0;
   }
 
+  void
+  ios_base::_M_move(ios_base& __rhs) noexcept
+  {
+    _M_precision = __rhs._M_precision;
+    _M_width = __rhs._M_width;
+    _M_flags = __rhs._M_flags;
+    _M_exception = __rhs._M_exception;
+    _M_streambuf_state = __rhs._M_streambuf_state;
+    _M_callbacks = std::__exchange(__rhs._M_callbacks, nullptr);
+    if (_M_word != _M_local_word)
+       delete[] _M_word;
+    if (__rhs._M_word == __rhs._M_local_word)
+     {
+       _M_word = _M_local_word;
+       _M_word_size = _S_local_word_size;
+       for (int __i = 0; __i < _S_local_word_size; __i++)
+	 _M_word[__i] = std::__exchange(__rhs._M_word[__i], {});
+     }
+    else
+     {
+       _M_word = std::__exchange(__rhs._M_word, __rhs._M_local_word);
+       _M_word_size
+	 = std::__exchange(__rhs._M_word_size, _S_local_word_size);
+     }
+    _M_ios_locale = __rhs._M_ios_locale;
+  }
+
+  void
+  ios_base::_M_swap(ios_base& __rhs) noexcept
+  {
+    std::swap(_M_precision, __rhs._M_precision);
+    std::swap(_M_width, __rhs._M_width);
+    std::swap(_M_flags, __rhs._M_flags);
+    std::swap(_M_exception, __rhs._M_exception);
+    std::swap(_M_streambuf_state, __rhs._M_streambuf_state);
+    std::swap(_M_callbacks, __rhs._M_callbacks);
+    const bool __lhs_local = _M_word == _M_local_word;
+    const bool __rhs_local = __rhs._M_word == __rhs._M_local_word;
+    if (__lhs_local && __rhs_local)
+     std::swap(_M_local_word, __rhs._M_local_word); // array swap
+    else
+     {
+       if (!__lhs_local && !__rhs_local)
+	 std::swap(_M_word, __rhs._M_word);
+       else
+	 {
+	   ios_base* __local;
+	   ios_base* __allocated;
+	   if (__lhs_local)
+	     {
+	       __local = this;
+	       __allocated = &__rhs;
+	     }
+	   else
+	     {
+	       __local = &__rhs;
+	       __allocated= this;
+	     }
+	   for (int __i = 0; __i < _S_local_word_size; __i++)
+	     __allocated->_M_local_word[__i] = __local->_M_local_word[__i];
+	   __local->_M_word = __allocated->_M_word;
+	   __allocated->_M_word = __allocated->_M_local_word;
+	 }
+       std::swap(_M_word_size, __rhs._M_word_size);
+     }
+    std::swap(_M_ios_locale, __rhs._M_ios_locale);
+  }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

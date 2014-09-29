@@ -15,6 +15,6 @@ t(struct B *b)
 /* We should guess that the pointer of type B probably points to an instance
    of B or its derivates and exclude A::t from list of likely targets.  */
 
-/* { dg-final { scan-ipa-dump "Targets that are not likely"  "devirt"  } } */
+/* { dg-final { scan-ipa-dump "Speculative targets"  "devirt"  } } */
 /* { dg-final { scan-ipa-dump "1 speculatively devirtualized"  "devirt"  } } */
 /* { dg-final { cleanup-ipa-dump "devirt" } } */

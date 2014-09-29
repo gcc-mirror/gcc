@@ -1127,7 +1127,8 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	  error ("switch quantity not an integer");
 	  cond = error_mark_node;
 	}
-      orig_type = TREE_TYPE (cond);
+      /* We want unlowered type here to handle enum bit-fields.  */
+      orig_type = unlowered_expr_type (cond);
       if (cond != error_mark_node)
 	{
 	  /* Warn if the condition has boolean value.  */
@@ -1692,10 +1693,10 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       if (current_function_decl
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
-	error ("invalid use of member %q+D in static member function", decl);
+	error ("invalid use of member %qD in static member function", decl);
       else
-	error ("invalid use of non-static data member %q+D", decl);
-      error ("from this location");
+	error ("invalid use of non-static data member %qD", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "declared here");
 
       return error_mark_node;
     }
@@ -4290,6 +4291,10 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		length);
       return error_mark_node;
     }
+  if (low_bound)
+    low_bound = mark_rvalue_use (low_bound);
+  if (length)
+    length = mark_rvalue_use (length);
   if (low_bound
       && TREE_CODE (low_bound) == INTEGER_CST
       && TYPE_PRECISION (TREE_TYPE (low_bound))

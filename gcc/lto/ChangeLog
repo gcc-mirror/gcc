@@ -1,3 +1,16 @@
+2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-symtab.c, lto.c: Rename all instances of DECL_ABSTRACT to
+	DECL_ABSTRACT_P.
+
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-partition.c (node_cmp): Update comment.
+	(varpool_node_cmp): Use symtab_node for comparison.
+	(add_sorted_nodes): New function.
+	(lto_balanced_map): Change to keep ordered queue
+	of ordered node. Handle no_reorder attribute.
+
 2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_read_decls): Register ODR types.

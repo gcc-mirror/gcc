@@ -72,23 +72,19 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	monetary_members.lo numeric_members.lo time_members.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo locale-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.lo ostream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.lo streambuf-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo
 am__objects_3 = parallel_settings.lo
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
 am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	codecvt.lo complex_io.lo ctype.lo globals_io.lo hash_tr1.lo \
-	hashtable_tr1.lo ios.lo ios_failure.lo ios_init.lo \
-	ios_locale.lo list.lo list-aux.lo list-aux-2.lo \
-	list_associated.lo list_associated-2.lo locale.lo \
-	locale_init.lo locale_facets.lo localename.lo \
-	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
-	strstream.lo tree.lo istream.lo streambuf.lo valarray.lo \
-	$(am__objects_1) $(am__objects_4)
+	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
+	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
+	list_associated-2.lo locale.lo locale_init.lo locale_facets.lo \
+	localename.lo math_stubs_float.lo math_stubs_long_double.lo \
+	stdexcept.lo strstream.lo tree.lo istream.lo streambuf.lo \
+	valarray.lo $(am__objects_1) $(am__objects_4)
 am_libc__98convenience_la_OBJECTS = $(am__objects_5)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -355,14 +351,8 @@ host_sources_extra = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	allocator-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc
 
 parallel_sources = parallel_settings.cc
@@ -378,7 +368,6 @@ sources = \
 	globals_io.cc \
 	hash_tr1.cc \
 	hashtable_tr1.cc \
-	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
 	ios_locale.cc \

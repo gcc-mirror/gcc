@@ -1603,6 +1603,7 @@ make_pass_cse_sincos (gcc::context *ctxt)
    consisting of octet sized markers:
 
    0    - target byte has the value 0
+   FF   - target byte has an unknown value (eg. due to sign extension)
    1..size - marker value is the target byte index minus one.
 
    To detect permutations on memory sources (arrays and structures), a symbolic
@@ -1629,6 +1630,10 @@ struct symbolic_number {
 };
 
 #define BITS_PER_MARKER 8
+#define MARKER_MASK ((1 << BITS_PER_MARKER) - 1)
+#define MARKER_BYTE_UNKNOWN MARKER_MASK
+#define HEAD_MARKER(n, size) \
+  ((n) & ((uint64_t) MARKER_MASK << (((size) - 1) * BITS_PER_MARKER)))
 
 /* The number which the find_bswap_or_nop_1 result should match in
    order to have a nop.  The number is masked according to the size of
@@ -1651,7 +1656,8 @@ do_shift_rotate (enum tree_code code,
 		 struct symbolic_number *n,
 		 int count)
 {
-  int size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+  int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+  unsigned head_marker;
 
   if (count % BITS_PER_UNIT != 0)
     return false;
@@ -1668,11 +1674,13 @@ do_shift_rotate (enum tree_code code,
       n->n <<= count;
       break;
     case RSHIFT_EXPR:
-      /* Arithmetic shift of signed type: result is dependent on the value.  */
-      if (!TYPE_UNSIGNED (n->type)
-	  && (n->n & ((uint64_t) 0xff << ((size - 1) * BITS_PER_MARKER))))
-	return false;
+      head_marker = HEAD_MARKER (n->n, size);
       n->n >>= count;
+      /* Arithmetic shift of signed type: result is dependent on the value.  */
+      if (!TYPE_UNSIGNED (n->type) && head_marker)
+	for (i = 0; i < count / BITS_PER_MARKER; i++)
+	  n->n |= (uint64_t) MARKER_BYTE_UNKNOWN
+		  << ((size - 1 - i) * BITS_PER_MARKER);
       break;
     case LROTATE_EXPR:
       n->n = (n->n << count) | (n->n >> ((size * BITS_PER_MARKER) - count));
@@ -1878,7 +1886,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      if ((val & tmp) != 0 && (val & tmp) != tmp)
 		return NULL;
 	      else if (val & tmp)
-		mask |= (uint64_t) 0xff << (i * BITS_PER_MARKER);
+		mask |= (uint64_t) MARKER_MASK << (i * BITS_PER_MARKER);
 
 	    n->n &= mask;
 	  }
@@ -1892,7 +1900,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  break;
 	CASE_CONVERT:
 	  {
-	    int type_size, old_type_size;
+	    int i, type_size, old_type_size;
 	    tree type;
 
 	    type = gimple_expr_type (stmt);
@@ -1905,11 +1913,10 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
 	    /* Sign extension: result is dependent on the value.  */
 	    old_type_size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-	    if (!TYPE_UNSIGNED (n->type)
-		&& type_size > old_type_size
-		&& n->n & ((uint64_t) 0xff << ((old_type_size - 1)
-					       * BITS_PER_MARKER)))
-	      return NULL;
+	    if (!TYPE_UNSIGNED (n->type) && type_size > old_type_size
+		&& HEAD_MARKER (n->n, old_type_size))
+	      for (i = 0; i < type_size - old_type_size; i++)
+		n->n |= MARKER_BYTE_UNKNOWN << (type_size - 1 - i);
 
 	    if (type_size < 64 / BITS_PER_MARKER)
 	      {
@@ -1968,7 +1975,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  if (gimple_assign_rhs1 (source_stmt1)
 	      != gimple_assign_rhs1 (source_stmt2))
 	    {
-	      int64_t inc, mask;
+	      int64_t inc;
 	      HOST_WIDE_INT off_sub;
 	      struct symbolic_number *n_ptr;
 
@@ -2002,15 +2009,15 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 		 bigger weight according to target endianness.  */
 	      inc = BYTES_BIG_ENDIAN ? off_sub + n2.range - n1.range : off_sub;
 	      size = TYPE_PRECISION (n1.type) / BITS_PER_UNIT;
-	      mask = 0xff;
 	      if (BYTES_BIG_ENDIAN)
 		n_ptr = &n1;
 	      else
 		n_ptr = &n2;
-	      for (i = 0; i < size; i++, inc <<= BITS_PER_MARKER,
-					 mask <<= BITS_PER_MARKER)
+	      for (i = 0; i < size; i++, inc <<= BITS_PER_MARKER)
 		{
-		  if (n_ptr->n & mask)
+		  unsigned marker =
+		    (n_ptr->n >> (i * BITS_PER_MARKER)) & MARKER_MASK;
+		  if (marker && marker != MARKER_BYTE_UNKNOWN)
 		    n_ptr->n += inc;
 		}
 	    }
@@ -2028,7 +2035,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  n->bytepos = n1.bytepos;
 	  n->type = n1.type;
 	  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-	  for (i = 0, mask = 0xff; i < size; i++, mask <<= BITS_PER_MARKER)
+	  for (i = 0, mask = MARKER_MASK; i < size;
+	       i++, mask <<= BITS_PER_MARKER)
 	    {
 	      uint64_t masked1, masked2;
 

@@ -4207,7 +4207,19 @@ verify_gimple_assign_single (gimple stmt)
 		  debug_generic_stmt (rhs1);
 		  return true;
 		}
+	      if (!is_gimple_val (elt_v))
+		{
+		  error ("vector CONSTRUCTOR element is not a GIMPLE value");
+		  debug_generic_stmt (rhs1);
+		  return true;
+		}
 	    }
+	}
+      else if (CONSTRUCTOR_NELTS (rhs1) != 0)
+	{
+	  error ("non-vector CONSTRUCTOR with elements");
+	  debug_generic_stmt (rhs1);
+	  return true;
 	}
       return res;
     case OBJ_TYPE_REF:

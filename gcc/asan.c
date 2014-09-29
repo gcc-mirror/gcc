@@ -230,6 +230,9 @@ along with GCC; see the file COPYING3.  If not see
 
        // 1 if it has dynamic initialization, 0 otherwise.
        uptr __has_dynamic_init;
+
+       // A pointer to struct that contains source location, could be NULL.
+       __asan_global_source_location *__location;
      }
 
    A destructor function that calls the runtime asan library function
@@ -2024,6 +2027,8 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	    case BUILT_IN_TRAP:
 	      /* Don't instrument these.  */
 	      return false;
+	    default:
+	      break;
 	    }
 	}
       tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
@@ -2136,19 +2141,20 @@ asan_dynamic_init_call (bool after_p)
      const void *__name;
      const void *__module_name;
      uptr __has_dynamic_init;
+     __asan_global_source_location *__location;
    } type.  */
 
 static tree
 asan_global_struct (void)
 {
-  static const char *field_names[6]
+  static const char *field_names[7]
     = { "__beg", "__size", "__size_with_redzone",
-	"__name", "__module_name", "__has_dynamic_init" };
-  tree fields[6], ret;
+	"__name", "__module_name", "__has_dynamic_init", "__location"};
+  tree fields[7], ret;
   int i;
 
   ret = make_node (RECORD_TYPE);
-  for (i = 0; i < 6; i++)
+  for (i = 0; i < 7; i++)
     {
       fields[i]
 	= build_decl (UNKNOWN_LOCATION, FIELD_DECL,
@@ -2220,6 +2226,8 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  build_int_cst (uptr, has_dynamic_init));
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  build_int_cst (uptr, 0));
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
@@ -2579,19 +2587,26 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	  gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
 	  gimple_seq seq = NULL;
 	  gimple_seq_add_stmt (&seq, shadow_test);
-	  /* Aligned (>= 8 bytes) access do not need & 7.  */
+	  /* Aligned (>= 8 bytes) can test just
+	     (real_size_in_bytes - 1 >= shadow), as base_addr & 7 is known
+	     to be 0.  */
 	  if (align < 8)
-	    gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
-						     base_addr, 7));
-	  gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
-						      gimple_seq_last (seq)));
-	  if (real_size_in_bytes > 1)
-	    gimple_seq_add_stmt (&seq,
-				 build_assign (PLUS_EXPR, gimple_seq_last (seq),
-					       real_size_in_bytes - 1));
-	  gimple_seq_add_stmt (&seq, build_assign (GE_EXPR,
+	    {
+	      gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
+						       base_addr, 7));
+	      gimple_seq_add_stmt (&seq,
+				   build_type_cast (shadow_type,
+						    gimple_seq_last (seq)));
+	      if (real_size_in_bytes > 1)
+		gimple_seq_add_stmt (&seq,
+				     build_assign (PLUS_EXPR,
 						   gimple_seq_last (seq),
-						   shadow));
+						   real_size_in_bytes - 1));
+	      t = gimple_assign_lhs (gimple_seq_last_stmt (seq));
+	    }
+	  else
+	    t = build_int_cst (shadow_type, real_size_in_bytes - 1);
+	  gimple_seq_add_stmt (&seq, build_assign (GE_EXPR, t, shadow));
 	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, shadow_test,
 						   gimple_seq_last (seq)));
 	  t = gimple_assign_lhs (gimple_seq_last (seq));

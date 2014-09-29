@@ -1709,6 +1709,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
         {
 	  ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
 	  enum reg_class conflict_aclass;
+	  allocno_color_data_t data = ALLOCNO_COLOR_DATA (conflict_a);
 
 	  /* Reload can give another class so we need to check all
 	     allocnos.  */
@@ -1780,7 +1781,12 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 		    hard_regno = ira_class_hard_regs[aclass][j];
 		    ira_assert (hard_regno >= 0);
 		    k = ira_class_hard_reg_index[conflict_aclass][hard_regno];
-		    if (k < 0)
+		    if (k < 0
+			   /* If HARD_REGNO is not available for CONFLICT_A,
+			      the conflict would be ignored, since HARD_REGNO
+			      will never be assigned to CONFLICT_A.  */
+			|| !TEST_HARD_REG_BIT (data->profitable_hard_regs,
+					       hard_regno))
 		      continue;
 		    full_costs[j] -= conflict_costs[k];
 		  }

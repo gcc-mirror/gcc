@@ -624,6 +624,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
+      && current_binding_level->kind != sk_template_parms
       && !processing_template_decl)
     for (tree d = getdecls (); d; d = TREE_CHAIN (d))
       {
@@ -2263,7 +2264,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	}
 
       /* Preserve abstractness on cloned [cd]tors.  */
-      DECL_ABSTRACT (newdecl) = DECL_ABSTRACT (olddecl);
+      DECL_ABSTRACT_P (newdecl) = DECL_ABSTRACT_P (olddecl);
 
       /* Update newdecl's parms to point at olddecl.  */
       for (parm = DECL_ARGUMENTS (newdecl); parm;
@@ -10279,7 +10280,7 @@ grokdeclarator (const cp_declarator *declarator,
 	       clones.  The decloning optimization (for space) may
                revert this subsequently if it determines that
                the clones should share a common implementation.  */
-	    DECL_ABSTRACT (decl) = 1;
+	    DECL_ABSTRACT_P (decl) = true;
 	}
       else if (current_class_type
 	       && constructor_name_p (unqualified_id, current_class_type))

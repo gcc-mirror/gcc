@@ -1,3 +1,21 @@
+2014-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* configure.tgt: Enable build on aarch64*-linux.
+
+2014-09-19  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r218156.
+	* asan/Makefile.am (asan_files): Added new files.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am (ubsan_files): Added new files.
+	* ubsan/Makefile.in: Regenerate.
+	* tsan/Makefile.am (tsan_files): Added new files.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new
+	  files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* asan/libtool-version: Bump the libasan SONAME.
+
 2014-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* ubsan/ubsan_handlers.cc, ubsan/ubsan_handlers.h: Cherry pick

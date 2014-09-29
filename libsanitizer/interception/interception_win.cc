@@ -17,20 +17,6 @@
 
 namespace __interception {
 
-bool GetRealFunctionAddress(const char *func_name, uptr *func_addr) {
-  const char *DLLS[] = {
-    "msvcr80.dll",
-    "msvcr90.dll",
-    "kernel32.dll",
-    NULL
-  };
-  *func_addr = 0;
-  for (size_t i = 0; *func_addr == 0 && DLLS[i]; ++i) {
-    *func_addr = (uptr)GetProcAddress(GetModuleHandleA(DLLS[i]), func_name);
-  }
-  return (*func_addr != 0);
-}
-
 // FIXME: internal_str* and internal_mem* functions should be moved from the
 // ASan sources into interception/.
 
@@ -108,9 +94,11 @@ static size_t RoundUpToInstrBoundary(size_t size, char *code) {
       case 0x458B:  // 8B 45 XX = mov eax, dword ptr [ebp+XXh]
       case 0x5D8B:  // 8B 5D XX = mov ebx, dword ptr [ebp+XXh]
       case 0xEC83:  // 83 EC XX = sub esp, XX
+      case 0x75FF:  // FF 75 XX = push dword ptr [ebp+XXh]
         cursor += 3;
         continue;
       case 0xC1F7:  // F7 C1 XX YY ZZ WW = test ecx, WWZZYYXX
+      case 0x25FF:  // FF 25 XX YY ZZ WW = jmp dword ptr ds:[WWZZYYXX]
         cursor += 6;
         continue;
       case 0x3D83:  // 83 3D XX YY ZZ WW TT = cmp TT, WWZZYYXX
@@ -119,6 +107,7 @@ static size_t RoundUpToInstrBoundary(size_t size, char *code) {
     }
     switch (0x00FFFFFF & *(unsigned int*)(code + cursor)) {
       case 0x24448A:  // 8A 44 24 XX = mov eal, dword ptr [esp+XXh]
+      case 0x24448B:  // 8B 44 24 XX = mov eax, dword ptr [esp+XXh]
       case 0x244C8B:  // 8B 4C 24 XX = mov ecx, dword ptr [esp+XXh]
       case 0x24548B:  // 8B 54 24 XX = mov edx, dword ptr [esp+XXh]
       case 0x24748B:  // 8B 74 24 XX = mov esi, dword ptr [esp+XXh]
@@ -131,8 +120,9 @@ static size_t RoundUpToInstrBoundary(size_t size, char *code) {
     // FIXME: Unknown instruction failures might happen when we add a new
     // interceptor or a new compiler version. In either case, they should result
     // in visible and readable error messages. However, merely calling abort()
-    // or __debugbreak() leads to an infinite recursion in CheckFailed.
+    // leads to an infinite recursion in CheckFailed.
     // Do we have a good way to abort with an error message here?
+    __debugbreak();
     return 0;
   }
 
@@ -187,6 +177,33 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
     return false;  // not clear if this failure bothers us.
 
   return true;
+}
+
+static const void **InterestingDLLsAvailable() {
+  const char *InterestingDLLs[] = { "kernel32.dll", "msvcr120.dll", NULL };
+  static void *result[ARRAY_SIZE(InterestingDLLs)] = { 0 };
+  if (!result[0]) {
+    for (size_t i = 0, j = 0; InterestingDLLs[i]; ++i) {
+      if (HMODULE h = GetModuleHandleA(InterestingDLLs[i]))
+        result[j++] = (void *)h;
+    }
+  }
+  return (const void **)&result[0];
+}
+
+static bool GetFunctionAddressInDLLs(const char *func_name, uptr *func_addr) {
+  *func_addr = 0;
+  const void **DLLs = InterestingDLLsAvailable();
+  for (size_t i = 0; *func_addr == 0 && DLLs[i]; ++i)
+    *func_addr = (uptr)GetProcAddress((HMODULE)DLLs[i], func_name);
+  return (*func_addr != 0);
+}
+
+bool OverrideFunction(const char *name, uptr new_func, uptr *orig_old_func) {
+  uptr orig_func;
+  if (!GetFunctionAddressInDLLs(name, &orig_func))
+    return false;
+  return OverrideFunction(orig_func, new_func, orig_old_func);
 }
 
 }  // namespace __interception

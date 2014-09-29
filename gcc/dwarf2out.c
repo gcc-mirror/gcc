@@ -3678,7 +3678,7 @@ decl_ultimate_origin (const_tree decl)
 
   /* DECL_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
-  if (DECL_ABSTRACT (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
+  if (DECL_ABSTRACT_P (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
     return NULL_TREE;
 
   /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
@@ -10461,6 +10461,40 @@ decl_quals (const_tree decl)
 	     ? TYPE_QUAL_VOLATILE : TYPE_UNQUALIFIED));
 }
 
+/* Determine the TYPE whose qualifiers match the largest strict subset
+   of the given TYPE_QUALS, and return its qualifiers.  Ignore all
+   qualifiers outside QUAL_MASK.  */
+
+static int
+get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
+{
+  tree t;
+  int best_rank = 0, best_qual = 0, max_rank;
+
+  type_quals &= qual_mask;
+  max_rank = popcount_hwi (type_quals) - 1;
+
+  for (t = TYPE_MAIN_VARIANT (type); t && best_rank < max_rank;
+       t = TYPE_NEXT_VARIANT (t))
+    {
+      int q = TYPE_QUALS (t) & qual_mask;
+
+      if ((q & type_quals) == q && q != type_quals
+	  && check_base_type (t, type))
+	{
+	  int rank = popcount_hwi (q);
+
+	  if (rank > best_rank)
+	    {
+	      best_rank = rank;
+	      best_qual = q;
+	    }
+	}
+    }
+
+  return best_qual;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
    entry that chains various modifiers in front of the given type.  */
 
@@ -10476,12 +10510,14 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   tree qualified_type;
   tree name, low, high;
   dw_die_ref mod_scope;
+  /* Only these cv-qualifiers are currently handled.  */
+  const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
+			    | TYPE_QUAL_RESTRICT);
 
   if (code == ERROR_MARK)
     return NULL;
 
-  /* Only these cv-qualifiers are currently handled.  */
-  cv_quals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT);
+  cv_quals &= cv_qual_mask;
 
   /* Don't emit DW_TAG_restrict_type for DWARFv2, since it is a type
      tag modifier (and not an attribute) old consumers won't be able
@@ -10532,10 +10568,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       else
 	{
 	  int dquals = TYPE_QUALS_NO_ADDR_SPACE (dtype);
-	  dquals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT
-	             | TYPE_QUAL_UPC_SHARED | TYPE_QUAL_UPC_STRICT
-	             | TYPE_QUAL_UPC_RELAXED);
-	            
+	  dquals &= cv_qual_mask;
 	  if ((dquals & ~cv_quals) != TYPE_UNQUALIFIED
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
 	    /* cv-unqualified version of named type.  Just use
@@ -10548,33 +10581,33 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 
   mod_scope = scope_die_for (type, context_die);
 
-  if ((cv_quals & TYPE_QUAL_CONST)
-      /* If there are multiple type modifiers, prefer a path which
-	 leads to a qualified type.  */
-      && (((cv_quals & ~TYPE_QUAL_CONST) == TYPE_UNQUALIFIED)
-	  || get_qualified_type (type, cv_quals) == NULL_TREE
-	  || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_CONST)
-	      != NULL_TREE)))
+  if (cv_quals)
     {
-      mod_type_die = new_die (DW_TAG_const_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_CONST,
-				   context_die);
-    }
-  else if ((cv_quals & TYPE_QUAL_VOLATILE)
-	   && (((cv_quals & ~TYPE_QUAL_VOLATILE) == TYPE_UNQUALIFIED)
-	       || get_qualified_type (type, cv_quals) == NULL_TREE
-	       || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_VOLATILE)
-		   != NULL_TREE)))
-    {
-      mod_type_die = new_die (DW_TAG_volatile_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_VOLATILE,
-				   context_die);
-    }
-  else if (cv_quals & TYPE_QUAL_RESTRICT)
-    {
-      mod_type_die = new_die (DW_TAG_restrict_type, mod_scope, type);
-      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_RESTRICT,
-				   context_die);
+      struct qual_info { int q; enum dwarf_tag t; };
+      static const struct qual_info qual_info[] =
+	{
+	  { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
+	  { TYPE_QUAL_VOLATILE, DW_TAG_volatile_type },
+	  { TYPE_QUAL_CONST, DW_TAG_const_type },
+	};
+      int sub_quals;
+      unsigned i;
+
+      /* Determine a lesser qualified type that most closely matches
+	 this one.  Then generate DW_TAG_* entries for the remaining
+	 qualifiers.  */
+      sub_quals = get_nearest_type_subqualifiers (type, cv_quals,
+						  cv_qual_mask);
+      mod_type_die = modified_type_die (type, sub_quals, context_die);
+
+      for (i = 0; i < sizeof (qual_info) / sizeof (qual_info[0]); i++)
+	if (qual_info[i].q & cv_quals & ~sub_quals)
+	  {
+	    dw_die_ref d = new_die (qual_info[i].t, mod_scope, type);
+	    if (mod_type_die)
+	      add_AT_die_ref (d, DW_AT_type, mod_type_die);
+	    mod_type_die = d;
+	  }
     }
   else if (use_upc_dwarf2_extensions
            && (cv_quals & TYPE_QUAL_UPC_SHARED))
@@ -17490,7 +17523,7 @@ gen_entry_point_die (tree decl, dw_die_ref context_die)
 			  TYPE_UNQUALIFIED, context_die);
     }
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, decl_die);
   else
     add_AT_lbl_id (decl_die, DW_AT_low_pc, decl_start_label (decl));
@@ -17672,7 +17705,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       else if (emit_name_p)
 	add_name_and_src_coords_attributes (parm_die, node);
       if (origin == NULL
-	  || (! DECL_ABSTRACT (node_or_origin)
+	  || (! DECL_ABSTRACT_P (node_or_origin)
 	      && variably_modified_type_p (TREE_TYPE (node_or_origin),
 					   decl_function_context
 							    (node_or_origin))))
@@ -17691,7 +17724,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
-      if (! DECL_ABSTRACT (node_or_origin))
+      if (! DECL_ABSTRACT_P (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
 					       node == NULL, DW_AT_location);
 
@@ -17976,7 +18009,7 @@ set_block_abstract_flags (tree stmt, int setting)
 }
 
 /* Given a pointer to some ..._DECL node, and a boolean value to set the
-   "abstract" flags to, set that value into the DECL_ABSTRACT flag for the
+   "abstract" flags to, set that value into the DECL_ABSTRACT_P flag for the
    given decl, and (in the case where the decl is a FUNCTION_DECL) also
    set the abstract flags for all of the parameters, local vars, local
    blocks and sub-blocks (recursively) to the same setting.  */
@@ -17984,13 +18017,13 @@ set_block_abstract_flags (tree stmt, int setting)
 static void
 set_decl_abstract_flags (tree decl, int setting)
 {
-  DECL_ABSTRACT (decl) = setting;
+  DECL_ABSTRACT_P (decl) = setting;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree arg;
 
       for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
-	DECL_ABSTRACT (arg) = setting;
+	DECL_ABSTRACT_P (arg) = setting;
       if (DECL_INITIAL (decl) != NULL_TREE
 	  && DECL_INITIAL (decl) != error_mark_node)
 	set_block_abstract_flags (DECL_INITIAL (decl), setting);
@@ -18035,7 +18068,7 @@ dwarf2out_abstract_function (tree decl)
   tail_call_site_count = -1;
 
   /* Be sure we've emitted the in-class declaration DIE (if any) first, so
-     we don't get confused by DECL_ABSTRACT.  */
+     we don't get confused by DECL_ABSTRACT_P.  */
   if (debug_info_level > DINFO_LEVEL_TERSE)
     {
       context = decl_class_context (decl);
@@ -18048,7 +18081,7 @@ dwarf2out_abstract_function (tree decl)
   save_fn = current_function_decl;
   current_function_decl = decl;
 
-  was_abstract = DECL_ABSTRACT (decl);
+  was_abstract = DECL_ABSTRACT_P (decl);
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
   if (! was_abstract)
@@ -18184,7 +18217,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
   premark_used_types (DECL_STRUCT_FUNCTION (decl));
 
-  /* It is possible to have both DECL_ABSTRACT and DECLARATION be true if we
+  /* It is possible to have both DECL_ABSTRACT_P and DECLARATION be true if we
      started to generate the abstract instance of an inline, decided to output
      its containing class, and proceeded to emit the declaration of the inline
      from the member list for the class.  If so, DECLARATION takes priority;
@@ -18329,7 +18362,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  equate_decl_number_to_die (decl, subr_die);
 	}
     }
-  else if (DECL_ABSTRACT (decl))
+  else if (DECL_ABSTRACT_P (decl))
     {
       if (DECL_DECLARED_INLINE_P (decl))
 	{
@@ -18963,7 +18996,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
      static variable, so we must test for the DW_AT_declaration flag.
 
      ??? Loop unrolling/reorder_blocks should perhaps be rewritten to
-     copy decls and set the DECL_ABSTRACT flag on them instead of
+     copy decls and set the DECL_ABSTRACT_P flag on them instead of
      sharing them.
 
      ??? Duplicated blocks have been rewritten to use .debug_ranges.
@@ -18998,7 +19031,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 
   if ((origin == NULL && !specialization_p)
       || (origin != NULL
-	  && !DECL_ABSTRACT (decl_or_origin)
+	  && !DECL_ABSTRACT_P (decl_or_origin)
 	  && variably_modified_type_p (TREE_TYPE (decl_or_origin),
 				       decl_function_context
 							(decl_or_origin))))
@@ -19027,11 +19060,11 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (declaration)
     add_AT_flag (var_die, DW_AT_declaration, 1);
 
-  if (decl && (DECL_ABSTRACT (decl) || declaration || old_die == NULL))
+  if (decl && (DECL_ABSTRACT_P (decl) || declaration || old_die == NULL))
     equate_decl_number_to_die (decl, var_die);
 
   if (! declaration
-      && (! DECL_ABSTRACT (decl_or_origin)
+      && (! DECL_ABSTRACT_P (decl_or_origin)
 	  /* Local static vars are shared between all clones/inlines,
 	     so emit DW_AT_location on the abstract DIE if DECL_RTL is
 	     already set.  */
@@ -19087,7 +19120,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
   else
     add_name_and_src_coords_attributes (lbl_die, decl);
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, lbl_die);
   else
     {
@@ -19865,7 +19898,7 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
       add_accessibility_attribute (type_die, decl);
     }
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, type_die);
 
   if (get_AT (type_die, DW_AT_name))
@@ -20597,7 +20630,7 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
       else if (cgraph_function_possibly_inlined_p (decl)
-	       && ! DECL_ABSTRACT (decl)
+	       && ! DECL_ABSTRACT_P (decl)
 	       && ! class_or_namespace_scope_p (context_die)
 	       /* dwarf2out_abstract_function won't emit a die if this is just
 		  a declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
@@ -20986,7 +21019,7 @@ dwarf2out_decl (tree decl)
 	 where the inlined function is output in a different LTRANS unit
 	 or not at all.  */
       if (DECL_INITIAL (decl) == NULL_TREE
-	  && ! DECL_ABSTRACT (decl))
+	  && ! DECL_ABSTRACT_P (decl))
 	return;
 
       /* If we're a nested function, initially use a parent of NULL; if we're

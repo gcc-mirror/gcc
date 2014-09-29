@@ -32,9 +32,13 @@
 # define SANITIZER_SUPPORTS_WEAK_HOOKS 0
 #endif
 
-// If set, the tool will install its own SEGV signal handler.
-#ifndef SANITIZER_NEEDS_SEGV
-# define SANITIZER_NEEDS_SEGV 1
+// We can use .preinit_array section on Linux to call sanitizer initialization
+// functions very early in the process startup (unless PIC macro is defined).
+// FIXME: do we have anything like this on Mac?
+#if SANITIZER_LINUX && !SANITIZER_ANDROID && !defined(PIC)
+# define SANITIZER_CAN_USE_PREINIT_ARRAY 1
+#else
+# define SANITIZER_CAN_USE_PREINIT_ARRAY 0
 #endif
 
 // GCC does not understand __has_feature

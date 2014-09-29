@@ -277,91 +277,7 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   VAR11 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
   VAR1 (T, N, MAP, L)
 
-/* BUILTIN_<ITERATOR> macros should expand to cover the same range of
-   modes as is given for each define_mode_iterator in
-   config/aarch64/iterators.md.  */
-
-#define BUILTIN_DX(T, N, MAP) \
-  VAR2 (T, N, MAP, di, df)
-#define BUILTIN_GPF(T, N, MAP) \
-  VAR2 (T, N, MAP, sf, df)
-#define BUILTIN_SDQ_I(T, N, MAP) \
-  VAR4 (T, N, MAP, qi, hi, si, di)
-#define BUILTIN_SD_HSI(T, N, MAP) \
-  VAR2 (T, N, MAP, hi, si)
-#define BUILTIN_V2F(T, N, MAP) \
-  VAR2 (T, N, MAP, v2sf, v2df)
-#define BUILTIN_VALL(T, N, MAP) \
-  VAR10 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
-	 v4si, v2di, v2sf, v4sf, v2df)
-#define BUILTIN_VALLDI(T, N, MAP) \
-  VAR11 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
-	 v4si, v2di, v2sf, v4sf, v2df, di)
-#define BUILTIN_VALLDIF(T, N, MAP) \
-  VAR12 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
-	 v4si, v2di, v2sf, v4sf, v2df, di, df)
-#define BUILTIN_VB(T, N, MAP) \
-  VAR2 (T, N, MAP, v8qi, v16qi)
-#define BUILTIN_VD1(T, N, MAP) \
-  VAR5 (T, N, MAP, v8qi, v4hi, v2si, v2sf, v1df)
-#define BUILTIN_VDC(T, N, MAP) \
-  VAR6 (T, N, MAP, v8qi, v4hi, v2si, v2sf, di, df)
-#define BUILTIN_VDIC(T, N, MAP) \
-  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
-#define BUILTIN_VDN(T, N, MAP) \
-  VAR3 (T, N, MAP, v4hi, v2si, di)
-#define BUILTIN_VDQ(T, N, MAP) \
-  VAR7 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
-#define BUILTIN_VDQF(T, N, MAP) \
-  VAR3 (T, N, MAP, v2sf, v4sf, v2df)
-#define BUILTIN_VDQF_DF(T, N, MAP) \
-  VAR4 (T, N, MAP, v2sf, v4sf, v2df, df)
-#define BUILTIN_VDQH(T, N, MAP) \
-  VAR2 (T, N, MAP, v4hi, v8hi)
-#define BUILTIN_VDQHS(T, N, MAP) \
-  VAR4 (T, N, MAP, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQIF(T, N, MAP) \
-  VAR9 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2sf, v4sf, v2df)
-#define BUILTIN_VDQM(T, N, MAP) \
-  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQV(T, N, MAP) \
-  VAR5 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v4si)
-#define BUILTIN_VDQQH(T, N, MAP) \
-  VAR4 (T, N, MAP, v8qi, v16qi, v4hi, v8hi)
-#define BUILTIN_VDQ_BHSI(T, N, MAP) \
-  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQ_I(T, N, MAP) \
-  VAR7 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
-#define BUILTIN_VDW(T, N, MAP) \
-  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
-#define BUILTIN_VD_BHSI(T, N, MAP) \
-  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
-#define BUILTIN_VD_HSI(T, N, MAP) \
-  VAR2 (T, N, MAP, v4hi, v2si)
-#define BUILTIN_VQ(T, N, MAP) \
-  VAR6 (T, N, MAP, v16qi, v8hi, v4si, v2di, v4sf, v2df)
-#define BUILTIN_VQN(T, N, MAP) \
-  VAR3 (T, N, MAP, v8hi, v4si, v2di)
-#define BUILTIN_VQW(T, N, MAP) \
-  VAR3 (T, N, MAP, v16qi, v8hi, v4si)
-#define BUILTIN_VQ_HSI(T, N, MAP) \
-  VAR2 (T, N, MAP, v8hi, v4si)
-#define BUILTIN_VQ_S(T, N, MAP) \
-  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VSDQ_HSI(T, N, MAP) \
-  VAR6 (T, N, MAP, v4hi, v8hi, v2si, v4si, hi, si)
-#define BUILTIN_VSDQ_I(T, N, MAP) \
-  VAR11 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si, di)
-#define BUILTIN_VSDQ_I_BHSI(T, N, MAP) \
-  VAR10 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si)
-#define BUILTIN_VSDQ_I_DI(T, N, MAP) \
-  VAR8 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, di)
-#define BUILTIN_VSD_HSI(T, N, MAP) \
-  VAR4 (T, N, MAP, v4hi, v2si, hi, si)
-#define BUILTIN_VSQN_HSDI(T, N, MAP) \
-  VAR6 (T, N, MAP, v8hi, v4si, v2di, hi, si, di)
-#define BUILTIN_VSTRUCT(T, N, MAP) \
-  VAR3 (T, N, MAP, oi, ci, xi)
+#include "aarch64-builtin-iterators.h"
 
 static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #include "aarch64-simd-builtins.def"
@@ -1446,40 +1362,6 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #undef AARCH64_FIND_FRINT_VARIANT
-#undef BUILTIN_DX
-#undef BUILTIN_SDQ_I
-#undef BUILTIN_SD_HSI
-#undef BUILTIN_V2F
-#undef BUILTIN_VALL
-#undef BUILTIN_VB
-#undef BUILTIN_VD1
-#undef BUILTIN_VDC
-#undef BUILTIN_VDIC
-#undef BUILTIN_VDN
-#undef BUILTIN_VDQ
-#undef BUILTIN_VDQF
-#undef BUILTIN_VDQH
-#undef BUILTIN_VDQHS
-#undef BUILTIN_VDQIF
-#undef BUILTIN_VDQM
-#undef BUILTIN_VDQV
-#undef BUILTIN_VDQ_BHSI
-#undef BUILTIN_VDQ_I
-#undef BUILTIN_VDW
-#undef BUILTIN_VD_BHSI
-#undef BUILTIN_VD_HSI
-#undef BUILTIN_VQ
-#undef BUILTIN_VQN
-#undef BUILTIN_VQW
-#undef BUILTIN_VQ_HSI
-#undef BUILTIN_VQ_S
-#undef BUILTIN_VSDQ_HSI
-#undef BUILTIN_VSDQ_I
-#undef BUILTIN_VSDQ_I_BHSI
-#undef BUILTIN_VSDQ_I_DI
-#undef BUILTIN_VSD_HSI
-#undef BUILTIN_VSQN_HSDI
-#undef BUILTIN_VSTRUCT
 #undef CF0
 #undef CF1
 #undef CF2

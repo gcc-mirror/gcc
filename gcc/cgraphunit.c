@@ -545,22 +545,6 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
     DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
 }
 
-/* Output all asm statements we have stored up to be output.  */
-
-void
-symbol_table::output_asm_statements (void)
-{
-  asm_node *can;
-
-  if (seen_error ())
-    return;
-
-  for (can = first_asm_symbol (); can; can = can->next)
-    assemble_asm (can->asm_str);
-
-  clear_asm_symbols ();
-}
-
 /* Analyze the function scheduled to be output.  */
 void
 cgraph_node::analyze (void)
@@ -657,7 +641,7 @@ symbol_table::process_same_body_aliases (void)
 /* Process attributes common for vars and functions.  */
 
 static void
-process_common_attributes (tree decl)
+process_common_attributes (symtab_node *node, tree decl)
 {
   tree weakref = lookup_attribute ("weakref", DECL_ATTRIBUTES (decl));
 
@@ -670,6 +654,9 @@ process_common_attributes (tree decl)
       DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						 DECL_ATTRIBUTES (decl));
     }
+
+  if (lookup_attribute ("no_reorder", DECL_ATTRIBUTES (decl)))
+    node->no_reorder = 1;
 }
 
 /* Look for externally_visible and used attributes and mark cgraph nodes
@@ -734,7 +721,7 @@ process_function_and_variable_attributes (cgraph_node *first,
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		    "always_inline function might not be inlinable");
      
-      process_common_attributes (decl);
+      process_common_attributes (node, decl);
     }
   for (vnode = symtab->first_variable (); vnode != first_var;
        vnode = symtab->next_variable (vnode))
@@ -763,7 +750,7 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						      DECL_ATTRIBUTES (decl));
 	}
-      process_common_attributes (decl);
+      process_common_attributes (vnode, decl);
     }
 }
 
@@ -785,8 +772,10 @@ varpool_node::finalize_decl (tree decl)
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
 	 optimizing and when not doing toplevel reoder.  */
-      || (!flag_toplevel_reorder && !DECL_COMDAT (node->decl)
-	  && !DECL_ARTIFICIAL (node->decl)))
+      || node->no_reorder
+      || ((!flag_toplevel_reorder
+          && !DECL_COMDAT (node->decl)
+	   && !DECL_ARTIFICIAL (node->decl))))
     node->force_output = true;
 
   if (symtab->state == CONSTRUCTION
@@ -1922,10 +1911,11 @@ struct cgraph_order_sort
    according to their order fields, which is the order in which they
    appeared in the file.  This implements -fno-toplevel-reorder.  In
    this mode we may output functions and variables which don't really
-   need to be output.  */
+   need to be output.
+   When NO_REORDER is true only do this for symbols marked no reorder. */
 
 static void
-output_in_order (void)
+output_in_order (bool no_reorder)
 {
   int max;
   cgraph_order_sort *nodes;
@@ -1940,6 +1930,8 @@ output_in_order (void)
     {
       if (pf->process && !pf->thunk.thunk_p && !pf->alias)
 	{
+	  if (no_reorder && !pf->no_reorder)
+	    continue;
 	  i = pf->order;
 	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
 	  nodes[i].kind = ORDER_FUNCTION;
@@ -1950,6 +1942,8 @@ output_in_order (void)
   FOR_EACH_DEFINED_VARIABLE (pv)
     if (!DECL_EXTERNAL (pv->decl))
       {
+	if (no_reorder && !pv->no_reorder)
+	    continue;
 	i = pv->order;
 	gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
 	nodes[i].kind = ORDER_VAR;
@@ -2203,11 +2197,12 @@ symbol_table::compile (void)
   state = EXPANSION;
 
   if (!flag_toplevel_reorder)
-    output_in_order ();
+    output_in_order (false);
   else
     {
-      output_asm_statements ();
-
+      /* Output first asm statements and anything ordered. The process
+         flag is cleared for these nodes, so we skip them later.  */
+      output_in_order (true);
       expand_all_functions ();
       output_variables ();
     }
@@ -2299,8 +2294,9 @@ cgraph_node::create_wrapper (cgraph_node *target)
     /* Preserve DECL_RESULT so we get right by reference flag.  */
     tree decl_result = DECL_RESULT (decl);
 
-    /* Remove the function's body.  */
-    release_body ();
+    /* Remove the function's body but keep arguments to be reused
+       for thunk.  */
+    release_body (true);
     reset ();
 
     DECL_RESULT (decl) = decl_result;

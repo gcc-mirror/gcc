@@ -640,6 +640,9 @@ function_and_variable_visibility (bool whole_program)
           vnode->externally_visible = false;
 	  vnode->forced_by_abi = false;
 	}
+      if (lookup_attribute ("no_reorder",
+			    DECL_ATTRIBUTES (vnode->decl)))
+	vnode->no_reorder = 1;
       if (!vnode->externally_visible
 	  && !vnode->weakref)
 	{

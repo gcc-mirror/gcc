@@ -1051,6 +1051,30 @@ c_cpp_builtins (cpp_reader *pfile)
 	  else
 	    gcc_unreachable ();
 	  builtin_define_with_value (macro_name, suffix, 0);
+	  bool excess_precision = false;
+	  if (TARGET_FLT_EVAL_METHOD != 0
+	      && mode != TYPE_MODE (long_double_type_node)
+	      && (mode == TYPE_MODE (float_type_node)
+		  || mode == TYPE_MODE (double_type_node)))
+	    switch (TARGET_FLT_EVAL_METHOD)
+	      {
+	      case -1:
+	      case 2:
+		excess_precision = true;
+		break;
+
+	      case 1:
+		excess_precision = mode == TYPE_MODE (float_type_node);
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
+	  macro_name = (char *) alloca (strlen (name)
+					+ sizeof ("__LIBGCC__EXCESS_"
+						  "PRECISION__"));
+	  sprintf (macro_name, "__LIBGCC_%s_EXCESS_PRECISION__", name);
+	  builtin_define_with_int_value (macro_name, excess_precision);
 	}
 
       /* For libgcc crtstuff.c and libgcc2.c.  */

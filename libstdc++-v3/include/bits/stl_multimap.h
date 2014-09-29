@@ -292,28 +292,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
 #if __cplusplus >= 201103L
-      /**
-       *  @brief  %Multimap move assignment operator.
-       *  @param  __x  A %multimap of identical element and allocator types.
-       *
-       *  The contents of @a __x are moved into this multimap (without copying
-       *  if the allocators compare equal or get moved on assignment).
-       *  Afterwards @a __x is in a valid, but unspecified state.
-       */
+      /// Move assignment operator.
       multimap&
-      operator=(multimap&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
-      {
-	if (!_M_t._M_move_assign(__x._M_t))
-	  {
-	    // The rvalue's allocator cannot be moved and is not equal,
-	    // so we need to individually move each element.
-	    clear();
-	    insert(std::__make_move_if_noexcept_iterator(__x.begin()),
-		   std::__make_move_if_noexcept_iterator(__x.end()));
-	    __x.clear();
-	  }
-	return *this;
-      }
+      operator=(multimap&&) = default;
 
       /**
        *  @brief  %Multimap list assignment operator.
@@ -329,8 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       multimap&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l.begin(), __l.end());
+	_M_t._M_assign_equal(__l.begin(), __l.end());
 	return *this;
       }
 #endif

@@ -608,13 +608,13 @@ convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
 #define APPLY_CONVERSION(CONVERTER, FROM, FLEN, TO) \
    CONVERTER.func (CONVERTER.cd, FROM, FLEN, TO)
 
-struct conversion
+struct cpp_conversion
 {
   const char *pair;
   convert_f func;
   iconv_t fake_cd;
 };
-static const struct conversion conversion_tab[] = {
+static const struct cpp_conversion conversion_tab[] = {
   { "UTF-8/UTF-32LE", convert_utf8_utf32, (iconv_t)0 },
   { "UTF-8/UTF-32BE", convert_utf8_utf32, (iconv_t)1 },
   { "UTF-8/UTF-16LE", convert_utf8_utf16, (iconv_t)0 },

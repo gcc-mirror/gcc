@@ -4849,6 +4849,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   new_node = cgraph_node::create_same_body_alias (new_decl, info->new_decl);
   new_node->tm_clone = true;
   new_node->externally_visible = info->old_node->externally_visible;
+  new_node->no_reorder = info->old_node->no_reorder;
   /* ?? Do not traverse aliases here.  */
   get_cg_data (&node, false)->clone = new_node;
 

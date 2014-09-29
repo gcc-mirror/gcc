@@ -11,7 +11,7 @@ public:
 bool Klass::dostuff()
 {
   auto f = []() -> bool {
-    if (local & 1) { return true; } // { dg-error "not captured" }
+    if (local & 1) { return true; } // { dg-error "not captured|non-static" }
     return false;
   };
 }

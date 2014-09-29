@@ -1399,15 +1399,6 @@ struct mips_cpu_info {
    support long double, we also want a 128-bit integer type.  */
 #define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE
 
-#ifdef IN_LIBGCC2
-#if ((defined _ABIN32 && _MIPS_SIM == _ABIN32) \
-     || (defined _ABI64 && _MIPS_SIM == _ABI64))
-#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-# else
-#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-# endif
-#endif
-
 /* Width in bits of a pointer.  */
 #ifndef POINTER_SIZE
 #define POINTER_SIZE ((TARGET_LONG64 && TARGET_64BIT) ? 64 : 32)

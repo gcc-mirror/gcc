@@ -10255,8 +10255,10 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 
 	  if (CONST_INT_P (XEXP (varop, 1))
 	      /* We can't do this if we have (ashiftrt (xor))  and the
-		 constant has its sign bit set in shift_mode.  */
+		 constant has its sign bit set in shift_mode with shift_mode
+		 wider than result_mode.  */
 	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
+		   && result_mode != shift_mode
 		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
 					      shift_mode))
 	      && (new_rtx = simplify_const_binary_operation
@@ -10273,10 +10275,12 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 
 	  /* If we can't do that, try to simplify the shift in each arm of the
 	     logical expression, make a new logical expression, and apply
-	     the inverse distributive law.  This also can't be done
-	     for some (ashiftrt (xor)).  */
+	     the inverse distributive law.  This also can't be done for
+	     (ashiftrt (xor)) where we've widened the shift and the constant
+	     changes the sign bit.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
 	     && !(code == ASHIFTRT && GET_CODE (varop) == XOR
+		  && result_mode != shift_mode
 		  && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
 					     shift_mode)))
 	    {

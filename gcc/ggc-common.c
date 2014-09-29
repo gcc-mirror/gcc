@@ -904,7 +904,7 @@ init_ggc_heuristics (void)
 }
 
 /* Datastructure used to store per-call-site statistics.  */
-struct loc_descriptor
+struct ggc_loc_descriptor
 {
   const char *file;
   int line;
@@ -918,42 +918,42 @@ struct loc_descriptor
 
 /* Hash table helper.  */
 
-struct loc_desc_hasher : typed_noop_remove <loc_descriptor>
+struct ggc_loc_desc_hasher : typed_noop_remove <ggc_loc_descriptor>
 {
-  typedef loc_descriptor value_type;
-  typedef loc_descriptor compare_type;
+  typedef ggc_loc_descriptor value_type;
+  typedef ggc_loc_descriptor compare_type;
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
 };
 
 inline hashval_t
-loc_desc_hasher::hash (const value_type *d)
+ggc_loc_desc_hasher::hash (const value_type *d)
 {
   return htab_hash_pointer (d->function) | d->line;
 }
 
 inline bool
-loc_desc_hasher::equal (const value_type *d, const compare_type *d2)
+ggc_loc_desc_hasher::equal (const value_type *d, const compare_type *d2)
 {
   return (d->file == d2->file && d->line == d2->line
 	  && d->function == d2->function);
 }
 
 /* Hashtable used for statistics.  */
-static hash_table<loc_desc_hasher> *loc_hash;
+static hash_table<ggc_loc_desc_hasher> *loc_hash;
 
-struct ptr_hash_entry
+struct ggc_ptr_hash_entry
 {
   void *ptr;
-  struct loc_descriptor *loc;
+  struct ggc_loc_descriptor *loc;
   size_t size;
 };
 
 /* Helper for ptr_hash table.  */
 
-struct ptr_hash_hasher : typed_noop_remove <ptr_hash_entry>
+struct ptr_hash_hasher : typed_noop_remove <ggc_ptr_hash_entry>
 {
-  typedef ptr_hash_entry value_type;
+  typedef ggc_ptr_hash_entry value_type;
   typedef void compare_type;
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
@@ -975,22 +975,22 @@ ptr_hash_hasher::equal (const value_type *p, const compare_type *p2)
 static hash_table<ptr_hash_hasher> *ptr_hash;
 
 /* Return descriptor for given call site, create new one if needed.  */
-static struct loc_descriptor *
+static struct ggc_loc_descriptor *
 make_loc_descriptor (const char *name, int line, const char *function)
 {
-  struct loc_descriptor loc;
-  struct loc_descriptor **slot;
+  struct ggc_loc_descriptor loc;
+  struct ggc_loc_descriptor **slot;
 
   loc.file = name;
   loc.line = line;
   loc.function = function;
   if (!loc_hash)
-    loc_hash = new hash_table<loc_desc_hasher> (10);
+    loc_hash = new hash_table<ggc_loc_desc_hasher> (10);
 
   slot = loc_hash->find_slot (&loc, INSERT);
   if (*slot)
     return *slot;
-  *slot = XCNEW (struct loc_descriptor);
+  *slot = XCNEW (struct ggc_loc_descriptor);
   (*slot)->file = name;
   (*slot)->line = line;
   (*slot)->function = function;
@@ -1002,9 +1002,9 @@ void
 ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 		     const char *name, int line, const char *function)
 {
-  struct loc_descriptor *loc = make_loc_descriptor (name, line, function);
-  struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
-  ptr_hash_entry **slot;
+  struct ggc_loc_descriptor *loc = make_loc_descriptor (name, line, function);
+  struct ggc_ptr_hash_entry *p = XNEW (struct ggc_ptr_hash_entry);
+  ggc_ptr_hash_entry **slot;
 
   p->ptr = ptr;
   p->loc = loc;
@@ -1023,9 +1023,9 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 /* Helper function for prune_overhead_list.  See if SLOT is still marked and
    remove it from hashtable if it is not.  */
 int
-ggc_prune_ptr (ptr_hash_entry **slot, void *b ATTRIBUTE_UNUSED)
+ggc_prune_ptr (ggc_ptr_hash_entry **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct ptr_hash_entry *p = *slot;
+  struct ggc_ptr_hash_entry *p = *slot;
   if (!ggc_marked_p (p->ptr))
     {
       p->loc->collected += p->size;
@@ -1047,15 +1047,15 @@ ggc_prune_overhead_list (void)
 void
 ggc_free_overhead (void *ptr)
 {
-  ptr_hash_entry **slot
+  ggc_ptr_hash_entry **slot
     = ptr_hash->find_slot_with_hash (ptr, htab_hash_pointer (ptr), NO_INSERT);
-  struct ptr_hash_entry *p;
+  struct ggc_ptr_hash_entry *p;
   /* The pointer might be not found if a PCH read happened between allocation
      and ggc_free () call.  FIXME: account memory properly in the presence of
      PCH. */
   if (!slot)
       return;
-  p = (struct ptr_hash_entry *) *slot;
+  p = (struct ggc_ptr_hash_entry *) *slot;
   p->loc->freed += p->size;
   ptr_hash->clear_slot (slot);
   free (p);
@@ -1065,10 +1065,10 @@ ggc_free_overhead (void *ptr)
 static int
 final_cmp_statistic (const void *loc1, const void *loc2)
 {
-  const struct loc_descriptor *const l1 =
-    *(const struct loc_descriptor *const *) loc1;
-  const struct loc_descriptor *const l2 =
-    *(const struct loc_descriptor *const *) loc2;
+  const struct ggc_loc_descriptor *const l1 =
+    *(const struct ggc_loc_descriptor *const *) loc1;
+  const struct ggc_loc_descriptor *const l2 =
+    *(const struct ggc_loc_descriptor *const *) loc2;
   long diff;
   diff = ((long)(l1->allocated + l1->overhead - l1->freed) -
 	  (l2->allocated + l2->overhead - l2->freed));
@@ -1079,10 +1079,10 @@ final_cmp_statistic (const void *loc1, const void *loc2)
 static int
 cmp_statistic (const void *loc1, const void *loc2)
 {
-  const struct loc_descriptor *const l1 =
-    *(const struct loc_descriptor *const *) loc1;
-  const struct loc_descriptor *const l2 =
-    *(const struct loc_descriptor *const *) loc2;
+  const struct ggc_loc_descriptor *const l1 =
+    *(const struct ggc_loc_descriptor *const *) loc1;
+  const struct ggc_loc_descriptor *const l2 =
+    *(const struct ggc_loc_descriptor *const *) loc2;
   long diff;
 
   diff = ((long)(l1->allocated + l1->overhead - l1->freed - l1->collected) -
@@ -1095,9 +1095,9 @@ cmp_statistic (const void *loc1, const void *loc2)
 }
 
 /* Collect array of the descriptors from hashtable.  */
-static struct loc_descriptor **loc_array;
+static struct ggc_loc_descriptor **loc_array;
 int
-ggc_add_statistics (loc_descriptor **slot, int *n)
+ggc_add_statistics (ggc_loc_descriptor **slot, int *n)
 {
   loc_array[*n] = *slot;
   (*n)++;
@@ -1120,7 +1120,7 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  loc_array = XCNEWVEC (struct loc_descriptor *,
+  loc_array = XCNEWVEC (struct ggc_loc_descriptor *,
 			loc_hash->elements_with_deleted ());
   fprintf (stderr, "-------------------------------------------------------\n");
   fprintf (stderr, "\n%-48s %10s       %10s       %10s       %10s       %10s\n",
@@ -1131,7 +1131,7 @@ dump_ggc_loc_statistics (bool final)
 	 final ? final_cmp_statistic : cmp_statistic);
   for (i = 0; i < nentries; i++)
     {
-      struct loc_descriptor *d = loc_array[i];
+      struct ggc_loc_descriptor *d = loc_array[i];
       allocated += d->allocated;
       times += d->times;
       freed += d->freed;
@@ -1140,7 +1140,7 @@ dump_ggc_loc_statistics (bool final)
     }
   for (i = 0; i < nentries; i++)
     {
-      struct loc_descriptor *d = loc_array[i];
+      struct ggc_loc_descriptor *d = loc_array[i];
       if (d->allocated)
 	{
 	  const char *s1 = d->file;

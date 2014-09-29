@@ -406,6 +406,8 @@ public:
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
+  /* Don't reorder to other symbols having this set.  */
+  unsigned no_reorder : 1;
   /* The symbol will be assumed to be used in an invisible way (like
      by an toplevel asm statement).  */
   unsigned force_output : 1;
@@ -915,7 +917,7 @@ public:
      Use this only for functions that are released before being translated to
      target code (i.e. RTL).  Functions that are compiled to RTL and beyond
      are free'd in final.c via free_after_compilation().  */
-  void release_body (void);
+  void release_body (bool keep_arguments = false);
 
   /* cgraph_node is no longer nested function; update cgraph accordingly.  */
   void unnest (void);
@@ -1265,19 +1267,83 @@ struct varpool_node_set_iterator
   unsigned index;
 };
 
+/* Context of polymorphic call. It represent information about the type of
+   instance that may reach the call.  This is used by ipa-devirt walkers of the
+   type inheritance graph.  */
+
+class GTY(()) ipa_polymorphic_call_context {
+public:
+  /* The called object appears in an object of type OUTER_TYPE
+     at offset OFFSET.  When information is not 100% reliable, we
+     use SPECULATIVE_OUTER_TYPE and SPECULATIVE_OFFSET. */
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT speculative_offset;
+  tree outer_type;
+  tree speculative_outer_type;
+  /* True if outer object may be in construction or destruction.  */
+  bool maybe_in_construction;
+  /* True if outer object may be of derived type.  */
+  bool maybe_derived_type;
+  /* True if speculative outer object may be of derived type.  We always
+     speculate that construction does not happen.  */
+  bool speculative_maybe_derived_type;
+  /* True if the context is invalid and all calls should be redirected
+     to BUILTIN_UNREACHABLE.  */
+  bool invalid;
+
+  /* Build empty "I know nothing" context.  */
+  ipa_polymorphic_call_context ();
+  /* Build polymorphic call context for indirect call E.  */
+  ipa_polymorphic_call_context (cgraph_edge *e);
+  /* Build polymorphic call context for IP invariant CST.
+     If specified, OTR_TYPE specify the type of polymorphic call
+     that takes CST+OFFSET as a prameter.  */
+  ipa_polymorphic_call_context (tree cst, tree otr_type = NULL,
+				HOST_WIDE_INT offset = 0);
+  /* Build context for pointer REF contained in FNDECL at statement STMT.
+     if INSTANCE is non-NULL, return pointer to the object described by
+     the context.  */
+  ipa_polymorphic_call_context (tree fndecl, tree ref, gimple stmt,
+				tree *instance = NULL);
+
+  /* Look for vtable stores or constructor calls to work out dynamic type
+     of memory location.  */
+  bool get_dynamic_type (tree, tree, tree, gimple);
+
+  /* Make context non-speculative.  */
+  void clear_speculation ();
+
+  /* Walk container types and modify context to point to actual class
+     containing EXPECTED_TYPE as base class.  */
+  bool restrict_to_inner_class (tree expected_type);
+
+  /* Dump human readable context to F.  */
+  void dump (FILE *f) const;
+  void DEBUG_FUNCTION debug () const;
+
+  /* LTO streaming.  */
+  void stream_out (struct output_block *) const;
+  void stream_in (struct lto_input_block *, struct data_in *data_in);
+
+private:
+  void set_by_decl (tree, HOST_WIDE_INT);
+  bool set_by_invariant (tree, tree, HOST_WIDE_INT);
+  void clear_outer_type (tree otr_type = NULL);
+};
+
 /* Structure containing additional information about an indirect call.  */
 
 struct GTY(()) cgraph_indirect_call_info
 {
-  /* When polymorphic is set, this field contains offset where the object which
-     was actually used in the polymorphic resides within a larger structure.
-     If agg_contents is set, the field contains the offset within the aggregate
-     from which the address to call was loaded.  */
-  HOST_WIDE_INT offset, speculative_offset;
+  /* When agg_content is set, an offset where the call pointer is located
+     within the aggregate.  */
+  HOST_WIDE_INT offset;
+  /* Context of the polymorphic call; use only when POLYMORPHIC flag is set.  */
+  ipa_polymorphic_call_context context;
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
-  tree otr_type, outer_type, speculative_outer_type;
+  tree otr_type;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -1298,9 +1364,6 @@ struct GTY(()) cgraph_indirect_call_info
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;
-  unsigned int maybe_in_construction : 1;
-  unsigned int maybe_derived_type : 1;
-  unsigned int speculative_maybe_derived_type : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
@@ -1707,9 +1770,6 @@ public:
   /* Output all variables enqueued to be assembled.  */
   bool output_variables (void);
 
-  /* Output all asm statements we have stored up to be output.  */
-  void output_asm_statements (void);
-
   /* Weakrefs may be associated to external decls and thus not output
      at expansion time.  Emit all necessary aliases.  */
   void output_weakrefs (void);
@@ -1976,7 +2036,7 @@ symtab_node::real_symbol_p (void)
 {
   cgraph_node *cnode;
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return false;
   if (!is_a <cgraph_node *> (this))
     return true;
@@ -2533,4 +2593,45 @@ inline symtab_node * symtab_node::get_create (tree node)
     return cgraph_node::get_create (node);
 }
 
+/* Build polymorphic call context for indirect call E.  */
+
+inline
+ipa_polymorphic_call_context::ipa_polymorphic_call_context (cgraph_edge *e)
+{
+  gcc_checking_assert (e->indirect_info->polymorphic);
+  *this = e->indirect_info->context;
+}
+
+/* Build empty "I know nothing" context.  */
+
+inline
+ipa_polymorphic_call_context::ipa_polymorphic_call_context ()
+{
+  clear_speculation ();
+  clear_outer_type ();
+  invalid = false;
+}
+
+/* Make context non-speculative.  */
+
+inline void
+ipa_polymorphic_call_context::clear_speculation ()
+{
+  speculative_outer_type = NULL;
+  speculative_offset = 0;
+  speculative_maybe_derived_type = false;
+}
+
+/* Produce context specifying all derrived types of OTR_TYPE.
+   If OTR_TYPE is NULL or type of the OBJ_TYPE_REF, the context is set
+   to dummy "I know nothing" setting.  */
+
+inline void
+ipa_polymorphic_call_context::clear_outer_type (tree otr_type)
+{
+  outer_type = otr_type ? TYPE_MAIN_VARIANT (otr_type) : NULL;
+  offset = 0;
+  maybe_derived_type = true;
+  maybe_in_construction = true;
+}
 #endif  /* GCC_CGRAPH_H  */

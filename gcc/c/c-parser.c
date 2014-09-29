@@ -133,11 +133,6 @@ c_parse_init (void)
    C++).  It would then be possible to share more of the C and C++
    lexer code, if desired.  */
 
-/* The following local token type is used.  */
-
-/* A keyword.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
 /* More information about the type of a CPP_NAME token.  */
 typedef enum c_id_kind {
   /* An ordinary identifier.  */
@@ -5303,7 +5298,7 @@ c_parser_switch_statement (c_parser *parser)
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);
-  c_finish_case (body);
+  c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
       location_t here = c_parser_peek_token (parser)->location;
@@ -10439,7 +10434,10 @@ c_parser_omp_variable_list (c_parser *parser,
 
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_COLON))
-		    low_bound = c_parser_expression (parser).value;
+		    {
+		      low_bound = c_parser_expression (parser).value;
+		      mark_exp_read (low_bound);
+		    }
 		  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		    length = integer_one_node;
 		  else
@@ -10452,7 +10450,10 @@ c_parser_omp_variable_list (c_parser *parser,
 			  break;
 			}
 		      if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
-			length = c_parser_expression (parser).value;
+			{
+			  length = c_parser_expression (parser).value;
+			  mark_exp_read (length);
+			}
 		    }
 		  /* Look for the closing `]'.  */
 		  if (!c_parser_require (parser, CPP_CLOSE_SQUARE,

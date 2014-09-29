@@ -1,3 +1,7 @@
+2014-09-22  Tom de Vries  <tom@codesourcery.com>
+
+	* mklog: Add --inline option.
+
 2014-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* dg-extract-results.py (Prog.result_re): Include options in test name.

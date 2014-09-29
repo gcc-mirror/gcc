@@ -32,6 +32,7 @@ tsan_files = \
 	tsan_rtl_mutex.cc \
 	tsan_rtl_report.cc \
 	tsan_rtl_thread.cc \
+	tsan_stack_trace.cc \
 	tsan_stat.cc \
 	tsan_suppressions.cc \
 	tsan_symbolize.cc \

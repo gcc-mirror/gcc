@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "regcprop.h"
+#include "rtl-iter.h"
 
 #ifdef HAVE_simple_return
 
@@ -169,7 +170,9 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 {
   rtx set, src, dest;
   bitmap live_out, live_in, bb_uses, bb_defs;
-  unsigned int i, dregno, end_dregno, sregno, end_sregno;
+  unsigned int i, dregno, end_dregno;
+  unsigned int sregno = FIRST_PSEUDO_REGISTER;
+  unsigned int end_sregno = FIRST_PSEUDO_REGISTER;
   basic_block next_block;
   edge live_edge;
 
@@ -179,7 +182,34 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
     return false;
   src = SET_SRC (set);
   dest = SET_DEST (set);
-  if (!REG_P (dest) || !REG_P (src)
+
+  if (!REG_P (src))
+    {
+      unsigned int reg_num = 0;
+      unsigned int nonconstobj_num = 0;
+      rtx src_inner = NULL_RTX;
+
+      subrtx_var_iterator::array_type array;
+      FOR_EACH_SUBRTX_VAR (iter, array, src, ALL)
+	{
+	  rtx x = *iter;
+	  if (REG_P (x))
+	    {
+	      reg_num++;
+	      src_inner = x;
+	    }
+	  else if (!CONSTANT_P (x) && OBJECT_P (x))
+	    nonconstobj_num++;
+	}
+
+      if (nonconstobj_num > 0
+	  || reg_num > 1)
+	src = NULL_RTX;
+      else if (reg_num == 1)
+	src = src_inner;
+    }
+
+  if (!REG_P (dest) || src == NULL_RTX
       /* STACK or FRAME related adjustment might be part of prologue.
 	 So keep them in the entry block.  */
       || dest == stack_pointer_rtx
@@ -188,10 +218,13 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
     return false;
 
   /* Make sure that the source register isn't defined later in BB.  */
-  sregno = REGNO (src);
-  end_sregno = END_REGNO (src);
-  if (overlaps_hard_reg_set_p (defs, GET_MODE (src), sregno))
-    return false;
+  if (REG_P (src))
+    {
+      sregno = REGNO (src);
+      end_sregno = END_REGNO (src);
+      if (overlaps_hard_reg_set_p (defs, GET_MODE (src), sregno))
+	return false;
+    }
 
   /* Make sure that the destination register isn't referenced later in BB.  */
   dregno = REGNO (dest);
@@ -217,16 +250,21 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       if (!df_live)
 	return false;
 
+      basic_block old_dest = live_edge->dest;
       next_block = split_edge (live_edge);
 
       /* We create a new basic block.  Call df_grow_bb_info to make sure
 	 all data structures are allocated.  */
       df_grow_bb_info (df_live);
-      bitmap_copy (df_get_live_in (next_block), df_get_live_out (bb));
+
+      bitmap_and (df_get_live_in (next_block), df_get_live_out (bb),
+		  df_get_live_in (old_dest));
       df_set_bb_dirty (next_block);
 
       /* We should not split more than once for a function.  */
-      gcc_assert (!(*split_p));
+      if (*split_p)
+	return false;
+
       *split_p = true;
     }
 
@@ -495,7 +533,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
       if (frame_pointer_needed)
 	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     HARD_FRAME_POINTER_REGNUM);
-      if (pic_offset_table_rtx)
+      if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
 	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     PIC_OFFSET_TABLE_REGNUM);
       if (crtl->drap_reg)

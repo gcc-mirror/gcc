@@ -933,7 +933,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
       nalt = 1;
       if (nop < 0)
 	{
-	  /* Its is a special insn like USE or CLOBBER.  We should
+	  /* It is a special insn like USE or CLOBBER.  We should
 	     recognize any regular insn otherwise LRA can do nothing
 	     with this insn.  */
 	  gcc_assert (GET_CODE (PATTERN (insn)) == USE

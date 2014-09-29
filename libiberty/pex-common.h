@@ -104,7 +104,7 @@ struct pex_funcs
   /* Open file NAME for writing.  If BINARY is non-zero, open in
      binary mode.  Return >= 0 on success, -1 on error.  */
   int (*open_write) (struct pex_obj *, const char */* name */,
-                     int /* binary */);
+                     int /* binary */, int /* append */);
   /* Execute a child process.  FLAGS, EXECUTABLE, ARGV, ERR are from
      pex_run.  IN, OUT, ERRDES, TOCLOSE are all descriptors, from
      open_read, open_write, or pipe, or they are one of STDIN_FILE_NO,

@@ -33,7 +33,6 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <sys/times.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -43,6 +42,7 @@
 
 #if !SANITIZER_ANDROID
 #include <sys/mount.h>
+#include <sys/timeb.h>
 #endif
 
 #if SANITIZER_LINUX
@@ -189,13 +189,14 @@ namespace __sanitizer {
   unsigned struct_tms_sz = sizeof(struct tms);
   unsigned struct_sigevent_sz = sizeof(struct sigevent);
   unsigned struct_sched_param_sz = sizeof(struct sched_param);
-  unsigned struct_statfs_sz = sizeof(struct statfs);
+
 
 #if SANITIZER_MAC && !SANITIZER_IOS
   unsigned struct_statfs64_sz = sizeof(struct statfs64);
 #endif // SANITIZER_MAC && !SANITIZER_IOS
 
 #if !SANITIZER_ANDROID
+  unsigned struct_statfs_sz = sizeof(struct statfs);
   unsigned struct_sockaddr_sz = sizeof(struct sockaddr);
   unsigned ucontext_t_sz = sizeof(ucontext_t);
 #endif // !SANITIZER_ANDROID
@@ -287,6 +288,7 @@ namespace __sanitizer {
   int ptrace_setfpregs = PTRACE_SETFPREGS;
   int ptrace_getfpxregs = PTRACE_GETFPXREGS;
   int ptrace_setfpxregs = PTRACE_SETFPXREGS;
+  int ptrace_geteventmsg = PTRACE_GETEVENTMSG;
 #if (defined(PTRACE_GETSIGINFO) && defined(PTRACE_SETSIGINFO)) ||              \
     (defined(PT_GETSIGINFO) && defined(PT_SETSIGINFO))
   int ptrace_getsiginfo = PTRACE_GETSIGINFO;
@@ -396,7 +398,7 @@ namespace __sanitizer {
   unsigned struct_sioc_vif_req_sz = sizeof(struct sioc_vif_req);
 #endif
 
-  unsigned IOCTL_NOT_PRESENT = 0;
+  const unsigned IOCTL_NOT_PRESENT = 0;
 
   unsigned IOCTL_FIOASYNC = FIOASYNC;
   unsigned IOCTL_FIOCLEX = FIOCLEX;
@@ -1056,6 +1058,10 @@ CHECK_SIZE_AND_OFFSET(shmid_ds, shm_nattch);
 
 CHECK_TYPE_SIZE(clock_t);
 
+#if SANITIZER_LINUX
+CHECK_TYPE_SIZE(clockid_t);
+#endif
+
 #if !SANITIZER_ANDROID
 CHECK_TYPE_SIZE(ifaddrs);
 CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_next);
@@ -1086,11 +1092,13 @@ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_data);
 COMPILER_CHECK(sizeof(__sanitizer_mallinfo) == sizeof(struct mallinfo));
 #endif
 
+#if !SANITIZER_ANDROID
 CHECK_TYPE_SIZE(timeb);
 CHECK_SIZE_AND_OFFSET(timeb, time);
 CHECK_SIZE_AND_OFFSET(timeb, millitm);
 CHECK_SIZE_AND_OFFSET(timeb, timezone);
 CHECK_SIZE_AND_OFFSET(timeb, dstflag);
+#endif
 
 CHECK_TYPE_SIZE(passwd);
 CHECK_SIZE_AND_OFFSET(passwd, pw_name);

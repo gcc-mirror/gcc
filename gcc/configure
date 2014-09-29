@@ -18252,7 +18252,11 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
+<<<<<<< .working
 #line 18255 "configure"
+=======
+#line 18052 "configure"
+>>>>>>> .merge-right.r215679
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18358,7 +18362,11 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
+<<<<<<< .working
 #line 18361 "configure"
+=======
+#line 18158 "configure"
+>>>>>>> .merge-right.r215679
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

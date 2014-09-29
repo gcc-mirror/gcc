@@ -1,3 +1,207 @@
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	DR 1339
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* include/bits/stl_uninitialized.h (uninitialized_fill_n): Return
+	an iterator.
+	(__uninitialized_fill_n_a, __uninitialized_default_n_a): Likewise.
+	* include/bits/stl_vector.h (vector::_M_fill_initialize,
+	vector::_M_default_initialize): Use returned iterator.
+	* include/bits/vector.tcc (vector::_M_fill_assign,
+	vector::_M_fill_insert, vector::_M_default_append): Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	16505.cc: Adjust return type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	dr1339.cc: New.
+
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/vector.tcc (vector::_M_fill_assign): Use _M_swap_data.
+
+2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ios/conv/bool_neg.cc: New.
+	* testsuite/27_io/basic_ios/conv/bool.cc: New.
+	* testsuite/27_io/basic_ios/conv/voidptr.cc: New.
+
+	* testsuite/27_io/basic_ios/conv/bool_neg.cc: Add dg-do compile.
+
+2014-09-25  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63199
+	* include/bits/regex.h (basic_regex::basic_regex, basic_regex::assign,
+	basic_regex::imbue, basic_regex::getloc, basic_regex::swap): Add
+	_M_loc for basic_regex.
+	* include/bits/regex_automaton.h: Add _M_traits for _NFA.
+	* include/bits/regex_compiler.h (_Compiler::_M_get_nfa, __compile_nfa):
+	Make _Compiler::_M_nfa heap allocated.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler): Make
+	_Compiler::_M_nfa heap allocated.
+	* include/bits/regex_executor.h (_Executor::_M_is_word):
+	Fix accessing _M_traits.
+	* include/bits/regex_executor.tcc (_Executor::_M_dfs):
+	Fix accessing _M_traits.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	New testcase.
+
+2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Make GLIBCXX_3.4 patterns stricter so the
+	new GLIBCXX_3.4.21 symbols don't match them.
+
+	PR libstdc++/56193
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/bits/basic_ios.h (basic_ios::operator bool): Define.
+	* src/c++98/ios_locale.cc (basic_ios::operator void*): Instantiate.
+
+2014-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/29988
+	* include/bits/stl_tree.h (_Rb_tree_reuse_or_alloc_node<>): New.
+	(_Rb_tree_alloc_node<>): New.
+	(_Rb_tree<>::operator=(_Rb_tree<>&&)): New.
+	(_Rb_tree<>::_M_assign_unique): New.
+	(_Rb_tree<>::_M_assign_equal): New.
+	(_Rb_tree<>): Adapt to reuse allocated nodes as much as possible.
+	* include/bits/stl_map.h
+	(std::map<>::operator=(std::map<>&&)): Default implementation.
+	(std::map<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_unique.
+	* include/bits/stl_multimap.h
+	(std::multimap<>::operator=(std::multimap<>&&)): Default implementation.
+	(std::multimap<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_equal.
+	* include/bits/stl_set.h
+	(std::set<>::operator=(std::set<>&&)): Default implementation.
+	(std::set<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_unique.
+	* include/bits/stl_multiset.h
+	(std::multiset<>::operator=(std::multiset<>&&)): Default implementation.
+	(std::multiset<>::operator=(initializer_list<>)): Adapt to use
+	_Rb_tree::_M_assign_equal.
+	* testsuite/23_containers/map/allocator/copy_assign.cc (test03): New.
+	* testsuite/23_containers/map/allocator/init-list.cc: New.
+	* testsuite/23_containers/map/allocator/move_assign.cc (test03): New.
+	* testsuite/23_containers/multimap/allocator/copy_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multimap/allocator/init-list.cc: New.
+	* testsuite/23_containers/multimap/allocator/move_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multiset/allocator/copy_assign.cc
+	(test03): New.
+	* testsuite/23_containers/multiset/allocator/init-list.cc: New.
+	* testsuite/23_containers/multiset/allocator/move_assign.cc
+	(test03): New.
+	* testsuite/23_containers/set/allocator/copy_assign.cc (test03): New.
+	* testsuite/23_containers/set/allocator/init-list.cc: New.
+	* testsuite/23_containers/set/allocator/move_assign.cc (test03): New.
+
+2014-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63353
+	* src/c++11/ios.cc (ios_base::_M_swap): Fix typo.
+
+2014-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Adjust basic_ostream exports.
+	* include/std/istream (basic_iostream(basic_iostream&&)): Pass *this
+	to ostream constructor.
+	* include/std/ostream (basic_ostream(basic_iostream*)): Change to take
+	parameter by reference, to avoid ambiguity.
+	* testsuite/27_io/basic_ostream/cons/char/null.cc: New.
+
+2014-09-22  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/Makefile.am (%/site.exp): Add @.
+	(check-DEJAGNU): Likewise.
+	* testsuite/Makefile.in: Regenerate.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h: Include missing header.
+	* include/bits/stl_stack.h: Likewise.
+	* testsuite/23_containers/priority_queue/requirements/
+	uses_allocator.cc: New.
+	* testsuite/23_containers/queue/requirements/uses_allocator.cc: New.
+	* testsuite/23_containers/stack/requirements/uses_allocator.cc: New.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status.
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mutex (try_lock): Do not swallow exceptions.
+	* testsuite/30_threads/try_lock/4.cc: Fix test.
+
+2014-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/54316
+	PR libstdc++/53626
+	* config/abi/pre/gnu.ver: Add new exports.
+	* config/io/basic_file_stdio.h (__basic_file): Support moving and
+	swapping.
+	* include/bits/basic_ios.h (basic_ios::move, basic_ios::swap):
+	Likewise.
+	* include/bits/ios_base.h (ios_base::_M_move, ios_base::_M_swap):
+	Likewise.
+	* include/bits/fstream.tcc (basic_filebuf): Likewise.
+	* include/bits/move.h (__exchange): Define for C++11 mode.
+	* include/ext/stdio_filebuf.h (stdio_filebuf): Support moving and
+	swapping.
+	* include/ext/stdio_sync_filebuf.h (stdio_sync_filebuf): Likewise.
+	* include/std/fstream (basic_filebuf, basic_ifstream, basic_ofstream,
+	basic_fstream): Likewise.
+	* include/std/ios: Remove whitespace.
+	* include/std/istream (basic_istream, basic_iostream): Support moving
+	and swapping.
+	* include/std/ostream (basic_ostream): Likewise.
+	* include/std/sstream (basic_stringbuf, basic_istringstream,
+	basic_ostringstream, basic_stringstream): Likewise.
+	* include/std/streambuf (basic_streambuf): Do not default copy
+	constructor and assignment on first declaration.
+	* include/std/utility (exchange): Forward to __exchange.
+	* testsuite/27_io/basic_filebuf/cons/char/copy_neg.cc: New.
+	* src/c++11/Makefile.am: Add stream-related files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/ext11-inst.cc (stdio_filebuf, stdio_sync_filebuf):
+	New file for explicit instantiation definitions.
+	* src/c++11/ios.cc: Move from src/c++98 to here.
+	(ios_base::_M_move, ios_base::_M_swap): Define.
+	* src/c++11/ios-inst.cc: Move from src/c++98 to here.
+	* src/c++11/iostream-inst.cc: Likewise.
+	* src/c++11/istream-inst.cc: Likewise.
+	* src/c++11/ostream-inst.cc: Likewise.
+	* src/c++11/sstream-inst.cc: Likewise.
+	* src/c++11/streambuf-inst.cc: Likewise.
+	* src/c++98/Makefile.am: Remove stream-related files.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/ext-inst.cc (stdio_filebuf): Remove explicit
+	instantiations.
+	* src/c++98/misc-inst.cc (stdio_sync_filebuf): Likewise.
+	* src/c++98/ios-inst.cc: Move to src/c++11/.
+	* src/c++98/ios.cc: Move to src/c++11/.
+	* src/c++98/iostream-inst.cc: Likewise.
+	* src/c++98/istream-inst.cc: Likewise.
+	* src/c++98/ostream-inst.cc: Likewise.
+	* src/c++98/sstream-inst.cc: Likewise.
+	* src/c++98/streambuf-inst.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/char/copy_neg.cc: New.
+	* testsuite/27_io/basic_fstream/cons/move.cc: New.
+	* testsuite/27_io/basic_fstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ifstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ifstream/assign/1.cc: New.
+	* testsuite/27_io/basic_istringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_istringstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ofstream/cons/move.cc: New.
+	* testsuite/27_io/basic_ofstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ostringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_ostringstream/cons/move.cc: New.
+	* testsuite/27_io/basic_stringstream/assign/1.cc: New.
+	* testsuite/27_io/basic_stringstream/cons/move.cc: New.
+
 2014-09-17  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/dyncast.cc (__dynamic_cast): Handle mid-destruction

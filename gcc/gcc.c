@@ -253,6 +253,7 @@ static void init_gcc_specs (struct obstack *, const char *, const char *,
 static const char *convert_filename (const char *, int, int);
 #endif
 
+static void try_generate_repro (const char **argv);
 static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
@@ -2884,7 +2885,7 @@ execute (void)
 	    }
 	}
 
-      if (string != commands[i].prog)
+      if (i && string != commands[i].prog)
 	free (CONST_CAST (char *, string));
     }
 
@@ -2937,6 +2938,15 @@ execute (void)
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
 	  {
+	    /* For ICEs in cc1, cc1obj, cc1plus see if it is
+	       reproducible or not.  */
+	    const char *p;
+	    if (flag_report_bug
+		&& WEXITSTATUS (status) == ICE_EXIT_CODE
+		&& i == 0
+		&& (p = strrchr (commands[0].argv[0], DIR_SEPARATOR))
+		&& ! strncmp (p + 1, "cc1", 3))
+	      try_generate_repro (commands[0].argv);
 	    if (WEXITSTATUS (status) > greatest_status)
 	      greatest_status = WEXITSTATUS (status);
 	    ret_code = -1;
@@ -2993,6 +3003,9 @@ execute (void)
 	      }
 	  }
       }
+
+   if (commands[0].argv[0] != commands[0].prog)
+     free (CONST_CAST (char *, commands[0].argv[0]));
 
     return ret_code;
   }
@@ -6185,6 +6198,348 @@ give_switch (int switchnum, int omit_first_word)
   switches[switchnum].validated = true;
 }
 
+/* Print GCC configuration (e.g. version, thread model, target,
+   configuration_arguments) to a given FILE.  */
+
+static void
+print_configuration (FILE *file)
+{
+  int n;
+  const char *thrmod;
+
+  fnotice (file, "Target: %s\n", spec_machine);
+  fnotice (file, "Configured with: %s\n", configuration_arguments);
+
+#ifdef THREAD_MODEL_SPEC
+  /* We could have defined THREAD_MODEL_SPEC to "%*" by default,
+  but there's no point in doing all this processing just to get
+  thread_model back.  */
+  obstack_init (&obstack);
+  do_spec_1 (THREAD_MODEL_SPEC, 0, thread_model);
+  obstack_1grow (&obstack, '\0');
+  thrmod = XOBFINISH (&obstack, const char *);
+#else
+  thrmod = thread_model;
+#endif
+
+  fnotice (file, "Thread model: %s\n", thrmod);
+
+  /* compiler_version is truncated at the first space when initialized
+  from version string, so truncate version_string at the first space
+  before comparing.  */
+  for (n = 0; version_string[n]; n++)
+    if (version_string[n] == ' ')
+      break;
+
+  if (! strncmp (version_string, compiler_version, n)
+      && compiler_version[n] == 0)
+    fnotice (file, "gcc version %s %s\n\n", version_string,
+	     pkgversion_string);
+  else
+    fnotice (file, "gcc driver version %s %sexecuting gcc version %s\n\n",
+	     version_string, pkgversion_string, compiler_version);
+
+}
+
+#define RETRY_ICE_ATTEMPTS 3
+
+/* Returns true if FILE1 and FILE2 contain equivalent data, 0 otherwise.  */
+
+static bool
+files_equal_p (char *file1, char *file2)
+{
+  struct stat st1, st2;
+  off_t n, len;
+  int fd1, fd2;
+  const int bufsize = 8192;
+  char *buf = XNEWVEC (char, bufsize);
+
+  fd1 = open (file1, O_RDONLY);
+  fd2 = open (file2, O_RDONLY);
+
+  if (fd1 < 0 || fd2 < 0)
+    goto error;
+
+  if (fstat (fd1, &st1) < 0 || fstat (fd2, &st2) < 0)
+    goto error;
+
+  if (st1.st_size != st2.st_size)
+    goto error;
+
+  for (n = st1.st_size; n; n -= len)
+    {
+      len = n;
+      if ((int) len > bufsize / 2)
+	len = bufsize / 2;
+
+      if (read (fd1, buf, len) != (int) len
+	  || read (fd2, buf + bufsize / 2, len) != (int) len)
+	{
+	  goto error;
+	}
+
+      if (memcmp (buf, buf + bufsize / 2, len) != 0)
+	goto error;
+    }
+
+  free (buf);
+  close (fd1);
+  close (fd2);
+
+  return 1;
+
+error:
+  free (buf);
+  close (fd1);
+  close (fd2);
+  return 0;
+}
+
+/* Check that compiler's output doesn't differ across runs.
+   TEMP_STDOUT_FILES and TEMP_STDERR_FILES are arrays of files, containing
+   stdout and stderr for each compiler run.  Return true if all of
+   TEMP_STDOUT_FILES and TEMP_STDERR_FILES are equivalent.  */
+
+static bool
+check_repro (char **temp_stdout_files, char **temp_stderr_files)
+{
+  int i;
+  for (i = 0; i < RETRY_ICE_ATTEMPTS - 2; ++i)
+    {
+     if (!files_equal_p (temp_stdout_files[i], temp_stdout_files[i + 1])
+	 || !files_equal_p (temp_stderr_files[i], temp_stderr_files[i + 1]))
+       {
+	 fnotice (stderr, "The bug is not reproducible, so it is"
+		  " likely a hardware or OS problem.\n");
+	 break;
+       }
+    }
+  return i == RETRY_ICE_ATTEMPTS - 2;
+}
+
+enum attempt_status {
+  ATTEMPT_STATUS_FAIL_TO_RUN,
+  ATTEMPT_STATUS_SUCCESS,
+  ATTEMPT_STATUS_ICE
+};
+
+
+/* Run compiler with arguments NEW_ARGV to reproduce the ICE, storing stdout
+   to OUT_TEMP and stderr to ERR_TEMP.  If APPEND is TRUE, append to OUT_TEMP
+   and ERR_TEMP instead of truncating.  If EMIT_SYSTEM_INFO is TRUE, also write
+   GCC configuration into to ERR_TEMP.  Return ATTEMPT_STATUS_FAIL_TO_RUN if
+   compiler failed to run, ATTEMPT_STATUS_ICE if compiled ICE-ed and
+   ATTEMPT_STATUS_SUCCESS otherwise.  */
+
+static enum attempt_status
+run_attempt (const char **new_argv, const char *out_temp,
+	     const char *err_temp, int emit_system_info, int append)
+{
+
+  if (emit_system_info)
+    {
+      FILE *file_out = fopen (err_temp, "a");
+      print_configuration (file_out);
+      fclose (file_out);
+    }
+
+  int exit_status;
+  const char *errmsg;
+  struct pex_obj *pex;
+  int err;
+  int pex_flags = PEX_USE_PIPES | PEX_LAST;
+  enum attempt_status status = ATTEMPT_STATUS_FAIL_TO_RUN;
+
+  if (append)
+    pex_flags |= PEX_STDOUT_APPEND | PEX_STDERR_APPEND;
+
+  pex = pex_init (PEX_USE_PIPES, new_argv[0], NULL);
+  if (!pex)
+    fatal_error ("pex_init failed: %m");
+
+  errmsg = pex_run (pex, pex_flags, new_argv[0],
+		    CONST_CAST2 (char *const *, const char **, &new_argv[1]), out_temp,
+		    err_temp, &err);
+  if (errmsg != NULL)
+    {
+      if (err == 0)
+	fatal_error (errmsg);
+      else
+	{
+	  errno = err;
+	  pfatal_with_name (errmsg);
+	}
+    }
+
+  if (!pex_get_status (pex, 1, &exit_status))
+    goto out;
+
+  switch (WEXITSTATUS (exit_status))
+    {
+      case ICE_EXIT_CODE:
+	status = ATTEMPT_STATUS_ICE;
+	break;
+
+      case SUCCESS_EXIT_CODE:
+	status = ATTEMPT_STATUS_SUCCESS;
+	break;
+
+      default:
+	;
+    }
+
+out:
+  pex_free (pex);
+  return status;
+}
+
+/* This routine adds preprocessed source code into the given ERR_FILE.
+   To do this, it adds "-E" to NEW_ARGV and execute RUN_ATTEMPT routine to
+   add information in report file.  RUN_ATTEMPT should return
+   ATTEMPT_STATUS_SUCCESS, in other case we cannot generate the report.  */
+
+static void
+do_report_bug (const char **new_argv, const int nargs,
+	       char **out_file, char **err_file)
+{
+  int i, status;
+  int fd = open (*out_file, O_RDWR | O_APPEND);
+  if (fd < 0)
+    return;
+  write (fd, "\n//", 3);
+  for (i = 0; i < nargs; i++)
+    {
+      write (fd, " ", 1);
+      write (fd, new_argv[i], strlen (new_argv[i]));
+    }
+  write (fd, "\n\n", 2);
+  close (fd);
+  new_argv[nargs] = "-E";
+  new_argv[nargs + 1] = NULL;
+
+  status = run_attempt (new_argv, *out_file, *err_file, 0, 1);
+
+  if (status == ATTEMPT_STATUS_SUCCESS)
+    {
+      fnotice (stderr, "Preprocessed source stored into %s file,"
+	       " please attach this to your bugreport.\n", *out_file);
+      /* Make sure it is not deleted.  */
+      free (*out_file);
+      *out_file = NULL;
+    }
+}
+
+/* Append string STR to file FILE.  */
+
+static void
+append_text (char *file, const char *str)
+{
+  int fd = open (file, O_RDWR | O_APPEND);
+  if (fd < 0)
+    return;
+
+  write (fd, str, strlen (str));
+  close (fd);
+}
+
+/* Try to reproduce ICE.  If bug is reproducible, generate report .err file
+   containing GCC configuration, backtrace, compiler's command line options
+   and preprocessed source code.  */
+
+static void
+try_generate_repro (const char **argv)
+{
+  int i, nargs, out_arg = -1, quiet = 0, attempt;
+  const char **new_argv;
+  char *temp_files[RETRY_ICE_ATTEMPTS * 2];
+  char **temp_stdout_files = &temp_files[0];
+  char **temp_stderr_files = &temp_files[RETRY_ICE_ATTEMPTS];
+
+  if (gcc_input_filename == NULL || ! strcmp (gcc_input_filename, "-"))
+    return;
+
+  for (nargs = 0; argv[nargs] != NULL; ++nargs)
+    /* Only retry compiler ICEs, not preprocessor ones.  */
+    if (! strcmp (argv[nargs], "-E"))
+      return;
+    else if (argv[nargs][0] == '-' && argv[nargs][1] == 'o')
+      {
+	if (out_arg == -1)
+	  out_arg = nargs;
+	else
+	  return;
+      }
+    /* If the compiler is going to output any time information,
+       it might varry between invocations.  */
+    else if (! strcmp (argv[nargs], "-quiet"))
+      quiet = 1;
+    else if (! strcmp (argv[nargs], "-ftime-report"))
+      return;
+
+  if (out_arg == -1 || !quiet)
+    return;
+
+  memset (temp_files, '\0', sizeof (temp_files));
+  new_argv = XALLOCAVEC (const char *, nargs + 4);
+  memcpy (new_argv, argv, (nargs + 1) * sizeof (const char *));
+  new_argv[nargs++] = "-frandom-seed=0";
+  new_argv[nargs++] = "-fdump-noaddr";
+  new_argv[nargs] = NULL;
+  if (new_argv[out_arg][2] == '\0')
+    new_argv[out_arg + 1] = "-";
+  else
+    new_argv[out_arg] = "-o-";
+
+  int status;
+  for (attempt = 0; attempt < RETRY_ICE_ATTEMPTS; ++attempt)
+    {
+      int emit_system_info = 0;
+      int append = 0;
+      temp_stdout_files[attempt] = make_temp_file (".out");
+      temp_stderr_files[attempt] = make_temp_file (".err");
+
+      if (attempt == RETRY_ICE_ATTEMPTS - 1)
+	{
+	  append = 1;
+	  emit_system_info = 1;
+	}
+
+      if (emit_system_info)
+	append_text (temp_stderr_files[attempt], "/*\n");
+
+      status = run_attempt (new_argv, temp_stdout_files[attempt],
+			    temp_stderr_files[attempt], emit_system_info,
+			    append);
+
+      if (emit_system_info)
+	append_text (temp_stderr_files[attempt], "*/\n");
+
+      if (status != ATTEMPT_STATUS_ICE)
+	{
+	  fnotice (stderr, "The bug is not reproducible, so it is"
+		   " likely a hardware or OS problem.\n");
+	  goto out;
+	}
+    }
+
+  if (!check_repro (temp_stdout_files, temp_stderr_files))
+    goto out;
+
+  /* In final attempt we append compiler options and preprocesssed code to last
+     generated .err file with configuration and backtrace.  */
+  do_report_bug (new_argv, nargs,
+		 &temp_stderr_files[RETRY_ICE_ATTEMPTS - 1],
+		 &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1]);
+
+out:
+  for (i = 0; i < RETRY_ICE_ATTEMPTS * 2; i++)
+    if (temp_files[i])
+      {
+	unlink (temp_stdout_files[i]);
+	free (temp_stdout_files[i]);
+      }
+}
+
 /* Search for a file named NAME trying various prefixes including the
    user's -B prefix and some standard ones.
    Return the absolute file name found.  If nothing is found, return NAME.  */
@@ -6954,41 +7309,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
   if (verbose_flag)
     {
-      int n;
-      const char *thrmod;
-
-      fnotice (stderr, "Target: %s\n", spec_machine);
-      fnotice (stderr, "Configured with: %s\n", configuration_arguments);
-
-#ifdef THREAD_MODEL_SPEC
-      /* We could have defined THREAD_MODEL_SPEC to "%*" by default,
-	 but there's no point in doing all this processing just to get
-	 thread_model back.  */
-      obstack_init (&obstack);
-      do_spec_1 (THREAD_MODEL_SPEC, 0, thread_model);
-      obstack_1grow (&obstack, '\0');
-      thrmod = XOBFINISH (&obstack, const char *);
-#else
-      thrmod = thread_model;
-#endif
-
-      fnotice (stderr, "Thread model: %s\n", thrmod);
-
-      /* compiler_version is truncated at the first space when initialized
-	 from version string, so truncate version_string at the first space
-	 before comparing.  */
-      for (n = 0; version_string[n]; n++)
-	if (version_string[n] == ' ')
-	  break;
-
-      if (! strncmp (version_string, compiler_version, n)
-	  && compiler_version[n] == 0)
-	fnotice (stderr, "gcc version %s %s\n", version_string,
-		 pkgversion_string);
-      else
-	fnotice (stderr, "gcc driver version %s %sexecuting gcc version %s\n",
-		 version_string, pkgversion_string, compiler_version);
-
+      print_configuration (stderr);
       if (n_infiles == 0)
 	return (0);
     }

@@ -76,6 +76,10 @@ class Vector {
   }
 
   void Resize(uptr size) {
+    if (size == 0) {
+      end_ = begin_;
+      return;
+    }
     uptr old_size = Size();
     EnsureSize(size);
     if (old_size < size) {
@@ -98,7 +102,7 @@ class Vector {
       return;
     }
     uptr cap0 = last_ - begin_;
-    uptr cap = 2 * cap0;
+    uptr cap = cap0 * 5 / 4;  // 25% growth
     if (cap == 0)
       cap = 16;
     if (cap < size)

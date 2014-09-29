@@ -449,6 +449,8 @@ varpool_node::add (tree decl)
   symtab->call_varpool_insertion_hooks (node);
   if (node->externally_visible_p ())
     node->externally_visible = true;
+  if (lookup_attribute ("no_reorder", DECL_ATTRIBUTES (decl)))
+    node->no_reorder = 1;
 }
 
 /* Return variable availability.  See cgraph.h for description of individual
@@ -640,7 +642,7 @@ symbol_table::remove_unreferenced_decls (void)
   for (node = first_defined_variable (); node; node = next)
     {
       next = next_defined_variable (node);
-      if (!node->aux)
+      if (!node->aux && !node->no_reorder)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " %s", node->asm_name ());
@@ -687,11 +689,22 @@ symbol_table::output_variables (void)
   timevar_push (TV_VAROUT);
 
   FOR_EACH_DEFINED_VARIABLE (node)
-    node->finalize_named_section_flags ();
+    {
+      /* Handled in output_in_order.  */
+      if (node->no_reorder)
+	continue;
+
+      node->finalize_named_section_flags ();
+    }
 
   FOR_EACH_DEFINED_VARIABLE (node)
-    if (node->assemble_decl ())
-      changed = true;
+    {
+      /* Handled in output_in_order.  */
+      if (node->no_reorder)
+	continue;
+      if (node->assemble_decl ())
+        changed = true;
+    }
   timevar_pop (TV_VAROUT);
   return changed;
 }
@@ -709,7 +722,7 @@ add_new_static_var (tree type)
   TREE_STATIC (new_decl) = 1;
   TREE_USED (new_decl) = 1;
   DECL_CONTEXT (new_decl) = NULL_TREE;
-  DECL_ABSTRACT (new_decl) = 0;
+  DECL_ABSTRACT_P (new_decl) = false;
   lang_hooks.dup_lang_specific_decl (new_decl);
   new_node = varpool_node::get_create (new_decl);
   varpool_node::finalize_decl (new_decl);

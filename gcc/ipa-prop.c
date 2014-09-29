@@ -416,6 +416,8 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	}
       else
 	fprintf (f, "\n");
+      if (ii->polymorphic)
+	ii->context.dump (f);
       ipa_print_node_jump_functions_for_edge (f, cs);
     }
 }
@@ -592,7 +594,7 @@ ipa_get_bb_info (struct func_body_info *fbi, basic_block bb)
 /* Structure to be passed in between detect_type_change and
    check_stmt_for_type_change.  */
 
-struct type_change_info
+struct prop_type_change_info
 {
   /* Offset into the object where there is the virtual method pointer we are
      looking for.  */
@@ -680,7 +682,7 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
    identified, return the type.  Otherwise return NULL_TREE.  */
 
 static tree
-extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
+extr_type_from_vtbl_ptr_store (gimple stmt, struct prop_type_change_info *tci)
 {
   HOST_WIDE_INT offset, size, max_size;
   tree lhs, rhs, base, binfo;
@@ -726,13 +728,13 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
    detect_type_change to check whether a particular statement may modify
    the virtual table pointer, and if possible also determine the new type of
    the (sub-)object.  It stores its result into DATA, which points to a
-   type_change_info structure.  */
+   prop_type_change_info structure.  */
 
 static bool
 check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 {
   gimple stmt = SSA_NAME_DEF_STMT (vdef);
-  struct type_change_info *tci = (struct type_change_info *) data;
+  struct prop_type_change_info *tci = (struct prop_type_change_info *) data;
 
   if (stmt_may_be_vtbl_ptr_store (stmt))
     {
@@ -830,7 +832,7 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
 				       gimple call, struct ipa_jump_func *jfunc,
 				       HOST_WIDE_INT offset)
 {
-  struct type_change_info tci;
+  struct prop_type_change_info tci;
   ao_ref ao;
   bool entry_reached = false;
 
@@ -2153,8 +2155,6 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gimple call,
 				   NULL, &by_ref))
     {
       struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
-      if (cs->indirect_info->offset != offset)
-	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->by_ref = by_ref;
@@ -2255,8 +2255,6 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gimple call,
       && parm_preserved_before_stmt_p (fbi, index, call, rec))
     {
       struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
-      if (cs->indirect_info->offset != offset)
-	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->member_ptr = 1;
@@ -2345,35 +2343,20 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
 
   if (cs->indirect_info->polymorphic)
     {
-      tree otr_type;
-      HOST_WIDE_INT otr_token;
       tree instance;
       tree target = gimple_call_fn (call);
       ipa_polymorphic_call_context context (current_function_decl,
 					    target, call, &instance);
 
-      otr_type = obj_type_ref_class (target);
-      otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
+      gcc_checking_assert (cs->indirect_info->otr_type
+			   == obj_type_ref_class (target));
+      gcc_checking_assert (cs->indirect_info->otr_token
+			   == tree_to_shwi (OBJ_TYPE_REF_TOKEN (target)));
 
       if (context.get_dynamic_type (instance,
 				    OBJ_TYPE_REF_OBJECT (target),
-				    otr_type, call))
-	{
-	  gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);
-	  cs->indirect_info->polymorphic = true;
-	  cs->indirect_info->param_index = -1;
-	  cs->indirect_info->otr_token = otr_token;
-	  cs->indirect_info->otr_type = otr_type;
-	  cs->indirect_info->outer_type = context.outer_type;
-	  cs->indirect_info->speculative_outer_type = context.speculative_outer_type;
-	  cs->indirect_info->offset = context.offset;
-	  cs->indirect_info->speculative_offset = context.speculative_offset;
-	  cs->indirect_info->maybe_in_construction
-	     = context.maybe_in_construction;
-	  cs->indirect_info->maybe_derived_type = context.maybe_derived_type;
-	  cs->indirect_info->speculative_maybe_derived_type
-	     = context.speculative_maybe_derived_type;
-	}
+				    obj_type_ref_class (target), call))
+	cs->indirect_info->context = context;
     }
 
   if (TREE_CODE (target) == SSA_NAME)
@@ -2581,36 +2564,6 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.bb_infos.release ();
   free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
-}
-
-/* Given a statement CALL which must be a GIMPLE_CALL calling an OBJ_TYPE_REF
-   attempt a type-based devirtualization.  If successful, return the
-   target function declaration, otherwise return NULL.  */
-
-tree
-ipa_intraprocedural_devirtualization (gimple call)
-{
-  tree binfo, token, fndecl;
-  struct ipa_jump_func jfunc;
-  tree otr = gimple_call_fn (call);
-
-  jfunc.type = IPA_JF_UNKNOWN;
-  compute_known_type_jump_func (OBJ_TYPE_REF_OBJECT (otr), &jfunc,
-				call, obj_type_ref_class (otr));
-  if (jfunc.type != IPA_JF_KNOWN_TYPE)
-    return NULL_TREE;
-  binfo = ipa_binfo_from_known_type_jfunc (&jfunc);
-  if (!binfo)
-    return NULL_TREE;
-  token = OBJ_TYPE_REF_TOKEN (otr);
-  fndecl = gimple_get_virt_method_for_binfo (tree_to_uhwi (token),
-					     binfo);
-#ifdef ENABLE_CHECKING
-  if (fndecl)
-    gcc_assert (possible_polymorphic_call_target_p
-		  (otr, call, cgraph_node::get (fndecl)));
-#endif
-  return fndecl;
 }
 
 /* Update the jump function DST when the call graph edge corresponding to SRC is
@@ -3252,8 +3205,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  else
 	    {
 	      ici->param_index = ipa_get_jf_ancestor_formal_id (jfunc);
-	      if (ipa_get_jf_ancestor_offset (jfunc))
-	        ici->outer_type = NULL;
 	      ici->offset += ipa_get_jf_ancestor_offset (jfunc);
 	    }
 	}
@@ -3638,6 +3589,21 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 		}
 	      gcc_assert (dst_rdesc);
 	      dst_jf->value.constant.rdesc = dst_rdesc;
+	    }
+	}
+      else if (dst_jf->type == IPA_JF_PASS_THROUGH
+	       && src->caller == dst->caller)
+	{
+	  struct cgraph_node *inline_root = dst->caller->global.inlined_to
+	    ? dst->caller->global.inlined_to : dst->caller;
+	  struct ipa_node_params *root_info = IPA_NODE_REF (inline_root);
+	  int idx = ipa_get_jf_pass_through_formal_id (dst_jf);
+
+	  int c = ipa_get_controlled_uses (root_info, idx);
+	  if (c != IPA_UNDESCRIBED_USE)
+	    {
+	      c++;
+	      ipa_set_controlled_uses (root_info, idx, c);
 	    }
 	}
     }
@@ -4719,25 +4685,22 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   struct bitpack_d bp;
 
   streamer_write_hwi (ob, ii->param_index);
-  streamer_write_hwi (ob, ii->offset);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, ii->polymorphic, 1);
   bp_pack_value (&bp, ii->agg_contents, 1);
   bp_pack_value (&bp, ii->member_ptr, 1);
   bp_pack_value (&bp, ii->by_ref, 1);
-  bp_pack_value (&bp, ii->maybe_in_construction, 1);
-  bp_pack_value (&bp, ii->maybe_derived_type, 1);
-  bp_pack_value (&bp, ii->speculative_maybe_derived_type, 1);
   streamer_write_bitpack (&bp);
+  if (ii->agg_contents || ii->polymorphic)
+    streamer_write_hwi (ob, ii->offset);
+  else
+    gcc_assert (ii->offset == 0);
 
   if (ii->polymorphic)
     {
       streamer_write_hwi (ob, ii->otr_token);
       stream_write_tree (ob, ii->otr_type, true);
-      stream_write_tree (ob, ii->outer_type, true);
-      stream_write_tree (ob, ii->speculative_outer_type, true);
-      if (ii->speculative_outer_type)
-        streamer_write_hwi (ob, ii->speculative_offset);
+      ii->context.stream_out (ob);
     }
 }
 
@@ -4746,30 +4709,27 @@ ipa_write_indirect_edge_info (struct output_block *ob,
 
 static void
 ipa_read_indirect_edge_info (struct lto_input_block *ib,
-			     struct data_in *data_in ATTRIBUTE_UNUSED,
+			     struct data_in *data_in,
 			     struct cgraph_edge *cs)
 {
   struct cgraph_indirect_call_info *ii = cs->indirect_info;
   struct bitpack_d bp;
 
   ii->param_index = (int) streamer_read_hwi (ib);
-  ii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
   bp = streamer_read_bitpack (ib);
   ii->polymorphic = bp_unpack_value (&bp, 1);
   ii->agg_contents = bp_unpack_value (&bp, 1);
   ii->member_ptr = bp_unpack_value (&bp, 1);
   ii->by_ref = bp_unpack_value (&bp, 1);
-  ii->maybe_in_construction = bp_unpack_value (&bp, 1);
-  ii->maybe_derived_type = bp_unpack_value (&bp, 1);
-  ii->speculative_maybe_derived_type = bp_unpack_value (&bp, 1);
+  if (ii->agg_contents || ii->polymorphic)
+    ii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+  else
+    ii->offset = 0;
   if (ii->polymorphic)
     {
       ii->otr_token = (HOST_WIDE_INT) streamer_read_hwi (ib);
       ii->otr_type = stream_read_tree (ib, data_in);
-      ii->outer_type = stream_read_tree (ib, data_in);
-      ii->speculative_outer_type = stream_read_tree (ib, data_in);
-      if (ii->speculative_outer_type)
-        ii->speculative_offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+      ii->context.stream_in (ib, data_in);
     }
 }
 

@@ -40,7 +40,7 @@
 #include <bits/char_traits.h> 	// For char_traits, streamoff, streamsize, fpos
 #include <bits/localefwd.h>	// For class locale
 #include <bits/ios_base.h>	// For ios_base declarations.
-#include <streambuf> 
+#include <streambuf>
 #include <bits/basic_ios.h>
 
 #endif	/* _GLIBCXX_IOS */

@@ -57,8 +57,7 @@ test_vcle_s64 (int64x1_t a, int64x1_t b)
   return vcle_s64 (a, b);
 }
 
-/* Idiom recognition will cause this testcase not to generate
-   the expected cmge instruction, so do not check for it.  */
+/* { dg-final { scan-assembler-times "\\tcmge\\td\[0-9\]+, d\[0-9\]+, #?0" 1 } } */
 
 uint64x1_t
 test_vcgez_s64 (int64x1_t a)
@@ -236,8 +235,8 @@ test_vrshl_u64 (uint64x1_t a, int64x1_t b)
   return vrshl_u64 (a, b);
 }
 
-/* { dg-final { scan-assembler-times "\\tsshr\\td\[0-9\]+" 3 } } */
-/* Idiom recognition compiles vcltz and vcgez to sshr rather than cmlt/cmge.  */
+/* For int64x1_t, sshr...#63 is output instead of the equivalent cmlt...#0.  */
+/* { dg-final { scan-assembler-times "\\tsshr\\td\[0-9\]+" 2 } } */
 
 int64x1_t
 test_vshr_n_s64 (int64x1_t a)

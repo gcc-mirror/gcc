@@ -2,17 +2,17 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-int i;
-const int ci;
+int i __attribute__((used));
+const int ci __attribute__((used));
 volatile int vi;
 const volatile int cvi;
 
 int *pi __attribute__((used));
-const int *pci;
-volatile int *pvi;
-const volatile int *pcvi;
+const int *pci __attribute__((used));
+volatile int *pvi __attribute__((used));
+const volatile int *pcvi __attribute__((used));
 
-int * const cip;
+int * const cip __attribute__((used));
 int * volatile vip;
 int * const volatile cvip;
 
@@ -28,8 +28,18 @@ struct foo
   const signed char csc;
 };
 
-struct foo foo;
-const struct foo cfoo;
+struct bar
+{
+  short s;
+  const short cs;
+  volatile short vs;
+  const volatile short cvs;
+  volatile long long vll;
+};
+
+struct bar bar __attribute__((used));
+struct foo foo __attribute__((used));
+const struct foo cfoo __attribute__((used));
 volatile struct foo vfoo;
 const volatile struct foo cvfoo;
 
@@ -72,6 +82,7 @@ main (int argc, char **argv)
 
 /* { dg-final { gdb-test 50 "type:cvip" "int * const volatile" } } */
 
+/* { dg-final { gdb-test 50 "type:bar" "struct bar { short s; const short cs; volatile short vs; const volatile short cvs; volatile long long vll; }" } } */
 /* { dg-final { gdb-test 50 "type:foo" "struct foo { const long cli; const signed char csc; }" } } */
 /* { dg-final { gdb-test 50 "type:cfoo" "const struct foo { const long cli; const signed char csc; }" } } */
 /* { dg-final { gdb-test 50 "type:vfoo" "volatile struct foo { const long cli; const signed char csc; }" } } */

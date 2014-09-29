@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline std::shared_ptr<_NFA<_TraitsT>>
     __compile_nfa(const typename _TraitsT::char_type* __first,
 		  const typename _TraitsT::char_type* __last,
-		  const _TraitsT& __traits,
+		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags);
 
 _GLIBCXX_END_NAMESPACE_VERSION
@@ -433,7 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * character sequence.
        */
       basic_regex()
-      : _M_flags(ECMAScript), _M_automaton(nullptr)
+      : _M_flags(ECMAScript), _M_loc(), _M_original_str(), _M_automaton(nullptr)
       { }
 
       /**
@@ -481,10 +481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __rhs A @p regex object.
        */
-      basic_regex(const basic_regex&& __rhs) noexcept
-      : _M_flags(__rhs._M_flags), _M_traits(__rhs._M_traits),
-	_M_automaton(std::move(__rhs._M_automaton))
-      { }
+      basic_regex(basic_regex&& __rhs) noexcept = default;
 
       /**
        * @brief Constructs a basic regular expression from the string
@@ -520,12 +517,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	basic_regex(_FwdIter __first, _FwdIter __last,
 		    flag_type __f = ECMAScript)
 	: _M_flags(__f),
+	  _M_loc(),
 	  _M_original_str(__first, __last),
-	  _M_automaton(__detail::__compile_nfa(_M_original_str.c_str(),
-					       _M_original_str.c_str()
-						 + _M_original_str.size(),
-					       _M_traits,
-					       _M_flags))
+	  _M_automaton(__detail::__compile_nfa<_Rx_traits>(
+	    _M_original_str.c_str(),
+	    _M_original_str.c_str() + _M_original_str.size(),
+	    _M_loc,
+	    _M_flags))
 	{ }
 
       /**
@@ -662,9 +660,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_flags = __flags;
 	  _M_original_str.assign(__s.begin(), __s.end());
 	  auto __p = _M_original_str.c_str();
-	  _M_automaton = __detail::__compile_nfa(__p,
-						 __p + _M_original_str.size(),
-						 _M_traits, _M_flags);
+	  _M_automaton = __detail::__compile_nfa<_Rx_traits>(
+	    __p,
+	    __p + _M_original_str.size(),
+	    _M_loc,
+	    _M_flags);
 	  return *this;
 	}
 
@@ -728,9 +728,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       locale_type
       imbue(locale_type __loc)
       {
-	auto __ret = _M_traits.imbue(__loc);
-	this->assign(_M_original_str, _M_flags);
-	return __ret;
+	std::swap(__loc, _M_loc);
+	if (_M_automaton != nullptr)
+	  this->assign(_M_original_str, _M_flags);
+	return __loc;
       }
 
       /**
@@ -739,7 +740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       locale_type
       getloc() const
-      { return _M_traits.getloc(); }
+      { return _M_loc; }
 
       // [7.8.6] swap
       /**
@@ -751,7 +752,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(basic_regex& __rhs)
       {
 	std::swap(_M_flags, __rhs._M_flags);
-	std::swap(_M_traits, __rhs._M_traits);
+	std::swap(_M_loc, __rhs._M_loc);
+	std::swap(_M_original_str, __rhs._M_original_str);
 	std::swap(_M_automaton, __rhs._M_automaton);
       }
 
@@ -761,7 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_automaton->_M_dot(__ostr); }
 #endif
 
-    protected:
+    private:
       typedef std::shared_ptr<__detail::_NFA<_Rx_traits>> _AutomatonPtr;
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
@@ -775,7 +777,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend class __detail::_Executor;
 
       flag_type              _M_flags;
-      _Rx_traits             _M_traits;
+      locale_type            _M_loc;
       basic_string<_Ch_type> _M_original_str;
       _AutomatonPtr          _M_automaton;
     };

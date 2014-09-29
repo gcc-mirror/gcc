@@ -210,7 +210,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_NONLOCAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_VIRTUAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IGNORED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_ABSTRACT_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PRESERVE_P (expr) = (unsigned) bp_unpack_value (bp, 1);

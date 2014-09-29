@@ -35,7 +35,6 @@ static void ParseFlags(Flags *f, const char *env) {
   ParseFlag(env, &f->enable_annotations, "enable_annotations", "");
   ParseFlag(env, &f->suppress_equal_stacks, "suppress_equal_stacks", "");
   ParseFlag(env, &f->suppress_equal_addresses, "suppress_equal_addresses", "");
-  ParseFlag(env, &f->suppress_java, "suppress_java", "");
   ParseFlag(env, &f->report_bugs, "report_bugs", "");
   ParseFlag(env, &f->report_thread_leaks, "report_thread_leaks", "");
   ParseFlag(env, &f->report_destroy_locked, "report_destroy_locked", "");
@@ -43,8 +42,6 @@ static void ParseFlags(Flags *f, const char *env) {
   ParseFlag(env, &f->report_signal_unsafe, "report_signal_unsafe", "");
   ParseFlag(env, &f->report_atomic_races, "report_atomic_races", "");
   ParseFlag(env, &f->force_seq_cst_atomics, "force_seq_cst_atomics", "");
-  ParseFlag(env, &f->suppressions, "suppressions", "");
-  ParseFlag(env, &f->print_suppressions, "print_suppressions", "");
   ParseFlag(env, &f->print_benign, "print_benign", "");
   ParseFlag(env, &f->exitcode, "exitcode", "");
   ParseFlag(env, &f->halt_on_error, "halt_on_error", "");
@@ -70,7 +67,6 @@ void InitializeFlags(Flags *f, const char *env) {
   f->enable_annotations = true;
   f->suppress_equal_stacks = true;
   f->suppress_equal_addresses = true;
-  f->suppress_java = false;
   f->report_bugs = true;
   f->report_thread_leaks = true;
   f->report_destroy_locked = true;
@@ -78,8 +74,6 @@ void InitializeFlags(Flags *f, const char *env) {
   f->report_signal_unsafe = true;
   f->report_atomic_races = true;
   f->force_seq_cst_atomics = false;
-  f->suppressions = "";
-  f->print_suppressions = false;
   f->print_benign = false;
   f->exitcode = 66;
   f->halt_on_error = false;
@@ -97,19 +91,19 @@ void InitializeFlags(Flags *f, const char *env) {
   // DDFlags
   f->second_deadlock_stack = false;
 
-  SetCommonFlagsDefaults(f);
+  CommonFlags *cf = common_flags();
+  SetCommonFlagsDefaults(cf);
   // Override some common flags defaults.
-  f->allow_addr2line = true;
+  cf->allow_addr2line = true;
+  cf->detect_deadlocks = true;
+  cf->print_suppressions = false;
 
   // Let a frontend override.
   ParseFlags(f, __tsan_default_options());
-  ParseCommonFlagsFromString(f, __tsan_default_options());
+  ParseCommonFlagsFromString(cf, __tsan_default_options());
   // Override from command line.
   ParseFlags(f, env);
-  ParseCommonFlagsFromString(f, env);
-
-  // Copy back to common flags.
-  *common_flags() = *f;
+  ParseCommonFlagsFromString(cf, env);
 
   // Sanity check.
   if (!f->report_bugs) {
@@ -118,7 +112,7 @@ void InitializeFlags(Flags *f, const char *env) {
     f->report_signal_unsafe = false;
   }
 
-  if (f->help) PrintFlagDescriptions();
+  if (cf->help) PrintFlagDescriptions();
 
   if (f->history_size < 0 || f->history_size > 7) {
     Printf("ThreadSanitizer: incorrect value for history_size"

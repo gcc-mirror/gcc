@@ -95,6 +95,9 @@
 ;; Vector Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
 
+;; Vector Float modes, and DF.
+(define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
+
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
 
@@ -534,6 +537,14 @@
 				(V2SF "v2si") (V4SF  "v4si")
 				(V2DF "v2di") (DF    "di")
 				(SF   "si")])
+
+;; Lower case element modes (as used in shift immediate patterns).
+(define_mode_attr ve_mode [(V8QI "qi") (V16QI "qi")
+			   (V4HI "hi") (V8HI  "hi")
+			   (V2SI "si") (V4SI  "si")
+			   (DI   "di") (V2DI  "di")
+			   (QI   "qi") (HI    "hi")
+			   (SI   "si")])
 
 ;; Vm for lane instructions is restricted to FP_LO_REGS.
 (define_mode_attr vwx [(V4HI "x") (V8HI "x") (HI "x")
@@ -1004,8 +1015,9 @@
 			 (UNSPEC_RADDHN2 "add")
 			 (UNSPEC_RSUBHN2 "sub")])
 
-(define_int_attr offsetlr [(UNSPEC_SSLI	"1") (UNSPEC_USLI "1")
-			   (UNSPEC_SSRI	"0") (UNSPEC_USRI "0")])
+(define_int_attr offsetlr [(UNSPEC_SSLI "") (UNSPEC_USLI "")
+			   (UNSPEC_SSRI "offset_")
+			   (UNSPEC_USRI "offset_")])
 
 ;; Standard pattern names for floating-point rounding instructions.
 (define_int_attr frint_pattern [(UNSPEC_FRINTZ "btrunc")

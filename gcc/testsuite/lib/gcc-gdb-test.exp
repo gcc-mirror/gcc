@@ -111,6 +111,10 @@ proc gdb-test { args } {
 	    # Squash all extra whitespace/newlines that gdb might use for
 	    # "pretty printing" into one so result is just one line.
 	    regsub -all {[\n\r\t ]+} $type " " type
+	    # Old gdb might output "long int" instead of just "long"
+	    # and "short int" instead of just "short". Canonicalize.
+	    regsub -all {\mlong int\M} $type "long" type
+	    regsub -all {\mshort int\M} $type "short" type
 	    set expected [lindex $args 2]
 	    if { $type == $expected } {
 		pass "$testname"

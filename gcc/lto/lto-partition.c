@@ -333,7 +333,8 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
-/* Helper function for qsort; sort nodes by order.  */
+/* Helper function for qsort; sort nodes by order. noreorder functions must have
+   been removed earlier.  */
 static int
 node_cmp (const void *pa, const void *pb)
 {
@@ -365,10 +366,25 @@ node_cmp (const void *pa, const void *pb)
 static int
 varpool_node_cmp (const void *pa, const void *pb)
 {
-  const varpool_node *a = *(const varpool_node * const *) pa;
-  const varpool_node *b = *(const varpool_node * const *) pb;
+  const symtab_node *a = *static_cast<const symtab_node * const *> (pa);
+  const symtab_node *b = *static_cast<const symtab_node * const *> (pb);
   return b->order - a->order;
 }
+
+/* Add all symtab nodes from NEXT_NODE to PARTITION in order.  */
+
+static void
+add_sorted_nodes (vec<symtab_node *> &next_nodes, ltrans_partition partition)
+{
+  unsigned i;
+  symtab_node *node;
+
+  next_nodes.qsort (varpool_node_cmp);
+  FOR_EACH_VEC_ELT (next_nodes, i, node)
+    if (!symbol_partitioned_p (node))
+      add_symbol_to_partition (partition, node);
+}
+
 
 /* Group cgraph nodes into equally-sized partitions.
 
@@ -414,7 +430,8 @@ lto_balanced_map (int n_lto_partitions)
   int n_nodes = 0;
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
   struct cgraph_node **order = XNEWVEC (cgraph_node *, symtab->cgraph_max_uid);
-  varpool_node **varpool_order = NULL;
+  auto_vec<cgraph_node *> noreorder;
+  auto_vec<varpool_node *> varpool_order;
   int i;
   struct cgraph_node *node;
   int total_size = 0, best_total_size = 0;
@@ -427,6 +444,7 @@ lto_balanced_map (int n_lto_partitions)
     INT_MAX, best_internal = 0;
   int npartitions;
   int current_order = -1;
+  int noreorder_pos = 0;
 
   FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->aux);
@@ -434,7 +452,10 @@ lto_balanced_map (int n_lto_partitions)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->get_partitioning_class () == SYMBOL_PARTITION)
       {
-	order[n_nodes++] = node;
+	if (node->no_reorder)
+	  noreorder.safe_push (node);
+	else
+	  order[n_nodes++] = node;
 	if (!node->alias)
 	  total_size += inline_summary (node)->size;
       }
@@ -445,26 +466,25 @@ lto_balanced_map (int n_lto_partitions)
      get better about minimizing the function bounday, but until that
      things works smoother if we order in source order.  */
   qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);
+  noreorder.qsort (node_cmp);
 
   if (symtab->dump_file)
-    for(i = 0; i < n_nodes; i++)
-      fprintf (symtab->dump_file, "Balanced map symbol order:%s:%u\n",
-	       order[i]->name (), order[i]->tp_first_run);
-
-  if (!flag_toplevel_reorder)
     {
-      FOR_EACH_VARIABLE (vnode)
-	if (vnode->get_partitioning_class () == SYMBOL_PARTITION)
-	  n_varpool_nodes++;
-      varpool_order = XNEWVEC (varpool_node *, n_varpool_nodes);
-
-      n_varpool_nodes = 0;
-      FOR_EACH_VARIABLE (vnode)
-	if (vnode->get_partitioning_class () == SYMBOL_PARTITION)
-	  varpool_order[n_varpool_nodes++] = vnode;
-      qsort (varpool_order, n_varpool_nodes, sizeof (varpool_node *),
-	     varpool_node_cmp);
+      for(i = 0; i < n_nodes; i++)
+	fprintf (symtab->dump_file, "Balanced map symbol order:%s:%u\n",
+		 order[i]->name (), order[i]->tp_first_run);
+      for(i = 0; i < (int)noreorder.length(); i++)
+	fprintf (symtab->dump_file, "Balanced map symbol no_reorder:%s:%u\n",
+		 noreorder[i]->name (), noreorder[i]->tp_first_run);
     }
+
+  /* Collect all variables that should not be reordered.  */
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->get_partitioning_class () == SYMBOL_PARTITION
+	&& (!flag_toplevel_reorder || vnode->no_reorder))
+      varpool_order.safe_push (vnode);
+  n_varpool_nodes = varpool_order.length ();
+  varpool_order.qsort (varpool_node_cmp);
 
   /* Compute partition size and create the first partition.  */
   partition_size = total_size / n_lto_partitions;
@@ -476,6 +496,8 @@ lto_balanced_map (int n_lto_partitions)
     fprintf (symtab->dump_file, "Total unit size: %i, partition size: %i\n",
 	     total_size, partition_size);
 
+  auto_vec<symtab_node *> next_nodes;
+
   for (i = 0; i < n_nodes; i++)
     {
       if (symbol_partitioned_p (order[i]))
@@ -483,14 +505,19 @@ lto_balanced_map (int n_lto_partitions)
 
       current_order = order[i]->order;
 
-      if (!flag_toplevel_reorder)
-	while (varpool_pos < n_varpool_nodes
-	       && varpool_order[varpool_pos]->order < current_order)
-	  {
-	    if (!symbol_partitioned_p (varpool_order[varpool_pos]))
-	      add_symbol_to_partition (partition, varpool_order[varpool_pos]);
-	    varpool_pos++;
-	  }
+      /* Output noreorder and varpool in program order first.  */
+      next_nodes.truncate (0);
+      while (varpool_pos < n_varpool_nodes
+	     && varpool_order[varpool_pos]->order < current_order)
+	next_nodes.safe_push (varpool_order[varpool_pos++]);
+      while (noreorder_pos < (int)noreorder.length ()
+	     && noreorder[noreorder_pos]->order < current_order)
+	{
+	  if (!noreorder[noreorder_pos]->alias)
+	    total_size -= inline_summary (noreorder[noreorder_pos])->size;
+	  next_nodes.safe_push (noreorder[noreorder_pos++]);
+	}
+      add_sorted_nodes (next_nodes, partition);
 
       add_symbol_to_partition (partition, order[i]);
       if (!order[i]->alias)
@@ -580,6 +607,7 @@ lto_balanced_map (int n_lto_partitions)
 		if (!vnode->definition)
 		  continue;
 		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
+		    && !vnode->no_reorder
 		    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, vnode);
 		index = lto_symtab_encoder_lookup (partition->encoder,
@@ -616,6 +644,7 @@ lto_balanced_map (int n_lto_partitions)
 		   to be removed.  Coupling with objects they refer to only helps to reduce
 		   number of symbols promoted to hidden.  */
 		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
+		    && !vnode->no_reorder
 		    && !vnode->can_remove_if_no_refs_p ()
 		    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, vnode);
@@ -705,24 +734,25 @@ lto_balanced_map (int n_lto_partitions)
 	}
     }
 
+  next_nodes.truncate (0);
+
   /* Varables that are not reachable from the code go into last partition.  */
   if (flag_toplevel_reorder)
     {
       FOR_EACH_VARIABLE (vnode)
 	if (vnode->get_partitioning_class () == SYMBOL_PARTITION
-	    && !symbol_partitioned_p (vnode))
-	  add_symbol_to_partition (partition, vnode);
+	    && !symbol_partitioned_p (vnode)
+	    && !vnode->no_reorder)
+	  next_nodes.safe_push (vnode);
     }
-  else
-    {
-      while (varpool_pos < n_varpool_nodes)
-	{
-	  if (!symbol_partitioned_p (varpool_order[varpool_pos]))
-	    add_symbol_to_partition (partition, varpool_order[varpool_pos]);
-	  varpool_pos++;
-	}
-      free (varpool_order);
-    }
+
+  /* Output remaining ordered symbols.  */
+  while (varpool_pos < n_varpool_nodes)
+    next_nodes.safe_push (varpool_order[varpool_pos++]);
+  while (noreorder_pos < (int)noreorder.length ())
+    next_nodes.safe_push (noreorder[noreorder_pos++]);
+  add_sorted_nodes (next_nodes, partition);
+
   free (order);
 }
 

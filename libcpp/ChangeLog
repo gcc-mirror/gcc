@@ -1,3 +1,16 @@
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* include/cpplib.h (enum cpp_ttype): Define CPP_KEYWORD.
+
+2014-09-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* charset.c (conversion): Rename to ...
+	(cpp_conversion): ... this one; update.
+	* files.c (file_hash_entry): Rename to ...
+	(cpp_file_hash_entry): ... this one ; update.
+
 2014-09-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61854

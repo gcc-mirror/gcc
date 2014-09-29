@@ -831,6 +831,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " forced_by_abi");
   if (externally_visible)
     fprintf (f, " externally_visible");
+  if (no_reorder)
+    fprintf (f, " no_reorder");
   if (resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
  	     ld_plugin_symbol_resolution_names[(int)resolution]);
@@ -1764,7 +1766,7 @@ symtab_node::get_partitioning_class (void)
      This include external delcarations.   */
   cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
 
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return SYMBOL_EXTERNAL;
 
   if (cnode && cnode->global.inlined_to)

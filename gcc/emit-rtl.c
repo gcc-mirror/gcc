@@ -3614,7 +3614,6 @@ try_split (rtx pat, rtx uncast_trial, int last)
   rtx_insn *trial = as_a <rtx_insn *> (uncast_trial);
   rtx_insn *before = PREV_INSN (trial);
   rtx_insn *after = NEXT_INSN (trial);
-  int has_barrier = 0;
   rtx note;
   rtx_insn *seq, *tem;
   int probability;
@@ -3634,14 +3633,6 @@ try_split (rtx pat, rtx uncast_trial, int last)
   seq = safe_as_a <rtx_insn *> (split_insns (pat, trial));
 
   split_branch_probability = -1;
-
-  /* If we are splitting a JUMP_INSN, it might be followed by a BARRIER.
-     We may need to handle this specially.  */
-  if (after && BARRIER_P (after))
-    {
-      has_barrier = 1;
-      after = NEXT_INSN (after);
-    }
 
   if (!seq)
     return trial;
@@ -3798,8 +3789,6 @@ try_split (rtx pat, rtx uncast_trial, int last)
   tem = emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
 
   delete_insn (trial);
-  if (has_barrier)
-    emit_barrier_after (tem);
 
   /* Recursively call try_split for each new insn created; by the
      time control returns here that insn will be fully split, so

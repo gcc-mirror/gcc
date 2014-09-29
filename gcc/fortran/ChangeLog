@@ -1,3 +1,33 @@
+2014-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (check_co_collective): Renamed from check_co_minmaxsum,
+	handle co_reduce.
+	(gfc_check_co_minmax, gfc_check_co_sum): Update call.
+	(gfc_check_co_broadcast, gfc_check_co_reduce): New.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_CO_BROADCAST and
+	GFC_ISYM_CO_REDUCE.
+	* intrinsic.c (add_subroutines): Add co_reduce and co_broadcast.
+	* intrinsic.h (gfc_check_co_broadcast, gfc_check_co_reduce): Add
+	proto types.
+	* intrinsic.texi (CO_BROADCAST): Add.
+	* trans.h (gfor_fndecl_co_broadcast): New.
+	* trans-decl.c (gfor_fndecl_co_broadcast): Ditto.
+	(gfc_build_builtin_function_decls): Add decl for it,
+	* trans-intrinsic.c (conv_co_collective): Renamed from
+	conv_co_minmaxsum. Handle co_reduce.
+	(gfc_conv_intrinsic_subroutine): Handle co_reduce.
+
+2014-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63331
+	* trans-types.c (gfc_get_array_descr_info): Build DEBUG_EXPR_DECL
+	instead of VAR_DECL for base_decl.
+
+2014-09-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* openmp.c (omp_context): Rename to ...
+	(fortran_omp_context): ... this one.
+
 2014-09-21  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* resolve.c (resolve_fl_procedure): Remove duplicated lines.

@@ -607,6 +607,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_gcount(streamsize(0))
       { this->init(0); }
 
+#if __cplusplus >= 201103L
+      basic_istream(const basic_istream&) = delete;
+
+      basic_istream(basic_istream&& __rhs)
+      : __ios_type(), _M_gcount(__rhs._M_gcount)
+      {
+	__ios_type::move(__rhs);
+	__rhs._M_gcount = 0;
+      }
+
+      // 27.7.3.3 Assign/swap
+
+      basic_istream& operator=(const basic_istream&) = delete;
+
+      basic_istream&
+      operator=(basic_istream&& __rhs)
+      {
+	swap(__rhs);
+	return *this;
+      }
+
+      void
+      swap(basic_istream& __rhs)
+      {
+	__ios_type::swap(__rhs);
+	std::swap(_M_gcount, __rhs._M_gcount);
+      }
+#endif
+
       template<typename _ValueT>
 	__istream_type&
 	_M_extract(_ValueT& __v);
@@ -829,6 +858,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     protected:
       basic_iostream()
       : __istream_type(), __ostream_type() { }
+
+#if __cplusplus >= 201103L
+      basic_iostream(const basic_iostream&) = delete;
+
+      basic_iostream(basic_iostream&& __rhs)
+      : __istream_type(std::move(__rhs)), __ostream_type(*this)
+      { }
+
+      // 27.7.3.3 Assign/swap
+
+      basic_iostream& operator=(const basic_iostream&) = delete;
+
+      basic_iostream&
+      operator=(basic_iostream&& __rhs)
+      {
+	swap(__rhs);
+	return *this;
+      }
+
+      void
+      swap(basic_iostream& __rhs)
+      { __istream_type::swap(__rhs); }
+#endif
     };
 
   /**
