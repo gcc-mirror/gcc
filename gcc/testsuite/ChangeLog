@@ -1,3 +1,8 @@
+2014-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/vrp94.c: New test.
+	* gnat.dg/opt40.adb: Likewise.
+
 2014-09-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.dg/vmx/ops.c: Remove calls to vec_splat, vec_vsplth,

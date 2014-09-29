@@ -1,3 +1,13 @@
+2014-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (get_single_symbol): New function.
+	(build_symbolic_expr): Likewise.
+	(symbolic_range_based_on_p): New predicate.
+	(extract_range_from_binary_expr_1): Deal with single-symbolic ranges
+	for PLUS and MINUS.  Do not drop symbolic ranges at the end.
+	(extract_range_from_binary_expr): Try harder for PLUS and MINUS if
+	operand is symbolic and based on the other operand.
+
 2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* config/microblaze/microblaze.md (call_internal1): Use VOID
