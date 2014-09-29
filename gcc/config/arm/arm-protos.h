@@ -55,6 +55,7 @@ extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx, rtx);
+extern bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
 extern int arm_legitimate_address_outer_p (enum machine_mode, rtx, RTX_CODE, int);
 extern int thumb_legitimate_offset_p (enum machine_mode, HOST_WIDE_INT);
 extern bool arm_legitimize_reload_address (rtx *, enum machine_mode, int, int,
@@ -285,5 +286,7 @@ extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool arm_autoinc_modes_ok_p (enum machine_mode, enum arm_auto_incmodes);
 
 extern void arm_emit_eabi_attribute (const char *, int, int);
+
+extern bool arm_is_constant_pool_ref (rtx);
 
 #endif /* ! GCC_ARM_PROTOS_H */

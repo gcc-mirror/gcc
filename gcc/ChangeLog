@@ -1,3 +1,20 @@
+2014-09-29  Charles Baylis  <charles.baylis@linaro.org>
+
+	Backport from mainline r212303
+	PR target/49423
+	* config/arm/arm-protos.h (arm_legitimate_address_p,
+	arm_is_constant_pool_ref): Add prototypes.
+	* config/arm/arm.c (arm_legitimate_address_p): Remove static.
+	(arm_is_constant_pool_ref) New function.
+	* config/arm/arm.md (unaligned_loadhis, arm_zero_extendhisi2_v6,
+	arm_zero_extendqisi2_v6): Use Uh constraint for memory operand.
+	(arm_extendhisi2, arm_extendhisi2_v6): Use Uh constraint for memory
+	operand and remove pool_range and neg_pool_range attributes.
+	(arm_extendqihi_insn, arm_extendqisi, arm_extendqisi_v6): Remove
+	pool_range and neg_pool_range attributes.
+	* config/arm/constraints.md (Uh): New constraint. (Uq): Don't allow
+	constant pool references.
+
 2014-09-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_function_epilogue): Only update

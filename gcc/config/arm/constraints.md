@@ -36,7 +36,7 @@
 ;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Q, Ut, Uv, Uy, Un, Um, Us
+;; in ARM/Thumb-2 state: Q, Uh, Ut, Uv, Uy, Un, Um, Us
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
 
@@ -310,6 +310,12 @@
   An address valid for loading/storing register exclusive"
  (match_operand 0 "mem_noofs_operand"))
 
+(define_memory_constraint "Uh"
+ "@internal
+  An address suitable for byte and half-word loads which does not point inside a constant pool"
+ (and (match_code "mem")
+      (match_test "arm_legitimate_address_p (GET_MODE (op), XEXP (op, 0), false) && !arm_is_constant_pool_ref (op)")))
+
 (define_memory_constraint "Ut"
  "@internal
   In ARM/Thumb-2 state an address valid for loading/storing opaque structure
@@ -356,7 +362,8 @@
  (and (match_code "mem")
       (match_test "TARGET_ARM
 		   && arm_legitimate_address_outer_p (GET_MODE (op), XEXP (op, 0),
-						      SIGN_EXTEND, 0)")))
+						      SIGN_EXTEND, 0)
+		   && !arm_is_constant_pool_ref (op)")))
 
 (define_memory_constraint "Q"
  "@internal
