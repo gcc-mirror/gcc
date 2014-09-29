@@ -1494,7 +1494,12 @@ msp430_expand_prologue (void)
   rtx p;
 
   if (is_naked_func ())
-    return;
+    {
+      /* We must generate some RTX as thread_prologue_and_epilogue_insns()
+	 examines the output of the gen_prologue() function.  */
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, GEN_INT (0)));
+      return;
+    }
 
   emit_insn (gen_prologue_start_marker ());
 
@@ -1603,7 +1608,12 @@ msp430_expand_epilogue (int is_eh)
   int helper_n = 0;
 
   if (is_naked_func ())
-    return;
+    {
+      /* We must generate some RTX as thread_prologue_and_epilogue_insns()
+	 examines the output of the gen_epilogue() function.  */
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, GEN_INT (0)));
+      return;
+    }
 
   if (cfun->machine->need_to_save [10])
     {
@@ -2030,20 +2040,50 @@ static const struct
   { NULL, NULL }
 };
 
-/* Returns true if the current MCU is an F5xxx series.  */
+/* Returns true if the current MCU supports an F5xxx series
+   hardware multiper.  */
+
 bool
 msp430_use_f5_series_hwmult (void)
 {
+  static const char * cached_match = NULL;
+  static bool         cached_result;
+
   if (msp430_hwmult_type == F5SERIES)
     return true;
 
   if (target_mcu == NULL || msp430_hwmult_type != AUTO)
     return false;
 
-  return strncasecmp (target_mcu, "msp430f5", 8) == 0;
+  if (target_mcu == cached_match)
+    return cached_result;
+
+  cached_match = target_mcu;
+
+  if (strncasecmp (target_mcu, "msp430f5", 8) == 0)
+    return cached_result = true;
+
+  static const char * known_f5_mult_mcus [] =
+    {
+      "cc430f5123",	"cc430f5125",	"cc430f5133",
+      "cc430f5135",	"cc430f5137",	"cc430f5143",
+      "cc430f5145",	"cc430f5147",	"cc430f6125",
+      "cc430f6126",	"cc430f6127",	"cc430f6135",
+      "cc430f6137",	"cc430f6143",	"cc430f6145",
+      "cc430f6147",	"msp430bt5190",	"msp430sl5438a"
+    };
+  int i;
+
+  for (i = ARRAY_SIZE (known_f5_mult_mcus); i--;)
+    if (strcasecmp (target_mcu, known_f5_mult_mcus[i]) == 0)
+      return cached_result = true;
+
+  return cached_result = false;
 }
 
-/* Returns true id the current MCU has a second generation 32-bit hardware multiplier.  */
+/* Returns true if the current MCU has a second generation
+   32-bit hardware multiplier.  */
+
 static bool
 use_32bit_hwmult (void)
 {
@@ -2056,6 +2096,8 @@ use_32bit_hwmult (void)
       "msp430f47186",     "msp430f47196",     "msp430f47167",
       "msp430f47177",     "msp430f47187",     "msp430f47197"
     };
+  static const char * cached_match = NULL;
+  static bool         cached_result;
   int i;
 
   if (msp430_hwmult_type == LARGE)
@@ -2064,15 +2106,105 @@ use_32bit_hwmult (void)
   if (target_mcu == NULL || msp430_hwmult_type != AUTO)
     return false;
 
+  if (target_mcu == cached_match)
+    return cached_result;
+
+  cached_match = target_mcu;
   for (i = ARRAY_SIZE (known_32bit_mult_mcus); i--;)
     if (strcasecmp (target_mcu, known_32bit_mult_mcus[i]) == 0)
-      return true;
+      return cached_result = true;
 
-  return false;
+  return cached_result = false;
+}
+
+/* Returns true if the current MCU does not have a
+   hardware multiplier of any kind.  */
+
+static bool
+msp430_no_hwmult (void)
+{
+  static const char * known_nomult_mcus [] =
+    {
+      "msp430c091",	"msp430c092",	"msp430c111",
+      "msp430c1111", 	"msp430c112", 	"msp430c1121",
+      "msp430c1331", 	"msp430c1351", 	"msp430c311s",
+      "msp430c312", 	"msp430c313", 	"msp430c314",
+      "msp430c315", 	"msp430c323", 	"msp430c325",
+      "msp430c412", 	"msp430c413", 	"msp430e112",
+      "msp430e313", 	"msp430e315", 	"msp430e325",
+      "msp430f110", 	"msp430f1101", 	"msp430f1101a",
+      "msp430f1111", 	"msp430f1111a",	"msp430f112",
+      "msp430f1121", 	"msp430f1121a", "msp430f1122",
+      "msp430f1132", 	"msp430f122", 	"msp430f1222",
+      "msp430f123", 	"msp430f1232", 	"msp430f133",
+      "msp430f135", 	"msp430f155", 	"msp430f156",
+      "msp430f157", 	"msp430f2001", 	"msp430f2002",
+      "msp430f2003", 	"msp430f2011", 	"msp430f2012",
+      "msp430f2013", 	"msp430f2101", 	"msp430f2111",
+      "msp430f2112", 	"msp430f2121", 	"msp430f2122",
+      "msp430f2131", 	"msp430f2132", 	"msp430f2232",
+      "msp430f2234", 	"msp430f2252", 	"msp430f2254",
+      "msp430f2272", 	"msp430f2274", 	"msp430f412",
+      "msp430f413", 	"msp430f4132", 	"msp430f415",
+      "msp430f4152", 	"msp430f417", 	"msp430f4250",
+      "msp430f4260", 	"msp430f4270", 	"msp430f435",
+      "msp430f4351", 	"msp430f436", 	"msp430f4361",
+      "msp430f437", 	"msp430f4371", 	"msp430f438",
+      "msp430f439", 	"msp430f477", 	"msp430f478",
+      "msp430f479", 	"msp430fe423", 	"msp430fe4232",
+      "msp430fe423a",   "msp430fe4242",	"msp430fe425",
+      "msp430fe4252",   "msp430fe425a", "msp430fe427",
+      "msp430fe4272",   "msp430fe427a", "msp430fg4250",
+      "msp430fg4260",   "msp430fg4270", "msp430fg437",
+      "msp430fg438", 	"msp430fg439", 	"msp430fg477",
+      "msp430fg478", 	"msp430fg479",  "msp430fr2032",
+      "msp430fr2033",	"msp430fr4131",	"msp430fr4132",
+      "msp430fr4133",	"msp430fw423",  "msp430fw425",
+      "msp430fw427", 	"msp430fw428",  "msp430fw429",
+      "msp430g2001", 	"msp430g2101",  "msp430g2102",
+      "msp430g2111", 	"msp430g2112",  "msp430g2113",
+      "msp430g2121", 	"msp430g2131",  "msp430g2132",
+      "msp430g2152", 	"msp430g2153",  "msp430g2201",
+      "msp430g2202", 	"msp430g2203",  "msp430g2210",
+      "msp430g2211", 	"msp430g2212",  "msp430g2213",
+      "msp430g2221", 	"msp430g2230",  "msp430g2231",
+      "msp430g2232", 	"msp430g2233",  "msp430g2252",
+      "msp430g2253", 	"msp430g2302",  "msp430g2303",
+      "msp430g2312", 	"msp430g2313",  "msp430g2332",
+      "msp430g2333", 	"msp430g2352",  "msp430g2353",
+      "msp430g2402", 	"msp430g2403",  "msp430g2412",
+      "msp430g2413", 	"msp430g2432",  "msp430g2433",
+      "msp430g2444", 	"msp430g2452",  "msp430g2453",
+      "msp430g2513", 	"msp430g2533",  "msp430g2544",
+      "msp430g2553", 	"msp430g2744",  "msp430g2755",
+      "msp430g2855", 	"msp430g2955",  "msp430l092",
+      "msp430p112", 	"msp430p313",   "msp430p315",
+      "msp430p315s", 	"msp430p325",   "msp430tch5e"
+    };
+  static const char * cached_match = NULL;
+  static bool         cached_result;
+  int i;
+
+  if (msp430_hwmult_type == NONE)
+    return true;
+
+  if (target_mcu == NULL || msp430_hwmult_type != AUTO)
+    return false;
+
+  if (target_mcu == cached_match)
+    return cached_result;
+
+  cached_match = target_mcu;
+  for (i = ARRAY_SIZE (known_nomult_mcus); i--;)
+    if (strcasecmp (target_mcu, known_nomult_mcus[i]) == 0)
+      return cached_result = true;
+
+  return cached_result = false;
 }
 
 /* This function does the same as the default, but it will replace GCC
    function names with the MSPABI-specified ones.  */
+
 void
 msp430_output_labelref (FILE *file, const char *name)
 {
@@ -2093,7 +2225,7 @@ msp430_output_labelref (FILE *file, const char *name)
 	{
 	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulhi2_f5";
-	  else
+	  else if (! msp430_no_hwmult ())
 	    name = "__mulhi2";
 	}
       else if (strcmp ("__mspabi_mpyl", name) == 0)
@@ -2102,7 +2234,7 @@ msp430_output_labelref (FILE *file, const char *name)
 	    name = "__mulsi2_f5";
 	  else if (use_32bit_hwmult ())
 	    name = "__mulsi2_hw32";
-	  else
+	  else if (! msp430_no_hwmult ())
 	    name = "__mulsi2";
 	}
     }

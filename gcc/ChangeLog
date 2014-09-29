@@ -1,3 +1,13 @@
+2014-09-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_expand_prologue): Return a
+	CLOBBER rtx for naked functions.
+	(msp430_expand_epilogue): Likewise.
+	(msp430_use_f5_series_hwmult): Cache result.
+	(use_32bit_hwmult): Cache result.
+	(msp430_no_hwmult): New function.
+	(msp430_output_labelref): Use it.
+
 2014-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/63247
@@ -10,8 +20,8 @@
 	* config/pa/pa.c (pa_output_function_epilogue): Only update
 	last_address when a nonnote insn is found.
 
-2014-09-26  Jan Hubicka  <hubicka@ucw.cz>	
-	
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60665
 	* ipa-devirt.c (possible_polymorphic_call_targets): Silence clang warning.
 
