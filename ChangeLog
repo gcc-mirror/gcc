@@ -1,3 +1,7 @@
+2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* MAINTAINERS:  Add myself as libstdc++ special modes maintainer.
+
 2014-09-29  Catherine Moore  <clm@codesourcery.com>
 
 	* MAINTAINERS:  Add myself as MIPS maintainer.
