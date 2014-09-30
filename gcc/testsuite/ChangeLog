@@ -1,10 +1,15 @@
+2014-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/63282
+	* gcc.c-torture/compile/pr63282.c: New test.
+
 2014-09-29  James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/61407
-	* gcc.dg/darwin-minversion-1.c: Fixed formatting
-	* gcc.dg/darwin-minversion-2.c: Fixed formatting
-	* gcc.dg/darwin-minversion-3.c: Fixed formatting
-	* gcc.dg/darwin-minversion-4.c: Added test for OS X 10.10
+	* gcc.dg/darwin-minversion-1.c: Fixed formatting.
+	* gcc.dg/darwin-minversion-2.c: Fixed formatting.
+	* gcc.dg/darwin-minversion-3.c: Fixed formatting.
+	* gcc.dg/darwin-minversion-4.c: Added test for OS X 10.10.
 
 2014-09-26  Jakub Jelinek  <jakub@redhat.com>
 
