@@ -1,3 +1,9 @@
+2014-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR preprocessor/58893
+	* gcc.dg/pr58893.c: New test case.
+	* gcc.dg/pr58893-0.h: New include.
+
 2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
 
 	PR middle-end/62120

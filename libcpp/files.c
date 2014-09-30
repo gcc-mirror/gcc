@@ -991,6 +991,18 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   _cpp_file *file;
   bool stacked;
 
+  /* For -include command-line flags we have type == IT_CMDLINE.
+     When the first -include file is processed we have the case, where
+     pfile->cur_token == pfile->cur_run->base, we are directly called up
+     by the front end.  However in the case of the second -include file,
+     we are called from _cpp_lex_token -> _cpp_get_fresh_line ->
+     cpp_push_include, with pfile->cur_token != pfile->cur_run->base,
+     and pfile->cur_token[-1].src_loc not (yet) initialized.
+     However, when the include file cannot be found, we need src_loc to
+     be initialized to some safe value: 0 means UNKNOWN_LOCATION.  */
+  if (type == IT_CMDLINE && pfile->cur_token != pfile->cur_run->base)
+    pfile->cur_token[-1].src_loc = 0;
+
   dir = search_path_head (pfile, fname, angle_brackets, type);
   if (!dir)
     return false;
