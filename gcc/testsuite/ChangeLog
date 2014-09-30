@@ -1,3 +1,7 @@
+2014-30-09  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* gfortran.dg/coarray_collectives_9.f90: Fix some dg-error.
+
 2014-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/63282
