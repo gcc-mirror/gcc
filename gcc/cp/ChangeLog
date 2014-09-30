@@ -1,3 +1,12 @@
+2014-09-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_trait_kind): Remove CPTK_IS_CONVERTIBLE_TO.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise. Remove redundant grokdeclarator.
+
 2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
        PR c++/16564

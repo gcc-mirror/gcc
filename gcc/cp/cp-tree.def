@@ -354,9 +354,9 @@ DEFTREECODE (STMT_EXPR, "stmt_expr", tcc_expression, 1)
    is applied.  */
 DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", tcc_unary, 1)
 
-/** C++0x extensions. */
+/** C++11 extensions. */
 
-/* A static assertion.  This is a C++0x extension.
+/* A static assertion.  This is a C++11 extension.
    STATIC_ASSERT_CONDITION contains the condition that is being
    checked.  STATIC_ASSERT_MESSAGE contains the message (a string
    literal) to be displayed if the condition fails to hold.  */

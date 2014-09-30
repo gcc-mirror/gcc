@@ -7355,10 +7355,6 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CLASS:
       return (NON_UNION_CLASS_TYPE_P (type1));
 
-    case CPTK_IS_CONVERTIBLE_TO:
-      /* TODO  */
-      return false;
-
     case CPTK_IS_EMPTY:
       return (NON_UNION_CLASS_TYPE_P (type1) && CLASSTYPE_EMPTY_P (type1));
 
@@ -7413,36 +7409,8 @@ check_trait_type (tree type)
 tree
 finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 {
-  gcc_assert (kind == CPTK_HAS_NOTHROW_ASSIGN
-	      || kind == CPTK_HAS_NOTHROW_CONSTRUCTOR
-	      || kind == CPTK_HAS_NOTHROW_COPY
-	      || kind == CPTK_HAS_TRIVIAL_ASSIGN
-	      || kind == CPTK_HAS_TRIVIAL_CONSTRUCTOR
-	      || kind == CPTK_HAS_TRIVIAL_COPY
-	      || kind == CPTK_HAS_TRIVIAL_DESTRUCTOR
-	      || kind == CPTK_HAS_VIRTUAL_DESTRUCTOR	      
-	      || kind == CPTK_IS_ABSTRACT
-	      || kind == CPTK_IS_BASE_OF
-	      || kind == CPTK_IS_CLASS
-	      || kind == CPTK_IS_CONVERTIBLE_TO
-	      || kind == CPTK_IS_EMPTY
-	      || kind == CPTK_IS_ENUM
-	      || kind == CPTK_IS_FINAL
-	      || kind == CPTK_IS_LITERAL_TYPE
-	      || kind == CPTK_IS_POD
-	      || kind == CPTK_IS_POLYMORPHIC
-	      || kind == CPTK_IS_STD_LAYOUT
-	      || kind == CPTK_IS_TRIVIAL
-	      || kind == CPTK_IS_UNION);
-
-  if (kind == CPTK_IS_CONVERTIBLE_TO)
-    {
-      sorry ("__is_convertible_to");
-      return error_mark_node;
-    }
-
   if (type1 == error_mark_node
-      || ((kind == CPTK_IS_BASE_OF || kind == CPTK_IS_CONVERTIBLE_TO)
+      || ((kind == CPTK_IS_BASE_OF)
 	  && type2 == error_mark_node))
     return error_mark_node;
 
@@ -7491,7 +7459,6 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNION:
       break;
     
-    case CPTK_IS_CONVERTIBLE_TO:
     default:
       gcc_unreachable ();
     }
