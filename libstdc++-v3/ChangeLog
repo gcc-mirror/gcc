@@ -1,3 +1,8 @@
+2014-09-30  Siva Chandra Reddy  <sivachandra@google.com>
+
+	* python/hook.in: Only import libstdcxx.v6.
+	* python/libstdcxx/v6/__init__.py: Load printers and xmethods.
+
 2014-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update.
