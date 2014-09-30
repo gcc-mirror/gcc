@@ -1,3 +1,11 @@
+2014-10-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/pack_generic.c (pack_s_internal): Fix
+	-Wmaybe-uninitialized warnings.
+	* m4/unpack.m4 (unpack0_'rtype_code`): Likewise.
+	(unpack1_'rtype_code`): Likewise.
+	* generated/unpack_*.m4: Regenerated.
+
 2014-09-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac (AM_CFLAGS): Add
