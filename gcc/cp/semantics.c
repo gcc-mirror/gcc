@@ -7379,6 +7379,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_TRIVIAL:
       return (trivial_type_p (type1));
 
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      return (trivially_copyable_p (type1));
+
     case CPTK_IS_UNION:
       return (type_code1 == UNION_TYPE);
 
@@ -7442,6 +7445,7 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
+    case CPTK_IS_TRIVIALLY_COPYABLE:
       if (!check_trait_type (type1))
 	return error_mark_node;
       break;

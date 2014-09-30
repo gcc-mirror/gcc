@@ -1,5 +1,8 @@
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
+	* c-common.h (enum rid): Add RID_IS_TRIVIALLY_COPYABLE.
+	* c-common.c (c_common_reswords): Add __is_trivially_copyable.
+
 	* c-common.h (enum rid): Remove RID_IS_CONVERTIBLE_TO.
 	* c-common.c (c_common_reswords): Remove __is_convertible_to.
 

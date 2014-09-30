@@ -4490,6 +4490,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_POLYMORPHIC:
 	case RID_IS_STD_LAYOUT:
 	case RID_IS_TRIVIAL:
+	case RID_IS_TRIVIALLY_COPYABLE:
 	case RID_IS_UNION:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
@@ -8723,6 +8724,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_TRIVIAL:
       kind = CPTK_IS_TRIVIAL;
+      break;
+    case RID_IS_TRIVIALLY_COPYABLE:
+      kind = CPTK_IS_TRIVIALLY_COPYABLE;
       break;
     case RID_IS_UNION:
       kind = CPTK_IS_UNION;

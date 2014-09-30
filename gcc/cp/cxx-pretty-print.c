@@ -2393,6 +2393,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_TRIVIAL:
       pp_cxx_ws_string (pp, "__is_trivial");
       break;
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      pp_cxx_ws_string (pp, "__is_trivially_copyable");
+      break;
     case CPTK_IS_UNION:
       pp_cxx_ws_string (pp, "__is_union");
       break;
