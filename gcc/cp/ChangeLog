@@ -1,5 +1,18 @@
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_ASSIGNABLE and
+	CPTK_IS_TRIVIALLY_CONSTRUCTIBLE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise.  Handle variadic trait.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	(check_trait_type): Handle variadic trait.  Return bool.
+	* method.c (build_stub_object): Add rvalue reference here.
+	(locate_fn_flags): Not here.
+	(check_nontriv, assignable_expr, constructible_expr): New.
+	(is_trivially_xible): New.
+
 	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_COPYABLE.
 	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
 	* parser.c (cp_parser_primary_expression): Likewise.
