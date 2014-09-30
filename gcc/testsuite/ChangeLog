@@ -1,3 +1,10 @@
+2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR middle-end/62120
+	* gcc.target/i386/avx512f-additional-reg-names.c: Use register valid
+	in 32-bit mode.
+	* gcc.target/i386/pr62120.c: New. 
+
 2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/simd/vqdmullh_laneq_s16.c: New.
