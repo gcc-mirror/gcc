@@ -6,7 +6,7 @@
 	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmulls_s32):  Fix
 	return type.
 
-2014-30-09  Dominique d'Humieres <dominiq@lps.ens.fr>
+2014-09-30  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* gfortran.dg/coarray_collectives_9.f90: Fix some dg-error.
 
