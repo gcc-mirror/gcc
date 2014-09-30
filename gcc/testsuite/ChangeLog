@@ -1,3 +1,11 @@
+2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/simd/vqdmullh_laneq_s16.c: New.
+	* gcc.target/aarch64/simd/vqdmulls_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulls_lane_s32.c: Fix return type.
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmulls_s32):  Fix
+	return type.
+
 2014-30-09  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* gfortran.dg/coarray_collectives_9.f90: Fix some dg-error.

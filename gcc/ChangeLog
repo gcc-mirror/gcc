@@ -1,3 +1,13 @@
+2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqdmull_laneq): Expand
+	iterator.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdmull_laneq<mode>): Expand iterator.
+	* config/aarch64/arm_neon.h (vqdmullh_laneq_s16): New.
+	(vqdmulls_lane_s32): Fix return type.
+	(vqdmulls_laneq_s32): New.
+
 2014-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/63282

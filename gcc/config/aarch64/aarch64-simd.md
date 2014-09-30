@@ -3398,7 +3398,7 @@
 
 (define_expand "aarch64_sqdmull_laneq<mode>"
   [(match_operand:<VWIDE> 0 "register_operand" "=w")
-   (match_operand:VD_HSI 1 "register_operand" "w")
+   (match_operand:VSD_HSI 1 "register_operand" "w")
    (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
    (match_operand:SI 3 "immediate_operand" "i")]
   "TARGET_SIMD"

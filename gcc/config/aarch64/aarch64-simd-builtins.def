@@ -155,7 +155,7 @@
 
   BUILTIN_VSD_HSI (BINOP, sqdmull, 0)
   BUILTIN_VSD_HSI (TERNOP, sqdmull_lane, 0)
-  BUILTIN_VD_HSI (TERNOP, sqdmull_laneq, 0)
+  BUILTIN_VSD_HSI (TERNOP, sqdmull_laneq, 0)
   BUILTIN_VD_HSI (BINOP, sqdmull_n, 0)
   BUILTIN_VQ_HSI (BINOP, sqdmull2, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmull2_lane, 0)
