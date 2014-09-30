@@ -852,7 +852,7 @@ build_stub_type (tree type, int quals, bool rvalue)
 static tree
 build_stub_object (tree reftype)
 {
-  tree stub = build1 (NOP_EXPR, reftype, integer_one_node);
+  tree stub = build1 (CONVERT_EXPR, reftype, integer_one_node);
   return convert_from_reference (stub);
 }
 
