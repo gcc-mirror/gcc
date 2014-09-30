@@ -1298,7 +1298,7 @@
         (unspec:SDF [(match_operand:SDF 1
 		         "register_operand" "<F_constraint>")]
          VRINT))]
-  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "TARGET_HARD_FLOAT && TARGET_VFP5 <vfp_double_cond>"
   "vrint<vrint_variant>%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1"
   [(set_attr "predicable" "<vrint_predicable>")
    (set_attr "predicable_short_it" "no")
@@ -1329,7 +1329,7 @@
   [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
         (smax:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
 		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
-  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "TARGET_HARD_FLOAT && TARGET_VFP5 <vfp_double_cond>"
   "vmaxnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "f_minmax<vfp_type>")
    (set_attr "conds" "unconditional")]
@@ -1339,7 +1339,7 @@
   [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
         (smin:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
 		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
-  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "TARGET_HARD_FLOAT && TARGET_VFP5 <vfp_double_cond>"
   "vminnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "f_minmax<vfp_type>")
    (set_attr "conds" "unconditional")]
