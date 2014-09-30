@@ -274,6 +274,9 @@ EnumValue
 Enum(processor_type) String(cortex-r7) Value(cortexr7)
 
 EnumValue
+Enum(processor_type) String(cortex-m7) Value(cortexm7)
+
+EnumValue
 Enum(processor_type) String(cortex-m4) Value(cortexm4)
 
 EnumValue
@@ -423,17 +426,23 @@ EnumValue
 Enum(arm_fpu) String(fpv4-sp-d16) Value(11)
 
 EnumValue
-Enum(arm_fpu) String(neon-vfpv4) Value(12)
+Enum(arm_fpu) String(fpv5-sp-d16) Value(12)
 
 EnumValue
-Enum(arm_fpu) String(fp-armv8) Value(13)
+Enum(arm_fpu) String(fpv5-d16) Value(13)
 
 EnumValue
-Enum(arm_fpu) String(neon-fp-armv8) Value(14)
+Enum(arm_fpu) String(neon-vfpv4) Value(14)
 
 EnumValue
-Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(15)
+Enum(arm_fpu) String(fp-armv8) Value(15)
 
 EnumValue
-Enum(arm_fpu) String(vfp3) Value(16)
+Enum(arm_fpu) String(neon-fp-armv8) Value(16)
+
+EnumValue
+Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(17)
+
+EnumValue
+Enum(arm_fpu) String(vfp3) Value(18)
 

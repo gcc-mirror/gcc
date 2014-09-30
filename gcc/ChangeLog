@@ -1,3 +1,16 @@
+2014-09-30  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m7): New core name.
+	* config/arm/arm-fpus.def (fpv5-sp-d16): New fpu name.
+	(fpv5-d16): Ditto.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm.h (TARGET_VFP5): New macro.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Include cortex-m7.
+	* config/arm/vfp.md (<vrint_pattern><SDF:mode>2,
+	smax<mode>3, smin<mode>3): Enabled for FPU FPv5.
+	* doc/invoke.texi: Document new cpu and fpu names.
+
 2014-09-30  Jiong Wang  <jiong.wang@arm.com>
 
 	* shrink-wrap.c (move_insn_for_shrink_wrap): Check "can_throw_internal"
