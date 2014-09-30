@@ -1,3 +1,27 @@
+2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+       PR c++/16564
+       * lib/gcc.exp: Accept "fatal error:" as error prefix.
+       * lib/g++.exp: Likewise.
+       * lib/obj-c++.exp: Likewise.
+       * lib/objc.exp: Likewise.
+       * g++.dg/template/pr16564.C: New test.
+
+2014-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16564
+	* g++.dg/cpp0x/decltype26.C: Adjust.
+	* g++.dg/cpp0x/decltype28.C: Likewise.
+	* g++.dg/cpp0x/decltype29.C: Likewise.
+	* g++.dg/cpp0x/decltype32.C: Likewise.
+	* g++.dg/cpp0x/enum11.C: Likewise.
+	* g++.dg/template/arrow1.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/template/recurse.C: Likewise.
+	* g++.dg/template/recurse2.C: Likewise.
+	* g++.dg/template/vtable2.C: Likewise.
+	* g++.old-deja/g++.pt/infinite1.C: Likewise.
+
 2014-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR preprocessor/58893
@@ -9,7 +33,7 @@
 	PR middle-end/62120
 	* gcc.target/i386/avx512f-additional-reg-names.c: Use register valid
 	in 32-bit mode.
-	* gcc.target/i386/pr62120.c: New. 
+	* gcc.target/i386/pr62120.c: New.
 
 2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
 

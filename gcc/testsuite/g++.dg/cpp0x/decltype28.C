@@ -14,3 +14,5 @@ ft (F f, typename enable_if<N==0, int>::type) {}
 int main() {
   ft<struct a*, 2> (0, 0);	// { dg-message "from here" }
 }
+
+// { dg-prune-output "compilation terminated" }

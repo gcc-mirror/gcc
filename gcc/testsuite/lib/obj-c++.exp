@@ -275,7 +275,7 @@ proc obj-c++_init { args } {
     lappend ALWAYS_OBJCXXFLAGS "additional_flags=-fmessage-length=0"
 
     set gcc_warning_prefix "warning:"
-    set gcc_error_prefix "error:"
+    set gcc_error_prefix "(fatal )?error:"
 
     if { [istarget *-*-darwin*] } {
 	lappend ALWAYS_OBJCXXFLAGS "ldflags=-multiply_defined suppress"

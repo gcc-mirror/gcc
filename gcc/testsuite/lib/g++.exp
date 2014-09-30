@@ -267,7 +267,7 @@ proc g++_init { args } {
     lappend ALWAYS_CXXFLAGS "additional_flags=-fmessage-length=0"
 
     set gcc_warning_prefix "warning:"
-    set gcc_error_prefix "error:"
+    set gcc_error_prefix "(fatal )?error:"
 
     if { [istarget *-*-darwin*] } {
 	lappend ALWAYS_CXXFLAGS "ldflags=-multiply_defined suppress"
