@@ -1,5 +1,12 @@
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_COPYABLE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
 	* method.c (build_stub_object): Use CONVERT_EXPR.
 	* tree.c (build_dummy_object): Likewise.
 	(is_dummy_object): Adjust.
