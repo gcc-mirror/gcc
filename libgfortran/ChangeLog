@@ -1,7 +1,7 @@
 2014-10-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/pack_generic.c (pack_s_internal): Fix
-	-Wmaybe-uninitialized warnings.
+	-Wmaybe-uninitialized warning.
 	* m4/unpack.m4 (unpack0_'rtype_code`): Likewise.
 	(unpack1_'rtype_code`): Likewise.
 	* generated/unpack_*.m4: Regenerated.
