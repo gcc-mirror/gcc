@@ -1,3 +1,11 @@
+2014-09-30  David Sherwood  <david.sherwood@arm.com>
+
+	* ira-int.h (ira_allocno): Add "wmode" field.
+	* ira-build.c (create_insn_allocnos): Add new "parent" function
+	parameter.
+	* ira-conflicts.c (ira_build_conflicts): Add conflicts for registers
+	that cannot be accessed in wmode.
+
 2014-09-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* data-streamer.c (bp_unpack_var_len_int): Avoid signed
