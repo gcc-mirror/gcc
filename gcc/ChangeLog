@@ -1,3 +1,8 @@
+2014-09-29  Andi Kleen  <ak@linux.intel.com>
+
+	* opts.c (print_filtered_help): Print --param min/max/default
+	with -Q.
+
 2014-09-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md: Use define_c_enum for "unspec" and "unspecv".
