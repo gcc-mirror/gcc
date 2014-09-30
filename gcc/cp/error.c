@@ -3360,16 +3360,6 @@ maybe_print_instantiation_context (diagnostic_context *context)
   record_last_problematic_instantiation ();
   print_instantiation_full_context (context);
 }
-
-/* Report the bare minimum context of a template instantiation.  */
-void
-print_instantiation_context (void)
-{
-  print_instantiation_partial_context
-    (global_dc, current_instantiation (), input_location);
-  pp_newline (global_dc->printer);
-  diagnostic_flush_buffer (global_dc);
-}
 
 /* Report what constexpr call(s) we're trying to expand, if any.  */
 

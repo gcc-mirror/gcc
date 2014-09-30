@@ -1,3 +1,21 @@
+2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+       PR c++/16564
+       * error.c (print_instantiation_context): Delete.
+       * typeck2.c (build_x_arrow): Record location when pushing
+       template instantiation.
+       * pt.c (push_tinst_level): Make it a wrapper around ...
+       (push_tinst_level_loc): ... this. New function. Make excessive
+       template instantiation depth a fatal error. Record location. Use
+       bool as return type.
+       (instantiate_pending_templates): Make excessive
+       template instantiation depth a fatal error.
+       (problematic_instantiation_changed): Use bool as return type.
+       * cp-tree.h (print_instantiation_context): Delete.
+       (push_tinst_level): Update declaration.
+       (problematic_instantiation_changed): Likewise.
+       (push_tinst_level_loc): New.
+
 2014-09-29  Richard Biener  <rguenther@suse.de>
 
 	* typeck.c (enum_cast_to_int): Use CONVERT_EXPR_P to check
