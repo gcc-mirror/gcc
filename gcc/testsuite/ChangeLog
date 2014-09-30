@@ -1,3 +1,8 @@
+2014-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/63282
+	* gcc.c-torture/compile/pr63282.c: New test.
+
 2014-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/compat/struct-layout-1_generate.c: Add -Wno-abi

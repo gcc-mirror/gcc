@@ -4271,6 +4271,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   old_dest = JUMP_LABEL (jump);
   if (other_bb != new_dest)
     {
+      if (!any_condjump_p (jump))
+	goto cancel;
+
       if (JUMP_P (BB_END (dest_edge->src)))
 	new_dest_label = JUMP_LABEL (BB_END (dest_edge->src));
       else if (new_dest == EXIT_BLOCK_PTR)

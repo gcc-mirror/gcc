@@ -1,3 +1,9 @@
+2014-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/63282
+	* ifcvt.c (dead_or_predicable): Don't call redirect_jump_1
+	or invert_jump_1 if jump isn't any_condjump_p.
+
 2014-09-29  Charles Baylis  <charles.baylis@linaro.org>
 
 	Backport from mainline r212303
