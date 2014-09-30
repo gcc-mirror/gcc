@@ -1,5 +1,9 @@
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
+	* method.c (build_stub_object): Use CONVERT_EXPR.
+	* tree.c (build_dummy_object): Likewise.
+	(is_dummy_object): Adjust.
+
 	* cp-tree.h (cp_trait_kind): Remove CPTK_IS_CONVERTIBLE_TO.
 	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
 	* semantics.c (trait_expr_value): Likewise.
