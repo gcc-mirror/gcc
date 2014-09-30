@@ -7379,6 +7379,12 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_TRIVIAL:
       return (trivial_type_p (type1));
 
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+      return is_trivially_xible (MODIFY_EXPR, type1, type2);
+
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      return is_trivially_xible (INIT_EXPR, type1, type2);
+
     case CPTK_IS_TRIVIALLY_COPYABLE:
       return (trivially_copyable_p (type1));
 
@@ -7392,19 +7398,26 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 }
 
 /* If TYPE is an array of unknown bound, or (possibly cv-qualified)
-   void, or a complete type, returns it, otherwise NULL_TREE.  */
+   void, or a complete type, returns true, otherwise false.  */
 
-static tree
+static bool
 check_trait_type (tree type)
 {
+  if (type == NULL_TREE)
+    return true;
+
+  if (TREE_CODE (type) == TREE_LIST)
+    return (check_trait_type (TREE_VALUE (type))
+	    && check_trait_type (TREE_CHAIN (type)));
+
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type)
       && COMPLETE_TYPE_P (TREE_TYPE (type)))
-    return type;
+    return true;
 
   if (VOID_TYPE_P (type))
-    return type;
+    return true;
 
-  return complete_type_or_else (strip_array_types (type), NULL_TREE);
+  return !!complete_type_or_else (strip_array_types (type), NULL_TREE);
 }
 
 /* Process a trait expression.  */
@@ -7413,8 +7426,7 @@ tree
 finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 {
   if (type1 == error_mark_node
-      || ((kind == CPTK_IS_BASE_OF)
-	  && type2 == error_mark_node))
+      || type2 == error_mark_node)
     return error_mark_node;
 
   if (processing_template_decl)
@@ -7447,6 +7459,13 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_TRIVIAL:
     case CPTK_IS_TRIVIALLY_COPYABLE:
       if (!check_trait_type (type1))
+	return error_mark_node;
+      break;
+
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      if (!check_trait_type (type1)
+	  || !check_trait_type (type2))
 	return error_mark_node;
       break;
 
