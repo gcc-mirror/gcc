@@ -1,3 +1,8 @@
+2014-09-30  Jason Merrill  <jason@redhat.com>
+
+	* c-common.h (enum rid): Remove RID_IS_CONVERTIBLE_TO.
+	* c-common.c (c_common_reswords): Remove __is_convertible_to.
+
 2014-09-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61405

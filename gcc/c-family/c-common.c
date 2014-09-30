@@ -472,7 +472,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
   { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
   { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
-  { "__is_convertible_to", RID_IS_CONVERTIBLE_TO, D_CXXONLY },
   { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
