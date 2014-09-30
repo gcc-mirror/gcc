@@ -110,7 +110,7 @@ bp_unpack_var_len_int (struct bitpack_d *bp)
       if ((half_byte & 0x8) == 0)
 	{
 	  if ((shift < HOST_BITS_PER_WIDE_INT) && (half_byte & 0x4))
-	    result |= - ((HOST_WIDE_INT)1 << shift);
+	    result |= - (HOST_WIDE_INT_1U << shift);
 
 	  return result;
 	}
