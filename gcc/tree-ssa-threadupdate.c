@@ -229,6 +229,9 @@ struct ssa_local_info_t
 
   /* TRUE if we thread one or more jumps, FALSE otherwise.  */
   bool jumps_threaded;
+
+  /* Blocks duplicated for the thread.  */
+  bitmap duplicate_blocks;
 };
 
 /* Passes which use the jump threading code register jump threading
@@ -292,7 +295,8 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 static void
 create_block_for_threading (basic_block bb,
 			    struct redirection_data *rd,
-			    unsigned int count)
+			    unsigned int count,
+			    bitmap *duplicate_blocks)
 {
   edge_iterator ei;
   edge e;
@@ -307,6 +311,8 @@ create_block_for_threading (basic_block bb,
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_blocks[count]->frequency = 0;
   rd->dup_blocks[count]->count = 0;
+  if (duplicate_blocks)
+    bitmap_set_bit (*duplicate_blocks, rd->dup_blocks[count]->index);
 }
 
 /* Main data structure to hold information for duplicates of BB.  */
@@ -555,8 +561,481 @@ any_remaining_duplicated_blocks (vec<jump_thread_edge *> *path,
   return false;
 }
 
+
+/* Compute the amount of profile count/frequency coming into the jump threading
+   path stored in RD that we are duplicating, returned in PATH_IN_COUNT_PTR and
+   PATH_IN_FREQ_PTR, as well as the amount of counts flowing out of the
+   duplicated path, returned in PATH_OUT_COUNT_PTR.  LOCAL_INFO is used to
+   identify blocks duplicated for jump threading, which have duplicated
+   edges that need to be ignored in the analysis.  Return true if path contains
+   a joiner, false otherwise.
+
+   In the non-joiner case, this is straightforward - all the counts/frequency
+   flowing into the jump threading path should flow through the duplicated
+   block and out of the duplicated path.
+
+   In the joiner case, it is very tricky.  Some of the counts flowing into
+   the original path go offpath at the joiner.  The problem is that while
+   we know how much total count goes off-path in the original control flow,
+   we don't know how many of the counts corresponding to just the jump
+   threading path go offpath at the joiner.
+
+   For example, assume we have the following control flow and identified
+   jump threading paths:
+
+                A     B     C
+                 \    |    /
+               Ea \   |Eb / Ec
+                   \  |  /
+                    v v v
+                      J       <-- Joiner
+                     / \
+                Eoff/   \Eon
+                   /     \
+                  v       v
+                Soff     Son  <--- Normal
+                         /\
+                      Ed/  \ Ee
+                       /    \
+                      v     v
+                      D      E
+
+            Jump threading paths: A -> J -> Son -> D (path 1)
+                                  C -> J -> Son -> E (path 2)
+
+   Note that the control flow could be more complicated:
+   - Each jump threading path may have more than one incoming edge.  I.e. A and
+   Ea could represent multiple incoming blocks/edges that are included in
+   path 1.
+   - There could be EDGE_NO_COPY_SRC_BLOCK edges after the joiner (either
+   before or after the "normal" copy block).  These are not duplicated onto
+   the jump threading path, as they are single-successor.
+   - Any of the blocks along the path may have other incoming edges that
+   are not part of any jump threading path, but add profile counts along
+   the path.
+
+   In the aboe example, after all jump threading is complete, we will
+   end up with the following control flow:
+
+                A          B            C
+                |          |            |
+              Ea|          |Eb          |Ec
+                |          |            |
+                v          v            v
+               Ja          J           Jc
+               / \        / \Eon'     / \
+          Eona/   \   ---/---\--------   \Eonc
+             /     \ /  /     \           \
+            v       v  v       v          v
+           Sona     Soff      Son        Sonc
+             \                 /\         /
+              \___________    /  \  _____/
+                          \  /    \/
+                           vv      v
+                            D      E
+
+   The main issue to notice here is that when we are processing path 1
+   (A->J->Son->D) we need to figure out the outgoing edge weights to
+   the duplicated edges Ja->Sona and Ja->Soff, while ensuring that the
+   sum of the incoming weights to D remain Ed.  The problem with simply
+   assuming that Ja (and Jc when processing path 2) has the same outgoing
+   probabilities to its successors as the original block J, is that after
+   all paths are processed and other edges/counts removed (e.g. none
+   of Ec will reach D after processing path 2), we may end up with not
+   enough count flowing along duplicated edge Sona->D.
+
+   Therefore, in the case of a joiner, we keep track of all counts
+   coming in along the current path, as well as from predecessors not
+   on any jump threading path (Eb in the above example).  While we
+   first assume that the duplicated Eona for Ja->Sona has the same
+   probability as the original, we later compensate for other jump
+   threading paths that may eliminate edges.  We do that by keep track
+   of all counts coming into the original path that are not in a jump
+   thread (Eb in the above example, but as noted earlier, there could
+   be other predecessors incoming to the path at various points, such
+   as at Son).  Call this cumulative non-path count coming into the path
+   before D as Enonpath.  We then ensure that the count from Sona->D is as at
+   least as big as (Ed - Enonpath), but no bigger than the minimum
+   weight along the jump threading path.  The probabilities of both the
+   original and duplicated joiner block J and Ja will be adjusted
+   accordingly after the updates.  */
+
+static bool
+compute_path_counts (struct redirection_data *rd,
+                     ssa_local_info_t *local_info,
+                     gcov_type *path_in_count_ptr,
+                     gcov_type *path_out_count_ptr,
+                     int *path_in_freq_ptr)
+{
+  edge e = rd->incoming_edges->e;
+  vec<jump_thread_edge *> *path = THREAD_PATH (e);
+  edge elast = path->last ()->e;
+  gcov_type nonpath_count = 0;
+  bool has_joiner = false;
+  gcov_type path_in_count = 0;
+  int path_in_freq = 0;
+
+  /* Start by accumulating incoming edge counts to the path's first bb
+     into a couple buckets:
+        path_in_count: total count of incoming edges that flow into the
+                  current path.
+        nonpath_count: total count of incoming edges that are not
+                  flowing along *any* path.  These are the counts
+                  that will still flow along the original path after
+                  all path duplication is done by potentially multiple
+                  calls to this routine.
+     (any other incoming edge counts are for a different jump threading
+     path that will be handled by a later call to this routine.)
+     To make this easier, start by recording all incoming edges that flow into
+     the current path in a bitmap.  We could add up the path's incoming edge
+     counts here, but we still need to walk all the first bb's incoming edges
+     below to add up the counts of the other edges not included in this jump
+     threading path.  */
+  struct el *next, *el;
+  bitmap in_edge_srcs = BITMAP_ALLOC (NULL);
+  for (el = rd->incoming_edges; el; el = next)
+    {
+      next = el->next;
+      bitmap_set_bit (in_edge_srcs, el->e->src->index);
+    }
+  edge ein;
+  edge_iterator ei;
+  FOR_EACH_EDGE (ein, ei, e->dest->preds)
+    {
+      vec<jump_thread_edge *> *ein_path = THREAD_PATH (ein);
+      /* Simply check the incoming edge src against the set captured above.  */
+      if (ein_path
+          && bitmap_bit_p (in_edge_srcs, (*ein_path)[0]->e->src->index))
+        {
+          /* It is necessary but not sufficient that the last path edges
+             are identical.  There may be different paths that share the
+             same last path edge in the case where the last edge has a nocopy
+             source block.  */
+          gcc_assert (ein_path->last ()->e == elast);
+          path_in_count += ein->count;
+          path_in_freq += EDGE_FREQUENCY (ein);
+        }
+      else if (!ein_path)
+        {
+          /* Keep track of the incoming edges that are not on any jump-threading
+             path.  These counts will still flow out of original path after all
+             jump threading is complete.  */
+            nonpath_count += ein->count;
+        }
+    }
+  BITMAP_FREE (in_edge_srcs);
+
+  /* Now compute the fraction of the total count coming into the first
+     path bb that is from the current threading path.  */
+  gcov_type total_count = e->dest->count;
+  /* Handle incoming profile insanities.  */
+  if (total_count < path_in_count)
+    path_in_count = total_count;
+  int onpath_scale = GCOV_COMPUTE_SCALE (path_in_count, total_count);
+
+  /* Walk the entire path to do some more computation in order to estimate
+     how much of the path_in_count will flow out of the duplicated threading
+     path.  In the non-joiner case this is straightforward (it should be
+     the same as path_in_count, although we will handle incoming profile
+     insanities by setting it equal to the minimum count along the path).
+
+     In the joiner case, we need to estimate how much of the path_in_count
+     will stay on the threading path after the joiner's conditional branch.
+     We don't really know for sure how much of the counts
+     associated with this path go to each successor of the joiner, but we'll
+     estimate based on the fraction of the total count coming into the path
+     bb was from the threading paths (computed above in onpath_scale).
+     Afterwards, we will need to do some fixup to account for other threading
+     paths and possible profile insanities.
+
+     In order to estimate the joiner case's counts we also need to update
+     nonpath_count with any additional counts coming into the path.  Other
+     blocks along the path may have additional predecessors from outside
+     the path.  */
+  gcov_type path_out_count = path_in_count;
+  gcov_type min_path_count = path_in_count;
+  for (unsigned int i = 1; i < path->length (); i++)
+    {
+      edge epath = (*path)[i]->e;
+      gcov_type cur_count = epath->count;
+      if ((*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+        {
+          has_joiner = true;
+          cur_count = apply_probability (cur_count, onpath_scale);
+        }
+      /* In the joiner case we need to update nonpath_count for any edges
+         coming into the path that will contribute to the count flowing
+         into the path successor.  */
+      if (has_joiner && epath != elast)
+      {
+        /* Look for other incoming edges after joiner.  */
+        FOR_EACH_EDGE (ein, ei, epath->dest->preds)
+          {
+            if (ein != epath
+                /* Ignore in edges from blocks we have duplicated for a
+                   threading path, which have duplicated edge counts until
+                   they are redirected by an invocation of this routine.  */
+                && !bitmap_bit_p (local_info->duplicate_blocks,
+                                  ein->src->index))
+              nonpath_count += ein->count;
+          }
+      }
+      if (cur_count < path_out_count)
+        path_out_count = cur_count;
+      if (epath->count < min_path_count)
+        min_path_count = epath->count;
+    }
+
+  /* We computed path_out_count above assuming that this path targeted
+     the joiner's on-path successor with the same likelihood as it
+     reached the joiner.  However, other thread paths through the joiner
+     may take a different path through the normal copy source block
+     (i.e. they have a different elast), meaning that they do not
+     contribute any counts to this path's elast.  As a result, it may
+     turn out that this path must have more count flowing to the on-path
+     successor of the joiner.  Essentially, all of this path's elast
+     count must be contributed by this path and any nonpath counts
+     (since any path through the joiner with a different elast will not
+     include a copy of this elast in its duplicated path).
+     So ensure that this path's path_out_count is at least the
+     difference between elast->count and nonpath_count.  Otherwise the edge
+     counts after threading will not be sane.  */
+  if (has_joiner && path_out_count < elast->count - nonpath_count)
+  {
+    path_out_count = elast->count - nonpath_count;
+    /* But neither can we go above the minimum count along the path
+       we are duplicating.  This can be an issue due to profile
+       insanities coming in to this pass.  */
+    if (path_out_count > min_path_count)
+      path_out_count = min_path_count;
+  }
+
+  *path_in_count_ptr = path_in_count;
+  *path_out_count_ptr = path_out_count;
+  *path_in_freq_ptr = path_in_freq;
+  return has_joiner;
+}
+
+
+/* Update the counts and frequencies for both an original path
+   edge EPATH and its duplicate EDUP.  The duplicate source block
+   will get a count/frequency of PATH_IN_COUNT and PATH_IN_FREQ,
+   and the duplicate edge EDUP will have a count of PATH_OUT_COUNT.  */
+static void
+update_profile (edge epath, edge edup, gcov_type path_in_count,
+                gcov_type path_out_count, int path_in_freq)
+{
+
+  /* First update the duplicated block's count / frequency.  */
+  if (edup)
+    {
+      basic_block dup_block = edup->src;
+      gcc_assert (dup_block->count == 0);
+      gcc_assert (dup_block->frequency == 0);
+      dup_block->count = path_in_count;
+      dup_block->frequency = path_in_freq;
+    }
+
+  /* Now update the original block's count and frequency in the
+     opposite manner - remove the counts/freq that will flow
+     into the duplicated block.  Handle underflow due to precision/
+     rounding issues.  */
+  epath->src->count -= path_in_count;
+  if (epath->src->count < 0)
+    epath->src->count = 0;
+  epath->src->frequency -= path_in_freq;
+  if (epath->src->frequency < 0)
+    epath->src->frequency = 0;
+
+  /* Next update this path edge's original and duplicated counts.  We know
+     that the duplicated path will have path_out_count flowing
+     out of it (in the joiner case this is the count along the duplicated path
+     out of the duplicated joiner).  This count can then be removed from the
+     original path edge.  */
+  if (edup)
+    edup->count = path_out_count;
+  epath->count -= path_out_count;
+  gcc_assert (epath->count >= 0);
+}
+
+
+/* The duplicate and original joiner blocks may end up with different
+   probabilities (different from both the original and from each other).
+   Recompute the probabilities here once we have updated the edge
+   counts and frequencies.  */
+
+static void
+recompute_probabilities (basic_block bb)
+{
+  edge esucc;
+  edge_iterator ei;
+  FOR_EACH_EDGE (esucc, ei, bb->succs)
+    {
+      if (bb->count)
+        esucc->probability = GCOV_COMPUTE_SCALE (esucc->count,
+                                                 bb->count);
+      if (esucc->probability > REG_BR_PROB_BASE)
+        {
+	  /* Can happen with missing/guessed probabilities, since we
+	     may determine that more is flowing along duplicated
+	     path than joiner succ probabilities allowed.
+	     Counts and freqs will be insane after jump threading,
+	     at least make sure probability is sane or we will
+	     get a flow verification error.
+	     Not much we can do to make counts/freqs sane without
+	     redoing the profile estimation.  */
+	  esucc->probability = REG_BR_PROB_BASE;
+	}
+    }
+}
+
+
+/* Update the counts of the original and duplicated edges from a joiner
+   that go off path, given that we have already determined that the
+   duplicate joiner DUP_BB has incoming count PATH_IN_COUNT and
+   outgoing count along the path PATH_OUT_COUNT.  The original (on-)path
+   edge from joiner is EPATH.  */
+
+static void
+update_joiner_offpath_counts (edge epath, basic_block dup_bb,
+                              gcov_type path_in_count,
+                              gcov_type path_out_count)
+{
+  /* Compute the count that currently flows off path from the joiner.
+     In other words, the total count of joiner's out edges other than
+     epath.  Compute this by walking the successors instead of
+     subtracting epath's count from the joiner bb count, since there
+     are sometimes slight insanities where the total out edge count is
+     larger than the bb count (possibly due to rounding/truncation
+     errors).  */
+  gcov_type total_orig_off_path_count = 0;
+  edge enonpath;
+  edge_iterator ei;
+  FOR_EACH_EDGE (enonpath, ei, epath->src->succs)
+    {
+      if (enonpath == epath)
+        continue;
+      total_orig_off_path_count += enonpath->count;
+    }
+
+  /* For the path that we are duplicating, the amount that will flow
+     off path from the duplicated joiner is the delta between the
+     path's cumulative in count and the portion of that count we
+     estimated above as flowing from the joiner along the duplicated
+     path.  */
+  gcov_type total_dup_off_path_count = path_in_count - path_out_count;
+
+  /* Now do the actual updates of the off-path edges.  */
+  FOR_EACH_EDGE (enonpath, ei, epath->src->succs)
+    {
+      /* Look for edges going off of the threading path.  */
+      if (enonpath == epath)
+        continue;
+
+      /* Find the corresponding edge out of the duplicated joiner.  */
+      edge enonpathdup = find_edge (dup_bb, enonpath->dest);
+      gcc_assert (enonpathdup);
+
+      /* We can't use the original probability of the joiner's out
+         edges, since the probabilities of the original branch
+         and the duplicated branches may vary after all threading is
+         complete.  But apportion the duplicated joiner's off-path
+         total edge count computed earlier (total_dup_off_path_count)
+         among the duplicated off-path edges based on their original
+         ratio to the full off-path count (total_orig_off_path_count).
+         */
+      int scale = GCOV_COMPUTE_SCALE (enonpath->count,
+                                      total_orig_off_path_count);
+      /* Give the duplicated offpath edge a portion of the duplicated
+         total.  */
+      enonpathdup->count = apply_scale (scale,
+                                        total_dup_off_path_count);
+      /* Now update the original offpath edge count, handling underflow
+         due to rounding errors.  */
+      enonpath->count -= enonpathdup->count;
+      if (enonpath->count < 0)
+        enonpath->count = 0;
+    }
+}
+
+
+/* Invoked for routines that have guessed frequencies and no profile
+   counts to record the block and edge frequencies for paths through RD
+   in the profile count fields of those blocks and edges.  This is because
+   ssa_fix_duplicate_block_edges incrementally updates the block and
+   edge counts as edges are redirected, and it is difficult to do that
+   for edge frequencies which are computed on the fly from the source
+   block frequency and probability.  When a block frequency is updated
+   its outgoing edge frequencies are affected and become difficult to
+   adjust.  */
+
+static void
+freqs_to_counts_path (struct redirection_data *rd)
+{
+  edge e = rd->incoming_edges->e;
+  vec<jump_thread_edge *> *path = THREAD_PATH (e);
+  edge ein;
+  edge_iterator ei;
+  FOR_EACH_EDGE (ein, ei, e->dest->preds)
+    {
+      gcc_assert (!ein->count);
+      ein->count = EDGE_FREQUENCY (ein);
+    }
+
+  for (unsigned int i = 1; i < path->length (); i++)
+    {
+      edge epath = (*path)[i]->e;
+      gcc_assert (!epath->count);
+      edge esucc;
+      FOR_EACH_EDGE (esucc, ei, epath->src->succs)
+        {
+          esucc->count = EDGE_FREQUENCY (esucc);
+        }
+      epath->src->count = epath->src->frequency;
+    }
+}
+
+
+/* For routines that have guessed frequencies and no profile counts, where we
+   used freqs_to_counts_path to record block and edge frequencies for paths
+   through RD, we clear the counts after completing all updates for RD.
+   The updates in ssa_fix_duplicate_block_edges are based off the count fields,
+   but the block frequencies and edge probabilities were updated as well,
+   so we can simply clear the count fields.  */
+
+static void
+clear_counts_path (struct redirection_data *rd)
+{
+  edge e = rd->incoming_edges->e;
+  vec<jump_thread_edge *> *path = THREAD_PATH (e);
+  edge ein, esucc;
+  edge_iterator ei;
+  FOR_EACH_EDGE (ein, ei, e->dest->preds)
+    ein->count = 0;
+
+  /* First clear counts along original path.  */
+  for (unsigned int i = 1; i < path->length (); i++)
+    {
+      edge epath = (*path)[i]->e;
+      FOR_EACH_EDGE (esucc, ei, epath->src->succs)
+        esucc->count = 0;
+      epath->src->count = 0;
+    }
+  /* Also need to clear the counts along duplicated path.  */
+  for (unsigned int i = 0; i < 2; i++)
+    {
+      basic_block dup = rd->dup_blocks[i];
+      if (!dup)
+        continue;
+      FOR_EACH_EDGE (esucc, ei, dup->succs)
+        esucc->count = 0;
+      dup->count = 0;
+    }
+}
+
 /* Wire up the outgoing edges from the duplicate blocks and
-   update any PHIs as needed.  */
+   update any PHIs as needed.  Also update the profile counts
+   on the original and duplicate blocks and edges.  */
 void
 ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 			       ssa_local_info_t *local_info)
@@ -564,9 +1043,38 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
   bool multi_incomings = (rd->incoming_edges->next != NULL);
   edge e = rd->incoming_edges->e;
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
+  edge elast = path->last ()->e;
+  gcov_type path_in_count = 0;
+  gcov_type path_out_count = 0;
+  int path_in_freq = 0;
 
+  /* This routine updates profile counts, frequencies, and probabilities
+     incrementally. Since it is difficult to do the incremental updates
+     using frequencies/probabilities alone, for routines without profile
+     data we first take a snapshot of the existing block and edge frequencies
+     by copying them into the empty profile count fields.  These counts are
+     then used to do the incremental updates, and cleared at the end of this
+     routine.  */
+  bool do_freqs_to_counts = (profile_status_for_fn (cfun) != PROFILE_READ
+                             || !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+  if (do_freqs_to_counts)
+    freqs_to_counts_path (rd);
+
+  /* First determine how much profile count to move from original
+     path to the duplicate path.  This is tricky in the presence of
+     a joiner (see comments for compute_path_counts), where some portion
+     of the path's counts will flow off-path from the joiner.  In the
+     non-joiner case the path_in_count and path_out_count should be the
+     same.  */
+  bool has_joiner = compute_path_counts (rd, local_info,
+                                         &path_in_count, &path_out_count,
+                                         &path_in_freq);
+
+  int cur_path_freq = path_in_freq;
   for (unsigned int count = 0, i = 1; i < path->length (); i++)
     {
+      edge epath = (*path)[i]->e;
+
       /* If we were threading through an joiner block, then we want
 	 to keep its control statement and redirect an outgoing edge.
 	 Else we want to remove the control statement & edges, then create
@@ -575,6 +1083,8 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	{
 	  edge victim;
 	  edge e2;
+
+          gcc_assert (has_joiner);
 
 	  /* This updates the PHIs at the destination of the duplicate
 	     block.  Pass 0 instead of i if we are threading a path which
@@ -591,14 +1101,13 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	     threading path.  */
 	  if (!any_remaining_duplicated_blocks (path, i))
 	    {
-	      e2 = redirect_edge_and_branch (victim, path->last ()->e->dest);
-	      e2->count = path->last ()->e->count;
+	      e2 = redirect_edge_and_branch (victim, elast->dest);
 	      /* If we redirected the edge, then we need to copy PHI arguments
 		 at the target.  If the edge already existed (e2 != victim
 		 case), then the PHIs in the target already have the correct
 		 arguments.  */
 	      if (e2 == victim)
-		copy_phi_args (e2->dest, path->last ()->e, e2,
+		copy_phi_args (e2->dest, elast, e2,
 			       path, multi_incomings ? 0 : i);
 	    }
 	  else
@@ -626,7 +1135,31 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 		    }
 		}
 	    }
-	  count++;
+
+	  /* Update the counts and frequency of both the original block
+	     and path edge, and the duplicates.  The path duplicate's
+	     incoming count and frequency are the totals for all edges
+	     incoming to this jump threading path computed earlier.
+	     And we know that the duplicated path will have path_out_count
+	     flowing out of it (i.e. along the duplicated path out of the
+	     duplicated joiner).  */
+	  update_profile (epath, e2, path_in_count, path_out_count,
+			  path_in_freq);
+
+	  /* Next we need to update the counts of the original and duplicated
+	     edges from the joiner that go off path.  */
+	  update_joiner_offpath_counts (epath, e2->src, path_in_count,
+                                        path_out_count);
+
+	  /* Finally, we need to set the probabilities on the duplicated
+	     edges out of the duplicated joiner (e2->src).  The probabilities
+	     along the original path will all be updated below after we finish
+	     processing the whole path.  */
+	  recompute_probabilities (e2->src);
+
+	  /* Record the frequency flowing to the downstream duplicated
+	     path blocks.  */
+	  cur_path_freq = EDGE_FREQUENCY (e2);
 	}
       else if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK)
 	{
@@ -635,9 +1168,60 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 						   multi_incomings ? 0 : i);
 	  if (count == 1)
 	    single_succ_edge (rd->dup_blocks[1])->aux = NULL;
-	  count++;
+
+	  /* Update the counts and frequency of both the original block
+	     and path edge, and the duplicates.  Since we are now after
+	     any joiner that may have existed on the path, the count
+	     flowing along the duplicated threaded path is path_out_count.
+	     If we didn't have a joiner, then cur_path_freq was the sum
+	     of the total frequencies along all incoming edges to the
+	     thread path (path_in_freq).  If we had a joiner, it would have
+	     been updated at the end of that handling to the edge frequency
+	     along the duplicated joiner path edge.  */
+	  update_profile (epath, EDGE_SUCC (rd->dup_blocks[count], 0),
+			  path_out_count, path_out_count,
+			  cur_path_freq);
 	}
+      else
+        {
+	  /* No copy case.  In this case we don't have an equivalent block
+	     on the duplicated thread path to update, but we do need
+	     to remove the portion of the counts/freqs that were moved
+	     to the duplicated path from the counts/freqs flowing through
+	     this block on the original path.  Since all the no-copy edges
+	     are after any joiner, the removed count is the same as
+	     path_out_count.
+
+	     If we didn't have a joiner, then cur_path_freq was the sum
+	     of the total frequencies along all incoming edges to the
+	     thread path (path_in_freq).  If we had a joiner, it would have
+	     been updated at the end of that handling to the edge frequency
+	     along the duplicated joiner path edge.  */
+	     update_profile (epath, NULL, path_out_count, path_out_count,
+			     cur_path_freq);
+	}
+
+      /* Increment the index into the duplicated path when we processed
+         a duplicated block.  */
+      if ((*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK
+          || (*path)[i]->type == EDGE_COPY_SRC_BLOCK)
+      {
+	  count++;
+      }
     }
+
+  /* Now walk orig blocks and update their probabilities, since the
+     counts and freqs should be updated properly by above loop.  */
+  for (unsigned int i = 1; i < path->length (); i++)
+    {
+      edge epath = (*path)[i]->e;
+      recompute_probabilities (epath->src);
+    }
+
+  /* Done with all profile and frequency updates, clear counts if they
+     were copied.  */
+  if (do_freqs_to_counts)
+    clear_counts_path (rd);
 }
 
 /* Hash table traversal callback routine to create duplicate blocks.  */
@@ -663,7 +1247,8 @@ ssa_create_duplicates (struct redirection_data **slot,
       if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK
 	  || (*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
 	{
-	  create_block_for_threading ((*path)[i]->e->src, rd, 1);
+	  create_block_for_threading ((*path)[i]->e->src, rd, 1,
+                                      &local_info->duplicate_blocks);
 	  break;
 	}
     }
@@ -672,7 +1257,8 @@ ssa_create_duplicates (struct redirection_data **slot,
      use the template to create a new block.  */
   if (local_info->template_block == NULL)
     {
-      create_block_for_threading ((*path)[1]->e->src, rd, 0);
+      create_block_for_threading ((*path)[1]->e->src, rd, 0,
+                                  &local_info->duplicate_blocks);
       local_info->template_block = rd->dup_blocks[0];
 
       /* We do not create any outgoing edges for the template.  We will
@@ -681,7 +1267,8 @@ ssa_create_duplicates (struct redirection_data **slot,
     }
   else
     {
-      create_block_for_threading (local_info->template_block, rd, 0);
+      create_block_for_threading (local_info->template_block, rd, 0,
+                                  &local_info->duplicate_blocks);
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
@@ -750,19 +1337,6 @@ ssa_redirect_edges (struct redirection_data **slot,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
 		     e->src->index, e->dest->index, rd->dup_blocks[0]->index);
-
-	  rd->dup_blocks[0]->count += e->count;
-
-	  /* Excessive jump threading may make frequencies large enough so
-	     the computation overflows.  */
-	  if (rd->dup_blocks[0]->frequency < BB_FREQ_MAX * 2)
-	    rd->dup_blocks[0]->frequency += EDGE_FREQUENCY (e);
-
-	  /* In the case of threading through a joiner block, the outgoing
-	     edges from the duplicate block were updated when they were
-	     redirected during ssa_fix_duplicate_block_edges.  */
-	  if ((*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
-	    EDGE_SUCC (rd->dup_blocks[0], 0)->count += e->count;
 
 	  /* If we redirect a loop latch edge cancel its loop.  */
 	  if (e->src == e->src->loop_father->latch)
@@ -849,6 +1423,8 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   edge_iterator ei;
   ssa_local_info_t local_info;
 
+  local_info.duplicate_blocks = BITMAP_ALLOC (NULL);
+
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
      difference.  However, if we have a block with a large number of
@@ -908,10 +1484,6 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 	    continue;
 	}
 
-      if (e->dest == e2->src)
-	update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
-					 e->count, (*THREAD_PATH (e))[1]->e);
-
       /* Insert the outgoing edge into the hash table if it is not
 	 already in the hash table.  */
       lookup_redirection_data (e, INSERT);
@@ -964,6 +1536,9 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   if (noloop_only
       && bb == bb->loop_father->header)
     set_loop_copy (bb->loop_father, NULL);
+
+  BITMAP_FREE (local_info.duplicate_blocks);
+  local_info.duplicate_blocks = NULL;
 
   /* Indicate to our caller whether or not any jumps were threaded.  */
   return local_info.jumps_threaded;
@@ -1031,7 +1606,7 @@ thread_single_edge (edge e)
   npath->safe_push (x);
   rd.path = npath;
 
-  create_block_for_threading (bb, &rd, 0);
+  create_block_for_threading (bb, &rd, 0, NULL);
   remove_ctrl_stmt_and_useless_edges (rd.dup_blocks[0], NULL);
   create_edge_and_update_destination_phis (&rd, rd.dup_blocks[0], 0);
 

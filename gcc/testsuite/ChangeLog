@@ -1,3 +1,8 @@
+2014-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/tree-prof/20050826-2.c: New test.
+	* gcc.dg/tree-prof/cmpsf-1.c: Ditto.
+
 2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
        PR c++/16564

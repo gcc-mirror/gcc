@@ -1,3 +1,22 @@
+2014-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): New
+	duplicate_blocks bitmap.
+	(remove_ctrl_stmt_and_useless_edges): Ditto.
+	(create_block_for_threading): Ditto.
+	(compute_path_counts): New function.
+	(update_profile): Ditto.
+	(recompute_probabilities): Ditto.
+	(update_joiner_offpath_counts): Ditto.
+	(freqs_to_counts_path): Ditto.
+	(clear_counts_path): Ditto.
+	(ssa_fix_duplicate_block_edges): Update profile info.
+	(ssa_create_duplicates): Pass new parameter.
+	(ssa_redirect_edges): Remove old profile update.
+	(thread_block_1): New duplicate_blocks bitmap,
+	remove old profile update.
+	(thread_single_edge): Pass new parameter.
+
 2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
 
 	PR middle-end/62120
