@@ -1,3 +1,8 @@
+2014-09-30  Jiong Wang  <jiong.wang@arm.com>
+
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Check "can_throw_internal"
+	before sinking insn.
+
 2014-09-30  David Sherwood  <david.sherwood@arm.com>
 
 	* ira-int.h (ira_allocno): Add "wmode" field.
