@@ -888,7 +888,7 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
       if (asmspec[0] != 0 && i < 0)
 	{
 	  i = atoi (asmspec);
-	  if (i < FIRST_PSEUDO_REGISTER && i >= 0)
+	  if (i < FIRST_PSEUDO_REGISTER && i >= 0 && reg_names[i][0])
 	    return i;
 	  else
 	    return -2;
@@ -925,7 +925,8 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
 
 	for (i = 0; i < (int) ARRAY_SIZE (table); i++)
 	  if (table[i].name[0]
-	      && ! strcmp (asmspec, table[i].name))
+	      && ! strcmp (asmspec, table[i].name)
+	      && reg_names[table[i].number][0])
 	    return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */

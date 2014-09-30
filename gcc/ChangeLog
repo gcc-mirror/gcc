@@ -1,3 +1,9 @@
+2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR middle-end/62120
+	* varasm.c (decode_reg_name_and_count): Check availability for
+	registers from ADDITIONAL_REGISTER_NAMES.
+
 2014-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR plugins/63410
