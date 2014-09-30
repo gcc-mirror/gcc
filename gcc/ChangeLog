@@ -1,3 +1,8 @@
+2014-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR plugins/63410
+	* Makefile.in (PLUGIN_HEADERS): Add pass-instances.def.
+
 2014-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/63282
