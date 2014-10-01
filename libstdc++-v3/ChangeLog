@@ -1,7 +1,12 @@
+2014-10-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdDebugIteratorPrinter.to_string):
+	Adapt to latest modifications on debug iterators.
+
 2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/std/type_traits: Add is_final<> type trait for C++14.
-	* testsuite/util/testsuite_tr1.h: Add 
+	* testsuite/util/testsuite_tr1.h: Add
 	* testsuite/20_util/is_final/requirements/
 	explicit_instantiation.cc: New.
 	* testsuite/20_util/is_final/requirements/typedefs.cc: New.
