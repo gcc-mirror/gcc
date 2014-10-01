@@ -38811,8 +38811,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	      op0 = gen_lowpart (V4DImode, d->op0);
 	      op1 = gen_lowpart (V4DImode, d->op1);
 	      rperm[0]
-		= GEN_INT (((d->perm[0] & (nelt / 2)) ? 1 : 0)
-			   || ((d->perm[nelt / 2] & (nelt / 2)) ? 2 : 0));
+		= GEN_INT ((d->perm[0] / (nelt / 2))
+			   | ((d->perm[nelt / 2] / (nelt / 2)) * 16));
 	      emit_insn (gen_avx2_permv2ti (target, op0, op1, rperm[0]));
 	      return true;
 	    }
