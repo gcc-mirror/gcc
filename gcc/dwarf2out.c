@@ -13882,6 +13882,10 @@ loc_list_from_tree (tree loc, int want_address)
       have_address = 1;
       break;
 
+    case TARGET_MEM_REF:
+    case SSA_NAME:
+      return NULL;
+
     case COMPOUND_EXPR:
       return loc_list_from_tree (TREE_OPERAND (loc, 1), want_address);
 
