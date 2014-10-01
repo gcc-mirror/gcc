@@ -14416,14 +14416,20 @@ loc_list_from_tree (tree loc, int want_address)
       break;
 
     case MEM_REF:
-      /* ??? FIXME.  */
       if (!integer_zerop (TREE_OPERAND (loc, 1)))
-	return 0;
+	{
+	  have_address = 1;
+	  goto do_plus;
+	}
       /* Fallthru.  */
     case INDIRECT_REF:
       list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 0);
       have_address = 1;
       break;
+
+    case TARGET_MEM_REF:
+    case SSA_NAME:
+      return NULL;
 
     case COMPOUND_EXPR:
       return loc_list_from_tree (TREE_OPERAND (loc, 1), want_address);
@@ -14587,6 +14593,7 @@ loc_list_from_tree (tree loc, int want_address)
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    do_plus:
       if (tree_fits_shwi_p (TREE_OPERAND (loc, 1)))
 	{
 	  list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 0);

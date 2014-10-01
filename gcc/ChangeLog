@@ -1,5 +1,9 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/63342
+	* dwarf2out.c (loc_list_from_tree): Handle MEM_REF with non-zero
+	offset, TARGET_MEM_REF and SSA_NAME.
+
 	* config/i386/i386.c (expand_vec_perm_palignr): Handle
 	256-bit vectors for TARGET_AVX2.
 
