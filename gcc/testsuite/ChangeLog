@@ -1,5 +1,8 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/63306
+	* g++.dg/ipa/pr63306.C: New test.
+
 	PR target/63428
 	* gcc.dg/torture/vshuf-4.inc: Move test 122 from EXPTESTS
 	to test 24 in TESTS.
