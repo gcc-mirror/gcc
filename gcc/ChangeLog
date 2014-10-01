@@ -1,3 +1,10 @@
+2014-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2014-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (*store_minmaxsi): Disable for arm_restrict_it.
+
 2014-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
