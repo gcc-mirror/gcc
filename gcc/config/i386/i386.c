@@ -43874,15 +43874,16 @@ expand_vec_perm_vperm2f128 (struct expand_vec_perm_d *d)
 	    dfirst.perm[i] = (i & (nelt2 - 1))
 			     + ((perm >> (2 * (i >= nelt2))) & 3) * nelt2;
 
+	  canonicalize_perm (&dfirst);
 	  ok = expand_vec_perm_1 (&dfirst);
 	  gcc_assert (ok);
 
 	  /* And dsecond is some single insn shuffle, taking
 	     d->op0 and result of vperm2f128 (if perm < 16) or
 	     d->op1 and result of vperm2f128 (otherwise).  */
-	  dsecond.op1 = dfirst.target;
 	  if (perm >= 16)
-	    dsecond.op0 = dfirst.op1;
+	    dsecond.op0 = dsecond.op1;
+	  dsecond.op1 = dfirst.target;
 
 	  ok = expand_vec_perm_1 (&dsecond);
 	  gcc_assert (ok);
