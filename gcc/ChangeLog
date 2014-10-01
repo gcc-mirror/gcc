@@ -1,5 +1,8 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (expand_vec_perm_vperm2f128): Canonicalize
+	dfirst permutation.
+
 	PR target/63428
 	* config/i386/i386.c (expand_vec_perm_pshufb): Fix up rperm[0]
 	argument to avx2_permv2ti.
