@@ -1,6 +1,12 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/63285
+	* haifa-sched.c (schedule_block): Advance cycle at the end of BB
+	if advance != 0.
+
 	2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/63186

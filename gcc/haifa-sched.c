@@ -6368,7 +6368,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   if (ls.modulo_epilogue)
     success = true;
  end_schedule:
-  if (!ls.first_cycle_insn_p)
+  if (!ls.first_cycle_insn_p || advance)
     advance_one_cycle ();
   perform_replacements_new_cycle ();
   if (modulo_ii > 0)
