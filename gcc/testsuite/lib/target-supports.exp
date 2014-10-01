@@ -865,7 +865,7 @@ proc check_effective_target_hard_float { } {
     if { [istarget mips*-*-*] } {
 	return [check_no_compiler_messages hard_float assembly {
 		#if (defined __mips_soft_float || defined __mips16)
-		#error FOO
+		#error __mips_soft_float || __mips16
 		#endif
 	}]
     }
@@ -877,7 +877,7 @@ proc check_effective_target_hard_float { } {
 	return 0
 	# return [check_no_compiler_messages hard_float assembly {
 		#if defined __RX_64_BIT_DOUBLES__
-		#error FOO
+		#error __RX_64_BIT_DOUBLES__
 		#endif
 	# }]
     }
@@ -893,7 +893,7 @@ proc check_effective_target_hard_float { } {
 proc check_effective_target_mips64 { } {
     return [check_no_compiler_messages mips64 assembly {
 	#ifndef __mips64
-	#error FOO
+	#error !__mips64
 	#endif
     }]
 }
@@ -904,7 +904,7 @@ proc check_effective_target_mips64 { } {
 proc check_effective_target_nomips16 { } {
     return [check_no_compiler_messages nomips16 object {
 	#ifndef __mips
-	#error FOO
+	#error !__mips
 	#else
 	/* A cheap way of testing for -mflip-mips16.  */
 	void foo (void) { asm ("addiu $20,$20,1"); }
@@ -927,12 +927,12 @@ proc add_options_for_mips16_attribute { flags } {
 proc check_effective_target_mips16_attribute { } {
     return [check_no_compiler_messages mips16_attribute assembly {
 	#ifdef PIC
-	#error FOO
+	#error PIC
 	#endif
 	#if defined __mips_hard_float \
 	    && (!defined _ABIO32 || _MIPS_SIM != _ABIO32) \
 	    && (!defined _ABIO64 || _MIPS_SIM != _ABIO64)
-	#error FOO
+	#error __mips_hard_float && (!_ABIO32 || !_ABIO64)
 	#endif
     } [add_options_for_mips16_attribute ""]]
 }
@@ -961,7 +961,7 @@ proc check_effective_target_mips_llsc { } {
     # Otherwise assume LL/SC support for everything but MIPS I.
     return [check_no_compiler_messages mips_llsc assembly {
 	#if __mips == 1
-	#error FOO
+	#error __mips == 1
 	#endif
     }]
 }
@@ -975,7 +975,7 @@ proc check_effective_target_mips_rel { } {
     return [check_no_compiler_messages mips_rel object {
 	#if (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
 	    || (defined _ABI64 && _MIPS_SIM == _ABI64)
-	#error FOO
+	#error _ABIN32 && (_ABIN32 || _ABI64)
 	#endif
     }]
 }
@@ -988,7 +988,7 @@ proc check_effective_target_mips_eabi { } {
     }
     return [check_no_compiler_messages mips_eabi object {
 	#ifndef __mips_eabi
-	#error FOO
+	#error !__mips_eabi
 	#endif
     }]
 }
@@ -998,7 +998,7 @@ proc check_effective_target_mips_eabi { } {
 proc check_effective_target_nonpic { } {
     return [check_no_compiler_messages nonpic assembly {
 	#if __PIC__
-	#error FOO
+	#error __PIC__
 	#endif
     }]
 }
@@ -1617,7 +1617,7 @@ proc check_effective_target_broken_cplxf_arg { } {
 proc check_effective_target_ti_c67x { } {
     return [check_no_compiler_messages ti_c67x assembly {
 	#if !defined(_TMS320C6700)
-	#error FOO
+	#error !_TMS320C6700
 	#endif
     }]
 }
@@ -1626,7 +1626,7 @@ proc check_effective_target_ti_c67x { } {
 proc check_effective_target_ti_c64xp { } {
     return [check_no_compiler_messages ti_c64xp assembly {
 	#if !defined(_TMS320C6400_PLUS)
-	#error FOO
+	#error !_TMS320C6400_PLUS
 	#endif
     }]
 }
@@ -1721,8 +1721,8 @@ proc check_effective_target_objc2 { } {
 	#ifdef __OBJC2__
 	int dummy[1];
 	#else
-	#error
-	#endif 
+	#error !__OBJC2__
+	#endif
     }]
 }
 
@@ -1731,8 +1731,8 @@ proc check_effective_target_next_runtime { } {
 	#ifdef __NEXT_RUNTIME__
 	int dummy[1];
 	#else
-	#error
-	#endif 
+	#error !__NEXT_RUNTIME__
+	#endif
     }]
 }
 
@@ -2244,7 +2244,7 @@ proc check_effective_target_vect_simd_clones { } {
 proc check_effective_target_aarch64_big_endian { } {
     return [check_no_compiler_messages aarch64_big_endian assembly {
 	#if !defined(__aarch64__) || !defined(__AARCH64EB__)
-	#error FOO
+	#error !__aarch64__ || !__AARCH64EB__
 	#endif
     }]
 }
@@ -2262,7 +2262,7 @@ proc check_effective_target_aarch64_little_endian { } {
 proc check_effective_target_arm32 { } {
     return [check_no_compiler_messages arm32 assembly {
 	#if !defined(__arm__) || (defined(__thumb__) && !defined(__thumb2__))
-	#error FOO
+	#error !__arm || __thumb__ && !__thumb2__
 	#endif
     }]
 }
@@ -2271,7 +2271,7 @@ proc check_effective_target_arm32 { } {
 proc check_effective_target_arm_nothumb { } {
     return [check_no_compiler_messages arm_nothumb assembly {
 	#if !defined(__arm__) || (defined(__thumb__) || defined(__thumb2__))
-	#error FOO
+	#error !__arm__ || __thumb || __thumb2__
 	#endif
     }]
 }
@@ -2280,7 +2280,7 @@ proc check_effective_target_arm_nothumb { } {
 proc check_effective_target_arm_little_endian { } {
     return [check_no_compiler_messages arm_little_endian assembly {
 	#if !defined(__arm__) || !defined(__ARMEL__)
-	#error FOO
+	#error !__arm__ || !__ARMEL__
 	#endif
     }]
 }
@@ -2291,7 +2291,7 @@ proc check_effective_target_arm_vect_no_misalign { } {
 	#if !defined(__arm__) \
 	    || (defined(__ARM_FEATURE_UNALIGNED) \
 	        && defined(__ARMEL__))
-	#error FOO
+	#error !__arm__ || (__ARMEL__ && __ARM_FEATURE_UNALIGNED)
 	#endif
     }]
 }
@@ -2719,7 +2719,7 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	    }
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
 		#if !defined (DEF)
-		#error FOO
+		#error !DEF
 		#endif
 	    } "FLAG" ]
 	}
@@ -2746,7 +2746,7 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 proc check_effective_target_arm_arm_ok { } {
     return [check_no_compiler_messages arm_arm_ok assembly {
 	#if !defined (__arm__) || defined (__thumb__) || defined (__thumb2__)
-	#error FOO
+	#error !__arm__ || __thumb__ || __thumb2__
 	#endif
     } "-marm"]
 }
@@ -2758,7 +2758,7 @@ proc check_effective_target_arm_arm_ok { } {
 proc check_effective_target_arm_thumb1_ok { } {
     return [check_no_compiler_messages arm_thumb1_ok assembly {
 	#if !defined(__arm__) || !defined(__thumb__) || defined(__thumb2__)
-	#error FOO
+	#error !__arm__ || !__thumb__ || __thumb2__
 	#endif
 	int foo (int i) { return i; }
     } "-mthumb"]
@@ -2770,7 +2770,7 @@ proc check_effective_target_arm_thumb1_ok { } {
 proc check_effective_target_arm_thumb2_ok { } {
     return [check_no_compiler_messages arm_thumb2_ok assembly {
 	#if !defined(__thumb2__)
-	#error FOO
+	#error !__thumb2__
 	#endif
 	int foo (int i) { return i; }
     } "-mthumb"]
@@ -2782,7 +2782,7 @@ proc check_effective_target_arm_thumb2_ok { } {
 proc check_effective_target_arm_thumb1 { } {
     return [check_no_compiler_messages arm_thumb1 assembly {
 	#if !defined(__arm__) || !defined(__thumb__) || defined(__thumb2__)
-	#error not thumb1
+	#error !__arm__ || !__thumb__ || __thumb2__
 	#endif
 	int i;
     } ""]
@@ -2794,7 +2794,7 @@ proc check_effective_target_arm_thumb1 { } {
 proc check_effective_target_arm_thumb2 { } {
     return [check_no_compiler_messages arm_thumb2 assembly {
 	#if !defined(__thumb2__)
-	#error FOO
+	#error !__thumb2__
 	#endif
 	int i;
     } ""]
@@ -2821,7 +2821,7 @@ proc check_effective_target_arm_cortex_m { } {
 	#if !defined(__ARM_ARCH_7M__) \
             && !defined (__ARM_ARCH_7EM__) \
             && !defined (__ARM_ARCH_6M__)
-	#error FOO
+	#error !__ARM_ARCH_7M__ && !__ARM_ARCH_7EM__ && !__ARM_ARCH_6M__
 	#endif
 	int i;
     } "-mthumb"]
@@ -2917,7 +2917,7 @@ proc check_effective_target_arm_neonv2 { } {
 proc check_effective_target_mips_loongson { } {
     return [check_no_compiler_messages loongson assembly {
 	#if !defined(__mips_loongson_vector_rev)
-	#error FOO
+	#error !__mips_loongson_vector_rev
 	#endif
     }]
 }
@@ -5022,7 +5022,7 @@ proc check_effective_target_sync_char_short { } {
 proc check_effective_target_coldfire_fpu { } {
     return [check_no_compiler_messages coldfire_fpu assembly {
 	#ifndef __mcffpu__
-	#error FOO
+	#error !__mcffpu__
 	#endif
     }]
 }
@@ -5033,7 +5033,7 @@ proc check_effective_target_uclibc {} {
     return [check_no_compiler_messages uclibc object {
 	#include <features.h>
 	#if !defined (__UCLIBC__)
-	#error FOO
+	#error !__UCLIBC__
 	#endif
     }]
 }
@@ -5361,7 +5361,7 @@ proc add_options_for_bind_pic_locally { flags } {
 
     if {[check_no_compiler_messages using_pic2 assembly {
         #if __PIC__ != 2
-        #error FOO
+        #error __PIC__ != 2
         #endif
     }]} {
         set flags_to_postpone "-fPIE"
@@ -5369,7 +5369,7 @@ proc add_options_for_bind_pic_locally { flags } {
     }
     if {[check_no_compiler_messages using_pic1 assembly {
         #if __PIC__ != 1
-        #error FOO
+        #error __PIC__ != 1
         #endif
     }]} {
         set flags_to_postpone "-fpie"
@@ -5399,7 +5399,7 @@ proc check_effective_target_c99_runtime { } {
 	close $file
 	append contents {
 	    #ifndef HAVE_C99_RUNTIME
-	    #error FOO
+	    #error !HAVE_C99_RUNTIME
 	    #endif
 	}
 	check_no_compiler_messages_nocache c99_runtime assembly \
