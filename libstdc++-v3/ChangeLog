@@ -1,5 +1,10 @@
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/mutex (try_lock): Do not swallow exceptions.
+	* testsuite/30_threads/try_lock/4.cc: Fix test.
+
+2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/59603
 	* include/bits/stl_algo.h (random_shuffle): Prevent self-swapping.
 	* testsuite/25_algorithms/random_shuffle/59603.cc: New.

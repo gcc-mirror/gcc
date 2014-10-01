@@ -648,12 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       int __idx;
       auto __locks = std::tie(__l1, __l2, __l3...);
-      __try
-      { __try_lock_impl<0>::__do_try_lock(__locks, __idx); }
-      __catch(const __cxxabiv1::__forced_unwind&)
-      { __throw_exception_again; }
-      __catch(...)
-      { }
+      __try_lock_impl<0>::__do_try_lock(__locks, __idx);
       return __idx;
     }
 
