@@ -1,5 +1,9 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63428
+	* config/i386/i386.c (expand_vec_perm_pshufb): Fix up rperm[0]
+	argument to avx2_permv2ti.
+
 	PR c++/63306
 	Backported from mainline
 	2014-08-01  James Greenhalgh  <james.greenhalgh@arm.com>
