@@ -743,6 +743,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_make_unique 201304
+
   template<typename _Tp>
     struct _MakeUniq
     { typedef unique_ptr<_Tp> __single_object; };

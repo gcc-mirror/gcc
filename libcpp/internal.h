@@ -258,6 +258,9 @@ struct lexer_state
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 
+  /* Nonzero if in a __has_include__ or __has_include_next__ statement.  */
+  unsigned char in__has_include__;
+
   /* Nonzero if prevent_expansion is true only because output is
      being discarded.  */
   unsigned char discarding_output;
@@ -279,6 +282,8 @@ struct spec_nodes
   cpp_hashnode *n_true;			/* C++ keyword true */
   cpp_hashnode *n_false;		/* C++ keyword false */
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
+  cpp_hashnode *n__has_include__;	/* __has_include__ operator */
+  cpp_hashnode *n__has_include_next__;	/* __has_include_next__ operator */
 };
 
 typedef struct _cpp_line_note _cpp_line_note;
@@ -645,6 +650,8 @@ extern bool _cpp_save_file_entries (cpp_reader *pfile, FILE *f);
 extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
 extern const char *_cpp_get_file_name (_cpp_file *);
 extern struct stat *_cpp_get_file_stat (_cpp_file *);
+extern bool _cpp_has_header (cpp_reader *, const char *, int,
+			     enum include_type);
 
 /* In expr.c */
 extern bool _cpp_parse_expr (cpp_reader *, bool);
@@ -680,6 +687,7 @@ extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 linenum_type, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
+extern char *_cpp_bracket_include (cpp_reader *);
 
 /* In directives.c */
 struct _cpp_dir_only_callbacks

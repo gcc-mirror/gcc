@@ -1,3 +1,9 @@
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* c-cppbuiltin.c (c_cpp_builtins()): Define language feature
+	macros and the __has_header macro.
+
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (enum rid): Add RID_IS_TRIVIALLY_ASSIGNABLE and
