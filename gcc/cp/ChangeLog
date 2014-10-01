@@ -1,3 +1,17 @@
+2014-10-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63362
+	* class.c (type_has_non_user_provided_default_constructor): Rename
+	from type_has_user_provided_default_constructor, reverse sense.
+	(default_init_uninitialized_part, explain_non_literal_class): Adjust.
+	(check_bases_and_members): Set TYPE_HAS_COMPLEX_DFLT.
+	* call.c (build_new_method_call_1): Adjust.
+	* cp-tree.h: Adjust.
+	* decl.c (grok_special_member_properties): Don't set
+	TYPE_HAS_COMPLEX_DFLT.
+	* init.c (build_value_init_noctor): Don't use
+	type_has_user_provided_default_constructor.
+
 2014-09-30  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_ASSIGNABLE and

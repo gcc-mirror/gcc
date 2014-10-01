@@ -7941,7 +7941,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
 	  /* For a user-provided default constructor, use the normal
 	     mechanisms so that protected access works.  */
-	  && !type_has_user_provided_default_constructor (basetype)
+	  && type_has_non_user_provided_default_constructor (basetype)
 	  && !processing_template_decl)
 	init = build_value_init (basetype, complain);
 
