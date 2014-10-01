@@ -1,3 +1,14 @@
+2014-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63186
+	* ipa-split.c (test_nonssa_use): Skip nonforced labels.
+	(mark_nonssa_use): Likewise.
+	(verify_non_ssa_vars): Verify all header blocks for label
+	definitions.
+
 2014-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
