@@ -460,7 +460,7 @@ class StdDebugIteratorPrinter:
     # and return the wrapped iterator value.
     def to_string (self):
         itype = self.val.type.template_argument(0)
-        return self.val['_M_current'].cast(itype)
+        return self.val.cast(itype)
 
 class StdMapPrinter:
     "Print a std::map or std::multimap"
