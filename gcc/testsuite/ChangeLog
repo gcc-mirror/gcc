@@ -1,3 +1,11 @@
+2014-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_fenv_exceptions): New function.
+
 2014-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/63282
