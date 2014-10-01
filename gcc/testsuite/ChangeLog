@@ -1,5 +1,8 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/63342
+	* gcc.dg/pr63342.c: New test.
+
 	PR c++/63306
 	* g++.dg/ipa/pr63306.C: New test.
 
