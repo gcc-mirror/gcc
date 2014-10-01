@@ -1,3 +1,15 @@
+2014-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fmodxf3): Enable for flag_finite_math_only only.
+	(fmod<mode>3): Ditto.
+	(fpremxf4_i387): Ditto.
+	(reminderxf3): Ditto.
+	(reminder<mode>3): Ditto.
+	(fprem1xf4_i387): Ditto.
+
 2014-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/63282
