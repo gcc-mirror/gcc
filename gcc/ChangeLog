@@ -1,3 +1,9 @@
+2014-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63428
+	* config/i386/i386.c (expand_vec_perm_pshufb): Fix up rperm[0]
+	argument to avx2_permv2ti.
+
 2014-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (*store_minmaxsi): Disable for arm_restrict_it.
