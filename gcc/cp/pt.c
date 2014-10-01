@@ -15487,7 +15487,9 @@ tsubst_copy_and_build (tree t,
 			     complain, in_decl);
 
 	tree type2 = TRAIT_EXPR_TYPE2 (t);
-	if (type2)
+	if (type2 && TREE_CODE (type2) == TREE_LIST)
+	  type2 = RECUR (type2);
+	else if (type2)
 	  type2 = tsubst (type2, args, complain, in_decl);
 	
 	RETURN (finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2));

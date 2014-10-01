@@ -8780,6 +8780,11 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  tree elt = cp_parser_type_id (parser);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      elt = make_pack_expansion (elt);
+	    }
 	  if (elt == error_mark_node)
 	    return error_mark_node;
 	  type2 = tree_cons (NULL_TREE, elt, type2);

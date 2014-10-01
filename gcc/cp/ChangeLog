@@ -1,6 +1,11 @@
 2014-10-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63362
+	* method.c (constructible_expr): Handle value-init of non-class.
+	* parser.c (cp_parser_trait_expr): Allow pack expansion.
+	* pt.c (tsubst_copy_and_build): Handle pack expansion.
+
+	PR c++/63362
 	* class.c (type_has_non_user_provided_default_constructor): Rename
 	from type_has_user_provided_default_constructor, reverse sense.
 	(default_init_uninitialized_part, explain_non_literal_class): Adjust.
