@@ -5373,5 +5373,5 @@ proc check_effective_target_fenv_exceptions {} {
 	  else
 	    abort ();
 	}
-    } [add_options_for_ieee "-std=gnu99"]]
+    } "-std=gnu99"]
 }
