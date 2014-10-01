@@ -782,6 +782,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
+#define __cpp_lib_chrono_udls 201304
+
   inline namespace literals
   {
   inline namespace chrono_literals

@@ -52,6 +52,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+
+#define __cpp_lib_shared_timed_mutex 201402
+
   /// shared_timed_mutex
   class shared_timed_mutex
   {
