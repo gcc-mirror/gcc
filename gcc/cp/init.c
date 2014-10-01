@@ -343,13 +343,17 @@ build_value_init (tree type, tsubst_flags_t complain)
   if (CLASS_TYPE_P (type)
       && type_build_ctor_call (type))
     {
-      tree ctor = build_aggr_init_expr
-	(type,
+      tree ctor =
 	 build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    NULL, type, LOOKUP_NORMAL,
-				    complain));
-      if (ctor == error_mark_node
-	  || type_has_user_provided_default_constructor (type))
+				    complain);
+      if (ctor == error_mark_node)
+	return ctor;
+      tree fn = NULL_TREE;
+      if (TREE_CODE (ctor) == CALL_EXPR)
+	fn = get_callee_fndecl (ctor);
+      ctor = build_aggr_init_expr (type, ctor);
+      if (fn && user_provided_p (fn))
 	return ctor;
       else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
