@@ -606,10 +606,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.12.4</entry>
       <entry><code>uninitialized_fill_n</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Returns <code>void</code>.</entry>
     </row>
     <row>
       <entry>20.6.13</entry>
@@ -1184,10 +1185,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.3.3.1</entry>
       <entry>Character classification</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>isblank</code>.</entry>
     </row>
     <row>
       <entry>22.3.3.2</entry>
@@ -1429,7 +1431,7 @@ particular release.
       <entry>23.3.5</entry>
       <entry>Class template <code>list</code></entry>
       <entry>Partial</entry>
-      <entry>Incomplete allocator support.</entry>
+      <entry>O(N) size. Incomplete allocator support.</entry>
     </row>
     <row>
       <entry>23.3.6</entry>
@@ -1640,10 +1642,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>25.3</entry>
       <entry>Mutating sequence operations</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>rotate</code> returns <code>void</code>.</entry>
     </row>
     <row>
       <entry>25.4</entry>
@@ -2050,10 +2053,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.8</entry>
       <entry>C Library</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>&lt;ctgmath&gt;</code> doesn't include
+	<code>&lt;ccomplex&gt;</code>
+      </entry>
     </row>
     <row>
       <entry>

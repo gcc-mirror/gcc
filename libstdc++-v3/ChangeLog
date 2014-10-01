@@ -1,5 +1,10 @@
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Corrections.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/vector.tcc (vector::_M_fill_assign): Use _M_swap_data.
 
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
