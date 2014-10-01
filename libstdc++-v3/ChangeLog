@@ -1,3 +1,8 @@
+2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Corrections.
+	* doc/html/manual/status.html: Regenerate.
+
 2014-08-28  Samuel Bronson  <naesten@gmail.com>
 
 	Backport r212453 from trunk

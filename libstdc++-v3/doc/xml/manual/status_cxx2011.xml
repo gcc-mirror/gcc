@@ -614,10 +614,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.12.4</entry>
       <entry><code>uninitialized_fill_n</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Returns <code>void</code>.</entry>
     </row>
     <row>
       <entry>20.6.13</entry>
@@ -1125,7 +1126,9 @@ particular release.
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
       <entry>Partial</entry>
-      <entry>Missing <code>getline</code> overloads for rvalue streams.</entry>
+      <entry>Non-conforming Copy-On-Write implementation.
+             Missing <code>getline</code> overloads for rvalue streams.
+      </entry>
     </row>
     <row>
       <entry>21.5</entry>
@@ -1193,10 +1196,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.3.3.1</entry>
       <entry>Character classification</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>isblank</code>.</entry>
     </row>
     <row>
       <entry>22.3.3.2</entry>
@@ -1275,16 +1279,18 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.1</entry>
       <entry>Class template <code>time_get</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>get</code> and <code>do_get</code></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.2</entry>
       <entry>Class template <code>time_get_byname</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Likewise</entry>
     </row>
     <row>
       <entry>22.4.5.3</entry>
@@ -1437,8 +1443,10 @@ particular release.
       <entry>23.3.5</entry>
       <entry>Class template <code>list</code></entry>
       <entry>Partial</entry>
-      <entry><code>insert</code> and <code>erase</code> members do not
-             take <code>const_iterator</code> arguments (N2350).</entry>
+      <entry>O(N) size.
+             <code>insert</code> and <code>erase</code> members do not
+             take <code>const_iterator</code> arguments (N2350).
+      </entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
@@ -1653,10 +1661,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>25.3</entry>
       <entry>Mutating sequence operations</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>rotate</code> returns <code>void</code>.</entry>
     </row>
     <row>
       <entry>25.4</entry>
@@ -2063,10 +2072,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.8</entry>
       <entry>C Library</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>&lt;ctgmath&gt;</code> doesn't include
+	<code>&lt;ccomplex&gt;</code>
+      </entry>
     </row>
     <row>
       <entry>
@@ -2146,6 +2158,7 @@ particular release.
         Missing move and swap operations on <code>basic_ios</code>.
         Missing <code>io_errc</code> and <code>iostream_category</code>.
         <code>ios_base::failure</code> is not derived from <code>system_error</code>.
+	Missing <code>ios_base::hexfloat</code>.
       </entry>
     </row>
     <row>
