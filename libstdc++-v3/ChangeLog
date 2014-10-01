@@ -1,5 +1,9 @@
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/vector.tcc (vector::_M_fill_assign): Use _M_swap_data.
+
+2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/stl_queue.h: Include missing header.
 	* include/bits/stl_stack.h: Likewise.
 	* testsuite/23_containers/priority_queue/requirements/
