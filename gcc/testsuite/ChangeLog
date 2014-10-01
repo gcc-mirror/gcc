@@ -1,6 +1,8 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
-	Backported from mainline
+	PR c++/63306
+	* g++.dg/ipa/pr63306.C: New test.
+
 	2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/63285

@@ -1,5 +1,15 @@
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/63306
+	Backported from mainline
+	2014-08-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR regression/61510
+	* cgraphunit.c (analyze_functions): Use get_create rather than get
+	for decls which are clones of abstract functions.
+
+2014-10-01  Jakub Jelinek  <jakub@redhat.com>
+
 	Backported from mainline
 	2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
