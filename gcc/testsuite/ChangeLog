@@ -1,5 +1,21 @@
 2014-10-02  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/noncompile/20020130-1.c: Use -std=gnu89.
+	* gcc.dg/noncompile/20050120-1.c: Likewise.
+	* gcc.dg/noncompile/old-style-parm-2.c: Likewise.
+	* gcc.dg/noncompile/920616-2.c: Fix defaulting to int.
+	* gcc.dg/noncompile/930301-1.c: Likewise.
+	* gcc.dg/noncompile/930622-1.c: Likewise.
+	* gcc.dg/noncompile/930622-2.c: Likewise.
+	* gcc.dg/noncompile/950825-1.c: Likewise.
+	* gcc.dg/noncompile/invalid_asm.c: Likewise.
+	* gcc.dg/noncompile/scope.c: Likewise.
+	* gcc.dg/noncompile/va-arg-1.c: Likewise.
+	* gcc.dg/noncompile/920923-1.c: Fix implicit declarations.
+	* gcc.dg/noncompile/971104-1.c: Likewise.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Fix defaulting to int.
 	* gcc.dg/tree-prof/crossmodule-indircall-1a.c: Likewise.
 	* gcc.dg/tree-prof/merge_block.c: Likewise.

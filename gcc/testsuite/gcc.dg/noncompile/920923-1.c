@@ -22,6 +22,12 @@ struct PTP {
 typedef struct PTP (u.p_tablep);/* { dg-error "expected" } */
 int pfree=0;
 int pcount=0;
+int Level1 ();
+int Level2 ();
+void enlarge_hash_table ();
+int fill_item_entry ();
+int __eprintf ();
+void build_ptables ();
 
 void
 mmu_walk_find(va)
