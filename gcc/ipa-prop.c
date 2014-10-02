@@ -3960,21 +3960,6 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
       DECL_FUNCTION_CODE (fndecl) = (enum built_in_function) 0;
     }
 
-  /* This is a new type, not a copy of an old type.  Need to reassociate
-     variants.  We can handle everything except the main variant lazily.  */
-  tree t = TYPE_MAIN_VARIANT (orig_type);
-  if (orig_type != t)
-    {
-      TYPE_MAIN_VARIANT (new_type) = t;
-      TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = new_type;
-    }
-  else
-    {
-      TYPE_MAIN_VARIANT (new_type) = new_type;
-      TYPE_NEXT_VARIANT (new_type) = NULL;
-    }
-
   TREE_TYPE (fndecl) = new_type;
   DECL_VIRTUAL_P (fndecl) = 0;
   DECL_LANG_SPECIFIC (fndecl) = NULL;
