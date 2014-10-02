@@ -12,9 +12,9 @@
 //#  error "<experimental/net>"
 //#endif
 
-//#if !__has_include(<experimental/any>)
-//#  error "<experimental/any>"
-//#endif
+#if !__has_include(<experimental/any>)
+#  error "<experimental/any>"
+#endif
 
 //#if !__has_include(<experimental/memory_resource>)
 //#  error "<experimental/memory_resource>"

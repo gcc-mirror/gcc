@@ -1,3 +1,21 @@
+2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/stl_function.h: Generic associative lookup feature
+	is not supported.
+	* testsuite/experimental/feat-lib-fund.cc: <experimental/any> is
+	actually available.
+	* testsuite/experimental/feat-cxx14.cc: Add test for __cpp_lib_is_final.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/duration/literals/range.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust.
+
 2014-10-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (StdDebugIteratorPrinter.to_string):
