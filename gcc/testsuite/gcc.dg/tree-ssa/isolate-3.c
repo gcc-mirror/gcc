@@ -43,6 +43,8 @@ VEC_rtx_gc_safe_grow_cleared (VEC_rtx_gc ** vec_, int size_,
 }
 
 static VEC_rtx_gc *reg_base_value;
+unsigned int max_reg_num (void);
+int arf (void);
 void
 init_alias_analysis (void)
 {

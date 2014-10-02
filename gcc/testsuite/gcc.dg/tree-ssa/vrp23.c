@@ -1,6 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
+void aa (void);
+void aos (void);
+void aob (void);
+
+void
 blah (int code1, int code2)
 {
   int i;

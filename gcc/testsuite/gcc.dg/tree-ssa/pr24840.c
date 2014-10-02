@@ -7,6 +7,7 @@ typedef struct
 } Object;
 
 void Err_Handler () __attribute__ ((__noreturn__));
+void Wrong_Type (Object, int);
 
 int
 P_Error (int argc, Object * argv)

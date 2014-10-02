@@ -26,6 +26,7 @@ struct basic_block_def
 {
   VEC_edge_gc *succs;
 };
+void foo (void);
 
 unsigned char
 cleanup_empty_eh (basic_block bb)

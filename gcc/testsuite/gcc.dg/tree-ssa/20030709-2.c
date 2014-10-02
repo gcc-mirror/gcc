@@ -27,6 +27,7 @@ union tree_node
 {
   struct tree_decl decl;
 };
+int make_decl_rtl (tree, int);
 void *
 get_alias_set (t)
      tree t;

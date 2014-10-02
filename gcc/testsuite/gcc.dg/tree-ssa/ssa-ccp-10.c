@@ -6,6 +6,8 @@
    ssa graph.  */
 
 extern __SIZE_TYPE__ strlen (const char *);
+extern void bar (__SIZE_TYPE__);
+extern int bla (void);
 
 void foo(int i)
 {

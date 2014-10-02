@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-ccp1" } */
 
+void h (void);
+
 int g (int i, int j)
 {
   int t = 0;

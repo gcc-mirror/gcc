@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 extern int a; /* { dg-error "declared weak after being used" } */
+int
 t()
 {
   return &a!=0;

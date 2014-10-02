@@ -1,6 +1,7 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 extern __SIZE_TYPE__ strlen (const char *) __attribute__ ((__pure__));
+extern void link_error (void);
 
 void
 foo (const char *str)

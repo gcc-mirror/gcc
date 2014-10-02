@@ -2,7 +2,10 @@
 /* { dg-options "-O1 -ftree-vrp -fdump-tree-dom2" } */
      
 extern void abort (void);
+extern void bitmap_clear (int *);
+extern void bar (int *);
 
+void
 oof ()
 {
   int live_head;
@@ -12,6 +15,7 @@ oof ()
    bitmap_clear (live);
 }
 
+void
 foo(int n)
 {
   int *space = (int *)__builtin_alloca (n);

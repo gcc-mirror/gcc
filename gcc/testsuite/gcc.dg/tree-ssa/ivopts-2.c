@@ -4,7 +4,9 @@
 long last_data_offset;
 int store;
 char *data;
+void g (long);
   
+void
 f ()
 {
   

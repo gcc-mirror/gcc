@@ -14,6 +14,7 @@ int t(int a)
       q(a+10);
 }
 
+int
 main()
 {
    t(5);

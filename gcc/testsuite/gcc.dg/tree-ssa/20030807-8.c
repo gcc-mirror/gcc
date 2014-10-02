@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom2" } */
+/* { dg-options "-O1 -fdump-tree-dom2 -std=gnu89" } */
                                                                                 
 struct die_struct;
 typedef struct die_struct *dw_die_ref;

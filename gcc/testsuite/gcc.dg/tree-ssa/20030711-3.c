@@ -31,6 +31,7 @@ union tree_node
 {
   struct tree_decl decl;
 };
+int make_decl_rtl (tree, void *);
 long
 get_alias_set (t)
      tree t;

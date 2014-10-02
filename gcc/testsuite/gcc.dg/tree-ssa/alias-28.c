@@ -2,6 +2,7 @@
 /* { dg-options "-O3" } */
 
 extern void abort (void);
+extern void __link_error (void);
 extern void *malloc(__SIZE_TYPE__);
 
 int * __attribute__((noinline,noclone))

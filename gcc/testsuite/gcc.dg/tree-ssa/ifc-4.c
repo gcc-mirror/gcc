@@ -26,6 +26,7 @@ struct cpp_reader
 {
   struct ht *hash_table;
 };
+void
 create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 {
   unsigned int num_extra_tokens = 0;

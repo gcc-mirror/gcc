@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-alias "" } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -std=gnu89" } */
 void abort (void);
 __attribute__ ((weak))
 int test() 

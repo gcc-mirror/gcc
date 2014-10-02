@@ -11,6 +11,7 @@ very_long_function(int a)
     return 2 * -a + very_long_function (a)/4;
 }
 
+int
 blah ()
 {
   very_long_function (1);
