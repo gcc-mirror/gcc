@@ -7156,7 +7156,9 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 
 	    ++cp_unevaluated_operand;
 	    ++c_inhibit_evaluation_warnings;
+	    ++cp_noexcept_operand;
 	    expr = cp_parser_expression (parser);
+	    --cp_noexcept_operand;
 	    --c_inhibit_evaluation_warnings;
 	    --cp_unevaluated_operand;
 
