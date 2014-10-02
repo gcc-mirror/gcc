@@ -1,6 +1,7 @@
 /* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
 int a[1000];
 int b=997;
+int
 main()
 {
 	int i;

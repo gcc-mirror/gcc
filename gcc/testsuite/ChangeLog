@@ -1,5 +1,25 @@
 2014-10-02  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Fix defaulting to int.
+	* gcc.dg/tree-prof/crossmodule-indircall-1a.c: Likewise.
+	* gcc.dg/tree-prof/merge_block.c: Likewise.
+	* gcc.dg/tree-prof/peel-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-2.c: Likewise.
+	* gcc.dg/tree-prof/unroll-1.c: Likewise.
+	* gcc.dg/tree-prof/update-cunroll-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-6.c: Likewise.
+	* gcc.dg/tree-prof/cmpsf-1.c: Likewise.
+	* gcc.dg/tree-prof/inliner-1.c: Use -fgnu89-inline.  Fix defaulting
+	to int.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.c-torture/compile/20000120-2.c: Use -fgnu89-inline.
 	* gcc.c-torture/compile/20011119-1.c: Likewise.
 	* gcc.c-torture/compile/20011119-2.c: Likewise.

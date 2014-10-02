@@ -7,6 +7,7 @@ int max=10000;
 /* We allow short memcpy()s for MIPS16.  */
 int __attribute__((nomips16))
 #endif
+int
 main()
 {
   int i;

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fgnu89-inline" } */
 int a;
 int b[100];
 void abort (void);
@@ -21,6 +21,7 @@ hot_function ()
       abort ();
 }
 
+int
 main ()
 {
   int i;

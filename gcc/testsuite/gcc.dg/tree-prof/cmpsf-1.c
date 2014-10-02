@@ -10,6 +10,7 @@ extern void exit (int);
 #define F 140
 #define T 13
 
+int
 feq (float x, float y)
 {
   if (x == y)
@@ -18,6 +19,7 @@ feq (float x, float y)
     return F;
 }
 
+int
 fne (float x, float y)
 {
   if (x != y)
@@ -26,6 +28,7 @@ fne (float x, float y)
     return F;
 }
 
+int
 flt (float x, float y)
 {
   if (x < y)
@@ -34,6 +37,7 @@ flt (float x, float y)
     return F;
 }
 
+int
 fge (float x, float y)
 {
   if (x >= y)
@@ -42,6 +46,7 @@ fge (float x, float y)
     return F;
 }
 
+int
 fgt (float x, float y)
 {
   if (x > y)
@@ -50,6 +55,7 @@ fgt (float x, float y)
     return F;
 }
 
+int
 fle (float x, float y)
 {
   if (x <= y)
