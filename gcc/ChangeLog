@@ -1,3 +1,29 @@
+2014-10-01  Jan HUbicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class):
+	Rename EXPECTED_TYPE to OTR_TYPE; Validate speculation late;
+	use speculation_consistent_p to do so; Add CONSDER_BASES
+	and CONSIDER_PLACEMENT_NEW parameters.
+	(contains_type_p): Add CONSDER_PLACEMENT_NEW and CONSIDER_BASES;
+	short circuit obvious cases.
+	(ipa_polymorphic_call_context::dump): Improve formatting.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Use
+	combine_speculation_with to record speculations; Do not ICE when
+	object is located in pointer type decl; do not ICE for methods
+	of UNION_TYPE; do not record nonpolymorphic types.
+	(ipa_polymorphic_call_context::speculation_consistent_p): New method.
+	(ipa_polymorphic_call_context::combine_speculation_with): New method.
+	(ipa_polymorphic_call_context::combine_with): New method.
+	(ipa_polymorphic_call_context::make_speculative): Move here; use
+	combine speculation.
+	* cgraph.h (ipa_polymorphic_call_context): Update
+	restrict_to_inner_class prototype; add offset_by, make_speculative, 
+	combine_with, useless_p, combine_speculation_with and
+	speculation_consistent_p methods.
+	(ipa_polymorphic_call_context::offset_by): New method.
+	(ipa_polymorphic_call_context::useless_p): New method.
+
 2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/62151
