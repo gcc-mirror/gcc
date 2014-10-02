@@ -115,6 +115,10 @@ vpath %.texi $(gcc_docdir)/include
 # UNSORTED
 # --------
 
+# Extra flags to pass to indicate cross compilation, which
+# might be used or tested by Make-lang fragments.
+CROSS=@CROSS@
+
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
