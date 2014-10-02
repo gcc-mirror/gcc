@@ -255,10 +255,7 @@ Gogo::pkgpath_for_symbol(const std::string& pkgpath)
       char c = s[i];
       if ((c >= 'a' && c <= 'z')
 	  || (c >= 'A' && c <= 'Z')
-	  || (c >= '0' && c <= '9')
-	  || c == '_'
-	  || c == '.'
-	  || c == '$')
+	  || (c >= '0' && c <= '9'))
 	;
       else
 	s[i] = '_';
