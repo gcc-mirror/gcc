@@ -1,4 +1,8 @@
 /* Origin: Franz Sirl <Franz.Sirl-kernel@lauterbach.com> */
+/* { dg-options "-fgnu89-inline" } */
+
+extern void abort (void);
+extern void exit (int);
 
 #include <stdarg.h>
 #include <limits.h>

@@ -4,7 +4,7 @@
 extern void abort (void);
 extern void exit (int);
 
-__attribute__ ((noinline))
+__attribute__ ((noinline)) void
 foo(short unsigned int *p1, short unsigned int *p2)
 {
   short unsigned int x1, x4;
@@ -23,6 +23,7 @@ foo(short unsigned int *p1, short unsigned int *p2)
   exit (0);
 }
 
+int
 main()
 {
   short unsigned int x, y;
@@ -30,4 +31,3 @@ main()
   y = -10;
   foo (&x, &y);
 }
-

@@ -2,6 +2,7 @@
     Origin:  Jeremy Denise      <jeremy.denise@libertysurf.fr>
     Reduced: Wolfgang Bangerth  <bangerth@dealii.org>
              Volker Reichelt    <reichelt@igpm.rwth-aachen.de>  */
+/* { dg-options "-fgnu89-inline" } */
 
 extern void abort ();
 

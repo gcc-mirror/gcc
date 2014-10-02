@@ -1,3 +1,43 @@
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.c-torture/compile/20000120-2.c: Use -fgnu89-inline.
+	* gcc.c-torture/compile/20011119-1.c: Likewise.
+	* gcc.c-torture/compile/20011119-2.c: Likewise.
+	* gcc.c-torture/compile/20021120-1.c: Likewise.
+	* gcc.c-torture/compile/20021120-2.c: Likewise.
+	* gcc.c-torture/compile/20050215-1.c: Likewise.
+	* gcc.c-torture/compile/20050215-2.c: Likewise.
+	* gcc.c-torture/compile/20050215-3.c: Likewise.
+	* gcc.c-torture/compile/pr37669.c: Likewise.
+	* gcc.c-torture/execute/20020107-1.c: Likewise.
+	* gcc.c-torture/execute/restrict-1.c: Likewise.
+	* gcc.c-torture/compile/20090721-1.c: Fix defaulting to int.
+	* gcc.c-torture/execute/930529-1.c: Likewise.
+	* gcc.c-torture/execute/920612-1.c: Likewise.
+	* gcc.c-torture/execute/920711-1.c: Likewise.
+	* gcc.c-torture/execute/990127-2.c: Likewise.
+	* gcc.c-torture/execute/pr40386.c: Likewise.
+	* gcc.c-torture/execute/pr57124.c: Likewise.
+	* gcc.c-torture/compile/pr34808.c: Add function declarations.
+	* gcc.c-torture/compile/pr42299.c: Likewise.
+	* gcc.c-torture/compile/pr48517.c: Use -std=gnu89.
+	* gcc.c-torture/compile/simd-6.c: Likewise.
+	* gcc.c-torture/execute/pr53645-2.c: Likewise.
+	* gcc.c-torture/execute/pr53645.c: Likewise.
+	* gcc.c-torture/execute/20001121-1.c: Use -fgnu89-inline.  Add function
+	declarations.
+	* gcc.c-torture/execute/980608-1.c: Likewise.
+	* gcc.c-torture/execute/bcp-1.c: Likewise.
+	* gcc.c-torture/execute/p18298.c: Likewise.
+	* gcc.c-torture/execute/unroll-1.c: Likewise.
+	* gcc.c-torture/execute/va-arg-7.c: Likewise.
+	* gcc.c-torture/execute/va-arg-8.c: Likewise.
+	* gcc.c-torture/execute/930526-1.c: Use -fgnu89-inline.  Add function
+	declarations.  Fix defaulting to int.
+	* gcc.c-torture/execute/961223-1.c: Likewise.
+	* gcc.c-torture/execute/loop-2c.c: Use -fgnu89-inline and
+	-Wno-pointer-to-int-cast.  Fix defaulting to int.
+
 2014-10-02  Andrew Pinski  <apinski@cavium.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
