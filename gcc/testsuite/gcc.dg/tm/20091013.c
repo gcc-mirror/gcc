@@ -4,6 +4,7 @@
 extern long ringo(long int);
 int g,i;
 
+void
 f()
 {
   __transaction_relaxed {

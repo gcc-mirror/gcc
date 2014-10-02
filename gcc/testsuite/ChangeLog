@@ -1,5 +1,29 @@
 2014-10-02  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/tm/20091013.c: Fix defaulting to int.
+	* gcc.dg/tm/20091221.c: Likewise.
+	* gcc.dg/tm/debug-1.c: Likewise.
+	* gcc.dg/tm/irrevocable-1.c: Likewise.
+	* gcc.dg/tm/irrevocable-2.c: Likewise.
+	* gcc.dg/tm/irrevocable-3.c: Likewise.
+	* gcc.dg/tm/irrevocable-4.c: Likewise.
+	* gcc.dg/tm/memopt-1.c: Likewise.
+	* gcc.dg/tm/pr52173-1.c: Likewise.
+	* gcc.dg/tm/props-1.c: Likewise.
+	* gcc.dg/tm/props-2.c: Likewise.
+	* gcc.dg/tm/props-3.c: Likewise.
+	* gcc.dg/tm/20100125.c: Fix implicit declarations.
+	* gcc.dg/tm/memopt-11.c: Likewise.
+	* gcc.dg/tm/memopt-12.c: Likewise.
+	* gcc.dg/tm/memopt-16.c: Likewise.
+	* gcc.dg/tm/memopt-3.c: Likewise.
+	* gcc.dg/tm/memopt-4.c: Likewise.
+	* gcc.dg/tm/memopt-5.c: Likewise.
+	* gcc.dg/tm/memopt-6.c: Likewise.
+	* gcc.dg/tm/wrap-4.c: Likewise.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/vect/pr24049.c: Fix implicit declarations.
 	* gcc.dg/vect/pr37730.c: Likewise.
 	* gcc.dg/vect/pr52870.c: Likewise.

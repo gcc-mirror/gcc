@@ -4,6 +4,7 @@
 int i;
 extern void virgin () __attribute__((transaction_pure));
 
+void
 foo()
 {
 	__transaction_atomic {

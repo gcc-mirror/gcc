@@ -4,6 +4,7 @@
    it to be converted into a COND_EXPR.  */
 
 extern int test(void) __attribute__((transaction_safe));
+extern int something(void);
 extern void *malloc (__SIZE_TYPE__) __attribute__((malloc,transaction_safe));
 
 struct large { int foo[500]; };

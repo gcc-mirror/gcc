@@ -11,6 +11,7 @@ void func()
     }
 }
 
+int
 main()
 { 
   int i;
