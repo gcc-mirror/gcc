@@ -1,3 +1,10 @@
+2014-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/ctgmath: Include <complex>.
+	* testsuite/26_numerics/headers/ctgmath/complex.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
 2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/stl_function.h: Generic associative lookup feature

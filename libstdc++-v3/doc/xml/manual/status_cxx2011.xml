@@ -2049,13 +2049,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.8</entry>
       <entry>C Library</entry>
-      <entry>Partial</entry>
-      <entry><code>&lt;ctgmath&gt;</code> doesn't include
-        <code>&lt;ccomplex&gt;</code>
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>
