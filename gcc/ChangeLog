@@ -1,5 +1,10 @@
 2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraphclones.c (build_function_type_skip_args): Do not make new
+	type variant of old. 
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.h (ipa_get_controlled_uses): Add hack to avoid ICE
 	when speculation is added.
 	(ipa_edge_args): Add polymorphic_call_contexts.
