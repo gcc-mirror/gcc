@@ -1,3 +1,9 @@
+2014-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/63375
+	* tree-sra.c (build_access_from_expr_1): Disqualify volatile
+	references.
+
 2014-10-02  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (CROSS): Define, to @CROSS.
