@@ -1,3 +1,36 @@
+2014-10-02  Andrew Pinski  <apinski@cavium.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* lib/ubsan-dg.exp
+	(check_effective_target_fsanitize_address): New function.
+	(ubsan_init): Save off ALWAYS_CXXFLAGS.
+	(ubsan_finish): Restore ALWAYS_CXXFLAGS correctly.
+	* lib/asan-dg.exp
+	(check_effective_target_faddress_sanitizer): Rename to ...
+	(check_effective_target_fsanitize_address): ... this. Change to creating
+	an executable.
+	(asan_init): Save off ALWAYS_CXXFLAGS.
+	(asan_finish): Restore ALWAYS_CXXFLAGS correctly.
+	* lib/tsan-dg.exp
+	(check_effective_target_fthread_sanitizer): Rename to ...
+	(check_effective_target_fsanitize_thread): ... this. Change to creating
+	an executable.
+	(tsan_init): Save off ALWAYS_CXXFLAGS.
+	(tsan_finish): Restore ALWAYS_CXXFLAGS correctly. Set dg-do-what-default
+	to run as a default behaviour.
+	* gcc.dg/ubsan/ubsan.exp: Don't check the return value of ubsan_init.
+	Check check_effective_target_fsanitize_undefined before running the
+	tests.
+	* g++.dg/ubsan/ubsan.exp: Likewise.
+	* gcc.dg/asan/asan.exp: Don't check the return value of asan_init.
+	check_effective_target_fsanitize_address too early.
+	Check check_effective_target_fsanitize_address before running the tests.
+	* g++.dg/asan/asan.exp: Likewise.
+	* gcc.dg/tsan/tsan.exp: Don't check the return value of tsan_init.
+	check_effective_target_fsanitize_thread too early.
+	Check check_effective_target_fsanitize_thread before running the tests.
+	* g++.dg/tsan/tsan.exp: Likewise.
+
 2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/combine-clobber.c: New.
