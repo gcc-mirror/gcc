@@ -1,3 +1,25 @@
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/vect/pr24049.c: Fix implicit declarations.
+	* gcc.dg/vect/pr37730.c: Likewise.
+	* gcc.dg/vect/pr52870.c: Likewise.
+	* gcc.dg/vect/pr60092-2.c: Likewise.
+	* gcc.dg/vect/pr60092.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad.c: Likewise.
+	* gcc.dg/vect/pr26359.c: Fix defaulting to int.
+	* gcc.dg/vect/pr31041.c: Likewise.
+	* gcc.dg/vect/pr32216.c: Likewise.
+	* gcc.dg/vect/pr32224.c: Likewise.
+	* gcc.dg/vect/pr32366.c: Likewise.
+	* gcc.dg/vect/pr33866.c: Likewise.
+	* gcc.dg/vect/pr43430-2.c: Likewise.
+	* gcc.dg/vect/pr43842.c: Likewise.
+	* gcc.dg/vect/vect-1.c: Likewise.
+	* gcc.dg/vect/vect-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-93.c: Likewise.
+	* gcc.dg/vect/pr28952.c: Fix implicit declarations and
+	defaulting to int.
+
 2014-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53025

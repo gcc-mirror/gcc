@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 
+void bar (int *);
+
 int *foo (int n)
 {
   int *p = __builtin_aligned_alloc (256, n * sizeof (int));
