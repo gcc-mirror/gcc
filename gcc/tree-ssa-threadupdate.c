@@ -977,20 +977,14 @@ freqs_to_counts_path (struct redirection_data *rd)
   edge ein;
   edge_iterator ei;
   FOR_EACH_EDGE (ein, ei, e->dest->preds)
-    {
-      gcc_assert (!ein->count);
-      ein->count = EDGE_FREQUENCY (ein);
-    }
+    ein->count = EDGE_FREQUENCY (ein);
 
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
-      gcc_assert (!epath->count);
       edge esucc;
       FOR_EACH_EDGE (esucc, ei, epath->src->succs)
-        {
-          esucc->count = EDGE_FREQUENCY (esucc);
-        }
+        esucc->count = EDGE_FREQUENCY (esucc);
       epath->src->count = epath->src->frequency;
     }
 }
