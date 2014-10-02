@@ -1,3 +1,9 @@
+2014-10-02  Teresa Johnson  <tejohnson@google.com>
+
+	PR middle-end/63422
+	* tree-ssa-threadupdate.c (freqs_to_counts_path): Remove
+	asserts to handle incoming insanities.
+
 2014-10-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/63375
