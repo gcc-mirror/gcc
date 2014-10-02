@@ -5,11 +5,11 @@
 
 int a,b, c, z;
 
-testing(){
+void testing(){
     c=9;
 }
 
-main() {
+int main() {
 	b = 9898;
 	__transaction_relaxed {
 		z = c;
