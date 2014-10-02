@@ -22,6 +22,7 @@ int do_something (int size)
     do_something_big (size);
 }
 extern int n;
+int
 main()
 {
   do_something (2);

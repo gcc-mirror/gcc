@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1" } */
 
+int func_81 (int);
+int func_98 (int);
+
 void
 func_18 ( int t )
 {

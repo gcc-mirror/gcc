@@ -2,6 +2,7 @@
 /* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
 
 /* Compile with -fno-tree-fre -O2 to prevent CSEing *p.  */
+int
 foo (int a, int *p)
 {
   int x = *p + 2;

@@ -39,6 +39,7 @@ baz (void)
 
 fnptr B[2] = { baz, boz };
 
+int
 main ()
 {
   int b, c;

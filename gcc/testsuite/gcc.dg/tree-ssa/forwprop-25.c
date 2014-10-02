@@ -22,6 +22,7 @@ struct rtx_def
 {
   __extension__ enum machine_mode mode:8;
 };
+void fancy_abort (const char *, int, const char *);
 void
 convert_move (rtx to, rtx from, int unsignedp)
 {

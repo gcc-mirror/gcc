@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-ivopts-details" } */
 
-void main (void)
+void f2 (void);
+
+int main (void)
 {
   int i;
   for (i = 0; i < 10; i++)

@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1" } */
 
+int baz (void);
+
+int
 foo (int i, int j, int a)
 {
   if (i >= 10)

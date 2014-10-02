@@ -22,6 +22,7 @@ int replace_reloads;
 int hard_regs_live_known;
 short* static_reload_reg_p;
 struct rd recog_data;
+int ix86_preferred_reload_class (rtx, int);
 
 int
 find_reloads (rtx insn, int replace, int ind_levels, int live_known,

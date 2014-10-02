@@ -1,6 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2" } */
 
+void link_failure (void);
 
 struct a
 {

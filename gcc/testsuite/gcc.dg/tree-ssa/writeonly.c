@@ -6,6 +6,7 @@ static struct b {int a,b,c,d,e,f;} magic3;
 
 struct b foo();
 
+void
 t()
 {
  a.magic1 = 1;

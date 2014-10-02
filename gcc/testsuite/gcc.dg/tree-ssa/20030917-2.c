@@ -4,7 +4,7 @@
    was never renamed.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-dominator-opts" } */
+/* { dg-options "-O -ftree-dominator-opts -std=gnu89" } */
 
 typedef __SIZE_TYPE__ size_t;
 typedef union tree_node *tree;

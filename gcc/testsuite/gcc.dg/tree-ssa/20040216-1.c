@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-dse1-details" } */
  
+int
 foo(int *z, int *y, int xx)
 {
   *z = 1;
