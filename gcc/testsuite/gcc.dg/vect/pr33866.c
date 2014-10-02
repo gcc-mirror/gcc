@@ -8,7 +8,7 @@ typedef struct
 }
 fill_iter_info;
 
-extern H5Diterate (fill_iter_info *);
+extern int H5Diterate (fill_iter_info *);
 
 void test_select_fill_hyper_simple (long *offset)
 {

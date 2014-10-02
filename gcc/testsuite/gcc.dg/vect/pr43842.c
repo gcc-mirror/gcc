@@ -30,6 +30,7 @@ int16_t g_4;
 int8_t g_4_8;
 uint32_t g_9[1];
 uint32_t g_9_8[2];
+void
 int161 (void)
 {
   int32_t l_2;
@@ -38,6 +39,7 @@ int161 (void)
     g_9[0] ^= safe_rshift_func_int16_t_s_u (g_4, 1);
 }
 
+int
 int81 (void)
 {
   int32_t l_2;

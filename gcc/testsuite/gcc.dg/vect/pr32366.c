@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 
+void
 stream_test (void)
 {
   static float input[20];

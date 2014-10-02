@@ -8,6 +8,7 @@
 
 unsigned char X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned char Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+int abs (int);
 
 /* Sum of absolute differences between arrays of unsigned char types.
    Detected as a sad pattern.
