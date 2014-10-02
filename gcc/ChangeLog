@@ -1,3 +1,14 @@
+2014-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/62128
+	* config/i386/i386.c (expand_vec_perm_1): Try expand_vec_perm_palignr
+	if it expands to a single insn only.
+	(expand_vec_perm_palignr): Add SINGLE_INSN_ONLY_P argument.  If true,
+	fail unless in_order is true.  Add forward declaration.
+	(expand_vec_perm_vperm2f128): Fix up comment about which permutation
+	is useful for one_operand_p.
+	(ix86_expand_vec_perm_const_1): Adjust expand_vec_perm_palignr caller.
+
 2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphclones.c (build_function_type_skip_args): Do not make new
