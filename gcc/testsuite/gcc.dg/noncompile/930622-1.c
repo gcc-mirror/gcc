@@ -1,3 +1,4 @@
+void
 f ()
 {
   double b;

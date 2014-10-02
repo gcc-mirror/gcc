@@ -2,7 +2,7 @@
    parameters is not accepted.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu89" } */
 
 void
 f(a)

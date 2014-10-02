@@ -1,6 +1,6 @@
 /* PR c/18946 */
 /* { dg-do compile } */
-/* { dg-options "-Wshadow" } */
+/* { dg-options "-Wshadow -std=gnu89" } */
 
 void bar (void)
 {
