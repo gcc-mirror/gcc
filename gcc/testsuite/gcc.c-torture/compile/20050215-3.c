@@ -1,4 +1,5 @@
 /* PR tree-optimization/18947 */
+/* { dg-options "-fgnu89-inline" } */
 int v;
 extern __inline void f0 (void) { v++; }
 extern __inline void f1 (void) { f0 (); }

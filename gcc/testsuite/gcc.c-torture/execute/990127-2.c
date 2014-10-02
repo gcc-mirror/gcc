@@ -18,6 +18,7 @@ fpTest (double x, double y)
   fpEq (result1, result2);
 }
 
+int
 main ()
 {
   fpTest (35.7, 45.0);

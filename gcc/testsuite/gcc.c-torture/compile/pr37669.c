@@ -1,4 +1,5 @@
 /* This testcase used to fail because a miscompiled execute_fold_all_builtins. */
+/* { dg-options "-fgnu89-inline" } */
 
 typedef __SIZE_TYPE__ size_t;
 extern __inline __attribute__ ((__always_inline__)) int __attribute__

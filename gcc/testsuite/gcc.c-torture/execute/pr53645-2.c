@@ -1,4 +1,5 @@
 /* PR tree-optimization/53645 */
+/* { dg-options "-std=gnu89" } */
 
 typedef unsigned short int UV __attribute__((vector_size (16)));
 typedef short int SV __attribute__((vector_size (16)));

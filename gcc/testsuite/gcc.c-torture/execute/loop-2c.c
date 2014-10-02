@@ -1,6 +1,11 @@
+/* { dg-options "-fgnu89-inline -Wno-pointer-to-int-cast" } */
+
+extern void abort (void);
+extern void exit (int);
+
 int a[2];
 
-__inline__ f (b, o)
+__inline__ void f (int b, int o)
 {
   unsigned int i;
   int *p;
@@ -8,11 +13,13 @@ __inline__ f (b, o)
     *--p = i * 3 + o;
 }
 
+void
 g(int b)
 {
   f (b, (int)a);
 }
 
+int
 main ()
 {
   a[0] = a[1] = 0;
