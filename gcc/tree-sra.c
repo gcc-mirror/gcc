@@ -1092,6 +1092,11 @@ build_access_from_expr_1 (tree expr, gimple stmt, bool write)
 			       "component.");
       return NULL;
     }
+  if (TREE_THIS_VOLATILE (expr))
+    {
+      disqualify_base_of_expr (expr, "part of a volatile reference.");
+      return NULL;
+    }
 
   switch (TREE_CODE (expr))
     {
