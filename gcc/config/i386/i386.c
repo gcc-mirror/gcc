@@ -39636,6 +39636,7 @@ struct expand_vec_perm_d
 static bool canonicalize_perm (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d);
+static bool expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool);
 
 /* Get a vector mode of the same size as the original but with elements
    twice as wide.  This is only guaranteed to apply to integral vectors.  */
@@ -43225,6 +43226,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_pshufb (d))
     return true;
 
+  /* Try the AVX2 vpalignr instruction.  */
+  if (expand_vec_perm_palignr (d, true))
+    return true;
+
   /* Try the AVX512F vpermi2 instructions.  */
   rtx vec[64];
   enum machine_mode mode = d->vmode;
@@ -43286,10 +43291,11 @@ expand_vec_perm_pshuflw_pshufhw (struct expand_vec_perm_d *d)
    the permutation using the SSSE3 palignr instruction.  This succeeds
    when all of the elements in PERM fit within one vector and we merely
    need to shift them down so that a single vector permutation has a
-   chance to succeed.  */
+   chance to succeed.  If SINGLE_INSN_ONLY_P, succeed if only
+   the vpalignr instruction itself can perform the requested permutation.  */
 
 static bool
-expand_vec_perm_palignr (struct expand_vec_perm_d *d)
+expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
 {
   unsigned i, nelt = d->nelt;
   unsigned min, max;
@@ -43320,8 +43326,9 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d)
 
   /* Given that we have SSSE3, we know we'll be able to implement the
      single operand permutation after the palignr with pshufb for
-     128-bit vectors.  */
-  if (d->testing_p && GET_MODE_SIZE (d->vmode) == 16)
+     128-bit vectors.  If SINGLE_INSN_ONLY_P, in_order has to be computed
+     first.  */
+  if (d->testing_p && GET_MODE_SIZE (d->vmode) == 16 && !single_insn_only_p)
     return true;
 
   dcopy = *d;
@@ -43341,6 +43348,9 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d)
       dcopy.perm[i] = e;
     }
   dcopy.one_operand_p = true;
+
+  if (single_insn_only_p && !in_order)
+    return false;
 
   /* For AVX2, test whether we can permute the result in one instruction.  */
   if (d->testing_p)
@@ -43922,7 +43932,8 @@ expand_vec_perm_vperm2f128 (struct expand_vec_perm_d *d)
 	  return true;
 	}
 
-      /* For one operand, the only useful vperm2f128 permutation is 0x10.  */
+      /* For one operand, the only useful vperm2f128 permutation is 0x01
+	 aka lanes swap.  */
       if (d->one_operand_p)
 	return false;
     }
@@ -44811,7 +44822,7 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_pshuflw_pshufhw (d))
     return true;
 
-  if (expand_vec_perm_palignr (d))
+  if (expand_vec_perm_palignr (d, false))
     return true;
 
   if (expand_vec_perm_interleave2 (d))
