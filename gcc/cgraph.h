@@ -1314,8 +1314,35 @@ public:
   void clear_speculation ();
 
   /* Walk container types and modify context to point to actual class
-     containing EXPECTED_TYPE as base class.  */
-  bool restrict_to_inner_class (tree expected_type);
+     containing OTR_TYPE (if non-NULL) as base class.
+     Return true if resulting context is valid.
+
+     When CONSIDER_PLACEMENT_NEW is false, reject contexts that may be made
+     valid only via alocation of new polymorphic type inside by means
+     of placement new.
+
+     When CONSIDER_BASES is false, only look for actual fields, not base types
+     of TYPE.  */
+  bool restrict_to_inner_class (tree otr_type,
+				bool consider_placement_new = true,
+				bool consider_bases = true);
+
+  /* Adjust all offsets in contexts by given number of bits.  */
+  void offset_by (HOST_WIDE_INT);
+  /* Take non-speculative info, merge it with speculative and clear speculatoin.
+     Used when we no longer manage to keep track of actual outer type, but we
+     think it is still there. 
+     If OTR_TYPE is set, the transformation can be done more effectively assuming
+     that context is going to be used only that way.  */
+  void make_speculative (tree otr_type = NULL);
+  /* Assume that both THIS and a given context is valid and strenghten THIS
+     if possible.  Return true if any strenghtening was made.
+     If actual type the context is being used in is known, OTR_TYPE should be
+     set accordingly. This improves quality of combined result.  */
+  bool combine_with (ipa_polymorphic_call_context, tree otr_type = NULL);
+
+  /* Return TRUE if context is fully useless.  */
+  bool useless_p () const;
 
   /* Dump human readable context to F.  */
   void dump (FILE *f) const;
@@ -1326,9 +1353,11 @@ public:
   void stream_in (struct lto_input_block *, struct data_in *data_in);
 
 private:
+  bool combine_speculation_with (tree, HOST_WIDE_INT, bool, tree);
   void set_by_decl (tree, HOST_WIDE_INT);
   bool set_by_invariant (tree, tree, HOST_WIDE_INT);
   void clear_outer_type (tree otr_type = NULL);
+  bool speculation_consistent_p (tree, HOST_WIDE_INT, bool, tree);
 };
 
 /* Structure containing additional information about an indirect call.  */
@@ -2633,5 +2662,24 @@ ipa_polymorphic_call_context::clear_outer_type (tree otr_type)
   offset = 0;
   maybe_derived_type = true;
   maybe_in_construction = true;
+}
+
+/* Adjust all offsets in contexts by OFF bits.  */
+
+inline void
+ipa_polymorphic_call_context::offset_by (HOST_WIDE_INT off)
+{
+  if (outer_type)
+    offset += off;
+  if (speculative_outer_type)
+    speculative_offset += off;
+}
+
+/* Return TRUE if context is fully useless.  */
+
+inline bool
+ipa_polymorphic_call_context::useless_p () const
+{
+  return (!outer_type && !speculative_outer_type);
 }
 #endif  /* GCC_CGRAPH_H  */
