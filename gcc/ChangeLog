@@ -1,9 +1,14 @@
-2014-10-01  Jan HUbicka  <hubicka@ucw.cz>
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (walk_polymorphic_call_targets): Avoid ICE when
+	dumping during WPA.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (ipa_modify_formal_parameters): Do not merge
 	type variants.
 
-2014-10-01  Jan HUbicka  <hubicka@ucw.cz>
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-polymorphic-call.c
 	(ipa_polymorphic_call_context::restrict_to_inner_class):
