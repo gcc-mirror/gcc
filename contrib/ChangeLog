@@ -1,3 +1,7 @@
+2014-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* dg-extract-results.py (output_variation): Always sort if do_sum.
+
 2014-09-22  Tom de Vries  <tom@codesourcery.com>
 
 	* mklog: Add --inline option.
