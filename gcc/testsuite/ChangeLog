@@ -1,3 +1,7 @@
+2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/combine-clobber.c: New.
+
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63342
