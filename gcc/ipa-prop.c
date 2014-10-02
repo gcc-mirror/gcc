@@ -364,6 +364,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	      fprintf (f, "\n");
 	    }
 	}
+      if (IPA_EDGE_REF (cs)->polymorphic_call_contexts)
+	ipa_get_ith_polymorhic_call_context (IPA_EDGE_REF (cs), i)->dump (f);
     }
 }
 
@@ -1876,10 +1878,13 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
   struct ipa_edge_args *args = IPA_EDGE_REF (cs);
   gimple call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
+  bool useful_context = false;
 
   if (arg_num == 0 || args->jump_functions)
     return;
   vec_safe_grow_cleared (args->jump_functions, arg_num);
+  if (flag_devirtualize)
+    vec_safe_grow_cleared (args->polymorphic_call_contexts, arg_num);
 
   if (gimple_call_internal_p (call))
     return;
@@ -1891,6 +1896,16 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
       struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, n);
       tree arg = gimple_call_arg (call, n);
       tree param_type = ipa_get_callee_param_type (cs, n);
+      if (flag_devirtualize && POINTER_TYPE_P (TREE_TYPE (arg)))
+	{
+	  struct ipa_polymorphic_call_context context (cs->caller->decl,
+						       arg, cs->call_stmt,
+						       NULL);
+	  /* TODO: We should also handle dynamic types.  */
+	  *ipa_get_ith_polymorhic_call_context (args, n) = context;
+	  if (!context.useless_p ())
+	    useful_context = true;
+	}
 
       if (is_gimple_ip_invariant (arg))
 	ipa_set_jf_constant (jfunc, arg, cs);
@@ -1963,6 +1978,8 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 	      || POINTER_TYPE_P (param_type)))
 	determine_locally_known_aggregate_parts (call, arg, param_type, jfunc);
     }
+  if (!useful_context)
+    vec_free (args->polymorphic_call_contexts);
 }
 
 /* Compute jump functions for all edges - both direct and indirect - outgoing
@@ -2608,11 +2625,15 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
   for (i = 0; i < count; i++)
     {
       struct ipa_jump_func *dst = ipa_get_ith_jump_func (args, i);
+      struct ipa_polymorphic_call_context *dst_ctx
+	= ipa_get_ith_polymorhic_call_context (args, i);
 
       if (dst->type == IPA_JF_ANCESTOR)
 	{
 	  struct ipa_jump_func *src;
 	  int dst_fid = dst->value.ancestor.formal_id;
+	  struct ipa_polymorphic_call_context *src_ctx
+	    = ipa_get_ith_polymorhic_call_context (top, dst_fid);
 
 	  /* Variable number of arguments can cause havoc if we try to access
 	     one that does not exist in the inlined edge.  So make sure we
@@ -2624,6 +2645,22 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	    }
 
 	  src = ipa_get_ith_jump_func (top, dst_fid);
+
+	  if (src_ctx && !src_ctx->useless_p ())
+	    {
+	      struct ipa_polymorphic_call_context ctx = *src_ctx;
+
+	      /* TODO: Make type preserved safe WRT contexts.  */
+	      if (!dst->value.ancestor.agg_preserved)
+		ctx.make_speculative ();
+	      ctx.offset_by (dst->value.ancestor.offset);
+	      if (!ctx.useless_p ())
+		{
+		  vec_safe_grow_cleared (args->polymorphic_call_contexts,
+					 count);
+		  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+		}
+	    }
 
 	  if (src->agg.items
 	      && (dst->value.ancestor.agg_preserved || !src->agg.by_ref))
@@ -2676,7 +2713,27 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      int dst_fid = dst->value.pass_through.formal_id;
 	      src = ipa_get_ith_jump_func (top, dst_fid);
 	      bool dst_agg_p = ipa_get_jf_pass_through_agg_preserved (dst);
+	      struct ipa_polymorphic_call_context *src_ctx
+		= ipa_get_ith_polymorhic_call_context (top, dst_fid);
 
+	      if (src_ctx && !src_ctx->useless_p ())
+		{
+		  struct ipa_polymorphic_call_context ctx = *src_ctx;
+
+		  /* TODO: Make type preserved safe WRT contexts.  */
+		  if (!dst->value.ancestor.agg_preserved)
+		    ctx.make_speculative ();
+		  if (!ctx.useless_p ())
+		    {
+		      if (!dst_ctx)
+			{
+			  vec_safe_grow_cleared (args->polymorphic_call_contexts,
+					         count);
+			  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+			}
+		      dst_ctx->combine_with (ctx);
+		    }
+		}
 	      switch (src->type)
 		{
 		case IPA_JF_UNKNOWN:
@@ -2754,11 +2811,13 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
     }
 }
 
-/* If TARGET is an addr_expr of a function declaration, make it the destination
-   of an indirect edge IE and return the edge.  Otherwise, return NULL.  */
+/* If TARGET is an addr_expr of a function declaration, make it the 
+   (SPECULATIVE)destination of an indirect edge IE and return the edge.
+   Otherwise, return NULL.  */
 
 struct cgraph_edge *
-ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
+ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
+				bool speculative)
 {
   struct cgraph_node *callee;
   struct inline_edge_summary *es = inline_edge_summary (ie);
@@ -2829,9 +2888,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 
   if (dump_file && !unreachable)
     {
-      fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
+      fprintf (dump_file, "ipa-prop: Discovered %s call to a %s target "
 	       "(%s/%i -> %s/%i), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
+	       speculative ? "speculative" : "known",
 	       xstrdup (ie->caller->name ()),
 	       ie->caller->order,
 	       xstrdup (callee->name ()),
@@ -2849,7 +2909,20 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 		       "converting indirect call in %s to direct call to %s\n",
 		       ie->caller->name (), callee->name ());
     }
-  ie = ie->make_direct (callee);
+  if (!speculative)
+    ie = ie->make_direct (callee);
+  else
+    {
+      if (!callee->can_be_discarded_p ())
+	{
+	  cgraph_node *alias;
+	  alias = dyn_cast<cgraph_node *> (callee->noninterposable_alias ());
+	  if (alias)
+	    callee = alias;
+	}
+      ie = ie->make_speculative
+	     (callee, ie->count * 8 / 10, ie->frequency * 8 / 10);
+    }
   es = inline_edge_summary (ie);
   es->call_stmt_size -= (eni_size_weights.indirect_call_cost
 			 - eni_size_weights.call_cost);
@@ -3035,14 +3108,33 @@ ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc,
-				   struct ipa_node_params *new_root_info)
+				   struct ipa_node_params *new_root_info,
+				   struct ipa_polymorphic_call_context *ctx_ptr)
 {
-  tree binfo, target;
+  tree binfo, target = NULL;
+  bool speculative = false;
+  bool updated = false;
 
   if (!flag_devirtualize)
     return NULL;
 
-  /* First try to do lookup via known virtual table pointer value.  */
+  /* If this is call of a function parameter, restrict its type
+     based on knowlede of the context.  */
+  if (ctx_ptr && !ie->indirect_info->by_ref)
+    {
+      struct ipa_polymorphic_call_context ctx = *ctx_ptr;
+
+      ctx.offset_by (ie->indirect_info->offset);
+
+      /* TODO: We want to record if type change happens.  
+	 Old code did not do that that seems like a bug.  */
+      ctx.make_speculative (ie->indirect_info->otr_type);
+
+      updated = ie->indirect_info->context.combine_with
+		  (ctx, ie->indirect_info->otr_type);
+    }
+
+  /* Try to do lookup via known virtual table pointer value.  */
   if (!ie->indirect_info->by_ref)
     {
       tree vtable;
@@ -3068,14 +3160,18 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   binfo = ipa_value_from_jfunc (new_root_info, jfunc);
 
-  if (!binfo)
-    return NULL;
-
-  if (TREE_CODE (binfo) != TREE_BINFO)
+  if (binfo && TREE_CODE (binfo) != TREE_BINFO)
     {
-      ipa_polymorphic_call_context context (binfo,
-					    ie->indirect_info->otr_type,
-					    ie->indirect_info->offset);
+      struct ipa_polymorphic_call_context ctx (binfo,
+					       ie->indirect_info->otr_type,
+					       ie->indirect_info->offset);
+      updated |= ie->indirect_info->context.combine_with
+		  (ctx, ie->indirect_info->otr_type);
+    }
+
+  if (updated)
+    {
+      ipa_polymorphic_call_context context (ie);
       vec <cgraph_node *>targets;
       bool final;
 
@@ -3083,29 +3179,49 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		 (ie->indirect_info->otr_type,
 		  ie->indirect_info->otr_token,
 		  context, &final);
-      if (!final || targets.length () > 1)
-	return NULL;
-      if (targets.length () == 1)
-	target = targets[0]->decl;
-      else
-	target = ipa_impossible_devirt_target (ie, NULL_TREE);
-    }
-  else
+      if (final && targets.length () <= 1)
+	{
+	  if (targets.length () == 1)
+	    target = targets[0]->decl;
+	  else
+	    target = ipa_impossible_devirt_target (ie, NULL_TREE);
+	}
+      else if (flag_devirtualize_speculatively
+	       && !ie->speculative && ie->maybe_hot_p ())
+	{
+	  cgraph_node *n = try_speculative_devirtualization (ie->indirect_info->otr_type,
+							     ie->indirect_info->otr_token,
+							     ie->indirect_info->context);
+	  if (n)
+	    {
+	      target = n->decl;
+	      speculative = true;
+	    }
+	}
+     }
+
+  if (binfo && TREE_CODE (binfo) == TREE_BINFO)
     {
       binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
 				   ie->indirect_info->otr_type);
       if (binfo)
-	target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
-						   binfo);
-      else
-	return NULL;
+	{
+	  tree t = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
+						     binfo);
+	  if (t)
+	    {
+	      gcc_assert (!target || speculative || target == t);
+	      target = t;
+	      speculative = false;
+	    }
+	}
     }
 
   if (target)
     {
-      if (!possible_polymorphic_call_target_p (ie, cgraph_node::get (target)))
+      if (!possible_polymorphic_call_target_p (ie, cgraph_node::get_create (target)))
 	target = ipa_impossible_devirt_target (ie, target);
-      return ipa_make_edge_direct_to_target (ie, target);
+      return ipa_make_edge_direct_to_target (ie, target, speculative);
     }
   else
     return NULL;
@@ -3157,8 +3273,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       if (!flag_indirect_inlining)
 	new_direct_edge = NULL;
       else if (ici->polymorphic)
-	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
-							     new_root_info);
+	{
+          ipa_polymorphic_call_context *ctx;
+          ctx = ipa_get_ith_polymorhic_call_context (top, param_index);
+	  new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
+							       new_root_info,
+							       ctx);
+	}
       else
 	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
 							    new_root_info);
@@ -3523,6 +3644,9 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
   new_args = IPA_EDGE_REF (dst);
 
   new_args->jump_functions = vec_safe_copy (old_args->jump_functions);
+  if (old_args->polymorphic_call_contexts)
+    new_args->polymorphic_call_contexts
+      = vec_safe_copy (old_args->polymorphic_call_contexts);
 
   for (i = 0; i < vec_safe_length (old_args->jump_functions); i++)
     {
@@ -4751,17 +4875,29 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
 
-      streamer_write_uhwi (ob, ipa_get_cs_argument_count (args));
+      streamer_write_uhwi (ob,
+			   ipa_get_cs_argument_count (args) * 2
+			   + (args->polymorphic_call_contexts != NULL));
       for (j = 0; j < ipa_get_cs_argument_count (args); j++)
-	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+	{
+	  ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+	  if (args->polymorphic_call_contexts != NULL)
+	    ipa_get_ith_polymorhic_call_context (args, j)->stream_out (ob);
+	}
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
 
-      streamer_write_uhwi (ob, ipa_get_cs_argument_count (args));
+      streamer_write_uhwi (ob,
+			   ipa_get_cs_argument_count (args) * 2
+  			   + (args->polymorphic_call_contexts != NULL));
       for (j = 0; j < ipa_get_cs_argument_count (args); j++)
-	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+	{
+	  ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+	  if (args->polymorphic_call_contexts != NULL)
+	    ipa_get_ith_polymorhic_call_context (args, j)->stream_out (ob);
+	}
       ipa_write_indirect_edge_info (ob, e);
     }
 }
@@ -4794,26 +4930,42 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       int count = streamer_read_uhwi (ib);
+      bool contexts_computed = count & 1;
+      count /= 2;
 
       if (!count)
 	continue;
       vec_safe_grow_cleared (args->jump_functions, count);
+      if (contexts_computed)
+	vec_safe_grow_cleared (args->polymorphic_call_contexts, count);
 
       for (k = 0; k < ipa_get_cs_argument_count (args); k++)
-	ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), e,
-				data_in);
+	{
+	  ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), e,
+				  data_in);
+	  if (contexts_computed)
+	    ipa_get_ith_polymorhic_call_context (args, k)->stream_in (ib, data_in);
+	}
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       int count = streamer_read_uhwi (ib);
+      bool contexts_computed = count & 1;
+      count /= 2;
 
       if (count)
 	{
 	  vec_safe_grow_cleared (args->jump_functions, count);
+	  if (contexts_computed)
+	    vec_safe_grow_cleared (args->polymorphic_call_contexts, count);
           for (k = 0; k < ipa_get_cs_argument_count (args); k++)
-	    ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), e,
-				    data_in);
+	    {
+	      ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), e,
+				      data_in);
+	      if (contexts_computed)
+		ipa_get_ith_polymorhic_call_context (args, k)->stream_in (ib, data_in);
+	    }
 	}
       ipa_read_indirect_edge_info (ib, data_in, e);
     }
