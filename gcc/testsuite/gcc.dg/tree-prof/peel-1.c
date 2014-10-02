@@ -12,6 +12,7 @@ t()
       return 1;
   abort ();
 }
+int
 main()
 {
   int i;
