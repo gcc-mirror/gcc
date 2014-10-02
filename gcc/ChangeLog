@@ -1,5 +1,28 @@
 2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.h (ipa_get_controlled_uses): Add hack to avoid ICE
+	when speculation is added.
+	(ipa_edge_args): Add polymorphic_call_contexts.
+	(ipa_get_ith_polymorhic_call_context): New accesor.
+	(ipa_make_edge_direct_to_target): Add SPECULATIVE parameter.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Print contexts.
+	(ipa_compute_jump_functions_for_edge): Compute contexts.
+	(update_jump_functions_after_inlining): Update contexts.
+	(ipa_make_edge_direct_to_target): Add SPECULATIVE argument;
+	update dumping; add speculative edge creation.
+	(try_make_edge_direct_virtual_call): Add CTX_PTR parameter; handle
+	context updating.
+	(update_indirect_edges_after_inlining): Pass down context.
+	(ipa_edge_duplication_hook): Duplicate contexts.
+	(ipa_write_node_info): Stream out contexts.
+	(ipa_read_node_info): Stream in contexts.
+	* ipa-devirt.c (type_all_derivations_known_p): Avoid ICE on non-ODR
+	types.
+	(try_speculative_devirtualization): New function.
+	* ipa-utils.h (try_speculative_devirtualization): Declare.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa.c (walk_polymorphic_call_targets): Avoid ICE when
 	dumping during WPA.
 
