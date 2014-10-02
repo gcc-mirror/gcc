@@ -1058,6 +1058,7 @@ struct GTY(()) saved_scope {
 
   int unevaluated_operand;
   int inhibit_evaluation_warnings;
+  int noexcept_operand;
   /* If non-zero, implicit "omp declare target" attribute is added into the
      attribute lists.  */
   int omp_declare_target_attribute;
@@ -1123,6 +1124,10 @@ struct GTY(()) saved_scope {
    local variables.  */
 
 #define local_specializations scope_chain->x_local_specializations
+
+/* Nonzero if we are parsing the operand of a noexcept operator.  */
+
+#define cp_noexcept_operand scope_chain->noexcept_operand
 
 /* A list of private types mentioned, for deferred access checking.  */
 

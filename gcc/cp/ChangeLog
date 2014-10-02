@@ -1,3 +1,12 @@
+2014-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53025
+	* cp-tree.h (struct saved_scope): Add noexcept_operand.
+	(cp_noexcept_operand): Define.
+	* call.c (build_over_call): Use it.
+	* parser.c (cp_parser_unary_expression, [RID_NOEXCEPT]): Likewise.
+	* pt.c (tsubst_copy_and_build, [NOEXCEPT_EXPR]): Likewise.
+
 2014-10-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63362

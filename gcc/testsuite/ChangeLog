@@ -1,3 +1,9 @@
+2014-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53025
+	* g++.dg/cpp0x/noexcept23.C: New.
+	* g++.dg/cpp0x/noexcept24.C: Likewise.
+
 2014-10-02  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/noncompile/20020130-1.c: Use -std=gnu89.

@@ -14769,11 +14769,13 @@ tsubst_copy_and_build (tree t,
       op1 = TREE_OPERAND (t, 0);
       ++cp_unevaluated_operand;
       ++c_inhibit_evaluation_warnings;
+      ++cp_noexcept_operand;
       op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
 				   /*function_p=*/false,
 				   /*integral_constant_expression_p=*/false);
       --cp_unevaluated_operand;
       --c_inhibit_evaluation_warnings;
+      --cp_noexcept_operand;
       RETURN (finish_noexcept_expr (op1, complain));
 
     case MODOP_EXPR:
