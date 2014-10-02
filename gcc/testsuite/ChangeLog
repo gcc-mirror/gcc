@@ -1,3 +1,8 @@
+2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Fix double negative thinko and
+	add many more tests.
+
 2014-10-02  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/tree-ssa/20030731-1.c: Use -std=gnu89.
