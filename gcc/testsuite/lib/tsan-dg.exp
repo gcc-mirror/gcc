@@ -17,9 +17,9 @@
 # Return 1 if compilation with -fsanitize=thread is error-free for trivial
 # code, 0 otherwise.
 
-proc check_effective_target_fthread_sanitizer {} {
-    return [check_no_compiler_messages faddress_sanitizer object {
-	void foo (void) { }
+proc check_effective_target_fsanitize_thread {} {
+    return [check_no_compiler_messages fanitize_thread executable {
+	int main (void) { return 0; }
     } "-fPIE -pie -fsanitize=thread"]
 }
 
@@ -69,6 +69,7 @@ proc tsan_init { args } {
     global ALWAYS_CXXFLAGS
     global TOOL_OPTIONS
     global tsan_saved_TEST_ALWAYS_FLAGS
+    global tsan_saved_ALWAYS_CXXFLAGS
     global dg-do-what-default
     global tsan_saved_dg-do-what-default
 
@@ -88,6 +89,7 @@ proc tsan_init { args } {
 	set tsan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
     }
     if [info exists ALWAYS_CXXFLAGS] {
+	set tsan_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
 	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fPIE -pie -fsanitize=thread -g}" $ALWAYS_CXXFLAGS]
     } else {
@@ -97,6 +99,8 @@ proc tsan_init { args } {
 	    set TEST_ALWAYS_FLAGS "$link_flags -fPIE -pie -fsanitize=thread -g"
 	}
     }
+
+    set dg-do-what-default run
     if { $link_flags != "" } {
 	global individual_timeout
 
@@ -110,9 +114,7 @@ proc tsan_init { args } {
 	    set dg-do-what-default compile
 	}
 	unset individual_timeout
-	return 1
     }
-    return 0
 }
 
 #
@@ -122,17 +124,24 @@ proc tsan_init { args } {
 proc tsan_finish { args } {
     global TEST_ALWAYS_FLAGS
     global tsan_saved_TEST_ALWAYS_FLAGS
+    global tsan_saved_ALWAYS_CXXFLAGS
     global dg-do-what-default
     global tsan_saved_dg-do-what-default
 
-    if [info exists tsan_saved_TEST_ALWAYS_FLAGS] {
-	set TEST_ALWAYS_FLAGS $tsan_saved_TEST_ALWAYS_FLAGS
+    if [info exists tsan_saved_ALWAYS_CXXFLAGS ] {
+	set ALWAYS_CXXFLAGS $tsan_saved_ALWAYS_CXXFLAGS
     } else {
-	unset TEST_ALWAYS_FLAGS
+	if [info exists tsan_saved_TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS $tsan_saved_TEST_ALWAYS_FLAGS
+        } else {
+	    unset TEST_ALWAYS_FLAGS
+        }
     }
+
     if [info exists tsan_saved_dg-do-what-default] {
 	set dg-do-what-default ${tsan_saved_dg-do-what-default}
     } else {
 	unset dg-do-what-default
     }
+    restore_ld_library_path_env_vars
 }
