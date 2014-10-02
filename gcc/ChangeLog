@@ -1,3 +1,10 @@
+2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/62151
+	* combine.c (can_combine_p): Allow the destination register of INSN
+	to be clobbered in I3.
+	(subst): Do not substitute into clobbers of registers.
+
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63342
