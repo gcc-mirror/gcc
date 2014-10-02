@@ -1,3 +1,11 @@
+2014-10-02  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63199
+	* include/bits/regex.h (basic_regex::basic_regex, basic_regex::assign,
+	basic_regex::swap): Fix dangling _M_traits reference problem.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	New test case.
+
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Corrections.

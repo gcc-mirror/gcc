@@ -474,17 +474,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __rhs A @p regex object.
        */
-      basic_regex(const basic_regex& __rhs) = default;
+      basic_regex(const basic_regex& __rhs)
+      : _M_flags(__rhs._M_flags), _M_original_str(__rhs._M_original_str)
+      { this->imbue(__rhs.getloc()); }
 
       /**
        * @brief Move-constructs a basic regular expression.
        *
        * @param __rhs A @p regex object.
+       *
+       * The implementation is a workaround concerning ABI compatibility. See:
+       * https://gcc.gnu.org/ml/libstdc++/2014-09/msg00067.html
        */
-      basic_regex(const basic_regex&& __rhs) noexcept
-      : _M_flags(__rhs._M_flags), _M_traits(__rhs._M_traits),
-	_M_automaton(std::move(__rhs._M_automaton))
-      { }
+      basic_regex(basic_regex&& __rhs)
+      : _M_flags(__rhs._M_flags),
+      _M_original_str(std::move(__rhs._M_original_str))
+      {
+	this->imbue(__rhs.getloc());
+	__rhs._M_automaton.reset();
+      }
 
       /**
        * @brief Constructs a basic regular expression from the string
@@ -555,9 +563,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Move-assigns one regular expression to another.
+       *
+       * The implementation is a workaround concerning ABI compatibility. See:
+       * https://gcc.gnu.org/ml/libstdc++/2014-09/msg00067.html
        */
       basic_regex&
-      operator=(basic_regex&& __rhs) noexcept
+      operator=(basic_regex&& __rhs)
       { return this->assign(std::move(__rhs)); }
 
       /**
@@ -591,8 +602,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_regex&
       assign(const basic_regex& __rhs)
       {
-	basic_regex __tmp(__rhs);
-	this->swap(__tmp);
+	_M_flags = __rhs._M_flags;
+	_M_original_str = __rhs._M_original_str;
+	this->imbue(__rhs.getloc());
 	return *this;
       }
 
@@ -600,13 +612,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief The move-assignment operator.
        *
        * @param __rhs Another regular expression object.
+       *
+       * The implementation is a workaround concerning ABI compatibility. See:
+       * https://gcc.gnu.org/ml/libstdc++/2014-09/msg00067.html
        */
       basic_regex&
-      assign(basic_regex&& __rhs) noexcept
+      assign(basic_regex&& __rhs)
       {
-	basic_regex __tmp(std::move(__rhs));
-	this->swap(__tmp);
-	return *this;
+	_M_flags = __rhs._M_flags;
+	_M_original_str = std::move(__rhs._M_original_str);
+	__rhs._M_automaton.reset();
+	this->imbue(__rhs.getloc());
       }
 
       /**
@@ -751,8 +767,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(basic_regex& __rhs)
       {
 	std::swap(_M_flags, __rhs._M_flags);
-	std::swap(_M_traits, __rhs._M_traits);
-	std::swap(_M_automaton, __rhs._M_automaton);
+	std::swap(_M_original_str, __rhs._M_original_str);
+	this->imbue(__rhs.imbue(this->getloc()));
       }
 
 #ifdef _GLIBCXX_DEBUG
