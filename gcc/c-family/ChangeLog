@@ -1,3 +1,10 @@
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* c-common.c (warn_logical_operator): Punt for vectors.
+
 2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement SD-6: SG10 Feature Test Recommendations

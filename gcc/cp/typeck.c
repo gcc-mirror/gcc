@@ -4045,8 +4045,8 @@ cp_build_binary_op (location_t location,
             return error_mark_node;
           case stv_firstarg:
             {
-	      op0 = save_expr (op0);
               op0 = convert (TREE_TYPE (type1), op0);
+	      op0 = save_expr (op0);
               op0 = build_vector_from_val (type1, op0);
               type0 = TREE_TYPE (op0);
               code0 = TREE_CODE (type0);
@@ -4055,8 +4055,8 @@ cp_build_binary_op (location_t location,
             }
           case stv_secondarg:
             {
-	      op1 = save_expr (op1);
               op1 = convert (TREE_TYPE (type0), op1);
+	      op1 = save_expr (op1);
               op1 = build_vector_from_val (type0, op1);
               type1 = TREE_TYPE (op1);
               code1 = TREE_CODE (type1);
@@ -4191,11 +4191,49 @@ cp_build_binary_op (location_t location,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      if (VECTOR_TYPE_P (type0) || VECTOR_TYPE_P (type1))
+      if (!VECTOR_TYPE_P (type0) && VECTOR_TYPE_P (type1))
 	{
-	  sorry ("logical operation on vector type");
-	  return error_mark_node;
+	  if (!COMPARISON_CLASS_P (op1))
+	    op1 = cp_build_binary_op (EXPR_LOCATION (op1), NE_EXPR, op1,
+				      build_zero_cst (type1), complain);
+	  if (code == TRUTH_ANDIF_EXPR)
+	    {
+	      tree z = build_zero_cst (TREE_TYPE (op1));
+	      return build_conditional_expr (location, op0, op1, z, complain);
+	    }
+	  else if (code == TRUTH_ORIF_EXPR)
+	    {
+	      tree m1 = build_all_ones_cst (TREE_TYPE (op1));
+	      return build_conditional_expr (location, op0, m1, op1, complain);
+	    }
+	  else
+	    gcc_unreachable ();
 	}
+      if (VECTOR_TYPE_P (type0))
+	{
+	  if (!COMPARISON_CLASS_P (op0))
+	    op0 = cp_build_binary_op (EXPR_LOCATION (op0), NE_EXPR, op0,
+				      build_zero_cst (type0), complain);
+	  if (!VECTOR_TYPE_P (type1))
+	    {
+	      tree m1 = build_all_ones_cst (TREE_TYPE (op0));
+	      tree z = build_zero_cst (TREE_TYPE (op0));
+	      op1 = build_conditional_expr (location, op1, z, m1, complain);
+	    }
+	  else if (!COMPARISON_CLASS_P (op1))
+	    op1 = cp_build_binary_op (EXPR_LOCATION (op1), NE_EXPR, op1,
+				      build_zero_cst (type1), complain);
+
+	  if (code == TRUTH_ANDIF_EXPR)
+	    code = BIT_AND_EXPR;
+	  else if (code == TRUTH_ORIF_EXPR)
+	    code = BIT_IOR_EXPR;
+	  else
+	    gcc_unreachable ();
+
+	  return cp_build_binary_op (location, code, op0, op1, complain);
+	}
+
       result_type = boolean_type_node;
       break;
 
@@ -5685,6 +5723,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
       break;
 
     case TRUTH_NOT_EXPR:
+      if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg)))
+	return cp_build_binary_op (input_location, EQ_EXPR, arg,
+				   build_zero_cst (TREE_TYPE (arg)), complain);
       arg = perform_implicit_conversion (boolean_type_node, arg,
 					 complain);
       val = invert_truthvalue_loc (input_location, arg);

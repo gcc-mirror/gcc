@@ -1,3 +1,13 @@
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* typeck.c (cp_build_binary_op): save_expr after convert to save
+	redundant operations.
+	[TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR]: Handle vectors.
+	(cp_build_unary_op) [TRUTH_NOT_EXPR]: Likewise.
+
 2014-10-03  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (start_decl): Complain about static/thread_local vars
