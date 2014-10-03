@@ -117,29 +117,21 @@ func makeMethodValue(op string, v Value) Value {
 	ftyp := (*funcType)(unsafe.Pointer(t))
 	method := int(v.flag) >> flagMethodShift
 
-	var code uintptr
-	var ffi *ffiData
+	fv := &makeFuncImpl{
+		typ:    ftyp,
+		method: method,
+		rcvr:   rcvr,
+	}
+
 	switch runtime.GOARCH {
 	case "amd64", "386":
 		// Indirect Go func value (dummy) to obtain actual
 		// code address. (A Go func value is a pointer to a C
 		// function pointer. http://golang.org/s/go11func.)
 		dummy := makeFuncStub
-		code = **(**uintptr)(unsafe.Pointer(&dummy))
+		fv.code = **(**uintptr)(unsafe.Pointer(&dummy))
 	default:
-		code, ffi = makeFuncFFI(ftyp,
-			func(in []Value) []Value {
-				m := rcvr.Method(method)
-				return m.Call(in)
-			})
-	}
-
-	fv := &makeFuncImpl{
-		code:   code,
-		typ:    ftyp,
-		method: method,
-		rcvr:   rcvr,
-		ffi:    ffi,
+		fv.code, fv.ffi = makeFuncFFI(ftyp, fv.call)
 	}
 
 	return Value{ft, unsafe.Pointer(&fv), v.flag&flagRO | flag(Func)<<flagKindShift | flagIndir}
@@ -160,28 +152,21 @@ func makeValueMethod(v Value) Value {
 	t := typ.common()
 	ftyp := (*funcType)(unsafe.Pointer(t))
 
-	var code uintptr
-	var ffi *ffiData
+	impl := &makeFuncImpl{
+		typ:    ftyp,
+		method: -2,
+		rcvr:   v,
+	}
+
 	switch runtime.GOARCH {
 	case "amd64", "386":
 		// Indirect Go func value (dummy) to obtain actual
 		// code address. (A Go func value is a pointer to a C
 		// function pointer. http://golang.org/s/go11func.)
 		dummy := makeFuncStub
-		code = **(**uintptr)(unsafe.Pointer(&dummy))
+		impl.code = **(**uintptr)(unsafe.Pointer(&dummy))
 	default:
-		code, ffi = makeFuncFFI(ftyp,
-			func(in []Value) []Value {
-				return v.Call(in)
-			})
-	}
-
-	impl := &makeFuncImpl{
-		code:   code,
-		typ:    ftyp,
-		method: -2,
-		rcvr:   v,
-		ffi:    ffi,
+		impl.code, impl.ffi = makeFuncFFI(ftyp, impl.call)
 	}
 
 	return Value{t, unsafe.Pointer(&impl), flag(Func<<flagKindShift) | flagIndir}
@@ -192,9 +177,17 @@ func (c *makeFuncImpl) call(in []Value) []Value {
 	if c.method == -1 {
 		return c.fn(in)
 	} else if c.method == -2 {
-		return c.rcvr.Call(in)
+		if c.typ.IsVariadic() {
+			return c.rcvr.CallSlice(in)
+		} else {
+			return c.rcvr.Call(in)
+		}
 	} else {
 		m := c.rcvr.Method(c.method)
-		return m.Call(in)
+		if c.typ.IsVariadic() {
+			return m.CallSlice(in)
+		} else {
+			return m.Call(in)
+		}
 	}
 }
