@@ -43422,7 +43422,7 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
 
 /* A subroutine of ix86_expand_vec_perm_const_1.  Try to simplify
    the permutation using the SSE4_1 pblendv instruction.  Potentially
-   reduces permutaion from 2 pshufb and or to 1 pshufb and pblendv.  */
+   reduces permutation from 2 pshufb and or to 1 pshufb and pblendv.  */
 
 static bool
 expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
@@ -43432,11 +43432,14 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
   enum machine_mode vmode = d->vmode;
   bool ok;
 
-  /* Use the same checks as in expand_vec_perm_blend, but skipping
-     AVX and AVX2 as they require more than 2 instructions.  */
+  /* Use the same checks as in expand_vec_perm_blend.  */
   if (d->one_operand_p)
     return false;
-  if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
+  if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
+    ;
+  else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
+    ;
+  else if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
     ;
   else
     return false;
@@ -43458,7 +43461,7 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
      respective lanes and 8 >= 8, but 2 not.  */
   if (which != 1 && which != 2)
     return false;
-  if (d->testing_p)
+  if (d->testing_p && GET_MODE_SIZE (vmode) == 16)
     return true;
 
   /* First we apply one operand permutation to the part where
@@ -43474,7 +43477,12 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
     dcopy.perm[i] = d->perm[i] & (nelt - 1);
 
   ok = expand_vec_perm_1 (&dcopy);
-  gcc_assert (ok);
+  if (GET_MODE_SIZE (vmode) != 16 && !ok)
+    return false;
+  else
+    gcc_assert (ok);
+  if (d->testing_p)
+    return true;
 
   /* Next we put permuted elements into their positions.  */
   dcopy1 = *d;

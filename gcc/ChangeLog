@@ -1,3 +1,12 @@
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/61403
+	* config/i386/i386.c (expand_vec_perm_palignr): Fix a spelling
+	error in comment.  Also optimize 256-bit vectors for AVX2
+	or AVX (floating vectors only), provided the first permutation
+	can be performed in one insn.
+
 2014-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.c (class driver): New class.
