@@ -475,6 +475,11 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
    (not dynamically allocated) and we want to disprove the fact
    that it may be in construction at invocation of CALL.
 
+   BASE represents memory location where instance is stored.
+   If BASE is NULL, it is assumed to be global memory.
+   OUTER_TYPE is known type of the instance or NULL if not
+   known.
+
    For the variable to be in construction we actually need to
    be in constructor of corresponding global variable or
    the inline stack of CALL must contain the constructor.
@@ -486,8 +491,9 @@ bool
 decl_maybe_in_construction_p (tree base, tree outer_type,
 			      gimple call, tree function)
 {
-  outer_type = TYPE_MAIN_VARIANT (outer_type);
-  gcc_assert (DECL_P (base));
+  if (outer_type)
+    outer_type = TYPE_MAIN_VARIANT (outer_type);
+  gcc_assert (!base || DECL_P (base));
 
   /* After inlining the code unification optimizations may invalidate
      inline stacks.  Also we need to give up on global variables after
@@ -498,7 +504,7 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
 
   /* Pure functions can not do any changes on the dynamic type;
      that require writting to memory.  */
-  if (!auto_var_in_fn_p (base, function)
+  if ((!base || !auto_var_in_fn_p (base, function))
       && flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
     return false;
 
@@ -517,7 +523,7 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
 	       argument (pointer to the instance).  */
 	    fn = DECL_ABSTRACT_ORIGIN (fn);
 	    if (!fn
-		|| !is_global_var (base)
+		|| (base && !is_global_var (base))
 	        || TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
 		|| (!DECL_CXX_CONSTRUCTOR_P (fn)
 		    && !DECL_CXX_DESTRUCTOR_P (fn)))
@@ -526,17 +532,20 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
 	if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
 	  continue;
 
-	/* FIXME: this can go away once we have ODR types equivalency on
-	   LTO level.  */
-	if (in_lto_p && !polymorphic_type_binfo_p (TYPE_BINFO (outer_type)))
-	  return true;
 	tree type = TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (fn)));
-	if (types_same_for_odr (type, outer_type))
+
+	if (!outer_type || !types_odr_comparable (type, outer_type))
+	  {
+	    if (TREE_CODE (type) == RECORD_TYPE
+		&& TYPE_BINFO (type)
+		&& polymorphic_type_binfo_p (TYPE_BINFO (type)))
+	      return true;
+	  }
+ 	else if (types_same_for_odr (type, outer_type))
 	  return true;
       }
 
-  if (TREE_CODE (base) == VAR_DECL
-      && is_global_var (base))
+  if (!base || (TREE_CODE (base) == VAR_DECL && is_global_var (base)))
     {
       if (TREE_CODE (TREE_TYPE (function)) != METHOD_TYPE
 	  || (!DECL_CXX_CONSTRUCTOR_P (function)
@@ -553,12 +562,15 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
 		  && !DECL_CXX_DESTRUCTOR_P (function)))
 	    return false;
 	}
-      /* FIXME: this can go away once we have ODR types equivalency on
-	 LTO level.  */
-      if (in_lto_p && !polymorphic_type_binfo_p (TYPE_BINFO (outer_type)))
-	return true;
       tree type = TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (function)));
-      if (types_same_for_odr (type, outer_type))
+      if (!outer_type || !types_odr_comparable (type, outer_type))
+	{
+	  if (TREE_CODE (type) == RECORD_TYPE
+	      && TYPE_BINFO (type)
+	      && polymorphic_type_binfo_p (TYPE_BINFO (type)))
+	    return true;
+	}
+      else if (types_same_for_odr (type, outer_type))
 	return true;
     }
   return false;
@@ -2009,10 +2021,11 @@ ipa_polymorphic_call_context::make_speculative (tree otr_type)
    type change is not happening.  */
 
 void
-ipa_polymorphic_call_context::possible_dynamic_type_change (tree otr_type)
+ipa_polymorphic_call_context::possible_dynamic_type_change (bool in_poly_cdtor,
+							    tree otr_type)
 {
   if (dynamic)
     make_speculative (otr_type);
-  else
+  else if (in_poly_cdtor)
     maybe_in_construction = true;
 }
