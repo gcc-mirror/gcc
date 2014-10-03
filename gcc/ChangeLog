@@ -1,3 +1,9 @@
+2014-10-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* lra-constraints.c (inherit_in_ebb): Handle calls with
+	multiple return values.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-data-refs.c (vect_permute_load_chain,

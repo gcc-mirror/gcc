@@ -5348,16 +5348,21 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		  if (GET_CODE (pat) == PARALLEL)
 		    pat = XVECEXP (pat, 0, 0);
 		  dest = SET_DEST (pat);
-		  start_sequence ();
-		  emit_move_insn (cheap, copy_rtx (dest));
-		  restore = get_insns ();
-		  end_sequence ();
-		  lra_process_new_insns (curr_insn, NULL, restore,
-					 "Inserting call parameter restore");
-		  /* We don't need to save/restore of the pseudo from
-		     this call.	 */
-		  usage_insns[regno].calls_num = calls_num;
-		  bitmap_set_bit (&check_only_regs, regno);
+		  /* For multiple return values dest is PARALLEL.
+		     Currently we handle only single return value case.  */
+		  if (REG_P (dest))
+		    {
+		      start_sequence ();
+		      emit_move_insn (cheap, copy_rtx (dest));
+		      restore = get_insns ();
+		      end_sequence ();
+		      lra_process_new_insns (curr_insn, NULL, restore,
+					     "Inserting call parameter restore");
+		      /* We don't need to save/restore of the pseudo from
+			 this call.	 */
+		      usage_insns[regno].calls_num = calls_num;
+		      bitmap_set_bit (&check_only_regs, regno);
+		    }
 		}
 	    }
 	  to_inherit_num = 0;

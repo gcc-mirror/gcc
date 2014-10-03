@@ -879,8 +879,13 @@ save_call_clobbered_regs (void)
 		  if (GET_CODE (pat) == PARALLEL)
 		    pat = XVECEXP (pat, 0, 0);
 		  dest = SET_DEST (pat);
-		  newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
-		  chain = insert_one_insn (chain, 0, -1, newpat);
+		  /* For multiple return values dest is PARALLEL.
+		     Currently we handle only single return value case.  */
+		  if (REG_P (dest))
+		    {
+		      newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
+		      chain = insert_one_insn (chain, 0, -1, newpat);
+		    }
 		}
 	    }
           last = chain;
