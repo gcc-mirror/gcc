@@ -1,3 +1,8 @@
+2014-10-03  Jing Yu  <jingyu@google.com>
+
+	* configure.ac: Add aarch64 to list of targets that support gold.
+	* configure: Regenerate.
+
 2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* MAINTAINERS:  Add myself as libstdc++ special modes maintainer.

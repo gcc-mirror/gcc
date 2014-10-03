@@ -331,7 +331,8 @@ case "${ENABLE_GOLD}" in
     if test "$is_elf" = "yes"; then
       # Check for target supported by gold.
       case "${target}" in
-        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* | tilegx*-*-*)
+        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
+        | aarch64*-*-* | tilegx*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
