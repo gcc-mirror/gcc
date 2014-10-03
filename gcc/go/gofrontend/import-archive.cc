@@ -295,6 +295,15 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
       // This is the symbol table.
       pname->clear();
     }
+  else if (hdr->ar_name[1] == 'S' && hdr->ar_name[2] == 'Y'
+	   && hdr->ar_name[3] == 'M' && hdr->ar_name[4] == '6'
+	   && hdr->ar_name[5] == '4' && hdr->ar_name[6] == '/'
+	   && hdr->ar_name[7] == ' '
+	  )
+    {
+      // 64-bit symbol table.
+      pname->clear();
+    }
   else if (hdr->ar_name[1] == '/')
     {
       // This is the extended name table.
