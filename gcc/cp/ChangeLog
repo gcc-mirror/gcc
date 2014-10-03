@@ -1,5 +1,10 @@
 2014-10-03  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (constexpr_fn_retval): Ignore declarations in C++14.
+	(var_in_constexpr_fn): New.
+	(cxx_eval_constant_expression): Look into DECL_INITIAL.
+	(potential_constant_expression_1): Allow constexpr-local vars.
+
 	PR c++/63362
 	* tree.c (strip_typedefs): Handle TREE_LIST.
 
