@@ -2317,14 +2317,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	}
       case BUILT_IN_LINE:
 	{
-	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
-	  *expr_p = build_int_cst (TREE_TYPE (*expr_p), loc.line);
+	  *expr_p = build_int_cst (TREE_TYPE (*expr_p),
+				   LOCATION_LINE (EXPR_LOCATION (*expr_p)));
 	  return GS_OK;
 	}
       case BUILT_IN_FILE:
 	{
-	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
-	  *expr_p = build_string_literal (strlen (loc.file) + 1, loc.file);
+	  const char *locfile = LOCATION_FILE (EXPR_LOCATION (*expr_p));
+	  *expr_p = build_string_literal (strlen (locfile) + 1, locfile);
 	  return GS_OK;
 	}
       case BUILT_IN_FUNCTION:

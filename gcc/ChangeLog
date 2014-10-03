@@ -1,3 +1,15 @@
+2014-10-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree-pretty-print.c (dump_location): Make it extern. Dump also
+	the column.
+	* tree-pretty-print.h (dump_location): Declare.
+	* gimple-pretty-print.c (dump_gimple_phi): Use dump_location.
+	(pp_gimple_stmt_1): Likewise.
+	(dump_implicit_edges): Likewise.
+	* gimplify.c (gimplify_call_expr): Use LOCATION_FILE and
+	LOCATION_LINE.
+
+
 2014-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.c	(driver::global_initializations): Remove "const" so
