@@ -1,3 +1,11 @@
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lex.c (search_line_fast): Add new version to be used for Power8
+	and later targets when Altivec is enabled.  Restrict the existing
+	Altivec version to big-endian systems so that lvsr is not used on
+	little endian, where it is deprecated.  Remove LE-specific code
+	from the now-BE-only version.
+
 2014-10-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jeff Law  <law@redhat.com>
 
