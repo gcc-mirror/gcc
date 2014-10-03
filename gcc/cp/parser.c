@@ -10915,6 +10915,10 @@ cp_parser_jump_statement (cp_parser* parser)
       break;
 
     case RID_GOTO:
+      if (parser->in_function_body
+	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	error ("%<goto%> in %<constexpr%> function");
+
       /* Create the goto-statement.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_MULT))
 	{
@@ -16484,6 +16488,11 @@ cp_parser_asm_definition (cp_parser* parser)
 
   /* Look for the `asm' keyword.  */
   cp_parser_require_keyword (parser, RID_ASM, RT_ASM);
+
+  if (parser->in_function_body
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    error ("%<asm%> in %<constexpr%> function");
+
   /* See if the next token is `volatile'.  */
   if (cp_parser_allow_gnu_extensions_p (parser)
       && cp_lexer_next_token_is_keyword (parser->lexer, RID_VOLATILE))
@@ -21441,6 +21450,10 @@ cp_parser_try_block (cp_parser* parser)
   tree try_block;
 
   cp_parser_require_keyword (parser, RID_TRY, RT_TRY);
+  if (parser->in_function_body
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    error ("%<try%> in %<constexpr%> function");
+
   try_block = begin_try_block ();
   cp_parser_compound_statement (parser, NULL, true, false);
   finish_try_block (try_block);

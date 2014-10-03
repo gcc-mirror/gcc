@@ -7537,7 +7537,9 @@ tree
 ensure_literal_type_for_constexpr_object (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl)
+  if (VAR_P (decl)
+      && (DECL_DECLARED_CONSTEXPR_P (decl)
+	  || var_in_constexpr_fn (decl))
       && !processing_template_decl)
     {
       tree stype = strip_array_types (type);
@@ -7546,8 +7548,12 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	   when we try to initialize the variable.  */;
       else if (!literal_type_p (type))
 	{
-	  error ("the type %qT of constexpr variable %qD is not literal",
-		 type, decl);
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    error ("the type %qT of constexpr variable %qD is not literal",
+		   type, decl);
+	  else
+	    error ("variable %qD of non-literal type %qT in %<constexpr%> "
+		   "function", decl, type);
 	  explain_non_literal_class (type);
 	  return NULL;
 	}

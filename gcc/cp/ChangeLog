@@ -1,5 +1,14 @@
 2014-10-03  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (start_decl): Complain about static/thread_local vars
+	in constexpr function.
+	(check_for_uninitialized_const_var): Also uninitialized vars.
+	* parser.c (cp_parser_jump_statement): And gotos.
+	(cp_parser_asm_operand_list): And asm.
+	(cp_parser_try_block): And try.
+	* semantics.c (ensure_literal_type_for_constexpr_object): And
+	non-literal.
+
 	* semantics.c (constexpr_fn_retval): Ignore declarations in C++14.
 	(var_in_constexpr_fn): New.
 	(cxx_eval_constant_expression): Look into DECL_INITIAL.
