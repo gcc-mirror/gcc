@@ -1,5 +1,9 @@
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-data-refs.c (vect_permute_load_chain,
+	vect_shift_permute_load_chain): Fix a typo in temporary var names,
+	suffle3 to shuffle3.
+
 	PR libgomp/61200
 	* omp-low.c (taskreg_contexts): New variable.
 	(scan_omp_parallel): Push newly created context into taskreg_contexts

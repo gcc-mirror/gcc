@@ -5185,7 +5185,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	  /* Create interleaving stmt (low part of):
 	     low = VEC_PERM_EXPR <first_vect, second_vect2, {k, 3 + k, 6 + k,
 							     ...}>  */
-	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3_low");
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_low");
 	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
 						    first_vect, second_vect,
 						    perm3_mask_low);
@@ -5196,7 +5196,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 							      ...}>  */
 	  first_vect = data_ref;
 	  second_vect = dr_chain[2];
-	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3_high");
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_high");
 	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
 						    first_vect, second_vect,
 						    perm3_mask_high);
@@ -5538,7 +5538,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 
       for (k = 0; k < 3; k++)
 	{
-	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3");
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3");
 	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
 						    dr_chain[k], dr_chain[k],
 						    perm3_mask);
