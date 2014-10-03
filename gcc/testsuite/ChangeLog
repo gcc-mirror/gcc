@@ -1,5 +1,13 @@
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/torture/vshuf-v8df.c: New test.
+	* gcc.dg/torture/vshuf-v8di.c: New test.
+	* gcc.dg/torture/vshuf-v16sf.c: New test.
+	* gcc.dg/torture/vshuf-v16si.c: New test.
+	* gcc.dg/torture/vshuf-v32hi.c: New test.
+	* gcc.dg/torture/vshuf-v64qi.c: New test.
+	* gcc.dg/torture/vshuf-64.inc: New file.
+
 	PR tree-optimization/61403
 	* gcc.dg/torture/vshuf-32.inc: Add a new test 29.
 
