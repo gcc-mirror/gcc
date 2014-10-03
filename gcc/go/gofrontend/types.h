@@ -384,6 +384,10 @@ class Methods
   find(const std::string& name) const
   { return this->methods_.find(name); }
 
+  bool
+  empty() const
+  { return this->methods_.empty(); }
+
  private:
   Method_map methods_;
 };
@@ -1228,24 +1232,24 @@ class Type
   add_methods_for_type(const Type* type, const Method::Field_indexes*,
 		       unsigned int depth, bool, bool,
 		       std::vector<const Named_type*>*,
-		       Methods**);
+		       Methods*);
 
   static void
   add_local_methods_for_type(const Named_type* type,
 			     const Method::Field_indexes*,
-			     unsigned int depth, bool, bool, Methods**);
+			     unsigned int depth, bool, bool, Methods*);
 
   static void
   add_embedded_methods_for_type(const Type* type,
 				const Method::Field_indexes*,
 				unsigned int depth, bool, bool,
 				std::vector<const Named_type*>*,
-				Methods**);
+				Methods*);
 
   static void
   add_interface_methods_for_type(const Type* type,
 				 const Method::Field_indexes*,
-				 unsigned int depth, Methods**);
+				 unsigned int depth, Methods*);
 
   // Build stub methods for a type.
   static void

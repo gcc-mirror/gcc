@@ -9387,9 +9387,14 @@ void
 Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
 		       Methods** all_methods)
 {
-  *all_methods = NULL;
+  *all_methods = new Methods();
   std::vector<const Named_type*> seen;
-  Type::add_methods_for_type(type, NULL, 0, false, false, &seen, all_methods);
+  Type::add_methods_for_type(type, NULL, 0, false, false, &seen, *all_methods);
+  if ((*all_methods)->empty())
+    {
+      delete *all_methods;
+      *all_methods = NULL;
+    }
   Type::build_stub_methods(gogo, type, *all_methods, location);
 }
 
@@ -9408,7 +9413,7 @@ Type::add_methods_for_type(const Type* type,
 			   bool is_embedded_pointer,
 			   bool needs_stub_method,
 			   std::vector<const Named_type*>* seen,
-			   Methods** methods)
+			   Methods* methods)
 {
   // Pointer types may not have methods.
   if (type->points_to() != NULL)
@@ -9457,14 +9462,11 @@ Type::add_local_methods_for_type(const Named_type* nt,
 				 unsigned int depth,
 				 bool is_embedded_pointer,
 				 bool needs_stub_method,
-				 Methods** methods)
+				 Methods* methods)
 {
   const Bindings* local_methods = nt->local_methods();
   if (local_methods == NULL)
     return;
-
-  if (*methods == NULL)
-    *methods = new Methods();
 
   for (Bindings::const_declarations_iterator p =
 	 local_methods->begin_declarations();
@@ -9476,7 +9478,7 @@ Type::add_local_methods_for_type(const Named_type* nt,
 			      || !Type::method_expects_pointer(no));
       Method* m = new Named_method(no, field_indexes, depth, is_value_method,
 				   (needs_stub_method || depth > 0));
-      if (!(*methods)->insert(no->name(), m))
+      if (!methods->insert(no->name(), m))
 	delete m;
     }
 }
@@ -9492,7 +9494,7 @@ Type::add_embedded_methods_for_type(const Type* type,
 				    bool is_embedded_pointer,
 				    bool needs_stub_method,
 				    std::vector<const Named_type*>* seen,
-				    Methods** methods)
+				    Methods* methods)
 {
   // Look for anonymous fields in TYPE.  TYPE has fields if it is a
   // struct.
@@ -9530,13 +9532,35 @@ Type::add_embedded_methods_for_type(const Type* type,
       sub_field_indexes->next = field_indexes;
       sub_field_indexes->field_index = i;
 
+      Methods tmp_methods;
       Type::add_methods_for_type(fnt, sub_field_indexes, depth + 1,
 				 (is_embedded_pointer || is_pointer),
 				 (needs_stub_method
 				  || is_pointer
 				  || i > 0),
 				 seen,
-				 methods);
+				 &tmp_methods);
+      // Check if there are promoted methods that conflict with field names and
+      // don't add them to the method map.
+      for (Methods::const_iterator p = tmp_methods.begin();
+	   p != tmp_methods.end();
+	   ++p)
+	{
+	  bool found = false;
+	  for (Struct_field_list::const_iterator fp = fields->begin();
+	       fp != fields->end();
+	       ++fp)
+	    {
+	      if (fp->field_name() == p->first)
+		{
+		  found = true;
+		  break;
+		}
+	    }
+	  if (!found &&
+	      !methods->insert(p->first, p->second))
+	    delete p->second;
+	}
     }
 }
 
@@ -9548,7 +9572,7 @@ void
 Type::add_interface_methods_for_type(const Type* type,
 				     const Method::Field_indexes* field_indexes,
 				     unsigned int depth,
-				     Methods** methods)
+				     Methods* methods)
 {
   const Interface_type* it = type->interface_type();
   if (it == NULL)
@@ -9557,9 +9581,6 @@ Type::add_interface_methods_for_type(const Type* type,
   const Typed_identifier_list* imethods = it->methods();
   if (imethods == NULL)
     return;
-
-  if (*methods == NULL)
-    *methods = new Methods();
 
   for (Typed_identifier_list::const_iterator pm = imethods->begin();
        pm != imethods->end();
@@ -9576,7 +9597,7 @@ Type::add_interface_methods_for_type(const Type* type,
       fntype = fntype->copy_with_receiver(const_cast<Type*>(type));
       Method* m = new Interface_method(pm->name(), pm->location(), fntype,
 				       field_indexes, depth);
-      if (!(*methods)->insert(pm->name(), m))
+      if (!methods->insert(pm->name(), m))
 	delete m;
     }
 }
