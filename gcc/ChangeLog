@@ -1,5 +1,14 @@
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/61200
+	* omp-low.c (taskreg_contexts): New variable.
+	(scan_omp_parallel): Push newly created context into taskreg_contexts
+	vector and move record layout code to finish_taskreg_scan.
+	(scan_omp_task): Likewise.
+	(finish_taskreg_scan): New function.
+	(execute_lower_omp): Call finish_taskreg_scan on all taskreg_contexts
+	vector elements and release it.
+
 	PR target/62128
 	* config/i386/i386.c (expand_vec_perm_palignr): If op1, op0 order
 	of palignr arguments can't be used due to min 0 or max - min
