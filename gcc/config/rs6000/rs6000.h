@@ -1178,9 +1178,11 @@ enum data_align { align_abi, align_opt, align_both };
    && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))		\
    && FP_REGNO_P (REGNO)						\
    ? V2DFmode								\
-   : ((MODE) == TFmode && FP_REGNO_P (REGNO))				\
+   : TARGET_E500_DOUBLE && ((MODE) == VOIDmode || (MODE) == DFmode)	\
    ? DFmode								\
-   : ((MODE) == TDmode && FP_REGNO_P (REGNO))				\
+   : !TARGET_E500_DOUBLE && (MODE) == TFmode && FP_REGNO_P (REGNO)	\
+   ? DFmode								\
+   : !TARGET_E500_DOUBLE && (MODE) == TDmode && FP_REGNO_P (REGNO)	\
    ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
