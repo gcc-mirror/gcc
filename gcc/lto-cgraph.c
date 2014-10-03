@@ -284,6 +284,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
   bp_pack_value (&bp, edge->can_throw_external, 1);
+  bp_pack_value (&bp, edge->in_polymorphic_cdtor, 1);
   if (edge->indirect_unknown_callee)
     {
       int flags = edge->indirect_info->ecf_flags;
@@ -1366,6 +1367,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   edge->inline_failed = inline_failed;
   edge->call_stmt_cannot_inline_p = bp_unpack_value (&bp, 1);
   edge->can_throw_external = bp_unpack_value (&bp, 1);
+  edge->in_polymorphic_cdtor = bp_unpack_value (&bp, 1);
   if (indirect)
     {
       if (bp_unpack_value (&bp, 1))

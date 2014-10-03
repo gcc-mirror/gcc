@@ -819,6 +819,12 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
   edge->indirect_unknown_callee = indir_unknown_callee;
+  if (flag_devirtualize && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
+    edge->in_polymorphic_cdtor
+      = decl_maybe_in_construction_p (NULL, NULL, call_stmt,
+				      caller->decl);
+  else
+    edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
   if (call_stmt && caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (edge);
 
@@ -1033,6 +1039,7 @@ cgraph_edge::make_speculative (cgraph_node *n2, gcov_type direct_count,
   else
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
+  e2->in_polymorphic_cdtor = in_polymorphic_cdtor;
   count -= e2->count;
   frequency -= e2->frequency;
   symtab->call_edge_duplication_hooks (this, e2);
