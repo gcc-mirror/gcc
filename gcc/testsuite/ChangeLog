@@ -1,3 +1,8 @@
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63453
+	* gcc.dg/pr63453.c: New test.
+
 2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
