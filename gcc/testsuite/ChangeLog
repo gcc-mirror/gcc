@@ -1,5 +1,9 @@
 2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* gcc.target/powerpc/lvsl-lvsr.c: New test.
+
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* g++.dg/ext/altivec-2.C: Compile with -Wno-deprecated to avoid
 	failing with the new warning message.
 	* gcc.dg/vmx/3c-01a.c: Likewise.
