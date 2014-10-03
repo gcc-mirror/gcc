@@ -1,3 +1,9 @@
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63453
+	* c-decl.c (pop_scope): Don't warn about "inline function declared
+	but never defined" for functions marked with gnu_inline attribute.
+
 2014-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/63249
