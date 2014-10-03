@@ -1,3 +1,48 @@
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/torture/pr24626-2.c: Add function declarations.  Fix
+	defaulting to int.
+	* gcc.dg/torture/pr28814.c: Likewise.
+	* gcc.dg/torture/pr57036-1.c: Likewise.
+	* gcc.dg/torture/inline-1.c: Add function declarations.
+	* gcc.dg/torture/pr24626-1.c: Likewise.
+	* gcc.dg/torture/pr24626-3.c: Likewise.
+	* gcc.dg/torture/pr25947-1.c: Likewise.
+	* gcc.dg/torture/pr27409.c: Likewise.
+	* gcc.dg/torture/pr38948.c: Likewise.
+	* gcc.dg/torture/pr44807.c: Likewise.
+	* gcc.dg/torture/pr49603.c: Likewise.
+	* gcc.dg/torture/pr45865.c: Likewise.
+	* gcc.dg/torture/pr51071-2.c: Likewise.
+	* gcc.dg/torture/pr51801.c: Likewise.
+	* gcc.dg/torture/pr52720.c: Likewise.
+	* gcc.dg/torture/pr55124.c: Likewise.
+	* gcc.dg/torture/pr55238.c: Likewise.
+	* gcc.dg/torture/pr55687.c: Likewise.
+	* gcc.dg/torture/pr55888.c: Likewise.
+	* gcc.dg/torture/pr57036-2.c: Likewise.
+	* gcc.dg/torture/pr57147-3.c: Likewise.
+	* gcc.dg/torture/pr57584.c: Likewise.
+	* gcc.dg/torture/pr59993.c: Likewise.
+	* gcc.dg/torture/pr58079.c: Likewise.
+	* gcc.dg/torture/va-arg-25.c: Likewise.
+	* gcc.dg/torture/vector-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/pr31254.c: Fix defaulting to int.
+	* gcc.dg/torture/pr43781.c: Likewise.
+	* gcc.dg/torture/pr52912.c: Likewise.
+	* gcc.dg/torture/pr59139.c: Likewise.
+	* gcc.dg/torture/pr55890-1.c: Likewise.
+	* gcc.dg/torture/pr55890-2.c: Likewise.
+	* gcc.dg/torture/pr59164.c: Likewise.
+	* gcc.dg/torture/pr57393-2.c: Likewise.
+	* gcc.dg/torture/stackalign/comp-goto-1.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_trapping): Likewise.
+	* gcc.dg/torture/pr35227.c: Use -std=gnu89.  Fix defaulting to int.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Use -fgnu89-inline.
+
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/61200

@@ -25,7 +25,7 @@ struct S2 g_320[2] = {
 };
 
 void
-int32func (uint64p_34)
+int32func (int uint64p_34)
 {
   for (g_22.f3 = 0; g_22.f3 <= 0; g_22.f3)
     {

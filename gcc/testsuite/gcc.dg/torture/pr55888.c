@@ -55,6 +55,8 @@ typedef enum
     PROTOBUF_C_WIRE_TYPE_END_GROUP, PROTOBUF_C_WIRE_TYPE_32BIT
 }
 ProtobufCWireType;
+size_t tag_pack (uint32_t, uint8_t *);
+size_t prefixed_message_pack (ProtobufCMessage *, uint8_t *);
 static inline size_t
 uint32_pack (uint32_t value, uint8_t * out)
 {

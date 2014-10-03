@@ -1,5 +1,8 @@
 /* { dg-do compile } */
 
+int sigemptyset (int *);
+int sigaddset(int, int);
+int sigprocmask ();
 struct jobstats
 {
   int j_jobslots;

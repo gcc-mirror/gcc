@@ -2,7 +2,7 @@
 
 int a, b, c;
 static int
-fn1 (p1)
+fn1 (int p1)
 {
 lbl_549:
       if (p1)

@@ -1,7 +1,10 @@
 /* { dg-do compile } */
 
 extern void g (void);
+int _setjmp();
+int read_buf_open (void);
 extern __inline __attribute__ ((__always_inline__,__leaf__))
+void
 f ()
 {
   g ();

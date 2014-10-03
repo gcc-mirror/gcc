@@ -25,6 +25,7 @@ struct rtx_def {
   unsigned int mode : 8;
 };
 extern enum rtx_code reverse_condition (enum rtx_code);
+extern enum rtx_code reverse_condition_maybe_unordered (enum rtx_code);
 enum rtx_code
 reversed_comparison_code_parts (enum rtx_code code, rtx insn, rtx arg0,
 				rtx arg1)

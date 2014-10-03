@@ -19,6 +19,7 @@ static inline
 {
   return &vnode->vfs_inode;
 };
+void
 afs_inode_map_status (struct afs_vnode *vnode)
 {
   struct inode *inode = AFS_VNODE_TO_I (vnode);
