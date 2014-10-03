@@ -25,8 +25,9 @@
   <section xml:id="sequences.list.size" xreflabel="list::size() is O(n)"><info><title>list::size() is O(n)</title></info>
     
    <para>
-     Yes it is, and that's okay.  This is a decision that we preserved
-     when we imported SGI's STL implementation.  The following is
+     Yes it is, and that was okay until the 2011 edition of the C++ standard.
+     In future GCC will change it to O(1) but O(N) was a decision that we
+     preserved when we imported SGI's STL implementation.  The following is
      quoted from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</link>:
    </para>
    <blockquote>
@@ -72,26 +73,6 @@
   </section>
 </section>
 
-<section xml:id="containers.sequences.vector" xreflabel="vector"><info><title>vector</title></info>
-<?dbhtml filename="vector.html"?>
-  
-  <para>
-  </para>
-  <section xml:id="sequences.vector.management" xreflabel="Space Overhead Management"><info><title>Space Overhead Management</title></info>
-    
-   <para>
-     In <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
-     message to the list</link>, Daniel Kostecky announced work on an
-     alternate form of <code>std::vector</code> that would support
-     hints on the number of elements to be over-allocated.  The design
-     was also described, along with possible implementation choices.
-   </para>
-   <para>
-     The first two alpha releases were announced <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</link>
-     and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</link>.
-   </para>
-
-  </section></section>
 </section>
 
 <!-- Sect1 02 : Associative -->

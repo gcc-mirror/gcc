@@ -1,3 +1,10 @@
+2014-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63449
+	* doc/xml/manual/containers.xml: Remove outdated section. Update
+	std::list notes.
+	* doc/html/*: Regenerate.
+
 2014-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Corrections.
