@@ -1,5 +1,16 @@
 2014-10-03  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/gomp/appendix-a/a.35.4.c: Fix implicit declarations.
+	* gcc.dg/gomp/appendix-a/a.35.5.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.6.c: Likewise.
+	* gcc.dg/gomp/asm-1.c: Likewise.
+	* gcc.dg/gomp/for-1.c: Likewise.
+	* gcc.dg/gomp/empty.c: Fix defaulting to int.
+	* gcc.dg/gomp/sharing-3.c: Likewise.
+	* gcc.dg/gomp/udr-3.c: Use -std=gnu89.
+
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/torture/pr24626-2.c: Add function declarations.  Fix
 	defaulting to int.
 	* gcc.dg/torture/pr28814.c: Likewise.
