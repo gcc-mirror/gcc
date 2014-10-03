@@ -1,3 +1,9 @@
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Issue a warning message when vec_lvsl or vec_lvsr is used with a
+	little endian target.
+
 2014-10-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-pretty-print.c (dump_location): Make it extern. Dump also
