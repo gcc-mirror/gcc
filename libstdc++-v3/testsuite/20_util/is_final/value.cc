@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++14" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2014 Free Software Foundation, Inc.
+
+// Copyright (C) 2011-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2044 }
-
-#include <utility>
+#include <type_traits>
+#include <testsuite_tr1.h>
 
 void test01()
 {
-  std::declval<int>();		// { dg-error "required from here" }
+  using std::is_final;
+  using namespace __gnu_test;
+
+  // Positive test.
+  static_assert(test_category<is_final, FinalType>(true), "");
+
+  // Negative tests.
+  static_assert(test_category<is_final, ClassType>(false), "");
+  static_assert(test_category<is_final, DerivedType>(false), "");
 }
