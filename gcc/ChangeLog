@@ -1,3 +1,18 @@
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (struct indirect_call_info): Add IN_POLYMORPHIC_CDTOR
+	* lto-cgraph.c (lto_output_edge, input_edge): Stream
+	in_polymorphic_cdtor
+	* cgraph.c (symbol_table::create_edge): Compute in_polymorphic_cdtor.
+	(cgraph_edge::make_speculative): Copy in_polymorphic_cdtor.
+	* cgraphclones.c (cgraph_edge::clone): Likewise.
+	* ipa-prop.c (update_jump_functions_after_inlining, 
+	try_make_edge_direct_virtual_call): Pass in_polymorphic_cdtor
+	to possible_dynamic_type_change.
+	(decl_maybe_in_construction_p): Allow empty OUTER_TYPE and BASE.
+	(ipa_polymorphic_call_context::possible_dynamic_type_change): Add
+	IN_POLY_CDOTR argument.
+
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Fix up formatting.

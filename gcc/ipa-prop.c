@@ -2652,7 +2652,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 
 	      /* TODO: Make type preserved safe WRT contexts.  */
 	      if (!dst->value.ancestor.agg_preserved)
-		ctx.possible_dynamic_type_change ();
+		ctx.possible_dynamic_type_change (e->in_polymorphic_cdtor);
 	      ctx.offset_by (dst->value.ancestor.offset);
 	      if (!ctx.useless_p ())
 		{
@@ -2722,7 +2722,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 
 		  /* TODO: Make type preserved safe WRT contexts.  */
 		  if (!dst->value.ancestor.agg_preserved)
-		    ctx.possible_dynamic_type_change ();
+		    ctx.possible_dynamic_type_change (e->in_polymorphic_cdtor);
 		  if (!ctx.useless_p ())
 		    {
 		      if (!dst_ctx)
@@ -3128,7 +3128,8 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
       /* TODO: We want to record if type change happens.  
 	 Old code did not do that that seems like a bug.  */
-      ctx.possible_dynamic_type_change (ie->indirect_info->otr_type);
+      ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
+					ie->indirect_info->otr_type);
 
       updated = ie->indirect_info->context.combine_with
 		  (ctx, ie->indirect_info->otr_type);

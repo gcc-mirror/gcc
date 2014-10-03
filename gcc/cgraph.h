@@ -1333,7 +1333,7 @@ public:
   void offset_by (HOST_WIDE_INT);
   /* Use when we can not track dynamic type change.  This speculatively assume
      type change is not happening.  */
-  void possible_dynamic_type_change (tree otr_type = NULL);
+  void possible_dynamic_type_change (bool, tree otr_type = NULL);
   /* Assume that both THIS and a given context is valid and strenghten THIS
      if possible.  Return true if any strenghtening was made.
      If actual type the context is being used in is known, OTR_TYPE should be
@@ -1512,6 +1512,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
      Optimizers may later redirect direct call to clone, so 1) and 3)
      do not need to necesarily agree with destination.  */
   unsigned int speculative : 1;
+  /* Set to true when caller is a constructor or destructor of polymorphic
+     type.  */
+  unsigned in_polymorphic_cdtor : 1;
 
 private:
   /* Remove the edge from the list of the callers of the callee.  */

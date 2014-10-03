@@ -159,6 +159,7 @@ cgraph_edge::clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid,
   new_edge->can_throw_external = can_throw_external;
   new_edge->call_stmt_cannot_inline_p = call_stmt_cannot_inline_p;
   new_edge->speculative = speculative;
+  new_edge->in_polymorphic_cdtor = in_polymorphic_cdtor;
   if (update_original)
     {
       count -= new_edge->count;
