@@ -8018,6 +8018,8 @@ constexpr_fn_retval (tree body)
     case DECL_EXPR:
       if (TREE_CODE (DECL_EXPR_DECL (body)) == USING_DECL)
 	return NULL_TREE;
+      if (cxx_dialect >= cxx14)
+	return NULL_TREE;
       return error_mark_node;
 
     case CLEANUP_POINT_EXPR:
@@ -9596,6 +9598,14 @@ cxx_eval_trinary_expression (const constexpr_call *call, tree t,
   return val;
 }
 
+bool
+var_in_constexpr_fn (tree t)
+{
+  tree ctx = DECL_CONTEXT (t);
+  return (cxx_dialect >= cxx14 && ctx && TREE_CODE (ctx) == FUNCTION_DECL
+	  && DECL_DECLARED_CONSTEXPR_P (ctx));
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -9635,6 +9645,11 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
+      if (DECL_P (r) && var_in_constexpr_fn (r)
+	  && DECL_INITIAL (r))
+	r = cxx_eval_constant_expression (call, DECL_INITIAL (r),
+					  allow_non_constant, false,
+					  non_constant_p, overflow_p);
       if (DECL_P (r))
 	{
 	  if (!allow_non_constant)
@@ -10320,6 +10335,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 
     case VAR_DECL:
       if (want_rval && !decl_constant_var_p (t)
+	  && !var_in_constexpr_fn (t)
 	  && !dependent_type_p (TREE_TYPE (t)))
         {
           if (flags & tf_error)

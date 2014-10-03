@@ -5833,6 +5833,7 @@ extern tree maybe_constant_value (tree);
 extern tree maybe_constant_init (tree);
 extern bool is_sub_constant_expr (tree);
 extern bool reduced_constant_expression_p (tree);
+extern bool var_in_constexpr_fn (tree);
 extern void explain_invalid_constexpr_fn (tree);
 extern vec<tree> cx_error_context (void);
 extern bool is_this_parameter (tree);
