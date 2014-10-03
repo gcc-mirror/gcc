@@ -1,3 +1,22 @@
+2014-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (ipa_polymorphic_call_context):
+	Turn bools into bitfields; add DYNAMIC; make MAKE_SPECULATIVE
+	private, add POSSIBLE_DYNAMIC_TYPE_CHANGE.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class): Allow accesses
+	past end of dynamic types.
+	(ipa_polymorphic_call_context::stream_out,
+	speculative_outer_type): Stream dynamic flag.
+	(ipa_polymorphic_call_context::set_by_decl): Clear DYNAMIC.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context):
+	Clear DYNAMIC.
+	(ipa_polymorphic_call_context::get_dynamic_type): Use DYNAMIC;
+	set it.
+	(ipa_polymorphic_call_context::combine_with): Propagate dynamic.
+	* ipa-prop.c (update_jump_functions_after_inlining,
+	try_make_edge_direct_virtual_call): Use possible_dynamic_type_change.
+
 2014-10-02  Teresa Johnson  <tejohnson@google.com>
 
 	* tree-ssa-threadupdate.c (freqs_to_counts_path): Scale frequencies

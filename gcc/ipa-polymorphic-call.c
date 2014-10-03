@@ -167,8 +167,11 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
      type = otr_type;
      cur_offset = 0;
 
-     /* If derived type is not allowed, we know that the context is invalid.  */
-     if (!maybe_derived_type)
+     /* If derived type is not allowed, we know that the context is invalid.
+	For dynamic types, we really do not have information about
+	size of the memory location.  It is possible that completely
+	different type is stored after outer_type.  */
+     if (!maybe_derived_type && !dynamic)
        {
 	 clear_speculation ();
 	 invalid = true;
@@ -575,7 +578,7 @@ ipa_polymorphic_call_context::dump (FILE *f) const
 	fprintf (f, "nothing known");
       if (outer_type || offset)
 	{
-	  fprintf (f, "Outer type:");
+	  fprintf (f, "Outer type%s:", dynamic ? " (dynamic)":"");
 	  print_generic_expr (f, outer_type, TDF_SLIM);
 	  if (maybe_derived_type)
 	    fprintf (f, " (or a derived type)");
@@ -618,6 +621,7 @@ ipa_polymorphic_call_context::stream_out (struct output_block *ob) const
   bp_pack_value (&bp, maybe_in_construction, 1);
   bp_pack_value (&bp, maybe_derived_type, 1);
   bp_pack_value (&bp, speculative_maybe_derived_type, 1);
+  bp_pack_value (&bp, dynamic, 1);
   bp_pack_value (&bp, outer_type != NULL, 1);
   bp_pack_value (&bp, offset != 0, 1);
   bp_pack_value (&bp, speculative_outer_type != NULL, 1);
@@ -648,6 +652,7 @@ ipa_polymorphic_call_context::stream_in (struct lto_input_block *ib,
   maybe_in_construction = bp_unpack_value (&bp, 1);
   maybe_derived_type = bp_unpack_value (&bp, 1);
   speculative_maybe_derived_type = bp_unpack_value (&bp, 1);
+  dynamic = bp_unpack_value (&bp, 1);
   bool outer_type_p = bp_unpack_value (&bp, 1);
   bool offset_p = bp_unpack_value (&bp, 1);
   bool speculative_outer_type_p = bp_unpack_value (&bp, 1);
@@ -679,10 +684,16 @@ void
 ipa_polymorphic_call_context::set_by_decl (tree base, HOST_WIDE_INT off)
 {
   gcc_assert (DECL_P (base));
+  clear_speculation ();
 
+  if (!contains_polymorphic_type_p (TREE_TYPE (base)))
+    {
+      clear_outer_type ();
+      offset = off;
+      return;
+    }
   outer_type = TYPE_MAIN_VARIANT (TREE_TYPE (base));
   offset = off;
-  clear_speculation ();
   /* Make very conservative assumption that all objects
      may be in construction. 
  
@@ -690,6 +701,7 @@ ipa_polymorphic_call_context::set_by_decl (tree base, HOST_WIDE_INT off)
      get_dynamic_type or decl_maybe_in_construction_p.  */
   maybe_in_construction = true;
   maybe_derived_type = false;
+  dynamic = false;
 }
 
 /* CST is an invariant (address of decl), try to get meaningful
@@ -832,7 +844,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 		      return;
 		    }
 		  set_by_decl (base, offset + offset2);
-		  if (maybe_in_construction && stmt)
+		  if (outer_type && maybe_in_construction && stmt)
 		    maybe_in_construction
 		     = decl_maybe_in_construction_p (base,
 						     outer_type,
@@ -888,6 +900,8 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 		*instance = base_pointer;
 	      return;
 	    }
+
+	  dynamic = true;
 
 	  /* If the function is constructor or destructor, then
 	     the type is possibly in construction, but we know
@@ -1192,6 +1206,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
       context.outer_type = type;
       context.maybe_in_construction = false;
       context.maybe_derived_type = false;
+      context.dynamic = true;
       /* If we failed to find the inner type, we know that the call
 	 would be undefined for type produced here.  */
       if (!context.restrict_to_inner_class (tci->otr_type))
@@ -1540,6 +1555,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 
   if (!tci.type_maybe_changed
       || (outer_type
+	  && !dynamic
 	  && !tci.seen_unanalyzed_store
 	  && !tci.multiple_types_encountered
 	  && offset == tci.offset
@@ -1563,6 +1579,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	{
 	  outer_type = TYPE_MAIN_VARIANT (tci.known_current_type);
 	  offset = tci.known_current_offset;
+	  dynamic = true;
 	  maybe_in_construction = false;
 	  maybe_derived_type = false;
 	  if (dump_file)
@@ -1599,6 +1616,12 @@ ipa_polymorphic_call_context::speculation_consistent_p (tree spec_outer_type,
 {
   if (!flag_devirtualize_speculatively)
     return false;
+
+  /* Non-polymorphic types are useless for deriving likely polymorphic
+     call targets.  */
+  if (!spec_outer_type || !contains_polymorphic_type_p (spec_outer_type))
+    return false;
+
   /* If we know nothing, speculation is always good.  */
   if (!outer_type)
     return true;
@@ -1613,11 +1636,6 @@ ipa_polymorphic_call_context::speculation_consistent_p (tree spec_outer_type,
      when it says something new.  */
   if (types_must_be_same_for_odr (spec_outer_type, outer_type))
     return maybe_derived_type && !spec_maybe_derived_type;
-
-  /* Non-polymorphic types are useless for deriving likely polymorphic
-     call targets.  */
-  if (!contains_polymorphic_type_p (spec_outer_type))
-    return false;
 
   /* If speculation does not contain the type in question, ignore it.  */
   if (otr_type
@@ -1792,6 +1810,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
     {
       outer_type = ctx.outer_type;
       offset = ctx.offset;
+      dynamic = ctx.dynamic;
       maybe_in_construction = ctx.maybe_in_construction;
       maybe_derived_type = ctx.maybe_derived_type;
       updated = true;
@@ -1821,6 +1840,11 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	{
 	  updated = true;
 	  maybe_derived_type = false;
+	}
+      if (dynamic && !ctx.dynamic)
+	{
+	  updated = true;
+	  dynamic = false;
 	}
     }
   /* If we know the type precisely, there is not much to improve.  */
@@ -1856,6 +1880,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	  outer_type = ctx.outer_type;
 	  maybe_derived_type = ctx.maybe_derived_type;
 	  offset = ctx.offset;
+	  dynamic = ctx.dynamic;
 	  updated = true;
 	}
 
@@ -1906,6 +1931,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	  maybe_in_construction = ctx.maybe_in_construction;
 	  maybe_derived_type = ctx.maybe_derived_type;
 	  offset = ctx.offset;
+	  dynamic = ctx.dynamic;
           updated = true;
 	}
     }
@@ -1952,7 +1978,10 @@ invalidate:
 
 /* Take non-speculative info, merge it with speculative and clear speculation.
    Used when we no longer manage to keep track of actual outer type, but we
-   think it is still there.  */
+   think it is still there.
+
+   If OTR_TYPE is set, the transformation can be done more effectively assuming
+   that context is going to be used only that way.  */
 
 void
 ipa_polymorphic_call_context::make_speculative (tree otr_type)
@@ -1974,4 +2003,16 @@ ipa_polymorphic_call_context::make_speculative (tree otr_type)
   combine_speculation_with (spec_outer_type, spec_offset,
 			    spec_maybe_derived_type,
 			    otr_type);
+}
+
+/* Use when we can not track dynamic type change.  This speculatively assume
+   type change is not happening.  */
+
+void
+ipa_polymorphic_call_context::possible_dynamic_type_change (tree otr_type)
+{
+  if (dynamic)
+    make_speculative (otr_type);
+  else
+    maybe_in_construction = true;
 }
