@@ -1,3 +1,7 @@
+2014-10-03  David Sherwood  <david.sherwood@arm.com>
+
+	* ira-int.h (ira_allocno): Mark hard_regno as signed.
+
 2014-10-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* lra-constraints.c (inherit_in_ebb): Handle calls with
