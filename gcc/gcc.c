@@ -6737,7 +6737,7 @@ class driver
   void set_progname (const char *argv0) const;
   void expand_at_files (int *argc, char ***argv) const;
   void decode_argv (int argc, const char **argv);
-  void global_initializations () const;
+  void global_initializations ();
   void build_multilib_strings () const;
   void set_up_specs () const;
   void putenv_COLLECT_GCC (const char *argv0) const;
@@ -6848,7 +6848,7 @@ driver::decode_argv (int argc, const char **argv)
 /* Perform various initializations and setup.  */
 
 void
-driver::global_initializations () const
+driver::global_initializations ()
 {
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
