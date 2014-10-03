@@ -1,3 +1,8 @@
+2014-10-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* convert.c (convert_to_integer): Do not introduce useless conversions
+	between integral types.
+
 2014-10-03  David Sherwood  <david.sherwood@arm.com>
 
 	* ira-int.h (ira_allocno): Mark hard_regno as signed.
