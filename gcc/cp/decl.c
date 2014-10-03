@@ -4767,6 +4767,16 @@ start_decl (const cp_declarator *declarator,
       DECL_THIS_STATIC (decl) = 1;
     }
 
+  if (current_function_decl && VAR_P (decl)
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    {
+      if (DECL_THREAD_LOCAL_P (decl))
+	error ("%qD declared %<thread_local%> in %<constexpr%> function",
+	       decl);
+      else if (TREE_STATIC (decl))
+	error ("%qD declared %<static%> in %<constexpr%> function", decl);
+    }
+
   if (!processing_template_decl && VAR_P (decl))
     start_decl_1 (decl, initialized);
 
@@ -5135,15 +5145,20 @@ check_for_uninitialized_const_var (tree decl)
      7.1.6 */
   if (VAR_P (decl)
       && TREE_CODE (type) != REFERENCE_TYPE
-      && CP_TYPE_CONST_P (type)
+      && (CP_TYPE_CONST_P (type) || var_in_constexpr_fn (decl))
       && !DECL_INITIAL (decl))
     {
       tree field = default_init_uninitialized_part (type);
       if (!field)
 	return;
 
-      permerror (DECL_SOURCE_LOCATION (decl),
-		 "uninitialized const %qD", decl);
+      if (CP_TYPE_CONST_P (type))
+	permerror (DECL_SOURCE_LOCATION (decl),
+		   "uninitialized const %qD", decl);
+      else
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "uninitialized variable %qD in %<constexpr%> function",
+		  decl);
 
       if (CLASS_TYPE_P (type))
 	{
