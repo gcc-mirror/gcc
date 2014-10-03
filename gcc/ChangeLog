@@ -1,3 +1,33 @@
+2014-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.c (class driver): New class.
+	(main): Reimplement in terms of driver::main, moving most of the
+	locals to be locals within individual methods of class driver.
+	The remaining locals "explicit_link_files", "decoded_options" and
+	"decoded_options_count" are used by multiple driver:: methods, and
+	so become member data.  Doing so isolates the argc/argv reads and
+	writes.  Replace "goto out" with a special exit code from
+	new method driver::prepare_infiles.  Split out the old
+	implementation of main into the following...
+	(driver::main): New function, corresponding to the old "main"
+	implementation.
+	(driver::set_progname): New function, taken from the old
+	"main" implementation.
+	(driver::expand_at_files): Likewise.
+	(driver::decode_argv): Likewise.
+	(driver::global_initializations): Likewise.
+	(driver::build_multilib_strings): Likewise.
+	(driver::set_up_specs): Likewise.
+	(driver::putenv_COLLECT_GCC): Likewise.
+	(driver::maybe_putenv_COLLECT_LTO_WRAPPER): Likewise.
+	(driver::handle_unrecognized_options): Likewise.
+	(driver::maybe_print_and_exit): Likewise.
+	(driver::prepare_infiles): Likewise.
+	(driver::do_spec_on_infiles): Likewise.
+	(driver::maybe_run_linker): Likewise.
+	(driver::final_actions): Likewise.
+	(driver::get_exit_code): Likewise.
+
 2014-10-03  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (asan_finish_file): Disable __asan_init calls for KASan;
