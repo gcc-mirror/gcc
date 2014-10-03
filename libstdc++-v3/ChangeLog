@@ -1,3 +1,9 @@
+2014-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63449
+	* doc/xml/manual/containers.xml: Remove outdated section.
+	* doc/html/*: Regenerate.
+
 2014-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/c_global/ctgmath: Include <complex>.
