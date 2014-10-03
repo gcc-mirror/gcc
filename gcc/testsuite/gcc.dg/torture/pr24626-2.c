@@ -22,7 +22,12 @@ typedef enum { MU_REMOVE, MU_RENAME, MU_OPEN } mu_action;
 typedef struct __dbpginfo {
     u_int8_t type;
 } PAGE;
+int __db_cursor ();
+int __memp_fget ();
+int __db_free ();
+int __db_c_close ();
 int __db_master_update(mdbp, sdbp, txn, subdb, type, action, newname, flags)
+  int txn, subdb, type, action, newname, flags;
   DB *mdbp, *sdbp;
 {
     DB_ENV *dbenv;

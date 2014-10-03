@@ -15,6 +15,8 @@
 const vector unsigned int v1 = {10,11,12,13};
 const vector unsigned int v2 = {20,21,22,23};
 
+extern int memcmp (const void *, const void *, size_t);
+
 void foo(int a, ...)
 {
   va_list args;

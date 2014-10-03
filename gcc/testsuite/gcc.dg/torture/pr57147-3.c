@@ -5,6 +5,8 @@ struct __jmp_buf_tag   {
 };
 typedef struct __jmp_buf_tag sigjmp_buf[1];
 sigjmp_buf GC_jmp_buf;
+int __sigsetjmp (sigjmp_buf, int);
+void GC_set_and_save_fault_handler (void (*)(int));
 void GC_fault_handler(int sig)
 {
 }

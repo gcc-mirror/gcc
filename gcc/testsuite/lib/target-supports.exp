@@ -702,7 +702,7 @@ proc check_effective_target_scheduling {} {
 
 proc check_effective_target_trapping {} {
     return [check_no_compiler_messages trapping object {
-        add (int a, int b) { return a + b; }
+        int add (int a, int b) { return a + b; }
     } "-ftrapv"]
 }
 

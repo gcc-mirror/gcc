@@ -32,6 +32,8 @@ struct scm_vm {
 };
 static SCM vm_regular_engine (SCM vm, SCM program, SCM *argv, int nargs) {
 }
+void vm_dispatch_hook ();
+int _setjmp ();
 static SCM vm_debug_engine (SCM vm, SCM program, SCM *argv, int nargs) {
     register scm_t_uint8 *ip ;
     register SCM *sp ;
