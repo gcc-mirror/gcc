@@ -1,5 +1,10 @@
 2014-10-02  Teresa Johnson  <tejohnson@google.com>
 
+	* tree-ssa-threadupdate.c (freqs_to_counts_path): Scale frequencies
+	up when synthesizing counts to avoid rounding errors.
+
+2014-10-02  Teresa Johnson  <tejohnson@google.com>
+
 	PR middle-end/63422
 	* tree-ssa-threadupdate.c (freqs_to_counts_path): Remove
 	asserts to handle incoming insanities.
