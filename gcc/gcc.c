@@ -6724,49 +6724,132 @@ compare_files (char *cmpfile[])
   return ret;
 }
 
+/* The top-level "main" within the driver would be ~1000 lines long.
+   This class breaks it up into smaller functions and contains some
+   state shared by them.  */
+
+class driver
+{
+ public:
+  int main (int argc, char **argv);
+
+ private:
+  void set_progname (const char *argv0) const;
+  void expand_at_files (int *argc, char ***argv) const;
+  void decode_argv (int argc, const char **argv);
+  void global_initializations () const;
+  void build_multilib_strings () const;
+  void set_up_specs () const;
+  void putenv_COLLECT_GCC (const char *argv0) const;
+  void maybe_putenv_COLLECT_LTO_WRAPPER () const;
+  void handle_unrecognized_options () const;
+  int maybe_print_and_exit () const;
+  bool prepare_infiles ();
+  void do_spec_on_infiles () const;
+  void maybe_run_linker (const char *argv0) const;
+  void final_actions () const;
+  int get_exit_code () const;
+
+ private:
+  char *explicit_link_files;
+  struct cl_decoded_option *decoded_options;
+  unsigned int decoded_options_count;
+};
+
+/* Implement the top-level "main" within the driver in terms of
+   driver::main.  */
+
 extern int main (int, char **);
 
 int
 main (int argc, char **argv)
 {
-  size_t i;
-  int value;
-  int linker_was_run = 0;
-  int lang_n_infiles = 0;
-  int num_linker_inputs = 0;
-  char *explicit_link_files;
-  char *specs_file;
-  char *lto_wrapper_file;
-  const char *p;
-  struct user_specs *uptr;
-  char **old_argv = argv;
-  struct cl_decoded_option *decoded_options;
-  unsigned int decoded_options_count;
+  driver d;
 
-  p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+  return d.main (argc, argv);
+}
+
+/* driver::main is implemented as a series of driver:: method calls.  */
+
+int
+driver::main (int argc, char **argv)
+{
+  bool early_exit;
+
+  set_progname (argv[0]);
+  expand_at_files (&argc, &argv);
+  decode_argv (argc, const_cast <const char **> (argv));
+  global_initializations ();
+  build_multilib_strings ();
+  set_up_specs ();
+  putenv_COLLECT_GCC (argv[0]);
+  maybe_putenv_COLLECT_LTO_WRAPPER ();
+  handle_unrecognized_options ();
+
+  if (!maybe_print_and_exit ())
+    return 0;
+
+  early_exit = prepare_infiles ();
+  if (early_exit)
+    return get_exit_code ();
+
+  do_spec_on_infiles ();
+  maybe_run_linker (argv[0]);
+  final_actions ();
+  return get_exit_code ();
+}
+
+/* Locate the final component of argv[0] after any leading path, and set
+   the program name accordingly.  */
+
+void
+driver::set_progname (const char *argv0) const
+{
+  const char *p = argv0 + strlen (argv0);
+  while (p != argv0 && !IS_DIR_SEPARATOR (p[-1]))
     --p;
   progname = p;
 
   xmalloc_set_program_name (progname);
+}
 
-  expandargv (&argc, &argv);
+/* Expand any @ files within the command-line args,
+   setting at_file_supplied if any were expanded.  */
+
+void
+driver::expand_at_files (int *argc, char ***argv) const
+{
+  char **old_argv = *argv;
+
+  expandargv (argc, argv);
 
   /* Determine if any expansions were made.  */
-  if (argv != old_argv)
+  if (*argv != old_argv)
     at_file_supplied = true;
+}
 
+/* Decode the command-line arguments from argc/argv into the
+   decoded_options array.  */
+
+void
+driver::decode_argv (int argc, const char **argv)
+{
   /* Register the language-independent parameters.  */
   global_init_params ();
   finish_params ();
 
   init_options_struct (&global_options, &global_options_set);
 
-  decode_cmdline_options_to_array (argc, CONST_CAST2 (const char **, char **,
-						      argv),
+  decode_cmdline_options_to_array (argc, argv,
 				   CL_DRIVER,
 				   &decoded_options, &decoded_options_count);
+}
 
+/* Perform various initializations and setup.  */
+
+void
+driver::global_initializations () const
+{
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
@@ -6808,10 +6891,16 @@ main (int argc, char **argv)
   alloc_args ();
 
   obstack_init (&obstack);
+}
 
-  /* Build multilib_select, et. al from the separate lines that make up each
-     multilib selection.  */
+/* Build multilib_select, et. al from the separate lines that make up each
+   multilib selection.  */
+
+void
+driver::build_multilib_strings () const
+{
   {
+    const char *p;
     const char *const *q = multilib_raw;
     int need_space;
 
@@ -6844,7 +6933,7 @@ main (int argc, char **argv)
     multilib_reuse = XOBFINISH (&multilib_obstack, const char *);
 
     need_space = FALSE;
-    for (i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
+    for (size_t i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
       {
 	if (need_space)
 	  obstack_1grow (&multilib_obstack, ' ');
@@ -6857,6 +6946,15 @@ main (int argc, char **argv)
     obstack_1grow (&multilib_obstack, 0);
     multilib_defaults = XOBFINISH (&multilib_obstack, const char *);
   }
+}
+
+/* Set up the spec-handling machinery.  */
+
+void
+driver::set_up_specs () const
+{
+  char *specs_file;
+  size_t i;
 
 #ifdef INIT_ENVIRONMENT
   /* Set up any other necessary machine specific environment variables.  */
@@ -7016,7 +7114,7 @@ main (int argc, char **argv)
 
   /* Process any user specified specs in the order given on the command
      line.  */
-  for (uptr = user_specs_head; uptr; uptr = uptr->next)
+  for (struct user_specs *uptr = user_specs_head; uptr; uptr = uptr->next)
     {
       char *filename = find_a_file (&startfile_prefixes, uptr->filename,
 				    R_OK, true);
@@ -7088,16 +7186,27 @@ main (int argc, char **argv)
   /* Now that we have the switches and the specs, set
      the subdirectory based on the options.  */
   set_multilib_dir ();
+}
 
-  /* Set up to remember the pathname of gcc and any options
-     needed for collect.  We use argv[0] instead of progname because
-     we need the complete pathname.  */
+/* Set up to remember the pathname of gcc and any options
+   needed for collect.  We use argv[0] instead of progname because
+   we need the complete pathname.  */
+
+void
+driver::putenv_COLLECT_GCC (const char *argv0) const
+{
   obstack_init (&collect_obstack);
   obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=") - 1);
-  obstack_grow (&collect_obstack, argv[0], strlen (argv[0]) + 1);
+  obstack_grow (&collect_obstack, argv0, strlen (argv0) + 1);
   xputenv (XOBFINISH (&collect_obstack, char *));
+}
 
-  /* Set up to remember the pathname of the lto wrapper. */
+/* Set up to remember the pathname of the lto wrapper. */
+
+void
+driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
+{
+  char *lto_wrapper_file;
 
   if (have_c)
     lto_wrapper_file = NULL;
@@ -7116,14 +7225,24 @@ main (int argc, char **argv)
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
 
-  /* Reject switches that no pass was interested in.  */
+}
 
-  for (i = 0; (int) i < n_switches; i++)
+/* Reject switches that no pass was interested in.  */
+
+void
+driver::handle_unrecognized_options () const
+{
+  for (size_t i = 0; (int) i < n_switches; i++)
     if (! switches[i].validated)
       error ("unrecognized command line option %<-%s%>", switches[i].part1);
+}
 
-  /* Obey some of the options.  */
+/* Handle the various -print-* options, returning 0 if the driver
+   should exit, or nonzero if the driver should continue.  */
 
+int
+driver::maybe_print_and_exit () const
+{
   if (print_search_dirs)
     {
       printf (_("install: %s%s\n"),
@@ -7286,11 +7405,24 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	return (0);
     }
 
+  return 1;
+}
+
+/* Figure out what to do with each input file.
+   Return true if we need to exit early from "main", false otherwise.  */
+
+bool
+driver::prepare_infiles ()
+{
+  size_t i;
+  int lang_n_infiles = 0;
+
   if (n_infiles == added_libraries)
     fatal_error ("no input files");
 
   if (seen_error ())
-    goto out;
+    /* Early exit needed from main.  */
+    return true;
 
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
@@ -7338,6 +7470,17 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
     fatal_error ("cannot specify -o with -c, -S or -E with multiple files");
 
+  /* No early exit needed from main; we can continue.  */
+  return false;
+}
+
+/* Run the spec machinery on each input file.  */
+
+void
+driver::do_spec_on_infiles () const
+{
+  size_t i;
+
   for (i = 0; (int) i < n_infiles; i++)
     {
       int this_file_error = 0;
@@ -7372,6 +7515,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    }
 	  else
 	    {
+	      int value;
+
 	      if (compare_debug)
 		{
 		  free (debug_check_temp_file[0]);
@@ -7473,6 +7618,16 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       if (lang_specific_pre_link ())
 	errorcount++;
     }
+}
+
+/* If we have to run the linker, do it now.  */
+
+void
+driver::maybe_run_linker (const char *argv0) const
+{
+  size_t i;
+  int linker_was_run = 0;
+  int num_linker_inputs;
 
   /* Determine if there are any linker input files.  */
   num_linker_inputs = 0;
@@ -7524,7 +7679,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      linker_plugin_file_spec = convert_white_space (temp_spec);
 	    }
 #endif
-	  lto_gcc_spec = argv[0];
+	  lto_gcc_spec = argv0;
 	}
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
@@ -7539,7 +7694,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		    " to the linker.\n\n"));
 	  fflush (stdout);
 	}
-      value = do_spec (link_command_spec);
+      int value = do_spec (link_command_spec);
       if (value < 0)
 	errorcount = 1;
       linker_was_run = (tmp != execution_count);
@@ -7554,7 +7709,13 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
 	warning (0, "%s: linker input file unused because linking not done",
 		 outfiles[i]);
+}
 
+/* The end of "main".  */
+
+void
+driver::final_actions () const
+{
   /* Delete some or all of the temporary files we made.  */
 
   if (seen_error ())
@@ -7566,8 +7727,13 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       printf (("\nFor bug reporting instructions, please see:\n"));
       printf ("%s\n", bug_report_url);
     }
+}
 
- out:
+/* Determine what the exit code of the driver should be.  */
+
+int
+driver::get_exit_code () const
+{
   return (signal_count != 0 ? 2
 	  : seen_error () ? (pass_exit_codes ? greatest_status : 1)
 	  : 0);
