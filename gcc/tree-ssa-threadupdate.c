@@ -977,15 +977,25 @@ freqs_to_counts_path (struct redirection_data *rd)
   edge ein;
   edge_iterator ei;
   FOR_EACH_EDGE (ein, ei, e->dest->preds)
-    ein->count = EDGE_FREQUENCY (ein);
+    {
+      /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
+         errors applying the probability when the frequencies are very
+         small.  */
+      ein->count = apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
+                                      ein->probability);
+    }
 
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
       edge esucc;
+      /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
+         errors applying the edge probability when the frequencies are very
+         small.  */
+      epath->src->count = epath->src->frequency * REG_BR_PROB_BASE;
       FOR_EACH_EDGE (esucc, ei, epath->src->succs)
-        esucc->count = EDGE_FREQUENCY (esucc);
-      epath->src->count = epath->src->frequency;
+        esucc->count = apply_probability (esucc->src->count,
+                                          esucc->probability);
     }
 }
 
