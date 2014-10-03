@@ -1,3 +1,9 @@
+2014-10-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/tm/debug-1.c: Update regex.
+	* c-c++-common/raw-string-18.c: Update regex.
+	* c-c++-common/raw-string-19.c: Update regex.
+
 2014-10-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63453
