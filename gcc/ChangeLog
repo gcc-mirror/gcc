@@ -1,3 +1,9 @@
+2014-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.c	(driver::global_initializations): Remove "const" so
+	that GCC_DRIVER_HOST_INITIALIZATION can modify decoded_options
+	and decoded_options_count.
+
 2014-10-03  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/e500.h (HARD_REGNO_CALLER_SAVE_MODE): Remove
