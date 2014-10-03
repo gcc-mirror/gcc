@@ -7918,6 +7918,13 @@ vector. If both @code{b} and @code{c} are scalars and the type of
 @code{b} and @code{c} are converted to a vector type whose elements have
 this type and with the same number of elements as @code{a}.
 
+In C++, the logic operators @code{!, &&, ||} are available for vectors.
+@code{!v} is equivalent to @code{v == 0}, @code{a && b} is equivalent to
+@code{a!=0 & b!=0} and @code{a || b} is equivalent to @code{a!=0 | b!=0}.
+For mixed operations between a scalar @code{s} and a vector @code{v},
+@code{s && v} is equivalent to @code{s?v!=0:0} (the evaluation is
+short-circuit) and @code{v && s} is equivalent to @code{v!=0 & (s?-1:0)}.
+
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
 @code{__builtin_shuffle (vec0, vec1, mask)}.

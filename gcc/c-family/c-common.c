@@ -1677,6 +1677,10 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	   || INTEGRAL_TYPE_P (TREE_TYPE (op_right))))
     return;
 
+  /* The range computations only work with scalars.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (op_left))
+      || VECTOR_TYPE_P (TREE_TYPE (op_right)))
+    return;
 
   /* We first test whether either side separately is trivially true
      (with OR) or trivially false (with AND).  If so, do not warn.

@@ -1,3 +1,13 @@
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* g++.dg/ext/vector9.C: Update, not an error anymore.
+	* g++.dg/ext/vector27.C: Replace with new test.
+	* g++.dg/ext/vector28.C: New file.
+	* g++.dg/other/error23.C: Update to a different error.
+
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/torture/vshuf-v8df.c: New test.
