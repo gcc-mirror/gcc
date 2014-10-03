@@ -1,3 +1,9 @@
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/62128
+	* gcc.dg/torture/vshuf-16.inc (TESTS): Add 2 new permutations.
+	* gcc.dg/torture/vshuf-32.inc (TESTS): Add 5 new permutations.
+
 2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* g++.dg/cpp1y/feat-cxx98-neg.C: Fix double negative thinko and
