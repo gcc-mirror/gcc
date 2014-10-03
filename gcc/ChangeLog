@@ -1,4 +1,11 @@
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Fix up formatting.
+	(ix86_expand_vec_perm): Only call ix86_expand_vec_perm_vpermi2 if
+	TARGET_AVX512F.
+	(expand_vec_perm_1): Likewise.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/61403

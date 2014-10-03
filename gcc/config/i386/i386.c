@@ -21373,21 +21373,23 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1)
     {
     case V16SImode:
       emit_insn (gen_avx512f_vpermi2varv16si3 (target, op0,
-					      force_reg (V16SImode, mask),
-					      op1));
+					       force_reg (V16SImode, mask),
+					       op1));
       return true;
     case V16SFmode:
       emit_insn (gen_avx512f_vpermi2varv16sf3 (target, op0,
-					      force_reg (V16SImode, mask),
-					      op1));
+					       force_reg (V16SImode, mask),
+					       op1));
       return true;
     case V8DImode:
       emit_insn (gen_avx512f_vpermi2varv8di3 (target, op0,
-					     force_reg (V8DImode, mask), op1));
+					      force_reg (V8DImode, mask),
+					      op1));
       return true;
     case V8DFmode:
       emit_insn (gen_avx512f_vpermi2varv8df3 (target, op0,
-					     force_reg (V8DImode, mask), op1));
+					      force_reg (V8DImode, mask),
+					      op1));
       return true;
     default:
       return false;
@@ -21414,7 +21416,8 @@ ix86_expand_vec_perm (rtx operands[])
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
 
-  if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1))
+  if (TARGET_AVX512F
+      && ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1))
     return;
 
   if (TARGET_AVX2)
@@ -43231,17 +43234,20 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
     return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
-  rtx vec[64];
-  enum machine_mode mode = d->vmode;
-  if (mode == V8DFmode)
-    mode = V8DImode;
-  else if (mode == V16SFmode)
-    mode = V16SImode;
-  for (i = 0; i < nelt; ++i)
-    vec[i] = GEN_INT (d->perm[i]);
-  rtx mask = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt, vec));
-  if (ix86_expand_vec_perm_vpermi2 (d->target, d->op0, mask, d->op1))
-    return true;
+  if (TARGET_AVX512F)
+    {
+      rtx vec[64];
+      enum machine_mode mode = d->vmode;
+      if (mode == V8DFmode)
+	mode = V8DImode;
+      else if (mode == V16SFmode)
+	mode = V16SImode;
+      for (i = 0; i < nelt; ++i)
+	vec[i] = GEN_INT (d->perm[i]);
+      rtx mask = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt, vec));
+      if (ix86_expand_vec_perm_vpermi2 (d->target, d->op0, mask, d->op1))
+	return true;
+    }
 
   return false;
 }
