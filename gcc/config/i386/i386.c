@@ -43298,8 +43298,8 @@ static bool
 expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
 {
   unsigned i, nelt = d->nelt;
-  unsigned min, max;
-  bool in_order, ok;
+  unsigned min, max, minswap, maxswap;
+  bool in_order, ok, swap = false;
   rtx shift, target;
   struct expand_vec_perm_d dcopy;
 
@@ -43309,20 +43309,40 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
       && (!TARGET_AVX2 || GET_MODE_SIZE (d->vmode) != 32))
     return false;
 
-  min = 2 * nelt, max = 0;
+  min = 2 * nelt;
+  max = 0;
+  minswap = 2 * nelt;
+  maxswap = 0;
   for (i = 0; i < nelt; ++i)
     {
       unsigned e = d->perm[i];
+      unsigned eswap = d->perm[i] ^ nelt;
       if (GET_MODE_SIZE (d->vmode) == 32)
-	e = (e & ((nelt / 2) - 1)) | ((e & nelt) >> 1);
+	{
+	  e = (e & ((nelt / 2) - 1)) | ((e & nelt) >> 1);
+	  eswap = e ^ (nelt / 2);
+	}
       if (e < min)
 	min = e;
       if (e > max)
 	max = e;
+      if (eswap < minswap)
+	minswap = eswap;
+      if (eswap > maxswap)
+	maxswap = eswap;
     }
   if (min == 0
       || max - min >= (GET_MODE_SIZE (d->vmode) == 32 ? nelt / 2 : nelt))
-    return false;
+    {
+      if (d->one_operand_p
+	  || minswap == 0
+	  || maxswap - minswap >= (GET_MODE_SIZE (d->vmode) == 32
+				   ? nelt / 2 : nelt))
+	return false;
+      swap = true;
+      min = minswap;
+      max = maxswap;
+    }
 
   /* Given that we have SSSE3, we know we'll be able to implement the
      single operand permutation after the palignr with pshufb for
@@ -43332,6 +43352,13 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
     return true;
 
   dcopy = *d;
+  if (swap)
+    {
+      dcopy.op0 = d->op1;
+      dcopy.op1 = d->op0;
+      for (i = 0; i < nelt; ++i)
+	dcopy.perm[i] ^= nelt;
+    }
 
   in_order = true;
   for (i = 0; i < nelt; ++i)
@@ -43365,14 +43392,16 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
   if (GET_MODE_SIZE (d->vmode) == 16)
     {
       target = gen_reg_rtx (TImode);
-      emit_insn (gen_ssse3_palignrti (target, gen_lowpart (TImode, d->op1),
-				      gen_lowpart (TImode, d->op0), shift));
+      emit_insn (gen_ssse3_palignrti (target, gen_lowpart (TImode, dcopy.op1),
+				      gen_lowpart (TImode, dcopy.op0), shift));
     }
   else
     {
       target = gen_reg_rtx (V2TImode);
-      emit_insn (gen_avx2_palignrv2ti (target, gen_lowpart (V2TImode, d->op1),
-				       gen_lowpart (V2TImode, d->op0), shift));
+      emit_insn (gen_avx2_palignrv2ti (target,
+				       gen_lowpart (V2TImode, dcopy.op1),
+				       gen_lowpart (V2TImode, dcopy.op0),
+				       shift));
     }
 
   dcopy.op0 = dcopy.op1 = gen_lowpart (d->vmode, target);
