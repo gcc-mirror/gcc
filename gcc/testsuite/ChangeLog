@@ -1,3 +1,8 @@
+2014-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36534
+	* gfortran.dg/widechar_10.f90: New test.
+
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* testsuite/g++.dg/ipa/devirt-42.C: New testcase.

@@ -1,3 +1,8 @@
+2014-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36534
+	* resolve.c (resolve_fl_procedure): Clean up obsolescence warning.
+
 2014-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (check_co_collective): Renamed from check_co_minmaxsum,
