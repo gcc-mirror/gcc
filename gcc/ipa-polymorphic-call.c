@@ -1390,12 +1390,13 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      This is because we do not update INSTANCE when walking inwards.  */
   HOST_WIDE_INT instance_offset = offset;
 
-  otr_type = TYPE_MAIN_VARIANT (otr_type);
+  if (otr_type)
+    otr_type = TYPE_MAIN_VARIANT (otr_type);
 
   /* Walk into inner type. This may clear maybe_derived_type and save us
      from useless work.  It also makes later comparsions with static type
      easier.  */
-  if (outer_type)
+  if (outer_type && otr_type)
     {
       if (!restrict_to_inner_class (otr_type))
         return false;
@@ -1484,8 +1485,9 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   /* We look for vtbl pointer read.  */
   ao.size = POINTER_SIZE;
   ao.max_size = ao.size;
-  ao.ref_alias_set
-    = get_deref_alias_set (TREE_TYPE (BINFO_VTABLE (TYPE_BINFO (otr_type))));
+  if (otr_type)
+    ao.ref_alias_set
+      = get_deref_alias_set (TREE_TYPE (BINFO_VTABLE (TYPE_BINFO (otr_type))));
 
   if (dump_file)
     {

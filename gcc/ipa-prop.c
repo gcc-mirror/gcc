@@ -1898,10 +1898,11 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
       tree param_type = ipa_get_callee_param_type (cs, n);
       if (flag_devirtualize && POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
+	  tree instance;
 	  struct ipa_polymorphic_call_context context (cs->caller->decl,
 						       arg, cs->call_stmt,
-						       NULL);
-	  /* TODO: We should also handle dynamic types.  */
+						       &instance);
+	  context.get_dynamic_type (instance, arg, NULL, cs->call_stmt);
 	  *ipa_get_ith_polymorhic_call_context (args, n) = context;
 	  if (!context.useless_p ())
 	    useful_context = true;
