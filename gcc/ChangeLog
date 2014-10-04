@@ -1,3 +1,10 @@
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Fix
+	code determining speculative type.
+	(ipa_polymorphic_call_context::combine_with): Fix speculation merge.
+
 2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* altivec.md (altivec_lvsl): New define_expand.

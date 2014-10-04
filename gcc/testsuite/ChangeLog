@@ -1,3 +1,10 @@
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-42.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-43.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-44.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-45.C: New testcase.
+
 2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/lvsl-lvsr.c: New test.
