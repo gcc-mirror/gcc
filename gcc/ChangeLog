@@ -1,3 +1,8 @@
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+    
+    	PR pch/63429
+    	* genconditions.c: Directly include ggc.h before rtl.h.
+
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-polymorphic-call.c
