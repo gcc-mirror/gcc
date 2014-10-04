@@ -820,8 +820,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 					       &offset2, &size, &max_size);
 
 	  if (max_size != -1 && max_size == size)
-	    combine_speculation_with (TYPE_MAIN_VARIANT
-					(TREE_TYPE (TREE_TYPE (base_pointer))),
+	    combine_speculation_with (TYPE_MAIN_VARIANT (TREE_TYPE (base)),
 				      offset + offset2,
 				      true,
 				      NULL /* Do not change outer type.  */);
@@ -1970,7 +1969,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 
   updated |= combine_speculation_with (ctx.speculative_outer_type,
 				       ctx.speculative_offset,
-				       ctx.maybe_in_construction,
+				       ctx.speculative_maybe_derived_type,
 				       otr_type);
 
   if (updated && dump_file && (dump_flags & TDF_DETAILS))
