@@ -1,3 +1,11 @@
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Call
+	get_dynamic_type; drop TODO.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::get_dynamic_type): Be ready
+	for otr_type to be unknown.
+
 2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* common/config/score/score-common.c: Remove.
