@@ -1,3 +1,8 @@
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-all-tests: Don't test score-*.
+	* config-list.mk: Likewise.
+
 2014-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* dg-extract-results.py (output_variation): Always sort if do_sum.

@@ -1,7 +1,24 @@
 2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* common/config/score/score-common.c: Remove.
+	* config.gcc: Remove support for score-*.
+	* config/score/constraints.md: Remove.
+	* config/score/elf.h: Remove.
+	* config/score/predicates.md: Remove.
+	* config/score/score-conv.h: Remove.
+	* config/score/score-generic.md: Remove.
+	* config/score/score-modes.def: Remove.
+	* config/score/score-protos.h: Remove.
+	* config/score/score.c: Remove.
+	* config/score/score.h: Remove.
+	* config/score/score.md: Remove.
+	* config/score/score.opt: Remove.
+	* doc/md.texi: Don't document score-*.
+
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
     
-    	PR pch/63429
-    	* genconditions.c: Directly include ggc.h before rtl.h.
+	PR pch/63429
+	* genconditions.c: Directly include ggc.h before rtl.h.
 
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 

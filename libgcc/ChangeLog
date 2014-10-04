@@ -1,3 +1,7 @@
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config.host: Remove support for score-*.
+
 2014-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* dfp-bit.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
