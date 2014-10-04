@@ -236,7 +236,8 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- score-*				\
+# Currently there are no obsolete targets.
+ nothing				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -431,10 +432,6 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	;;
-score*-*-*)
-	cpu_type=score
-	extra_options="${extra_options} g.opt"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -2441,11 +2438,6 @@ s390x-ibm-tpf*)
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	;;
-score-*-elf)
-	gas=yes
-	gnu_ld=yes
-        tm_file="dbxelf.h elfos.h score/elf.h score/score.h newlib-stdint.h"
-        ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \

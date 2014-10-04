@@ -76,7 +76,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   x86_64-knetbsd-gnu x86_64-w64-mingw32 \
   x86_64-mingw32OPT-enable-sjlj-exceptions=yes xstormy16-elf xtensa-elf \
   xtensa-linux \
-  i686-interix3OPT-enable-obsolete score-elfOPT-enable-obsolete
+  i686-interix3OPT-enable-obsolete
 
 LOGFILES = $(patsubst %,log/%-make.out,$(LIST))
 all: $(LOGFILES)
