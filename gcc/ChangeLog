@@ -1,5 +1,11 @@
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/62121
+	* ipa-devirt.c (restrict_to_inner_class): Do not ICE when type is
+	unknown.
+
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/62026
 	* lto-streamer-out.c (lto_output): Handle thunks correctly.
 	* cgraphclones.c (duplicate_thunk_for_node): Get thunk's arguments.

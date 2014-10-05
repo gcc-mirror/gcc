@@ -994,7 +994,8 @@ give_up:
   if ((TREE_CODE (type) != RECORD_TYPE
        || !TYPE_BINFO (type)
        || !polymorphic_type_binfo_p (TYPE_BINFO (type)))
-      && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+      && (!TYPE_SIZE (type)
+	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 	  || (offset + tree_to_uhwi (TYPE_SIZE (expected_type)) <=
 	      tree_to_uhwi (TYPE_SIZE (type)))))
     return true;
