@@ -23,7 +23,7 @@ m()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a speculative target\[^\\n\]*C::_ZTh" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*C::_ZTh" 1 "inline"  } } */
 /* { dg-final { scan-ipa-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 /* FIXME: We ought to inline thunk.  */
 /* { dg-final { scan-ipa-dump "C::_ZThn" "optimized"  } } */

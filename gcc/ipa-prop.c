@@ -2371,9 +2371,10 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
       gcc_checking_assert (cs->indirect_info->otr_token
 			   == tree_to_shwi (OBJ_TYPE_REF_TOKEN (target)));
 
-      context.get_dynamic_type (instance,
-				OBJ_TYPE_REF_OBJECT (target),
-				obj_type_ref_class (target), call);
+      cs->indirect_info->vptr_changed
+	= !context.get_dynamic_type (instance,
+				     OBJ_TYPE_REF_OBJECT (target),
+				     obj_type_ref_class (target), call);
       cs->indirect_info->context = context;
     }
 
@@ -3263,7 +3264,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
     {
       if (!possible_polymorphic_call_target_p (ie, cgraph_node::get_create (target)))
 	{
-	  if (!speculative)
+	  if (speculative)
 	    return NULL;
 	  target = ipa_impossible_devirt_target (ie, target);
 	}

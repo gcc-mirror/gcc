@@ -20,7 +20,7 @@ m()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a speculative target\[^\\n\]*B::foo" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*B::foo" 1 "inline"  } } */
 /* { dg-final { scan-ipa-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 /* { dg-final { scan-ipa-dump-not "abort" "optimized"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

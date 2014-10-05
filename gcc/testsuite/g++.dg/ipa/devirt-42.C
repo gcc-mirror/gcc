@@ -26,13 +26,9 @@ main()
 /* Inlining everything into main makes type clear from type of variable b.
    However devirtualization is also possible for offline copy of A::barbar. Invoking
    B's barbar makes it clear the type is at least B and B is an anonymous
-   namespace type and therefore we know it has no derivations.
-   FIXME: Currently we devirtualize speculatively only because we do not track
-   dynamic type changes well.  */
-/* { dg-final { scan-ipa-dump-times "First type is base of second" 1 "inline"  } } */
-/* { dg-final { scan-ipa-dump-times "Outer types match, merging flags" 2 "inline"  } } */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline"  } } */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a speculative target" 1 "inline"  } } */
+   namespace type and therefore we know it has no derivations.  */
+/* { dg-final { scan-ipa-dump-times "First type is base of second" 3 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "inline"  } } */
 
 /* Verify that speculation is optimized by late optimizers.  */
 /* { dg-final { scan-ipa-dump-times "return 2" 2 "optimized"  } } */
