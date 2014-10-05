@@ -310,6 +310,11 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   if (thunk_of->thunk.thunk_p)
     node = duplicate_thunk_for_node (thunk_of, node);
 
+   /* We need to copy arguments, at LTO these mat not be read from function
+      section.  */
+  if (!DECL_ARGUMENTS (thunk->decl))
+    cgraph_get_body (thunk);
+
   struct cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (cs->caller->thunk.thunk_p

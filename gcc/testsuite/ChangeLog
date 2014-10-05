@@ -1,3 +1,8 @@
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/62026
+	* g++.dg/lto/pr62026.C: New testcase.
+
 2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/61200
