@@ -1,5 +1,10 @@
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/61144
+	* varpool.c (ctor_for_folding): Do not fold WEAK symbols.
+
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/62121
 	* ipa-devirt.c (restrict_to_inner_class): Do not ICE when type is
 	unknown.
