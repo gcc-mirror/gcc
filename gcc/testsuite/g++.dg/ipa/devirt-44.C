@@ -27,7 +27,6 @@ main()
    Check that we handle that.  */
 
 /* { dg-final { scan-ipa-dump-times "First type is base of second" 1 "inline"  } } */
-/* { dg-final { scan-ipa-dump "(maybe in construction)" "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*A::foo" 1 "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*B::foo" 1 "inline"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

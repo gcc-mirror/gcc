@@ -97,7 +97,7 @@ possible_placement_new (tree type, tree expected_type,
 	      || !tree_fits_shwi_p (TYPE_SIZE (type))
 	      || (cur_offset
 		  + (expected_type ? tree_to_uhwi (TYPE_SIZE (expected_type))
-		     : 1)
+		     : GET_MODE_BITSIZE (Pmode))
 		  <= tree_to_uhwi (TYPE_SIZE (type)))));
 }
 
@@ -278,6 +278,14 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	      pos = int_bit_position (fld);
 	      if (pos > (unsigned HOST_WIDE_INT)cur_offset)
 		continue;
+
+	      /* Do not consider vptr itself.  Not even for placement new.  */
+	      if (!pos && DECL_ARTIFICIAL (fld)
+		  && POINTER_TYPE_P (TREE_TYPE (fld))
+		  && TYPE_BINFO (type)
+		  && polymorphic_type_binfo_p (TYPE_BINFO (type)))
+		continue;
+
 	      if (!DECL_SIZE (fld) || !tree_fits_uhwi_p (DECL_SIZE (fld)))
 		goto no_useful_type_info;
 	      size = tree_to_uhwi (DECL_SIZE (fld));
@@ -583,7 +591,7 @@ ipa_polymorphic_call_context::dump (FILE *f) const
 {
   fprintf (f, "    ");
   if (invalid)
-    fprintf (f, "Call is known to be undefined\n");
+    fprintf (f, "Call is known to be undefined");
   else
     {
       if (useless_p ())
@@ -751,11 +759,14 @@ ipa_polymorphic_call_context::set_by_invariant (tree cst,
 }
 
 /* See if OP is SSA name initialized as a copy or by single assignment.
-   If so, walk the SSA graph up.  */
+   If so, walk the SSA graph up.  Because simple PHI conditional is considered
+   copy, GLOBAL_VISITED may be used to avoid infinite loop walking the SSA
+   graph.  */
 
 static tree
-walk_ssa_copies (tree op)
+walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 {
+  hash_set <tree> *visited = NULL;
   STRIP_NOPS (op);
   while (TREE_CODE (op) == SSA_NAME
 	 && !SSA_NAME_IS_DEFAULT_DEF (op)
@@ -763,6 +774,20 @@ walk_ssa_copies (tree op)
 	 && (gimple_assign_single_p (SSA_NAME_DEF_STMT (op))
 	     || gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI))
     {
+      if (global_visited)
+	{
+	  if (!*global_visited)
+	    *global_visited = new hash_set<tree>;
+	  if ((*global_visited)->add (op))
+	    goto done;
+	}	
+      else
+	{
+	  if (!visited)
+	    visited = new hash_set<tree>;
+	  if (visited->add (op))
+	    goto done;
+	}
       /* Special case
 	 if (ptr == 0)
 	   ptr = 0;
@@ -776,23 +801,28 @@ walk_ssa_copies (tree op)
 	{
 	  gimple phi = SSA_NAME_DEF_STMT (op);
 
-	  if (gimple_phi_num_args (phi) != 2)
-	    return op;
-	  if (integer_zerop (gimple_phi_arg_def (phi, 0)))
+	  if (gimple_phi_num_args (phi) > 2)
+	    goto done;
+	  if (gimple_phi_num_args (phi) == 1)
+	    op = gimple_phi_arg_def (phi, 0);
+	  else if (integer_zerop (gimple_phi_arg_def (phi, 0)))
 	    op = gimple_phi_arg_def (phi, 1);
 	  else if (integer_zerop (gimple_phi_arg_def (phi, 1)))
 	    op = gimple_phi_arg_def (phi, 0);
 	  else
-	    return op;
+	    goto done;
 	}
       else
 	{
 	  if (gimple_assign_load_p (SSA_NAME_DEF_STMT (op)))
-	    return op;
+	    goto done;
 	  op = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op));
 	}
       STRIP_NOPS (op);
     }
+done:
+  if (visited)
+    delete (visited);
   return op;
 }
 
@@ -820,6 +850,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 {
   tree otr_type = NULL;
   tree base_pointer;
+  hash_set <tree> *visited = NULL;
 
   if (TREE_CODE (ref) == OBJ_TYPE_REF)
     {
@@ -835,9 +866,9 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
   invalid = false;
 
   /* Walk SSA for outer object.  */
-  do 
+  while (true)
     {
-      base_pointer = walk_ssa_copies (base_pointer);
+      base_pointer = walk_ssa_copies (base_pointer, &visited);
       if (TREE_CODE (base_pointer) == ADDR_EXPR)
 	{
 	  HOST_WIDE_INT size, max_size;
@@ -869,6 +900,8 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 		 is known.  */
 	      else if (DECL_P (base))
 		{
+		  if (visited)
+		    delete (visited);
 		  /* Only type inconsistent programs can have otr_type that is
 		     not part of outer type.  */
 		  if (otr_type
@@ -907,7 +940,9 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
       else
 	break;
     }
-  while (true);
+
+  if (visited)
+    delete (visited);
 
   /* Try to determine type of the outer object.  */
   if (TREE_CODE (base_pointer) == SSA_NAME
