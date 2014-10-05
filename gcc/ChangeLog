@@ -1,5 +1,10 @@
 2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Remove overactive
+	sanity check.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-polymorphic-call.c (possible_placement_new): Fix condition
 	on size.
 	(ipa_polymorphic_call_context::restrict_to_inner_type): Do not walk

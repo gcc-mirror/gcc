@@ -3253,7 +3253,6 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 						     binfo);
 	  if (t)
 	    {
-	      gcc_assert (!target || speculative || target == t);
 	      target = t;
 	      speculative = false;
 	    }
