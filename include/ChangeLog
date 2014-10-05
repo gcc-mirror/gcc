@@ -1,3 +1,8 @@
+2013-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* dwarf2.def (DW_AT_GNU_deleted): New attribute.
+
 2014-09-26  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* libiberty.h (PEX_STDOUT_APPEND): New flag.

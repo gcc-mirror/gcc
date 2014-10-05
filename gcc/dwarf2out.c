@@ -18306,6 +18306,12 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      && (dwarf_version >= 3 || !dwarf_strict))
 	    add_AT_flag (subr_die, DW_AT_explicit, 1);
 
+	  /* If this is a C++11 deleted special function member then generate
+	     a DW_AT_GNU_deleted attribute.  */
+	  if (lang_hooks.decls.function_decl_deleted_p (decl)
+	      && (! dwarf_strict))
+	    add_AT_flag (subr_die, DW_AT_GNU_deleted, 1);
+
 	  /* The first time we see a member function, it is in the context of
 	     the class to which it belongs.  We make sure of this by emitting
 	     the class first.  The next time is the definition, which is

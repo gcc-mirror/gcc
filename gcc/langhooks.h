@@ -166,6 +166,9 @@ struct lang_hooks_for_decls
   /* Returns true if DECL is explicit member function.  */
   bool (*function_decl_explicit_p) (tree);
 
+  /* Returns true if DECL is C++11 deleted special member function.  */
+  bool (*function_decl_deleted_p) (tree);
+
   /* Returns True if the parameter is a generic parameter decl
      of a generic type, e.g a template template parameter for the C++ FE.  */
   bool (*generic_generic_parameter_decl_p) (const_tree);

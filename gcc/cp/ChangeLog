@@ -1,3 +1,10 @@
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* cp-objcp-common.h (LANG_HOOKS_FUNCTION_DECL_DELETED_P): Define.
+	(cp_function_decl_deleted_p): New prototype.
+	* cp-objcp-common.c (cp_function_deleted_p): New function.
+
 2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

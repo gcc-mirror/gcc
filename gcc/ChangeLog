@@ -1,3 +1,13 @@
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* dwarf2out.c (gen_subprogram_die): When a member function is
+	explicitly deleted then add a DW_AT_GNU_deleted attribute.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	function_decl_deleted_p langhook.
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_DECL_DELETED_P): Define.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_FUNCTION_DECL_DELETED_P.
+
 2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-polymorphic-call.c (walk_ssa_copies): Recognize
