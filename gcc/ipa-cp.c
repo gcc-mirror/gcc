@@ -1560,7 +1560,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   t = NULL;
 
   /* Try to work out value of virtual table pointer value in replacemnets.  */
-  if (!t && agg_reps && !ie->indirect_info->by_ref)
+  if (!t && agg_reps && !ie->indirect_info->by_ref
+      && !ie->indirect_info->vptr_changed)
     {
       while (agg_reps)
 	{
@@ -1578,7 +1579,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   /* Try to work out value of virtual table pointer value in known
      aggregate values.  */
   if (!t && known_aggs.length () > (unsigned int) param_index
-      && !ie->indirect_info->by_ref)
+      && !ie->indirect_info->by_ref
+      && !ie->indirect_info->vptr_changed)
     {
        struct ipa_agg_jump_function *agg;
        agg = known_aggs[param_index];

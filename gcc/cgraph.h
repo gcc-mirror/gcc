@@ -1393,6 +1393,9 @@ struct GTY(()) cgraph_indirect_call_info
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;
+  /* For polymorphic calls this specify whether the virtual table pointer
+     may have changed in between function entry and the call.  */
+  unsigned vptr_changed : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {

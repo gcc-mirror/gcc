@@ -2371,10 +2371,10 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
       gcc_checking_assert (cs->indirect_info->otr_token
 			   == tree_to_shwi (OBJ_TYPE_REF_TOKEN (target)));
 
-      if (context.get_dynamic_type (instance,
-				    OBJ_TYPE_REF_OBJECT (target),
-				    obj_type_ref_class (target), call))
-	cs->indirect_info->context = context;
+      context.get_dynamic_type (instance,
+				OBJ_TYPE_REF_OBJECT (target),
+				obj_type_ref_class (target), call);
+      cs->indirect_info->context = context;
     }
 
   if (TREE_CODE (target) == SSA_NAME)
@@ -2878,6 +2878,38 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
       callee = cgraph_node::get_create (target);
     }
 
+  /* If the edge is already speculated.  */
+  if (speculative && ie->speculative)
+    {
+      struct cgraph_edge *e2;
+      struct ipa_ref *ref;
+      ie->speculative_call_info (e2, ie, ref);
+      if (e2->callee->ultimate_alias_target ()
+	  != callee->ultimate_alias_target ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
+		     "(%s/%i -> %s/%i) but the call is already speculated to %s/%i. Giving up.\n",
+		     xstrdup (ie->caller->name ()),
+		     ie->caller->order,
+		     xstrdup (callee->name ()),
+		     callee->order,
+		     xstrdup (e2->callee->name ()),
+		     e2->callee->order);
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
+		     "(%s/%i -> %s/%i) this agree with previous speculation.\n",
+		     xstrdup (ie->caller->name ()),
+		     ie->caller->order,
+		     xstrdup (callee->name ()),
+		     callee->order);
+	}
+      return NULL;
+    }
+
   if (!dbg_cnt (devirt))
     return NULL;
 
@@ -3127,17 +3159,17 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
       ctx.offset_by (ie->indirect_info->offset);
 
-      /* TODO: We want to record if type change happens.  
-	 Old code did not do that that seems like a bug.  */
-      ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
-					ie->indirect_info->otr_type);
+      if (ie->indirect_info->vptr_changed)
+	ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
+					  ie->indirect_info->otr_type);
 
       updated = ie->indirect_info->context.combine_with
 		  (ctx, ie->indirect_info->otr_type);
     }
 
   /* Try to do lookup via known virtual table pointer value.  */
-  if (!ie->indirect_info->by_ref)
+  if (!ie->indirect_info->by_ref
+      && (!ie->indirect_info->vptr_changed || flag_devirtualize_speculatively))
     {
       tree vtable;
       unsigned HOST_WIDE_INT offset;
@@ -3146,16 +3178,24 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 					   true);
       if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
 	{
-	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
+	  t = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
 						      vtable, offset);
-	  if (target)
+	  if (t)
 	    {
-	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
-		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+	      if ((TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE
+		   && DECL_FUNCTION_CODE (t) == BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
-		       (ie, cgraph_node::get (target)))
-		target = ipa_impossible_devirt_target (ie, target);
-	      return ipa_make_edge_direct_to_target (ie, target);
+		       (ie, cgraph_node::get (t)))
+		{
+		  /* Do not speculate builtin_unreachable, it is stpid!  */
+		  if (!ie->indirect_info->vptr_changed)
+		    target = ipa_impossible_devirt_target (ie, target);
+		}
+	      else
+		{
+		  target = t;
+		  speculative = ie->indirect_info->vptr_changed;
+		}
 	    }
 	}
     }
@@ -3188,7 +3228,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	  else
 	    target = ipa_impossible_devirt_target (ie, NULL_TREE);
 	}
-      else if (flag_devirtualize_speculatively
+      else if (!target && flag_devirtualize_speculatively
 	       && !ie->speculative && ie->maybe_hot_p ())
 	{
 	  cgraph_node *n = try_speculative_devirtualization (ie->indirect_info->otr_type,
@@ -3222,7 +3262,11 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   if (target)
     {
       if (!possible_polymorphic_call_target_p (ie, cgraph_node::get_create (target)))
-	target = ipa_impossible_devirt_target (ie, target);
+	{
+	  if (!speculative)
+	    return NULL;
+	  target = ipa_impossible_devirt_target (ie, target);
+	}
       return ipa_make_edge_direct_to_target (ie, target, speculative);
     }
   else
@@ -4801,6 +4845,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   bp_pack_value (&bp, ii->agg_contents, 1);
   bp_pack_value (&bp, ii->member_ptr, 1);
   bp_pack_value (&bp, ii->by_ref, 1);
+  bp_pack_value (&bp, ii->vptr_changed, 1);
   streamer_write_bitpack (&bp);
   if (ii->agg_contents || ii->polymorphic)
     streamer_write_hwi (ob, ii->offset);
@@ -4832,6 +4877,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   ii->agg_contents = bp_unpack_value (&bp, 1);
   ii->member_ptr = bp_unpack_value (&bp, 1);
   ii->by_ref = bp_unpack_value (&bp, 1);
+  ii->vptr_changed = bp_unpack_value (&bp, 1);
   if (ii->agg_contents || ii->polymorphic)
     ii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
   else

@@ -760,11 +760,37 @@ walk_ssa_copies (tree op)
   while (TREE_CODE (op) == SSA_NAME
 	 && !SSA_NAME_IS_DEFAULT_DEF (op)
 	 && SSA_NAME_DEF_STMT (op)
-	 && gimple_assign_single_p (SSA_NAME_DEF_STMT (op)))
+	 && (gimple_assign_single_p (SSA_NAME_DEF_STMT (op))
+	     || gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI))
     {
-      if (gimple_assign_load_p (SSA_NAME_DEF_STMT (op)))
-	return op;
-      op = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op));
+      /* Special case
+	 if (ptr == 0)
+	   ptr = 0;
+	 else
+	   ptr = ptr.foo;
+	 This pattern is implicitly produced for casts to non-primary
+	 bases.  When doing context analysis, we do not really care
+	 about the case pointer is NULL, becuase the call will be
+	 undefined anyway.  */
+      if (gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI)
+	{
+	  gimple phi = SSA_NAME_DEF_STMT (op);
+
+	  if (gimple_phi_num_args (phi) != 2)
+	    return op;
+	  if (integer_zerop (gimple_phi_arg_def (phi, 0)))
+	    op = gimple_phi_arg_def (phi, 1);
+	  else if (integer_zerop (gimple_phi_arg_def (phi, 1)))
+	    op = gimple_phi_arg_def (phi, 0);
+	  else
+	    return op;
+	}
+      else
+	{
+	  if (gimple_assign_load_p (SSA_NAME_DEF_STMT (op)))
+	    return op;
+	  op = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op));
+	}
       STRIP_NOPS (op);
     }
   return op;
@@ -1371,6 +1397,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    is set), try to walk memory writes and find the actual construction of the
    instance.
 
+   Return true if memory is unchanged from function entry.
+
    We do not include this analysis in the context analysis itself, because
    it needs memory SSA to be fully built and the walk may be expensive.
    So it is not suitable for use withing fold_stmt and similar uses.  */
@@ -1615,7 +1643,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	       function_entry_reached ? " (multiple types encountered)" : "");
     }
 
-  return true;
+  return false;
 }
 
 /* See if speculation given by SPEC_OUTER_TYPE, SPEC_OFFSET and SPEC_MAYBE_DERIVED_TYPE
