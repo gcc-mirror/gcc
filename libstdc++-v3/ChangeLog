@@ -1,3 +1,10 @@
+2014-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/63456
+	* include/bits/hashtable.h (_M_uses_single_bucket(__bucket_type*)): Test
+	the parameter.
+	* testsuite/23_containers/unordered_set/63456.cc: New.
+
 2014-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/63449

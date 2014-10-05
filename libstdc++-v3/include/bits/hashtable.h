@@ -326,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       _M_uses_single_bucket(__bucket_type* __bkts) const
-      { return __builtin_expect(_M_buckets == &_M_single_bucket, false); }
+      { return __builtin_expect(__bkts == &_M_single_bucket, false); }
 
       bool
       _M_uses_single_bucket() const
