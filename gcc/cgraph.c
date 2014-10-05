@@ -883,6 +883,7 @@ cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
+  edge->indirect_info->vptr_changed = true;
 
   /* Record polymorphic call info.  */
   if (compute_indirect_info
@@ -1988,6 +1989,8 @@ cgraph_node::dump (FILE *f)
 		    edge->indirect_info->member_ptr ? "member ptr" : "aggregate",
 		    edge->indirect_info->by_ref ? "passed by reference":"",
 		    (int)edge->indirect_info->offset);
+	  if (edge->indirect_info->vptr_changed)
+	    fprintf (f, " (vptr maybe changed)");
 	}
       fprintf (f, "\n");
       if (edge->indirect_info->polymorphic)

@@ -1,5 +1,24 @@
 2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-polymorphic-call.c (walk_ssa_copies): Recognize
+	NULL pointer checks.
+	(ipa_polymorphic_call_context::get_dynamic_type): Return true
+	if type doesn't change.
+	* cgraph.h (cgraph_indirect_call_info): New flag.
+	* cgraph.c (cgraph_node::create_indirect_edge): Initialize it.
+	(cgraph_node::dump): Dump it.
+	* ipa-prop.c (ipa_analyze_call_uses):  Ignore return valud
+	of context.get_dynamic_type.
+	(ipa_make_edge_direct_to_target): Do not speculate
+	edge that is already speuclative.
+	(try_make_edge_direct_virtual_call): Use VPTR_CHANGED; Do not
+	speculate to __builtin_unreachable
+	(ipa_write_indirect_edge_info, ipa_read_indirect_edge_info): Stream
+	vptr_changed.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use vptr_changed.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Call
 	get_dynamic_type; drop TODO.
 	* ipa-polymorphic-call.c
