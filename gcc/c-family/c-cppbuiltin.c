@@ -828,6 +828,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_rvalue_reference=200610");
 	  cpp_define (pfile, "__cpp_variadic_templates=200704");
 	  cpp_define (pfile, "__cpp_alias_templates=200704");
+	  cpp_define (pfile, "__cpp_attribute_deprecated=201309");
 	}
       if (cxx_dialect > cxx11)
 	{
@@ -841,7 +842,6 @@ c_cpp_builtins (cpp_reader *pfile)
 	  //cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
-	  cpp_define (pfile, "__cpp_attribute_deprecated=201309");
 	  //cpp_define (pfile, "__cpp_sized_deallocation=201309");
 	  /* We'll have to see where runtime arrays wind up.
 	     Let's put it in C++14 for now.  */

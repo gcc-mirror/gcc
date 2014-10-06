@@ -79,3 +79,9 @@
 #elif __cpp_binary_literals != 201304
 #  error "__cpp_binary_literals != 201304"
 #endif
+
+#ifndef __cpp_attribute_deprecated
+#  error "__cpp_attribute_deprecated"
+#elif __cpp_attribute_deprecated != 201309
+#  error "__cpp_attribute_deprecated != 201309"
+#endif
