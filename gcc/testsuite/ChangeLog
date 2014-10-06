@@ -1,5 +1,21 @@
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/ipa/inline-2.c: Fix implicit declarations.
+	* gcc.dg/ipa/inline-4.c: Likewise.
+	* gcc.dg/ipa/inline-5.c: Likewise.
+	* gcc.dg/ipa/pr57539.c: Likewise.
+	* gcc.dg/ipa/inline-6.c: Fix implicit declarations.  Fix
+	defaulting to int.
+	* gcc.dg/ipa/inlinehint-1.c: Likewise.
+	* gcc.dg/ipa/inlinehint-3.c: Likewise.
+	* gcc.dg/ipa/inlinehint-2.c: Fix defaulting to int.
+	* gcc.dg/ipa/ipacost-1.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	* gcc.dg/ipa/pure-const-1.c: Use -fgnu89-inline.  Fix defaulting
+	to int.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/debug/20010207-1.c: Use -fgnu89-inline.  Fix implicit
 	declarations.
 	* gcc.dg/debug/dwarf2-2.c: Fix defaulting to int.

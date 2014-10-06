@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -c -fdump-ipa-inline -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
 
+void work_hard (void);
+
 void do_something (int shall_i_work)
 {
   if (shall_i_work)
