@@ -1,5 +1,12 @@
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
+	* c-c++-common/raw-string-3.c: Use -std=gnu89 for C.
+	* g++.dg/lto/pr54625-1_0.c: Fix defaulting to int.
+	* g++.dg/lto/pr54625-2_0.c: Likewise.
+	* gcc.misc-tests/gcov-14.c: Use -fgnu89-inline.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.target/i386/20040112-1.c: Fix defaulting to int.
 	* gcc.target/i386/avxfp-1.c: Likewise.
 	* gcc.target/i386/avxfp-2.c: Likewise.
