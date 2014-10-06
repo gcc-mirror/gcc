@@ -984,6 +984,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __base;
   }
 
+#if __cplusplus >= 201103L
+  // New C++11 floatfield manipulators
+
+  /// Calls
+  /// base.setf(ios_base::fixed|ios_base::scientific, ios_base::floatfield)
+  inline ios_base&
+  hexfloat(ios_base& __base)
+  {
+    __base.setf(ios_base::fixed | ios_base::scientific, ios_base::floatfield);
+    return __base;
+  }
+
+  /// Calls @c base.unsetf(ios_base::floatfield)
+  inline ios_base&
+  defaultfloat(ios_base& __base)
+  {
+    __base.unsetf(ios_base::floatfield);
+    return __base;
+  }
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
