@@ -1,3 +1,8 @@
+2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (expand_call): Do not use the target as the return slot if
+	it is not sufficiently aligned.
+
 2014-10-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (analyze_swaps commentary): Add
