@@ -114,22 +114,34 @@ static int new_flag[GFC_LETTERS];
 /* Handle a correctly parsed IMPLICIT NONE.  */
 
 void
-gfc_set_implicit_none (void)
+gfc_set_implicit_none (bool type, bool external)
 {
   int i;
 
-  if (gfc_current_ns->seen_implicit_none)
+  if (gfc_current_ns->seen_implicit_none
+      || gfc_current_ns->has_implicit_none_export)
     {
-      gfc_error ("Duplicate IMPLICIT NONE statement at %C");
+      gfc_error_now ("Duplicate IMPLICIT NONE statement at %C");
       return;
     }
 
-  gfc_current_ns->seen_implicit_none = 1;
+  if (external)
+    gfc_current_ns->has_implicit_none_export = 1;
 
-  for (i = 0; i < GFC_LETTERS; i++)
+  if (type)
     {
-      gfc_clear_ts (&gfc_current_ns->default_type[i]);
-      gfc_current_ns->set_flag[i] = 1;
+      gfc_current_ns->seen_implicit_none = 1;
+      for (i = 0; i < GFC_LETTERS; i++)
+	{
+	  if (gfc_current_ns->set_flag[i])
+	    {
+	      gfc_error_now ("IMPLICIT NONE (type) statement at %C following an "
+			     "IMPLICIT statement");
+	      return;
+	    }
+	  gfc_clear_ts (&gfc_current_ns->default_type[i]);
+	  gfc_current_ns->set_flag[i] = 1;
+	}
     }
 }
 
@@ -2382,6 +2394,9 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
 	  ts->kind = gfc_default_real_kind;
 	}
     }
+
+  if (parent_types && ns->parent != NULL)
+    ns->has_implicit_none_export = ns->parent->has_implicit_none_export;
 
   ns->refs = 1;
 

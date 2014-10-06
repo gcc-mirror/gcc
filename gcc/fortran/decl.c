@@ -2946,7 +2946,50 @@ get_kind:
 match
 gfc_match_implicit_none (void)
 {
-  return (gfc_match_eos () == MATCH_YES) ? MATCH_YES : MATCH_NO;
+  char c;
+  match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  bool type = false;
+  bool external = false;
+
+  gfc_gobble_whitespace ();
+  c = gfc_peek_ascii_char ();
+  if (c == '(')
+    {
+      (void) gfc_next_ascii_char ();
+      if (!gfc_notify_std (GFC_STD_F2015, "IMPORT NONE with spec list at %C"))
+	return MATCH_ERROR;
+      for(;;)
+	{
+	  m = gfc_match (" %n", name);
+          if (m != MATCH_YES)
+	    return MATCH_ERROR;
+
+          if (strcmp (name, "type") == 0)
+	    type = true;
+          else if (strcmp (name, "external") == 0)
+	    external = true;
+          else
+            return MATCH_ERROR;
+
+	  gfc_gobble_whitespace ();
+          c = gfc_next_ascii_char ();
+          if (c == ',')
+	    continue;
+	  if (c == ')')
+	    break;
+	  return MATCH_ERROR;
+	}
+    }
+  else
+    type = true;
+
+  if (gfc_match_eos () != MATCH_YES)
+    return MATCH_ERROR;
+
+  gfc_set_implicit_none (type, external);
+
+  return MATCH_YES;
 }
 
 
@@ -3061,6 +3104,13 @@ gfc_match_implicit (void)
   locus cur_loc;
   char c;
   match m;
+
+  if (gfc_current_ns->seen_implicit_none)
+    {
+      gfc_error ("IMPLICIT statement at %C following an IMPLICIT NONE (type) "
+		 "statement");
+      return MATCH_ERROR;
+    }
 
   gfc_clear_ts (&ts);
 

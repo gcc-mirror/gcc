@@ -1,3 +1,9 @@
+2014-10-06  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/implicit_14.f90: New.
+	* gfortran.dg/implicit_15.f90: New.
+	* gfortran.dg/implicit_4.f90: Update dg-error.
+
 2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-42.C: Update template.
