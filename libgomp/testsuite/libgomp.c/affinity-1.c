@@ -31,7 +31,7 @@
 
 #ifdef DO_FORK
 #include <signal.h>
-pid_t waitpid (pid_t, int *, int);
+#include <sys/wait.h>
 #endif
 #ifdef HAVE_PTHREAD_AFFINITY_NP
 #include <sched.h>
