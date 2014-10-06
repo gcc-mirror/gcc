@@ -1,3 +1,8 @@
+2014-10-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (analyze_swaps commentary): Add
+	discussion of permutes and why we don't handle them.
+
 2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/predicates.md (int_register_operand): Delete.
