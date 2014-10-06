@@ -2,7 +2,7 @@
    -pedantic-errors.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu89 -pedantic-errors" } */
 
 /* If a declaration does not declare a declarator, it must declare a
    tag or the members of an enumeration, and must only contain one

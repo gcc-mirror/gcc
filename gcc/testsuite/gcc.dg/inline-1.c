@@ -1,6 +1,6 @@
 /* Verify that DECL_INLINE gets copied between DECLs properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O1" } */
+/* { dg-options "-O1 -fgnu89-inline" } */
 /* { dg-final { if [ istarget hppa*-*-* ] { scan-assembler-not "xyzzy?,%r" } else { scan-assembler-not "xyzzy" } } } */
 
 /* Test that declaration followed by definition inlines.  */

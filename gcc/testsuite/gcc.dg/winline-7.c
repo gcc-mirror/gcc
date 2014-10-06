@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Winline -O2" } */
+/* { dg-options "-Winline -O2 -fgnu89-inline" } */
 
 extern void *alloca (__SIZE_TYPE__);
 

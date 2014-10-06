@@ -7,6 +7,7 @@ extern void exit (int);
 struct { union {int x; int y;}; int q; } b;
 union { struct {int x;}; int q; } e;
 
+int
 main()
 {
   b.y = 10;

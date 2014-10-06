@@ -1,6 +1,8 @@
 /* PR rtl-optimization/18611 */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fmove-loop-invariants" } */
+
+void dumpCineonChannelInfo ();
 typedef struct {
 	int channels_per_image;
 	int channel[8];

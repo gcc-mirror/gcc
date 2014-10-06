@@ -3,6 +3,6 @@
    -pedantic.  Test with -pedantic.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-std=gnu89 -pedantic" } */
 
 foo(); /* { dg-warning "data definition has no type or storage class" } */

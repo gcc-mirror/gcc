@@ -6,6 +6,7 @@
 
 extern int printf (__const char *__restrict __format, ...);
 extern void print_c_condition (const char *);
+extern void print_host_wide_int (long);
 
 enum decision_type
 {
