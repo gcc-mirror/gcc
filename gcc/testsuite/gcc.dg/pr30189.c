@@ -12,7 +12,7 @@ void baz (int i)
 }
 
 void
-bar (i)
+bar (int i)
 {
   baz (i);
 }

@@ -57,9 +57,13 @@ struct window
 };
 extern Lisp_Object Vtruncate_partial_width_windows;
 extern struct Lisp_Char_Table *window_display_table (struct window *);
+long find_before_next_newline (long, long, long);
+long disp_char_vector (struct Lisp_Char_Table *, int);
+long char_table_ref (Lisp_Object, int); 
 struct position *
 compute_motion (from, fromvpos, fromhpos, did_motion, to, tovpos, tohpos,
 		width, hscroll, tab_offset, win)
+     int did_motion, width, hscroll, tab_offset;
      long from, fromvpos, fromhpos, to, tovpos, tohpos;
      struct window *win;
 {

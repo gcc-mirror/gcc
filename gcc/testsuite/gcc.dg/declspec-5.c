@@ -2,7 +2,7 @@
    -pedantic.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-std=gnu89 -pedantic" } */
 
 /* If a declaration does not declare a declarator, it must declare a
    tag or the members of an enumeration, and must only contain one

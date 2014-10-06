@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional" } */
+/* { dg-options "-Wtraditional -std=gnu89" } */
 
 int
 x (b)

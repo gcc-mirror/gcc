@@ -2,6 +2,7 @@
 /* { dg-options "-O1 -fdelete-null-pointer-checks -fdump-tree-ccp1" } */
 
 void foo();
+void link_error (void);
 
 int main()
 {

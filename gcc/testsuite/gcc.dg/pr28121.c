@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
+int GetMouseButton ();
+int ParsePos ();
+
 short
 GetCmd ()
 {

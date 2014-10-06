@@ -4,6 +4,7 @@
 
 /* Make sure -Werror turns warnings in to errors.  */
 
+void grill ();
 void __attribute__((dj)) bar() { }	/* { dg-error ".* attribute directive ignored" } */
 
 int i;

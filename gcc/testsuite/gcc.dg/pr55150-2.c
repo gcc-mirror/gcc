@@ -7,6 +7,7 @@ typedef unsigned char DES_cblock[8];
  typedef struct DES_ks {
  }
  DES_key_schedule;
+void DES_encrypt1 (long *, DES_key_schedule *, int);
  void DES_ede3_cbcm_encrypt (const unsigned char *in, unsigned char *out, 		       long length, DES_key_schedule * ks1, 		       DES_key_schedule * ks2, DES_key_schedule * ks3, 		       DES_cblock * ivec1, DES_cblock * ivec2, int enc) {
    register unsigned long tout0, tout1, xor0, xor1, m0, m1;
    register long l = length;

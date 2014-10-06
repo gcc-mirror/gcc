@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
 
-static
+static int
 foo (int x, int y)
 {
   return x * y;

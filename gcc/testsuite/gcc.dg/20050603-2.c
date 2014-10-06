@@ -12,6 +12,8 @@ void set (struct s*, int) __attribute__((noinline));
 void set (struct s* p, int flags) {
   p->g = flags << 1;
 }
+
+int
 main() {
   struct s foo = {0 , 0, 3, 0};
   set (&foo, -1);

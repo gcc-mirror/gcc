@@ -71,4 +71,5 @@ yasm_list_modules(yasm_module_type type,
     }
 }
 
+int
 main() {}

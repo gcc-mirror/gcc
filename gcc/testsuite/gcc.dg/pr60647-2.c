@@ -6,6 +6,9 @@ struct _wincore
   int width, height;
 };
 
+void fn1 (int);
+void fn2 (int, int, int *);
+
 static void
 foo (void *dpy, struct _wincore *winInfo, int offset)
 {

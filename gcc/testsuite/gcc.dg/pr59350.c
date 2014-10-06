@@ -60,6 +60,10 @@ typedef enum
     0x09, kDNSFlag1_RC_NotZone = 0x0A
 }
 TSIG_ErrorCode;
+int uDNS_ReceiveTestQuestionResponse (mDNS * const, DNSMessage * const,
+				      const char * const,
+				      const mDNSAddr * const,
+				      const mDNSIPPort);
 void
 uDNS_ReceiveMsg (mDNS * const m, DNSMessage * const msg,
 		 const char * const end, const mDNSAddr * const srcaddr,

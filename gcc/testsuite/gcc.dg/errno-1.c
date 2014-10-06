@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
+void do_not_optimize_away ();
+
 int main()
 {
   void * volatile p;

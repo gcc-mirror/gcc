@@ -8,6 +8,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O" } */
 
+void Get16u();
 typedef struct { int ThumbnailSize; } ImageInfo_t;
 
 double ConvertAnyFormat(void)

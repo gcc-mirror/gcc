@@ -2,7 +2,7 @@
 
 /* Origin: Andreas Jaeger <aj@suse.de> */
 /* { dg-do compile } */
-/* { dg-options "-Wold-style-definition" } */
+/* { dg-options "-Wold-style-definition -std=gnu89" } */
 
 void
 bar (a) int a; { } /* { dg-warning "old-style function definition" } */

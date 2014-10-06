@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O -frerun-cse-after-loop -fno-tree-loop-optimize -funroll-loops -fcompare-debug" } */
 
+void bar (void);
+
 void
 foo (float *f)
 {

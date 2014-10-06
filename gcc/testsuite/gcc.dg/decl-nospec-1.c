@@ -3,6 +3,6 @@
    -pedantic.  Test with no options.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu89" } */
 
 foo(); /* { dg-warning "data definition has no type or storage class" } */
