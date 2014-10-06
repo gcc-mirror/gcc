@@ -1,5 +1,65 @@
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.target/i386/20040112-1.c: Fix defaulting to int.
+	* gcc.target/i386/avxfp-1.c: Likewise.
+	* gcc.target/i386/avxfp-2.c: Likewise.
+	* gcc.target/i386/cadd.c: Likewise.
+	* gcc.target/i386/cmov2.c: Likewise.
+	* gcc.target/i386/cmov3.c: Likewise.
+	* gcc.target/i386/cmov4.c: Likewise.
+	* gcc.target/i386/cold-attribute-1.c: Likewise.
+	* gcc.target/i386/cvt-1.c: Likewise.
+	* gcc.target/i386/fpcvt-1.c: Likewise.
+	* gcc.target/i386/fpcvt-2.c: Likewise.
+	* gcc.target/i386/fpcvt-3.c: Likewise.
+	* gcc.target/i386/local.c: Likewise.
+	* gcc.target/i386/memcpy-2.c: Likewise.
+	* gcc.target/i386/memcpy-3.c: Likewise.
+	* gcc.target/i386/memset-1.c: Likewise.
+	* gcc.target/i386/minmax-1.c: Likewise.
+	* gcc.target/i386/minmax-2.c: Likewise.
+	* gcc.target/i386/pr45352-2.c: Likewise.
+	* gcc.target/i386/pr46253.c: Likewise.
+	* gcc.target/i386/pr53623.c: Likewise.
+	* gcc.target/i386/pr60902.c: Likewise.
+	* gcc.target/i386/pr57003.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-19.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse4a-extract.c: Likewise.
+	* gcc.target/i386/sse4a-insert.c: Likewise.
+	* gcc.target/i386/ssefp-1.c: Likewise.
+	* gcc.target/i386/ssefp-2.c: Likewise.
+	* gcc.target/i386/testimm-10.c: Likewise.
+	* gcc.target/i386/vectorize4-avx.c: Likewise.
+	* gcc.target/i386/980709-1.c: Fix implicit declarations.
+	* gcc.target/i386/avx-pr57233.c: Likewise.
+	* gcc.target/i386/avx2-pr57233.c: Likewise.
+	* gcc.target/i386/avx2-vpop-check.h: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-7.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-7.c: Likewise.
+	* gcc.target/i386/crc32-4.c: Likewise.
+	* gcc.target/i386/pr20204.c: Likewise.
+	* gcc.target/i386/pr23570.c: Likewise.
+	* gcc.target/i386/pr26449-1.c: Likewise.
+	* gcc.target/i386/pr28839.c: Likewise.
+	* gcc.target/i386/pr37101.c: Likewise.
+	* gcc.target/i386/pr61923.c: Likewise.
+	* gcc.target/i386/shrink_wrap_1.c: Likewise.
+	* gcc.target/i386/sse2-pr57233.c: Likewise.
+	* gcc.target/i386/vect-abs-s16.c: Likewise.
+	* gcc.target/i386/vect-abs-s32.c: Likewise.
+	* gcc.target/i386/vect-abs-s8.c: Likewise.
+	* gcc.target/i386/xop-pr57233.c: Likewise.
+	* gcc.target/i386/xop-rotate2-vector.c: Likewise.
+	* gcc.target/i386/cold-attribute-2.c: Fix defaulting to int.  Fix
+	implicit declarations.
+	* gcc.target/i386/xop-shift1-vector.c: Fix typo.
+	* gcc.target/i386/xop-shift2-vector.c: Likewise.
+	* gcc.target/i386/xop-shift3-vector.c: Likewise.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/20001012-1.c: Fix defaulting to int.
 	* gcc.dg/20001012-2.c: Likewise.
 	* gcc.dg/20001108-1.c: Likewise.

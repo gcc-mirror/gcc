@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "testb" } } */
+void
 ftn (char *sp)
 {
   char status;

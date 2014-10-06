@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler "magic\[^\\n\]*(edi|ecx)" { target { ! { ia32 } } } } } */
 
 /* Verify that local calling convention is used.  */
-static t(int) __attribute__ ((noinline));
+static void t(int) __attribute__ ((noinline));
 extern volatile int i;
 
 void m(void)
@@ -12,7 +12,7 @@ void m(void)
 	t(i);
 }
 
-static t(int a)
+static void t(int a)
 {
 	asm("magic %0"::"g"(a));
 }

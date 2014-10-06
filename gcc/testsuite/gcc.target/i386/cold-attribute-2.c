@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 --param=builtin-expect-probability=100" } */
 #include <string.h>
+void cold_hint (void);
+int
 t(int c)
 {
   if (__builtin_expect (c, 0))
