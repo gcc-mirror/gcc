@@ -32,6 +32,7 @@
 static unsigned char *buf1, *buf2;
 static size_t bufsize, page_size;
 static int fail;
+int getpagesize (void);
 
 static void
 do_test (size_t align1, size_t align2, size_t len)
