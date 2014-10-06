@@ -159,6 +159,7 @@ cgraph_edge::clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid,
   new_edge->can_throw_external = can_throw_external;
   new_edge->call_stmt_cannot_inline_p = call_stmt_cannot_inline_p;
   new_edge->speculative = speculative;
+  new_edge->in_polymorphic_cdtor = in_polymorphic_cdtor;
   if (update_original)
     {
       count -= new_edge->count;
@@ -177,7 +178,7 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
 			       bool skip_return)
 {
   tree new_type = NULL;
-  tree args, new_args = NULL, t;
+  tree args, new_args = NULL;
   tree new_reversed;
   int i = 0;
 
@@ -217,22 +218,6 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
 
   if (skip_return)
     TREE_TYPE (new_type) = void_type_node;
-
-  /* This is a new type, not a copy of an old type.  Need to reassociate
-     variants.  We can handle everything except the main variant lazily.  */
-  t = TYPE_MAIN_VARIANT (orig_type);
-  if (t != orig_type)
-    {
-      t = build_function_type_skip_args (t, args_to_skip, skip_return);
-      TYPE_MAIN_VARIANT (new_type) = t;
-      TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = new_type;
-    }
-  else
-    {
-      TYPE_MAIN_VARIANT (new_type) = new_type;
-      TYPE_NEXT_VARIANT (new_type) = NULL;
-    }
 
   return new_type;
 }

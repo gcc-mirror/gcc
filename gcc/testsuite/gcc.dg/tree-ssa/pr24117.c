@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
+void link_error (void);
+
 typedef struct  {
   int x;
   int z;

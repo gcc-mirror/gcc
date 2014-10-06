@@ -296,6 +296,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports VFPv3 instructions.  */
 #define TARGET_VFP3 (TARGET_VFP && arm_fpu_desc->rev >= 3)
 
+/* FPU supports FPv5 instructions.  */
+#define TARGET_VFP5 (TARGET_VFP && arm_fpu_desc->rev >= 5)
+
 /* FPU only supports VFP single-precision instructions.  */
 #define TARGET_VFP_SINGLE (TARGET_VFP && arm_fpu_desc->regs == VFP_REG_SINGLE)
 

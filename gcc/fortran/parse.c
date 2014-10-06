@@ -1950,9 +1950,6 @@ accept_statement (gfc_statement st)
   switch (st)
     {
     case ST_IMPLICIT_NONE:
-      gfc_set_implicit_none ();
-      break;
-
     case ST_IMPLICIT:
       break;
 
@@ -2142,7 +2139,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
       break;
 
     case ST_IMPLICIT_NONE:
-      if (p->state > ORDER_IMPLICIT_NONE)
+      if (p->state > ORDER_IMPLICIT)
 	goto order;
 
       /* The '>' sign cannot be a '>=', because a FORMAT or ENTRY

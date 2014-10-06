@@ -20,17 +20,13 @@
 load_lib g++-dg.exp
 load_lib asan-dg.exp
 
-if ![check_effective_target_faddress_sanitizer] {
-  return
-}
-
 # Initialize `dg'.
 dg-init
-if [asan_init] {
+asan_init
 
 # Main loop.
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/asan/*.c]] "" ""
-
+if [check_effective_target_fsanitize_address] {
+  gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/asan/*.c]] "" ""
 }
 
 # All done.

@@ -1,3 +1,143 @@
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* cp-objcp-common.h (LANG_HOOKS_FUNCTION_DECL_DELETED_P): Define.
+	(cp_function_decl_deleted_p): New prototype.
+	* cp-objcp-common.c (cp_function_deleted_p): New function.
+
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* typeck.c (cp_build_binary_op): save_expr after convert to save
+	redundant operations.
+	[TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR]: Handle vectors.
+	(cp_build_unary_op) [TRUTH_NOT_EXPR]: Likewise.
+
+2014-10-03  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (start_decl): Complain about static/thread_local vars
+	in constexpr function.
+	(check_for_uninitialized_const_var): Also uninitialized vars.
+	* parser.c (cp_parser_jump_statement): And gotos.
+	(cp_parser_asm_operand_list): And asm.
+	(cp_parser_try_block): And try.
+	* semantics.c (ensure_literal_type_for_constexpr_object): And
+	non-literal.
+
+	* semantics.c (constexpr_fn_retval): Ignore declarations in C++14.
+	(var_in_constexpr_fn): New.
+	(cxx_eval_constant_expression): Look into DECL_INITIAL.
+	(potential_constant_expression_1): Allow constexpr-local vars.
+
+	PR c++/63362
+	* tree.c (strip_typedefs): Handle TREE_LIST.
+
+2014-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_assignment_expression,
+	cp_parser_constant_expression): Add default arguments.
+	(cp_parser_primary_expression,
+	cp_parser_postfix_open_square_expression,
+	cp_parser_parenthesized_expression_list,
+	cp_parser_question_colon_clause,
+	cp_parser_expression, cp_parser_constant_expression,
+	cp_parser_label_for_labeled_statement, cp_parser_static_assert,
+	cp_parser_template_argument, cp_parser_enumerator_definition,
+	cp_parser_member_declaration, cp_parser_constant_initializer,
+	cp_parser_noexcept_specification_opt, cp_parser_throw_expression,
+	cp_parser_std_attribute_spec, cp_parser_objc_message_args,
+	cp_parser_objc_class_ivars, cp_parser_omp_clause_collapse,
+	cp_parser_omp_clause_aligned, cp_parser_omp_clause_safelen,
+	cp_parser_omp_clause_simdlen, cp_parser_omp_clause_dist_schedule,
+	cp_parser_omp_for_incr, cp_parser_omp_for_loop_init,
+	cp_parser_cilk_simd_vectorlength, cp_parser_cilk_simd_linear): Adjust.
+
+2014-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53025
+	* cp-tree.h (struct saved_scope): Add noexcept_operand.
+	(cp_noexcept_operand): Define.
+	* call.c (build_over_call): Use it.
+	* parser.c (cp_parser_unary_expression, [RID_NOEXCEPT]): Likewise.
+	* pt.c (tsubst_copy_and_build, [NOEXCEPT_EXPR]): Likewise.
+
+2014-10-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63362
+	* method.c (constructible_expr): Handle value-init of non-class.
+	* parser.c (cp_parser_trait_expr): Allow pack expansion.
+	* pt.c (tsubst_copy_and_build): Handle pack expansion.
+
+	PR c++/63362
+	* class.c (type_has_non_user_provided_default_constructor): Rename
+	from type_has_user_provided_default_constructor, reverse sense.
+	(default_init_uninitialized_part, explain_non_literal_class): Adjust.
+	(check_bases_and_members): Set TYPE_HAS_COMPLEX_DFLT.
+	* call.c (build_new_method_call_1): Adjust.
+	* cp-tree.h: Adjust.
+	* decl.c (grok_special_member_properties): Don't set
+	TYPE_HAS_COMPLEX_DFLT.
+	* init.c (build_value_init_noctor): Don't use
+	type_has_user_provided_default_constructor.
+
+2014-09-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_ASSIGNABLE and
+	CPTK_IS_TRIVIALLY_CONSTRUCTIBLE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise.  Handle variadic trait.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	(check_trait_type): Handle variadic trait.  Return bool.
+	* method.c (build_stub_object): Add rvalue reference here.
+	(locate_fn_flags): Not here.
+	(check_nontriv, assignable_expr, constructible_expr): New.
+	(is_trivially_xible): New.
+
+	* cp-tree.h (cp_trait_kind): Add CPTK_IS_TRIVIALLY_COPYABLE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+	* method.c (build_stub_object): Use CONVERT_EXPR.
+	* tree.c (build_dummy_object): Likewise.
+	(is_dummy_object): Adjust.
+
+	* cp-tree.h (cp_trait_kind): Remove CPTK_IS_CONVERTIBLE_TO.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_trait_expr): Likewise. Remove redundant grokdeclarator.
+
+2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+       PR c++/16564
+       * error.c (print_instantiation_context): Delete.
+       * typeck2.c (build_x_arrow): Record location when pushing
+       template instantiation.
+       * pt.c (push_tinst_level): Make it a wrapper around ...
+       (push_tinst_level_loc): ... this. New function. Make excessive
+       template instantiation depth a fatal error. Record location. Use
+       bool as return type.
+       (instantiate_pending_templates): Make excessive
+       template instantiation depth a fatal error.
+       (problematic_instantiation_changed): Use bool as return type.
+       * cp-tree.h (print_instantiation_context): Delete.
+       (push_tinst_level): Update declaration.
+       (problematic_instantiation_changed): Likewise.
+       (push_tinst_level_loc): New.
+
+2014-09-29  Richard Biener  <rguenther@suse.de>
+
+	* typeck.c (enum_cast_to_int): Use CONVERT_EXPR_P to check
+	for conversions.
+
 2014-09-26  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (find_substitution): Use write_abi_tags.

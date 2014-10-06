@@ -3,6 +3,7 @@
 
 extern void abort (void);
 
+int
 foo (int k, int j)
 {
   if (k >= 10)
@@ -18,6 +19,7 @@ foo (int k, int j)
   return j;
 }
 
+int
 main()
 {
   foo (10, 3);

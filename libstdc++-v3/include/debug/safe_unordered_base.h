@@ -71,12 +71,6 @@ namespace __gnu_debug
 			      bool __constant)
     { this->_M_attach(__x._M_sequence, __constant); }
 
-    _Safe_local_iterator_base&
-    operator=(const _Safe_local_iterator_base&);
-
-    explicit
-    _Safe_local_iterator_base(const _Safe_local_iterator_base&);
-
     ~_Safe_local_iterator_base() { this->_M_detach(); }
 
     _Safe_unordered_container_base*

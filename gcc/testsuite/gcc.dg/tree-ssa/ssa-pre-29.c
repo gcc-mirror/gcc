@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-pre-details" } */
 
+void bark (void);
 int flag, hoist, y, z;
 
 void

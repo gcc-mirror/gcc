@@ -6,6 +6,7 @@ extern char *rl_line_buffer;
 extern int rl_point;
 extern int rl_end;
 static const char *vi_motion = " hl^$0ftFT;,%wbeWBE|";
+void rl_vi_end_word (int, int);
 void
 rl_vi_complete (int ignore, int key)
 {

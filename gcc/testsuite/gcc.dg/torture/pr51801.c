@@ -4,6 +4,8 @@ typedef struct { char Vshow; } TScreen;
 typedef struct _Misc { char Tshow; } Misc;
 typedef struct _XtermWidgetRec { TScreen screen; Misc misc; } XtermWidgetRec, *XtermWidget;
 extern XtermWidget term;
+void Bell (XtermWidget, int, int);
+void set_tek_visibility (int);
 
 void
 handle_tekshow (void *gw, int allowswitch)

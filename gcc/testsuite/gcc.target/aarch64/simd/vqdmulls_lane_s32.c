@@ -5,7 +5,7 @@
 
 #include "arm_neon.h"
 
-int64x1_t
+int64_t
 t_vqdmulls_lane_s32 (int32_t a, int32x2_t b)
 {
   return vqdmulls_lane_s32 (a, b, 0);

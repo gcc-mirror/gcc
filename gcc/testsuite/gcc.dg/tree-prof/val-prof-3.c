@@ -3,6 +3,7 @@ unsigned int a[1000];
 unsigned int b = 257;
 unsigned int c = 1023;
 unsigned int d = 19;
+int
 main ()
 {
   int i;

@@ -20,4 +20,4 @@ int main()
   f<0>();
 }
 
-// { dg-prune-output "note" }
+// { dg-prune-output "compilation terminated" }

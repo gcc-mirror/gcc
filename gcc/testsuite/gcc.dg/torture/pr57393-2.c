@@ -3,6 +3,7 @@
 
 char a;
 
+void
 foo (int **p)
 {
   int b;

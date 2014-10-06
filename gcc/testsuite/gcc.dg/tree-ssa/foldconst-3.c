@@ -31,7 +31,9 @@ union tree_node
 };
 const enum tree_code_class tree_code_type[] =
 { tcc_exceptional, 1, 0, 0, 0, 0, 2, };
+extern void tree_class_check_failed (const_tree, const char *);
 
+void
 int_fits_type_p (const_tree c, const_tree type)
 {
   double_int dc, dd;

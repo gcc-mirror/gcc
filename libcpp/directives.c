@@ -566,6 +566,11 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
       if (is_def_or_undef && node == pfile->spec_nodes.n_defined)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"defined\" cannot be used as a macro name");
+      else if (is_def_or_undef
+	    && (node == pfile->spec_nodes.n__has_include__
+	     || node == pfile->spec_nodes.n__has_include_next__))
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "\"__has_include__\" cannot be used as a macro name");
       else if (! (node->flags & NODE_POISONED))
 	return node;
     }
@@ -2623,3 +2628,12 @@ _cpp_init_directives (cpp_reader *pfile)
       node->directive_index = i;
     }
 }
+
+/* Extract header file from a bracket include. Parsing starts after '<'.
+   The string is malloced and must be freed by the caller.  */
+char *
+_cpp_bracket_include(cpp_reader *pfile)
+{
+  return glue_header_name (pfile);
+}
+

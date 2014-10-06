@@ -86,24 +86,26 @@ namespace __gnu_debug
       for (_Safe_iterator_base* __iter = __lhs_iterators; __iter;)
 	{
 	  // Even iterator is cast to const_iterator, not a problem.
-	  const_iterator* __victim = static_cast<const_iterator*>(__iter);
+	  _Safe_iterator_base* __victim_base = __iter;
+	  const_iterator* __victim =
+	    static_cast<const_iterator*>(__victim_base);
 	  __iter = __iter->_M_next;
 	  if (__victim->base() == __rseq._M_base().cbefore_begin())
 	    {
 	      __victim->_M_unlink();
-	      if (__lhs_iterators == __victim)
-		__lhs_iterators = __victim->_M_next;
+	      if (__lhs_iterators == __victim_base)
+		__lhs_iterators = __victim_base->_M_next;
 	      if (__bbegin_its)
 		{
-		  __victim->_M_next = __bbegin_its;
-		  __bbegin_its->_M_prior = __victim;
+		  __victim_base->_M_next = __bbegin_its;
+		  __bbegin_its->_M_prior = __victim_base;
 		}
 	      else
-		__last_bbegin = __victim;
-	      __bbegin_its = __victim;
+		__last_bbegin = __victim_base;
+	      __bbegin_its = __victim_base;
 	    }
 	  else
-	    __victim->_M_sequence = &__lhs;
+	    __victim_base->_M_sequence = &__lhs;
 	}
 
       if (__bbegin_its)

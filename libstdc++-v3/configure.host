@@ -346,8 +346,13 @@ case "${host}" in
         abi_baseline_pair=x86_64-linux-gnu
         ;;
       *)
-        if test -d ${glibcxx_srcdir}/config/abi/post/${try_cpu}-linux-gnu; then
-          abi_baseline_pair=${try_cpu}-linux-gnu
+        if test $try_cpu = generic; then
+          try_abi_cpu=$host_cpu
+        else
+          try_abi_cpu=$try_cpu
+        fi
+        if test -d ${glibcxx_srcdir}/config/abi/post/${try_abi_cpu}-linux-gnu; then
+          abi_baseline_pair=${try_abi_cpu}-linux-gnu
         fi
     esac
     case "${host}" in

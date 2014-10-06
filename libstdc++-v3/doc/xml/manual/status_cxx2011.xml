@@ -606,11 +606,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.12.4</entry>
       <entry><code>uninitialized_fill_n</code></entry>
-      <entry>Partial</entry>
-      <entry>Returns <code>void</code>..</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.6.13</entry>
@@ -1372,8 +1371,7 @@ particular release.
       <entry>23.2.1</entry>
       <entry>General container requirements</entry>
       <entry>Partial</entry>
-      <entry><code>deque</code> and <code>list</code> do not
-             meet the requirements
+      <entry><code>list</code> does not meet the requirements
              relating to allocator use and propagation.</entry>
     </row>
     <row>
@@ -1413,11 +1411,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.3</entry>
       <entry>Class template <code>deque</code></entry>
-      <entry>Partial</entry>
-      <entry>Incomplete allocator support.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.4</entry>
@@ -2052,13 +2049,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.8</entry>
       <entry>C Library</entry>
-      <entry>Partial</entry>
-      <entry><code>&lt;ctgmath&gt;</code> doesn't include
-        <code>&lt;ccomplex&gt;</code>
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>

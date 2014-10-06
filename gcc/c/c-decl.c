@@ -1181,7 +1181,8 @@ pop_scope (void)
 	      /* C99 6.7.4p6: "a function with external linkage... declared
 		 with an inline function specifier ... shall also be defined
 		 in the same translation unit."  */
-	      if (!flag_gnu89_inline)
+	      if (!flag_gnu89_inline
+		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p)))
 		pedwarn (input_location, 0,
 			 "inline function %q+D declared but never defined", p);
 	      DECL_EXTERNAL (p) = 1;

@@ -7355,10 +7355,6 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CLASS:
       return (NON_UNION_CLASS_TYPE_P (type1));
 
-    case CPTK_IS_CONVERTIBLE_TO:
-      /* TODO  */
-      return false;
-
     case CPTK_IS_EMPTY:
       return (NON_UNION_CLASS_TYPE_P (type1) && CLASSTYPE_EMPTY_P (type1));
 
@@ -7383,6 +7379,15 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_TRIVIAL:
       return (trivial_type_p (type1));
 
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+      return is_trivially_xible (MODIFY_EXPR, type1, type2);
+
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      return is_trivially_xible (INIT_EXPR, type1, type2);
+
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      return (trivially_copyable_p (type1));
+
     case CPTK_IS_UNION:
       return (type_code1 == UNION_TYPE);
 
@@ -7393,19 +7398,26 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 }
 
 /* If TYPE is an array of unknown bound, or (possibly cv-qualified)
-   void, or a complete type, returns it, otherwise NULL_TREE.  */
+   void, or a complete type, returns true, otherwise false.  */
 
-static tree
+static bool
 check_trait_type (tree type)
 {
+  if (type == NULL_TREE)
+    return true;
+
+  if (TREE_CODE (type) == TREE_LIST)
+    return (check_trait_type (TREE_VALUE (type))
+	    && check_trait_type (TREE_CHAIN (type)));
+
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type)
       && COMPLETE_TYPE_P (TREE_TYPE (type)))
-    return type;
+    return true;
 
   if (VOID_TYPE_P (type))
-    return type;
+    return true;
 
-  return complete_type_or_else (strip_array_types (type), NULL_TREE);
+  return !!complete_type_or_else (strip_array_types (type), NULL_TREE);
 }
 
 /* Process a trait expression.  */
@@ -7413,37 +7425,8 @@ check_trait_type (tree type)
 tree
 finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 {
-  gcc_assert (kind == CPTK_HAS_NOTHROW_ASSIGN
-	      || kind == CPTK_HAS_NOTHROW_CONSTRUCTOR
-	      || kind == CPTK_HAS_NOTHROW_COPY
-	      || kind == CPTK_HAS_TRIVIAL_ASSIGN
-	      || kind == CPTK_HAS_TRIVIAL_CONSTRUCTOR
-	      || kind == CPTK_HAS_TRIVIAL_COPY
-	      || kind == CPTK_HAS_TRIVIAL_DESTRUCTOR
-	      || kind == CPTK_HAS_VIRTUAL_DESTRUCTOR	      
-	      || kind == CPTK_IS_ABSTRACT
-	      || kind == CPTK_IS_BASE_OF
-	      || kind == CPTK_IS_CLASS
-	      || kind == CPTK_IS_CONVERTIBLE_TO
-	      || kind == CPTK_IS_EMPTY
-	      || kind == CPTK_IS_ENUM
-	      || kind == CPTK_IS_FINAL
-	      || kind == CPTK_IS_LITERAL_TYPE
-	      || kind == CPTK_IS_POD
-	      || kind == CPTK_IS_POLYMORPHIC
-	      || kind == CPTK_IS_STD_LAYOUT
-	      || kind == CPTK_IS_TRIVIAL
-	      || kind == CPTK_IS_UNION);
-
-  if (kind == CPTK_IS_CONVERTIBLE_TO)
-    {
-      sorry ("__is_convertible_to");
-      return error_mark_node;
-    }
-
   if (type1 == error_mark_node
-      || ((kind == CPTK_IS_BASE_OF || kind == CPTK_IS_CONVERTIBLE_TO)
-	  && type2 == error_mark_node))
+      || type2 == error_mark_node)
     return error_mark_node;
 
   if (processing_template_decl)
@@ -7474,7 +7457,15 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
+    case CPTK_IS_TRIVIALLY_COPYABLE:
       if (!check_trait_type (type1))
+	return error_mark_node;
+      break;
+
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      if (!check_trait_type (type1)
+	  || !check_trait_type (type2))
 	return error_mark_node;
       break;
 
@@ -7491,7 +7482,6 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNION:
       break;
     
-    case CPTK_IS_CONVERTIBLE_TO:
     default:
       gcc_unreachable ();
     }
@@ -7547,7 +7537,9 @@ tree
 ensure_literal_type_for_constexpr_object (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl)
+  if (VAR_P (decl)
+      && (DECL_DECLARED_CONSTEXPR_P (decl)
+	  || var_in_constexpr_fn (decl))
       && !processing_template_decl)
     {
       tree stype = strip_array_types (type);
@@ -7556,8 +7548,12 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	   when we try to initialize the variable.  */;
       else if (!literal_type_p (type))
 	{
-	  error ("the type %qT of constexpr variable %qD is not literal",
-		 type, decl);
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    error ("the type %qT of constexpr variable %qD is not literal",
+		   type, decl);
+	  else
+	    error ("variable %qD of non-literal type %qT in %<constexpr%> "
+		   "function", decl, type);
 	  explain_non_literal_class (type);
 	  return NULL;
 	}
@@ -8027,6 +8023,8 @@ constexpr_fn_retval (tree body)
 
     case DECL_EXPR:
       if (TREE_CODE (DECL_EXPR_DECL (body)) == USING_DECL)
+	return NULL_TREE;
+      if (cxx_dialect >= cxx14)
 	return NULL_TREE;
       return error_mark_node;
 
@@ -9606,6 +9604,14 @@ cxx_eval_trinary_expression (const constexpr_call *call, tree t,
   return val;
 }
 
+bool
+var_in_constexpr_fn (tree t)
+{
+  tree ctx = DECL_CONTEXT (t);
+  return (cxx_dialect >= cxx14 && ctx && TREE_CODE (ctx) == FUNCTION_DECL
+	  && DECL_DECLARED_CONSTEXPR_P (ctx));
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -9645,6 +9651,11 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
+      if (DECL_P (r) && var_in_constexpr_fn (r)
+	  && DECL_INITIAL (r))
+	r = cxx_eval_constant_expression (call, DECL_INITIAL (r),
+					  allow_non_constant, false,
+					  non_constant_p, overflow_p);
       if (DECL_P (r))
 	{
 	  if (!allow_non_constant)
@@ -10330,6 +10341,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 
     case VAR_DECL:
       if (want_rval && !decl_constant_var_p (t)
+	  && !var_in_constexpr_fn (t)
 	  && !dependent_type_p (TREE_TYPE (t)))
         {
           if (flags & tf_error)

@@ -6,7 +6,7 @@
 #define N 3001
 
 
-__attribute__ ((noinline))
+__attribute__ ((noinline)) int
 main1 (float *pa)
 {
   int i;

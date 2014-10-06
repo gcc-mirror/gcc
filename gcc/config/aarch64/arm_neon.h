@@ -19420,16 +19420,28 @@ vqdmullh_lane_s16 (int16_t __a, int16x4_t __b, const int __c)
   return __builtin_aarch64_sqdmull_lanehi (__a, __b, __c);
 }
 
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vqdmullh_laneq_s16 (int16_t __a, int16x8_t __b, const int __c)
+{
+  return __builtin_aarch64_sqdmull_laneqhi (__a, __b, __c);
+}
+
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vqdmulls_s32 (int32_t __a, int32_t __b)
 {
   return __builtin_aarch64_sqdmullsi (__a, __b);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vqdmulls_lane_s32 (int32_t __a, int32x2_t __b, const int __c)
 {
-  return (int64x1_t) {__builtin_aarch64_sqdmull_lanesi (__a, __b, __c)};
+  return __builtin_aarch64_sqdmull_lanesi (__a, __b, __c);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmulls_laneq_s32 (int32_t __a, int32x4_t __b, const int __c)
+{
+  return __builtin_aarch64_sqdmull_laneqsi (__a, __b, __c);
 }
 
 /* vqmovn */

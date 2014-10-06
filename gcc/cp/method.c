@@ -852,7 +852,9 @@ build_stub_type (tree type, int quals, bool rvalue)
 static tree
 build_stub_object (tree reftype)
 {
-  tree stub = build1 (NOP_EXPR, reftype, integer_one_node);
+  if (TREE_CODE (reftype) != REFERENCE_TYPE)
+    reftype = cp_build_reference_type (reftype, /*rval*/true);
+  tree stub = build1 (CONVERT_EXPR, reftype, integer_one_node);
   return convert_from_reference (stub);
 }
 
@@ -889,8 +891,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 	       elt = TREE_CHAIN (elt))
 	    {
 	      tree type = TREE_VALUE (elt);
-	      if (TREE_CODE (type) != REFERENCE_TYPE)
-		type = cp_build_reference_type (type, /*rval*/true);
 	      tree arg = build_stub_object (type);
 	      vec_safe_push (args, arg);
 	    }
@@ -999,6 +999,115 @@ get_inherited_ctor (tree ctor)
   if (fn == error_mark_node)
     return NULL_TREE;
   return fn;
+}
+
+/* walk_tree helper function for is_trivially_xible.  If *TP is a call,
+   return it if it calls something other than a trivial special member
+   function.  */
+
+static tree
+check_nontriv (tree *tp, int *, void *)
+{
+  tree fn;
+  if (TREE_CODE (*tp) == CALL_EXPR)
+    fn = CALL_EXPR_FN (*tp);
+  else if (TREE_CODE (*tp) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (*tp);
+  else
+    return NULL_TREE;
+
+  if (TREE_CODE (fn) == ADDR_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+
+  if (TREE_CODE (fn) != FUNCTION_DECL
+      || !trivial_fn_p (fn))
+    return fn;
+  return NULL_TREE;
+}
+
+/* Return declval<T>() = declval<U>() treated as an unevaluated operand.  */
+
+static tree
+assignable_expr (tree to, tree from)
+{
+  ++cp_unevaluated_operand;
+  to = build_stub_object (to);
+  from = build_stub_object (from);
+  tree r = cp_build_modify_expr (to, NOP_EXPR, from, tf_none);
+  --cp_unevaluated_operand;
+  return r;
+}
+
+/* The predicate condition for a template specialization
+   is_constructible<T, Args...> shall be satisfied if and only if the
+   following variable definition would be well-formed for some invented
+   variable t: T t(create<Args>()...);
+
+   Return something equivalent in well-formedness and triviality.  */
+
+static tree
+constructible_expr (tree to, tree from)
+{
+  tree expr;
+  if (CLASS_TYPE_P (to))
+    {
+      tree ctype = to;
+      vec<tree, va_gc> *args = NULL;
+      if (TREE_CODE (to) != REFERENCE_TYPE)
+	to = cp_build_reference_type (to, /*rval*/false);
+      tree ob = build_stub_object (to);
+      for (; from; from = TREE_CHAIN (from))
+	vec_safe_push (args, build_stub_object (TREE_VALUE (from)));
+      expr = build_special_member_call (ob, complete_ctor_identifier, &args,
+					ctype, LOOKUP_NORMAL, tf_none);
+      if (expr == error_mark_node)
+	return error_mark_node;
+      /* The current state of the standard vis-a-vis LWG 2116 is that
+	 is_*constructible involves destruction as well.  */
+      if (type_build_dtor_call (ctype))
+	{
+	  tree dtor = build_special_member_call (ob, complete_dtor_identifier,
+						 NULL, ctype, LOOKUP_NORMAL,
+						 tf_none);
+	  if (dtor == error_mark_node)
+	    return error_mark_node;
+	  if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
+	    expr = build2 (COMPOUND_EXPR, void_type_node, expr, dtor);
+	}
+    }
+  else
+    {
+      if (from == NULL_TREE)
+	return build_value_init (to, tf_none);
+      else if (TREE_CHAIN (from))
+	return error_mark_node; // too many initializers
+      from = build_stub_object (TREE_VALUE (from));
+      expr = perform_direct_initialization_if_possible (to, from,
+							/*cast*/false,
+							tf_none);
+    }
+  return expr;
+}
+
+/* Returns true iff TO is trivially assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+bool
+is_trivially_xible (enum tree_code code, tree to, tree from)
+{
+  tree expr;
+  if (code == MODIFY_EXPR)
+    expr = assignable_expr (to, from);
+  else if (from && TREE_CHAIN (from))
+    return false; // only 0- and 1-argument ctors can be trivial
+  else
+    expr = constructible_expr (to, from);
+
+  if (expr == error_mark_node)
+    return false;
+  tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
+  return !nt;
 }
 
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and

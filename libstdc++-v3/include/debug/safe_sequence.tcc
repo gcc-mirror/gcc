@@ -81,42 +81,45 @@ namespace __gnu_debug
 
 	  for (_Safe_iterator_base* __iter = __from._M_iterators; __iter;)
 	    {
-	      iterator* __victim = static_cast<iterator*>(__iter);
+	      _Safe_iterator_base* __victim_base = __iter;
+	      iterator* __victim = static_cast<iterator*>(__victim_base);
 	      __iter = __iter->_M_next;
 	      if (!__victim->_M_singular() && __pred(__victim->base()))
 		{
 		  __victim->_M_detach_single();
 		  if (__transfered_iterators)
 		    {
-		      __victim->_M_next = __transfered_iterators;
-		      __transfered_iterators->_M_prior = __victim;
+		      __victim_base->_M_next = __transfered_iterators;
+		      __transfered_iterators->_M_prior = __victim_base;
 		    }
 		  else
-		    __last_iterator = __victim;
-		  __victim->_M_sequence = this;
-		  __victim->_M_version = this->_M_version;
-		  __transfered_iterators = __victim;
+		    __last_iterator = __victim_base;
+		  __victim_base->_M_sequence = this;
+		  __victim_base->_M_version = this->_M_version;
+		  __transfered_iterators = __victim_base;
 		}
 	    }
 
 	  for (_Safe_iterator_base* __iter2 = __from._M_const_iterators;
 		 __iter2;)
 	    {
-	      const_iterator* __victim = static_cast<const_iterator*>(__iter2);
+	      _Safe_iterator_base* __victim_base = __iter2;
+	      const_iterator* __victim =
+		static_cast<const_iterator*>(__victim_base);
 	      __iter2 = __iter2->_M_next;
 	      if (!__victim->_M_singular() && __pred(__victim->base()))
 		{
 		  __victim->_M_detach_single();
 		  if (__transfered_const_iterators)
 		    {
-		      __victim->_M_next = __transfered_const_iterators;
-		      __transfered_const_iterators->_M_prior = __victim;
+		      __victim_base->_M_next = __transfered_const_iterators;
+		      __transfered_const_iterators->_M_prior = __victim_base;
 		    }
 		  else
 		    __last_const_iterator = __victim;
-		  __victim->_M_sequence = this;
-		  __victim->_M_version = this->_M_version;
-		  __transfered_const_iterators = __victim;
+		  __victim_base->_M_sequence = this;
+		  __victim_base->_M_version = this->_M_version;
+		  __transfered_const_iterators = __victim_base;
 		}
 	    }
 	}

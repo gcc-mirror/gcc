@@ -14,6 +14,7 @@ typedef struct
 }
 ProtocolOperations;
 static const ProtocolOperations *protocol;
+int
 brl_readCommand (BrailleDisplay * brl)
 {
   unsigned long int keys;

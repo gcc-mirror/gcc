@@ -168,6 +168,16 @@ cp_function_decl_explicit_p (tree decl)
 	  && DECL_NONCONVERTING_P (decl));
 }
 
+/* Return true if DECL is deleted special member function.  */
+
+bool
+cp_function_decl_deleted_p (tree decl)
+{
+  return (decl
+	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
+	  && DECL_DELETED_FN (decl));
+}
+
 /* Stubs to keep c-opts.c happy.  */
 void
 push_file_scope (void)

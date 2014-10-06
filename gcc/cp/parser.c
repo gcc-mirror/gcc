@@ -1961,13 +1961,13 @@ static tree cp_parser_binary_expression
 static tree cp_parser_question_colon_clause
   (cp_parser *, tree);
 static tree cp_parser_assignment_expression
-  (cp_parser *, bool, cp_id_kind *);
+  (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false);
 static enum tree_code cp_parser_assignment_operator_opt
   (cp_parser *);
 static tree cp_parser_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false);
 static tree cp_parser_constant_expression
-  (cp_parser *, bool, bool *);
+  (cp_parser *, bool = false, bool * = NULL);
 static tree cp_parser_builtin_offsetof
   (cp_parser *);
 static tree cp_parser_lambda_expression
@@ -4134,7 +4134,6 @@ complain_flags (bool decltype_p)
      __is_abstract ( type-id )
      __is_base_of ( type-id , type-id )
      __is_class ( type-id )
-     __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
      __is_final ( type-id )
@@ -4452,8 +4451,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Look for the opening `('.  */
 	    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 	    /* Now, parse the assignment-expression.  */
-	    expression = cp_parser_assignment_expression (parser,
-							  /*cast_p=*/false, NULL);
+	    expression = cp_parser_assignment_expression (parser);
 	    /* Look for the `,'.  */
 	    cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 	    type_location = cp_lexer_peek_token (parser->lexer)->location;
@@ -4483,7 +4481,6 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_ABSTRACT:
 	case RID_IS_BASE_OF:
 	case RID_IS_CLASS:
-	case RID_IS_CONVERTIBLE_TO:
 	case RID_IS_EMPTY:
 	case RID_IS_ENUM:
 	case RID_IS_FINAL:
@@ -4492,6 +4489,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_POLYMORPHIC:
 	case RID_IS_STD_LAYOUT:
 	case RID_IS_TRIVIAL:
+	case RID_IS_TRIVIALLY_ASSIGNABLE:
+	case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
+	case RID_IS_TRIVIALLY_COPYABLE:
 	case RID_IS_UNION:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
@@ -6423,7 +6423,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
      Rather than open the barn door too wide right away, allow only integer
      constant expressions here.  */
   if (for_offsetof)
-    index = cp_parser_constant_expression (parser, false, NULL);
+    index = cp_parser_constant_expression (parser);
   else
     {
       if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
@@ -6806,8 +6806,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 		    break;
 		  }
 		if (expr == NULL_TREE)
-		  expr = cp_parser_assignment_expression (parser, cast_p,
-							  NULL);
+		  expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL,
+							  cast_p);
 	      }
 
 	    if (fold_expr_p)
@@ -7155,7 +7155,9 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 
 	    ++cp_unevaluated_operand;
 	    ++c_inhibit_evaluation_warnings;
+	    ++cp_noexcept_operand;
 	    expr = cp_parser_expression (parser);
+	    --cp_noexcept_operand;
 	    --c_inhibit_evaluation_warnings;
 	    --cp_unevaluated_operand;
 
@@ -8236,7 +8238,7 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   /* The next token should be a `:'.  */
   cp_parser_require (parser, CPP_COLON, RT_COLON);
   /* Parse the assignment-expression.  */
-  assignment_expr = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+  assignment_expr = cp_parser_assignment_expression (parser);
   c_inhibit_evaluation_warnings -= logical_or_expr == truthvalue_true_node;
 
   /* Build the conditional-expression.  */
@@ -8259,8 +8261,8 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
    Returns a representation for the expression.  */
 
 static tree
-cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
-				 bool decltype_p, cp_id_kind * pidk)
+cp_parser_assignment_expression (cp_parser* parser, cp_id_kind * pidk,
+				 bool cast_p, bool decltype_p)
 {
   tree expr;
 
@@ -8318,14 +8320,6 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
     }
 
   return expr;
-}
-
-static tree
-cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
-				 cp_id_kind * pidk)
-{
-  return cp_parser_assignment_expression (parser, cast_p,
-					  /*decltype*/false, pidk);
 }
 
 /* Parse an (optional) assignment-operator.
@@ -8437,7 +8431,7 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
 
       /* Parse the next assignment-expression.  */
       assignment_expression
-	= cp_parser_assignment_expression (parser, cast_p, decltype_p, pidk);
+	= cp_parser_assignment_expression (parser, pidk, cast_p, decltype_p);
 
       /* We don't create a temporary for a call that is the immediate operand
 	 of decltype or on the RHS of a comma.  But when we see a comma, we
@@ -8529,7 +8523,7 @@ cp_parser_constant_expression (cp_parser* parser,
      For example, cp_parser_initializer_clauses uses this function to
      determine whether a particular assignment-expression is in fact
      constant.  */
-  expression = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+  expression = cp_parser_assignment_expression (parser);
   /* Restore the old settings.  */
   parser->integral_constant_expression_p
     = saved_integral_constant_expression_p;
@@ -8665,7 +8659,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
   cp_trait_kind kind;
   tree type1, type2 = NULL_TREE;
   bool binary = false;
-  cp_decl_specifier_seq decl_specs;
+  bool variadic = false;
 
   switch (keyword)
     {
@@ -8703,10 +8697,6 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_IS_CLASS:
       kind = CPTK_IS_CLASS;
       break;
-    case RID_IS_CONVERTIBLE_TO:
-      kind = CPTK_IS_CONVERTIBLE_TO;
-      binary = true;
-      break;
     case RID_IS_EMPTY:
       kind = CPTK_IS_EMPTY;
       break;
@@ -8730,6 +8720,17 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_TRIVIAL:
       kind = CPTK_IS_TRIVIAL;
+      break;
+    case RID_IS_TRIVIALLY_ASSIGNABLE:
+      kind = CPTK_IS_TRIVIALLY_ASSIGNABLE;
+      binary = true;
+      break;
+    case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
+      kind = CPTK_IS_TRIVIALLY_CONSTRUCTIBLE;
+      variadic = true;
+      break;
+    case RID_IS_TRIVIALLY_COPYABLE:
+      kind = CPTK_IS_TRIVIALLY_COPYABLE;
       break;
     case RID_IS_UNION:
       kind = CPTK_IS_UNION;
@@ -8757,14 +8758,6 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
   if (type1 == error_mark_node)
     return error_mark_node;
 
-  /* Build a trivial decl-specifier-seq.  */
-  clear_decl_specs (&decl_specs);
-  decl_specs.type = type1;
-
-  /* Call grokdeclarator to figure out what type this is.  */
-  type1 = grokdeclarator (NULL, &decl_specs, TYPENAME,
-			  /*initialized=*/0, /*attrlist=*/NULL);
-
   if (binary)
     {
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
@@ -8773,14 +8766,22 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
       if (type2 == error_mark_node)
 	return error_mark_node;
-
-      /* Build a trivial decl-specifier-seq.  */
-      clear_decl_specs (&decl_specs);
-      decl_specs.type = type2;
-
-      /* Call grokdeclarator to figure out what type this is.  */
-      type2 = grokdeclarator (NULL, &decl_specs, TYPENAME,
-			      /*initialized=*/0, /*attrlist=*/NULL);
+    }
+  else if (variadic)
+    {
+      while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  tree elt = cp_parser_type_id (parser);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      elt = make_pack_expansion (elt);
+	    }
+	  if (elt == error_mark_node)
+	    return error_mark_node;
+	  type2 = tree_cons (NULL_TREE, elt, type2);
+	}
     }
 
   cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
@@ -9731,9 +9732,7 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
 	/* Consume the `case' token.  */
 	cp_lexer_consume_token (parser->lexer);
 	/* Parse the constant-expression.  */
-	expr = cp_parser_constant_expression (parser,
-					      /*allow_non_constant_p=*/false,
-					      NULL);
+	expr = cp_parser_constant_expression (parser);
 
 	ellipsis = cp_lexer_peek_token (parser->lexer);
 	if (ellipsis->type == CPP_ELLIPSIS)
@@ -9741,9 +9740,8 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
 	    /* Consume the `...' token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    expr_hi =
-	      cp_parser_constant_expression (parser,
-					     /*allow_non_constant_p=*/false,
-					     NULL);
+	      cp_parser_constant_expression (parser);
+
 	    /* We don't need to emit warnings here, as the common code
 	       will do this for us.  */
 	  }
@@ -10917,6 +10915,10 @@ cp_parser_jump_statement (cp_parser* parser)
       break;
 
     case RID_GOTO:
+      if (parser->in_function_body
+	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	error ("%<goto%> in %<constexpr%> function");
+
       /* Create the goto-statement.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_MULT))
 	{
@@ -14221,9 +14223,8 @@ cp_parser_template_argument (cp_parser* parser)
      because the argument could really be a type-id.  */
   if (maybe_type_id)
     cp_parser_parse_tentatively (parser);
-  argument = cp_parser_constant_expression (parser,
-					    /*allow_non_constant_p=*/false,
-					    /*non_constant_p=*/NULL);
+  argument = cp_parser_constant_expression (parser);
+
   if (!maybe_type_id)
     return argument;
   if (!cp_parser_next_token_ends_template_argument_p (parser))
@@ -15884,9 +15885,7 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
       /* Consume the `=' token.  */
       cp_lexer_consume_token (parser->lexer);
       /* Parse the value.  */
-      value = cp_parser_constant_expression (parser,
-					     /*allow_non_constant_p=*/false,
-					     NULL);
+      value = cp_parser_constant_expression (parser);
     }
   else
     value = NULL_TREE;
@@ -16489,6 +16488,11 @@ cp_parser_asm_definition (cp_parser* parser)
 
   /* Look for the `asm' keyword.  */
   cp_parser_require_keyword (parser, RID_ASM, RT_ASM);
+
+  if (parser->in_function_body
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    error ("%<asm%> in %<constexpr%> function");
+
   /* See if the next token is `volatile'.  */
   if (cp_parser_allow_gnu_extensions_p (parser)
       && cp_lexer_next_token_is_keyword (parser->lexer, RID_VOLATILE))
@@ -20711,9 +20715,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_lexer_consume_token (parser->lexer);
 	      /* Get the width of the bitfield.  */
 	      width
-		= cp_parser_constant_expression (parser,
-						 /*allow_non_constant=*/false,
-						 NULL);
+		= cp_parser_constant_expression (parser);
 
 	      /* Look for attributes that apply to the bitfield.  */
 	      attributes = cp_parser_attributes_opt (parser);
@@ -21038,9 +21040,7 @@ cp_parser_constant_initializer (cp_parser* parser)
       return error_mark_node;
     }
 
-  return cp_parser_constant_expression (parser,
-					/*allow_non_constant=*/false,
-					NULL);
+  return cp_parser_constant_expression (parser);
 }
 
 /* Derived classes [gram.class.derived] */
@@ -21300,7 +21300,7 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	      parser->type_definition_forbidden_message
 	      = G_("types may not be defined in an exception-specification");
 
-	      expr = cp_parser_constant_expression (parser, false, NULL);
+	      expr = cp_parser_constant_expression (parser);
 
 	      /* Restore the saved message.  */
 	      parser->type_definition_forbidden_message = saved_message;
@@ -21450,6 +21450,10 @@ cp_parser_try_block (cp_parser* parser)
   tree try_block;
 
   cp_parser_require_keyword (parser, RID_TRY, RT_TRY);
+  if (parser->in_function_body
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    error ("%<try%> in %<constexpr%> function");
+
   try_block = begin_try_block ();
   cp_parser_compound_statement (parser, NULL, true, false);
   finish_try_block (try_block);
@@ -21611,8 +21615,7 @@ cp_parser_throw_expression (cp_parser* parser)
       || token->type == CPP_COLON)
     expression = NULL_TREE;
   else
-    expression = cp_parser_assignment_expression (parser,
-						  /*cast_p=*/false, NULL);
+    expression = cp_parser_assignment_expression (parser);
 
   return build_throw (expression);
 }
@@ -22336,8 +22339,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 		      || alignas_expr == NULL_TREE);
 
 	  alignas_expr =
-	    cp_parser_assignment_expression (parser, /*cast_p=*/false,
-					     /**cp_id_kind=*/NULL);
+	    cp_parser_assignment_expression (parser);
 	  if (alignas_expr == error_mark_node)
 	    cp_parser_skip_to_end_of_statement (parser);
 	  if (alignas_expr == NULL_TREE
@@ -25530,7 +25532,7 @@ cp_parser_objc_message_args (cp_parser* parser)
 
       maybe_unary_selector_p = false;
       cp_parser_require (parser, CPP_COLON, RT_COLON);
-      arg = cp_parser_assignment_expression (parser, false, NULL);
+      arg = cp_parser_assignment_expression (parser);
 
       sel_args
 	= chainon (sel_args,
@@ -25545,7 +25547,7 @@ cp_parser_objc_message_args (cp_parser* parser)
       tree arg;
 
       cp_lexer_consume_token (parser->lexer);
-      arg = cp_parser_assignment_expression (parser, false, NULL);
+      arg = cp_parser_assignment_expression (parser);
 
       addl_args
 	= chainon (addl_args,
@@ -26409,9 +26411,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	      cp_lexer_consume_token (parser->lexer);  /* Eat ':'.  */
 	      /* Get the width of the bitfield.  */
 	      width
-		= cp_parser_constant_expression (parser,
-						 /*allow_non_constant=*/false,
-						 NULL);
+		= cp_parser_constant_expression (parser);
 	    }
 	  else
 	    {
@@ -27611,7 +27611,7 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  num = cp_parser_constant_expression (parser, false, NULL);
+  num = cp_parser_constant_expression (parser);
 
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
     cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
@@ -28001,7 +28001,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list, location_t location
       cp_lexer_consume_token (parser->lexer);
 
       token = cp_lexer_peek_token (parser->lexer);
-      t = cp_parser_assignment_expression (parser, false, NULL);
+      t = cp_parser_assignment_expression (parser);
 
       if (t == error_mark_node)
 	goto resync_fail;
@@ -28157,7 +28157,7 @@ cp_parser_omp_clause_aligned (cp_parser *parser, tree list)
 
   if (colon)
     {
-      alignment = cp_parser_constant_expression (parser, false, NULL);
+      alignment = cp_parser_constant_expression (parser);
 
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
 	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
@@ -28227,7 +28227,7 @@ cp_parser_omp_clause_safelen (cp_parser *parser, tree list,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  t = cp_parser_constant_expression (parser, false, NULL);
+  t = cp_parser_constant_expression (parser);
 
   if (t == error_mark_node
       || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -28256,7 +28256,7 @@ cp_parser_omp_clause_simdlen (cp_parser *parser, tree list,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  t = cp_parser_constant_expression (parser, false, NULL);
+  t = cp_parser_constant_expression (parser);
 
   if (t == error_mark_node
       || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -28430,7 +28430,7 @@ cp_parser_omp_clause_dist_schedule (cp_parser *parser, tree list,
     {
       cp_lexer_consume_token (parser->lexer);
 
-      t = cp_parser_assignment_expression (parser, false, NULL);
+      t = cp_parser_assignment_expression (parser);
 
       if (t == error_mark_node)
 	goto resync_fail;
@@ -29380,7 +29380,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
 
   if (op != NOP_EXPR)
     {
-      rhs = cp_parser_assignment_expression (parser, false, NULL);
+      rhs = cp_parser_assignment_expression (parser);
       rhs = build2 (op, TREE_TYPE (decl), decl, rhs);
       return build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, rhs);
     }
@@ -29553,7 +29553,7 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 	    {
 	      /* Consume '='.  */
 	      cp_lexer_consume_token (parser->lexer);
-	      init = cp_parser_assignment_expression (parser, false, NULL);
+	      init = cp_parser_assignment_expression (parser);
 
 	    non_class:
 	      if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
@@ -29589,7 +29589,7 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 
 	  cp_parser_parse_definitely (parser);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
-	  rhs = cp_parser_assignment_expression (parser, false, NULL);
+	  rhs = cp_parser_assignment_expression (parser);
 	  finish_expr_stmt (build_x_modify_expr (EXPR_LOCATION (rhs),
 						 decl, NOP_EXPR,
 						 rhs,
@@ -32115,7 +32115,7 @@ cp_parser_cilk_simd_vectorlength (cp_parser *parser, tree clauses,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return error_mark_node;
 
-  expr = cp_parser_constant_expression (parser, false, NULL);
+  expr = cp_parser_constant_expression (parser);
   expr = maybe_constant_value (expr);
 
   /* If expr == error_mark_node, then don't emit any errors nor
@@ -32216,7 +32216,7 @@ cp_parser_cilk_simd_linear (cp_parser *parser, tree clauses)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 
-	      e = cp_parser_assignment_expression (parser, false, NULL);
+	      e = cp_parser_assignment_expression (parser);
 	      e = maybe_constant_value (e);
 
 	      if (e == error_mark_node)

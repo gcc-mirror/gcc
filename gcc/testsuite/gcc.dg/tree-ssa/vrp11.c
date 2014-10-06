@@ -7,6 +7,7 @@ bounce (int arg)
   return arg;
 }
 
+int
 foo (int k, int j, int z)
 {
   if (k > z)

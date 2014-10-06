@@ -1,6 +1,6 @@
 /* PR middle-end/26361.  */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -std=gnu89" } */
 
 void abort(void);
 

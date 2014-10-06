@@ -1,3 +1,16 @@
+2014-10-03  Jing Yu  <jingyu@google.com>
+
+	* configure.ac: Add aarch64 to list of targets that support gold.
+	* configure: Regenerate.
+
+2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* MAINTAINERS:  Add myself as libstdc++ special modes maintainer.
+
+2014-09-29  Catherine Moore  <clm@codesourcery.com>
+
+	* MAINTAINERS:  Add myself as MIPS maintainer.
+
 2014-09-28  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* MAINTAINERS: Move myself to MIPS maintainers.

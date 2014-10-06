@@ -6,6 +6,7 @@ struct lineno_cache_entry
 {
   unsigned long size;
 };
+int
 _bfd_link_section_stabs (struct lineno_cache_entry * stabsec)
 {
   unsigned long count;

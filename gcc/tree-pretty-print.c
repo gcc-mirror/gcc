@@ -678,7 +678,7 @@ dump_omp_clauses (pretty_printer *buffer, tree clause, int spc, int flags)
 
 /* Dump location LOC to BUFFER.  */
 
-static void
+void
 dump_location (pretty_printer *buffer, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
@@ -687,9 +687,11 @@ dump_location (pretty_printer *buffer, location_t loc)
   if (xloc.file)
     {
       pp_string (buffer, xloc.file);
-      pp_string (buffer, " : ");
+      pp_string (buffer, ":");
     }
   pp_decimal_int (buffer, xloc.line);
+  pp_colon (buffer);
+  pp_decimal_int (buffer, xloc.column);
   pp_string (buffer, "] ");
 }
 

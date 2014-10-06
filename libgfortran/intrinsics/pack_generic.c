@@ -463,6 +463,9 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   index_type total;
 
   dim = GFC_DESCRIPTOR_RANK (array);
+  /* Initialize sstride[0] to avoid -Wmaybe-uninitialized
+     complaints.  */
+  sstride[0] = size;
   ssize = 1;
   for (n = 0; n < dim; n++)
     {

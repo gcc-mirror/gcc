@@ -1950,11 +1950,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
     for (i = XVECLEN (PATTERN (i3), 0) - 1; i >= 0; i--)
       if (GET_CODE (XVECEXP (PATTERN (i3), 0, i)) == CLOBBER)
 	{
-	  /* Don't substitute for a register intended as a clobberable
-	     operand.  */
 	  rtx reg = XEXP (XVECEXP (PATTERN (i3), 0, i), 0);
-	  if (rtx_equal_p (reg, dest))
-	    return 0;
 
 	  /* If the clobber represents an earlyclobber operand, we must not
 	     substitute an expression containing the clobbered register.
@@ -4962,6 +4958,11 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
   ((X) == (Y)						\
    || (REG_P (X) && REG_P (Y)	\
        && REGNO (X) == REGNO (Y) && GET_MODE (X) == GET_MODE (Y)))
+
+  /* Do not substitute into clobbers of regs -- this will never result in
+     valid RTL.  */
+  if (GET_CODE (x) == CLOBBER && REG_P (XEXP (x, 0)))
+    return x;
 
   if (! in_dest && COMBINE_RTX_EQUAL_P (x, from))
     {

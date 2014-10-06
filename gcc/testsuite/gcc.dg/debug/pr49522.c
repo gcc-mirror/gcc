@@ -7,6 +7,8 @@ volatile int val2 = 7L;
 long long val3;
 int *ptr = &val1;
 
+int foo (void);
+
 static int
 func1 ()
 {

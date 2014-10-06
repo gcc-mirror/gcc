@@ -198,7 +198,11 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 
 	  if (dump_enabled_p ())
             {
-	      location_t locus = gimple_location (edge->call_stmt);
+	      location_t locus;
+	      if (edge->call_stmt)
+		locus = gimple_location (edge->call_stmt);
+	      else
+		locus = UNKNOWN_LOCATION;
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
                                "devirtualizing call in %s/%i to %s/%i\n",
                                edge->caller->name (), edge->caller->order,

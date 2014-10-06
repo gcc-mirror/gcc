@@ -1,3 +1,26 @@
+2014-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/63460
+	* io/unit.c (init_units): Initialize the DELIM flag to
+	UNSPECIFIED for the STDIN unit so that the flag is
+	correctly set later.
+
+2014-10-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/pack_generic.c (pack_s_internal): Fix
+	-Wmaybe-uninitialized warning.
+	* m4/unpack.m4 (unpack0_'rtype_code`): Likewise.
+	(unpack1_'rtype_code`): Likewise.
+	* generated/unpack_*.m4: Regenerated.
+
+2014-09-30  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac (AM_CFLAGS): Add
+	-Werror=implicit-function-declaration.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
 2014-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (_gfortran_caf_co_broadcast): New prototype.

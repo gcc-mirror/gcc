@@ -14,6 +14,9 @@ union semun {
 };
 static union semun semctl_arg;
 static int semid;
+int semop(int semid, struct sembuf *sops, unsigned nsops);
+void error (const char *);
+int semctl(int semid, int semnum, int cmd, ...);
 static void up(int sem){
   struct sembuf sb;
   sb.sem_num = (unsigned short) sem;

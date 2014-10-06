@@ -1,5 +1,8 @@
+/* { dg-options "-fgnu89-inline" } */
+
 #include <stdbool.h>
 #include <stdlib.h>
+extern void abort (void);
 int strcmp (const char*, const char*);
 char s[2048] = "a";
 inline bool foo(const char *str) {

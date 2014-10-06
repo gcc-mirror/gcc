@@ -1316,7 +1316,8 @@ asan_protect_global (tree decl)
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
       || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
-      || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE)
+      || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE
+      || TREE_TYPE (decl) == ubsan_get_source_location_type ())
     return false;
 
   rtl = DECL_RTL (decl);
@@ -2226,8 +2227,38 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  build_int_cst (uptr, has_dynamic_init));
-  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
-			  build_int_cst (uptr, 0));
+  tree locptr = NULL_TREE;
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  expanded_location xloc = expand_location (loc);
+  if (xloc.file != NULL)
+    {
+      static int lasanloccnt = 0;
+      char buf[25];
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LASANLOC", ++lasanloccnt);
+      tree var = build_decl (UNKNOWN_LOCATION, VAR_DECL, get_identifier (buf),
+			     ubsan_get_source_location_type ());
+      TREE_STATIC (var) = 1;
+      TREE_PUBLIC (var) = 0;
+      DECL_ARTIFICIAL (var) = 1;
+      DECL_IGNORED_P (var) = 1;
+      pretty_printer filename_pp;
+      pp_string (&filename_pp, xloc.file);
+      tree str = asan_pp_string (&filename_pp);
+      tree ctor = build_constructor_va (TREE_TYPE (var), 3,
+					NULL_TREE, str, NULL_TREE,
+					build_int_cst (unsigned_type_node,
+						       xloc.line), NULL_TREE,
+					build_int_cst (unsigned_type_node,
+						       xloc.column));
+      TREE_CONSTANT (ctor) = 1;
+      TREE_STATIC (ctor) = 1;
+      DECL_INITIAL (var) = ctor;
+      varpool_node::finalize_decl (var);
+      locptr = fold_convert (uptr, build_fold_addr_expr (var));
+    }
+  else
+    locptr = build_int_cst (uptr, 0);
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, locptr);
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
@@ -2400,8 +2431,11 @@ asan_finish_file (void)
      nor after .LASAN* array.  */
   flag_sanitize &= ~SANITIZE_ADDRESS;
 
-  tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
-  append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
+  if (flag_sanitize & SANITIZE_USER_ADDRESS)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
+      append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
+    }
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (TREE_ASM_WRITTEN (vnode->decl)
 	&& asan_protect_global (vnode->decl))
@@ -2438,7 +2472,7 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_node::finalize_decl (var);
 
-      fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
+      tree fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
       tree gcount_tree = build_int_cst (pointer_sized_int_node, gcount);
       append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
@@ -2453,8 +2487,9 @@ asan_finish_file (void)
       cgraph_build_static_cdtor ('D', dtor_statements,
 				 MAX_RESERVED_INIT_PRIORITY - 1);
     }
-  cgraph_build_static_cdtor ('I', asan_ctor_statements,
-			     MAX_RESERVED_INIT_PRIORITY - 1);
+  if (asan_ctor_statements)
+    cgraph_build_static_cdtor ('I', asan_ctor_statements,
+			       MAX_RESERVED_INIT_PRIORITY - 1);
   flag_sanitize |= SANITIZE_ADDRESS;
 }
 

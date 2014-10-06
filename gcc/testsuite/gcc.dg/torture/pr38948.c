@@ -24,6 +24,7 @@ typedef struct gs_matrix_fixed_s
   int x;
 }
 gs_matrix_fixed;
+int gx_path_add_curve_notes ();
 static int
 append_simple (const byte * glyph, const gs_matrix_fixed * pmat, void * ppath)
 {
@@ -78,6 +79,7 @@ append_simple (const byte * glyph, const gs_matrix_fixed * pmat, void * ppath)
       }
   }
 }
+void gs_matrix_multiply (gs_matrix *, const gs_matrix *, gs_matrix *);
 int
 append_outline (uint glyph_index, const gs_matrix_fixed *pmat, void *ppath)
 {

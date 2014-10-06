@@ -2,6 +2,7 @@
 /* { dg-options "-fgnu-tm -O -fdump-tree-tmmark" } */
 
 extern int test(void) __attribute__((transaction_safe));
+extern int something (void);
 extern void *malloc (__SIZE_TYPE__) __attribute__((malloc,transaction_safe));
 
 struct large { int foo[500]; };

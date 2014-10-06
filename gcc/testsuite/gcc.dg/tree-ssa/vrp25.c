@@ -2,8 +2,10 @@
 /* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 extern void abort ();
+extern void arf ();
 int tree_code_length[100];
 
+void
 blah (int code1)
 {
   unsigned char D18670;

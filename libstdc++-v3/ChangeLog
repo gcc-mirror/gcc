@@ -1,3 +1,124 @@
+2014-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/63456
+	* include/bits/hashtable.h (_M_uses_single_bucket(__bucket_type*)): Test
+	the parameter.
+	* testsuite/23_containers/unordered_set/63456.cc: New.
+
+2014-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63449
+	* doc/xml/manual/containers.xml: Remove outdated section.
+	* doc/html/*: Regenerate.
+
+2014-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/ctgmath: Include <complex>.
+	* testsuite/26_numerics/headers/ctgmath/complex.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/stl_function.h: Generic associative lookup feature
+	is not supported.
+	* testsuite/experimental/feat-lib-fund.cc: <experimental/any> is
+	actually available.
+	* testsuite/experimental/feat-cxx14.cc: Add test for __cpp_lib_is_final.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/duration/literals/range.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust.
+
+2014-10-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdDebugIteratorPrinter.to_string):
+	Adapt to latest modifications on debug iterators.
+
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/std/type_traits: Add is_final<> type trait for C++14.
+	* testsuite/util/testsuite_tr1.h: Add
+	* testsuite/20_util/is_final/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_final/requirements/typedefs.cc: New.
+	* testsuite/20_util/is_final/value.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust.
+
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* include/bits/basic_string.h: Add __cpp_lib feature test macro.
+	* include/bits/stl_algobase.h: Ditto.
+	* include/bits/stl_function.h: Ditto.
+	* include/bits/unique_ptr.h: Ditto.
+	* include/std/chrono: Ditto.
+	* include/std/complex: Ditto.
+	* include/std/iomanip: Ditto.
+	* include/std/shared_mutex: Ditto.
+	* include/std/tuple: Ditto.
+	* include/std/type_traits: Ditto.
+	* include/std/utility: Ditto.
+	* testsuite/experimental/feat-cxx14.cc: New.
+	* testsuite/experimental/feat-lib-fund.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/duration/literals/range.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust.
+
+2014-09-30  Siva Chandra Reddy  <sivachandra@google.com>
+
+	* python/hook.in: Only import libstdcxx.v6.
+	* python/libstdcxx/v6/__init__.py: Load printers and xmethods.
+
+2014-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-09-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: New
+	file.
+
+	* configure.host (abi_baseline_pair): If try_cpu is generic use
+	host_cpu for the default.
+
+2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/62313
+	* include/debug/safe_base.h
+	(_Safe_iterator_base(const _Safe_iterator_base&)): Delete declaration.
+	(_Safe_iterator_base& operator=(const _Safe_iterator_base&)): Likewise.
+	* include/debug/safe_iterator.h (_Safe_iterator<>): Move normal iterator
+	before _Safe_iterator_base in memory. Lock before modifying the iterator
+	in numerous places.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator_base(const _Safe_local_iterator_base&)): Delete
+	declaration.
+	(_Safe_local_iterator_base& operator=(const _Safe_local_iterator_base&)):
+	Likewise.
+	* include/debug/safe_unordered_base.h (_Safe_local_iterator<>):  Move
+	normal iterator before _Safe_iterator_base in memory. Lock before
+	modifying the iterator in numerous places.
+	* include/debug/forward_list (_Safe_forward_list<>::_M_swap_aux): Adapt.
+	* include/debug/safe_sequence.tcc
+	(_Safe_sequence<>::_M_transfer_from_if): Adapt.
+
 2014-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	DR 1339

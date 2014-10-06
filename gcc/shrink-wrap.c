@@ -189,6 +189,9 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       unsigned int nonconstobj_num = 0;
       rtx src_inner = NULL_RTX;
 
+      if (can_throw_internal (insn))
+	return false;
+
       subrtx_var_iterator::array_type array;
       FOR_EACH_SUBRTX_VAR (iter, array, src, ALL)
 	{

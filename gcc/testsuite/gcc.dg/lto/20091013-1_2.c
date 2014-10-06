@@ -3,6 +3,7 @@ typedef struct HDC__ { int unused; } *HDC;
 typedef struct HFONT__ { int unused; } *HFONT;
 
 void* HeapAlloc(void*,unsigned int,unsigned long);
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 typedef struct tagLOGFONTW
 {
@@ -72,6 +73,7 @@ static int get_glyph_index_linked(GdiFont *font, unsigned int c, GdiFont **linke
 static long load_VDMX(GdiFont*, long);
 
 extern int f1(void*,int);
+extern int strcmpiW (const void*,const void*);
 
 static FT_Face OpenFontFace(GdiFont *font, void *face, long width, long height)
 {
@@ -206,6 +208,8 @@ static int get_glyph_index_linked(GdiFont *font, unsigned int c, GdiFont **linke
     }
     return 0;
 }
+
+void load_sfnt_table ();
 
 unsigned int WineEngGetFontData(GdiFont *font, unsigned int table, unsigned int offset, void* buf,
     unsigned int cbData)

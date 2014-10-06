@@ -8,7 +8,7 @@ int i __attribute__((used));
 int main()
 {
   if (i == 0)
-    return;
+    return 0;
 
   *p = 0;
 

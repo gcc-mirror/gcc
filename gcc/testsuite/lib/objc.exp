@@ -124,7 +124,7 @@ proc objc_init { args } {
     }
 
     set gcc_warning_prefix "warning:"
-    set gcc_error_prefix "error:"
+    set gcc_error_prefix "(fatal )?error:"
 
     objc_maybe_build_wrapper "${tmpdir}/objc-testglue.o"
 

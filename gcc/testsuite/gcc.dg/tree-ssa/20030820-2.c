@@ -3,6 +3,9 @@
 
 /* A test for variables getting out of their scope in copy propagation.  */
 
+void bla (int);
+int bar (void);
+
 void foo(void)
 {
   int k;

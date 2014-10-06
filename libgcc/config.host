@@ -167,9 +167,6 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	;;
-score*-*-*)
-	cpu_type=score
-	;;
 sparc64*-*-*)
 	cpu_type=sparc
 	;;
@@ -1051,10 +1048,6 @@ s390x-ibm-tpf*)
 	extra_parts="crtbeginS.o crtendS.o"
 	md_unwind_header=s390/tpf-unwind.h
 	;;
-score-*-elf)
-	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
-        ;;
 sh-*-elf* | sh[12346l]*-*-elf*)
 	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crt1.o crti.o crtn.o crtbeginS.o crtendS.o \

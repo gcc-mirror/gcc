@@ -103,6 +103,7 @@ union gimple_statement_d
   struct gimple_statement_phi gimple_phi;
 };
 extern size_t const gimple_ops_offset_[];
+int gimple_statement_structure (gimple);
 static __inline__ tree *
 gimple_ops (gimple gs)
 {
@@ -155,6 +156,8 @@ struct switch_conv_info
   tree *default_values;
 };
 static struct switch_conv_info info;
+void gsi_next (gimple_stmt_iterator *);
+int gsi_gsi_start_phis (basic_block);
 
 static void
 gather_default_values (tree default_case)
@@ -177,6 +180,8 @@ gather_default_values (tree default_case)
       info.default_values[i++] = val;
     }
 }
+
+unsigned int gimple_switch_num_labels (gimple);
 
 unsigned char
 process_switch (gimple swtch)

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-ivcanon-details" } */
 int a[1];
+void test2 (void);
+void
 test(int c)
 { 
   int i=0,j;

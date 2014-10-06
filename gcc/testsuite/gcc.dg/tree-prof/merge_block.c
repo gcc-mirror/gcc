@@ -9,6 +9,7 @@ int t()
 			break;
 	return i;
 }
+int
 main ()
 {
   int i;

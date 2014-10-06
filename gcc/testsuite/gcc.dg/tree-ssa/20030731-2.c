@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dce1" } */
 
+void foo (void);
+
 void
 bar (int i, int partial, int args_addr)
 {

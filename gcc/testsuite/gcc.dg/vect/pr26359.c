@@ -4,6 +4,7 @@
 
 int a[256], b[256], c[256];
 
+void
 foo () {
   int i;
 

@@ -1,3 +1,23 @@
+2014-10-06  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h (GFC_STD_F2015): Add.
+	* decl.c (gfc_match_implicit_none): Handle spec list.
+	(gfc_match_implicit): Move double intrinsic warning here.
+	* gfortran.h (gfc_namespace): Add has_implicit_none_export:1.
+	(gfc_set_implicit_none): Update interface.
+	* interface.c (gfc_procedure_use): Add implicit-none external
+	error check.
+	* parse.c (accept_statement): Remove call.
+	(verify_st_order): Permit that external-implict-none follows
+	implicit statement.
+	* symbol.c (gfc_set_implicit_none): Handle external/type
+	implicit none.
+
+2014-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36534
+	* resolve.c (resolve_fl_procedure): Clean up obsolescence warning.
+
 2014-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (check_co_collective): Renamed from check_co_minmaxsum,

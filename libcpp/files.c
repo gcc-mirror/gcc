@@ -991,6 +991,18 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   _cpp_file *file;
   bool stacked;
 
+  /* For -include command-line flags we have type == IT_CMDLINE.
+     When the first -include file is processed we have the case, where
+     pfile->cur_token == pfile->cur_run->base, we are directly called up
+     by the front end.  However in the case of the second -include file,
+     we are called from _cpp_lex_token -> _cpp_get_fresh_line ->
+     cpp_push_include, with pfile->cur_token != pfile->cur_run->base,
+     and pfile->cur_token[-1].src_loc not (yet) initialized.
+     However, when the include file cannot be found, we need src_loc to
+     be initialized to some safe value: 0 means UNKNOWN_LOCATION.  */
+  if (type == IT_CMDLINE && pfile->cur_token != pfile->cur_run->base)
+    pfile->cur_token[-1].src_loc = 0;
+
   dir = search_path_head (pfile, fname, angle_brackets, type);
   if (!dir)
     return false;
@@ -1028,6 +1040,9 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
 {
   int sysp = pfile->line_table->highest_line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > (angle_brackets || !!sysp);
+
+  if (pfile->state.in__has_include__)
+    return;
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
@@ -1945,3 +1960,18 @@ check_file_against_entries (cpp_reader *pfile ATTRIBUTE_UNUSED,
   return bsearch (&d, pchf->entries, pchf->count, sizeof (struct pchf_entry),
 		  pchf_compare) != NULL;
 }
+
+/* Return true if the file FNAME is found in the appropriate include file path
+   as indicated by ANGLE_BRACKETS.  */
+
+bool
+_cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
+		 enum include_type type)
+{
+  cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type);
+  _cpp_file *file = _cpp_find_file (pfile, fname, start_dir,
+				    /*fake=*/false, angle_brackets,
+				    /*implicit_preinclude=*/false);
+  return file->err_no != ENOENT;
+}
+

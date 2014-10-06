@@ -785,14 +785,28 @@ else
 	    [Define to the flags needed for the .section .eh_frame directive.])
 fi
 
+AC_CACHE_CHECK([if compiler supports -Qunused-arguments],
+[libgo_cv_c_unused_arguments],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -Qunused-arguments"
+AC_COMPILE_IFELSE([[int i;]],
+[libgo_cv_c_unused_arguments=yes],
+[libgo_cv_c_unused_arguments=no])
+CFLAGS=$CFLAGS_hold])
+
 AC_CACHE_CHECK([if assembler supports GNU comdat group syntax],
 libgo_cv_as_comdat_gnu, [
 echo '.section .text,"axG",@progbits,.foo,comdat' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
 if $CC $CFLAGS -c conftest.s > /dev/null 2>&1; then
   libgo_cv_as_comdat_gnu=yes
 else
   libgo_cv_as_comdat_gnu=no
 fi
+CFLAGS=$CFLAGS_hold
 ])
 if test "x$libgo_cv_as_comdat_gnu" = xyes; then
   AC_DEFINE(HAVE_AS_COMDAT_GAS, 1,
@@ -803,9 +817,14 @@ AC_CACHE_CHECK([assembler supports pc related relocs],
 libgo_cv_as_x86_pcrel, [
 libgo_cv_as_x86_pcrel=yes
 echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
 if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
     libgo_cv_as_x86_pcrel=no
 fi
+CFLAGS=$CFLAGS_hold
 ])
 if test "x$libgo_cv_as_x86_pcrel" = xyes; then
   AC_DEFINE(HAVE_AS_X86_PCREL, 1,
@@ -816,9 +835,14 @@ AC_CACHE_CHECK([assembler supports unwind section type],
 libgo_cv_as_x86_64_unwind_section_type, [
 libgo_cv_as_x86_64_unwind_section_type=yes
 echo '.section .eh_frame,"a",@unwind' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
 if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
     libgo_cv_as_x86_64_unwind_section_type=no
 fi
+CFLAGS=$CFLAGS_hold
 ])
 if test "x$libgo_cv_as_x86_64_unwind_section_type" = xyes; then
   AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,

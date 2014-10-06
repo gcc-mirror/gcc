@@ -1,3 +1,38 @@
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lex.c (search_line_fast): Add new version to be used for Power8
+	and later targets when Altivec is enabled.  Restrict the existing
+	Altivec version to big-endian systems so that lvsr is not used on
+	little endian, where it is deprecated.  Remove LE-specific code
+	from the now-BE-only version.
+
+2014-10-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jeff Law  <law@redhat.com>
+
+	* charset.c (convert_no_conversion): Reallocate memory with 25%
+	headroom.
+
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* internal.h (lexer_state, spec_nodes): Add in__has_include__.
+	* directives.c: Support __has_include__ builtin.
+	* expr.c (parse_has_include): New function to parse __has_include__
+	builtin; (eval_token()): Use it.
+	* files.c (_cpp_has_header()): New funtion to look for header;
+	(open_file_failed()): Not an error to not find a header file for
+	__has_include__.
+	* identifiers.c (_cpp_init_hashtable()): Add entry for __has_include__.
+	* pch.c (cpp_read_state): Lookup __has_include__.
+	* traditional.c (enum ls, _cpp_scan_out_logical_line()): Walk through
+	__has_include__ statements.
+
+2014-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR preprocessor/58893
+	* errors.c (cpp_diagnostic): Fix possible out of bounds access.
+	* files.c (_cpp_stack_include): Initialize src_loc for IT_CMDLINE.
+
 2014-09-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61405

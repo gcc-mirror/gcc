@@ -4326,6 +4326,14 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr, "altivec_resolve_overloaded_builtin, code = %4d, %s\n",
 	     (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+ 
+  /* vec_lvsl and vec_lvsr are deprecated for use with LE element order.  */
+  if (fcode == ALTIVEC_BUILTIN_VEC_LVSL && !VECTOR_ELT_ORDER_BIG)
+    warning (OPT_Wdeprecated, "vec_lvsl is deprecated for little endian; use \
+assignment for unaligned loads and stores");
+  else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !VECTOR_ELT_ORDER_BIG)
+    warning (OPT_Wdeprecated, "vec_lvsr is deprecated for little endian; use \
+assignment for unaligned loads and stores");
 
   /* For now treat vec_splats and vec_promote as the same.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS

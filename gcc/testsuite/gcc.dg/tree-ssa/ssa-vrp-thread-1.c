@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
-
+void oof (void);
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 enum gimple_code

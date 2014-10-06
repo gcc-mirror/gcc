@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fdump-tree-pre-stats -std=gnu89" } */
 typedef union tree_node *tree;
 struct tree_common
 {

@@ -2,6 +2,8 @@
 /* { dg-options "-O1 -fdump-tree-dom2" } */
                                                                                 
 typedef unsigned int cppchar_t;
+void foo (void);
+cppchar_t oof (void);
 cppchar_t
 cpp_parse_escape (pstr, limit, wide)
      const unsigned char **pstr;

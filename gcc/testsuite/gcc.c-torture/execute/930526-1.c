@@ -1,5 +1,9 @@
-inline
-f (x)
+/* { dg-options "-fgnu89-inline" } */
+
+extern void exit (int);
+
+inline void
+f (int x)
 {
   int *(p[25]);
   int m[25*7];
@@ -11,6 +15,7 @@ f (x)
   p[1][0] = 0;
 }
 
+int
 main ()
 {
   f (7);

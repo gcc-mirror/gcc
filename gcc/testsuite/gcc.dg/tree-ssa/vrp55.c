@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1-blocks-vops-details" } */
 
+void arf (void);
+
+void
 fu (char *p, int x)
 {
   if (x)

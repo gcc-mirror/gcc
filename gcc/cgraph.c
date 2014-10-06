@@ -819,6 +819,12 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
   edge->indirect_unknown_callee = indir_unknown_callee;
+  if (flag_devirtualize && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
+    edge->in_polymorphic_cdtor
+      = decl_maybe_in_construction_p (NULL, NULL, call_stmt,
+				      caller->decl);
+  else
+    edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
   if (call_stmt && caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (edge);
 
@@ -877,6 +883,7 @@ cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
+  edge->indirect_info->vptr_changed = true;
 
   /* Record polymorphic call info.  */
   if (compute_indirect_info
@@ -1033,6 +1040,7 @@ cgraph_edge::make_speculative (cgraph_node *n2, gcov_type direct_count,
   else
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
+  e2->in_polymorphic_cdtor = in_polymorphic_cdtor;
   count -= e2->count;
   frequency -= e2->frequency;
   symtab->call_edge_duplication_hooks (this, e2);
@@ -1981,6 +1989,8 @@ cgraph_node::dump (FILE *f)
 		    edge->indirect_info->member_ptr ? "member ptr" : "aggregate",
 		    edge->indirect_info->by_ref ? "passed by reference":"",
 		    (int)edge->indirect_info->offset);
+	  if (edge->indirect_info->vptr_changed)
+	    fprintf (f, " (vptr maybe changed)");
 	}
       fprintf (f, "\n");
       if (edge->indirect_info->polymorphic)

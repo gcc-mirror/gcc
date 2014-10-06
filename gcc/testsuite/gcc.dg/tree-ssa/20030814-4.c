@@ -18,6 +18,7 @@ union tree_node
   struct tree_common common;
   struct tree_decl decl;
 };
+void record_alias_subset (long);
 long
 blah (decl, set)
      tree decl;

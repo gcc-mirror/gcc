@@ -1,3 +1,8 @@
+/* { dg-options "-fgnu89-inline" } */
+
+extern void abort (void);
+extern void exit (int);
+
 __attribute__ ((externally_visible)) int global;
 int func(void);
 

@@ -55,18 +55,4 @@ if gdb.current_objfile () is not None:
     if not dir_ in sys.path:
         sys.path.insert(0, dir_)
 
-# Load the pretty-printers.
-from libstdcxx.v6.printers import register_libstdcxx_printers
-register_libstdcxx_printers (gdb.current_objfile ())
-
-# Load the xmethods if GDB supports them.
-def gdb_has_xmethods():
-    try:
-        import gdb.xmethod
-        return True
-    except ImportError:
-        return False
-
-if gdb_has_xmethods():
-    from libstdcxx.v6.xmethods import register_libstdcxx_xmethods
-    register_libstdcxx_xmethods (gdb.current_objfile ())
+import libstdcxx.v6

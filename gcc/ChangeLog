@@ -1,3 +1,515 @@
+2014-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan.h (ubsan_get_source_location): New prototype.
+	* ubsan.c (ubsan_source_location_type): New variable.
+	Function renamed to ...
+	(ubsan_get_source_location_type): ... this.  Cache
+	return value in ubsan_source_location_type variable.
+	(ubsan_source_location, ubsan_create_data): Use
+	ubsan_get_source_location_type instead of
+	ubsan_source_location_type.
+	* asan.c (asan_protect_global): Don't protect globals
+	with ubsan_get_source_location_type () type.
+	(asan_add_global): Provide global decl location info
+	if possible.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Remove overactive
+	sanity check.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c (possible_placement_new): Fix condition
+	on size.
+	(ipa_polymorphic_call_context::restrict_to_inner_type): Do not walk
+	into vptr pointer.
+	(ipa_polymorphic_call_context::dump): Fix formating.
+	(walk_ssa_copies): Add logic avoiding loops; update uses.
+	* ipa-prop.c (ipa_analyze_call_uses): Compute vptr_changed.
+
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* dwarf2out.c (gen_subprogram_die): When a member function is
+	explicitly deleted then add a DW_AT_GNU_deleted attribute.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	function_decl_deleted_p langhook.
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_DECL_DELETED_P): Define.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_FUNCTION_DECL_DELETED_P.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c (walk_ssa_copies): Recognize
+	NULL pointer checks.
+	(ipa_polymorphic_call_context::get_dynamic_type): Return true
+	if type doesn't change.
+	* cgraph.h (cgraph_indirect_call_info): New flag.
+	* cgraph.c (cgraph_node::create_indirect_edge): Initialize it.
+	(cgraph_node::dump): Dump it.
+	* ipa-prop.c (ipa_analyze_call_uses):  Ignore return valud
+	of context.get_dynamic_type.
+	(ipa_make_edge_direct_to_target): Do not speculate
+	edge that is already speuclative.
+	(try_make_edge_direct_virtual_call): Use VPTR_CHANGED; Do not
+	speculate to __builtin_unreachable
+	(ipa_write_indirect_edge_info, ipa_read_indirect_edge_info): Stream
+	vptr_changed.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use vptr_changed.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Call
+	get_dynamic_type; drop TODO.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::get_dynamic_type): Be ready
+	for otr_type to be unknown.
+
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* common/config/score/score-common.c: Remove.
+	* config.gcc: Remove support for score-*.
+	* config/score/constraints.md: Remove.
+	* config/score/elf.h: Remove.
+	* config/score/predicates.md: Remove.
+	* config/score/score-conv.h: Remove.
+	* config/score/score-generic.md: Remove.
+	* config/score/score-modes.def: Remove.
+	* config/score/score-protos.h: Remove.
+	* config/score/score.c: Remove.
+	* config/score/score.h: Remove.
+	* config/score/score.md: Remove.
+	* config/score/score.opt: Remove.
+	* doc/md.texi: Don't document score-*.
+
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+    
+	PR pch/63429
+	* genconditions.c: Directly include ggc.h before rtl.h.
+
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Fix
+	code determining speculative type.
+	(ipa_polymorphic_call_context::combine_with): Fix speculation merge.
+
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* altivec.md (altivec_lvsl): New define_expand.
+	(altivec_lvsl_direct): Rename define_insn from altivec_lvsl.
+	(altivec_lvsr): New define_expand.
+	(altivec_lvsr_direct): Rename define_insn from altivec_lvsr.
+	* rs6000.c (rs6000_expand_builtin): Change to use
+	altivec_lvs[lr]_direct; remove commented-out code.
+
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Issue a warning message when vec_lvsl or vec_lvsr is used with a
+	little endian target.
+
+2014-10-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree-pretty-print.c (dump_location): Make it extern. Dump also
+	the column.
+	* tree-pretty-print.h (dump_location): Declare.
+	* gimple-pretty-print.c (dump_gimple_phi): Use dump_location.
+	(pp_gimple_stmt_1): Likewise.
+	(dump_implicit_edges): Likewise.
+	* gimplify.c (gimplify_call_expr): Use LOCATION_FILE and
+	LOCATION_LINE.
+
+
+2014-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.c	(driver::global_initializations): Remove "const" so
+	that GCC_DRIVER_HOST_INITIALIZATION can modify decoded_options
+	and decoded_options_count.
+
+2014-10-03  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/e500.h (HARD_REGNO_CALLER_SAVE_MODE): Remove
+	macro.
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Handle
+	TARGET_E500_DOUBLE case here.
+
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* doc/extend.texi (Vector Extensions): Document &&, ||, ! in C++.
+
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (struct indirect_call_info): Add IN_POLYMORPHIC_CDTOR
+	* lto-cgraph.c (lto_output_edge, input_edge): Stream
+	in_polymorphic_cdtor
+	* cgraph.c (symbol_table::create_edge): Compute in_polymorphic_cdtor.
+	(cgraph_edge::make_speculative): Copy in_polymorphic_cdtor.
+	* cgraphclones.c (cgraph_edge::clone): Likewise.
+	* ipa-prop.c (update_jump_functions_after_inlining, 
+	try_make_edge_direct_virtual_call): Pass in_polymorphic_cdtor
+	to possible_dynamic_type_change.
+	(decl_maybe_in_construction_p): Allow empty OUTER_TYPE and BASE.
+	(ipa_polymorphic_call_context::possible_dynamic_type_change): Add
+	IN_POLY_CDOTR argument.
+
+	* ipa-polymorphic-call.c (decl_maybe_in_construction_p): Be ready
+	for BASE and OUTER_TYPE being NULL.
+	(ipa_polymorphic_call_context::possible_dynamic_type_change): Add
+	in_poly_cdtor parameter.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Fix up formatting.
+	(ix86_expand_vec_perm): Only call ix86_expand_vec_perm_vpermi2 if
+	TARGET_AVX512F.
+	(expand_vec_perm_1): Likewise.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/61403
+	* config/i386/i386.c (expand_vec_perm_palignr): Fix a spelling
+	error in comment.  Also optimize 256-bit vectors for AVX2
+	or AVX (floating vectors only), provided the first permutation
+	can be performed in one insn.
+
+2014-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.c (class driver): New class.
+	(main): Reimplement in terms of driver::main, moving most of the
+	locals to be locals within individual methods of class driver.
+	The remaining locals "explicit_link_files", "decoded_options" and
+	"decoded_options_count" are used by multiple driver:: methods, and
+	so become member data.  Doing so isolates the argc/argv reads and
+	writes.  Replace "goto out" with a special exit code from
+	new method driver::prepare_infiles.  Split out the old
+	implementation of main into the following...
+	(driver::main): New function, corresponding to the old "main"
+	implementation.
+	(driver::set_progname): New function, taken from the old
+	"main" implementation.
+	(driver::expand_at_files): Likewise.
+	(driver::decode_argv): Likewise.
+	(driver::global_initializations): Likewise.
+	(driver::build_multilib_strings): Likewise.
+	(driver::set_up_specs): Likewise.
+	(driver::putenv_COLLECT_GCC): Likewise.
+	(driver::maybe_putenv_COLLECT_LTO_WRAPPER): Likewise.
+	(driver::handle_unrecognized_options): Likewise.
+	(driver::maybe_print_and_exit): Likewise.
+	(driver::prepare_infiles): Likewise.
+	(driver::do_spec_on_infiles): Likewise.
+	(driver::maybe_run_linker): Likewise.
+	(driver::final_actions): Likewise.
+	(driver::get_exit_code): Likewise.
+
+2014-10-03  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (asan_finish_file): Disable __asan_init calls for KASan;
+	don't emit empty ctors.
+
+2014-10-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* convert.c (convert_to_integer): Do not introduce useless conversions
+	between integral types.
+
+2014-10-03  David Sherwood  <david.sherwood@arm.com>
+
+	* ira-int.h (ira_allocno): Mark hard_regno as signed.
+
+2014-10-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* lra-constraints.c (inherit_in_ebb): Handle calls with
+	multiple return values.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_permute_load_chain,
+	vect_shift_permute_load_chain): Fix a typo in temporary var names,
+	suffle3 to shuffle3.
+
+	PR libgomp/61200
+	* omp-low.c (taskreg_contexts): New variable.
+	(scan_omp_parallel): Push newly created context into taskreg_contexts
+	vector and move record layout code to finish_taskreg_scan.
+	(scan_omp_task): Likewise.
+	(finish_taskreg_scan): New function.
+	(execute_lower_omp): Call finish_taskreg_scan on all taskreg_contexts
+	vector elements and release it.
+
+	PR target/62128
+	* config/i386/i386.c (expand_vec_perm_palignr): If op1, op0 order
+	of palignr arguments can't be used due to min 0 or max - min
+	too high, try also op0, op1 order of palignr arguments.
+
+2014-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (ipa_polymorphic_call_context):
+	Turn bools into bitfields; add DYNAMIC; make MAKE_SPECULATIVE
+	private, add POSSIBLE_DYNAMIC_TYPE_CHANGE.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class): Allow accesses
+	past end of dynamic types.
+	(ipa_polymorphic_call_context::stream_out,
+	speculative_outer_type): Stream dynamic flag.
+	(ipa_polymorphic_call_context::set_by_decl): Clear DYNAMIC.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context):
+	Clear DYNAMIC.
+	(ipa_polymorphic_call_context::get_dynamic_type): Use DYNAMIC;
+	set it.
+	(ipa_polymorphic_call_context::combine_with): Propagate dynamic.
+	* ipa-prop.c (update_jump_functions_after_inlining,
+	try_make_edge_direct_virtual_call): Use possible_dynamic_type_change.
+
+2014-10-02  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-threadupdate.c (freqs_to_counts_path): Scale frequencies
+	up when synthesizing counts to avoid rounding errors.
+
+2014-10-02  Teresa Johnson  <tejohnson@google.com>
+
+	PR middle-end/63422
+	* tree-ssa-threadupdate.c (freqs_to_counts_path): Remove
+	asserts to handle incoming insanities.
+
+2014-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/63375
+	* tree-sra.c (build_access_from_expr_1): Disqualify volatile
+	references.
+
+2014-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (CROSS): Define, to @CROSS.
+
+2014-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/62128
+	* config/i386/i386.c (expand_vec_perm_1): Try expand_vec_perm_palignr
+	if it expands to a single insn only.
+	(expand_vec_perm_palignr): Add SINGLE_INSN_ONLY_P argument.  If true,
+	fail unless in_order is true.  Add forward declaration.
+	(expand_vec_perm_vperm2f128): Fix up comment about which permutation
+	is useful for one_operand_p.
+	(ix86_expand_vec_perm_const_1): Adjust expand_vec_perm_palignr caller.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (build_function_type_skip_args): Do not make new
+	type variant of old. 
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.h (ipa_get_controlled_uses): Add hack to avoid ICE
+	when speculation is added.
+	(ipa_edge_args): Add polymorphic_call_contexts.
+	(ipa_get_ith_polymorhic_call_context): New accesor.
+	(ipa_make_edge_direct_to_target): Add SPECULATIVE parameter.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Print contexts.
+	(ipa_compute_jump_functions_for_edge): Compute contexts.
+	(update_jump_functions_after_inlining): Update contexts.
+	(ipa_make_edge_direct_to_target): Add SPECULATIVE argument;
+	update dumping; add speculative edge creation.
+	(try_make_edge_direct_virtual_call): Add CTX_PTR parameter; handle
+	context updating.
+	(update_indirect_edges_after_inlining): Pass down context.
+	(ipa_edge_duplication_hook): Duplicate contexts.
+	(ipa_write_node_info): Stream out contexts.
+	(ipa_read_node_info): Stream in contexts.
+	* ipa-devirt.c (type_all_derivations_known_p): Avoid ICE on non-ODR
+	types.
+	(try_speculative_devirtualization): New function.
+	* ipa-utils.h (try_speculative_devirtualization): Declare.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (walk_polymorphic_call_targets): Avoid ICE when
+	dumping during WPA.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_modify_formal_parameters): Do not merge
+	type variants.
+
+2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class):
+	Rename EXPECTED_TYPE to OTR_TYPE; Validate speculation late;
+	use speculation_consistent_p to do so; Add CONSDER_BASES
+	and CONSIDER_PLACEMENT_NEW parameters.
+	(contains_type_p): Add CONSDER_PLACEMENT_NEW and CONSIDER_BASES;
+	short circuit obvious cases.
+	(ipa_polymorphic_call_context::dump): Improve formatting.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Use
+	combine_speculation_with to record speculations; Do not ICE when
+	object is located in pointer type decl; do not ICE for methods
+	of UNION_TYPE; do not record nonpolymorphic types.
+	(ipa_polymorphic_call_context::speculation_consistent_p): New method.
+	(ipa_polymorphic_call_context::combine_speculation_with): New method.
+	(ipa_polymorphic_call_context::combine_with): New method.
+	(ipa_polymorphic_call_context::make_speculative): Move here; use
+	combine speculation.
+	* cgraph.h (ipa_polymorphic_call_context): Update
+	restrict_to_inner_class prototype; add offset_by, make_speculative, 
+	combine_with, useless_p, combine_speculation_with and
+	speculation_consistent_p methods.
+	(ipa_polymorphic_call_context::offset_by): New method.
+	(ipa_polymorphic_call_context::useless_p): New method.
+
+2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/62151
+	* combine.c (can_combine_p): Allow the destination register of INSN
+	to be clobbered in I3.
+	(subst): Do not substitute into clobbers of registers.
+
+2014-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63342
+	* dwarf2out.c (loc_list_from_tree): Handle MEM_REF with non-zero
+	offset, TARGET_MEM_REF and SSA_NAME.
+
+	* config/i386/i386.c (expand_vec_perm_palignr): Handle
+	256-bit vectors for TARGET_AVX2.
+
+	* config/i386/i386.c (expand_vec_perm_vperm2f128): Canonicalize
+	dfirst permutation.
+
+	PR target/63428
+	* config/i386/i386.c (expand_vec_perm_pshufb): Fix up rperm[0]
+	argument to avx2_permv2ti.
+
+2014-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (*store_minmaxsi): Disable for arm_restrict_it.
+
+2014-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fmodxf3): Enable for flag_finite_math_only only.
+	(fmod<mode>3): Ditto.
+	(fpremxf4_i387): Ditto.
+	(reminderxf3): Ditto.
+	(reminder<mode>3): Ditto.
+	(fprem1xf4_i387): Ditto.
+
+2014-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): New
+	duplicate_blocks bitmap.
+	(remove_ctrl_stmt_and_useless_edges): Ditto.
+	(create_block_for_threading): Ditto.
+	(compute_path_counts): New function.
+	(update_profile): Ditto.
+	(recompute_probabilities): Ditto.
+	(update_joiner_offpath_counts): Ditto.
+	(freqs_to_counts_path): Ditto.
+	(clear_counts_path): Ditto.
+	(ssa_fix_duplicate_block_edges): Update profile info.
+	(ssa_create_duplicates): Pass new parameter.
+	(ssa_redirect_edges): Remove old profile update.
+	(thread_block_1): New duplicate_blocks bitmap,
+	remove old profile update.
+	(thread_single_edge): Pass new parameter.
+
+2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR middle-end/62120
+	* varasm.c (decode_reg_name_and_count): Check availability for
+	registers from ADDITIONAL_REGISTER_NAMES.
+
+2014-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR plugins/63410
+	* Makefile.in (PRETTY_PRINT_H): Add wide-int-print.h.
+	(PLUGIN_HEADERS): Add pass-instances.def.
+
+2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqdmull_laneq): Expand
+	iterator.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdmull_laneq<mode>): Expand iterator.
+	* config/aarch64/arm_neon.h (vqdmullh_laneq_s16): New.
+	(vqdmulls_lane_s32): Fix return type.
+	(vqdmulls_laneq_s32): New.
+
+2014-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/63282
+	* ifcvt.c (dead_or_predicable): Don't call redirect_jump_1
+	or invert_jump_1 if jump isn't any_condjump_p.
+
+2014-09-30  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m7): New core name.
+	* config/arm/arm-fpus.def (fpv5-sp-d16): New fpu name.
+	(fpv5-d16): Ditto.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm.h (TARGET_VFP5): New macro.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Include cortex-m7.
+	* config/arm/vfp.md (<vrint_pattern><SDF:mode>2,
+	smax<mode>3, smin<mode>3): Enabled for FPU FPv5.
+	* doc/invoke.texi: Document new cpu and fpu names.
+
+2014-09-30  Jiong Wang  <jiong.wang@arm.com>
+
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Check "can_throw_internal"
+	before sinking insn.
+
+2014-09-30  David Sherwood  <david.sherwood@arm.com>
+
+	* ira-int.h (ira_allocno): Add "wmode" field.
+	* ira-build.c (create_insn_allocnos): Add new "parent" function
+	parameter.
+	* ira-conflicts.c (ira_build_conflicts): Add conflicts for registers
+	that cannot be accessed in wmode.
+
+2014-09-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* data-streamer.c (bp_unpack_var_len_int): Avoid signed
+	integer overflow.
+
+2014-09-29  Andi Kleen  <ak@linux.intel.com>
+
+	* opts.c (print_filtered_help): Print --param min/max/default
+	with -Q.
+
+2014-09-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md: Use define_c_enum for "unspec" and "unspecv".
+
+2014-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (get_single_symbol): New function.
+	(build_symbolic_expr): Likewise.
+	(symbolic_range_based_on_p): New predicate.
+	(extract_range_from_binary_expr_1): Deal with single-symbolic ranges
+	for PLUS and MINUS.  Do not drop symbolic ranges at the end.
+	(extract_range_from_binary_expr): Try harder for PLUS and MINUS if
+	operand is symbolic and based on the other operand.
+
+2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* config/microblaze/microblaze.md (call_internal1): Use VOID
+	instead of SI to fix "((void (*)(void)) 0)()" issue
+
+2014-09-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_expand_prologue): Return a
+	CLOBBER rtx for naked functions.
+	(msp430_expand_epilogue): Likewise.
+	(msp430_use_f5_series_hwmult): Cache result.
+	(use_32bit_hwmult): Cache result.
+	(msp430_no_hwmult): New function.
+	(msp430_output_labelref): Use it.
+
 2014-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/63247
@@ -10,8 +522,8 @@
 	* config/pa/pa.c (pa_output_function_epilogue): Only update
 	last_address when a nonnote insn is found.
 
-2014-09-26  Jan Hubicka  <hubicka@ucw.cz>	
-	
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60665
 	* ipa-devirt.c (possible_polymorphic_call_targets): Silence clang warning.
 
