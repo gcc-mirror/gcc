@@ -1,5 +1,17 @@
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/debug/20010207-1.c: Use -fgnu89-inline.  Fix implicit
+	declarations.
+	* gcc.dg/debug/dwarf2-2.c: Fix defaulting to int.
+	* gcc.dg/debug/dwarf2/ipa-cp1.c: Likewise.
+	* gcc.dg/debug/pr42767.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die3.c: Use -fgnu89-inline.
+	* gcc.dg/debug/dwarf2/inline1.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
+	* gcc.dg/debug/pr49522.c: Fix implicit declarations.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/lto/20080924_0.c: Fix defaulting to int.
 	* gcc.dg/lto/20090213_0.c: Likewise.
 	* gcc.dg/lto/20090706-2_0.c: Likewise.

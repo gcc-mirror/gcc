@@ -14,7 +14,7 @@
   properly nested DW_TAG_inlined_subroutine DIEs for third, second and first.
 */
 
-/* { dg-options "-O -g3 -gdwarf -dA" } */
+/* { dg-options "-O -g3 -gdwarf -dA -fgnu89-inline" } */
 /* { dg-do compile } */
 
 /* There are 6 inlined subroutines:
