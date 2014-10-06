@@ -1,3 +1,16 @@
+2014-10-06  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59987
+	* doc/xml/manual/status_cxx2011.xml: Remove hexfloat from notes.
+	* doc/html/manual/status.html: Regenerate.
+	* include/bits/ios_base.h (hexfloat): New function.
+	(defaultfloat): New function.
+	* src/c++98/locale_facets.cc (__num_base::_S_format_float): Support
+	hexadecimal floating point format.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	New file.
+
 2014-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new header.

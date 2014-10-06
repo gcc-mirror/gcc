@@ -2131,7 +2131,6 @@ particular release.
       <entry>
         Missing <code>io_errc</code> and <code>iostream_category</code>.
         <code>ios_base::failure</code> is not derived from <code>system_error</code>.
-	Missing <code>ios_base::hexfloat</code>.
       </entry>
     </row>
     <row>
