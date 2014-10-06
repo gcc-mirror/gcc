@@ -1,3 +1,11 @@
+2014-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55250
+	* semantics.c (check_constexpr_bind_expr_vars): New.
+	(check_constexpr_ctor_body, massage_constexpr_body): Use it.
+	(build_constexpr_constructor_member_initializers): Handle
+	BIND_EXPR in the main conditional.
+
 2014-10-02  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/63239
