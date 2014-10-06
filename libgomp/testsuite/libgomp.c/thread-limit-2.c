@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+extern int omp_get_thread_limit (void);
+extern int omp_set_dynamic (int);
+extern void omp_set_nested (int);
+extern int omp_get_num_threads (void);
+
 int
 main ()
 {

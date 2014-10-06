@@ -2,6 +2,7 @@
 /* { dg-do run } */
 
 extern int omp_set_dynamic (int);
+extern void omp_set_nested (int);
 extern int omp_get_thread_num (void);
 extern void abort (void);
 extern void GOMP_barrier (void);
