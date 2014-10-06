@@ -32,6 +32,7 @@
 static unsigned char *buf;
 static size_t bufsize, page_size;
 static int fail;
+int getpagesize (void);
 
 #ifndef MAP_ANONYMOUS
 #  ifdef MAP_ANON

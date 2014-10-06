@@ -1,3 +1,8 @@
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libitm.c/memcpy-1.c: Declare getpagesize.
+	* testsuite/libitm.c/memset-1.c: Likewise.
+
 2014-07-24  Richard Henderson  <rth@redhat.com>
 
 	* config/aarch64/sjlj.S (_ITM_beginTransaction): Use post-inc
