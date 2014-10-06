@@ -91,6 +91,8 @@ typedef struct nitem
 nitem;
 typedef int (*distfn) (box *, box *);
 typedef int (*intersectfn) (nitem *, nitem *);
+int agnnodes (graph_t *);
+int overlaps (nitem *, int);
 static int
 cmpitem (Dt_t * d, int *p1, int *p2, Dtdisc_t * disc)
 {

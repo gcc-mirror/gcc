@@ -59,6 +59,7 @@ i_can_not_be_propagated_fully2 (int *a)
   }
   i_can_not_be_propagated_fully (a);
 }
+int
 main()
 {
   int i;
