@@ -1,3 +1,18 @@
+2014-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan.h (ubsan_get_source_location): New prototype.
+	* ubsan.c (ubsan_source_location_type): New variable.
+	Function renamed to ...
+	(ubsan_get_source_location_type): ... this.  Cache
+	return value in ubsan_source_location_type variable.
+	(ubsan_source_location, ubsan_create_data): Use
+	ubsan_get_source_location_type instead of
+	ubsan_source_location_type.
+	* asan.c (asan_protect_global): Don't protect globals
+	with ubsan_get_source_location_type () type.
+	(asan_add_global): Provide global decl location info
+	if possible.
+
 2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (try_make_edge_direct_virtual_call): Remove overactive
