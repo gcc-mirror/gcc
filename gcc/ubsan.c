@@ -197,6 +197,9 @@ ubsan_type_descriptor_type (void)
   return ret;
 }
 
+/* Cached ubsan_get_source_location_type () return value.  */
+static GTY(()) tree ubsan_source_location_type;
+
 /* Build
    struct __ubsan_source_location
    {
@@ -206,12 +209,15 @@ ubsan_type_descriptor_type (void)
    }
    type.  */
 
-static tree
-ubsan_source_location_type (void)
+tree
+ubsan_get_source_location_type (void)
 {
   static const char *field_names[3]
     = { "__filename", "__line", "__column" };
   tree fields[3], ret;
+  if (ubsan_source_location_type)
+    return ubsan_source_location_type;
+
   tree const_char_type = build_qualified_type (char_type_node,
 					       TYPE_QUAL_CONST);
 
@@ -229,6 +235,7 @@ ubsan_source_location_type (void)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = get_identifier ("__ubsan_source_location");
   layout_type (ret);
+  ubsan_source_location_type = ret;
   return ret;
 }
 
@@ -239,7 +246,7 @@ static tree
 ubsan_source_location (location_t loc)
 {
   expanded_location xloc;
-  tree type = ubsan_source_location_type ();
+  tree type = ubsan_get_source_location_type ();
 
   xloc = expand_location (loc);
   tree str;
@@ -484,7 +491,7 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
     {
       gcc_checking_assert (i < 2);
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			      ubsan_source_location_type ());
+			      ubsan_get_source_location_type ());
       DECL_CONTEXT (fields[i]) = ret;
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
