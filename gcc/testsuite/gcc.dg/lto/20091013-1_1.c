@@ -54,6 +54,8 @@ static struct __wine_debug_channel __wine_dbch_font = { ~0, "font" };
 static struct __wine_debug_channel * const __wine_dbch___default = &__wine_dbch_font;
 
 static void* FONT_SelectObject( void* handle, void* hdc );
+int TranslateCharsetInfo( void *, CHARSETINFO *, int );
+unsigned int GetACP (void);
 
 static const struct gdi_obj_funcs font_funcs =
 {
