@@ -1,6 +1,8 @@
 /* { dg-lto-do run } */
 int first = 0;
 void abort (void);
+void c (void);
+void b (void);
 int second = 0;
 void callmealias (void)
 {
@@ -21,6 +23,7 @@ void callmesecond (void)
     abort();
   second = 1;
 }
+int
 main()
 {
   c();

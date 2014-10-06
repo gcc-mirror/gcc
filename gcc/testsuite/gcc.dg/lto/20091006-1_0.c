@@ -2,7 +2,7 @@
 
 typedef void (*fnt) (void);
 void __attribute__((noinline)) bar (void) {}
-extern inline void check3 (void)
+extern inline void __attribute__((gnu_inline)) check3 (void)
 {
     bar ();
 }

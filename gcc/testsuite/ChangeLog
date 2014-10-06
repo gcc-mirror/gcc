@@ -1,3 +1,40 @@
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/lto/20080924_0.c: Fix defaulting to int.
+	* gcc.dg/lto/20090213_0.c: Likewise.
+	* gcc.dg/lto/20090706-2_0.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_1.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_2.c: Likewise.
+	* gcc.dg/lto/ipareference2_0.c: Likewise.
+	* gcc.dg/lto/ipareference_0.c: Likewise.
+	* gcc.dg/lto/ipareference_1.c: Likewise.
+	* gcc.dg/lto/pr55703_0.c: Likewise.
+	* gcc.dg/lto/resolutions_0.c: Likewise.
+	* gcc.dg/lto/trans-mem-3_1.c: Likewise.
+	* gcc.dg/lto/20081115_0.c: Fix defaulting to int.  Fix implicit
+	declarations.  Mark function as gnu_inline.
+	* gcc.dg/lto/20081118_0.c: Likewise.
+	* gcc.dg/lto/20081201-1_0.c: Likewise.
+	* gcc.dg/lto/20081115_1.c: Mark function as gnu_inline.
+	* gcc.dg/lto/20081118_1.c: Likewise.
+	* gcc.dg/lto/20081120-1_1.c: Likewise.
+	* gcc.dg/lto/20081201-1_1.c: Likewise.
+	* gcc.dg/lto/20081210-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-1_0.c: Likewise.
+	* gcc.dg/lto/20091006-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-1_1.c: Use -fgnu89-inline.
+	* gcc.dg/lto/20090218-2_1.c: Likewise.
+	* gcc.dg/lto/materialize-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-2_0.c: Fix implicit declarations.
+	* gcc.dg/lto/20091013-1_1.c: Likewise.
+	* gcc.dg/lto/20091013-1_2.c: Likewise.
+	* gcc.dg/lto/20091015-1_2.c: Likewise.
+	* gcc.dg/lto/20091027-1_1.c: Likewise.
+	* gcc.dg/lto/pr48622_0.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_0.c: Fix implicit declarations. Fix
+	defaulting to int.
+	* gcc.dg/lto/pr47924_0.c: Return 0 instead of nothing.
+
 2014-10-06  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/implicit_14.f90: New.
