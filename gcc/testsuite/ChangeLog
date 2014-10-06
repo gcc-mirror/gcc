@@ -1,3 +1,10 @@
+2014-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55250
+	* g++.dg/cpp0x/constexpr-type-decl1.C: New.
+	* g++.dg/cpp0x/constexpr-type-def1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-type-def1.C: Likewise.
+
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/raw-string-3.c: Use -std=gnu89 for C.
