@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+unsigned long int strtoul(const char *, char **, int);
 int cnt;
 #pragma omp threadprivate (cnt)
 
