@@ -1,3 +1,7 @@
+2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2cfi.c (create_pseudo_cfg): Fix trace numbering.
+
 2014-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* ubsan.h (ubsan_get_source_location): New prototype.
