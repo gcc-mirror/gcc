@@ -260,11 +260,6 @@
   return REG_P (op) && SPARC_FP_REG_P (REGNO (op));
 })
 
-;; Return true if OP is an integer register.
-(define_special_predicate "int_register_operand"
-  (ior (match_test "register_operand (op, SImode)")
-       (match_test "TARGET_ARCH64 && register_operand (op, DImode)")))
-
 ;; Return true if OP is an integer register of the appropriate mode
 ;; for a cstore result.
 (define_special_predicate "cstore_result_operand"
