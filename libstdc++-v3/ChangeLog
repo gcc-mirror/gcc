@@ -1,3 +1,13 @@
+2014-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/tuple: New
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+	* testsuite/experimental/feat-lib-fund.cc: Test for new header.
+	* testsuite/experimental/tuple/apply.cc: New.
+
 2014-10-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/63456
