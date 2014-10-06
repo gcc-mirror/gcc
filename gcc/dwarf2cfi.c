@@ -2763,7 +2763,7 @@ create_pseudo_cfg (void)
 	  memset (&ti, 0, sizeof (ti));
 	  ti.head = insn;
 	  ti.switch_sections = switch_sections;
-	  ti.id = trace_info.length () - 1;
+	  ti.id = trace_info.length ();
 	  trace_info.safe_push (ti);
 
 	  saw_barrier = false;
@@ -2781,7 +2781,7 @@ create_pseudo_cfg (void)
       dw_trace_info **slot;
 
       if (dump_file)
-	fprintf (dump_file, "Creating trace %u : start at %s %d%s\n", i,
+	fprintf (dump_file, "Creating trace %u : start at %s %d%s\n", tp->id,
 		 rtx_name[(int) GET_CODE (tp->head)], INSN_UID (tp->head),
 		 tp->switch_sections ? " (section switch)" : "");
 
