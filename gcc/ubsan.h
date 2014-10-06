@@ -47,6 +47,6 @@ extern tree ubsan_encode_value (tree, bool = false);
 extern bool is_ubsan_builtin_p (tree);
 extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree, tree);
 extern tree ubsan_instrument_float_cast (location_t, tree, tree);
+extern tree ubsan_get_source_location_type (void);
 
 #endif  /* GCC_UBSAN_H  */
-
