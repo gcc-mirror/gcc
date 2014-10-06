@@ -2495,7 +2495,8 @@ wait_for_child ()
    Fork if that seems to help.  */
 
 static void
-stream_out (char *temp_filename, lto_symtab_encoder_t encoder, bool last)
+stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
+	    bool ARG_UNUSED (last))
 {
 #ifdef HAVE_WORKING_FORK
   static int nruns;
