@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -msse2 -mno-sse3 -fdump-tree-vect-details" } */
 
+int abs (int);
 
 void test (char* a, char* b)
 {

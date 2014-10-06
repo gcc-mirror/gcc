@@ -19,6 +19,7 @@ struct ext4_map_blocks
   int m_flags;
 };
 int ext4_da_map_blocks_ei_0;
+void fn2 (int, int);
 void fn1 (int p1, struct ext4_map_blocks *p2)
 {
   int ret;

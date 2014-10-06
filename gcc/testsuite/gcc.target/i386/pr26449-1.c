@@ -3,6 +3,7 @@
 
 typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 void sse2_test (void)
 {

@@ -6,6 +6,7 @@
 int ARCHnodes;
 int *nodekind;
 float *nodekindf;
+void
 t()
 {
 int i;

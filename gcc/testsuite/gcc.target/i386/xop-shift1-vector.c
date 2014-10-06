@@ -27,7 +27,7 @@ left_shift32 (void)
 
 int main ()
 {
-  left_shfit32 ();
+  left_shift32 ();
   exit (0);
 }
 

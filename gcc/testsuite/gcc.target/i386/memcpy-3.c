@@ -2,6 +2,7 @@
 /* { dg-options "-O2" } */
 void *a;
 void *b;
+void
 t(int c)
 {
   if (c<10)
