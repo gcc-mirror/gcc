@@ -127,6 +127,10 @@ main (int argc, char **argv)
   /* At this point every element of ARGV from 1 to LAST_ARG is a `-D'
      option.  Process them appropriately.  */
   fprintf (stream, "extern const char **_Jv_Compiler_Properties;\n");
+  if (indirect)
+    fprintf (stream, "extern void JvRunMainName ();\n");
+  else
+    fprintf (stream, "extern void JvRunMain ();\n");
   fprintf (stream, "static const char *props[] =\n{\n");
   for (i = 1; i < last_arg; ++i)
     {
