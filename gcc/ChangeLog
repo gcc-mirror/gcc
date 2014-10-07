@@ -1,3 +1,9 @@
+2014-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c: Remove current_function_has_inlines.
+	(gen_subprogram_die): Same.
+	(gen_inlined_subroutine_die): Same.
+
 2014-10-07  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/adxintrin.h (_subborrow_u64): Use long long for param

@@ -2954,9 +2954,6 @@ static GTY(()) unsigned int loclabel_num;
 /* Unique label counter for point-of-call tables.  */
 static GTY(()) unsigned int poc_label_num;
 
-/* Record whether the function being analyzed contains inlined functions.  */
-static int current_function_has_inlines;
-
 /* The last file entry emitted by maybe_emit_file().  */
 static GTY(()) struct dwarf_file_data * last_emitted_file;
 
@@ -18626,7 +18623,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       if (DECL_NAME (DECL_RESULT (decl)))
 	gen_decl_die (DECL_RESULT (decl), NULL, subr_die);
 
-      current_function_has_inlines = 0;
       decls_for_scope (outer_scope, subr_die, 0);
 
       if (call_arg_locations && !dwarf_strict)
@@ -19283,7 +19279,6 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
       add_call_src_coords_attributes (stmt, subr_die);
 
       decls_for_scope (stmt, subr_die, depth);
-      current_function_has_inlines = 1;
     }
 }
 
