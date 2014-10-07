@@ -1,3 +1,7 @@
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* jvgenmain.c (main): Provide declarations for JvRunMain{,Name}.
+
 2014-07-08  Mark Wielaard  <mjw@redhat.com>
 
 	* builtins.c (putVolatile_builtin): Use build_qualified_type
