@@ -17,6 +17,7 @@ struct REGS {
 struct ebfp {
   long double v;
 };
+void put_ebfp (struct ebfp *);
 
 void s390_convert_fix32_to_bfp_ext_reg (REGS *regs)
 {

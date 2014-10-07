@@ -3,6 +3,8 @@
 /* { dg-do compile { target rs6000-*-* powerpc*-*-* sparc*-*-* ia64-*-* } } */
 /* { dg-final { scan-assembler-not "^\t(trap|ta|break)\[ \t\]" } } */
 
+void bar (void);
+
 void f1(int p)
 {
   if (p)
