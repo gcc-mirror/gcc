@@ -2992,6 +2992,23 @@ cgraph_node::get_body (void)
   return true;
 }
 
+/* Return the DECL_STRUCT_FUNCTION of the function.  */
+
+struct function *
+cgraph_node::get_fun (void)
+{
+  cgraph_node *node = this;
+  struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
+
+  while (!fun && node->clone_of)
+    {
+      node = node->clone_of;
+      fun = DECL_STRUCT_FUNCTION (node->decl);
+    }
+
+  return fun;
+}
+
 /* Verify if the type of the argument matches that of the function
    declaration.  If we cannot verify this or there is a mismatch,
    return false.  */

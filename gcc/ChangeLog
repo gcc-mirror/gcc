@@ -1,5 +1,11 @@
 2014-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* cgraph.h (cgraph_node::get_fun): Declare.
+	* cgraph.c (cgraph_node::get_fun): New method.
+	* ipa-inline.c (can_inline_edge_p): Use it.
+
+2014-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lto-opts.c (lto_write_options): Handle -fmath-errno, -fsigned-zeros
 	and -ftrapping-math.
 	* lto-wrapper.c (merge_and_complain): Likewise.
