@@ -1,5 +1,11 @@
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59717
+	* c-decl.c (header_for_builtin_fn): New function.
+	(implicitly_declare): Suggest which header to include.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
 	* c-convert.c (convert): Use error_operand_p.
 	* c-typeck.c (require_complete_type): Likewise.
 	(really_atomic_lvalue): Likewise.

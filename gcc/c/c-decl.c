@@ -2968,6 +2968,189 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
     }
 }
 
+/* This function represents mapping of a function code FCODE
+   to its respective header.  */
+
+static const char *
+header_for_builtin_fn (enum built_in_function fcode)
+{
+  switch (fcode)
+    {
+    CASE_FLT_FN (BUILT_IN_ACOS):
+    CASE_FLT_FN (BUILT_IN_ACOSH):
+    CASE_FLT_FN (BUILT_IN_ASIN):
+    CASE_FLT_FN (BUILT_IN_ASINH):
+    CASE_FLT_FN (BUILT_IN_ATAN):
+    CASE_FLT_FN (BUILT_IN_ATANH):
+    CASE_FLT_FN (BUILT_IN_ATAN2):
+    CASE_FLT_FN (BUILT_IN_CBRT):
+    CASE_FLT_FN (BUILT_IN_CEIL):
+    CASE_FLT_FN (BUILT_IN_COPYSIGN):
+    CASE_FLT_FN (BUILT_IN_COS):
+    CASE_FLT_FN (BUILT_IN_COSH):
+    CASE_FLT_FN (BUILT_IN_ERF):
+    CASE_FLT_FN (BUILT_IN_ERFC):
+    CASE_FLT_FN (BUILT_IN_EXP):
+    CASE_FLT_FN (BUILT_IN_EXP2):
+    CASE_FLT_FN (BUILT_IN_EXPM1):
+    CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN (BUILT_IN_FDIM):
+    CASE_FLT_FN (BUILT_IN_FLOOR):
+    CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN (BUILT_IN_FMAX):
+    CASE_FLT_FN (BUILT_IN_FMIN):
+    CASE_FLT_FN (BUILT_IN_FMOD):
+    CASE_FLT_FN (BUILT_IN_FREXP):
+    CASE_FLT_FN (BUILT_IN_HYPOT):
+    CASE_FLT_FN (BUILT_IN_ILOGB):
+    CASE_FLT_FN (BUILT_IN_LDEXP):
+    CASE_FLT_FN (BUILT_IN_LGAMMA):
+    CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_FLT_FN (BUILT_IN_LLROUND):
+    CASE_FLT_FN (BUILT_IN_LOG):
+    CASE_FLT_FN (BUILT_IN_LOG10):
+    CASE_FLT_FN (BUILT_IN_LOG1P):
+    CASE_FLT_FN (BUILT_IN_LOG2):
+    CASE_FLT_FN (BUILT_IN_LOGB):
+    CASE_FLT_FN (BUILT_IN_LRINT):
+    CASE_FLT_FN (BUILT_IN_LROUND):
+    CASE_FLT_FN (BUILT_IN_MODF):
+    CASE_FLT_FN (BUILT_IN_NAN):
+    CASE_FLT_FN (BUILT_IN_NEARBYINT):
+    CASE_FLT_FN (BUILT_IN_NEXTAFTER):
+    CASE_FLT_FN (BUILT_IN_NEXTTOWARD):
+    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_FLT_FN (BUILT_IN_REMAINDER):
+    CASE_FLT_FN (BUILT_IN_REMQUO):
+    CASE_FLT_FN (BUILT_IN_RINT):
+    CASE_FLT_FN (BUILT_IN_ROUND):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SIN):
+    CASE_FLT_FN (BUILT_IN_SINH):
+    CASE_FLT_FN (BUILT_IN_SINCOS):
+    CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN (BUILT_IN_TAN):
+    CASE_FLT_FN (BUILT_IN_TANH):
+    CASE_FLT_FN (BUILT_IN_TGAMMA):
+    CASE_FLT_FN (BUILT_IN_TRUNC):
+    case BUILT_IN_ISINF:
+    case BUILT_IN_ISNAN:
+      return "<math.h>";
+    CASE_FLT_FN (BUILT_IN_CABS):
+    CASE_FLT_FN (BUILT_IN_CACOS):
+    CASE_FLT_FN (BUILT_IN_CACOSH):
+    CASE_FLT_FN (BUILT_IN_CARG):
+    CASE_FLT_FN (BUILT_IN_CASIN):
+    CASE_FLT_FN (BUILT_IN_CASINH):
+    CASE_FLT_FN (BUILT_IN_CATAN):
+    CASE_FLT_FN (BUILT_IN_CATANH):
+    CASE_FLT_FN (BUILT_IN_CCOS):
+    CASE_FLT_FN (BUILT_IN_CCOSH):
+    CASE_FLT_FN (BUILT_IN_CEXP):
+    CASE_FLT_FN (BUILT_IN_CIMAG):
+    CASE_FLT_FN (BUILT_IN_CLOG):
+    CASE_FLT_FN (BUILT_IN_CONJ):
+    CASE_FLT_FN (BUILT_IN_CPOW):
+    CASE_FLT_FN (BUILT_IN_CPROJ):
+    CASE_FLT_FN (BUILT_IN_CREAL):
+    CASE_FLT_FN (BUILT_IN_CSIN):
+    CASE_FLT_FN (BUILT_IN_CSINH):
+    CASE_FLT_FN (BUILT_IN_CSQRT):
+    CASE_FLT_FN (BUILT_IN_CTAN):
+    CASE_FLT_FN (BUILT_IN_CTANH):
+      return "<complex.h>";
+    case BUILT_IN_MEMCHR:
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_STRCAT:
+    case BUILT_IN_STRCHR:
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRCPY:
+    case BUILT_IN_STRCSPN:
+    case BUILT_IN_STRLEN:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCMP:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRPBRK:
+    case BUILT_IN_STRRCHR:
+    case BUILT_IN_STRSPN:
+    case BUILT_IN_STRSTR:
+      return "<string.h>";
+    case BUILT_IN_FPRINTF:
+    case BUILT_IN_PUTC:
+    case BUILT_IN_FPUTC:
+    case BUILT_IN_FPUTS:
+    case BUILT_IN_FSCANF:
+    case BUILT_IN_FWRITE:
+    case BUILT_IN_PRINTF:
+    case BUILT_IN_PUTCHAR:
+    case BUILT_IN_PUTS:
+    case BUILT_IN_SCANF:
+    case BUILT_IN_SNPRINTF:
+    case BUILT_IN_SPRINTF:
+    case BUILT_IN_SSCANF:
+    case BUILT_IN_VFPRINTF:
+    case BUILT_IN_VFSCANF:
+    case BUILT_IN_VPRINTF:
+    case BUILT_IN_VSCANF:
+    case BUILT_IN_VSNPRINTF:
+    case BUILT_IN_VSPRINTF:
+    case BUILT_IN_VSSCANF:
+      return "<stdio.h>";
+    case BUILT_IN_ISALNUM:
+    case BUILT_IN_ISALPHA:
+    case BUILT_IN_ISBLANK:
+    case BUILT_IN_ISCNTRL:
+    case BUILT_IN_ISDIGIT:
+    case BUILT_IN_ISGRAPH:
+    case BUILT_IN_ISLOWER:
+    case BUILT_IN_ISPRINT:
+    case BUILT_IN_ISPUNCT:
+    case BUILT_IN_ISSPACE:
+    case BUILT_IN_ISUPPER:
+    case BUILT_IN_ISXDIGIT:
+    case BUILT_IN_TOLOWER:
+    case BUILT_IN_TOUPPER:
+      return "<ctype.h>";
+    case BUILT_IN_ISWALNUM:
+    case BUILT_IN_ISWALPHA:
+    case BUILT_IN_ISWBLANK:
+    case BUILT_IN_ISWCNTRL:
+    case BUILT_IN_ISWDIGIT:
+    case BUILT_IN_ISWGRAPH:
+    case BUILT_IN_ISWLOWER:
+    case BUILT_IN_ISWPRINT:
+    case BUILT_IN_ISWPUNCT:
+    case BUILT_IN_ISWSPACE:
+    case BUILT_IN_ISWUPPER:
+    case BUILT_IN_ISWXDIGIT:
+    case BUILT_IN_TOWLOWER:
+    case BUILT_IN_TOWUPPER:
+      return "<wctype.h>";
+    case BUILT_IN_ABORT:
+    case BUILT_IN_ABS:
+    case BUILT_IN_CALLOC:
+    case BUILT_IN_EXIT:
+    case BUILT_IN_FREE:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_MALLOC:
+    case BUILT_IN_REALLOC:
+    case BUILT_IN__EXIT2:
+    case BUILT_IN_ALIGNED_ALLOC:
+      return "<stdlib.h>";
+    case BUILT_IN_IMAXABS:
+      return "<inttypes.h>";
+    case BUILT_IN_STRFTIME:
+      return "<time.h>";
+    default:
+      return NULL;
+    }
+}
+
 /* Generate an implicit declaration for identifier FUNCTIONID at LOC as a
    function of type int ().  */
 
@@ -3025,8 +3208,15 @@ implicitly_declare (location_t loc, tree functionid)
 						      (TREE_TYPE (decl)));
 	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
-		  warning_at (loc, 0, "incompatible implicit declaration of "
-			      "built-in function %qD", decl);
+		  bool warned = warning_at (loc, 0, "incompatible implicit "
+					    "declaration of built-in "
+					    "function %qD", decl);
+		  /* See if we can hint which header to include.  */
+		  const char *header
+		    = header_for_builtin_fn (DECL_FUNCTION_CODE (decl));
+		  if (header != NULL && warned)
+		    inform (loc, "include %qs or provide a declaration of %qD",
+			    header, decl);
 		  newtype = TREE_TYPE (decl);
 		}
 	    }
@@ -3034,7 +3224,8 @@ implicitly_declare (location_t loc, tree functionid)
 	    {
 	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
-		  error_at (loc, "incompatible implicit declaration of function %qD", decl);
+		  error_at (loc, "incompatible implicit declaration of "
+			    "function %qD", decl);
 		  locate_old_decl (decl);
 		}
 	    }
