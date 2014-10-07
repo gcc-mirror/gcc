@@ -55,24 +55,24 @@ _addcarryx_u32 (unsigned char __CF, unsigned int __X,
 #ifdef __x86_64__
 extern __inline unsigned char
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_subborrow_u64 (unsigned char __CF, unsigned long __X,
-	        unsigned long __Y, unsigned long long *__P)
+_subborrow_u64 (unsigned char __CF, unsigned long long __X,
+	        unsigned long long __Y, unsigned long long *__P)
 {
     return __builtin_ia32_sbb_u64 (__CF, __Y, __X, __P);
 }
 
 extern __inline unsigned char
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_addcarry_u64 (unsigned char __CF, unsigned long __X,
-	       unsigned long __Y, unsigned long long *__P)
+_addcarry_u64 (unsigned char __CF, unsigned long long __X,
+	       unsigned long long __Y, unsigned long long *__P)
 {
     return __builtin_ia32_addcarryx_u64 (__CF, __X, __Y, __P);
 }
 
 extern __inline unsigned char
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_addcarryx_u64 (unsigned char __CF, unsigned long __X,
-		unsigned long __Y, unsigned long long *__P)
+_addcarryx_u64 (unsigned char __CF, unsigned long long __X,
+		unsigned long long __Y, unsigned long long *__P)
 {
     return __builtin_ia32_addcarryx_u64 (__CF, __X, __Y, __P);
 }
