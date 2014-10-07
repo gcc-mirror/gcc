@@ -2574,7 +2574,7 @@ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 
 GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \
   $(srcdir)/../libgcc/libgcov-driver.c $(srcdir)/../libgcc/libgcov-driver-system.c \
-  $(srcdir)/../libgcc/libgcov-merge.c \
+  $(srcdir)/../libgcc/libgcov-merge.c $(srcdir)/../libgcc/libgcov.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H) version.h intl.h $(DIAGNOSTIC_H)
 libgcov-util.o: $(srcdir)/../libgcc/libgcov-util.c $(GCOV_TOOL_DEP_FILES)
 	+$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o $@ $<

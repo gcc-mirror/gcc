@@ -52,3 +52,6 @@ DEF_GCOV_COUNTER(GCOV_COUNTER_IOR, "ior", _ior)
 
 /* Time profile collecting first run of a function */
 DEF_GCOV_COUNTER(GCOV_TIME_PROFILER, "time_profiler", _time_profile)
+
+/* Top N value tracking for indirect calls.  */
+DEF_GCOV_COUNTER(GCOV_COUNTER_ICALL_TOPNV, "indirect_call_topn", _icall_topn)
