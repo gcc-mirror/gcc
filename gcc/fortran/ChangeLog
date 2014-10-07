@@ -1,3 +1,19 @@
+2014-10-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	PR fortran/54687
+	* gfortran.h (gfc_warning_cmdline): Add overload that takes an
+	option.
+	(gfc_error_cmdline): Declare.
+	* error.c (gfc_warning_cmdline): New overload that takes an option.
+	(gfc_error_cmdline): New.
+	* lang.opt (Wmissing-include-dirs): New.
+	* scanner.c (add_path_to_list): Use the new functions.
+	(load_file): Likewise.
+	* options.c (gfc_init_options): Wmissing-include-dirs is enabled
+	by default in Fortran.
+	(gfc_handle_option): Accept automatically handled options.
+
 2014-10-06  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h (GFC_STD_F2015): Add.

@@ -1054,15 +1054,51 @@ gfc_diagnostic_finalizer (diagnostic_context *context,
 
 /* Give a warning about the command-line.  */
 
-void
+bool
+gfc_warning_cmdline (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+		       DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
+  va_end (argp);
+  return ret;
+}
+
+
+/* Give a warning about the command-line.  */
+
+bool
 gfc_warning_cmdline (const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+		       DK_WARNING);
+  ret = report_diagnostic (&diagnostic);
+  va_end (argp);
+  return ret;
+}
+
+
+/* Give an error about the command-line.  */
+
+void
+gfc_error_cmdline (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
-		       DK_WARNING);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (argp);
 }
