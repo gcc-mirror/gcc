@@ -1,3 +1,18 @@
+2014-10-06  Rong Xu  <xur@google.com>
+
+	* Makefile.in: Ditto.
+	* libgcov-driver.c (gcov_sort_n_vals): New utility function.
+	(gcov_sort_icall_topn_counter): Ditto.
+	(gcov_sort_topn_counter_arrays): Ditto.
+	(dump_one_gcov): Sort indirect_call topn counters.
+	* libgcov-merge.c (__gcov_merge_icall_topn): New merge
+	function.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body): New
+	utility function.
+	(__gcov_indirect_call_topn_profiler): New profiler function.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): New.
+	* libgcov.h: New decls.
+
 2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config.host: Remove support for score-*.
