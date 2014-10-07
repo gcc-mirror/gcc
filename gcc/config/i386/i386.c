@@ -38979,9 +38979,11 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
     {
       if (sibcall_insn_operand (fnaddr, word_mode))
 	{
-	  tmp = gen_rtx_CALL (VOIDmode, fnaddr, const0_rtx);
-          tmp = emit_call_insn (tmp);
-          SIBLING_CALL_P (tmp) = 1;
+	  fnaddr = XEXP (DECL_RTL (function), 0);
+	  tmp = gen_rtx_MEM (QImode, fnaddr);
+	  tmp = gen_rtx_CALL (VOIDmode, tmp, const0_rtx);
+	  tmp = emit_call_insn (tmp);
+	  SIBLING_CALL_P (tmp) = 1;
 	}
       else
 	emit_jump_insn (gen_indirect_jump (fnaddr));
