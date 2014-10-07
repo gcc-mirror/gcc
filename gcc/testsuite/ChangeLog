@@ -1,5 +1,10 @@
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59717
+	* gcc.dg/pr59717.c: New test.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/guality/pr41616-1.c: Use -fgnu89-inline.
 	* gcc.dg/iftrap-1.c: Fix implicit declarations.
 	* gcc.target/powerpc/pr26350.c: Likewise.
