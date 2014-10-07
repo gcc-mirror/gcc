@@ -18,6 +18,36 @@
 	* lto-wrapper.c (merge_and_complain): Likewise.
 	(run_gcc): Likewise.
 
+2014-10-06  Rong Xu  <xur@google.com>
+
+	* params.def (PARAM_INDIR_CALL_TOPN_PROFILE): New param.
+	* tree-profile.c: (params.h): New include.
+	(init_ic_make_global_vars): Make __gcov_indirect_call_topn_callee
+	and __gcov_indirect_call_topn_counters for
+	indirect_call_topn_profile.
+	(gimple_init_edge_profiler): New decls for 
+	__gcov_indirect_call_topn_profiler.
+	(gimple_gen_ic_profiler): Generate the correct profiler call.
+	(gimple_gen_ic_func_profiler): Fix format.
+	* value-prof.c (params.h): New include.
+	(dump_histogram_value): Hanlde indirect_call_topn counters.
+	(stream_in_histogram_value): Ditto.
+	(gimple_indirect_call_to_profile): Use indirect_call_topn
+	profile when PARAM_INDIR_CALL_TOPN_PROFILE is set.
+	(gimple_find_values_to_profile): Hanlde indirect_call_topn
+	counters.
+	* value-prof.h (enum hist_type): Histrogram type for
+	indirect_call_topn counters.
+	* profile.c (instrument_values): Instrument
+	indirect_call_topn counters.
+
+2014-10-06  Rong Xu  <xur@google.com>
+
+	* Makefile.in: Fix dependence.
+	* gcov-counter.def (GCOV_COUNTER_ICALL_TOPNV): Add
+	indirect call topn profiler.
+	* gcov-io.h: Ditto.
+
 2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* calls.c (expand_call): Do not use the target as the return slot if
