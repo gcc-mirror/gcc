@@ -1,5 +1,10 @@
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
+	* lib/target-supports.exp (check_effective_target_fd_truncate):
+	Include <string.h>.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c/59717
 	* gcc.dg/pr59717.c: New test.
 

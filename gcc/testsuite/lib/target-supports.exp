@@ -5284,6 +5284,7 @@ proc check_effective_target_fd_truncate { } {
 	#include <unistd.h>
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include <string.h>
 	int main ()
 	{
 	  FILE *f = fopen ("tst.tmp", "wb");
