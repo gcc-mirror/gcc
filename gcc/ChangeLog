@@ -31,7 +31,7 @@
 	(init_ic_make_global_vars): Make __gcov_indirect_call_topn_callee
 	and __gcov_indirect_call_topn_counters for
 	indirect_call_topn_profile.
-	(gimple_init_edge_profiler): New decls for 
+	(gimple_init_edge_profiler): New decls for
 	__gcov_indirect_call_topn_profiler.
 	(gimple_gen_ic_profiler): Generate the correct profiler call.
 	(gimple_gen_ic_func_profiler): Fix format.
@@ -157,7 +157,7 @@
 	* doc/md.texi: Don't document score-*.
 
 2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
-    
+
 	PR pch/63429
 	* genconditions.c: Directly include ggc.h before rtl.h.
 
@@ -223,7 +223,7 @@
 	* cgraph.c (symbol_table::create_edge): Compute in_polymorphic_cdtor.
 	(cgraph_edge::make_speculative): Copy in_polymorphic_cdtor.
 	* cgraphclones.c (cgraph_edge::clone): Likewise.
-	* ipa-prop.c (update_jump_functions_after_inlining, 
+	* ipa-prop.c (update_jump_functions_after_inlining,
 	try_make_edge_direct_virtual_call): Pass in_polymorphic_cdtor
 	to possible_dynamic_type_change.
 	(decl_maybe_in_construction_p): Allow empty OUTER_TYPE and BASE.
@@ -375,7 +375,7 @@
 2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphclones.c (build_function_type_skip_args): Do not make new
-	type variant of old. 
+	type variant of old.
 
 2014-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -430,7 +430,7 @@
 	(ipa_polymorphic_call_context::make_speculative): Move here; use
 	combine speculation.
 	* cgraph.h (ipa_polymorphic_call_context): Update
-	restrict_to_inner_class prototype; add offset_by, make_speculative, 
+	restrict_to_inner_class prototype; add offset_by, make_speculative,
 	combine_with, useless_p, combine_speculation_with and
 	speculation_consistent_p methods.
 	(ipa_polymorphic_call_context::offset_by): New method.
@@ -1510,7 +1510,7 @@
 2014-09-21  Patrick Oppenlander  <pattyo.lists@gmail.com>
 
 	* config/rs6000/t-spe (MULTILIB_EXCEPTIONS): Allow isel without SPE.
-	
+
 2014-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (div<mode>3): Fix comment.  Use a different
@@ -1962,7 +1962,7 @@
 	profiling is disabled.
 
 2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
-    
+
     	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
     	config/rs6000/rs6000.c, config/sh/sh.c, cprop.c, dwarf2out.c,
     	emit-rtl.c, final.c, function.c, gcse.c, jump.c, reg-stack.c,
@@ -2289,7 +2289,7 @@
 
 2014-09-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
-	* doc/install.texi (Options specification): add 
+	* doc/install.texi (Options specification): add
 	--disable-libsanitizer item.
 
 2014-09-14  James Clarke  <jrtc27@jrtc27.com>
@@ -9338,11 +9338,11 @@
 	(void call_edge_removal_hooks (cgraph_edge *e)):
 	  created from cgraph_call_edge_removal_hooks
 	(void call_cgraph_insertion_hooks (cgraph_node *node)):
-	  created from call_function_insertion_hooks 
+	  created from call_function_insertion_hooks
 	(void call_cgraph_removal_hooks (cgraph_node *node)):
-	  created from cgraph_call_node_removal_hooks 
+	  created from cgraph_call_node_removal_hooks
 	(void call_cgraph_duplication_hooks (cgraph_node *node, cgraph_node *node2)):
-	  created from cgraph_node::call_duplication_hooks 
+	  created from cgraph_node::call_duplication_hooks
 	(void call_edge_duplication_hooks (cgraph_edge *cs1, cgraph_edge *cs2)):
 	  created from cgraph_call_edge_duplication_hooks
 	(void call_varpool_removal_hooks (varpool_node *node)):
@@ -13230,7 +13230,7 @@
 
 2014-08-12  Steve Ellcey  <sellcey@mips.com>
 
-	* config/mips/mips.h (ASM_SPEC): Pass float options to assembler. 
+	* config/mips/mips.h (ASM_SPEC): Pass float options to assembler.
 
 2014-08-12  Steve Ellcey  <sellcey@mips.com>
 
@@ -15002,7 +15002,7 @@
 	(void DEBUG_FUNCTION debug (void)): created from debug_symtab_node
 	(void DEBUG_FUNCTION verify (void)): created from verify_symtab_node
 	(struct ipa_ref *add_reference (symtab_node *referred_node,
-	enum ipa_ref_use use_type)): created from add_reference 
+	enum ipa_ref_use use_type)): created from add_reference
 	(struct ipa_ref *add_reference (symtab_node *referred_node,
 	enum ipa_ref_use use_type, gimple stmt)): created from add_reference
 	(struct ipa_ref *maybe_add_reference (tree val, enum ipa_ref_use use_type,
@@ -15026,7 +15026,7 @@
 	void *data, bool include_overwrite)): created from symtab_for_node_and_aliases
 	(symtab_node *noninterposable_alias (void)): created from symtab_nonoverwritable_alias
 	(inline symtab_node *get_alias_target (void)): created from symtab_alias_target
-	(void set_section (const char *section)): created from set_section_1 
+	(void set_section (const char *section)): created from set_section_1
 	(enum availability get_availability (void)): created from symtab_node_availability
 	(void make_decl_local (void)): created from symtab_make_decl_local
 	(bool real_symbol_p (void)): created from symtab_read_node
@@ -15041,7 +15041,7 @@
 	(static inline DEBUG_FUNCTION void debug_symtab (void)): created from debug_symtab
 	(static DEBUG_FUNCTION void verify_symtab_nodes (void)): created from verify_symtab
 	(static bool used_from_object_file_p_worker (symtab_node *node)): created from
-	symtab_used_from_object_file_p 
+	symtab_used_from_object_file_p
 	(void dump_base (FILE *)): created from dump_symtab_base
 	(bool DEBUG_FUNCTION verify_base (void)): created from verify_symtab_base
 	(void unregister (void)): created from symtab_unregister_node
@@ -15060,7 +15060,7 @@
 	(cgraph_node *create_clone (tree decl, gcov_type count, int freq, bool update_original,
 	vec<cgraph_edge *> redirect_callers, bool call_duplication_hook,
 	struct cgraph_node *new_inlined_to, bitmap args_to_skip)):
-	created from cgraph_create_clone 
+	created from cgraph_create_clone
 	(cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 	vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, const char * suffix)):
 	created from cgraph_create_virtual_clone
@@ -15149,7 +15149,7 @@
 	(static cgraph_node *get_for_asmname (tree asmname)):
 	created from cgraph_node_for_asm
 	(static cgraph_node * create_same_body_alias (tree alias, tree decl)):
-	created from cgraph_same_body_alias 
+	created from cgraph_same_body_alias
 	(static bool used_from_object_file_p_worker (cgraph_node *node,
 	void *): new function
 	(static bool non_local_p (cgraph_node *node, void *)):
