@@ -261,6 +261,9 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    (*decoded_options)[j] = *foption;
 	  break;
 
+	case OPT_fmath_errno:
+	case OPT_fsigned_zeros:
+	case OPT_ftrapping_math:
 	case OPT_fwrapv:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -268,7 +271,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      break;
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
-	  /* -fwrapv > -fno-wrapv.  */
+	  /* -fmath-errno > -fno-math-errno,
+	     -fsigned-zeros > -fno-signed-zeros,
+	     -ftrapping-math -> -fno-trapping-math,
+	     -fwrapv > -fno-wrapv.  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
 	  break;
@@ -502,6 +508,9 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fpcc_struct_return:
 	case OPT_fshort_double:
 	case OPT_ffp_contract_:
+	case OPT_fmath_errno:
+	case OPT_fsigned_zeros:
+	case OPT_ftrapping_math:
 	case OPT_fwrapv:
 	case OPT_ftrapv:
 	case OPT_fstrict_overflow:

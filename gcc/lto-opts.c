@@ -115,6 +115,24 @@ lto_write_options (void)
       default:
 	gcc_unreachable ();
       }
+  /* The default -fmath-errno, -fsigned-zeros and -ftrapping-math change
+     depending on the language (they can be disabled by the Ada and Java
+     front-ends).  Pass thru conservative standard settings.  */
+  if (!global_options_set.x_flag_errno_math)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   global_options.x_flag_errno_math
+				   ? "-fmath-errno"
+				   : "-fno-math-errno");
+  if (!global_options_set.x_flag_signed_zeros)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   global_options.x_flag_signed_zeros
+				   ? "-fsigned-zeros"
+				   : "-fno-signed-zeros");
+  if (!global_options_set.x_flag_trapping_math)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   global_options.x_flag_trapping_math
+				   ? "-ftrapping-math"
+				   : "-fno-trapping-math");
   /* We need to merge -f[no-]strict-overflow, -f[no-]wrapv and -f[no-]trapv
      conservatively, so stream out their defaults.  */
   if (!global_options_set.x_flag_wrapv
