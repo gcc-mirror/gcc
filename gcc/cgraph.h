@@ -919,6 +919,9 @@ public:
      are free'd in final.c via free_after_compilation().  */
   void release_body (bool keep_arguments = false);
 
+  /* Return the DECL_STRUCT_FUNCTION of the function.  */
+  struct function *get_fun (void);
+
   /* cgraph_node is no longer nested function; update cgraph accordingly.  */
   void unnest (void);
 
