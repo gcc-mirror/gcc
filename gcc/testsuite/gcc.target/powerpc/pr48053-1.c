@@ -6,6 +6,7 @@
 int sourcenode;
 int ARCHelems;
 int *source_elms;
+void vv12x12 (double *, double *, double *);
 void
 foo (int argc, char **argv)
 {

@@ -1,3 +1,22 @@
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/guality/pr41616-1.c: Use -fgnu89-inline.
+	* gcc.dg/iftrap-1.c: Fix implicit declarations.
+	* gcc.target/powerpc/pr26350.c: Likewise.
+	* gcc.target/powerpc/altivec-consts.c: Likewise.
+	* gcc.target/powerpc/altivec-varargs-1.c: Likewise.
+	* gcc.target/powerpc/le-altivec-consts.c: Likewise.
+	* gcc.target/powerpc/ppc-vector-memcpy.c: Likewise.
+	* gcc.target/powerpc/ppc-vector-memset.c: Likewise.
+	* gcc.target/powerpc/pr47862.c: Likewise.
+	* gcc.target/powerpc/pr48053-1.c: Likewise.
+	* gcc.target/powerpc/pr53487.c: Likewise.
+	* gcc.dg/vect/pr48765.c: Fix implicit declarations and defaulting
+	to int.
+	* gcc.target/powerpc/20050603-1.c: Fix defaulting to int.
+	* gcc.target/powerpc/altivec-2.c: Likewise.
+	* gcc.target/powerpc/pr47755-2.c: Likewise.
+
 2014-10-07  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/lto/pr63270.h: New test.

@@ -7,6 +7,7 @@
 /* PR 47862: Verify caller-save spill of vectors in FP regs do not use
    legacy FP insns, which spill only half the vector.  */
 extern vector double dd[15];
+void bar (void);
 
 vector double foo() {
   vector double a,b,c,d,e,f,g,h,i,j,k,l,m,n;
