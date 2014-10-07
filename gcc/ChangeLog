@@ -1,3 +1,10 @@
+2014-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-opts.c (lto_write_options): Handle -fmath-errno, -fsigned-zeros
+	and -ftrapping-math.
+	* lto-wrapper.c (merge_and_complain): Likewise.
+	(run_gcc): Likewise.
+
 2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* calls.c (expand_call): Do not use the target as the return slot if
