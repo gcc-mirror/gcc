@@ -1,3 +1,13 @@
+2014-10-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_counter_type.h
+	(counter_type::operator<(const counter_type&)): Update
+	less_compare_count.
+	* testsuite/25_algorithms/make_heap/complexity.cc: New.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: New.
+	* testsuite/25_algorithms/push_heap/complexity.cc: New.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: New.
+
 2014-10-06  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
