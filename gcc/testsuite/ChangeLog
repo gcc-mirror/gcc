@@ -1,3 +1,9 @@
+2014-10-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.dg/vmx/3c-01a.c: Add default options from vmx.exp.
+	* gcc.dg/vmx/ops.c: Likewise.
+	* gcc.dg/vmx/ops-long-1.c: Likewise.
+
 2014-10-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/implicit_4.f90: Fix some dg-error.
