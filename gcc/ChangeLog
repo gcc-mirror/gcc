@@ -1,3 +1,28 @@
+2014-10-08  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/linux64.h: Remove.
+	* config/mips/gnu-user64.h: Remove.
+	* gcc.config (mips*-*-*): Remove references to linux64.h and
+	gnu-user64.h
+	* config/mips/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): Replace
+	with modified version from gnu-user64.h.
+	(LINUX_DRIVER_SELF_SPECS): Update parts from gnu-user64.h.
+	(LOCAL_LABEL_PREFIX): Copy from gnu-user64.h.
+	* config/mips/linux.h (GNU_USER_LINK_EMULATION32): Copy from
+	linux64.h.
+	(GNU_USER_LINK_EMULATION64): Ditto.
+	(GNU_USER_LINK_EMULATIONN32): Ditto.
+	(GLIBC_DYNAMIC_LINKER32): Ditto.
+	(GLIBC_DYNAMIC_LINKER64): Ditto.
+	(GLIBC_DYNAMIC_LINKERN32): Ditto.
+	(UCLIBC_DYNAMIC_LINKER32): Ditto.
+	(UCLIBC_DYNAMIC_LINKER64): Ditto.
+	(UCLIBC_DYNAMIC_LINKERN32): Ditto.
+	(BIONIC_DYNAMIC_LINKERN32): Ditto.
+	(GNU_USER_DYNAMIC_LINKERN32): Ditto.
+	(GLIBC_DYNAMIC_LINKER): Delete.
+	(UCLIBC_DYNAMIC_LINKER): Delete.
+
 2014-10-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Richard Biener  <rguenther@suse.de>
 
