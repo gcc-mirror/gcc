@@ -1,4 +1,9 @@
-2014-10-07  Jan Hubicka  <hubicka@ucw.cz>
+2014-10-08  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mti-linux.h (DRIVER_SELF_SPECS): Change
+	LINUX64_DRIVER_SELF_SPECS to LINUX_DRIVER_SELF_SPECS
+
+2014-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-polymorphic-call.c (extr_type_from_vtbl_store): Do better
 	pattern matching of MEM_REF.
