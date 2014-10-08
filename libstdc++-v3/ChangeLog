@@ -1,5 +1,12 @@
 2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_facets.tcc (num_put::_M_insert_float): Do not
+	pass precision when using hexfloat format.
+	* src/c++98/locale_facets.cc (__num_base::_S_format_float): Always
+	output precision if C99 hexfloat conversion specifiers not available.
+
+2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/regex.h (regex_token_iterator::_M_end_of_seq): Add
 	const qualifier.
 
