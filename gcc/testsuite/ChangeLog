@@ -1,3 +1,7 @@
+2014-10-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/implicit_4.f90: Fix some dg-error.
+
 2014-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/torture/stackalign/builtin-apply-4.c: Use
@@ -4213,7 +4217,7 @@
 2014-07-09  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR testsuite/61453
-	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	* gfortran.dg/bind_c_array_params_2.f90:
 	Adjust regexp for more targets.
 
 2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
@@ -6258,9 +6262,9 @@
 
 2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
 
-	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	* gfortran.dg/bind_c_array_params_2.f90:
 	Adjust regexp for -flto.
-	* gfortran.dg/gfortran.dg/pr48636-2.f90: Likewise.
+	* gfortran.dg/pr48636-2.f90: Likewise.
 	* gfortran.dg/pr52835.f90: Likewise.
 
 2014-05-23  Vladimir Makarov  <vmakarov@redhat.com>
