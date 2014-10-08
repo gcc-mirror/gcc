@@ -1,3 +1,8 @@
+2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (regex_token_iterator::_M_end_of_seq): Add
+	const qualifier.
+
 2014-10-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/63456
