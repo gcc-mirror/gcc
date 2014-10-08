@@ -1,3 +1,7 @@
+2014-10-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cp_tree_equal) [TRAIT_EXPR]: Use cp_tree_equal for type2.
+
 2014-10-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* cp/parser.c: Allow [[deprecated]] for C++11.  Issue a pedwarn.
