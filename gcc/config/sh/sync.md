@@ -466,6 +466,7 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(match_operand:SI 2 "arith_operand" "rI08")] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
    || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
@@ -484,6 +485,7 @@
    (set (mem:QIHI (match_dup 1))
 	(unspec:QIHI
 	  [(match_operand:QIHI 2 "register_operand" "r")] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -617,6 +619,7 @@
 	  [(FETCHOP:SI (mem:SI (match_dup 1))
 	     (match_operand:SI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
    || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
@@ -637,6 +640,7 @@
 	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1))
 	     (match_operand:QIHI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -784,6 +788,7 @@
 	  [(not:SI (and:SI (mem:SI (match_dup 1))
 		   (match_operand:SI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
    || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
@@ -805,6 +810,7 @@
 	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1))
 		     (match_operand:QIHI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -960,7 +966,8 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(FETCHOP:SI (mem:SI (match_dup 1)) (match_dup 2))]
-	  UNSPEC_ATOMIC))]
+	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))]
   "TARGET_ATOMIC_HARD_LLCS
    || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
@@ -980,6 +987,7 @@
 	(unspec:QIHI
 	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -1124,7 +1132,8 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(not:SI (and:SI (mem:SI (match_dup 1)) (match_dup 2)))]
-	  UNSPEC_ATOMIC))]
+	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))]
   "TARGET_ATOMIC_HARD_LLCS
    || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
@@ -1145,6 +1154,7 @@
 	(unspec:QIHI
 	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1)) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
