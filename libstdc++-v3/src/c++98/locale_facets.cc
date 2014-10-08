@@ -71,7 +71,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
 
+#ifdef _GLIBCXX_USE_C99
+    // Precision is always used except for hexfloat format.
     if (__fltfield != (ios_base::fixed | ios_base::scientific))
+#endif
       {
         // As per DR 231: not only when __flags & ios_base::fixed || __prec > 0
         *__fptr++ = '.';
