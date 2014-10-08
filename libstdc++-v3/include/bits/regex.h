@@ -2689,7 +2689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr bool
-      _M_end_of_seq()
+      _M_end_of_seq() const
       { return _M_result == nullptr; }
 
       _Position         _M_position;
