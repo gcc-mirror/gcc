@@ -1,3 +1,8 @@
+2014-10-08  Mark Wielaard  <mjw@redhat.com>
+
+	* g++.dg/debug/dwarf2/deleted-member-function.C: Remove comment marker
+	prefix from scan-assembler-times.
+
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_fd_truncate):
