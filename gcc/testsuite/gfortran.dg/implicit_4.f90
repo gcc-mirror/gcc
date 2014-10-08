@@ -6,7 +6,7 @@ END
 
 SUBROUTINE a
 IMPLICIT REAL(b-j)
-implicit none      ! { dg-error "Type IMPLICIT NONE statement at .1. following an IMPLICIT statement" }
+implicit none      ! { dg-error "IMPLICIT NONE .type. statement at .1. following an IMPLICIT statement" }
 END SUBROUTINE a
 
 subroutine b
