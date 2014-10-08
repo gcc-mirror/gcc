@@ -1,3 +1,9 @@
+2014-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-polymorphic-call.c (extr_type_from_vtbl_store): Do better
+	pattern matching of MEM_REF.
+	(check_stmt_for_type_change): Update.
+
 2014-10-08  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/linux64.h: Remove.
