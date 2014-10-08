@@ -274,7 +274,10 @@ static struct gcov_summary_buffer *sum_buffer;
    It computes and returns CRC32 and stored summary in THIS_PRG.
    Also determines the longest filename length of the info files.  */
 
-static gcov_unsigned_t
+#if !IN_GCOV_TOOL
+static
+#endif
+gcov_unsigned_t
 compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
 		 size_t *max_length)
 {

@@ -1,3 +1,20 @@
+2014-10-08  Rong Xu  <xur@google.com>
+
+	* libgcov-util.c (read_gcda_file): Fix format.
+	(find_match_gcov_info): Ditto.
+	(calculate_2_entries): New.
+	(compute_one_gcov): Ditto.
+	(gcov_info_count_all_cold): Ditto.
+	(gcov_info_count_all_zero): Ditto.
+	(extract_file_basename): Ditto.
+	(get_file_basename): Ditto.
+	(set_flag): Ditto.
+	(matched_gcov_info): Ditto.
+	(calculate_overlap): Ditto.
+	(gcov_profile_overlap): Ditto.
+	* libgcov-driver.c (compute_summary): Make
+	it avavilable for external calls.
+
 2014-10-06  Rong Xu  <xur@google.com>
 
 	* Makefile.in: Ditto.

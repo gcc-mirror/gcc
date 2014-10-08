@@ -1,3 +1,14 @@
+2014-10-08  Rong Xu  <xur@google.com>
+
+	* gcov-tool.c (profile_overlap): New driver function
+	to compute profile overlap. 
+	(print_overlap_usage_message): New.
+	(overlap_usage): New.
+	(do_overlap): New.
+	(print_usage): Add calls to overlap function.
+	(main): Ditto.
+	* doc/gcov-tool.texi: Add documentation.
+
 2014-10-08  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mti-linux.h (DRIVER_SELF_SPECS): Change
