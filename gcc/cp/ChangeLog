@@ -1,3 +1,8 @@
+2014-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63405
+	* pt.c (tsubst_pack_expansion): Limit simple expansion to type packs.
+
 2014-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/63249
