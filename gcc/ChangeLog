@@ -1,3 +1,9 @@
+2014-10-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (expand_debug_expr) <TARGET_MEM_REF>:
+	Get address space from operand 0 (BASE).
+
 2014-10-07  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/61387
