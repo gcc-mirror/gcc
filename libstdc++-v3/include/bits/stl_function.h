@@ -217,6 +217,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_transparent_operators 201210
+//#define __cpp_lib_generic_associative_lookup 201304
+
   template<>
     struct plus<void>
     {

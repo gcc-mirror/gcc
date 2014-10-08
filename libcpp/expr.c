@@ -64,6 +64,8 @@ static unsigned int interpret_float_suffix (cpp_reader *, const uchar *, size_t)
 static unsigned int interpret_int_suffix (cpp_reader *, const uchar *, size_t);
 static void check_promotion (cpp_reader *, const struct op *);
 
+static cpp_num parse_has_include (cpp_reader *, enum include_type);
+
 /* Token type abuse to create unary plus and minus operators.  */
 #define CPP_UPLUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 1))
 #define CPP_UMINUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 2))
@@ -1041,6 +1043,10 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
     case CPP_NAME:
       if (token->val.node.node == pfile->spec_nodes.n_defined)
 	return parse_defined (pfile);
+      else if (token->val.node.node == pfile->spec_nodes.n__has_include__)
+	return parse_has_include (pfile, IT_INCLUDE);
+      else if (token->val.node.node == pfile->spec_nodes.n__has_include_next__)
+	return parse_has_include (pfile, IT_INCLUDE_NEXT);
       else if (CPP_OPTION (pfile, cplusplus)
 	       && (token->val.node.node == pfile->spec_nodes.n_true
 		   || token->val.node.node == pfile->spec_nodes.n_false))
@@ -2064,4 +2070,73 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
     lhs = num_negate (lhs, precision);
 
   return lhs;
+}
+
+/* Handle meeting "__has_include__" in a preprocessor expression.  */
+static cpp_num
+parse_has_include (cpp_reader *pfile, enum include_type type)
+{
+  cpp_num result;
+  bool paren = false;
+  cpp_hashnode *node = 0;
+  const cpp_token *token;
+  bool bracket = false;
+  char *fname = 0;
+
+  result.unsignedp = false;
+  result.high = 0;
+  result.overflow = false;
+  result.low = 0;
+
+  pfile->state.in__has_include__++;
+
+  token = cpp_get_token (pfile);
+  if (token->type == CPP_OPEN_PAREN)
+    {
+      paren = true;
+      token = cpp_get_token (pfile);
+    }
+
+  if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
+    {
+      if (token->type == CPP_HEADER_NAME)
+	bracket = true;
+      fname = XNEWVEC (char, token->val.str.len - 1);
+      memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
+      fname[token->val.str.len - 2] = '\0';
+      node = token->val.node.node;
+    }
+  else if (token->type == CPP_LESS)
+    {
+      bracket = true;
+      fname = _cpp_bracket_include (pfile);
+    }
+  else
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "operator \"__has_include__\" requires a header string");
+
+  if (fname)
+    {
+      int angle_brackets = (bracket ? 1 : 0);
+
+      if (_cpp_has_header (pfile, fname, angle_brackets, type))
+	result.low = 1;
+      else
+	result.low = 0;
+
+      XDELETEVEC (fname);
+    }
+
+  if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "missing ')' after \"__has_include__\"");
+
+  /* A possible controlling macro of the form #if !__has_include__ ().
+     _cpp_parse_expr checks there was no other junk on the line.  */
+  if (node)
+    pfile->mi_ind_cmacro = node;
+
+  pfile->state.in__has_include__--;
+
+  return result;
 }

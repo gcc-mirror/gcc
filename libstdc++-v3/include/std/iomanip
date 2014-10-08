@@ -339,6 +339,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
+#define __cpp_lib_quoted_string_io 201304
+
 _GLIBCXX_END_NAMESPACE_VERSION
   namespace __detail {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION

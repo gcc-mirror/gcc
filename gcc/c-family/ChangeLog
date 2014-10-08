@@ -1,3 +1,9 @@
+2014-10-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* c-cppbuiltin.c (c_cpp_builtins()): Define language feature
+	macros and the __has_header macro.
+
 2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/61962

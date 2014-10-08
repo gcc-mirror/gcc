@@ -1023,6 +1023,9 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
   int sysp = pfile->line_table->highest_line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > (angle_brackets || !!sysp);
 
+  if (pfile->state.in__has_include__)
+    return;
+
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
     {
@@ -1939,3 +1942,18 @@ check_file_against_entries (cpp_reader *pfile ATTRIBUTE_UNUSED,
   return bsearch (&d, pchf->entries, pchf->count, sizeof (struct pchf_entry),
 		  pchf_compare) != NULL;
 }
+
+/* Return true if the file FNAME is found in the appropriate include file path
+   as indicated by ANGLE_BRACKETS.  */
+
+bool
+_cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
+		 enum include_type type)
+{
+  cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type);
+  _cpp_file *file = _cpp_find_file (pfile, fname, start_dir,
+				    /*fake=*/false, angle_brackets,
+				    /*implicit_preinclude=*/false);
+  return file->err_no != ENOENT;
+}
+

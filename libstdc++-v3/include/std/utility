@@ -70,6 +70,7 @@
 #include <bits/stl_pair.h>
 
 #if __cplusplus >= 201103L
+
 #include <bits/move.h>
 #include <initializer_list>
 
@@ -153,6 +154,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __pair_get<_Int>::__const_get(__in); }
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_tuples_by_type 201304
+
   template <typename _Tp, typename _Up>
     constexpr _Tp&
     get(pair<_Tp, _Up>& __p) noexcept
@@ -182,6 +186,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp&&
     get(pair<_Up, _Tp>&& __p) noexcept
     { return std::move(__p.second); }
+
+#define __cpp_lib_exchange_function 201304
 
   /// Assign @p __new_val to @p __obj and return its previous value.
   template <typename _Tp, typename _Up = _Tp>
@@ -216,6 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_integer_sequence 201304
+
   /// Class template integer_sequence
   template<typename _Tp, _Tp... _Idx>
     struct integer_sequence

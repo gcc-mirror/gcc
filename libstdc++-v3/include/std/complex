@@ -1929,6 +1929,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 inline namespace literals {
 inline namespace complex_literals {
 
+#define __cpp_lib_complex_udls 201309
+
   constexpr std::complex<float>
   operator""if(long double __num)
   { return std::complex<float>{0.0F, static_cast<float>(__num)}; }

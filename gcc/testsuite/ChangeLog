@@ -1,3 +1,14 @@
+2014-10-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* g++.dg/cpp1y/feat-cxx11-neg.C: New.
+	* g++.dg/cpp1y/feat-cxx11.C: New.
+	* g++.dg/cpp1y/feat-cxx14.C: New.
+	* g++.dg/cpp1y/feat-cxx98.C: New.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: New.
+	* g++.dg/cpp1y/phoobhar.h: New.
+	* g++.dg/cpp1y/testinc/phoobhar.h: New.
+
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61144

@@ -774,6 +774,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple<_Elements...>>::type&&>(get<__i>(__t)); }
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_tuples_by_type 201304
+
   template<typename _Head, size_t __i, typename... _Tail>
     constexpr typename __add_ref<_Head>::type
     __get_helper2(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept

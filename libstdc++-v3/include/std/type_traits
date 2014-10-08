@@ -73,6 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef integral_constant<_Tp, __v>   type;
       constexpr operator value_type() const { return value; }
 #if __cplusplus > 201103L
+
+#define __cpp_lib_integral_constant_callable 201304
+
       constexpr value_type operator()() const { return value; }
 #endif
     };
@@ -480,6 +483,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_function<_Res(_ArgTypes......) const volatile &&>
     : public true_type { };
 
+#define __cpp_lib_is_null_pointer 201309
+
   template<typename>
     struct __is_null_pointer_helper
     : public false_type { };
@@ -636,6 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
   /// is_final
+  #define __cpp_lib_is_final 201402L
   template<typename _Tp>
     struct is_final
     : public integral_constant<bool, __is_final(_Tp)>
@@ -1459,6 +1465,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_transformation_trait_aliases 201304
+
   /// Alias template for remove_const
   template<typename _Tp>
     using remove_const_t = typename remove_const<_Tp>::type;
@@ -2051,6 +2060,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class result_of;
 
   // Sfinae-friendly result_of implementation:
+
+#define __cpp_lib_result_of_sfinae 201210
 
   // [func.require] paragraph 1 bullet 1:
   struct __result_of_memfun_ref_impl

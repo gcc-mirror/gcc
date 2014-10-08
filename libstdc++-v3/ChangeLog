@@ -1,3 +1,30 @@
+2014-10-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* include/bits/basic_string.h: Add __cpp_lib feature test macro.
+	* include/bits/stl_algobase.h: Ditto.
+	* include/bits/stl_function.h: Ditto.
+	* include/bits/unique_ptr.h: Ditto.
+	* include/std/chrono: Ditto.
+	* include/std/complex: Ditto.
+	* include/std/iomanip: Ditto.
+	* include/std/shared_mutex: Ditto.
+	* include/std/tuple: Ditto.
+	* include/std/type_traits: Ditto.
+	* include/std/utility: Ditto.
+	* testsuite/experimental/feat-cxx14.cc: New.
+	* testsuite/experimental/feat-lib-fund.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/duration/literals/range.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust.
+
 2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (regex_token_iterator::_M_end_of_seq): Add
