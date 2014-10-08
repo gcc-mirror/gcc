@@ -853,7 +853,9 @@ build_cplus_array_type (tree elt_type, tree index_type)
     {
       tree m = t;
       for (t = m; t; t = TYPE_NEXT_VARIANT (t))
-	if (TREE_TYPE (t) == elt_type)
+	if (TREE_TYPE (t) == elt_type
+	    && TYPE_NAME (t) == NULL_TREE
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
 	  break;
       if (!t)
 	{

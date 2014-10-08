@@ -1,5 +1,9 @@
 2014-10-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63485
+	* tree.c (build_cplus_array_type): Look for a type with no
+	typedef-name or attributes.
+
 	* call.c (call_copy_ctor): New.
 	(build_over_call): Use it to avoid infinite recursion on invalid code.
 
