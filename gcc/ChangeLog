@@ -1,3 +1,16 @@
+2014-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52941
+	* config/sh/sync.md (atomic_exchangesi_hard, atomic_exchange<mode>_hard,
+	atomic_fetch_<fetchop_name>si_hard,
+	atomic_fetch_<fetchop_name><mode>_hard, atomic_fetch_nandsi_hard,
+	atomic_fetch_nand<mode>_hard, atomic_<fetchop_name>_fetchsi_hard,
+	atomic_<fetchop_name>_fetch<mode>_hard, atomic_nand_fetchsi_hard,
+	atomic_nand_fetch<mode>_hard): Add missing set of T_REG.
+
 2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61144
