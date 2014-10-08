@@ -1,3 +1,8 @@
+2014-10-08  Jason Merrill  <jason@redhat.com>
+
+	* call.c (call_copy_ctor): New.
+	(build_over_call): Use it to avoid infinite recursion on invalid code.
+
 2014-10-07  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cp_tree_equal) [TRAIT_EXPR]: Use cp_tree_equal for type2.
