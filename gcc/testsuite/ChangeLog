@@ -1,3 +1,8 @@
+2014-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Use
+	dg-additional-options.
+
 2014-10-08  Mark Wielaard  <mjw@redhat.com>
 
 	* g++.dg/debug/dwarf2/deleted-member-function.C: Remove comment marker
