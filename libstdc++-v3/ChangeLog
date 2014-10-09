@@ -1,3 +1,60 @@
+2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/60132
+	* include/std/type_traits (is_trivially_copyable,
+    	is_trivially_constructible, is_trivially_default_constructible,
+    	is_trivially_copy_constructible, is_trivially_move_constructible,
+    	is_trivially_assignable, is_trivially_copy_assignable,
+    	is_trivially_move_assignable): New.
+	* testsuite/20_util/is_trivially_assignable/requirements/
+    	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_assignable/requirements/
+    	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/requirements/
+    	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/requirements/
+    	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/
+	value.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/requirements/
+    	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/requirements/
+    	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/requirements/
+    	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/requirements/
+    	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/value.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_facets.tcc (num_put::_M_insert_float): Do not
