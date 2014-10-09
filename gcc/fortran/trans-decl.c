@@ -5619,36 +5619,6 @@ is_ieee_module_used (gfc_namespace *ns)
 }
 
 
-static tree
-save_fp_state (stmtblock_t *block)
-{
-  tree type, fpstate, tmp;
-
-  type = build_array_type (char_type_node,
-	                   build_range_type (size_type_node, size_zero_node,
-					     size_int (32)));
-  fpstate = gfc_create_var (type, "fpstate");
-  fpstate = gfc_build_addr_expr (pvoid_type_node, fpstate);
-
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_entry,
-			     1, fpstate);
-  gfc_add_expr_to_block (block, tmp);
-
-  return fpstate;
-}
-
-
-static void
-restore_fp_state (stmtblock_t *block, tree fpstate)
-{
-  tree tmp;
-
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_exit,
-			     1, fpstate);
-  gfc_add_expr_to_block (block, tmp);
-}
-
-
 /* Generate code for a function.  */
 
 void
@@ -5760,7 +5730,7 @@ gfc_generate_function_code (gfc_namespace * ns)
      the floating point state.  */
   ieee = is_ieee_module_used (ns);
   if (ieee)
-    fpstate = save_fp_state (&init);
+    fpstate = gfc_save_fp_state (&init);
 
   /* Now generate the code for the body of this function.  */
   gfc_init_block (&body);
@@ -5847,7 +5817,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   /* If IEEE modules are loaded, restore the floating-point state.  */
   if (ieee)
-    restore_fp_state (&cleanup, fpstate);
+    gfc_restore_fp_state (&cleanup, fpstate);
 
   /* Finish the function body and add init and cleanup code.  */
   tmp = gfc_finish_block (&body);

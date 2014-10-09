@@ -1197,38 +1197,8 @@ GFORTRAN_1.5 {
 
 GFORTRAN_1.6 {
   global:
-    _gfortran_ieee_copy_sign_4_4_;
-    _gfortran_ieee_copy_sign_4_8_;
-    _gfortran_ieee_copy_sign_8_4_;
-    _gfortran_ieee_copy_sign_8_8_;
-    _gfortran_ieee_is_finite_4_;
-    _gfortran_ieee_is_finite_8_;
-    _gfortran_ieee_is_nan_4_;
-    _gfortran_ieee_is_nan_8_;
-    _gfortran_ieee_is_negative_4_;
-    _gfortran_ieee_is_negative_8_;
-    _gfortran_ieee_is_normal_4_;
-    _gfortran_ieee_is_normal_8_;
-    _gfortran_ieee_logb_4_;
-    _gfortran_ieee_logb_8_;
-    _gfortran_ieee_next_after_4_4_;
-    _gfortran_ieee_next_after_4_8_;
-    _gfortran_ieee_next_after_8_4_;
-    _gfortran_ieee_next_after_8_8_;
     _gfortran_ieee_procedure_entry;
     _gfortran_ieee_procedure_exit;
-    _gfortran_ieee_rem_4_4_;
-    _gfortran_ieee_rem_4_8_;
-    _gfortran_ieee_rem_8_4_;
-    _gfortran_ieee_rem_8_8_;
-    _gfortran_ieee_rint_4_;
-    _gfortran_ieee_rint_8_;
-    _gfortran_ieee_scalb_4_;
-    _gfortran_ieee_scalb_8_;
-    _gfortran_ieee_unordered_4_4_;
-    _gfortran_ieee_unordered_4_8_;
-    _gfortran_ieee_unordered_8_4_;
-    _gfortran_ieee_unordered_8_8_;
     __ieee_arithmetic_MOD_ieee_class_4;
     __ieee_arithmetic_MOD_ieee_class_8;
     __ieee_arithmetic_MOD_ieee_class_type_eq;

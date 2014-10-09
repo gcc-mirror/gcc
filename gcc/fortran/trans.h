@@ -437,6 +437,10 @@ tree size_of_string_in_bytes (int, tree);
 /* Intrinsic procedure handling.  */
 tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
+bool gfc_conv_ieee_arithmetic_function (gfc_se *, gfc_expr *);
+tree gfc_save_fp_state (stmtblock_t *);
+void gfc_restore_fp_state (stmtblock_t *, tree);
+
 
 /* Does an intrinsic map directly to an external library call
    This is true for array-returning intrinsics, unless
@@ -791,6 +795,10 @@ extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_sc_kind;
 extern GTY(()) tree gfor_fndecl_si_kind;
 extern GTY(()) tree gfor_fndecl_sr_kind;
+
+/* IEEE-related.  */
+extern GTY(()) tree gfor_fndecl_ieee_procedure_entry;
+extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
 
 /* True if node is an integer constant.  */
