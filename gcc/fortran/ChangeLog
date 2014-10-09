@@ -1,3 +1,24 @@
+2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* f95-lang.c (gfc_init_builtin_functions): Add more floating-point
+	built-ins.
+	* mathbuiltins.def (OTHER_BUILTIN): Define built-ins for logb,
+	remainder, rint and signbit.
+	* trans-decl.c (save_fp_state, restore_fp_state): Move to
+	trans-intrinsic.c
+	(gfc_generate_function_code): Use new names for these two functions.
+	* trans-expr.c (gfc_conv_function_expr): Catch IEEE functions to
+	emit code from the front-end.
+	* trans-intrinsic.c (gfc_save_fp_state, gfc_restore_fp_state,
+	conv_ieee_function_args, conv_intrinsic_ieee_builtin,
+	conv_intrinsic_ieee_is_normal, conv_intrinsic_ieee_is_negative,
+	conv_intrinsic_ieee_logb_rint, conv_intrinsic_ieee_rem,
+	conv_intrinsic_ieee_next_after, conv_intrinsic_ieee_scalb,
+	conv_intrinsic_ieee_copy_sign, gfc_conv_ieee_arithmetic_function):
+	New functions.
+	* trans.h (gfc_conv_ieee_arithmetic_function,
+	gfc_save_fp_state, gfc_restore_fp_state): New prototypes.
+
 2014-10-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054

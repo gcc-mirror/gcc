@@ -5768,6 +5768,11 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   if (!sym)
     sym = expr->symtree->n.sym;
 
+  /* The IEEE_ARITHMETIC functions are caught here. */
+  if (sym->from_intmod == INTMOD_IEEE_ARITHMETIC)
+    if (gfc_conv_ieee_arithmetic_function (se, expr))
+      return;
+
   /* We distinguish statement functions from general functions to improve
      runtime performance.  */
   if (sym->attr.proc == PROC_ST_FUNCTION)
