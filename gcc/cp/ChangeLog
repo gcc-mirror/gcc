@@ -1,3 +1,19 @@
+2014-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (check_constexpr_ctor_body_1): New.
+	(check_constexpr_ctor_body): Use it; add bool parameter.
+	(build_data_member_initialization): Handle BIND_EXPR and
+	USING_STMT in the main conditional.
+	(build_constexpr_constructor_member_initializers): Do not
+	handle BIND_EXPR here.
+	(constexpr_fn_retval): Handle BIND_EXPR in the switch.
+	(massage_constexpr_body): Don't do it here.
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Adjust check_constexpr_ctor_body call.
+	(cp_parser_compound_statement): Do not pedwarn for compound-statement
+	in constexpr function in C++14 mode.
+	* cp-tree.h (check_constexpr_ctor_body): Update declaration.
+
 2014-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63309

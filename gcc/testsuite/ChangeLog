@@ -1,3 +1,11 @@
+2014-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-using3.C: New.
+	* g++.dg/cpp1y/constexpr-local-compound1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-type-def-compound1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-local1.C: Extend.
+	* g++.dg/cpp0x/constexpr-compound.C: Specify expected error.
+
 2014-10-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/torture/float128-extendxf-underflow.c: New test.

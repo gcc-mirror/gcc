@@ -7781,8 +7781,12 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 	 wrong type, but cxx_eval_constant_expression doesn't care.  */
       init = break_out_target_exprs (t);
     }
-  else if (TREE_CODE (t) == DECL_EXPR)
-    /* Declaring a temporary, don't add it to the CONSTRUCTOR.  */
+  else if (TREE_CODE (t) == BIND_EXPR)
+    return build_data_member_initialization (BIND_EXPR_BODY (t), vec);
+  else if (TREE_CODE (t) == DECL_EXPR
+	   || TREE_CODE (t) == USING_STMT)
+    /* Declaring a temporary, don't add it to the CONSTRUCTOR.
+       Likewise for using directives.  */
     return true;
   else
     gcc_unreachable ();
@@ -7835,7 +7839,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   return true;
 }
 
-/* Subroutine of check_constexpr_ctor_body and massage_constexpr_body.
+/* Subroutine of check_constexpr_ctor_body_1 and constexpr_fn_retval.
    In C++11 mode checks that the TYPE_DECLs in the BIND_EXPR_VARS of a 
    BIND_EXPR conform to 7.1.5/3/4 on typedef and alias declarations.  */
 
@@ -7854,11 +7858,45 @@ check_constexpr_bind_expr_vars (tree t)
   return true;
 }
 
+/* Subroutine of check_constexpr_ctor_body.  */
+
+static bool
+check_constexpr_ctor_body_1 (tree last, tree list)
+{
+  switch (TREE_CODE (list))
+    {
+    case DECL_EXPR:
+      if (TREE_CODE (DECL_EXPR_DECL (list)) == USING_DECL)
+	return true;
+      if (cxx_dialect >= cxx14)
+	return true;
+      return false;
+
+    case CLEANUP_POINT_EXPR:
+      return check_constexpr_ctor_body (last, TREE_OPERAND (list, 0),
+					/*complain=*/false);
+
+    case BIND_EXPR:
+       if (!check_constexpr_bind_expr_vars (list)
+	   || !check_constexpr_ctor_body (last, BIND_EXPR_BODY (list),
+					  /*complain=*/false))
+	 return false;
+       return true;
+
+    case USING_STMT:
+    case STATIC_ASSERT:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Make sure that there are no statements after LAST in the constructor
    body represented by LIST.  */
 
 bool
-check_constexpr_ctor_body (tree last, tree list)
+check_constexpr_ctor_body (tree last, tree list, bool complain)
 {
   bool ok = true;
   if (TREE_CODE (list) == STATEMENT_LIST)
@@ -7869,19 +7907,7 @@ check_constexpr_ctor_body (tree last, tree list)
 	  tree t = tsi_stmt (i);
 	  if (t == last)
 	    break;
-	  if (TREE_CODE (t) == BIND_EXPR)
-	    {
-	      if (!check_constexpr_bind_expr_vars (t))
-		{
-		  ok = false;
-		  break;
-		}
-	      if (!check_constexpr_ctor_body (last, BIND_EXPR_BODY (t)))
-		return false;
-	      else
-		continue;
-	    }
-	  if (TREE_CODE (t) != STATIC_ASSERT)
+	  if (!check_constexpr_ctor_body_1 (last, t))
 	    {
 	      ok = false;
 	      break;
@@ -7889,11 +7915,12 @@ check_constexpr_ctor_body (tree last, tree list)
 	}
     }
   else if (list != last
-	   && TREE_CODE (list) != STATIC_ASSERT)
+	   && !check_constexpr_ctor_body_1 (last, list))
     ok = false;
   if (!ok)
     {
-      error ("constexpr constructor does not have empty body");
+      if (complain)
+	error ("constexpr constructor does not have empty body");
       DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
     }
   return ok;
@@ -7983,8 +8010,6 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	     "a function-try-block");
       return error_mark_node;
     }
-  else if (TREE_CODE (body) == BIND_EXPR)
-    ok = build_data_member_initialization (BIND_EXPR_BODY (body), &vec);
   else if (EXPR_P (body))
     ok = build_data_member_initialization (body, &vec);
   else
@@ -8052,6 +8077,11 @@ constexpr_fn_retval (tree body)
     case CLEANUP_POINT_EXPR:
       return constexpr_fn_retval (TREE_OPERAND (body, 0));
 
+    case BIND_EXPR:
+      if (!check_constexpr_bind_expr_vars (body))
+	return error_mark_node;
+      return constexpr_fn_retval (BIND_EXPR_BODY (body));
+
     case USING_STMT:
       return NULL_TREE;
 
@@ -8076,9 +8106,6 @@ massage_constexpr_body (tree fun, tree body)
         body = EH_SPEC_STMTS (body);
       if (TREE_CODE (body) == MUST_NOT_THROW_EXPR)
 	body = TREE_OPERAND (body, 0);
-      if (TREE_CODE (body) == BIND_EXPR
-	  && check_constexpr_bind_expr_vars (body))
-	body = BIND_EXPR_BODY (body);
       body = constexpr_fn_retval (body);
     }
   return body;
