@@ -18,13 +18,32 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/avr/avr-arch.h
+
 mcall-prologues
 Target Report Mask(CALL_PROLOGUES)
 Use subroutines for function prologues and epilogues
 
 mmcu=
-Target RejectNegative Joined Var(avr_mcu_index) Init(0) Enum(avr_mcu)
+Target RejectNegative Joined
 -mmcu=MCU	Select the target MCU
+
+march=
+Target RejectNegative Joined Var(avr_arch_index) Init(ARCH_AVR2) Enum(avr_arch)
+-march=ARCH Select target architecture
+
+mn-flash=
+Target RejectNegative Joined Var(avr_n_flash) UInteger Init(-1)
+Set the number of 64 KiB flash segments
+
+mskip-bug
+Target Report Mask(SKIP_BUG)
+Indicate presence of a processor erratum
+
+mrmw
+Target Report Mask(RMW)
+Enable Read-Modify-Write (RMW) instructions support/use
 
 mdeb
 Target Report Undocumented Mask(ALL_DEBUG)

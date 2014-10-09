@@ -1,3 +1,74 @@
+2014-10-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/avr.opt (mmcu=): Change to have a string value.
+	(mn-flash=, mskip-bug, march=, mrmw): New options.
+	(HeaderInclude): New.
+	(mmcu=): Remove Var / Init clauses.
+	* config/avr/avr.h (DRIVER_SELF_SPECS): Translate -mmcu into a
+	-specs option.
+	(SYMBOL_FLAG_IO, SYMBOL_FLAG_ADDRESS): Define.
+	(ASM_OUTPUT_ALIGNED_BSS): Use avr_asm_asm_output_aligned_bss.
+	(SYMBOL_FLAG_IO_LOW): Define.
+	(avr_device_to_as, avr_device_to_ld): Don't declare.
+	(avr_device_to_data_start, avr_device_to_startfiles): Likewise.
+	(avr_device_to_devicelib, avr_device_to_sp8): Likewise.
+	(EXTRA_SPEC_FUNCTIONS): Don't define.
+	(ASM_SPEC): Translate -arch= option to -mmcu= option.
+	(LINK_SPEC): Translate -arch= option to -m= option.
+	Don't use device_to_ld / device_to_data_start.
+	(STARTFILE_SPEC): Now empty.
+	(ASM_SPEC): Add -%{mrelax: --mlink-relax}.
+	* config/avr/gen-avr-mmcu-specs.c: New file.
+	* config/avr/t-avr (gen-avr-mmcu-specs$(build_exeext)): New rule.
+	(s-device-specs): Likewise.
+	(GCC_PASSES): Add s-device-specs.
+	(install-driver): Depend on install-device-specs.
+	(install-device-specs): New rule.
+	* config/avr/avr.c (avr_option_override): Look up mcu arch by
+	avr_arch_index and provide fallback initialization for avr_n_flash.
+	(varasm.h): #include.
+	(avr_print_operand) <i>: Allow SYMBOL_REF with SYMBOL_FLAG_IO;
+	(avr_handle_addr_attribute, avr_eval_addr_attrib): New functions.
+	(avr_attribute_table): Add "io", "address" and "io_low".
+	(avr_asm_output_aligned_decl_common): Change type of decl to tree.
+	Add special handling for symbols with "io" and/or "address" attributes.
+	(avr_asm_asm_output_aligned_bss): New function.
+	(avr_encode_section_info): Set SYMBOL_FLAG_IO and SYMBOL_FLAG_ADDRESS
+	as appropriate.  Handle io_low attribute.
+	(avr_out_sbxx_branch): Handle symbolic io addresses.
+	(avr_xload_libgcc_p, avr_nonconst_pointer_addrspace): Use
+	avr_n_flash instead of avr_current_device->n_flash.
+	(avr_pgm_check_var_decl, avr_insert_attributes): Likewise.
+	(avr_emit_movmemhi): Likewise.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Likewise.
+	Use TARGET_RMW instead of avr_current_device->dev_attributes.
+	Don't define avr_current_device->macro (that's the specfile's job).
+	Use TARGET_SKIP_BUG instead of avr_current_device->errata_skip.
+	* config/avr/avr.c (avr_2word_insn_p): Likewise.
+	* config/avr/avr.md (*cpse.ne): Likewise.
+	(mov<mode>): Use avr_eval_addr_attrib.
+	(cbi): Change constraint for low_io_address_operand operand to "i".
+	(sbi, sbix_branch, sbix_branch_bit7, insv.io, insv.not.io): Likewise.
+	* config/avr/predicates.md (io_address_operand):
+	Allow SYMBOL_REF with SYMBOL_FLAG_IO.
+	(low_io_address_operand): Allow SYMBOL_REF with SYMBOL_FLAG_IO_LOW.
+	* config/avr/avr-protos.h (avr_asm_output_aligned_decl_common):
+	Update prototype.
+	(avr_eval_addr_attrib, avr_asm_asm_output_aligned_bss): Prototype.
+	* config/avr/genmultilib.awk: Use -march=.
+	Remove Multilib matches processing.
+	* config/avr/t-multilib, config/avr/avr-tables.opt: Regenerate.
+	* config/avr/avr-arch.h: Add double include guard.
+	(avr_mcu_t) <library_name>: Update comment.
+	* config/avr/driver-avr.c (avr_device_to_as): Delete.
+	(avr_device_to_ld, avr_device_to_data_start): Likewise.
+	(avr_device_to_startfiles, avr_device_to_devicelib): Likewise.
+	(avr_device_to_sp8): Likewise.
+	* config/avr/genopt.sh:  Instead avr_mcu, emit an Enum for avr_arch.
+
+	* doc/extend.texi (io, address): Document new AVR variable attributes.
+	(io_low): Likewise.
+
 2014-10-09  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -fsanitize=bool and -fsanitize=enum.

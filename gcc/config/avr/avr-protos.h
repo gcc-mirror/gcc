@@ -33,7 +33,8 @@ extern void avr_register_target_pragmas (void);
 extern void avr_init_expanders (void);
 
 #ifdef TREE_CODE
-extern void avr_asm_output_aligned_decl_common (FILE*, const_tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
+extern void avr_asm_output_aligned_decl_common (FILE*, tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
+extern void avr_asm_asm_output_aligned_bss (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int, void (*) (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int));
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
 
@@ -124,6 +125,7 @@ extern bool avr_mem_flash_p (rtx);
 extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (enum machine_mode);
+extern rtx avr_eval_addr_attrib (rtx x);
 
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;
