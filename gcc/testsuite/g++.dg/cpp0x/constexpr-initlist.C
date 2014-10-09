@@ -23,11 +23,11 @@ public:
   template<size_t N>
   constexpr initializer_list(const E(&array)[N]) : sz(N), start(array) {}
 
-  constexpr size_t size() { return sz; }
+  constexpr size_t size() const { return sz; }
 
-  constexpr const E* begin() { return start; }
+  constexpr const E* begin() const { return start; }
 
-  constexpr const E* end() { return start + sz; }
+  constexpr const E* end() const { return start + sz; }
 };
 
 template<class E, size_t N>

@@ -24,5 +24,5 @@ constexpr Defer<Function> make_deferred(const Function f) {
 
 int main() {
   constexpr auto deferred = make_deferred(&fibonacci);
-  static_assert(deferred(25) == 75025, "Static fibonacci call failed");
+  static_assert(deferred(25) == 75025, "Static fibonacci call failed"); // { dg-error "no match for call" "" { target c++14 } }
 }

@@ -10539,7 +10539,8 @@ grokdeclarator (const cp_declarator *declarator,
       && !NEW_DELETE_OPNAME_P (unqualified_id))
     {
       cp_cv_quals real_quals = memfn_quals;
-      if (constexpr_p && sfk != sfk_constructor && sfk != sfk_destructor)
+      if (cxx_dialect < cxx14 && constexpr_p
+	  && sfk != sfk_constructor && sfk != sfk_destructor)
 	real_quals |= TYPE_QUAL_CONST;
       type = build_memfn_type (type, ctype, real_quals, rqual);
     }
