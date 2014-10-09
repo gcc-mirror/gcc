@@ -811,16 +811,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.9.4.3</entry>
       <entry>Type properties</entry>
-      <entry>Partial</entry>
-      <entry>Missing is_trivially_copyable,
-      is_trivially_constructible, is_trivially_default_constructible,
-      is_trivially_copy_constructible, is_trivially_move_constructible,
-      is_trivially_assignable, is_trivially_default_assignable,
-      is_trivially_copy_assignable, is_trivially_move_assignable
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.9.5</entry>
