@@ -1,3 +1,9 @@
+2014-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61969
+	* tree-nrv.c (pass_nrv::execute): Properly test for automatic
+	variables.
+
 2014-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63445
