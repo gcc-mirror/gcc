@@ -7436,7 +7436,11 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
-  if (vec_safe_length (constructor_elements) != 1)
+  /* Initialization with { } counts as zeroinit.  */
+  if (vec_safe_length (constructor_elements) == 0)
+    constructor_zeroinit = 1;
+  /* If the constructor has more than one element, it can't be { 0 }.  */
+  else if (vec_safe_length (constructor_elements) != 1)
     constructor_zeroinit = 0;
 
   /* Warn when some structs are initialized with direct aggregation.  */
@@ -7463,7 +7467,7 @@ pop_init_level (location_t loc, int implicit,
 	    /* Do not warn if this level of the initializer uses member
 	       designators; it is likely to be deliberate.  */
 	    && !constructor_designated
-	    /* Do not warn about initializing with ` = {0}'.  */
+	    /* Do not warn about initializing with { 0 } or with { }.  */
 	    && !constructor_zeroinit)
 	  {
 	    if (warning_at (input_location, OPT_Wmissing_field_initializers,
