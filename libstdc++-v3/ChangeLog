@@ -1,3 +1,8 @@
+2014-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
 2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/60132
