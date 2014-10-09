@@ -1,3 +1,9 @@
+2014-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63445
+	* tree-vrp.c (simplify_cond_using_ranges): Only warn about
+	overflow for non-equality compares.
+
 2014-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/57003
