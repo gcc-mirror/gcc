@@ -9189,8 +9189,9 @@ simplify_cond_using_ranges (gimple stmt)
 	      /* If the range overflowed and the user has asked for warnings
 		 when strict overflow semantics were used to optimize code,
 		 issue an appropriate warning.  */
-	      if ((is_negative_overflow_infinity (vr->min)
-		   || is_positive_overflow_infinity (vr->max))
+	      if (cond_code != EQ_EXPR && cond_code != NE_EXPR
+		  && (is_negative_overflow_infinity (vr->min)
+		      || is_positive_overflow_infinity (vr->max))
 		  && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_CONDITIONAL))
 		{
 		  location_t location;
