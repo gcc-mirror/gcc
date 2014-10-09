@@ -1598,6 +1598,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case CONSTRUCTOR:
       {
 	tree field, value;
+	iterative_hash_template_arg (TREE_TYPE (arg), val);
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
 	  {
 	    val = iterative_hash_template_arg (field, val);
@@ -21062,6 +21063,8 @@ value_dependent_expression_p (tree expression)
       {
 	unsigned ix;
 	tree val;
+	if (dependent_type_p (TREE_TYPE (expression)))
+	  return true;
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), ix, val)
 	  if (value_dependent_expression_p (val))
 	    return true;
