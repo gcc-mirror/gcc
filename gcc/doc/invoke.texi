@@ -5604,6 +5604,19 @@ This option enables instrumentation of return statements in functions
 marked with @code{returns_nonnull} function attribute, to detect returning
 of null values from such functions.
 
+@item -fsanitize=bool
+@opindex fsanitize=bool
+
+This option enables instrumentation of loads from bool.  If a value other
+than 0/1 is loaded, a run-time error is issued.
+
+@item -fsanitize=enum
+@opindex fsanitize=enum
+
+This option enables instrumentation of loads from an enum type.  If
+a value outside the range of values for the enum type is loaded,
+a run-time error is issued.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,

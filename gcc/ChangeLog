@@ -1,3 +1,7 @@
+2014-10-09  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -fsanitize=bool and -fsanitize=enum.
+
 2014-10-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61969
