@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
-#include "pointer-set.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 
@@ -100,7 +99,6 @@ static void print_instantiation_partial_context (diagnostic_context *,
 						 struct tinst_level *,
 						 location_t);
 static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
-static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
@@ -110,7 +108,7 @@ void
 init_error (void)
 {
   diagnostic_starter (global_dc) = cp_diagnostic_starter;
-  diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
+  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (global_dc) = cp_printer;
 
   new (cxx_pp) cxx_pretty_printer ();
@@ -822,6 +820,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
 	pp_cxx_right_paren (pp);
+      if (TREE_CODE (t) == POINTER_TYPE)
+	flags |= TFF_POINTER;
       dump_type_suffix (pp, TREE_TYPE (t), flags);
       break;
 
@@ -841,7 +841,9 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 	dump_parameters (pp, arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
 	pp->padding = pp_before;
-	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t));
+	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t),
+			      TREE_CODE (t) == FUNCTION_TYPE
+			      && (flags & TFF_POINTER));
 	dump_ref_qualifier (pp, t, flags);
 	dump_exception_spec (pp, TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (pp, TREE_TYPE (t), flags);
@@ -1042,6 +1044,18 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
     case FIELD_DECL:
     case PARM_DECL:
       dump_simple_decl (pp, t, TREE_TYPE (t), flags);
+
+      /* Handle variable template specializations.  */
+      if (TREE_CODE (t) == VAR_DECL
+	  && DECL_LANG_SPECIFIC (t)
+	  && DECL_TEMPLATE_INFO (t)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)))
+	{
+	  pp_cxx_begin_template_argument_list (pp);
+	  tree args = INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (t));
+	  dump_template_argument_list (pp, args, flags);
+	  pp_cxx_end_template_argument_list (pp);
+	}
       break;
 
     case RESULT_DECL:
@@ -1325,7 +1339,7 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 
 struct find_typenames_t
 {
-  struct pointer_set_t *p_set;
+  hash_set<tree> *p_set;
   vec<tree, va_gc> *typenames;
 };
 
@@ -1351,7 +1365,7 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
+  if (mv && (mv == *tp || !d->p_set->add (mv)))
     vec_safe_push (d->typenames, mv);
 
   /* Search into class template arguments, which cp_walk_subtrees
@@ -1367,11 +1381,11 @@ static vec<tree, va_gc> *
 find_typenames (tree t)
 {
   struct find_typenames_t ft;
-  ft.p_set = pointer_set_create ();
+  ft.p_set = new hash_set<tree>;
   ft.typenames = NULL;
   cp_walk_tree (&TREE_TYPE (DECL_TEMPLATE_RESULT (t)),
 		find_typenames_r, &ft, ft.p_set);
-  pointer_set_destroy (ft.p_set);
+  delete ft.p_set;
   return ft.typenames;
 }
 
@@ -3042,14 +3056,6 @@ cp_diagnostic_starter (diagnostic_context *context,
 								 diagnostic));
 }
 
-static void
-cp_diagnostic_finalizer (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
-{
-  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_destroy_prefix (context->printer);
-}
-
 /* Print current function onto BUFFER, in the process of reporting
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
@@ -3353,16 +3359,6 @@ maybe_print_instantiation_context (diagnostic_context *context)
 
   record_last_problematic_instantiation ();
   print_instantiation_full_context (context);
-}
-
-/* Report the bare minimum context of a template instantiation.  */
-void
-print_instantiation_context (void)
-{
-  print_instantiation_partial_context
-    (global_dc, current_instantiation (), input_location);
-  pp_newline (global_dc->printer);
-  diagnostic_flush_buffer (global_dc);
 }
 
 /* Report what constexpr call(s) we're trying to expand, if any.  */

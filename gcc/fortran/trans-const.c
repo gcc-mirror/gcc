@@ -23,12 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "gfortran.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "realmpfr.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
 #include "double-int.h"
-#include "gfortran.h"
 #include "trans.h"
 #include "trans-const.h"
 #include "trans-types.h"

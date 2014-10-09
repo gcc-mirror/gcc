@@ -227,19 +227,13 @@ lto_create_simple_input_block (struct lto_file_decl_data *file_data,
   const struct lto_simple_header * header
     = (const struct lto_simple_header *) data;
 
-  struct lto_input_block* ib_main;
   int main_offset = sizeof (struct lto_simple_header);
 
   if (!data)
     return NULL;
 
-  ib_main = XNEW (struct lto_input_block);
-
   *datar = data;
-  LTO_INIT_INPUT_BLOCK_PTR (ib_main, data + main_offset,
-			    0, header->main_size);
-
-  return ib_main;
+  return new lto_input_block (data + main_offset, header->main_size);
 }
 
 
@@ -255,7 +249,7 @@ lto_destroy_simple_input_block (struct lto_file_decl_data *file_data,
 				struct lto_input_block *ib,
 				const char *data, size_t len)
 {
-  free (ib);
+  delete ib;
   lto_free_section_data (file_data, section_type, NULL, data, len);
 }
 

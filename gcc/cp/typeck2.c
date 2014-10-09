@@ -842,27 +842,31 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 }
 
 
-/* Give errors about narrowing conversions within { }.  */
+/* Give diagnostic about narrowing conversions within { }.  */
 
-void
-check_narrowing (tree type, tree init)
+bool
+check_narrowing (tree type, tree init, tsubst_flags_t complain)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
   REAL_VALUE_TYPE d;
 
-  if (!warn_narrowing || !ARITHMETIC_TYPE_P (type))
-    return;
+  if (((!warn_narrowing || !(complain & tf_warning))
+       && cxx_dialect == cxx98)
+      || !ARITHMETIC_TYPE_P (type))
+    return ok;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && TREE_CODE (type) == COMPLEX_TYPE)
     {
       tree elttype = TREE_TYPE (type);
       if (CONSTRUCTOR_NELTS (init) > 0)
-        check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value);
+        ok &= check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value,
+			       complain);
       if (CONSTRUCTOR_NELTS (init) > 1)
-	check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value);
-      return;
+	ok &= check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value,
+			       complain);
+      return ok;
     }
 
   init = maybe_constant_value (fold_non_dependent_expr_sfinae (init, tf_none));
@@ -917,15 +921,27 @@ check_narrowing (tree type, tree init)
 
   if (!ok)
     {
-      if (cxx_dialect >= cxx11)
-	pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
-		 "narrowing conversion of %qE from %qT to %qT inside { }",
-		 init, ftype, type);
-      else
+      if (cxx_dialect == cxx98)
 	warning_at (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
 		    "narrowing conversion of %qE from %qT to %qT inside { } "
 		    "is ill-formed in C++11", init, ftype, type);
+      else if (!TREE_CONSTANT (init))
+	{
+	  if (complain & tf_warning_or_error)
+	    {
+	      pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
+		       "narrowing conversion of %qE from %qT to %qT inside { }",
+		       init, ftype, type);
+	      ok = true;
+	    }
+	}
+      else if (complain & tf_error)
+	error_at (EXPR_LOC_OR_LOC (init, input_location),
+		  "narrowing conversion of %qE from %qT to %qT inside { }",
+		  init, ftype, type);
     }
+
+  return cxx_dialect == cxx98 || ok; 
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting
@@ -1239,8 +1255,9 @@ process_init_constructor_array (tree type, tree init,
 	  {
 	    /* If this type needs constructors run for default-initialization,
 	       we can't rely on the back end to do it for us, so make the
-	       initialization explicit by list-initializing from {}.  */
+	       initialization explicit by list-initializing from T{}.  */
 	    next = build_constructor (init_list_type_node, NULL);
+	    CONSTRUCTOR_IS_DIRECT_INIT (next) = true;
 	    next = massage_init_elt (TREE_TYPE (type), next, complain);
 	    if (initializer_zerop (next))
 	      /* The default zero-initialization is fine for us; don't
@@ -1342,7 +1359,8 @@ process_init_constructor_record (tree type, tree init,
 	  next = massage_init_elt (TREE_TYPE (field), next, complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
-	  if (complain & tf_warning)
+	  if ((complain & tf_warning)
+	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 	}
@@ -1365,7 +1383,8 @@ process_init_constructor_record (tree type, tree init,
 
 	  /* Warn when some struct elements are implicitly initialized
 	     to zero.  */
-	  if (complain & tf_warning)
+	  if ((complain & tf_warning)
+	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 
@@ -1620,8 +1639,13 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 
+	  /* This provides a better instantiation backtrace in case of
+	     error.  */
 	  if (fn && DECL_USE_TEMPLATE (fn))
-	    push_tinst_level (fn);
+	    push_tinst_level_loc (fn, 
+				  (current_instantiation () != actual_inst)
+				  ? DECL_SOURCE_LOCATION (fn)
+				  : input_location);
 	  fn = NULL;
 
 	  if (vec_member (TREE_TYPE (expr), types_memoized))

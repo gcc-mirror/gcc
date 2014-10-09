@@ -313,7 +313,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  && (DECL) && DECL_SIZE (DECL))				\
 	{								\
 	  size_directive_output = 1;					\
-	  size = int_size_in_bytes (TREE_TYPE (DECL));			\
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (DECL));			\
 	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
 	}								\
 									\
@@ -341,7 +341,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  && !size_directive_output)				\
 	{							\
 	  size_directive_output = 1;				\
-	  size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (DECL));		\
 	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);		\
 	}							\
     }								\

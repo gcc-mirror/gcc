@@ -72,7 +72,7 @@ DEFHOOK
  "The maximum number of bytes to skip before @var{label} when applying\n\
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if\n\
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_label_align_after_barrier_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -82,7 +82,7 @@ DEFHOOK
  "The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to\n\
 @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is\n\
 defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_loop_align_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -92,7 +92,7 @@ DEFHOOK
  "The maximum number of bytes to skip when applying @code{LABEL_ALIGN}\n\
 to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}\n\
 is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_label_align_max_skip)
 
 /* The maximum number of bytes to skip when applying
@@ -102,7 +102,7 @@ DEFHOOK
  "The maximum number of bytes to skip before @var{label} when applying\n\
 @code{JUMP_ALIGN}.  This works only if\n\
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx label),
+ int, (rtx_insn *label),
  default_jump_align_max_skip)
 
 /* Try to output the assembler code for an integer object whose
@@ -194,7 +194,7 @@ DEFHOOK
  "This target hook emits assembly directives required to unwind the\n\
 given instruction.  This is only used when @code{TARGET_EXCEPT_UNWIND_INFO}\n\
 returns @code{UI_TARGET}.",
- void, (FILE *stream, rtx insn),
+ void, (FILE *stream, rtx_insn *insn),
  NULL)
 
 DEFHOOKPOD
@@ -810,7 +810,7 @@ elements of the vector which contain meaningful data for this insn.\n\
 The contents of this vector are what was used to convert the insn\n\
 template into assembler code, so you can change the assembler mode\n\
 by checking the contents of the vector.",
- void, (FILE *file, rtx insn, rtx *opvec, int noperands),
+ void, (FILE *file, rtx_insn *insn, rtx *opvec, int noperands),
  NULL)
 
 /* Emit the trampoline template.  This hook may be NULL.  */
@@ -924,7 +924,7 @@ output-dependence is maximum of one and the difference of latency\n\
 times of the first and the second insns.  If these values are not\n\
 acceptable, you could use the hook to modify them too.  See also\n\
 @pxref{Processor pipeline description}.",
- int, (rtx insn, rtx link, rtx dep_insn, int cost), NULL)
+ int, (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost), NULL)
 
 /* Adjust the priority of an insn as you see fit.  Returns the new priority.  */
 DEFHOOK
@@ -934,7 +934,7 @@ DEFHOOK
 execute @var{insn} earlier, reduce the priority to execute @var{insn}\n\
 later.  Do not define this hook if you do not need to adjust the\n\
 scheduling priorities of insns.",
- int, (rtx insn, int priority), NULL)
+ int, (rtx_insn *insn, int priority), NULL)
 
 /* Function which returns the maximum number of insns that can be
    scheduled in the same machine cycle.  This must be constant
@@ -967,7 +967,7 @@ than others, so that fewer insns can follow them in the same cycle.\n\
 debug output to.  @var{verbose} is the verbose level provided by\n\
 @option{-fsched-verbose-@var{n}}.  @var{insn} is the instruction that\n\
 was scheduled.",
- int, (FILE *file, int verbose, rtx insn, int more), NULL)
+ int, (FILE *file, int verbose, rtx_insn *insn, int more), NULL)
 
 /* Initialize machine-dependent scheduling code.  */
 DEFHOOK
@@ -1027,7 +1027,7 @@ is the timer tick of the scheduler.  You may modify the ready list and\n\
 the number of ready insns.  The return value is the number of insns that\n\
 can issue this cycle; normally this is just @code{issue_rate}.  See also\n\
 @samp{TARGET_SCHED_REORDER2}.",
- int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
+ int, (FILE *file, int verbose, rtx_insn **ready, int *n_readyp, int clock), NULL)
 
 DEFHOOK
 (reorder2,
@@ -1039,7 +1039,7 @@ return the number of insns to be scheduled in the same cycle.  Defining\n\
 this hook can be useful if there are frequent situations where\n\
 scheduling one insn causes other insns to become ready in the same\n\
 cycle.  These other insns can then be taken into account properly.",
- int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
+ int, (FILE *file, int verbose, rtx_insn **ready, int *n_readyp, int clock), NULL)
 
 DEFHOOK
 (macro_fusion_p,
@@ -1052,7 +1052,7 @@ DEFHOOK
 target microarchitecture. If this hook returns true for the given insn pair\n\
 (@var{condgen} and @var{condjmp}), scheduler will put them into a sched\n\
 group, and they will not be scheduled apart.",
- bool, (rtx condgen, rtx condjmp), NULL)
+ bool, (rtx_insn *condgen, rtx_insn *condjmp), NULL)
 
 /* The following member value is a pointer to a function called
    after evaluation forward dependencies of insns in chain given
@@ -1066,7 +1066,7 @@ example, it can be used for better insn classification if it requires\n\
 analysis of dependencies.  This hook can use backward and forward\n\
 dependencies of the insn scheduler because they are already\n\
 calculated.",
- void, (rtx head, rtx tail), NULL)
+ void, (rtx_insn *head, rtx_insn *tail), NULL)
 
 /* The values of the following four members are pointers to functions
    used to simplify the automaton descriptions.  dfa_pre_cycle_insn and
@@ -1105,7 +1105,7 @@ DEFHOOK
  "The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used\n\
 to changed the state as if the insn were scheduled when the new\n\
 simulated processor cycle finishes.",
- rtx, (void), NULL)
+ rtx_insn *, (void), NULL)
 
 /* The values of the following two members are pointers to
    functions used to simplify the automaton descriptions.
@@ -1184,7 +1184,7 @@ instruction at position 0 in the ready list.  @var{ready_index} is passed\n\
 to allow backends make correct judgements.\n\
 \n\
 The default is that any ready insns can be chosen to be issued.",
- int, (rtx insn, int ready_index), NULL)
+ int, (rtx_insn *insn, int ready_index), NULL)
 
 /* This hook prepares the target for a new round of multipass
    scheduling.
@@ -1215,7 +1215,7 @@ scheduling.",
 DEFHOOK
 (first_cycle_multipass_issue,
  "This hook is called when multipass scheduling evaluates instruction INSN.",
- void, (void *data, signed char *ready_try, int n_ready, rtx insn,
+ void, (void *data, signed char *ready_try, int n_ready, rtx_insn *insn,
 	const void *prev_data), NULL)
 
 /* This hook is called when multipass scheduling backtracks from evaluation of
@@ -1290,7 +1290,7 @@ verbosity level to use for debugging output.\n\
 @var{last_clock} and @var{clock} are, respectively, the\n\
 processor cycle on which the previous insn has been issued,\n\
 and the current processor cycle.",
- int, (FILE *dump, int verbose, rtx insn, int last_clock,
+ int, (FILE *dump, int verbose, rtx_insn *insn, int last_clock,
        int clock, int *sort_p),
  NULL)
 
@@ -1330,7 +1330,9 @@ DEFHOOK_UNDOC
  "Given the current cost, @var{cost}, of an insn, @var{insn}, calculate and\
  return a new cost based on its relationship to @var{dep_insn} through the\
  dependence of weakness @var{dw}.  The default is to make no adjustment.",
- int, (rtx insn, int dep_type1, rtx dep_insn, int cost, unsigned int dw), NULL)
+ int, (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn, int cost,
+       unsigned int dw),
+ NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler. This hook is called to notify the backend
@@ -1396,7 +1398,7 @@ pattern.  The hook should return 1, if the instruction has a speculative form,\n
 or @minus{}1, if it doesn't.  @var{request} describes the type of requested\n\
 speculation.  If the return value equals 1 then @var{new_pat} is assigned\n\
 the generated speculative pattern.",
- int, (rtx insn, unsigned int dep_status, rtx *new_pat), NULL)
+ int, (rtx_insn *insn, unsigned int dep_status, rtx *new_pat), NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler.  It should return true if the check instruction
@@ -1425,7 +1427,7 @@ be emitted, or a null pointer, when requested check doesn't branch to\n\
 recovery code (a simple check).  If @var{mutate_p} is nonzero, then\n\
 a pattern for a branchy check corresponding to a simple check denoted by\n\
 @var{insn} should be generated.  In this case @var{label} can't be null.",
- rtx, (rtx insn, rtx label, unsigned int ds), NULL)
+ rtx, (rtx_insn *insn, rtx_insn *label, unsigned int ds), NULL)
 
 /* The following member value is a pointer to a function that provides
    information about the speculation capabilities of the target.
@@ -1441,12 +1443,12 @@ The structure describes speculation types that can be used in the scheduler.",
 DEFHOOK_UNDOC
 (get_insn_spec_ds,
  "Return speculation types of instruction @var{insn}.",
- unsigned int, (rtx insn), NULL)
+ unsigned int, (rtx_insn *insn), NULL)
 
 DEFHOOK_UNDOC
 (get_insn_checked_ds,
  "Return speculation types that are checked for instruction @var{insn}",
- unsigned int, (rtx insn), NULL)
+ unsigned int, (rtx_insn *insn), NULL)
 
 DEFHOOK_UNDOC
 (skip_rtx_p,
@@ -1475,8 +1477,8 @@ DEFHOOK
 (dispatch_do,
 "This hook is called by Haifa Scheduler.  It performs the operation specified\n\
 in its second parameter.",
-void, (rtx insn, int x),
-hook_void_rtx_int)
+void, (rtx_insn *insn, int x),
+hook_void_rtx_insn_int)
 
 /* The following member value is a a function that returns true is
    dispatch schedling is supported in hardware and condition passed
@@ -1485,8 +1487,8 @@ DEFHOOK
 (dispatch,
 "This hook is called by Haifa Scheduler.  It returns true if dispatch scheduling\n\
 is supported in hardware and the condition specified in the parameter is true.",
-bool, (rtx insn, int x),
-hook_bool_rtx_int_false)
+bool, (rtx_insn *insn, int x),
+hook_bool_rtx_insn_int_false)
 
 DEFHOOKPOD
 (exposed_pipeline,
@@ -2276,8 +2278,8 @@ DEFHOOK
   false, if it can't.\
   For example, on some targets, certain kinds of branches can't be made to\
   follow through a hot/cold partitioning.",
- bool, (const_rtx follower, const_rtx followee),
- hook_bool_const_rtx_const_rtx_true)
+ bool, (const rtx_insn *follower, const rtx_insn *followee),
+ hook_bool_const_rtx_insn_const_rtx_insn_true)
 
 /* Return a register class for which branch target register
    optimizations should be applied.  */
@@ -2363,7 +2365,7 @@ of TLS symbols for various targets.",
 DEFHOOK_UNDOC
 (cannot_copy_insn_p,
  "True if the insn @var{x} cannot be duplicated.",
- bool, (rtx), NULL)
+ bool, (rtx_insn *), NULL)
 
 /* True if X is considered to be commutative.  */
 DEFHOOK
@@ -2983,6 +2985,16 @@ If this hook allows @code{val} to have a scalar mode, then\n\
  bool, (enum machine_mode mode, unsigned HOST_WIDE_INT nelems),
  hook_bool_mode_uhwi_false)
 
+DEFHOOK
+(libgcc_floating_mode_supported_p,
+ "Define this to return nonzero if libgcc provides support for the \n\
+floating-point mode @var{mode}, which is known to pass \n\
+@code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
+hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
+@code{XFmode} and @code{TFmode}, if such modes exist.",
+ bool, (enum machine_mode mode),
+ default_libgcc_floating_mode_supported_p)
+
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
 DEFHOOK
@@ -3215,6 +3227,17 @@ register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.\n\
 If not defined, the default is to return @code{NULL_RTX}.",
  rtx, (rtx reg),
  hook_rtx_rtx_null)
+
+/* Given a register return the mode of the corresponding DWARF frame
+   register.  */
+DEFHOOK
+(dwarf_frame_reg_mode,
+ "Given a register, this hook should return the mode which the\n\
+corresponding Dwarf frame register should have.  This is normally\n\
+used to return a smaller mode than the raw mode to prevent call\n\
+clobbered parts of a register altering the frame register size",
+ enum machine_mode, (int regno),
+ default_dwarf_frame_reg_mode)
 
 /* If expand_builtin_init_dwarf_reg_sizes needs to fill in table
    entries not corresponding directly to registers below
@@ -3549,7 +3572,7 @@ instruction that clobbers these this function should return a string indicating\
 the reason why the doloop could not be applied.\n\
 By default, the RTL loop optimizer does not use a present doloop pattern for\n\
 loops containing function calls or branch on table instructions.",
- const char *, (const_rtx insn),
+ const char *, (const rtx_insn *insn),
  default_invalid_within_doloop)
 
 /* Returns true for a legitimate combined insn.  */
@@ -3558,8 +3581,8 @@ DEFHOOK
 "Take an instruction in @var{insn} and return @code{false} if the instruction\
  is not appropriate as a combination of two or more instructions.  The\
  default is to accept all instructions.",
- bool, (rtx insn),
- hook_bool_rtx_true)
+ bool, (rtx_insn *insn),
+ hook_bool_rtx_insn_true)
 
 DEFHOOK
 (valid_dllimport_attribute_p,
@@ -5371,12 +5394,12 @@ DEFHOOK
 DEFHOOK
 (needed,
  "@var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.",
- int, (int entity, rtx insn), NULL)
+ int, (int entity, rtx_insn *insn), NULL)
 
 DEFHOOK
 (after,
  "@var{entity} is an integer specifying a mode-switched entity.  If this macro is defined, it is evaluated for every @var{insn} during mode switching.  It determines the mode that an insn results in (if different from the incoming mode).",
- int, (int entity, int mode, rtx insn), NULL)
+ int, (int entity, int mode, rtx_insn *insn), NULL)
 
 DEFHOOK
 (entry,

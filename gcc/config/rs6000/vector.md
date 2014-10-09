@@ -224,25 +224,9 @@
   [(set (match_dup 0)
 	(plus:P (match_dup 1)
 		(match_dup 2)))
-   (parallel [(set (match_dup 0)
-		   (and:P (match_dup 0)
-			  (const_int -16)))
-	      (clobber:CC (scratch:CC))])])
-
-;; The normal ANDSI3/ANDDI3 won't match if reload decides to move an AND -16
-;; address to a register because there is no clobber of a (scratch), so we add
-;; it here.
-(define_insn_and_split "*vec_reload_and_reg_<mptrsize>"
-  [(set (match_operand:P 0 "gpc_reg_operand" "=b")
-	(and:P (match_operand:P 1 "gpc_reg_operand" "r")
-	       (const_int -16)))]
-  "(TARGET_ALTIVEC || TARGET_VSX) && (reload_in_progress || reload_completed)"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (and:P (match_dup 1)
-			  (const_int -16)))
-	      (clobber:CC (scratch:CC))])])
+   (set (match_dup 0)
+	(and:P (match_dup 0)
+	       (const_int -16)))])
 
 ;; Generic floating point vector arithmetic support
 (define_expand "add<mode>3"
@@ -702,7 +686,9 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (reg:CC 74)
 	       (const_int 0)))
-   (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
@@ -717,7 +703,9 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (reg:CC 74)
 	       (const_int 0)))
-   (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 

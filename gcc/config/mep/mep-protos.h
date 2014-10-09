@@ -19,20 +19,20 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 extern int mep_regno_reg_class (int);
-extern rtx mep_mulr_source (rtx, rtx, rtx, rtx);
-extern bool mep_reuse_lo_p (rtx, rtx, rtx, bool);
-extern bool mep_use_post_modify_p (rtx, rtx, rtx);
+extern rtx mep_mulr_source (rtx_insn *, rtx, rtx, rtx);
+extern bool mep_reuse_lo_p (rtx, rtx, rtx_insn *, bool);
+extern bool mep_use_post_modify_p (rtx_insn *, rtx, rtx);
 extern bool mep_allow_clip (rtx, rtx, int);
 extern bool mep_bit_position_p (rtx, bool);
 extern bool mep_split_mov (rtx *, int);
 extern bool mep_vliw_mode_match (rtx);
 extern bool mep_vliw_jmp_match (rtx);
-extern bool mep_multi_slot (rtx);
+extern bool mep_multi_slot (rtx_insn *);
 extern bool mep_legitimate_address (enum machine_mode, rtx, int);
 extern int mep_legitimize_address (rtx *, rtx, enum machine_mode);
 extern int mep_legitimize_reload_address (rtx *, enum machine_mode, int, /*enum reload_type*/ int, int);
-extern int mep_core_address_length (rtx, int);
-extern int mep_cop_address_length (rtx, int);
+extern int mep_core_address_length (rtx_insn *, int);
+extern int mep_cop_address_length (rtx_insn *, int);
 extern bool mep_expand_mov (rtx *, enum machine_mode);
 extern bool mep_mov_ok (rtx *, enum machine_mode);
 extern void mep_split_wide_move (rtx *, enum machine_mode);
@@ -65,7 +65,7 @@ extern void mep_function_profiler (FILE *);
 extern const char *mep_emit_bb_trace_ret (void);
 extern void mep_print_operand_address (FILE *, rtx);
 extern void mep_print_operand (FILE *, rtx, int);
-extern void mep_final_prescan_insn (rtx, rtx *, int);
+extern void mep_final_prescan_insn (rtx_insn *, rtx *, int);
 extern void mep_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern bool mep_return_in_memory (const_tree, const_tree);
 extern rtx mep_function_value (const_tree, const_tree);
@@ -79,9 +79,9 @@ extern void mep_output_aligned_common (FILE *, tree, const char *,
 				       int, int, int);
 extern void mep_emit_doloop (rtx *, int);
 extern bool mep_vliw_function_p (tree);
-extern bool mep_store_data_bypass_p (rtx, rtx);
-extern bool mep_mul_hilo_bypass_p (rtx, rtx);
-extern bool mep_ipipe_ldc_p (rtx);
+extern bool mep_store_data_bypass_p (rtx_insn *, rtx_insn *);
+extern bool mep_mul_hilo_bypass_p (rtx_insn *, rtx_insn *);
+extern bool mep_ipipe_ldc_p (rtx_insn *);
 extern bool mep_emit_intrinsic (int, const rtx *);
 extern bool mep_expand_unary_intrinsic (int, rtx *);
 extern bool mep_expand_binary_intrinsic (int, int, int, int, rtx *);

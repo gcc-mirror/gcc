@@ -253,7 +253,7 @@ class SymbolizerProcess : public ExternalSymbolizerInterface {
       internal_close(outfd[1]);
       internal_close(infd[0]);
       internal_close(infd[1]);
-      for (int fd = getdtablesize(); fd > 2; fd--)
+      for (int fd = sysconf(_SC_OPEN_MAX); fd > 2; fd--)
         internal_close(fd);
       ExecuteWithDefaultArgs(path_);
       internal__exit(1);
@@ -714,7 +714,7 @@ class POSIXSymbolizer : public Symbolizer {
   LibbacktraceSymbolizer *libbacktrace_symbolizer_;   // Leaked.
 };
 
-Symbolizer *Symbolizer::PlatformInit(const char *path_to_external) {
+Symbolizer *Symbolizer::PlatformInit() {
   if (!common_flags()->symbolize) {
     return new(symbolizer_allocator_) POSIXSymbolizer(0, 0, 0);
   }
@@ -727,6 +727,7 @@ Symbolizer *Symbolizer::PlatformInit(const char *path_to_external) {
     libbacktrace_symbolizer =
         LibbacktraceSymbolizer::get(&symbolizer_allocator_);
     if (!libbacktrace_symbolizer) {
+      const char *path_to_external = common_flags()->external_symbolizer_path;
       if (path_to_external && path_to_external[0] == '\0') {
         // External symbolizer is explicitly disabled. Do nothing.
       } else {

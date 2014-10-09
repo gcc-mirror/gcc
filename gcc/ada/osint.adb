@@ -39,6 +39,7 @@ with Unchecked_Conversion;
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
 with System.Case_Util; use System.Case_Util;
+with System.CRTL;
 pragma Warnings (On);
 
 with GNAT.HTable;
@@ -118,10 +119,11 @@ package body Osint is
    --  failure
 
    procedure Find_File
-     (N     : File_Name_Type;
-      T     : File_Type;
-      Found : out File_Name_Type;
-      Attr  : access File_Attributes);
+     (N         : File_Name_Type;
+      T         : File_Type;
+      Found     : out File_Name_Type;
+      Attr      : access File_Attributes;
+      Full_Name : Boolean := False);
    --  A version of Find_File that also returns a cache of the file attributes
    --  for later reuse
 
@@ -364,8 +366,9 @@ package body Osint is
 
          S := new String (1 .. Len);
 
-         --  Read the file. Note that the loop is not necessary since the
-         --  whole file is read at once except on VMS.
+         --  Read the file. Note that the loop is probably not necessary any
+         --  more since the whole file is read in at once on all targets. But
+         --  it is harmless and might be needed in future.
 
          Curr := 1;
          Actual_Len := Len;
@@ -472,31 +475,21 @@ package body Osint is
          Get_Dirs_From_File (Additional_Source_Dir => False);
       end if;
 
-      --  On VMS, don't expand the logical name (e.g. environment variable),
-      --  just put it into Unix (e.g. canonical) format. System services
-      --  will handle the expansion as part of the file processing.
+      --  Put path name in canonical form
 
       for Additional_Source_Dir in False .. True loop
          if Additional_Source_Dir then
             Search_Path := Getenv (Ada_Include_Path);
 
             if Search_Path'Length > 0 then
-               if Hostparm.OpenVMS then
-                  Search_Path := To_Canonical_Path_Spec ("ADA_INCLUDE_PATH:");
-               else
-                  Search_Path := To_Canonical_Path_Spec (Search_Path.all);
-               end if;
+               Search_Path := To_Canonical_Path_Spec (Search_Path.all);
             end if;
 
          else
             Search_Path := Getenv (Ada_Objects_Path);
 
             if Search_Path'Length > 0 then
-               if Hostparm.OpenVMS then
-                  Search_Path := To_Canonical_Path_Spec ("ADA_OBJECTS_PATH:");
-               else
-                  Search_Path := To_Canonical_Path_Spec (Search_Path.all);
-               end if;
+               Search_Path := To_Canonical_Path_Spec (Search_Path.all);
             end if;
          end if;
 
@@ -511,9 +504,7 @@ package body Osint is
       --  For the compiler, if --RTS= was specified, add the runtime
       --  directories.
 
-      if RTS_Src_Path_Name /= null
-        and then RTS_Lib_Path_Name /= null
-      then
+      if RTS_Src_Path_Name /= null and then RTS_Lib_Path_Name /= null then
          Add_Search_Dirs (RTS_Src_Path_Name, Include);
          Add_Search_Dirs (RTS_Lib_Path_Name, Objects);
 
@@ -732,6 +723,23 @@ package body Osint is
       end if;
    end Create_File_And_Check;
 
+   -----------------------------------
+   -- Open_File_To_Append_And_Check --
+   -----------------------------------
+
+   procedure Open_File_To_Append_And_Check
+     (Fdesc : out File_Descriptor;
+      Fmode : Mode)
+   is
+   begin
+      Output_File_Name := Name_Enter;
+      Fdesc := Open_Append (Name_Buffer'Address, Fmode);
+
+      if Fdesc = Invalid_FD then
+         Fail ("Cannot create: " & Name_Buffer (1 .. Name_Len));
+      end if;
+   end Open_File_To_Append_And_Check;
+
    ------------------------
    -- Current_File_Index --
    ------------------------
@@ -852,13 +860,12 @@ package body Osint is
                Buffer : String := Name_Buffer (1 .. Name_Len);
 
             begin
-               --  Get the file name in canonical case to accept as is names
-               --  ending with ".EXE" on VMS and Windows.
+               --  Get the file name in canonical case to accept as is. Names
+               --  end with ".EXE" on Windows.
 
                Canonical_Case_File_Name (Buffer);
 
-               --  If Executable does not end with the executable suffix, add
-               --  it.
+               --  If Executable doesn't end with the executable suffix, add it
 
                if Buffer'Length <= Exec_Suffix'Length
                  or else
@@ -1076,10 +1083,15 @@ package body Osint is
       function Internal
         (F : Integer;
          N : C_File_Name;
-         A : System.Address) return Long_Integer;
+         A : System.Address) return CRTL.int64;
       pragma Import (C, Internal, "__gnat_file_length_attr");
+
    begin
-      return Internal (-1, Name, Attr.all'Address);
+      --  The conversion from int64 to Long_Integer is ok here as this
+      --  routine is only to be used by the compiler and we do not expect
+      --  a unit to be larger than a 32bit integer.
+
+      return Long_Integer (Internal (-1, Name, Attr.all'Address));
    end File_Length;
 
    ---------------------
@@ -1142,13 +1154,14 @@ package body Osint is
    ---------------
 
    function Find_File
-     (N : File_Name_Type;
-      T : File_Type) return File_Name_Type
+     (N         : File_Name_Type;
+      T         : File_Type;
+      Full_Name : Boolean := False) return File_Name_Type
    is
       Attr  : aliased File_Attributes;
       Found : File_Name_Type;
    begin
-      Find_File (N, T, Found, Attr'Access);
+      Find_File (N, T, Found, Attr'Access, Full_Name);
       return Found;
    end Find_File;
 
@@ -1157,10 +1170,12 @@ package body Osint is
    ---------------
 
    procedure Find_File
-     (N     : File_Name_Type;
-      T     : File_Type;
-      Found : out File_Name_Type;
-      Attr  : access File_Attributes) is
+     (N         : File_Name_Type;
+      T         : File_Type;
+      Found     : out File_Name_Type;
+      Attr      : access File_Attributes;
+      Full_Name : Boolean := False)
+   is
    begin
       Get_Name_String (N);
 
@@ -1177,15 +1192,24 @@ package body Osint is
 
          if T = Config
            or else (Debug_Generated_Code
-                      and then Name_Len > 3
-                      and then
-                      (Name_Buffer (Name_Len - 2 .. Name_Len) = ".dg"
-                       or else
-                       (Hostparm.OpenVMS and then
-                        Name_Buffer (Name_Len - 2 .. Name_Len) = "_dg")))
+                     and then Name_Len > 3
+                     and then Name_Buffer (Name_Len - 2 .. Name_Len) = ".dg")
          then
             Found := N;
             Attr.all  := Unknown_Attributes;
+
+            if T = Config and then Full_Name then
+               declare
+                  Full_Path : constant String :=
+                                Normalize_Pathname (Get_Name_String (N));
+                  Full_Size : constant Natural := Full_Path'Length;
+               begin
+                  Name_Buffer (1 .. Full_Size) := Full_Path;
+                  Name_Len := Full_Size;
+                  Found := Name_Find;
+               end;
+            end if;
+
             return;
 
          --  If we are trying to find the current main file just look in the
@@ -1285,21 +1309,6 @@ package body Osint is
 
       --  Command_Name(Cindex1 .. Cindex2) is now the equivalent of the
       --  POSIX command "basename argv[0]"
-
-      --  Strip off any versioning information such as found on VMS.
-      --  This would take the form of TOOL.exe followed by a ";" or "."
-      --  and a sequence of one or more numbers.
-
-      if Command_Name (Cindex2) in '0' .. '9' then
-         for J in reverse Cindex1 .. Cindex2 loop
-            if Command_Name (J) = '.' or else Command_Name (J) = ';' then
-               Cindex2 := J - 1;
-               exit;
-            end if;
-
-            exit when Command_Name (J) not in '0' .. '9';
-         end loop;
-      end if;
 
       --  Strip off any executable extension (usually nothing or .exe)
       --  but formally reported by autoconf in the variable EXEEXT
@@ -1696,15 +1705,9 @@ package body Osint is
    function Is_Directory_Separator (C : Character) return Boolean is
    begin
       --  In addition to the default directory_separator allow the '/' to
-      --  act as separator since this is allowed in MS-DOS, Windows 95/NT,
-      --  and OS2 ports. On VMS, the situation is more complicated because
-      --  there are two characters to check for.
+      --  act as separator since this is allowed in MS-DOS and Windows.
 
-      return
-        C = Directory_Separator
-          or else C = '/'
-          or else (Hostparm.OpenVMS
-                    and then (C = ']' or else C = ':'));
+      return C = Directory_Separator or else C = '/';
    end Is_Directory_Separator;
 
    -------------------------
@@ -2196,11 +2199,7 @@ package body Osint is
 
    function Prep_Suffix return String is
    begin
-      if Hostparm.OpenVMS then
-         return "_prep";
-      else
-         return ".prep";
-      end if;
+      return ".prep";
    end Prep_Suffix;
 
    ------------------
@@ -2338,8 +2337,9 @@ package body Osint is
       S := new String (1 .. Len + 1);
       S (Len + 1) := Path_Separator;
 
-      --  Read the file. Note that the loop is not necessary since the
-      --  whole file is read at once except on VMS.
+      --  Read the file. Note that the loop is probably not necessary since the
+      --  whole file is read at once but the loop is harmless and that way we
+      --  are sure to accomodate systems where this is not the case.
 
       Curr := 1;
       Actual_Len := Len;
@@ -2559,9 +2559,9 @@ package body Osint is
 
          Text := new Text_Buffer (Lo .. Hi);
 
-         --  Some systems (e.g. VMS) have file types that require one
-         --  read per line, so read until we get the Len bytes or until
-         --  there are no more characters.
+         --  Some systems have file types that require one read per line,
+         --  so read until we get the Len bytes or until there are no more
+         --  characters.
 
          Hi := Lo;
          loop
@@ -2608,7 +2608,7 @@ package body Osint is
       --  For the call to Close
 
    begin
-      Current_Full_Source_Name  := Find_File (N, T);
+      Current_Full_Source_Name  := Find_File (N, T, Full_Name => True);
       Current_Full_Source_Stamp := File_Stamp (Current_Full_Source_Name);
 
       if Current_Full_Source_Name = No_File then
@@ -2692,9 +2692,9 @@ package body Osint is
       begin
          --  Allocate source buffer, allowing extra character at end for EOF
 
-         --  Some systems (e.g. VMS) have file types that require one read per
-         --  line, so read until we get the Len bytes or until there are no
-         --  more characters.
+         --  Some systems have file types that require one read per line,
+         --  so read until we get the Len bytes or until there are no more
+         --  characters.
 
          Hi := Lo;
          loop
@@ -2800,15 +2800,6 @@ package body Osint is
       Library (3 .. 2 + Name'Length)            := Name;
       Library (3 + Name'Length)                 := '-';
       Library (4 + Name'Length .. Library'Last) := Library_Version;
-
-      if OpenVMS_On_Target then
-         for K in Library'First + 2 .. Library'Last loop
-            if Library (K) = '.' or else Library (K) = '-' then
-               Library (K) := '_';
-            end if;
-         end loop;
-      end if;
-
       return Library;
    end Shared_Lib;
 

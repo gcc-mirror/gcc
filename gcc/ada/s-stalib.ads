@@ -106,7 +106,6 @@ package System.Standard_Library is
       Lang : Character;
       --  A character indicating the language raising the exception.
       --  Set to "A" for exceptions defined by an Ada program.
-      --  Set to "V" for imported VMS exceptions.
       --  Set to "C" for imported C++ exceptions.
 
       Name_Length : Natural;
@@ -122,9 +121,8 @@ package System.Standard_Library is
       --  identities and names.
 
       Foreign_Data : Address;
-      --  Data for imported exceptions. This represents the exception code
-      --  for the handling of Import/Export_Exception for the VMS case.
-      --  This represents the address of the RTTI for the C++ case.
+      --  Data for imported exceptions. Not used in the Ada case. This
+      --  represents the address of the RTTI for the C++ case.
 
       Raise_Hook : Raise_Action;
       --  This field can be used to place a "hook" on an exception. If the

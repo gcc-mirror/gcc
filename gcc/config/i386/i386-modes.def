@@ -86,6 +86,9 @@ VECTOR_MODE (INT, TI, 1);     /*                   V1TI */
 VECTOR_MODE (INT, DI, 1);     /*                   V1DI */
 VECTOR_MODE (INT, SI, 1);     /*                   V1SI */
 VECTOR_MODE (INT, QI, 2);     /*                   V2QI */
+VECTOR_MODE (INT, QI, 12);    /*                  V12QI */
+VECTOR_MODE (INT, QI, 14);    /*                  V14QI */
+VECTOR_MODE (INT, HI, 6);     /*                   V6HI */
 
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);

@@ -126,7 +126,7 @@ package body System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Task_Image    : String;
       Created_Task  : Task_Id);
-   --  Code shared between Create_Restricted_Task_Concurrent and
+   --  Code shared between Create_Restricted_Task (the concurrent version) and
    --  Create_Restricted_Task_Sequential. See comment of the former in the
    --  specification of this package.
 
@@ -210,6 +210,9 @@ package body System.Tasking.Restricted.Stages is
       Secondary_Stack : aliased SSE.Storage_Array
         (1 .. Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
                 SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100);
+      for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
+      --  This is the secondary stack data. Note that it is critical that this
+      --  have maximum alignment, since any kind of data can be allocated here.
 
       pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
@@ -538,7 +541,6 @@ package body System.Tasking.Restricted.Stages is
 
       if CPU /= Unspecified_CPU
         and then (CPU < Integer (System.Multiprocessors.CPU_Range'First)
-          or else CPU > Integer (System.Multiprocessors.CPU_Range'Last)
           or else CPU > Integer (System.Multiprocessors.Number_Of_CPUs))
       then
          raise Tasking_Error with "CPU not in range";

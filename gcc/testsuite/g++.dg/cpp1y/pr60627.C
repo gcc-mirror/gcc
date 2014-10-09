@@ -1,5 +1,5 @@
 // PR c++/60627
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 // { dg-options "" }
 
 template<typename T> void foo(T) {}

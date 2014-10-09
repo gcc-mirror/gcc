@@ -1,3 +1,4 @@
+/* { dg-skip-if "signed zero not supported" { "vax-*-*" } { "*" } { "" } } */
 extern void abort (void);
 
 double

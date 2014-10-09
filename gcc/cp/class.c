@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "attribs.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "cp-tree.h"
 #include "flags.h"
@@ -209,7 +208,6 @@ static int splay_tree_compare_integer_csts (splay_tree_key k1,
 					    splay_tree_key k2);
 static void warn_about_ambiguous_bases (tree);
 static bool type_requires_array_cookie (tree);
-static bool contains_empty_class_p (tree);
 static bool base_derived_from (tree, tree);
 static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
@@ -1147,7 +1145,7 @@ add_method (tree type, tree method, tree using_decl)
 		  if (DECL_ASSEMBLER_NAME_SET_P (method))
 		    mangle_decl (method);
 		}
-	      record_function_versions (fn, method);
+	      cgraph_node::record_function_versions (fn, method);
 	      continue;
 	    }
 	  if (DECL_INHERITED_CTOR_BASE (method))
@@ -1443,7 +1441,8 @@ check_abi_tags (tree t, tree subob)
 void
 inherit_targ_abi_tags (tree t)
 {
-  if (CLASSTYPE_TEMPLATE_INFO (t) == NULL_TREE)
+  if (!CLASS_TYPE_P (t)
+      || CLASSTYPE_TEMPLATE_INFO (t) == NULL_TREE)
     return;
 
   mark_type_abi_tags (t, true);
@@ -2822,7 +2821,8 @@ warn_hidden (tree t)
       for (fn = fns; fn; fn = OVL_NEXT (fn))
 	{
 	  fndecl = OVL_CURRENT (fn);
-	  if (DECL_VINDEX (fndecl))
+	  if (TREE_CODE (fndecl) == FUNCTION_DECL
+	      && DECL_VINDEX (fndecl))
 	    {
 	      tree *prev = &base_fndecls;
 
@@ -3530,9 +3530,11 @@ check_field_decls (tree t, tree *access_decls,
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* If at least one non-static data member is non-literal, the whole
-         class becomes non-literal.  Note: if the type is incomplete we
-	 will complain later on.  */
-      if (COMPLETE_TYPE_P (type) && !literal_type_p (type))
+         class becomes non-literal.  Per Core/1453, volatile non-static
+	 data members and base classes are also not allowed.
+	 Note: if the type is incomplete we will complain later on.  */
+      if (COMPLETE_TYPE_P (type)
+	  && (!literal_type_p (type) || CP_TYPE_VOLATILE_P (type))) 
         CLASSTYPE_LITERAL_P (t) = false;
 
       /* A standard-layout class is a class that:
@@ -4580,7 +4582,7 @@ clone_function_decl (tree fn, int update_method_vec_p)
     }
 
   /* Note that this is an abstract function that is never emitted.  */
-  DECL_ABSTRACT (fn) = 1;
+  DECL_ABSTRACT_P (fn) = true;
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -4935,21 +4937,25 @@ type_has_user_provided_constructor (tree t)
   return false;
 }
 
-/* Returns true iff class T has a user-provided default constructor.  */
+/* Returns true iff class T has a non-user-provided (i.e. implicitly
+   declared or explicitly defaulted in the class body) default
+   constructor.  */
 
 bool
-type_has_user_provided_default_constructor (tree t)
+type_has_non_user_provided_default_constructor (tree t)
 {
   tree fns;
 
-  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+  if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
     return false;
+  if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
+    return true;
 
   for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
       if (TREE_CODE (fn) == FUNCTION_DECL
-	  && user_provided_p (fn)
+	  && !user_provided_p (fn)
 	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)))
 	return true;
     }
@@ -5007,7 +5013,7 @@ default_init_uninitialized_part (tree type)
   type = strip_array_types (type);
   if (!CLASS_TYPE_P (type))
     return type;
-  if (type_has_user_provided_default_constructor (type))
+  if (!type_has_non_user_provided_default_constructor (type))
     return NULL_TREE;
   for (binfo = TYPE_BINFO (type), i = 0;
        BINFO_BASE_ITERATE (binfo, i, t); ++i)
@@ -5359,15 +5365,15 @@ finalize_literal_type_property (tree t)
 void
 explain_non_literal_class (tree t)
 {
-  static struct pointer_set_t *diagnosed;
+  static hash_set<tree> *diagnosed;
 
   if (!CLASS_TYPE_P (t))
     return;
   t = TYPE_MAIN_VARIANT (t);
 
   if (diagnosed == NULL)
-    diagnosed = pointer_set_create ();
-  if (pointer_set_insert (diagnosed, t) != 0)
+    diagnosed = new hash_set<tree>;
+  if (diagnosed->add (t))
     /* Already explained.  */
     return;
 
@@ -5381,8 +5387,7 @@ explain_non_literal_class (tree t)
       inform (0, "  %q+T is not an aggregate, does not have a trivial "
 	      "default constructor, and has no constexpr constructor that "
 	      "is not a copy or move constructor", t);
-      if (TYPE_HAS_DEFAULT_CONSTRUCTOR (t)
-	  && !type_has_user_provided_default_constructor (t))
+      if (type_has_non_user_provided_default_constructor (t))
 	{
 	  /* Note that we can't simply call locate_ctor because when the
 	     constructor is deleted it just returns NULL_TREE.  */
@@ -5433,6 +5438,9 @@ explain_non_literal_class (tree t)
 	      if (CLASS_TYPE_P (ftype))
 		explain_non_literal_class (ftype);
 	    }
+	  if (CP_TYPE_VOLATILE_P (ftype))
+	    inform (0, "  non-static data member %q+D has "
+		    "volatile type", field);
 	}
     }
 }
@@ -5456,9 +5464,6 @@ check_bases_and_members (tree t)
   bool saved_complex_asn_ref;
   bool saved_nontrivial_dtor;
   tree fn;
-
-  /* Pick up any abi_tags from our template arguments before checking.  */
-  inherit_targ_abi_tags (t);
 
   /* By default, we use const reference arguments and generate default
      constructors.  */
@@ -5525,6 +5530,13 @@ check_bases_and_members (tree t)
   TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
+
+  /* If the only explicitly declared default constructor is user-provided,
+     set TYPE_HAS_COMPLEX_DFLT.  */
+  if (!TYPE_HAS_COMPLEX_DFLT (t)
+      && TYPE_HAS_DEFAULT_CONSTRUCTOR (t)
+      && !type_has_non_user_provided_default_constructor (t))
+    TYPE_HAS_COMPLEX_DFLT (t) = true;
 
   /* Warn if a public base of a polymorphic type has an accessible
      non-virtual destructor.  It is only now that we know the class is
@@ -6408,7 +6420,7 @@ finish_struct_1 (tree t)
 	 in every translation unit where the class definition appears.  If
 	 we're devirtualizing, we can look into the vtable even if we
 	 aren't emitting it.  */
-      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE || flag_use_all_virtuals)
+      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE)
 	keyed_classes = tree_cons (NULL_TREE, t, keyed_classes);
     }
 
@@ -6505,7 +6517,8 @@ finish_struct_1 (tree t)
   /* This warning does not make sense for Java classes, since they
      cannot have destructors.  */
   if (!TYPE_FOR_JAVA (t) && warn_nonvdtor
-      && TYPE_POLYMORPHIC_P (t) && accessible_nvdtor_p (t))
+      && TYPE_POLYMORPHIC_P (t) && accessible_nvdtor_p (t)
+      && !CLASSTYPE_FINAL (t))
     warning (OPT_Wnon_virtual_dtor,
 	     "%q#T has virtual functions and accessible"
 	     " non-virtual destructor", t);
@@ -7132,6 +7145,29 @@ currently_open_derived_class (tree t)
     }
 
   return NULL_TREE;
+}
+
+/* Return the outermost enclosing class type that is still open, or
+   NULL_TREE.  */
+
+tree
+outermost_open_class (void)
+{
+  if (!current_class_type)
+    return NULL_TREE;
+  tree r = NULL_TREE;
+  if (TYPE_BEING_DEFINED (current_class_type))
+    r = current_class_type;
+  for (int i = current_class_depth - 1; i > 0; --i)
+    {
+      if (current_class_stack[i].hidden)
+	break;
+      tree t = current_class_stack[i].type;
+      if (!TYPE_BEING_DEFINED (t))
+	break;
+      r = t;
+    }
+  return r;
 }
 
 /* Returns the innermost class type which is not a lambda closure type.  */
@@ -7795,35 +7831,6 @@ is_empty_class (tree type)
     return 0;
 
   return CLASSTYPE_EMPTY_P (type);
-}
-
-/* Returns true if TYPE contains an empty class.  */
-
-static bool
-contains_empty_class_p (tree type)
-{
-  if (is_empty_class (type))
-    return true;
-  if (CLASS_TYPE_P (type))
-    {
-      tree field;
-      tree binfo;
-      tree base_binfo;
-      int i;
-
-      for (binfo = TYPE_BINFO (type), i = 0;
-	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
-	if (contains_empty_class_p (BINFO_TYPE (base_binfo)))
-	  return true;
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL
-	    && !DECL_ARTIFICIAL (field)
-	    && is_empty_class (TREE_TYPE (field)))
-	  return true;
-    }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
-    return contains_empty_class_p (TREE_TYPE (type));
-  return false;
 }
 
 /* Returns true if TYPE contains no actual data, just various

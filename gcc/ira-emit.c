@@ -172,7 +172,7 @@ struct move
      dependencies.  */
   move_t *deps;
   /* First insn generated for the move.  */
-  rtx insn;
+  rtx_insn *insn;
 };
 
 /* Array of moves (indexed by BB index) which should be put at the
@@ -196,7 +196,7 @@ create_move (ira_allocno_t to, ira_allocno_t from)
   move->to = to;
   move->from = from;
   move->next = NULL;
-  move->insn = NULL_RTX;
+  move->insn = NULL;
   move->visited_p = false;
   return move;
 }
@@ -298,6 +298,15 @@ change_regs (rtx *loc)
 	    result = change_regs (&XVECEXP (*loc, i, j)) || result;
 	}
     }
+  return result;
+}
+
+static bool
+change_regs_in_insn (rtx_insn **insn_ptr)
+{
+  rtx rtx = *insn_ptr;
+  bool result = change_regs (&rtx);
+  *insn_ptr = as_a <rtx_insn *> (rtx);
   return result;
 }
 
@@ -557,7 +566,8 @@ change_loop (ira_loop_tree_node_t node)
   int regno;
   bool used_p;
   ira_allocno_t allocno, parent_allocno, *map;
-  rtx insn, original_reg;
+  rtx_insn *insn;
+  rtx original_reg;
   enum reg_class aclass, pclass;
   ira_loop_tree_node_t parent;
 
@@ -568,7 +578,7 @@ change_loop (ira_loop_tree_node_t node)
       if (node->bb != NULL)
 	{
 	  FOR_BB_INSNS (node->bb, insn)
-	    if (INSN_P (insn) && change_regs (&insn))
+	    if (INSN_P (insn) && change_regs_in_insn (&insn))
 	      {
 		df_insn_rescan (insn);
 		df_notes_rescan (insn);
@@ -893,12 +903,13 @@ modify_move_list (move_t list)
 
 /* Generate RTX move insns from the move list LIST.  This updates
    allocation cost using move execution frequency FREQ.  */
-static rtx
+static rtx_insn *
 emit_move_list (move_t list, int freq)
 {
   rtx to, from, dest;
   int to_regno, from_regno, cost, regno;
-  rtx result, insn, set;
+  rtx_insn *result, *insn;
+  rtx set;
   enum machine_mode mode;
   enum reg_class aclass;
 
@@ -984,7 +995,7 @@ emit_moves (void)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  rtx insns, tmp;
+  rtx_insn *insns, *tmp;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1234,7 +1245,7 @@ void
 ira_emit (bool loops_p)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   edge_iterator ei;
   edge e;
   ira_allocno_t a;

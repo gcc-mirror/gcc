@@ -1,3 +1,143 @@
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lex.c (search_line_fast): Add new version to be used for Power8
+	and later targets when Altivec is enabled.  Restrict the existing
+	Altivec version to big-endian systems so that lvsr is not used on
+	little endian, where it is deprecated.  Remove LE-specific code
+	from the now-BE-only version.
+
+2014-10-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jeff Law  <law@redhat.com>
+
+	* charset.c (convert_no_conversion): Reallocate memory with 25%
+	headroom.
+
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* internal.h (lexer_state, spec_nodes): Add in__has_include__.
+	* directives.c: Support __has_include__ builtin.
+	* expr.c (parse_has_include): New function to parse __has_include__
+	builtin; (eval_token()): Use it.
+	* files.c (_cpp_has_header()): New funtion to look for header;
+	(open_file_failed()): Not an error to not find a header file for
+	__has_include__.
+	* identifiers.c (_cpp_init_hashtable()): Add entry for __has_include__.
+	* pch.c (cpp_read_state): Lookup __has_include__.
+	* traditional.c (enum ls, _cpp_scan_out_logical_line()): Walk through
+	__has_include__ statements.
+
+2014-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR preprocessor/58893
+	* errors.c (cpp_diagnostic): Fix possible out of bounds access.
+	* files.c (_cpp_stack_include): Initialize src_loc for IT_CMDLINE.
+
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* include/cpplib.h (enum cpp_ttype): Define CPP_KEYWORD.
+
+2014-09-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* charset.c (conversion): Rename to ...
+	(cpp_conversion): ... this one; update.
+	* files.c (file_hash_entry): Rename to ...
+	(cpp_file_hash_entry): ... this one ; update.
+
+2014-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61854
+	* init.c (struct lang_flags): Remove cplusplus_comments.
+	(cpp_set_lang): Likewise.
+	(post_options): Likewise.
+	* lex.c (_cpp_lex_direct): Disallow C++ style comments in C90/C94.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/cpplib.h (struct cpp_options): Declare warn_normalize as
+	int instead of enum.
+
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* macro.c (replace_args): Use cpp_pedwarning, cpp_warning and
+	CPP_W flags.
+	* include/cpplib.h: Add CPP_W_C90_C99_COMPAT and CPP_W_PEDANTIC.
+	* init.c (cpp_create_reader): Do not init to -1 here.
+	* expr.c (num_binary_op): Use cpp_pedwarning.
+
+2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* directives.c (check_eol_1): New.
+	(check_eol_endif_labels): New.
+	(check_eol): Call check_eol_1.
+	(do_else,do_endif): Call check_eol_endif_labels.
+
+2014-08-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* macro.c (warn_of_redefinition): Suppress warnings for builtins
+	that lack the NODE_WARN flag, unless Wbuiltin-macro-redefined.
+	(_cpp_create_definition): Use Wbuiltin-macro-redefined for
+	builtins that lack the NODE_WARN flag.
+	* directives.c (do_undef): Likewise.
+	* init.c (cpp_init_special_builtins): Do not change flags
+	depending on Wbuiltin-macro-redefined.
+
+2014-08-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR cpp/23827 - standard C++ should not have hex float preprocessor
+	tokens
+	* libcpp/init.c (lang_flags): Change CXX98 flag for extended numbers
+	from 1 to 0.
+	* libcpp/expr.c (cpp_classify_number): Weite error message for improper
+	use of hex floating literal.
+
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX1Z, CLK_CXX1Z;
+	Rename CLK_GNUCXX1Y, CLK_CXX1Y to CLK_GNUCXX14, CLK_CXX14;
+	* init.c (struct lang_flags lang_defaults): Add column for trigraphs;
+	Add rows for CLK_GNUCXX1Z, CLK_CXX1Z; (cpp_set_lang): Set trigraphs;
+	(cpp_init_builtins): Set __cplusplus to 201402L for C++14;
+	Set __cplusplus to 201500L for C++17.
+	* expr.c (cpp_classify_number): Change C++1y to C++14 in binary
+	constants error message.
+
+2014-08-20  Marek Polacek  <polacek@redhat.com>
+
+	* include/cpplib.h (cpp_options): Use signed char.
+	* lex.c (_cpp_lex_direct): Don't warn in C++ mode.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* lex.c (_cpp_lex_direct): Fix a typo.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* charset.c (_cpp_valid_ucn): Warn only if -Wc90-c99-compat.
+	* lex.c (_cpp_lex_direct): Likewise.
+	* macro.c (replace_args): Likewise.
+	(parse_params): Likewise.
+	* include/cpplib.h (cpp_options): Change cpp_warn_c90_c99_compat
+	to char.
+
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* lex.c (_cpp_lex_direct): Warn when -Wc90-c99-compat is in effect.
+	* charset.c (_cpp_valid_ucn): Likewise.
+	* include/cpplib.h (cpp_options): Add cpp_warn_c90_c99_compat.
+	* macro.c (replace_args): Warn when -Wc90-c99-compat is in effect.
+	(parse_params): Likewise.
+
+2014-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61861
+	* macro.c (builtin_macro): Add location parameter.  Set
+	location of builtin macro to the expansion point.
+	(enter_macro_context): Pass location to builtin_macro.
+
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
 	Support location tracking for built-in macro tokens

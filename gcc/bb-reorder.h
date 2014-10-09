@@ -26,7 +26,7 @@ struct target_bb_reorder {
   int x_uncond_jump_length;
 };
 
-extern GTY(()) struct target_bb_reorder default_target_bb_reorder;
+extern struct target_bb_reorder default_target_bb_reorder;
 #if SWITCHABLE_TARGET
 extern struct target_bb_reorder *this_target_bb_reorder;
 #else

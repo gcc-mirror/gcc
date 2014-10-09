@@ -9,7 +9,7 @@ import (
 	// "io/ioutil"
 	// "os"
 	// "os/exec"
-	// . "runtime"
+	. "runtime"
 	"runtime/debug"
 	// "strconv"
 	// "strings"

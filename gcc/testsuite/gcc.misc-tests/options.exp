@@ -19,6 +19,17 @@
 # match the patterns COMPILER_PATTERN, AS_PATTERN and LD_PATTERN,
 # respectively.
 
+load_lib gcc-defs.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p options] {
+    return
+}
+gcc_parallel_test_enable 0
+
 proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_pattern} {
     set filename test-[pid]
     set fd [open $filename.c w]
@@ -52,3 +63,5 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 }
 
 check_for_all_options c {--coverage} {-fprofile-arcs -ftest-coverage} {} {-lgcov}
+
+gcc_parallel_test_enable 1

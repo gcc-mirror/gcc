@@ -673,6 +673,11 @@ DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "The maximum number of RTL nodes that can be recorded as combiner's last value",
 	 10000, 0, 0)
 
+DEFPARAM(PARAM_MAX_COMBINE_INSNS,
+	 "max-combine-insns",
+	 "The maximum number of insns combine tries to combine",
+	 4, 2, 4)
+
 /* INTEGER_CST nodes are shared for values [{-1,0} .. N) for
    {signed,unsigned} integral types.  This determines N.
    Experimentation shows 251 to be a good value that generates the
@@ -868,6 +873,22 @@ DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
 	  "loop-invariant-max-bbs-in-loop",
 	  "Max basic blocks number in loop for loop invariant motion",
 	  10000, 0, 0)
+
+/* When the parameter is 1, use the internal function id
+   to look up for profile data. Otherwise, use a more stable
+   external id based on assembler name and source location. */
+DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
+         "profile-func-internal-id",
+         "use internal function id in profile lookup",
+          0, 0, 1)
+
+/* When the parameter is 1, track the most frequent N target
+   addresses in indirect-call profile. This disables
+   indirect_call_profiler_v2 which tracks single target.  */
+DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
+         "indir-call-topn-profile",
+         "track topn target addresses in indirect-call profile",
+          0, 0, 1)
 
 /* Avoid SLP vectorization of large basic blocks.  */
 DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
@@ -1072,14 +1093,14 @@ DEFPARAM (PARAM_ASAN_MEMINTRIN,
 
 DEFPARAM (PARAM_ASAN_USE_AFTER_RETURN,
          "asan-use-after-return",
-         "Enable asan builtin functions protection",
+         "Enable asan detection of use-after-return bugs",
          1, 0, 1)
 
 DEFPARAM (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
          "asan-instrumentation-with-call-threshold",
-         "Use callbacks instead of inline code once number of accesses "
-         " in function becomes greater or equal than this threshold",
-         10000, 0, INT_MAX)
+         "Use callbacks instead of inline code if number of accesses "
+         "in function becomes greater or equal to this number",
+         7000, 0, INT_MAX)
 
 DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,
 	  "uninit-control-dep-attempts",

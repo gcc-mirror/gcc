@@ -5,6 +5,7 @@ struct alu_bank_swizzle {
     int hw_gpr[3][4];
     int hw_cfile_addr[4];
 };
+void check_vector (struct alu_bank_swizzle *);
 static void init_bank_swizzle(struct alu_bank_swizzle *bs)
 {
   int i, cycle, component;

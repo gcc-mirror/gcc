@@ -1,3 +1,4 @@
+/* { dg-xfail-if "Can not call system libm.a with -msoft-float" { powerpc-*-aix* rs6000-*-aix* } { "-msoft-float" } { "" } } */
 #include <math.h>
 
 main()

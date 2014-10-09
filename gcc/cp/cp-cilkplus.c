@@ -42,12 +42,11 @@ static tree
 cpp_validate_cilk_plus_loop_aux (tree *tp, int *walk_subtrees, void *data)
 {
   bool *valid = (bool *) data;
-  location_t loc = EXPR_HAS_LOCATION (*tp) ? EXPR_LOCATION (*tp) :
-    UNKNOWN_LOCATION;
 
   if (!tp || !*tp)
     return NULL_TREE;
 
+  location_t loc = EXPR_LOCATION (*tp);
   if (TREE_CODE (*tp) == THROW_EXPR)
     {
       error_at (loc, "throw expressions are not allowed inside loops "
@@ -142,4 +141,3 @@ cilk_install_body_with_frame_cleanup (tree fndecl, tree orig_body, void *wd)
   append_to_statement_list (build_stmt (loc, TRY_FINALLY_EXPR, body, dtor),
 			    &list);
 }
-

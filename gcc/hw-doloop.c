@@ -94,7 +94,7 @@ scan_loop (hwloop_info loop)
 
   for (ix = 0; loop->blocks.iterate (ix, &bb); ix++)
     {
-      rtx insn;
+      rtx_insn *insn;
       edge e;
       edge_iterator ei;
 
@@ -232,7 +232,7 @@ add_forwarder_blocks (hwloop_info loop)
    the expected use; targets that call into this code usually replace the
    loop counter with a different special register.  */
 static void
-discover_loop (hwloop_info loop, basic_block tail_bb, rtx tail_insn, rtx reg)
+discover_loop (hwloop_info loop, basic_block tail_bb, rtx_insn *tail_insn, rtx reg)
 {
   bool found_tail;
   unsigned dwork = 0;
@@ -242,7 +242,7 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx tail_insn, rtx reg)
   loop->loop_end = tail_insn;
   loop->iter_reg = reg;
   vec_alloc (loop->incoming, 2);
-  loop->start_label = JUMP_LABEL (tail_insn);
+  loop->start_label = as_a <rtx_insn *> (JUMP_LABEL (tail_insn));
 
   if (EDGE_COUNT (tail_bb->succs) != 2)
     {
@@ -359,8 +359,9 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
      structure and add the head block to the work list. */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx tail = BB_END (bb);
-      rtx insn, reg;
+      rtx_insn *tail = BB_END (bb);
+      rtx_insn *insn;
+      rtx reg;
 
       while (tail && NOTE_P (tail) && tail != BB_HEAD (bb))
 	tail = PREV_INSN (tail);
@@ -378,7 +379,7 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
 
       /* There's a degenerate case we can handle - an empty loop consisting
 	 of only a back branch.  Handle that by deleting the branch.  */
-      insn = JUMP_LABEL (tail);
+      insn = JUMP_LABEL_AS_INSN (tail);
       while (insn && !NONDEBUG_INSN_P (insn))
 	insn = NEXT_INSN (insn);
       if (insn == tail)

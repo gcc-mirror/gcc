@@ -192,6 +192,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
+#include "inchash.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "flags.h"
@@ -312,9 +313,9 @@ stmt_local_def (gimple stmt)
   tree val;
   def_operand_p def_p;
 
-  if (gimple_has_side_effects (stmt)
-      || stmt_could_throw_p (stmt)
-      || gimple_vdef (stmt) != NULL_TREE)
+  if (gimple_vdef (stmt) != NULL_TREE
+      || gimple_has_side_effects (stmt)
+      || gimple_could_trap_p_1 (stmt, false, false))
     return false;
 
   def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
@@ -450,7 +451,7 @@ stmt_update_dep_bb (gimple stmt)
 static hashval_t
 same_succ_hash (const_same_succ e)
 {
-  hashval_t hashval = bitmap_hash (e->succs);
+  inchash::hash hstate (bitmap_hash (e->succs));
   int flags;
   unsigned int i;
   unsigned int first = bitmap_first_set_bit (e->bbs);
@@ -471,37 +472,35 @@ same_succ_hash (const_same_succ e)
 	continue;
       size++;
 
-      hashval = iterative_hash_hashval_t (gimple_code (stmt), hashval);
+      hstate.add_int (gimple_code (stmt));
       if (is_gimple_assign (stmt))
-	hashval = iterative_hash_hashval_t (gimple_assign_rhs_code (stmt),
-					    hashval);
+	hstate.add_int (gimple_assign_rhs_code (stmt));
       if (!is_gimple_call (stmt))
 	continue;
       if (gimple_call_internal_p (stmt))
-	hashval = iterative_hash_hashval_t
-	  ((hashval_t) gimple_call_internal_fn (stmt), hashval);
+        hstate.add_int (gimple_call_internal_fn (stmt));
       else
 	{
-	  hashval = iterative_hash_expr (gimple_call_fn (stmt), hashval);
+	  inchash::add_expr (gimple_call_fn (stmt), hstate);
 	  if (gimple_call_chain (stmt))
-	    hashval = iterative_hash_expr (gimple_call_chain (stmt), hashval);
+	    inchash::add_expr (gimple_call_chain (stmt), hstate);
 	}
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
 	  arg = gimple_call_arg (stmt, i);
 	  arg = vn_valueize (arg);
-	  hashval = iterative_hash_expr (arg, hashval);
+	  inchash::add_expr (arg, hstate);
 	}
     }
 
-  hashval = iterative_hash_hashval_t (size, hashval);
+  hstate.add_int (size);
   BB_SIZE (bb) = size;
 
   for (i = 0; i < e->succ_flags.length (); ++i)
     {
       flags = e->succ_flags[i];
       flags = flags & ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      hashval = iterative_hash_hashval_t (flags, hashval);
+      hstate.add_int (flags);
     }
 
   EXECUTE_IF_SET_IN_BITMAP (e->succs, 0, s, bs)
@@ -520,7 +519,7 @@ same_succ_hash (const_same_succ e)
 	}
     }
 
-  return hashval;
+  return hstate.end ();
 }
 
 /* Returns true if E1 and E2 have 2 successors, and if the successor flags
@@ -1160,17 +1159,9 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
       lhs2 = gimple_get_lhs (s2);
       if (TREE_CODE (lhs1) != SSA_NAME
 	  && TREE_CODE (lhs2) != SSA_NAME)
-	{
-	  /* If the vdef is the same, it's the same statement.  */
-	  if (vn_valueize (gimple_vdef (s1))
-	      == vn_valueize (gimple_vdef (s2)))
-	    return true;
-
-	  /* Test for structural equality.  */
-	  return (operand_equal_p (lhs1, lhs2, 0)
-		  && gimple_operand_equal_value_p (gimple_assign_rhs1 (s1),
-						   gimple_assign_rhs1 (s2)));
-	}
+	return (operand_equal_p (lhs1, lhs2, 0)
+		&& gimple_operand_equal_value_p (gimple_assign_rhs1 (s1),
+						 gimple_assign_rhs1 (s2)));
       else if (TREE_CODE (lhs1) == SSA_NAME
 	       && TREE_CODE (lhs2) == SSA_NAME)
 	return vn_valueize (lhs1) == vn_valueize (lhs2);

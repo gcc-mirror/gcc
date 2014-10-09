@@ -51,13 +51,13 @@ struct ddg_node
   int cuid;
 
   /* The insn represented by the node.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* A note preceding INSN (or INSN itself), such that all insns linked
      from FIRST_NOTE until INSN (inclusive of both) are moved together
      when reordering the insns.  This takes care of notes that should
      continue to precede INSN.  */
-  rtx first_note;
+  rtx_insn *first_note;
 
   /* Incoming and outgoing dependency edges.  */
   ddg_edge_ptr in;
@@ -173,7 +173,7 @@ void vcg_print_ddg (FILE *, ddg_ptr);
 void print_ddg_edge (FILE *, ddg_edge_ptr);
 void print_sccs (FILE *, ddg_all_sccs_ptr, ddg_ptr);
 
-ddg_node_ptr get_node_of_insn (ddg_ptr, rtx);
+ddg_node_ptr get_node_of_insn (ddg_ptr, rtx_insn *);
 
 void find_successors (sbitmap result, ddg_ptr, sbitmap);
 void find_predecessors (sbitmap result, ddg_ptr, sbitmap);
@@ -184,6 +184,6 @@ void free_ddg_all_sccs (ddg_all_sccs_ptr);
 int find_nodes_on_paths (sbitmap result, ddg_ptr, sbitmap from, sbitmap to);
 int longest_simple_path (ddg_ptr, int from, int to, sbitmap via);
 
-bool autoinc_var_is_used_p (rtx, rtx);
+bool autoinc_var_is_used_p (rtx_insn *, rtx_insn *);
 
 #endif /* GCC_DDG_H */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1800,18 +1800,17 @@ package body Atree is
       New_Node := New_Copy (Source);
       Fix_Parents (Ref_Node => Source, Fix_Node => New_Node);
 
-      --  We now set the parent of the new node to be the same as the
-      --  parent of the source. Almost always this parent will be
-      --  replaced by a new value when the relocated node is reattached
-      --  to the tree, but by doing it now, we ensure that this node is
-      --  not even temporarily disconnected from the tree. Note that this
-      --  does not happen free, because in the list case, the parent does
-      --  not get set.
+      --  We now set the parent of the new node to be the same as the parent of
+      --  the source. Almost always this parent will be replaced by a new value
+      --  when the relocated node is reattached to the tree, but by doing it
+      --  now, we ensure that this node is not even temporarily disconnected
+      --  from the tree. Note that this does not happen free, because in the
+      --  list case, the parent does not get set.
 
       Set_Parent (New_Node, Parent (Source));
 
-      --  If the node being relocated was a rewriting of some original
-      --  node, then the relocated node has the same original node.
+      --  If the node being relocated was a rewriting of some original node,
+      --  then the relocated node has the same original node.
 
       if Orig_Nodes.Table (Source) /= Source then
          Orig_Nodes.Table (New_Node) := Orig_Nodes.Table (Source);

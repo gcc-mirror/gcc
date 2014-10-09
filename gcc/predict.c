@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -74,11 +74,11 @@ along with GCC; see the file COPYING3.  If not see
 static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
-static void combine_predictions_for_insn (rtx, basic_block);
+static void combine_predictions_for_insn (rtx_insn *, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
 static void predict_paths_leading_to_edge (edge, enum br_predictor, enum prediction);
-static bool can_predict_insn_p (const_rtx);
+static bool can_predict_insn_p (const rtx_insn *);
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -113,7 +113,7 @@ static const struct predictor_info predictor_info[]= {
 static inline bool
 maybe_hot_frequency_p (struct function *fun, int freq)
 {
-  struct cgraph_node *node = cgraph_get_node (fun->decl);
+  struct cgraph_node *node = cgraph_node::get (fun->decl);
   if (!profile_info || !flag_branch_probabilities)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -187,31 +187,30 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 /* Return true if the call can be hot.  */
 
 bool
-cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
+cgraph_edge::maybe_hot_p (void)
 {
   if (profile_info && flag_branch_probabilities
-      && !maybe_hot_count_p (NULL,
-                             edge->count))
+      && !maybe_hot_count_p (NULL, count))
     return false;
-  if (edge->caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
-      || (edge->callee
-	  && edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+  if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
+      || (callee
+	  && callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return false;
-  if (edge->caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
-      && (edge->callee
-	  && edge->callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
+  if (caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
+      && (callee
+	  && callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
     return false;
   if (optimize_size)
     return false;
-  if (edge->caller->frequency == NODE_FREQUENCY_HOT)
+  if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
-  if (edge->caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && edge->frequency < CGRAPH_FREQ_BASE * 3 / 2)
+  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+      && frequency < CGRAPH_FREQ_BASE * 3 / 2)
     return false;
   if (flag_guess_branch_prob)
     {
       if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
-	  || edge->frequency <= (CGRAPH_FREQ_BASE
+	  || frequency <= (CGRAPH_FREQ_BASE
 				 / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
         return false;
     }
@@ -275,7 +274,7 @@ probably_never_executed (struct function *fun,
       return true;
     }
   if ((!profile_info || !flag_branch_probabilities)
-      && (cgraph_get_node (fun->decl)->frequency
+      && (cgraph_node::get (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
   return false;
@@ -299,14 +298,14 @@ probably_never_executed_edge_p (struct function *fun, edge e)
   return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
-/* Return true if NODE should be optimized for size.  */
+/* Return true if function should be optimized for size.  */
 
 bool
-cgraph_optimize_for_size_p (struct cgraph_node *node)
+cgraph_node::optimize_for_size_p (void)
 {
   if (optimize_size)
     return true;
-  if (node && (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return true;
   else
     return false;
@@ -321,7 +320,9 @@ optimize_function_for_size_p (struct function *fun)
     return true;
   if (!fun || !fun->decl)
     return false;
-  return cgraph_optimize_for_size_p (cgraph_get_node (fun->decl));
+
+  cgraph_node *n = cgraph_node::get (fun->decl);
+  return n && n->optimize_for_size_p ();
 }
 
 /* Return true when current function should always be optimized for speed.  */
@@ -337,7 +338,8 @@ optimize_function_for_speed_p (struct function *fun)
 bool
 optimize_bb_for_size_p (const_basic_block bb)
 {
-  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (cfun, bb);
+  return (optimize_function_for_size_p (cfun)
+	  || (bb && !maybe_hot_bb_p (cfun, bb)));
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
@@ -488,11 +490,6 @@ rtl_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
   return false;
 }
 
-/* This map contains for a basic block the list of predictions for the
-   outgoing edges.  */
-
-static struct pointer_map_t *bb_predictions;
-
 /*  Structure representing predictions in tree level. */
 
 struct edge_prediction {
@@ -502,6 +499,11 @@ struct edge_prediction {
     int ep_probability;
 };
 
+/* This map contains for a basic block the list of predictions for the
+   outgoing edges.  */
+
+static hash_map<const_basic_block, edge_prediction *> *bb_predictions;
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 
@@ -509,12 +511,12 @@ bool
 gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
-  void **preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
 
   if (!preds)
     return false;
 
-  for (i = (struct edge_prediction *) *preds; i; i = i->ep_next)
+  for (i = *preds; i; i = i->ep_next)
     if (i->ep_predictor == predictor)
       return true;
   return false;
@@ -560,7 +562,7 @@ br_prob_note_reliable_p (const_rtx note)
 }
 
 static void
-predict_insn (rtx insn, enum br_predictor predictor, int probability)
+predict_insn (rtx_insn *insn, enum br_predictor predictor, int probability)
 {
   gcc_assert (any_condjump_p (insn));
   if (!flag_guess_branch_prob)
@@ -575,7 +577,7 @@ predict_insn (rtx insn, enum br_predictor predictor, int probability)
 /* Predict insn by given predictor.  */
 
 void
-predict_insn_def (rtx insn, enum br_predictor predictor,
+predict_insn_def (rtx_insn *insn, enum br_predictor predictor,
 		  enum prediction taken)
 {
    int probability = predictor_info[(int) predictor].hitrate;
@@ -591,7 +593,7 @@ predict_insn_def (rtx insn, enum br_predictor predictor,
 void
 rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
-  rtx last_insn;
+  rtx_insn *last_insn;
   last_insn = BB_END (e->src);
 
   /* We can store the branch prediction information only about
@@ -616,10 +618,10 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
       && flag_guess_branch_prob && optimize)
     {
       struct edge_prediction *i = XNEW (struct edge_prediction);
-      void **preds = pointer_map_insert (bb_predictions, e->src);
+      edge_prediction *&preds = bb_predictions->get_or_insert (e->src);
 
-      i->ep_next = (struct edge_prediction *) *preds;
-      *preds = i;
+      i->ep_next = preds;
+      preds = i;
       i->ep_probability = probability;
       i->ep_predictor = predictor;
       i->ep_edge = e;
@@ -631,16 +633,14 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 remove_predictions_associated_with_edge (edge e)
 {
-  void **preds;
-
   if (!bb_predictions)
     return;
 
-  preds = pointer_map_contains (bb_predictions, e->src);
+  edge_prediction **preds = bb_predictions->get (e->src);
 
   if (preds)
     {
-      struct edge_prediction **prediction = (struct edge_prediction **) preds;
+      struct edge_prediction **prediction = preds;
       struct edge_prediction *next;
 
       while (*prediction)
@@ -662,13 +662,13 @@ remove_predictions_associated_with_edge (edge e)
 static void
 clear_bb_predictions (basic_block bb)
 {
-  void **preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
   struct edge_prediction *pred, *next;
 
   if (!preds)
     return;
 
-  for (pred = (struct edge_prediction *) *preds; pred; pred = next)
+  for (pred = *preds; pred; pred = next)
     {
       next = pred->ep_next;
       free (pred);
@@ -680,7 +680,7 @@ clear_bb_predictions (basic_block bb)
    At the moment we represent predictions only on conditional
    jumps, not at computed jump or other complicated cases.  */
 static bool
-can_predict_insn_p (const_rtx insn)
+can_predict_insn_p (const rtx_insn *insn)
 {
   return (JUMP_P (insn)
 	  && any_condjump_p (insn)
@@ -773,7 +773,7 @@ set_even_probabilities (basic_block bb)
    note if not already present.  Remove now useless REG_BR_PRED notes.  */
 
 static void
-combine_predictions_for_insn (rtx insn, basic_block bb)
+combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 {
   rtx prob_note;
   rtx *pnote;
@@ -901,7 +901,6 @@ combine_predictions_for_bb (basic_block bb)
   int nedges = 0;
   edge e, first = NULL, second = NULL;
   edge_iterator ei;
-  void **preds;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
@@ -933,12 +932,12 @@ combine_predictions_for_bb (basic_block bb)
   if (dump_file)
     fprintf (dump_file, "Predictions for bb %i\n", bb->index);
 
-  preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
   if (preds)
     {
       /* We implement "first match" heuristics and use probability guessed
 	 by predictor with smallest index.  */
-      for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
+      for (pred = *preds; pred; pred = pred->ep_next)
 	{
 	  enum br_predictor predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
@@ -1668,7 +1667,7 @@ predict_loops (void)
 static void
 bb_estimate_probability_locally (basic_block bb)
 {
-  rtx last_insn = BB_END (bb);
+  rtx_insn *last_insn = BB_END (bb);
   rtx cond;
 
   if (! can_predict_insn_p (last_insn))
@@ -1859,7 +1858,6 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    return val;
 		  if (predictor)
 		    {
-		      *predictor = PRED_BUILTIN_EXPECT;
 		      tree val2 = gimple_call_arg (def, 2);
 		      gcc_assert (TREE_CODE (val2) == INTEGER_CST
 				  && tree_fits_uhwi_p (val2)
@@ -1904,6 +1902,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		if (predictor)
 		  *predictor = PRED_COMPARE_AND_SWAP;
 		return boolean_true_node;
+	      default:
+		break;
 	    }
 	}
 
@@ -2241,14 +2241,14 @@ tree_bb_level_predictions (void)
 
 #ifdef ENABLE_CHECKING
 
-/* Callback for pointer_map_traverse, asserts that the pointer map is
+/* Callback for hash_map::traverse, asserts that the pointer map is
    empty.  */
 
-static bool
-assert_is_empty (const void *key ATTRIBUTE_UNUSED, void **value,
-		 void *data ATTRIBUTE_UNUSED)
+bool
+assert_is_empty (const_basic_block const &, edge_prediction *const &value,
+		 void *)
 {
-  gcc_assert (!*value);
+  gcc_assert (!value);
   return false;
 }
 #endif
@@ -2373,7 +2373,7 @@ tree_estimate_probability (void)
   create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
-  bb_predictions = pointer_map_create ();
+  bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
   tree_bb_level_predictions ();
   record_loop_exits ();
 
@@ -2387,9 +2387,9 @@ tree_estimate_probability (void)
     combine_predictions_for_bb (bb);
 
 #ifdef ENABLE_CHECKING
-  pointer_map_traverse (bb_predictions, assert_is_empty, NULL);
+  bb_predictions->traverse<void *, assert_is_empty> (NULL);
 #endif
-  pointer_map_destroy (bb_predictions);
+  delete bb_predictions;
   bb_predictions = NULL;
 
   estimate_bb_frequencies (false);
@@ -2498,7 +2498,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
 
-typedef struct block_info_def
+struct block_info
 {
   /* Estimated frequency of execution of basic_block.  */
   sreal frequency;
@@ -2508,10 +2508,10 @@ typedef struct block_info_def
 
   /* Number of predecessors we need to visit first.  */
   int npredecessors;
-} *block_info;
+};
 
 /* Similar information for edges.  */
-typedef struct edge_info_def
+struct edge_prob_info
 {
   /* In case edge is a loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
@@ -2519,10 +2519,10 @@ typedef struct edge_info_def
   sreal back_edge_prob;
   /* True if the edge is a loopback edge in the natural loop.  */
   unsigned int back_edge:1;
-} *edge_info;
+};
 
-#define BLOCK_INFO(B)	((block_info) (B)->aux)
-#define EDGE_INFO(E)	((edge_info) (E)->aux)
+#define BLOCK_INFO(B)	((block_info *) (B)->aux)
+#define EDGE_INFO(E)	((edge_prob_info *) (E)->aux)
 
 /* Helper function for estimate_bb_frequencies.
    Propagate the frequencies in blocks marked in
@@ -2891,7 +2891,7 @@ expensive_function_p (int threshold)
   limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency * threshold;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	if (active_insn_p (insn))
@@ -2937,8 +2937,8 @@ estimate_bb_frequencies (bool force)
 	 REG_BR_PROB_BASE;
 
       /* Set up block info for each basic block.  */
-      alloc_aux_for_blocks (sizeof (struct block_info_def));
-      alloc_aux_for_edges (sizeof (struct edge_info_def));
+      alloc_aux_for_blocks (sizeof (block_info));
+      alloc_aux_for_edges (sizeof (edge_prob_info));
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
 	  edge e;
@@ -2983,7 +2983,7 @@ void
 compute_function_frequency (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
   if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
       || MAIN_NAME_P (DECL_NAME (current_function_decl)))

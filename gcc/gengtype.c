@@ -569,6 +569,40 @@ do_scalar_typedef (const char *s, struct fileloc *pos)
   do_typedef (s, &scalar_nonchar, pos);
 }
 
+/* Similar to strtok_r.  */
+
+static char *
+strtoken (char *str, const char *delim, char **next)
+{
+  char *p;
+
+  if (str == NULL)
+    str = *next;
+
+  /* Skip the leading delimiters.  */
+  str += strspn (str, delim);
+  if (*str == '\0')
+    /* This is an empty token.  */
+    return NULL;
+
+  /* The current token.  */
+  p = str;
+
+  /* Find the next delimiter.  */
+  str += strcspn (str, delim);
+  if (*str == '\0')
+    /* This is the last token.  */
+    *next = str;
+  else
+    {
+      /* Terminate the current token.  */
+      *str = '\0';
+      /* Advance to the next token.  */
+      *next = str + 1;
+    }
+
+  return p;
+}
 
 /* Define TYPE_NAME to be a user defined type at location POS.  */
 
@@ -599,7 +633,8 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 	 comma-separated list of strings, implicitly assumed to
 	 be type names, potentially with "*" characters.  */
       char *arg = open_bracket + 1;
-      char *type_id = strtok (arg, ",>");
+      char *next;
+      char *type_id = strtoken (arg, ",>", &next);
       pair_p fields = 0;
       while (type_id)
 	{
@@ -628,7 +663,7 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 	    arg_type = resolve_typedef (field_name, pos);
 
 	  fields = create_field_at (fields, arg_type, field_name, 0, pos);
-	  type_id = strtok (0, ",>");
+	  type_id = strtoken (0, ",>", &next);
 	}
 
       /* Associate the field list to TY.  */
@@ -1790,7 +1825,7 @@ open_base_files (void)
       "tree.h", "rtl.h", "wide-int.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
-      "pointer-set.h", "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
+      "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",

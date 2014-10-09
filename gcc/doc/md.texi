@@ -1546,18 +1546,18 @@ Here are constraint modifier characters.
 @table @samp
 @cindex @samp{=} in constraint
 @item =
-Means that this operand is write-only for this instruction: the previous
-value is discarded and replaced by output data.
+Means that this operand is written to by this instruction:
+the previous value is discarded and replaced by new data.
 
 @cindex @samp{+} in constraint
 @item +
 Means that this operand is both read and written by the instruction.
 
 When the compiler fixes up the operands to satisfy the constraints,
-it needs to know which operands are inputs to the instruction and
-which are outputs from it.  @samp{=} identifies an output; @samp{+}
-identifies an operand that is both input and output; all other operands
-are assumed to be input only.
+it needs to know which operands are read by the instruction and
+which are written by it.  @samp{=} identifies an operand which is only
+written; @samp{+} identifies an operand that is both read and written; all
+other operands are assumed to only be read.
 
 If you specify @samp{=} or @samp{+} in a constraint, you put it in the
 first character of the constraint string.
@@ -1566,9 +1566,9 @@ first character of the constraint string.
 @cindex earlyclobber operand
 @item &
 Means (in a particular alternative) that this operand is an
-@dfn{earlyclobber} operand, which is modified before the instruction is
+@dfn{earlyclobber} operand, which is written before the instruction is
 finished using the input operands.  Therefore, this operand may not lie
-in a register that is used as an input operand or as part of any memory
+in a register that is read by the instruction or as part of any memory
 address.
 
 @samp{&} applies only to the alternative in which it is written.  In
@@ -1576,16 +1576,19 @@ constraints with multiple alternatives, sometimes one alternative
 requires @samp{&} while others do not.  See, for example, the
 @samp{movdf} insn of the 68000.
 
-An input operand can be tied to an earlyclobber operand if its only
-use as an input occurs before the early result is written.  Adding
-alternatives of this form often allows GCC to produce better code
-when only some of the inputs can be affected by the earlyclobber.
-See, for example, the @samp{mulsi3} insn of the ARM@.
+A operand which is read by the instruction can be tied to an earlyclobber
+operand if its only use as an input occurs before the early result is
+written.  Adding alternatives of this form often allows GCC to produce
+better code when only some of the read operands can be affected by the
+earlyclobber. See, for example, the @samp{mulsi3} insn of the ARM@.
 
-Furthermore, if the @dfn{earlyclobber} operand is also read/write operand, then
-that operand is modified only after it's used.
+Furthermore, if the @dfn{earlyclobber} operand is also a read/write
+operand, then that operand is written only after it's used.
 
-@samp{&} does not obviate the need to write @samp{=} or @samp{+}.
+@samp{&} does not obviate the need to write @samp{=} or @samp{+}.  As
+@dfn{earlyclobber} operands are always written, a read-only
+@dfn{earlyclobber} operand is ill-formed and will be rejected by the
+compiler.
 
 @cindex @samp{%} in constraint
 @item %
@@ -1593,7 +1596,7 @@ Declares the instruction to be commutative for this operand and the
 following operand.  This means that the compiler may interchange the
 two operands if that is the cheapest way to make all operands fit the
 constraints.  @samp{%} applies to all alternatives and must appear as
-the first character in the constraint.  Only input operands can use
+the first character in the constraint.  Only read-only operands can use
 @samp{%}.
 
 @ifset INTERNALS
@@ -2066,46 +2069,6 @@ A memory operand for floating-point loads and stores
 A register indirect memory operand
 @end table
 
-@item picoChip family---@file{picochip.h}
-@table @code
-@item k
-Stack register.
-
-@item f
-Pointer register.  A register which can be used to access memory without
-supplying an offset.  Any other register can be used to access memory,
-but will need a constant offset.  In the case of the offset being zero,
-it is more efficient to use a pointer register, since this reduces code
-size.
-
-@item t
-A twin register.  A register which may be paired with an adjacent
-register to create a 32-bit register.
-
-@item a
-Any absolute memory address (e.g., symbolic constant, symbolic
-constant + offset).
-
-@item I
-4-bit signed integer.
-
-@item J
-4-bit unsigned integer.
-
-@item K
-8-bit signed integer.
-
-@item M
-Any constant whose absolute value is no greater than 4-bits.
-
-@item N
-10-bit signed integer
-
-@item O
-16-bit signed integer.
-
-@end table
-
 @item PowerPC and IBM RS6000---@file{config/rs6000/constraints.md}
 @table @code
 @item b
@@ -2131,6 +2094,18 @@ VSX vector register to hold vector float data or NO_REGS.
 
 @item wg
 If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
+
+@item wh
+Floating point register if direct moves are available, or NO_REGS.
+
+@item wi
+FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.
+
+@item wj
+FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.
+
+@item wk
+FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.
 
 @item wl
 Floating point register if the LFIWAX instruction is enabled or NO_REGS.
@@ -2163,7 +2138,7 @@ FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
 Floating point register if the STFIWX instruction is enabled or NO_REGS.
 
 @item wy
-VSX vector register to hold scalar float values or NO_REGS.
+FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
 
 @item wz
 Floating point register if the LFIWZX instruction is enabled or NO_REGS.
@@ -3696,75 +3671,6 @@ Pointer with long displacement.
 @item Y
 Shift count operand.
 
-@end table
-
-@item Score family---@file{config/score/score.h}
-@table @code
-@item d
-Registers from r0 to r32.
-
-@item e
-Registers from r0 to r16.
-
-@item t
-r8---r11 or r22---r27 registers.
-
-@item h
-hi register.
-
-@item l
-lo register.
-
-@item x
-hi + lo register.
-
-@item q
-cnt register.
-
-@item y
-lcb register.
-
-@item z
-scb register.
-
-@item a
-cnt + lcb + scb register.
-
-@item c
-cr0---cr15 register.
-
-@item b
-cp1 registers.
-
-@item f
-cp2 registers.
-
-@item i
-cp3 registers.
-
-@item j
-cp1 + cp2 + cp3 registers.
-
-@item I
-High 16-bit constant (32-bit constant with 16 LSBs zero).
-
-@item J
-Unsigned 5 bit integer (in the range 0 to 31).
-
-@item K
-Unsigned 16 bit integer (in the range 0 to 65535).
-
-@item L
-Signed 16 bit integer (in the range @minus{}32768 to 32767).
-
-@item M
-Unsigned 14 bit integer (in the range 0 to 16383).
-
-@item N
-Signed 14 bit integer (in the range @minus{}8192 to 8191).
-
-@item Z
-Any SYMBOL_REF.
 @end table
 
 @item Xstormy16---@file{config/stormy16/stormy16.h}
@@ -5316,10 +5222,18 @@ generating the instruction.
 The @code{ffs} built-in function of C always uses the mode which
 corresponds to the C data type @code{int}.
 
+@cindex @code{clrsb@var{m}2} instruction pattern
+@item @samp{clrsb@var{m}2}
+Count leading redundant sign bits.
+Store into operand 0 the number of redundant sign bits in operand 1, starting
+at the most significant bit position.
+A redundant sign bit is defined as any sign bit after the first. As such,
+this count will be one less than the count of leading sign bits.
+
 @cindex @code{clz@var{m}2} instruction pattern
 @item @samp{clz@var{m}2}
-Store into operand 0 the number of leading 0-bits in @var{x}, starting
-at the most significant bit position.  If @var{x} is 0, the
+Store into operand 0 the number of leading 0-bits in operand 1, starting
+at the most significant bit position.  If operand 1 is 0, the
 @code{CLZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
 the result is undefined or has a useful value.
 @var{m} is the mode of operand 0; operand 1's mode is
@@ -5328,8 +5242,8 @@ operand to that mode before generating the instruction.
 
 @cindex @code{ctz@var{m}2} instruction pattern
 @item @samp{ctz@var{m}2}
-Store into operand 0 the number of trailing 0-bits in @var{x}, starting
-at the least significant bit position.  If @var{x} is 0, the
+Store into operand 0 the number of trailing 0-bits in operand 1, starting
+at the least significant bit position.  If operand 1 is 0, the
 @code{CTZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
 the result is undefined or has a useful value.
 @var{m} is the mode of operand 0; operand 1's mode is
@@ -5338,15 +5252,15 @@ operand to that mode before generating the instruction.
 
 @cindex @code{popcount@var{m}2} instruction pattern
 @item @samp{popcount@var{m}2}
-Store into operand 0 the number of 1-bits in @var{x}.  @var{m} is the
+Store into operand 0 the number of 1-bits in operand 1.  @var{m} is the
 mode of operand 0; operand 1's mode is specified by the instruction
 pattern, and the compiler will convert the operand to that mode before
 generating the instruction.
 
 @cindex @code{parity@var{m}2} instruction pattern
 @item @samp{parity@var{m}2}
-Store into operand 0 the parity of @var{x}, i.e.@: the number of 1-bits
-in @var{x} modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
+Store into operand 0 the parity of operand 1, i.e.@: the number of 1-bits
+in operand 1 modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
 is specified by the instruction pattern, and the compiler will convert
 the operand to that mode before generating the instruction.
 

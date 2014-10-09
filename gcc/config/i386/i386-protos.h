@@ -47,10 +47,10 @@ extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx);
-extern const char *standard_sse_constant_opcode (rtx, rtx);
+extern const char *standard_sse_constant_opcode (rtx_insn *, rtx);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
-extern bool x86_extended_QIreg_mentioned_p (rtx);
+extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern bool x86_maybe_negate_const_int (rtx *, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
@@ -75,7 +75,7 @@ extern void split_double_mode (enum machine_mode, rtx[], int, rtx[], rtx[]);
 extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx, rtx*);
 extern const char *output_387_reg_move (rtx, rtx*);
-extern const char *output_fix_trunc (rtx, rtx*, bool);
+extern const char *output_fix_trunc (rtx_insn *, rtx*, bool);
 extern const char *output_fp_compare (rtx, rtx*, bool, bool);
 extern const char *output_adjust_stack_and_probe (rtx);
 extern const char *output_probe_stack_range (rtx, rtx);
@@ -93,14 +93,14 @@ extern void ix86_expand_binary_operator (enum rtx_code,
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 enum machine_mode, rtx[]);
 extern bool ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
-extern bool ix86_avoid_lea_for_add (rtx, rtx[]);
-extern bool ix86_use_lea_for_mov (rtx, rtx[]);
-extern bool ix86_avoid_lea_for_addr (rtx, rtx[]);
-extern void ix86_split_lea_for_addr (rtx, rtx[], enum machine_mode);
-extern bool ix86_lea_for_add_ok (rtx, rtx[]);
+extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
+extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
+extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
+extern void ix86_split_lea_for_addr (rtx_insn *, rtx[], enum machine_mode);
+extern bool ix86_lea_for_add_ok (rtx_insn *, rtx[]);
 extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
-extern bool ix86_agi_dependent (rtx set_insn, rtx use_insn);
+extern bool ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
@@ -145,9 +145,9 @@ extern void ix86_split_idivmod (enum machine_mode, rtx[], bool);
 extern bool ix86_emit_cfi ();
 
 extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
-extern int ix86_attr_length_immediate_default (rtx, bool);
-extern int ix86_attr_length_address_default (rtx);
-extern int ix86_attr_length_vex_default (rtx, bool, bool);
+extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
+extern int ix86_attr_length_address_default (rtx_insn *);
+extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 
@@ -260,7 +260,7 @@ extern void i386_pe_record_stub (const char *);
 
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);
-extern void i386_pe_seh_unwind_emit (FILE *, rtx);
+extern void i386_pe_seh_unwind_emit (FILE *, rtx_insn *);
 extern void i386_pe_seh_emit_except_personality (rtx);
 extern void i386_pe_seh_init_sections (void);
 
@@ -302,7 +302,7 @@ extern int asm_preferred_eh_data_format (int, int);
 extern enum attr_cpu ix86_schedule;
 #endif
 
-extern const char * ix86_output_call_insn (rtx insn, rtx call_op);
+extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

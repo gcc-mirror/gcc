@@ -1,4 +1,4 @@
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 int i;
 auto& f() { return i; }

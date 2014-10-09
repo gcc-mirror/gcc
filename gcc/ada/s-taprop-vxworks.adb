@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1298,7 +1298,6 @@ package body System.Task_Primitives.Operations is
       C           : Task_Id;
 
       Dummy : int;
-      pragma Unreferenced (Dummy);
 
    begin
       Dummy := Int_Lock;

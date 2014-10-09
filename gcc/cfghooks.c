@@ -569,14 +569,10 @@ delete_basic_block (basic_block bb)
       struct loop *loop = bb->loop_father;
 
       /* If we remove the header or the latch of a loop, mark the loop for
-	 removal by setting its header and latch to NULL.  */
+	 removal.  */
       if (loop->latch == bb
 	  || loop->header == bb)
-	{
-	  loop->header = NULL;
-	  loop->latch = NULL;
-	  loops_state_set (LOOPS_NEED_FIXUP);
-	}
+	mark_loop_for_removal (loop);
 
       remove_bb_from_loops (bb);
     }
@@ -760,11 +756,7 @@ merge_blocks (basic_block a, basic_block b)
 	  /* ... we merge two loop headers, in which case we kill
 	     the inner loop.  */
 	  if (b->loop_father->header == b)
-	    {
-	      b->loop_father->header = NULL;
-	      b->loop_father->latch = NULL;
-	      loops_state_set (LOOPS_NEED_FIXUP);
-	    }
+	    mark_loop_for_removal (b->loop_father);
 	}
       /* If we merge a loop header into its predecessor, update the loop
 	 structure.  */
@@ -1099,9 +1091,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 	  && cloop->header == bb)
 	{
 	  add_bb_to_loop (new_bb, loop_outer (cloop));
-	  cloop->header = NULL;
-	  cloop->latch = NULL;
-	  loops_state_set (LOOPS_NEED_FIXUP);
+	  mark_loop_for_removal (cloop);
 	}
       else
 	{

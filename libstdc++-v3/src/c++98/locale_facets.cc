@@ -69,19 +69,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (__flags & ios_base::showpoint)
       *__fptr++ = '#';
 
-    // As per DR 231: _always_, not only when 
-    // __flags & ios_base::fixed || __prec > 0
-    *__fptr++ = '.';
-    *__fptr++ = '*';
+    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
+
+#ifdef _GLIBCXX_USE_C99
+    // Precision is always used except for hexfloat format.
+    if (__fltfield != (ios_base::fixed | ios_base::scientific))
+#endif
+      {
+        // As per DR 231: not only when __flags & ios_base::fixed || __prec > 0
+        *__fptr++ = '.';
+        *__fptr++ = '*';
+      }
 
     if (__mod)
       *__fptr++ = __mod;
-    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
     // [22.2.2.2.2] Table 58
     if (__fltfield == ios_base::fixed)
       *__fptr++ = 'f';
     else if (__fltfield == ios_base::scientific)
       *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
+#ifdef _GLIBCXX_USE_C99
+    else if (__fltfield == (ios_base::fixed | ios_base::scientific))
+      *__fptr++ = (__flags & ios_base::uppercase) ? 'A' : 'a';
+#endif
     else
       *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
     *__fptr = '\0';

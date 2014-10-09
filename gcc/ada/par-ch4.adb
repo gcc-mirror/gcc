@@ -42,6 +42,7 @@ package body Ch4 is
       Attribute_Img          => True,
       Attribute_Loop_Entry   => True,
       Attribute_Old          => True,
+      Attribute_Result       => True,
       Attribute_Stub_Type    => True,
       Attribute_Version      => True,
       Attribute_Type_Key     => True,
@@ -2105,7 +2106,7 @@ package body Ch4 is
             Node1 := New_Op_Node (P_Unary_Adding_Operator, Tokptr);
 
             if Style_Check then
-               Style.Check_Unary_Plus_Or_Minus;
+               Style.Check_Unary_Plus_Or_Minus (Inside_Depends);
             end if;
 
             Scan; -- past operator

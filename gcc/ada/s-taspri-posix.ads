@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --            Copyright (C) 1991-1994, Florida State University             --
---                     Copyright (C) 1995-2011, AdaCore                     --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,8 @@ package System.Task_Primitives is
 
    type RTS_Lock is limited private;
    --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
+   --  and the RTS_Lock is that the latter serves only as a semaphore so that
+   --  we do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -64,13 +64,8 @@ package System.Task_Primitives is
    --  Ada_Task_Control_Block.
 
    subtype Task_Address is System.Address;
-   --  In some versions of Task_Primitives, notably for VMS, Task_Address is
-   --  the short version of address defined in System.Aux_DEC. To avoid
-   --  dragging Aux_DEC into tasking packages a tasking specific subtype is
-   --  defined here.
-
    Task_Address_Size : constant := Standard'Address_Size;
-   --  The size of Task_Address
+   --  Type used for task addresses and its size
 
    Alternate_Stack_Size : constant := System.OS_Interface.Alternate_Stack_Size;
    --  Import value from System.OS_Interface

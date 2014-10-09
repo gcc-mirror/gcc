@@ -97,6 +97,7 @@ static inline uint32_t bs_read1( bs_t *s ) {
   return 0;
 }
 int Open ( vlc_object_t * );
+int vlc_module_set ( module_t *, enum vlc_module_properties, void *);
 void Close( vlc_object_t * );
 __attribute__((visibility("default"))) int vlc_entry__0_9_0f ( module_t *p_module ) {
   {
@@ -128,6 +129,7 @@ struct decoder_sys_t {
 };
 enum { NAL_SLICE = 1, NAL_SLICE_IDR = 5, NAL_SPS = 7, NAL_AU_DELIMITER= 9 };
 static block_t *ParseNALBlock( decoder_t *, block_t * );
+int U16_AT ( uint8_t * );
 int Open( vlc_object_t *p_this ) {
   decoder_t *p_dec = (decoder_t*)p_this;
   decoder_sys_t *p_sys;

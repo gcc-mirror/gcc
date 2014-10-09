@@ -456,8 +456,8 @@ convert_to_integer (tree type, tree expr)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_ROUND):
-	  /* Only convert in ISO C99 mode.  */
-	  if (!targetm.libc_has_function (function_c99_misc))
+	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
+	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -477,8 +477,8 @@ convert_to_integer (tree type, tree expr)
 	    break;
 	  /* ... Fall through ...  */
 	CASE_FLT_FN (BUILT_IN_RINT):
-	  /* Only convert in ISO C99 mode.  */
-	  if (!targetm.libc_has_function (function_c99_misc))
+	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
+	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -746,8 +746,9 @@ convert_to_integer (tree type, tree expr)
 		/* Can't do arithmetic in enumeral types
 		   so use an integer type that will hold the values.  */
 		if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		  typex = lang_hooks.types.type_for_size
-		    (TYPE_PRECISION (typex), TYPE_UNSIGNED (typex));
+		  typex
+		    = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
+						      TYPE_UNSIGNED (typex));
 
 		/* But now perhaps TYPEX is as wide as INPREC.
 		   In that case, do nothing special here.
@@ -788,9 +789,15 @@ convert_to_integer (tree type, tree expr)
 			    && (ex_form == PLUS_EXPR
 				|| ex_form == MINUS_EXPR
 				|| ex_form == MULT_EXPR)))
-		      typex = unsigned_type_for (typex);
+		      {
+			if (!TYPE_UNSIGNED (typex))
+			  typex = unsigned_type_for (typex);
+		      }
 		    else
-		      typex = signed_type_for (typex);
+		      {
+			if (TYPE_UNSIGNED (typex))
+			  typex = signed_type_for (typex);
+		      }
 		    return convert (type,
 				    fold_build2 (ex_form, typex,
 						 convert (typex, arg0),
@@ -805,7 +812,19 @@ convert_to_integer (tree type, tree expr)
 	  /* This is not correct for ABS_EXPR,
 	     since we must test the sign before truncation.  */
 	  {
-	    tree typex = unsigned_type_for (type);
+	    /* Do the arithmetic in type TYPEX,
+	       then convert result to TYPE.  */
+	    tree typex = type;
+
+	    /* Can't do arithmetic in enumeral types
+	       so use an integer type that will hold the values.  */
+	    if (TREE_CODE (typex) == ENUMERAL_TYPE)
+	      typex
+		= lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
+						  TYPE_UNSIGNED (typex));
+
+	    if (!TYPE_UNSIGNED (typex))
+	      typex = unsigned_type_for (typex);
 	    return convert (type,
 			    fold_build1 (ex_form, typex,
 					 convert (typex,

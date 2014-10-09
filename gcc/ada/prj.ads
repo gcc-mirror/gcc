@@ -72,6 +72,15 @@ package Prj is
    type Yes_No_Unknown is (Yes, No, Unknown);
    --  Tri-state to decide if -lgnarl is needed when linking
 
+   type Attribute_Default_Value is
+     (Read_Only_Value,     --  For read only attributes (Name, Project_Dir)
+      Empty_Value,         --  Empty string or empty string list
+      Dot_Value,           --  "." or (".")
+      Object_Dir_Value,    --  'Object_Dir
+      Target_Value);       --  'Target (special rules)
+   --  Describe the default values of attributes that are referenced but not
+   --  declared.
+
    pragma Warnings (Off);
    type Project_Qualifier is
      (Unspecified,
@@ -83,7 +92,7 @@ package Prj is
 
       Library,
       Configuration,
-      Dry,
+      Abstract_Project,
       Aggregate,
       Aggregate_Library);
    pragma Warnings (On);
@@ -91,7 +100,7 @@ package Prj is
    --  file:
    --    Standard:             standard project ...
    --    Library:              library project is ...
-   --    Dry:                  abstract project is
+   --    Abstract_Project:     abstract project is
    --    Aggregate:            aggregate project is
    --    Aggregate_Library:    aggregate library project is ...
    --    Configuration:        configuration project is ...
@@ -122,6 +131,9 @@ package Prj is
    function Empty_File   return File_Name_Type;
    function Empty_String return Name_Id;
    --  Return the id for an empty string ""
+
+   function Dot_String return Name_Id;
+   --  Return the id for "."
 
    type Path_Information is record
       Name         : Path_Name_Type := No_Path;
@@ -441,10 +453,8 @@ package Prj is
    No_Source : constant Source_Id := null;
 
    type Path_Syntax_Kind is
-     (Canonical,
-      --  Unix style
-      Host);
-      --  Host specific syntax, for example on VMS (the default)
+     (Canonical, -- Unix style
+      Host);     -- Host specific syntax
 
    --  The following record describes the configuration of a language
 
@@ -484,8 +494,7 @@ package Prj is
       --  unit in a multi-source file, in the object file name.
 
       Path_Syntax : Path_Syntax_Kind := Host;
-      --  Value may be Canonical (Unix style) or Host (host syntax, for example
-      --  on VMS for DEC C).
+      --  Value may be Canonical (Unix style) or Host (host syntax)
 
       Source_File_Switches : Name_List_Index := No_Name_List;
       --  Optional switches to be put before the source file. The source file
@@ -1573,6 +1582,7 @@ package Prj is
       Arrays            : Array_Table.Instance;
       Packages          : Package_Table.Instance;
       Private_Part      : Private_Project_Tree_Data;
+      Dot_String_List   : String_List_Id := Nil_String;
    end record;
    type Shared_Project_Tree_Data_Access is access all Shared_Project_Tree_Data;
    --  The data that is shared among multiple trees, when these trees are
@@ -1882,10 +1892,11 @@ package Prj is
    --       * user project also includes a "with" that can only be resolved
    --         once we have found the gnatls
 
-   Gprbuild_Flags : constant Processing_Flags;
-   Gprclean_Flags : constant Processing_Flags;
-   Gprexec_Flags  : constant Processing_Flags;
-   Gnatmake_Flags : constant Processing_Flags;
+   Gprbuild_Flags   : constant Processing_Flags;
+   Gprinstall_Flags : constant Processing_Flags;
+   Gprclean_Flags   : constant Processing_Flags;
+   Gprexec_Flags    : constant Processing_Flags;
+   Gnatmake_Flags   : constant Processing_Flags;
    --  Flags used by the various tools. They all display the error messages
    --  through Prj.Err.
 
@@ -1951,7 +1962,6 @@ package Prj is
    --  indentation level only affects output done through Debug_Output.
 
 private
-
    All_Packages : constant String_List_Access := null;
 
    No_Project_Tree : constant Project_Tree_Ref := null;
@@ -1991,14 +2001,18 @@ private
       Last : in out Natural);
    --  Append a String to the Buffer
 
+   --  Table used to store the path name of all the created temporary files, so
+   --  that they can be deleted at the end, or when the program is interrupted.
+
    package Temp_Files_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Integer,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
       Table_Increment      => 10);
-   --  Table to store the path name of all the created temporary files, so that
-   --  they can be deleted at the end, or when the program is interrupted.
+
+   --  The following type is used to represent the part of a project tree which
+   --  is private to the Project Manager.
 
    type Private_Project_Tree_Data is record
       Temp_Files   : Temp_Files_Table.Instance;
@@ -2008,18 +2022,17 @@ private
       Current_Source_Path_File : Path_Name_Type := No_Path;
       --  Current value of project source path file env var. Used to avoid
       --  setting the env var to the same value. When different from No_Path,
-      --  this indicates that logical names (VMS) or environment variables were
-      --  created and should be deassigned to avoid polluting the environment
-      --  on VMS. This is for gnatmake only.
+      --  this indicates that environment variables were created and should be
+      --  deassigned to avoid polluting the environment. For gnatmake only.
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid
       --  setting the env var to the same value.
       --  gnatmake only
-
    end record;
-   --  Type to represent the part of a project tree which is private to the
-   --  Project Manager.
+
+   --  The following type is used to hold processing flags which show what
+   --  functions are required for the various tools that are handled.
 
    type Processing_Flags is record
       Require_Sources_Other_Lang : Boolean;
@@ -2034,52 +2047,64 @@ private
       Ignore_Missing_With        : Boolean;
    end record;
 
-   Gprbuild_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Warning,
-                       Require_Sources_Other_Lang => True,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => True,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Error,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprbuild_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Error,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gprclean_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Warning,
-                       Require_Sources_Other_Lang => True,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => True,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Warning,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprinstall_Flags : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Silent,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gprexec_Flags :  constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Silent,
-                       Require_Sources_Other_Lang => False,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => False,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Silent,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Silent,
-                       Ignore_Missing_With        => False);
+   Gprclean_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Warning,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gnatmake_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Error,
-                       Require_Sources_Other_Lang => False,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => False,
-                       Error_On_Unknown_Language  => False,
-                       Require_Obj_Dirs           => Error,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprexec_Flags    : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Silent,
+                         Require_Sources_Other_Lang => False,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => False,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Silent,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Silent,
+                         Ignore_Missing_With        => False);
+
+   Gnatmake_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Error,
+                         Require_Sources_Other_Lang => False,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => False,
+                         Error_On_Unknown_Language  => False,
+                         Require_Obj_Dirs           => Error,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
 end Prj;

@@ -1689,6 +1689,9 @@ Target uses a ColdFire FPU.
 @item hard_float
 Target supports FPU instructions.
 
+@item non_strict_align
+Target does not require strict alignment.
+
 @item sse
 Target supports compiling @code{sse} instructions.
 

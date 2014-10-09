@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
 #include "alloc-pool.h"
 #include "hash-table.h"
 #include "hash-map.h"
@@ -338,7 +339,7 @@ pool_free (alloc_pool pool, void *ptr)
 /* Output per-alloc_pool statistics.  */
 
 /* Used to accumulate statistics about alloc_pool sizes.  */
-struct output_info
+struct pool_output_info
 {
   unsigned long total_created;
   unsigned long total_allocated;
@@ -349,7 +350,7 @@ struct output_info
 bool
 print_alloc_pool_statistics (const char *const &name,
 			     const alloc_pool_descriptor &d,
-			     struct output_info *i)
+			     struct pool_output_info *i)
 {
   if (d.allocated)
     {
@@ -368,7 +369,7 @@ print_alloc_pool_statistics (const char *const &name,
 void
 dump_alloc_pool_statistics (void)
 {
-  struct output_info info;
+  struct pool_output_info info;
 
   if (! GATHER_STATISTICS)
     return;
@@ -380,7 +381,7 @@ dump_alloc_pool_statistics (void)
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   info.total_created = 0;
   info.total_allocated = 0;
-  alloc_pool_hash->traverse <struct output_info *,
+  alloc_pool_hash->traverse <struct pool_output_info *,
 			     print_alloc_pool_statistics> (&info);
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   fprintf (stderr, "%-22s           %7lu %10lu\n",

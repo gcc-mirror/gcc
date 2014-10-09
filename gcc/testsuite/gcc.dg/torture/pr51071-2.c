@@ -7,6 +7,7 @@ extern struct module __this_module;
 static inline void
 trace_module_get  (struct module *mod, uintptr_t ip) { }
 struct module;
+int module_is_live (struct module *);
 static inline __attribute__((no_instrument_function))
 int try_module_get(struct module *module)
 {
@@ -29,6 +30,7 @@ struct net_device;
 struct net_device_ops {
     int (*ndo_open)(struct net_device *dev);
 };
+int hdlc_open (struct net_device *);
 int t3e3_open(struct net_device *dev)
 {
   int ret = hdlc_open(dev);

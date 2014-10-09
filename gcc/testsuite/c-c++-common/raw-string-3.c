@@ -1,7 +1,7 @@
 // If not c++0x/gnu99, the {,u,u8,U,L}R prefix should be parsed as separate
 // token.
 // { dg-do compile }
-// { dg-options "" { target c } }
+// { dg-options "-std=gnu89" { target c } }
 // { dg-options "-std=c++98" { target c++ } }
 
 const void	*s0	= R"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }

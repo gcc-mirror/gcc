@@ -146,6 +146,11 @@ package body Lib is
       return Units.Table (U).Munit_Index;
    end Munit_Index;
 
+   function No_Elab_Code_All (U : Unit_Number_Type) return Boolean is
+   begin
+      return Units.Table (U).No_Elab_Code_All;
+   end No_Elab_Code_All;
+
    function OA_Setting (U : Unit_Number_Type) return Character is
    begin
       return Units.Table (U).OA_Setting;
@@ -225,6 +230,14 @@ package body Lib is
    begin
       Units.Table (U).Main_Priority := P;
    end Set_Main_Priority;
+
+   procedure Set_No_Elab_Code_All
+     (U : Unit_Number_Type;
+      B : Boolean := True)
+   is
+   begin
+      Units.Table (U).No_Elab_Code_All := B;
+   end Set_No_Elab_Code_All;
 
    procedure Set_OA_Setting (U : Unit_Number_Type; C : Character) is
    begin
@@ -1046,8 +1059,17 @@ package body Lib is
    ----------------
 
    procedure Store_Note (N : Node_Id) is
+      Sfile : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
+
    begin
-      Notes.Append ((Pragma_Node => N, Unit => Current_Sem_Unit));
+      --  Notes for a generic are emitted when processing the template, never
+      --  in instances.
+
+      if In_Extended_Main_Code_Unit (N)
+        and then Instance (Sfile) = No_Instance_Id
+      then
+         Notes.Append (N);
+      end if;
    end Store_Note;
 
    -------------------------------

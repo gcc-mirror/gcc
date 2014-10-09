@@ -5,6 +5,7 @@ typedef short gshort;
 typedef struct _GString GString;
 
 extern char *fgets(char *, int, FILE *);
+extern void g_string_append_c_inline (GString *, char);
 
 void verbose_text_loop (void *data)
 {

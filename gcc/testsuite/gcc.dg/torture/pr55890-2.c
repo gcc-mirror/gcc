@@ -1,4 +1,4 @@
 /* { dg-do compile } */
 
 extern void *memcpy();
-main() { memcpy(); }
+int main() { memcpy(); }

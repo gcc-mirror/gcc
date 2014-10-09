@@ -2,11 +2,12 @@
 /* { dg-options "-O2" } */
 #include <string.h>
 static inline
-__attribute__ ((cold))
+__attribute__ ((cold)) void
 my_cold_memset (void *a, int b,int c)
 {
   memset (a,b,c);
 }
+void
 t(void *a,int b,int c)
 {
   if (a)

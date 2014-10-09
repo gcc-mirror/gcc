@@ -3,6 +3,7 @@
 /* { dg-final { scan-assembler "cmov\[^3\]" } } */
 
 /* This conditional move is fastest to be done using cmov.  */
+int
 t(int a, int b)
 {
   return (a<=b?5:-5);

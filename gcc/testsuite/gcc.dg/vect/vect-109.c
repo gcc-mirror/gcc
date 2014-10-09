@@ -1,3 +1,4 @@
+/* { dg-skip-if "" { vect_no_align } } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>

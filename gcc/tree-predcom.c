@@ -350,7 +350,7 @@ static bitmap looparound_phis;
 
 /* Cache used by tree_to_aff_combination_expand.  */
 
-static struct pointer_map_t *name_expansions;
+static hash_map<tree, name_expansion *> *name_expansions;
 
 /* Dumps data reference REF to FILE.  */
 

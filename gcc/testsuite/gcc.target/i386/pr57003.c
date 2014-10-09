@@ -21,7 +21,7 @@ baz (unsigned long x)
   return d;
 }
 
-__attribute__ ((ms_abi, noinline, noclone))
+__attribute__ ((ms_abi, noinline, noclone)) void
 foo (void)
 {
   unsigned d;

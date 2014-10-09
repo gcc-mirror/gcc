@@ -231,6 +231,9 @@ const struct attribute_spec microblaze_attribute_table[] = {
 
 static int microblaze_interrupt_function_p (tree);
 
+static void microblaze_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
+static void microblaze_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
+
 section *sdata2_section;
 
 #ifdef HAVE_AS_TLS
@@ -568,10 +571,11 @@ load_tls_operand (rtx x, rtx reg)
   return reg;
 }
 
-static rtx
+static rtx_insn *
 microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
-  rtx insns, tls_entry;
+  rtx_insn *insns;
+  rtx tls_entry;
 
   df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
@@ -595,7 +599,8 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 rtx
 microblaze_legitimize_tls_address(rtx x, rtx reg)
 {
-  rtx dest, insns, ret, eqv, addend;
+  rtx dest, ret, eqv, addend;
+  rtx_insn *insns;
   enum tls_model model;
   model = SYMBOL_REF_TLS_MODEL (x);
 
@@ -1144,7 +1149,8 @@ microblaze_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
 static void
 microblaze_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
 {
-  rtx label, src_reg, dest_reg, final_src;
+  rtx_code_label *label;
+  rtx src_reg, dest_reg, final_src;
   HOST_WIDE_INT leftover;
 
   leftover = length % MAX_MOVE_BYTES;
@@ -2714,6 +2720,47 @@ microblaze_function_end_prologue (FILE * file)
     }
 }
 
+static void
+microblaze_elf_asm_cdtor (rtx symbol, int priority, bool is_ctor)
+{
+  section *s;
+
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      char buf[18];
+      sprintf (buf, "%s.%.5u",
+               is_ctor ? ".ctors" : ".dtors",
+               MAX_INIT_PRIORITY - priority);
+      s = get_section (buf, SECTION_WRITE, NULL_TREE);
+    }
+  else if (is_ctor)
+    s = ctors_section;
+  else
+    s = dtors_section;
+
+  switch_to_section (s);
+  assemble_align (POINTER_SIZE);
+  fputs ("\t.word\t", asm_out_file);
+  output_addr_const (asm_out_file, symbol);
+  fputs ("\n", asm_out_file);
+}
+
+/* Add a function to the list of static constructors.  */
+
+static void
+microblaze_elf_asm_constructor (rtx symbol, int priority)
+{
+  microblaze_elf_asm_cdtor (symbol, priority, /*is_ctor=*/true);
+}
+
+/* Add a function to the list of static destructors.  */
+
+static void
+microblaze_elf_asm_destructor (rtx symbol, int priority)
+{
+  microblaze_elf_asm_cdtor (symbol, priority, /*is_ctor=*/false);
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -2851,7 +2898,7 @@ microblaze_expand_prologue (void)
     {
       rtx fsiz_rtx = GEN_INT (fsiz);
 
-      rtx insn = NULL;
+      rtx_insn *insn = NULL;
       insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				    fsiz_rtx));
       if (insn)
@@ -2878,7 +2925,7 @@ microblaze_expand_prologue (void)
 
       if (frame_pointer_needed)
 	{
-	  rtx insn = 0;
+	  rtx_insn *insn = 0;
 
 	  insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
 				       stack_pointer_rtx));
@@ -3125,7 +3172,8 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
         HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
         tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
 
   reload_completed = 1;
   epilogue_completed = 1;
@@ -3306,7 +3354,7 @@ microblaze_asm_output_ident (const char *string)
   int size;
   char *buf;
 
-  if (cgraph_state != CGRAPH_STATE_PARSING)
+  if (symtab->state != PARSING)
     return;
 
   size = strlen (string) + 1;
@@ -3316,7 +3364,7 @@ microblaze_asm_output_ident (const char *string)
     section_asm_op = READONLY_DATA_SECTION_ASM_OP;
 
   buf = ACONCAT ((section_asm_op, "\n\t.ascii \"", string, "\\0\"\n", NULL));
-  add_asm_node (build_string (strlen (buf), buf));
+  symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
 static void
@@ -3430,12 +3478,12 @@ microblaze_expand_divide (rtx operands[])
   rtx regt1 = gen_reg_rtx (SImode); 
   rtx reg18 = gen_rtx_REG (SImode, R_TMP);
   rtx regqi = gen_reg_rtx (QImode);
-  rtx div_label = gen_label_rtx ();
-  rtx div_end_label = gen_label_rtx ();
+  rtx_code_label *div_label = gen_label_rtx ();
+  rtx_code_label *div_end_label = gen_label_rtx ();
   rtx div_table_rtx = gen_rtx_SYMBOL_REF (QImode,"_divsi3_table");
   rtx mem_rtx;
   rtx ret;
-  rtx jump, cjump, insn;
+  rtx_insn *jump, *cjump, *insn;
 
   insn = emit_insn (gen_iorsi3 (regt1, operands[1], operands[2]));
   cjump = emit_jump_insn_after (gen_cbranchsi4 (
@@ -3481,8 +3529,8 @@ microblaze_function_value (const_tree valtype,
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
-			rtx dep ATTRIBUTE_UNUSED, int cost)
+microblaze_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
+			rtx_insn *dep ATTRIBUTE_UNUSED, int cost)
 {
   if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
     return cost;

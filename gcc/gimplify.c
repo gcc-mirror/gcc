@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "expr.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "hash-table.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
@@ -134,7 +134,7 @@ struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
   splay_tree variables;
-  struct pointer_set_t *privatized_types;
+  hash_set<tree> *privatized_types;
   location_t location;
   enum omp_clause_default_kind default_kind;
   enum omp_region_type region_type;
@@ -352,7 +352,7 @@ new_omp_context (enum omp_region_type region_type)
   c = XCNEW (struct gimplify_omp_ctx);
   c->outer_context = gimplify_omp_ctxp;
   c->variables = splay_tree_new (splay_tree_compare_decl_uid, 0, 0);
-  c->privatized_types = pointer_set_create ();
+  c->privatized_types = new hash_set<tree>;
   c->location = input_location;
   c->region_type = region_type;
   if ((region_type & ORT_TASK) == 0)
@@ -369,7 +369,7 @@ static void
 delete_omp_context (struct gimplify_omp_ctx *c)
 {
   splay_tree_delete (c->variables);
-  pointer_set_destroy (c->privatized_types);
+  delete c->privatized_types;
   XDELETE (c);
 }
 
@@ -744,7 +744,7 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
      copy their subtrees if we can make sure to do it only once.  */
   if (code == SAVE_EXPR || code == TARGET_EXPR || code == BIND_EXPR)
     {
-      if (data && !pointer_set_insert ((struct pointer_set_t *)data, t))
+      if (data && !((hash_set<tree> *)data)->add (t))
 	;
       else
 	*walk_subtrees = 0;
@@ -826,18 +826,17 @@ copy_if_shared (tree *tp, void *data)
 static void
 unshare_body (tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_get_node (fndecl);
+  struct cgraph_node *cgn = cgraph_node::get (fndecl);
   /* If the language requires deep unsharing, we need a pointer set to make
      sure we don't repeatedly unshare subtrees of unshareable nodes.  */
-  struct pointer_set_t *visited
-    = lang_hooks.deep_unsharing ? pointer_set_create () : NULL;
+  hash_set<tree> *visited
+    = lang_hooks.deep_unsharing ? new hash_set<tree> : NULL;
 
   copy_if_shared (&DECL_SAVED_TREE (fndecl), visited);
   copy_if_shared (&DECL_SIZE (DECL_RESULT (fndecl)), visited);
   copy_if_shared (&DECL_SIZE_UNIT (DECL_RESULT (fndecl)), visited);
 
-  if (visited)
-    pointer_set_destroy (visited);
+  delete visited;
 
   if (cgn)
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
@@ -876,7 +875,7 @@ unmark_visited (tree *tp)
 static void
 unvisit_body (tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_get_node (fndecl);
+  struct cgraph_node *cgn = cgraph_node::get (fndecl);
 
   unmark_visited (&DECL_SAVED_TREE (fndecl));
   unmark_visited (&DECL_SIZE (DECL_RESULT (fndecl)));
@@ -1733,7 +1732,7 @@ gimplify_conversion (tree *expr_p)
 }
 
 /* Nonlocal VLAs seen in the current function.  */
-static struct pointer_set_t *nonlocal_vlas;
+static hash_set<tree> *nonlocal_vlas;
 
 /* The VAR_DECLs created for nonlocal VLAs for debug info purposes.  */
 static tree nonlocal_vla_vars;
@@ -1784,7 +1783,7 @@ gimplify_var_or_parm_decl (tree *expr_p)
 		 && (ctx->region_type == ORT_WORKSHARE
 		     || ctx->region_type == ORT_SIMD))
 	    ctx = ctx->outer_context;
-	  if (!ctx && !pointer_set_insert (nonlocal_vlas, decl))
+	  if (!ctx && !nonlocal_vlas->add (decl))
 	    {
 	      tree copy = copy_node (decl);
 
@@ -2318,14 +2317,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	}
       case BUILT_IN_LINE:
 	{
-	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
-	  *expr_p = build_int_cst (TREE_TYPE (*expr_p), loc.line);
+	  *expr_p = build_int_cst (TREE_TYPE (*expr_p),
+				   LOCATION_LINE (EXPR_LOCATION (*expr_p)));
 	  return GS_OK;
 	}
       case BUILT_IN_FILE:
 	{
-	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
-	  *expr_p = build_string_literal (strlen (loc.file) + 1, loc.file);
+	  const char *locfile = LOCATION_FILE (EXPR_LOCATION (*expr_p));
+	  *expr_p = build_string_literal (strlen (locfile) + 1, locfile);
 	  return GS_OK;
 	}
       case BUILT_IN_FUNCTION:
@@ -4022,12 +4021,6 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		break;
 	      }
 
-	    /* Don't reduce an initializer constant even if we can't
-	       make a VECTOR_CST.  It won't do anything for us, and it'll
-	       prevent us from representing it as a single constant.  */
-	    if (initializer_constant_valid_p (ctor, type))
-	      break;
-
 	    TREE_CONSTANT (ctor) = 0;
 	  }
 
@@ -5463,7 +5456,7 @@ omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *ctx, tree type)
     return;
   type = TYPE_MAIN_VARIANT (type);
 
-  if (pointer_set_insert (ctx->privatized_types, type))
+  if (ctx->privatized_types->add (type))
     return;
 
   switch (TREE_CODE (type))
@@ -6209,6 +6202,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
 	    remove = true;
@@ -6309,7 +6303,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 		= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (on && (on->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
 				      | GOVD_PRIVATE | GOVD_REDUCTION
-				      | GOVD_LINEAR)) != 0)
+				      | GOVD_LINEAR | GOVD_MAP)) != 0)
 		break;
 	      ctx = ctx->outer_context;
 	    }
@@ -6585,6 +6579,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  break;
 
 	default:
@@ -7057,6 +7052,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
     case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
     case CILK_SIMD: kind = GF_OMP_FOR_KIND_CILKSIMD; break;
+    case CILK_FOR: kind = GF_OMP_FOR_KIND_CILKFOR; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     default:
       gcc_unreachable ();
@@ -8129,6 +8125,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_FOR:
 	case OMP_SIMD:
 	case CILK_SIMD:
+	case CILK_FOR:
 	case OMP_DISTRIBUTE:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;
@@ -8764,9 +8761,9 @@ gimplify_body (tree fndecl, bool do_parms)
   unshare_body (fndecl);
   unvisit_body (fndecl);
 
-  cgn = cgraph_get_node (fndecl);
+  cgn = cgraph_node::get (fndecl);
   if (cgn && cgn->origin)
-    nonlocal_vlas = pointer_set_create ();
+    nonlocal_vlas = new hash_set<tree>;
 
   /* Make sure input_location isn't set to something weird.  */
   input_location = DECL_SOURCE_LOCATION (fndecl);
@@ -8830,7 +8827,7 @@ gimplify_body (tree fndecl, bool do_parms)
 			 nonlocal_vla_vars);
 	  nonlocal_vla_vars = NULL_TREE;
 	}
-      pointer_set_destroy (nonlocal_vlas);
+      delete nonlocal_vlas;
       nonlocal_vlas = NULL;
     }
 

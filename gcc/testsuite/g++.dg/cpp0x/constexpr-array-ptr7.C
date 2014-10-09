@@ -17,4 +17,4 @@ S::foo ()
 constexpr S s = { 0,1,2,3,4,5,6,7,8,9,10 };
 
 #define SA(X) static_assert ((X), #X)
-SA(s.foo() == 10);
+SA(s.foo() == 10); // { dg-error "discards qualifiers" "" { target c++14 } }

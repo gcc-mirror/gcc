@@ -3,7 +3,7 @@
 /* { dg-options "-Wconversion -Woverflow" } */
 
 int f (unsigned int);
-typedef sitype __attribute__((mode(SI)));
+typedef int sitype __attribute__((mode(SI)));
 
 int
 g (void)

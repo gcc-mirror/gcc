@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,15 +59,15 @@ package body Stream_Attributes is
    -- EO_To_String --
    ------------------
 
-   --  We use the null string to represent the null occurrence, otherwise
-   --  we output the Exception_Information string for the occurrence.
+   --  We use the null string to represent the null occurrence, otherwise we
+   --  output the Untailored_Exception_Information string for the occurrence.
 
    function EO_To_String (X : Exception_Occurrence) return String is
    begin
       if X.Id = Null_Id then
          return "";
       else
-         return Exception_Information (X);
+         return Exception_Data.Untailored_Exception_Information (X);
       end if;
    end EO_To_String;
 

@@ -154,7 +154,6 @@ lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
   static int current_line;
   static int current_col;
   bool file_change, line_change, column_change;
-  unsigned len;
   bool prev_file = current_file != NULL;
 
   if (bp_unpack_value (bp, 1))
@@ -165,10 +164,7 @@ lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
   column_change = bp_unpack_value (bp, 1);
 
   if (file_change)
-    current_file = canon_file_name
-		     (string_for_index (data_in,
-					bp_unpack_var_len_unsigned (bp),
-					&len));
+    current_file = canon_file_name (bp_unpack_string (data_in, bp));
 
   if (line_change)
     current_line = bp_unpack_var_len_unsigned (bp);
@@ -936,9 +932,9 @@ input_function (tree fn_decl, struct data_in *data_in,
 
   gimple_register_cfg_hooks ();
 
-  node = cgraph_get_node (fn_decl);
+  node = cgraph_node::get (fn_decl);
   if (!node)
-    node = cgraph_create_node (fn_decl);
+    node = cgraph_node::create (fn_decl);
   input_struct_function_base (fn, data_in, ib);
   input_cfg (ib_cfg, data_in, fn, node->count_materialization_scale);
 
@@ -1054,8 +1050,6 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
   int cfg_offset;
   int main_offset;
   int string_offset;
-  struct lto_input_block ib_cfg;
-  struct lto_input_block ib_main;
   tree fn_decl = node->decl;
 
   header = (const struct lto_function_header *) data;
@@ -1064,26 +1058,11 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
       cfg_offset = sizeof (struct lto_function_header);
       main_offset = cfg_offset + header->cfg_size;
       string_offset = main_offset + header->main_size;
-
-      LTO_INIT_INPUT_BLOCK (ib_cfg,
-			    data + cfg_offset,
-			    0,
-			    header->cfg_size);
-
-      LTO_INIT_INPUT_BLOCK (ib_main,
-			    data + main_offset,
-			    0,
-			    header->main_size);
     }
   else
     {
       main_offset = sizeof (struct lto_function_header);
       string_offset = main_offset + header->main_size;
-
-      LTO_INIT_INPUT_BLOCK (ib_main,
-			    data + main_offset,
-			    0,
-			    header->main_size);
     }
 
   data_in = lto_data_in_create (file_data, data + string_offset,
@@ -1104,8 +1083,12 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
+      lto_input_block ib_main (data + main_offset, header->main_size);
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
-        input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	{
+	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size);
+	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	}
       else
         input_constructor (fn_decl, data_in, &ib_main);
       /* And fixup types we streamed locally.  */
@@ -1324,15 +1307,7 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
   else if (tag == LTO_tree_scc)
-    {
-      unsigned len, entry_len;
-
-      /* Input and skip the SCC.  */
-      lto_input_scc (ib, data_in, &len, &entry_len);
-
-      /* Recurse.  */
-      return lto_input_tree (ib, data_in);
-    }
+    gcc_unreachable ();
   else
     {
       /* Otherwise, materialize a new node from IB.  */
@@ -1345,7 +1320,15 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
 tree
 lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
-  return lto_input_tree_1 (ib, data_in, streamer_read_record_start (ib), 0);
+  enum LTO_tags tag;
+
+  /* Input and skip SCCs.  */
+  while ((tag = streamer_read_record_start (ib)) == LTO_tree_scc)
+    {
+      unsigned len, entry_len;
+      lto_input_scc (ib, data_in, &len, &entry_len);
+    }
+  return lto_input_tree_1 (ib, data_in, tag, 0);
 }
 
 
@@ -1357,10 +1340,10 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   size_t len;
   const char *data = lto_get_section_data (file_data, LTO_section_asm,
 					   NULL, &len);
-  const struct lto_asm_header *header = (const struct lto_asm_header *) data;
+  const struct lto_simple_header_with_strings *header
+    = (const struct lto_simple_header_with_strings *) data;
   int string_offset;
   struct data_in *data_in;
-  struct lto_input_block ib;
   tree str;
 
   if (! data)
@@ -1368,20 +1351,17 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 
   string_offset = sizeof (*header) + header->main_size;
 
-  LTO_INIT_INPUT_BLOCK (ib,
-			data + sizeof (*header),
-			0,
-			header->main_size);
+  lto_input_block ib (data + sizeof (*header), header->main_size);
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
 
   while ((str = streamer_read_string_cst (data_in, &ib)))
     {
-      struct asm_node *node = add_asm_node (str);
+      asm_node *node = symtab->finalize_toplevel_asm (str);
       node->order = streamer_read_hwi (&ib) + order_base;
-      if (node->order >= symtab_order)
-	symtab_order = node->order + 1;
+      if (node->order >= symtab->order)
+	symtab->order = node->order + 1;
     }
 
   lto_data_in_delete (data_in);
@@ -1427,6 +1407,5 @@ lto_data_in_delete (struct data_in *data_in)
 {
   data_in->globals_resolution.release ();
   streamer_tree_cache_delete (data_in->reader_cache);
-  free (data_in->labels);
   free (data_in);
 }

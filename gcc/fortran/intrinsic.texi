@@ -63,12 +63,12 @@ Some basic guidelines for editing this document:
 * @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
 * @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
 * @code{ATOMIC_CAS}:    ATOMIC_CAS, Atomic compare and swap
+* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_FETCH_ADD}: ATOMIC_FETCH_ADD, Atomic ADD operation with prior fetch
 * @code{ATOMIC_FETCH_AND}: ATOMIC_FETCH_AND, Atomic bitwise AND operation with prior fetch
 * @code{ATOMIC_FETCH_OR}: ATOMIC_FETCH_OR, Atomic bitwise OR operation with prior fetch
 * @code{ATOMIC_FETCH_XOR}: ATOMIC_FETCH_XOR, Atomic bitwise XOR operation with prior fetch
 * @code{ATOMIC_OR}:     ATOMIC_OR, Atomic bitwise OR operation
-* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
 * @code{ATOMIC_XOR}:    ATOMIC_XOR, Atomic bitwise OR operation
 * @code{BACKTRACE}:     BACKTRACE, Show a backtrace
@@ -95,6 +95,7 @@ Some basic guidelines for editing this document:
 * @code{CHDIR}:         CHDIR,     Change working directory
 * @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
+* @code{CO_BROADCAST}:  CO_BROADCAST, Copy a value to all images the current set of images
 * @code{CO_MAX}:        CO_MAX,    Maximal value on the current set of images
 * @code{CO_MIN}:        CO_MIN,    Minimal value on the current set of images
 * @code{CO_SUM}:        CO_SUM,    Sum of values on the current set of images
@@ -3291,6 +3292,59 @@ end program test_cmplx
 
 
 
+@node CO_BROADCAST
+@section @code{CO_BROADCAST} --- Copy a value to all images the current set of images
+@fnindex CO_BROADCAST
+@cindex Collectives, value broadcasting
+
+@table @asis
+@item @emph{Description}:
+@code{CO_BROADCAST} copies the value of argument @var{A} on the image with
+image index @code{SOURCE_IMAGE} to all images in the current team.  @var{A}
+becomes defined as if by intrinsic assignment.  If the execution was
+successful and @var{STAT} is present, it is assigned the value zero.  If the
+execution failed, @var{STAT} gets assigned a nonzero value and, if present,
+@var{ERRMSG} gets assigned a value describing the occurred error.
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
+@item @emph{Class}:
+Collective subroutine
+
+@item @emph{Syntax}:
+@code{CALL CO_BROADCAST(A, SOURCE_IMAGE [, STAT, ERRMSG])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}            @tab INTENT(INOUT) argument; shall have the same
+dynamic type and type paramters on all images of the current team. If it
+is an array, it shall have the same shape on all images.
+@item @var{SOURCE_IMAGE} @tab (optional) a scalar integer expression.
+It shall have the same the same value on all images and refer to an
+image of the current team.
+@item @var{STAT}         @tab (optional) a scalar integer variable
+@item @var{ERRMSG}       @tab (optional) a scalar character variable
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: val(3)
+  if (this_image() == 1) then
+    val = [1, 5, 3]
+  end if
+  call co_broadcast (val, source_image=1)
+  print *, this_image, ":", val
+end program test
+@end smallexample
+
+@item @emph{See also}:
+@ref{CO_MAX}, @ref{CO_MIN}, @ref{CO_SUM}
+@end table
+
+
+
 @node CO_MAX
 @section @code{CO_MAX} --- Maximal value on the current set of images
 @fnindex CO_MAX
@@ -3340,7 +3394,7 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MIN}, @ref{CO_SUM}
+@ref{CO_MIN}, @ref{CO_SUM}, @ref{CO_BROADCAST}
 @end table
 
 
@@ -3394,7 +3448,7 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MAX}, @ref{CO_SUM}
+@ref{CO_MAX}, @ref{CO_SUM}, @ref{CO_BROADCAST}
 @end table
 
 
@@ -3448,7 +3502,7 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MAX}, @ref{CO_MIN}
+@ref{CO_MAX}, @ref{CO_MIN}, @ref{CO_BROADCAST}
 @end table
 
 
@@ -7370,9 +7424,10 @@ the following rules:
 @item (A)
 If @var{A} is of type @code{INTEGER}, @code{INT(A) = A} 
 @item (B)
-If @var{A} is of type @code{REAL} and @math{|A| < 1}, @code{INT(A)} equals @code{0}. 
-If @math{|A| \geq 1}, then @code{INT(A)} equals the largest integer that does not exceed 
-the range of @var{A} and whose sign is the same as the sign of @var{A}.
+If @var{A} is of type @code{REAL} and @math{|A| < 1}, @code{INT(A)}
+equals @code{0}. If @math{|A| \geq 1}, then @code{INT(A)} is the integer
+whose magnitude is the largest integer that does not exceed the magnitude
+of @var{A} and whose sign is the same as the sign of @var{A}.
 @item (C)
 If @var{A} is of type @code{COMPLEX}, rule B is applied to the real part of @var{A}.
 @end table
@@ -12204,8 +12259,10 @@ number of bytes occupied by the argument.  If the argument has the
 to is returned.  If the argument is of a derived type with @code{POINTER}
 or @code{ALLOCATABLE} components, the return value does not account for
 the sizes of the data pointed to by these components. If the argument is
-polymorphic, the size according to the declared type is returned. The argument
-may not be a procedure or procedure pointer.
+polymorphic, the size according to the dynamic type is returned. The argument
+may not be a procedure or procedure pointer. Note that the code assumes for
+arrays that those are contiguous; for contiguous arrays, it returns the
+storage or an array element multiplied by the size of the array.
 
 @item @emph{Example}:
 @smallexample

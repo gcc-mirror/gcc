@@ -14,6 +14,8 @@ struct gpsdisplay {
   struct displayfuncs *funcs;
 };
 
+void PSDoArc ();
+
 static void PSMyArc(double cx, double cy, double radx, double rady, double sa,
 		    double ta)
 {

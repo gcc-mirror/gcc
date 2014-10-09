@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2008-2009  Free Software Foundation, Inc.          --
+--          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,10 @@ with Interfaces.C;
 package Ada.Calendar.Conversions is
 
    function To_Ada_Time (Unix_Time : Interfaces.C.long) return Time;
-   --  Convert a time value represented as number of seconds since the Unix
-   --  Epoch to a time value relative to an Ada implementation-defined Epoch.
-   --  The units of the result are 100 nanoseconds on VMS and nanoseconds on
-   --  all other targets. Raises Time_Error if the result cannot fit into a
-   --  Time value.
+   --  Convert a time value represented as number of seconds since the
+   --  Unix Epoch to a time value relative to an Ada implementation-defined
+   --  Epoch. The units of the result are nanoseconds on all targets. Raises
+   --  Time_Error if the result cannot fit into a Time value.
 
    function To_Ada_Time
      (tm_year  : Interfaces.C.int;

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "toplev.h" /* get_random_seed */
 #include "hashtab.h"
+#include "inchash.h"
 #include "filenames.h"
 #include "output.h"
 #include "target.h"
@@ -51,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "basic-block.h"
 #include "bitmap.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -230,8 +230,8 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 static int type_hash_marked_p (const void *);
-static unsigned int type_hash_list (const_tree, hashval_t);
-static unsigned int attribute_hash_list (const_tree, hashval_t);
+static void type_hash_list (const_tree, inchash::hash &);
+static void attribute_hash_list (const_tree, inchash::hash &);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -281,6 +281,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_SECTIONS  */
   0, /* OMP_CLAUSE_TASKGROUP  */
   1, /* OMP_CLAUSE__SIMDUID_  */
+  1, /* OMP_CLAUSE__CILK_FOR_COUNT_  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -324,7 +325,8 @@ const char * const omp_clause_code_name[] =
   "parallel",
   "sections",
   "taskgroup",
-  "_simduid_"
+  "_simduid_",
+  "_Cilk_for_count_"
 };
 
 
@@ -603,7 +605,7 @@ decl_assembler_name (tree decl)
 tree
 decl_comdat_group (const_tree node)
 {
-  struct symtab_node *snode = symtab_get_node (node);
+  struct symtab_node *snode = symtab_node::get (node);
   if (!snode)
     return NULL;
   return snode->get_comdat_group ();
@@ -613,7 +615,7 @@ decl_comdat_group (const_tree node)
 tree
 decl_comdat_group_id (const_tree node)
 {
-  struct symtab_node *snode = symtab_get_node (node);
+  struct symtab_node *snode = symtab_node::get (node);
   if (!snode)
     return NULL;
   return snode->get_comdat_group_id ();
@@ -624,7 +626,7 @@ decl_comdat_group_id (const_tree node)
 const char *
 decl_section_name (const_tree node)
 {
-  struct symtab_node *snode = symtab_get_node (node);
+  struct symtab_node *snode = symtab_node::get (node);
   if (!snode)
     return NULL;
   return snode->get_section ();
@@ -639,14 +641,14 @@ set_decl_section_name (tree node, const char *value)
 
   if (value == NULL)
     {
-      snode = symtab_get_node (node);
+      snode = symtab_node::get (node);
       if (!snode)
 	return;
     }
   else if (TREE_CODE (node) == VAR_DECL)
-    snode = varpool_node_for_decl (node);
+    snode = varpool_node::get_create (node);
   else
-    snode = cgraph_get_create_node (node);
+    snode = cgraph_node::get_create (node);
   snode->set_section (value);
 }
 
@@ -654,7 +656,7 @@ set_decl_section_name (tree node, const char *value)
 enum tls_model
 decl_tls_model (const_tree node)
 {
-  struct varpool_node *snode = varpool_get_node (node);
+  struct varpool_node *snode = varpool_node::get (node);
   if (!snode)
     return TLS_MODEL_NONE;
   return snode->tls_model;
@@ -668,12 +670,12 @@ set_decl_tls_model (tree node, enum tls_model model)
 
   if (model == TLS_MODEL_NONE)
     {
-      vnode = varpool_get_node (node);
+      vnode = varpool_node::get (node);
       if (!vnode)
 	return;
     }
   else
-    vnode = varpool_node_for_decl (node);
+    vnode = varpool_node::get_create (node);
   vnode->tls_model = model;
 }
 
@@ -2167,6 +2169,21 @@ integer_onep (const_tree expr)
     }
 }
 
+/* Return 1 if EXPR is the integer constant one.  For complex and vector,
+   return 1 if every piece is the integer constant one.  */
+
+int
+integer_each_onep (const_tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return (integer_onep (TREE_REALPART (expr))
+	    && integer_onep (TREE_IMAGPART (expr)));
+  else
+    return integer_onep (expr);
+}
+
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
    it contains, or a complex or vector whose subparts are such integers.  */
 
@@ -2813,16 +2830,6 @@ bit_position (const_tree field)
 {
   return bit_from_pos (DECL_FIELD_OFFSET (field),
 		       DECL_FIELD_BIT_OFFSET (field));
-}
-
-/* Likewise, but return as an integer.  It must be representable in
-   that way (since it could be a signed value, we don't have the
-   option of returning -1 like int_size_in_byte can.  */
-
-HOST_WIDE_INT
-int_bit_position (const_tree field)
-{
-  return tree_to_shwi (bit_position (field));
 }
 
 /* Return the byte position of FIELD, in bytes from the start of the record.
@@ -4568,7 +4575,7 @@ build_block (tree vars, tree subblocks, tree supercontext, tree chain)
 void
 protected_set_expr_location (tree t, location_t loc)
 {
-  if (t && CAN_HAVE_LOCATION_P (t))
+  if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, loc);
 }
 
@@ -4582,56 +4589,6 @@ build_decl_attribute_variant (tree ddecl, tree attribute)
   return ddecl;
 }
 
-/* Borrowed from hashtab.c iterative_hash implementation.  */
-#define mix(a,b,c) \
-{ \
-  a -= b; a -= c; a ^= (c>>13); \
-  b -= c; b -= a; b ^= (a<< 8); \
-  c -= a; c -= b; c ^= ((b&0xffffffff)>>13); \
-  a -= b; a -= c; a ^= ((c&0xffffffff)>>12); \
-  b -= c; b -= a; b = (b ^ (a<<16)) & 0xffffffff; \
-  c -= a; c -= b; c = (c ^ (b>> 5)) & 0xffffffff; \
-  a -= b; a -= c; a = (a ^ (c>> 3)) & 0xffffffff; \
-  b -= c; b -= a; b = (b ^ (a<<10)) & 0xffffffff; \
-  c -= a; c -= b; c = (c ^ (b>>15)) & 0xffffffff; \
-}
-
-
-/* Produce good hash value combining VAL and VAL2.  */
-hashval_t
-iterative_hash_hashval_t (hashval_t val, hashval_t val2)
-{
-  /* the golden ratio; an arbitrary value.  */
-  hashval_t a = 0x9e3779b9;
-
-  mix (a, val, val2);
-  return val2;
-}
-
-/* Produce good hash value combining VAL and VAL2.  */
-hashval_t
-iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
-{
-  if (sizeof (HOST_WIDE_INT) == sizeof (hashval_t))
-    return iterative_hash_hashval_t (val, val2);
-  else
-    {
-      hashval_t a = (hashval_t) val;
-      /* Avoid warnings about shifting of more than the width of the type on
-         hosts that won't execute this path.  */
-      int zero = 0;
-      hashval_t b = (hashval_t) (val >> (sizeof (hashval_t) * 8 + zero));
-      mix (a, b, val2);
-      if (sizeof (HOST_WIDE_INT) > 2 * sizeof (hashval_t))
-	{
-	  hashval_t a = (hashval_t) (val >> (sizeof (hashval_t) * 16 + zero));
-	  hashval_t b = (hashval_t) (val >> (sizeof (hashval_t) * 24 + zero));
-	  mix (a, b, val2);
-	}
-      return val2;
-    }
-}
-
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE and its qualifiers are QUALS.
 
@@ -4642,7 +4599,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      hashval_t hashcode = 0;
+      inchash::hash hstate;
       tree ntype;
       int i;
       tree t;
@@ -4670,39 +4627,37 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       TYPE_ATTRIBUTES (ntype) = attribute;
 
-      hashcode = iterative_hash_object (code, hashcode);
+      hstate.add_int (code);
       if (TREE_TYPE (ntype))
-	hashcode = iterative_hash_object (TYPE_HASH (TREE_TYPE (ntype)),
-					  hashcode);
-      hashcode = attribute_hash_list (attribute, hashcode);
+	hstate.add_object (TYPE_HASH (TREE_TYPE (ntype)));
+      attribute_hash_list (attribute, hstate);
 
       switch (TREE_CODE (ntype))
 	{
 	case FUNCTION_TYPE:
-	  hashcode = type_hash_list (TYPE_ARG_TYPES (ntype), hashcode);
+	  type_hash_list (TYPE_ARG_TYPES (ntype), hstate);
 	  break;
 	case ARRAY_TYPE:
 	  if (TYPE_DOMAIN (ntype))
-	    hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (ntype)),
-					      hashcode);
+	    hstate.add_object (TYPE_HASH (TYPE_DOMAIN (ntype)));
 	  break;
 	case INTEGER_TYPE:
 	  t = TYPE_MAX_VALUE (ntype);
 	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	    hashcode = iterative_hash_object (TREE_INT_CST_ELT (t, i), hashcode);
+	    hstate.add_object (TREE_INT_CST_ELT (t, i));
 	  break;
 	case REAL_TYPE:
 	case FIXED_POINT_TYPE:
 	  {
 	    unsigned int precision = TYPE_PRECISION (ntype);
-	    hashcode = iterative_hash_object (precision, hashcode);
+	    hstate.add_object (precision);
 	  }
 	  break;
 	default:
 	  break;
 	}
 
-      ntype = type_hash_canon (hashcode, ntype);
+      ntype = type_hash_canon (hstate.end(), ntype);
 
       /* If the target-dependent attributes make NTYPE different from
 	 its canonical type, we will need to use structural equality
@@ -5030,6 +4985,17 @@ free_lang_data_in_type (tree type)
 static inline bool
 need_assembler_name_p (tree decl)
 {
+  /* We use DECL_ASSEMBLER_NAME to hold mangled type names for One Definition Rule
+     merging.  */
+  if (flag_lto_odr_type_mering
+      && TREE_CODE (decl) == TYPE_DECL
+      && DECL_NAME (decl)
+      && decl == TYPE_NAME (TREE_TYPE (decl))
+      && !is_lang_specific (TREE_TYPE (decl))
+      && AGGREGATE_TYPE_P (TREE_TYPE (decl))
+      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE)
+      && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
+    return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
   if (TREE_CODE (decl) != FUNCTION_DECL
       && TREE_CODE (decl) != VAR_DECL)
@@ -5042,7 +5008,7 @@ need_assembler_name_p (tree decl)
     return false;
 
   /* Abstract decls do not need an assembler name.  */
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT_P (decl))
     return false;
 
   /* For VAR_DECLs, only static, public and external symbols need an
@@ -5062,7 +5028,7 @@ need_assembler_name_p (tree decl)
 	return false;
 
       /* Functions represented in the callgraph need an assembler name.  */
-      if (cgraph_get_node (decl) != NULL)
+      if (cgraph_node::get (decl) != NULL)
 	return true;
 
       /* Unused and not public functions don't need an assembler name.  */
@@ -5105,11 +5071,11 @@ free_lang_data_in_decl (tree decl)
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node;
-      if (!(node = cgraph_get_node (decl))
+      if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
 	{
 	  if (node)
-	    cgraph_release_function_body (node);
+	    node->release_body ();
 	  else
 	    {
 	      release_function_body (decl);
@@ -5194,7 +5160,7 @@ struct free_lang_data_d
   vec<tree> worklist;
 
   /* Set of traversed objects.  Used to avoid duplicate visits.  */
-  struct pointer_set_t *pset;
+  hash_set<tree> *pset;
 
   /* Array of symbols to process with free_lang_data_in_decl.  */
   vec<tree> decls;
@@ -5259,7 +5225,7 @@ add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
 static inline void
 fld_worklist_push (tree t, struct free_lang_data_d *fld)
 {
-  if (t && !is_lang_specific (t) && !pointer_set_contains (fld->pset, t))
+  if (t && !is_lang_specific (t) && !fld->pset->contains (t))
     fld->worklist.safe_push ((t));
 }
 
@@ -5425,7 +5391,7 @@ find_decls_types (tree t, struct free_lang_data_d *fld)
 {
   while (1)
     {
-      if (!pointer_set_contains (fld->pset, t))
+      if (!fld->pset->contains (t))
 	walk_tree (&t, find_decls_types_r, fld, fld->pset);
       if (fld->worklist.is_empty ())
 	break;
@@ -5635,7 +5601,7 @@ free_lang_data_in_cgraph (void)
   alias_pair *p;
 
   /* Initialize sets and arrays to store referenced decls and types.  */
-  fld.pset = pointer_set_create ();
+  fld.pset = new hash_set<tree>;
   fld.worklist.create (0);
   fld.decls.create (100);
   fld.types.create (100);
@@ -5665,7 +5631,7 @@ free_lang_data_in_cgraph (void)
   FOR_EACH_VEC_ELT (fld.types, i, t)
     free_lang_data_in_type (t);
 
-  pointer_set_destroy (fld.pset);
+  delete fld.pset;
   fld.worklist.release ();
   fld.decls.release ();
   fld.types.release ();
@@ -6219,19 +6185,27 @@ set_type_quals (tree type, int type_quals)
   TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
 }
 
-/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
+/* Returns true iff unqualified CAND and BASE are equivalent.  */
 
 bool
-check_qualified_type (const_tree cand, const_tree base, int type_quals)
+check_base_type (const_tree cand, const_tree base)
 {
-  return (TYPE_QUALS (cand) == type_quals
-	  && TYPE_NAME (cand) == TYPE_NAME (base)
+  return (TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == TYPE_ALIGN (base)
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base)));
+}
+
+/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
+
+bool
+check_qualified_type (const_tree cand, const_tree base, int type_quals)
+{
+  return (TYPE_QUALS (cand) == type_quals
+	  && check_base_type (cand, base));
 }
 
 /* Returns true iff CAND is equivalent to BASE with ALIGN.  */
@@ -6488,7 +6462,7 @@ tree_decl_map_hash (const void *item)
 priority_type
 decl_init_priority_lookup (tree decl)
 {
-  symtab_node *snode = symtab_get_node (decl);
+  symtab_node *snode = symtab_node::get (decl);
 
   if (!snode)
     return DEFAULT_INIT_PRIORITY;
@@ -6501,7 +6475,7 @@ decl_init_priority_lookup (tree decl)
 priority_type
 decl_fini_priority_lookup (tree decl)
 {
-  cgraph_node *node = cgraph_get_node (decl);
+  cgraph_node *node = cgraph_node::get (decl);
 
   if (!node)
     return DEFAULT_INIT_PRIORITY;
@@ -6518,14 +6492,14 @@ decl_init_priority_insert (tree decl, priority_type priority)
 
   if (priority == DEFAULT_INIT_PRIORITY)
     {
-      snode = symtab_get_node (decl);
+      snode = symtab_node::get (decl);
       if (!snode)
 	return;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
-    snode = varpool_node_for_decl (decl);
+    snode = varpool_node::get_create (decl);
   else
-    snode = cgraph_get_create_node (decl);
+    snode = cgraph_node::get_create (decl);
   snode->set_init_priority (priority);
 }
 
@@ -6538,12 +6512,12 @@ decl_fini_priority_insert (tree decl, priority_type priority)
 
   if (priority == DEFAULT_INIT_PRIORITY)
     {
-      node = cgraph_get_node (decl);
+      node = cgraph_node::get (decl);
       if (!node)
 	return;
     }
   else
-    node = cgraph_get_create_node (decl);
+    node = cgraph_node::get_create (decl);
   node->set_fini_priority (priority);
 }
 
@@ -6681,17 +6655,14 @@ decl_debug_args_insert (tree from)
    with types in the TREE_VALUE slots), by adding the hash codes
    of the individual types.  */
 
-static unsigned int
-type_hash_list (const_tree list, hashval_t hashcode)
+static void
+type_hash_list (const_tree list, inchash::hash &hstate)
 {
   const_tree tail;
 
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     if (TREE_VALUE (tail) != error_mark_node)
-      hashcode = iterative_hash_object (TYPE_HASH (TREE_VALUE (tail)),
-					hashcode);
-
-  return hashcode;
+      hstate.add_object (TYPE_HASH (TREE_VALUE (tail)));
 }
 
 /* These are the Hashtable callback functions.  */
@@ -6818,44 +6789,6 @@ type_hash_hash (const void *item)
   return ((const struct type_hash *) item)->hash;
 }
 
-/* Look in the type hash table for a type isomorphic to TYPE.
-   If one is found, return it.  Otherwise return 0.  */
-
-static tree
-type_hash_lookup (hashval_t hashcode, tree type)
-{
-  struct type_hash *h, in;
-
-  /* The TYPE_ALIGN field of a type is set by layout_type(), so we
-     must call that routine before comparing TYPE_ALIGNs.  */
-  layout_type (type);
-
-  in.hash = hashcode;
-  in.type = type;
-
-  h = (struct type_hash *) htab_find_with_hash (type_hash_table, &in,
-						hashcode);
-  if (h)
-    return h->type;
-  return NULL_TREE;
-}
-
-/* Add an entry to the type-hash-table
-   for a type TYPE whose hash code is HASHCODE.  */
-
-static void
-type_hash_add (hashval_t hashcode, tree type)
-{
-  struct type_hash *h;
-  void **loc;
-
-  h = ggc_alloc<type_hash> ();
-  h->hash = hashcode;
-  h->type = type;
-  loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
-  *loc = (void *)h;
-}
-
 /* Given TYPE, and HASHCODE its hash code, return the canonical
    object for an identical type if one already exists.
    Otherwise, return TYPE, and record it as the canonical object.
@@ -6868,17 +6801,25 @@ type_hash_add (hashval_t hashcode, tree type)
 tree
 type_hash_canon (unsigned int hashcode, tree type)
 {
-  tree t1;
+  type_hash in;
+  void **loc;
 
   /* The hash table only contains main variants, so ensure that's what we're
      being passed.  */
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
-  /* See if the type is in the hash table already.  If so, return it.
-     Otherwise, add the type.  */
-  t1 = type_hash_lookup (hashcode, type);
-  if (t1 != 0)
+  /* The TYPE_ALIGN field of a type is set by layout_type(), so we
+     must call that routine before comparing TYPE_ALIGNs.  */
+  layout_type (type);
+
+  in.hash = hashcode;
+  in.type = type;
+
+  loc = htab_find_slot_with_hash (type_hash_table, &in, hashcode, INSERT);
+  if (*loc)
     {
+      tree t1 = ((type_hash *) *loc)->type;
+      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
       if (GATHER_STATISTICS)
 	{
 	  tree_code_counts[(int) TREE_CODE (type)]--;
@@ -6889,7 +6830,13 @@ type_hash_canon (unsigned int hashcode, tree type)
     }
   else
     {
-      type_hash_add (hashcode, type);
+      struct type_hash *h;
+
+      h = ggc_alloc<type_hash> ();
+      h->hash = hashcode;
+      h->type = type;
+      *loc = (void *)h;
+
       return type;
     }
 }
@@ -6919,16 +6866,14 @@ print_type_hash_statistics (void)
    with names in the TREE_PURPOSE slots and args in the TREE_VALUE slots),
    by adding the hash codes of the individual attributes.  */
 
-static unsigned int
-attribute_hash_list (const_tree list, hashval_t hashcode)
+static void
+attribute_hash_list (const_tree list, inchash::hash &hstate)
 {
   const_tree tail;
 
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     /* ??? Do we want to add in TREE_VALUE too? */
-    hashcode = iterative_hash_object
-      (IDENTIFIER_HASH_VALUE (get_attribute_name (tail)), hashcode);
-  return hashcode;
+    hstate.add_object (IDENTIFIER_HASH_VALUE (get_attribute_name (tail)));
 }
 
 /* Given two lists of attributes, return true if list l2 is
@@ -7440,21 +7385,26 @@ commutative_ternary_tree_code (enum tree_code code)
   return false;
 }
 
+namespace inchash
+{
+
 /* Generate a hash value for an expression.  This can be used iteratively
-   by passing a previous result as the VAL argument.
+   by passing a previous result as the HSTATE argument.
 
    This function is intended to produce the same hash for expressions which
    would compare equal using operand_equal_p.  */
-
-hashval_t
-iterative_hash_expr (const_tree t, hashval_t val)
+void
+add_expr (const_tree t, inchash::hash &hstate)
 {
   int i;
   enum tree_code code;
   enum tree_code_class tclass;
 
   if (t == NULL_TREE)
-    return iterative_hash_hashval_t (0, val);
+    {
+      hstate.merge_hash (0);
+      return;
+    }
 
   code = TREE_CODE (t);
 
@@ -7463,58 +7413,61 @@ iterative_hash_expr (const_tree t, hashval_t val)
     /* Alas, constants aren't shared, so we can't rely on pointer
        identity.  */
     case VOID_CST:
-      return iterative_hash_hashval_t (0, val);
+      hstate.merge_hash (0);
+      return;
     case INTEGER_CST:
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	val = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), val);
-      return val;
+	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
+      return;
     case REAL_CST:
       {
 	unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
-
-	return iterative_hash_hashval_t (val2, val);
+	hstate.merge_hash (val2);
+	return;
       }
     case FIXED_CST:
       {
 	unsigned int val2 = fixed_hash (TREE_FIXED_CST_PTR (t));
-
-	return iterative_hash_hashval_t (val2, val);
+	hstate.merge_hash (val2);
+	return;
       }
     case STRING_CST:
-      return iterative_hash (TREE_STRING_POINTER (t),
-			     TREE_STRING_LENGTH (t), val);
+      hstate.add ((const void *) TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
+      return;
     case COMPLEX_CST:
-      val = iterative_hash_expr (TREE_REALPART (t), val);
-      return iterative_hash_expr (TREE_IMAGPART (t), val);
+      inchash::add_expr (TREE_REALPART (t), hstate);
+      inchash::add_expr (TREE_IMAGPART (t), hstate);
+      return;
     case VECTOR_CST:
       {
 	unsigned i;
 	for (i = 0; i < VECTOR_CST_NELTS (t); ++i)
-	  val = iterative_hash_expr (VECTOR_CST_ELT (t, i), val);
-	return val;
+	  inchash::add_expr (VECTOR_CST_ELT (t, i), hstate);
+	return;
       }
     case SSA_NAME:
       /* We can just compare by pointer.  */
-      return iterative_hash_host_wide_int (SSA_NAME_VERSION (t), val);
+      hstate.add_wide_int (SSA_NAME_VERSION (t));
+      return;
     case PLACEHOLDER_EXPR:
       /* The node itself doesn't matter.  */
-      return val;
+      return;
     case TREE_LIST:
       /* A list of expressions, for a CALL_EXPR or as the elements of a
 	 VECTOR_CST.  */
       for (; t; t = TREE_CHAIN (t))
-	val = iterative_hash_expr (TREE_VALUE (t), val);
-      return val;
+	inchash::add_expr (TREE_VALUE (t), hstate);
+      return;
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
 	tree field, value;
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
-	    val = iterative_hash_expr (field, val);
-	    val = iterative_hash_expr (value, val);
+	    inchash::add_expr (field, hstate);
+	    inchash::add_expr (value, hstate);
 	  }
-	return val;
+	return;
       }
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
@@ -7535,13 +7488,13 @@ iterative_hash_expr (const_tree t, hashval_t val)
       if (tclass == tcc_declaration)
 	{
 	  /* DECL's have a unique ID */
-	  val = iterative_hash_host_wide_int (DECL_UID (t), val);
+	  hstate.add_wide_int (DECL_UID (t));
 	}
       else
 	{
 	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
 
-	  val = iterative_hash_object (code, val);
+	  hstate.add_object (code);
 
 	  /* Don't hash the type, that can lead to having nodes which
 	     compare equal according to operand_equal_p, but which
@@ -7550,8 +7503,8 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	      || code == NON_LVALUE_EXPR)
 	    {
 	      /* Make sure to include signness in the hash computation.  */
-	      val += TYPE_UNSIGNED (TREE_TYPE (t));
-	      val = iterative_hash_expr (TREE_OPERAND (t, 0), val);
+	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	      inchash::add_expr (TREE_OPERAND (t, 0), hstate);
 	    }
 
 	  else if (commutative_tree_code (code))
@@ -7560,22 +7513,19 @@ iterative_hash_expr (const_tree t, hashval_t val)
 		 however it appears.  We do this by first hashing both operands
 		 and then rehashing based on the order of their independent
 		 hashes.  */
-	      hashval_t one = iterative_hash_expr (TREE_OPERAND (t, 0), 0);
-	      hashval_t two = iterative_hash_expr (TREE_OPERAND (t, 1), 0);
-	      hashval_t t;
-
-	      if (one > two)
-		t = one, one = two, two = t;
-
-	      val = iterative_hash_hashval_t (one, val);
-	      val = iterative_hash_hashval_t (two, val);
+	      inchash::hash one, two;
+	      inchash::add_expr (TREE_OPERAND (t, 0), one);
+	      inchash::add_expr (TREE_OPERAND (t, 1), two);
+	      hstate.add_commutative (one, two);
 	    }
 	  else
 	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
-	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
+	      inchash::add_expr (TREE_OPERAND (t, i), hstate);
 	}
-      return val;
+      return;
     }
+}
+
 }
 
 /* Constructors for pointer, array and function types.
@@ -7767,7 +7717,7 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
-  hashval_t hashcode = 0;
+  inchash::hash hstate;
 
   TREE_TYPE (itype) = type;
 
@@ -7795,10 +7745,10 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  hashcode = iterative_hash_expr (TYPE_MIN_VALUE (itype), hashcode);
-  hashcode = iterative_hash_expr (TYPE_MAX_VALUE (itype), hashcode);
-  hashcode = iterative_hash_hashval_t (TYPE_HASH (type), hashcode);
-  itype = type_hash_canon (hashcode, itype);
+  inchash::add_expr (TYPE_MIN_VALUE (itype), hstate);
+  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
+  hstate.merge_hash (TYPE_HASH (type));
+  itype = type_hash_canon (hstate.end (), itype);
 
   return itype;
 }
@@ -7903,10 +7853,11 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 
   if (shared)
     {
-      hashval_t hashcode = iterative_hash_object (TYPE_HASH (elt_type), 0);
+      inchash::hash hstate;
+      hstate.add_object (TYPE_HASH (elt_type));
       if (index_type)
-	hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
-      t = type_hash_canon (hashcode, t);
+	hstate.add_object (TYPE_HASH (index_type));
+      t = type_hash_canon (hstate.end (), t);
     }
 
   if (TYPE_CANONICAL (t) == t)
@@ -8046,7 +7997,7 @@ tree
 build_function_type (tree value_type, tree arg_types)
 {
   tree t;
-  hashval_t hashcode = 0;
+  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8062,9 +8013,9 @@ build_function_type (tree value_type, tree arg_types)
   TYPE_ARG_TYPES (t) = arg_types;
 
   /* If we already have such a type, use the old one.  */
-  hashcode = iterative_hash_object (TYPE_HASH (value_type), hashcode);
-  hashcode = type_hash_list (arg_types, hashcode);
-  t = type_hash_canon (hashcode, t);
+  hstate.add_object (TYPE_HASH (value_type));
+  type_hash_list (arg_types, hstate);
+  t = type_hash_canon (hstate.end (), t);
 
   /* Set up the canonical type. */
   any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
@@ -8201,7 +8152,7 @@ build_method_type_directly (tree basetype,
 {
   tree t;
   tree ptype;
-  int hashcode = 0;
+  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8218,10 +8169,10 @@ build_method_type_directly (tree basetype,
   TYPE_ARG_TYPES (t) = argtypes;
 
   /* If we already have such a type, use the old one.  */
-  hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (rettype), hashcode);
-  hashcode = type_hash_list (argtypes, hashcode);
-  t = type_hash_canon (hashcode, t);
+  hstate.add_object (TYPE_HASH (basetype));
+  hstate.add_object (TYPE_HASH (rettype));
+  type_hash_list (argtypes, hstate);
+  t = type_hash_canon (hstate.end (), t);
 
   /* Set up the canonical type. */
   any_structural_p
@@ -8269,7 +8220,7 @@ tree
 build_offset_type (tree basetype, tree type)
 {
   tree t;
-  hashval_t hashcode = 0;
+  inchash::hash hstate;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -8278,9 +8229,9 @@ build_offset_type (tree basetype, tree type)
   TREE_TYPE (t) = type;
 
   /* If we already have such a type, use the old one.  */
-  hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (type), hashcode);
-  t = type_hash_canon (hashcode, t);
+  hstate.add_object (TYPE_HASH (basetype));
+  hstate.add_object (TYPE_HASH (type));
+  t = type_hash_canon (hstate.end (), t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -8306,7 +8257,7 @@ tree
 build_complex_type (tree component_type)
 {
   tree t;
-  hashval_t hashcode;
+  inchash::hash hstate;
 
   gcc_assert (INTEGRAL_TYPE_P (component_type)
 	      || SCALAR_FLOAT_TYPE_P (component_type)
@@ -8318,8 +8269,8 @@ build_complex_type (tree component_type)
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
 
   /* If we already have such a type, use the old one.  */
-  hashcode = iterative_hash_object (TYPE_HASH (component_type), 0);
-  t = type_hash_canon (hashcode, t);
+  hstate.add_object (TYPE_HASH (component_type));
+  t = type_hash_canon (hstate.end (), t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -9458,7 +9409,7 @@ static tree
 make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 {
   tree t;
-  hashval_t hashcode = 0;
+  inchash::hash hstate;
 
   t = make_node (VECTOR_TYPE);
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
@@ -9474,11 +9425,11 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 
   layout_type (t);
 
-  hashcode = iterative_hash_host_wide_int (VECTOR_TYPE, hashcode);
-  hashcode = iterative_hash_host_wide_int (nunits, hashcode);
-  hashcode = iterative_hash_host_wide_int (mode, hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (TREE_TYPE (t)), hashcode);
-  t = type_hash_canon (hashcode, t);
+  hstate.add_wide_int (VECTOR_TYPE);
+  hstate.add_wide_int (nunits);
+  hstate.add_wide_int (mode);
+  hstate.add_object (TYPE_HASH (TREE_TYPE (t)));
+  t = type_hash_canon (hstate.end (), t);
 
   /* We have built a main variant, based on the main variant of the
      inner type. Use it to build the variant we return.  */
@@ -9773,9 +9724,9 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   integer_ptr_type_node = build_pointer_type (integer_type_node);
 
   /* Fixed size integer types.  */
-  uint16_type_node = build_nonstandard_integer_type (16, true);
-  uint32_type_node = build_nonstandard_integer_type (32, true);
-  uint64_type_node = build_nonstandard_integer_type (64, true);
+  uint16_type_node = make_or_reuse_type (16, 1);
+  uint32_type_node = make_or_reuse_type (32, 1);
+  uint64_type_node = make_or_reuse_type (64, 1);
 
   /* Decimal float types. */
   dfloat32_type_node = make_node (REAL_TYPE);
@@ -9920,8 +9871,9 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
 }
 
 /* Call this function after instantiating all builtins that the language
-   front end cares about.  This will build the rest of the builtins that
-   are relied upon by the tree optimizers and the middle-end.  */
+   front end cares about.  This will build the rest of the builtins
+   and internal functions that are relied upon by the tree optimizers and
+   the middle-end.  */
 
 void
 build_common_builtin_nodes (void)
@@ -10154,6 +10106,8 @@ build_common_builtin_nodes (void)
 			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
       }
   }
+
+  init_internal_fns ();
 }
 
 /* HACK.  GROSS.  This is absolutely disgusting.  I wish there was a
@@ -10874,7 +10828,7 @@ num_ending_zeros (const_tree x)
 
 static tree
 walk_type_fields (tree type, walk_tree_fn func, void *data,
-		  struct pointer_set_t *pset, walk_tree_lh lh)
+		  hash_set<tree> *pset, walk_tree_lh lh)
 {
   tree result = NULL_TREE;
 
@@ -10956,7 +10910,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
 
 tree
 walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
-	     struct pointer_set_t *pset, walk_tree_lh lh)
+	     hash_set<tree> *pset, walk_tree_lh lh)
 {
   enum tree_code code;
   int walk_subtrees;
@@ -10977,7 +10931,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 
   /* Don't walk the same tree twice, if the user has requested
      that we avoid doing so.  */
-  if (pset && pointer_set_insert (pset, *tp))
+  if (pset && pset->add (*tp))
     return NULL_TREE;
 
   /* Call the function.  */
@@ -11113,6 +11067,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
+	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
 
@@ -11292,11 +11247,9 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
 				walk_tree_lh lh)
 {
   tree result;
-  struct pointer_set_t *pset;
 
-  pset = pointer_set_create ();
-  result = walk_tree_1 (tp, func, data, pset, lh);
-  pointer_set_destroy (pset);
+  hash_set<tree> pset;
+  result = walk_tree_1 (tp, func, data, &pset, lh);
   return result;
 }
 
@@ -11625,8 +11578,7 @@ block_ultimate_origin (const_tree block)
 {
   tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
 
-  /* output_inline_function sets BLOCK_ABSTRACT_ORIGIN for all the
-     nodes in the function to point to themselves; ignore that if
+  /* BLOCK_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
   if (BLOCK_ABSTRACT (block) && immediate_origin == block)
     return NULL_TREE;

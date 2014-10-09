@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,10 +39,10 @@ package Err_Vars is
    --  from invalid values in such cases.
 
    --  Note on error counts (Serious_Errors_Detected, Total_Errors_Detected,
-   --  Warnings_Detected). These counts might more logically appear in this
-   --  unit, but we place them in atree.ads, because of licensing issues. We
-   --  need to be able to access these counts from units that have the more
-   --  general licensing conditions.
+   --  Warnings_Detected, Info_Messages). These counts might more logically
+   --  appear in this unit, but we place them instead in atree.ads, because of
+   --  licensing issues. We need to be able to access these counts from units
+   --  that have the more general licensing conditions.
 
    ----------------------------------
    -- Error Message Mode Variables --
@@ -93,7 +93,6 @@ package Err_Vars is
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
-   --  Note: always ignored on VMS, where we do not provide this capability.
 
    ----------------------------------------
    -- Error Message Insertion Parameters --

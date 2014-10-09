@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32plus } */
+/* { dg-skip-if "pointers can be truncated" { m32c-*-* } "*" "" } */
 /* Extracted from GDB sources. */
 
 typedef long long bfd_signed_vma;

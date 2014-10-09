@@ -477,7 +477,8 @@
        ; in not able to allocate segment registers and reload the resulting
        ; expressions.  Notice that no address register can hold a PSImode.  */
 
-    rtx insn, addr = XEXP (operands[1], 0);
+    rtx_insn *insn;
+    rtx addr = XEXP (operands[1], 0);
     rtx hi8 = gen_reg_rtx (QImode);
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
 
@@ -512,7 +513,7 @@
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
     rtx addr_hi8 = simplify_gen_subreg (QImode, addr, PSImode, 2);
     addr_space_t as = MEM_ADDR_SPACE (operands[1]);
-    rtx insn;
+    rtx_insn *insn;
 
     /* Split the address to R21:Z */
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));
@@ -584,7 +585,7 @@
   ""
   {
     rtx dest = operands[0];
-    rtx src  = operands[1];
+    rtx src  = avr_eval_addr_attrib (operands[1]);
 
     if (avr_mem_flash_p (dest))
       DONE;
@@ -4931,8 +4932,9 @@
         (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r,z")]
                    UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_dup 0))]
-  ""
+   (clobber (match_dup 0))
+   (clobber (const_int 0))]
+  "!AVR_HAVE_EIJMP_EICALL"
   "@
 	ijmp
 	push %A0\;push %B0\;ret
@@ -4940,6 +4942,19 @@
   [(set_attr "length" "1,3,2")
    (set_attr "isa" "rjmp,rjmp,jmp")
    (set_attr "cc" "none,none,clobber")])
+
+(define_insn "*tablejump.3byte-pc"
+  [(set (pc)
+        (unspec:HI [(reg:HI REG_Z)]
+                   UNSPEC_INDEX_JMP))
+   (use (label_ref (match_operand 0 "" "")))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI 24))]
+  "AVR_HAVE_EIJMP_EICALL"
+  "clr r24\;subi r30,pm_lo8(-(%0))\;sbci r31,pm_hi8(-(%0))\;sbci r24,pm_hh8(-(%0))\;jmp __tablejump2__"
+  [(set_attr "length" "6")
+   (set_attr "isa" "eijmp")
+   (set_attr "cc" "clobber")])
 
 
 (define_expand "casesi"
@@ -4958,15 +4973,31 @@
                       (label_ref (match_operand 4 "" ""))
                       (pc)))
 
-   (set (match_dup 6)
-        (plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
+   (set (match_dup 10)
+        (match_dup 7))
 
-   (parallel [(set (pc) (unspec:HI [(match_dup 6)] UNSPEC_INDEX_JMP))
+   (parallel [(set (pc)
+                   (unspec:HI [(match_dup 10)] UNSPEC_INDEX_JMP))
               (use (label_ref (match_dup 3)))
-              (clobber (match_dup 6))])]
+              (clobber (match_dup 10))
+              (clobber (match_dup 8))])]
   ""
   {
     operands[6] = gen_reg_rtx (HImode);
+
+    if (AVR_HAVE_EIJMP_EICALL)
+      {
+        operands[7] = operands[6];
+        operands[8] = all_regs_rtx[24];
+        operands[10] = gen_rtx_REG (HImode, REG_Z);
+      }
+    else
+      {
+        operands[7] = gen_rtx_PLUS (HImode, operands[6], 
+                                    gen_rtx_LABEL_REF (VOIDmode, operands[3]));
+        operands[8] = const0_rtx;
+        operands[10] = operands[6];
+      }
   })
 
 
@@ -4983,7 +5014,7 @@
 ;; Clear/set/test a single bit in I/O address space.
 
 (define_insn "*cbi"
-  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (and:QI (mem:QI (match_dup 0))
                 (match_operand:QI 1 "single_zero_operand" "n")))]
   ""
@@ -4995,7 +5026,7 @@
    (set_attr "cc" "none")])
 
 (define_insn "*sbi"
-  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (ior:QI (mem:QI (match_dup 0))
                 (match_operand:QI 1 "single_one_operand" "n")))]
   ""
@@ -5012,7 +5043,7 @@
         (if_then_else
          (match_operator 0 "eqne_operator"
                          [(zero_extract:QIHI
-                           (mem:QI (match_operand 1 "low_io_address_operand" "n"))
+                           (mem:QI (match_operand 1 "low_io_address_operand" "i"))
                            (const_int 1)
                            (match_operand 2 "const_int_operand" "n"))
                           (const_int 0)])
@@ -5036,7 +5067,7 @@
   [(set (pc)
         (if_then_else
          (match_operator 0 "gelt_operator"
-                         [(mem:QI (match_operand 1 "low_io_address_operand" "n"))
+                         [(mem:QI (match_operand 1 "low_io_address_operand" "i"))
                           (const_int 0)])
          (label_ref (match_operand 2 "" ""))
          (pc)))]
@@ -5351,7 +5382,7 @@
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
   "!AVR_HAVE_JMP_CALL
-   || !(avr_current_device->dev_attribute & AVR_ERRATA_SKIP)"
+   || !TARGET_SKIP_BUG"
   {
     if (operands[2] == CONST0_RTX (<MODE>mode))
       operands[2] = zero_reg_rtx;
@@ -6209,7 +6240,7 @@
 ;; in contrast to a IN/BST/BLD/OUT sequence we need less registers and the
 ;; operation on I/O is atomic.
 (define_insn "*insv.io"
-  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n,n,n"))
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i,i,i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n,n,n"))
         (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))]
@@ -6222,7 +6253,7 @@
    (set_attr "cc" "none")])
 
 (define_insn "*insv.not.io"
-  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n"))
         (not:QI (match_operand:QI 2 "register_operand"                     "r")))]

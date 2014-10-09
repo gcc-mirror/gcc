@@ -83,7 +83,7 @@ unsigned int
 pass_stack_ptr_mod::execute (function *fun)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Assume that the stack pointer is unchanging if alloca hasn't
      been used.  */

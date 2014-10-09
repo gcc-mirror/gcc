@@ -1,4 +1,8 @@
-2013-07-18  Uros Bizjak  <ubizjak@gmail.com>
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* configure.tgt: Add cygwin to supported targets.
+
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.tgt (alpha*): Add -mfp-trap-mode=sui to XCFLAGS.
 

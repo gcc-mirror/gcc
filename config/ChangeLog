@@ -1,3 +1,22 @@
+2014-09-01  Andi Kleen  <ak@linux.intel.com>
+
+	* bootstrap-lto.mk: Implement slim bootstrap.
+
+2014-08-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* isl.m4 (ISL_CHECK_VERSION): Check link of isl library
+	for cross_compiling.
+
+2014-08-18 Roman Gareev  <gareevroman@gmail.com>
+
+	* cloog.m4: Remove the path to isllibs from clooglibs.
+	* isl.m4: Add paths to islinc, isllibs.
+
+2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* mh-alpha-linux: New file.
+
 2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* mt-nios2-elf: New file.

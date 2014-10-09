@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <cstdio>
 #include <bits/c++io.h>  // For __c_file
+#include <bits/move.h>   // For __exchange
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 #include <cwchar>
@@ -64,8 +65,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename traits_type::off_type		off_type;
 
     private:
+      typedef std::basic_streambuf<_CharT, _Traits> __streambuf_type;
+
       // Underlying stdio FILE
-      std::__c_file* const _M_file;
+      std::__c_file* _M_file;
 
       // Last character gotten. This is used when pbackfail is
       // called from basic_streambuf::sungetc()
@@ -76,6 +79,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       stdio_sync_filebuf(std::__c_file* __f)
       : _M_file(__f), _M_unget_buf(traits_type::eof())
       { }
+
+#if __cplusplus >= 201103L
+      stdio_sync_filebuf(stdio_sync_filebuf&& __fb) noexcept
+      : __streambuf_type(std::move(__fb)),
+      _M_file(__fb._M_file), _M_unget_buf(__fb._M_unget_buf)
+      {
+	__fb._M_file = nullptr;
+	__fb._M_unget_buf = traits_type::eof();
+      }
+
+      stdio_sync_filebuf&
+      operator=(stdio_sync_filebuf&& __fb) noexcept
+      {
+	__streambuf_type::operator=(__fb);
+	_M_file = std::__exchange(__fb._M_file, nullptr);
+	_M_unget_buf = std::__exchange(__fb._M_unget_buf, traits_type::eof());
+	return *this;
+      }
+
+      void
+      swap(stdio_sync_filebuf& __fb)
+      {
+	__streambuf_type::swap(__fb);
+	std::swap(_M_file, __fb._M_file);
+	std::swap(_M_unget_buf, __fb._M_unget_buf);
+      }
+#endif
 
       /**
        *  @return  The underlying FILE*.

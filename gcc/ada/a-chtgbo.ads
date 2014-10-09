@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,16 @@ package Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    --  Deallocates each node in hash table HT. (Note that it only deallocates
    --  the nodes, not the buckets array.)  Program_Error is raised if the hash
    --  table is busy.
+
+   procedure Delete_Node_At_Index
+     (HT   : in out Hash_Table_Type'Class;
+      Indx : Hash_Type;
+      X    : Count_Type);
+   --  Delete a node whose bucket position is known. extracted from following
+   --  subprogram, but also used directly to remove a node whose element has
+   --  been modified through a key_preserving reference: in that case we cannot
+   --  use the value of the element precisely because the current value does
+   --  not correspond to the hash code that determines its bucket.
 
    procedure Delete_Node_Sans_Free
      (HT : in out Hash_Table_Type'Class;

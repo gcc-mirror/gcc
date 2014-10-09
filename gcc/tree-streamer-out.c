@@ -178,7 +178,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_NONLOCAL (expr), 1);
   bp_pack_value (bp, DECL_VIRTUAL_P (expr), 1);
   bp_pack_value (bp, DECL_IGNORED_P (expr), 1);
-  bp_pack_value (bp, DECL_ABSTRACT (expr), 1);
+  bp_pack_value (bp, DECL_ABSTRACT_P (expr), 1);
   bp_pack_value (bp, DECL_ARTIFICIAL (expr), 1);
   bp_pack_value (bp, DECL_USER_ALIGN (expr), 1);
   bp_pack_value (bp, DECL_PRESERVE_P (expr), 1);
@@ -524,11 +524,11 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
       /* We avoid outputting external vars or functions by reference
 	 to the global decls section as we do not want to have them
 	 enter decl merging.  This is, of course, only for the call
-	 for streaming BLOCK_VARS, but other callers are safe.  */
-      /* ???  FIXME wrt SCC streaming.  Drop these for now.  */
+	 for streaming BLOCK_VARS, but other callers are safe.
+	 See also lto-streamer-out.c:DFS_write_tree_body.  */
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_EXTERNAL (t))
-	; /* stream_write_tree_shallow_non_ref (ob, t, ref_p); */
+	stream_write_tree_shallow_non_ref (ob, t, ref_p);
       else
 	stream_write_tree (ob, t, ref_p);
 

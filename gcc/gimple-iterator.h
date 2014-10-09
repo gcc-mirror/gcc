@@ -58,7 +58,7 @@ extern void gsi_insert_seq_after (gimple_stmt_iterator *, gimple_seq,
 extern gimple_seq gsi_split_seq_after (gimple_stmt_iterator);
 extern void gsi_set_stmt (gimple_stmt_iterator *, gimple);
 extern void gsi_split_seq_before (gimple_stmt_iterator *, gimple_seq *);
-extern void gsi_replace (gimple_stmt_iterator *, gimple, bool);
+extern bool gsi_replace (gimple_stmt_iterator *, gimple, bool);
 extern void gsi_replace_with_seq (gimple_stmt_iterator *, gimple_seq, bool);
 extern void gsi_insert_before_without_update (gimple_stmt_iterator *, gimple,
 					      enum gsi_iterator_update);
@@ -279,6 +279,30 @@ gsi_last_nondebug_bb (basic_block bb)
     gsi_prev_nondebug (&i);
 
   return i;
+}
+
+/* Iterates I statement iterator to the next non-virtual statement.  */
+
+static inline void
+gsi_next_nonvirtual_phi (gimple_stmt_iterator *i)
+{
+  gimple phi;
+
+  if (gsi_end_p (*i))
+    return;
+
+  phi = gsi_stmt (*i);
+  gcc_assert (phi != NULL);
+
+  while (virtual_operand_p (gimple_phi_result (phi)))
+    {
+      gsi_next (i);
+
+      if (gsi_end_p (*i))
+	return;
+
+      phi = gsi_stmt (*i);
+    }
 }
 
 /* Return the basic block associated with this iterator.  */

@@ -22,7 +22,7 @@ template<class T> using Vec = Vector<T, Alloc<T> >;
 
 template<class T> void g(Vector<T, Alloc<T> >);
 
-template<template<class T> class TT> void h(TT<int>); // { dg-error "provided for" }
+template<template<class T> class TT> void h(TT<int>); // { dg-message "provided for" }
 
 void
 bar()

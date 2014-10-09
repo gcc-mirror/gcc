@@ -502,13 +502,17 @@ package Lib.Xref is
       E_Signed_Integer_Subtype                     => 'I',
       E_Signed_Integer_Type                        => 'I',
       E_String_Literal_Subtype                     => ' ',
-      E_String_Subtype                             => 'S',
-      E_String_Type                                => 'S',
       E_Subprogram_Type                            => ' ',
       E_Task_Subtype                               => 'T',
       E_Task_Type                                  => 'T',
       E_Variable                                   => '*',
       E_Void                                       => ' ',
+
+      --  These are dummy entries which can be removed when we finally get
+      --  rid of these obsolete entries once and for all.
+
+      E_String_Type                               => ' ',
+      E_String_Subtype                            => ' ',
 
       --  The following entities are not ones to which we gather the cross-
       --  references, since it does not make sense to do so (e.g. references to

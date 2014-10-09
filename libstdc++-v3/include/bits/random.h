@@ -164,6 +164,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
     template<typename _Engine, typename _DInputType>
       struct _Adaptor
       {
+	static_assert(std::is_floating_point<_DInputType>::value,
+		      "template argument not a floating point type");
 
       public:
 	_Adaptor(_Engine& __g)

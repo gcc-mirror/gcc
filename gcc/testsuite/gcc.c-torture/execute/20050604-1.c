@@ -1,4 +1,8 @@
 /* PR regression/21897 */
+/* This testcase generates MMX instructions together with x87 instructions.
+   Currently, there is no "emms" generated to switch between register sets,
+   so the testcase fails for targets where MMX insns are enabled.  */
+/* { dg-options "-mno-mmx" { target { x86_64-*-* i?86-*-* } } } */
 
 extern void abort (void);
 

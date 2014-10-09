@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,6 +107,10 @@ package Prj.Attr is
       Var_Kind : Defined_Variable_Kind;
       --  The attribute value kind: single or list
 
+      Default : Attribute_Default_Value := Empty_Value;
+      --  The value of the attribute when referenced if the attribute has not
+      --  yet been declared.
+
    end record;
    --  Name and characteristics of an attribute in a package registered
    --  explicitly with Register_New_Package (see below).
@@ -190,6 +194,11 @@ package Prj.Attr is
    --  Set the variable kind of a known attribute. Does nothing if Attribute is
    --  Empty_Attribute.
 
+   function Attribute_Default_Of
+     (Attribute : Attribute_Node_Id) return Attribute_Default_Value;
+   --  Returns the default of the attribute, Read_Only_Value for read only
+   --  attributes, Empty_Value when default not specified, or specified value.
+
    function Optional_Index_Of (Attribute : Attribute_Node_Id) return Boolean;
    --  Returns True if Attribute is a known attribute and may have an
    --  optional index. Returns False otherwise.
@@ -231,13 +240,14 @@ package Prj.Attr is
       In_Package         : Package_Node_Id;
       Attr_Kind          : Defined_Attribute_Kind;
       Var_Kind           : Defined_Variable_Kind;
-      Index_Is_File_Name : Boolean := False;
-      Opt_Index          : Boolean := False);
+      Index_Is_File_Name : Boolean                 := False;
+      Opt_Index          : Boolean                 := False;
+      Default            : Attribute_Default_Value := Empty_Value);
    --  Add a new attribute to registered package In_Package. Fails if Name
    --  (the attribute name) is empty, if In_Package is Empty_Package or if
    --  the attribute name has a duplicate name. See definition of type
    --  Attribute_Data above for the meaning of parameters Attr_Kind, Var_Kind,
-   --  Index_Is_File_Name and Opt_Index.
+   --  Index_Is_File_Name, Opt_Index, and Default.
 
    function Package_Node_Id_Of (Name : Name_Id) return Package_Node_Id;
    --  Returns the package node id of the package with name Name. Returns
@@ -320,6 +330,7 @@ private
       Attr_Kind      : Attribute_Kind;
       Read_Only      : Boolean;
       Others_Allowed : Boolean;
+      Default        : Attribute_Default_Value;
       Next           : Attr_Node_Id;
    end record;
    --  Data for an attribute

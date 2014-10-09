@@ -8,6 +8,7 @@ struct rtx_def
 {
   int code;
 };
+void
 foo (reg)
      rtx reg;
 {

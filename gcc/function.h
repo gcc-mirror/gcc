@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_FUNCTION_H
 
 #include "hashtab.h"
+#include "hash-set.h"
 #include "vec.h"
 #include "machmode.h"
 #include "tm.h"			/* For CUMULATIVE_ARGS.  */
@@ -34,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct GTY(()) sequence_stack {
   /* First and last insns in the chain of the saved sequence.  */
-  rtx first;
-  rtx last;
+  rtx_insn *first;
+  rtx_insn *last;
   struct sequence_stack *next;
 };
 
@@ -52,8 +53,8 @@ struct GTY(()) emit_status {
 
      start_sequence saves both of these on `sequence_stack' and then starts
      a new, nested sequence of insns.  */
-  rtx x_first_insn;
-  rtx x_last_insn;
+  rtx_insn *x_first_insn;
+  rtx_insn *x_last_insn;
 
   /* Stack of pending (incomplete) sequences saved by `start_sequence'.
      Each element describes one pending sequence.
@@ -135,7 +136,7 @@ struct GTY(()) expr_status {
   rtx x_apply_args_value;
 
   /* List of labels that must never be deleted.  */
-  rtx x_forced_labels;
+  rtx_insn_list *x_forced_labels;
 };
 
 typedef struct call_site_record_d *call_site_record;
@@ -144,10 +145,10 @@ typedef struct call_site_record_d *call_site_record;
 struct GTY(()) rtl_eh {
   rtx ehr_stackadj;
   rtx ehr_handler;
-  rtx ehr_label;
+  rtx_code_label *ehr_label;
 
   rtx sjlj_fc;
-  rtx sjlj_exit_after;
+  rtx_insn *sjlj_exit_after;
 
   vec<uchar, va_gc> *action_record_data;
 
@@ -264,29 +265,29 @@ struct GTY(()) rtl_data {
      Used for detecting stack clobbers.  */
   tree stack_protect_guard;
 
-  /* List (chain of EXPR_LIST) of labels heading the current handlers for
+  /* List (chain of INSN_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
-  rtx x_nonlocal_goto_handler_labels;
+  rtx_insn_list *x_nonlocal_goto_handler_labels;
 
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_return_label;
+  rtx_code_label *x_return_label;
 
   /* Label that will go on the end of function epilogue.
      Jumping to this label serves as a "naked return" instruction
      on machines which require execution of the epilogue on all returns.  */
-  rtx x_naked_return_label;
+  rtx_code_label *x_naked_return_label;
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
-  rtx x_stack_slot_list;
+  rtx_expr_list *x_stack_slot_list;
 
   /* List of empty areas in the stack frame.  */
   struct frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx x_stack_check_probe_note;
+  rtx_note *x_stack_check_probe_note;
 
   /* Location at which to save the argument pointer if it will need to be
      referenced.  There are two cases where this is done: if nonlocal gotos
@@ -303,7 +304,7 @@ struct GTY(()) rtl_data {
   HOST_WIDE_INT x_frame_offset;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-  rtx x_parm_birth_insn;
+  rtx_insn *x_parm_birth_insn;
 
   /* List of all used temporaries allocated, by level.  */
   vec<temp_slot_p, va_gc> *x_used_temp_slots;
@@ -564,7 +565,7 @@ struct GTY(()) function {
   struct language_function * language;
 
   /* Used types hash table.  */
-  htab_t GTY ((param_is (union tree_node))) used_types_hash;
+  hash_set<tree> *GTY (()) used_types_hash;
 
   /* Dwarf2 Frame Description Entry, containing the Call Frame Instructions
      used for unwinding.  Only set when either dwarf2 unwinding or dwarf2

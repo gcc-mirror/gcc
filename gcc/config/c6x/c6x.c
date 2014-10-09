@@ -87,7 +87,7 @@ unsigned long c6x_insn_mask = C6X_DEFAULT_INSN_MASK;
 
 /* The instruction that is being output (as obtained from FINAL_PRESCAN_INSN).
  */
-static rtx c6x_current_insn = NULL_RTX;
+static rtx_insn *c6x_current_insn = NULL;
 
 /* A decl we build to access __c6xabi_DSBT_base.  */
 static GTY(()) tree dsbt_decl;
@@ -770,7 +770,7 @@ c6x_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   /* The this parameter is passed as the first argument.  */
   rtx this_rtx = gen_rtx_REG (Pmode, REG_A4);
 
-  c6x_current_insn = NULL_RTX;
+  c6x_current_insn = NULL;
 
   xops[4] = XEXP (DECL_RTL (function), 0);
   if (!vcall_offset)
@@ -1177,7 +1177,7 @@ c6x_function_ok_for_sibcall (tree decl, tree exp)
 	/* Not enough information.  */
 	return false;
 
-      this_func = cgraph_local_info (current_function_decl);
+      this_func = cgraph_node::local_info (current_function_decl);
       return this_func->local;
     }
 
@@ -1566,7 +1566,7 @@ c6x_expand_compare (rtx comparison, enum machine_mode mode)
 
       if (is_fp_libfunc)
 	{
-	  rtx insns;
+	  rtx_insn *insns;
 	  rtx libfunc;
 	  switch (code)
 	    {
@@ -1971,7 +1971,7 @@ c6x_print_address_operand (FILE *file, rtx x, enum machine_mode mem_mode)
    specifies the functional unit used by INSN.  */
 
 char
-c6x_get_unit_specifier (rtx insn)
+c6x_get_unit_specifier (rtx_insn *insn)
 {
   enum attr_units units;
 
@@ -2008,7 +2008,7 @@ c6x_get_unit_specifier (rtx insn)
 
 /* Prints the unit specifier field.  */
 static void
-c6x_print_unit_specifier_field (FILE *file, rtx insn)
+c6x_print_unit_specifier_field (FILE *file, rtx_insn *insn)
 {
   enum attr_units units = get_attr_units (insn);
   enum attr_cross cross = get_attr_cross (insn);
@@ -2488,7 +2488,7 @@ c6x_preferred_rename_class (reg_class_t cl)
 
 /* Implements FINAL_PRESCAN_INSN.  */
 void
-c6x_final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
+c6x_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 			int noperands ATTRIBUTE_UNUSED)
 {
   c6x_current_insn = insn;
@@ -2540,7 +2540,7 @@ must_reload_pic_reg_p (void)
   if (!TARGET_DSBT)
     return false;
 
-  i = cgraph_local_info (current_function_decl);
+  i = cgraph_node::local_info (current_function_decl);
 
   if ((crtl->uses_pic_offset_table || !crtl->is_leaf) && !i->local)
     return true;
@@ -2716,7 +2716,7 @@ emit_add_sp_const (HOST_WIDE_INT offset, bool frame_related_p)
 {
   rtx to_add = GEN_INT (offset);
   rtx orig_to_add = to_add;
-  rtx insn;
+  rtx_insn *insn;
 
   if (offset == 0)
     return;
@@ -2753,7 +2753,8 @@ void
 c6x_expand_prologue (void)
 {
   struct c6x_frame frame;
-  rtx insn, mem;
+  rtx_insn *insn;
+  rtx mem;
   int nsaved = 0;
   HOST_WIDE_INT initial_offset, off, added_already;
 
@@ -2977,7 +2978,7 @@ shadow_type_p (enum attr_type type)
 
 /* Return true iff INSN is a shadow pattern.  */
 static bool
-shadow_p (rtx insn)
+shadow_p (rtx_insn *insn)
 {
   if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) < 0)
     return false;
@@ -2986,7 +2987,7 @@ shadow_p (rtx insn)
 
 /* Return true iff INSN is a shadow or blockage pattern.  */
 static bool
-shadow_or_blockage_p (rtx insn)
+shadow_or_blockage_p (rtx_insn *insn)
 {
   enum attr_type type;
   if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) < 0)
@@ -3027,7 +3028,7 @@ get_reservation_flags (enum attr_units units)
 /* Compute the side of the machine used by INSN, which reserves UNITS.
    This must match the reservations in the scheduling description.  */
 static int
-get_insn_side (rtx insn, enum attr_units units)
+get_insn_side (rtx_insn *insn, enum attr_units units)
 {
   if (units == UNITS_D_ADDR)
     return (get_attr_addr_regfile (insn) == ADDR_REGFILE_A ? 0 : 1);
@@ -3044,13 +3045,13 @@ get_insn_side (rtx insn, enum attr_units units)
 /* After scheduling, walk the insns between HEAD and END and assign unit
    reservations.  */
 static void
-assign_reservations (rtx head, rtx end)
+assign_reservations (rtx_insn *head, rtx_insn *end)
 {
-  rtx insn;
+  rtx_insn *insn;
   for (insn = head; insn != NEXT_INSN (end); insn = NEXT_INSN (insn))
     {
       unsigned int sched_mask, reserved;
-      rtx within, last;
+      rtx_insn *within, *last;
       int pass;
       int rsrv[2];
       int rsrv_count[2][4];
@@ -3060,7 +3061,7 @@ assign_reservations (rtx head, rtx end)
 	continue;
 
       reserved = 0;
-      last = NULL_RTX;
+      last = NULL;
       /* Find the last insn in the packet.  It has a state recorded for it,
 	 which we can use to determine the units we should be using.  */
       for (within = insn;
@@ -3226,7 +3227,7 @@ unit_req_factor (enum unitreqs r)
    instructions reservation, e.g. UNIT_REQ_DL.  REQ2 is used to either
    describe a cross path, or for loads/stores, the T unit.  */
 static int
-get_unit_reqs (rtx insn, int *req1, int *side1, int *req2, int *side2)
+get_unit_reqs (rtx_insn *insn, int *req1, int *side1, int *req2, int *side2)
 {
   enum attr_units units;
   enum attr_cross cross;
@@ -3271,9 +3272,9 @@ get_unit_reqs (rtx insn, int *req1, int *side1, int *req2, int *side2)
 /* Walk the insns between and including HEAD and TAIL, and mark the
    resource requirements in the unit_reqs table.  */
 static void
-count_unit_reqs (unit_req_table reqs, rtx head, rtx tail)
+count_unit_reqs (unit_req_table reqs, rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   memset (reqs, 0, sizeof (unit_req_table));
 
@@ -3361,7 +3362,8 @@ res_mii (unit_req_table reqs)
    found by get_unit_reqs.  Return true if we did this successfully, false
    if we couldn't identify what to do with INSN.  */
 static bool
-get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
+get_unit_operand_masks (rtx_insn *insn, unsigned int *pmask1,
+			unsigned int *pmask2)
 {
   enum attr_op_pattern op_pat;
 
@@ -3416,7 +3418,8 @@ get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
    We recompute this information locally after our transformation, and keep
    it only if we managed to improve the balance.  */
 static void
-try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
+try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
+		     rtx insn,
 		     insn_rr_info *info, unsigned int op_mask, int orig_side)
 {
   enum reg_class super_class = orig_side == 0 ? B_REGS : A_REGS;
@@ -3519,9 +3522,9 @@ try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
 static void
 reshuffle_units (basic_block loop)
 {
-  rtx head = BB_HEAD (loop);
-  rtx tail = BB_END (loop);
-  rtx insn;
+  rtx_insn *head = BB_HEAD (loop);
+  rtx_insn *tail = BB_END (loop);
+  rtx_insn *insn;
   unit_req_table reqs;
   edge e;
   edge_iterator ei;
@@ -3612,9 +3615,9 @@ typedef struct c6x_sched_context
   int delays_finished_at;
 
   /* The following variable value is the last issued insn.  */
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
   /* The last issued insn that isn't a shadow of another.  */
-  rtx last_scheduled_iter0;
+  rtx_insn *last_scheduled_iter0;
 
   /* The following variable value is DFA state before issuing the
      first insn in the current clock cycle.  We do not use this member
@@ -3782,7 +3785,7 @@ conditions_opposite_p (rtx cond1, rtx cond2)
    already has that predicate.  If DOIT is true, also perform the
    modification.  */
 static bool
-predicate_insn (rtx insn, rtx cond, bool doit)
+predicate_insn (rtx_insn *insn, rtx cond, bool doit)
 {
   int icode;
   if (cond == NULL_RTX)
@@ -3843,8 +3846,8 @@ predicate_insn (rtx insn, rtx cond, bool doit)
 static void
 init_sched_state (c6x_sched_context_t sc)
 {
-  sc->last_scheduled_insn = NULL_RTX;
-  sc->last_scheduled_iter0 = NULL_RTX;
+  sc->last_scheduled_insn = NULL;
+  sc->last_scheduled_iter0 = NULL;
   sc->issued_this_cycle = 0;
   memset (sc->jump_cycles, 0, sizeof sc->jump_cycles);
   memset (sc->jump_cond, 0, sizeof sc->jump_cond);
@@ -3981,7 +3984,8 @@ c6x_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 
 static int
 c6x_dfa_new_cycle (FILE *dump ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		   rtx insn ATTRIBUTE_UNUSED, int last_clock ATTRIBUTE_UNUSED,
+		   rtx_insn *insn ATTRIBUTE_UNUSED,
+		   int last_clock ATTRIBUTE_UNUSED,
 		   int clock ATTRIBUTE_UNUSED, int *sort_p ATTRIBUTE_UNUSED)
 {
   if (clock != last_clock)
@@ -4043,7 +4047,7 @@ c6x_mark_reg_written (rtx reg, int cycles)
    next cycle.  */
 
 static bool
-c6x_registers_update (rtx insn)
+c6x_registers_update (rtx_insn *insn)
 {
   enum attr_cross cross;
   enum attr_dest_regfile destrf;
@@ -4131,11 +4135,11 @@ c6x_registers_update (rtx insn)
    number of non-unsafe insns.  */
 
 static int
-c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
+c6x_sched_reorder_1 (rtx_insn **ready, int *pn_ready, int clock_var)
 {
   int n_ready = *pn_ready;
-  rtx *e_ready = ready + n_ready;
-  rtx *insnp;
+  rtx_insn **e_ready = ready + n_ready;
+  rtx_insn **insnp;
   int first_jump;
 
   /* Keep track of conflicts due to a limit number of register accesses,
@@ -4144,7 +4148,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 
   for (insnp = ready; insnp < e_ready; insnp++)
     {
-      rtx insn = *insnp;
+      rtx_insn *insn = *insnp;
       int icode = recog_memoized (insn);
       bool is_asm = (icode < 0
 		     && (GET_CODE (PATTERN (insn)) == ASM_INPUT
@@ -4205,7 +4209,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 
       for (insnp = ready; insnp < e_ready; insnp++)
 	{
-	  rtx insn = *insnp;
+	  rtx_insn *insn = *insnp;
 	  int icode = recog_memoized (insn);
 	  bool is_asm = (icode < 0
 			 && (GET_CODE (PATTERN (insn)) == ASM_INPUT
@@ -4248,7 +4252,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 static int
 c6x_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
 		   int sched_verbose ATTRIBUTE_UNUSED,
-		   rtx *ready ATTRIBUTE_UNUSED,
+		   rtx_insn **ready ATTRIBUTE_UNUSED,
 		   int *pn_ready ATTRIBUTE_UNUSED, int clock_var)
 {
   ss.curr_sched_clock = clock_var;
@@ -4268,7 +4272,7 @@ c6x_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
 static int
 c6x_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 		    int sched_verbose ATTRIBUTE_UNUSED,
-		    rtx *ready ATTRIBUTE_UNUSED,
+		    rtx_insn **ready ATTRIBUTE_UNUSED,
 		    int *pn_ready ATTRIBUTE_UNUSED, int clock_var)
 {
   /* FIXME: the assembler rejects labels inside an execute packet.
@@ -4281,12 +4285,12 @@ c6x_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 	  && get_attr_type (ss.last_scheduled_insn) == TYPE_ATOMIC))
     {
       int n_ready = *pn_ready;
-      rtx *e_ready = ready + n_ready;
-      rtx *insnp;
+      rtx_insn **e_ready = ready + n_ready;
+      rtx_insn **insnp;
 
       for (insnp = ready; insnp < e_ready; insnp++)
 	{
-	  rtx insn = *insnp;
+	  rtx_insn *insn = *insnp;
 	  if (!shadow_p (insn))
 	    {
 	      memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
@@ -4357,7 +4361,7 @@ maybe_clobber_cond (rtx insn, int clock_var)
 static int
 c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		    int sched_verbose ATTRIBUTE_UNUSED,
-		    rtx insn, int can_issue_more ATTRIBUTE_UNUSED)
+		    rtx_insn *insn, int can_issue_more ATTRIBUTE_UNUSED)
 {
   ss.last_scheduled_insn = insn;
   if (INSN_UID (insn) < sploop_max_uid_iter0 && !JUMP_P (insn))
@@ -4464,7 +4468,7 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
    anti- and output dependencies.  */
 
 static int
-c6x_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+c6x_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type = TYPE_UNKNOWN, dep_insn_type = TYPE_UNKNOWN;
   int dep_insn_code_number, insn_code_number;
@@ -4589,36 +4593,37 @@ c6x_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
    first in the original stream.  */
 
 static void
-gen_one_bundle (rtx *slot, int n_filled, int real_first)
+gen_one_bundle (rtx_insn **slot, int n_filled, int real_first)
 {
-  rtx bundle;
-  rtx t;
+  rtx seq;
+  rtx_insn *bundle;
+  rtx_insn *t;
   int i;
 
-  bundle = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec_v (n_filled, slot));
-  bundle = make_insn_raw (bundle);
+  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec_v (n_filled, slot));
+  bundle = make_insn_raw (seq);
   BLOCK_FOR_INSN (bundle) = BLOCK_FOR_INSN (slot[0]);
   INSN_LOCATION (bundle) = INSN_LOCATION (slot[0]);
-  PREV_INSN (bundle) = PREV_INSN (slot[real_first]);
+  SET_PREV_INSN (bundle) = SET_PREV_INSN (slot[real_first]);
 
-  t = NULL_RTX;
+  t = NULL;
 
   for (i = 0; i < n_filled; i++)
     {
-      rtx insn = slot[i];
+      rtx_insn *insn = slot[i];
       remove_insn (insn);
-      PREV_INSN (insn) = t ? t : PREV_INSN (bundle);
+      SET_PREV_INSN (insn) = t ? t : PREV_INSN (bundle);
       if (t != NULL_RTX)
-	NEXT_INSN (t) = insn;
+	SET_NEXT_INSN (t) = insn;
       t = insn;
       if (i > 0)
 	INSN_LOCATION (slot[i]) = INSN_LOCATION (bundle);
     }
 
-  NEXT_INSN (bundle) = NEXT_INSN (PREV_INSN (bundle));
-  NEXT_INSN (t) = NEXT_INSN (bundle);
-  NEXT_INSN (PREV_INSN (bundle)) = bundle;
-  PREV_INSN (NEXT_INSN (bundle)) = bundle;
+  SET_NEXT_INSN (bundle) = NEXT_INSN (PREV_INSN (bundle));
+  SET_NEXT_INSN (t) = NEXT_INSN (bundle);
+  SET_NEXT_INSN (PREV_INSN (bundle)) = bundle;
+  SET_PREV_INSN (NEXT_INSN (bundle)) = bundle;
 }
 
 /* Move all parallel instructions into SEQUENCEs, so that no subsequent passes
@@ -4628,14 +4633,14 @@ static void
 c6x_gen_bundles (void)
 {
   basic_block bb;
-  rtx insn, next, last_call;
+  rtx_insn *insn, *next, *last_call;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
       /* The machine is eight insns wide.  We can have up to six shadow
 	 insns, plus an extra slot for merging the jump shadow.  */
-      rtx slot[15];
+      rtx_insn *slot[15];
       int n_filled = 0;
       int first_slot = 0;
 
@@ -4698,7 +4703,7 @@ c6x_gen_bundles (void)
   /* Bundling, and emitting nops, can separate
      NOTE_INSN_CALL_ARG_LOCATION from the corresponding calls.  Fix
      that up here.  */
-  last_call = NULL_RTX;
+  last_call = NULL;
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -4710,22 +4715,22 @@ c6x_gen_bundles (void)
 	continue;
       if (NEXT_INSN (last_call) == insn)
 	continue;
-      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-      PREV_INSN (insn) = last_call;
-      NEXT_INSN (insn) = NEXT_INSN (last_call);
-      PREV_INSN (NEXT_INSN (insn)) = insn;
-      NEXT_INSN (PREV_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+      SET_PREV_INSN (insn) = last_call;
+      SET_NEXT_INSN (insn) = NEXT_INSN (last_call);
+      SET_PREV_INSN (NEXT_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = insn;
       last_call = insn;
     }
 }
 
 /* Emit a NOP instruction for CYCLES cycles after insn AFTER.  Return it.  */
 
-static rtx
+static rtx_insn *
 emit_nop_after (int cycles, rtx after)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* mpydp has 9 delay slots, and we may schedule a stall for a cross-path
      operation.  We don't need the extra NOP since in this case, the hardware
@@ -4745,7 +4750,7 @@ emit_nop_after (int cycles, rtx after)
    placed.  */
 
 static bool
-returning_call_p (rtx insn)
+returning_call_p (rtx_insn *insn)
 {
   if (CALL_P (insn))
     return (!SIBLING_CALL_P (insn)
@@ -4760,7 +4765,7 @@ returning_call_p (rtx insn)
 
 /* Determine whether INSN's pattern can be converted to use callp.  */
 static bool
-can_use_callp (rtx insn)
+can_use_callp (rtx_insn *insn)
 {
   int icode = recog_memoized (insn);
   if (!TARGET_INSNS_64PLUS
@@ -4776,7 +4781,7 @@ can_use_callp (rtx insn)
 
 /* Convert the pattern of INSN, which must be a CALL_INSN, into a callp.  */
 static void
-convert_to_callp (rtx insn)
+convert_to_callp (rtx_insn *insn)
 {
   rtx lab;
   extract_insn (insn);
@@ -4831,7 +4836,7 @@ static rtx
 find_last_same_clock (rtx insn)
 {
   rtx retval = insn;
-  rtx t = next_real_insn (insn);
+  rtx_insn *t = next_real_insn (insn);
 
   while (t && GET_MODE (t) != TImode)
     {
@@ -4853,13 +4858,13 @@ static void
 reorg_split_calls (rtx *call_labels)
 {
   unsigned int reservation_mask = 0;
-  rtx insn = get_insns ();
+  rtx_insn *insn = get_insns ();
   gcc_assert (NOTE_P (insn));
   insn = next_real_insn (insn);
   while (insn)
     {
       int uid;
-      rtx next = next_real_insn (insn);
+      rtx_insn *next = next_real_insn (insn);
 
       if (DEBUG_INSN_P (insn))
 	goto done;
@@ -4884,7 +4889,7 @@ reorg_split_calls (rtx *call_labels)
 	      else
 		{
 		  rtx t;
-		  rtx slot[4];
+		  rtx_insn *slot[4];
 		  emit_label_after (label, insn);
 
 		  /* Bundle the call and its delay slots into a single
@@ -4938,7 +4943,8 @@ reorg_split_calls (rtx *call_labels)
 		  /* Find the first insn of the next execute packet.  If it
 		     is the shadow insn corresponding to this call, we may
 		     use a CALLP insn.  */
-		  rtx shadow = next_nonnote_nondebug_insn (last_same_clock);
+		  rtx_insn *shadow =
+		    next_nonnote_nondebug_insn (last_same_clock);
 
 		  if (CALL_P (shadow)
 		      && insn_get_clock (shadow) == this_clock + 5)
@@ -4951,7 +4957,7 @@ reorg_split_calls (rtx *call_labels)
 			= INSN_INFO_ENTRY (INSN_UID (last_same_clock)).unit_mask;
 		      if (GET_MODE (insn) == TImode)
 			{
-			  rtx new_cycle_first = NEXT_INSN (insn);
+			  rtx_insn *new_cycle_first = NEXT_INSN (insn);
 			  while (!NONDEBUG_INSN_P (new_cycle_first)
 				 || GET_CODE (PATTERN (new_cycle_first)) == USE
 				 || GET_CODE (PATTERN (new_cycle_first)) == CLOBBER)
@@ -5026,10 +5032,11 @@ static void
 reorg_emit_nops (rtx *call_labels)
 {
   bool first;
-  rtx prev, last_call;
+  rtx last_call;
+  rtx_insn *prev;
   int prev_clock, earliest_bb_end;
   int prev_implicit_nops;
-  rtx insn = get_insns ();
+  rtx_insn *insn = get_insns ();
 
   /* We look at one insn (or bundle inside a sequence) in each iteration, storing
      its issue time in PREV_CLOCK for the next iteration.  If there is a gap in
@@ -5041,7 +5048,7 @@ reorg_emit_nops (rtx *call_labels)
      a multi-cycle nop.  The code is scheduled such that subsequent insns will
      show the cycle gap, but we needn't insert a real NOP instruction.  */
   insn = next_real_insn (insn);
-  last_call = prev = NULL_RTX;
+  last_call = prev = NULL;
   prev_clock = -1;
   earliest_bb_end = 0;
   prev_implicit_nops = 0;
@@ -5049,7 +5056,7 @@ reorg_emit_nops (rtx *call_labels)
   while (insn)
     {
       int this_clock = -1;
-      rtx next;
+      rtx_insn *next;
       int max_cycles = 0;
 
       next = next_real_insn (insn);
@@ -5151,10 +5158,11 @@ reorg_emit_nops (rtx *call_labels)
 /* If possible, split INSN, which we know is either a jump or a call, into a real
    insn and its shadow.  */
 static void
-split_delayed_branch (rtx insn)
+split_delayed_branch (rtx_insn *insn)
 {
   int code = recog_memoized (insn);
-  rtx i1, newpat;
+  rtx_insn *i1;
+  rtx newpat;
   rtx pat = PATTERN (insn);
 
   if (GET_CODE (pat) == COND_EXEC)
@@ -5257,11 +5265,12 @@ split_delayed_branch (rtx insn)
    with the possibility.  Currently we handle loads and most mpy2 and
    mpy4 insns.  */
 static bool
-split_delayed_nonbranch (rtx insn)
+split_delayed_nonbranch (rtx_insn *insn)
 {
   int code = recog_memoized (insn);
   enum attr_type type;
-  rtx i1, newpat, src, dest;
+  rtx_insn *i1;
+  rtx newpat, src, dest;
   rtx pat = PATTERN (insn);
   rtvec rtv;
   int delay;
@@ -5327,11 +5336,12 @@ split_delayed_nonbranch (rtx insn)
 /* Examine if INSN is the result of splitting a load into a real load and a
    shadow, and if so, undo the transformation.  */
 static void
-undo_split_delayed_nonbranch (rtx insn)
+undo_split_delayed_nonbranch (rtx_insn *insn)
 {
   int icode = recog_memoized (insn);
   enum attr_type type;
-  rtx prev_pat, insn_pat, prev;
+  rtx prev_pat, insn_pat;
+  rtx_insn *prev;
 
   if (icode < 0)
     return;
@@ -5369,7 +5379,7 @@ undo_split_delayed_nonbranch (rtx insn)
 static void
 split_delayed_insns (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (JUMP_P (insn) || CALL_P (insn))
@@ -5383,7 +5393,7 @@ static void
 conditionalize_after_sched (void)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
@@ -5405,7 +5415,7 @@ conditionalize_after_sched (void)
    loop counter.  Otherwise, return NULL_RTX.  */
 
 static rtx
-hwloop_pattern_reg (rtx insn)
+hwloop_pattern_reg (rtx_insn *insn)
 {
   rtx pat, reg;
 
@@ -5427,7 +5437,7 @@ static int
 bb_earliest_end_cycle (basic_block bb, rtx ignore)
 {
   int earliest = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -5453,7 +5463,7 @@ bb_earliest_end_cycle (basic_block bb, rtx ignore)
 static void
 filter_insns_above (basic_block bb, int max_uid)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
   bool prev_ti = false;
   int prev_cycle = -1;
 
@@ -5511,17 +5521,17 @@ static bool
 hwloop_optimize (hwloop_info loop)
 {
   basic_block entry_bb, bb;
-  rtx seq, insn, prev, entry_after, end_packet;
-  rtx head_insn, tail_insn, new_insns, last_insn;
+  rtx_insn *seq, *insn, *prev, *entry_after, *end_packet;
+  rtx_insn *head_insn, *tail_insn, *new_insns, *last_insn;
   int loop_earliest;
   int n_execute_packets;
   edge entry_edge;
   unsigned ix;
   int max_uid_before, delayed_splits;
   int i, sp_ii, min_ii, max_ii, max_parallel, n_insns, n_real_insns, stages;
-  rtx *orig_vec;
-  rtx *copies;
-  rtx **insn_copies;
+  rtx_insn **orig_vec;
+  rtx_insn **copies;
+  rtx_insn ***insn_copies;
 
   if (!c6x_flag_modulo_sched || !c6x_flag_schedule_insns2
       || !TARGET_INSNS_64PLUS)
@@ -5586,7 +5596,7 @@ hwloop_optimize (hwloop_info loop)
       if (NONDEBUG_INSN_P (insn) && insn != loop->loop_end)
 	n_real_insns++;
     }
-  orig_vec = XNEWVEC (rtx, n_insns);
+  orig_vec = XNEWVEC (rtx_insn *, n_insns);
   n_insns = 0;
   FOR_BB_INSNS (bb, insn)
     orig_vec[n_insns++] = insn;
@@ -5604,8 +5614,8 @@ hwloop_optimize (hwloop_info loop)
      to handle.  */
   max_parallel = loop_earliest / min_ii + 1;
 
-  copies = XCNEWVEC (rtx, (max_parallel + 1) * n_real_insns);
-  insn_copies = XNEWVEC (rtx *, max_parallel + 1);
+  copies = XCNEWVEC (rtx_insn *, (max_parallel + 1) * n_real_insns);
+  insn_copies = XNEWVEC (rtx_insn **, max_parallel + 1);
   for (i = 0; i < max_parallel + 1; i++)
     insn_copies[i] = copies + i * n_real_insns;
 
@@ -5625,20 +5635,20 @@ hwloop_optimize (hwloop_info loop)
   for (i = 0; i < max_parallel; i++)
     {
       int j;
-      rtx this_iter;
+      rtx_insn *this_iter;
 
       this_iter = duplicate_insn_chain (head_insn, tail_insn);
       j = 0;
       while (this_iter)
 	{
-	  rtx prev_stage_insn = insn_copies[i][j];
+	  rtx_insn *prev_stage_insn = insn_copies[i][j];
 	  gcc_assert (INSN_CODE (this_iter) == INSN_CODE (prev_stage_insn));
 
 	  if (INSN_CODE (this_iter) >= 0
 	      && (get_attr_type (this_iter) == TYPE_LOAD_SHADOW
 		  || get_attr_type (this_iter) == TYPE_MULT_SHADOW))
 	    {
-	      rtx prev = PREV_INSN (this_iter);
+	      rtx_insn *prev = PREV_INSN (this_iter);
 	      record_delay_slot_pair (prev, this_iter,
 				      get_attr_cycles (prev) - 1, 0);
 	    }
@@ -5698,8 +5708,8 @@ hwloop_optimize (hwloop_info loop)
      reservations of the instructions contained in it to the corresponding
      instructions from iteration 0, which are the only ones we'll keep.  */
   assign_reservations (BB_HEAD (bb), ss.last_scheduled_insn);
-  PREV_INSN (BB_END (bb)) = ss.last_scheduled_iter0;
-  NEXT_INSN (ss.last_scheduled_iter0) = BB_END (bb);
+  SET_PREV_INSN (BB_END (bb)) = ss.last_scheduled_iter0;
+  SET_NEXT_INSN (ss.last_scheduled_iter0) = BB_END (bb);
   filter_insns_above (bb, sploop_max_uid_iter0);
 
   for (i = 0; i < n_real_insns; i++)
@@ -5722,9 +5732,11 @@ hwloop_optimize (hwloop_info loop)
 
   /* Compute the number of execute packets the pipelined form of the loop will
      require.  */
-  prev = NULL_RTX;
+  prev = NULL;
   n_execute_packets = 0;
-  for (insn = loop->start_label; insn != loop->loop_end; insn = NEXT_INSN (insn))
+  for (insn = loop->start_label;
+       insn != loop->loop_end;
+       insn = NEXT_INSN (insn))
     {
       if (NONDEBUG_INSN_P (insn) && GET_MODE (insn) == TImode
 	  && !shadow_p (insn))
@@ -5759,9 +5771,10 @@ hwloop_optimize (hwloop_info loop)
      spot.  */
   PUT_MODE (end_packet, VOIDmode);
 
-  insn = gen_spkernel (GEN_INT (stages - 1),
-		       const0_rtx, JUMP_LABEL (loop->loop_end));
-  insn = emit_jump_insn_before (insn, end_packet);
+  insn = emit_jump_insn_before (
+	   gen_spkernel (GEN_INT (stages - 1),
+			 const0_rtx, JUMP_LABEL (loop->loop_end)),
+	   end_packet);
   JUMP_LABEL (insn) = JUMP_LABEL (loop->loop_end);
   insn_set_clock (insn, loop_earliest);
   PUT_MODE (insn, TImode);
@@ -5821,13 +5834,13 @@ hwloop_optimize (hwloop_info loop)
 
   for (i = 1; i < n_insns; i++)
     {
-      NEXT_INSN (orig_vec[i - 1]) = orig_vec[i];
-      PREV_INSN (orig_vec[i]) = orig_vec[i - 1];
+      SET_NEXT_INSN (orig_vec[i - 1]) = orig_vec[i];
+      SET_PREV_INSN (orig_vec[i]) = orig_vec[i - 1];
     }
-  PREV_INSN (orig_vec[0]) = PREV_INSN (BB_HEAD (bb));
-  NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
-  NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
-  PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
+  SET_PREV_INSN (orig_vec[0]) = PREV_INSN (BB_HEAD (bb));
+  SET_NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
+  SET_NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
+  SET_PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
   BB_HEAD (bb) = orig_vec[0];
   BB_END (bb) = orig_vec[n_insns - 1];
  undo_splits:
@@ -5861,7 +5874,7 @@ hwloop_fail (hwloop_info loop)
     emit_insn_before (insn, loop->loop_end);
   else
     {
-      rtx t = loop->start_label;
+      rtx_insn *t = loop->start_label;
       while (!NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_BASIC_BLOCK)
 	t = NEXT_INSN (t);
       emit_insn_after (insn, t);

@@ -89,7 +89,7 @@ ADA_FLAGS_TO_PASS = \
 
 # List of Ada tools to build and install
 ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
-          gnatname gnatprep gnatxref gnatfind gnatclean gnatsym
+          gnatname gnatprep gnatxref gnatfind gnatclean
 
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
@@ -128,11 +128,12 @@ ada: gnat1$(exeext) gnatbind$(exeext)
 # Tell GNU Make to ignore these, if they exist.
 .PHONY: ada
 
-CXX_LFLAGS = \
- -B../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
- -B../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs \
- -L../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
- -L../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs
+# Compute the FLAGS to pass for gnattools, now linked with a C++ driver as
+# we're linking against at least libcommon which contains C++ compiled code.
+# We need to use the same driver to link as the one that was used to produce
+# the objects, which depends on whether we're bootstrapping or not.  The CXX
+# variable conveys what we need for this, set to "g++" if not bootstrapping,
+# ".../xg++" otherwise.
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
@@ -142,7 +143,7 @@ ifeq ($(build), $(host))
     # tree.
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="../../xgcc -B../../" \
-        CXX="../../xg++ -B../../ $(CXX_LFLAGS)" \
+        CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I- -I../rts" \
         GNATMAKE="../../gnatmake" \
@@ -281,7 +282,6 @@ GNAT_ADA_OBJS =	\
  ada/exp_strm.o	\
  ada/exp_tss.o	\
  ada/exp_util.o	\
- ada/exp_vfpt.o	\
  ada/expander.o	\
  ada/fmap.o	\
  ada/fname-uf.o	\
@@ -415,7 +415,6 @@ GNAT_ADA_OBJS =	\
  ada/sem_smem.o	\
  ada/sem_type.o	\
  ada/sem_util.o	\
- ada/sem_vfpt.o	\
  ada/sem_warn.o	\
  ada/set_targ.o \
  ada/sinfo-cn.o	\
@@ -655,26 +654,7 @@ ada.tags: force
 
 # Generate documentation.
 
-ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
-	-$(MKDIR) ada/doctools
-	$(CP) $^ ada/doctools
-	cd ada/doctools && gnatmake -q xgnatugn
-
-# Note that doc/gnat_ugn.texi and doc/projects.texi do not depend on
-# xgnatugn being built so we can distribute a pregenerated doc/gnat_ugn.info
-
-doc/gnat_ugn.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
-   doc/projects.texi $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
-	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
-	   $(srcdir)/ada/ug_words doc/gnat_ugn.texi
-
-doc/projects.texi: $(srcdir)/ada/projects.texi
-	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
-	ada/doctools/xgnatugn unw $(srcdir)/ada/projects.texi \
-	   $(srcdir)/ada/ug_words doc/projects.texi
-
-doc/gnat_ugn.info: doc/gnat_ugn.texi			\
+doc/gnat_ugn.info: ada/gnat_ugn.texi ada/projects.texi \
    $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -699,8 +679,7 @@ doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi	\
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_ugn.texi \
-                doc/gnat_rm.info doc/gnat-style.info
+ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_rm.info doc/gnat-style.info
 
 ada.info: $(ADA_INFOFILES)
 
@@ -733,7 +712,8 @@ ada.html:
 
 ada.install-html:
 
-doc/gnat_ugn.dvi: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.dvi: ada/gnat_ugn.texi ada/projects.texi \
+	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
@@ -744,7 +724,8 @@ doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_ugn.pdf: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.pdf: ada/gnat_ugn.texi ada/projects.texi \
+	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 
@@ -764,8 +745,7 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # or from the --target option if the former is not specified.
 # Do the same for the rest of the Ada tools (gnatchop, gnat, gnatkr,
 # gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
-# gnatclean, gnatsym).
-# gnatsym is only built on some platforms, including VMS.
+# gnatclean).
 # gnatdll is only used on Windows.
 # vxaddr2line is only used for cross VxWorks ports (it calls the underlying
 # cross addr2line).
@@ -841,7 +821,6 @@ ada.distclean:
 	-$(RM) gnatfind$(exeext)
 	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
-	-$(RM) gnatsym$(exeext)
 	-$(RM) ada/rts/*
 	-$(RMDIR) ada/rts
 	-$(RM) ada/tools/*
@@ -883,7 +862,18 @@ check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 
-check_acats_targets = $(patsubst %,check-acats%, 0 1 2)
+check_acats_numbers0:=1 2 3 4 5 6 7 8 9
+check_acats_numbers1:=0 $(check_acats_numbers0)
+check_acats_numbers2:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers1)))
+check_acats_numbers3:=$(addprefix 0,$(check_acats_numbers1)) $(check_acats_numbers2)
+check_acats_numbers4:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers3)))
+check_acats_numbers5:=$(addprefix 0,$(check_acats_numbers3)) $(check_acats_numbers4)
+check_acats_numbers6:=$(foreach i,$(check_acats_numbers0),$(addprefix $(i),$(check_acats_numbers5)))
+check_acats_numbers:=$(check_acats_numbers0) $(check_acats_numbers2) $(check_acats_numbers4) $(check_acats_numbers6)
+check_acats_subdirs=$(wordlist 1, \
+		    $(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),128), \
+		    $(check_acats_numbers))
+check_acats_targets = $(addprefix check-acats, $(check_acats_subdirs))
 
 check-acats:
 	@test -d $(ACATSDIR) || mkdir -p $(ACATSDIR); \
@@ -891,35 +881,45 @@ check-acats:
 	EXPECT=$(EXPECT); export EXPECT; \
 	if [ -z "$(CHAPTERS)" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; \
 	then \
+	  rm -rf $(ACATSDIR)-parallel; \
+	  mkdir $(ACATSDIR)-parallel; \
+	  ( testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
+	    export testdir; \
+	    cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats NONE ) \
+	    || exit 1; \
+	  GCC_RUNTEST_PARALLELIZE_DIR=$$rootme/$(ACATSDIR)-parallel; \
+	  export GCC_RUNTEST_PARALLELIZE_DIR; \
 	  $(MAKE) $(check_acats_targets); \
-	  for idx in 0 1 2; do \
+	  rm -rf $(ACATSDIR)-parallel; \
+	  acats_sums= ; acats_logs= ; \
+	  for idx in "" $(check_acats_subdirs); do \
+	    [ -d $(ACATSDIR)$$idx ] || continue; \
 	    mv -f $(ACATSDIR)$$idx/acats.sum $(ACATSDIR)$$idx/acats.sum.sep; \
 	    mv -f $(ACATSDIR)$$idx/acats.log $(ACATSDIR)$$idx/acats.log.sep; \
+	    acats_sums="$$acats_sums $(ACATSDIR)$$idx/acats.sum.sep"; \
+	    acats_logs="$$acats_logs $(ACATSDIR)$$idx/acats.log.sep"; \
 	  done; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh \
-	    $(ACATSDIR)0/acats.sum.sep $(ACATSDIR)1/acats.sum.sep \
-	    $(ACATSDIR)2/acats.sum.sep > $(ACATSDIR)/acats.sum; \
+	    $$acats_sums > $(ACATSDIR)/acats.sum; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L \
-	    $(ACATSDIR)0/acats.log.sep $(ACATSDIR)1/acats.log.sep \
-	    $(ACATSDIR)2/acats.log.sep > $(ACATSDIR)/acats.log; \
+	    $$acats_logs > $(ACATSDIR)/acats.log; \
 	  exit 0; \
 	fi; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
 	export testdir; cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats $(CHAPTERS)
 
 check-acats-subtargets:
-	@echo $(check_acats_targets)
+	@echo check-acats
 
 # Parallelized check-acats
 $(check_acats_targets): check-acats%:
+	if [ -f $$GCC_RUNTEST_PARALLELIZE_DIR/finished ]; then \
+	  rm -rf $(ACATSDIR)$*; exit 0; \
+	fi; \
 	test -d $(ACATSDIR)$* || mkdir -p $(ACATSDIR)$*; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
-	case "$*" in \
-	  0) chapters="`cd $$testdir/tests; echo [a-b]* c[0-4]*`";; \
-	  1) chapters="`cd $$testdir/tests; echo c[5-9ab]*`";; \
-	  2) chapters="`cd $$testdir/tests; echo c[c-z]* [d-z]*`";; \
-	esac; \
-	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats $$chapters
+	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats
+	touch $$GCC_RUNTEST_PARALLELIZE_DIR/finished
 
 .PHONY: check-acats $(check_acats_targets)
 

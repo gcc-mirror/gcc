@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -871,7 +870,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 
 struct cp_genericize_data
 {
-  struct pointer_set_t *p_set;
+  hash_set<tree> *p_set;
   vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
 };
@@ -884,7 +883,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
   tree stmt = *stmt_p;
   struct cp_genericize_data *wtd = (struct cp_genericize_data *) data;
-  struct pointer_set_t *p_set = wtd->p_set;
+  hash_set<tree> *p_set = wtd->p_set;
 
   /* If in an OpenMP context, note var uses.  */
   if (__builtin_expect (wtd->omp_ctx != NULL, 0)
@@ -924,7 +923,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   /* Other than invisiref parms, don't walk the same tree twice.  */
-  if (pointer_set_contains (p_set, stmt))
+  if (p_set->contains (stmt))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
@@ -1198,8 +1197,29 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	*stmt_p = size_one_node;
       return NULL;
     }    
+  else if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+    {
+      if (TREE_CODE (stmt) == NOP_EXPR
+	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
+	ubsan_maybe_instrument_reference (stmt);
+      else if (TREE_CODE (stmt) == CALL_EXPR)
+	{
+	  tree fn = CALL_EXPR_FN (stmt);
+	  if (fn != NULL_TREE
+	      && !error_operand_p (fn)
+	      && POINTER_TYPE_P (TREE_TYPE (fn))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) == METHOD_TYPE)
+	    {
+	      bool is_ctor
+		= TREE_CODE (fn) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+		  && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0));
+	      ubsan_maybe_instrument_member_call (stmt, is_ctor);
+	    }
+	}
+    }
 
-  pointer_set_insert (p_set, *stmt_p);
+  p_set->add (*stmt_p);
 
   return NULL;
 }
@@ -1211,11 +1231,11 @@ cp_genericize_tree (tree* t_p)
 {
   struct cp_genericize_data wtd;
 
-  wtd.p_set = pointer_set_create ();
+  wtd.p_set = new hash_set<tree>;
   wtd.bind_expr_stack.create (0);
   wtd.omp_ctx = NULL;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
-  pointer_set_destroy (wtd.p_set);
+  delete wtd.p_set;
   wtd.bind_expr_stack.release ();
 }
 

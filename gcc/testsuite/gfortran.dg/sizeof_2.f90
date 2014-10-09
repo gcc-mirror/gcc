@@ -10,7 +10,7 @@ subroutine foo(x, y)
   integer(8) :: ii
   procedure() :: proc
 
-  ii = sizeof (x) ! { dg-error "Assumed-type argument at .1. is not permitted as actual argument to the intrinsic sizeof" }
+  ii = sizeof (x) ! { dg-error "'x' argument of 'sizeof' intrinsic at \\(1\\) shall not be TYPE\\(\\*\\)" }
   ii = c_sizeof (x) ! { dg-error "Assumed-type argument at .1. is not permitted as actual argument to the intrinsic c_sizeof" }
   ii = storage_size (x) ! { dg-error "Assumed-type argument at .1. is not permitted as actual argument to the intrinsic storage_size" }
 

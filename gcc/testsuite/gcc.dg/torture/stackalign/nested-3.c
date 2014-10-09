@@ -8,6 +8,7 @@
 #endif
 
 typedef int aligned __attribute__((aligned(ALIGNMENT)));
+extern int strncmp (const char *, const char *, size_t);
 
 int global;
 

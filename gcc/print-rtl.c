@@ -392,12 +392,14 @@ print_rtx (const_rtx in_rtx)
 	if (i == 4 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
+	    const rtx_insn *in_insn = as_a <const rtx_insn *> (in_rtx);
+
 	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
-	    if (INSN_HAS_LOCATION (in_rtx))
+	    if (INSN_HAS_LOCATION (in_insn))
 	      {
-		expanded_location xloc = insn_location (in_rtx);
+		expanded_location xloc = insn_location (in_insn);
 		fprintf (outfile, " %s:%i", xloc.file, xloc.line);
 	      }
 #endif
@@ -699,14 +701,15 @@ DEBUG_VARIABLE int debug_rtx_count = 0;	/* 0 is treated as equivalent to 1 */
 /* Call this function to print list from X on.
 
    N is a count of the rtx's to print. Positive values print from the specified
-   rtx on.  Negative values print a window around the rtx.
-   EG: -5 prints 2 rtx's on either side (in addition to the specified rtx).  */
+   rtx_insn on.  Negative values print a window around the rtx_insn.
+   EG: -5 prints 2 rtx_insn's on either side (in addition to the specified
+   rtx_insn).  */
 
 DEBUG_FUNCTION void
-debug_rtx_list (const_rtx x, int n)
+debug_rtx_list (const rtx_insn *x, int n)
 {
   int i,count;
-  const_rtx insn;
+  const rtx_insn *insn;
 
   count = n == 0 ? 1 : n < 0 ? -n : n;
 
@@ -727,10 +730,11 @@ debug_rtx_list (const_rtx x, int n)
     }
 }
 
-/* Call this function to print an rtx list from START to END inclusive.  */
+/* Call this function to print an rtx_insn list from START to END
+   inclusive.  */
 
 DEBUG_FUNCTION void
-debug_rtx_range (const_rtx start, const_rtx end)
+debug_rtx_range (const rtx_insn *start, const rtx_insn *end)
 {
   while (1)
     {
@@ -742,12 +746,12 @@ debug_rtx_range (const_rtx start, const_rtx end)
     }
 }
 
-/* Call this function to search an rtx list to find one with insn uid UID,
+/* Call this function to search an rtx_insn list to find one with insn uid UID,
    and then call debug_rtx_list to print it, using DEBUG_RTX_COUNT.
    The found insn is returned to enable further debugging analysis.  */
 
 DEBUG_FUNCTION const_rtx
-debug_rtx_find (const_rtx x, int uid)
+debug_rtx_find (const rtx_insn *x, int uid)
 {
   while (x != 0 && INSN_UID (x) != uid)
     x = NEXT_INSN (x);
@@ -772,7 +776,7 @@ debug_rtx_find (const_rtx x, int uid)
 void
 print_rtl (FILE *outf, const_rtx rtx_first)
 {
-  const_rtx tmp_rtx;
+  const rtx_insn *tmp_rtx;
 
   outfile = outf;
   sawclose = 0;
@@ -792,7 +796,9 @@ print_rtl (FILE *outf, const_rtx rtx_first)
       case CODE_LABEL:
       case JUMP_TABLE_DATA:
       case BARRIER:
-	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
+	for (tmp_rtx = as_a <const rtx_insn *> (rtx_first);
+	     tmp_rtx != 0;
+	     tmp_rtx = NEXT_INSN (tmp_rtx))
 	  {
 	    fputs (print_rtx_head, outfile);
 	    print_rtx (tmp_rtx);

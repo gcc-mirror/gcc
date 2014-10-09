@@ -21,8 +21,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifdef __mips_micromips
-  /* DO NOTHING */
+#if defined(__mips_micromips) || defined(__mips_soft_float)
+  /* Do nothing because this code is only needed when linking
+     against mips16 hard-float objects.  Neither micromips code
+     nor soft-float code can be linked against mips16 hard-float
+     objects so we do not need these routines when building libgcc
+     for those cases.  */
 #else
 
 /* This file contains mips16 floating point support functions.  These
@@ -749,4 +753,4 @@ CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 #endif /* !__mips_single_float */
 
 #endif
-#endif /* __mips_micromips */
+#endif /* defined(__mips_micromips) || defined(__mips_soft_float) */

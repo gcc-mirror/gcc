@@ -18,15 +18,12 @@ foo (int y)
   return y + bar (y);
 }
 
-int
-main (void)
-{
-  return !(foo (5) == 13);
-}
+/* Check that no registers are saved/restored. */
+/* { dg-final { scan-assembler-not "push"  } } */
+/* { dg-final { scan-assembler-not "pop"  } } */
 
-/* Verify that no registers where saved on stack.  */
-/* { dg-final { scan-assembler-not "\.cfi_offset"  } } */
+/* Check that addition uses dx. */
+/* { dg-final { scan-assembler-times "addl\t%\[re\]?dx, %\[re\]?ax" 1 } } */
 
 /* Verify that bar is self-recursive.  */
-/* { dg-final { scan-assembler-times "call\tbar" 2 } } */
-
+/* { dg-final { scan-assembler-times "call\t_?bar" 2 } } */

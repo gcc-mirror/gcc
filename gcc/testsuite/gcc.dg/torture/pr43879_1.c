@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fipa-pta" } */
+/* { dg-options "-fipa-pta -fno-inline" } */
 /* { dg-additional-sources "pr43879_2.c" } */
 
 void bar(int c)

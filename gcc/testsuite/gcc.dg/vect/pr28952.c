@@ -15,6 +15,8 @@ struct packet_spaceship_info
 {
   char structure[32 + 1];
 };
+void lsend_packet_spaceship_info (struct packet_spaceship_info *);
+void
 send_spaceship_info (void)
 {
   int j;

@@ -47,7 +47,6 @@ package body Bcheck is
 
    procedure Check_Consistent_Dispatching_Policy;
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
-   procedure Check_Consistent_Floating_Point_Format;
    procedure Check_Consistent_Interrupt_States;
    procedure Check_Consistent_Locking_Policy;
    procedure Check_Consistent_Normalize_Scalars;
@@ -56,6 +55,7 @@ package body Bcheck is
    procedure Check_Consistent_Queuing_Policy;
    procedure Check_Consistent_Restrictions;
    procedure Check_Consistent_Restriction_No_Default_Initialization;
+   procedure Check_Consistent_SSO_Default;
    procedure Check_Consistent_Zero_Cost_Exception_Handling;
 
    procedure Consistency_Error_Msg (Msg : String);
@@ -72,10 +72,6 @@ package body Bcheck is
 
    procedure Check_Configuration_Consistency is
    begin
-      if Float_Format_Specified /= ' ' then
-         Check_Consistent_Floating_Point_Format;
-      end if;
-
       if Queuing_Policy_Specified /= ' ' then
          Check_Consistent_Queuing_Policy;
       end if;
@@ -86,6 +82,10 @@ package body Bcheck is
 
       if Partition_Elaboration_Policy_Specified /= ' ' then
          Check_Consistent_Partition_Elaboration_Policy;
+      end if;
+
+      if SSO_Default_Specified then
+         Check_Consistent_SSO_Default;
       end if;
 
       if Zero_Cost_Exceptions_Specified then
@@ -520,41 +520,6 @@ package body Bcheck is
          end loop;
       end if;
    end Check_Consistent_Dynamic_Elaboration_Checking;
-
-   --------------------------------------------
-   -- Check_Consistent_Floating_Point_Format --
-   --------------------------------------------
-
-   --  The rule is that all files must be compiled with the same setting
-   --  for the floating-point format.
-
-   procedure Check_Consistent_Floating_Point_Format is
-   begin
-      --  First search for a unit specifying a floating-point format and then
-      --  check all remaining units against it.
-
-      Find_Format : for A1 in ALIs.First .. ALIs.Last loop
-         if ALIs.Table (A1).Float_Format /= ' ' then
-            Check_Format : declare
-               Format : constant Character := ALIs.Table (A1).Float_Format;
-            begin
-               for A2 in A1 + 1 .. ALIs.Last loop
-                  if ALIs.Table (A2).Float_Format /= Format then
-                     Error_Msg_File_1 := ALIs.Table (A1).Sfile;
-                     Error_Msg_File_2 := ALIs.Table (A2).Sfile;
-
-                     Consistency_Error_Msg
-                       ("{ and { compiled with different " &
-                        "floating-point representations");
-                     exit Find_Format;
-                  end if;
-               end loop;
-            end Check_Format;
-
-            exit Find_Format;
-         end if;
-      end loop Find_Format;
-   end Check_Consistent_Floating_Point_Format;
 
    ---------------------------------------
    -- Check_Consistent_Interrupt_States --
@@ -1107,6 +1072,73 @@ package body Bcheck is
          end;
       end loop;
    end Check_Consistent_Restriction_No_Default_Initialization;
+
+   ----------------------------------
+   -- Check_Consistent_SSO_Default --
+   ----------------------------------
+
+   procedure Check_Consistent_SSO_Default is
+      Default : Character;
+
+   begin
+      Default := ALIs.Table (ALIs.First).SSO_Default;
+
+      --  Check all entries match the default above from the first entry
+
+      for A1 in ALIs.First + 1 .. ALIs.Last loop
+         if ALIs.Table (A1).SSO_Default /= Default then
+            Default := '?';
+            exit;
+         end if;
+      end loop;
+
+      --  All match, return
+
+      if Default /= '?' then
+         return;
+      end if;
+
+      --  Here we have a mismatch
+
+      Consistency_Error_Msg
+        ("files not compiled with same Default_Scalar_Storage_Order");
+
+      Write_Eol;
+      Write_Str ("files compiled with High_Order_First");
+      Write_Eol;
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if ALIs.Table (A1).SSO_Default = 'H' then
+            Write_Str ("  ");
+            Write_Name (ALIs.Table (A1).Sfile);
+            Write_Eol;
+         end if;
+      end loop;
+
+      Write_Eol;
+      Write_Str ("files compiled with Low_Order_First");
+      Write_Eol;
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if ALIs.Table (A1).SSO_Default = 'L' then
+            Write_Str ("  ");
+            Write_Name (ALIs.Table (A1).Sfile);
+            Write_Eol;
+         end if;
+      end loop;
+
+      Write_Eol;
+      Write_Str ("files compiled with no Default_Scalar_Storage_Order");
+      Write_Eol;
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if ALIs.Table (A1).SSO_Default = ' ' then
+            Write_Str ("  ");
+            Write_Name (ALIs.Table (A1).Sfile);
+            Write_Eol;
+         end if;
+      end loop;
+   end Check_Consistent_SSO_Default;
 
    ---------------------------------------------------
    -- Check_Consistent_Zero_Cost_Exception_Handling --

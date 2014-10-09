@@ -129,9 +129,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_CONSTEXPR complex(const _Tp& __r = _Tp(), const _Tp& __i = _Tp())
       : _M_real(__r), _M_imag(__i) { }
 
-      // Lets the compiler synthesize the copy constructor   
-      // complex (const complex<_Tp>&);
-      ///  Copy constructor.
+      // Let the compiler synthesize the copy constructor
+#if __cplusplus >= 201103L
+      constexpr complex(const complex&) = default;
+#endif
+
+      ///  Converting constructor.
       template<typename _Up>
         _GLIBCXX_CONSTEXPR complex(const complex<_Up>& __z)
 	: _M_real(__z.real()), _M_imag(__z.imag()) { }
@@ -172,10 +175,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       imag(_Tp __val) { _M_imag = __val; }
 
-      /// Assign this complex number to scalar @a t.
+      /// Assign a scalar to this complex number.
       complex<_Tp>& operator=(const _Tp&);
       
-      /// Add @a t to this complex number.
+      /// Add a scalar to this complex number.
       // 26.2.5/1
       complex<_Tp>&
       operator+=(const _Tp& __t)
@@ -184,7 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      /// Subtract @a t from this complex number.
+      /// Subtract a scalar from this complex number.
       // 26.2.5/3
       complex<_Tp>&
       operator-=(const _Tp& __t)
@@ -193,27 +196,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      /// Multiply this complex number by @a t.
+      /// Multiply this complex number by a scalar.
       complex<_Tp>& operator*=(const _Tp&);
-      /// Divide this complex number by @a t.
+      /// Divide this complex number by a scalar.
       complex<_Tp>& operator/=(const _Tp&);
 
-      // Lets the compiler synthesize the
-      // copy and assignment operator
-      // complex<_Tp>& operator= (const complex<_Tp>&);
-      /// Assign this complex number to complex @a z.
+      // Let the compiler synthesize the copy assignment operator
+#if __cplusplus >= 201103L
+      complex& operator=(const complex&) = default;
+#endif
+
+      /// Assign another complex number to this one.
       template<typename _Up>
         complex<_Tp>& operator=(const complex<_Up>&);
-      /// Add @a z to this complex number.
+      /// Add another complex number to this one.
       template<typename _Up>
         complex<_Tp>& operator+=(const complex<_Up>&);
-      /// Subtract @a z from this complex number.
+      /// Subtract another complex number from this one.
       template<typename _Up>
         complex<_Tp>& operator-=(const complex<_Up>&);
-      /// Multiply this complex number by @a z.
+      /// Multiply this complex number by another.
       template<typename _Up>
         complex<_Tp>& operator*=(const complex<_Up>&);
-      /// Divide this complex number by @a z.
+      /// Divide this complex number by another.
       template<typename _Up>
         complex<_Tp>& operator/=(const complex<_Up>&);
 
@@ -625,7 +630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 26.2.7/5: norm(__z) returns the squared magnitude of __z.
   //     As defined, norm() is -not- a norm is the common mathematical
-  //     sens used in numerics.  The helper class _Norm_helper<> tries to
+  //     sense used in numerics.  The helper class _Norm_helper<> tries to
   //     distinguish between builtin floating point and the rest, so as
   //     to deliver an answer as close as possible to the real value.
   template<bool>
@@ -1928,6 +1933,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 inline namespace literals {
 inline namespace complex_literals {
+
+#define __cpp_lib_complex_udls 201309
 
   constexpr std::complex<float>
   operator""if(long double __num)

@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) #CODE,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) #CODE,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   "<invalid-fn>"
@@ -48,11 +48,25 @@ const char *const internal_fn_name_array[] = {
 
 /* The ECF_* flags of each internal function, indexed by function number.  */
 const int internal_fn_flags_array[] = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) FLAGS,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) FLAGS,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   0
 };
+
+/* Fnspec of each internal function, indexed by function number.  */
+const_tree internal_fn_fnspec_array[IFN_LAST + 1];
+
+void
+init_internal_fns ()
+{
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+  if (FNSPEC) internal_fn_fnspec_array[IFN_##CODE] = \
+    build_string ((int) sizeof (FNSPEC), FNSPEC ? FNSPEC : "");
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+  internal_fn_fnspec_array[IFN_LAST] = 0;
+}
 
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
    for load-lanes-style optab OPTAB.  The insn must exist.  */
@@ -167,6 +181,14 @@ expand_UBSAN_BOUNDS (gimple stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_ASAN_CHECK (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* Add sub/add overflow checking to the statement STMT.
    CODE says whether the operation is +, or -.  */
 
@@ -175,7 +197,8 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 {
   rtx res, op0, op1;
   tree lhs, fn, arg0, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg0 = gimple_call_arg (stmt, 0);
@@ -195,7 +218,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -221,7 +244,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 
   if (icode == CODE_FOR_nothing)
     {
-      rtx sub_check = gen_label_rtx ();
+      rtx_code_label *sub_check = gen_label_rtx ();
       int pos_neg = 3;
 
       /* Compute the operation.  On RTL level, the addition is always
@@ -323,7 +346,8 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
 {
   rtx res, op1;
   tree lhs, fn, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg1 = gimple_call_arg (stmt, 1);
@@ -341,7 +365,7 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[3];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -399,7 +423,8 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 {
   rtx res, op0, op1;
   tree lhs, fn, arg0, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg0 = gimple_call_arg (stmt, 0);
@@ -419,7 +444,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -477,14 +502,14 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
       else if (hmode != BLKmode
 	       && 2 * GET_MODE_PRECISION (hmode) == GET_MODE_PRECISION (mode))
 	{
-	  rtx large_op0 = gen_label_rtx ();
-	  rtx small_op0_large_op1 = gen_label_rtx ();
-	  rtx one_small_one_large = gen_label_rtx ();
-	  rtx both_ops_large = gen_label_rtx ();
-	  rtx after_hipart_neg = gen_label_rtx ();
-	  rtx after_lopart_neg = gen_label_rtx ();
-	  rtx do_overflow = gen_label_rtx ();
-	  rtx hipart_different = gen_label_rtx ();
+	  rtx_code_label *large_op0 = gen_label_rtx ();
+	  rtx_code_label *small_op0_large_op1 = gen_label_rtx ();
+	  rtx_code_label *one_small_one_large = gen_label_rtx ();
+	  rtx_code_label *both_ops_large = gen_label_rtx ();
+	  rtx_code_label *after_hipart_neg = gen_label_rtx ();
+	  rtx_code_label *after_lopart_neg = gen_label_rtx ();
+	  rtx_code_label *do_overflow = gen_label_rtx ();
+	  rtx_code_label *hipart_different = gen_label_rtx ();
 
 	  unsigned int hprec = GET_MODE_PRECISION (hmode);
 	  rtx hipart0 = expand_shift (RSHIFT_EXPR, mode, op0, hprec,
@@ -584,12 +609,12 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	  if (GET_CODE (lopart0) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart0) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart0, 0);
+	      SUBREG_PROMOTED_SET (lopart0, 0);
 	    }
 	  if (GET_CODE (lopart1) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart1) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart1, 0);
+	      SUBREG_PROMOTED_SET (lopart1, 0);
 	    }
 	  tree halfstype = build_nonstandard_integer_type (hprec, 0);
 	  ops.op0 = make_tree (halfstype, lopart0);
@@ -897,7 +922,7 @@ expand_BUILTIN_EXPECT (gimple stmt)
 
    where STMT is the statement that performs the call. */
 static void (*const internal_fn_expanders[]) (gimple) = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) expand_##CODE,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   0

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "gfortran.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -39,8 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "gfortran.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "constructor.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -63,7 +63,7 @@ static GTY(()) tree parent_fake_result_decl;
 static GTY(()) tree saved_function_decls;
 static GTY(()) tree saved_parent_function_decls;
 
-static struct pointer_set_t *nonlocal_dummy_decl_pset;
+static hash_set<tree> *nonlocal_dummy_decl_pset;
 static GTY(()) tree nonlocal_dummy_decls;
 
 /* Holds the variable DECLs that are locals.  */
@@ -135,8 +135,6 @@ tree gfor_fndecl_caf_deregister;
 tree gfor_fndecl_caf_get;
 tree gfor_fndecl_caf_send;
 tree gfor_fndecl_caf_sendget;
-tree gfor_fndecl_caf_critical;
-tree gfor_fndecl_caf_end_critical;
 tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_images;
 tree gfor_fndecl_caf_error_stop;
@@ -145,6 +143,9 @@ tree gfor_fndecl_caf_atomic_def;
 tree gfor_fndecl_caf_atomic_ref;
 tree gfor_fndecl_caf_atomic_cas;
 tree gfor_fndecl_caf_atomic_op;
+tree gfor_fndecl_caf_lock;
+tree gfor_fndecl_caf_unlock;
+tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_sum;
@@ -1094,9 +1095,9 @@ gfc_nonlocal_dummy_array_decl (gfc_symbol *sym)
   tree decl, dummy;
 
   if (! nonlocal_dummy_decl_pset)
-    nonlocal_dummy_decl_pset = pointer_set_create ();
+    nonlocal_dummy_decl_pset = new hash_set<tree>;
 
-  if (pointer_set_insert (nonlocal_dummy_decl_pset, sym->backend_decl))
+  if (nonlocal_dummy_decl_pset->add (sym->backend_decl))
     return;
 
   dummy = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
@@ -2565,7 +2566,7 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 
       current_function_decl = NULL_TREE;
 
-      cgraph_finalize_function (thunk_fndecl, true);
+      cgraph_node::finalize_function (thunk_fndecl, true);
 
       /* We share the symbols in the formal argument list with other entry
 	 points and the master function.  Clear them so that they are
@@ -3353,26 +3354,23 @@ gfc_build_builtin_function_decls (void)
         ppvoid_type_node, pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_caf_get = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_get")), ".R.RRRW", void_type_node, 8,
+	get_identifier (PREFIX("caf_get")), ".R.RRRW", void_type_node, 9,
         pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
-	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
+	boolean_type_node);
 
       gfor_fndecl_caf_send = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_send")), ".R.RRRR", void_type_node, 8,
+	get_identifier (PREFIX("caf_send")), ".R.RRRR", void_type_node, 9,
         pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
-	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
+	boolean_type_node);
 
       gfor_fndecl_caf_sendget = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sendget")), ".R.RRRR.RRR", void_type_node,
-	12, pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
+	13, pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
 	pvoid_type_node, pvoid_type_node, size_type_node, integer_type_node,
-	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
-
-      gfor_fndecl_caf_critical = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_critical")), void_type_node, 0);
-
-      gfor_fndecl_caf_end_critical = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_end_critical")), void_type_node, 0);
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
+	boolean_type_node);
 
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sync_all")), ".WW", void_type_node,
@@ -3416,6 +3414,21 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 9, integer_type_node, pvoid_type_node, size_type_node,
 	integer_type_node, pvoid_type_node, pvoid_type_node, pint_type,
 	integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_lock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_lock")), "R..WWW",
+	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_caf_unlock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_unlock")), "R..WW",
+	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_co_broadcast = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_co_broadcast")), "W.WW",
+	void_type_node, 5, pvoid_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_max")), "W.WW",
@@ -3644,7 +3657,7 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
 /* Initialize INTENT(OUT) derived type dummies.  As well as giving
    them their default initializer, if they do not have allocatable
-   components, they have their allocatable components deallocated. */
+   components, they have their allocatable components deallocated.  */
 
 static void
 init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
@@ -4694,6 +4707,8 @@ static void
 generate_coarray_sym_init (gfc_symbol *sym)
 {
   tree tmp, size, decl, token;
+  bool is_lock_type;
+  int reg_type;
 
   if (sym->attr.dummy || sym->attr.allocatable || !sym->attr.codimension
       || sym->attr.use_assoc || !sym->attr.referenced
@@ -4704,11 +4719,20 @@ generate_coarray_sym_init (gfc_symbol *sym)
   TREE_USED(decl) = 1;
   gcc_assert (GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
 
+  is_lock_type = sym->ts.type == BT_DERIVED
+		 && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+		 && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE;
+
   /* FIXME: Workaround for PR middle-end/49106, cf. also PR middle-end/49108
      to make sure the variable is not optimized away.  */
   DECL_PRESERVE_P (DECL_CONTEXT (decl)) = 1;
 
-  size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (decl)));
+  /* For lock types, we pass the array size as only the library knows the
+     size of the variable.  */
+  if (is_lock_type)
+    size = gfc_index_one_node;
+  else
+    size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (decl)));
 
   /* Ensure that we do not have size=0 for zero-sized arrays.  */
   size = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
@@ -4725,16 +4749,16 @@ generate_coarray_sym_init (gfc_symbol *sym)
   gcc_assert (GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (decl)) != NULL_TREE);
   token = gfc_build_addr_expr (ppvoid_type_node,
 			       GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE(decl)));
-
+  if (is_lock_type)
+    reg_type = sym->attr.artificial ? GFC_CAF_CRITICAL : GFC_CAF_LOCK_STATIC;
+  else
+    reg_type = GFC_CAF_COARRAY_STATIC;
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,
-			     build_int_cst (integer_type_node,
-					    GFC_CAF_COARRAY_STATIC), /* type.  */
+			     build_int_cst (integer_type_node, reg_type),
 			     token, null_pointer_node, /* token, stat.  */
 			     null_pointer_node, /* errgmsg, errmsg_len.  */
 			     build_int_cst (integer_type_node, 0));
-
   gfc_add_modify (&caf_init_block, decl, fold_convert (TREE_TYPE (decl), tmp));
-
 
   /* Handle "static" initializer.  */
   if (sym->value)
@@ -4800,9 +4824,9 @@ generate_coarray_init (gfc_namespace * ns __attribute((unused)))
   set_cfun (NULL);
 
   if (decl_function_context (fndecl))
-    (void) cgraph_create_node (fndecl);
+    (void) cgraph_node::create (fndecl);
   else
-    cgraph_finalize_function (fndecl, true);
+    cgraph_node::finalize_function (fndecl, true);
 
   pop_function_context ();
   current_function_decl = save_fn_decl;
@@ -5332,7 +5356,7 @@ create_main_function (tree fndecl)
 
   gfc_init_block (&body);
 
-  /* Call some libgfortran initialization routines, call then MAIN__(). */
+  /* Call some libgfortran initialization routines, call then MAIN__().  */
 
   /* Call _gfortran_caf_init (*argc, ***argv).  */
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
@@ -5395,7 +5419,7 @@ create_main_function (tree fndecl)
     /* TODO: This is the -frange-check option, which no longer affects
        library behavior; when bumping the library ABI this slot can be
        reused for something else. As it is the last element in the
-       array, we can instead leave it out altogether. */
+       array, we can instead leave it out altogether.  */
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node, 0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
@@ -5514,7 +5538,7 @@ create_main_function (tree fndecl)
   /* Output the GENERIC tree.  */
   dump_function (TDI_original, ftn_main);
 
-  cgraph_finalize_function (ftn_main, true);
+  cgraph_node::finalize_function (ftn_main, true);
 
   if (old_context)
     {
@@ -5592,36 +5616,6 @@ is_ieee_module_used (gfc_namespace *ns)
   seen_ieee_symbol = 0;
   gfc_traverse_ns (ns, is_from_ieee_module);
   return seen_ieee_symbol;
-}
-
-
-static tree
-save_fp_state (stmtblock_t *block)
-{
-  tree type, fpstate, tmp;
-
-  type = build_array_type (char_type_node,
-	                   build_range_type (size_type_node, size_zero_node,
-					     size_int (32)));
-  fpstate = gfc_create_var (type, "fpstate");
-  fpstate = gfc_build_addr_expr (pvoid_type_node, fpstate);
-
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_entry,
-			     1, fpstate);
-  gfc_add_expr_to_block (block, tmp);
-
-  return fpstate;
-}
-
-
-static void
-restore_fp_state (stmtblock_t *block, tree fpstate)
-{
-  tree tmp;
-
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_exit,
-			     1, fpstate);
-  gfc_add_expr_to_block (block, tmp);
 }
 
 
@@ -5736,7 +5730,7 @@ gfc_generate_function_code (gfc_namespace * ns)
      the floating point state.  */
   ieee = is_ieee_module_used (ns);
   if (ieee)
-    fpstate = save_fp_state (&init);
+    fpstate = gfc_save_fp_state (&init);
 
   /* Now generate the code for the body of this function.  */
   gfc_init_block (&body);
@@ -5823,7 +5817,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   /* If IEEE modules are loaded, restore the floating-point state.  */
   if (ieee)
-    restore_fp_state (&cleanup, fpstate);
+    gfc_restore_fp_state (&cleanup, fpstate);
 
   /* Finish the function body and add init and cleanup code.  */
   tmp = gfc_finish_block (&body);
@@ -5861,7 +5855,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       BLOCK_VARS (DECL_INITIAL (fndecl))
 	= chainon (BLOCK_VARS (DECL_INITIAL (fndecl)), nonlocal_dummy_decls);
-      pointer_set_destroy (nonlocal_dummy_decl_pset);
+      delete nonlocal_dummy_decl_pset;
       nonlocal_dummy_decls = NULL;
       nonlocal_dummy_decl_pset = NULL;
     }
@@ -5893,10 +5887,10 @@ gfc_generate_function_code (gfc_namespace * ns)
 	 function has already called cgraph_create_node, which also created
 	 the cgraph node for this function.  */
       if (!has_coarray_vars || gfc_option.coarray != GFC_FCOARRAY_LIB)
-	(void) cgraph_create_node (fndecl);
+	(void) cgraph_node::create (fndecl);
     }
   else
-    cgraph_finalize_function (fndecl, true);
+    cgraph_node::finalize_function (fndecl, true);
 
   gfc_trans_use_stmts (ns);
   gfc_traverse_ns (ns, gfc_emit_parameter_debug_info);

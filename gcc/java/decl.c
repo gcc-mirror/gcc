@@ -1890,7 +1890,7 @@ finish_method (tree fndecl)
   cfun->function_end_locus = DECL_FUNCTION_LAST_LINE (fndecl);
 
   /* Defer inlining and expansion to the cgraph optimizers.  */
-  cgraph_finalize_function (fndecl, false);
+  cgraph_node::finalize_function (fndecl, false);
 }
 
 /* We pessimistically marked all methods and fields external until we
@@ -1906,7 +1906,7 @@ java_mark_decl_local (tree decl)
   /* Double check that we didn't pass the function to the callgraph early.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->definition);
     }
 #endif

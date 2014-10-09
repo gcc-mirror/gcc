@@ -1,7 +1,7 @@
 // { dg-do compile }
 // GROUPS passed old-abort
 template<int a, int b>
-class Elvis // { dg-error "class Elvis" }
+class Elvis // { dg-message "class Elvis" }
 {
 } ;
 

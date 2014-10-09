@@ -607,7 +607,7 @@ expand_an_in_modify_expr (location_t location, tree lhs,
     
   if (lhs_rank == 0 && rhs_rank != 0)
     {
-      error_at (location, "%qD cannot be scalar when %qD is not", lhs, rhs);
+      error_at (location, "%qE cannot be scalar when %qE is not", lhs, rhs);
       return error_mark_node;
     }
   if (lhs_rank != 0 && rhs_rank != 0 && lhs_rank != rhs_rank)
@@ -1148,13 +1148,13 @@ expand_array_notation_exprs (tree t)
     case PARM_DECL:
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
-    case INIT_EXPR:
     case ADDR_EXPR:
     case ARRAY_REF:
     case BIT_FIELD_REF:
     case VECTOR_CST:
     case COMPLEX_CST:
       return t;
+    case INIT_EXPR:
     case MODIFY_EXPR:
       if (contains_array_notation_expr (t))
 	t = expand_an_in_modify_expr (loc, TREE_OPERAND (t, 0), NOP_EXPR, 
@@ -1176,13 +1176,24 @@ expand_array_notation_exprs (tree t)
 	return t;
       }
     case DECL_EXPR:
-      {
-	tree x = DECL_EXPR_DECL (t);
-	if (t && TREE_CODE (x) != FUNCTION_DECL)
+      if (contains_array_notation_expr (t))
+	{
+	  tree x = DECL_EXPR_DECL (t);
 	  if (DECL_INITIAL (x))
-	    t = expand_unary_array_notation_exprs (t);
+	    {
+	      location_t loc = DECL_SOURCE_LOCATION (x);
+	      tree lhs = x;
+	      tree rhs = DECL_INITIAL (x);
+	      DECL_INITIAL (x) = NULL;
+	      tree new_modify_expr = build_modify_expr (loc, lhs,
+							TREE_TYPE (lhs),
+							NOP_EXPR,
+							loc, rhs,
+							TREE_TYPE(rhs));
+	      t = expand_array_notation_exprs (new_modify_expr);
+	    }
+	}
       return t;
-      }
     case STATEMENT_LIST:
       {
 	tree_stmt_iterator i;
@@ -1393,7 +1404,10 @@ build_array_notation_ref (location_t loc, tree array, tree start, tree length,
   if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == POINTER_TYPE)
     TREE_TYPE (array_ntn_expr) = TREE_TYPE (type);
   else
-    gcc_unreachable ();
+    {
+      error_at (loc, "base of array section must be pointer or array type");
+      return error_mark_node;
+    }
 
   SET_EXPR_LOCATION (array_ntn_expr, loc);
   return array_ntn_expr;

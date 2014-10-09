@@ -5,7 +5,9 @@
 int i;
 
 int foo ();
+int bar ();
 
+int
 main ()
 {
   return foo (i);

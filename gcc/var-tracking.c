@@ -93,7 +93,7 @@
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"
 #include "tm_p.h"
@@ -118,6 +118,7 @@
 #include "recog.h"
 #include "tm_p.h"
 #include "alias.h"
+#include "rtl-iter.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -179,7 +180,7 @@ typedef struct micro_operation_def
      instruction or note in the original flow (before any var-tracking
      notes are inserted, to simplify emission of notes), for MO_SET
      and MO_CLOBBER.  */
-  rtx insn;
+  rtx_insn *insn;
 
   union {
     /* Location.  For MO_SET and MO_COPY, this is the SET that
@@ -509,7 +510,7 @@ typedef variable_table_type::iterator variable_iterator_type;
 typedef struct emit_note_data_def
 {
   /* The instruction which the note will be emitted before/after.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* Where the note will be emitted (before/after insn)?  */
   enum emit_note_where where;
@@ -622,7 +623,7 @@ static bool cselib_hook_called;
 /* Local function prototypes.  */
 static void stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
 					  HOST_WIDE_INT *);
-static void insn_stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
+static void insn_stack_adjust_offset_pre_post (rtx_insn *, HOST_WIDE_INT *,
 					       HOST_WIDE_INT *);
 static bool vt_stack_adjustments (void);
 
@@ -664,7 +665,6 @@ static void dataflow_set_destroy (dataflow_set *);
 static bool contains_symbol_ref (rtx);
 static bool track_expr_p (tree, bool);
 static bool same_variable_part_p (rtx, tree, HOST_WIDE_INT);
-static int add_uses (rtx *, void *);
 static void add_uses_1 (rtx *, void *);
 static void add_stores (rtx, const_rtx, void *);
 static bool compute_bb_dataflow (basic_block);
@@ -793,7 +793,7 @@ stack_adjust_offset_pre_post (rtx pattern, HOST_WIDE_INT *pre,
    PRE- and POST-modifying stack pointer.  */
 
 static void
-insn_stack_adjust_offset_pre_post (rtx insn, HOST_WIDE_INT *pre,
+insn_stack_adjust_offset_pre_post (rtx_insn *insn, HOST_WIDE_INT *pre,
 				   HOST_WIDE_INT *post)
 {
   rtx pattern;
@@ -862,7 +862,7 @@ vt_stack_adjustments (void)
       /* Check if the edge destination has been visited yet.  */
       if (!VTI (dest)->visited)
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 	  HOST_WIDE_INT pre, post, offset;
 	  VTI (dest)->visited = true;
 	  VTI (dest)->in.stack_adjust = offset = VTI (src)->out.stack_adjust;
@@ -948,44 +948,44 @@ struct adjust_mem_data
   bool store;
   enum machine_mode mem_mode;
   HOST_WIDE_INT stack_adjust;
-  rtx side_effects;
+  rtx_expr_list *side_effects;
 };
 
-/* Helper for adjust_mems.  Return 1 if *loc is unsuitable for
-   transformation of wider mode arithmetics to narrower mode,
-   -1 if it is suitable and subexpressions shouldn't be
-   traversed and 0 if it is suitable and subexpressions should
-   be traversed.  Called through for_each_rtx.  */
+/* Helper for adjust_mems.  Return true if X is suitable for
+   transformation of wider mode arithmetics to narrower mode.  */
 
-static int
-use_narrower_mode_test (rtx *loc, void *data)
+static bool
+use_narrower_mode_test (rtx x, const_rtx subreg)
 {
-  rtx subreg = (rtx) data;
-
-  if (CONSTANT_P (*loc))
-    return -1;
-  switch (GET_CODE (*loc))
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {
-    case REG:
-      if (cselib_lookup (*loc, GET_MODE (SUBREG_REG (subreg)), 0, VOIDmode))
-	return 1;
-      if (!validate_subreg (GET_MODE (subreg), GET_MODE (*loc),
-			    *loc, subreg_lowpart_offset (GET_MODE (subreg),
-							 GET_MODE (*loc))))
-	return 1;
-      return -1;
-    case PLUS:
-    case MINUS:
-    case MULT:
-      return 0;
-    case ASHIFT:
-      if (for_each_rtx (&XEXP (*loc, 0), use_narrower_mode_test, data))
-	return 1;
+      rtx x = *iter;
+      if (CONSTANT_P (x))
+	iter.skip_subrtxes ();
       else
-	return -1;
-    default:
-      return 1;
+	switch (GET_CODE (x))
+	  {
+	  case REG:
+	    if (cselib_lookup (x, GET_MODE (SUBREG_REG (subreg)), 0, VOIDmode))
+	      return false;
+	    if (!validate_subreg (GET_MODE (subreg), GET_MODE (x), x,
+				  subreg_lowpart_offset (GET_MODE (subreg),
+							 GET_MODE (x))))
+	      return false;
+	    break;
+	  case PLUS:
+	  case MINUS:
+	  case MULT:
+	    break;
+	  case ASHIFT:
+	    iter.substitute (XEXP (x, 0));
+	    break;
+	  default:
+	    return false;
+	  }
     }
+  return true;
 }
 
 /* Transform X into narrower mode MODE from wider mode WMODE.  */
@@ -1141,12 +1141,14 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
 	      || GET_CODE (SUBREG_REG (tem)) == MULT
 	      || GET_CODE (SUBREG_REG (tem)) == ASHIFT)
-	  && GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
-	  && GET_MODE_SIZE (GET_MODE (tem))
-	     < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tem)))
+	  && (GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
+	      || GET_MODE_CLASS (GET_MODE (tem)) == MODE_PARTIAL_INT)
+	  && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
+	      || GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_PARTIAL_INT)
+	  && GET_MODE_PRECISION (GET_MODE (tem))
+	     < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (tem)))
 	  && subreg_lowpart_p (tem)
-	  && !for_each_rtx (&SUBREG_REG (tem), use_narrower_mode_test, tem))
+	  && use_narrower_mode_test (SUBREG_REG (tem), tem))
 	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
 				  GET_MODE (SUBREG_REG (tem)));
       return tem;
@@ -1198,7 +1200,7 @@ adjust_mem_stores (rtx loc, const_rtx expr, void *data)
    as other sets to the insn.  */
 
 static void
-adjust_insn (basic_block bb, rtx insn)
+adjust_insn (basic_block bb, rtx_insn *insn)
 {
   struct adjust_mem_data amd;
   rtx set;
@@ -1231,7 +1233,7 @@ adjust_insn (basic_block bb, rtx insn)
 
   amd.mem_mode = VOIDmode;
   amd.stack_adjust = -VTI (bb)->out.stack_adjust;
-  amd.side_effects = NULL_RTX;
+  amd.side_effects = NULL;
 
   amd.store = true;
   note_stores (PATTERN (insn), adjust_mem_stores, &amd);
@@ -2019,12 +2021,12 @@ vt_get_canonicalize_base (rtx loc)
 
 /* This caches canonicalized addresses for VALUEs, computed using
    information in the global cselib table.  */
-static struct pointer_map_t *global_get_addr_cache;
+static hash_map<rtx, rtx> *global_get_addr_cache;
 
 /* This caches canonicalized addresses for VALUEs, computed using
    information from the global cache and information pertaining to a
    basic block being analyzed.  */
-static struct pointer_map_t *local_get_addr_cache;
+static hash_map<rtx, rtx> *local_get_addr_cache;
 
 static rtx vt_canonicalize_addr (dataflow_set *, rtx);
 
@@ -2036,13 +2038,13 @@ static rtx
 get_addr_from_global_cache (rtx const loc)
 {
   rtx x;
-  void **slot;
 
   gcc_checking_assert (GET_CODE (loc) == VALUE);
   
-  slot = pointer_map_insert (global_get_addr_cache, loc);
-  if (*slot)
-    return (rtx)*slot;
+  bool existed;
+  rtx *slot = &global_get_addr_cache->get_or_insert (loc, &existed);
+  if (existed)
+    return *slot;
 
   x = canon_rtx (get_addr (loc));
 
@@ -2056,8 +2058,7 @@ get_addr_from_global_cache (rtx const loc)
 	{
 	  /* The table may have moved during recursion, recompute
 	     SLOT.  */
-	  slot = pointer_map_contains (global_get_addr_cache, loc);
-	  *slot = x = nx;
+	  *global_get_addr_cache->get (loc) = x = nx;
 	}
     }
 
@@ -2072,16 +2073,16 @@ static rtx
 get_addr_from_local_cache (dataflow_set *set, rtx const loc)
 {
   rtx x;
-  void **slot;
   decl_or_value dv;
   variable var;
   location_chain l;
 
   gcc_checking_assert (GET_CODE (loc) == VALUE);
   
-  slot = pointer_map_insert (local_get_addr_cache, loc);
-  if (*slot)
-    return (rtx)*slot;
+  bool existed;
+  rtx *slot = &local_get_addr_cache->get_or_insert (loc, &existed);
+  if (existed)
+    return *slot;
 
   x = get_addr_from_global_cache (loc);
   
@@ -2095,7 +2096,7 @@ get_addr_from_local_cache (dataflow_set *set, rtx const loc)
       rtx nx = vt_canonicalize_addr (set, x);
       if (nx != x)
 	{
-	  slot = pointer_map_contains (local_get_addr_cache, loc);
+	  slot = local_get_addr_cache->get (loc);
 	  *slot = x = nx;
 	}
       return x;
@@ -2116,7 +2117,7 @@ get_addr_from_local_cache (dataflow_set *set, rtx const loc)
 	  rtx nx = vt_canonicalize_addr (set, l->loc);
 	  if (x != nx)
 	    {
-	      slot = pointer_map_contains (local_get_addr_cache, loc);
+	      slot = local_get_addr_cache->get (loc);
 	      *slot = x = nx;
 	    }
 	  break;
@@ -2472,7 +2473,8 @@ val_bind (dataflow_set *set, rtx val, rtx loc, bool modified)
    values bound to it.  */
 
 static void
-val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
+val_store (dataflow_set *set, rtx val, rtx loc, rtx_insn *insn,
+	   bool modified)
 {
   cselib_val *v = CSELIB_VAL_PTR (val);
 
@@ -2503,11 +2505,10 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
 
 /* Clear (canonical address) slots that reference X.  */
 
-static bool
-local_get_addr_clear_given_value (const void *v ATTRIBUTE_UNUSED,
-				  void **slot, void *x)
+bool
+local_get_addr_clear_given_value (rtx const &, rtx *slot, rtx x)
 {
-  if (vt_get_canonicalize_base ((rtx)*slot) == x)
+  if (vt_get_canonicalize_base (*slot) == x)
     *slot = NULL;
   return true;
 }
@@ -2530,11 +2531,10 @@ val_reset (dataflow_set *set, decl_or_value dv)
   if (var->onepart == ONEPART_VALUE)
     {
       rtx x = dv_as_value (dv);
-      void **slot;
       
       /* Relationships in the global cache don't change, so reset the
 	 local cache entry only.  */
-      slot = pointer_map_contains (local_get_addr_cache, x);
+      rtx *slot = local_get_addr_cache->get (x);
       if (slot)
 	{
 	  /* If the value resolved back to itself, odds are that other
@@ -2543,8 +2543,8 @@ val_reset (dataflow_set *set, decl_or_value dv)
 	     old X but resolved to something else remain ok as long as
 	     that something else isn't also reset.  */
 	  if (*slot == x)
-	    pointer_map_traverse (local_get_addr_cache,
-				  local_get_addr_clear_given_value, x);
+	    local_get_addr_cache
+	      ->traverse<rtx, local_get_addr_clear_given_value> (x);
 	  *slot = NULL;
 	}
     }
@@ -2603,7 +2603,7 @@ val_reset (dataflow_set *set, decl_or_value dv)
    value.  */
 
 static void
-val_resolve (dataflow_set *set, rtx val, rtx loc, rtx insn)
+val_resolve (dataflow_set *set, rtx val, rtx loc, rtx_insn *insn)
 {
   decl_or_value dv = dv_from_value (val);
 
@@ -5298,7 +5298,7 @@ var_lowpart (enum machine_mode mode, rtx loc)
 struct count_use_info
 {
   /* The insn where the RTX is.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The basic block where insn is.  */
   basic_block bb;
@@ -5368,16 +5368,16 @@ replace_expr_with_values (rtx loc)
     return cselib_subst_to_values (loc, VOIDmode);
 }
 
-/* Return true if *X is a DEBUG_EXPR.  Usable as an argument to
-   for_each_rtx to tell whether there are any DEBUG_EXPRs within
-   RTX.  */
+/* Return true if X contains a DEBUG_EXPR.  */
 
-static int
-rtx_debug_expr_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+rtx_debug_expr_p (const_rtx x)
 {
-  rtx loc = *x;
-
-  return GET_CODE (loc) == DEBUG_EXPR;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (GET_CODE (*iter) == DEBUG_EXPR)
+      return true;
+  return false;
 }
 
 /* Determine what kind of micro operation to choose for a USE.  Return
@@ -5467,7 +5467,7 @@ use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
 		  DEBUG_EXPRs (only happens in the presence of debug
 		  insns).  */
 	       && (!MAY_HAVE_DEBUG_INSNS
-		   || !for_each_rtx (&XEXP (loc, 0), rtx_debug_expr_p, NULL)))
+		   || !rtx_debug_expr_p (XEXP (loc, 0))))
 	return MO_USE;
       else
 	return MO_CLOBBER;
@@ -5480,7 +5480,7 @@ use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
    INSN of BB.  */
 
 static inline void
-log_op_type (rtx x, basic_block bb, rtx insn,
+log_op_type (rtx x, basic_block bb, rtx_insn *insn,
 	     enum micro_operation_type mopt, FILE *out)
 {
   fprintf (out, "bb %i op %i insn %i %s ",
@@ -5524,38 +5524,41 @@ preserve_value (cselib_val *val)
    any rtxes not suitable for CONST use not replaced by VALUEs
    are discovered.  */
 
-static int
-non_suitable_const (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+non_suitable_const (const_rtx x)
 {
-  if (*x == NULL_RTX)
-    return 0;
-
-  switch (GET_CODE (*x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
     {
-    case REG:
-    case DEBUG_EXPR:
-    case PC:
-    case SCRATCH:
-    case CC0:
-    case ASM_INPUT:
-    case ASM_OPERANDS:
-      return 1;
-    case MEM:
-      return !MEM_READONLY_P (*x);
-    default:
-      return 0;
+      const_rtx x = *iter;
+      switch (GET_CODE (x))
+	{
+	case REG:
+	case DEBUG_EXPR:
+	case PC:
+	case SCRATCH:
+	case CC0:
+	case ASM_INPUT:
+	case ASM_OPERANDS:
+	  return true;
+	case MEM:
+	  if (!MEM_READONLY_P (x))
+	    return true;
+	  break;
+	default:
+	  break;
+	}
     }
+  return false;
 }
 
 /* Add uses (register and memory references) LOC which will be tracked
-   to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
+   to VTI (bb)->mos.  */
 
-static int
-add_uses (rtx *ploc, void *data)
+static void
+add_uses (rtx loc, struct count_use_info *cui)
 {
-  rtx loc = *ploc;
   enum machine_mode mode = VOIDmode;
-  struct count_use_info *cui = (struct count_use_info *)data;
   enum micro_operation_type type = use_type (loc, cui, &mode);
 
   if (type != MO_CLOBBER)
@@ -5590,8 +5593,7 @@ add_uses (rtx *ploc, void *data)
 	    }
 
 	  if (CONSTANT_P (vloc)
-	      && (GET_CODE (vloc) != CONST
-		  || for_each_rtx (&vloc, non_suitable_const, NULL)))
+	      && (GET_CODE (vloc) != CONST || non_suitable_const (vloc)))
 	    /* For constants don't look up any value.  */;
 	  else if (!VAR_LOC_UNKNOWN_P (vloc) && !unsuitable_loc (vloc)
 		   && (val = find_use_val (vloc, GET_MODE (oloc), cui)))
@@ -5702,8 +5704,6 @@ add_uses (rtx *ploc, void *data)
 	log_op_type (mo.u.loc, cui->bb, cui->insn, mo.type, dump_file);
       VTI (bb)->mos.safe_push (mo);
     }
-
-  return 0;
 }
 
 /* Helper function for finding all uses of REG/MEM in X in insn INSN.  */
@@ -5711,7 +5711,9 @@ add_uses (rtx *ploc, void *data)
 static void
 add_uses_1 (rtx *x, void *cui)
 {
-  for_each_rtx (x, add_uses, cui);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *x, NONCONST)
+    add_uses (*iter, (struct count_use_info *) cui);
 }
 
 /* This is the value used during expansion of locations.  We want it
@@ -5732,7 +5734,7 @@ add_uses_1 (rtx *x, void *cui)
    no longer live we can express its value as VAL - 6.  */
 
 static void
-reverse_op (rtx val, const_rtx expr, rtx insn)
+reverse_op (rtx val, const_rtx expr, rtx_insn *insn)
 {
   rtx src, arg, ret;
   cselib_val *v;
@@ -6130,7 +6132,7 @@ static rtx call_arguments;
 /* Compute call_arguments.  */
 
 static void
-prepare_call_arguments (basic_block bb, rtx insn)
+prepare_call_arguments (basic_block bb, rtx_insn *insn)
 {
   rtx link, x, call;
   rtx prev, cur, next;
@@ -6240,8 +6242,10 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	if (GET_MODE (link) == VOIDmode
 	    || GET_MODE (link) == BLKmode
 	    || (GET_MODE (link) != GET_MODE (x)
-		&& (GET_MODE_CLASS (GET_MODE (link)) != MODE_INT
-		    || GET_MODE_CLASS (GET_MODE (x)) != MODE_INT)))
+		&& ((GET_MODE_CLASS (GET_MODE (link)) != MODE_INT
+		     && GET_MODE_CLASS (GET_MODE (link)) != MODE_PARTIAL_INT)
+		    || (GET_MODE_CLASS (GET_MODE (x)) != MODE_INT
+			&& GET_MODE_CLASS (GET_MODE (x)) != MODE_PARTIAL_INT))))
 	  /* Can't do anything for these, if the original type mode
 	     isn't known or can't be converted.  */;
 	else if (REG_P (x))
@@ -6249,7 +6253,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+		     || GET_MODE_CLASS (GET_MODE (x)) == MODE_PARTIAL_INT)
 	      {
 		enum machine_mode mode = GET_MODE (x);
 
@@ -6279,7 +6284,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		struct adjust_mem_data amd;
 		amd.mem_mode = VOIDmode;
 		amd.stack_adjust = -VTI (bb)->out.stack_adjust;
-		amd.side_effects = NULL_RTX;
+		amd.side_effects = NULL;
 		amd.store = true;
 		mem = simplify_replace_fn_rtx (mem, NULL_RTX, adjust_mems,
 					       &amd);
@@ -6288,7 +6293,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    val = cselib_lookup (mem, GET_MODE (mem), 0, VOIDmode);
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT)
+	    else if (GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT
+		     && GET_MODE_CLASS (GET_MODE (mem)) != MODE_PARTIAL_INT)
 	      {
 		/* For non-integer stack argument see also if they weren't
 		   initialized by integers.  */
@@ -6331,7 +6337,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		&& reg
 		&& REG_P (reg)
 		&& GET_MODE (reg) == mode
-		&& GET_MODE_CLASS (mode) == MODE_INT
+		&& (GET_MODE_CLASS (mode) == MODE_INT
+		    || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 		&& REG_P (x)
 		&& REGNO (x) == REGNO (reg)
 		&& GET_MODE (x) == mode
@@ -6466,7 +6473,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
    first place, in which case sets and n_sets will be 0).  */
 
 static void
-add_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
+add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   int n1, n2;
@@ -6660,11 +6667,11 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (out, in);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    local_get_addr_cache = pointer_map_create ();
+    local_get_addr_cache = new hash_map<rtx, rtx>;
 
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
     {
-      rtx insn = mo->insn;
+      rtx_insn *insn = mo->insn;
 
       switch (mo->type)
 	{
@@ -6943,7 +6950,7 @@ compute_bb_dataflow (basic_block bb)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      pointer_map_destroy (local_get_addr_cache);
+      delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
       dataflow_set_equiv_regs (out);
@@ -8589,10 +8596,11 @@ int
 emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
 {
   variable var = *varp;
-  rtx insn = data->insn;
+  rtx_insn *insn = data->insn;
   enum emit_note_where where = data->where;
   variable_table_type *vars = data->vars;
-  rtx note, note_vl;
+  rtx_note *note;
+  rtx note_vl;
   int i, j, n_var_parts;
   bool complete;
   enum var_init_status initialized = VAR_INIT_STATUS_UNINITIALIZED;
@@ -8969,7 +8977,7 @@ process_changed_values (variable_table_type *htab)
    the notes shall be emitted before of after instruction INSN.  */
 
 static void
-emit_notes_for_changes (rtx insn, enum emit_note_where where,
+emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
 			shared_hash vars)
 {
   emit_note_data data;
@@ -9087,7 +9095,7 @@ emit_notes_for_differences_2 (variable_def **slot, variable_table_type *old_vars
    NEW_SET.  */
 
 static void
-emit_notes_for_differences (rtx insn, dataflow_set *old_set,
+emit_notes_for_differences (rtx_insn *insn, dataflow_set *old_set,
 			    dataflow_set *new_set)
 {
   shared_hash_htab (old_set->vars)
@@ -9101,8 +9109,8 @@ emit_notes_for_differences (rtx insn, dataflow_set *old_set,
 
 /* Return the next insn after INSN that is not a NOTE_INSN_VAR_LOCATION.  */
 
-static rtx
-next_non_note_insn_var_location (rtx insn)
+static rtx_insn *
+next_non_note_insn_var_location (rtx_insn *insn)
 {
   while (insn)
     {
@@ -9129,8 +9137,8 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
     {
-      rtx insn = mo->insn;
-      rtx next_insn = next_non_note_insn_var_location (insn);
+      rtx_insn *insn = mo->insn;
+      rtx_insn *next_insn = next_non_note_insn_var_location (insn);
 
       switch (mo->type)
 	{
@@ -9138,7 +9146,8 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	    dataflow_set_clear_at_call (set);
 	    emit_notes_for_changes (insn, EMIT_NOTE_AFTER_CALL_INSN, set->vars);
 	    {
-	      rtx arguments = mo->u.loc, *p = &arguments, note;
+	      rtx arguments = mo->u.loc, *p = &arguments;
+	      rtx_note *note;
 	      while (*p)
 		{
 		  XEXP (XEXP (*p, 0), 1)
@@ -9477,13 +9486,13 @@ vt_emit_notes (void)
       emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
 
       if (MAY_HAVE_DEBUG_INSNS)
-	local_get_addr_cache = pointer_map_create ();
+	local_get_addr_cache = new hash_map<rtx, rtx>;
 
       /* Emit the notes for the changes in the basic block itself.  */
       emit_notes_in_bb (bb, &cur);
 
       if (MAY_HAVE_DEBUG_INSNS)
-	pointer_map_destroy (local_get_addr_cache);
+	delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
       /* Free memory occupied by the in hash table, we won't need it
@@ -9916,7 +9925,7 @@ vt_initialize (void)
       valvar_pool = create_alloc_pool ("small variable_def pool",
 				       sizeof (struct variable_def), 256);
       preserved_values.create (256);
-      global_get_addr_cache = pointer_map_create ();
+      global_get_addr_cache = new hash_map<rtx, rtx>;
     }
   else
     {
@@ -10051,7 +10060,7 @@ vt_initialize (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       HOST_WIDE_INT pre, post = 0;
       basic_block first_bb, last_bb;
 
@@ -10187,7 +10196,7 @@ static void
 delete_debug_insns (void)
 {
   basic_block bb;
-  rtx insn, next;
+  rtx_insn *insn, *next;
 
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
@@ -10263,7 +10272,7 @@ vt_finalize (void)
   if (MAY_HAVE_DEBUG_INSNS)
     {
       if (global_get_addr_cache)
-	pointer_map_destroy (global_get_addr_cache);
+	delete global_get_addr_cache;
       global_get_addr_cache = NULL;
       if (loc_exp_dep_pool)
 	free_alloc_pool (loc_exp_dep_pool);

@@ -20,8 +20,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.8.3.* Class template uniform_on_sphere_distribution [rand.dist.ext.uniform_on_sphere]
-// 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
+// Class template uniform_on_sphere_distribution
+// 26.5.1.6 Random number distribution requirements [rand.req.dist]
 
 #include <ext/random>
 #include <sstream>
@@ -40,6 +40,8 @@ test01()
   str << u;
 
   str >> v;
+
+  VERIFY( u == v );
 }
 
 int

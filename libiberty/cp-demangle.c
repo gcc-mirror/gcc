@@ -713,7 +713,9 @@ d_dump (struct demangle_component *dc, int indent)
       printf ("pointer to member type\n");
       break;
     case DEMANGLE_COMPONENT_FIXED_TYPE:
-      printf ("fixed-point type\n");
+      printf ("fixed-point type, accum? %d, sat? %d\n",
+              dc->u.s_fixed.accum, dc->u.s_fixed.sat);
+      d_dump (dc->u.s_fixed.length, indent + 2)
       break;
     case DEMANGLE_COMPONENT_ARGLIST:
       printf ("argument list\n");
@@ -3685,6 +3687,7 @@ d_substitution (struct d_info *di, int prefix)
 	    {
 	      const char *s;
 	      int len;
+	      struct demangle_component *c;
 
 	      if (p->set_last_name != NULL)
 		di->last_name = d_make_sub (di, p->set_last_name,
@@ -3700,7 +3703,15 @@ d_substitution (struct d_info *di, int prefix)
 		  len = p->simple_len;
 		}
 	      di->expansion += len;
-	      return d_make_sub (di, s, len);
+	      c = d_make_sub (di, s, len);
+	      if (d_peek_char (di) == 'B')
+		{
+		  /* If there are ABI tags on the abbreviation, it becomes
+		     a substitution candidate.  */
+		  c = d_abi_tags (di, c);
+		  d_add_substitution (di, c);
+		}
+	      return c;
 	    }
 	}
 
@@ -3875,7 +3886,6 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_FUNCTION_TYPE:
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
@@ -3918,6 +3928,11 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
       d_count_templates_scopes (num_templates, num_scopes,
 				dc->u.s_extended_operator.name);
+      break;
+
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+      d_count_templates_scopes (num_templates, num_scopes,
+                                dc->u.s_fixed.length);
       break;
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:

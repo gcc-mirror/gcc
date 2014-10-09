@@ -1,4 +1,5 @@
 /* This tests for a bug in regstack that was breaking glibc's math library. */
+/* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } { "*" } { "" } } */
 
 extern void abort (void);
 

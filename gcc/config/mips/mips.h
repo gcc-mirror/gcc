@@ -1187,6 +1187,8 @@ struct mips_cpu_info {
 %{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
 %{mtune=*} \
+%{mhard-float} %{msoft-float} \
+%{msingle-float} %{mdouble-float} \
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */
@@ -1265,6 +1267,12 @@ struct mips_cpu_info {
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
+
+/* Registers may have a prefix which can be ignored when matching
+   user asm and register definitions.  */
+#ifndef REGISTER_PREFIX
+#define REGISTER_PREFIX    "$"
+#endif
 
 /* Local compiler-generated symbols must have a prefix that the assembler
    understands.   By default, this is $, although some targets (e.g.,
@@ -1390,15 +1398,6 @@ struct mips_cpu_info {
 /* long double is not a fixed mode, but the idea is that, if we
    support long double, we also want a 128-bit integer type.  */
 #define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE
-
-#ifdef IN_LIBGCC2
-#if ((defined _ABIN32 && _MIPS_SIM == _ABIN32) \
-     || (defined _ABI64 && _MIPS_SIM == _ABI64))
-#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-# else
-#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-# endif
-#endif
 
 /* Width in bits of a pointer.  */
 #ifndef POINTER_SIZE

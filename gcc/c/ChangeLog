@@ -1,3 +1,208 @@
+2014-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63480
+	* c-typeck.c (pop_init_level): Don't warn about initializing
+	with { }.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59717
+	* c-decl.c (header_for_builtin_fn): New function.
+	(implicitly_declare): Suggest which header to include.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.c (convert): Use error_operand_p.
+	* c-typeck.c (require_complete_type): Likewise.
+	(really_atomic_lvalue): Likewise.
+	(digest_init): Likewise.
+	(handle_omp_array_sections_1): Likewise.
+
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63453
+	* c-decl.c (pop_scope): Don't warn about "inline function declared
+	but never defined" for functions marked with gnu_inline attribute.
+
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63249
+	* c-parser.c (c_parser_omp_variable_list): Call mark_exp_read
+	on low_bound and length.
+
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* c-parser.c: Don't define CPP_KEYWORD.
+	(c_parser_switch_statement): Pass original type to c_finish_case.
+	* c-tree.h (c_finish_case): Update declaration.
+	* c-typeck.c (c_finish_case): Add TYPE parameter.  Pass it
+	conditionally to c_do_switch_warnings.
+
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62024
+	* c-parser.c (c_parser_static_assert_declaration_no_semi): Strip no-op
+	conversions.
+
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-parser.c (c_parser_cilk_for): New function.
+	(c_parser_cilk_grainsize): Likewise.
+	(c_get_temp_regvar): Likewise.
+	(c_parser_statement_after_labels): Added RID_CILK_FOR case.
+	(c_parser_pragma): Added PRAGMA_CILK_GRAINSIZE case.
+	(c_parser_omp_for_loop): Added CILK_FOR and CILK_SIMD checks.
+	* c-typeck.c (c_finish_omp_clauses): Added OMP_CLAUSE__CILK_FOR_COUNT_
+	case.
+
+2014-08-27  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* c-aux-info.c (gen_type): Resize 'buff' from 10 to 23 bytes,
+	with using HOST_WIDE_INT without truncation to 'int'
+
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-typeck.c (parser_build_binary_op): Adjust call to
+	warn_logical_not_parentheses.
+
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* c-parser.c (c_parser_array_notation): Check for correct
+	type of an array added.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-typeck.c (build_binary_op): If either operand of a comparison
+	is a boolean expression, call maybe_warn_bool_compare.
+
+2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/45584
+	* c-typeck.c (build_c_cast): Do a conversion even when the
+	TYPE_MAIN_VARIANTs are the same.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (diagnose_mismatched_decls): Unconditionally call
+	pedwarn_c99 instead of pedwarn.
+	(grokfield): Likewise.
+	(warn_defaults_to): New function.
+	(grokdeclarator): Call warn_defaults_to instead of pedwarn_c99.
+	Unconditionally call pedwarn_c99 instead of pedwarn.
+	(start_function): Call warn_defaults_to instead of pedwarn_c99.
+	(declspecs_add_scspec): Call pedwarn_c99 instead of pedwarn, don't
+	check flag_isoc11 before.
+	* c-errors.c (pedwarn_c99): Change the return type to bool.
+	Handle -Wc99-c11-compat.
+	* c-parser.c (disable_extension_diagnostics): Handle
+	warn_c99_c11_compat.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_static_assert_declaration_no_semi): Call pedwarn_c99
+	instead of pedwarn, don't check flag_isoc11 before.
+	(c_parser_declspecs): Likewise.
+	(c_parser_alignas_specifier): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_generic_selection): Likewise.
+	* c-tree.h (pedwarn_c99): Update declaration.
+	* c-typeck.c (c_finish_return): Call pedwarn or warning_at instead
+	of pedwarn_c99.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (warn_variable_length_array): Pass OPT_Wvla unconditionally
+	to pedwarn_c90.
+	* c-errors.c: Include "opts.h".
+	(pedwarn_c90): Rewrite to handle -Wno-c90-c99-compat better.
+	* c-parser.c (disable_extension_diagnostics): Handle negative value
+	of warn_c90_c99_compat, too.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_compound_statement_nostart): Pass
+	OPT_Wdeclaration_after_statement unconditionally to pedwarn_c90.
+
+2014-08-12  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression) <case RID_FUNCTION_NAME>:
+	Add pedwarn.
+	(c_parser_postfix_expression) <case RID_PRETTY_FUNCTION_NAME>:
+	Likewise.
+	(c_parser_postfix_expression) <case RID_C99_FUNCTION_NAME>: Likewise.
+
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* c-decl.c (build_array_declarator): Remove check for !flag_isoc99.
+	Call pedwarn_c90 instead of pedwarn.
+	(check_bitfield_type_and_width): Likewise.
+	(declspecs_add_qual): Likewise.
+	(declspecs_add_type): Likewise.
+	(warn_variable_length_array): Unify function for -pedantic and -Wvla.
+	Adjust to only call pedwarn_c90.
+	(grokdeclarator): Remove pedantic && !flag_isoc99 check.  Call
+	pedwarn_c90 instead of pedwarn.
+	* c-errors.c (pedwarn_c90): Handle -Wc90-c99-compat.
+	* c-parser.c (disable_extension_diagnostics): Handle
+	warn_c90_c99_compat.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_enum_specifier): Remove check for !flag_isoc99.  Call
+	pedwarn_c90 instead of pedwarn.
+	(c_parser_initelt): Likewise.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Likewise.
+	(c_parser_compound_statement_nostart): Remove check for !flag_isoc99.
+	* c-tree.h: Fix formatting.
+	* c-typeck.c (build_array_ref): Remove check for !flag_isoc99.  Call
+	pedwarn_c90 instead of pedwarn.
+
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-typeck.c: Remove include of pointer-set.h.
+
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (pointer_diff): Remove P - (P + CST) optimization.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-typeck.c: Use hash_map instead of pointer_map.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c: Use hash_set instead of pointer_set.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-array-notation.c (expand_array_notations): Handling
+	of DECL_EXPR added.
+
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-typeck.c (c_finish_return): Return 0 instead of the address of
+	a local variable.
+
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	* c-typeck.c (struct constructor_stack) <designator_depth>: New
+	field.
+	(really_start_incremental_init, push_init_level): Initialize
+	designator_depth.
+	(pop_init_level): Set global designator_depth.
+	(process_init_element): Check for designated_init attribute.
+
+2014-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61852
+	* c-decl.c (implicit_decl_warning): Add location_t parameter.  Use it.
+	(implicitly_declare): Pass location to implicit_decl_warning.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294

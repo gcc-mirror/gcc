@@ -24,12 +24,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "gfortran.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
 #include "langhooks.h"
 #include "flags.h"
-#include "gfortran.h"
 #include "arith.h"
 #include "constructor.h"
 #include "trans.h"
@@ -231,7 +231,7 @@ gfc_reset_vptr (stmtblock_t *block, gfc_expr *e)
   gfc_ref *ref;
 
   /* If we have a class array, we need go back to the class
-     container. */
+     container.  */
   if (lhs->ref && lhs->ref->next && !lhs->ref->next->next
       && lhs->ref->next->type == REF_ARRAY
       && lhs->ref->next->u.ar.type == AR_FULL
@@ -564,7 +564,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   var = gfc_create_var (tmp, "class");
 
   /* Set the vptr.  */
-  ctree =  gfc_class_vptr_get (var);
+  ctree = gfc_class_vptr_get (var);
 
   vtab = gfc_find_vtab (&e->ts);
   gcc_assert (vtab);
@@ -573,7 +573,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 		  fold_convert (TREE_TYPE (ctree), tmp));
 
   /* Now set the data field.  */
-  ctree =  gfc_class_data_get (var);
+  ctree = gfc_class_data_get (var);
   if (parmse->ss && parmse->ss->info->useflags)
     {
       /* For an array reference in an elemental procedure call we need
@@ -589,7 +589,16 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	{
 	  parmse->ss = NULL;
 	  gfc_conv_expr_reference (parmse, e);
-	  tmp = fold_convert (TREE_TYPE (ctree), parmse->expr);
+	  if (class_ts.u.derived->components->as
+	      && class_ts.u.derived->components->as->type == AS_ASSUMED_RANK)
+	    {
+	      tmp = gfc_conv_scalar_to_descriptor (parmse, parmse->expr,
+						   gfc_expr_attr (e));
+	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
+				     TREE_TYPE (ctree), tmp);
+	    }
+	  else
+	      tmp = fold_convert (TREE_TYPE (ctree), parmse->expr);
 	  gfc_add_modify (&parmse->pre, ctree, tmp);
 	}
       else
@@ -597,7 +606,14 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	  parmse->ss = ss;
 	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
-	  gfc_add_modify (&parmse->pre, ctree, parmse->expr);
+	  if (class_ts.u.derived->components->as->rank != e->rank)
+	    {
+	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
+				     TREE_TYPE (ctree), parmse->expr);
+	      gfc_add_modify (&parmse->pre, ctree, tmp);
+	    }
+	  else
+	    gfc_add_modify (&parmse->pre, ctree, parmse->expr);
 	}
     }
 
@@ -713,7 +729,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
   ctree = gfc_class_vptr_get (var);
 
   /* The vptr is the second field of the actual argument.
-     First we have to find the corresponding class reference. */
+     First we have to find the corresponding class reference.  */
 
   tmp = NULL_TREE;
   if (class_ref == NULL
@@ -1425,6 +1441,149 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
       }
   gcc_assert (found && caf_decl);
   return caf_decl;
+}
+
+
+/* Obtain the Coarray token - and optionally also the offset.  */
+
+void
+gfc_get_caf_token_offset (tree *token, tree *offset, tree caf_decl, tree se_expr,
+			  gfc_expr *expr)
+{
+  tree tmp;
+
+  /* Coarray token.  */
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
+    {
+      gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
+		    == GFC_ARRAY_ALLOCATABLE
+		  || expr->symtree->n.sym->attr.select_type_temporary);
+      *token = gfc_conv_descriptor_token (caf_decl);
+    }
+  else if (DECL_LANG_SPECIFIC (caf_decl)
+	   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
+    *token = GFC_DECL_TOKEN (caf_decl);
+  else
+    {
+      gcc_assert (GFC_ARRAY_TYPE_P (TREE_TYPE (caf_decl))
+		  && GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl)) != NULL_TREE);
+      *token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl));
+    }
+
+  if (offset == NULL)
+    return;
+
+  /* Offset between the coarray base address and the address wanted.  */
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl))
+      && (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE
+	  || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_POINTER))
+    *offset = build_int_cst (gfc_array_index_type, 0);
+  else if (DECL_LANG_SPECIFIC (caf_decl)
+	   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
+    *offset = GFC_DECL_CAF_OFFSET (caf_decl);
+  else if (GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl)) != NULL_TREE)
+    *offset = GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl));
+  else
+    *offset = build_int_cst (gfc_array_index_type, 0);
+
+  if (POINTER_TYPE_P (TREE_TYPE (se_expr))
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se_expr))))
+    {
+      tmp = build_fold_indirect_ref_loc (input_location, se_expr);
+      tmp = gfc_conv_descriptor_data_get (tmp);
+    }
+  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se_expr)))
+    tmp = gfc_conv_descriptor_data_get (se_expr);
+  else
+    {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (se_expr)));
+      tmp = se_expr;
+    }
+
+  *offset = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			     *offset, fold_convert (gfc_array_index_type, tmp));
+
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
+    tmp = gfc_conv_descriptor_data_get (caf_decl);
+  else
+   {
+     gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl)));
+     tmp = caf_decl;
+   }
+
+  *offset = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			    fold_convert (gfc_array_index_type, *offset),
+			    fold_convert (gfc_array_index_type, tmp));
+}
+
+
+/* Convert the coindex of a coarray into an image index; the result is
+   image_num =  (idx(1)-lcobound(1)+1) + (idx(2)-lcobound(2)+1)*extent(1)
+              + (idx(3)-lcobound(3)+1)*extent(2) + ...  */
+
+tree
+gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
+{
+  gfc_ref *ref;
+  tree lbound, ubound, extent, tmp, img_idx;
+  gfc_se se;
+  int i;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+      break;
+  gcc_assert (ref != NULL);
+
+  img_idx = integer_zero_node;
+  extent = integer_one_node;
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+      {
+	gfc_init_se (&se, NULL);
+	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
+	gfc_add_block_to_block (block, &se.pre);
+	lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
+	tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			       integer_type_node, se.expr,
+			       fold_convert(integer_type_node, lbound));
+	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
+			       extent, tmp);
+	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+				   img_idx, tmp);
+	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
+	  {
+	    ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
+	    extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
+	    extent = fold_convert (integer_type_node, extent);
+	  }
+      }
+  else
+    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+      {
+	gfc_init_se (&se, NULL);
+	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
+	gfc_add_block_to_block (block, &se.pre);
+	lbound = GFC_TYPE_ARRAY_LBOUND (TREE_TYPE (desc), i);
+	lbound = fold_convert (integer_type_node, lbound);
+	tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			       integer_type_node, se.expr, lbound);
+	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
+			       extent, tmp);
+	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+				   img_idx, tmp);
+	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
+	  {
+	    ubound = GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (desc), i);
+	    ubound = fold_convert (integer_type_node, ubound);
+	    extent = fold_build2_loc (input_location, MINUS_EXPR,
+				      integer_type_node, ubound, lbound);
+	    extent = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+				      extent, integer_one_node);
+	  }
+      }
+  img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+			     img_idx, integer_one_node);
+  return img_idx;
 }
 
 
@@ -4430,7 +4589,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && e->expr_type == EXPR_VARIABLE
 		      && (!e->ref
 			  || (e->ref->type == REF_ARRAY
-			      && !e->ref->u.ar.type != AR_FULL))
+			      && e->ref->u.ar.type != AR_FULL))
 		      && e->symtree->n.sym->attr.optional)
 		    {
 		      tmp = fold_build3_loc (input_location, COND_EXPR,
@@ -4794,7 +4953,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  && CLASS_DATA (fsym)->attr.codimension
 		  && !CLASS_DATA (fsym)->attr.allocatable)))
 	{
-	  /* Token and offset. */
+	  /* Token and offset.  */
 	  vec_safe_push (stringargs, null_pointer_node);
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
@@ -5609,6 +5768,11 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   if (!sym)
     sym = expr->symtree->n.sym;
 
+  /* The IEEE_ARITHMETIC functions are caught here. */
+  if (sym->from_intmod == INTMOD_IEEE_ARITHMETIC)
+    if (gfc_conv_ieee_arithmetic_function (se, expr))
+      return;
+
   /* We distinguish statement functions from general functions to improve
      runtime performance.  */
   if (sym->attr.proc == PROC_ST_FUNCTION)
@@ -6244,7 +6408,9 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       else if (cm->ts.u.derived && strcmp (cm->name, "_size") == 0)
 	{
 	  val = TYPE_SIZE_UNIT (gfc_get_derived_type (cm->ts.u.derived));
-	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
+	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl,
+				  fold_convert (TREE_TYPE (cm->backend_decl),
+						val));
 	}
       else
 	{
@@ -7230,7 +7396,7 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
     {
       /* A temporary is not needed if the function is not contained and
 	 the variable is local or host associated and not a pointer or
-	 a target. */
+	 a target.  */
       if (!expr2->value.function.esym->attr.contained)
 	return false;
 
@@ -7259,7 +7425,7 @@ realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss,
 			       gfc_loopinfo *loop)
 {
   /* Signal that the function call should not be made by
-     gfc_conv_loop_setup. */
+     gfc_conv_loop_setup.  */
   se->ss->is_alloc_lhs = 1;
   gfc_init_loopinfo (loop);
   gfc_add_ss_to_loop (loop, *ss);
@@ -7879,7 +8045,7 @@ is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
 	  for (a = expr2->value.function.actual; a != NULL; a = a->next)
 	    {
 	      e1 = a->expr;
-	      if (e1->rank > 0 && !is_runtime_conformable (expr1, e1))
+	      if (e1 && e1->rank > 0 && !is_runtime_conformable (expr1, e1))
 		return false;
 	    }
 	  return true;
@@ -7890,7 +8056,7 @@ is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
 	  for (a = expr2->value.function.actual; a != NULL; a = a->next)
 	    {
 	      e1 = a->expr;
-	      if (e1->rank > 0 && !is_runtime_conformable (expr1, e1))
+	      if (e1 && e1->rank > 0 && !is_runtime_conformable (expr1, e1))
 		return false;
 	    }
 	  return true;
@@ -8091,7 +8257,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      the function call must happen before the (re)allocation of the lhs -
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
-     parameter available to the caller; gfortran saves it in the .mod files. */
+     parameter available to the caller; gfortran saves it in the .mod files.  */
   if (gfc_option.flag_realloc_lhs && expr2->ts.type == BT_CHARACTER
       && expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);

@@ -1255,27 +1255,6 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_UNWIND_WORD_MODE
 
-@defmac ROUND_TOWARDS_ZERO
-If defined, this macro should be true if the prevailing rounding
-mode is towards zero.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-Not defining this macro is equivalent to returning zero.
-@end defmac
-
-@defmac LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should return true if floats with @var{size}
-bits do not have a NaN or infinity representation, but use the largest
-exponent for normal numbers instead.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-The default definition of this macro returns false for all sizes.
-@end defmac
-
 @hook TARGET_MS_BITFIELD_LAYOUT_P
 
 @hook TARGET_DECIMAL_FLOAT_SUPPORTED_P
@@ -1405,36 +1384,6 @@ the target machine.  If you don't define this, the default is
 @code{BITS_PER_UNIT * 16}.
 @end defmac
 
-@defmac LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-Define this macro if @code{LONG_DOUBLE_TYPE_SIZE} is not constant or
-if you want routines in @file{libgcc2.a} for a size other than
-@code{LONG_DOUBLE_TYPE_SIZE}.  If you don't define this, the
-default is @code{LONG_DOUBLE_TYPE_SIZE}.
-@end defmac
-
-@defmac LIBGCC2_HAS_DF_MODE
-Define this macro if neither @code{DOUBLE_TYPE_SIZE} nor
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
-@code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and either @code{DOUBLE_TYPE_SIZE}
-or @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64 then the default is 1,
-otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_XF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{XFmode} but you want @code{XFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 80 then the default is 1, otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_TF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{TFmode} but you want @code{TFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 128 then the default is 1, otherwise it is 0.
-@end defmac
-
 @defmac LIBGCC2_GNU_PREFIX
 This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
 hook and should be defined if that hook is overriden to be true.  It
@@ -1442,20 +1391,6 @@ causes function names in libgcc to be changed to use a @code{__gnu_}
 prefix for their name rather than the default @code{__}.  A port which
 uses this macro should also arrange to use @file{t-gnu-prefix} in
 the libgcc @file{config.host}.
-@end defmac
-
-@defmac SF_SIZE
-@defmacx DF_SIZE
-@defmacx XF_SIZE
-@defmacx TF_SIZE
-Define these macros to be the size in bits of the mantissa of
-@code{SFmode}, @code{DFmode}, @code{XFmode} and @code{TFmode} values,
-if the defaults in @file{libgcc2.h} are inappropriate.  By default,
-@code{FLT_MANT_DIG} is used for @code{SF_SIZE}, @code{LDBL_MANT_DIG}
-for @code{XF_SIZE} and @code{TF_SIZE}, and @code{DBL_MANT_DIG} or
-@code{LDBL_MANT_DIG} for @code{DF_SIZE} according to whether
-@code{DOUBLE_TYPE_SIZE} or
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64.
 @end defmac
 
 @defmac TARGET_FLT_EVAL_METHOD
@@ -3565,6 +3500,8 @@ stack.
 
 @hook TARGET_ARRAY_MODE_SUPPORTED_P
 
+@hook TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 
 @hook TARGET_FLAGS_REGNUM
@@ -3682,16 +3619,6 @@ nothing when you use @option{-freg-struct-return} mode.
 If you enable it, GCC can save registers around function calls.  This
 makes it possible to use call-clobbered registers to hold variables that
 must live across calls.
-
-@defmac CALLER_SAVE_PROFITABLE (@var{refs}, @var{calls})
-A C expression to determine whether it is worthwhile to consider placing
-a pseudo-register in a call-clobbered hard register and saving and
-restoring it around each function call.  The expression should be 1 when
-this is worth doing, and 0 otherwise.
-
-If you don't define this macro, a default is used which is good on most
-machines: @code{4 * @var{calls} < @var{refs}}.
-@end defmac
 
 @defmac HARD_REGNO_CALLER_SAVE_MODE (@var{regno}, @var{nregs})
 A C expression specifying which mode is required for saving @var{nregs}
@@ -6603,6 +6530,8 @@ the target supports DWARF 2 frame unwind information.
 @hook TARGET_TERMINATE_DW2_EH_FRAME_INFO
 
 @hook TARGET_DWARF_REGISTER_SPAN
+
+@hook TARGET_DWARF_FRAME_REG_MODE
 
 @hook TARGET_INIT_DWARF_REG_SIZES_EXTRA
 

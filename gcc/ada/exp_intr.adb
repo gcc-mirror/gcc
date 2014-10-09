@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,10 +109,12 @@ package body Exp_Intr is
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
    --  Rewrite the node by the appropriate string or positive constant.
    --  Nam can be one of the following:
-   --    Name_File             - expand string that is the name of source file
-   --    Name_Line             - expand integer line number
-   --    Name_Source_Location  - expand string of form file:line
-   --    Name_Enclosing_Entity - expand string  with name of enclosing entity
+   --    Name_File                  - expand string name of source file
+   --    Name_Line                  - expand integer line number
+   --    Name_Source_Location       - expand string of form file:line
+   --    Name_Enclosing_Entity      - expand string name of enclosing entity
+   --    Name_Compilation_Date      - expand string with compilation date
+   --    Name_Compilation_Time      - expand string with compilation time
 
    ---------------------------------
    -- Expand_Binary_Operator_Call --
@@ -557,7 +559,9 @@ package body Exp_Intr is
       elsif Nam_In (Nam, Name_File,
                          Name_Line,
                          Name_Source_Location,
-                         Name_Enclosing_Entity)
+                         Name_Enclosing_Entity,
+                         Name_Compilation_Date,
+                         Name_Compilation_Time)
       then
          Expand_Source_Info (N, Nam);
 
@@ -806,6 +810,35 @@ package body Exp_Intr is
 
                Write_Entity_Name (Ent);
 
+            when Name_Compilation_Date =>
+               declare
+                  subtype S13 is String (1 .. 3);
+                  Months : constant array (1 .. 12) of S13 :=
+                    ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+                  M1 : constant Character := Opt.Compilation_Time (6);
+                  M2 : constant Character := Opt.Compilation_Time (7);
+
+                  MM : constant Natural range 1 .. 12 :=
+                    (Character'Pos (M1) - Character'Pos ('0')) * 10 +
+                    (Character'Pos (M2) - Character'Pos ('0'));
+
+               begin
+                  --  Reformat ISO date into MMM DD YYYY (__DATE__) format
+
+                  Name_Buffer (1 .. 3)  := Months (MM);
+                  Name_Buffer (4)       := ' ';
+                  Name_Buffer (5 .. 6)  := Opt.Compilation_Time (9 .. 10);
+                  Name_Buffer (7)       := ' ';
+                  Name_Buffer (8 .. 11) := Opt.Compilation_Time (1 .. 4);
+                  Name_Len := 11;
+               end;
+
+            when Name_Compilation_Time =>
+               Name_Buffer (1 .. 8) := Opt.Compilation_Time (12 .. 19);
+               Name_Len := 8;
+
             when others =>
                raise Program_Error;
          end case;
@@ -914,6 +947,7 @@ package body Exp_Intr is
       Finalizer_Data  : Finalization_Exception_Data;
 
       Blk        : Node_Id := Empty;
+      Blk_Id     : Entity_Id;
       Deref      : Node_Id;
       Final_Code : List_Id;
       Free_Arg   : Node_Id;
@@ -925,6 +959,10 @@ package body Exp_Intr is
       --  we can avoid the test. The reason that we need to capture this is
       --  that we analyze some generated statements before properly attaching
       --  them to the tree, and that can disturb current value settings.
+
+      Dummy : Entity_Id;
+      --  This variable captures an unused dummy internal entity, see the
+      --  comment associated with its use.
 
    begin
       --  Nothing to do if we know the argument is null
@@ -1007,8 +1045,7 @@ package body Exp_Intr is
          --  protected by an abort defer/undefer pair.
 
          if Abort_Allowed then
-            Prepend_To (Final_Code,
-              Build_Runtime_Call (Loc, RE_Abort_Defer));
+            Prepend_To (Final_Code, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
             Blk :=
               Make_Block_Statement (Loc, Handled_Statement_Sequence =>
@@ -1016,9 +1053,15 @@ package body Exp_Intr is
                   Statements  => Final_Code,
                   At_End_Proc =>
                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc)));
+            Add_Block_Identifier (Blk, Blk_Id);
 
             Append (Blk, Stmts);
+
          else
+            --  Generate a dummy entity to ensure that the internal symbols are
+            --  in sync when a unit is compiled with and without aborts.
+
+            Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
             Append_List_To (Stmts, Final_Code);
          end if;
       end if;
@@ -1063,9 +1106,11 @@ package body Exp_Intr is
          end if;
       end if;
 
-      --  Normal processing for non-controlled types
+      --  Normal processing for non-controlled types. The argument to free is
+      --  a renaming rather than a constant to ensure that the original context
+      --  is always set to null after the deallocation takes place.
 
-      Free_Arg := Duplicate_Subexpr_No_Checks (Arg);
+      Free_Arg  := Duplicate_Subexpr_No_Checks (Arg, Renaming_Req => True);
       Free_Node := Make_Free_Statement (Loc, Empty);
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);

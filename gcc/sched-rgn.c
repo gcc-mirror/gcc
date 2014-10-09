@@ -236,11 +236,12 @@ static int is_exception_free (rtx, int, int);
 
 static bool sets_likely_spilled (rtx);
 static void sets_likely_spilled_1 (rtx, const_rtx, void *);
-static void add_branch_dependences (rtx, rtx);
+static void add_branch_dependences (rtx_insn *, rtx_insn *);
 static void compute_block_dependences (int);
 
 static void schedule_region (int);
-static void concat_insn_mem_list (rtx, rtx, rtx *, rtx *);
+static void concat_insn_mem_list (rtx_insn_list *, rtx_expr_list *,
+				  rtx_insn_list **, rtx_expr_list **);
 static void propagate_deps (int, struct deps_desc *);
 static void free_pending_lists (void);
 
@@ -256,7 +257,7 @@ static int
 is_cfg_nonregular (void)
 {
   basic_block b;
-  rtx insn;
+  rtx_insn *insn;
 
   /* If we have a label that could be the target of a nonlocal goto, then
      the cfg is not well structured.  */
@@ -278,7 +279,8 @@ is_cfg_nonregular (void)
   FOR_EACH_BB_FN (b, cfun)
     FOR_BB_INSNS (b, insn)
       {
-	rtx note, next, set, dest;
+	rtx note, set, dest;
+	rtx_insn *next;
 
 	/* If this function has a computed jump, then we consider the cfg
 	   not well structured.  */
@@ -539,7 +541,7 @@ rgn_estimate_number_of_insns (basic_block bb)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	if (DEBUG_INSN_P (insn))
@@ -1803,7 +1805,7 @@ update_live_1 (int src, rtx x)
    ready-list or before the scheduling.  */
 
 static int
-check_live (rtx insn, int src)
+check_live (rtx_insn *insn, int src)
 {
   /* Find the registers set by instruction.  */
   if (GET_CODE (PATTERN (insn)) == SET
@@ -1877,7 +1879,7 @@ find_conditional_protection (rtx insn, int load_insn_bb)
   /* Iterate through DEF-USE forward dependences.  */
   FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
     {
-      rtx next = DEP_CON (dep);
+      rtx_insn *next = DEP_CON (dep);
 
       if ((CONTAINING_RGN (BLOCK_NUM (next)) ==
 	   CONTAINING_RGN (BB_TO_BLOCK (load_insn_bb)))
@@ -1913,7 +1915,7 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx insn1 = DEP_PRO (dep);
+      rtx_insn *insn1 = DEP_PRO (dep);
 
       /* Must be a DEF-USE dependence upon non-branch.  */
       if (DEP_TYPE (dep) != REG_DEP_TRUE
@@ -1969,7 +1971,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_PRO (back_dep);
+      rtx_insn *insn1 = DEP_PRO (back_dep);
 
       if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
 	/* Found a DEF-USE dependence (insn1, load_insn).  */
@@ -1979,7 +1981,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
 	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_CON (fore_dep);
+	      rtx_insn *insn2 = DEP_CON (fore_dep);
 
 	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
 		{
@@ -2077,19 +2079,19 @@ static int sched_n_insns;
 
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
-static int can_schedule_ready_p (rtx);
-static void begin_schedule_ready (rtx);
-static ds_t new_ready (rtx, ds_t);
+static int can_schedule_ready_p (rtx_insn *);
+static void begin_schedule_ready (rtx_insn *);
+static ds_t new_ready (rtx_insn *, ds_t);
 static int schedule_more_p (void);
-static const char *rgn_print_insn (const_rtx, int);
-static int rgn_rank (rtx, rtx);
+static const char *rgn_print_insn (const rtx_insn *, int);
+static int rgn_rank (rtx_insn *, rtx_insn *);
 static void compute_jump_reg_dependencies (rtx, regset);
 
 /* Functions for speculative scheduling.  */
-static void rgn_add_remove_insn (rtx, int);
+static void rgn_add_remove_insn (rtx_insn *, int);
 static void rgn_add_block (basic_block, basic_block);
 static void rgn_fix_recovery_cfg (int, int, int);
-static basic_block advance_target_bb (basic_block, rtx);
+static basic_block advance_target_bb (basic_block, rtx_insn *);
 
 /* Return nonzero if there are more insns that should be scheduled.  */
 
@@ -2105,10 +2107,10 @@ schedule_more_p (void)
 static void
 init_ready_list (void)
 {
-  rtx prev_head = current_sched_info->prev_head;
-  rtx next_tail = current_sched_info->next_tail;
+  rtx_insn *prev_head = current_sched_info->prev_head;
+  rtx_insn *next_tail = current_sched_info->next_tail;
   int bb_src;
-  rtx insn;
+  rtx_insn *insn;
 
   target_n_insns = 0;
   sched_target_n_insns = 0;
@@ -2140,9 +2142,9 @@ init_ready_list (void)
   for (bb_src = target_bb + 1; bb_src < current_nr_blocks; bb_src++)
     if (IS_VALID (bb_src))
       {
-	rtx src_head;
-	rtx src_next_tail;
-	rtx tail, head;
+	rtx_insn *src_head;
+	rtx_insn *src_next_tail;
+	rtx_insn *tail, *head;
 
 	get_ebb_head_tail (EBB_FIRST_BB (bb_src), EBB_LAST_BB (bb_src),
 			   &head, &tail);
@@ -2163,7 +2165,7 @@ init_ready_list (void)
    insn can be scheduled, nonzero if we should silently discard it.  */
 
 static int
-can_schedule_ready_p (rtx insn)
+can_schedule_ready_p (rtx_insn *insn)
 {
   /* An interblock motion?  */
   if (INSN_BB (insn) != target_bb
@@ -2179,7 +2181,7 @@ can_schedule_ready_p (rtx insn)
    can_schedule_ready_p () differs from the one passed to
    begin_schedule_ready ().  */
 static void
-begin_schedule_ready (rtx insn)
+begin_schedule_ready (rtx_insn *insn)
 {
   /* An interblock motion?  */
   if (INSN_BB (insn) != target_bb)
@@ -2211,7 +2213,7 @@ begin_schedule_ready (rtx insn)
    Return nonzero if it should be moved to the ready list or the queue, or zero
    if we should silently discard it.  */
 static ds_t
-new_ready (rtx next, ds_t ts)
+new_ready (rtx_insn *next, ds_t ts)
 {
   if (INSN_BB (next) != target_bb)
     {
@@ -2264,7 +2266,7 @@ new_ready (rtx next, ds_t ts)
    to be formatted so that multiple output lines will line up nicely.  */
 
 static const char *
-rgn_print_insn (const_rtx insn, int aligned)
+rgn_print_insn (const rtx_insn *insn, int aligned)
 {
   static char tmp[80];
 
@@ -2285,7 +2287,7 @@ rgn_print_insn (const_rtx insn, int aligned)
    is to be preferred.  Zero if they are equally good.  */
 
 static int
-rgn_rank (rtx insn1, rtx insn2)
+rgn_rank (rtx_insn *insn1, rtx_insn *insn2)
 {
   /* Some comparison make sense in interblock scheduling only.  */
   if (INSN_BB (insn1) != INSN_BB (insn2))
@@ -2316,7 +2318,7 @@ rgn_rank (rtx insn1, rtx insn2)
    calculations.  */
 
 int
-contributes_to_priority (rtx next, rtx insn)
+contributes_to_priority (rtx_insn *next, rtx_insn *insn)
 {
   /* NEXT and INSN reside in one ebb.  */
   return BLOCK_TO_BB (BLOCK_NUM (next)) == BLOCK_TO_BB (BLOCK_NUM (insn));
@@ -2362,7 +2364,7 @@ static const struct sched_deps_info_def rgn_const_sel_sched_deps_info =
 /* Return true if scheduling INSN will trigger finish of scheduling
    current block.  */
 static bool
-rgn_insn_finishes_block_p (rtx insn)
+rgn_insn_finishes_block_p (rtx_insn *insn)
 {
   if (INSN_BB (insn) == target_bb
       && sched_target_n_insns + 1 == target_n_insns)
@@ -2439,9 +2441,9 @@ static sbitmap insn_referenced;
 /* Add dependences so that branches are scheduled to run last in their
    block.  */
 static void
-add_branch_dependences (rtx head, rtx tail)
+add_branch_dependences (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn, last;
+  rtx_insn *insn, *last;
 
   /* For all branches, calls, uses, clobbers, cc0 setters, and instructions
      that can throw exceptions, force them to remain in order at the end of
@@ -2583,18 +2585,20 @@ add_branch_dependences (rtx head, rtx tail)
 static struct deps_desc *bb_deps;
 
 static void
-concat_insn_mem_list (rtx copy_insns, rtx copy_mems, rtx *old_insns_p,
-		      rtx *old_mems_p)
+concat_insn_mem_list (rtx_insn_list *copy_insns,
+		      rtx_expr_list *copy_mems,
+		      rtx_insn_list **old_insns_p,
+		      rtx_expr_list **old_mems_p)
 {
-  rtx new_insns = *old_insns_p;
-  rtx new_mems = *old_mems_p;
+  rtx_insn_list *new_insns = *old_insns_p;
+  rtx_expr_list *new_mems = *old_mems_p;
 
   while (copy_insns)
     {
-      new_insns = alloc_INSN_LIST (XEXP (copy_insns, 0), new_insns);
-      new_mems = alloc_EXPR_LIST (VOIDmode, XEXP (copy_mems, 0), new_mems);
-      copy_insns = XEXP (copy_insns, 1);
-      copy_mems = XEXP (copy_mems, 1);
+      new_insns = alloc_INSN_LIST (copy_insns->insn (), new_insns);
+      new_mems = alloc_EXPR_LIST (VOIDmode, copy_mems->element (), new_mems);
+      copy_insns = copy_insns->next ();
+      copy_mems = copy_mems->next ();
     }
 
   *old_insns_p = new_insns;
@@ -2721,7 +2725,7 @@ propagate_deps (int bb, struct deps_desc *pred_deps)
 static void
 compute_block_dependences (int bb)
 {
-  rtx head, tail;
+  rtx_insn *head, *tail;
   struct deps_desc tmp_deps;
 
   tmp_deps = bb_deps[bb];
@@ -2750,8 +2754,8 @@ compute_block_dependences (int bb)
 static void
 free_block_dependencies (int bb)
 {
-  rtx head;
-  rtx tail;
+  rtx_insn *head;
+  rtx_insn *tail;
 
   get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
 
@@ -2793,7 +2797,7 @@ debug_rgn_dependencies (int from_bb)
 
   for (bb = from_bb; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
       fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
@@ -2805,10 +2809,10 @@ debug_rgn_dependencies (int from_bb)
 
 /* Print dependencies information for instructions between HEAD and TAIL.
    ??? This function would probably fit best in haifa-sched.c.  */
-void debug_dependencies (rtx head, rtx tail)
+void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
-  rtx next_tail = NEXT_INSN (tail);
+  rtx_insn *insn;
+  rtx_insn *next_tail = NEXT_INSN (tail);
 
   fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
 	   "insn", "code", "bb", "dep", "prio", "cost",
@@ -2894,7 +2898,7 @@ free_rgn_deps (void)
 
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
@@ -2914,7 +2918,7 @@ compute_priorities (void)
   current_sched_info->sched_max_insns_priority = 0;
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
@@ -3025,7 +3029,7 @@ schedule_region (int rgn)
       for (bb = 0; bb < current_nr_blocks; bb++)
 	{
 	  basic_block first_bb, last_bb;
-	  rtx head, tail;
+	  rtx_insn *head, *tail;
 
 	  first_bb = EBB_FIRST_BB (bb);
 	  last_bb = EBB_LAST_BB (bb);
@@ -3045,7 +3049,7 @@ schedule_region (int rgn)
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       basic_block first_bb, last_bb, curr_bb;
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       first_bb = EBB_FIRST_BB (bb);
       last_bb = EBB_LAST_BB (bb);
@@ -3424,7 +3428,7 @@ schedule_insns (void)
 
 /* INSN has been added to/removed from current region.  */
 static void
-rgn_add_remove_insn (rtx insn, int remove_p)
+rgn_add_remove_insn (rtx_insn *insn, int remove_p)
 {
   if (!remove_p)
     rgn_n_insns++;
@@ -3579,7 +3583,7 @@ rgn_fix_recovery_cfg (int bbi, int check_bbi, int check_bb_nexti)
 /* Return next block in ebb chain.  For parameter meaning please refer to
    sched-int.h: struct sched_info: advance_target_bb.  */
 static basic_block
-advance_target_bb (basic_block bb, rtx insn)
+advance_target_bb (basic_block bb, rtx_insn *insn)
 {
   if (insn)
     return 0;

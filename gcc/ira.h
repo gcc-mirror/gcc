@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IRA_H
+#define GCC_IRA_H
+
 /* True when we use LRA instead of reload pass for the current
    function.  */
 extern bool ira_use_lra_p;
@@ -166,7 +169,7 @@ struct ira_reg_equiv_s
   rtx constant;
   rtx invariant;
   /* Always NULL_RTX if defined_p is false.  */
-  rtx init_insns;
+  rtx_insn_list *init_insns;
 };
 
 /* The length of the following array.  */
@@ -177,13 +180,12 @@ extern struct ira_reg_equiv_s *ira_reg_equiv;
 
 extern void ira_init_once (void);
 extern void ira_init (void);
-extern void ira_finish_once (void);
 extern void ira_setup_eliminable_regset (void);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
 extern void ira_expand_reg_equiv (void);
-extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx);
+extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx_insn *);
 
 extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
 extern void ira_mark_allocation_change (int);
@@ -196,3 +198,5 @@ extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx);
 extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
+
+#endif /* GCC_IRA_H */

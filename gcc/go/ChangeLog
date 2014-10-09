@@ -1,3 +1,25 @@
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (check_go_parallelize): Change to just an upper bound
+	number.
+
+2014-09-03  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Remove init
+	parameter.  Add is_hidden parameter.
+	(Gcc_backend::implicit_variable_set_init): New method.
+	(Gcc_backend::implicit_variable_reference): New method.
+
+2014-08-08  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::compound_statement): Don't return
+	NULL_TREE.
+
+2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Rename
+	symtab_get_node to symtab_node::get.
+
 2014-06-13  Ian Lance Taylor  <iant@google.com>
 
 	PR go/61496
@@ -7,7 +29,7 @@
 
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* go/go-gcc.cc (Gcc_backend::global_variable_set_init): Use
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Use
 	symtab_get_node(var_decl)->implicit_section.
 
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>

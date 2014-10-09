@@ -415,6 +415,18 @@ find_matching_operand (rtx pattern, int n)
   return NULL;
 }
 
+/* In DEFINE_EXPAND, DEFINE_SPLIT, and DEFINE_PEEPHOLE2, we
+   don't use the MATCH_OPERAND constraint, only the predicate.
+   This is confusing to folks doing new ports, so help them
+   not make the mistake.  */
+
+static bool
+constraints_supported_in_insn_p (rtx insn)
+{
+  return !(GET_CODE (insn) == DEFINE_EXPAND
+	   || GET_CODE (insn) == DEFINE_SPLIT
+	   || GET_CODE (insn) == DEFINE_PEEPHOLE2);
+}
 
 /* Check for various errors in patterns.  SET is nonnull for a destination,
    and is the complete set pattern.  SET_CODE is '=' for normal sets, and
@@ -432,7 +444,33 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
   switch (code)
     {
     case MATCH_SCRATCH:
-      return;
+      {
+	const char constraints0 = XSTR (pattern, 1)[0];
+
+	if (!constraints_supported_in_insn_p (insn))
+	  {
+	    if (constraints0)
+	      {
+		error_with_line (pattern_lineno,
+				 "constraints not supported in %s",
+				 rtx_name[GET_CODE (insn)]);
+	      }
+	    return;
+	  }
+
+	/* If a MATCH_SCRATCH is used in a context requiring an write-only
+	   or read/write register, validate that.  */
+	if (set_code == '='
+	    && constraints0
+	    && constraints0 != '='
+	    && constraints0 != '+')
+	  {
+	    error_with_line (pattern_lineno,
+			     "operand %d missing output reload",
+			     XINT (pattern, 0));
+	  }
+	return;
+      }
     case MATCH_DUP:
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
@@ -467,18 +505,14 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	  {
 	    const char constraints0 = XSTR (pattern, 2)[0];
 
-	    /* In DEFINE_EXPAND, DEFINE_SPLIT, and DEFINE_PEEPHOLE2, we
-	       don't use the MATCH_OPERAND constraint, only the predicate.
-	       This is confusing to folks doing new ports, so help them
-	       not make the mistake.  */
-	    if (GET_CODE (insn) == DEFINE_EXPAND
-		|| GET_CODE (insn) == DEFINE_SPLIT
-		|| GET_CODE (insn) == DEFINE_PEEPHOLE2)
+	    if (!constraints_supported_in_insn_p (insn))
 	      {
 		if (constraints0)
-		  error_with_line (pattern_lineno,
-				   "constraints not supported in %s",
-				   rtx_name[GET_CODE (insn)]);
+		  {
+		    error_with_line (pattern_lineno,
+				     "constraints not supported in %s",
+				     rtx_name[GET_CODE (insn)]);
+		  }
 	      }
 
 	    /* A MATCH_OPERAND that is a SET should have an output reload.  */
@@ -617,10 +651,10 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
       return;
 
     case LABEL_REF:
-      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
+      if (GET_MODE (LABEL_REF_LABEL (pattern)) != VOIDmode)
 	error_with_line (pattern_lineno,
 			 "operand to label_ref %smode not VOIDmode",
-			 GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
+			 GET_MODE_NAME (GET_MODE (LABEL_REF_LABEL (pattern))));
       break;
 
     default:
@@ -2180,6 +2214,7 @@ write_subroutine (struct decision_head *head, enum routine_type type)
   const char *s_or_e;
   char extension[32];
   int i;
+  const char *insn_param;
 
   s_or_e = subfunction ? "static " : "";
 
@@ -2190,21 +2225,27 @@ write_subroutine (struct decision_head *head, enum routine_type type)
   else
     strcpy (extension, "_insns");
 
+  /* For now, the top-level functions take a plain "rtx", and perform a
+     checked cast to "rtx_insn *" for use throughout the rest of the
+     function and the code it calls.  */
+  insn_param = subfunction ? "rtx_insn *insn" : "rtx uncast_insn";
+
   switch (type)
     {
     case RECOG:
       printf ("%sint\n\
-recog%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n", s_or_e, extension);
+recog%s (rtx x0 ATTRIBUTE_UNUSED,\n\t%s ATTRIBUTE_UNUSED,\n\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     case SPLIT:
       printf ("%srtx\n\
-split%s (rtx x0 ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
-	      s_or_e, extension);
+split%s (rtx x0 ATTRIBUTE_UNUSED, %s ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     case PEEPHOLE2:
       printf ("%srtx\n\
-peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *_pmatch_len ATTRIBUTE_UNUSED)\n",
-	      s_or_e, extension);
+peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\t%s ATTRIBUTE_UNUSED,\n\tint *_pmatch_len ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     }
 
@@ -2216,6 +2257,14 @@ peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *_pma
 
   if (!subfunction)
     printf ("  recog_data.insn = NULL_RTX;\n");
+
+  /* For now add the downcast to rtx_insn *, at the top of each top-level
+     function.  */
+  if (!subfunction)
+    {
+      printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
+      printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
+    }
 
   if (head->first)
     write_tree (head, &root_pos, type, 1);
@@ -2461,12 +2510,12 @@ make_insn_sequence (rtx insn, enum routine_type type)
 
     case SPLIT:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_split_%d (rtx, rtx *);\n", next_insn_code);
+      printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n", next_insn_code);
       break;
 
     case PEEPHOLE2:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_peephole2_%d (rtx, rtx *);\n",
+      printf ("extern rtx gen_peephole2_%d (rtx_insn *, rtx *);\n",
 	      next_insn_code);
       break;
     }

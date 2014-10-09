@@ -300,10 +300,14 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 	 last < first holds.  */
       if (integer_zerop (length2))
 	{
+	  tree b = get_base_type (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+
 	  length_zero_p = true;
 
-	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
-	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+	  ub1
+	    = convert (b, TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1))));
+	  lb1
+	    = convert (b, TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1))));
 
 	  comparison = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
@@ -319,20 +323,23 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 	 just use its length computed from the actual stored bounds.  */
       else if (TREE_CODE (length2) == INTEGER_CST)
 	{
-	  tree bt;
+	  tree b = get_base_type (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 
-	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
-	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+	  ub1
+	    = convert (b, TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1))));
+	  lb1
+	    = convert (b, TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1))));
 	  /* Note that we know that UB2 and LB2 are constant and hence
 	     cannot contain a PLACEHOLDER_EXPR.  */
-	  ub2 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
-	  lb2 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
-	  bt = get_base_type (TREE_TYPE (ub1));
+	  ub2
+	    = convert (b, TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2))));
+	  lb2
+	    = convert (b, TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2))));
 
 	  comparison
 	    = fold_build2_loc (loc, EQ_EXPR, result_type,
-			       build_binary_op (MINUS_EXPR, bt, ub1, lb1),
-			       build_binary_op (MINUS_EXPR, bt, ub2, lb2));
+			       build_binary_op (MINUS_EXPR, b, ub1, lb1),
+			       build_binary_op (MINUS_EXPR, b, ub2, lb2));
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
 	  if (EXPR_P (comparison))
 	    SET_EXPR_LOCATION (comparison, loc);
@@ -1177,7 +1184,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
     ;
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
     {
-      TREE_THIS_NOTRAP (result) = 1;
       if (TYPE_VOLATILE (operation_type))
 	TREE_THIS_VOLATILE (result) = 1;
     }
@@ -1996,7 +2002,8 @@ build_simple_component_ref (tree record_variable, tree component, tree field,
 
       /* Look through a conversion between original and packable version, but
 	 the field needs to be adjusted in this case.  */
-      else if (TYPE_NAME (inner_type) == TYPE_NAME (record_type))
+      else if (RECORD_OR_UNION_TYPE_P (inner_type)
+	       && TYPE_NAME (inner_type) == TYPE_NAME (record_type))
 	{
 	  tree new_field;
 
@@ -2153,18 +2160,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
   tree size_to_malloc
     = aligning_type ? TYPE_SIZE_UNIT (aligning_type) : data_size;
 
-  tree malloc_ptr;
-
-  /* On VMS, if pointers are 64-bit and the allocator size is 32-bit or
-     Convention C, allocate 32-bit memory.  */
-  if (TARGET_ABI_OPEN_VMS
-      && POINTER_SIZE == 64
-      && Nkind (gnat_node) == N_Allocator
-      && (UI_To_Int (Esize (Etype (gnat_node))) == 32
-          || Convention (Etype (gnat_node)) == Convention_C))
-    malloc_ptr = build_call_n_expr (malloc32_decl, 1, size_to_malloc);
-  else
-    malloc_ptr = build_call_n_expr (malloc_decl, 1, size_to_malloc);
+  tree malloc_ptr = build_call_n_expr (malloc_decl, 1, size_to_malloc);
 
   if (aligning_type)
     {

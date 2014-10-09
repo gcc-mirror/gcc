@@ -8,7 +8,7 @@ typedef unsigned int uintptr_t;
 
 extern void srand (uintptr_t);
 
-inline void
+inline void __attribute__ ((gnu_inline))
 foo (uintptr_t seed)
 {
  srand (seed * seed);

@@ -468,7 +468,7 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_printf (pp, "`%s'", XSTR (x, 0));
       break;
     case LABEL_REF:
-      pp_printf (pp, "L%d", INSN_UID (XEXP (x, 0)));
+      pp_printf (pp, "L%d", INSN_UID (LABEL_REF_LABEL (x)));
       break;
     case CONST:
     case HIGH:
@@ -578,8 +578,9 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       break;
     case SEQUENCE:
       {
+	const rtx_sequence *seq = as_a <const rtx_sequence *> (x);
 	pp_string (pp, "sequence{");
-	if (INSN_P (XVECEXP (x, 0, 0)))
+	if (INSN_P (seq->element (0)))
 	  {
 	    /* Print the sequence insns indented.  */
 	    const char * save_print_rtx_head = print_rtx_head;
@@ -591,16 +592,16 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
 		      sizeof (indented_print_rtx_head),
 		      "%s     ", print_rtx_head);
 	    print_rtx_head = indented_print_rtx_head;
-	    for (int i = 0; i < XVECLEN (x, 0); i++)
-	      print_insn_with_notes (pp, XVECEXP (x, 0, i));
+	    for (int i = 0; i < seq->len (); i++)
+	      print_insn_with_notes (pp, seq->insn (i));
 	    pp_printf (pp, "%s      ", save_print_rtx_head);
 	    print_rtx_head = save_print_rtx_head;
 	  }
 	else
 	  {
-	    for (int i = 0; i < XVECLEN (x, 0); i++)
+	    for (int i = 0; i < seq->len (); i++)
 	      {
-		print_pattern (pp, XVECEXP (x, 0, i), verbose);
+		print_pattern (pp, seq->element (i), verbose);
 		pp_semicolon (pp);
 	      }
 	  }
@@ -815,14 +816,14 @@ dump_insn_slim (FILE *f, const_rtx x)
    If COUNT < 0 it will stop only at LAST or NULL rtx.  */
 
 void
-dump_rtl_slim (FILE *f, const_rtx first, const_rtx last,
+dump_rtl_slim (FILE *f, const rtx_insn *first, const rtx_insn *last,
 	       int count, int flags ATTRIBUTE_UNUSED)
 {
-  const_rtx insn, tail;
+  const rtx_insn *insn, *tail;
   pretty_printer rtl_slim_pp;
   rtl_slim_pp.buffer->stream = f;
 
-  tail = last ? NEXT_INSN (last) : NULL_RTX;
+  tail = last ? NEXT_INSN (last) : NULL;
   for (insn = first;
        (insn != NULL) && (insn != tail) && (count != 0);
        insn = NEXT_INSN (insn))
@@ -841,7 +842,7 @@ dump_rtl_slim (FILE *f, const_rtx first, const_rtx last,
 void
 rtl_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
   bool first = true;
 
   /* TODO: inter-bb stuff.  */
@@ -881,9 +882,11 @@ debug_insn_slim (const_rtx x)
 }
 
 /* Same as above, but using dump_rtl_slim.  */
-extern void debug_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
+extern void debug_rtl_slim (FILE *, const rtx_insn *, const rtx_insn *,
+			    int, int);
 DEBUG_FUNCTION void
-debug_rtl_slim (const_rtx first, const_rtx last, int count, int flags)
+debug_rtl_slim (const rtx_insn *first, const rtx_insn *last, int count,
+		int flags)
 {
   dump_rtl_slim (stderr, first, last, count, flags);
 }

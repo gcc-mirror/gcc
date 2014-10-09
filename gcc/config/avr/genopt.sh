@@ -41,19 +41,18 @@ cat <<EOF
 ; <http://www.gnu.org/licenses/>.
 
 Enum
-Name(avr_mcu) Type(int)
-Known MCU names:
+Name(avr_arch) Type(enum avr_arch)
+Known MCU architectures:
 
 EOF
 
 awk -F'[(, 	]+' 'BEGIN {
-    value = 0
 }
-/^AVR_MCU/ {
+/^AVR_MCU.*NULL/ {
     name = $2
+    value = $3
     gsub("\"", "", name)
     print "EnumValue"
-    print "Enum(avr_mcu) String(" name ") Value(" value ")"
+    print "Enum(avr_arch) String(" name ") Value(" value ")"
     print ""
-    value++
 }' $1

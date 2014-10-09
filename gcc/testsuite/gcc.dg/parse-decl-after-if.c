@@ -3,7 +3,7 @@
 { dg-options "-fsyntax-only" }
 */
 
-void f(x)
+void f(int x)
 {
   if (x > 1)
     int ret = 1; /* { dg-error "expected expression before 'int'" } */

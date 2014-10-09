@@ -62,6 +62,7 @@
 #include "dumpfile.h"
 #include "gimple-expr.h"
 #include "builtins.h"
+#include "tm-constrs.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -108,21 +109,21 @@ static const char *output_multi_immediate (rtx *, const char *, const char *,
 static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
 static void thumb_exit (FILE *, int);
-static HOST_WIDE_INT get_jump_table_size (rtx);
+static HOST_WIDE_INT get_jump_table_size (rtx_jump_table_data *);
 static Mnode *move_minipool_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
 static Mnode *add_minipool_forward_ref (Mfix *);
 static Mnode *move_minipool_fix_backward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
 static Mnode *add_minipool_backward_ref (Mfix *);
 static void assign_minipool_offsets (Mfix *);
 static void arm_print_value (FILE *, rtx);
-static void dump_minipool (rtx);
+static void dump_minipool (rtx_insn *);
 static int arm_barrier_cost (rtx);
 static Mfix *create_fix_barrier (Mfix *, HOST_WIDE_INT);
-static void push_minipool_barrier (rtx, HOST_WIDE_INT);
-static void push_minipool_fix (rtx, HOST_WIDE_INT, rtx *, enum machine_mode,
-			       rtx);
+static void push_minipool_barrier (rtx_insn *, HOST_WIDE_INT);
+static void push_minipool_fix (rtx_insn *, HOST_WIDE_INT, rtx *,
+			       enum machine_mode, rtx);
 static void arm_reorg (void);
-static void note_invalid_constants (rtx, HOST_WIDE_INT, int);
+static void note_invalid_constants (rtx_insn *, HOST_WIDE_INT, int);
 static unsigned long arm_compute_save_reg0_reg12_mask (void);
 static unsigned long arm_compute_save_reg_mask (void);
 static unsigned long arm_isr_value (tree);
@@ -137,8 +138,8 @@ static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
-static int arm_adjust_cost (rtx, rtx, rtx, int);
-static int arm_sched_reorder (FILE *, int, rtx *, int *, int);
+static int arm_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int arm_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int optimal_immediate_sequence (enum rtx_code code,
 				       unsigned HOST_WIDE_INT val,
 				       struct four_ints *return_sequence);
@@ -180,7 +181,7 @@ static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
 static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
-static rtx emit_set_insn (rtx, rtx);
+static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
@@ -216,7 +217,7 @@ static bool arm_return_in_msb (const_tree);
 static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
 static bool arm_return_in_memory (const_tree, const_tree);
 #if ARM_UNWIND_INFO
-static void arm_unwind_emit (FILE *, rtx);
+static void arm_unwind_emit (FILE *, rtx_insn *);
 static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
@@ -238,7 +239,7 @@ static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
-static bool arm_cannot_copy_insn_p (rtx);
+static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static bool arm_output_addr_const_extra (FILE *, rtx);
@@ -255,9 +256,9 @@ static void arm_asm_trampoline_template (FILE *);
 static void arm_trampoline_init (rtx, tree, rtx);
 static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
-static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
-static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
-static bool fa726te_sched_adjust_cost (rtx, rtx, rtx, int *);
+static bool cortex_a9_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
+static bool xscale_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
+static bool fa726te_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
 static bool arm_array_mode_supported_p (enum machine_mode,
 					unsigned HOST_WIDE_INT);
 static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
@@ -1698,7 +1699,9 @@ const struct tune_params arm_slowmul_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -1715,7 +1718,9 @@ const struct tune_params arm_fastmul_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -1735,7 +1740,9 @@ const struct tune_params arm_strongarm_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -1752,7 +1759,9 @@ const struct tune_params arm_xscale_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -1769,7 +1778,9 @@ const struct tune_params arm_9e_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -1786,7 +1797,9 @@ const struct tune_params arm_v6t2_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -1804,7 +1817,9 @@ const struct tune_params arm_cortex_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a8_tune =
@@ -1821,7 +1836,9 @@ const struct tune_params arm_cortex_a8_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  true,						/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a7_tune =
@@ -1838,7 +1855,9 @@ const struct tune_params arm_cortex_a7_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,			/* Vectorizer costs.  */
   false,					/* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  true,						/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a15_tune =
@@ -1855,7 +1874,9 @@ const struct tune_params arm_cortex_a15_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  true, true                                    /* Prefer 32-bit encodings.  */
+  true, true,                                   /* Prefer 32-bit encodings.  */
+  true,						/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a53_tune =
@@ -1872,7 +1893,9 @@ const struct tune_params arm_cortex_a53_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,			/* Vectorizer costs.  */
   false,					/* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a57_tune =
@@ -1889,7 +1912,9 @@ const struct tune_params arm_cortex_a57_tune =
   {true, true},                                /* Prefer non short circuit.  */
   &arm_default_vec_cost,                       /* Vectorizer costs.  */
   false,                                       /* Prefer Neon for 64-bits bitops.  */
-  true, true                                   /* Prefer 32-bit encodings.  */
+  true, true,                                  /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -1909,7 +1934,9 @@ const struct tune_params arm_cortex_a5_tune =
   {false, false},				/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  true,						/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -1926,7 +1953,9 @@ const struct tune_params arm_cortex_a9_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_cortex_a12_tune =
@@ -1943,7 +1972,9 @@ const struct tune_params arm_cortex_a12_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  true,						/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 /* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
@@ -1967,7 +1998,9 @@ const struct tune_params arm_v7m_tune =
   {false, false},				/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
@@ -1986,7 +2019,9 @@ const struct tune_params arm_v6m_tune =
   {false, false},				/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -2003,7 +2038,9 @@ const struct tune_params arm_fa726te_tune =
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false                                  /* Prefer 32-bit encodings.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
 };
 
 
@@ -2075,7 +2112,7 @@ arm_constant_limit (bool size_p)
 
 /* Emit an insn that's a simple single-set.  Both the operands must be known
    to be valid.  */
-inline static rtx
+inline static rtx_insn *
 emit_set_insn (rtx x, rtx y)
 {
   return emit_insn (gen_rtx_SET (VOIDmode, x, y));
@@ -2809,6 +2846,9 @@ arm_option_override (void)
 
   arm_fpu_desc = &all_fpus[arm_fpu_index];
 
+  if (TARGET_NEON && !arm_arch7)
+    error ("target CPU does not support NEON");
+
   switch (arm_fpu_desc->model)
     {
     case ARM_FP_MODEL_VFP:
@@ -2989,6 +3029,10 @@ arm_option_override (void)
       /* If optimizing for size, bump the number of instructions that we
          are prepared to conditionally execute (even on a StrongARM).  */
       max_insns_skipped = 6;
+
+      /* For THUMB2, we limit the conditional sequence to one IT block.  */
+      if (TARGET_THUMB2)
+	max_insns_skipped = MAX_INSN_PER_IT_BLOCK;
     }
   else
     max_insns_skipped = current_tune->max_insns_skipped;
@@ -5131,7 +5175,7 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	     so we are free to use whatever conventions are
 	     appropriate.  */
 	  /* FIXME: remove CONST_CAST_TREE when cgraph is constified.  */
-	  struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
+	  cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE(decl));
 	  if (i && i->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
@@ -6412,7 +6456,7 @@ require_pic_register (void)
 	}
       else
 	{
-	  rtx seq, insn;
+	  rtx_insn *seq, *insn;
 
 	  if (!cfun->machine->pic_reg)
 	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
@@ -8884,9 +8928,11 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       /* A SET doesn't have a mode, so let's look at the SET_DEST to get
 	 the mode.  */
       words = ARM_NUM_INTS (GET_MODE_SIZE (GET_MODE (SET_DEST (x))));
-      return (COSTS_N_INSNS (words)
-              + 4 * ((MEM_P (SET_SRC (x)))
-                     + MEM_P (SET_DEST (x))));
+      return COSTS_N_INSNS (words)
+	     + COSTS_N_INSNS (1) * (satisfies_constraint_J (SET_SRC (x))
+				    || satisfies_constraint_K (SET_SRC (x))
+				       /* thumb1_movdi_insn.  */
+				    || ((words > 1) && MEM_P (SET_SRC (x))));
 
     case CONST_INT:
       if (outer == SET)
@@ -8939,16 +8985,14 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     case AND:
     case XOR:
     case IOR:
-      /* XXX guess.  */
-      return 8;
+      return COSTS_N_INSNS (1);
 
     case MEM:
-      /* XXX another guess.  */
-      /* Memory costs quite a lot for the first word, but subsequent words
-         load at the equivalent of a single insn each.  */
-      return (10 + 4 * ((GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD)
+      return (COSTS_N_INSNS (1)
+	      + COSTS_N_INSNS (1)
+		* ((GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD)
               + ((GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
-                 ? 4 : 0));
+                 ? COSTS_N_INSNS (1) : 0));
 
     case IF_THEN_ELSE:
       /* XXX a guess.  */
@@ -11400,7 +11444,7 @@ arm_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Adjust cost hook for XScale.  */
 static bool
-xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+xscale_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   /* Some true dependencies can have a higher cost depending
      on precisely how certain input operands are used.  */
@@ -11461,7 +11505,7 @@ xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
 /* Adjust cost hook for Cortex A9.  */
 static bool
-cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   switch (REG_NOTE_KIND (link))
     {
@@ -11534,7 +11578,7 @@ cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
 /* Adjust cost hook for FA726TE.  */
 static bool
-fa726te_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+fa726te_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 {
   /* For FA726TE, true dependency on CPSR (i.e. set cond followed by predicated)
      have penalty of 3.  */
@@ -11703,7 +11747,7 @@ arm_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Return true if and only if this insn can dual-issue only as older.  */
 static bool
-cortexa7_older_only (rtx insn)
+cortexa7_older_only (rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     return false;
@@ -11755,7 +11799,7 @@ cortexa7_older_only (rtx insn)
 
 /* Return true if and only if this insn can dual-issue as younger.  */
 static bool
-cortexa7_younger (FILE *file, int verbose, rtx insn)
+cortexa7_younger (FILE *file, int verbose, rtx_insn *insn)
 {
   if (recog_memoized (insn) < 0)
     {
@@ -11793,8 +11837,8 @@ cortexa7_younger (FILE *file, int verbose, rtx insn)
    instructions.  This heuristic may affect dual issue opportunities
    in the current cycle.  */
 static void
-cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
-                        int clock)
+cortexa7_sched_reorder (FILE *file, int verbose, rtx_insn **ready,
+			int *n_readyp, int clock)
 {
   int i;
   int first_older_only = -1, first_younger = -1;
@@ -11811,7 +11855,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
      older.  */
   for (i = *n_readyp - 1; i >= 0; i--)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (cortexa7_older_only (insn))
         {
           first_older_only = i;
@@ -11846,7 +11890,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
     fprintf (file, ";; cortexa7_sched_reorder insn %d before %d\n",
              INSN_UID(ready [first_older_only]),
              INSN_UID(ready [first_younger]));
-  rtx first_older_only_insn = ready [first_older_only];
+  rtx_insn *first_older_only_insn = ready [first_older_only];
   for (i = first_older_only; i < first_younger; i++)
     {
       ready[i] = ready[i+1];
@@ -11858,7 +11902,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
 
 /* Implement TARGET_SCHED_REORDER. */
 static int
-arm_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
+arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
                    int clock)
 {
   switch (arm_tune)
@@ -11882,7 +11926,7 @@ arm_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
    adjust_cost function. Only put bits of code into arm_adjust_cost that
    are common across all cores.  */
 static int
-arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
+arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   rtx i_pat, d_pat;
 
@@ -13111,7 +13155,7 @@ arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 }
 
 static bool
-arm_cannot_copy_insn_p (rtx insn)
+arm_cannot_copy_insn_p (rtx_insn *insn)
 {
   /* The tls call insn cannot be copied, as it is paired with a data
      word.  */
@@ -14486,7 +14530,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 			       unsigned int interleave_factor,
 			       HOST_WIDE_INT bytes_per_iter)
 {
-  rtx label, src_reg, dest_reg, final_src, test;
+  rtx src_reg, dest_reg, final_src, test;
   HOST_WIDE_INT leftover;
   
   leftover = length % bytes_per_iter;
@@ -14502,7 +14546,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 				   0, 0, OPTAB_WIDEN);
 
   /* Emit the start of the loop.  */
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
   
   /* Emit the loop body.  */
@@ -16087,7 +16131,7 @@ struct minipool_node
 struct minipool_fixup
 {
   Mfix *            next;
-  rtx               insn;
+  rtx_insn *        insn;
   HOST_WIDE_INT     address;
   rtx *             loc;
   enum machine_mode mode;
@@ -16104,7 +16148,7 @@ struct minipool_fixup
 
 static Mnode *	minipool_vector_head;
 static Mnode *	minipool_vector_tail;
-static rtx	minipool_vector_label;
+static rtx_code_label	*minipool_vector_label;
 static int	minipool_pad;
 
 /* The linked list of all minipool fixes required for this function.  */
@@ -16118,7 +16162,7 @@ Mfix *		minipool_barrier;
 #endif
 
 static HOST_WIDE_INT
-get_jump_table_size (rtx insn)
+get_jump_table_size (rtx_jump_table_data *insn)
 {
   /* ADDR_VECs only take room if read-only data does into the text
      section.  */
@@ -16567,7 +16611,7 @@ assign_minipool_offsets (Mfix *barrier)
 
 /* Output the literal table */
 static void
-dump_minipool (rtx scan)
+dump_minipool (rtx_insn *scan)
 {
   Mnode * mp;
   Mnode * nmp;
@@ -16690,23 +16734,23 @@ static Mfix *
 create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 {
   HOST_WIDE_INT count = 0;
-  rtx barrier;
-  rtx from = fix->insn;
+  rtx_barrier *barrier;
+  rtx_insn *from = fix->insn;
   /* The instruction after which we will insert the jump.  */
-  rtx selected = NULL;
+  rtx_insn *selected = NULL;
   int selected_cost;
   /* The address at which the jump instruction will be placed.  */
   HOST_WIDE_INT selected_address;
   Mfix * new_fix;
   HOST_WIDE_INT max_count = max_address - fix->address;
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
 
   selected_cost = arm_barrier_cost (from);
   selected_address = fix->address;
 
   while (from && count < max_count)
     {
-      rtx tmp;
+      rtx_jump_table_data *tmp;
       int new_cost;
 
       /* This code shouldn't have been called if there was a natural barrier
@@ -16763,7 +16807,7 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
      CALL_ARG_LOCATION note.  */
   if (CALL_P (selected))
     {
-      rtx next = NEXT_INSN (selected);
+      rtx_insn *next = NEXT_INSN (selected);
       if (next && NOTE_P (next)
 	  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
 	  selected = next;
@@ -16788,7 +16832,7 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 /* Record that there is a natural barrier in the insn stream at
    ADDRESS.  */
 static void
-push_minipool_barrier (rtx insn, HOST_WIDE_INT address)
+push_minipool_barrier (rtx_insn *insn, HOST_WIDE_INT address)
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
@@ -16810,7 +16854,7 @@ push_minipool_barrier (rtx insn, HOST_WIDE_INT address)
    fixing; VALUE is the constant that must be loaded, which is of type
    MODE.  */
 static void
-push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
+push_minipool_fix (rtx_insn *insn, HOST_WIDE_INT address, rtx *loc,
 		   enum machine_mode mode, rtx value)
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
@@ -16899,6 +16943,14 @@ arm_const_double_inline_cost (rtx val)
 			      NULL_RTX, NULL_RTX, 0, 0));
 }
 
+/* Cost of loading a SImode constant.  */
+static inline int
+arm_const_inline_cost (enum rtx_code code, rtx val)
+{
+  return arm_gen_constant (code, SImode, NULL_RTX, INTVAL (val),
+                           NULL_RTX, NULL_RTX, 1, 0);
+}
+
 /* Return true if it is worthwhile to split a 64-bit constant into two
    32-bit operations.  This is the case if optimizing for size, or
    if we have load delay slots, or if one 32-bit part can be done with
@@ -16966,7 +17018,7 @@ arm_const_double_by_immediates (rtx val)
    If DO_PUSHES is false we do not actually push any of the fixups
    needed.  */
 static void
-note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
+note_invalid_constants (rtx_insn *insn, HOST_WIDE_INT address, int do_pushes)
 {
   int opno;
 
@@ -17043,7 +17095,7 @@ thumb1_reorg (void)
     {
       rtx dest, src;
       rtx pat, op0, set = NULL;
-      rtx prev, insn = BB_END (bb);
+      rtx_insn *prev, *insn = BB_END (bb);
       bool insn_clobbered = false;
 
       while (insn != BB_HEAD (bb) && !NONDEBUG_INSN_P (insn))
@@ -17126,7 +17178,7 @@ thumb2_reorg (void)
 	  && optimize_bb_for_speed_p (bb))
 	continue;
 
-      rtx insn;
+      rtx_insn *insn;
       Convert_Action action = SKIP;
       Convert_Action action_for_partial_flag_setting
 	= (current_tune->disparage_partial_flag_setting_t16_encodings
@@ -17320,7 +17372,7 @@ thumb2_reorg (void)
 static void
 arm_reorg (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   HOST_WIDE_INT address = 0;
   Mfix * fix;
 
@@ -17351,7 +17403,7 @@ arm_reorg (void)
 	push_minipool_barrier (insn, address);
       else if (INSN_P (insn))
 	{
-	  rtx table;
+	  rtx_jump_table_data *table;
 
 	  note_invalid_constants (insn, address, true);
 	  address += get_attr_length (insn);
@@ -17491,24 +17543,7 @@ arm_reorg (void)
 
 /* Routines to output assembly language.  */
 
-/* If the rtx is the correct value then return the string of the number.
-   In this way we can ensure that valid double constants are generated even
-   when cross compiling.  */
-const char *
-fp_immediate_constant (rtx x)
-{
-  REAL_VALUE_TYPE r;
-
-  if (!fp_consts_inited)
-    init_fp_table ();
-
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-
-  gcc_assert (REAL_VALUES_EQUAL (r, value_fp0));
-  return "0";
-}
-
-/* As for fp_immediate_constant, but value is passed directly, not in rtx.  */
+/* Return string representation of passed in real value.  */
 static const char *
 fp_const_from_val (REAL_VALUE_TYPE *r)
 {
@@ -17599,14 +17634,22 @@ arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
 /* Output the assembly for a store multiple.  */
 
 const char *
-vfp_output_fstmd (rtx * operands)
+vfp_output_vstmd (rtx * operands)
 {
   char pattern[100];
   int p;
   int base;
   int i;
+  rtx addr_reg = REG_P (XEXP (operands[0], 0))
+		   ? XEXP (operands[0], 0)
+		   : XEXP (XEXP (operands[0], 0), 0);
+  bool push_p =  REGNO (addr_reg) == SP_REGNUM;
 
-  strcpy (pattern, "fstmfdd%?\t%m0!, {%P1");
+  if (push_p)
+    strcpy (pattern, "vpush%?.64\t{%P1");
+  else
+    strcpy (pattern, "vstmdb%?.64\t%m0!, {%P1");
+
   p = strlen (pattern);
 
   gcc_assert (REG_P (operands[1]));
@@ -18424,19 +18467,19 @@ output_move_vfp (rtx *operands)
   switch (GET_CODE (addr))
     {
     case PRE_DEC:
-      templ = "f%smdb%c%%?\t%%0!, {%%%s1}%s";
+      templ = "v%smdb%%?.%s\t%%0!, {%%%s1}%s";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
       break;
 
     case POST_INC:
-      templ = "f%smia%c%%?\t%%0!, {%%%s1}%s";
+      templ = "v%smia%%?.%s\t%%0!, {%%%s1}%s";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
       break;
 
     default:
-      templ = "f%s%c%%?\t%%%s0, %%1%s";
+      templ = "v%sr%%?.%s\t%%%s0, %%1%s";
       ops[0] = reg;
       ops[1] = mem;
       break;
@@ -18444,7 +18487,7 @@ output_move_vfp (rtx *operands)
 
   sprintf (buff, templ,
 	   load ? "ld" : "st",
-	   dp ? 'd' : 's',
+	   dp ? "64" : "32",
 	   dp ? "P" : "",
 	   integer_p ? "\t%@ int" : "");
   output_asm_insn (buff, ops);
@@ -18551,6 +18594,20 @@ output_move_neon (rtx *operands)
       /* FIXME: Not currently enabled in neon_vector_mem_operand.  */
       gcc_unreachable ();
 
+    case REG:
+      /* We have to use vldm / vstm for too-large modes.  */
+      if (nregs > 1)
+	{
+	  if (nregs > 4)
+	    templ = "v%smia%%?\t%%m0, %%h1";
+	  else
+	    templ = "v%s1.64\t%%h1, %%A0";
+
+	  ops[0] = mem;
+	  ops[1] = reg;
+	  break;
+	}
+      /* Fall through.  */
     case LABEL_REF:
     case PLUS:
       {
@@ -18584,14 +18641,7 @@ output_move_neon (rtx *operands)
       }
 
     default:
-      /* We have to use vldm / vstm for too-large modes.  */
-      if (nregs > 4)
-	templ = "v%smia%%?\t%%m0, %%h1";
-      else
-	templ = "v%s1.64\t%%h1, %%A0";
-
-      ops[0] = mem;
-      ops[1] = reg;
+      gcc_unreachable ();
     }
 
   sprintf (buff, templ, load ? "ld" : "st");
@@ -18603,7 +18653,7 @@ output_move_neon (rtx *operands)
 /* Compute and return the length of neon_mov<mode>, where <mode> is
    one of VSTRUCT modes: EI, OI, CI or XI.  */
 int
-arm_attr_length_move_neon (rtx insn)
+arm_attr_length_move_neon (rtx_insn *insn)
 {
   rtx reg, mem, addr;
   int load;
@@ -18654,7 +18704,7 @@ arm_attr_length_move_neon (rtx insn)
    return zero.  */
 
 int
-arm_address_offset_is_imm (rtx insn)
+arm_address_offset_is_imm (rtx_insn *insn)
 {
   rtx mem, addr;
 
@@ -20781,30 +20831,47 @@ arm_get_frame_offsets (void)
 	{
 	  int reg = -1;
 
+	  /* Register r3 is caller-saved.  Normally it does not need to be
+	     saved on entry by the prologue.  However if we choose to save
+	     it for padding then we may confuse the compiler into thinking
+	     a prologue sequence is required when in fact it is not.  This
+	     will occur when shrink-wrapping if r3 is used as a scratch
+	     register and there are no other callee-saved writes.
+
+	     This situation can be avoided when other callee-saved registers
+	     are available and r3 is not mandatory if we choose a callee-saved
+	     register for padding.  */
+	  bool prefer_callee_reg_p = false;
+
 	  /* If it is safe to use r3, then do so.  This sometimes
 	     generates better code on Thumb-2 by avoiding the need to
 	     use 32-bit push/pop instructions.  */
           if (! any_sibcall_could_use_r3 ()
 	      && arm_size_return_regs () <= 12
 	      && (offsets->saved_regs_mask & (1 << 3)) == 0
-              && (TARGET_THUMB2
+	      && (TARGET_THUMB2
 		  || !(TARGET_LDRD && current_tune->prefer_ldrd_strd)))
 	    {
 	      reg = 3;
+	      if (!TARGET_THUMB2)
+		prefer_callee_reg_p = true;
 	    }
-	  else
-	    for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
-	      {
-		/* Avoid fixed registers; they may be changed at
-		   arbitrary times so it's unsafe to restore them
-		   during the epilogue.  */
-		if (!fixed_regs[i]
-		    && (offsets->saved_regs_mask & (1 << i)) == 0)
-		  {
-		    reg = i;
-		    break;
-		  }
-	      }
+	  if (reg == -1
+	      || prefer_callee_reg_p)
+	    {
+	      for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
+		{
+		  /* Avoid fixed registers; they may be changed at
+		     arbitrary times so it's unsafe to restore them
+		     during the epilogue.  */
+		  if (!fixed_regs[i]
+		      && (offsets->saved_regs_mask & (1 << i)) == 0)
+		    {
+		      reg = i;
+		      break;
+		    }
+		}
+	    }
 
 	  if (reg != -1)
 	    {
@@ -21304,7 +21371,7 @@ arm_expand_prologue (void)
     {
       /* This add can produce multiple insns for a large constant, so we
 	 need to get tricky.  */
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       amount = GEN_INT (offsets->saved_args + saved_regs
 			- offsets->outgoing_args);
@@ -22072,15 +22139,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  break;
 
 	case CONST_DOUBLE:
-          if (TARGET_NEON)
-            {
-              char fpstr[20];
-              real_to_decimal (fpstr, CONST_DOUBLE_REAL_VALUE (x),
-			       sizeof (fpstr), 0, 1);
-              fprintf (stream, "#%s", fpstr);
-            }
-          else
-	    fprintf (stream, "#%s", fp_immediate_constant (x));
+	  {
+            char fpstr[20];
+            real_to_decimal (fpstr, CONST_DOUBLE_REAL_VALUE (x),
+			      sizeof (fpstr), 0, 1);
+            fprintf (stream, "#%s", fpstr);
+	  }
 	  break;
 
 	default:
@@ -22548,9 +22612,9 @@ get_arm_condition_code (rtx comparison)
 /* Tell arm_asm_output_opcode to output IT blocks for conditionally executed
    instructions.  */
 void
-thumb2_final_prescan_insn (rtx insn)
+thumb2_final_prescan_insn (rtx_insn *insn)
 {
-  rtx first_insn = insn;
+  rtx_insn *first_insn = insn;
   rtx body = PATTERN (insn);
   rtx predicate;
   enum arm_cond_code code;
@@ -22632,7 +22696,7 @@ thumb2_final_prescan_insn (rtx insn)
 }
 
 void
-arm_final_prescan_insn (rtx insn)
+arm_final_prescan_insn (rtx_insn *insn)
 {
   /* BODY will hold the body of INSN.  */
   rtx body = PATTERN (insn);
@@ -22647,7 +22711,7 @@ arm_final_prescan_insn (rtx insn)
 
   /* START_INSN will hold the insn from where we start looking.  This is the
      first insn after the following code_label if REVERSE is true.  */
-  rtx start_insn = insn;
+  rtx_insn *start_insn = insn;
 
   /* If in state 4, check if the target branch is reached, in order to
      change back to state 0.  */
@@ -22719,7 +22783,8 @@ arm_final_prescan_insn (rtx insn)
       int fail = FALSE, succeed = FALSE;
       /* Flag which part of the IF_THEN_ELSE is the LABEL_REF.  */
       int then_not_else = TRUE;
-      rtx this_insn = start_insn, label = 0;
+      rtx_insn *this_insn = start_insn;
+      rtx label = 0;
 
       /* Register the insn jumped to.  */
       if (reverse)
@@ -22948,6 +23013,9 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	    || (TARGET_HARD_FLOAT && TARGET_VFP
 		&& regno == VFPCC_REGNUM));
 
+  if (regno == CC_REGNUM && GET_MODE_CLASS (mode) != MODE_CC)
+    return false;
+
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
        registers 0 - 6, so that there is always a second low
@@ -23044,6 +23112,9 @@ arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 enum reg_class
 arm_regno_class (int regno)
 {
+  if (regno == PC_REGNUM)
+    return NO_REGS;
+
   if (TARGET_THUMB1)
     {
       if (regno == STACK_POINTER_REGNUM)
@@ -23090,7 +23161,7 @@ arm_regno_class (int regno)
 int
 arm_debugger_arg_offset (int value, rtx addr)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* We are only interested if dbxout_parms() failed to compute the offset.  */
   if (value != 0)
@@ -23222,6 +23293,7 @@ typedef enum {
   NEON_SETLANE,
   NEON_CREATE,
   NEON_RINT,
+  NEON_COPYSIGNF,
   NEON_DUP,
   NEON_DUPLANE,
   NEON_COMBINE,
@@ -24216,6 +24288,22 @@ arm_init_neon_builtins (void)
 	    ftype = build_function_type_list (eltype, eltype, NULL);
 	    break;
 	}
+	case NEON_COPYSIGNF:
+	  {
+	    tree eltype = NULL_TREE;
+	    switch (insn_data[d->code].operand[1].mode)
+	      {
+	      case V2SFmode:
+		eltype = V2SF_type_node;
+		break;
+	      case V4SFmode:
+		eltype = V4SF_type_node;
+		break;
+	      default: gcc_unreachable ();
+	      }
+	    ftype = build_function_type_list (eltype, eltype, NULL);
+	    break;
+	  }
 	default:
 	  gcc_unreachable ();
 	}
@@ -24367,8 +24455,8 @@ static const struct builtin_description bdesc_2arg[] =
   {0, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
    UNKNOWN, 0},
 
-  FP_BUILTIN (set_fpscr, GET_FPSCR)
-  FP_BUILTIN (get_fpscr, SET_FPSCR)
+  FP_BUILTIN (get_fpscr, GET_FPSCR)
+  FP_BUILTIN (set_fpscr, SET_FPSCR)
 #undef FP_BUILTIN
 
 #define CRC32_BUILTIN(L, U) \
@@ -25419,6 +25507,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
+    case NEON_COPYSIGNF:
     case NEON_COMBINE:
     case NEON_VTBL:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
@@ -26124,11 +26213,12 @@ number_of_first_bit_set (unsigned mask)
    to be saved; REAL_REGS is the set of registers to be described as
    saved.  If REAL_REGS is 0, only describe the stack adjustment.  */
 
-static rtx
+static rtx_insn *
 thumb1_emit_multi_reg_push (unsigned long mask, unsigned long real_regs)
 {
   unsigned long regno;
-  rtx par[10], tmp, reg, insn;
+  rtx par[10], tmp, reg;
+  rtx_insn *insn;
   int i, j;
 
   /* Build the parallel of the registers actually being stored.  */
@@ -26524,7 +26614,7 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
    For Thumb-1, we track the status of the condition codes; this
    information is used in the cbranchsi4_insn pattern.  */
 void
-thumb1_final_prescan_insn (rtx insn)
+thumb1_final_prescan_insn (rtx_insn *insn)
 {
   if (flag_print_asm_name)
     asm_fprintf (asm_out_file, "%@ 0x%04x\n",
@@ -26593,7 +26683,7 @@ thumb_shiftable_const (unsigned HOST_WIDE_INT val)
 static int
 thumb_far_jump_used_p (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   bool far_jump = false;
   unsigned int func_size = 0;
 
@@ -27042,7 +27132,7 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 void
 thumb1_expand_prologue (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   HOST_WIDE_INT amount;
   arm_stack_offsets *offsets;
@@ -27494,7 +27584,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
       int saved_size = arm_get_vfp_saved_size ();
       if (saved_size > 0)
         {
-	  rtx insn;
+	  rtx_insn *insn;
           floats_from_frame += saved_size;
           insn = emit_insn (gen_addsi3 (ip_rtx,
 					hard_frame_pointer_rtx,
@@ -27533,7 +27623,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
     {
       /* The frame pointer is guaranteed to be non-double-word aligned, as
          it is set to double-word-aligned old_stack_pointer - 4.  */
-      rtx insn;
+      rtx_insn *insn;
       int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
 
       for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
@@ -27573,7 +27663,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
   num_regs = bit_count (saved_regs_mask);
   if ((offsets->outgoing_args != (1 + num_regs)) || cfun->calls_alloca)
     {
-      rtx insn;
+      rtx_insn *insn;
       emit_insn (gen_blockage ());
       /* Unwind the stack to just below the saved registers.  */
       insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
@@ -27590,7 +27680,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
     {
       /* Interrupt handlers will have pushed the
          IP onto the stack, so restore it now.  */
-      rtx insn;
+      rtx_insn *insn;
       rtx addr = gen_rtx_MEM (SImode,
                               gen_rtx_POST_INC (SImode,
                               stack_pointer_rtx));
@@ -27659,7 +27749,7 @@ arm_expand_epilogue (bool really_return)
 
   if (frame_pointer_needed)
     {
-      rtx insn;
+      rtx_insn *insn;
       /* Restore stack pointer if necessary.  */
       if (TARGET_ARM)
         {
@@ -27716,7 +27806,7 @@ arm_expand_epilogue (bool really_return)
       amount = offsets->outgoing_args - offsets->saved_regs;
       if (amount)
         {
-	  rtx tmp;
+	  rtx_insn *tmp;
           /* Force out any pending memory operations that reference stacked data
              before stack de-allocation occurs.  */
           emit_insn (gen_blockage ());
@@ -27768,7 +27858,7 @@ arm_expand_epilogue (bool really_return)
     for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
       if (df_regs_ever_live_p (i) && !call_used_regs[i])
         {
-          rtx insn;
+          rtx_insn *insn;
           rtx addr = gen_rtx_MEM (V2SImode,
                                   gen_rtx_POST_INC (SImode,
                                                     stack_pointer_rtx));
@@ -27857,9 +27947,10 @@ arm_expand_epilogue (bool really_return)
     {
       int i, j;
       rtx dwarf = NULL_RTX;
-      rtx tmp = emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   GEN_INT (crtl->args.pretend_args_size)));
+      rtx_insn *tmp =
+	emit_insn (gen_addsi3 (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       GEN_INT (crtl->args.pretend_args_size)));
 
       RTX_FRAME_RELATED_P (tmp) = 1;
 
@@ -29323,7 +29414,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 /* Emit unwind directives for the given insn.  */
 
 static void
-arm_unwind_emit (FILE * asm_out_file, rtx insn)
+arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -29709,7 +29800,7 @@ arm_output_iwmmxt_tinsr (rtx *operands)
 const char *
 thumb1_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[0]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[0])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -29732,7 +29823,7 @@ thumb1_output_casesi (rtx *operands)
 const char *
 thumb2_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -29916,6 +30007,7 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 {
   enum machine_mode in_mode, out_mode;
   int in_n, out_n;
+  bool out_unsigned_p = TYPE_UNSIGNED (type_out);
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
@@ -29961,29 +30053,66 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
             return ARM_FIND_VRINT_VARIANT (vrintz);
           case BUILT_IN_ROUNDF:
             return ARM_FIND_VRINT_VARIANT (vrinta);
+#undef ARM_CHECK_BUILTIN_MODE_1
+#define ARM_CHECK_BUILTIN_MODE_1(C) \
+  (out_mode == SImode && out_n == C \
+   && in_mode == SFmode && in_n == C)
+
+#define ARM_FIND_VCVT_VARIANT(N) \
+  (ARM_CHECK_BUILTIN_MODE (2) \
+   ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v2sfv2si, false) \
+   : (ARM_CHECK_BUILTIN_MODE (4) \
+     ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v4sfv4si, false) \
+     : NULL_TREE))
+
+#define ARM_FIND_VCVTU_VARIANT(N) \
+  (ARM_CHECK_BUILTIN_MODE (2) \
+   ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##uv2sfv2si, false) \
+   : (ARM_CHECK_BUILTIN_MODE (4) \
+     ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##uv4sfv4si, false) \
+     : NULL_TREE))
+          case BUILT_IN_LROUNDF:
+            return out_unsigned_p
+                     ? ARM_FIND_VCVTU_VARIANT (vcvta)
+                     : ARM_FIND_VCVT_VARIANT (vcvta);
+          case BUILT_IN_LCEILF:
+            return out_unsigned_p
+                     ? ARM_FIND_VCVTU_VARIANT (vcvtp)
+                     : ARM_FIND_VCVT_VARIANT (vcvtp);
+          case BUILT_IN_LFLOORF:
+            return out_unsigned_p
+                     ? ARM_FIND_VCVTU_VARIANT (vcvtm)
+                     : ARM_FIND_VCVT_VARIANT (vcvtm);
 #undef ARM_CHECK_BUILTIN_MODE
 #define ARM_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Imode && out_n == C \
-   && in_mode == N##Imode && in_n == C)
+  (out_mode == N##mode && out_n == C \
+   && in_mode == N##mode && in_n == C)
           case BUILT_IN_BSWAP16:
-            if (ARM_CHECK_BUILTIN_MODE (4, H))
+            if (ARM_CHECK_BUILTIN_MODE (4, HI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4hi, false);
-            else if (ARM_CHECK_BUILTIN_MODE (8, H))
+            else if (ARM_CHECK_BUILTIN_MODE (8, HI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv8hi, false);
             else
               return NULL_TREE;
           case BUILT_IN_BSWAP32:
-            if (ARM_CHECK_BUILTIN_MODE (2, S))
+            if (ARM_CHECK_BUILTIN_MODE (2, SI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2si, false);
-            else if (ARM_CHECK_BUILTIN_MODE (4, S))
+            else if (ARM_CHECK_BUILTIN_MODE (4, SI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4si, false);
             else
               return NULL_TREE;
           case BUILT_IN_BSWAP64:
-            if (ARM_CHECK_BUILTIN_MODE (2, D))
+            if (ARM_CHECK_BUILTIN_MODE (2, DI))
               return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2di, false);
             else
               return NULL_TREE;
+	  case BUILT_IN_COPYSIGNF:
+	    if (ARM_CHECK_BUILTIN_MODE (2, SF))
+              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv2sf, false);
+	    else if (ARM_CHECK_BUILTIN_MODE (4, SF))
+              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv4sf, false);
+	    else
+	      return NULL_TREE;
 
           default:
             return NULL_TREE;
@@ -29991,8 +30120,11 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
     }
   return NULL_TREE;
 }
+#undef ARM_FIND_VCVT_VARIANT
+#undef ARM_FIND_VCVTU_VARIANT
 #undef ARM_CHECK_BUILTIN_MODE
 #undef ARM_FIND_VRINT_VARIANT
+
 
 /* The AAPCS sets the maximum alignment of a vector to 64 bits.  */
 static HOST_WIDE_INT
@@ -30415,7 +30547,8 @@ arm_split_compare_and_swap (rtx operands[])
   enum machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
-  rtx label1, label2, x, cond;
+  rtx_code_label *label1, *label2;
+  rtx x, cond;
 
   rval = operands[0];
   mem = operands[1];
@@ -30441,7 +30574,7 @@ arm_split_compare_and_swap (rtx operands[])
   if (!(use_acquire || use_release))
     arm_pre_atomic_barrier (mod_s);
 
-  label1 = NULL_RTX;
+  label1 = NULL;
   if (!is_weak)
     {
       label1 = gen_label_rtx ();
@@ -30491,7 +30624,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   enum memmodel model = (enum memmodel) INTVAL (model_rtx);
   enum machine_mode mode = GET_MODE (mem);
   enum machine_mode wmode = (mode == DImode ? DImode : SImode);
-  rtx label, x;
+  rtx_code_label *label;
+  rtx x;
 
   bool use_acquire = TARGET_HAVE_LDACQ
                      && !(model == MEMMODEL_RELAXED
@@ -31417,7 +31551,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 			  ORR (SHIFT (ASHIFT, in_up, scratch1), out_down)));
 	  if (code == ASHIFTRT)
 	    {
-	      rtx done_label = gen_label_rtx ();
+	      rtx_code_label *done_label = gen_label_rtx ();
 	      emit_jump_insn (BRANCH (LT, done_label));
 	      emit_insn (SET (out_down, ORR (SHIFT (ASHIFTRT, in_up, scratch2),
 					     out_down)));
@@ -31436,7 +31570,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 
 	  if (code == ASHIFTRT)
 	    {
-	      rtx done_label = gen_label_rtx ();
+	      rtx_code_label *done_label = gen_label_rtx ();
 	      emit_jump_insn (BRANCH (LT, done_label));
 	      emit_insn (SET (scratch2, SHIFT (ASHIFTRT, in_up, scratch2)));
 	      emit_insn (SET (out_down, ORR (out_down, scratch2)));
@@ -31514,6 +31648,519 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 
 }
 
+/* Maximum number of instructions to set block of memory.  */
+static int
+arm_block_set_max_insns (void)
+{
+  if (optimize_function_for_size_p (cfun))
+    return 4;
+  else
+    return current_tune->max_insns_inline_memset;
+}
+
+/* Return TRUE if it's profitable to set block of memory for
+   non-vectorized case.  VAL is the value to set the memory
+   with.  LENGTH is the number of bytes to set.  ALIGN is the
+   alignment of the destination memory in bytes.  UNALIGNED_P
+   is TRUE if we can only set the memory with instructions
+   meeting alignment requirements.  USE_STRD_P is TRUE if we
+   can use strd to set the memory.  */
+static bool
+arm_block_set_non_vect_profit_p (rtx val,
+				 unsigned HOST_WIDE_INT length,
+				 unsigned HOST_WIDE_INT align,
+				 bool unaligned_p, bool use_strd_p)
+{
+  int num = 0;
+  /* For leftovers in bytes of 0-7, we can set the memory block using
+     strb/strh/str with minimum instruction number.  */
+  const int leftover[8] = {0, 1, 1, 2, 1, 2, 2, 3};
+
+  if (unaligned_p)
+    {
+      num = arm_const_inline_cost (SET, val);
+      num += length / align + length % align;
+    }
+  else if (use_strd_p)
+    {
+      num = arm_const_double_inline_cost (val);
+      num += (length >> 3) + leftover[length & 7];
+    }
+  else
+    {
+      num = arm_const_inline_cost (SET, val);
+      num += (length >> 2) + leftover[length & 3];
+    }
+
+  /* We may be able to combine last pair STRH/STRB into a single STR
+     by shifting one byte back.  */
+  if (unaligned_access && length > 3 && (length & 3) == 3)
+    num--;
+
+  return (num <= arm_block_set_max_insns ());
+}
+
+/* Return TRUE if it's profitable to set block of memory for
+   vectorized case.  LENGTH is the number of bytes to set.
+   ALIGN is the alignment of destination memory in bytes.
+   MODE is the vector mode used to set the memory.  */
+static bool
+arm_block_set_vect_profit_p (unsigned HOST_WIDE_INT length,
+			     unsigned HOST_WIDE_INT align,
+			     enum machine_mode mode)
+{
+  int num;
+  bool unaligned_p = ((align & 3) != 0);
+  unsigned int nelt = GET_MODE_NUNITS (mode);
+
+  /* Instruction loading constant value.  */
+  num = 1;
+  /* Instructions storing the memory.  */
+  num += (length + nelt - 1) / nelt;
+  /* Instructions adjusting the address expression.  Only need to
+     adjust address expression if it's 4 bytes aligned and bytes
+     leftover can only be stored by mis-aligned store instruction.  */
+  if (!unaligned_p && (length & 3) != 0)
+    num++;
+
+  /* Store the first 16 bytes using vst1:v16qi for the aligned case.  */
+  if (!unaligned_p && mode == V16QImode)
+    num--;
+
+  return (num <= arm_block_set_max_insns ());
+}
+
+/* Set a block of memory using vectorization instructions for the
+   unaligned case.  We fill the first LENGTH bytes of the memory
+   area starting from DSTBASE with byte constant VALUE.  ALIGN is
+   the alignment requirement of memory.  Return TRUE if succeeded.  */
+static bool
+arm_block_set_unaligned_vect (rtx dstbase,
+			      unsigned HOST_WIDE_INT length,
+			      unsigned HOST_WIDE_INT value,
+			      unsigned HOST_WIDE_INT align)
+{
+  unsigned int i, j, nelt_v16, nelt_v8, nelt_mode;
+  rtx dst, mem;
+  rtx val_elt, val_vec, reg;
+  rtx rval[MAX_VECT_LEN];
+  rtx (*gen_func) (rtx, rtx);
+  enum machine_mode mode;
+  unsigned HOST_WIDE_INT v = value;
+
+  gcc_assert ((align & 0x3) != 0);
+  nelt_v8 = GET_MODE_NUNITS (V8QImode);
+  nelt_v16 = GET_MODE_NUNITS (V16QImode);
+  if (length >= nelt_v16)
+    {
+      mode = V16QImode;
+      gen_func = gen_movmisalignv16qi;
+    }
+  else
+    {
+      mode = V8QImode;
+      gen_func = gen_movmisalignv8qi;
+    }
+  nelt_mode = GET_MODE_NUNITS (mode);
+  gcc_assert (length >= nelt_mode);
+  /* Skip if it isn't profitable.  */
+  if (!arm_block_set_vect_profit_p (length, align, mode))
+    return false;
+
+  dst = copy_addr_to_reg (XEXP (dstbase, 0));
+  mem = adjust_automodify_address (dstbase, mode, dst, 0);
+
+  v = sext_hwi (v, BITS_PER_WORD);
+  val_elt = GEN_INT (v);
+  for (j = 0; j < nelt_mode; j++)
+    rval[j] = val_elt;
+
+  reg = gen_reg_rtx (mode);
+  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  /* Emit instruction loading the constant value.  */
+  emit_move_insn (reg, val_vec);
+
+  /* Handle nelt_mode bytes in a vector.  */
+  for (i = 0; (i + nelt_mode <= length); i += nelt_mode)
+    {
+      emit_insn ((*gen_func) (mem, reg));
+      if (i + 2 * nelt_mode <= length)
+	emit_insn (gen_add2_insn (dst, GEN_INT (nelt_mode)));
+    }
+
+  /* If there are not less than nelt_v8 bytes leftover, we must be in
+     V16QI mode.  */
+  gcc_assert ((i + nelt_v8) > length || mode == V16QImode);
+
+  /* Handle (8, 16) bytes leftover.  */
+  if (i + nelt_v8 < length)
+    {
+      emit_insn (gen_add2_insn (dst, GEN_INT (length - i)));
+      /* We are shifting bytes back, set the alignment accordingly.  */
+      if ((length & 1) != 0 && align >= 2)
+	set_mem_align (mem, BITS_PER_UNIT);
+
+      emit_insn (gen_movmisalignv16qi (mem, reg));
+    }
+  /* Handle (0, 8] bytes leftover.  */
+  else if (i < length && i + nelt_v8 >= length)
+    {
+      if (mode == V16QImode)
+	{
+	  reg = gen_lowpart (V8QImode, reg);
+	  mem = adjust_automodify_address (dstbase, V8QImode, dst, 0);
+	}
+      emit_insn (gen_add2_insn (dst, GEN_INT ((length - i)
+					      + (nelt_mode - nelt_v8))));
+      /* We are shifting bytes back, set the alignment accordingly.  */
+      if ((length & 1) != 0 && align >= 2)
+	set_mem_align (mem, BITS_PER_UNIT);
+
+      emit_insn (gen_movmisalignv8qi (mem, reg));
+    }
+
+  return true;
+}
+
+/* Set a block of memory using vectorization instructions for the
+   aligned case.  We fill the first LENGTH bytes of the memory area
+   starting from DSTBASE with byte constant VALUE.  ALIGN is the
+   alignment requirement of memory.  Return TRUE if succeeded.  */
+static bool
+arm_block_set_aligned_vect (rtx dstbase,
+			    unsigned HOST_WIDE_INT length,
+			    unsigned HOST_WIDE_INT value,
+			    unsigned HOST_WIDE_INT align)
+{
+  unsigned int i, j, nelt_v8, nelt_v16, nelt_mode;
+  rtx dst, addr, mem;
+  rtx val_elt, val_vec, reg;
+  rtx rval[MAX_VECT_LEN];
+  enum machine_mode mode;
+  unsigned HOST_WIDE_INT v = value;
+
+  gcc_assert ((align & 0x3) == 0);
+  nelt_v8 = GET_MODE_NUNITS (V8QImode);
+  nelt_v16 = GET_MODE_NUNITS (V16QImode);
+  if (length >= nelt_v16 && unaligned_access && !BYTES_BIG_ENDIAN)
+    mode = V16QImode;
+  else
+    mode = V8QImode;
+
+  nelt_mode = GET_MODE_NUNITS (mode);
+  gcc_assert (length >= nelt_mode);
+  /* Skip if it isn't profitable.  */
+  if (!arm_block_set_vect_profit_p (length, align, mode))
+    return false;
+
+  dst = copy_addr_to_reg (XEXP (dstbase, 0));
+
+  v = sext_hwi (v, BITS_PER_WORD);
+  val_elt = GEN_INT (v);
+  for (j = 0; j < nelt_mode; j++)
+    rval[j] = val_elt;
+
+  reg = gen_reg_rtx (mode);
+  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  /* Emit instruction loading the constant value.  */
+  emit_move_insn (reg, val_vec);
+
+  i = 0;
+  /* Handle first 16 bytes specially using vst1:v16qi instruction.  */
+  if (mode == V16QImode)
+    {
+      mem = adjust_automodify_address (dstbase, mode, dst, 0);
+      emit_insn (gen_movmisalignv16qi (mem, reg));
+      i += nelt_mode;
+      /* Handle (8, 16) bytes leftover using vst1:v16qi again.  */
+      if (i + nelt_v8 < length && i + nelt_v16 > length)
+	{
+	  emit_insn (gen_add2_insn (dst, GEN_INT (length - nelt_mode)));
+	  mem = adjust_automodify_address (dstbase, mode, dst, 0);
+	  /* We are shifting bytes back, set the alignment accordingly.  */
+	  if ((length & 0x3) == 0)
+	    set_mem_align (mem, BITS_PER_UNIT * 4);
+	  else if ((length & 0x1) == 0)
+	    set_mem_align (mem, BITS_PER_UNIT * 2);
+	  else
+	    set_mem_align (mem, BITS_PER_UNIT);
+
+	  emit_insn (gen_movmisalignv16qi (mem, reg));
+	  return true;
+	}
+      /* Fall through for bytes leftover.  */
+      mode = V8QImode;
+      nelt_mode = GET_MODE_NUNITS (mode);
+      reg = gen_lowpart (V8QImode, reg);
+    }
+
+  /* Handle 8 bytes in a vector.  */
+  for (; (i + nelt_mode <= length); i += nelt_mode)
+    {
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, mode, addr, i);
+      emit_move_insn (mem, reg);
+    }
+
+  /* Handle single word leftover by shifting 4 bytes back.  We can
+     use aligned access for this case.  */
+  if (i + UNITS_PER_WORD == length)
+    {
+      addr = plus_constant (Pmode, dst, i - UNITS_PER_WORD);
+      mem = adjust_automodify_address (dstbase, mode,
+				       addr, i - UNITS_PER_WORD);
+      /* We are shifting 4 bytes back, set the alignment accordingly.  */
+      if (align > UNITS_PER_WORD)
+	set_mem_align (mem, BITS_PER_UNIT * UNITS_PER_WORD);
+
+      emit_move_insn (mem, reg);
+    }
+  /* Handle (0, 4), (4, 8) bytes leftover by shifting bytes back.
+     We have to use unaligned access for this case.  */
+  else if (i < length)
+    {
+      emit_insn (gen_add2_insn (dst, GEN_INT (length - nelt_mode)));
+      mem = adjust_automodify_address (dstbase, mode, dst, 0);
+      /* We are shifting bytes back, set the alignment accordingly.  */
+      if ((length & 1) == 0)
+	set_mem_align (mem, BITS_PER_UNIT * 2);
+      else
+	set_mem_align (mem, BITS_PER_UNIT);
+
+      emit_insn (gen_movmisalignv8qi (mem, reg));
+    }
+
+  return true;
+}
+
+/* Set a block of memory using plain strh/strb instructions, only
+   using instructions allowed by ALIGN on processor.  We fill the
+   first LENGTH bytes of the memory area starting from DSTBASE
+   with byte constant VALUE.  ALIGN is the alignment requirement
+   of memory.  */
+static bool
+arm_block_set_unaligned_non_vect (rtx dstbase,
+				  unsigned HOST_WIDE_INT length,
+				  unsigned HOST_WIDE_INT value,
+				  unsigned HOST_WIDE_INT align)
+{
+  unsigned int i;
+  rtx dst, addr, mem;
+  rtx val_exp, val_reg, reg;
+  enum machine_mode mode;
+  HOST_WIDE_INT v = value;
+
+  gcc_assert (align == 1 || align == 2);
+
+  if (align == 2)
+    v |= (value << BITS_PER_UNIT);
+
+  v = sext_hwi (v, BITS_PER_WORD);
+  val_exp = GEN_INT (v);
+  /* Skip if it isn't profitable.  */
+  if (!arm_block_set_non_vect_profit_p (val_exp, length,
+					align, true, false))
+    return false;
+
+  dst = copy_addr_to_reg (XEXP (dstbase, 0));
+  mode = (align == 2 ? HImode : QImode);
+  val_reg = force_reg (SImode, val_exp);
+  reg = gen_lowpart (mode, val_reg);
+
+  for (i = 0; (i + GET_MODE_SIZE (mode) <= length); i += GET_MODE_SIZE (mode))
+    {
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, mode, addr, i);
+      emit_move_insn (mem, reg);
+    }
+
+  /* Handle single byte leftover.  */
+  if (i + 1 == length)
+    {
+      reg = gen_lowpart (QImode, val_reg);
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, QImode, addr, i);
+      emit_move_insn (mem, reg);
+      i++;
+    }
+
+  gcc_assert (i == length);
+  return true;
+}
+
+/* Set a block of memory using plain strd/str/strh/strb instructions,
+   to permit unaligned copies on processors which support unaligned
+   semantics for those instructions.  We fill the first LENGTH bytes
+   of the memory area starting from DSTBASE with byte constant VALUE.
+   ALIGN is the alignment requirement of memory.  */
+static bool
+arm_block_set_aligned_non_vect (rtx dstbase,
+				unsigned HOST_WIDE_INT length,
+				unsigned HOST_WIDE_INT value,
+				unsigned HOST_WIDE_INT align)
+{
+  unsigned int i;
+  rtx dst, addr, mem;
+  rtx val_exp, val_reg, reg;
+  unsigned HOST_WIDE_INT v;
+  bool use_strd_p;
+
+  use_strd_p = (length >= 2 * UNITS_PER_WORD && (align & 3) == 0
+		&& TARGET_LDRD && current_tune->prefer_ldrd_strd);
+
+  v = (value | (value << 8) | (value << 16) | (value << 24));
+  if (length < UNITS_PER_WORD)
+    v &= (0xFFFFFFFF >> (UNITS_PER_WORD - length) * BITS_PER_UNIT);
+
+  if (use_strd_p)
+    v |= (v << BITS_PER_WORD);
+  else
+    v = sext_hwi (v, BITS_PER_WORD);
+
+  val_exp = GEN_INT (v);
+  /* Skip if it isn't profitable.  */
+  if (!arm_block_set_non_vect_profit_p (val_exp, length,
+					align, false, use_strd_p))
+    {
+      if (!use_strd_p)
+	return false;
+
+      /* Try without strd.  */
+      v = (v >> BITS_PER_WORD);
+      v = sext_hwi (v, BITS_PER_WORD);
+      val_exp = GEN_INT (v);
+      use_strd_p = false;
+      if (!arm_block_set_non_vect_profit_p (val_exp, length,
+					    align, false, use_strd_p))
+	return false;
+    }
+
+  i = 0;
+  dst = copy_addr_to_reg (XEXP (dstbase, 0));
+  /* Handle double words using strd if possible.  */
+  if (use_strd_p)
+    {
+      val_reg = force_reg (DImode, val_exp);
+      reg = val_reg;
+      for (; (i + 8 <= length); i += 8)
+	{
+	  addr = plus_constant (Pmode, dst, i);
+	  mem = adjust_automodify_address (dstbase, DImode, addr, i);
+	  emit_move_insn (mem, reg);
+	}
+    }
+  else
+    val_reg = force_reg (SImode, val_exp);
+
+  /* Handle words.  */
+  reg = (use_strd_p ? gen_lowpart (SImode, val_reg) : val_reg);
+  for (; (i + 4 <= length); i += 4)
+    {
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, SImode, addr, i);
+      if ((align & 3) == 0)
+	emit_move_insn (mem, reg);
+      else
+	emit_insn (gen_unaligned_storesi (mem, reg));
+    }
+
+  /* Merge last pair of STRH and STRB into a STR if possible.  */
+  if (unaligned_access && i > 0 && (i + 3) == length)
+    {
+      addr = plus_constant (Pmode, dst, i - 1);
+      mem = adjust_automodify_address (dstbase, SImode, addr, i - 1);
+      /* We are shifting one byte back, set the alignment accordingly.  */
+      if ((align & 1) == 0)
+	set_mem_align (mem, BITS_PER_UNIT);
+
+      /* Most likely this is an unaligned access, and we can't tell at
+	 compilation time.  */
+      emit_insn (gen_unaligned_storesi (mem, reg));
+      return true;
+    }
+
+  /* Handle half word leftover.  */
+  if (i + 2 <= length)
+    {
+      reg = gen_lowpart (HImode, val_reg);
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, HImode, addr, i);
+      if ((align & 1) == 0)
+	emit_move_insn (mem, reg);
+      else
+	emit_insn (gen_unaligned_storehi (mem, reg));
+
+      i += 2;
+    }
+
+  /* Handle single byte leftover.  */
+  if (i + 1 == length)
+    {
+      reg = gen_lowpart (QImode, val_reg);
+      addr = plus_constant (Pmode, dst, i);
+      mem = adjust_automodify_address (dstbase, QImode, addr, i);
+      emit_move_insn (mem, reg);
+    }
+
+  return true;
+}
+
+/* Set a block of memory using vectorization instructions for both
+   aligned and unaligned cases.  We fill the first LENGTH bytes of
+   the memory area starting from DSTBASE with byte constant VALUE.
+   ALIGN is the alignment requirement of memory.  */
+static bool
+arm_block_set_vect (rtx dstbase,
+		    unsigned HOST_WIDE_INT length,
+		    unsigned HOST_WIDE_INT value,
+		    unsigned HOST_WIDE_INT align)
+{
+  /* Check whether we need to use unaligned store instruction.  */
+  if (((align & 3) != 0 || (length & 3) != 0)
+      /* Check whether unaligned store instruction is available.  */
+      && (!unaligned_access || BYTES_BIG_ENDIAN))
+    return false;
+
+  if ((align & 3) == 0)
+    return arm_block_set_aligned_vect (dstbase, length, value, align);
+  else
+    return arm_block_set_unaligned_vect (dstbase, length, value, align);
+}
+
+/* Expand string store operation.  Firstly we try to do that by using
+   vectorization instructions, then try with ARM unaligned access and
+   double-word store if profitable.  OPERANDS[0] is the destination,
+   OPERANDS[1] is the number of bytes, operands[2] is the value to
+   initialize the memory, OPERANDS[3] is the known alignment of the
+   destination.  */
+bool
+arm_gen_setmem (rtx *operands)
+{
+  rtx dstbase = operands[0];
+  unsigned HOST_WIDE_INT length;
+  unsigned HOST_WIDE_INT value;
+  unsigned HOST_WIDE_INT align;
+
+  if (!CONST_INT_P (operands[2]) || !CONST_INT_P (operands[1]))
+    return false;
+
+  length = UINTVAL (operands[1]);
+  if (length > 64)
+    return false;
+
+  value = (UINTVAL (operands[2]) & 0xFF);
+  align = UINTVAL (operands[3]);
+  if (TARGET_NEON && length >= 8
+      && current_tune->string_ops_prefer_neon
+      && arm_block_set_vect (dstbase, length, value, align))
+    return true;
+
+  if (!unaligned_access && (align & 3) != 0)
+    return arm_block_set_unaligned_non_vect (dstbase, length, value, align);
+
+  return arm_block_set_aligned_non_vect (dstbase, length, value, align);
+}
+
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
 static unsigned HOST_WIDE_INT
@@ -31583,7 +32230,7 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree update_call, atomic_feraiseexcept, hold_fnclex;
 
   if (!TARGET_VFP || !TARGET_HARD_FLOAT)
-    return default_atomic_assign_expand_fenv (hold, clear, update);
+    return;
 
   /* Generate the equivalent of :
        unsigned int fenv_var;

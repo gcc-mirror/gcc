@@ -121,7 +121,7 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
 
       context->cfa -= STACK_BIAS;
 
-      for (i = 0; i < DWARF_FRAME_REGISTERS + 1; ++i)
+      for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__ + 1; ++i)
 	if (fs->regs.reg[i].how == REG_SAVED_OFFSET)
 	  _Unwind_SetGRPtr (context, i,
 			    _Unwind_GetGRPtr (context, i) - STACK_BIAS);

@@ -138,18 +138,20 @@ enum rid
   RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
   RID_HAS_TRIVIAL_DESTRUCTOR,  RID_HAS_VIRTUAL_DESTRUCTOR,
   RID_IS_ABSTRACT,             RID_IS_BASE_OF,
-  RID_IS_CLASS,                RID_IS_CONVERTIBLE_TO,
+  RID_IS_CLASS,
   RID_IS_EMPTY,                RID_IS_ENUM,
   RID_IS_FINAL,                RID_IS_LITERAL_TYPE,
   RID_IS_POD,                  RID_IS_POLYMORPHIC,
   RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
+  RID_IS_TRIVIALLY_ASSIGNABLE, RID_IS_TRIVIALLY_CONSTRUCTIBLE,
+  RID_IS_TRIVIALLY_COPYABLE,
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
   /* Cilk Plus keywords.  */
-  RID_CILK_SPAWN, RID_CILK_SYNC,
+  RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
   
   /* Objective-C ("AT" reserved words - they are only keywords when
      they follow '@')  */
@@ -326,9 +328,6 @@ struct c_common_resword
 };
 
 /* Extra cpp_ttype values for C++.  */
-
-/* A token type for keywords, as opposed to ordinary identifiers.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
 
 /* A token type for template-ids.  If a template-id is processed while
    parsing tentatively, it is replaced with a CPP_TEMPLATE_ID token;
@@ -640,8 +639,8 @@ enum cxx_dialect {
   /* C++11  */
   cxx0x,
   cxx11 = cxx0x,
-  /* C++1y (C++14?) */
-  cxx1y,
+  /* C++14 */
+  cxx14,
   /* C++1z (C++17?) */
   cxx1z
 };
@@ -762,7 +761,6 @@ extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_save_expr (tree);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
-extern unsigned int min_align_of_type (tree);
 extern tree c_sizeof_or_alignof_type (location_t, tree, bool, bool, int);
 extern tree c_alignof_expr (location_t, tree);
 /* Print an error message for invalid operands to arith operation CODE.
@@ -781,8 +779,7 @@ extern void overflow_warning (location_t, tree);
 extern bool warn_if_unused_value (const_tree, location_t);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
-extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
-					  tree);
+extern void warn_logical_not_parentheses (location_t, enum tree_code, tree);
 extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);
@@ -1016,6 +1013,7 @@ extern void record_types_used_by_current_var_decl (tree);
 extern void record_locally_defined_typedef (tree);
 extern void maybe_record_typedef_use (tree);
 extern void maybe_warn_unused_local_typedefs (void);
+extern void maybe_warn_bool_compare (location_t, enum tree_code, tree, tree);
 extern vec<tree, va_gc> *make_tree_vector (void);
 extern void release_tree_vector (vec<tree, va_gc> *);
 extern vec<tree, va_gc> *make_tree_vector_single (tree);
@@ -1396,4 +1394,5 @@ extern tree create_cilk_function_exit (tree, bool, bool);
 extern tree cilk_install_body_pedigree_operations (tree);
 extern void cilk_outline (tree, tree *, void *);
 extern bool contains_cilk_spawn_stmt (tree);
+extern tree cilk_for_number_of_iterations (tree);
 #endif /* ! GCC_C_COMMON_H */

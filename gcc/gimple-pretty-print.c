@@ -1135,6 +1135,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  kind = " distribute";
 	  break;
+	case GF_OMP_FOR_KIND_CILKFOR:
+	  kind = " _Cilk_for";
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1169,16 +1172,24 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  pp_string (buffer, "#pragma omp distribute");
 	  break;
+	case GF_OMP_FOR_KIND_CILKFOR:
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
-      dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
+      if (gimple_omp_for_kind (gs) != GF_OMP_FOR_KIND_CILKFOR)
+	dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
 	  if (i)
 	    spc += 2;
-	  newline_and_indent (buffer, spc);
-	  pp_string (buffer, "for (");
+	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
+	    pp_string (buffer, "_Cilk_for (");
+	  else
+	    {
+	      newline_and_indent (buffer, spc);
+	      pp_string (buffer, "for (");
+	    }
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
 			     flags, false);
 	  pp_string (buffer, " = ");
@@ -1203,6 +1214,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	    case GE_EXPR:
 	      pp_greater_equal (buffer);
 	      break;
+	    case NE_EXPR:
+	      pp_string (buffer, "!=");
+	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -1221,6 +1235,8 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
+	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
+	    dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
 	  newline_and_indent (buffer, spc + 2);
 	  pp_left_brace (buffer);
 	  pp_newline (buffer);
@@ -1818,21 +1834,7 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, bool comment,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       if ((flags & TDF_LINENO) && gimple_phi_arg_has_location (phi, i))
-        {
-	  expanded_location xloc;
-
-	  xloc = expand_location (gimple_phi_arg_location (phi, i));
-	  pp_left_bracket (buffer);
-	  if (xloc.file)
-	    {
-	      pp_string (buffer, xloc.file);
-	      pp_string (buffer, " : ");
-	    }
-	  pp_decimal_int (buffer, xloc.line);
-	  pp_colon (buffer);
-	  pp_decimal_int (buffer, xloc.column);
-	  pp_string (buffer, "] ");
-	}
+	dump_location (buffer, gimple_phi_arg_location (phi, i));
       dump_generic_node (buffer, gimple_phi_arg_def (phi, i), spc, flags,
 			 false);
       pp_left_paren (buffer);
@@ -2060,19 +2062,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
     pp_printf (buffer, "<&%p> ", (void *) gs);
 
   if ((flags & TDF_LINENO) && gimple_has_location (gs))
-    {
-      expanded_location xloc = expand_location (gimple_location (gs));
-      pp_left_bracket (buffer);
-      if (xloc.file)
-	{
-	  pp_string (buffer, xloc.file);
-	  pp_string (buffer, " : ");
-	}
-      pp_decimal_int (buffer, xloc.line);
-      pp_colon (buffer);
-      pp_decimal_int (buffer, xloc.column);
-      pp_string (buffer, "] ");
-    }
+    dump_location (buffer, gimple_location (gs));
 
   if (flags & TDF_EH)
     {
@@ -2388,22 +2378,8 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
       INDENT (indent);
 
       if ((flags & TDF_LINENO)
-	  && e->goto_locus != UNKNOWN_LOCATION
-	  )
-	{
-	  expanded_location goto_xloc;
-	  goto_xloc = expand_location (e->goto_locus);
-	  pp_left_bracket (buffer);
-	  if (goto_xloc.file)
-	    {
-	      pp_string (buffer, goto_xloc.file);
-	      pp_string (buffer, " : ");
-	    }
-	  pp_decimal_int (buffer, goto_xloc.line);
-	  pp_string (buffer, " : ");
-	  pp_decimal_int (buffer, goto_xloc.column);
-	  pp_string (buffer, "] ");
-	}
+	  && e->goto_locus != UNKNOWN_LOCATION)
+	dump_location (buffer, e->goto_locus);
 
       pp_cfg_jump (buffer, e->dest);
       pp_newline (buffer);

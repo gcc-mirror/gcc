@@ -117,7 +117,7 @@ class Prog:
         self.tool_re = re.compile (r'^\t\t=== (.*) tests ===$')
         self.result_re = re.compile (r'^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED'
                                      r'|WARNING|ERROR|UNSUPPORTED|UNTESTED'
-                                     r'|KFAIL):\s*(\S+)')
+                                     r'|KFAIL):\s*(.+)')
         self.completed_re = re.compile (r'.* completed at (.*)')
         # Pieces of text to write at the head of the output.
         # start_line is a pair in which the first element is a datetime
@@ -495,15 +495,7 @@ class Prog:
                                key = attrgetter ('name')):
             sys.stdout.write ('Running ' + harness.name + ' ...\n')
             if self.do_sum:
-                # Keep the original test result order if there was only
-                # one segment for this harness.  This is needed for
-                # unsorted.exp, which has unusual test names.  Otherwise
-                # sort the tests by test filename.  If there are several
-                # subtests for the same test filename (such as 'compilation',
-                # 'test for excess errors', etc.) then keep the subtests
-                # in the original order.
-                if len (harness.segments) > 1:
-                    harness.results.sort()
+                harness.results.sort()
                 for (key, line) in harness.results:
                     sys.stdout.write (line)
             else:

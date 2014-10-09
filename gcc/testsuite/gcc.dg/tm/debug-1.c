@@ -5,11 +5,11 @@
 
 int a,b, c, z;
 
-testing(){
+void testing(){
     c=9;
 }
 
-main() {
+int main() {
 	b = 9898;
 	__transaction_relaxed {
 		z = c;
@@ -19,8 +19,8 @@ main() {
 	return 0;
 }
 
-/* { dg-final { scan-tree-dump-times ": 13:.*b = 9898" 1 "tmmark" } } */
-/* { dg-final { scan-tree-dump-times ": 14:.*_ITM_beginTransaction" 1 "tmmark" } } */
-/* { dg-final { scan-tree-dump-times ": 15:.*ITM_WU. \\(&z" 1 "tmmark" } } */
-/* { dg-final { scan-tree-dump-times ": 16:.*ITM_WU. \\(&a" 1 "tmmark" } } */
+/* { dg-final { scan-tree-dump-times ":13:.*b = 9898" 1 "tmmark" } } */
+/* { dg-final { scan-tree-dump-times ":14:.*_ITM_beginTransaction" 1 "tmmark" } } */
+/* { dg-final { scan-tree-dump-times ":15:.*ITM_WU. \\(&z" 1 "tmmark" } } */
+/* { dg-final { scan-tree-dump-times ":16:.*ITM_WU. \\(&a" 1 "tmmark" } } */
 /* { dg-final { cleanup-tree-dump "tmmark" } } */

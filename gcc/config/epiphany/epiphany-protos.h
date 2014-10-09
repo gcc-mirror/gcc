@@ -27,7 +27,7 @@ extern struct rtx_def *gen_compare_reg (enum machine_mode, enum rtx_code,
 #endif
 
 /* Declarations for various fns used in the .md file.  */
-extern void epiphany_final_prescan_insn (rtx, rtx *, int);
+extern void epiphany_final_prescan_insn (rtx_insn *, rtx *, int);
 extern bool epiphany_is_long_call_p (rtx);
 extern bool epiphany_small16 (rtx);
 bool epiphany_uninterruptible_p (tree decl);
@@ -43,10 +43,10 @@ extern int hard_regno_mode_ok (int regno, enum machine_mode mode);
 extern void emit_set_fp_mode (int entity, int mode, int prev_mode,
 			      HARD_REG_SET regs_live);
 #endif
-extern void epiphany_insert_mode_switch_use (rtx insn, int, int);
+extern void epiphany_insert_mode_switch_use (rtx_insn *insn, int, int);
 extern void epiphany_expand_set_fp_mode (rtx *operands);
-extern int epiphany_mode_needed (int entity, rtx insn);
-extern int epiphany_mode_after (int entity, int last_mode, rtx insn);
+extern int epiphany_mode_needed (int entity, rtx_insn *insn);
+extern int epiphany_mode_after (int entity, int last_mode, rtx_insn *insn);
 extern bool epiphany_epilogue_uses (int regno);
 extern bool epiphany_optimize_mode_switching (int entity);
 extern bool epiphany_is_interrupt_p (tree);
@@ -59,5 +59,5 @@ extern bool epiphany_regno_rename_ok (unsigned src, unsigned dst);
    can't / won't include that.  In particular:
    PR other/55523: gencondmd file includes / dependencies are messed up,
    it uses peephole2 predicates without having all the necessary headers.  */
-extern int get_attr_sched_use_fpu (rtx);
+extern int get_attr_sched_use_fpu (rtx_insn *);
 

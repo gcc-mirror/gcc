@@ -1,6 +1,7 @@
 /* PR tree-optimization/57233 */
 /* { dg-do run { target { ilp32 || lp64 } } } */
 /* { dg-options "-O2" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef unsigned V4 __attribute__((vector_size(4 * sizeof (int))));
 typedef unsigned V8 __attribute__((vector_size(8 * sizeof (int))));

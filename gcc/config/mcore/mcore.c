@@ -97,13 +97,13 @@ cond_type;
 
 static void       output_stack_adjust           (int, int);
 static int        calc_live_regs                (int *);
-static int        try_constant_tricks           (long, HOST_WIDE_INT *, HOST_WIDE_INT *);
+static int        try_constant_tricks           (HOST_WIDE_INT, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static const char *     output_inline_const     (enum machine_mode, rtx *);
 static void       layout_mcore_frame            (struct mcore_frame *);
 static void       mcore_setup_incoming_varargs	(cumulative_args_t, enum machine_mode, tree, int *, int);
 static cond_type  is_cond_candidate             (rtx);
-static rtx        emit_new_cond_insn            (rtx, int);
-static rtx        conditionalize_block          (rtx);
+static rtx_insn  *emit_new_cond_insn            (rtx, int);
+static rtx_insn  *conditionalize_block          (rtx_insn *);
 static void       conditionalize_optimization   (void);
 static void       mcore_reorg                   (void);
 static rtx        handle_structs_in_regs        (enum machine_mode, const_tree, int);
@@ -122,9 +122,9 @@ static bool       mcore_print_operand_punct_valid_p (unsigned char code);
 static void       mcore_unique_section	        (tree, int);
 static void mcore_encode_section_info		(tree, rtx, int);
 static const char *mcore_strip_name_encoding	(const char *);
-static int        mcore_const_costs            	(rtx, RTX_CODE);
-static int        mcore_and_cost               	(rtx);
-static int        mcore_ior_cost               	(rtx);
+static int        mcore_const_costs             (rtx, RTX_CODE);
+static int        mcore_and_cost                (rtx);
+static int        mcore_ior_cost                (rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int,
 						 int *, bool);
 static void       mcore_external_libcall	(rtx);
@@ -903,9 +903,9 @@ try_constant_tricks (HOST_WIDE_INT value, HOST_WIDE_INT * x, HOST_WIDE_INT * y)
    can ignore subregs by extracting the actual register.  BRC  */
 
 int
-mcore_is_dead (rtx first, rtx reg)
+mcore_is_dead (rtx_insn *first, rtx reg)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* For mcore, subregs can't live independently of their parent regs.  */
   if (GET_CODE (reg) == SUBREG)
@@ -2321,7 +2321,7 @@ is_cond_candidate (rtx insn)
 /* Emit a conditional version of insn and replace the old insn with the
    new one.  Return the new insn if emitted.  */
 
-static rtx
+static rtx_insn *
 emit_new_cond_insn (rtx insn, int cond)
 {
   rtx c_insn = 0;
@@ -2406,7 +2406,7 @@ emit_new_cond_insn (rtx insn, int cond)
 
   delete_insn (insn);
   
-  return c_insn;
+  return as_a <rtx_insn *> (c_insn);
 }
 
 /* Attempt to change a basic block into a series of conditional insns.  This
@@ -2438,14 +2438,14 @@ emit_new_cond_insn (rtx insn, int cond)
    we can delete the L2 label if NUSES==1 and re-apply the optimization
    starting at the last instruction of block 2.  This may allow an entire
    if-then-else statement to be conditionalized.  BRC  */
-static rtx
-conditionalize_block (rtx first)
+static rtx_insn *
+conditionalize_block (rtx_insn *first)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx br_pat;
-  rtx end_blk_1_br = 0;
-  rtx end_blk_2_insn = 0;
-  rtx start_blk_3_lab = 0;
+  rtx_insn *end_blk_1_br = 0;
+  rtx_insn *end_blk_2_insn = 0;
+  rtx_insn *start_blk_3_lab = 0;
   int cond;
   int br_lab_num;
   int blk_size = 0;
@@ -2534,9 +2534,9 @@ conditionalize_block (rtx first)
   for (insn = NEXT_INSN (end_blk_1_br); insn != start_blk_3_lab; 
        insn = NEXT_INSN (insn))
     {
-      rtx newinsn;
+      rtx_insn *newinsn;
 
-      if (INSN_DELETED_P (insn))
+      if (insn->deleted ())
 	continue;
       
       /* Try to form a conditional variant of the instruction and emit it.  */
@@ -2582,7 +2582,7 @@ conditionalize_block (rtx first)
 static void
 conditionalize_optimization (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = get_insns (); insn; insn = conditionalize_block (insn))
     continue;

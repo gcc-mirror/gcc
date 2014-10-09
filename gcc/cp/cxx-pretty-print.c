@@ -388,7 +388,6 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      __is_abstract ( type-id )
      __is_base_of ( type-id , type-id )
      __is_class ( type-id )
-     __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
      __is_literal_type ( type-id )
@@ -2373,9 +2372,6 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_CLASS:
       pp_cxx_ws_string (pp, "__is_class");
       break;
-    case CPTK_IS_CONVERTIBLE_TO:
-      pp_cxx_ws_string (pp, "__is_convertible_to");
-      break;
     case CPTK_IS_EMPTY:
       pp_cxx_ws_string (pp, "__is_empty");
       break;
@@ -2397,6 +2393,15 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_TRIVIAL:
       pp_cxx_ws_string (pp, "__is_trivial");
       break;
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+      pp_cxx_ws_string (pp, "__is_trivially_assignable");
+      break;
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      pp_cxx_ws_string (pp, "__is_trivially_constructible");
+      break;
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      pp_cxx_ws_string (pp, "__is_trivially_copyable");
+      break;
     case CPTK_IS_UNION:
       pp_cxx_ws_string (pp, "__is_union");
       break;
@@ -2411,7 +2416,7 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
   pp_cxx_left_paren (pp);
   pp->type_id (TRAIT_EXPR_TYPE1 (t));
 
-  if (kind == CPTK_IS_BASE_OF || kind == CPTK_IS_CONVERTIBLE_TO)
+  if (kind == CPTK_IS_BASE_OF)
     {
       pp_cxx_separate_with (pp, ',');
       pp->type_id (TRAIT_EXPR_TYPE2 (t));

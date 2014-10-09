@@ -489,6 +489,12 @@ proc go-gc-tests { } {
 
 	close $fd
 
+	# runtest_file_p is already run above, and the code below can run
+	# runtest_file_p again, make sure everything for this test is
+	# performed if the above runtest_file_p decided this runtest
+	# instance should execute the test
+	gcc_parallel_test_enable 0
+
 	set go_compile_args ""
 	set go_execute_args ""
 	if { [regexp "// run (\[^|&>2\].*)\$" $test_line match progargs] \
@@ -651,13 +657,17 @@ proc go-gc-tests { } {
 	    set runtests "go-test.exp"
 	    set dg-do-what-default "assemble"
 	    set dir "[file rootname $test].dir"
-	    set del {}
-	    foreach f [lsort [glob "$dir/*.go"]] {
-		dg-test -keep-output $f "-O" "-w $DEFAULT_GOCFLAGS"
-		lappend del "[file rootname [file tail $f]].o"
-	    }
-	    foreach f $del {
-		file delete $f
+	    set files [lsort [glob "$dir/*.go"]]
+	    set packages [go-find-packages $test $name $files]
+	    if { [llength $packages] > 0 } {
+		set del [list]
+		foreach p $packages {
+		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O" "-w $DEFAULT_GOCFLAGS"
+		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
+		}
+		foreach f $del {
+		    file delete $f
+		}
 	    }
 	    set runtests $hold_runtests
 	} elseif { $test_line == "// rundir" } {
@@ -1160,6 +1170,7 @@ proc go-gc-tests { } {
 	set go_compile_args ""
 	set go_execute_args ""
         set TORTURE_OPTIONS [list { -O2 -g }]
+	gcc_parallel_test_enable 1
     }
 
     set dg-do-what-default ${saved-dg-do-what-default}

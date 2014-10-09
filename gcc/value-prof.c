@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "builtins.h"
 #include "tree-nested.h"
+#include "hash-set.h"
+#include "params.h"
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -358,6 +360,22 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       }
       fprintf (dump_file, ".\n");
       break;
+    case HIST_TYPE_INDIR_CALL_TOPN:
+      fprintf (dump_file, "Indirect call topn ");
+      if (hist->hvalue.counters)
+	{
+           int i;
+
+           fprintf (dump_file, "accu:%"PRId64, hist->hvalue.counters[0]);
+           for (i = 1; i < (GCOV_ICALL_TOPN_VAL << 2); i += 2)
+             {
+               fprintf (dump_file, " target:%"PRId64 " value:%"PRId64,
+                       (int64_t) hist->hvalue.counters[i],
+                       (int64_t) hist->hvalue.counters[i+1]);
+             }
+        }
+      fprintf (dump_file, ".\n");
+      break;
     case HIST_TYPE_MAX:
       gcc_unreachable ();
    }
@@ -431,9 +449,14 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
 	  break;
 
 	case HIST_TYPE_IOR:
-  case HIST_TYPE_TIME_PROFILE:
+        case HIST_TYPE_TIME_PROFILE:
 	  ncounters = 1;
 	  break;
+
+        case HIST_TYPE_INDIR_CALL_TOPN:
+          ncounters = (GCOV_ICALL_TOPN_VAL << 2) + 1;
+          break;
+
 	case HIST_TYPE_MAX:
 	  gcc_unreachable ();
 	}
@@ -515,10 +538,10 @@ static bool error_found = false;
 static int
 visit_hist (void **slot, void *data)
 {
-  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+  hash_set<histogram_value> *visited = (hash_set<histogram_value> *) data;
   histogram_value hist = *(histogram_value *) slot;
 
-  if (!pointer_set_contains (visited, hist)
+  if (!visited->contains (hist)
       && hist->type != HIST_TYPE_TIME_PROFILE)
     {
       error ("dead histogram");
@@ -538,10 +561,9 @@ verify_histograms (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   histogram_value hist;
-  struct pointer_set_t *visited_hists;
 
   error_found = false;
-  visited_hists = pointer_set_create ();
+  hash_set<histogram_value> visited_hists;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
@@ -558,12 +580,11 @@ verify_histograms (void)
 		dump_histogram_value (stderr, hist);
 		error_found = true;
 	      }
-            pointer_set_insert (visited_hists, hist);
+            visited_hists.add (hist);
 	  }
       }
   if (VALUE_HISTOGRAMS (cfun))
-    htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, visited_hists);
-  pointer_set_destroy (visited_hists);
+    htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, &visited_hists);
   if (error_found)
     internal_error ("verify_histograms failed");
 }
@@ -1210,7 +1231,32 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static pointer_map_t *cgraph_node_map;
+struct profile_id_traits : default_hashmap_traits
+{
+  template<typename T>
+  static bool
+  is_deleted (T &e)
+    {
+      return e.m_key == UINT_MAX;
+    }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
+  template<typename T> static void mark_deleted (T &e) { e.m_key = UINT_MAX; }
+  template<typename T> static void mark_empty (T &e) { e.m_key = 0; }
+};
+
+static hash_map<unsigned int, cgraph_node *, profile_id_traits> *
+cgraph_node_map = 0;
+
+/* Returns true if node graph is initialized. This
+   is used to test if profile_id has been created
+   for cgraph_nodes.  */
+
+bool
+coverage_node_map_initialized_p (void)
+{
+  return cgraph_node_map != 0;
+}
 
 /* Initialize map from PROFILE_ID to CGRAPH_NODE.
    When LOCAL is true, the PROFILE_IDs are computed.  when it is false we assume
@@ -1220,18 +1266,17 @@ void
 init_node_map (bool local)
 {
   struct cgraph_node *n;
-  cgraph_node_map = pointer_map_create ();
+  cgraph_node_map
+    = new hash_map<unsigned int, cgraph_node *, profile_id_traits>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (cgraph_function_with_gimple_body_p (n)
-	&& !cgraph_only_called_directly_p (n))
+    if (n->has_gimple_body_p ())
       {
-	void **val;
+	cgraph_node **val;
 	if (local)
 	  {
 	    n->profile_id = coverage_compute_profile_id (n);
-	    while ((val = pointer_map_contains (cgraph_node_map,
-						(void *)(size_t)n->profile_id))
+	    while ((val = cgraph_node_map->get (n->profile_id))
 		   || !n->profile_id)
 	      {
 		if (dump_file)
@@ -1240,8 +1285,8 @@ init_node_map (bool local)
 			   n->profile_id,
 			   n->name (),
 			   n->order,
-			   (*(symtab_node **)val)->name (),
-			   (*(symtab_node **)val)->order);
+			   (*val)->name (),
+			   (*val)->order);
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
@@ -1255,8 +1300,7 @@ init_node_map (bool local)
 		       n->order);
 	    continue;
 	  }
-	else if ((val = pointer_map_contains (cgraph_node_map,
-					      (void *)(size_t)n->profile_id)))
+	else if ((val = cgraph_node_map->get (n->profile_id)))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file,
@@ -1268,8 +1312,7 @@ init_node_map (bool local)
 	    *val = NULL;
 	    continue;
 	  }
-	*pointer_map_insert (cgraph_node_map,
-			     (void *)(size_t)n->profile_id) = (void *)n;
+	cgraph_node_map->put (n->profile_id, n);
       }
 }
 
@@ -1278,7 +1321,7 @@ init_node_map (bool local)
 void
 del_node_map (void)
 {
-  pointer_map_destroy (cgraph_node_map);
+  delete cgraph_node_map;
 }
 
 /* Return cgraph node for function with pid */
@@ -1286,10 +1329,9 @@ del_node_map (void)
 struct cgraph_node*
 find_func_by_profile_id (int profile_id)
 {
-  void **val = pointer_map_contains (cgraph_node_map,
-				     (void *)(size_t)profile_id);
+  cgraph_node **val = cgraph_node_map->get (profile_id);
   if (val)
-    return (struct cgraph_node *)*val;
+    return *val;
   else
     return NULL;
 }
@@ -1900,8 +1942,12 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
 
   values->reserve (3);
 
-  values->quick_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
-						    stmt, callee));
+  values->quick_push (gimple_alloc_histogram_value (
+                        cfun,
+                        PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
+                          HIST_TYPE_INDIR_CALL_TOPN :
+                          HIST_TYPE_INDIR_CALL,
+			stmt, callee));
 
   return;
 }
@@ -1991,9 +2037,9 @@ gimple_find_values_to_profile (histogram_values *values)
  	  hist->n_counters = 3;
 	  break;
 
-  case HIST_TYPE_TIME_PROFILE:
-    hist->n_counters = 1;
-    break;
+        case HIST_TYPE_TIME_PROFILE:
+          hist->n_counters = 1;
+          break;
 
 	case HIST_TYPE_AVERAGE:
 	  hist->n_counters = 2;
@@ -2002,6 +2048,10 @@ gimple_find_values_to_profile (histogram_values *values)
 	case HIST_TYPE_IOR:
 	  hist->n_counters = 1;
 	  break;
+
+        case HIST_TYPE_INDIR_CALL_TOPN:
+          hist->n_counters = GCOV_ICALL_TOPN_NCOUNTS;
+          break;
 
 	default:
 	  gcc_unreachable ();

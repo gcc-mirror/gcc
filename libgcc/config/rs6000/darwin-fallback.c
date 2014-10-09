@@ -438,7 +438,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
     }
 
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - old_cfa;;
   
   /* The choice of column for the return address is somewhat tricky.

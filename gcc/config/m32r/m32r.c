@@ -76,7 +76,7 @@ static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
 
 static void  m32r_file_start (void);
 
-static int    m32r_adjust_priority (rtx, int);
+static int    m32r_adjust_priority (rtx_insn *, int);
 static int    m32r_issue_rate (void);
 
 static void m32r_encode_section_info (tree, rtx, int);
@@ -1322,7 +1322,7 @@ m32r_is_insn (rtx insn)
    short instructions are scheduled ahead of the long ones.  */
 
 static int
-m32r_adjust_priority (rtx insn, int priority)
+m32r_adjust_priority (rtx_insn *insn, int priority)
 {
   if (m32r_is_insn (insn)
       && get_attr_insn_size (insn) != INSN_SIZE_SHORT)
@@ -2539,7 +2539,7 @@ m32r_expand_block_move (rtx operands[])
   /* If necessary, generate a loop to handle the bulk of the copy.  */
   if (bytes)
     {
-      rtx label = NULL_RTX;
+      rtx_code_label *label = NULL;
       rtx final_src = NULL_RTX;
       rtx at_a_time = GEN_INT (MAX_MOVE_BYTES);
       rtx rounded_total = GEN_INT (bytes);

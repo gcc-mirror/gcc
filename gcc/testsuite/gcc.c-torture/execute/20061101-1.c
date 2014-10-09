@@ -1,5 +1,6 @@
 /* PR rtl-optimization/28970 */
 /* Origin: Peter Bergner <bergner@vnet.ibm.com> */
+/* { dg-require-effective-target int32plus } */
 
 extern void abort (void);
 

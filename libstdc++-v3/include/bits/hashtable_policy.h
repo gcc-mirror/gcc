@@ -460,7 +460,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// smallest prime that keeps the load factor small enough.
   struct _Prime_rehash_policy
   {
-    _Prime_rehash_policy(float __z = 1.0)
+    _Prime_rehash_policy(float __z = 1.0) noexcept
     : _M_max_load_factor(__z), _M_next_resize(0) { }
 
     float
@@ -1071,7 +1071,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef void* 					__hash_code;
       typedef _Hash_node<_Value, false>			__node_type;
 
-      // We need the default constructor for the local iterators.
+      // We need the default constructor for the local iterators and _Hashtable
+      // default constructor.
       _Hash_code_base() = default;
 
       _Hash_code_base(const _ExtractKey& __ex, const _H1&, const _H2&,
@@ -1161,7 +1162,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::size_t 				__hash_code;
       typedef _Hash_node<_Value, false>			__node_type;
 
-      // We need the default constructor for the local iterators.
+      // We need the default constructor for the local iterators and _Hashtable
+      // default constructor.
       _Hash_code_base() = default;
 
       _Hash_code_base(const _ExtractKey& __ex,
@@ -1250,6 +1252,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::size_t 				__hash_code;
       typedef _Hash_node<_Value, true>			__node_type;
 
+      // We need the default constructor for _Hashtable default constructor.
+      _Hash_code_base() = default;
       _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,
 		      const _Default_ranged_hash&)
@@ -1694,6 +1698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					__hash_code, __hash_cached::value>;
 
   protected:
+    _Hashtable_base() = default;
     _Hashtable_base(const _ExtractKey& __ex, const _H1& __h1, const _H2& __h2,
 		    const _Hash& __hash, const _Equal& __eq)
     : __hash_code_base(__ex, __h1, __h2, __hash), _EqualEBO(__eq)
@@ -1906,6 +1911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__alloc_rebind<__node_alloc_type, __bucket_type>;
       using __bucket_alloc_traits = std::allocator_traits<__bucket_alloc_type>;
 
+      _Hashtable_alloc() = default;
       _Hashtable_alloc(const _Hashtable_alloc&) = default;
       _Hashtable_alloc(_Hashtable_alloc&&) = default;
 

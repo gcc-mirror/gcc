@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ begin
       --  outside the AAA/ZZZ range.
 
       System.Traceback.Call_Chain
-        (Traceback   => Excep.Tracebacks'Address,
+        (Traceback   => Excep.Tracebacks,
          Max_Len     => Max_Tracebacks,
          Len         => Excep.Num_Tracebacks,
          Exclude_Min => Code_Address_For_AAA,

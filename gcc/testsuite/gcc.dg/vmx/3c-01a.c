@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-maltivec -mabi=altivec -std=gnu99 -mno-vsx -Wno-deprecated" } */
 #include <altivec.h>
 typedef const volatile unsigned int _1;
 typedef const  unsigned int _2;

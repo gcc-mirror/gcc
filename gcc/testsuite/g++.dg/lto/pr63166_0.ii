@@ -1,0 +1,37 @@
+// { dg-lto-do compile }
+extern "C"
+{
+  extern long unsigned int strlen (__const char *__s);
+}
+class Cstring
+{
+};
+class Foobar_Out
+{
+  virtual void put_to_buf (const char *str, long unsigned int msg_len);
+  void put_to_buf (const char *str)
+  {
+    put_to_buf (str, strlen (str));
+  }
+  Foobar_Out & operator << (const char *str);
+  Foobar_Out & operator << (const Cstring & cstring);
+};
+
+class Foobar_Log:public Foobar_Out
+{
+  Foobar_Log (int channel);
+  virtual void put_to_buf (const char *str, long unsigned int msg_len);
+};
+Foobar_Out & Foobar_Out::operator << (const char *str)
+{
+  put_to_buf (str);
+}
+
+Foobar_Out & Foobar_Out::operator << (const Cstring & cstring)
+{
+  return *this;
+}
+
+Foobar_Log::Foobar_Log (int ch)
+{
+}

@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "common/common-target.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "basic-block.h"
@@ -71,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "wide-int.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Processor costs */
 
@@ -501,9 +501,6 @@ struct GTY(()) machine_function
   rtx frame_base_reg;
   HOST_WIDE_INT frame_base_offset;
 
-  /* Some local-dynamic TLS symbol name.  */
-  const char *some_ld_name;
-
   /* Number of global or FP registers to be saved (as 4-byte quantities).  */
   int n_global_fp_regs;
 
@@ -538,8 +535,8 @@ static void scan_record_type (const_tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 				const_tree, bool, bool, int *, int *);
 
-static int supersparc_adjust_cost (rtx, rtx, rtx, int);
-static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
+static int supersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int hypersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 
 static void sparc_emit_set_const32 (rtx, rtx);
 static void sparc_emit_set_const64 (rtx, rtx);
@@ -551,14 +548,14 @@ static bool sparc_legitimate_constant_p (enum machine_mode, rtx);
 static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
-static int set_extends (rtx);
+static int set_extends (rtx_insn *);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef TARGET_SOLARIS
 static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
 						 tree) ATTRIBUTE_UNUSED;
 #endif
-static int sparc_adjust_cost (rtx, rtx, rtx, int);
+static int sparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
 static int sparc_use_sched_lookahead (void);
@@ -585,8 +582,6 @@ static struct machine_function * sparc_init_machine_status (void);
 static bool sparc_cannot_force_const_mem (enum machine_mode, rtx);
 static rtx sparc_tls_get_addr (void);
 static rtx sparc_tls_got (void);
-static const char *get_some_local_dynamic_name (void);
-static int get_some_local_dynamic_name_1 (rtx *, void *);
 static int sparc_register_move_cost (enum machine_mode,
 				     reg_class_t, reg_class_t);
 static bool sparc_rtx_costs (rtx, int, int, int, int *, bool);
@@ -876,7 +871,7 @@ mem_ref (rtx x)
 static unsigned int
 sparc_do_work_around_errata (void)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -888,8 +883,9 @@ sparc_do_work_around_errata (void)
       rtx set;
 
       /* Look into the instruction in a delay slot.  */
-      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 1);
+      if (NONJUMP_INSN_P (insn))
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  insn = seq->insn (1);
 
       /* Look for a single-word load into an odd-numbered FP register.  */
       if (sparc_fix_at697f
@@ -1020,7 +1016,7 @@ sparc_do_work_around_errata (void)
 	  /* The problematic combination is with the sibling FP register.  */
 	  const unsigned int x = REGNO (SET_DEST (set));
 	  const unsigned int y = x ^ 1;
-	  rtx after;
+	  rtx_insn *after;
 	  int i;
 
 	  next = next_active_insn (insn);
@@ -1054,15 +1050,16 @@ sparc_do_work_around_errata (void)
 		  if (++i == n_insns)
 		    break;
 		  branch_p = true;
-		  after = NULL_RTX;
+		  after = NULL;
 		}
 	      /* This is a branch with a filled delay slot.  */
-	      else if (GET_CODE (PATTERN (after)) == SEQUENCE)
+	      else if (rtx_sequence *seq =
+		         dyn_cast <rtx_sequence *> (PATTERN (after)))
 		{
 		  if (++i == n_insns)
 		    break;
 		  branch_p = true;
-		  after = XVECEXP (PATTERN (after), 0, 1);
+		  after = seq->insn (1);
 		}
 	      /* This is a regular instruction.  */
 	      else
@@ -3426,7 +3423,7 @@ emit_tfmode_cvt (enum rtx_code code, rtx *operands)
    nop into its delay slot.  */
 
 int
-empty_delay_slot (rtx insn)
+empty_delay_slot (rtx_insn *insn)
 {
   rtx seq;
 
@@ -3482,7 +3479,7 @@ emit_cbcond_nop (rtx insn)
 /* Return nonzero if TRIAL can go into the call delay slot.  */
 
 int
-eligible_for_call_delay (rtx trial)
+eligible_for_call_delay (rtx_insn *trial)
 {
   rtx pat;
 
@@ -3608,7 +3605,7 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 /* Return nonzero if TRIAL can go into the function return's delay slot.  */
 
 int
-eligible_for_return_delay (rtx trial)
+eligible_for_return_delay (rtx_insn *trial)
 {
   int regno;
   rtx pat;
@@ -3674,7 +3671,7 @@ eligible_for_return_delay (rtx trial)
 /* Return nonzero if TRIAL can go into the sibling call's delay slot.  */
 
 int
-eligible_for_sibcall_delay (rtx trial)
+eligible_for_sibcall_delay (rtx_insn *trial)
 {
   rtx pat;
 
@@ -4104,7 +4101,8 @@ sparc_tls_referenced_p (rtx x)
 static rtx
 sparc_legitimize_tls_address (rtx addr)
 {
-  rtx temp1, temp2, temp3, ret, o0, got, insn;
+  rtx temp1, temp2, temp3, ret, o0, got;
+  rtx_insn *insn;
 
   gcc_assert (can_create_pseudo_p ());
 
@@ -4257,7 +4255,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
       || (GET_CODE (orig) == LABEL_REF && !can_use_mov_pic_label_ref (orig)))
     {
       rtx pic_ref, address;
-      rtx insn;
+      rtx_insn *insn;
 
       if (reg == 0)
 	{
@@ -4601,7 +4599,7 @@ load_got_register (void)
 void
 sparc_emit_call_insn (rtx pat, rtx addr)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   insn = emit_call_insn (pat);
 
@@ -5248,7 +5246,8 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 			   sorr_act_t action_true, sorr_act_t action_false)
 {
   unsigned int i;
-  rtx mem, insn;
+  rtx mem;
+  rtx_insn *insn;
 
   if (TARGET_ARCH64 && high <= 32)
     {
@@ -5407,10 +5406,10 @@ emit_save_or_restore_local_in_regs (rtx base, int offset, sorr_act_t action)
 
 /* Emit a window_save insn.  */
 
-static rtx
+static rtx_insn *
 emit_window_save (rtx increment)
 {
-  rtx insn = emit_insn (gen_window_save (increment));
+  rtx_insn *insn = emit_insn (gen_window_save (increment));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   /* The incoming return address (%o7) is saved in %i7.  */
@@ -5451,7 +5450,7 @@ void
 sparc_expand_prologue (void)
 {
   HOST_WIDE_INT size;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Compute a snapshot of crtl->uses_only_leaf_regs.  Relying
      on the final value of the flag means deferring the prologue/epilogue
@@ -5585,7 +5584,7 @@ void
 sparc_flat_expand_prologue (void)
 {
   HOST_WIDE_INT size;
-  rtx insn;
+  rtx_insn *insn;
 
   sparc_leaf_function_p = optimize > 0 && crtl->is_leaf;
 
@@ -5893,7 +5892,7 @@ output_restore (rtx pat)
 /* Output a return.  */
 
 const char *
-output_return (rtx insn)
+output_return (rtx_insn *insn)
 {
   if (crtl->calls_eh_return)
     {
@@ -5980,7 +5979,7 @@ output_return (rtx insn)
 /* Output a sibling call.  */
 
 const char *
-output_sibcall (rtx insn, rtx call_operand)
+output_sibcall (rtx_insn *insn, rtx call_operand)
 {
   rtx operands[1];
 
@@ -6015,7 +6014,7 @@ output_sibcall (rtx insn, rtx call_operand)
 
       if (final_sequence)
 	{
-	  rtx delay = NEXT_INSN (insn);
+	  rtx_insn *delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
 
 	  output_restore (PATTERN (delay));
@@ -7263,7 +7262,7 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	     provided.  */
 	  rtx ret_reg = gen_rtx_REG (Pmode, 31);
 	  rtx scratch = gen_reg_rtx (SImode);
-	  rtx endlab = gen_label_rtx ();
+	  rtx_code_label *endlab = gen_label_rtx ();
 
 	  /* Calculate the return object size */
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
@@ -7587,7 +7586,7 @@ sparc_preferred_simd_mode (enum machine_mode mode)
    DEST is the destination insn (i.e. the label), INSN is the source.  */
 
 const char *
-output_ubranch (rtx dest, rtx insn)
+output_ubranch (rtx dest, rtx_insn *insn)
 {
   static char string[64];
   bool v9_form = false;
@@ -7661,7 +7660,7 @@ output_ubranch (rtx dest, rtx insn)
 
 const char *
 output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
-		rtx insn)
+		rtx_insn *insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -8051,12 +8050,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 void
 sparc_emit_floatunsdi (rtx *operands, enum machine_mode mode)
 {
-  rtx neglab, donelab, i0, i1, f0, in, out;
+  rtx i0, i1, f0, in, out;
 
   out = operands[0];
   in = force_reg (DImode, operands[1]);
-  neglab = gen_label_rtx ();
-  donelab = gen_label_rtx ();
+  rtx_code_label *neglab = gen_label_rtx ();
+  rtx_code_label *donelab = gen_label_rtx ();
   i0 = gen_reg_rtx (DImode);
   i1 = gen_reg_rtx (DImode);
   f0 = gen_reg_rtx (mode);
@@ -8084,12 +8083,12 @@ sparc_emit_floatunsdi (rtx *operands, enum machine_mode mode)
 void
 sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
 {
-  rtx neglab, donelab, i0, i1, f0, in, out, limit;
+  rtx i0, i1, f0, in, out, limit;
 
   out = operands[0];
   in = force_reg (mode, operands[1]);
-  neglab = gen_label_rtx ();
-  donelab = gen_label_rtx ();
+  rtx_code_label *neglab = gen_label_rtx ();
+  rtx_code_label *donelab = gen_label_rtx ();
   i0 = gen_reg_rtx (DImode);
   i1 = gen_reg_rtx (DImode);
   limit = gen_reg_rtx (mode);
@@ -8124,7 +8123,7 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
    and OP is the conditional expression.  */
 
 const char *
-output_cbcond (rtx op, rtx dest, rtx insn)
+output_cbcond (rtx op, rtx dest, rtx_insn *insn)
 {
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
@@ -8251,7 +8250,7 @@ output_cbcond (rtx op, rtx dest, rtx insn)
 
 const char *
 output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
-		 int annul, rtx insn)
+		 int annul, rtx_insn *insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -8788,7 +8787,11 @@ sparc_print_operand (FILE *file, rtx x, int code)
       return;
     case '&':
       /* Print some local dynamic TLS name.  */
-      assemble_name (file, get_some_local_dynamic_name ());
+      if (const char *name = get_some_local_dynamic_name ())
+	assemble_name (file, name);
+      else
+	output_operand_lossage ("'%%&' used without any "
+				"local dynamic TLS references");
       return;
 
     case 'Y':
@@ -9406,7 +9409,7 @@ sparc_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-supersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type;
 
@@ -9467,7 +9470,7 @@ supersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 }
 
 static int
-hypersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type, dep_type;
   rtx pat = PATTERN(insn);
@@ -9544,7 +9547,7 @@ hypersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 }
 
 static int
-sparc_adjust_cost(rtx insn, rtx link, rtx dep, int cost)
+sparc_adjust_cost(rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   switch (sparc_cpu)
     {
@@ -9612,7 +9615,7 @@ sparc_issue_rate (void)
 }
 
 static int
-set_extends (rtx insn)
+set_extends (rtx_insn *insn)
 {
   register rtx pat = PATTERN (insn);
 
@@ -9778,7 +9781,7 @@ sparc_output_deferred_case_vectors (void)
    unknown.  Return 1 if the high bits are zero, -1 if the register is
    sign extended.  */
 int
-sparc_check_64 (rtx x, rtx insn)
+sparc_check_64 (rtx x, rtx_insn *insn)
 {
   /* If a register is set only once it is safe to ignore insns this
      code does not know how to handle.  The loop will either recognize
@@ -9838,7 +9841,7 @@ sparc_check_64 (rtx x, rtx insn)
    OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
 
 const char *
-output_v8plus_shift (rtx insn, rtx *operands, const char *opcode)
+output_v8plus_shift (rtx_insn *insn, rtx *operands, const char *opcode)
 {
   static char asm_code[60];
 
@@ -11265,7 +11268,8 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		       tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
   unsigned int int_arg_first;
 
   reload_completed = 1;
@@ -11481,41 +11485,6 @@ sparc_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in local-dynamic base patterns.  */
-
-static const char *
-get_some_local_dynamic_name (void)
-{
-  rtx insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  gcc_unreachable ();
-}
-
-static int
-get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (x
-      && GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
-    {
-      cfun->machine->some_ld_name = XSTR (x, 0);
-      return 1;
-    }
-
-  return 0;
-}
-
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
@@ -11725,7 +11694,7 @@ sparc_expand_compare_and_swap_12 (rtx bool_result, rtx result, rtx mem,
   rtx newvalue = gen_reg_rtx (SImode);
   rtx res = gen_reg_rtx (SImode);
   rtx resv = gen_reg_rtx (SImode);
-  rtx memsi, val, mask, end_label, loop_label, cc;
+  rtx memsi, val, mask, cc;
 
   emit_insn (gen_rtx_SET (VOIDmode, addr,
 			  gen_rtx_AND (Pmode, addr1, GEN_INT (-4))));
@@ -11775,8 +11744,8 @@ sparc_expand_compare_and_swap_12 (rtx bool_result, rtx result, rtx mem,
   emit_insn (gen_rtx_SET (VOIDmode, newv,
 			  gen_rtx_AND (SImode, newv, mask)));
 
-  end_label = gen_label_rtx ();
-  loop_label = gen_label_rtx ();
+  rtx_code_label *end_label = gen_label_rtx ();
+  rtx_code_label *loop_label = gen_label_rtx ();
   emit_label (loop_label);
 
   emit_insn (gen_rtx_SET (VOIDmode, oldvalue,
@@ -12121,7 +12090,7 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
    OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
 
 const char *
-output_v8plus_mult (rtx insn, rtx *operands, const char *opcode)
+output_v8plus_mult (rtx_insn *insn, rtx *operands, const char *opcode)
 {
   char mulstr[32];
 

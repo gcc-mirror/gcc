@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 struct seginfo
 {
   int mode;
-  rtx insn_ptr;
+  rtx_insn *insn_ptr;
   int bbnum;
   struct seginfo *next;
   HARD_REG_SET regs_live;
@@ -84,7 +84,7 @@ struct bb_info
   int mode_in;
 };
 
-static struct seginfo * new_seginfo (int, rtx, int, HARD_REG_SET);
+static struct seginfo * new_seginfo (int, rtx_insn *, int, HARD_REG_SET);
 static void add_seginfo (struct bb_info *, struct seginfo *);
 static void reg_dies (rtx, HARD_REG_SET *);
 static void reg_becomes_live (rtx, const_rtx, void *);
@@ -154,7 +154,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
    manner.  */
 
 static struct seginfo *
-new_seginfo (int mode, rtx insn, int bb, HARD_REG_SET regs_live)
+new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
 {
   struct seginfo *ptr;
 
@@ -242,7 +242,8 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
     if (eg->flags & EDGE_FALLTHRU)
       {
 	basic_block src_bb = eg->src;
-	rtx last_insn, ret_reg;
+	rtx_insn *last_insn;
+	rtx ret_reg;
 
 	gcc_assert (!pre_exit);
 	/* If this function returns a value at the end, we have to
@@ -259,11 +260,11 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    bool short_block = false;
 	    bool multi_reg_return = false;
 	    bool forced_late_switch = false;
-	    rtx before_return_copy;
+	    rtx_insn *before_return_copy;
 
 	    do
 	      {
-		rtx return_copy = PREV_INSN (last_insn);
+		rtx_insn *return_copy = PREV_INSN (last_insn);
 		rtx return_copy_pat, copy_reg;
 		int copy_start, copy_num;
 		int j;
@@ -559,7 +560,7 @@ optimize_mode_switching (void)
       int e = entity_map[j];
       int no_mode = num_modes[e];
       struct bb_info *info = bb_info[j];
-      rtx insn;
+      rtx_insn *insn;
 
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
@@ -584,7 +585,7 @@ optimize_mode_switching (void)
 		break;
 	    if (eg)
 	      {
-		rtx ins_pos = BB_HEAD (bb);
+		rtx_insn *ins_pos = BB_HEAD (bb);
 		if (LABEL_P (ins_pos))
 		  ins_pos = NEXT_INSN (ins_pos);
 		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
@@ -785,7 +786,7 @@ optimize_mode_switching (void)
 	      next = ptr->next;
 	      if (ptr->mode != no_mode)
 		{
-		  rtx mode_set;
+		  rtx_insn *mode_set;
 
 		  rtl_profile_for_bb (bb);
 		  start_sequence ();

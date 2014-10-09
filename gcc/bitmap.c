@@ -2143,7 +2143,7 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix,
 
 
 /* Used to accumulate statistics about bitmap sizes.  */
-struct output_info
+struct bitmap_output_info
 {
   uint64_t size;
   uint64_t count;
@@ -2152,7 +2152,7 @@ struct output_info
 /* Called via hash_table::traverse.  Output bitmap descriptor pointed out by
    SLOT and update statistics.  */
 int
-print_statistics (bitmap_descriptor_d **slot, output_info *i)
+print_statistics (bitmap_descriptor_d **slot, bitmap_output_info *i)
 {
   bitmap_descriptor d = *slot;
   char s[4096];
@@ -2181,7 +2181,7 @@ print_statistics (bitmap_descriptor_d **slot, output_info *i)
 void
 dump_bitmap_statistics (void)
 {
-  struct output_info info;
+  struct bitmap_output_info info;
 
   if (! GATHER_STATISTICS)
     return;
@@ -2197,7 +2197,7 @@ dump_bitmap_statistics (void)
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   info.count = 0;
   info.size = 0;
-  bitmap_desc_hash->traverse <output_info *, print_statistics> (&info);
+  bitmap_desc_hash->traverse <bitmap_output_info *, print_statistics> (&info);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   fprintf (stderr,
 	   "%-41s %9"PRId64" %15"PRId64"\n",

@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dce.h"
 #include "dbgcnt.h"
+#include "emit-rtl.h"
+#include "rtl-iter.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
@@ -69,7 +71,7 @@ static bool block_was_dirty;
 static bool try_crossjump_to_edge (int, edge, edge, enum replace_direction);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
-static enum replace_direction old_insns_match_p (int, rtx, rtx);
+static enum replace_direction old_insns_match_p (int, rtx_insn *, rtx_insn *);
 
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
@@ -80,7 +82,6 @@ static edge thread_jump (edge, basic_block);
 static bool mark_effect (rtx, bitmap);
 static void notice_new_block (basic_block);
 static void update_forwarder_flag (basic_block);
-static int mentions_nonequal_regs (rtx *, void *);
 static void merge_memattrs (rtx, rtx);
 
 /* Set flags for newly created block.  */
@@ -114,7 +115,7 @@ try_simplify_condjump (basic_block cbranch_block)
 {
   basic_block jump_block, jump_dest_block, cbranch_dest_block;
   edge cbranch_jump_edge, cbranch_fallthru_edge;
-  rtx cbranch_insn;
+  rtx_insn *cbranch_insn;
 
   /* Verify that there are exactly two successors.  */
   if (EDGE_COUNT (cbranch_block->succs) != 2)
@@ -234,29 +235,31 @@ mark_effect (rtx exp, regset nonequal)
     }
 }
 
-/* Return nonzero if X is a register set in regset DATA.
-   Called via for_each_rtx.  */
-static int
-mentions_nonequal_regs (rtx *x, void *data)
+/* Return true if X contains a register in NONEQUAL.  */
+static bool
+mentions_nonequal_regs (const_rtx x, regset nonequal)
 {
-  regset nonequal = (regset) data;
-  if (REG_P (*x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
     {
-      int regno;
-
-      regno = REGNO (*x);
-      if (REGNO_REG_SET_P (nonequal, regno))
-	return 1;
-      if (regno < FIRST_PSEUDO_REGISTER)
+      const_rtx x = *iter;
+      if (REG_P (x))
 	{
-	  int n = hard_regno_nregs[regno][GET_MODE (*x)];
-	  while (--n > 0)
-	    if (REGNO_REG_SET_P (nonequal, regno + n))
-	      return 1;
+	  unsigned int regno = REGNO (x);
+	  if (REGNO_REG_SET_P (nonequal, regno))
+	    return true;
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      int n = hard_regno_nregs[regno][GET_MODE (x)];
+	      while (--n > 0)
+		if (REGNO_REG_SET_P (nonequal, regno + n))
+		  return true;
+	    }
 	}
     }
-  return 0;
+  return false;
 }
+
 /* Attempt to prove that the basic block B will have no side effects and
    always continues in the same edge if reached via E.  Return the edge
    if exist, NULL otherwise.  */
@@ -264,7 +267,8 @@ mentions_nonequal_regs (rtx *x, void *data)
 static edge
 thread_jump (edge e, basic_block b)
 {
-  rtx set1, set2, cond1, cond2, insn;
+  rtx set1, set2, cond1, cond2;
+  rtx_insn *insn;
   enum rtx_code code1, code2, reversed_code2;
   bool reverse1 = false;
   unsigned i;
@@ -379,7 +383,7 @@ thread_jump (edge e, basic_block b)
 
   /* cond2 must not mention any register that is not equal to the
      former block.  */
-  if (for_each_rtx (&cond2, mentions_nonequal_regs, nonequal))
+  if (mentions_nonequal_regs (cond2, nonequal))
     goto failed_exit;
 
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
@@ -491,7 +495,7 @@ try_forward_edges (int mode, basic_block b)
 		      if (LOCATION_LOCUS (new_locus) != UNKNOWN_LOCATION)
 			locus = new_locus;
 
-		      rtx last = BB_END (target);
+		      rtx_insn *last = BB_END (target);
 		      if (DEBUG_INSN_P (last))
 			last = prev_nondebug_insn (last);
 		      if (last && INSN_P (last))
@@ -658,7 +662,7 @@ try_forward_edges (int mode, basic_block b)
 static void
 merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
 {
-  rtx barrier;
+  rtx_insn *barrier;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -702,8 +706,9 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
 static void
 merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 {
-  rtx barrier, real_b_end;
-  rtx label, table;
+  rtx_insn *barrier, *real_b_end;
+  rtx label;
+  rtx_jump_table_data *table;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -883,7 +888,7 @@ merge_memattrs (rtx x, rtx y)
   if (GET_MODE (x) != GET_MODE (y))
     return;
 
-  if (code == MEM && MEM_ATTRS (x) != MEM_ATTRS (y))
+  if (code == MEM && !mem_attrs_eq_p (MEM_ATTRS (x), MEM_ATTRS (y)))
     {
       if (! MEM_ATTRS (x))
 	MEM_ATTRS (y) = 0;
@@ -1012,7 +1017,7 @@ equal_different_set_p (rtx p1, rtx s1, rtx p2, rtx s2)
    - dir_both if both are the case.  */
 
 static enum replace_direction
-can_replace_by (rtx i1, rtx i2)
+can_replace_by (rtx_insn *i1, rtx_insn *i2)
 {
   rtx s1, s2, d1, d2, src1, src2, note1, note2;
   bool c1, c2;
@@ -1091,7 +1096,7 @@ merge_dir (enum replace_direction a, enum replace_direction b)
    - dir_both if both are the case.  */
 
 static enum replace_direction
-old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
+old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 {
   rtx p1, p2;
 
@@ -1222,7 +1227,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
    flow_find_head_matching_sequence, ensure the notes match.  */
 
 static void
-merge_notes (rtx i1, rtx i2)
+merge_notes (rtx_insn *i1, rtx_insn *i2)
 {
   /* If the merged insns have different REG_EQUAL notes, then
      remove them.  */
@@ -1248,7 +1253,7 @@ merge_notes (rtx i1, rtx i2)
     DID_FALLTHRU.  Otherwise, stops at the head of the bb.  */
 
 static void
-walk_to_nondebug_insn (rtx *i1, basic_block *bb1, bool follow_fallthru,
+walk_to_nondebug_insn (rtx_insn **i1, basic_block *bb1, bool follow_fallthru,
                        bool *did_fallthru)
 {
   edge fallthru;
@@ -1291,10 +1296,10 @@ walk_to_nondebug_insn (rtx *i1, basic_block *bb1, bool follow_fallthru,
    store the head of the blocks in *F1 and *F2.  */
 
 int
-flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
-                      enum replace_direction *dir_p)
+flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx_insn **f1,
+		      rtx_insn **f2, enum replace_direction *dir_p)
 {
-  rtx i1, i2, last1, last2, afterlast1, afterlast2;
+  rtx_insn *i1, *i2, *last1, *last2, *afterlast1, *afterlast2;
   int ninsns = 0;
   enum replace_direction dir, last_dir, afterlast_dir;
   bool follow_fallthru, did_fallthru;
@@ -1310,7 +1315,7 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
      need to be compared for equivalence, which we'll do below.  */
 
   i1 = BB_END (bb1);
-  last1 = afterlast1 = last2 = afterlast2 = NULL_RTX;
+  last1 = afterlast1 = last2 = afterlast2 = NULL;
   if (onlyjump_p (i1)
       || (returnjump_p (i1) && !side_effects_p (PATTERN (i1))))
     {
@@ -1426,10 +1431,10 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
    non-zero, only count active insns.  */
 
 int
-flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
-				  rtx *f2, int stop_after)
+flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx_insn **f1,
+				  rtx_insn **f2, int stop_after)
 {
-  rtx i1, i2, last1, last2, beforelast1, beforelast2;
+  rtx_insn *i1, *i2, *last1, *last2, *beforelast1, *beforelast2;
   int ninsns = 0;
   edge e;
   edge_iterator ei;
@@ -1444,7 +1449,7 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
   i1 = BB_HEAD (bb1);
   i2 = BB_HEAD (bb2);
-  last1 = beforelast1 = last2 = beforelast2 = NULL_RTX;
+  last1 = beforelast1 = last2 = beforelast2 = NULL;
 
   while (true)
     {
@@ -1674,7 +1679,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
      Return true if they are identical.  */
     {
       rtx label1, label2;
-      rtx table1, table2;
+      rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (bb1), &label1, &table1)
 	  && tablejump_p (BB_END (bb2), &label2, &table2)
@@ -1714,15 +1719,11 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
 	      if (identical)
 		{
-		  replace_label_data rr;
 		  bool match;
 
 		  /* Temporarily replace references to LABEL1 with LABEL2
 		     in BB1->END so that we could compare the instructions.  */
-		  rr.r1 = label1;
-		  rr.r2 = label2;
-		  rr.update_label_nuses = false;
-		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
+		  replace_label_in_insn (BB_END (bb1), label1, label2, false);
 
 		  match = (old_insns_match_p (mode, BB_END (bb1), BB_END (bb2))
 			   == dir_both);
@@ -1734,9 +1735,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		  /* Set the original label in BB1->END because when deleting
 		     a block whose end is a tablejump, the tablejump referenced
 		     from the instruction is deleted too.  */
-		  rr.r1 = label2;
-		  rr.r2 = label1;
-		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
+		  replace_label_in_insn (BB_END (bb1), label2, label1, false);
 
 		  return match;
 		}
@@ -1749,8 +1748,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
      stop when we see the NOTE_INSN_BASIC_BLOCK, as old_insns_match_p
      handles that case specially. old_insns_match_p does not handle
      other types of instruction notes.  */
-  rtx last1 = BB_END (bb1);
-  rtx last2 = BB_END (bb2);
+  rtx_insn *last1 = BB_END (bb1);
+  rtx_insn *last2 = BB_END (bb2);
   while (!NOTE_INSN_BASIC_BLOCK_P (last1) &&
          (DEBUG_INSN_P (last1) || NOTE_P (last1)))
     last1 = PREV_INSN (last1);
@@ -1882,11 +1881,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   basic_block src1 = e1->src, src2 = e2->src;
   basic_block redirect_to, redirect_from, to_remove;
   basic_block osrc1, osrc2, redirect_edges_to, tmp;
-  rtx newpos1, newpos2;
+  rtx_insn *newpos1, *newpos2;
   edge s;
   edge_iterator ei;
 
-  newpos1 = newpos2 = NULL_RTX;
+  newpos1 = newpos2 = NULL;
 
   /* If we have partitioned hot/cold basic blocks, it is a bad idea
      to try this optimization.
@@ -1953,7 +1952,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
       SWAP (basic_block, osrc1, osrc2);
       SWAP (basic_block, src1, src2);
       SWAP (edge, e1, e2);
-      SWAP (rtx, newpos1, newpos2);
+      SWAP (rtx_insn *, newpos1, newpos2);
 #undef SWAP
     }
 
@@ -1977,26 +1976,22 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      so replace the references to TABLE1 by references to TABLE2.  */
     {
       rtx label1, label2;
-      rtx table1, table2;
+      rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (osrc1), &label1, &table1)
 	  && tablejump_p (BB_END (osrc2), &label2, &table2)
 	  && label1 != label2)
 	{
-	  replace_label_data rr;
-	  rtx insn;
+	  rtx_insn *insn;
 
 	  /* Replace references to LABEL1 with LABEL2.  */
-	  rr.r1 = label1;
-	  rr.r2 = label2;
-	  rr.update_label_nuses = true;
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    {
 	      /* Do not replace the label in SRC1->END because when deleting
 		 a block whose end is a tablejump, the tablejump referenced
 		 from the instruction is deleted too.  */
 	      if (insn != BB_END (osrc1))
-		for_each_rtx (&insn, replace_label, &rr);
+		replace_label_in_insn (insn, label1, label2, true);
 	    }
 	}
     }
@@ -2284,12 +2279,14 @@ try_head_merge_bb (basic_block bb)
   basic_block final_dest_bb = NULL;
   int max_match = INT_MAX;
   edge e0;
-  rtx *headptr, *currptr, *nextptr;
+  rtx_insn **headptr, **currptr, **nextptr;
   bool changed, moveall;
   unsigned ix;
-  rtx e0_last_head, cond, move_before;
+  rtx_insn *e0_last_head;
+  rtx cond;
+  rtx_insn *move_before;
   unsigned nedges = EDGE_COUNT (bb->succs);
-  rtx jump = BB_END (bb);
+  rtx_insn *jump = BB_END (bb);
   regset live, live_union;
 
   /* Nothing to do if there is not at least two outgoing edges.  */
@@ -2379,13 +2376,13 @@ try_head_merge_bb (basic_block bb)
     }
 
   e0 = EDGE_SUCC (bb, 0);
-  e0_last_head = NULL_RTX;
+  e0_last_head = NULL;
   changed = false;
 
   for (ix = 1; ix < nedges; ix++)
     {
       edge e = EDGE_SUCC (bb, ix);
-      rtx e0_last, e_last;
+      rtx_insn *e0_last, *e_last;
       int nmatch;
 
       nmatch = flow_find_head_matching_sequence (e0->dest, e->dest,
@@ -2422,15 +2419,15 @@ try_head_merge_bb (basic_block bb)
   live = BITMAP_ALLOC (NULL);
   live_union = BITMAP_ALLOC (NULL);
 
-  currptr = XNEWVEC (rtx, nedges);
-  headptr = XNEWVEC (rtx, nedges);
-  nextptr = XNEWVEC (rtx, nedges);
+  currptr = XNEWVEC (rtx_insn *, nedges);
+  headptr = XNEWVEC (rtx_insn *, nedges);
+  nextptr = XNEWVEC (rtx_insn *, nedges);
 
   for (ix = 0; ix < nedges; ix++)
     {
       int j;
       basic_block merge_bb = EDGE_SUCC (bb, ix)->dest;
-      rtx head = BB_HEAD (merge_bb);
+      rtx_insn *head = BB_HEAD (merge_bb);
 
       while (!NONDEBUG_INSN_P (head))
 	head = NEXT_INSN (head);
@@ -2451,7 +2448,7 @@ try_head_merge_bb (basic_block bb)
      with the final move.  */
   if (final_dest_bb != NULL)
     {
-      rtx move_upto;
+      rtx_insn *move_upto;
 
       moveall = can_move_insns_across (currptr[0], e0_last_head, move_before,
 				       jump, e0->dest, live_union,
@@ -2486,7 +2483,7 @@ try_head_merge_bb (basic_block bb)
 
   do
     {
-      rtx move_upto;
+      rtx_insn *move_upto;
       moveall = can_move_insns_across (currptr[0], e0_last_head,
 				       move_before, jump, e0->dest, live_union,
 				       NULL, &move_upto);
@@ -2520,7 +2517,7 @@ try_head_merge_bb (basic_block bb)
 	    break;
 	  for (ix = 0; ix < nedges; ix++)
 	    {
-	      rtx curr = currptr[ix];
+	      rtx_insn *curr = currptr[ix];
 	      do
 		curr = NEXT_INSN (curr);
 	      while (!NONDEBUG_INSN_P (curr));
@@ -2533,7 +2530,7 @@ try_head_merge_bb (basic_block bb)
       if (!moveall)
 	for (ix = 0; ix < nedges; ix++)
 	  {
-	    rtx curr = currptr[ix];
+	    rtx_insn *curr = currptr[ix];
 	    do
 	      curr = NEXT_INSN (curr);
 	    while (!NONDEBUG_INSN_P (curr));
@@ -2587,7 +2584,7 @@ try_head_merge_bb (basic_block bb)
 static bool
 trivially_empty_bb_p (basic_block bb)
 {
-  rtx insn = BB_END (bb);
+  rtx_insn *insn = BB_END (bb);
 
   while (1)
     {
@@ -2685,7 +2682,7 @@ try_optimize_cfg (int mode)
 			}
 		      else
 			{
-			  rtx last = get_last_bb_insn (b);
+			  rtx_insn *last = get_last_bb_insn (b);
 			  if (last && BARRIER_P (last))
 			    FOR_EACH_EDGE (e, ei, b->preds)
 			      if ((e->flags & EDGE_FALLTHRU))
@@ -2704,6 +2701,7 @@ try_optimize_cfg (int mode)
 		  && (single_pred_edge (b)->flags & EDGE_FALLTHRU)
 		  && !(single_pred_edge (b)->flags & EDGE_COMPLEX)
 		  && LABEL_P (BB_HEAD (b))
+		  && !LABEL_PRESERVE_P (BB_HEAD (b))
 		  /* If the previous block ends with a branch to this
 		     block, we can't delete the label.  Normally this
 		     is a condjump that is yet to be simplified, but
@@ -2959,7 +2957,7 @@ delete_dead_jumptables (void)
      between two adjacent basic blocks.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
 
       for (insn = NEXT_INSN (BB_END (bb));
 	   insn && !NOTE_INSN_BASIC_BLOCK_P (insn);
@@ -2970,7 +2968,7 @@ delete_dead_jumptables (void)
 	      && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
 	      && JUMP_TABLE_DATA_P (next))
 	    {
-	      rtx label = insn, jump = next;
+	      rtx_insn *label = insn, *jump = next;
 
 	      if (dump_file)
 		fprintf (dump_file, "Dead jumptable %i removed\n",

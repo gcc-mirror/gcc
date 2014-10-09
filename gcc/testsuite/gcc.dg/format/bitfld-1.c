@@ -46,6 +46,6 @@ foo (void)
   printf ("%ld%lu", x.u32, x.u32);
   printf ("%ld%lu", x.s32, x.s32);
 #endif
-  printf ("%llu", x.u48); /* { dg-warning "has type '.*unsigned int:48'" } */
+  printf ("%llu", x.u48); /* { dg-warning "11:has type '.*unsigned int:48'" } */
   printf ("%llu", (unsigned long long)x.u48);
 }

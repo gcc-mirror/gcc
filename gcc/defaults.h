@@ -451,7 +451,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Dwarf 2 addresses need to be larger than the architecture's
    pointers.  */
 #ifndef DWARF2_ADDR_SIZE
-#define DWARF2_ADDR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
+#define DWARF2_ADDR_SIZE ((POINTER_SIZE + BITS_PER_UNIT - 1) / BITS_PER_UNIT)
 #endif
 
 /* The size in bytes of a DWARF field indicating an offset or length
@@ -751,6 +751,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef POINTER_SIZE
 #define POINTER_SIZE BITS_PER_WORD
 #endif
+#ifndef POINTER_SIZE_UNITS
+#define POINTER_SIZE_UNITS ((POINTER_SIZE + BITS_PER_UNIT - 1) / BITS_PER_UNIT)
+#endif
+
 
 #ifndef PIC_OFFSET_TABLE_REGNUM
 #define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
@@ -920,14 +924,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 /* No debugging format is supported by this target.  */
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
-#endif
-
-#ifndef LARGEST_EXPONENT_IS_NORMAL
-#define LARGEST_EXPONENT_IS_NORMAL(SIZE) 0
-#endif
-
-#ifndef ROUND_TOWARDS_ZERO
-#define ROUND_TOWARDS_ZERO 0
 #endif
 
 #ifndef FLOAT_LIB_COMPARE_RETURNS_BOOL

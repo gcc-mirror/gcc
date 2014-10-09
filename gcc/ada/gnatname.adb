@@ -30,7 +30,6 @@ with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Dynamic_Tables;
 with GNAT.OS_Lib;       use GNAT.OS_Lib;
 
-with Hostparm;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -549,35 +548,31 @@ procedure Gnatname is
 begin
    --  Add the directory where gnatname is invoked in front of the
    --  path, if gnatname is invoked with directory information.
-   --  Only do this if the platform is not VMS, where the notion of path
-   --  does not really exist.
 
-   if not Hostparm.OpenVMS then
-      declare
-         Command : constant String := Command_Name;
+   declare
+      Command : constant String := Command_Name;
 
-      begin
-         for Index in reverse Command'Range loop
-            if Command (Index) = Directory_Separator then
-               declare
-                  Absolute_Dir : constant String :=
-                                   Normalize_Pathname
-                                     (Command (Command'First .. Index));
+   begin
+      for Index in reverse Command'Range loop
+         if Command (Index) = Directory_Separator then
+            declare
+               Absolute_Dir : constant String :=
+                                Normalize_Pathname
+                                  (Command (Command'First .. Index));
 
-                  PATH         : constant String :=
-                                   Absolute_Dir &
-                                   Path_Separator &
-                                   Getenv ("PATH").all;
+               PATH         : constant String :=
+                                Absolute_Dir &
+                                Path_Separator &
+                                Getenv ("PATH").all;
 
-               begin
-                  Setenv ("PATH", PATH);
-               end;
+            begin
+               Setenv ("PATH", PATH);
+            end;
 
-               exit;
-            end if;
-         end loop;
-      end;
-   end if;
+            exit;
+         end if;
+      end loop;
+   end;
 
    --  Initialize tables
 
@@ -585,12 +580,12 @@ begin
    declare
       New_Arguments : Argument_Data;
       pragma Warnings (Off, New_Arguments);
-      --  Declaring this defaulted initialized object ensures
-      --  that the new allocated component of table Arguments
-      --  is correctly initialized.
+      --  Declaring this defaulted initialized object ensures that the new
+      --  allocated component of table Arguments is correctly initialized.
    begin
       Arguments.Append (New_Arguments);
    end;
+
    Patterns.Init (Arguments.Table (1).Directories);
    Patterns.Set_Last (Arguments.Table (1).Directories, 0);
    Patterns.Init (Arguments.Table (1).Name_Patterns);

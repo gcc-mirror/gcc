@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "ggc.h"
 #include "dumpfile.h"
+#include "rtl-iter.h"
 
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)
 
@@ -102,8 +103,8 @@ static GTY(()) rtx savepat;
 static GTY(()) rtx restpat;
 static GTY(()) rtx test_reg;
 static GTY(()) rtx test_mem;
-static GTY(()) rtx saveinsn;
-static GTY(()) rtx restinsn;
+static GTY(()) rtx_insn *saveinsn;
+static GTY(()) rtx_insn *restinsn;
 
 /* Return the INSN_CODE used to save register REG in mode MODE.  */
 static int
@@ -417,7 +418,7 @@ setup_save_areas (void)
   int i, j, k, freq;
   HARD_REG_SET hard_regs_used;
   struct saved_hard_reg *saved_reg;
-  rtx insn;
+  rtx_insn *insn;
   struct insn_chain *chain, *next;
   unsigned int regno;
   HARD_REG_SET hard_regs_to_save, used_regs, this_insn_sets;
@@ -755,7 +756,7 @@ save_call_clobbered_regs (void)
 
   for (chain = reload_insn_chain; chain != 0; chain = next)
     {
-      rtx insn = chain->insn;
+      rtx_insn *insn = chain->insn;
       enum rtx_code code = GET_CODE (insn);
 
       next = chain->next;
@@ -878,8 +879,13 @@ save_call_clobbered_regs (void)
 		  if (GET_CODE (pat) == PARALLEL)
 		    pat = XVECEXP (pat, 0, 0);
 		  dest = SET_DEST (pat);
-		  newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
-		  chain = insert_one_insn (chain, 0, -1, newpat);
+		  /* For multiple return values dest is PARALLEL.
+		     Currently we handle only single return value case.  */
+		  if (REG_P (dest))
+		    {
+		      newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
+		      chain = insert_one_insn (chain, 0, -1, newpat);
+		    }
 		}
 	    }
           last = chain;
@@ -901,7 +907,7 @@ save_call_clobbered_regs (void)
 	      && last
 	      && last->block == chain->block)
 	    {
-	      rtx ins, prev;
+	      rtx_insn *ins, *prev;
 	      basic_block bb = BLOCK_FOR_INSN (insn);
 
 	      /* When adding hard reg restores after a DEBUG_INSN, move
@@ -913,13 +919,13 @@ save_call_clobbered_regs (void)
 		  prev = PREV_INSN (ins);
 		  if (NOTE_P (ins))
 		    {
-		      NEXT_INSN (prev) = NEXT_INSN (ins);
-		      PREV_INSN (NEXT_INSN (ins)) = prev;
-		      PREV_INSN (ins) = insn;
-		      NEXT_INSN (ins) = NEXT_INSN (insn);
-		      NEXT_INSN (insn) = ins;
+		      SET_NEXT_INSN (prev) = NEXT_INSN (ins);
+		      SET_PREV_INSN (NEXT_INSN (ins)) = prev;
+		      SET_PREV_INSN (ins) = insn;
+		      SET_NEXT_INSN (ins) = NEXT_INSN (insn);
+		      SET_NEXT_INSN (insn) = ins;
 		      if (NEXT_INSN (ins))
-			PREV_INSN (NEXT_INSN (ins)) = ins;
+			SET_PREV_INSN (NEXT_INSN (ins)) = ins;
                       if (BB_END (bb) == insn)
 			BB_END (bb) = ins;
 		    }
@@ -1336,43 +1342,33 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   return numregs - 1;
 }
 
-/* A for_each_rtx callback used by add_used_regs.  Add the hard-register
-   equivalent of each REG to regset DATA.  */
-
-static int
-add_used_regs_1 (rtx *loc, void *data)
-{
-  unsigned int regno;
-  regset live;
-  rtx x;
-
-  x = *loc;
-  live = (regset) data;
-  if (REG_P (x))
-    {
-      regno = REGNO (x);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (live, regno, hard_regno_nregs[regno][GET_MODE (x)]);
-      else
-	regno = reg_renumber[regno];
-    }
-  return 0;
-}
-
 /* A note_uses callback used by insert_one_insn.  Add the hard-register
    equivalent of each REG to regset DATA.  */
 
 static void
 add_used_regs (rtx *loc, void *data)
 {
-  for_each_rtx (loc, add_used_regs_1, data);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x))
+	{
+	  unsigned int regno = REGNO (x);
+	  if (HARD_REGISTER_NUM_P (regno))
+	    bitmap_set_range ((regset) data, regno,
+			      hard_regno_nregs[regno][GET_MODE (x)]);
+	  else
+	    gcc_checking_assert (reg_renumber[regno] < 0);
+	}
+    }
 }
 
 /* Emit a new caller-save insn and set the code.  */
 static struct insn_chain *
 insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 {
-  rtx insn = chain->insn;
+  rtx_insn *insn = chain->insn;
   struct insn_chain *new_chain;
 
 #ifdef HAVE_cc0

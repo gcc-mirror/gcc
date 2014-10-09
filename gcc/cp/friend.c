@@ -427,6 +427,10 @@ do_friend (tree ctype, tree declarator, tree decl,
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
 
+  if (DECL_OVERRIDE_P (decl) || DECL_FINAL_P (decl))
+    error ("friend declaration %qD may not have virt-specifiers",
+	   decl);
+
   /* Unfortunately, we have to handle attributes here.  Normally we would
      handle them in start_decl_1, but since this is a friend decl start_decl_1
      never gets to see it.  */

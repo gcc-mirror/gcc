@@ -55,18 +55,18 @@ static basic_block last_bb;
 
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
-static void begin_schedule_ready (rtx);
+static void begin_schedule_ready (rtx_insn *);
 static int schedule_more_p (void);
-static const char *ebb_print_insn (const_rtx, int);
-static int rank (rtx, rtx);
-static int ebb_contributes_to_priority (rtx, rtx);
+static const char *ebb_print_insn (const rtx_insn *, int);
+static int rank (rtx_insn *, rtx_insn *);
+static int ebb_contributes_to_priority (rtx_insn *, rtx_insn *);
 static basic_block earliest_block_with_similiar_load (basic_block, rtx);
-static void add_deps_for_risky_insns (rtx, rtx);
-static void debug_ebb_dependencies (rtx, rtx);
+static void add_deps_for_risky_insns (rtx_insn *, rtx_insn *);
+static void debug_ebb_dependencies (rtx_insn *, rtx_insn *);
 
-static void ebb_add_remove_insn (rtx, int);
+static void ebb_add_remove_insn (rtx_insn *, int);
 static void ebb_add_block (basic_block, basic_block);
-static basic_block advance_target_bb (basic_block, rtx);
+static basic_block advance_target_bb (basic_block, rtx_insn *);
 static void ebb_fix_recovery_cfg (int, int, int);
 
 /* Allocate memory and store the state of the frontend.  Return the allocated
@@ -98,7 +98,7 @@ schedule_more_p (void)
 
 /* Print dependency information about ebb between HEAD and TAIL.  */
 static void
-debug_ebb_dependencies (rtx head, rtx tail)
+debug_ebb_dependencies (rtx_insn *head, rtx_insn *tail)
 {
   fprintf (sched_dump,
 	   ";;   --------------- forward dependences: ------------ \n");
@@ -116,9 +116,9 @@ static void
 init_ready_list (void)
 {
   int n = 0;
-  rtx prev_head = current_sched_info->prev_head;
-  rtx next_tail = current_sched_info->next_tail;
-  rtx insn;
+  rtx_insn *prev_head = current_sched_info->prev_head;
+  rtx_insn *next_tail = current_sched_info->next_tail;
+  rtx_insn *insn;
 
   sched_rgn_n_insns = 0;
 
@@ -139,14 +139,14 @@ init_ready_list (void)
 
 /* INSN is being scheduled after LAST.  Update counters.  */
 static void
-begin_schedule_ready (rtx insn ATTRIBUTE_UNUSED)
+begin_schedule_ready (rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   sched_rgn_n_insns++;
 }
 
 /* INSN is being moved to its place in the schedule, after LAST.  */
 static void
-begin_move_insn (rtx insn, rtx last)
+begin_move_insn (rtx_insn *insn, rtx_insn *last)
 {
   if (BLOCK_FOR_INSN (insn) == last_bb
       /* INSN is a jump in the last block, ...  */
@@ -189,7 +189,7 @@ begin_move_insn (rtx insn, rtx last)
       else
 	{
 	  /* Create an empty unreachable block after the INSN.  */
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  if (next && BARRIER_P (next))
 	    next = NEXT_INSN (next);
 	  bb = create_basic_block (next, NULL_RTX, last_bb);
@@ -214,7 +214,7 @@ begin_move_insn (rtx insn, rtx last)
    to be formatted so that multiple output lines will line up nicely.  */
 
 static const char *
-ebb_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
+ebb_print_insn (const rtx_insn *insn, int aligned ATTRIBUTE_UNUSED)
 {
   static char tmp[80];
 
@@ -232,7 +232,7 @@ ebb_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
    is to be preferred.  Zero if they are equally good.  */
 
 static int
-rank (rtx insn1, rtx insn2)
+rank (rtx_insn *insn1, rtx_insn *insn2)
 {
   basic_block bb1 = BLOCK_FOR_INSN (insn1);
   basic_block bb2 = BLOCK_FOR_INSN (insn2);
@@ -251,8 +251,8 @@ rank (rtx insn1, rtx insn2)
    calculations.  */
 
 static int
-ebb_contributes_to_priority (rtx next ATTRIBUTE_UNUSED,
-                             rtx insn ATTRIBUTE_UNUSED)
+ebb_contributes_to_priority (rtx_insn *next ATTRIBUTE_UNUSED,
+                             rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -338,7 +338,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_PRO (back_dep);
+      rtx_insn *insn1 = DEP_PRO (back_dep);
 
       if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
 	/* Found a DEF-USE dependence (insn1, load_insn).  */
@@ -348,7 +348,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 
 	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_CON (fore_dep);
+	      rtx_insn *insn2 = DEP_CON (fore_dep);
 	      basic_block insn2_block = BLOCK_FOR_INSN (insn2);
 
 	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
@@ -381,12 +381,12 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
    insns in given ebb.  */
 
 static void
-add_deps_for_risky_insns (rtx head, rtx tail)
+add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn, prev;
+  rtx_insn *insn, *prev;
   int classification;
-  rtx last_jump = NULL_RTX;
-  rtx next_tail = NEXT_INSN (tail);
+  rtx_insn *last_jump = NULL;
+  rtx_insn *next_tail = NEXT_INSN (tail);
   basic_block last_block = NULL, bb;
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -477,7 +477,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
    NULL_RTX.  */
 
 basic_block
-schedule_ebb (rtx head, rtx tail, bool modulo_scheduling)
+schedule_ebb (rtx_insn *head, rtx_insn *tail, bool modulo_scheduling)
 {
   basic_block first_bb, target_bb;
   struct deps_desc tmp_deps;
@@ -621,7 +621,7 @@ schedule_ebbs (void)
 {
   basic_block bb;
   int probability_cutoff;
-  rtx tail;
+  rtx_insn *tail;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -639,7 +639,7 @@ schedule_ebbs (void)
   /* Schedule every region in the subroutine.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx head = BB_HEAD (bb);
+      rtx_insn *head = BB_HEAD (bb);
 
       if (bb->flags & BB_DISABLE_SCHEDULE)
 	continue;
@@ -668,7 +668,7 @@ schedule_ebbs (void)
 
 /* INSN has been added to/removed from current ebb.  */
 static void
-ebb_add_remove_insn (rtx insn ATTRIBUTE_UNUSED, int remove_p)
+ebb_add_remove_insn (rtx_insn *insn ATTRIBUTE_UNUSED, int remove_p)
 {
   if (!remove_p)
     rgn_n_insns++;
@@ -692,7 +692,7 @@ ebb_add_block (basic_block bb, basic_block after)
 /* Return next block in ebb chain.  For parameter meaning please refer to
    sched-int.h: struct sched_info: advance_target_bb.  */
 static basic_block
-advance_target_bb (basic_block bb, rtx insn)
+advance_target_bb (basic_block bb, rtx_insn *insn)
 {
   if (insn)
     {

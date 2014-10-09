@@ -1352,7 +1352,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && ! SUBREG_PROMOTED_UNSIGNED_P (op)
+	  && SUBREG_PROMOTED_SIGNED_P (op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
@@ -1364,8 +1364,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 (sign_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
       if (GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND)
 	{
-	  gcc_assert (GET_MODE_BITSIZE (mode)
-		      > GET_MODE_BITSIZE (GET_MODE (op)));
+	  gcc_assert (GET_MODE_PRECISION (mode)
+		      > GET_MODE_PRECISION (GET_MODE (op)));
 	  return simplify_gen_unary (GET_CODE (op), mode, XEXP (op, 0),
 				     GET_MODE (XEXP (op, 0)));
 	}
@@ -1419,7 +1419,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_UNSIGNED_P (op) > 0
+	  && SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
@@ -1476,15 +1476,15 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* (zero_extend:M (lshiftrt:N (ashift <X> (const_int I)) (const_int I)))
 	 is (zero_extend:M (subreg:O <X>)) if there is mode with
-	 GET_MODE_BITSIZE (N) - I bits.  */
+	 GET_MODE_PRECISION (N) - I bits.  */
       if (GET_CODE (op) == LSHIFTRT
 	  && GET_CODE (XEXP (op, 0)) == ASHIFT
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
-	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
+	  && GET_MODE_PRECISION (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
 	{
 	  enum machine_mode tmode
-	    = mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
+	    = mode_for_size (GET_MODE_PRECISION (GET_MODE (op))
 			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
 	  if (tmode != BLKmode)
 	    {
@@ -3079,10 +3079,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 #if defined(HAVE_rotate) && defined(HAVE_rotatert)
       if (CONST_INT_P (trueop1)
 	  && IN_RANGE (INTVAL (trueop1),
-		       GET_MODE_BITSIZE (mode) / 2 + (code == ROTATE),
-		       GET_MODE_BITSIZE (mode) - 1))
+		       GET_MODE_PRECISION (mode) / 2 + (code == ROTATE),
+		       GET_MODE_PRECISION (mode) - 1))
 	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
-				    mode, op0, GEN_INT (GET_MODE_BITSIZE (mode)
+				    mode, op0, GEN_INT (GET_MODE_PRECISION (mode)
 							- INTVAL (trueop1)));
 #endif
       /* FALLTHRU */
@@ -3099,7 +3099,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     canonicalize_shift:
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
 	{
-	  val = INTVAL (op1) & (GET_MODE_BITSIZE (mode) - 1);
+	  val = INTVAL (op1) & (GET_MODE_PRECISION (mode) - 1);
 	  if (val != INTVAL (op1))
 	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
 	}
@@ -3367,6 +3367,50 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      subop1 = XEXP (trueop0, i1);
 
 	      return simplify_gen_binary (VEC_CONCAT, mode, subop0, subop1);
+	    }
+
+	  /* If we select one half of a vec_concat, return that.  */
+	  if (GET_CODE (trueop0) == VEC_CONCAT
+	      && CONST_INT_P (XVECEXP (trueop1, 0, 0)))
+	    {
+	      rtx subop0 = XEXP (trueop0, 0);
+	      rtx subop1 = XEXP (trueop0, 1);
+	      enum machine_mode mode0 = GET_MODE (subop0);
+	      enum machine_mode mode1 = GET_MODE (subop1);
+	      int li = GET_MODE_SIZE (GET_MODE_INNER (mode0));
+	      int l0 = GET_MODE_SIZE (mode0) / li;
+	      int l1 = GET_MODE_SIZE (mode1) / li;
+	      int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
+	      if (i0 == 0 && !side_effects_p (op1) && mode == mode0)
+		{
+		  bool success = true;
+		  for (int i = 1; i < l0; ++i)
+		    {
+		      rtx j = XVECEXP (trueop1, 0, i);
+		      if (!CONST_INT_P (j) || INTVAL (j) != i)
+			{
+			  success = false;
+			  break;
+			}
+		    }
+		  if (success)
+		    return subop0;
+		}
+	      if (i0 == l0 && !side_effects_p (op0) && mode == mode1)
+		{
+		  bool success = true;
+		  for (int i = 1; i < l1; ++i)
+		    {
+		      rtx j = XVECEXP (trueop1, 0, i);
+		      if (!CONST_INT_P (j) || INTVAL (j) != i0 + i)
+			{
+			  success = false;
+			  break;
+			}
+		    }
+		  if (success)
+		    return subop1;
+		}
 	    }
 	}
 
@@ -3735,7 +3779,8 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   /* We can fold some multi-word operations.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  if ((GET_MODE_CLASS (mode) == MODE_INT
+       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
       && CONST_SCALAR_INT_P (op0)
       && CONST_SCALAR_INT_P (op1))
     {
@@ -4435,16 +4480,16 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       && op0code == XOR
       && rtx_equal_p (XEXP (op0, 0), op1)
       && !side_effects_p (XEXP (op0, 0)))
-    return simplify_gen_relational (code, mode, cmp_mode,
-				    XEXP (op0, 1), const0_rtx);
+    return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 1),
+				    CONST0_RTX (mode));
 
   /* Likewise (eq/ne (xor x y) y) simplifies to (eq/ne x 0).  */
   if ((code == EQ || code == NE)
       && op0code == XOR
       && rtx_equal_p (XEXP (op0, 1), op1)
       && !side_effects_p (XEXP (op0, 1)))
-    return simplify_gen_relational (code, mode, cmp_mode,
-				    XEXP (op0, 0), const0_rtx);
+    return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 0),
+				    CONST0_RTX (mode));
 
   /* (eq/ne (xor x C1) C2) simplifies to (eq/ne x (C1^C2)).  */
   if ((code == EQ || code == NE)
@@ -5589,7 +5634,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	{
 	  newx = gen_rtx_SUBREG (outermode, SUBREG_REG (op), final_offset);
 	  if (SUBREG_PROMOTED_VAR_P (op)
-	      && SUBREG_PROMOTED_UNSIGNED_P (op) >= 0
+	      && SUBREG_PROMOTED_SIGN (op) >= 0
 	      && GET_MODE_CLASS (outermode) == MODE_INT
 	      && IN_RANGE (GET_MODE_SIZE (outermode),
 			   GET_MODE_SIZE (innermode),
@@ -5597,8 +5642,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	      && subreg_lowpart_p (newx))
 	    {
 	      SUBREG_PROMOTED_VAR_P (newx) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET
-		(newx, SUBREG_PROMOTED_UNSIGNED_P (op));
+	      SUBREG_PROMOTED_SET (newx, SUBREG_PROMOTED_GET (op));
 	    }
 	  return newx;
 	}

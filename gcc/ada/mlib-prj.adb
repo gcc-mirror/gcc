@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with Sinput.P;
 with Snames;   use Snames;
 with Switch;   use Switch;
 with Table;
-with Targparm; use Targparm;
 with Tempdir;
 with Types;    use Types;
 
@@ -61,8 +60,8 @@ package body MLib.Prj is
 
    ALI_Suffix : constant String := ".ali";
 
-   B_Start : String_Ptr := new String'("b~");
-   --  Prefix of bind file, changed to b__ for VMS
+   B_Start : constant String := "b~";
+   --  Prefix of bind file
 
    S_Osinte_Ads : File_Name_Type := No_File;
    --  Name_Id for "s-osinte.ads"
@@ -310,9 +309,6 @@ package body MLib.Prj is
       Libgnarl_Needed   : Yes_No_Unknown := For_Project.Libgnarl_Needed;
       --  Set True if library needs to be linked with libgnarl
 
-      Libdecgnat_Needed : Boolean := False;
-      --  On OpenVMS, set True if library needs to be linked with libdecgnat
-
       Object_Directory_Path : constant String :=
                                 Get_Name_String
                                   (For_Project.Object_Directory.Display_Name);
@@ -367,9 +363,7 @@ package body MLib.Prj is
       procedure Check_Libs (ALI_File : String; Main_Project : Boolean);
       --  Set Libgnarl_Needed if the ALI_File indicates that there is a need
       --  to link with -lgnarl (this is the case when there is a dependency
-      --  on s-osinte.ads). On OpenVMS, set Libdecgnat_Needed if the ALI file
-      --  indicates that there is a need to link with -ldecgnat (this is the
-      --  case when there is a dependency on dec.ads).
+      --  on s-osinte.ads).
 
       procedure Process (The_ALI : File_Name_Type);
       --  Check if the closure of a library unit which is or should be in the
@@ -503,11 +497,8 @@ package body MLib.Prj is
          Id       : ALI.ALI_Id;
 
       begin
-         if Libgnarl_Needed /= Yes
-           or else
-            (Main_Project
-              and then OpenVMS_On_Target)
-         then
+         if Libgnarl_Needed /= Yes then
+
             --  Scan the ALI file
 
             Name_Len := ALI_File'Length;
@@ -535,11 +526,6 @@ package body MLib.Prj is
                      For_Project.Libgnarl_Needed := Yes;
                   else
                      exit;
-                  end if;
-
-               elsif OpenVMS_On_Target then
-                  if ALI.Sdep.Table (Index).Sfile = S_Dec_Ads then
-                     Libdecgnat_Needed := True;
                   end if;
                end if;
             end loop;
@@ -851,19 +837,14 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>_"
+            --  Add "-n -o b~<lib>.adb -L<lib>_"
 
             Argument_Number := 2;
             Arguments (1) := No_Main;
             Arguments (2) := Output_Switch;
 
-            if OpenVMS_On_Target then
-               B_Start := new String'("b__");
-            end if;
-
             Add_Argument
-              (B_Start.all
-               & Get_Name_String (For_Project.Library_Name) & ".adb");
+              (B_Start & Get_Name_String (For_Project.Library_Name) & ".adb");
 
             --  Make sure that the init procedure is never "adainit"
 
@@ -1220,13 +1201,8 @@ package body MLib.Prj is
             Arguments (1) := Compile_Switch;
             Arguments (2) := No_Warning;
 
-            if OpenVMS_On_Target then
-               B_Start := new String'("b__");
-            end if;
-
             Add_Argument
-              (B_Start.all
-               & Get_Name_String (For_Project.Library_Name) & ".adb");
+              (B_Start & Get_Name_String (For_Project.Library_Name) & ".adb");
 
             --  If necessary, add the PIC option
 
@@ -1429,7 +1405,7 @@ package body MLib.Prj is
                            if In_Main_Object_Directory
                              or else Last < 5
                              or else
-                               C_Filename (1 .. B_Start'Length) /= B_Start.all
+                               C_Filename (1 .. B_Start'Length) /= B_Start
                            then
                               Name_Len := 0;
                               Add_Str_To_Name_Buffer (C_Filename);
@@ -1458,7 +1434,7 @@ package body MLib.Prj is
                                           (Last >= 5
                                              and then
                                                C_Filename (1 .. B_Start'Length)
-                                                 = B_Start.all);
+                                                 = B_Start);
 
                                     if Is_Regular_File (ALI_Path) then
 
@@ -1624,21 +1600,6 @@ package body MLib.Prj is
             end if;
          end if;
 
-         if Libdecgnat_Needed then
-            Opts.Increment_Last;
-
-            Opts.Table (Opts.Last) :=
-              new String'("-L" & Lib_Directory & "/../declib");
-
-            Opts.Increment_Last;
-
-            if The_Build_Mode = Static then
-               Opts.Table (Opts.Last) := new String'("-ldecgnat");
-            else
-               Opts.Table (Opts.Last) := new String'(Shared_Lib ("decgnat"));
-            end if;
-         end if;
-
          Opts.Increment_Last;
 
          if The_Build_Mode = Static then
@@ -1765,10 +1726,8 @@ package body MLib.Prj is
          Argument_Number := 0;
 
          --  If we have a standalone library, gather all the interface ALI.
-         --  They are passed to Build_Dynamic_Library, where they are used by
-         --  some platforms (VMS, for example) to decide what symbols should be
-         --  exported. They are also flagged as Interface when we copy them to
-         --  the library directory (by Copy_ALI_Files, below).
+         --  They are flagged as Interface when we copy them to the library
+         --  directory (by Copy_ALI_Files, below).
 
          if Standalone then
             Current_Proj := For_Project;
@@ -2131,10 +2090,6 @@ package body MLib.Prj is
                Object_Dir : Dir_Type;
 
             begin
-               if OpenVMS_On_Target then
-                  B_Start := new String'("b__");
-               end if;
-
                --  If the library file does not exist, then the time stamp will
                --  be Empty_Time_Stamp, earlier than any other time stamp.
 
@@ -2152,7 +2107,7 @@ package body MLib.Prj is
                   --  generated file.
 
                   if Is_Obj (Name_Buffer (1 .. Name_Len))
-                    and then Name_Buffer (1 .. B_Start'Length) /= B_Start.all
+                    and then Name_Buffer (1 .. B_Start'Length) /= B_Start
                   then
                      --  Get the object file time stamp
 
@@ -2443,9 +2398,8 @@ package body MLib.Prj is
 
             --  Also ignore the shared libraries which are :
 
-            --  UNIX / Windows    VMS
-            --  -lgnat-<version>  -lgnat_<version>  (7 + version'length chars)
-            --  -lgnarl-<version> -lgnarl_<version> (8 + version'length chars)
+            --  -lgnat-<version>  (7 + version'length chars)
+            --  -lgnarl-<version> (8 + version'length chars)
 
             if Next_Line (1 .. Nlast) /= "-static" and then
                Next_Line (1 .. Nlast) /= "-shared" and then

@@ -18,7 +18,7 @@ baz (int i)
 {
   (*tformatprintf0) ("%d", i);
   (*tformatprintf0) ((*tformat_arg) ("%d"), i);
-  (*tformatprintf0) ("%"); /* { dg-warning "format" "prefix" } */
+  (*tformatprintf0) ("%"); /* { dg-warning "22:format" "prefix" } */
   (*tformatprintf0) ((*tformat_arg) ("%")); /* { dg-warning "format" "prefix" } */
   (*tformatprintf1) ("%d", i);
   (*tformatprintf1) ((*tformat_arg) ("%d"), i);

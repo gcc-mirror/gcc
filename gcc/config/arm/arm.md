@@ -3449,7 +3449,7 @@
 	 [(match_operand:SI 1 "s_register_operand" "r")
 	  (match_operand:SI 2 "s_register_operand" "r")]))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && optimize_function_for_size_p (cfun)"
+  "TARGET_32BIT && optimize_function_for_size_p (cfun) && !arm_restrict_it"
   "*
   operands[3] = gen_rtx_fmt_ee (minmax_code (operands[3]), SImode,
 				operands[1], operands[2]);
@@ -6425,7 +6425,7 @@
 
 (define_insn "*arm_movqi_insn"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,r,l,Uu,r,m")
-	(match_operand:QI 1 "general_operand" "rk,rk,I,Py,K,Uu,l,m,r"))]
+	(match_operand:QI 1 "general_operand" "rk,rk,I,Py,K,Uu,l,Uh,r"))]
   "TARGET_32BIT
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
@@ -6713,6 +6713,20 @@
 			      INTVAL (operands[2]),
 			      force_reg (SImode, XEXP (operands[0], 0)),
 			      FALSE, operands[0], &offset);
+})
+
+
+(define_expand "setmemsi"
+  [(match_operand:BLK 0 "general_operand" "")
+   (match_operand:SI 1 "const_int_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")
+   (match_operand:SI 3 "const_int_operand" "")]
+  "TARGET_32BIT"
+{
+  if (arm_gen_setmem (operands))
+    DONE;
+
+  FAIL;
 })
 
 
@@ -7411,7 +7425,7 @@
     return \"\";
   }"
   [(set_attr "conds" "use")
-   (set_attr "type" "f_sel<vfp_type>")]
+   (set_attr "type" "fcsel")]
 )
 
 (define_insn_and_split "*movsicc_insn"
@@ -9314,10 +9328,16 @@
     enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[5]),
 					     operands[3], operands[4]);
     enum rtx_code rc = GET_CODE (operands[5]);
-
     operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     gcc_assert (!(mode == CCFPmode || mode == CCFPEmode));
-    rc = reverse_condition (rc);
+    if (REGNO (operands[2]) != REGNO (operands[0]))
+      rc = reverse_condition (rc);
+    else 
+      {
+	rtx tmp = operands[1];
+	operands[1] = operands[2];
+	operands[2] = tmp;
+      }
 
     operands[6] = gen_rtx_fmt_ee (rc, VOIDmode, operands[6], const0_rtx);
   }
@@ -10514,7 +10534,7 @@
     int num_regs = XVECLEN (operands[0], 0);
     char pattern[100];
     rtx op_list[2];
-    strcpy (pattern, \"fldmfdd\\t\");
+    strcpy (pattern, \"vldm\\t\");
     strcat (pattern, reg_names[REGNO (SET_DEST (XVECEXP (operands[0], 0, 0)))]);
     strcat (pattern, \"!, {\");
     op_list[0] = XEXP (XVECEXP (operands[0], 0, 1), 0);
@@ -10662,6 +10682,7 @@
   "TARGET_32BIT && arm_arch5"
   "clz%?\\t%0, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "clz")])
 
 (define_insn "rbitsi2"
@@ -10670,6 +10691,7 @@
   "TARGET_32BIT && arm_arch_thumb2"
   "rbit%?\\t%0, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "clz")])
 
 (define_expand "ctzsi2"
@@ -10829,6 +10851,8 @@
    rev%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "rev")]
 )
 

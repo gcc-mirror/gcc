@@ -411,6 +411,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx512er = 0, has_avx512pf = 0, has_avx512cd = 0;
   unsigned int has_avx512f = 0, has_sha = 0, has_prefetchwt1 = 0;
   unsigned int has_clflushopt = 0, has_xsavec = 0, has_xsaves = 0;
+  unsigned int has_avx512dq = 0, has_avx512bw = 0, has_avx512vl = 0;
 
   bool arch;
 
@@ -432,7 +433,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;
-  if (vendor == signature_INTEL_ebx)
+  if (vendor == signature_INTEL_ebx
+      || vendor == signature_AMD_ebx)
     {
       unsigned int extended_model, extended_family;
 
@@ -488,6 +490,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512cd = ebx & bit_AVX512CD;
       has_sha = ebx & bit_SHA;
       has_clflushopt = ebx & bit_CLFLUSHOPT;
+      has_avx512dq = ebx & bit_AVX512DQ;
+      has_avx512bw = ebx & bit_AVX512BW;
+      has_avx512vl = ebx & bit_AVX512VL;
 
       has_prefetchwt1 = ecx & bit_PREFETCHWT1;
     }
@@ -528,6 +533,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 #define XSTATE_FP			0x1
 #define XSTATE_SSE			0x2
 #define XSTATE_YMM			0x4
+#define XSTATE_OPMASK			0x20
+#define XSTATE_ZMM			0x40
+#define XSTATE_HI_ZMM			0x80
   if (has_osxsave)
     asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
 	 : "=a" (eax), "=d" (edx)
@@ -547,6 +555,20 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xsaveopt = 0;
       has_xsaves = 0;
       has_xsavec = 0;
+    }
+
+  if (!has_osxsave
+      || (eax &
+	  (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
+	  != (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
+    {
+      has_avx512f = 0;
+      has_avx512er = 0;
+      has_avx512pf = 0;
+      has_avx512cd = 0;
+      has_avx512dq = 0;
+      has_avx512bw = 0;
+      has_avx512vl = 0;
     }
 
   if (!arch)
@@ -576,7 +598,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       if (name == signature_NSC_ebx)
 	processor = PROCESSOR_GEODE;
-      else if (has_movbe)
+      else if (has_movbe && family == 22)
 	processor = PROCESSOR_BTVER2;
       else if (has_avx2)
         processor = PROCESSOR_BDVER4;
@@ -900,6 +922,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *clflushopt = has_clflushopt ? " -mclflushopt" : " -mno-clflushopt";
       const char *xsavec = has_xsavec ? " -mxsavec" : " -mno-xsavec";
       const char *xsaves = has_xsaves ? " -mxsaves" : " -mno-xsaves";
+      const char *avx512dq = has_avx512dq ? " -mavx512dq" : " -mno-avx512dq";
+      const char *avx512bw = has_avx512bw ? " -mavx512bw" : " -mno-avx512bw";
+      const char *avx512vl = has_avx512vl ? " -mavx512vl" : " -mno-avx512vl";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
@@ -908,7 +933,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,
 			fxsr, xsave, xsaveopt, avx512f, avx512er,
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
-			xsavec, xsaves, NULL);
+			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
+			NULL);
     }
 
 done:
@@ -920,8 +946,7 @@ done:
    -march and -mtune "native" target and will leave to the newly
    built compiler to generate code for its default target.  */
 
-const char *host_detect_local_cpu (int argc ATTRIBUTE_UNUSED,
-				   const char **argv ATTRIBUTE_UNUSED)
+const char *host_detect_local_cpu (int, const char **)
 {
   return NULL;
 }

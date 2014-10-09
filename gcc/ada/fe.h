@@ -55,8 +55,7 @@ extern char Fold_Lower[], Fold_Upper[];
 #define Debug_Flag_NN debug__debug_flag_nn
 extern Boolean Debug_Flag_NN;
 
-/* einfo: We will be setting Esize for types, Component_Bit_Offset for fields,
-   Alignment for types and objects, Component_Size for array types.  */
+/* einfo: */
 
 #define Set_Alignment			einfo__set_alignment
 #define Set_Component_Bit_Offset	einfo__set_component_bit_offset
@@ -155,11 +154,6 @@ extern void Get_External_Name	(Entity_Id, Boolean, String_Pointer);
 
 extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
 
-/* exp_vfpt: */
-
-#define Get_Vax_Real_Literal_As_Signed exp_vfpt__get_vax_real_literal_as_signed
-extern Ureal Get_Vax_Real_Literal_As_Signed (Node_Id);
-
 /* lib: */
 
 #define Cunit 				lib__cunit
@@ -174,20 +168,24 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 
 /* opt: */
 
+#define Back_End_Inlining              opt__back_end_inlining
 #define Exception_Extra_Info           opt__exception_extra_info
 #define Exception_Locations_Suppressed opt__exception_locations_suppressed
 #define Exception_Mechanism            opt__exception_mechanism
-#define Generate_SCO_Instance_Table    opt__generate_sco_instance_table
 #define Float_Format                   opt__float_format
+#define Generate_SCO_Instance_Table    opt__generate_sco_instance_table
+#define GNAT_Mode                      opt__gnat_mode
 #define List_Representation_Info       opt__list_representation_info
 
 typedef enum {Setjmp_Longjmp, Back_End_Exceptions} Exception_Mechanism_Type;
 
+extern Boolean Back_End_Inlining;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;
-extern Boolean Generate_SCO_Instance_Table;
 extern Char Float_Format;
+extern Boolean Generate_SCO_Instance_Table;
+extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 
 /* restrict: */
@@ -201,6 +199,11 @@ extern Boolean No_Exception_Handlers_Set   (void);
 extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed (Node_Id);
+
+/* sem_aggr:  */
+#define Is_Others_Aggregate    sem_aggr__is_others_aggregate
+
+extern Boolean Is_Others_Aggregate (Node_Id);
 
 /* sem_aux:  */
 

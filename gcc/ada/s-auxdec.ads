@@ -39,13 +39,7 @@ package System.Aux_DEC is
    pragma Preelaborate;
 
    subtype Short_Address is Address;
-   --  In some versions of System.Aux_DEC, notably that for VMS on IA64, there
-   --  are two address types (64-bit and 32-bit), and the name Short_Address
-   --  is used for the short address form. To avoid difficulties (in regression
-   --  tests and elsewhere) with units that reference Short_Address, it is
-   --  provided for other targets as a synonym for the normal Address type,
-   --  and, as in the case where the lengths are different, Address and
-   --  Short_Address can be freely inter-converted.
+   --  For compatibility with systems having short and long addresses
 
    type Integer_8  is range -2 **  (8 - 1) .. +2 **  (8 - 1) - 1;
    for Integer_8'Size  use  8;
@@ -109,27 +103,15 @@ package System.Aux_DEC is
 
    --  Floating point type declarations for VAX floating point data types
 
-   pragma Warnings (Off);
-   --  ??? needs comment
-
    type F_Float is digits 6;
-   pragma Float_Representation (VAX_Float, F_Float);
-
    type D_Float is digits 9;
-   pragma Float_Representation (Vax_Float, D_Float);
-
    type G_Float is digits 15;
-   pragma Float_Representation (Vax_Float, G_Float);
+   --  We provide the type names, but these will be IEEE format, not VAX format
 
    --  Floating point type declarations for IEEE floating point data types
 
    type IEEE_Single_Float is digits 6;
-   pragma Float_Representation (IEEE_Float, IEEE_Single_Float);
-
    type IEEE_Double_Float is digits 15;
-   pragma Float_Representation (IEEE_Float, IEEE_Double_Float);
-
-   pragma Warnings (On);
 
    Non_Ada_Error : exception;
 

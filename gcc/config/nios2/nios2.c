@@ -1304,7 +1304,7 @@ nios2_emit_expensive_div (rtx *operands, enum machine_mode mode)
 {
   rtx or_result, shift_left_result;
   rtx lookup_value;
-  rtx lab1, lab3;
+  rtx_code_label *lab1, *lab3;
   rtx insns;
   rtx libfunc;
   rtx final_result;

@@ -273,6 +273,7 @@ package body Impunit is
     ("g-expect", F),  -- GNAT.Expect
     ("g-exptty", F),  -- GNAT.Expect.TTY
     ("g-flocon", F),  -- GNAT.Float_Control
+    ("g-forstr", F),  -- GNAT.Formatted_String
     ("g-heasor", F),  -- GNAT.Heap_Sort
     ("g-hesora", F),  -- GNAT.Heap_Sort_A
     ("g-hesorg", F),  -- GNAT.Heap_Sort_G
@@ -344,7 +345,6 @@ package body Impunit is
     ("i-cexten", F),  -- Interfaces.C.Extensions
     ("i-cil   ", F),  -- Interfaces.CIL
     ("i-cilobj", F),  -- Interfaces.CIL.Object
-    ("i-cpp   ", F),  -- Interfaces.CPP
     ("i-cstrea", F),  -- Interfaces.C.Streams
     ("i-java  ", F),  -- Interfaces.Java
     ("i-javjni", F),  -- Interfaces.Java.JNI

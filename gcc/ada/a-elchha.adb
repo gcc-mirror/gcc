@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,14 +49,19 @@ is
    pragma Import (Ada, Exception_Message_Length, "__gnat_exception_msg_len");
 
    procedure Append_Info_Exception_Message
-     (X : Exception_Occurrence; Info : in out String; Ptr : in out Natural);
+     (X    : Exception_Occurrence;
+      Info : in out String;
+      Ptr  : in out Natural);
    pragma Import
      (Ada, Append_Info_Exception_Message, "__gnat_append_info_e_msg");
 
-   procedure Append_Info_Exception_Information
-     (X : Exception_Occurrence; Info : in out String; Ptr : in out Natural);
+   procedure Append_Info_Untailored_Exception_Information
+     (X    : Exception_Occurrence;
+      Info : in out String;
+      Ptr  : in out Natural);
    pragma Import
-     (Ada, Append_Info_Exception_Information, "__gnat_append_info_e_info");
+     (Ada, Append_Info_Untailored_Exception_Information,
+      "__gnat_append_info_u_e_info");
 
    procedure To_Stderr (S : String);
    pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
@@ -129,7 +134,7 @@ begin
       To_Stderr ("Execution terminated by unhandled exception");
       To_Stderr (Nline);
 
-      Append_Info_Exception_Information (Except, Nobuf, Ptr);
+      Append_Info_Untailored_Exception_Information (Except, Nobuf, Ptr);
    end if;
 
    Unhandled_Terminate;

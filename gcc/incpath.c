@@ -263,7 +263,8 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 	      /* If -Wmissing-include-dirs is given, warn.  */
 	      cpp_options *opts = cpp_get_options (pfile);
 	      if (opts->warn_missing_include_dirs && cur->user_supplied_p)
-		cpp_errno (pfile, CPP_DL_WARNING, cur->name);
+		cpp_warning (pfile, CPP_W_MISSING_INCLUDE_DIRS, "%s: %s",
+			     cur->name, xstrerror (errno));
 	      reason = REASON_NOENT;
 	    }
 	}

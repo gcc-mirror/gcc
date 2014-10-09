@@ -41,21 +41,21 @@ func main() {
 	asBool(1 != 2) // ok now
 	asBool(i < j)  // ok now
 
-	_, b = m[2] // ERROR "cannot .* bool.*type Bool"
+	_, b = m[2]
 
 	var inter interface{}
-	_, b = inter.(Map) // ERROR "cannot .* bool.*type Bool"
+	_, b = inter.(Map)
 	_ = b
 
 	var minter interface {
 		M()
 	}
-	_, b = minter.(Map) // ERROR "cannot .* bool.*type Bool"
+	_, b = minter.(Map)
 	_ = b
 
 	_, bb := <-c
 	asBool(bb) // ERROR "cannot use.*type bool.*as type Bool"
-	_, b = <-c // ERROR "cannot .* bool.*type Bool"
+	_, b = <-c
 	_ = b
 
 	asString(String(slice)) // ok

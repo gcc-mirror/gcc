@@ -65,7 +65,7 @@ static rtx extract_fixed_bit_field_1 (enum machine_mode, rtx,
 static rtx lshift_value (enum machine_mode, unsigned HOST_WIDE_INT, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, int);
-static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
+static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx_code_label *);
 static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
@@ -118,13 +118,19 @@ init_expmed_one_conv (struct init_expmed_rtl *all, enum machine_mode to_mode,
   int to_size, from_size;
   rtx which;
 
-  /* We're given no information about the true size of a partial integer,
-     only the size of the "full" integer it requires for storage.  For
-     comparison purposes here, reduce the bit size by one in that case.  */
-  to_size = (GET_MODE_BITSIZE (to_mode)
-	     - (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT));
-  from_size = (GET_MODE_BITSIZE (from_mode)
-	       - (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT));
+  to_size = GET_MODE_PRECISION (to_mode);
+  from_size = GET_MODE_PRECISION (from_mode);
+
+  /* Most partial integers have a precision less than the "full"
+     integer it requires for storage.  In case one doesn't, for
+     comparison purposes here, reduce the bit size by one in that
+     case.  */
+  if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT
+      && exact_log2 (to_size) != -1)
+    to_size --;
+  if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT
+      && exact_log2 (from_size) != -1)
+    from_size --;
   
   /* Assume cost of zero-extend and sign-extend is the same.  */
   which = (to_size < from_size ? all->trunc : all->zext);
@@ -482,7 +488,7 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
   struct expand_operand ops[4];
   rtx value1;
   rtx xop0 = op0;
-  rtx last = get_last_insn ();
+  rtx_insn *last = get_last_insn ();
   bool copy_back = false;
 
   enum machine_mode op_mode = insv->field_mode;
@@ -768,7 +774,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       unsigned int backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
       unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       unsigned int i;
-      rtx last;
+      rtx_insn *last;
 
       /* This is the mode we must force value to, so that there will be enough
 	 subwords to extract.  Note that fieldmode will often (always?) be
@@ -874,7 +880,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  && store_bit_field_using_insv (&insv, op0, bitsize, bitnum, value))
 	return true;
 
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       /* Try loading part of OP0 into a register, inserting the bitfield
 	 into that, and then copying the result back to OP0.  */
@@ -1051,16 +1057,17 @@ store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   if (CONST_INT_P (value))
     {
-      HOST_WIDE_INT v = INTVAL (value);
+      unsigned HOST_WIDE_INT v = UINTVAL (value);
 
       if (bitsize < HOST_BITS_PER_WIDE_INT)
-	v &= ((HOST_WIDE_INT) 1 << bitsize) - 1;
+	v &= ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1;
 
       if (v == 0)
 	all_zero = 1;
       else if ((bitsize < HOST_BITS_PER_WIDE_INT
-		&& v == ((HOST_WIDE_INT) 1 << bitsize) - 1)
-	       || (bitsize == HOST_BITS_PER_WIDE_INT && v == -1))
+		&& v == ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1)
+	       || (bitsize == HOST_BITS_PER_WIDE_INT
+		   && v == (unsigned HOST_WIDE_INT) -1))
 	all_one = 1;
 
       value = lshift_value (mode, v, bitnum);
@@ -1553,7 +1560,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       unsigned int backwards = WORDS_BIG_ENDIAN;
       unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       unsigned int i;
-      rtx last;
+      rtx_insn *last;
 
       if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
@@ -1671,7 +1678,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    return result;
 	}
 
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       /* Try loading part of OP0 into a register and extracting the
 	 bitfield from that.  */
@@ -2906,7 +2913,8 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 		   enum mult_variant variant)
 {
   HOST_WIDE_INT val_so_far;
-  rtx insn, accum, tem;
+  rtx_insn *insn;
+  rtx accum, tem;
   int opno;
   enum machine_mode nmode;
 
@@ -3503,7 +3511,8 @@ expmed_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
       && (mul_cost (speed, wider_mode) + shift_cost (speed, mode, size-1)
 	  < max_cost))
     {
-      rtx insns, wop0, wop1;
+      rtx_insn *insns;
+      rtx wop0, wop1;
 
       /* We need to widen the operands, for example to ensure the
 	 constant multiplier is correctly sign or zero extended.
@@ -3624,7 +3633,8 @@ expmed_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
 static rtx
 expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 {
-  rtx result, temp, shift, label;
+  rtx result, temp, shift;
+  rtx_code_label *label;
   int logd;
   int prec = GET_MODE_PRECISION (mode);
 
@@ -3720,7 +3730,8 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 static rtx
 expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 {
-  rtx temp, label;
+  rtx temp;
+  rtx_code_label *label;
   int logd;
 
   logd = floor_log2 (d);
@@ -3753,7 +3764,7 @@ expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 				     mode, temp, temp2, mode, 0);
       if (temp2)
 	{
-	  rtx seq = get_insns ();
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
 	  emit_insn (seq);
 	  return expand_shift (RSHIFT_EXPR, mode, temp2, logd, NULL_RTX, 0);
@@ -3835,9 +3846,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
   enum machine_mode compute_mode;
   rtx tquotient;
   rtx quotient = 0, remainder = 0;
-  rtx last;
+  rtx_insn *last;
   int size;
-  rtx insn;
+  rtx_insn *insn;
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2 = 0;
   int max_cost, extra_cost;
@@ -4455,7 +4466,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	    /* This could be computed with a branch-less sequence.
 	       Save that for later.  */
 	    rtx tem;
-	    rtx label = gen_label_rtx ();
+	    rtx_code_label *label = gen_label_rtx ();
 	    do_cmp_and_jump (remainder, const0_rtx, EQ, compute_mode, label);
 	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);
@@ -4469,7 +4480,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	/* No luck with division elimination or divmod.  Have to do it
 	   by conditionally adjusting op0 *and* the result.  */
 	{
-	  rtx label1, label2, label3, label4, label5;
+	  rtx_code_label *label1, *label2, *label3, *label4, *label5;
 	  rtx adjusted_op0;
 	  rtx tem;
 
@@ -4530,7 +4541,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 				      compute_mode, 1, 1);
 		if (t3 == 0)
 		  {
-		    rtx lab;
+		    rtx_code_label *lab;
 		    lab = gen_label_rtx ();
 		    do_cmp_and_jump (t2, const0_rtx, EQ, compute_mode, lab);
 		    expand_inc (t1, const1_rtx);
@@ -4570,7 +4581,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	      {
 		/* This could be computed with a branch-less sequence.
 		   Save that for later.  */
-		rtx label = gen_label_rtx ();
+		rtx_code_label *label = gen_label_rtx ();
 		do_cmp_and_jump (remainder, const0_rtx, EQ,
 				 compute_mode, label);
 		expand_inc (quotient, const1_rtx);
@@ -4582,7 +4593,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	    /* No luck with division elimination or divmod.  Have to do it
 	       by conditionally adjusting op0 *and* the result.  */
 	    {
-	      rtx label1, label2;
+	      rtx_code_label *label1, *label2;
 	      rtx adjusted_op0, tem;
 
 	      quotient = gen_reg_rtx (compute_mode);
@@ -4627,7 +4638,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 				      compute_mode, 1, 1);
 		if (t3 == 0)
 		  {
-		    rtx lab;
+		    rtx_code_label *lab;
 		    lab = gen_label_rtx ();
 		    do_cmp_and_jump (t2, const0_rtx, EQ, compute_mode, lab);
 		    expand_inc (t1, const1_rtx);
@@ -4667,7 +4678,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		/* This could be computed with a branch-less sequence.
 		   Save that for later.  */
 		rtx tem;
-		rtx label = gen_label_rtx ();
+		rtx_code_label *label = gen_label_rtx ();
 		do_cmp_and_jump (remainder, const0_rtx, EQ,
 				 compute_mode, label);
 		tem = expand_binop (compute_mode, xor_optab, op0, op1,
@@ -4682,7 +4693,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	    /* No luck with division elimination or divmod.  Have to do it
 	       by conditionally adjusting op0 *and* the result.  */
 	    {
-	      rtx label1, label2, label3, label4, label5;
+	      rtx_code_label *label1, *label2, *label3, *label4, *label5;
 	      rtx adjusted_op0;
 	      rtx tem;
 
@@ -4757,7 +4768,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	if (unsignedp)
 	  {
 	    rtx tem;
-	    rtx label;
+	    rtx_code_label *label;
 	    label = gen_label_rtx ();
 	    quotient = gen_reg_rtx (compute_mode);
 	    remainder = gen_reg_rtx (compute_mode);
@@ -4780,7 +4791,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	else
 	  {
 	    rtx abs_rem, abs_op1, tem, mask;
-	    rtx label;
+	    rtx_code_label *label;
 	    label = gen_label_rtx ();
 	    quotient = gen_reg_rtx (compute_mode);
 	    remainder = gen_reg_rtx (compute_mode);
@@ -5090,7 +5101,8 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 	     enum machine_mode target_mode)
 {
   struct expand_operand ops[4];
-  rtx op0, last, comparison, subtarget;
+  rtx op0, comparison, subtarget;
+  rtx_insn *last;
   enum machine_mode result_mode = targetm.cstore_mode (icode);
 
   last = get_last_insn ();
@@ -5394,7 +5406,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   enum machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
   enum rtx_code rcode;
   rtx subtarget;
-  rtx tem, last, trueval;
+  rtx tem, trueval;
+  rtx_insn *last;
 
   /* If we compare constants, we shouldn't use a store-flag operation,
      but a constant load.  We can get there via the vanilla route that
@@ -5722,7 +5735,8 @@ rtx
 emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 		       enum machine_mode mode, int unsignedp, int normalizep)
 {
-  rtx tem, label;
+  rtx tem;
+  rtx_code_label *label;
   rtx trueval, falseval;
 
   /* First see if emit_store_flag can do the job.  */
@@ -5796,7 +5810,7 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
 static void
 do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, enum machine_mode mode,
-		 rtx label)
+		 rtx_code_label *label)
 {
   int unsignedp = (op == LTU || op == LEU || op == GTU || op == GEU);
   do_compare_rtx_and_jump (arg1, arg2, op, unsignedp, mode,

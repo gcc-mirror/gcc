@@ -236,7 +236,7 @@ class Parse
 			 bool* is_type_switch, bool* is_parenthesized);
   Type* reassociate_chan_direction(Channel_type*, Location);
   Expression* qualified_expr(Expression*, Location);
-  Expression* id_to_expression(const std::string&, Location);
+  Expression* id_to_expression(const std::string&, Location, bool);
   void statement(Label*);
   bool statement_may_start_here();
   void labeled_stmt(const std::string&, Location);

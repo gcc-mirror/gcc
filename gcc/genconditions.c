@@ -70,6 +70,7 @@ write_header (void)
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"insn-constants.h\"\n\
+#include \"ggc.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"function.h\"\n\
@@ -95,7 +96,7 @@ write_header (void)
 
   puts ("\
 /* Dummy external declarations.  */\n\
-extern rtx insn;\n\
+extern rtx_insn *insn;\n\
 extern rtx ins1;\n\
 extern rtx operands[];\n\
 \n\

@@ -308,7 +308,7 @@
 (define_constraint "Clb"
   "label"
   (and (match_code "label_ref")
-       (match_test "arc_text_label (XEXP (op, 0))")))
+       (match_test "arc_text_label (as_a <rtx_insn *> (XEXP (op, 0)))")))
 
 (define_constraint "Cal"
   "constant for arithmetic/logical operations"

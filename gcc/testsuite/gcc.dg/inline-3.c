@@ -1,5 +1,7 @@
 /* { dg-options "-O2 -funit-at-a-time" } */
 /* { dg-final { scan-assembler-not "big_function_2" } } */
+
+int t(void);
 static void
 big_function_2(void);
 void

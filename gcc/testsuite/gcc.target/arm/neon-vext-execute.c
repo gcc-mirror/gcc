@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_neon_ok } */
+/* { dg-require-effective-target arm_neon_hw } */
 /* { dg-require-effective-target arm_little_endian } */
 /* { dg-options "-O2" } */
 /* { dg-add-options arm_neon } */

@@ -354,7 +354,7 @@ lto_obj_begin_section (const char *name)
    DATA.  */
 
 void
-lto_obj_append_data (const void *data, size_t len, void *block)
+lto_obj_append_data (const void *data, size_t len, void *)
 {
   struct lto_simple_object *lo;
   const char *errmsg;
@@ -372,8 +372,6 @@ lto_obj_append_data (const void *data, size_t len, void *block)
       else
 	fatal_error ("%s: %s", errmsg, xstrerror (errno));
     }
-
-  free (block);
 }
 
 /* Stop writing to the current output section.  */

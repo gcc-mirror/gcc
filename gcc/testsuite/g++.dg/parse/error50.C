@@ -15,4 +15,4 @@ struct B
   static T i;
 };
 
-template<> template <> int B<int>::i; // { dg-error "should be 1" }
+template<> template <> int B<int>::i; // { dg-error "template|should be 1" }

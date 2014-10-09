@@ -126,11 +126,6 @@ c_parse_init (void)
    C++).  It would then be possible to share more of the C and C++
    lexer code, if desired.  */
 
-/* The following local token type is used.  */
-
-/* A keyword.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
 /* More information about the type of a CPP_NAME token.  */
 typedef enum c_id_kind {
   /* An ordinary identifier.  */
@@ -1072,7 +1067,15 @@ disable_extension_diagnostics (void)
 	     | (flag_iso << 3)
 	     | (warn_long_long << 4)
 	     | (warn_cxx_compat << 5)
-	     | (warn_overlength_strings << 6));
+	     | (warn_overlength_strings << 6)
+	     /* warn_c90_c99_compat has three states: -1/0/1, so we must
+		play tricks to properly restore it.  */
+	     | ((warn_c90_c99_compat == 1) << 7)
+	     | ((warn_c90_c99_compat == -1) << 8)
+	     /* Similarly for warn_c99_c11_compat.  */
+	     | ((warn_c99_c11_compat == 1) << 9)
+	     | ((warn_c99_c11_compat == -1) << 10)
+	     );
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
   cpp_opts->cpp_warn_traditional = warn_traditional = 0;
@@ -1080,6 +1083,8 @@ disable_extension_diagnostics (void)
   cpp_opts->cpp_warn_long_long = warn_long_long = 0;
   warn_cxx_compat = 0;
   warn_overlength_strings = 0;
+  warn_c90_c99_compat = 0;
+  warn_c99_c11_compat = 0;
   return ret;
 }
 
@@ -1096,6 +1101,9 @@ restore_extension_diagnostics (int flags)
   cpp_opts->cpp_warn_long_long = warn_long_long = (flags >> 4) & 1;
   warn_cxx_compat = (flags >> 5) & 1;
   warn_overlength_strings = (flags >> 6) & 1;
+  /* See above for why is this needed.  */
+  warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
+  warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
 }
 
 /* Possibly kinds of declarator to parse.  */
@@ -1251,9 +1259,11 @@ static bool c_parser_objc_diagnose_bad_element_prefix
 
 /* Cilk Plus supporting routines.  */
 static void c_parser_cilk_simd (c_parser *);
+static void c_parser_cilk_for (c_parser *, tree);
 static bool c_parser_cilk_verify_simd (c_parser *, enum pragma_context);
 static tree c_parser_array_notation (location_t, c_parser *, tree, tree);
 static tree c_parser_cilk_clause_vectorlength (c_parser *, tree, bool);
+static void c_parser_cilk_grainsize (c_parser *);
 
 /* Parse a translation unit (C90 6.7, C99 6.9).
 
@@ -1967,7 +1977,7 @@ c_parser_asm_definition (c_parser *parser)
 {
   tree asm_str = c_parser_simple_asm_expr (parser);
   if (asm_str)
-    add_asm_node (asm_str);
+    symtab->finalize_toplevel_asm (asm_str);
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 }
 
@@ -2002,15 +2012,12 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT));
   assert_loc = c_parser_peek_token (parser)->location;
-  if (!flag_isoc11)
-    {
-      if (flag_isoc99)
-	pedwarn (assert_loc, OPT_Wpedantic,
+  if (flag_isoc99)
+    pedwarn_c99 (assert_loc, OPT_Wpedantic,
 		 "ISO C99 does not support %<_Static_assert%>");
-      else
-	pedwarn (assert_loc, OPT_Wpedantic,
+  else
+    pedwarn_c99 (assert_loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<_Static_assert%>");
-    }
   c_parser_consume_token (parser);
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return;
@@ -2048,6 +2055,8 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   if (TREE_CODE (value) != INTEGER_CST)
     {
       value = c_fully_fold (value, false, NULL);
+      /* Strip no-op conversions.  */
+      STRIP_TYPE_NOPS (value);
       if (TREE_CODE (value) == INTEGER_CST)
 	pedwarn (value_loc, OPT_Wpedantic, "expression in static assertion "
 		 "is not an integer constant expression");
@@ -2375,15 +2384,12 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	     correct lvalue-to-rvalue conversions.  */
 	  if (flag_openmp)
 	    sorry ("%<_Atomic%> with OpenMP");
-	  if (!flag_isoc11)
-	    {
-	      if (flag_isoc99)
-		pedwarn (loc, OPT_Wpedantic,
+	  if (flag_isoc99)
+	    pedwarn_c99 (loc, OPT_Wpedantic,
 			 "ISO C99 does not support the %<_Atomic%> qualifier");
-	      else
-		pedwarn (loc, OPT_Wpedantic,
+	  else
+	    pedwarn_c99 (loc, OPT_Wpedantic,
 			 "ISO C90 does not support the %<_Atomic%> qualifier");
-	    }
 	  attrs_ok = true;
 	  tree value;
 	  value = c_parser_peek_token (parser)->value;
@@ -2545,8 +2551,9 @@ c_parser_enum_specifier (c_parser *parser)
 	    }
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
 	    {
-	      if (seen_comma && !flag_isoc99)
-		pedwarn (comma_loc, OPT_Wpedantic, "comma at end of enumerator list");
+	      if (seen_comma)
+		pedwarn_c90 (comma_loc, OPT_Wpedantic,
+			     "comma at end of enumerator list");
 	      c_parser_consume_token (parser);
 	      break;
 	    }
@@ -3047,15 +3054,12 @@ c_parser_alignas_specifier (c_parser * parser)
   location_t loc = c_parser_peek_token (parser)->location;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNAS));
   c_parser_consume_token (parser);
-  if (!flag_isoc11)
-    {
-      if (flag_isoc99)
-	pedwarn (loc, OPT_Wpedantic,
+  if (flag_isoc99)
+    pedwarn_c99 (loc, OPT_Wpedantic,
 		 "ISO C99 does not support %<_Alignas%>");
-      else
-	pedwarn (loc, OPT_Wpedantic,
+  else
+    pedwarn_c99 (loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<_Alignas%>");
-    }
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return ret;
   if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
@@ -4348,9 +4352,9 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	{
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
-	      if (!flag_isoc99)
-		pedwarn (des_loc, OPT_Wpedantic,
-			 "ISO C90 forbids specifying subobject to initialize");
+	      pedwarn_c90 (des_loc, OPT_Wpedantic,
+			   "ISO C90 forbids specifying subobject "
+			   "to initialize");
 	      c_parser_consume_token (parser);
 	    }
 	  else
@@ -4566,10 +4570,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  c_parser_declaration_or_fndef (parser, true, true, true, true,
 					 true, NULL, vNULL);
 	  if (last_stmt)
-	    pedwarn_c90 (loc,
-			 (pedantic && !flag_isoc99)
-			 ? OPT_Wpedantic
-			 : OPT_Wdeclaration_after_statement,
+	    pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			 "ISO C90 forbids mixed declarations and code");
 	  last_stmt = false;
 	}
@@ -4597,9 +4598,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		 disable this diagnostic.  */
 	      restore_extension_diagnostics (ext);
 	      if (last_stmt)
-		pedwarn_c90 (loc, (pedantic && !flag_isoc99)
-			     ? OPT_Wpedantic
-			     : OPT_Wdeclaration_after_statement,
+		pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			     "ISO C90 forbids mixed declarations and code");
 	      last_stmt = false;
 	    }
@@ -4894,6 +4893,16 @@ c_parser_statement_after_labels (c_parser *parser)
 	  break;
 	case RID_FOR:
 	  c_parser_for_statement (parser, false);
+	  break;
+	case RID_CILK_FOR:
+	  if (!flag_cilkplus)
+	    {
+	      error_at (c_parser_peek_token (parser)->location,
+			"-fcilkplus must be enabled to use %<_Cilk_for%>");
+	      c_parser_skip_to_end_of_block_or_statement (parser);
+	    }
+	  else
+	    c_parser_cilk_for (parser, integer_zero_node);
 	  break;
 	case RID_CILK_SYNC:
 	  c_parser_consume_token (parser);
@@ -5218,7 +5227,7 @@ c_parser_switch_statement (c_parser *parser)
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);
-  c_finish_case (body);
+  c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
       location_t here = c_parser_peek_token (parser)->location;
@@ -6576,14 +6585,14 @@ c_parser_alignof_expression (c_parser *parser)
   /* A diagnostic is not required for the use of this identifier in
      the implementation namespace; only diagnose it for the C11
      spelling because of existing code using the other spellings.  */
-  if (!flag_isoc11 && is_c11_alignof)
+  if (is_c11_alignof)
     {
       if (flag_isoc99)
-	pedwarn (loc, OPT_Wpedantic, "ISO C99 does not support %qE",
-		 alignof_spelling);
+	pedwarn_c99 (loc, OPT_Wpedantic, "ISO C99 does not support %qE",
+		     alignof_spelling);
       else
-	pedwarn (loc, OPT_Wpedantic, "ISO C90 does not support %qE",
-		 alignof_spelling);
+	pedwarn_c99 (loc, OPT_Wpedantic, "ISO C90 does not support %qE",
+		     alignof_spelling);
     }
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
@@ -6742,15 +6751,12 @@ c_parser_generic_selection (c_parser *parser)
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_GENERIC));
   generic_loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
-  if (!flag_isoc11)
-    {
-      if (flag_isoc99)
-	pedwarn (generic_loc, OPT_Wpedantic,
+  if (flag_isoc99)
+    pedwarn_c99 (generic_loc, OPT_Wpedantic,
 		 "ISO C99 does not support %<_Generic%>");
-      else
-	pedwarn (generic_loc, OPT_Wpedantic,
+  else
+    pedwarn_c99 (generic_loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<_Generic%>");
-    }
 
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return error_expr;
@@ -7133,8 +7139,24 @@ c_parser_postfix_expression (c_parser *parser)
       switch (c_parser_peek_token (parser)->keyword)
 	{
 	case RID_FUNCTION_NAME:
+	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
+		   "%<__FUNCTION__%> predefined identifier");
+	  expr.value = fname_decl (loc,
+				   c_parser_peek_token (parser)->keyword,
+				   c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
 	case RID_PRETTY_FUNCTION_NAME:
+	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
+		   "%<__PRETTY_FUNCTION__%> predefined identifier");
+	  expr.value = fname_decl (loc,
+				   c_parser_peek_token (parser)->keyword,
+				   c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
 	case RID_C99_FUNCTION_NAME:
+	  pedwarn_c90 (loc, OPT_Wpedantic,  "ISO C90 does not support "
+		   "%<__func__%> predefined identifier");
 	  expr.value = fname_decl (loc,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
@@ -7401,9 +7423,8 @@ c_parser_postfix_expression (c_parser *parser)
 		expr.value = error_mark_node;
 		break;
 	      }
-	    if (!flag_isoc99)
-	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C90 does not support complex types");
+	    pedwarn_c90 (loc, OPT_Wpedantic,
+			 "ISO C90 does not support complex types");
 	    expr.value = build2 (COMPLEX_EXPR,
 				 build_complex_type
 				   (TYPE_MAIN_VARIANT
@@ -7607,8 +7628,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
       type = error_mark_node;
     }
 
-  if (!flag_isoc99)
-    pedwarn (start_loc, OPT_Wpedantic, "ISO C90 forbids compound literals");
+  pedwarn_c90 (start_loc, OPT_Wpedantic, "ISO C90 forbids compound literals");
   non_const = ((init.value && TREE_CODE (init.value) == CONSTRUCTOR)
 	       ? CONSTRUCTOR_NON_CONST (init.value)
 	       : init.original_code == C_MAYBE_CONST_EXPR);
@@ -9571,6 +9591,23 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
       c_parser_consume_pragma (parser);
       c_parser_cilk_simd (parser);
       return false;
+    case PRAGMA_CILK_GRAINSIZE:
+      if (!flag_cilkplus)
+	{
+	  warning (0, "%<#pragma grainsize%> ignored because -fcilkplus is not"
+		   " enabled");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
+      if (context == pragma_external)
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "%<#pragma grainsize%> must be inside a function");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
+      c_parser_cilk_grainsize (parser);
+      return false;
 
     default:
       if (id < PRAGMA_FIRST_EXTERNAL)
@@ -9845,7 +9882,10 @@ c_parser_omp_variable_list (c_parser *parser,
 
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_COLON))
-		    low_bound = c_parser_expression (parser).value;
+		    {
+		      low_bound = c_parser_expression (parser).value;
+		      mark_exp_read (low_bound);
+		    }
 		  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		    length = integer_one_node;
 		  else
@@ -9858,7 +9898,10 @@ c_parser_omp_variable_list (c_parser *parser,
 			  break;
 			}
 		      if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
-			length = c_parser_expression (parser).value;
+			{
+			  length = c_parser_expression (parser).value;
+			  mark_exp_read (length);
+			}
 		    }
 		  /* Look for the closing `]'.  */
 		  if (!c_parser_require (parser, CPP_CLOSE_SQUARE,
@@ -11704,9 +11747,16 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   condv = make_tree_vec (collapse);
   incrv = make_tree_vec (collapse);
 
-  if (!c_parser_next_token_is_keyword (parser, RID_FOR))
+  if (code != CILK_FOR
+      && !c_parser_next_token_is_keyword (parser, RID_FOR))
     {
       c_parser_error (parser, "for statement expected");
+      return NULL;
+    }
+  if (code == CILK_FOR
+      && !c_parser_next_token_is_keyword (parser, RID_CILK_FOR))
+    {
+      c_parser_error (parser, "_Cilk_for statement expected");
       return NULL;
     }
   for_loc = c_parser_peek_token (parser)->location;
@@ -11786,7 +11836,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	    case LE_EXPR:
 	      break;
 	    case NE_EXPR:
-	      if (code == CILK_SIMD)
+	      if (code == CILK_SIMD || code == CILK_FOR)
 		break;
 	      /* FALLTHRU.  */
 	    default:
@@ -13879,8 +13929,48 @@ c_parser_cilk_all_clauses (c_parser *parser)
   return c_finish_cilk_clauses (clauses);
 }
 
-/* Main entry point for parsing Cilk Plus <#pragma simd> for
-   loops.  */
+/* This function helps parse the grainsize pragma for a _Cilk_for statement.
+   Here is the correct syntax of this pragma:
+	    #pragma cilk grainsize = <EXP>
+ */
+
+static void
+c_parser_cilk_grainsize (c_parser *parser)
+{
+  extern tree convert_to_integer (tree, tree);
+
+  /* consume the 'grainsize' keyword.  */
+  c_parser_consume_pragma (parser);
+
+  if (c_parser_require (parser, CPP_EQ, "expected %<=%>") != 0)
+    {
+      struct c_expr g_expr = c_parser_binary_expression (parser, NULL, NULL);
+      if (g_expr.value == error_mark_node)
+	{
+	  c_parser_skip_to_pragma_eol (parser);
+	  return;
+	}
+      tree grain = convert_to_integer (long_integer_type_node,
+				       c_fully_fold (g_expr.value, false,
+						     NULL));
+      c_parser_skip_to_pragma_eol (parser);
+      c_token *token = c_parser_peek_token (parser);
+      if (token && token->type == CPP_KEYWORD
+	  && token->keyword == RID_CILK_FOR)
+	{
+	  if (grain == NULL_TREE || grain == error_mark_node)
+	    grain = integer_zero_node;
+	  c_parser_cilk_for (parser, grain);
+	}
+      else
+	warning (0, "%<#pragma cilk grainsize%> is not followed by "
+		    "%<_Cilk_for%>");
+    }
+  else
+    c_parser_skip_to_pragma_eol (parser);
+}
+
+/* Main entry point for parsing Cilk Plus <#pragma simd> for loops.  */
 
 static void
 c_parser_cilk_simd (c_parser *parser)
@@ -13892,6 +13982,105 @@ c_parser_cilk_simd (c_parser *parser)
   block = c_end_compound_stmt (loc, block, true);
   add_stmt (block);
 }
+
+/* Create an artificial decl with TYPE and emit initialization of it with
+   INIT.  */
+
+static tree
+c_get_temp_regvar (tree type, tree init)
+{
+  location_t loc = EXPR_LOCATION (init);
+  tree decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  pushdecl (decl);
+  tree t = build2 (INIT_EXPR, type, decl, init);
+  add_stmt (t);
+  return decl;
+}
+
+/* Main entry point for parsing Cilk Plus _Cilk_for loops.
+  GRAIN is the grain value passed in through pragma or 0.  */
+
+static void
+c_parser_cilk_for (c_parser *parser, tree grain)
+{
+  tree clauses = build_omp_clause (EXPR_LOCATION (grain), OMP_CLAUSE_SCHEDULE);
+  OMP_CLAUSE_SCHEDULE_KIND (clauses) = OMP_CLAUSE_SCHEDULE_CILKFOR;
+  OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clauses) = grain;
+  clauses = c_finish_omp_clauses (clauses);
+
+  tree block = c_begin_compound_stmt (true);
+  tree sb = push_stmt_list ();
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree omp_for = c_parser_omp_for_loop (loc, parser, CILK_FOR, clauses, NULL);
+  sb = pop_stmt_list (sb);
+
+  if (omp_for)
+    {
+      tree omp_par = make_node (OMP_PARALLEL);
+      TREE_TYPE (omp_par) = void_type_node;
+      OMP_PARALLEL_CLAUSES (omp_par) = NULL_TREE;
+      tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      BIND_EXPR_BODY (bind) = sb;
+      OMP_PARALLEL_BODY (omp_par) = bind;
+      if (OMP_FOR_PRE_BODY (omp_for))
+	{
+	  add_stmt (OMP_FOR_PRE_BODY (omp_for));
+	  OMP_FOR_PRE_BODY (omp_for) = NULL_TREE;
+	}
+      tree init = TREE_VEC_ELT (OMP_FOR_INIT (omp_for), 0);
+      tree decl = TREE_OPERAND (init, 0);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (omp_for), 0);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), 0);
+      tree t = TREE_OPERAND (cond, 1), c, clauses = NULL_TREE;
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  TREE_OPERAND (cond, 1) = c_get_temp_regvar (TREE_TYPE (t), t);
+	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (cond, 1);
+	  OMP_CLAUSE_CHAIN (c) = clauses;
+	  clauses = c;
+	}
+      if (TREE_CODE (incr) == MODIFY_EXPR)
+	{
+	  t = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
+	  if (TREE_CODE (t) != INTEGER_CST)
+	    {
+	      TREE_OPERAND (TREE_OPERAND (incr, 1), 1)
+		= c_get_temp_regvar (TREE_TYPE (t), t);
+	      c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
+	      OMP_CLAUSE_CHAIN (c) = clauses;
+	      clauses = c;
+	    }
+	}
+      t = TREE_OPERAND (init, 1);
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  TREE_OPERAND (init, 1) = c_get_temp_regvar (TREE_TYPE (t), t);
+	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (init, 1);
+	  OMP_CLAUSE_CHAIN (c) = clauses;
+	  clauses = c;
+	}
+      c = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+      OMP_CLAUSE_DECL (c) = decl;
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+      c = build_omp_clause (input_location, OMP_CLAUSE__CILK_FOR_COUNT_);
+      OMP_CLAUSE_OPERAND (c, 0)
+	= cilk_for_number_of_iterations (omp_for);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      OMP_PARALLEL_CLAUSES (omp_par) = c_finish_omp_clauses (c);
+      add_stmt (omp_par);
+    }
+
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (block);
+}
+
 
 /* Parse a transaction attribute (GCC Extension).
 
@@ -14159,6 +14348,13 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
   
   array_type = TREE_TYPE (array_value);
   gcc_assert (array_type);
+  if (TREE_CODE (array_type) != ARRAY_TYPE
+      && TREE_CODE (array_type) != POINTER_TYPE)
+    {
+      error_at (loc, "base of array section must be pointer or array type");
+      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+      return error_mark_node;
+    }
   type = TREE_TYPE (array_type);
   token = c_parser_peek_token (parser);
    

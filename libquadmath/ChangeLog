@@ -1,3 +1,15 @@
+2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libquadmath/55821
+	* Makefile.am: Conditionally define info_TEXINFOS and
+	libquadmath_TEXINFOS.
+	* Makefile.in: Regenerate.
+
+2014-10-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libquadmath/63487
+	* libquadmath.texi (sincosq): Fix typo.
+
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* libquadmath.texi: Bump @copying's copyright year.

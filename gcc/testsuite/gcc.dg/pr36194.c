@@ -22,6 +22,7 @@ g (long long a)
   asm ("");
 }
 
+int
 main ()
 {
   g (0x1234567887654321ll);

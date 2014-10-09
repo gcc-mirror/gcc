@@ -1,5 +1,6 @@
 // PR c++/15142
 // Bug: We were aborting after giving a warning about passing a non-POD.
+// { dg-options "-Wconditionally-supported" }
 
 struct B { 
     B() throw() { } 
@@ -14,5 +15,5 @@ struct X {
 struct S { S(...); }; 
  
 void SillyFunc() { 
-  throw S(X()); 		// { dg-error "copy" }
+  throw S(X()); 		// { dg-message "copy" }
 } 

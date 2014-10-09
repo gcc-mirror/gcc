@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,27 +35,11 @@
 /*  struct timeval fields type are not normalized (they are generally       */
 /*  defined as int or long values).                                         */
 
-#if defined(VMS) || defined(__nucleus__)
-
-/* this is temporary code to avoid build failure under VMS */
-
-void
-__gnat_timeval_to_duration (void *t, long *sec, long *usec)
-{
-}
-
-void
-__gnat_duration_to_timeval (long sec, long usec, void *t)
-{
-}
-
-#else
-
 #if defined (__vxworks)
 #ifdef __RTP__
 #include <time.h>
 #include <version.h>
-#if (_WRS_VXWORKS_MINOR != 0)
+#if (_WRS_VXWORKS_MAJOR == 7) || (_WRS_VXWORKS_MINOR != 0)
 #include <sys/time.h>
 #endif
 #else
@@ -75,35 +59,18 @@ __gnat_duration_to_timeval (long sec, long usec, void *t)
 #endif
 
 void
-__gnat_timeval_to_duration (struct timeval *t, long *sec, long *usec)
+__gnat_timeval_to_duration (struct timeval *t, long long *sec, long *usec)
 {
-  *sec  = (long) t->tv_sec;
+  *sec  = (long long) t->tv_sec;
   *usec = (long) t->tv_usec;
 }
 
 void
-__gnat_duration_to_timeval (long sec, long usec, struct timeval *t)
+__gnat_duration_to_timeval (long long sec, long usec, struct timeval *t)
 {
-  /* here we are doing implicit conversion from a long to the struct timeval
+  /* here we are doing implicit conversion to the struct timeval
      fields types. */
 
   t->tv_sec = sec;
   t->tv_usec = usec;
-}
-#endif
-
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#elif defined (__vxworks)
-#include <types/vxTypesOld.h>
-#endif
-
-/* Return the value of the "time" C library function.  We always return
-   a long and do it this way to avoid problems with not knowing
-   what time_t is on the target.  */
-
-long
-gnat_time (void)
-{
-  return time (0);
 }

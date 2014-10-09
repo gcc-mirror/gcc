@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-cunroll-details" } */
+/* { dg-options "-O3 -fdump-tree-cunroll-details -fno-tree-vectorize" } */
 int *a;
+void
 test(int c)
 { 
   int i;

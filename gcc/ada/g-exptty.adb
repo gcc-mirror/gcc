@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2000-2011, AdaCore                      --
+--                    Copyright (C) 2000-2014, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,7 @@ package body GNAT.Expect.TTY is
       pragma Import (C, Terminate_Process, "__gnat_terminate_process");
 
       function Waitpid (Process : System.Address) return Integer;
-      pragma Import (C, Waitpid, "__gnat_waitpid");
+      pragma Import (C, Waitpid, "__gnat_tty_waitpid");
       --  Wait for a specific process id, and return its exit code
 
       procedure Free_Process (Process : System.Address);
@@ -66,6 +66,18 @@ package body GNAT.Expect.TTY is
          Status := -1;
 
       else
+         --  Send a Ctrl-C to the process first. This way, if the launched
+         --  process is a "sh" or "cmd", the child processes will get
+         --  terminated as well. Otherwise, terminating the main process
+         --  brutally will leave the children running.
+
+         --  Note: special characters are sent to the terminal to generate the
+         --  signal, so this needs to be done while the file descriptors are
+         --  still open (it used to be after the closes and that was wrong).
+
+         Interrupt (Descriptor);
+         delay (0.05);
+
          if Descriptor.Input_Fd /= Invalid_FD then
             Close (Descriptor.Input_Fd);
          end if;
@@ -79,14 +91,6 @@ package body GNAT.Expect.TTY is
          if Descriptor.Output_Fd /= Invalid_FD then
             Close (Descriptor.Output_Fd);
          end if;
-
-         --  Send a Ctrl-C to the process first. This way, if the
-         --  launched process is a "sh" or "cmd", the child processes
-         --  will get terminated as well. Otherwise, terminating the
-         --  main process brutally will leave the children running.
-
-         Interrupt (Descriptor);
-         delay 0.05;
 
          Terminate_Process (Descriptor.Process);
          Status := Waitpid (Descriptor.Process);

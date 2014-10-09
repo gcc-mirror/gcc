@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "incompatible options" { ! { arm_thumb1_ok || arm_thumb2_ok } } { "*" } { "" } } */
 /* { dg-options "-fno-short-enums -O2 -mthumb -march=armv7-a -mfpu=neon -mfloat-abi=softfp -mtune=cortex-a9 -fno-section-anchors" } */
 
 typedef unsigned int size_t;

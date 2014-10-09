@@ -10,7 +10,8 @@
 #define SIZE (AVX512F_LEN / 64)
 #include "avx512f-mask-type.h"
 #include "math.h"
-#include "values.h"
+#include "float.h"
+
 
 static void
 CALC (double *r, double src, long long tbl)
@@ -60,10 +61,10 @@ CALC (double *r, double src, long long tbl)
       *r = M_PI_2;
       break;
     case 14:
-      *r = MAXDOUBLE;
+      *r = DBL_MAX;
       break;
     case 15:
-      *r = -MAXDOUBLE;
+      *r = -DBL_MAX;
       break;
     default:
       abort ();

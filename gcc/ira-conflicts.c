@@ -60,7 +60,7 @@ static IRA_INT_TYPE **conflicts;
 
 /* Record a conflict between objects OBJ1 and OBJ2.  If necessary,
    canonicalize the conflict by recording it for lower-order subobjects
-   of the corresponding allocnos. */
+   of the corresponding allocnos.  */
 static void
 record_object_conflict (ira_object_t obj1, ira_object_t obj2)
 {
@@ -244,7 +244,7 @@ go_through_subreg (rtx x, int *offset)
    FALSE.  */
 static bool
 process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
-		       rtx insn, int freq)
+		       rtx_insn *insn, int freq)
 {
   int allocno_preferenced_hard_regno, cost, index, offset1, offset2;
   bool only_regs_p;
@@ -345,7 +345,7 @@ process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
 	  || bound_p[i])
 	continue;
 
-      process_regs_for_copy (reg, another_reg, false, NULL_RTX, freq);
+      process_regs_for_copy (reg, another_reg, false, NULL, freq);
     }
 }
 
@@ -353,7 +353,7 @@ process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
    it might be because INSN is a pseudo-register move or INSN is two
    operand insn.  */
 static void
-add_insn_allocno_copies (rtx insn)
+add_insn_allocno_copies (rtx_insn *insn)
 {
   rtx set, operand, dup;
   bool bound_p[MAX_RECOG_OPERANDS];
@@ -396,7 +396,7 @@ add_insn_allocno_copies (rtx insn)
 				REG_P (operand)
 				? operand
 				: SUBREG_REG (operand)) != NULL_RTX)
-	    process_regs_for_copy (operand, dup, true, NULL_RTX,
+	    process_regs_for_copy (operand, dup, true, NULL,
 				   freq);
 	}
     }
@@ -421,7 +421,7 @@ static void
 add_copies (ira_loop_tree_node_t loop_tree_node)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
 
   bb = loop_tree_node->bb;
   if (bb == NULL)
@@ -772,6 +772,27 @@ ira_build_conflicts (void)
 				no_caller_save_reg_set);
 	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
 				temp_hard_reg_set);
+	    }
+
+	  /* Now we deal with paradoxical subreg cases where certain registers
+	     cannot be accessed in the widest mode.  */
+	  enum machine_mode outer_mode = ALLOCNO_WMODE (a);
+	  enum machine_mode inner_mode = ALLOCNO_MODE (a);
+	  if (GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
+	    {
+	      enum reg_class aclass = ALLOCNO_CLASS (a);
+	      for (int j = ira_class_hard_regs_num[aclass] - 1; j >= 0; --j)
+		{
+		   int inner_regno = ira_class_hard_regs[aclass][j];
+		   int outer_regno = simplify_subreg_regno (inner_regno,
+							    inner_mode, 0,
+							    outer_mode);
+		   if (outer_regno < 0
+		       || !in_hard_reg_set_p (reg_class_contents[aclass],
+					      outer_mode, outer_regno))
+		     SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj),
+				       inner_regno);
+		}
 	    }
 
 	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)

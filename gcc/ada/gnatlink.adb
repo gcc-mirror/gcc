@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@
 with ALI;      use ALI;
 with Csets;
 with Gnatvsn;  use Gnatvsn;
-with Hostparm;
 with Indepsw;  use Indepsw;
 with Namet;    use Namet;
 with Opt;
@@ -227,12 +226,6 @@ procedure Gnatlink is
 
    procedure Process_Binder_File (Name : String);
    --  Reads the binder file and extracts linker arguments
-
-   function To_Lower (A : Character) return Character;
-   --  Fold a character to lower case;
-
-   procedure To_Lower (A : in out String);
-   --  Fold a string to lower case;
 
    procedure Usage;
    --  Display usage
@@ -637,8 +630,7 @@ procedure Gnatlink is
                   Linker_Objects.Table (Linker_Objects.Last) :=
                     new String'(Arg);
 
-               --  If host object file, record object file e.g. accept foo.o
-               --  as well as foo.obj on VMS target.
+               --  If host object file, record object file
 
                elsif Arg'Length > Get_Object_Suffix.all'Length
                  and then Arg
@@ -737,18 +729,17 @@ procedure Gnatlink is
       --  Save state of -shared option
 
       Xlinker_Was_Previous : Boolean := False;
-      --  Indicate that "-Xlinker" was the option preceding the current
-      --  option. If True, then the current option is never suppressed.
+      --  Indicate that "-Xlinker" was the option preceding the current option.
+      --  If True, then the current option is never suppressed.
 
       --  Rollback data
 
-      --  These data items are used to store current binder file context.
-      --  The context is composed of the file descriptor position and the
-      --  current line together with the slice indexes (first and last
-      --  position) for this line. The rollback data are used by the
-      --  Store_File_Context and Rollback_File_Context routines below.
-      --  The file context mechanism interact only with the Get_Next_Line
-      --  call. For example:
+      --  These data items are used to store current binder file context. The
+      --  context is composed of the file descriptor position and the current
+      --  line together with the slice indexes (first and last position) for
+      --  this line. The rollback data are used by the Store_File_Context and
+      --  Rollback_File_Context routines below. The file context mechanism
+      --  interact only with the Get_Next_Line call. For example:
 
       --     Store_File_Context;
       --     Get_Next_Line;
@@ -779,7 +770,7 @@ procedure Gnatlink is
       pragma Import
         (C, Object_Library_Ext_Ptr, "__gnat_object_library_extension");
       --  Pointer to string specifying the default extension for
-      --  object libraries, e.g. Unix uses ".a", VMS uses ".olb".
+      --  object libraries, e.g. Unix uses ".a".
 
       Separate_Run_Path_Options : Boolean;
       for Separate_Run_Path_Options'Size use Character'Size;
@@ -793,10 +784,6 @@ procedure Gnatlink is
 
       function Index (S, Pattern : String) return Natural;
       --  Return the last occurrence of Pattern in S, or 0 if none
-
-      function Is_Option_Present (Opt : String) return Boolean;
-      --  Return true if the option Opt is already present in
-      --  Linker_Options table.
 
       procedure Store_File_Context;
       --  Store current file context, Fd position and current line data.
@@ -855,23 +842,6 @@ procedure Gnatlink is
 
          return 0;
       end Index;
-
-      -----------------------
-      -- Is_Option_Present --
-      -----------------------
-
-      function Is_Option_Present (Opt : String) return Boolean is
-      begin
-         for I in 1 .. Linker_Options.Last loop
-
-            if Linker_Options.Table (I).all = Opt then
-               return True;
-            end if;
-
-         end loop;
-
-         return False;
-      end Is_Option_Present;
 
       ---------------------------
       -- Rollback_File_Context --
@@ -1098,13 +1068,7 @@ procedure Gnatlink is
             --  Add binder options only if not already set on the command line.
             --  This rule is a way to control the linker options order.
 
-            --  The following test needs comments, why is it VMS specific.
-            --  The above comment looks out of date ???
-
-            elsif not
-              (OpenVMS_On_Target
-                and then Is_Option_Present (Next_Line (Nfirst .. Nlast)))
-            then
+            else
                if Nlast > Nfirst + 2 and then
                  Next_Line (Nfirst .. Nfirst + 1) = "-L"
                then
@@ -1126,8 +1090,7 @@ procedure Gnatlink is
                   Linker_Options.Table (Linker_Options.Last) :=
                     new String'(Next_Line (Nfirst .. Nlast));
 
-               elsif Next_Line (Nfirst .. Nlast) = "-ldecgnat"
-                 or else Next_Line (Nfirst .. Nlast) = "-lgnarl"
+               elsif Next_Line (Nfirst .. Nlast) = "-lgnarl"
                  or else Next_Line (Nfirst .. Nlast) = "-lgnat"
                  or else
                    Next_Line
@@ -1417,31 +1380,6 @@ procedure Gnatlink is
       Status := fclose (Fd);
    end Process_Binder_File;
 
-   --------------
-   -- To_Lower --
-   --------------
-
-   function To_Lower (A : Character) return Character is
-      A_Val : constant Natural := Character'Pos (A);
-
-   begin
-      if A in 'A' .. 'Z'
-        or else A_Val in 16#C0# .. 16#D6#
-        or else A_Val in 16#D8# .. 16#DE#
-      then
-         return Character'Val (A_Val + 16#20#);
-      else
-         return A;
-      end if;
-   end To_Lower;
-
-   procedure To_Lower (A : in out String) is
-   begin
-      for J in A'Range loop
-         A (J) := To_Lower (A (J));
-      end loop;
-   end To_Lower;
-
    -----------
    -- Usage --
    -----------
@@ -1507,45 +1445,33 @@ procedure Gnatlink is
 
 begin
    --  Add the directory where gnatlink is invoked in front of the path, if
-   --  gnatlink is invoked with directory information. Only do this if the
-   --  platform is not VMS, where the notion of path does not really exist.
+   --  gnatlink is invoked with directory information.
 
-   if not Hostparm.OpenVMS then
-      declare
-         Command : constant String := Command_Name;
+   declare
+      Command : constant String := Command_Name;
+   begin
+      for Index in reverse Command'Range loop
+         if Command (Index) = Directory_Separator then
+            declare
+               Absolute_Dir : constant String :=
+                 Normalize_Pathname
+                   (Command (Command'First .. Index));
 
-      begin
-         for Index in reverse Command'Range loop
-            if Command (Index) = Directory_Separator then
-               declare
-                  Absolute_Dir : constant String :=
-                                   Normalize_Pathname
-                                     (Command (Command'First .. Index));
+               PATH : constant String :=
+                 Absolute_Dir &
+                 Path_Separator &
+                 Getenv ("PATH").all;
 
-                  PATH : constant String :=
-                           Absolute_Dir &
-                           Path_Separator &
-                           Getenv ("PATH").all;
+            begin
+               Setenv ("PATH", PATH);
+            end;
 
-               begin
-                  Setenv ("PATH", PATH);
-               end;
-
-               exit;
-            end if;
-         end loop;
-      end;
-   end if;
+            exit;
+         end if;
+      end loop;
+   end;
 
    Base_Command_Name := new String'(Base_Name (Command_Name));
-
-   --  Fold to lower case "GNATLINK" on VMS to be consistent with output
-   --  from other GNAT utilities.
-
-   if Hostparm.OpenVMS then
-      To_Lower (Base_Command_Name.all);
-   end if;
-
    Process_Args;
 
    if Argument_Count = 0
@@ -1676,13 +1602,11 @@ begin
    Osint.Add_Default_Search_Dirs;
    Targparm.Get_Target_Parameters;
 
-   if VM_Target /= No_VM then
-      case VM_Target is
-         when JVM_Target => Gcc := new String'("jvm-gnatcompile");
-         when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
-         when No_VM      => raise Program_Error;
-      end case;
-   end if;
+   case VM_Target is
+      when JVM_Target => Gcc := new String'("jvm-gnatcompile");
+      when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
+      when No_VM      => null;
+   end case;
 
    --  Compile the bind file with the following switches:
 
@@ -1734,17 +1658,6 @@ begin
          if Linker_Path = null then
             Exit_With_Error ("Couldn't locate dotnet-ld");
          end if;
-
-      elsif RTX_RTSS_Kernel_Module_On_Target then
-
-         --  Use Microsoft linker for RTSS modules
-
-         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("link");
-
-         if Linker_Path = null then
-            Exit_With_Error ("Couldn't locate link");
-         end if;
-
       else
          Linker_Path := Gcc_Path;
       end if;
@@ -1760,19 +1673,12 @@ begin
                       & Get_Target_Debuggable_Suffix.all);
    end if;
 
-   if RTX_RTSS_Kernel_Module_On_Target then
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) :=
-        new String'("/OUT:" & Output_File_Name.all);
+   Linker_Options.Increment_Last;
+   Linker_Options.Table (Linker_Options.Last) := new String'("-o");
 
-   else
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) := new String'("-o");
-
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) :=
-        new String'(Output_File_Name.all);
-   end if;
+   Linker_Options.Increment_Last;
+   Linker_Options.Table (Linker_Options.Last) :=
+     new String'(Output_File_Name.all);
 
    Check_Existing_Executable (Output_File_Name.all);
 
@@ -1828,11 +1734,10 @@ begin
       end loop;
 
       --  For now we detect windows by an output executable name ending with
-      --  the suffix .exe (excluding VMS which might use that same name).
+      --  the suffix .exe.
 
       if FN'Length > 5
         and then FN (FN'Last - 3 .. FN'Last) = ".exe"
-        and then not OpenVMS_On_Target
       then
          Check_File_Name ("install");
          Check_File_Name ("setup");
@@ -1880,11 +1785,7 @@ begin
    begin
       --  Set prefix
 
-      if OpenVMS_On_Target then
-         Bind_File_Prefix := new String'("b__");
-      else
-         Bind_File_Prefix := new String'("b~");
-      end if;
+      Bind_File_Prefix := new String'("b~");
 
       --  If the length of the binder file becomes too long due to
       --  the addition of the "b?" prefix, then truncate it.
@@ -1979,359 +1880,209 @@ begin
    --  the actual link at run time. We might consider packing all class files
    --  in a .zip file during this step.
 
-   if VM_Target /= JVM_Target then
-      Link_Step : declare
-         Num_Args : Natural :=
-                     (Linker_Options.Last - Linker_Options.First + 1) +
-                     (Gcc_Linker_Options.Last - Gcc_Linker_Options.First + 1) +
-                     (Linker_Objects.Last - Linker_Objects.First + 1);
-         Stack_Op : Boolean := False;
-         IDENT_Op : Boolean := False;
+   Link_Step : declare
+      Num_Args : Natural :=
+        (Linker_Options.Last - Linker_Options.First + 1) +
+        (Gcc_Linker_Options.Last - Gcc_Linker_Options.First + 1) +
+        (Linker_Objects.Last - Linker_Objects.First + 1);
+      Stack_Op : Boolean := False;
+
+   begin
+      if AAMP_On_Target then
+
+         --  Remove extraneous flags not relevant for AAMP
+
+         for J in reverse Linker_Options.First .. Linker_Options.Last loop
+            if Linker_Options.Table (J)'Length = 0
+              or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
+              or else Linker_Options.Table (J) (1 .. 3) = "-sh"
+              or else Linker_Options.Table (J) (1 .. 2) = "-O"
+              or else Linker_Options.Table (J) (1 .. 2) = "-g"
+            then
+               Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                 Linker_Options.Table (J + 1 .. Linker_Options.Last);
+               Linker_Options.Decrement_Last;
+               Num_Args := Num_Args - 1;
+            end if;
+         end loop;
+      end if;
+
+      --  Remove duplicate stack size setting from the Linker_Options table.
+      --  The stack setting option "-Xlinker --stack=R,C" can be found
+      --  in one line when set by a pragma Linker_Options or in two lines
+      --  ("-Xlinker" then "--stack=R,C") when set on the command line. We
+      --  also check for the "-Wl,--stack=R" style option.
+
+      --  We must remove the second stack setting option instance because
+      --  the one on the command line will always be the first one. And any
+      --  subsequent stack setting option will overwrite the previous one.
+      --  This is done especially for GNAT/NT where we set the stack size
+      --  for tasking programs by a pragma in the NT specific tasking
+      --  package System.Task_Primitives.Operations.
+
+      --  Note: This is not a FOR loop that runs from Linker_Options.First
+      --  to Linker_Options.Last, since operations within the loop can
+      --  modify the length of the table.
+
+      Clean_Link_Option_Set : declare
+         J                  : Natural;
+         Shared_Libgcc_Seen : Boolean := False;
 
       begin
-         if AAMP_On_Target then
-
-            --  Remove extraneous flags not relevant for AAMP
-
-            for J in reverse Linker_Options.First .. Linker_Options.Last loop
-               if Linker_Options.Table (J)'Length = 0
-                 or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
-                 or else Linker_Options.Table (J) (1 .. 3) = "-sh"
-                 or else Linker_Options.Table (J) (1 .. 2) = "-O"
-                 or else Linker_Options.Table (J) (1 .. 2) = "-g"
-               then
-                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+         J := Linker_Options.First;
+         while J <= Linker_Options.Last loop
+            if Linker_Options.Table (J).all = "-Xlinker"
+              and then J < Linker_Options.Last
+              and then Linker_Options.Table (J + 1)'Length > 8
+              and then Linker_Options.Table (J + 1) (1 .. 8) = "--stack="
+            then
+               if Stack_Op then
+                  Linker_Options.Table (J .. Linker_Options.Last - 2) :=
+                    Linker_Options.Table (J + 2 .. Linker_Options.Last);
                   Linker_Options.Decrement_Last;
-                  Num_Args := Num_Args - 1;
-               end if;
-            end loop;
-
-         elsif RTX_RTSS_Kernel_Module_On_Target then
-
-            --  Remove irrelevant flags for Microsoft linker, adapt some others
-
-            for J in reverse Linker_Options.First .. Linker_Options.Last loop
-
-               --  Remove flags that are not accepted
-
-               if Linker_Options.Table (J)'Length = 0
-                 or else Linker_Options.Table (J) (1 .. 2) = "-l"
-                 or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
-                 or else Linker_Options.Table (J) (1 .. 3) = "-sh"
-                 or else Linker_Options.Table (J) (1 .. 2) = "-O"
-                 or else Linker_Options.Table (J) (1 .. 8) = "-Xlinker"
-                 or else Linker_Options.Table (J) (1 .. 9) = "-mthreads"
-               then
-                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
                   Linker_Options.Decrement_Last;
-                  Num_Args := Num_Args - 1;
+                  Num_Args := Num_Args - 2;
 
-               --  Replace "-L" by its counterpart "/LIBPATH:" and UNIX "/" by
-               --  Windows "\".
-
-               elsif Linker_Options.Table (J) (1 .. 2) = "-L" then
-                  declare
-                     Libpath_Option : constant String_Access := new String'
-                       ("/LIBPATH:" &
-                          Linker_Options.Table
-                            (J) (3 .. Linker_Options.Table (J).all'Last));
-                  begin
-                     for Index in 10 .. Libpath_Option'Last loop
-                        if Libpath_Option (Index) = '/' then
-                           Libpath_Option (Index) := '\';
-                        end if;
-                     end loop;
-
-                     Linker_Options.Table (J) := Libpath_Option;
-                  end;
-
-               --  Replace "-g" by "/DEBUG"
-
-               elsif Linker_Options.Table (J) (1 .. 2) = "-g" then
-                  Linker_Options.Table (J) := new String'("/DEBUG");
-
-               --  Replace "-o" by "/OUT:"
-
-               elsif Linker_Options.Table (J) (1 .. 2) = "-o" then
-                  Linker_Options.Table (J + 1) := new String'
-                    ("/OUT:" & Linker_Options.Table (J + 1).all);
-
-                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
-                  Linker_Options.Decrement_Last;
-                  Num_Args := Num_Args - 1;
-
-               --  Replace "--stack=" by "/STACK:"
-
-               elsif Linker_Options.Table (J) (1 .. 8) = "--stack=" then
-                  Linker_Options.Table (J) := new String'
-                    ("/STACK:" &
-                     Linker_Options.Table (J)
-                       (9 .. Linker_Options.Table (J).all'Last));
-
-               --  Replace "-v" by its counterpart "/VERBOSE"
-
-               elsif Linker_Options.Table (J) (1 .. 2) = "-v" then
-                  Linker_Options.Table (J) := new String'("/VERBOSE");
+               else
+                  Stack_Op := True;
                end if;
-            end loop;
-
-            --  Add some required flags to create RTSS modules
-
-            declare
-               Flags_For_Linker : constant array (1 .. 17) of String_Access :=
-                 (new String'("/NODEFAULTLIB"),
-                  new String'("/INCREMENTAL:NO"),
-                  new String'("/NOLOGO"),
-                  new String'("/DRIVER"),
-                  new String'("/ALIGN:0x20"),
-                  new String'("/SUBSYSTEM:NATIVE"),
-                  new String'("/ENTRY:_RtapiProcessEntryCRT@8"),
-                  new String'("/RELEASE"),
-                  new String'("startupCRT.obj"),
-                  new String'("rtxlibcmt.lib"),
-                  new String'("oldnames.lib"),
-                  new String'("rtapi_rtss.lib"),
-                  new String'("Rtx_Rtss.lib"),
-                  new String'("libkernel32.a"),
-                  new String'("libws2_32.a"),
-                  new String'("libmswsock.a"),
-                  new String'("libadvapi32.a"));
-               --  These flags need to be passed to Microsoft linker. They
-               --  come from the RTX documentation.
-
-               Gcc_Lib_Path : constant String_Access := new String'
-                 ("/LIBPATH:" & Include_Dir_Default_Prefix & "\..\");
-               --  Place to look for gcc related libraries, such as libgcc
-
-            begin
-               --  Replace UNIX "/" by Windows "\" in the path
-
-               for Index in 10 .. Gcc_Lib_Path.all'Last loop
-                  if Gcc_Lib_Path (Index) = '/' then
-                     Gcc_Lib_Path (Index) := '\';
-                  end if;
-               end loop;
-
-               Linker_Options.Increment_Last;
-               Linker_Options.Table (Linker_Options.Last) := Gcc_Lib_Path;
-               Num_Args := Num_Args + 1;
-
-               for Index in Flags_For_Linker'Range loop
-                  Linker_Options.Increment_Last;
-                  Linker_Options.Table (Linker_Options.Last) :=
-                    Flags_For_Linker (Index);
-                  Num_Args := Num_Args + 1;
-               end loop;
-            end;
-         end if;
-
-         --  Remove duplicate stack size setting from the Linker_Options table.
-         --  The stack setting option "-Xlinker --stack=R,C" can be found
-         --  in one line when set by a pragma Linker_Options or in two lines
-         --  ("-Xlinker" then "--stack=R,C") when set on the command line. We
-         --  also check for the "-Wl,--stack=R" style option.
-
-         --  We must remove the second stack setting option instance because
-         --  the one on the command line will always be the first one. And any
-         --  subsequent stack setting option will overwrite the previous one.
-         --  This is done especially for GNAT/NT where we set the stack size
-         --  for tasking programs by a pragma in the NT specific tasking
-         --  package System.Task_Primitives.Operations.
-
-         --  Note: This is not a FOR loop that runs from Linker_Options.First
-         --  to Linker_Options.Last, since operations within the loop can
-         --  modify the length of the table.
-
-         Clean_Link_Option_Set : declare
-            J                  : Natural;
-            Shared_Libgcc_Seen : Boolean := False;
-
-         begin
-            J := Linker_Options.First;
-            while J <= Linker_Options.Last loop
-               if Linker_Options.Table (J).all = "-Xlinker"
-                 and then J < Linker_Options.Last
-                 and then Linker_Options.Table (J + 1)'Length > 8
-                 and then Linker_Options.Table (J + 1) (1 .. 8) = "--stack="
-               then
-                  if Stack_Op then
-                     Linker_Options.Table (J .. Linker_Options.Last - 2) :=
-                       Linker_Options.Table (J + 2 .. Linker_Options.Last);
-                     Linker_Options.Decrement_Last;
-                     Linker_Options.Decrement_Last;
-                     Num_Args := Num_Args - 2;
-
-                  else
-                     Stack_Op := True;
-                  end if;
-               end if;
-
-               --  Remove duplicate -shared-libgcc switch
-
-               if Linker_Options.Table (J).all = Shared_Libgcc_String then
-                  if Shared_Libgcc_Seen then
-                     Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                       Linker_Options.Table (J + 1 .. Linker_Options.Last);
-                     Linker_Options.Decrement_Last;
-                     Num_Args := Num_Args - 1;
-
-                  else
-                     Shared_Libgcc_Seen := True;
-                  end if;
-               end if;
-
-               --  Here we just check for a canonical form that matches the
-               --  pragma Linker_Options set in the NT runtime.
-
-               if (Linker_Options.Table (J)'Length > 17
-                    and then Linker_Options.Table (J) (1 .. 17) =
-                                                     "-Xlinker --stack=")
-                 or else
-                  (Linker_Options.Table (J)'Length > 12
-                    and then Linker_Options.Table (J) (1 .. 12) =
-                                                     "-Wl,--stack=")
-               then
-                  if Stack_Op then
-                     Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                       Linker_Options.Table (J + 1 .. Linker_Options.Last);
-                     Linker_Options.Decrement_Last;
-                     Num_Args := Num_Args - 1;
-
-                  else
-                     Stack_Op := True;
-                  end if;
-               end if;
-
-               --  Remove duplicate IDENTIFICATION directives (VMS)
-
-               if Linker_Options.Table (J)'Length > 29
-                 and then Linker_Options.Table (J) (1 .. 30) =
-                            "--for-linker=--identification="
-               then
-                  if IDENT_Op then
-                     Linker_Options.Table (J .. Linker_Options.Last - 1) :=
-                       Linker_Options.Table (J + 1 .. Linker_Options.Last);
-                     Linker_Options.Decrement_Last;
-                     Num_Args := Num_Args - 1;
-
-                  else
-                     IDENT_Op := True;
-                  end if;
-               end if;
-
-               J := J + 1;
-            end loop;
-
-            if Linker_Path = Gcc_Path and then VM_Target = No_VM then
-
-               --  For systems where the default is to link statically with
-               --  libgcc, if gcc is not called with -shared-libgcc, call it
-               --  with -static-libgcc, as there are some platforms where one
-               --  of these two switches is compulsory to link.
-
-               if Shared_Libgcc_Default = 'T'
-                 and then not Shared_Libgcc_Seen
-               then
-                  Linker_Options.Increment_Last;
-                  Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
-                  Num_Args := Num_Args + 1;
-               end if;
-
-            elsif RTX_RTSS_Kernel_Module_On_Target then
-
-               --  Force the use of the static libgcc for RTSS modules
-
-               Linker_Options.Increment_Last;
-               Linker_Options.Table (Linker_Options.Last) :=
-                 new String'("libgcc.a");
-               Num_Args := Num_Args + 1;
             end if;
 
-         end Clean_Link_Option_Set;
+            --  Remove duplicate -shared-libgcc switch
 
-         --  Prepare arguments for call to linker
+            if Linker_Options.Table (J).all = Shared_Libgcc_String then
+               if Shared_Libgcc_Seen then
+                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+                  Linker_Options.Decrement_Last;
+                  Num_Args := Num_Args - 1;
 
-         Call_Linker : declare
-            Success  : Boolean;
-            Args     : Argument_List (1 .. Num_Args + 1);
-            Index    : Integer := Args'First;
+               else
+                  Shared_Libgcc_Seen := True;
+               end if;
+            end if;
 
-         begin
-            Args (Index) := Binder_Obj_File;
+            --  Here we just check for a canonical form that matches the
+            --  pragma Linker_Options set in the NT runtime.
 
-            --  Add the object files and any -largs libraries
+            if (Linker_Options.Table (J)'Length > 17
+                and then Linker_Options.Table (J) (1 .. 17) =
+                  "-Xlinker --stack=")
+              or else
+                (Linker_Options.Table (J)'Length > 12
+                 and then Linker_Options.Table (J) (1 .. 12) =
+                       "-Wl,--stack=")
+            then
+               if Stack_Op then
+                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+                  Linker_Options.Decrement_Last;
+                  Num_Args := Num_Args - 1;
 
-            for J in Linker_Objects.First .. Linker_Objects.Last loop
-               Index := Index + 1;
-               Args (Index) := Linker_Objects.Table (J);
+               else
+                  Stack_Op := True;
+               end if;
+            end if;
+
+            J := J + 1;
+         end loop;
+
+         if Linker_Path = Gcc_Path and then VM_Target = No_VM then
+
+            --  For systems where the default is to link statically with
+            --  libgcc, if gcc is not called with -shared-libgcc, call it
+            --  with -static-libgcc, as there are some platforms where one
+            --  of these two switches is compulsory to link.
+
+            if Shared_Libgcc_Default = 'T'
+              and then not Shared_Libgcc_Seen
+            then
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
+               Num_Args := Num_Args + 1;
+            end if;
+         end if;
+      end Clean_Link_Option_Set;
+
+      --  Prepare arguments for call to linker
+
+      Call_Linker : declare
+         Success  : Boolean;
+         Args     : Argument_List (1 .. Num_Args + 1);
+         Index    : Integer := Args'First;
+
+      begin
+         Args (Index) := Binder_Obj_File;
+
+         --  Add the object files and any -largs libraries
+
+         for J in Linker_Objects.First .. Linker_Objects.Last loop
+            Index := Index + 1;
+            Args (Index) := Linker_Objects.Table (J);
+         end loop;
+
+         --  Add the linker options from the binder file
+
+         for J in Linker_Options.First .. Linker_Options.Last loop
+            Index := Index + 1;
+            Args (Index) := Linker_Options.Table (J);
+         end loop;
+
+         --  Finally add the libraries from the --GCC= switch
+
+         for J in Gcc_Linker_Options.First .. Gcc_Linker_Options.Last loop
+            Index := Index + 1;
+            Args (Index) := Gcc_Linker_Options.Table (J);
+         end loop;
+
+         if Verbose_Mode then
+            Write_Str (Linker_Path.all);
+
+            for J in Args'Range loop
+               Write_Str (" ");
+               Write_Str (Args (J).all);
             end loop;
 
-            --  Add the linker options from the binder file
+            Write_Eol;
 
-            for J in Linker_Options.First .. Linker_Options.Last loop
-               Index := Index + 1;
-               Args (Index) := Linker_Options.Table (J);
-            end loop;
+            --  If we are on very verbose mode (-v -v) and a response file
+            --  is used we display its content.
 
-            --  Finally add the libraries from the --GCC= switch
+            if Very_Verbose_Mode and then Tname_FD /= Invalid_FD then
+               Write_Eol;
+               Write_Str ("Response file (" &
+                            Tname (Tname'First .. Tname'Last - 1) &
+                            ") content : ");
+               Write_Eol;
 
-            for J in Gcc_Linker_Options.First .. Gcc_Linker_Options.Last loop
-               Index := Index + 1;
-               Args (Index) := Gcc_Linker_Options.Table (J);
-            end loop;
-
-            if Verbose_Mode then
-               Write_Str (Linker_Path.all);
-
-               for J in Args'Range loop
-                  Write_Str (" ");
-                  Write_Str (Args (J).all);
+               for J in
+                 Response_File_Objects.First .. Response_File_Objects.Last
+               loop
+                  Write_Str (Response_File_Objects.Table (J).all);
+                  Write_Eol;
                end loop;
 
                Write_Eol;
+            end if;
+         end if;
 
-               --  If we are on very verbose mode (-v -v) and a response file
-               --  is used we display its content.
+         System.OS_Lib.Spawn (Linker_Path.all, Args, Success);
 
-               if Very_Verbose_Mode and then Tname_FD /= Invalid_FD then
-                  Write_Eol;
-                  Write_Str ("Response file (" &
-                             Tname (Tname'First .. Tname'Last - 1) &
-                             ") content : ");
-                  Write_Eol;
+         if Success then
 
-                  for J in
-                    Response_File_Objects.First .. Response_File_Objects.Last
-                  loop
-                     Write_Str (Response_File_Objects.Table (J).all);
-                     Write_Eol;
-                  end loop;
+            --  Delete the temporary file used in conjunction with linking
+            --  if one was created. See Process_Bind_File for details.
 
-                  Write_Eol;
-               end if;
+            if Tname_FD /= Invalid_FD then
+               Delete (Tname);
             end if;
 
-            System.OS_Lib.Spawn (Linker_Path.all, Args, Success);
-
-            if Success then
-
-               --  Delete the temporary file used in conjunction with linking
-               --  if one was created. See Process_Bind_File for details.
-
-               if Tname_FD /= Invalid_FD then
-                  Delete (Tname);
-               end if;
-
-            else
-               Error_Msg ("error when calling " & Linker_Path.all);
-               Exit_Program (E_Fatal);
-            end if;
-         end Call_Linker;
-      end Link_Step;
-   end if;
+         else
+            Error_Msg ("error when calling " & Linker_Path.all);
+            Exit_Program (E_Fatal);
+         end if;
+      end Call_Linker;
+   end Link_Step;
 
    --  Only keep the binder output file and it's associated object
    --  file if compiling with the -g option.  These files are only

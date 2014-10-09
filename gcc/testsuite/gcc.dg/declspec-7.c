@@ -4,7 +4,7 @@
    gcc.dg/tls/diag-*.c.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fgnu89-inline" } */
 
 /* Duplicate specifiers.  */
 

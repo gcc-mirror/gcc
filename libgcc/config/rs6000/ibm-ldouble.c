@@ -87,18 +87,30 @@ __asm__ (".symver __gcc_qadd,_xlqadd@GCC_3.4\n\t"
 	 ".symver .__gcc_qdiv,._xlqdiv@GCC_3.4");
 #endif
 
-typedef union
+/* Combine two 'double' values into one 'long double' and return the result.  */
+static inline long double
+pack_ldouble (double dh, double dl)
 {
-  long double ldval;
-  double dval[2];
-} longDblUnion;
+#if defined (__LONG_DOUBLE_128__) \
+    && !(defined (_SOFT_FLOAT) || defined (__NO_FPRS__))
+  return __builtin_pack_longdouble (dh, dl);
+#else
+  union
+  {
+    long double ldval;
+    double dval[2];
+  } x;
+  x.dval[0] = dh;
+  x.dval[1] = dl;
+  return x.ldval;
+#endif
+}
 
 /* Add two 'long double' values and return the result.	*/
 long double
 __gcc_qadd (double a, double aa, double c, double cc)
 {
-  longDblUnion x;
-  double z, q, zz, xh;
+  double xh, xl, z, q, zz;
 
   z = a + c;
 
@@ -109,12 +121,12 @@ __gcc_qadd (double a, double aa, double c, double cc)
       z = cc + aa + c + a;
       if (nonfinite (z))
 	return z;
-      x.dval[0] = z;  /* Will always be DBL_MAX.  */
+      xh = z;  /* Will always be DBL_MAX.  */
       zz = aa + cc;
       if (fabs(a) > fabs(c))
-	x.dval[1] = a - z + c + zz;
+	xl = a - z + c + zz;
       else
-	x.dval[1] = c - z + a + zz;
+	xl = c - z + a + zz;
     }
   else
     {
@@ -129,10 +141,9 @@ __gcc_qadd (double a, double aa, double c, double cc)
       if (nonfinite (xh))
 	return xh;
 
-      x.dval[0] = xh;
-      x.dval[1] = z - xh + zz;
+      xl = z - xh + zz;
     }
-  return x.ldval;
+  return pack_ldouble (xh, xl);
 }
 
 long double
@@ -148,8 +159,7 @@ static double fmsub (double, double, double);
 long double
 __gcc_qmul (double a, double b, double c, double d)
 {
-  longDblUnion z;
-  double t, tau, u, v, w;
+  double xh, xl, t, tau, u, v, w;
   
   t = a * c;			/* Highest order double term.  */
 
@@ -173,16 +183,15 @@ __gcc_qmul (double a, double b, double c, double d)
   /* Construct long double result.  */
   if (nonfinite (u))
     return u;
-  z.dval[0] = u;
-  z.dval[1] = (t - u) + tau;
-  return z.ldval;
+  xh = u;
+  xl = (t - u) + tau;
+  return pack_ldouble (xh, xl);
 }
 
 long double
 __gcc_qdiv (double a, double b, double c, double d)
 {
-  longDblUnion z;
-  double s, sigma, t, tau, u, v, w;
+  double xh, xl, s, sigma, t, tau, u, v, w;
   
   t = a / c;                    /* highest order double term */
   
@@ -219,9 +228,9 @@ __gcc_qdiv (double a, double b, double c, double d)
   /* Construct long double result.  */
   if (nonfinite (u))
     return u;
-  z.dval[0] = u;
-  z.dval[1] = (t - u) + tau;
-  return z.ldval;
+  xh = u;
+  xl = (t - u) + tau;
+  return pack_ldouble (xh, xl);
 }
 
 #if defined (_SOFT_DOUBLE) && defined (__LONG_DOUBLE_128__)
@@ -248,11 +257,7 @@ extern int __gedf2 (double, double);
 long double
 __gcc_qneg (double a, double aa)
 {
-  longDblUnion x;
-
-  x.dval[0] = -a;
-  x.dval[1] = -aa;
-  return x.ldval;
+  return pack_ldouble (-a, -aa);
 }
 
 /* Compare two 'long double' values for equality.  */
@@ -292,24 +297,14 @@ strong_alias (__gcc_qge, __gcc_qgt);
 long double
 __gcc_stoq (float a)
 {
-  longDblUnion x;
-
-  x.dval[0] = (double) a;
-  x.dval[1] = 0.0;
-
-  return x.ldval;
+  return pack_ldouble ((double) a, 0.0);
 }
 
 /* Convert double to long double.  */
 long double
 __gcc_dtoq (double a)
 {
-  longDblUnion x;
-
-  x.dval[0] = a;
-  x.dval[1] = 0.0;
-
-  return x.ldval;
+  return pack_ldouble (a, 0.0);
 }
 
 /* Convert long double to single.  */

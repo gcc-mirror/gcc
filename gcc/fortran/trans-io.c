@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "ggc.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
 #include "gfortran.h"
+#include "diagnostic-core.h"	/* For internal_error.  */
 #include "trans.h"
 #include "trans-stmt.h"
 #include "trans-array.h"
@@ -467,7 +467,7 @@ gfc_build_io_library_fndecls (void)
   iocall[IOCALL_SET_NML_VAL] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("st_set_nml_var")), ".w.R",
 	void_type_node, 6, dt_parm_type, pvoid_type_node, pvoid_type_node,
-	void_type_node, gfc_charlen_type_node, gfc_int4_type_node);
+	gfc_int4_type_node, gfc_charlen_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_SET_NML_VAL_DIM] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("st_set_nml_var_dim")), ".w",
@@ -1557,6 +1557,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   tree dtype;
   tree dt_parm_addr;
   tree decl = NULL_TREE;
+  tree gfc_int4_type_node = gfc_get_int_type (4);
   int n_dim;
   int itype;
   int rank = 0;
@@ -1605,7 +1606,8 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   tmp = build_call_expr_loc (input_location,
 			 iocall[IOCALL_SET_NML_VAL], 6,
 			 dt_parm_addr, addr_expr, string,
-			 IARG (ts->kind), tmp, dtype);
+			 build_int_cst (gfc_int4_type_node, ts->kind),
+			 tmp, dtype);
   gfc_add_expr_to_block (block, tmp);
 
   /* If the object is an array, transfer rank times:
@@ -1616,7 +1618,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       tmp = build_call_expr_loc (input_location,
 			     iocall[IOCALL_SET_NML_VAL_DIM], 5,
 			     dt_parm_addr,
-			     IARG (n_dim),
+			     build_int_cst (gfc_int4_type_node, n_dim),
 			     gfc_conv_array_stride (decl, n_dim),
 			     gfc_conv_array_lbound (decl, n_dim),
 			     gfc_conv_array_ubound (decl, n_dim));
@@ -2133,7 +2135,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  return;
 	}
-      /* Fall through. */
+      /* Fall through.  */
     case BT_HOLLERITH:
       if (se->string_length)
 	arg2 = se->string_length;

@@ -524,6 +524,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
   tree *args = XALLOCAVEC (tree, n);
   va_list list;
   int i;
+  bool err = false;
 
   va_start (list, n);
   for (i = 0; i < n; ++i)
@@ -531,22 +532,22 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
       builtin_type a = (builtin_type) va_arg (list, int);
       t = builtin_types[a];
       if (t == error_mark_node)
-	goto egress;
+	err = true;
       args[i] = t;
     }
   va_end (list);
 
   t = builtin_types[ret];
+  if (err)
+    t = error_mark_node;
   if (t == error_mark_node)
-    goto egress;
-  if (var)
+    ;
+  else if (var)
     t = build_varargs_function_type_array (t, n, args);
   else
     t = build_function_type_array (t, n, args);
 
- egress:
   builtin_types[def] = t;
-  va_end (list);
 }
 
 /* Used to help initialize the builtin-types.def table.  When a type of
@@ -1192,10 +1193,10 @@ lto_init (void)
     }
   else
     {
-      lto_define_builtins (va_list_type_node,
-			   build_reference_type (va_list_type_node));
+      lto_define_builtins (build_reference_type (va_list_type_node),
+			   va_list_type_node);
     }
-  
+
   if (flag_cilkplus)
     cilk_init_builtins ();
 

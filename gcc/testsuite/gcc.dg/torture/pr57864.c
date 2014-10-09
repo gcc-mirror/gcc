@@ -15,12 +15,12 @@ static void fn1(union U *p1, int p2, _Bool p3)
     union U *e;
 
     if (p2 == 0)
-	a = ((union U*)((unsigned long)p1 & ~1))->val;
+	a = ((union U*)((__SIZE_TYPE__)p1 & ~1))->val;
 
     if (b) {
 	e = p1;
     } else if (c) {
-	e = ((union U*)((unsigned long)p1 & ~1))->ptr;
+	e = ((union U*)((__SIZE_TYPE__)p1 & ~1))->ptr;
 	d = e;
     } else {
 	e = 0;

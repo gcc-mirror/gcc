@@ -43,7 +43,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// Declare all variables at top in case any
 	// declarations require heap allocation (e.g., err1).
 	var (
-		r1     Pid_t
+		r1     uintptr
 		err1   Errno
 		nextfd int
 		i      int
@@ -65,7 +65,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
 	runtime_BeforeFork()
-	r1, err1 = raw_fork()
+	r1, _, err1 = RawSyscall6(SYS_CLONE, uintptr(SIGCHLD)|sys.Cloneflags, 0, 0, 0, 0, 0)
 	if err1 != 0 {
 		runtime_AfterFork()
 		return 0, err1

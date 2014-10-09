@@ -217,33 +217,32 @@ package body Snames is
 
    function Get_Pragma_Id (N : Name_Id) return Pragma_Id is
    begin
-      if N = Name_AST_Entry then
-         return Pragma_AST_Entry;
-      elsif N = Name_CPU then
-         return Pragma_CPU;
-      elsif N = Name_Dispatching_Domain then
-         return Pragma_Dispatching_Domain;
-      elsif N = Name_Fast_Math then
-         return Pragma_Fast_Math;
-      elsif N = Name_Interface then
-         return Pragma_Interface;
-      elsif N = Name_Interrupt_Priority then
-         return Pragma_Interrupt_Priority;
-      elsif N = Name_Lock_Free then
-         return Pragma_Lock_Free;
-      elsif N = Name_Priority then
-         return Pragma_Priority;
-      elsif N = Name_Relative_Deadline then
-         return Pragma_Relative_Deadline;
-      elsif N = Name_Storage_Size then
-         return Pragma_Storage_Size;
-      elsif N = Name_Storage_Unit then
-         return Pragma_Storage_Unit;
-      elsif N not in First_Pragma_Name .. Last_Pragma_Name then
-         return Unknown_Pragma;
-      else
-         return Pragma_Id'Val (N - First_Pragma_Name);
-      end if;
+      case N is
+         when Name_CPU                              =>
+            return Pragma_CPU;
+         when Name_Default_Scalar_Storage_Order     =>
+            return Pragma_Default_Scalar_Storage_Order;
+         when Name_Dispatching_Domain               =>
+            return Pragma_Dispatching_Domain;
+         when Name_Fast_Math                        =>
+            return Pragma_Fast_Math;
+         when Name_Interface                        =>
+            return Pragma_Interface;
+         when Name_Interrupt_Priority               =>
+            return Pragma_Interrupt_Priority;
+         when Name_Lock_Free                        =>
+            return Pragma_Lock_Free;
+         when Name_Priority                         =>
+            return Pragma_Priority;
+         when Name_Storage_Size                     =>
+            return Pragma_Storage_Size;
+         when Name_Storage_Unit                     =>
+            return Pragma_Storage_Unit;
+         when First_Pragma_Name .. Last_Pragma_Name =>
+            return Pragma_Id'Val (N - First_Pragma_Name);
+         when others                                =>
+            return Unknown_Pragma;
+      end case;
    end Get_Pragma_Id;
 
    ---------------------------
@@ -338,6 +337,7 @@ package body Snames is
    function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean is
    begin
       return N in First_Pragma_Name .. Last_Configuration_Pragma_Name
+        or else N = Name_Default_Scalar_Storage_Order
         or else N = Name_Fast_Math;
    end Is_Configuration_Pragma_Name;
 
@@ -449,8 +449,8 @@ package body Snames is
    function Is_Pragma_Name (N : Name_Id) return Boolean is
    begin
       return N in First_Pragma_Name .. Last_Pragma_Name
-        or else N = Name_AST_Entry
         or else N = Name_CPU
+        or else N = Name_Default_Scalar_Storage_Order
         or else N = Name_Dispatching_Domain
         or else N = Name_Fast_Math
         or else N = Name_Interface

@@ -362,7 +362,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    fputs (" unsigned", file);
 	  if (DECL_IGNORED_P (node))
 	    fputs (" ignored", file);
-	  if (DECL_ABSTRACT (node))
+	  if (DECL_ABSTRACT_P (node))
 	    fputs (" abstract", file);
 	  if (DECL_EXTERNAL (node))
 	    fputs (" external", file);

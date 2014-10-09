@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Handing of packed arrays with Component_Size = 14
+--  Handling of packed arrays with Component_Size = 14
 
 package System.Pack_14 is
    pragma Preelaborate;
@@ -39,20 +39,37 @@ package System.Pack_14 is
    type Bits_14 is mod 2 ** Bits;
    for Bits_14'Size use Bits;
 
-   function Get_14 (Arr : System.Address; N : Natural) return Bits_14;
+   --  In all subprograms below, Rev_SSO is set True if the array has the
+   --  non-default scalar storage order.
+
+   function Get_14
+     (Arr     : System.Address;
+      N       : Natural;
+      Rev_SSO : Boolean) return Bits_14 with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is extracted and returned.
 
-   procedure Set_14 (Arr : System.Address; N : Natural; E : Bits_14);
+   procedure Set_14
+     (Arr     : System.Address;
+      N       : Natural;
+      E       : Bits_14;
+      Rev_SSO : Boolean) with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is set to the given value.
 
-   function GetU_14 (Arr : System.Address; N : Natural) return Bits_14;
+   function GetU_14
+     (Arr     : System.Address;
+      N       : Natural;
+      Rev_SSO : Boolean) return Bits_14 with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is extracted and returned. This version
    --  is used when Arr may represent an unaligned address.
 
-   procedure SetU_14 (Arr : System.Address; N : Natural; E : Bits_14);
+   procedure SetU_14
+     (Arr     : System.Address;
+      N       : Natural;
+      E       : Bits_14;
+      Rev_SSO : Boolean) with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is set to the given value. This version
    --  is used when Arr may represent an unaligned address

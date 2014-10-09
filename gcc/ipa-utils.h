@@ -34,28 +34,13 @@ struct ipa_dfs_info {
   PTR aux;
 };
 
-/* Context of polymorphic call.  This is used by ipa-devirt walkers of the
-   type inheritance graph.  */
-struct ipa_polymorphic_call_context {
-  /* The called object appears in an object of type OUTER_TYPE
-     at offset OFFSET.  */
-  HOST_WIDE_INT offset;
-  tree outer_type;
-  /* True if outer object may be in construction or destruction.  */
-  bool maybe_in_construction;
-  /* True if outer object may be of derived type.  */
-  bool maybe_derived_type;
-};
-
-/* Context representing "I know nothing".  */
-extern const ipa_polymorphic_call_context ipa_dummy_polymorphic_call_context;
 
 /* In ipa-utils.c  */
 void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
 int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
 			  bool (*ignore_edge) (struct cgraph_edge *));
 void ipa_free_postorder_info (void);
-vec<cgraph_node_ptr> ipa_get_nodes_in_cycle (struct cgraph_node *);
+vec<cgraph_node *> ipa_get_nodes_in_cycle (struct cgraph_node *);
 bool ipa_edge_within_scc (struct cgraph_edge *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
@@ -75,29 +60,33 @@ void update_type_inheritance_graph (void);
 vec <cgraph_node *>
 possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
 				   ipa_polymorphic_call_context,
-				   bool *final = NULL,
+				   bool *copletep = NULL,
 				   void **cache_token = NULL,
-				   int *nonconstruction_targets = NULL);
+				   bool speuclative = false);
 odr_type get_odr_type (tree, bool insert = false);
+bool possible_polymorphic_call_target_p (tree ref, gimple stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
 					 struct cgraph_node *);
 tree method_class_type (const_tree);
-tree get_polymorphic_call_info (tree, tree, tree *,
-				HOST_WIDE_INT *,
-				ipa_polymorphic_call_context *,
-				gimple call = NULL);
-bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
-					       tree, tree, HOST_WIDE_INT);
 bool decl_maybe_in_construction_p (tree, tree, gimple, tree);
 tree vtable_pointer_value_to_binfo (const_tree);
 bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
+tree subbinfo_with_vtable_at_offset (tree, unsigned HOST_WIDE_INT, tree);
+void compare_virtual_tables (varpool_node *, varpool_node *);
+bool type_all_derivations_known_p (const_tree);
+bool type_known_to_have_no_deriavations_p (tree);
 bool contains_polymorphic_type_p (const_tree);
+void register_odr_type (tree);
+bool types_must_be_same_for_odr (tree, tree);
+bool types_odr_comparable (tree, tree);
+cgraph_node *try_speculative_devirtualization (tree, HOST_WIDE_INT,
+					       ipa_polymorphic_call_context);
 
 /* Return vector containing possible targets of polymorphic call E.
-   If FINALP is non-NULL, store true if the list is complette. 
+   If COMPLETEP is non-NULL, store true if the list is complette. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
@@ -108,20 +97,17 @@ bool contains_polymorphic_type_p (const_tree);
 
 inline vec <cgraph_node *>
 possible_polymorphic_call_targets (struct cgraph_edge *e,
-				   bool *final = NULL,
+				   bool *completep = NULL,
 				   void **cache_token = NULL,
-				   int *nonconstruction_targets = NULL)
+				   bool speculative = false)
 {
-  gcc_checking_assert (e->indirect_info->polymorphic);
-  ipa_polymorphic_call_context context = {e->indirect_info->offset,
-					  e->indirect_info->outer_type,
-					  e->indirect_info->maybe_in_construction,
-					  e->indirect_info->maybe_derived_type};
+  ipa_polymorphic_call_context context(e);
+
   return possible_polymorphic_call_targets (e->indirect_info->otr_type,
 					    e->indirect_info->otr_token,
 					    context,
-					    final, cache_token,
-					    nonconstruction_targets);
+					    completep, cache_token,
+					    speculative);
 }
 
 /* Same as above but taking OBJ_TYPE_REF as an parameter.  */
@@ -129,21 +115,16 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 inline vec <cgraph_node *>
 possible_polymorphic_call_targets (tree ref,
 				   gimple call,
-				   bool *final = NULL,
+				   bool *completep = NULL,
 				   void **cache_token = NULL)
 {
-  tree otr_type;
-  HOST_WIDE_INT otr_token;
-  ipa_polymorphic_call_context context;
+  ipa_polymorphic_call_context context (current_function_decl, ref, call);
 
-  get_polymorphic_call_info (current_function_decl,
-			     ref,
-			     &otr_type, &otr_token, &context, call);
   return possible_polymorphic_call_targets (obj_type_ref_class (ref),
 					    tree_to_uhwi
 					      (OBJ_TYPE_REF_TOKEN (ref)),
 					    context,
-					    final, cache_token);
+					    completep, cache_token);
 }
 
 /* Dump possible targets of a polymorphic call E into F.  */
@@ -151,11 +132,8 @@ possible_polymorphic_call_targets (tree ref,
 inline void
 dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e)
 {
-  gcc_checking_assert (e->indirect_info->polymorphic);
-  ipa_polymorphic_call_context context = {e->indirect_info->offset,
-					  e->indirect_info->outer_type,
-					  e->indirect_info->maybe_in_construction,
-					  e->indirect_info->maybe_derived_type};
+  ipa_polymorphic_call_context context(e);
+
   dump_possible_polymorphic_call_targets (f, e->indirect_info->otr_type,
 					  e->indirect_info->otr_token,
 					  context);
@@ -168,27 +146,45 @@ inline bool
 possible_polymorphic_call_target_p (struct cgraph_edge *e,
 				    struct cgraph_node *n)
 {
-  ipa_polymorphic_call_context context = {e->indirect_info->offset,
-					  e->indirect_info->outer_type,
-					  e->indirect_info->maybe_in_construction,
-					  e->indirect_info->maybe_derived_type};
+  ipa_polymorphic_call_context context(e);
+
   return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
 					     e->indirect_info->otr_token,
 					     context, n);
 }
 
-/* Return true if N can be possibly target of a polymorphic call of
-   OBJ_TYPE_REF expression CALL.  */
+/* Return true of T is type with One Definition Rule info attached. 
+   It means that either it is anonymous type or it has assembler name
+   set.  */
+
+static inline bool
+odr_type_p (const_tree t)
+{
+  if (type_in_anonymous_namespace_p (t))
+    return true;
+  /* We do not have this information when not in LTO, but we do not need
+     to care, since it is used only for type merging.  */
+  gcc_assert (in_lto_p || flag_lto);
+
+  return (TYPE_NAME (t)
+          && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))));
+}
+
+/* Return true if BINFO corresponds to a type with virtual methods. 
+
+   Every type has several BINFOs.  One is the BINFO associated by the type
+   while other represents bases of derived types.  The BINFOs representing
+   bases do not have BINFO_VTABLE pointer set when this is the single
+   inheritance (because vtables are shared).  Look up the BINFO of type
+   and check presence of its vtable.  */
 
 inline bool
-possible_polymorphic_call_target_p (tree call,
-				    struct cgraph_node *n)
+polymorphic_type_binfo_p (const_tree binfo)
 {
-  return possible_polymorphic_call_target_p (obj_type_ref_class (call),
-					     tree_to_uhwi
-					       (OBJ_TYPE_REF_TOKEN (call)),
-					     ipa_dummy_polymorphic_call_context,
-					     n);
+  /* See if BINFO's type has an virtual table associtated with it.
+     Check is defensive because of Java FE produces BINFOs
+     without BINFO_TYPE set.   */
+  return BINFO_TYPE (binfo) && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo)));
 }
 #endif  /* GCC_IPA_UTILS_H  */
 

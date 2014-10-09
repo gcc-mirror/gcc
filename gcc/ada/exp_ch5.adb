@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
@@ -58,6 +59,7 @@ with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
+with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
 package body Exp_Ch5 is
@@ -106,7 +108,7 @@ package body Exp_Ch5 is
    --  using the standard Insert_Actions mechanism.
 
    procedure Expand_Assign_Record (N : Node_Id);
-   --  N is an assignment of a non-tagged record value. This routine handles
+   --  N is an assignment of an untagged record value. This routine handles
    --  the case where the assignment must be made component by component,
    --  either because the target is not byte aligned, or there is a change
    --  of representation, or when we have a tagged type with a representation
@@ -1734,7 +1736,6 @@ package body Exp_Ch5 is
          --  First deal with generation of range check if required
 
          if Do_Range_Check (Rhs) then
-            Set_Do_Range_Check (Rhs, False);
             Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
          end if;
 
@@ -2002,6 +2003,14 @@ package body Exp_Ch5 is
       if Is_Access_Type (Typ)
         and then Can_Never_Be_Null (Etype (Lhs))
         and then not Can_Never_Be_Null (Etype (Rhs))
+
+        --  If an actual is an out parameter of a null-excluding access
+        --  type, there is access check on entry, so we set the flag
+        --  Suppress_Assignment_Checks on the generated statement to
+        --  assign the actual to the parameter block, and we do not want
+        --  to generate an additional check at this point.
+
+        and then not Suppress_Assignment_Checks (N)
       then
          Apply_Constraint_Check (Rhs, Etype (Lhs));
       end if;
@@ -2524,7 +2533,13 @@ package body Exp_Ch5 is
       if Compile_Time_Known_Value (Expr) then
          Alt := Find_Static_Alternative (N);
 
-         Process_Statements_For_Controlled_Objects (Alt);
+         --  Do not consider controlled objects found in a case statement which
+         --  actually models a case expression because their early finalization
+         --  will affect the result of the expression.
+
+         if not From_Conditional_Expression (N) then
+            Process_Statements_For_Controlled_Objects (Alt);
+         end if;
 
          --  Move statements from this alternative after the case statement.
          --  They are already analyzed, so will be skipped by the analyzer.
@@ -2603,10 +2618,16 @@ package body Exp_Ch5 is
             --  effects.
 
             Remove_Side_Effects (Expression (N));
-
             Alt := First (Alternatives (N));
 
-            Process_Statements_For_Controlled_Objects (Alt);
+            --  Do not consider controlled objects found in a case statement
+            --  which actually models a case expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (Alt);
+            end if;
+
             Insert_List_After (N, Statements (Alt));
 
             --  That leaves the case statement as a shell. The alternative that
@@ -2660,12 +2681,22 @@ package body Exp_Ch5 is
                            and then Attribute_Name (Choice) = Name_Range)
                  or else (Is_Entity_Name (Choice)
                            and then Is_Type (Entity (Choice)))
-                 or else Nkind (Choice) = N_Subtype_Indication
                then
                   Cond :=
                     Make_In (Loc,
                       Left_Opnd  => Expression (N),
                       Right_Opnd => Relocate_Node (Choice));
+
+               --  A subtype indication is not a legal operator in a membership
+               --  test, so retrieve its range.
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Cond :=
+                    Make_In (Loc,
+                      Left_Opnd  => Expression (N),
+                      Right_Opnd =>
+                        Relocate_Node
+                          (Range_Expression (Constraint (Choice))));
 
                --  For any other subexpression "expression = value"
 
@@ -2694,10 +2725,9 @@ package body Exp_Ch5 is
          --  compute the contents of the Others_Discrete_Choices which is not
          --  needed by the back end anyway.
 
-         --  The reason we do this is that the back end always needs some
-         --  default for a switch, so if we have not supplied one in the
-         --  processing above for validity checking, then we need to supply
-         --  one here.
+         --  The reason for this is that the back end always needs some default
+         --  for a switch, so if we have not supplied one in the processing
+         --  above for validity checking, then we need to supply one here.
 
          if not Others_Present then
             Others_Node := Make_Others_Choice (Sloc (Last_Alt));
@@ -2711,7 +2741,14 @@ package body Exp_Ch5 is
 
          Alt := First_Non_Pragma (Alternatives (N));
          while Present (Alt) loop
-            Process_Statements_For_Controlled_Objects (Alt);
+
+            --  Do not consider controlled objects found in a case statement
+            --  which actually models a case expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (Alt);
+            end if;
 
             if Has_SP_Choice (Alt) then
                Expand_Static_Predicates_In_Choices (Alt);
@@ -2782,7 +2819,7 @@ package body Exp_Ch5 is
       I_Spec        : constant Node_Id    := Iterator_Specification (Isc);
       Element       : constant Entity_Id  := Defining_Identifier (I_Spec);
       Container     : constant Node_Id    := Entity (Name (I_Spec));
-      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      Container_Typ : constant Entity_Id  := Base_Type (Etype (Container));
       Stats         : constant List_Id    := Statements (N);
 
       Cursor    : constant Entity_Id :=
@@ -2914,7 +2951,13 @@ package body Exp_Ch5 is
       --  these warnings for expander generated code.
 
    begin
-      Process_Statements_For_Controlled_Objects (N);
+      --  Do not consider controlled objects found in an if statement which
+      --  actually models an if expression because their early finalization
+      --  will affect the result of the expression.
+
+      if not From_Conditional_Expression (N) then
+         Process_Statements_For_Controlled_Objects (N);
+      end if;
 
       Adjust_Condition (Condition (N));
 
@@ -3001,7 +3044,14 @@ package body Exp_Ch5 is
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));
          while Present (E) loop
-            Process_Statements_For_Controlled_Objects (E);
+
+            --  Do not consider controlled objects found in an if statement
+            --  which actually models an if expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (E);
+            end if;
 
             Adjust_Condition (Condition (E));
 
@@ -3157,8 +3207,9 @@ package body Exp_Ch5 is
       Id     : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc    : constant Source_Ptr := Sloc (N);
 
-      Container     : constant Node_Id   := Name (I_Spec);
-      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      Container     : constant Node_Id     := Name (I_Spec);
+      Container_Typ : constant Entity_Id   := Base_Type (Etype (Container));
+      I_Kind        : constant Entity_Kind := Ekind (Id);
       Cursor        : Entity_Id;
       Iterator      : Entity_Id;
       New_Loop      : Node_Id;
@@ -3253,17 +3304,90 @@ package body Exp_Ch5 is
          --  type of the iterator must be obtained from the aspect.
 
          if Of_Present (I_Spec) then
-            declare
-               Default_Iter : constant Entity_Id :=
-                                Entity
-                                  (Find_Value_Of_Aspect
-                                    (Etype (Container),
-                                     Aspect_Default_Iterator));
-
+            Handle_Of : declare
+               Default_Iter  : Entity_Id;
                Container_Arg : Node_Id;
                Ent           : Entity_Id;
 
+               function Get_Default_Iterator
+                 (T : Entity_Id) return Entity_Id;
+               --  If the container is a derived type, the aspect holds the
+               --  parent operation. The required one is a primitive of the
+               --  derived type and is either inherited or overridden.
+
+               --------------------------
+               -- Get_Default_Iterator --
+               --------------------------
+
+               function Get_Default_Iterator
+                 (T : Entity_Id) return Entity_Id
+               is
+                  Iter : constant Entity_Id :=
+                    Entity (Find_Value_Of_Aspect (T, Aspect_Default_Iterator));
+                  Prim : Elmt_Id;
+                  Op   : Entity_Id;
+
+               begin
+                  Container_Arg := New_Copy_Tree (Container);
+
+                  --  A previous version of GNAT allowed indexing aspects to
+                  --  be redefined on derived container types, while the
+                  --  default iterator was inherited from the aprent type.
+                  --  This non-standard extension is preserved temporarily for
+                  --  use by the modelling project under debug flag d.X.
+
+                  if Debug_Flag_Dot_XX then
+                     if Base_Type (Etype (Container)) /=
+                        Base_Type (Etype (First_Formal (Iter)))
+                     then
+                        Container_Arg :=
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of
+                                (Etype (First_Formal (Iter)), Loc),
+                            Expression   => Container_Arg);
+                     end if;
+
+                     return Iter;
+
+                  elsif Is_Derived_Type (T) then
+
+                     --  The default iterator must be a primitive operation
+                     --  of the type, at the same dispatch slot position.
+
+                     Prim := First_Elmt (Primitive_Operations (T));
+                     while Present (Prim) loop
+                        Op := Node (Prim);
+
+                        if Chars (Op) = Chars (Iter)
+                          and then DT_Position (Op) = DT_Position (Iter)
+                        then
+                           return Op;
+                        end if;
+
+                        Next_Elmt (Prim);
+                     end loop;
+
+                     --  default iterator must exist.
+
+                     pragma Assert (False);
+
+                  else              --  not a derived type
+                     return Iter;
+                  end if;
+               end Get_Default_Iterator;
+
+            --  Start of processing for Handle_Of
+
             begin
+               if Is_Class_Wide_Type (Container_Typ) then
+                  Default_Iter :=
+                    Get_Default_Iterator (Etype (Base_Type (Container_Typ)));
+
+               else
+                  Default_Iter := Get_Default_Iterator (Etype (Container));
+               end if;
+
                Cursor := Make_Temporary (Loc, 'C');
 
                --  For an container element iterator, the iterator type
@@ -3281,24 +3405,7 @@ package body Exp_Ch5 is
                Pack := Scope (Root_Type (Etype (Iter_Type)));
 
                --  Rewrite domain of iteration as a call to the default
-               --  iterator for the container type. If the container is
-               --  a derived type and the aspect is inherited, convert
-               --  container to parent type. The Cursor type is also
-               --  inherited from the scope of the parent.
-
-               if Base_Type (Etype (Container)) =
-                  Base_Type (Etype (First_Formal (Default_Iter)))
-               then
-                  Container_Arg := New_Copy_Tree (Container);
-
-               else
-                  Container_Arg :=
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of
-                          (Etype (First_Formal (Default_Iter)), Loc),
-                      Expression => New_Copy_Tree (Container));
-               end if;
+               --  iterator for the container type.
 
                Rewrite (Name (I_Spec),
                  Make_Function_Call (Loc,
@@ -3328,9 +3435,9 @@ package body Exp_Ch5 is
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
-                   Subtype_Mark     =>
+                   Subtype_Mark        =>
                      New_Occurrence_Of (Element_Type, Loc),
-                   Name             =>
+                   Name                =>
                      Make_Indexed_Component (Loc,
                        Prefix      => Relocate_Node (Container_Arg),
                        Expressions =>
@@ -3376,7 +3483,7 @@ package body Exp_Ch5 is
                else
                   Prepend_To (Stats, Decl);
                end if;
-            end;
+            end Handle_Of;
 
          --  X in Iterate (S) : type of iterator is type of explicitly
          --  given Iterate function, and the loop variable is the cursor.
@@ -3384,7 +3491,6 @@ package body Exp_Ch5 is
 
          else
             Cursor := Id;
-            Set_Ekind (Cursor, E_Variable);
          end if;
 
          Iterator := Make_Temporary (Loc, 'I');
@@ -3430,6 +3536,7 @@ package body Exp_Ch5 is
               Make_Assignment_Statement (Loc,
                  Name       => New_Occurrence_Of (Cursor, Loc),
                  Expression => Rhs));
+            Set_Assignment_OK (Name (Last (Stats)));
          end;
 
          --  Generate:
@@ -3495,12 +3602,15 @@ package body Exp_Ch5 is
 
             --  The cursor is only modified in expanded code, so it appears
             --  as unassigned to the warning machinery. We must suppress
-            --  this spurious warning explicitly.
+            --  this spurious warning explicitly. The cursor's kind is that of
+            --  the original loop parameter (it is a constant if the domain of
+            --  iteration is constant).
 
             Set_Warnings_Off (Cursor);
             Set_Assignment_OK (Decl);
 
             Insert_Action (N, Decl);
+            Set_Ekind (Cursor, I_Kind);
          end;
 
          --  If the range of iteration is given by a function call that
@@ -3915,6 +4025,19 @@ package body Exp_Ch5 is
         and then Present (Iterator_Specification (Scheme))
       then
          Expand_Iterator_Loop (N);
+
+         --  An iterator loop may generate renaming declarations for elements
+         --  that require debug information. This is the case in particular
+         --  with element iterators, where debug information must be generated
+         --  for the temporary that holds the element value. These temporaries
+         --  are created within a transient block whose local declarations are
+         --  transferred to the loop, which now has non-trivial local objects.
+
+         if Nkind (N) = N_Loop_Statement
+           and then Present (Identifier (N))
+         then
+            Qualify_Entity_Names (N);
+         end if;
       end if;
 
       --  When the iteration scheme mentiones attribute 'Loop_Entry, the loop
@@ -3946,7 +4069,7 @@ package body Exp_Ch5 is
       LPS     : constant Node_Id    := Loop_Parameter_Specification (Isc);
       Loop_Id : constant Entity_Id  := Defining_Identifier (LPS);
       Ltype   : constant Entity_Id  := Etype (Loop_Id);
-      Stat    : constant List_Id    := Static_Predicate (Ltype);
+      Stat    : constant List_Id    := Static_Discrete_Predicate (Ltype);
       Stmts   : constant List_Id    := Statements (N);
 
    begin
@@ -4029,7 +4152,7 @@ package body Exp_Ch5 is
 
             function Hi_Val (N : Node_Id) return Node_Id is
             begin
-               if Is_Static_Expression (N) then
+               if Is_OK_Static_Expression (N) then
                   return New_Copy (N);
                else
                   pragma Assert (Nkind (N) = N_Range);
@@ -4043,7 +4166,7 @@ package body Exp_Ch5 is
 
             function Lo_Val (N : Node_Id) return Node_Id is
             begin
-               if Is_Static_Expression (N) then
+               if Is_OK_Static_Expression (N) then
                   return New_Copy (N);
                else
                   pragma Assert (Nkind (N) = N_Range);

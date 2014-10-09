@@ -3,6 +3,7 @@
 /* { dg-options "-O3 -c -fdump-ipa-inline -fno-early-inlining"  } */
 
 struct bah {int a,b,d;};
+void test3 (int, int, int, int, int);
 
 __attribute__ ((noinline))
 void test(int a,int b,int c,int d,int e)

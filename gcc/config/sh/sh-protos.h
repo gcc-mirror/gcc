@@ -94,16 +94,17 @@ extern rtx sh_fsca_int2sf (void);
 
 /* Declare functions defined in sh.c and used in templates.  */
 
-extern const char *output_branch (int, rtx, rtx *);
-extern const char *output_ieee_ccmpeq (rtx, rtx *);
-extern const char *output_branchy_insn (enum rtx_code, const char *, rtx, rtx *);
+extern const char *output_branch (int, rtx_insn *, rtx *);
+extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
+extern const char *output_branchy_insn (enum rtx_code, const char *,
+					rtx_insn *, rtx *);
 extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
 extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
-extern const char *output_far_jump (rtx, rtx);
+extern const char *output_far_jump (rtx_insn *, rtx);
 
-extern rtx sfunc_uses_reg (rtx);
-extern int barrier_align (rtx);
-extern int sh_loop_align (rtx);
+extern rtx sfunc_uses_reg (rtx_insn *);
+extern int barrier_align (rtx_insn *);
+extern int sh_loop_align (rtx_insn *);
 extern bool fp_zero_operand (rtx);
 extern bool fp_one_operand (rtx);
 extern rtx get_fpscr_rtx (void);
@@ -143,18 +144,18 @@ extern int shl_sext_length (rtx);
 extern bool gen_shl_sext (rtx, rtx, rtx, rtx);
 extern rtx gen_datalabel_ref (rtx);
 extern int regs_used (rtx, int);
-extern void fixup_addr_diff_vecs (rtx);
+extern void fixup_addr_diff_vecs (rtx_insn *);
 extern int get_dest_uid (rtx, int);
-extern void final_prescan_insn (rtx, rtx *, int);
+extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern enum tls_model tls_symbolic_operand (rtx, enum machine_mode);
 extern bool system_reg_operand (rtx, enum machine_mode);
-extern bool reg_unused_after (rtx, rtx);
+extern bool reg_unused_after (rtx, rtx_insn *);
 extern void expand_sf_unop (rtx (*)(rtx, rtx, rtx), rtx *);
 extern void expand_sf_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
 extern void expand_df_unop (rtx (*)(rtx, rtx, rtx), rtx *);
 extern void expand_df_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
-extern int sh_insn_length_adjustment (rtx);
-extern bool sh_can_redirect_branch (rtx, rtx);
+extern int sh_insn_length_adjustment (rtx_insn *);
+extern bool sh_can_redirect_branch (rtx_insn *, rtx_insn *);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 extern bool sh_expand_t_scc (rtx *);
@@ -181,7 +182,7 @@ struct set_of_reg
   rtx set_src;
 };
 
-extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx));
+extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx));
 extern bool sh_is_logical_t_store_expr (rtx op, rtx insn);
 extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx insn);
 #endif /* RTX_CODE */
@@ -206,7 +207,7 @@ extern bool sh_cannot_change_mode_class
 	      (enum machine_mode, enum machine_mode, enum reg_class);
 extern bool sh_small_register_classes_for_mode_p (enum machine_mode);
 extern void sh_mark_label (rtx, int);
-extern bool check_use_sfunc_addr (rtx, rtx);
+extern bool check_use_sfunc_addr (rtx_insn *, rtx);
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem (int, HARD_REG_SET);

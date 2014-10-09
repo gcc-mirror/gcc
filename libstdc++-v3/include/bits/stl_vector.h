@@ -1297,9 +1297,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_fill_initialize(size_type __n, const value_type& __value)
       {
-	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value, 
-				      _M_get_Tp_allocator());
-	this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
+	this->_M_impl._M_finish =
+	  std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
+					_M_get_Tp_allocator());
       }
 
 #if __cplusplus >= 201103L
@@ -1307,9 +1307,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_default_initialize(size_type __n)
       {
-	std::__uninitialized_default_n_a(this->_M_impl._M_start, __n, 
-					 _M_get_Tp_allocator());
-	this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
+	this->_M_impl._M_finish =
+	  std::__uninitialized_default_n_a(this->_M_impl._M_start, __n,
+					   _M_get_Tp_allocator());
       }
 #endif
 

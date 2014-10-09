@@ -265,6 +265,9 @@ begin
    Write_Str ("                      Create map file mapfile");
    Write_Eol;
 
+   Write_Str ("  --keep-temp-files   Keep temporary files");
+   Write_Eol;
+
    Write_Str ("  --GCC=command       Use this gcc command");
    Write_Eol;
 

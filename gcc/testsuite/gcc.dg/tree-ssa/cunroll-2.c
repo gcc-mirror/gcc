@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-cunroll-details" } */
 int a[2];
+int test2 (void);
+void
 test(int c)
 { 
   int i;

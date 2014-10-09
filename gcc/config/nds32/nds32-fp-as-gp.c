@@ -72,7 +72,7 @@ nds32_have_prologue_p (void)
 /* Return true if is load/store with SYMBOL_REF addressing mode
    and memory mode is SImode.  */
 static bool
-nds32_symbol_load_store_p (rtx insn)
+nds32_symbol_load_store_p (rtx_insn *insn)
 {
   rtx mem_src = NULL_RTX;
 
@@ -153,7 +153,7 @@ nds32_fp_as_gp_check_available (void)
       int symbol_count  = 0;
 
       int threshold;
-      rtx insn;
+      rtx_insn *insn;
 
       /* We check if there already requires prologue.
          Note that $gp will be saved in prologue for PIC code generation.

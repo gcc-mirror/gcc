@@ -143,7 +143,7 @@ extern tree make_packable_type (tree type, bool in_record);
 extern tree make_type_from_size (tree type, tree size_tree, bool for_biased);
 
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
-   if needed.  We have already verified that SIZE and TYPE are large enough.
+   if needed.  We have already verified that SIZE and ALIGN are large enough.
    GNAT_ENTITY is used to name the resulting record and to issue a warning.
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  IS_USER_TYPE is true if the original type needs to be completed.
@@ -335,6 +335,9 @@ extern int double_float_alignment;
    types whose size is greater or equal to 64 bits, or 0 if this alignment
    is not specifically capped.  */
 extern int double_scalar_alignment;
+
+/* True if floating-point arithmetics may use wider intermediate results.  */
+extern bool fp_arith_may_widen;
 
 /* Data structures used to represent attributes.  */
 
@@ -392,10 +395,8 @@ enum standard_datatypes
   ADT_sbitsize_unit_node,
 
   /* Function declaration nodes for run-time functions for allocating memory.
-     Ada allocators cause calls to these functions to be generated.  Malloc32
-     is used only on 64bit systems needing to allocate 32bit memory.  */
+     Ada allocators cause calls to this function to be generated.  */
   ADT_malloc_decl,
-  ADT_malloc32_decl,
 
   /* Likewise for freeing memory.  */
   ADT_free_decl,
@@ -449,7 +450,9 @@ enum inline_status_t
   /* No inlining is requested for the subprogram.  */
   is_disabled,
   /* Inlining is requested for the subprogram.  */
-  is_enabled
+  is_enabled,
+  /* Inlining is required for the subprogram.  */
+  is_required
 };
 
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
@@ -466,7 +469,6 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define sbitsize_one_node gnat_std_decls[(int) ADT_sbitsize_one_node]
 #define sbitsize_unit_node gnat_std_decls[(int) ADT_sbitsize_unit_node]
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
-#define malloc32_decl gnat_std_decls[(int) ADT_malloc32_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
@@ -778,19 +780,6 @@ extern void rest_of_subprog_body_compilation (tree subprog_decl);
    Return a constructor for the template.  */
 extern tree build_template (tree template_type, tree array_type, tree expr);
 
-/* Build a 64bit VMS descriptor from a Mechanism_Type, which must specify
-   a descriptor type, and the GCC type of an object.  Each FIELD_DECL
-   in the type contains in its DECL_INITIAL the expression to use when
-   a constructor is made for the type.  GNAT_ENTITY is a gnat node used
-   to print out an error message if the mechanism cannot be applied to
-   an object of that type and also for the name.  */
-extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
-                                  Entity_Id gnat_entity);
-
-/* Build a 32bit VMS descriptor from a Mechanism_Type. See above.  */
-extern tree build_vms_descriptor32 (tree type, Mechanism_Type mech,
-                                  Entity_Id gnat_entity);
-
 /* Build a type to be used to represent an aliased object whose nominal type
    is an unconstrained array.  This consists of a RECORD_TYPE containing a
    field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an ARRAY_TYPE.
@@ -958,19 +947,6 @@ extern tree build_allocator (tree type, tree init, tree result_type,
                              Entity_Id gnat_proc, Entity_Id gnat_pool,
                              Node_Id gnat_node, bool);
 
-/* Fill in a VMS descriptor of GNU_TYPE for GNU_EXPR and return the result.
-   GNAT_ACTUAL is the actual parameter for which the descriptor is built.  */
-extern tree fill_vms_descriptor (tree gnu_type, tree gnu_expr,
-                                 Node_Id gnat_actual);
-
-/* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
-   pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
-   pointer type of GNU_EXPR.  GNAT_SUBPROG is the subprogram to which the
-   descriptor is passed.  */
-extern tree convert_vms_descriptor (tree gnu_type, tree gnu_expr,
-				    tree gnu_expr_alt_type,
-				    Entity_Id gnat_subprog);
-
 /* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */
 extern bool gnat_mark_addressable (tree t);
@@ -1017,6 +993,18 @@ extern int fp_prec_to_size (int prec);
 /* Return the precision of the FP mode with size SIZE.  */
 extern int fp_size_to_prec (int size);
 
+/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
+   from the parameter association for the instantiation of a generic.  We do
+   not want to emit source location for them: the code generated for their
+   initialization is likely to disturb debugging.  */
+extern bool renaming_from_generic_instantiation_p (Node_Id gnat_node);
+
+/* Try to process all nodes in the deferred context queue.  Keep in the queue
+   the ones that cannot be processed yet, remove the other ones.  If FORCE is
+   true, force the processing for all nodes, use the global context when nodes
+   don't have a GNU translation.  */
+extern void process_deferred_decl_context (bool force);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1054,19 +1042,6 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 
 #ifdef __cplusplus
 }
-#endif
-
-/* Let code know whether we are targeting VMS without need of
-   intrusive preprocessor directives.  */
-#ifndef TARGET_ABI_OPEN_VMS
-#define TARGET_ABI_OPEN_VMS 0
-#endif
-
-/* VMS option set by default, when clear forces 32bit mallocs and 32bit
-   Descriptors.  Always used in combination with TARGET_ABI_OPEN_VMS
-   so no effect on non-VMS systems.  */
-#if TARGET_ABI_OPEN_VMS == 0
-#define flag_vms_malloc64 0
 #endif
 
 /* Convenient shortcuts.  */

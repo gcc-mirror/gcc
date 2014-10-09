@@ -5,6 +5,7 @@
 
 extern const char *mystr;       /* normally in a header */
 const char *mystr;
+int
 main()
 {
 }

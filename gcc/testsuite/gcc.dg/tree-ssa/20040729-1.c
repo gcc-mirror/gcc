@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-dce2" } */
 
+int
 foo ()
 {
   volatile int *p;

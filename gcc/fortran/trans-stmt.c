@@ -773,7 +773,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     }
 
   /* Check SYNC IMAGES(imageset) for valid image index.
-     FIXME: Add a check for image-set arrays. */
+     FIXME: Add a check for image-set arrays.  */
   if (code->expr1 && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
       && code->expr1->rank == 0)
     {
@@ -1106,18 +1106,23 @@ gfc_trans_arithmetic_if (gfc_code * code)
 }
 
 
-/* Translate a CRITICAL block. */
+/* Translate a CRITICAL block.  */
 tree
 gfc_trans_critical (gfc_code *code)
 {
   stmtblock_t block;
-  tree tmp;
+  tree tmp, token = NULL_TREE;
 
   gfc_start_block (&block);
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_critical, 0);
+      token = gfc_get_symbol_decl (code->resolved_sym);
+      token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
+				 token, integer_zero_node, integer_one_node,
+				 null_pointer_node, null_pointer_node,
+				 null_pointer_node, integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -1126,8 +1131,10 @@ gfc_trans_critical (gfc_code *code)
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_end_critical,
-				 0);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_unlock, 6,
+				 token, integer_zero_node, integer_one_node,
+				 null_pointer_node, null_pointer_node,
+				 integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -1424,7 +1431,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   gfc_add_modify_loc (loc, pblock, dovar,
 		      fold_convert (TREE_TYPE(dovar), from));
 
-  /* Save value for do-tinkering checking. */
+  /* Save value for do-tinkering checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
@@ -1453,7 +1460,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
       gfc_add_expr_to_block (&body, tmp);
     }
 
-  /* Check whether someone has modified the loop variable. */
+  /* Check whether someone has modified the loop variable.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
@@ -1627,7 +1634,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (&block, dovar, from);
 
-  /* Save value for do-tinkering checking. */
+  /* Save value for do-tinkering checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
@@ -1736,7 +1743,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       gfc_add_expr_to_block (&body, tmp);
     }
 
-  /* Check whether someone has modified the loop variable. */
+  /* Check whether someone has modified the loop variable.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node, dovar,
@@ -4169,7 +4176,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
   stmtblock_t body;
   tree index, maskexpr;
 
-  /* A defined assignment. */
+  /* A defined assignment.  */
   if (cnext && cnext->resolved_sym)
     return gfc_trans_call (cnext, true, mask, count1, invert);
 

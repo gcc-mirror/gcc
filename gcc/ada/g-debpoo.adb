@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions.Traceback;
 with GNAT.IO; use GNAT.IO;
 
 with System.Address_Image;
 with System.Memory;     use System.Memory;
 with System.Soft_Links; use System.Soft_Links;
 
-with System.Traceback_Entries; use System.Traceback_Entries;
+with System.Traceback_Entries;
 
 with GNAT.HTable;
 with GNAT.Traceback; use GNAT.Traceback;
@@ -45,11 +44,39 @@ with Ada.Unchecked_Conversion;
 
 package body GNAT.Debug_Pools is
 
-   Default_Alignment : constant := Standard'Maximum_Alignment;
-   --  Alignment used for the memory chunks returned by Allocate. Using this
-   --  value guarantees that this alignment will be compatible with all types
-   --  and at the same time makes it easy to find the location of the extra
-   --  header allocated for each chunk.
+   Storage_Alignment : constant := Standard'Maximum_Alignment;
+   --  Alignment enforced for all the memory chunks returned by Allocate,
+   --  maximized to make sure that it will be compatible with all types.
+   --
+   --  The addresses returned by the underlying low-level allocator (be it
+   --  'new' or a straight 'malloc') aren't guaranteed to be that much aligned
+   --  on some targets, so we manage the needed alignment padding ourselves
+   --  systematically. Use of a common value for every allocation allows
+   --  significant simplifications in the code, nevertheless, for improved
+   --  robustness and efficiency overall.
+
+   --  We combine a few internal devices to offer the pool services:
+   --
+   --  * A management header attached to each allocated memory block, located
+   --    right ahead of it, like so:
+   --
+   --        Storage Address returned by the pool,
+   --        aligned on Storage_Alignment
+   --                       v
+   --      +------+--------+---------------------
+   --      | ~~~~ | HEADER | USER DATA ... |
+   --      +------+--------+---------------------
+   --       <---->
+   --       alignment
+   --       padding
+   --
+   --    The alignment padding is required
+   --
+   --  * A validity bitmap, which holds a validity bit for blocks managed by
+   --    the pool. Enforcing Storage_Alignment on those blocks allows efficient
+   --    validity management.
+   --
+   --  * A list of currently used blocks.
 
    Max_Ignored_Levels : constant Natural := 10;
    --  Maximum number of levels that will be ignored in backtraces. This is so
@@ -79,8 +106,7 @@ package body GNAT.Debug_Pools is
    type Header is range 1 .. 1023;
    --  Number of elements in the hash-table
 
-   type Tracebacks_Array_Access
-      is access GNAT.Traceback.Tracebacks_Array;
+   type Tracebacks_Array_Access is access Tracebacks_Array;
 
    type Traceback_Kind is (Alloc, Dealloc, Indirect_Alloc, Indirect_Dealloc);
 
@@ -192,19 +218,25 @@ package body GNAT.Debug_Pools is
      (Traceback_Htable_Elem_Ptr, Traceback_Ptr_Or_Address);
 
    Header_Offset : constant Storage_Count :=
-                     Default_Alignment *
-                       ((Allocation_Header'Size / System.Storage_Unit
-                          + Default_Alignment - 1) / Default_Alignment);
-   --  Offset of user data after allocation header
+     (Allocation_Header'Object_Size / System.Storage_Unit);
+   --  Offset, in bytes, from start of allocation Header to start of User
+   --  data.  The start of user data is assumed to be aligned at least as much
+   --  as what the header type requires, so applying this offset yields a
+   --  suitably aligned address as well.
 
-   Minimum_Allocation : constant Storage_Count :=
-                          Default_Alignment - 1 + Header_Offset;
-   --  Minimal allocation: size of allocation_header rounded up to next
-   --  multiple of default alignment + worst-case padding.
+   Extra_Allocation : constant Storage_Count :=
+     (Storage_Alignment - 1 + Header_Offset);
+   --  Amount we need to secure in addition to the user data for a given
+   --  allocation request: room for the allocation header plus worst-case
+   --  alignment padding.
 
    -----------------------
    -- Local subprograms --
    -----------------------
+
+   function Align (Addr : Integer_Address) return Integer_Address;
+   pragma Inline (Align);
+   --  Return the next address aligned on Storage_Alignment from Addr.
 
    function Find_Or_Create_Traceback
      (Pool                : Debug_Pool;
@@ -273,8 +305,8 @@ package body GNAT.Debug_Pools is
    Code_Address_For_Deallocate_End  : System.Address;
    Code_Address_For_Dereference_End : System.Address;
    --  Taking the address of the above procedures will not work on some
-   --  architectures (HPUX and VMS for instance). Thus we do the same thing
-   --  that is done in a-except.adb, and get the address of labels instead
+   --  architectures (HPUX for instance). Thus we do the same thing that
+   --  is done in a-except.adb, and get the address of labels instead.
 
    procedure Skip_Levels
      (Depth               : Natural;
@@ -288,6 +320,21 @@ package body GNAT.Debug_Pools is
    --  first one in Ignored_Frame_Start .. Ignored_Frame_End (basically
    --  addresses internal to this package). Depth is the number of levels that
    --  the user is interested in.
+
+   package STBE renames System.Traceback_Entries;
+
+   function PC_For (TB_Entry : STBE.Traceback_Entry) return System.Address
+     renames STBE.PC_For;
+
+   -----------
+   -- Align --
+   -----------
+
+   function Align (Addr : Integer_Address) return Integer_Address is
+      Factor : constant Integer_Address := Storage_Alignment;
+   begin
+      return ((Addr + Factor - 1) / Factor) * Factor;
+   end Align;
 
    ---------------
    -- Header_Of --
@@ -329,7 +376,7 @@ package body GNAT.Debug_Pools is
    -----------
 
    function Equal (K1, K2 : Tracebacks_Array_Access) return Boolean is
-      use Ada.Exceptions.Traceback;
+      use type Tracebacks_Array;
    begin
       return K1.all = K2.all;
    end Equal;
@@ -522,7 +569,7 @@ package body GNAT.Debug_Pools is
       --  that two chunk of allocated data are very far from each other.
 
       Memory_Chunk_Size : constant Integer_Address := 2 ** 24; --  16 MB
-      Validity_Divisor  : constant := Default_Alignment * System.Storage_Unit;
+      Validity_Divisor  : constant := Storage_Alignment * System.Storage_Unit;
 
       Max_Validity_Byte_Index : constant :=
                                  Memory_Chunk_Size / Validity_Divisor;
@@ -575,12 +622,12 @@ package body GNAT.Debug_Pools is
          Int_Storage  : constant Integer_Address := To_Integer (Storage);
 
       begin
-         --  The pool only returns addresses aligned on Default_Alignment so
+         --  The pool only returns addresses aligned on Storage_Alignment so
          --  anything off cannot be a valid block address and we can return
          --  early in this case. We actually have to since our data structures
          --  map validity bits for such aligned addresses only.
 
-         if Int_Storage mod Default_Alignment /= 0 then
+         if Int_Storage mod Storage_Alignment /= 0 then
             return False;
          end if;
 
@@ -592,7 +639,7 @@ package body GNAT.Debug_Pools is
             Offset       : constant Integer_Address :=
                              (Int_Storage -
                                (Block_Number * Memory_Chunk_Size)) /
-                                  Default_Alignment;
+                                  Storage_Alignment;
             Bit          : constant Byte :=
                              2 ** Natural (Offset mod System.Storage_Unit);
          begin
@@ -615,7 +662,7 @@ package body GNAT.Debug_Pools is
          Ptr          : Validity_Bits_Ref := Validy_Htable.Get (Block_Number);
          Offset       : constant Integer_Address :=
                           (Int_Storage - (Block_Number * Memory_Chunk_Size)) /
-                             Default_Alignment;
+                             Storage_Alignment;
          Bit          : constant Byte :=
                           2 ** Natural (Offset mod System.Storage_Unit);
 
@@ -656,11 +703,12 @@ package body GNAT.Debug_Pools is
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count)
    is
+
       pragma Unreferenced (Alignment);
-      --  Ignored, we always force 'Default_Alignment
+      --  Ignored, we always force Storage_Alignment
 
       type Local_Storage_Array is new Storage_Array
-        (1 .. Size_In_Storage_Elements + Minimum_Allocation);
+        (1 .. Size_In_Storage_Elements + Extra_Allocation);
 
       type Ptr is access Local_Storage_Array;
       --  On some systems, we might want to physically protect pages against
@@ -705,17 +753,33 @@ package body GNAT.Debug_Pools is
             P := new Local_Storage_Array;
       end;
 
-      Storage_Address :=
-        To_Address
-          (Default_Alignment *
-             ((To_Integer (P.all'Address) + Default_Alignment - 1)
-               / Default_Alignment)
-           + Integer_Address (Header_Offset));
+      --  Compute Storage_Address, aimed at receiving user data. We need room
+      --  for the allocation header just ahead of the user data space plus
+      --  alignment padding so Storage_Address is aligned on Storage_Alignment,
+      --  like so:
+      --
+      --                         Storage_Address, aligned
+      --                         on Storage_Alignment
+      --                           v
+      --          | ~~~~ | Header | User data ... |
+      --                  ^........^
+      --                  Header_Offset
+      --
+      --  Header_Offset is fixed so moving back and forth between user data
+      --  and allocation header is straightforward. The value is also such
+      --  that the header type alignment is honored when starting from
+      --  Default_alignment.
+
+      --  For the purpose of computing Storage_Address, we just do as if the
+      --  header was located first, followed by the alignment padding:
+
+      Storage_Address := To_Address
+        (Align (To_Integer (P.all'Address) + Integer_Address (Header_Offset)));
       --  Computation is done in Integer_Address, not Storage_Offset, because
       --  the range of Storage_Offset may not be large enough.
 
       pragma Assert ((Storage_Address - System.Null_Address)
-                     mod Default_Alignment = 0);
+                     mod Storage_Alignment = 0);
       pragma Assert (Storage_Address + Size_In_Storage_Elements
                      <= P.all'Address + P'Length);
 
@@ -726,7 +790,7 @@ package body GNAT.Debug_Pools is
       pragma Warnings (Off);
       --  Turn warning on alignment for convert call off. We know that in fact
       --  this conversion is safe since P itself is always aligned on
-      --  Default_Alignment.
+      --  Storage_Alignment.
 
       Header_Of (Storage_Address).all :=
         (Allocation_Address => P.all'Address,
@@ -950,7 +1014,7 @@ package body GNAT.Debug_Pools is
                     (Output_File (Pool),
                      "info: Freeing physical memory "
                        & Storage_Count'Image
-                       ((abs Header.Block_Size) + Minimum_Allocation)
+                       ((abs Header.Block_Size) + Extra_Allocation)
                        & " bytes at 0x"
                        & Address_Image (Header.Allocation_Address));
                end if;
@@ -1167,7 +1231,7 @@ package body GNAT.Debug_Pools is
                  & Storage_Count'Image (Size_In_Storage_Elements)
                  & " bytes at 0x" & Address_Image (Storage_Address)
                  & " (physically"
-                 & Storage_Count'Image (Header.Block_Size + Minimum_Allocation)
+                 & Storage_Count'Image (Header.Block_Size + Extra_Allocation)
                  & " bytes at 0x" & Address_Image (Header.Allocation_Address)
                  & "), at ");
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,

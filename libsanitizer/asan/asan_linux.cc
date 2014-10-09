@@ -17,6 +17,7 @@
 #include "asan_internal.h"
 #include "asan_thread.h"
 #include "sanitizer_common/sanitizer_flags.h"
+#include "sanitizer_common/sanitizer_freebsd.h"
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
 
@@ -25,6 +26,7 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -40,19 +42,14 @@
 extern "C" void* _DYNAMIC;
 #else
 #include <sys/ucontext.h>
-#include <dlfcn.h>
 #include <link.h>
 #endif
 
-// x86_64 FreeBSD 9.2 and older define 64-bit register names in both 64-bit
-// and 32-bit modes.
-#if SANITIZER_FREEBSD
-#include <sys/param.h>
-# if __FreeBSD_version <= 902001  // v9.2
-#  define mc_eip mc_rip
-#  define mc_ebp mc_rbp
-#  define mc_esp mc_rsp
-# endif
+// x86-64 FreeBSD 9.2 and older define 'ucontext_t' incorrectly in
+// 32-bit mode.
+#if SANITIZER_FREEBSD && (SANITIZER_WORDSIZE == 32) && \
+  __FreeBSD_version <= 902001  // v9.2
+#define ucontext_t xucontext_t
 #endif
 
 typedef enum {
@@ -240,6 +237,10 @@ void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
   UNIMPLEMENTED();
 }
 #endif
+
+void *AsanDlSymNext(const char *sym) {
+  return dlsym(RTLD_NEXT, sym);
+}
 
 }  // namespace __asan
 

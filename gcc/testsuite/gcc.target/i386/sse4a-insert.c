@@ -38,7 +38,7 @@ sse4a_test_inserti (long long in1, long long in2)
   return (v_out.i[0]);  
 }
 
-static chk (long long i1, long long i2)
+static int chk (long long i1, long long i2)
 {
   int n_fails =0;
   if (i1 != i2) 

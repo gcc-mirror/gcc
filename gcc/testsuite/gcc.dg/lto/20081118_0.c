@@ -2,8 +2,9 @@
 
 extern void abort (void);
 extern int f (void);
+extern int foo (void);
 
-extern inline int
+extern inline int __attribute__ ((gnu_inline))
 e_inline_baz (void)
 {
  return 1 + f();
@@ -15,6 +16,7 @@ bar (void)
  return e_inline_baz ();
 }
 
+int
 main ()
 {
 #ifdef OPTIMIZE

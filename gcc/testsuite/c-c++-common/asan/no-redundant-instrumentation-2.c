@@ -3,7 +3,7 @@
    be instrumented by the Address Sanitizer.  But in case of access to
    overlapping regions we must be precise.  */
 
-/* { dg-options "-fdump-tree-asan0" } */
+/* { dg-options "-fdump-tree-sanopt" } */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
@@ -20,7 +20,7 @@ main ()
   __builtin_memset (tab, 1, 3);
 }
 
-/* { dg-final { scan-tree-dump-times "& 7" 3 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report" 2 "asan0" }  } */
-/* { dg-final { cleanup-tree-dump "asan0" } } */
+/* { dg-final { scan-tree-dump-times "& 7" 3 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report" 2 "sanopt" }  } */
+/* { dg-final { cleanup-tree-dump "sanopt" } } */

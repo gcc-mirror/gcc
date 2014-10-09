@@ -1,20 +1,23 @@
+/* { dg-add-options ieee } */
+/* { dg-skip-if "No Inf/NaN support" { spu-*-* } "*" "" } */
+
 extern void abort (void);
 
-static int __attribute__((always_inline)) testf (float b)
+static inline int __attribute__((always_inline)) testf (float b)
 {
   float c = 1.01f * b;
 
   return __builtin_isinff (c);
 }
 
-static int __attribute__((always_inline)) test (double b)
+static inline int __attribute__((always_inline)) test (double b)
 {
   double c = 1.01 * b;
 
   return __builtin_isinf (c);
 }
 
-static int __attribute__((always_inline)) testl (long double b)
+static inline int __attribute__((always_inline)) testl (long double b)
 {
   long double c = 1.01L * b;
 

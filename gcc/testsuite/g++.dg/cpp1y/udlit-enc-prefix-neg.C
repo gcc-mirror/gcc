@@ -1,4 +1,4 @@
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 int
 operator L""_Ls(unsigned long long) // { dg-error "invalid encoding prefix in literal operator" }

@@ -6642,36 +6642,18 @@ reorder_operands_p (const_tree arg0, const_tree arg1)
 bool
 tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
 {
+  if (CONSTANT_CLASS_P (arg1))
+    return 0;
+  if (CONSTANT_CLASS_P (arg0))
+    return 1;
+
   STRIP_SIGN_NOPS (arg0);
   STRIP_SIGN_NOPS (arg1);
-
-  if (TREE_CODE (arg1) == INTEGER_CST)
-    return 0;
-  if (TREE_CODE (arg0) == INTEGER_CST)
-    return 1;
-
-  if (TREE_CODE (arg1) == REAL_CST)
-    return 0;
-  if (TREE_CODE (arg0) == REAL_CST)
-    return 1;
-
-  if (TREE_CODE (arg1) == FIXED_CST)
-    return 0;
-  if (TREE_CODE (arg0) == FIXED_CST)
-    return 1;
-
-  if (TREE_CODE (arg1) == COMPLEX_CST)
-    return 0;
-  if (TREE_CODE (arg0) == COMPLEX_CST)
-    return 1;
 
   if (TREE_CONSTANT (arg1))
     return 0;
   if (TREE_CONSTANT (arg0))
     return 1;
-
-  if (optimize_function_for_size_p (cfun))
-    return 0;
 
   if (reorder && flag_evaluation_order
       && (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1)))
@@ -6845,217 +6827,6 @@ fold_sign_changed_comparison (location_t loc, enum tree_code code, tree type,
     arg1 = fold_convert_loc (loc, inner_type, arg1);
 
   return fold_build2_loc (loc, code, type, arg0_inner, arg1);
-}
-
-/* Tries to replace &a[idx] p+ s * delta with &a[idx + delta], if s is
-   step of the array.  Reconstructs s and delta in the case of s *
-   delta being an integer constant (and thus already folded).  ADDR is
-   the address. MULT is the multiplicative expression.  If the
-   function succeeds, the new address expression is returned.
-   Otherwise NULL_TREE is returned.  LOC is the location of the
-   resulting expression.  */
-
-static tree
-try_move_mult_to_index (location_t loc, tree addr, tree op1)
-{
-  tree s, delta, step;
-  tree ref = TREE_OPERAND (addr, 0), pref;
-  tree ret, pos;
-  tree itype;
-  bool mdim = false;
-
-  /*  Strip the nops that might be added when converting op1 to sizetype. */
-  STRIP_NOPS (op1);
-
-  /* Canonicalize op1 into a possibly non-constant delta
-     and an INTEGER_CST s.  */
-  if (TREE_CODE (op1) == MULT_EXPR)
-    {
-      tree arg0 = TREE_OPERAND (op1, 0), arg1 = TREE_OPERAND (op1, 1);
-
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      if (TREE_CODE (arg0) == INTEGER_CST)
-        {
-          s = arg0;
-          delta = arg1;
-        }
-      else if (TREE_CODE (arg1) == INTEGER_CST)
-        {
-          s = arg1;
-          delta = arg0;
-        }
-      else
-        return NULL_TREE;
-    }
-  else if (TREE_CODE (op1) == INTEGER_CST)
-    {
-      delta = op1;
-      s = NULL_TREE;
-    }
-  else
-    {
-      /* Simulate we are delta * 1.  */
-      delta = op1;
-      s = integer_one_node;
-    }
-
-  /* Handle &x.array the same as we would handle &x.array[0].  */
-  if (TREE_CODE (ref) == COMPONENT_REF
-      && TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
-    {
-      tree domain;
-
-      /* Remember if this was a multi-dimensional array.  */
-      if (TREE_CODE (TREE_OPERAND (ref, 0)) == ARRAY_REF)
-	mdim = true;
-
-      domain = TYPE_DOMAIN (TREE_TYPE (ref));
-      if (! domain)
-	goto cont;
-      itype = TREE_TYPE (domain);
-
-      step = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ref)));
-      if (TREE_CODE (step) != INTEGER_CST)
-	goto cont;
-
-      if (s)
-	{
-	  if (! tree_int_cst_equal (step, s))
-	    goto cont;
-	}
-      else
-	{
-	  /* Try if delta is a multiple of step.  */
-	  tree tmp = div_if_zero_remainder (op1, step);
-	  if (! tmp)
-	    goto cont;
-	  delta = tmp;
-	}
-
-      /* Only fold here if we can verify we do not overflow one
-	 dimension of a multi-dimensional array.  */
-      if (mdim)
-	{
-	  tree tmp;
-
-	  if (!TYPE_MIN_VALUE (domain)
-	      || !TYPE_MAX_VALUE (domain)
-	      || TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST)
-	    goto cont;
-
-	  tmp = fold_binary_loc (loc, PLUS_EXPR, itype,
-				 fold_convert_loc (loc, itype,
-						   TYPE_MIN_VALUE (domain)),
-				 fold_convert_loc (loc, itype, delta));
-	  if (TREE_CODE (tmp) != INTEGER_CST
-	      || tree_int_cst_lt (TYPE_MAX_VALUE (domain), tmp))
-	    goto cont;
-	}
-
-      /* We found a suitable component reference.  */
-
-      pref = TREE_OPERAND (addr, 0);
-      ret = copy_node (pref);
-      SET_EXPR_LOCATION (ret, loc);
-
-      ret = build4_loc (loc, ARRAY_REF, TREE_TYPE (TREE_TYPE (ref)), ret,
-			fold_build2_loc
-			  (loc, PLUS_EXPR, itype,
-			   fold_convert_loc (loc, itype,
-					     TYPE_MIN_VALUE
-					       (TYPE_DOMAIN (TREE_TYPE (ref)))),
-			   fold_convert_loc (loc, itype, delta)),
-			NULL_TREE, NULL_TREE);
-      return build_fold_addr_expr_loc (loc, ret);
-    }
-
-cont:
-
-  for (;; ref = TREE_OPERAND (ref, 0))
-    {
-      if (TREE_CODE (ref) == ARRAY_REF)
-	{
-	  tree domain;
-
-	  /* Remember if this was a multi-dimensional array.  */
-	  if (TREE_CODE (TREE_OPERAND (ref, 0)) == ARRAY_REF)
-	    mdim = true;
-
-	  domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
-	  if (! domain)
-	    continue;
-	  itype = TREE_TYPE (domain);
-
-	  step = array_ref_element_size (ref);
-	  if (TREE_CODE (step) != INTEGER_CST)
-	    continue;
-
-	  if (s)
-	    {
-	      if (! tree_int_cst_equal (step, s))
-                continue;
-	    }
-	  else
-	    {
-	      /* Try if delta is a multiple of step.  */
-	      tree tmp = div_if_zero_remainder (op1, step);
-	      if (! tmp)
-		continue;
-	      delta = tmp;
-	    }
-
-	  /* Only fold here if we can verify we do not overflow one
-	     dimension of a multi-dimensional array.  */
-	  if (mdim)
-	    {
-	      tree tmp;
-
-	      if (TREE_CODE (TREE_OPERAND (ref, 1)) != INTEGER_CST
-		  || !TYPE_MAX_VALUE (domain)
-		  || TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST)
-		continue;
-
-	      tmp = fold_binary_loc (loc, PLUS_EXPR, itype,
-				     fold_convert_loc (loc, itype,
-						       TREE_OPERAND (ref, 1)),
-				     fold_convert_loc (loc, itype, delta));
-	      if (!tmp
-		  || TREE_CODE (tmp) != INTEGER_CST
-		  || tree_int_cst_lt (TYPE_MAX_VALUE (domain), tmp))
-		continue;
-	    }
-
-	  break;
-	}
-      else
-	mdim = false;
-
-      if (!handled_component_p (ref))
-	return NULL_TREE;
-    }
-
-  /* We found the suitable array reference.  So copy everything up to it,
-     and replace the index.  */
-
-  pref = TREE_OPERAND (addr, 0);
-  ret = copy_node (pref);
-  SET_EXPR_LOCATION (ret, loc);
-  pos = ret;
-
-  while (pref != ref)
-    {
-      pref = TREE_OPERAND (pref, 0);
-      TREE_OPERAND (pos, 0) = copy_node (pref);
-      pos = TREE_OPERAND (pos, 0);
-    }
-
-  TREE_OPERAND (pos, 1)
-    = fold_build2_loc (loc, PLUS_EXPR, itype,
-		       fold_convert_loc (loc, itype, TREE_OPERAND (pos, 1)),
-		       fold_convert_loc (loc, itype, delta));
-  return fold_build1_loc (loc, ADDR_EXPR, TREE_TYPE (addr), ret);
 }
 
 
@@ -7240,15 +7011,18 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
    upon failure.  */
 
 static int
-native_encode_int (const_tree expr, unsigned char *ptr, int len)
+native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
+  if (off == -1)
+    off = 0;
   words = total_bytes / UNITS_PER_WORD;
 
   for (byte = 0; byte < total_bytes; byte++)
@@ -7271,9 +7045,11 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
 	}
       else
 	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
-      ptr[offset] = value;
+      if (offset >= off
+	  && offset - off < len)
+	ptr[offset - off] = value;
     }
-  return total_bytes;
+  return MIN (len, total_bytes - off);
 }
 
 
@@ -7283,7 +7059,7 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
+native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   enum machine_mode mode = TYPE_MODE (type);
@@ -7303,7 +7079,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
   value = TREE_FIXED_CST (expr);
   i_value = double_int_to_tree (i_type, value.data);
 
-  return native_encode_int (i_value, ptr, len);
+  return native_encode_int (i_value, ptr, len, off);
 }
 
 
@@ -7313,7 +7089,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_real (const_tree expr, unsigned char *ptr, int len)
+native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
@@ -7325,8 +7101,11 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
      up to 192 bits.  */
   long tmp[6];
 
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
+  if (off == -1)
+    off = 0;
   words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
   real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
@@ -7350,9 +7129,12 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
 	}
       else
 	offset = BYTES_BIG_ENDIAN ? 3 - byte : byte;
-      ptr[offset + ((bitpos / BITS_PER_UNIT) & ~3)] = value;
+      offset = offset + ((bitpos / BITS_PER_UNIT) & ~3);
+      if (offset >= off
+	  && offset - off < len)
+	ptr[offset - off] = value;
     }
-  return total_bytes;
+  return MIN (len, total_bytes - off);
 }
 
 /* Subroutine of native_encode_expr.  Encode the COMPLEX_CST
@@ -7361,18 +7143,22 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_complex (const_tree expr, unsigned char *ptr, int len)
+native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
 {
   int rsize, isize;
   tree part;
 
   part = TREE_REALPART (expr);
-  rsize = native_encode_expr (part, ptr, len);
-  if (rsize == 0)
+  rsize = native_encode_expr (part, ptr, len, off);
+  if (off == -1
+      && rsize == 0)
     return 0;
   part = TREE_IMAGPART (expr);
-  isize = native_encode_expr (part, ptr+rsize, len-rsize);
-  if (isize != rsize)
+  if (off != -1)
+    off = MAX (0, off - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (part))));
+  isize = native_encode_expr (part, ptr+rsize, len-rsize, off);
+  if (off == -1
+      && isize != rsize)
     return 0;
   return rsize + isize;
 }
@@ -7384,7 +7170,7 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_vector (const_tree expr, unsigned char *ptr, int len)
+native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 {
   unsigned i, count;
   int size, offset;
@@ -7396,10 +7182,21 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len)
   size = GET_MODE_SIZE (TYPE_MODE (itype));
   for (i = 0; i < count; i++)
     {
+      if (off >= size)
+	{
+	  off -= size;
+	  continue;
+	}
       elem = VECTOR_CST_ELT (expr, i);
-      if (native_encode_expr (elem, ptr+offset, len-offset) != size)
+      int res = native_encode_expr (elem, ptr+offset, len-offset, off);
+      if ((off == -1 && res != size)
+	  || res == 0)
 	return 0;
-      offset += size;
+      offset += res;
+      if (offset >= len)
+	return offset;
+      if (off != -1)
+	off = 0;
     }
   return offset;
 }
@@ -7411,7 +7208,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_string (const_tree expr, unsigned char *ptr, int len)
+native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   HOST_WIDE_INT total_bytes;
@@ -7422,47 +7219,56 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len)
       || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
   total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (type));
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
-  if (TREE_STRING_LENGTH (expr) < total_bytes)
+  if (off == -1)
+    off = 0;
+  if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
     {
-      memcpy (ptr, TREE_STRING_POINTER (expr), TREE_STRING_LENGTH (expr));
-      memset (ptr + TREE_STRING_LENGTH (expr), 0,
-	      total_bytes - TREE_STRING_LENGTH (expr));
+      int written = 0;
+      if (off < TREE_STRING_LENGTH (expr))
+	{
+	  written = MIN (len, TREE_STRING_LENGTH (expr) - off);
+	  memcpy (ptr, TREE_STRING_POINTER (expr) + off, written);
+	}
+      memset (ptr + written, 0,
+	      MIN (total_bytes - written, len - written));
     }
   else
-    memcpy (ptr, TREE_STRING_POINTER (expr), total_bytes);
-  return total_bytes;
+    memcpy (ptr, TREE_STRING_POINTER (expr) + off, MIN (total_bytes, len));
+  return MIN (total_bytes - off, len);
 }
 
 
 /* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST,
    REAL_CST, COMPLEX_CST or VECTOR_CST specified by EXPR into the
-   buffer PTR of length LEN bytes.  Return the number of bytes
-   placed in the buffer, or zero upon failure.  */
+   buffer PTR of length LEN bytes.  If OFF is not -1 then start
+   the encoding at byte offset OFF and encode at most LEN bytes.
+   Return the number of bytes placed in the buffer, or zero upon failure.  */
 
 int
-native_encode_expr (const_tree expr, unsigned char *ptr, int len)
+native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
 {
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return native_encode_int (expr, ptr, len);
+      return native_encode_int (expr, ptr, len, off);
 
     case REAL_CST:
-      return native_encode_real (expr, ptr, len);
+      return native_encode_real (expr, ptr, len, off);
 
     case FIXED_CST:
-      return native_encode_fixed (expr, ptr, len);
+      return native_encode_fixed (expr, ptr, len, off);
 
     case COMPLEX_CST:
-      return native_encode_complex (expr, ptr, len);
+      return native_encode_complex (expr, ptr, len, off);
 
     case VECTOR_CST:
-      return native_encode_vector (expr, ptr, len);
+      return native_encode_vector (expr, ptr, len, off);
 
     case STRING_CST:
-      return native_encode_string (expr, ptr, len);
+      return native_encode_string (expr, ptr, len, off);
 
     default:
       return 0;
@@ -8991,9 +8797,13 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
   /* Transform comparisons of the form X - Y CMP 0 to X CMP Y.  */
   if (TREE_CODE (arg0) == MINUS_EXPR
-      && (equality_code || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
+      && equality_code
       && integer_zerop (arg1))
     {
+      /* ??? The transformation is valid for the other operators if overflow
+	 is undefined for the type, but performing it here badly interacts
+	 with the transformation in fold_cond_expr_with_comparison which
+	 attempts to synthetize ABS_EXPR.  */
       if (!equality_code)
 	fold_overflow_warning ("assuming signed overflow does not occur "
 			       "when changing X - Y cmp 0 to X cmp Y",
@@ -10259,18 +10069,6 @@ fold_binary_loc (location_t loc,
 	return fold_build2_loc (loc, PLUS_EXPR, type, arg0,
 			    fold_convert_loc (loc, type, arg1));
 
-     /* Try replacing &a[i1] +p c * i2 with &a[i1 + i2], if c is step
-	of the array.  Loop optimizer sometimes produce this type of
-	expressions.  */
-      if (TREE_CODE (arg0) == ADDR_EXPR)
-	{
-	  tem = try_move_mult_to_index (loc, arg0,
-					fold_convert_loc (loc,
-							  ssizetype, arg1));
-	  if (tem)
-	    return fold_convert_loc (loc, type, tem);
-	}
-
       return NULL_TREE;
 
     case PLUS_EXPR:
@@ -10294,7 +10092,7 @@ fold_binary_loc (location_t loc,
 	{
 	  /* Convert ~A + 1 to -A.  */
 	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	      && integer_onep (arg1))
+	      && integer_each_onep (arg1))
 	    return fold_build1_loc (loc, NEGATE_EXPR, type,
 				fold_convert_loc (loc, type,
 						  TREE_OPERAND (arg0, 0)));
@@ -10792,6 +10590,19 @@ fold_binary_loc (location_t loc,
 	      if (tmp)
 	        return fold_build2_loc (loc, PLUS_EXPR, type, tmp, arg01);
 	    }
+	  /* PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A, assuming PTR0 - PTR1
+	     simplifies. */
+	  else if (TREE_CODE (arg1) == POINTER_PLUS_EXPR)
+	    {
+	      tree arg10 = fold_convert_loc (loc, type,
+					     TREE_OPERAND (arg1, 0));
+	      tree arg11 = fold_convert_loc (loc, type,
+					     TREE_OPERAND (arg1, 1));
+	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type, arg0,
+					  fold_convert_loc (loc, type, arg10));
+	      if (tmp)
+		return fold_build2_loc (loc, MINUS_EXPR, type, tmp, arg11);
+	    }
 	}
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
@@ -10808,9 +10619,8 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg0, 0)));
       /* Convert -A - 1 to ~A.  */
-      if (TREE_CODE (type) != COMPLEX_TYPE
-	  && TREE_CODE (arg0) == NEGATE_EXPR
-	  && integer_onep (arg1)
+      if (TREE_CODE (arg0) == NEGATE_EXPR
+	  && integer_each_onep (arg1)
 	  && !TYPE_OVERFLOW_TRAPS (type))
 	return fold_build1_loc (loc, BIT_NOT_EXPR, type,
 			    fold_convert_loc (loc, type,
@@ -11573,6 +11383,7 @@ fold_binary_loc (location_t loc,
 
       /* Fold (X & 1) ^ 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && INTEGRAL_TYPE_P (type)
 	  && integer_onep (TREE_OPERAND (arg0, 1))
 	  && integer_onep (arg1))
 	return fold_build2_loc (loc, EQ_EXPR, type, arg0,
@@ -11683,6 +11494,7 @@ fold_binary_loc (location_t loc,
 
       /* Fold (X ^ 1) & 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && INTEGRAL_TYPE_P (type)
 	  && integer_onep (TREE_OPERAND (arg0, 1))
 	  && integer_onep (arg1))
 	{
@@ -11696,6 +11508,7 @@ fold_binary_loc (location_t loc,
 	}
       /* Fold ~X & 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (type)
 	  && integer_onep (arg1))
 	{
 	  tree tem2;
@@ -16037,7 +15850,7 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	  {
 	    struct symtab_node *symbol;
 
-	    symbol = symtab_get_node (base);
+	    symbol = symtab_node::get_create (base);
 	    if (symbol)
 	      return symbol->nonzero_address ();
 	    else

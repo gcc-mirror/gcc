@@ -1,5 +1,7 @@
 /* { dg-options "-g" } */
 
+void bar (void);
+
 static int
 foo (int x, int y)
 {

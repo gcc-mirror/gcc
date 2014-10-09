@@ -460,7 +460,7 @@ class StdDebugIteratorPrinter:
     # and return the wrapped iterator value.
     def to_string (self):
         itype = self.val.type.template_argument(0)
-        return self.val['_M_current'].cast(itype)
+        return self.val.cast(itype)
 
 class StdMapPrinter:
     "Print a std::map or std::multimap"
@@ -851,14 +851,14 @@ class SingleObjContainerPrinter(object):
         return gdb.types.apply_type_recognizers(gdb.types.get_type_recognizers(),
                                                 type) or str(type)
 
-    class _contained:
+    class _contained(Iterator):
         def __init__ (self, val):
             self.val = val
 
         def __iter__ (self):
             return self
 
-        def next (self):
+        def __next__(self):
             if self.val is None:
                 raise StopIteration
             retval = self.val
@@ -899,7 +899,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
                 raise ValueError("Unknown manager function in std::experimental::any")
 
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
-            mgrname = re.sub("std::string(?!\w)", gdb.lookup_type('std::string').strip_typedefs().name, m.group(1))
+            mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
             mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None

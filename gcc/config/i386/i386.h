@@ -71,6 +71,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512ER_P(x)	TARGET_ISA_AVX512ER_P(x)
 #define TARGET_AVX512CD	TARGET_ISA_AVX512CD
 #define TARGET_AVX512CD_P(x)	TARGET_ISA_AVX512CD_P(x)
+#define TARGET_AVX512DQ	TARGET_ISA_AVX512DQ
+#define TARGET_AVX512DQ_P(x)	TARGET_ISA_AVX512DQ_P(x)
+#define TARGET_AVX512BW	TARGET_ISA_AVX512BW
+#define TARGET_AVX512BW_P(x)	TARGET_ISA_AVX512BW_P(x)
+#define TARGET_AVX512VL	TARGET_ISA_AVX512VL
+#define TARGET_AVX512VL_P(x)	TARGET_ISA_AVX512VL_P(x)
 #define TARGET_FMA	TARGET_ISA_FMA
 #define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
 #define TARGET_SSE4A	TARGET_ISA_SSE4A
@@ -467,6 +473,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS]
 #define TARGET_ADJUST_UNROLL \
     ix86_tune_features[X86_TUNE_ADJUST_UNROLL]
+#define TARGET_AVOID_FALSE_DEP_FOR_BMI \
+	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -685,16 +693,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE \
   (TARGET_LONG_DOUBLE_64 ? 64 : (TARGET_LONG_DOUBLE_128 ? 128 : 80))
-
-/* Define this to set long double type size to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#ifdef __LONG_DOUBLE_64__
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-#elif defined (__LONG_DOUBLE_128__)
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
-#endif
 
 #define WIDEST_HARDWARE_FP_SIZE 80
 
@@ -1048,7 +1046,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    applied to them.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO)				\
+   || MMX_REGNO_P (REGNO) || MASK_REGNO_P (REGNO)			\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
@@ -1079,7 +1078,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
-   || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode)
+   || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
+   || (MODE) == V4TImode)
+
+#define VALID_AVX512VL_128_REG_MODE(MODE)					\
+  ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
+   || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
@@ -1125,6 +1129,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V16SFmode)
 
 #define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
+
+#define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
@@ -1448,6 +1454,7 @@ enum reg_class
          : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
                                    : (FIRST_EXT_REX_SSE_REG + (N) - 16))
 
+#define MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 #define MASK_REGNO_P(N) IN_RANGE ((N), FIRST_MASK_REG, LAST_MASK_REG)
 #define ANY_MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 
@@ -2481,9 +2488,9 @@ extern void debug_dispatch_window (int);
 /* The value at zero is only defined for the BMI instructions
    LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 1 : 0)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 1 : 0)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

@@ -4,6 +4,7 @@
 
 /* Make sure -Wno-error= overrides -Werror.  */
 
+void grill ();
 void __attribute__((dj)) bar() { }	/* { dg-error ".* attribute directive ignored" } */
 
 int i;

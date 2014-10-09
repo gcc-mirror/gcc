@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output;   use Output;
-with Targparm; use Targparm;
+with Output; use Output;
 
 package body Butil is
 
@@ -38,17 +37,9 @@ package body Butil is
    function Is_Internal_Unit return Boolean is
    begin
       return Is_Predefined_Unit
-        or else (Name_Len > 4
-                   and then (Name_Buffer (1 .. 5) = "gnat%"
-                               or else
-                             Name_Buffer (1 .. 5) = "gnat."))
-        or else
-          (OpenVMS_On_Target
-           and then Name_Len > 3
-           and then (Name_Buffer (1 .. 4) = "dec%"
-                      or else
-                     Name_Buffer (1 .. 4) = "dec."));
-
+        or else (Name_Len > 4 and then (Name_Buffer (1 .. 5) = "gnat%"
+                                          or else
+                                        Name_Buffer (1 .. 5) = "gnat."));
    end Is_Internal_Unit;
 
    ------------------------
@@ -59,54 +50,25 @@ package body Butil is
    --  is that it would drag too much junk into the binder.
 
    function Is_Predefined_Unit return Boolean is
+      L : Natural renames Name_Len;
+      B : String  renames Name_Buffer;
    begin
-      return    (Name_Len >  3
-                  and then Name_Buffer (1 ..  4) = "ada.")
-
-        or else (Name_Len >  6
-                  and then Name_Buffer (1 ..  7) = "system.")
-
-        or else (Name_Len > 10
-                   and then Name_Buffer (1 .. 11) = "interfaces.")
-
-        or else (Name_Len >  3
-                   and then Name_Buffer (1 ..  4) = "ada%")
-
-        or else (Name_Len >  8
-                   and then Name_Buffer (1 ..  9) = "calendar%")
-
-        or else (Name_Len >  9
-                   and then Name_Buffer (1 .. 10) = "direct_io%")
-
-        or else (Name_Len > 10
-                   and then Name_Buffer (1 .. 11) = "interfaces%")
-
-        or else (Name_Len > 13
-                   and then Name_Buffer (1 .. 14) = "io_exceptions%")
-
-        or else (Name_Len > 12
-                   and then Name_Buffer (1 .. 13) = "machine_code%")
-
-        or else (Name_Len > 13
-                   and then Name_Buffer (1 .. 14) = "sequential_io%")
-
-        or else (Name_Len >  6
-                   and then Name_Buffer (1 ..  7) = "system%")
-
-        or else (Name_Len >  7
-                   and then Name_Buffer (1 ..  8) = "text_io%")
-
-        or else (Name_Len > 20
-                   and then Name_Buffer (1 .. 21) = "unchecked_conversion%")
-
-        or else (Name_Len > 22
-                   and then Name_Buffer (1 .. 23) = "unchecked_deallocation%")
-
-        or else (Name_Len > 4
-                   and then Name_Buffer (1 .. 5) = "gnat%")
-
-        or else (Name_Len > 4
-                   and then Name_Buffer (1 .. 5) = "gnat.");
+      return    (L >  3 and then B (1 ..  4) = "ada.")
+        or else (L >  6 and then B (1 ..  7) = "system.")
+        or else (L > 10 and then B (1 .. 11) = "interfaces.")
+        or else (L >  3 and then B (1 ..  4) = "ada%")
+        or else (L >  8 and then B (1 ..  9) = "calendar%")
+        or else (L >  9 and then B (1 .. 10) = "direct_io%")
+        or else (L > 10 and then B (1 .. 11) = "interfaces%")
+        or else (L > 13 and then B (1 .. 14) = "io_exceptions%")
+        or else (L > 12 and then B (1 .. 13) = "machine_code%")
+        or else (L > 13 and then B (1 .. 14) = "sequential_io%")
+        or else (L >  6 and then B (1 ..  7) = "system%")
+        or else (L >  7 and then B (1 ..  8) = "text_io%")
+        or else (L > 20 and then B (1 .. 21) = "unchecked_conversion%")
+        or else (L > 22 and then B (1 .. 23) = "unchecked_deallocation%")
+        or else (L >  4 and then B (1 ..  5) = "gnat%")
+        or else (L >  4 and then B (1 ..  5) = "gnat.");
    end Is_Predefined_Unit;
 
    ----------------
@@ -119,7 +81,7 @@ package body Butil is
 
       declare
          U1_Name : constant String (1 .. Name_Len) :=
-           Name_Buffer (1 .. Name_Len);
+                     Name_Buffer (1 .. Name_Len);
          Min_Length : Natural;
 
       begin
@@ -131,10 +93,10 @@ package body Butil is
             Min_Length := U1_Name'Last;
          end if;
 
-         for I in 1 .. Min_Length loop
-            if U1_Name (I) > Name_Buffer (I) then
+         for J in 1 .. Min_Length loop
+            if U1_Name (J) > Name_Buffer (J) then
                return False;
-            elsif U1_Name (I) < Name_Buffer (I) then
+            elsif U1_Name (J) < Name_Buffer (J) then
                return True;
             end if;
          end loop;

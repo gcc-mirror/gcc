@@ -7,6 +7,7 @@ struct function
   function (_Functor);
 };
 
+template <class U>
 struct C
 {
   template <typename T>
@@ -15,6 +16,9 @@ struct C
 
 void bar ()
 {
-  C c;
+  C<int> c;
   c.foo (1);
 }
+
+// { dg-final { scan-assembler "_ZN8functionC1IZN1CIiE3fooIiEEvT_S_Ed_UlvE_EET_" } }
+// { dg-final { scan-assembler-not "_ZZN1CIiE3fooIiEEvT_8functionEd_NKUlvE_clEv" } }

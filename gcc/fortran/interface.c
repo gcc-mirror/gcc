@@ -2014,7 +2014,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (formal->ts.type == BT_CLASS && formal->attr.class_ok
       && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
-	   && !formal->attr.intent == INTENT_IN)
+	   && formal->attr.intent != INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
     {
       if (actual->ts.type != BT_CLASS)
@@ -3252,8 +3252,14 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
      for calling a ISO_C_BINDING because c_loc and c_funloc
      are pseudo-unknown.  Additionally, warn about procedures not
      explicitly declared at all if requested.  */
-  if (sym->attr.if_source == IFSRC_UNKNOWN && ! sym->attr.is_iso_c)
+  if (sym->attr.if_source == IFSRC_UNKNOWN && !sym->attr.is_iso_c)
     {
+      if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
+	{
+	  gfc_error ("Procedure '%s' called at %L is not explicitly declared",
+		     sym->name, where);
+	  return false;
+	}
       if (gfc_option.warn_implicit_interface)
 	gfc_warning ("Procedure '%s' called with an implicit interface at %L",
 		     sym->name, where);

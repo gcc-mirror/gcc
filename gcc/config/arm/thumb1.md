@@ -639,7 +639,7 @@
 ; thumb1_movdi_insn has a better way to handle them.
 (define_split
   [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
-       (match_operand:ANY64 1 "const_double_operand" ""))]
+       (match_operand:ANY64 1 "immediate_operand" ""))]
   "TARGET_THUMB1 && reload_completed && !satisfies_constraint_J (operands[1])"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
@@ -707,8 +707,8 @@
 )
 
 (define_insn "*thumb1_movhi_insn"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l,m,*r,*h,l")
-	(match_operand:HI 1 "general_operand"       "l,m,l,*h,*r,I"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l,m,l*r,*h,l")
+	(match_operand:HI 1 "general_operand"       "l,m,l,k*h,*r,I"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
@@ -761,8 +761,8 @@
 )
 
 (define_insn "*thumb1_movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=l,l,m,*r,*h,l")
-	(match_operand:QI 1 "general_operand"      "l, m,l,*h,*r,I"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=l,l,m,l*r,*h,l")
+	(match_operand:QI 1 "general_operand"       "l,m,l,k*h,*r,I"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"

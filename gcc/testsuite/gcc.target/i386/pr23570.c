@@ -71,6 +71,9 @@ sse_swap_rowf (float *r1, float *r2, int n)
     }
 }
 
+void swap_index (int *, int, int);
+void sse_add_rowf (float *, float *, float, int);
+
 void
 ludcompf (float *m, int nw, int *prow, int n)
 {

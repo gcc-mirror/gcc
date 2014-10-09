@@ -147,6 +147,11 @@ lhd_set_decl_assembler_name (tree decl)
 {
   tree id;
 
+  /* set_decl_assembler_name may be called on TYPE_DECL to record ODR
+     name for C++ types.  By default types have no ODR names.  */
+  if (TREE_CODE (decl) == TYPE_DECL)
+    return;
+
   /* The language-independent code should never use the
      DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
      VAR_DECLs for variables with static storage duration need a real
@@ -320,7 +325,7 @@ write_global_declarations (void)
   timevar_start (TV_PHASE_OPT_GEN);
   /* This lang hook is dual-purposed, and also finalizes the
      compilation unit.  */
-  finalize_compilation_unit ();
+  symtab->finalize_compilation_unit ();
   timevar_stop (TV_PHASE_OPT_GEN);
 
   timevar_start (TV_PHASE_DBGINFO);
@@ -661,14 +666,13 @@ lhd_begin_section (const char *name)
 
 
 /* Write DATA of length LEN to the current LTO output section.  This default
-   implementation just calls assemble_string and frees BLOCK.  */
+   implementation just calls assemble_string.  */
 
 void
-lhd_append_data (const void *data, size_t len, void *block)
+lhd_append_data (const void *data, size_t len, void *)
 {
   if (data)
     assemble_string ((const char *)data, len);
-  free (block);
 }
 
 

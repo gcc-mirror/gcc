@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,12 @@
 
 with System.Storage_Elements;
 with System.Unsigned_Types;
-with Ada.Unchecked_Conversion;
 
 package body System.Pack_31 is
+
+   subtype Bit_Order is System.Bit_Order;
+   Reverse_Bit_Order : constant Bit_Order :=
+     Bit_Order'Val (1 - Bit_Order'Pos (System.Default_Bit_Order));
 
    subtype Ofs is System.Storage_Elements.Storage_Offset;
    subtype Uns is System.Unsigned_Types.Unsigned;
@@ -68,45 +71,87 @@ package body System.Pack_31 is
 
    type Cluster_Ref is access Cluster;
 
-   function To_Ref is new
-     Ada.Unchecked_Conversion (System.Address, Cluster_Ref);
+   type Rev_Cluster is new Cluster
+     with Bit_Order            => Reverse_Bit_Order,
+          Scalar_Storage_Order => Reverse_Bit_Order;
+   type Rev_Cluster_Ref is access Rev_Cluster;
 
    ------------
    -- Get_31 --
    ------------
 
-   function Get_31 (Arr : System.Address; N : Natural) return Bits_31 is
-      C : constant Cluster_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
+   function Get_31
+     (Arr     : System.Address;
+      N       : Natural;
+      Rev_SSO : Boolean) return Bits_31
+   is
+      A  : constant System.Address := Arr + Bits * Ofs (Uns (N) / 8);
+      C  : Cluster_Ref     with Address => A'Address, Import;
+      RC : Rev_Cluster_Ref with Address => A'Address, Import;
    begin
-      case N07 (Uns (N) mod 8) is
-         when 0 => return C.E0;
-         when 1 => return C.E1;
-         when 2 => return C.E2;
-         when 3 => return C.E3;
-         when 4 => return C.E4;
-         when 5 => return C.E5;
-         when 6 => return C.E6;
-         when 7 => return C.E7;
-      end case;
+      if Rev_SSO then
+         case N07 (Uns (N) mod 8) is
+            when 0 => return RC.E0;
+            when 1 => return RC.E1;
+            when 2 => return RC.E2;
+            when 3 => return RC.E3;
+            when 4 => return RC.E4;
+            when 5 => return RC.E5;
+            when 6 => return RC.E6;
+            when 7 => return RC.E7;
+         end case;
+
+      else
+         case N07 (Uns (N) mod 8) is
+            when 0 => return C.E0;
+            when 1 => return C.E1;
+            when 2 => return C.E2;
+            when 3 => return C.E3;
+            when 4 => return C.E4;
+            when 5 => return C.E5;
+            when 6 => return C.E6;
+            when 7 => return C.E7;
+         end case;
+      end if;
    end Get_31;
 
    ------------
    -- Set_31 --
    ------------
 
-   procedure Set_31 (Arr : System.Address; N : Natural; E : Bits_31) is
-      C : constant Cluster_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
+   procedure Set_31
+     (Arr     : System.Address;
+      N       : Natural;
+      E       : Bits_31;
+      Rev_SSO : Boolean)
+   is
+      A  : constant System.Address := Arr + Bits * Ofs (Uns (N) / 8);
+      C  : Cluster_Ref     with Address => A'Address, Import;
+      RC : Rev_Cluster_Ref with Address => A'Address, Import;
    begin
-      case N07 (Uns (N) mod 8) is
-         when 0 => C.E0 := E;
-         when 1 => C.E1 := E;
-         when 2 => C.E2 := E;
-         when 3 => C.E3 := E;
-         when 4 => C.E4 := E;
-         when 5 => C.E5 := E;
-         when 6 => C.E6 := E;
-         when 7 => C.E7 := E;
-      end case;
+      if Rev_SSO then
+         case N07 (Uns (N) mod 8) is
+            when 0 => RC.E0 := E;
+            when 1 => RC.E1 := E;
+            when 2 => RC.E2 := E;
+            when 3 => RC.E3 := E;
+            when 4 => RC.E4 := E;
+            when 5 => RC.E5 := E;
+            when 6 => RC.E6 := E;
+            when 7 => RC.E7 := E;
+         end case;
+      else
+         case N07 (Uns (N) mod 8) is
+            when 0 => C.E0 := E;
+            when 1 => C.E1 := E;
+            when 2 => C.E2 := E;
+            when 3 => C.E3 := E;
+            when 4 => C.E4 := E;
+            when 5 => C.E5 := E;
+            when 6 => C.E6 := E;
+            when 7 => C.E7 := E;
+         end case;
+      end if;
    end Set_31;
 
 end System.Pack_31;

@@ -80,7 +80,7 @@ extern bool nds32_valid_multiple_load_store (rtx, bool);
 
 /* Auxiliary functions for stack operation predicate checking.  */
 
-extern bool nds32_valid_stack_push_pop (rtx, bool);
+extern bool nds32_valid_stack_push_pop_p (rtx, bool);
 
 /* Auxiliary functions for bit operation detection.  */
 
@@ -92,7 +92,7 @@ extern int nds32_can_use_bitci_p (int);
 
 /* Auxiliary function for 'Computing the Length of an Insn'.  */
 
-extern int nds32_adjust_insn_length (rtx, int);
+extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 
@@ -117,8 +117,8 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
-extern const char *nds32_output_stack_push (void);
-extern const char *nds32_output_stack_pop (void);
+extern const char *nds32_output_stack_push (rtx);
+extern const char *nds32_output_stack_pop (rtx);
 
 /* Auxiliary functions to decide output alignment or not.  */
 
@@ -136,6 +136,7 @@ extern void nds32_check_isr_attrs_conflict (tree, tree);
 extern void nds32_construct_isr_vectors_information (tree, const char *);
 extern void nds32_asm_file_start_for_isr (void);
 extern void nds32_asm_file_end_for_isr (void);
+extern bool nds32_isr_function_p (tree);
 
 /* Auxiliary functions for cost calculation.  */
 

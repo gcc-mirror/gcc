@@ -304,7 +304,8 @@ package body Sem_Ch9 is
 
                            if Is_Scalar_Type (Etype (Attr))
                              and then Is_Scalar_Type (Etype (Prefix (Attr)))
-                             and then Is_Static_Subtype (Etype (Prefix (Attr)))
+                             and then
+                               Is_OK_Static_Subtype (Etype (Prefix (Attr)))
                            then
                               Para := First (Expressions (Attr));
 
@@ -389,7 +390,7 @@ package body Sem_Ch9 is
                      --  static function restricted.
 
                      elsif Kind = N_Attribute_Reference
-                       and then not Is_Static_Expression (N)
+                       and then not Is_OK_Static_Expression (N)
                        and then not Is_Static_Function (N)
                      then
                         if Lock_Free_Given then
@@ -427,7 +428,7 @@ package body Sem_Ch9 is
                      --  Non-static function calls restricted
 
                      elsif Kind = N_Function_Call
-                       and then not Is_Static_Expression (N)
+                       and then not Is_OK_Static_Expression (N)
                      then
                         if Lock_Free_Given then
                            Error_Msg_N
@@ -700,7 +701,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("abort statement is not allowed", N);
+      Check_SPARK_05_Restriction ("abort statement is not allowed", N);
 
       T_Name := First (Names (N));
       while Present (T_Name) loop
@@ -771,7 +772,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("accept statement is not allowed", N);
+      Check_SPARK_05_Restriction ("accept statement is not allowed", N);
 
       --  Entry name is initialized to Any_Id. It should get reset to the
       --  matching entry entity. An error is signalled if it is not reset.
@@ -1002,7 +1003,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("select statement is not allowed", N);
+      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -1048,7 +1049,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("select statement is not allowed", N);
+      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
@@ -1145,7 +1146,7 @@ package body Sem_Ch9 is
       E : constant Node_Id := Expression (N);
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("delay statement is not allowed", N);
+      Check_SPARK_05_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Relative_Delay, N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
@@ -1163,7 +1164,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("delay statement is not allowed", N);
+      Check_SPARK_05_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
       Analyze (E);
@@ -1452,7 +1453,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("entry call is not allowed", N);
+      Check_SPARK_05_Restriction ("entry call is not allowed", N);
 
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
@@ -1557,7 +1558,7 @@ package body Sem_Ch9 is
                goto Skip_LB;
             end if;
 
-            if Is_Static_Expression (LBR)
+            if Is_OK_Static_Expression (LBR)
               and then Expr_Value (LBR) < LB
             then
                Error_Msg_Uint_1 := LB;
@@ -1583,7 +1584,7 @@ package body Sem_Ch9 is
                goto Skip_UB;
             end if;
 
-            if Is_Static_Expression (UBR)
+            if Is_OK_Static_Expression (UBR)
               and then Expr_Value (UBR) > UB
             then
                Error_Msg_Uint_1 := UB;
@@ -1885,7 +1886,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("protected definition is not allowed", N);
+      Check_SPARK_05_Restriction ("protected definition is not allowed", N);
       Analyze_Declarations (Visible_Declarations (N));
 
       if Present (Private_Declarations (N))
@@ -1911,6 +1912,11 @@ package body Sem_Ch9 is
            or else Has_Task (Etype (E))
          then
             Set_Has_Task (Current_Scope);
+
+         elsif Is_Protected_Type (Etype (E))
+           or else Has_Protected (Etype (E))
+         then
+            Set_Has_Protected (Current_Scope);
          end if;
 
          Next_Entity (E);
@@ -1957,6 +1963,7 @@ package body Sem_Ch9 is
 
       Set_Ekind              (T, E_Protected_Type);
       Set_Is_First_Subtype   (T, True);
+      Set_Has_Protected      (T, True);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
@@ -2169,7 +2176,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("requeue statement is not allowed", N);
+      Check_SPARK_05_Restriction ("requeue statement is not allowed", N);
       Check_Restriction (No_Requeue_Statements, N);
       Check_Unreachable_Code (N);
 
@@ -2464,7 +2471,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("select statement is not allowed", N);
+      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Loop to analyze alternatives
@@ -2855,7 +2862,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("task definition is not allowed", N);
+      Check_SPARK_05_Restriction ("task definition is not allowed", N);
 
       if Present (Visible_Declarations (N)) then
          Analyze_Declarations (Visible_Declarations (N));
@@ -2889,6 +2896,17 @@ package body Sem_Ch9 is
    begin
       Check_Restriction (No_Tasking, N);
       Tasking_Used := True;
+
+      --  The sequential partition elaboration policy is supported only in the
+      --  restricted profile.
+
+      if Partition_Elaboration_Policy = 'S'
+        and then not Restricted_Profile
+      then
+         Error_Msg_N
+           ("sequential elaboration supported only in restricted profile", N);
+      end if;
+
       T := Find_Type_Name (N);
       Generate_Definition (T);
 
@@ -3027,7 +3045,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_Restriction ("select statement is not allowed", N);
+      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call

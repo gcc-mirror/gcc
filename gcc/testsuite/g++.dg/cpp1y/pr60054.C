@@ -1,5 +1,5 @@
 // PR c++/60054
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 template<typename T> T fooA(T);
 template<typename T> decltype(T{}) fooB(T);

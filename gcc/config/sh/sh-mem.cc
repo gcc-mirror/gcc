@@ -201,11 +201,11 @@ sh_expand_cmpstr (rtx *operands)
   rtx tmp3 = gen_reg_rtx (SImode);
 
   rtx jump;
-  rtx L_return = gen_label_rtx ();
-  rtx L_loop_byte = gen_label_rtx ();
-  rtx L_end_loop_byte = gen_label_rtx ();
-  rtx L_loop_long = gen_label_rtx ();
-  rtx L_end_loop_long = gen_label_rtx ();
+  rtx_code_label *L_return = gen_label_rtx ();
+  rtx_code_label *L_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_end_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_loop_long = gen_label_rtx ();
+  rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
   int align = INTVAL (operands[3]);
 
@@ -328,9 +328,9 @@ sh_expand_cmpnstr (rtx *operands)
   rtx tmp2 = gen_reg_rtx (SImode);
 
   rtx jump;
-  rtx L_return = gen_label_rtx ();
-  rtx L_loop_byte = gen_label_rtx ();
-  rtx L_end_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_return = gen_label_rtx ();
+  rtx_code_label *L_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_end_loop_byte = gen_label_rtx ();
 
   rtx len = force_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
@@ -342,8 +342,8 @@ sh_expand_cmpnstr (rtx *operands)
       rtx tmp3 = gen_reg_rtx (SImode);
       rtx lenw = gen_reg_rtx (SImode);
 
-      rtx L_loop_long = gen_label_rtx ();
-      rtx L_end_loop_long = gen_label_rtx ();
+      rtx_code_label *L_loop_long = gen_label_rtx ();
+      rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
       int align = INTVAL (operands[4]);
       int bytes = INTVAL (operands[3]);
@@ -543,12 +543,12 @@ sh_expand_strlen (rtx *operands)
   rtx start_addr = gen_reg_rtx (Pmode);
   rtx tmp0 = gen_reg_rtx (SImode);
   rtx tmp1 = gen_reg_rtx (SImode);
-  rtx L_return = gen_label_rtx ();
-  rtx L_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_return = gen_label_rtx ();
+  rtx_code_label *L_loop_byte = gen_label_rtx ();
 
   rtx jump;
-  rtx L_loop_long = gen_label_rtx ();
-  rtx L_end_loop_long = gen_label_rtx ();
+  rtx_code_label *L_loop_long = gen_label_rtx ();
+  rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
   int align = INTVAL (operands[3]);
 
@@ -629,9 +629,9 @@ sh_expand_strlen (rtx *operands)
 void
 sh_expand_setmem (rtx *operands)
 {
-  rtx L_loop_byte = gen_label_rtx ();
-  rtx L_loop_word = gen_label_rtx ();
-  rtx L_return = gen_label_rtx ();
+  rtx_code_label *L_loop_byte = gen_label_rtx ();
+  rtx_code_label *L_loop_word = gen_label_rtx ();
+  rtx_code_label *L_return = gen_label_rtx ();
   rtx jump;
   rtx dest = copy_rtx (operands[0]);
   rtx dest_addr = copy_addr_to_reg (XEXP (dest, 0));

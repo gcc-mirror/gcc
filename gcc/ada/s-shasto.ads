@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,10 +35,6 @@
 --  passive package. This implementation is specific to GNAT and GLADE
 --  provides a more general implementation not dedicated to file
 --  storage.
-
---  This unit (and shared passive partitions) are supported on all
---  GNAT implementations except on OpenVMS (where problems arise from
---  trying to share files, and with version numbers of files)
 
 --  --------------------------
 --  -- Shared Storage Model --

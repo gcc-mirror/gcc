@@ -115,6 +115,10 @@ package System is
 
 private
 
+   pragma Linker_Options ("--specs=vxworks-crtbe-link.spec");
+   --  Pull in crtbegin/crtend objects and register exceptions for ZCX.
+   --  This is commented out by our Makefile for SJLJ runtimes.
+
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;
 
@@ -151,6 +155,6 @@ private
    Always_Compatible_Rep     : constant Boolean := False;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := True;
-   ZCX_By_Default            : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
 
 end System;

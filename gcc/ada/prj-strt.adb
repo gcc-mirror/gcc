@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,7 +217,10 @@ package body Prj.Strt is
             Set_Case_Insensitive
               (Reference, In_Tree,
                To => Attribute_Kind_Of (Current_Attribute) in
-                      All_Case_Insensitive_Associative_Array);
+                       All_Case_Insensitive_Associative_Array);
+            Set_Default_Of
+              (Reference, In_Tree,
+               To => Attribute_Default_Of (Current_Attribute));
 
             --  Scan past the attribute name
 
@@ -292,18 +295,21 @@ package body Prj.Strt is
    ---------------------------
 
    procedure End_Case_Construction
-     (Check_All_Labels   : Boolean;
-      Case_Location      : Source_Ptr;
-      Flags              : Processing_Flags)
+     (Check_All_Labels : Boolean;
+      Case_Location    : Source_Ptr;
+      Flags            : Processing_Flags;
+      String_Type      : Boolean)
    is
-      Non_Used : Natural := 0;
+      Non_Used       : Natural := 0;
       First_Non_Used : Choice_Node_Id := First_Choice_Node_Id;
+
    begin
-      --  First, if Check_All_Labels is True, check if all values
-      --  of the string type have been used.
+      --  First, if Check_All_Labels is True, check if all values of the string
+      --  type have been used.
 
       if Check_All_Labels then
-         for Choice in Choice_First .. Choices.Last loop
+         if String_Type then
+            for Choice in Choice_First .. Choices.Last loop
                if not Choices.Table (Choice).Already_Used then
                   Non_Used := Non_Used + 1;
 
@@ -311,27 +317,34 @@ package body Prj.Strt is
                      First_Non_Used := Choice;
                   end if;
                end if;
-         end loop;
-
-         --  If only one is not used, report a single warning for this value
-
-         if Non_Used = 1 then
-            Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
-            Error_Msg (Flags, "?value %% is not used as label", Case_Location);
-
-         --  If several are not used, report a warning for each one of them
-
-         elsif Non_Used > 1 then
-            Error_Msg
-              (Flags, "?the following values are not used as labels:",
-               Case_Location);
-
-            for Choice in First_Non_Used .. Choices.Last loop
-               if not Choices.Table (Choice).Already_Used then
-                  Error_Msg_Name_1 := Choices.Table (Choice).The_String;
-                  Error_Msg (Flags, "\?%%", Case_Location);
-               end if;
             end loop;
+
+            --  If only one is not used, report a single warning for this value
+
+            if Non_Used = 1 then
+               Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
+               Error_Msg
+                 (Flags, "?value %% is not used as label", Case_Location);
+
+            --  If several are not used, report a warning for each one of them
+
+            elsif Non_Used > 1 then
+               Error_Msg
+                 (Flags, "?the following values are not used as labels:",
+                  Case_Location);
+
+               for Choice in First_Non_Used .. Choices.Last loop
+                  if not Choices.Table (Choice).Already_Used then
+                     Error_Msg_Name_1 := Choices.Table (Choice).The_String;
+                     Error_Msg (Flags, "\?%%", Case_Location);
+                  end if;
+               end loop;
+            end if;
+         else
+            Error_Msg
+              (Flags,
+               "?no when others for this case construction",
+               Case_Location);
          end if;
       end if;
 
@@ -342,18 +355,15 @@ package body Prj.Strt is
          Choices.Set_Last (First_Choice_Node_Id);
          Choice_First := 0;
 
+      --  Second case construction, set the tables to the first
+
       elsif Choice_Lasts.Last = 2 then
-
-         --  This is the second case construction, set the tables to the first
-
          Choice_Lasts.Set_Last (1);
          Choices.Set_Last (Choice_Lasts.Table (1));
          Choice_First := 1;
 
+      --  Third or more case construction, set the tables to the previous one
       else
-         --  This is the 3rd or more case construction, set the tables to the
-         --  previous one.
-
          Choice_Lasts.Decrement_Last;
          Choices.Set_Last (Choice_Lasts.Table (Choice_Lasts.Last));
          Choice_First := Choice_Lasts.Table (Choice_Lasts.Last - 1) + 1;
@@ -427,7 +437,6 @@ package body Prj.Strt is
          Scan (In_Tree);
 
          case Token is
-
             when Tok_Right_Paren =>
                if Ext_List then
                   Error_Msg (Flags, "`,` expected", Token_Ptr);
@@ -484,7 +493,8 @@ package body Prj.Strt is
    procedure Parse_Choice_List
      (In_Tree      : Project_Node_Tree_Ref;
       First_Choice : out Project_Node_Id;
-      Flags        : Processing_Flags)
+      Flags        : Processing_Flags;
+      String_Type  : Boolean := True)
    is
       Current_Choice : Project_Node_Id := Empty_Node;
       Next_Choice    : Project_Node_Id := Empty_Node;
@@ -514,38 +524,41 @@ package body Prj.Strt is
 
          Set_String_Value_Of (Current_Choice, In_Tree, To => Choice_String);
 
-         --  Check if the label is part of the string type and if it has not
-         --  been already used.
+         if String_Type then
 
-         Found := False;
-         for Choice in Choice_First .. Choices.Last loop
-            if Choices.Table (Choice).The_String = Choice_String then
+            --  Check if the label is part of the string type and if it has not
+            --  been already used.
 
-               --  This label is part of the string type
+            Found := False;
+            for Choice in Choice_First .. Choices.Last loop
+               if Choices.Table (Choice).The_String = Choice_String then
 
-               Found := True;
+                  --  This label is part of the string type
 
-               if Choices.Table (Choice).Already_Used then
+                  Found := True;
 
-                  --  But it has already appeared in a choice list for this
-                  --  case construction so report an error.
+                  if Choices.Table (Choice).Already_Used then
 
-                  Error_Msg_Name_1 := Choice_String;
-                  Error_Msg (Flags, "duplicate case label %%", Token_Ptr);
+                     --  But it has already appeared in a choice list for this
+                     --  case construction so report an error.
 
-               else
-                  Choices.Table (Choice).Already_Used := True;
+                     Error_Msg_Name_1 := Choice_String;
+                     Error_Msg (Flags, "duplicate case label %%", Token_Ptr);
+
+                  else
+                     Choices.Table (Choice).Already_Used := True;
+                  end if;
+
+                  exit;
                end if;
+            end loop;
 
-               exit;
+            --  If the label is not part of the string list, report an error
+
+            if not Found then
+               Error_Msg_Name_1 := Choice_String;
+               Error_Msg (Flags, "illegal case label %%", Token_Ptr);
             end if;
-         end loop;
-
-         --  If the label is not part of the string list, report an error
-
-         if not Found then
-            Error_Msg_Name_1 := Choice_String;
-            Error_Msg (Flags, "illegal case label %%", Token_Ptr);
          end if;
 
          --  Scan past the label
@@ -1162,7 +1175,7 @@ package body Prj.Strt is
 
             --  If we have not found the variable in the package, check if the
             --  variable has been declared in the project, or in any of its
-            --  ancestors.
+            --  ancestors, or in any of the project it extends.
 
             if No (Current_Variable) then
                declare
@@ -1182,7 +1195,19 @@ package body Prj.Strt is
 
                      exit when Present (Current_Variable);
 
-                     Proj := Parent_Project_Of (Proj, In_Tree);
+                     --  If the current project is a child project, check if
+                     --  the variable is declared in its parent. Otherwise, if
+                     --  the current project extends another project, check if
+                     --  the variable is declared in one of the projects the
+                     --  current project extends.
+
+                     if No (Parent_Project_Of (Proj, In_Tree)) then
+                        Proj :=
+                          Extended_Project_Of
+                            (Project_Declaration_Of (Proj, In_Tree), In_Tree);
+                     else
+                        Proj := Parent_Project_Of (Proj, In_Tree);
+                     end if;
 
                      Set_Project_Node_Of (Variable, In_Tree, To => Proj);
 

@@ -96,8 +96,8 @@ package body System.OS_Lib is
       Stdout : Boolean);
    --  Internal routine to implement two Create_Temp_File routines. If Stdout
    --  is set to True the created descriptor is stdout-compatible, otherwise
-   --  it might not be depending on the OS (VMS is one example). The first two
-   --  parameters are as in Create_Temp_File.
+   --  it might not be depending on the OS. The first two parameters are as
+   --  in Create_Temp_File.
 
    function C_String_Length (S : Address) return Integer;
    --  Returns the length of C (null-terminated) string at S, or 0 for
@@ -279,7 +279,6 @@ package body System.OS_Lib is
    procedure Close (FD : File_Descriptor) is
       use CRTL;
       Discard : constant int := close (int (FD));
-      pragma Unreferenced (Discard);
    begin
       null;
    end Close;
@@ -417,8 +416,8 @@ package body System.OS_Lib is
          loop
             R := Read (From, Buffer (1)'Address, Buf_Size);
 
-            --  For VMS, the buffer may not be full. So, we need to try again
-            --  until there is nothing to read.
+            --  On some systems, the buffer may not be full. So, we need to try
+            --  again until there is nothing to read.
 
             exit when R = 0;
 
@@ -887,6 +886,26 @@ package body System.OS_Lib is
          end if;
       end loop File_Loop;
    end Create_Temp_File_Internal;
+
+   -------------------------
+   -- Current_Time_String --
+   -------------------------
+
+   function Current_Time_String return String is
+      subtype S23 is String (1 .. 23);
+      --  Holds current time in ISO 8601 format YYYY-MM-DD HH:MM:SS.SS + NUL
+
+      procedure Current_Time_String (Time : System.Address);
+      pragma Import (C, Current_Time_String, "__gnat_current_time_string");
+      --  Puts current time into Time in above ISO 8601 format
+
+      Result23 : aliased S23;
+      --  Current time in ISO 8601 format
+
+   begin
+      Current_Time_String (Result23'Address);
+      return Result23 (1 .. 19);
+   end Current_Time_String;
 
    -----------------
    -- Delete_File --
@@ -1832,6 +1851,7 @@ package body System.OS_Lib is
         (Host_File : System.Address) return System.Address;
       pragma Import
         (C, To_Canonical_File_Spec, "__gnat_to_canonical_file_spec");
+      --  Convert possible foreign file syntax to canonical form
 
       The_Name : String (1 .. Name'Length + 1);
       Canonical_File_Addr : System.Address;
@@ -1959,19 +1979,19 @@ package body System.OS_Lib is
          return "";
       end if;
 
-      --  First, convert VMS file spec to Unix file spec.
-      --  If Name is not in VMS syntax, then this is equivalent
-      --  to put Name at the beginning of Path_Buffer.
+      --  First, convert possible foreign file spec to Unix file spec. If no
+      --  conversion is required, all this does is put Name at the beginning
+      --  of Path_Buffer unchanged.
 
-      VMS_Conversion : begin
+      File_Name_Conversion : begin
          The_Name (1 .. Name'Length) := Name;
          The_Name (The_Name'Last) := ASCII.NUL;
 
          Canonical_File_Addr := To_Canonical_File_Spec (The_Name'Address);
          Canonical_File_Len  := Integer (CRTL.strlen (Canonical_File_Addr));
 
-         --  If VMS syntax conversion has failed, return an empty string
-         --  to indicate the failure.
+         --  If syntax conversion has failed, return an empty string to
+         --  indicate the failure.
 
          if Canonical_File_Len = 0 then
             return "";
@@ -1988,7 +2008,7 @@ package body System.OS_Lib is
             End_Path := Canonical_File_Len;
             Last := 1;
          end;
-      end VMS_Conversion;
+      end File_Name_Conversion;
 
       --  Replace all '/' by Directory Separators (this is for Windows)
 
@@ -2000,12 +2020,7 @@ package body System.OS_Lib is
          end loop;
       end if;
 
-      --  Resolve directory names for Windows (formerly also VMS)
-
-      --  On VMS, if we have a Unix path such as /temp/..., and TEMP is a
-      --  logical name, we must not try to resolve this logical name, because
-      --  it may have multiple equivalences and if resolved we will only
-      --  get the first one.
+      --  Resolve directory names for Windows
 
       if On_Windows then
 
@@ -2241,6 +2256,33 @@ package body System.OS_Lib is
 
       return "";
    end Normalize_Pathname;
+
+   -----------------
+   -- Open_Append --
+   -----------------
+
+   function Open_Append
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor
+   is
+      function C_Open_Append
+        (Name  : C_File_Name;
+         Fmode : Mode) return File_Descriptor;
+      pragma Import (C, C_Open_Append, "__gnat_open_append");
+   begin
+      return C_Open_Append (Name, Fmode);
+   end Open_Append;
+
+   function Open_Append
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor
+   is
+      C_Name : String (1 .. Name'Length + 1);
+   begin
+      C_Name (1 .. Name'Length) := Name;
+      C_Name (C_Name'Last)      := ASCII.NUL;
+      return Open_Append (C_Name (C_Name'First)'Address, Fmode);
+   end Open_Append;
 
    ---------------
    -- Open_Read --

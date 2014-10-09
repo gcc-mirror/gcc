@@ -542,6 +542,9 @@ struct GTY (()) aarch64_frame
    * frame (incomming SP) to the stack_pointer.  This value is always
    * a multiple of STACK_BOUNDARY.  */
 
+  unsigned wb_candidate1;
+  unsigned wb_candidate2;
+
   HOST_WIDE_INT frame_size;
 
   bool laid_out;

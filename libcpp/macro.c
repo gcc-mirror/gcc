@@ -84,7 +84,7 @@ struct macro_arg_token_iter
 
 static int enter_macro_context (cpp_reader *, cpp_hashnode *,
 				const cpp_token *, source_location);
-static int builtin_macro (cpp_reader *, cpp_hashnode *);
+static int builtin_macro (cpp_reader *, cpp_hashnode *, source_location);
 static void push_ptoken_context (cpp_reader *, cpp_hashnode *, _cpp_buff *,
 				 const cpp_token **, unsigned int);
 static void push_extended_tokens_context (cpp_reader *, cpp_hashnode *,
@@ -399,9 +399,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 /* Convert builtin macros like __FILE__ to a token and push it on the
    context stack.  Also handles _Pragma, for which a new token may not
    be created.  Returns 1 if it generates a new token context, 0 to
-   return the token to the caller.  */
+   return the token to the caller.  LOC is the location of the expansion
+   point of the macro.  */
 static int
-builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
+builtin_macro (cpp_reader *pfile, cpp_hashnode *node, source_location loc)
 {
   const uchar *buf;
   size_t len;
@@ -429,6 +430,8 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
   cpp_token *token = _cpp_lex_direct (pfile);
+  /* We should point to the expansion point of the builtin macro.  */
+  token->src_loc = loc;
   if (pfile->context->tokens_kind == TOKENS_KIND_EXTENDED)
     {
       /* We are tracking tokens resulting from macro expansion.
@@ -1212,7 +1215,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   pfile->about_to_expand_macro_p = false;
   /* Handle built-in macros and the _Pragma operator.  */
-  return builtin_macro (pfile, node);
+  return builtin_macro (pfile, node, location);
 }
 
 /* De-allocate the memory used by BUFF which is an array of instances
@@ -1773,25 +1776,32 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	    paste_flag =
 	      (const cpp_token **) tokens_buff_last_token_ptr (buff);
 	}
-      else if (CPP_PEDANTIC (pfile) && ! macro->syshdr
-	       && ! CPP_OPTION (pfile, c99)
-	       && ! cpp_in_system_header (pfile))
+      else if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99)
+	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "invoking macro %s argument %d: "
-		       "empty macro arguments are undefined"
-		       " in ISO C++98",
-		       NODE_NAME (node),
-		       src->val.macro_arg.arg_no);
-	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "invoking macro %s argument %d: "
-		       "empty macro arguments are undefined"
-		       " in ISO C90",
-		       NODE_NAME (node),
-		       src->val.macro_arg.arg_no);
+	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			    "invoking macro %s argument %d: "
+			    "empty macro arguments are undefined"
+			    " in ISO C++98",
+			    NODE_NAME (node), src->val.macro_arg.arg_no);
+	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat))
+	    cpp_pedwarning (pfile, 
+			    CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+			    ? CPP_W_C90_C99_COMPAT : CPP_W_PEDANTIC,
+			    "invoking macro %s argument %d: "
+			    "empty macro arguments are undefined"
+			    " in ISO C90",
+			    NODE_NAME (node), src->val.macro_arg.arg_no);
 	}
+      else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+	       && ! CPP_OPTION (pfile, cplusplus)
+	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	cpp_warning (pfile, CPP_W_C90_C99_COMPAT,
+		     "invoking macro %s argument %d: "
+		     "empty macro arguments are undefined"
+		     " in ISO C90",
+		     NODE_NAME (node), src->val.macro_arg.arg_no);
 
       /* Avoid paste on RHS (even case count == 0).  */
       if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))
@@ -2686,13 +2696,12 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_WARN)
     return true;
 
-  /* Suppress warnings for builtins that lack the NODE_WARN flag.  */
-  if (node->flags & NODE_BUILTIN)
-    {
-      if (!pfile->cb.user_builtin_macro
-	  || !pfile->cb.user_builtin_macro (pfile, node))
-	return false;
-    }
+  /* Suppress warnings for builtins that lack the NODE_WARN flag,
+     unless Wbuiltin-macro-redefined.  */
+  if (node->flags & NODE_BUILTIN
+      && (!pfile->cb.user_builtin_macro
+	  || !pfile->cb.user_builtin_macro (pfile, node)))
+    return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
      the other hand, must be allowed silently.  */
@@ -2845,6 +2854,10 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 			(pfile, CPP_W_VARIADIC_MACROS,
 			"anonymous variadic macros were introduced in C99");
 		}
+	      else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+		       && ! CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_WARNING,
+			   "anonymous variadic macros were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, cpp_pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))
@@ -3164,14 +3177,14 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason = (node->flags & NODE_BUILTIN)
+          const int reason = ((node->flags & NODE_BUILTIN)
+			      && !(node->flags & NODE_WARN))
                              ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
-	  bool warned;
 
-	  warned = cpp_pedwarning_with_line (pfile, reason,
-					     pfile->directive_line, 0,
-					     "\"%s\" redefined",
-                                             NODE_NAME (node));
+	  bool warned = 
+	    cpp_pedwarning_with_line (pfile, reason,
+				      pfile->directive_line, 0,
+				      "\"%s\" redefined", NODE_NAME (node));
 
 	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,

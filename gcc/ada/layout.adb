@@ -2195,13 +2195,12 @@ package body Layout is
                            D_List := New_List;
                            D_Entity := First_Discriminant (E);
                            while Present (D_Entity) loop
-                              Append (
+                              Append_To (D_List,
                                 Make_Selected_Component (Loc,
                                   Prefix        =>
                                     Make_Identifier (Loc, Vname),
                                   Selector_Name =>
-                                    New_Occurrence_Of (D_Entity, Loc)),
-                                D_List);
+                                    New_Occurrence_Of (D_Entity, Loc)));
 
                               D_Entity := Next_Discriminant (D_Entity);
                            end loop;
@@ -2524,31 +2523,6 @@ package body Layout is
 
          else
             Init_Size (E, System_Address_Size);
-         end if;
-
-         --  On VMS, reset size to 32 for convention C access type if no
-         --  explicit size clause is given and the default size is 64. Really
-         --  we do not know the size, since depending on options for the VMS
-         --  compiler, the size of a pointer type can be 32 or 64, but choosing
-         --  32 as the default improves compatibility with legacy VMS code.
-
-         --  Note: we do not use Has_Size_Clause in the test below, because we
-         --  want to catch the case of a derived type inheriting a size clause.
-         --  We want to consider this to be an explicit size clause for this
-         --  purpose, since it would be weird not to inherit the size in this
-         --  case.
-
-         --  We do NOT do this if we are in -gnatdm mode on a non-VMS target
-         --  since in that case we want the normal pointer representation.
-
-         if Opt.True_VMS_Target
-           and then (Convention (E) = Convention_C
-                       or else
-                     Convention (E) = Convention_CPP)
-           and then No (Get_Attribute_Definition_Clause (E, Attribute_Size))
-           and then Esize (E) = 64
-         then
-            Init_Size (E, 32);
          end if;
 
          Set_Elem_Alignment (E);
@@ -3022,8 +2996,7 @@ package body Layout is
 
             --  If Optimize_Alignment is set to Time, then we reset for odd
             --  "in between sizes", for example a 17 bit record is given an
-            --  alignment of 4. Note that this matches the old VMS behavior
-            --  in versions of GNAT prior to 6.1.1.
+            --  alignment of 4.
 
          elsif Optimize_Alignment_Time (E)
            and then Siz > System_Storage_Unit

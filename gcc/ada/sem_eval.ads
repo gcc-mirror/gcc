@@ -52,7 +52,12 @@ package Sem_Eval is
    --    Is_Static_Expression
 
    --      This flag is set on any expression that is static according to the
-   --      rules in (RM 4.9(3-32)).
+   --      rules in (RM 4.9(3-32)). This flag should be tested during testing
+   --      of legality of parts of a larger static expression. For all other
+   --      contexts that require static expressions, use the separate predicate
+   --      Is_OK_Static_Expression, since an expression that meets the RM 4.9
+   --      requirements, but raises a constraint error when evaluated in a non-
+   --      static context does not meet the legality requirements.
 
    --    Raises_Constraint_Error
 
@@ -63,16 +68,37 @@ package Sem_Eval is
    --      (i.e. the flag is accurate for static expressions, and conservative
    --      for non-static expressions.
 
-   --  If a static expression does not raise constraint error, then the
-   --  Raises_Constraint_Error flag is off, and the expression must be computed
-   --  at compile time, which means that it has the form of either a literal,
-   --  or a constant that is itself (recursively) either a literal or a
-   --  constant.
+   --  If a static expression does not raise constraint error, then it will
+   --  have the flag Raises_Constraint_Error flag False, and the expression
+   --  must be computed at compile time, which means that it has the form of
+   --  either a literal, or a constant that is itself (recursively) either a
+   --  literal or a constant.
 
    --  The above rules must be followed exactly in order for legality checks to
    --  be accurate. For subexpressions that are not static according to the RM
    --  definition, they are sometimes folded anyway, but of course in this case
    --  Is_Static_Expression is not set.
+
+   --  When we are analyzing and evaluating static expressions, we propagate
+   --  both flags accurately. Usually if a subexpression raises a constraint
+   --  error, then so will its parent expression, and Raise_Constraint_Error
+   --  will be propagated to this parent. The exception is conditional cases
+   --  like (True or else 1/0 = 0) which results in an expresion that has the
+   --  Is_Static_Expression flag True, and Raises_Constraint_Error False. Even
+   --  though 1/0 would raise an exception, the right operand is never actually
+   --  executed, so the expression as a whole does not raise CE.
+
+   --  For constructs in the language where static expressions are part of the
+   --  required semantics, we need an expression that meets the 4.9 rules and
+   --  does not raise CE. So nearly everywhere, callers should call function
+   --  Is_OK_Static_Expression rather than Is_Static_Expression.
+
+   --  Finally, the case of static predicates. These are applied only to entire
+   --  expressions, not to subexpressions, so we do not have the case of having
+   --  to propagate this information. We handle this case simply by resetting
+   --  the Is_Static_Expression flag if a static predicate fails. Note that we
+   --  can't use this simpler approach for the constraint error case because of
+   --  the (True or else 1/0 = 0) example discussed above.
 
    -------------------------------
    -- Compile-Time Known Values --
@@ -106,6 +132,17 @@ package Sem_Eval is
    -----------------
    -- Subprograms --
    -----------------
+
+   procedure Check_Expression_Against_Static_Predicate
+     (Expr : Node_Id;
+      Typ  : Entity_Id);
+   --  Determine whether an arbitrary expression satisfies the static predicate
+   --  of a type. The routine does nothing if Expr is not known at compile time
+   --  or Typ lacks a static predicate, otherwise it may emit a warning if the
+   --  expression is prohibited by the predicate. If the expression is a static
+   --  expression and it fails a predicate that was not explicitly stated to be
+   --  a dynamic predicate, then an additional warning is given, and the flag
+   --  Is_Static_Expression is reset on Expr.
 
    procedure Check_Non_Static_Context (N : Node_Id);
    --  Deals with the special check required for a static expression that
@@ -181,18 +218,14 @@ package Sem_Eval is
    --  for compile time evaluation purposes. Use Compile_Time_Known_Value
    --  instead (see section on "Compile-Time Known Values" above).
 
-   function Is_Static_Range (N : Node_Id) return Boolean;
-   --  Determine if range is static, as defined in RM 4.9(26). The only allowed
-   --  argument is an N_Range node (but note that the semantic analysis of
-   --  equivalent range attribute references already turned them into the
-   --  equivalent range).
-
    function Is_OK_Static_Range (N : Node_Id) return Boolean;
-   --  Like Is_Static_Range, but also makes sure that the bounds of the range
-   --  are compile-time evaluable (i.e. do not raise constraint error). A
-   --  result of true means that the bounds are compile time evaluable. A
-   --  result of false means they are not (either because the range is not
-   --  static, or because one or the other bound raises CE).
+   --  Determines if range is static, as defined in RM 4.9(26), and also checks
+   --  that neither bound of the range raises constraint error, thus ensuring
+   --  that both bounds of the range are compile-time evaluable (i.e. do not
+   --  raise constraint error). A result of true means that the bounds are
+   --  compile time evaluable. A result of false means they are not (either
+   --  because the range is not static, or because one or the other bound
+   --  raises CE).
 
    function Is_Static_Subtype (Typ : Entity_Id) return Boolean;
    --  Determines whether a subtype fits the definition of an Ada static
@@ -204,14 +237,28 @@ package Sem_Eval is
    --
    --  Implementation note: an attempt to include this Ada 2012 case failed,
    --  since it appears that this routine is called in some cases before the
-   --  Static_Predicate field is set ???
+   --  Static_Discrete_Predicate field is set ???
+   --
+   --  This differs from Is_OK_Static_Subtype (which is what must be used by
+   --  clients) in that it does not care whether the bounds raise a constraint
+   --  error exception or not. Used for checking whether expressions are static
+   --  in the 4.9 sense (without worrying about exceptions).
 
    function Is_OK_Static_Subtype (Typ : Entity_Id) return Boolean;
-   --  Like Is_Static_Subtype but also makes sure that the bounds of the
-   --  subtype are compile-time evaluable (i.e. do not raise constraint error).
-   --  A result of true means that the bounds are compile time evaluable. A
-   --  result of false means they are not (either because the range is not
-   --  static, or because one or the other bound raises CE).
+   --  Determines whether a subtype fits the definition of an Ada static
+   --  subtype as given in (RM 4.9(26)) with the additional check that neither
+   --  bound raises constraint error (meaning that Expr_Value[_R|S] can be used
+   --  on these bounds. Important note: This check does not include the Ada
+   --  2012 case of a non-static predicate which results in an otherwise static
+   --  subtype being non-static. Such a subtype will return True for this test,
+   --  so if the distinction is important, the caller must deal with this.
+   --
+   --  Implementation note: an attempt to include this Ada 2012 case failed,
+   --  since it appears that this routine is called in some cases before the
+   --  Static_Discrete_Predicate field is set ???
+   --
+   --  This differs from Is_Static_Subtype in that it includes the constraint
+   --  error checks, which are missing from Is_Static_Subtype.
 
    function Subtypes_Statically_Compatible
      (T1                      : Entity_Id;
@@ -364,14 +411,6 @@ package Sem_Eval is
    procedure Eval_Unary_Op               (N : Node_Id);
    procedure Eval_Unchecked_Conversion   (N : Node_Id);
 
-   function Eval_Static_Predicate_Check
-     (N   : Node_Id;
-      Typ : Entity_Id) return Boolean;
-   --  Evaluate a static predicate check applied expression which represents
-   --  a value that is known at compile time (does not have to be static). The
-   --  caller has checked that a static predicate does apply to Typ, and thus
-   --  the type is known to be scalar.
-
    procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
    --  Rewrite N with a new N_String_Literal node as the result of the compile
    --  time evaluation of the node N. Val is the resulting string value from
@@ -381,7 +420,8 @@ package Sem_Eval is
    --  static). The point here is that normally all string literals are static,
    --  but if this was the result of some sequence of evaluation where values
    --  were known at compile time but not static, then the result is not
-   --  static.
+   --  static. The call has no effect if Raises_Constraint_Error (N) is True,
+   --  since there is no point in folding if we have an error.
 
    procedure Fold_Uint (N : Node_Id; Val : Uint; Static : Boolean);
    --  Rewrite N with a (N_Integer_Literal, N_Identifier, N_Character_Literal)
@@ -393,7 +433,8 @@ package Sem_Eval is
    --  consider static). The point here is that normally all integer literals
    --  are static, but if this was the result of some sequence of evaluation
    --  where values were known at compile time but not static, then the result
-   --  is not static.
+   --  is not static. The call has no effect if Raises_Constraint_Error (N) is
+   --  True, since there is no point in folding if we have an error.
 
    procedure Fold_Ureal (N : Node_Id; Val : Ureal; Static : Boolean);
    --  Rewrite N with a new N_Real_Literal node as the result of the compile
@@ -404,6 +445,8 @@ package Sem_Eval is
    --  The point here is that normally all string literals are static, but if
    --  this was the result of some sequence of evaluation where values were
    --  known at compile time but not static, then the result is not static.
+   --  The call has no effect if Raises_Constraint_Error (N) is True, since
+   --  there is no point in folding if we have an error.
 
    function Is_In_Range
      (N            : Node_Id;
@@ -411,20 +454,20 @@ package Sem_Eval is
       Assume_Valid : Boolean := False;
       Fixed_Int    : Boolean := False;
       Int_Real     : Boolean := False) return Boolean;
-   --  Returns True if it can be guaranteed at compile time that expression is
-   --  known to be in range of the subtype Typ. A result of False does not mean
-   --  that the expression is out of range, merely that it cannot be determined
-   --  at compile time that it is in range. If Typ is a floating point type or
-   --  Int_Real is set, any integer value is treated as though it was a real
-   --  value (i.e. the underlying real value is used). In this case we use the
-   --  corresponding real value, both for the bounds of Typ, and for the value
-   --  of the expression N. If Typ is a fixed type or a discrete type and
-   --  Int_Real is False but flag Fixed_Int is True then any fixed-point value
-   --  is treated as though it was discrete value (i.e. the underlying integer
-   --  value is used). In this case we use the corresponding integer value,
-   --  both for the bounds of Typ, and for the value of the expression N. If
-   --  Typ is a discrete type and Fixed_Int as well as Int_Real are false,
-   --  integer values are used throughout.
+   --  Returns True if it can be guaranteed at compile time that expression
+   --  N is known to be in range of the subtype Typ. A result of False does
+   --  not mean that the expression is out of range, merely that it cannot be
+   --  determined at compile time that it is in range. If Typ is a floating
+   --  point type or Int_Real is set, any integer value is treated as though it
+   --  was a real value (i.e. the underlying real value is used). In this case
+   --  we use the corresponding real value, both for the bounds of Typ, and for
+   --  the value of the expression N. If Typ is a fixed type or a discrete type
+   --  and Int_Real is False but flag Fixed_Int is True then any fixed-point
+   --  value is treated as though it was discrete value (i.e. the underlying
+   --  integer value is used). In this case we use the corresponding integer
+   --  value, both for the bounds of Typ, and for the value of the expression
+   --  N. If Typ is a discrete type and Fixed_Int as well as Int_Real are
+   --  false, integer values are used throughout.
    --
    --  If Assume_Valid is set True, then N is always assumed to contain a valid
    --  value. If Assume_Valid is set False, then N may be invalid (unless there
@@ -460,6 +503,10 @@ package Sem_Eval is
    --  cannot (because the value of Lo or Hi is not known at compile time) then
    --  it returns False.
 
+   function Is_Statically_Unevaluated (Expr : Node_Id) return Boolean;
+   --  This function returns True if the given expression Expr is statically
+   --  unevaluated, as defined in (RM 4.9 (32.1-32.6)).
+
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
    --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
    --  it cannot (because the value of Lo or Hi is not known at compile time)
@@ -487,7 +534,7 @@ package Sem_Eval is
    --
    --  Note that these messages are not continuation messages, instead they are
    --  separate unconditional messages, marked with '!'. The reason for this is
-   --  that they can be posted at a different location from the maim message as
+   --  that they can be posted at a different location from the main message as
    --  documented above ("appropriate offending component"), and continuation
    --  messages must always point to the same location as the parent message.
 

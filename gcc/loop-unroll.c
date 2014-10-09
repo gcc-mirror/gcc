@@ -73,24 +73,19 @@ along with GCC; see the file COPYING3.  If not see
 
 struct iv_to_split
 {
-  rtx insn;		/* The insn in that the induction variable occurs.  */
+  rtx_insn *insn;	/* The insn in that the induction variable occurs.  */
   rtx orig_var;		/* The variable (register) for the IV before split.  */
   rtx base_var;		/* The variable on that the values in the further
 			   iterations are based.  */
   rtx step;		/* Step of the induction variable.  */
   struct iv_to_split *next; /* Next entry in walking order.  */
-  unsigned n_loc;
-  unsigned loc[3];	/* Location where the definition of the induction
-			   variable occurs in the insn.  For example if
-			   N_LOC is 2, the expression is located at
-			   XEXP (XEXP (single_set, loc[0]), loc[1]).  */
 };
 
 /* Information about accumulators to expand.  */
 
 struct var_to_expand
 {
-  rtx insn;		           /* The insn in that the variable expansion occurs.  */
+  rtx_insn *insn;	           /* The insn in that the variable expansion occurs.  */
   rtx reg;                         /* The accumulator which is expanded.  */
   vec<rtx> var_expansions;   /* The copies of the accumulator which is expanded.  */
   struct var_to_expand *next;	   /* Next entry in walking order.  */
@@ -192,10 +187,10 @@ static struct opt_info *analyze_insns_in_loop (struct loop *);
 static void opt_info_start_duplication (struct opt_info *);
 static void apply_opt_in_copies (struct opt_info *, unsigned, bool, bool);
 static void free_opt_info (struct opt_info *);
-static struct var_to_expand *analyze_insn_to_expand_var (struct loop*, rtx);
+static struct var_to_expand *analyze_insn_to_expand_var (struct loop*, rtx_insn *);
 static bool referenced_in_one_insn_in_loop_p (struct loop *, rtx, int *);
-static struct iv_to_split *analyze_iv_to_split_insn (rtx);
-static void expand_var_during_unrolling (struct var_to_expand *, rtx);
+static struct iv_to_split *analyze_iv_to_split_insn (rtx_insn *);
+static void expand_var_during_unrolling (struct var_to_expand *, rtx_insn *);
 static void insert_var_expansion_initialization (struct var_to_expand *,
 						 basic_block);
 static void combine_var_copies_in_loop_exit (struct var_to_expand *,
@@ -324,7 +319,7 @@ static bool
 loop_exit_at_end_p (struct loop *loop)
 {
   struct niter_desc *desc = get_simple_loop_desc (loop);
-  rtx insn;
+  rtx_insn *insn;
 
   if (desc->in_edge->dest != loop->latch)
     return false;
@@ -1012,7 +1007,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
    and NULL is returned instead.  */
 
 basic_block
-split_edge_and_insert (edge e, rtx insns)
+split_edge_and_insert (edge e, rtx_insn *insns)
 {
   basic_block bb;
 
@@ -1058,11 +1053,12 @@ split_edge_and_insert (edge e, rtx insns)
    true, with probability PROB.  If CINSN is not NULL, it is the insn to copy
    in order to create a jump.  */
 
-static rtx
+static rtx_insn *
 compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
-		      rtx cinsn)
+		      rtx_insn *cinsn)
 {
-  rtx seq, jump, cond;
+  rtx_insn *seq, *jump;
+  rtx cond;
   enum machine_mode mode;
 
   mode = GET_MODE (op0);
@@ -1141,7 +1137,8 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
 static void
 unroll_loop_runtime_iterations (struct loop *loop)
 {
-  rtx old_niter, niter, init_code, branch_code, tmp;
+  rtx old_niter, niter, tmp;
+  rtx_insn *init_code, *branch_code;
   unsigned i, j, p;
   basic_block preheader, *body, swtch, ezc_swtch;
   sbitmap wont_exit;
@@ -1258,7 +1255,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       preheader = split_edge (loop_preheader_edge (loop));
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
-					  NULL_RTX);
+					  NULL);
 
       /* We rely on the fact that the compare and jump cannot be optimized out,
 	 and hence the cfg we create is correct.  */
@@ -1281,7 +1278,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       preheader = split_edge (loop_preheader_edge (loop));
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,
-					  NULL_RTX);
+					  NULL);
       gcc_assert (branch_code != NULL_RTX);
 
       swtch = split_edge_and_insert (single_succ_edge (swtch), branch_code);
@@ -1689,7 +1686,7 @@ referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg,
   basic_block *body, bb;
   unsigned i;
   int count_ref = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
@@ -1715,7 +1712,7 @@ reset_debug_uses_in_loop (struct loop *loop, rtx reg, int debug_uses)
 {
   basic_block *body, bb;
   unsigned i;
-  rtx insn;
+  rtx_insn *insn;
 
   body = get_loop_body (loop);
   for (i = 0; debug_uses && i < loop->num_nodes; i++)
@@ -1760,7 +1757,7 @@ reset_debug_uses_in_loop (struct loop *loop, rtx reg, int debug_uses)
 */
 
 static struct var_to_expand *
-analyze_insn_to_expand_var (struct loop *loop, rtx insn)
+analyze_insn_to_expand_var (struct loop *loop, rtx_insn *insn)
 {
   rtx set, dest, src;
   struct var_to_expand *ves;
@@ -1898,7 +1895,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
    pointer to it.  */
 
 static struct iv_to_split *
-analyze_iv_to_split_insn (rtx insn)
+analyze_iv_to_split_insn (rtx_insn *insn)
 {
   rtx set, dest;
   struct rtx_iv iv;
@@ -1942,8 +1939,6 @@ analyze_iv_to_split_insn (rtx insn)
   ivts->base_var = NULL_RTX;
   ivts->step = iv.step;
   ivts->next = NULL;
-  ivts->n_loc = 1;
-  ivts->loc[0] = 1;
 
   return ivts;
 }
@@ -1959,7 +1954,7 @@ analyze_insns_in_loop (struct loop *loop)
   basic_block *body, bb;
   unsigned i;
   struct opt_info *opt_info = XCNEW (struct opt_info);
-  rtx insn;
+  rtx_insn *insn;
   struct iv_to_split *ivts = NULL;
   struct var_to_expand *ves = NULL;
   iv_to_split **slot1;
@@ -2080,27 +2075,12 @@ determine_split_iv_delta (unsigned n_copy, unsigned n_copies, bool unrolling)
     }
 }
 
-/* Locate in EXPR the expression corresponding to the location recorded
-   in IVTS, and return a pointer to the RTX for this location.  */
-
-static rtx *
-get_ivts_expr (rtx expr, struct iv_to_split *ivts)
-{
-  unsigned i;
-  rtx *ret = &expr;
-
-  for (i = 0; i < ivts->n_loc; i++)
-    ret = &XEXP (*ret, ivts->loc[i]);
-
-  return ret;
-}
-
 /* Allocate basic variable for the induction variable chain.  */
 
 static void
 allocate_basic_variable (struct iv_to_split *ivts)
 {
-  rtx expr = *get_ivts_expr (single_set (ivts->insn), ivts);
+  rtx expr = SET_SRC (single_set (ivts->insn));
 
   ivts->base_var = gen_reg_rtx (GET_MODE (expr));
 }
@@ -2109,10 +2089,10 @@ allocate_basic_variable (struct iv_to_split *ivts)
    the initial value from INSN.  */
 
 static void
-insert_base_initialization (struct iv_to_split *ivts, rtx insn)
+insert_base_initialization (struct iv_to_split *ivts, rtx_insn *insn)
 {
-  rtx expr = copy_rtx (*get_ivts_expr (single_set (insn), ivts));
-  rtx seq;
+  rtx expr = copy_rtx (SET_SRC (single_set (insn)));
+  rtx_insn *seq;
 
   start_sequence ();
   expr = force_operand (expr, ivts->base_var);
@@ -2128,9 +2108,10 @@ insert_base_initialization (struct iv_to_split *ivts, rtx insn)
    by base variable + DELTA * step.  */
 
 static void
-split_iv (struct iv_to_split *ivts, rtx insn, unsigned delta)
+split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
 {
-  rtx expr, *loc, seq, incr, var;
+  rtx expr, *loc, incr, var;
+  rtx_insn *seq;
   enum machine_mode mode = GET_MODE (ivts->base_var);
   rtx src, dest, set;
 
@@ -2146,7 +2127,7 @@ split_iv (struct iv_to_split *ivts, rtx insn, unsigned delta)
     }
 
   /* Figure out where to do the replacement.  */
-  loc = get_ivts_expr (single_set (insn), ivts);
+  loc = &SET_SRC (single_set (insn));
 
   /* If we can make the replacement right away, we're done.  */
   if (validate_change (insn, loc, expr, 0))
@@ -2210,7 +2191,7 @@ get_expansion (struct var_to_expand *ve)
    with a new register.  */
 
 static void
-expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
+expand_var_during_unrolling (struct var_to_expand *ve, rtx_insn *insn)
 {
   rtx new_reg, set;
   bool really_new_expansion = false;
@@ -2268,7 +2249,8 @@ static void
 insert_var_expansion_initialization (struct var_to_expand *ve,
 				     basic_block place)
 {
-  rtx seq, var, zero_init;
+  rtx_insn *seq;
+  rtx var, zero_init;
   unsigned i;
   enum machine_mode mode = GET_MODE (ve->reg);
   bool honor_signed_zero_p = HONOR_SIGNED_ZEROS (mode);
@@ -2319,7 +2301,8 @@ static void
 combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
 {
   rtx sum = ve->reg;
-  rtx expr, seq, var, insn;
+  rtx expr, var;
+  rtx_insn *seq, *insn;
   unsigned i;
 
   if (ve->var_expansions.length () == 0)
@@ -2370,7 +2353,7 @@ combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
    any notes attached to them.  So resort to old techniques...  */
 
 static void
-maybe_strip_eq_note_for_split_iv (struct opt_info *opt_info, rtx insn)
+maybe_strip_eq_note_for_split_iv (struct opt_info *opt_info, rtx_insn *insn)
 {
   struct iv_to_split *ivts;
   rtx note = find_reg_equal_equiv_note (insn);
@@ -2400,7 +2383,7 @@ apply_opt_in_copies (struct opt_info *opt_info,
 {
   unsigned i, delta;
   basic_block bb, orig_bb;
-  rtx insn, orig_insn, next;
+  rtx_insn *insn, *orig_insn, *next;
   struct iv_to_split ivts_templ, *ivts;
   struct var_to_expand ve_templ, *ves;
 

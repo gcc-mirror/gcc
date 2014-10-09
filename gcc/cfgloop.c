@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "flags.h"
 #include "tree.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -650,11 +650,11 @@ find_subloop_latch_edge (struct loop *loop)
 /* Callback for make_forwarder_block.  Returns true if the edge E is marked
    in the set MFB_REIS_SET.  */
 
-static struct pointer_set_t *mfb_reis_set;
+static hash_set<edge> *mfb_reis_set;
 static bool
 mfb_redirect_edges_in_set (edge e)
 {
-  return pointer_set_contains (mfb_reis_set, e);
+  return mfb_reis_set->contains (e);
 }
 
 /* Creates a subloop of LOOP with latch edge LATCH.  */
@@ -666,15 +666,15 @@ form_subloop (struct loop *loop, edge latch)
   edge e, new_entry;
   struct loop *new_loop;
 
-  mfb_reis_set = pointer_set_create ();
+  mfb_reis_set = new hash_set<edge>;
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     {
       if (e != latch)
-	pointer_set_insert (mfb_reis_set, e);
+	mfb_reis_set->add (e);
     }
   new_entry = make_forwarder_block (loop->header, mfb_redirect_edges_in_set,
 				    NULL);
-  pointer_set_destroy (mfb_reis_set);
+  delete mfb_reis_set;
 
   loop->header = new_entry->src;
 
@@ -705,12 +705,12 @@ merge_latch_edges (struct loop *loop)
       if (dump_file)
 	fprintf (dump_file, "Merged latch edges of loop %d\n", loop->num);
 
-      mfb_reis_set = pointer_set_create ();
+      mfb_reis_set = new hash_set<edge>;
       FOR_EACH_VEC_ELT (latches, i, e)
-	pointer_set_insert (mfb_reis_set, e);
+	mfb_reis_set->add (e);
       latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set,
 				    NULL);
-      pointer_set_destroy (mfb_reis_set);
+      delete mfb_reis_set;
 
       loop->header = latch->dest;
       loop->latch = latch->src;
@@ -1736,7 +1736,7 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 location_t
 get_loop_location (struct loop *loop)
 {
-  rtx insn = NULL;
+  rtx_insn *insn = NULL;
   struct niter_desc *desc = NULL;
   edge exit;
 
@@ -1921,3 +1921,15 @@ bb_loop_depth (const_basic_block bb)
 {
   return bb->loop_father ? loop_depth (bb->loop_father) : 0;
 }
+
+/* Marks LOOP for removal and sets LOOPS_NEED_FIXUP.  */
+
+void
+mark_loop_for_removal (loop_p loop)
+{
+  loop->former_header = loop->header;
+  loop->header = NULL;
+  loop->latch = NULL;
+  loops_state_set (LOOPS_NEED_FIXUP);
+}
+

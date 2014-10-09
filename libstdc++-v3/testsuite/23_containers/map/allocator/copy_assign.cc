@@ -59,9 +59,33 @@ void test02()
   VERIFY(1 == v2.get_allocator().get_personality());
 }
 
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+
+  using namespace __gnu_test;
+
+  typedef tracker_allocator<std::pair<const int, int>> alloc_type;
+  typedef std::map<int, int, std::less<int>, alloc_type> test_type;
+
+  tracker_allocator_counter::reset();
+
+  test_type v1 = { { 0, 0 }, { 1, 1 } };
+  test_type v2 = { { 2, 2 }, { 3, 3 } };
+
+  auto allocs = tracker_allocator_counter::get_allocation_count();
+  auto constructs = tracker_allocator_counter::get_construct_count();
+
+  v1 = v2;
+
+  VERIFY( tracker_allocator_counter::get_allocation_count() == allocs );
+  VERIFY( tracker_allocator_counter::get_construct_count() == constructs + 2 );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }

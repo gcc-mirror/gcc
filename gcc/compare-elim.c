@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 struct comparison_use
 {
   /* The instruction in which the result of the compare is used.  */
-  rtx insn;
+  rtx_insn *insn;
   /* The location of the flags register within the use.  */
   rtx *loc;
   /* The comparison code applied against the flags register.  */
@@ -91,10 +91,10 @@ struct comparison_use
 struct comparison
 {
   /* The comparison instruction.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The insn prior to the comparison insn that clobbers the flags.  */
-  rtx prev_clobber;
+  rtx_insn *prev_clobber;
 
   /* The two values being compared.  These will be either REGs or
      constants.  */
@@ -129,7 +129,7 @@ static vec<comparison_struct_p> all_compares;
    the rtx for the COMPARE itself.  */
 
 static rtx
-conforming_compare (rtx insn)
+conforming_compare (rtx_insn *insn)
 {
   rtx set, src, dest;
 
@@ -159,7 +159,7 @@ conforming_compare (rtx insn)
    correct.  The term "arithmetic" may be somewhat misleading...  */
 
 static bool
-arithmetic_flags_clobber_p (rtx insn)
+arithmetic_flags_clobber_p (rtx_insn *insn)
 {
   rtx pat, x;
 
@@ -194,7 +194,7 @@ arithmetic_flags_clobber_p (rtx insn)
    it in CMP; otherwise indicate that we've missed a use.  */
 
 static void
-find_flags_uses_in_insn (struct comparison *cmp, rtx insn)
+find_flags_uses_in_insn (struct comparison *cmp, rtx_insn *insn)
 {
   df_ref use;
 
@@ -263,7 +263,7 @@ void
 find_comparison_dom_walker::before_dom_children (basic_block bb)
 {
   struct comparison *last_cmp;
-  rtx insn, next, last_clobber;
+  rtx_insn *insn, *next, *last_clobber;
   bool last_cmp_valid;
   bool need_purge = false;
   bitmap killed;
@@ -295,7 +295,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
     {
       rtx src;
 
-      next = (insn == BB_END (bb) ? NULL_RTX : NEXT_INSN (insn));
+      next = (insn == BB_END (bb) ? NULL : NEXT_INSN (insn));
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
@@ -515,7 +515,8 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
 static bool
 try_eliminate_compare (struct comparison *cmp)
 {
-  rtx x, insn, bb_head, flags, in_a, cmp_src;
+  rtx_insn *insn, *bb_head;
+  rtx x, flags, in_a, cmp_src;
 
   /* We must have found an interesting "clobber" preceding the compare.  */
   if (cmp->prev_clobber == NULL)

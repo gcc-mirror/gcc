@@ -424,6 +424,33 @@ default_scalar_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* Return true if libgcc supports floating-point mode MODE (known to
+   be supported as a scalar mode).  */
+
+bool
+default_libgcc_floating_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+#ifdef HAVE_SFmode
+    case SFmode:
+#endif
+#ifdef HAVE_DFmode
+    case DFmode:
+#endif
+#ifdef HAVE_XFmode
+    case XFmode:
+#endif
+#ifdef HAVE_TFmode
+    case TFmode:
+#endif
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Make some target macros useable by target-independent code.  */
 bool
 targhook_words_big_endian (void)
@@ -485,7 +512,7 @@ default_has_ifunc_p (void)
    these cases.  */
 
 const char *
-default_invalid_within_doloop (const_rtx insn)
+default_invalid_within_doloop (const rtx_insn *insn)
 {
   if (CALL_P (insn))
     return "Function call in loop.";
@@ -1454,6 +1481,19 @@ default_debug_unwind_info (void)
 #endif
 
   return UI_NONE;
+}
+
+/* Determine the correct mode for a Dwarf frame register that represents
+   register REGNO.  */
+
+enum machine_mode
+default_dwarf_frame_reg_mode (int regno)
+{
+  enum machine_mode save_mode = reg_raw_mode[regno];
+
+  if (HARD_REGNO_CALL_PART_CLOBBERED (regno, save_mode))
+    save_mode = choose_hard_reg_mode (regno, 1, true);
+  return save_mode;
 }
 
 /* To be used by targets where reg_raw_mode doesn't return the right

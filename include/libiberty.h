@@ -445,6 +445,11 @@ extern struct pex_obj *pex_init (int flags, const char *pname,
    on Unix.  */
 #define PEX_BINARY_ERROR	0x80
 
+/* Append stdout to existing file instead of truncating it.  */
+#define PEX_STDOUT_APPEND	0x100
+
+/* Thes same as PEX_STDOUT_APPEND, but for STDERR.  */
+#define PEX_STDERR_APPEND	0x200
 
 /* Execute one program.  Returns NULL on success.  On error returns an
    error string (typically just the name of a system call); the error

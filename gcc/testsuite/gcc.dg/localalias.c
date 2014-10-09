@@ -11,6 +11,7 @@
    { dg-require-alias "" }
    { dg-additional-sources "localalias-2.c" } */
 extern void abort (void);
+extern void tt (void);
 extern int test2count;
 int testcount;
 __attribute__ ((weak,noinline))

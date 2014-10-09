@@ -11,4 +11,4 @@ template <class T> using B = typename A<T>::U; // { dg-error "type" }
 template <class T> struct A {
     typedef B<T> U;
 };
-B<short> b; // { dg-error "invalid type" }
+B<short> b;

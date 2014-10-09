@@ -4027,9 +4027,9 @@ write_attr_get (FILE *outf, struct attr_desc *attr)
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
   if (attr->name[0] == '*')
-    fprintf (outf, "%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
+    fprintf (outf, "%s (rtx_insn *insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
   else if (attr->is_const == 0)
-    fprintf (outf, "get_attr_%s (rtx insn ATTRIBUTE_UNUSED)\n", attr->name);
+    fprintf (outf, "get_attr_%s (rtx_insn *insn ATTRIBUTE_UNUSED)\n", attr->name);
   else
     {
       fprintf (outf, "get_attr_%s (void)\n", attr->name);
@@ -4453,11 +4453,11 @@ write_eligible_delay (FILE *outf, const char *kind)
   /* Write function prelude.  */
 
   fprintf (outf, "int\n");
-  fprintf (outf, "eligible_for_%s (rtx delay_insn ATTRIBUTE_UNUSED, int slot, \n"
-		 "		   rtx candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
+  fprintf (outf, "eligible_for_%s (rtx_insn *delay_insn ATTRIBUTE_UNUSED, int slot, \n"
+		 "		   rtx_insn *candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
 	   kind);
   fprintf (outf, "{\n");
-  fprintf (outf, "  rtx insn;\n");
+  fprintf (outf, "  rtx_insn *insn;\n");
   fprintf (outf, "\n");
   fprintf (outf, "  gcc_assert (slot < %d);\n", max_slots);
   fprintf (outf, "\n");
@@ -4691,7 +4691,7 @@ write_const_num_delay_slots (FILE *outf)
 
   if (attr)
     {
-      fprintf (outf, "int\nconst_num_delay_slots (rtx insn)\n");
+      fprintf (outf, "int\nconst_num_delay_slots (rtx_insn *insn)\n");
       fprintf (outf, "{\n");
       fprintf (outf, "  switch (recog_memoized (insn))\n");
       fprintf (outf, "    {\n");
@@ -4922,7 +4922,7 @@ make_automaton_attrs (void)
 	    continue;
 	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
 	  fprintf (dfa_file,
-		   "extern int internal_dfa_insn_code_%s (rtx);\n",
+		   "extern int internal_dfa_insn_code_%s (rtx_insn *);\n",
 		   XSTR (val->value, 0));
 	}
       fprintf (dfa_file, "\n");
@@ -4934,7 +4934,7 @@ make_automaton_attrs (void)
 	    continue;
 	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
 	  fprintf (latency_file,
-		   "extern int insn_default_latency_%s (rtx);\n",
+		   "extern int insn_default_latency_%s (rtx_insn *);\n",
 		   XSTR (val->value, 0));
 	}
       fprintf (latency_file, "\n");
@@ -4946,13 +4946,13 @@ make_automaton_attrs (void)
 	    continue;
 	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
 	  fprintf (attr_file,
-		   "extern int internal_dfa_insn_code_%s (rtx);\n"
-		   "extern int insn_default_latency_%s (rtx);\n",
+		   "extern int internal_dfa_insn_code_%s (rtx_insn *);\n"
+		   "extern int insn_default_latency_%s (rtx_insn *);\n",
 		   XSTR (val->value, 0), XSTR (val->value, 0));
 	}
       fprintf (attr_file, "\n");
-      fprintf (attr_file, "int (*internal_dfa_insn_code) (rtx);\n");
-      fprintf (attr_file, "int (*insn_default_latency) (rtx);\n");
+      fprintf (attr_file, "int (*internal_dfa_insn_code) (rtx_insn *);\n");
+      fprintf (attr_file, "int (*insn_default_latency) (rtx_insn *);\n");
       fprintf (attr_file, "\n");
       fprintf (attr_file, "void\n");
       fprintf (attr_file, "init_sched_attrs (void)\n");

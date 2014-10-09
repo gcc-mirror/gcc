@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,11 +119,6 @@ package body Bindusg is
       --  Line for -h switch
 
       Write_Line ("  -h        Output this usage (help) information");
-
-      --  Line for -H switch
-
-      Write_Line ("  -Hnn      Use nn bit heap where nn is 32 or 64 " &
-                  "(VMS Only)");
 
       --  Lines for -I switch
 

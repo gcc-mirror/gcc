@@ -1730,7 +1730,7 @@ __gnat_inum_to_ivec (int num)
 }
 #endif
 
-#if !defined(__alpha_vxworks) && (_WRS_VXWORKS_MAJOR != 6) && !defined(__RTP__)
+#if !defined(__alpha_vxworks) && ((_WRS_VXWORKS_MAJOR != 6) && (_WRS_VXWORKS_MAJOR != 7)) && !defined(__RTP__)
 
 /* getpid is used by s-parint.adb, but is not defined by VxWorks, except
    on Alpha VxWorks and VxWorks 6.x (including RTPs).  */
@@ -1911,7 +1911,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if (defined (__ARMEL__) || defined (__PPC__)) && defined(_WRS_KERNEL)
+#if defined (__ARMEL__) || defined (__PPC__)
   /* On PowerPC, kernel mode, we process signals through a Call Frame Info
      trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX

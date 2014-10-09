@@ -68,7 +68,6 @@
 ; f_mrc              transfer vfp to arm reg.
 ; f_mrrc             transfer vfp to two arm regs.
 ; f_rint[d,s]        double/single floating point rount to integral.
-; f_sel[d,s]         double/single floating byte select.
 ; f_store[d,s]       double/single store to memory.  Used for VFP unit.
 ; fadd[d,s]          double/single floating-point scalar addition.
 ; fcmp[d,s]          double/single floating-point compare.
@@ -574,8 +573,6 @@
   f_mrrc,\
   f_rintd,\
   f_rints,\
-  f_seld,\
-  f_sels,\
   f_stored,\
   f_stores,\
   faddd,\

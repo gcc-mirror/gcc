@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 
 with Types;    use Types;
 with Osint;
-with Hostparm;
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -1137,13 +1136,7 @@ package body Xr_Tabls is
          Buffer (Read_Ptr) := EOF;
          Contents := new String'(Buffer (1 .. Read_Ptr));
 
-         --  Things are not simple on VMS due to the plethora of file types
-         --  and organizations. It seems clear that there shouldn't be more
-         --  bytes read than are contained in the file though.
-
-         if (Hostparm.OpenVMS and then Read_Ptr > Length + 1)
-           or else (not Hostparm.OpenVMS and then Read_Ptr /= Length + 1)
-         then
+         if Read_Ptr /= Length + 1 then
             raise Ada.Text_IO.End_Error;
          end if;
 

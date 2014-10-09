@@ -461,7 +461,7 @@ package body Exp_Util is
 
          Utyp := Underlying_Type (Base_Type (Utyp));
 
-         --  Deal with non-tagged derivation of private views. If the parent is
+         --  Deal with untagged derivation of private views. If the parent is
          --  now known to be protected, the finalization routine is the one
          --  defined on the corresponding record of the ancestor (corresponding
          --  records do not automatically inherit operations, but maybe they
@@ -786,7 +786,7 @@ package body Exp_Util is
          if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
             Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
-         --  For deallocation of class wide types we obtain the value of
+         --  For deallocation of class-wide types we obtain the value of
          --  alignment from the Type Specific Record of the deallocated object.
          --  This is needed because the frontend expansion of class-wide types
          --  into equivalent types confuses the backend.
@@ -1012,6 +1012,49 @@ package body Exp_Util is
              Name => New_Occurrence_Of (RTE (RE), Loc));
       end if;
    end Build_Runtime_Call;
+
+   ------------------------
+   -- Build_SS_Mark_Call --
+   ------------------------
+
+   function Build_SS_Mark_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id
+   is
+   begin
+      --  Generate:
+      --    Mark : constant Mark_Id := SS_Mark;
+
+      return
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Mark,
+          Constant_Present    => True,
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
+          Expression          =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc)));
+   end Build_SS_Mark_Call;
+
+   ---------------------------
+   -- Build_SS_Release_Call --
+   ---------------------------
+
+   function Build_SS_Release_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id
+   is
+   begin
+      --  Generate:
+      --    SS_Release (Mark);
+
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_SS_Release), Loc),
+          Parameter_Associations => New_List (
+            New_Occurrence_Of (Mark, Loc)));
+   end Build_SS_Release_Call;
 
    ----------------------------
    -- Build_Task_Array_Image --
@@ -1590,6 +1633,68 @@ package body Exp_Util is
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
 
+   -----------------------------
+   -- Check_Float_Op_Overflow --
+   -----------------------------
+
+   procedure Check_Float_Op_Overflow (N : Node_Id) is
+   begin
+      --  Return if no check needed
+
+      if not Is_Floating_Point_Type (Etype (N))
+        or else not (Do_Overflow_Check (N) and then Check_Float_Overflow)
+
+        --  In CodePeer_Mode, rely on the overflow check flag being set instead
+        --  and do not expand the code for float overflow checking.
+
+        or else CodePeer_Mode
+      then
+         return;
+      end if;
+
+      --  Otherwise we replace the expression by
+
+      --  do Tnn : constant ftype := expression;
+      --     constraint_error when not Tnn'Valid;
+      --  in Tnn;
+
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
+         Tnn : constant Entity_Id  := Make_Temporary (Loc, 'T', N);
+         Typ : constant Entity_Id  := Etype (N);
+
+      begin
+         --  Turn off the Do_Overflow_Check flag, since we are doing that work
+         --  right here. We also set the node as analyzed to prevent infinite
+         --  recursion from repeating the operation in the expansion.
+
+         Set_Do_Overflow_Check (N, False);
+         Set_Analyzed (N, True);
+
+         --  Do the rewrite to include the check
+
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Actions    => New_List (
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Tnn,
+                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                 Constant_Present    => True,
+                 Expression          => Relocate_Node (N)),
+               Make_Raise_Constraint_Error (Loc,
+                 Condition =>
+                   Make_Op_Not (Loc,
+                     Right_Opnd =>
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Occurrence_Of (Tnn, Loc),
+                         Attribute_Name => Name_Valid)),
+                 Reason    => CE_Overflow_Check_Failed)),
+             Expression => New_Occurrence_Of (Tnn, Loc)));
+
+         Analyze_And_Resolve (N, Typ);
+      end;
+   end Check_Float_Op_Overflow;
+
    ----------------------------------
    -- Component_May_Be_Bit_Aligned --
    ----------------------------------
@@ -1748,11 +1853,12 @@ package body Exp_Util is
    -----------------------
 
    function Duplicate_Subexpr
-     (Exp      : Node_Id;
-      Name_Req : Boolean := False) return Node_Id
+     (Exp          : Node_Id;
+      Name_Req     : Boolean := False;
+      Renaming_Req : Boolean := False) return Node_Id
    is
    begin
-      Remove_Side_Effects (Exp, Name_Req);
+      Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
       return New_Copy_Tree (Exp);
    end Duplicate_Subexpr;
 
@@ -1761,12 +1867,14 @@ package body Exp_Util is
    ---------------------------------
 
    function Duplicate_Subexpr_No_Checks
-     (Exp      : Node_Id;
-      Name_Req : Boolean := False) return Node_Id
+     (Exp          : Node_Id;
+      Name_Req     : Boolean := False;
+      Renaming_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
+
    begin
-      Remove_Side_Effects (Exp, Name_Req);
+      Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
       New_Exp := New_Copy_Tree (Exp);
       Remove_Checks (New_Exp);
       return New_Exp;
@@ -1777,12 +1885,14 @@ package body Exp_Util is
    -----------------------------------
 
    function Duplicate_Subexpr_Move_Checks
-     (Exp      : Node_Id;
-      Name_Req : Boolean := False) return Node_Id
+     (Exp          : Node_Id;
+      Name_Req     : Boolean := False;
+      Renaming_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
+
    begin
-      Remove_Side_Effects (Exp, Name_Req);
+      Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
       New_Exp := New_Copy_Tree (Exp);
       Remove_Checks (Exp);
       return New_Exp;
@@ -1980,7 +2090,7 @@ package body Exp_Util is
             --  if the list is empty, corresponding to a False predicate, then
             --  no choices are inserted.
 
-            P := First (Static_Predicate (Entity (Choice)));
+            P := First (Static_Discrete_Predicate (Entity (Choice)));
             while Present (P) loop
 
                --  If low bound and high bounds are equal, copy simple choice
@@ -3185,6 +3295,62 @@ package body Exp_Util is
       end;
    end Get_Current_Value_Condition;
 
+   -------------------------------------------------
+   -- Get_First_Parent_With_Ext_Axioms_For_Entity --
+   -------------------------------------------------
+
+   function Get_First_Parent_With_Ext_Axioms_For_Entity
+     (E : Entity_Id) return Entity_Id
+   is
+      Decl : Node_Id;
+
+   begin
+      if Ekind (E) = E_Package then
+         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Parent (E));
+         else
+            Decl := Parent (E);
+         end if;
+      end if;
+
+      --  E is the package or generic package which is externally axiomatized
+
+      if Ekind_In (E, E_Package, E_Generic_Package)
+        and then Has_Annotate_Pragma_For_External_Axiomatization (E)
+      then
+         return E;
+      end if;
+
+      --  If E's scope is axiomatized, E is axiomatized.
+
+      declare
+         First_Ax_Parent_Scope : Entity_Id := Empty;
+
+      begin
+         if Present (Scope (E)) then
+            First_Ax_Parent_Scope :=
+              Get_First_Parent_With_Ext_Axioms_For_Entity (Scope (E));
+         end if;
+
+         if Present (First_Ax_Parent_Scope) then
+            return First_Ax_Parent_Scope;
+         end if;
+
+         --  otherwise, if E is a package instance, it is axiomatized if the
+         --  corresponding generic package is axiomatized.
+
+         if Ekind (E) = E_Package
+           and then Present (Generic_Parent (Decl))
+         then
+            return
+              Get_First_Parent_With_Ext_Axioms_For_Entity
+                (Generic_Parent (Decl));
+         else
+            return Empty;
+         end if;
+      end;
+   end Get_First_Parent_With_Ext_Axioms_For_Entity;
+
    ---------------------
    -- Get_Stream_Size --
    ---------------------
@@ -3227,6 +3393,122 @@ package body Exp_Util is
          return False;
       end if;
    end Has_Access_Constraint;
+
+   -----------------------------------------------------
+   -- Has_Annotate_Pragma_For_External_Axiomatization --
+   -----------------------------------------------------
+
+   function Has_Annotate_Pragma_For_External_Axiomatization
+     (E : Entity_Id) return Boolean
+   is
+      function Is_Annotate_Pragma_For_External_Axiomatization
+        (N : Node_Id) return Boolean;
+      --  Returns whether N is
+      --    pragma Annotate (GNATprove, External_Axiomatization);
+
+      ----------------------------------------------------
+      -- Is_Annotate_Pragma_For_External_Axiomatization --
+      ----------------------------------------------------
+
+      --  The general form of pragma Annotate is
+
+      --    pragma Annotate (IDENTIFIER [, IDENTIFIER {, ARG}]);
+      --    ARG ::= NAME | EXPRESSION
+
+      --  The first two arguments are by convention intended to refer to an
+      --  external tool and a tool-specific function. These arguments are
+      --  not analyzed.
+
+      --  The following is used to annotate a package specification which
+      --  GNATprove should treat specially, because the axiomatization of
+      --  this unit is given by the user instead of being automatically
+      --  generated.
+
+      --    pragma Annotate (GNATprove, External_Axiomatization);
+
+      function Is_Annotate_Pragma_For_External_Axiomatization
+        (N : Node_Id) return Boolean
+      is
+         Name_GNATprove               : constant String :=
+                                          "gnatprove";
+         Name_External_Axiomatization : constant String :=
+                                          "external_axiomatization";
+         --  Special names
+
+      begin
+         if Nkind (N) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
+           and then List_Length (Pragma_Argument_Associations (N)) = 2
+         then
+            declare
+               Arg1 : constant Node_Id :=
+                        First (Pragma_Argument_Associations (N));
+               Arg2 : constant Node_Id := Next (Arg1);
+               Nam1 : Name_Id;
+               Nam2 : Name_Id;
+
+            begin
+               --  Fill in Name_Buffer with Name_GNATprove first, and then with
+               --  Name_External_Axiomatization so that Name_Find returns the
+               --  corresponding name. This takes care of all possible casings.
+
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Name_GNATprove);
+               Nam1 := Name_Find;
+
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Name_External_Axiomatization);
+               Nam2 := Name_Find;
+
+               return Chars (Get_Pragma_Arg (Arg1)) = Nam1
+                         and then
+                      Chars (Get_Pragma_Arg (Arg2)) = Nam2;
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Annotate_Pragma_For_External_Axiomatization;
+
+      --  Local variables
+
+      Decl      : Node_Id;
+      Vis_Decls : List_Id;
+      N         : Node_Id;
+
+   --  Start of processing for Has_Annotate_Pragma_For_External_Axiomatization
+
+   begin
+      if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+         Decl := Parent (Parent (E));
+      else
+         Decl := Parent (E);
+      end if;
+
+      Vis_Decls := Visible_Declarations (Decl);
+
+      N := First (Vis_Decls);
+      while Present (N) loop
+
+         --  Skip declarations generated by the frontend. Skip all pragmas
+         --  that are not the desired Annotate pragma. Stop the search on
+         --  the first non-pragma source declaration.
+
+         if Comes_From_Source (N) then
+            if Nkind (N) = N_Pragma then
+               if Is_Annotate_Pragma_For_External_Axiomatization (N) then
+                  return True;
+               end if;
+            else
+               return False;
+            end if;
+         end if;
+
+         Next (N);
+      end loop;
+
+      return False;
+   end Has_Annotate_Pragma_For_External_Axiomatization;
 
    ----------------------------------
    -- Has_Following_Address_Clause --
@@ -3435,9 +3717,8 @@ package body Exp_Util is
                    or else Etype (Assoc_Node) /= Standard_Void_Type)
         and then Nkind (Assoc_Node) /= N_Procedure_Call_Statement
         and then (Nkind (Assoc_Node) /= N_Attribute_Reference
-                   or else
-                     not Is_Procedure_Attribute_Name
-                           (Attribute_Name (Assoc_Node)))
+                   or else not Is_Procedure_Attribute_Name
+                                 (Attribute_Name (Assoc_Node)))
       then
          N := Assoc_Node;
          P := Parent (Assoc_Node);
@@ -4652,8 +4933,7 @@ package body Exp_Util is
                if Nkind (Stmt) = N_Object_Declaration
                  and then Present (Expression (Stmt))
                  and then Nkind (Expression (Stmt)) = N_Reference
-                 and then Nkind (Prefix (Expression (Stmt))) =
-                            N_Function_Call
+                 and then Nkind (Prefix (Expression (Stmt))) = N_Function_Call
                then
                   Call := Prefix (Expression (Stmt));
 
@@ -4875,6 +5155,12 @@ package body Exp_Util is
       T  : constant Entity_Id := Etype (N);
 
    begin
+      --  Objects are never unaligned on VMs
+
+      if VM_Target /= No_VM then
+         return False;
+      end if;
+
       --  If renamed object, apply test to underlying object
 
       if Is_Entity_Name (N)
@@ -5041,18 +5327,6 @@ package body Exp_Util is
 
       if Nkind (N) /= N_Slice then
          return False;
-      end if;
-
-      --  Always assume the worst for a nested record component with a
-      --  component clause, which gigi/gcc does not appear to handle well.
-      --  It is not clear why this special test is needed at all ???
-
-      if Nkind (Prefix (N)) = N_Selected_Component
-        and then Nkind (Prefix (Prefix (N))) = N_Selected_Component
-        and then
-          Present (Component_Clause (Entity (Selector_Name (Prefix (N)))))
-      then
-         return True;
       end if;
 
       --  We only need to worry if the target has strict alignment
@@ -5438,6 +5712,8 @@ package body Exp_Util is
             --  that it is common and reasonable for code to be deleted in
             --  instances for various reasons.
 
+            --  Could we use Is_Statically_Unevaluated here???
+
             if Nkind (Parent (N)) = N_If_Statement then
                declare
                   C : constant Node_Id := Condition (Parent (N));
@@ -5486,6 +5762,7 @@ package body Exp_Util is
 
             declare
                E : Entity_Id := First_Entity (Defining_Entity (N));
+
             begin
                while Present (E) loop
                   if Ekind (E) = E_Operator then
@@ -5501,7 +5778,7 @@ package body Exp_Util is
 
          elsif Nkind (N) = N_If_Statement then
             Kill_Dead_Code (Then_Statements (N));
-            Kill_Dead_Code (Elsif_Parts (N));
+            Kill_Dead_Code (Elsif_Parts     (N));
             Kill_Dead_Code (Else_Statements (N));
 
          elsif Nkind (N) = N_Loop_Statement then
@@ -5534,8 +5811,10 @@ package body Exp_Util is
    procedure Kill_Dead_Code (L : List_Id; Warn : Boolean := False) is
       N : Node_Id;
       W : Boolean;
+
    begin
       W := Warn;
+
       if Is_Non_Empty_List (L) then
          N := First (L);
          while Present (N) loop
@@ -5826,10 +6105,14 @@ package body Exp_Util is
 
       Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
 
+      --  A class-wide equivalent type does not require initialization
+
+      Set_Suppress_Initialization (Equiv_Type);
+
       if not Is_Interface (Root_Typ) then
          Append_To (Comp_List,
            Make_Component_Declaration (Loc,
-             Defining_Identifier =>
+             Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Name_uParent),
              Component_Definition =>
                Make_Component_Definition (Loc,
@@ -5848,9 +6131,9 @@ package body Exp_Util is
       Append_To (List_Def,
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Equiv_Type,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Record_Definition (Loc,
-              Component_List =>
+              Component_List  =>
                 Make_Component_List (Loc,
                   Component_Items => Comp_List,
                   Variant_Part    => Empty))));
@@ -6059,7 +6342,7 @@ package body Exp_Util is
    --  2. If Expr is a unconstrained discriminated type expression, creates
    --    Unc_Type(Expr.Discr1, ... , Expr.Discr_n)
 
-   --  3. If Expr is class-wide, creates an implicit class wide subtype
+   --  3. If Expr is class-wide, creates an implicit class-wide subtype
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;
@@ -6148,8 +6431,8 @@ package body Exp_Util is
 
             if Expander_Active and then Tagged_Type_Expansion then
 
-               --  If this is the class_wide type of a completion that is a
-               --  record subtype, set the type of the class_wide type to be
+               --  If this is the class-wide type of a completion that is a
+               --  record subtype, set the type of the class-wide type to be
                --  the full base type, for use in the expanded code for the
                --  equivalent type. Should this be done earlier when the
                --  completion is analyzed ???
@@ -6761,7 +7044,7 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when others                       =>
+         when others =>
             null;
       end case;
    end Process_Statements_For_Controlled_Objects;
@@ -6773,6 +7056,7 @@ package body Exp_Util is
    function Power_Of_Two (N : Node_Id) return Nat is
       Typ : constant Entity_Id := Etype (N);
       pragma Assert (Is_Integer_Type (Typ));
+
       Siz : constant Nat := UI_To_Int (Esize (Typ));
       Val : Uint;
 
@@ -6899,6 +7183,7 @@ package body Exp_Util is
    procedure Remove_Side_Effects
      (Exp          : Node_Id;
       Name_Req     : Boolean := False;
+      Renaming_Req : Boolean := False;
       Variable_Ref : Boolean := False)
    is
       Loc          : constant Source_Ptr      := Sloc (Exp);
@@ -6984,14 +7269,30 @@ package body Exp_Util is
             Set_Analyzed (Prefix (Exp), False);
          end if;
 
-         E :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
-             Constant_Present    => True,
-             Expression          => Relocate_Node (Exp));
+         --  Generate:
+         --    Rnn : Exp_Type renames Expr;
 
-         Set_Assignment_OK (E);
+         if Renaming_Req then
+            E :=
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
+                Name                => Relocate_Node (Exp));
+
+         --  Generate:
+         --    Rnn : constant Exp_Type := Expr;
+
+         else
+            E :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
+                Constant_Present    => True,
+                Expression          => Relocate_Node (Exp));
+
+            Set_Assignment_OK (E);
+         end if;
+
          Insert_Action (Exp, E);
 
       --  If the expression has the form v.all then we can just capture the
@@ -7441,9 +7742,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                N_Object_Declaration
-              and then Is_Finalizable_Transient
-                         (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                                                        N_Object_Declaration
             then
                return True;
 
@@ -7464,9 +7763,8 @@ package body Exp_Util is
             --  treated as controlled since they require manual cleanup.
 
             elsif Ekind (Obj_Id) = E_Variable
-              and then
-                (Is_Simple_Protected_Type (Obj_Typ)
-                  or else Has_Simple_Protected_Object (Obj_Typ))
+              and then (Is_Simple_Protected_Type (Obj_Typ)
+                         or else Has_Simple_Protected_Object (Obj_Typ))
             then
                return True;
             end if;
@@ -7529,9 +7827,7 @@ package body Exp_Util is
                   and then not Is_Access_Subprogram_Type (Typ)
                   and then Needs_Finalization
                              (Available_View (Designated_Type (Typ))))
-               or else
-                (Is_Type (Typ)
-                  and then Needs_Finalization (Typ)))
+                or else (Is_Type (Typ) and then Needs_Finalization (Typ)))
               and then Requires_Cleanup_Actions
                          (Actions (Decl), Lib_Level, Nested_Constructs)
             then
@@ -7756,7 +8052,8 @@ package body Exp_Util is
       if Ialign /= No_Uint and then Ialign > Maximum_Alignment then
          return True;
 
-      elsif Ialign /= No_Uint and then Oalign /= No_Uint
+      elsif Ialign /= No_Uint
+        and then Oalign /= No_Uint
         and then Ialign <= Oalign
       then
          return True;
@@ -7920,6 +8217,50 @@ package body Exp_Util is
             --  pick up bogus indications of the wrong constant value.
 
             Set_Current_Value (Ent, Empty);
+
+            --  If the subprogram is in the current declarative part and
+            --  'access has been applied to it, generate an elaboration
+            --  check at the beginning of the declarations of the body.
+
+            if Nkind (N) = N_Subprogram_Body
+              and then Address_Taken (Spec_Id)
+              and then
+                Ekind_In (Scope (Spec_Id), E_Block, E_Procedure, E_Function)
+            then
+               declare
+                  Loc   : constant Source_Ptr := Sloc (N);
+                  Decls : constant List_Id    := Declarations (N);
+                  Chk   : Node_Id;
+
+               begin
+                  --  No need to generate this check if first entry in the
+                  --  declaration list is a raise of Program_Error now.
+
+                  if Present (Decls)
+                    and then Nkind (First (Decls)) = N_Raise_Program_Error
+                  then
+                     return;
+                  end if;
+
+                  --  Otherwise generate the check
+
+                  Chk :=
+                    Make_Raise_Program_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => New_Occurrence_Of (Ent, Loc),
+                          Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+                      Reason    => PE_Access_Before_Elaboration);
+
+                  if No (Decls) then
+                     Set_Declarations (N, New_List (Chk));
+                  else
+                     Prepend (Chk, Decls);
+                  end if;
+
+                  Analyze (Chk);
+               end;
+            end if;
          end if;
       end if;
    end Set_Elaboration_Flag;
@@ -8327,7 +8668,7 @@ package body Exp_Util is
 
          when N_Range =>
             return Side_Effect_Free (Low_Bound (N),  Name_Req, Variable_Ref)
-                      and then
+                     and then
                    Side_Effect_Free (High_Bound (N), Name_Req, Variable_Ref);
 
          --  A slice is side effect free if it is a side effect free
@@ -8698,7 +9039,6 @@ package body Exp_Util is
       Loc   : constant Source_Ptr := Sloc (N);
       Stseq : constant Node_Id    := Handled_Statement_Sequence (N);
       Stmts : constant List_Id    := Statements (Stseq);
-
    begin
       if Abort_Allowed then
          Prepend_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));

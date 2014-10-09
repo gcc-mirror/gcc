@@ -126,6 +126,10 @@ do {									\
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
+/* This variable should be set to 'true' if the target ABI requires
+   unwinding tables even when exceptions are not used.  */
+#define TARGET_UNWIND_TABLES_DEFAULT true
+
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.

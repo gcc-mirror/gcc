@@ -157,7 +157,7 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the use of @command{gfortran}, 
+This manual documents the use of @command{gfortran},
 the GNU Fortran compiler.  You can find in this manual how to invoke
 @command{gfortran}, as well as its features and incompatibilities.
 
@@ -184,6 +184,7 @@ Part II: Language Reference
 * Compiler Characteristics::      User-visible implementation details.
 * Extensions::                    Language extensions implemented by GNU Fortran.
 * Mixed-Language Programming::    Interoperability with C
+* Coarray Programming::
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
 
@@ -289,13 +290,13 @@ It also helps developers to find bugs in the compiler itself.
 @item
 Provide information in the generated machine code that can
 make it easier to find bugs in the program (using a debugging tool,
-called a @dfn{debugger}, such as the GNU Debugger @command{gdb}). 
+called a @dfn{debugger}, such as the GNU Debugger @command{gdb}).
 
 @item
 Locate and gather machine code already generated to
 perform actions requested by statements in the user's program.
 This machine code is organized into @dfn{modules} and is located
-and @dfn{linked} to the user program. 
+and @dfn{linked} to the user program.
 @end itemize
 
 The GNU Fortran compiler consists of several components:
@@ -2713,7 +2714,8 @@ are in a shared library.  The following attributes are available:
 
 @itemize
 @item @code{DLLEXPORT} -- provide a global pointer to a pointer in the DLL
-@item @code{DLLIMPORT} -- reference the function or variable using a global pointer 
+@item @code{DLLIMPORT} -- reference the function or variable using a
+global pointer
 @end itemize
 
 For dummy arguments, the @code{NO_ARG_CHECK} attribute can be used; in
@@ -2863,7 +2865,7 @@ if e.g. an input-output edit descriptor is invalid in a given standard.
 Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
 (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), 
+@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
 @code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TS (512). Default:
 @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
 | GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77
@@ -3102,7 +3104,7 @@ by-reference argument.  Note that with the @option{-ff2c} option,
 the argument passing is modified and no longer completely matches
 the platform ABI.  Some other Fortran compilers use @code{f2c}
 semantic by default; this might cause problems with
-interoperablility. 
+interoperablility.
 
 GNU Fortran passes most arguments by reference, i.e. by passing a
 pointer to the data.  Note that the compiler might use a temporary
@@ -3174,6 +3176,507 @@ argument which is a @code{CHARACTER} or a nonallocatable coarray dummy
 argument, followed by the hidden arguments of the next dummy argument
 of such a type
 @end itemize
+
+
+@c ---------------------------------------------------------------------
+@c Coarray Programming
+@c ---------------------------------------------------------------------
+
+@node Coarray Programming
+@chapter Coarray Programming
+@cindex Coarrays
+
+@menu
+* Type and enum ABI Documentation::
+* Function ABI Documentation::
+@end menu
+
+
+@node Type and enum ABI Documentation
+@section Type and enum ABI Documentation
+
+@menu
+* caf_token_t::
+* caf_register_t::
+@end menu
+
+@node caf_token_t
+@subsection @code{caf_token_t}
+
+Typedef of type @code{void *} on the compiler side. Can be any data
+type on the library side.
+
+@node caf_register_t
+@subsection @code{caf_register_t}
+
+Indicates which kind of coarray variable should be registered.
+
+@verbatim
+typedef enum caf_register_t {
+  CAF_REGTYPE_COARRAY_STATIC,
+  CAF_REGTYPE_COARRAY_ALLOC,
+  CAF_REGTYPE_LOCK_STATIC,
+  CAF_REGTYPE_LOCK_ALLOC,
+  CAF_REGTYPE_CRITICAL
+}
+caf_register_t;
+@end verbatim
+
+
+@node Function ABI Documentation
+@section Function ABI Documentation
+
+@menu
+* _gfortran_caf_init:: Initialiation function
+* _gfortran_caf_finish:: Finalization function
+* _gfortran_caf_this_image:: Querying the image number
+* _gfortran_caf_num_images:: Querying the maximal number of images
+* _gfortran_caf_register:: Registering coarrays
+* _gfortran_caf_deregister:: Deregistering coarrays
+* _gfortran_caf_send:: Sending data from a local image to a remote image
+* _gfortran_caf_get:: Getting data from a remote image
+* _gfortran_caf_sendget:: Sending data between remote images
+* _gfortran_caf_lock:: Locking a lock variable
+* _gfortran_caf_unlock:: Unlocking a lock variable
+@end menu
+
+
+@node _gfortran_caf_init
+@subsection @code{_gfortran_caf_init} --- Initialiation function
+@cindex Coarray, _gfortran_caf_init
+
+@table @asis
+@item @emph{Description}:
+This function is called at startup of the program before the Fortran main
+program, if the latter has been compiled with @option{-fcoarray=lib}.
+It takes as arguments the command-line arguments of the program.  It is
+permitted to pass to @code{NULL} pointers as argument; if non-@code{NULL},
+the library is permitted to modify the arguments.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_init (int *argc, char ***argv)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{argc} @tab intent(inout) An integer pointer with the number of
+arguments passed to the program or @code{NULL}.
+@item @var{argv} @tab intent(inout) A pointer to an array of strings with the
+command-line arguments or @code{NULL}.
+@end multitable
+
+@item @emph{NOTES}
+The function is modelled after the initialization function of the Message
+Passing Interface (MPI) specification.  Due to the way coarray registration
+works, it might not be the first call to the libaray.  If the main program is
+not written in Fortran and only a library uses coarrays, it can happen that
+this function is never called.  Therefore, it is recommended that the library
+does not rely on the passed arguments and whether the call has been done.
+@end table
+
+
+@node _gfortran_caf_finish
+@subsection @code{_gfortran_caf_finish} --- Finalization function
+@cindex Coarray, _gfortran_caf_finish
+
+@table @asis
+@item @emph{Description}:
+This function is called at the end of the Fortran main program, if it has
+been compiled with the @option{-fcoarray=lib} option.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_finish (void)}
+
+@item @emph{NOTES}
+For non-Fortran programs, it is recommended to call the function at the end
+of the main program.  To ensure that the shutdown is also performed for
+programs where this function is not explicitly invoked, for instance
+non-Fortran programs or calls to the system's exit() function, the library
+can use a destructor function.  Note that programs can also be terminated
+using the STOP and ERROR STOP statements; those use different library calls.
+@end table
+
+
+@node _gfortran_caf_this_image
+@subsection @code{_gfortran_caf_this_image} --- Querying the image number
+@cindex Coarray, _gfortran_caf_this_image
+
+@table @asis
+@item @emph{Description}:
+This function returns the current image number, which is a positive number.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_this_image (int distance)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{distance} @tab As specified for the @code{this_image} intrinsic
+in TS18508. Shall be a nonnegative number.
+@end multitable
+
+@item @emph{NOTES}
+If the Fortran intrinsic @code{this_image} is invoked without an argument, which
+is the only permitted form in Fortran 2008, GCC passes @code{0} as
+first argument.
+@end table
+
+
+@node _gfortran_caf_num_images
+@subsection @code{_gfortran_caf_num_images} --- Querying the maximal number of images
+@cindex Coarray, _gfortran_caf_num_images
+
+@table @asis
+@item @emph{Description}:
+This function returns the number of images in the current team, if
+@var{distance} is 0 or the number of images in the parent team at the specified
+distance. If failed is -1, the function returns the number of all images at
+the specified distance; if it is 0, the function returns the number of
+nonfailed images, and if it is 1, it returns the number of failed images.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_num_images(int distance, int failed)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{distance} @tab the distance from this image to the ancestor.
+Shall be positive.
+@item @var{failed} @tab shall be -1, 0, or 1
+@end multitable
+
+@item @emph{NOTES}
+This function follows TS18508. If the num_image intrinsic has no arguments,
+the the compiler passes @code{distance=0} and @code{failed=-1} to the function.
+@end table
+
+
+@node _gfortran_caf_register
+@subsection @code{_gfortran_caf_register} --- Registering coarrays
+@cindex Coarray, _gfortran_caf_deregister
+
+@table @asis
+@item @emph{Description}:
+Allocates memory for a coarray and creates a token to identify the coarray. The
+function is called for both coarrays with @code{SAVE} attribute and using an
+explicit @code{ALLOCATE} statement. If an error occurs and @var{STAT} is a
+@code{NULL} pointer, the function shall abort with printing an error message
+and starting the error termination.  If no error occurs and @var{STAT} is
+present, it shall be set to zero. Otherwise, it shall be set to a positive
+value and, if not-@code{NULL}, @var{ERRMSG} shall be set to a string describing
+the failure. The function shall return a pointer to the requested memory
+for the local image as a call to @code{malloc} would do.
+
+For @code{CAF_REGTYPE_COARRAY_STATIC} and @code{CAF_REGTYPE_COARRAY_ALLOC},
+the passed size is the byte size requested.  For @code{CAF_REGTYPE_LOCK_STATIC},
+@code{CAF_REGTYPE_LOCK_ALLOC} and @code{CAF_REGTYPE_CRITICAL} it is the array
+size or one for a scalar.
+
+
+@item @emph{Syntax}:
+@code{void *caf_register (size_t size, caf_register_t type, caf_token_t *token,
+int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{size} @tab For normal coarrays, the byte size of the coarray to be
+allocated; for lock types, the number of elements.
+@item @var{type} @tab one of the caf_register_t types.
+@item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+Nonalloatable coarrays have to be registered prior use from remote images.
+In order to guarantee this, they have to be registered before the main
+program. This can be achieved by creating constructor functions. That is what
+GCC does such that also nonallocatable coarrays the memory is allocated and no
+static memory is used.  The token permits to identify the coarray; to the
+processor, the token is a nonaliasing pointer. The library can, for instance,
+store the base address of the coarray in the token, some handle or a more
+complicated struct.
+
+For normal coarrays, the returned pointer is used for accesses on the local
+image. For lock types, the value shall only used for checking the allocation
+status. Note that for critical blocks, the locking is only required on one
+image; in the locking statement, the processor shall always pass always an
+image index of one for critical-block lock variables
+(@code{CAF_REGTYPE_CRITICAL}).
+@end table
+
+
+@node _gfortran_caf_deregister
+@subsection @code{_gfortran_caf_deregister} --- Deregistering coarrays
+@cindex Coarray, _gfortran_caf_deregister
+
+@table @asis
+@item @emph{Description}:
+Called to free the memory of a coarray; the processor calls this function for
+automatic and explicit deallocation.  In case of an error, this function shall
+fail with an error message, unless the @var{STAT} variable is not null.
+
+@item @emph{Syntax}:
+@code{void caf_deregister (const caf_token_t *token, int *stat, char *errmsg,
+int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set
+to an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+For nonalloatable coarrays this function is never called.  If a cleanup is
+required, it has to be handled via the finish, stop and error stop functions,
+and via destructors.
+@end table
+
+
+@node _gfortran_caf_send
+@subsection @code{_gfortran_caf_send} --- Sending data from a local image to a remote image
+@cindex Coarray, _gfortran_caf_send
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or whole array from a local
+to a remote image identified by the image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_send (caf_token_t token, size_t offset,
+int image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
+gfc_descriptor_t *src, int dst_kind, int src_kind, bool may_require_tmp)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{dest} @tab intent(in) Array descriptor for the remote image for the
+bounds and the size. The base_addr shall not be accessed.
+@item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
+subscript of the destination array; the values are relative to the dimension
+triplet of the dest argument.
+@item @var{src} @tab intent(in) Array descriptor of the local array to be
+transferred to the remote image
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_id equal the current image; the memory of the
+send-to and the send-from might (partially) overlap in that case. The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory. If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted. In addition,
+the library has to handle numeric-type conversion and for strings, padding
+and different character kinds.
+@end table
+
+
+@node _gfortran_caf_get
+@subsection @code{_gfortran_caf_get} --- Getting data from a remote image
+@cindex Coarray, _gfortran_caf_get
+
+@table @asis
+@item @emph{Description}:
+Called to get an array section or whole array from a a remote,
+image identified by the image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_get_desc (caf_token_t token, size_t offset,
+int image_index, gfc_descriptor_t *src, caf_vector_t *src_vector,
+gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{dest} @tab intent(in) Array descriptor of the local array to be
+transferred to the remote image
+@item @var{src} @tab intent(in) Array descriptor for the remote image for the
+bounds and the size. The base_addr shall not be accessed.
+@item @var{src_vector} @tab intent(int)  If not NULL, it contains the vector
+subscript of the destination array; the values are relative to the dimension
+triplet of the dest argument.
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_id equal the current image; the memory of the
+send-to and the send-from might (partially) overlap in that case. The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory. If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the library has to handle numeric-type conversion and for strings,
+padding and different character kinds.
+@end table
+
+
+@node _gfortran_caf_sendget
+@subsection @code{_gfortran_caf_sendget} --- Sending data between remote images
+@cindex Coarray, _gfortran_caf_sendget
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or whole array from a remote image
+identified by the src_image_index to a remote image identified by the
+dst_image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
+int dst_image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
+caf_token_t src_token, size_t src_offset, int src_image_index,
+gfc_descriptor_t *src, caf_vector_t *src_vector, int dst_kind, int src_kind,
+bool may_require_tmp)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
+destination coarray.
+@item @var{dst_offset} @tab  By which amount of bytes the actual data is
+shifted compared to the base address of the destination coarray.
+@item @var{dst_image_index} @tab The ID of the destination remote image; must
+be a positive number.
+@item @var{dest} @tab intent(in) Array descriptor for the destination
+remote image for the bounds and the size. The base_addr shall not be accessed.
+@item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
+subscript of the destination array; the values are relative to the dimension
+triplet of the dest argument.
+@item @var{src_token} @tab An opaque pointer identifying the source coarray.
+@item @var{src_offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the source coarray.
+@item @var{src_image_index} @tab The ID of the source remote image; must be a
+positive number.
+@item @var{src} @tab intent(in) Array descriptor of the local array to be
+transferred to the remote image.
+@item @var{src_vector} @tab intent(in) Array descriptor of the local array to
+be transferred to the remote image
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_ids equal; the memory of the send-to and the
+send-from might (partially) overlap in that case. The implementation has to
+take care that it handles this case, e.g. using @code{memmove} which handles
+(partially) overlapping memory. If @var{may_require_tmp} is true, the library
+might additionally create a temporary variable, unless additional checks show
+that this is not required (e.g. because walking backward is possible or because
+both arrays are contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted. In addition,
+the library has to handle numeric-type conversion and for strings, padding and
+different character kinds.
+@end table
+
+
+@node _gfortran_caf_lock
+@subsection @code{_gfortran_caf_lock} --- Locking a lock variable
+@cindex Coarray, _gfortran_caf_lock
+
+@table @asis
+@item @emph{Description}:
+Acquire a lock on the given image on a scalar locking variable or for the
+given array element for an array-valued variable. If the @var{aquired_lock}
+is @code{NULL}, the function return after having obtained the lock. If it is
+nonnull, the result is is assigned the value true (one) when the lock could be
+obtained and false (zero) otherwise.  Locking a lock variable which has already
+been locked by the same image is an error.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
+int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{aquired_lock} @tab intent(out) If not NULL, it returns whether lock
+could be obtained
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This function is also called for critical blocks; for those, the array index
+is always zero and the image index is one.  Libraries are permitted to use other
+images for critical-block locking variables.
+@end table
+
+
+@node _gfortran_caf_unlock
+@subsection @code{_gfortran_caf_lock} --- Unlocking a lock variable
+@cindex Coarray, _gfortran_caf_unlock
+
+@table @asis
+@item @emph{Description}:
+Release a lock on the given image on a scalar locking variable or for the
+given array element for an array-valued variable. Unlocking a lock variable
+which is unlocked or has been locked by a different image is an error.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
+int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This function is also called for critical block; for those, the array index
+is always zero and the image index is one.  Libraries are permitted to use other
+images for critical-block locking variables.
+@end table
 
 
 
@@ -3318,7 +3821,7 @@ order.  Most of these are necessary to be fully compatible with
 existing Fortran compilers, but they are not part of the official
 J3 Fortran 95 standard.
 
-@subsection Compiler extensions: 
+@subsection Compiler extensions:
 @itemize @bullet
 @item
 User-specified alignment rules for structures.

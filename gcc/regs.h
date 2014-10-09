@@ -214,14 +214,6 @@ extern short *reg_renumber;
 
 extern int caller_save_needed;
 
-/* Predicate to decide whether to give a hard reg to a pseudo which
-   is referenced REFS times and would need to be saved and restored
-   around a call CALLS times.  */
-
-#ifndef CALLER_SAVE_PROFITABLE
-#define CALLER_SAVE_PROFITABLE(REFS, CALLS)  (4 * (CALLS) < (REFS))
-#endif
-
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #ifndef HARD_REGNO_CALLER_SAVE_MODE
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
@@ -420,7 +412,7 @@ range_in_hard_reg_set_p (const HARD_REG_SET set, unsigned regno, int nregs)
 }
 
 /* Get registers used by given function call instruction.  */
-extern bool get_call_reg_set_usage (rtx insn, HARD_REG_SET *reg_set,
+extern bool get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 				    HARD_REG_SET default_set);
 
 #endif /* GCC_REGS_H */

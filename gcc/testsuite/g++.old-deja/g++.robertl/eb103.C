@@ -4,7 +4,7 @@
 template <int nlimb, int i>
 inline unsigned f (unsigned* ptr);
 template <int nlimb>
-inline unsigned f<nlimb,nlimb> (unsigned* ptr) // { dg-error "function template partial specialization" }
+inline unsigned f<nlimb,nlimb> (unsigned* ptr) // { dg-error "partial specialization" }
 {
   return 1;
 }

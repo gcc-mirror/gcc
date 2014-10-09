@@ -1,5 +1,5 @@
 // PR c++/59867
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 using namespace std;
 

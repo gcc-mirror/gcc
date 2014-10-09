@@ -346,7 +346,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 
   if (saveall || is_inthandler)
     {
-      rtx insn = emit_move_insn (predec, gen_rtx_REG (SImode, REG_ASTAT));
+      rtx_insn *insn = emit_move_insn (predec, gen_rtx_REG (SImode, REG_ASTAT));
 
       RTX_FRAME_RELATED_P (insn) = 1;
       for (dregno = REG_LT0; dregno <= REG_LB1; dregno++)
@@ -363,7 +363,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 
   if (total_consec != 0)
     {
-      rtx insn;
+      rtx_insn *insn;
       rtx val = GEN_INT (-total_consec * 4);
       rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (total_consec + 2));
 
@@ -405,7 +405,8 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     {
       if (must_save_p (is_inthandler, dregno))
 	{
-	  rtx insn = emit_move_insn (predec, gen_rtx_REG (word_mode, dregno));
+	  rtx_insn *insn =
+	    emit_move_insn (predec, gen_rtx_REG (word_mode, dregno));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  ndregs--;
 	}
@@ -414,7 +415,8 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     {
       if (must_save_p (is_inthandler, pregno))
 	{
-	  rtx insn = emit_move_insn (predec, gen_rtx_REG (word_mode, pregno));
+	  rtx_insn *insn =
+	    emit_move_insn (predec, gen_rtx_REG (word_mode, pregno));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  npregs--;
 	}
@@ -425,7 +427,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 	    && (df_regs_ever_live_p (i)
 		|| (!leaf_function_p () && call_used_regs[i]))))
       {
-	rtx insn;
+	rtx_insn *insn;
 	if (i == REG_A0 || i == REG_A1)
 	  insn = emit_move_insn (gen_rtx_MEM (PDImode, predec1),
 				 gen_rtx_REG (PDImode, i));
@@ -452,7 +454,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
   int npregs_consec = saveall ? 6 : n_pregs_to_save (is_inthandler, true);
   int total_consec = ndregs_consec + npregs_consec;
   int i, regno;
-  rtx insn;
+  rtx_insn *insn;
 
   /* A slightly crude technique to stop flow from trying to delete "dead"
      insns.  */
@@ -706,7 +708,7 @@ bfin_initial_elimination_offset (int from, int to)
 static void
 frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx cst = GEN_INT (constant);
 
   if (constant >= -32768 && constant < 65536)
@@ -743,7 +745,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
     {
       rtx tmpreg;
       rtx tmpreg2;
-      rtx insn;
+      rtx_insn *insn;
 
       tmpreg2 = NULL_RTX;
 
@@ -792,7 +794,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
     do
       {
 	int size = value;
-	rtx insn;
+	rtx_insn *insn;
 
 	if (size > 60)
 	  size = 60;
@@ -817,7 +819,7 @@ static void
 emit_link_insn (rtx spreg, HOST_WIDE_INT frame_size)
 {
   HOST_WIDE_INT link_size = frame_size;
-  rtx insn;
+  rtx_insn *insn;
   int i;
 
   if (link_size > 262140)
@@ -884,7 +886,7 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx pat = gen_movsi (gen_rtx_MEM (Pmode,
 					    gen_rtx_PRE_DEC (Pmode, spreg)),
 			       bfin_rets_rtx);
-	  rtx insn = emit_insn (pat);
+	  rtx_insn *insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       if (must_save_fp_p ())
@@ -892,7 +894,7 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx pat = gen_movsi (gen_rtx_MEM (Pmode,
 					    gen_rtx_PRE_DEC (Pmode, spreg)),
 			       gen_rtx_REG (Pmode, REG_FP));
-	  rtx insn = emit_insn (pat);
+	  rtx_insn *insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       add_to_reg (spreg, -frame_size, 1, 0);
@@ -940,7 +942,7 @@ expand_interrupt_handler_prologue (rtx spreg, e_funkind fkind, bool all)
   HOST_WIDE_INT frame_size = get_frame_size ();
   rtx predec1 = gen_rtx_PRE_DEC (SImode, spreg);
   rtx predec = gen_rtx_MEM (SImode, predec1);
-  rtx insn;
+  rtx_insn *insn;
   tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
   tree kspisusp = lookup_attribute ("kspisusp", attrs);
 
@@ -1045,7 +1047,7 @@ bfin_load_pic_reg (rtx dest)
   struct cgraph_local_info *i = NULL;
   rtx addr;
  
-  i = cgraph_local_info (current_function_decl);
+  i = cgraph_node::local_info (current_function_decl);
  
   /* Functions local to the translation unit don't need to reload the
      pic reg, since the caller always passes a usable one.  */
@@ -1839,8 +1841,8 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
     /* Not enough information.  */
     return false;
  
-  this_func = cgraph_local_info (current_function_decl);
-  called_func = cgraph_local_info (decl);
+  this_func = cgraph_node::local_info (current_function_decl);
+  called_func = cgraph_node::local_info (decl);
   if (!called_func)
     return false;
   return !called_func->local || this_func->local;
@@ -2416,7 +2418,7 @@ bfin_option_override (void)
    we still prefer to use shorter sequences.  */
 
 static int
-branch_dest (rtx branch)
+branch_dest (rtx_insn *branch)
 {
   rtx dest;
   int dest_uid;
@@ -2470,7 +2472,7 @@ static const char *ccbranch_templates[][3] = {
    anyway.  */
 
 void
-asm_conditional_branch (rtx insn, rtx *operands, int n_nops, int predict_taken)
+asm_conditional_branch (rtx_insn *insn, rtx *operands, int n_nops, int predict_taken)
 {
   int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
   /* Note : offset for instructions like if cc jmp; jump.[sl] offset
@@ -3308,7 +3310,7 @@ bfin_issue_rate (void)
 }
 
 static int
-bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+bfin_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type dep_insn_type;
   int dep_insn_code_number;
@@ -3346,8 +3348,8 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 /* This function acts like NEXT_INSN, but is aware of three-insn bundles and
    skips all subsequent parallel instructions if INSN is the start of such
    a group.  */
-static rtx
-find_next_insn_start (rtx insn)
+static rtx_insn *
+find_next_insn_start (rtx_insn *insn)
 {
   if (GET_MODE (insn) == SImode)
     {
@@ -3360,8 +3362,8 @@ find_next_insn_start (rtx insn)
 /* This function acts like PREV_INSN, but is aware of three-insn bundles and
    skips all subsequent parallel instructions if INSN is the start of such
    a group.  */
-static rtx
-find_prev_insn_start (rtx insn)
+static rtx_insn *
+find_prev_insn_start (rtx_insn *insn)
 {
   insn = PREV_INSN (insn);
   gcc_assert (GET_MODE (insn) != SImode);
@@ -3409,7 +3411,7 @@ bfin_hardware_loop (void)
 /* Estimate the length of INSN conservatively.  */
 
 static int
-length_for_loop (rtx insn)
+length_for_loop (rtx_insn *insn)
 {
   int length = 0;
   if (JUMP_P (insn) && any_condjump_p (insn) && !optimize_size)
@@ -3437,11 +3439,12 @@ static bool
 hwloop_optimize (hwloop_info loop)
 {
   basic_block bb;
-  rtx insn, last_insn;
+  rtx_insn *insn, *last_insn;
   rtx loop_init, start_label, end_label;
   rtx iter_reg, scratchreg, scratch_init, scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
-  rtx seq, seq_end;
+  rtx seq_end;
+  rtx_insn *seq;
   int length;
   bool clobber0, clobber1;
 
@@ -3612,7 +3615,7 @@ hwloop_optimize (hwloop_info loop)
 	}
       else
 	{
-	  last_insn = NULL_RTX;
+	  last_insn = NULL;
 	  break;
 	}
     }
@@ -3770,7 +3773,7 @@ hwloop_optimize (hwloop_info loop)
 
   if (loop->incoming_src)
     {
-      rtx prev = BB_END (loop->incoming_src);
+      rtx_insn *prev = BB_END (loop->incoming_src);
       if (vec_safe_length (loop->incoming) > 1
 	  || !(loop->incoming->last ()->flags & EDGE_FALLTHRU))
 	{
@@ -3862,7 +3865,7 @@ hwloop_fail (hwloop_info loop)
    loop counter.  Otherwise, return NULL_RTX.  */
 
 static rtx
-hwloop_pattern_reg (rtx insn)
+hwloop_pattern_reg (rtx_insn *insn)
 {
   rtx reg;
 
@@ -3895,7 +3898,7 @@ bfin_reorg_loops (void)
 /* Possibly generate a SEQUENCE out of three insns found in SLOT.
    Returns true if we modified the insn chain, false otherwise.  */
 static bool
-gen_one_bundle (rtx slot[3])
+gen_one_bundle (rtx_insn *slot[3])
 {
   gcc_assert (slot[1] != NULL_RTX);
 
@@ -3907,7 +3910,7 @@ gen_one_bundle (rtx slot[3])
   /* Verify that we really can do the multi-issue.  */
   if (slot[0])
     {
-      rtx t = NEXT_INSN (slot[0]);
+      rtx_insn *t = NEXT_INSN (slot[0]);
       while (t != slot[1])
 	{
 	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
@@ -3917,7 +3920,7 @@ gen_one_bundle (rtx slot[3])
     }
   if (slot[2])
     {
-      rtx t = NEXT_INSN (slot[1]);
+      rtx_insn *t = NEXT_INSN (slot[1]);
       while (t != slot[2])
 	{
 	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
@@ -3963,11 +3966,11 @@ bfin_gen_bundles (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
-      rtx slot[3];
+      rtx_insn *insn, *next;
+      rtx_insn *slot[3];
       int n_filled = 0;
 
-      slot[0] = slot[1] = slot[2] = NULL_RTX;
+      slot[0] = slot[1] = slot[2] = NULL;
       for (insn = BB_HEAD (bb);; insn = next)
 	{
 	  int at_end;
@@ -4023,7 +4026,7 @@ bfin_gen_bundles (void)
 		    }
 		}
 	      n_filled = 0;
-	      slot[0] = slot[1] = slot[2] = NULL_RTX;
+	      slot[0] = slot[1] = slot[2] = NULL;
 	    }
 	  if (delete_this != NULL_RTX)
 	    delete_insn (delete_this);
@@ -4042,8 +4045,8 @@ reorder_var_tracking_notes (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
-      rtx queue = NULL_RTX;
+      rtx_insn *insn, *next;
+      rtx_insn *queue = NULL;
       bool in_bundle = false;
 
       for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
@@ -4057,11 +4060,11 @@ reorder_var_tracking_notes (void)
 		{
 		  while (queue)
 		    {
-		      rtx next_queue = PREV_INSN (queue);
-		      PREV_INSN (NEXT_INSN (insn)) = queue;
-		      NEXT_INSN (queue) = NEXT_INSN (insn);
-		      NEXT_INSN (insn) = queue;
-		      PREV_INSN (queue) = insn;
+		      rtx_insn *next_queue = PREV_INSN (queue);
+		      SET_PREV_INSN (NEXT_INSN (insn)) = queue;
+		      SET_NEXT_INSN (queue) = NEXT_INSN (insn);
+		      SET_NEXT_INSN (insn) = queue;
+		      SET_PREV_INSN (queue) = insn;
 		      queue = next_queue;
 		    }
 		  in_bundle = false;
@@ -4073,11 +4076,11 @@ reorder_var_tracking_notes (void)
 	    {
 	      if (in_bundle)
 		{
-		  rtx prev = PREV_INSN (insn);
-		  PREV_INSN (next) = prev;
-		  NEXT_INSN (prev) = next;
+		  rtx_insn *prev = PREV_INSN (insn);
+		  SET_PREV_INSN (next) = prev;
+		  SET_NEXT_INSN (prev) = next;
 
-		  PREV_INSN (insn) = queue;
+		  SET_PREV_INSN (insn) = queue;
 		  queue = insn;
 		}
 	    }
@@ -4091,7 +4094,7 @@ reorder_var_tracking_notes (void)
 static void
 workaround_rts_anomaly (void)
 {
-  rtx insn, first_insn = NULL_RTX;
+  rtx_insn *insn, *first_insn = NULL;
   int cycles = 4;
 
   if (! ENABLE_WA_RETS)
@@ -4173,16 +4176,16 @@ workaround_rts_anomaly (void)
    SEQUENCEs.  */
 
 static enum attr_type
-type_for_anomaly (rtx insn)
+type_for_anomaly (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
-  if (GET_CODE (pat) == SEQUENCE)
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
     {
       enum attr_type t;
-      t = get_attr_type (XVECEXP (pat, 0, 1));
+      t = get_attr_type (seq->insn (1));
       if (t == TYPE_MCLD)
 	return t;
-      t = get_attr_type (XVECEXP (pat, 0, 2));
+      t = get_attr_type (seq->insn (2));
       if (t == TYPE_MCLD)
 	return t;
       return TYPE_MCST;
@@ -4214,7 +4217,7 @@ harmless_null_pointer_p (rtx mem, int np_reg)
 /* Return nonzero if INSN contains any loads that may trap.  */
 
 static bool
-trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
+trapping_loads_p (rtx_insn *insn, int np_reg, bool after_np_branch)
 {
   rtx mem = SET_SRC (single_set (insn));
 
@@ -4226,23 +4229,23 @@ trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
 
 /* Return INSN if it is of TYPE_MCLD.  Alternatively, if INSN is the start of
    a three-insn bundle, see if one of them is a load and return that if so.
-   Return NULL_RTX if the insn does not contain loads.  */
-static rtx
-find_load (rtx insn)
+   Return NULL if the insn does not contain loads.  */
+static rtx_insn *
+find_load (rtx_insn *insn)
 {
   if (!NONDEBUG_INSN_P (insn))
-    return NULL_RTX;
+    return NULL;
   if (get_attr_type (insn) == TYPE_MCLD)
     return insn;
   if (GET_MODE (insn) != SImode)
-    return NULL_RTX;
+    return NULL;
   do {
     insn = NEXT_INSN (insn);
     if ((GET_MODE (insn) == SImode || GET_MODE (insn) == QImode)
 	&& get_attr_type (insn) == TYPE_MCLD)
       return insn;
   } while (GET_MODE (insn) != QImode);
-  return NULL_RTX;
+  return NULL;
 }
 
 /* Determine whether PAT is an indirect call pattern.  */
@@ -4283,8 +4286,8 @@ note_np_check_stores (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
 static void
 workaround_speculation (void)
 {
-  rtx insn, next;
-  rtx last_condjump = NULL_RTX;
+  rtx_insn *insn, *next;
+  rtx_insn *last_condjump = NULL;
   int cycles_since_jump = INT_MAX;
   int delay_added = 0;
 
@@ -4356,7 +4359,7 @@ workaround_speculation (void)
 	}
       else if (NONDEBUG_INSN_P (insn))
 	{
-	  rtx load_insn = find_load (insn);
+	  rtx_insn *load_insn = find_load (insn);
 	  enum attr_type type = type_for_anomaly (insn);
 
 	  if (cycles_since_jump < INT_MAX)
@@ -4447,9 +4450,9 @@ workaround_speculation (void)
 	  && (INSN_CODE (insn) == CODE_FOR_cbranch_predicted_taken
 	      || cbranch_predicted_taken_p (insn)))
 	{
-	  rtx target = JUMP_LABEL (insn);
+	  rtx_insn *target = JUMP_LABEL_AS_INSN (insn);
 	  rtx label = target;
-	  rtx next_tgt;
+	  rtx_insn *next_tgt;
 
 	  cycles_since_jump = 0;
 	  for (; target && cycles_since_jump < 3; target = next_tgt)
@@ -4472,7 +4475,7 @@ workaround_speculation (void)
 
 	      if (NONDEBUG_INSN_P (target))
 		{
-		  rtx load_insn = find_load (target);
+		  rtx_insn *load_insn = find_load (target);
 		  enum attr_type type = type_for_anomaly (target);
 		  int delay_needed = 0;
 		  if (cycles_since_jump < INT_MAX)
@@ -4526,7 +4529,7 @@ workaround_speculation (void)
 static void
 add_sched_insns_for_speculation (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (! ENABLE_WA_SPECULATIVE_LOADS && ! ENABLE_WA_SPECULATIVE_SYNCS
       && ! ENABLE_WA_INDIRECT_CALLS)
@@ -4569,7 +4572,7 @@ add_sched_insns_for_speculation (void)
 	  && (cbranch_predicted_taken_p (insn)))
 	{
 	  rtx target = JUMP_LABEL (insn);
-	  rtx next = next_real_insn (target);
+	  rtx_insn *next = next_real_insn (target);
 
 	  if (GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE
 	      && get_attr_type (next) == TYPE_STALL)

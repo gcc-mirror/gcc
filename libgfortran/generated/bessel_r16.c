@@ -166,7 +166,7 @@ bessel_yn_r16 (gfc_array_r16 * const restrict ret, int n1, int n2,
 
   x2rev = GFC_REAL_16_LITERAL(2.)/x;
 
-  for (i = 2; i <= n1+n2; i++)
+  for (i = 2; i <= n2 - n1; i++)
     {
 #if defined(GFC_REAL_16_INFINITY)
       if (unlikely (last2 == -GFC_REAL_16_INFINITY))

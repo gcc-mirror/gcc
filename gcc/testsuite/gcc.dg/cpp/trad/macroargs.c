@@ -7,6 +7,7 @@
 #define g(x) x
 
 extern void abort (void);
+extern int strcmp (const char *, const char *);
 
 void testquoting ()
 {

@@ -193,6 +193,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Number of iteration analysis data for RTL.  */
   struct niter_desc *simple_loop_desc;
+
+  /* For sanity checking during loop fixup we record here the former
+     loop header for loops marked for removal.  Note that this prevents
+     the basic-block from being collected but its index can still be
+     reused.  */
+  basic_block former_header;
 };
 
 /* Flags for state of loop structure.  */
@@ -336,6 +342,8 @@ struct loop * loop_version (struct loop *, void *,
 extern bool remove_path (edge);
 extern void unloop (struct loop *, bool *, bitmap);
 extern void scale_loop_frequencies (struct loop *, int, int);
+void mark_loop_for_removal (loop_p);
+
 
 /* Induction variable analysis.  */
 
@@ -423,11 +431,12 @@ struct GTY(()) niter_desc
 };
 
 extern void iv_analysis_loop_init (struct loop *);
-extern bool iv_analyze (rtx, rtx, struct rtx_iv *);
-extern bool iv_analyze_result (rtx, rtx, struct rtx_iv *);
-extern bool iv_analyze_expr (rtx, rtx, enum machine_mode, struct rtx_iv *);
+extern bool iv_analyze (rtx_insn *, rtx, struct rtx_iv *);
+extern bool iv_analyze_result (rtx_insn *, rtx, struct rtx_iv *);
+extern bool iv_analyze_expr (rtx_insn *, rtx, enum machine_mode,
+			     struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
-extern bool biv_p (rtx, rtx);
+extern bool biv_p (rtx_insn *, rtx);
 extern void find_simple_exit (struct loop *, struct niter_desc *);
 extern void iv_analysis_done (void);
 

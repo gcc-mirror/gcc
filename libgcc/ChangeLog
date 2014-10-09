@@ -1,3 +1,437 @@
+2014-10-08  Rong Xu  <xur@google.com>
+
+	* libgcov-util.c (read_gcda_file): Fix format.
+	(find_match_gcov_info): Ditto.
+	(calculate_2_entries): New.
+	(compute_one_gcov): Ditto.
+	(gcov_info_count_all_cold): Ditto.
+	(gcov_info_count_all_zero): Ditto.
+	(extract_file_basename): Ditto.
+	(get_file_basename): Ditto.
+	(set_flag): Ditto.
+	(matched_gcov_info): Ditto.
+	(calculate_overlap): Ditto.
+	(gcov_profile_overlap): Ditto.
+	* libgcov-driver.c (compute_summary): Make
+	it avavilable for external calls.
+
+2014-10-06  Rong Xu  <xur@google.com>
+
+	* Makefile.in: Ditto.
+	* libgcov-driver.c (gcov_sort_n_vals): New utility function.
+	(gcov_sort_icall_topn_counter): Ditto.
+	(gcov_sort_topn_counter_arrays): Ditto.
+	(dump_one_gcov): Sort indirect_call topn counters.
+	* libgcov-merge.c (__gcov_merge_icall_topn): New merge
+	function.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body): New
+	utility function.
+	(__gcov_indirect_call_topn_profiler): New profiler function.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): New.
+	* libgcov.h: New decls.
+
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config.host: Remove support for score-*.
+
+2014-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* dfp-bit.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+	(__LIBGCC_XF_MANT_DIG__): Define if not already defined.
+	(LONG_DOUBLE_HAS_XF_MODE): Define in terms of
+	__LIBGCC_XF_MANT_DIG__.
+	(__LIBGCC_TF_MANT_DIG__): Define if not already defined.
+	(LONG_DOUBLE_HAS_TF_MODE): Define in terms of
+	__LIBGCC_TF_MANT_DIG__.
+	* libgcc2.c (NOTRUNC): Define in terms of
+	__LIBGCC_*_EXCESS_PRECISION__, not LIBGCC2_LONG_DOUBLE_TYPE_SIZE.
+	* libgcc2.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Remove.
+
+2014-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/63312
+	* config/ia64/sfp-machine.h (FE_EX_ALL, FP_TRAPPING_EXCEPTIONS):
+	New macros.
+
+2014-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* crtstuff.c (USE_EH_FRAME_REGISTRY): Let USE_EH_FRAME_REGISTRY_ALWAYS
+	override USE_PT_GNU_EH_FRAME.
+	[__LIBGCC_EH_FRAME_SECTION_NAME__ && !USE_PT_GNU_EH_FRAME]: Sanity-
+	check USE_EH_FRAME_REGISTRY_ALWAYS against
+	__LIBGCC_EH_FRAME_SECTION_NAME__, emit error if unsane.
+	* Makefile.in (FORCE_EXPLICIT_EH_REGISTRY): New
+	variable for substituted force_explicit_eh_registry.
+	(CRTSTUFF_CFLAGS): Add FORCE_EXPLICIT_EH_REGISTRY.
+	* configure.ac (explicit-exception-frame-registration):
+	New AC_ARG_ENABLE.
+	* configure: Regenerate.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworksmils): New configuration,
+	same as vxworksae.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.c (CEXT): Define using __LIBGCC_*_FUNC_EXT__.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/sfp-machine.h (FP_TRAPPING_EXCEPTIONS): Treat clear
+	bits not set bits as indicating trapping exceptions.
+
+2014-09-17  Nathan sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_INTERFACE): Add _gcov_dump from ...
+	(LIBGCOV_DRIVER): ... here.
+	* libgcov-driver.c (gcov_master): New.
+	(gcov_exit): Remove from master chain.
+	(__gcov_init): Add to master chain if version compatible.  Don't
+	clear the version.
+	* libgcov_interface (__gcov_flust): Call gcov_dump_int.
+	(gcov_reset_int): Clear master chain, if compatible.
+	(gcov_dump_int): New internal interface.  Dump master chain, if
+	compatible.
+	(gcov_dump): Alias for gcov_dump_int.
+	* libgcov.h (struct gcov_root): Add next and prev fields.
+	(struct gcov_master): New struct.
+	(__gcov_master): New.
+	(gcov_dump_int): Declare.
+
+2014-09-17  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (x86_64-*-mingw*): Add i386/t-cygming to tmake_file
+	and crtbegin.o + crtend.o to extra_parts.
+
+2014-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.h (LIBGCC2_HAS_SF_MODE): Define using
+	__LIBGCC_HAS_SF_MODE__.
+	(LIBGCC2_HAS_DF_MODE): Define using __LIBGCC_HAS_DF_MODE__.
+	(LIBGCC2_HAS_XF_MODE): Define using __LIBGCC_HAS_XF_MODE__.
+	(LIBGCC2_HAS_TF_MODE): Define using __LIBGCC_HAS_TF_MODE__.
+	* config/libbid/bid_gcc_intrinsics.h
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Do not define.
+	(LIBGCC2_HAS_XF_MODE): Define using __LIBGCC_HAS_XF_MODE__.
+	(LIBGCC2_HAS_TF_MODE): Define using __LIBGCC_HAS_TF_MODE__.
+	* fixed-bit.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Do not define.
+	(LIBGCC2_HAS_SF_MODE): Define using __LIBGCC_HAS_SF_MODE__.
+	(LIBGCC2_HAS_DF_MODE): Define using __LIBGCC_HAS_DF_MODE__.
+
+2014-09-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/63223
+	* config/avr/libgcc.S (__tablejump2__): Rewrite to use RAMPZ, ELPM
+	and R24 as needed.  Make work for all devices and .text locations.
+	(__do_global_ctors, __do_global_dtors): Use word addresses.
+	(__tablejump__, __tablejump_elpm__): Remove functions.
+	* t-avr (LIB1ASMFUNCS): Remove _tablejump, _tablejump_elpm.
+	Add _tablejump2.
+	(XICALL, XIJMP): New macros.
+
+2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config.host (aarch64*): Include crtfastmath.o and
+	t-crtfm.
+	* config/aarch64/crtfastmath.c: New file.
+
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config.host: Remove picochip support.
+	* config/picochip/adddi3.S: Remove.
+	* config/picochip/ashlsi3.S: Remove.
+	* config/picochip/ashlsi3.c: Remove.
+	* config/picochip/ashrsi3.S: Remove.
+	* config/picochip/ashrsi3.c: Remove.
+	* config/picochip/clzsi2.S: Remove.
+	* config/picochip/cmpsi2.S: Remove.
+	* config/picochip/divmod15.S: Remove.
+	* config/picochip/divmodhi4.S: Remove.
+	* config/picochip/divmodsi4.S: Remove.
+	* config/picochip/lib1funcs.S: Remove.
+	* config/picochip/longjmp.S: Remove.
+	* config/picochip/lshrsi3.S: Remove.
+	* config/picochip/lshrsi3.c: Remove.
+	* config/picochip/parityhi2.S: Remove.
+	* config/picochip/popcounthi2.S: Remove.
+	* config/picochip/setjmp.S: Remove.
+	* config/picochip/subdi3.S: Remove.
+	* config/picochip/t-picochip: Remove.
+	* config/picochip/ucmpsi2.S: Remove.
+	* config/picochip/udivmodhi4.S: Remove.
+	* config/picochip/udivmodsi4.S: Remove.
+
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.c (SF_SIZE): Change all uses to __LIBGCC_SF_MANT_DIG__.
+	(DF_SIZE): Change all uses to __LIBGCC_DF_MANT_DIG__.
+	(XF_SIZE): Change all uses to __LIBGCC_XF_MANT_DIG__.
+	(TF_SIZE): Change all uses to __LIBGCC_TF_MANT_DIG__.
+	* libgcc2.h (SF_SIZE): Change to __LIBGCC_SF_MANT_DIG__.  Give
+	error if not defined and LIBGCC2_HAS_SF_MODE is defined.
+	(DF_SIZE): Change to __LIBGCC_DF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_DF_MODE is defined.
+	(XF_SIZE): Change to __LIBGCC_XF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_XF_MODE is defined.
+	(TF_SIZE): Change to __LIBGCC_TF_MANT_DIG__.  Give error if not
+	defined and LIBGCC2_HAS_TF_MODE is defined.
+
+2014-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* fp-bit.c (pack_d, unpack_d): Remove LARGEST_EXPONENT_IS_NORMAL
+	and ROUND_TOWARDS_ZERO conditionals.
+
+2014-09-07  Nathan sidwell  <nathan@acm.org>
+
+	* libgcov-interface.c (STRONG_ALIAS): Rename to ...
+	(ALIAS_weak): ... here. Use forwarding function.  Adjust uses.
+
+2014-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add -fbuilding-libgcc.
+	* config/aarch64/linux-unwind.h (STACK_POINTER_REGNUM): Change all
+	uses to __LIBGCC_STACK_POINTER_REGNUM__.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Change all uses to
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/alpha/vms-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN):
+	Change use to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/cr16/unwind-cr16.c (STACK_GROWS_DOWNWARD): Change all
+	uses to __LIBGCC_STACK_GROWS_DOWNWARD__.
+	(DWARF_FRAME_REGISTERS): Change all uses to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.
+	(EH_RETURN_STACKADJ_RTX): Change all uses to
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__.
+	* config/cr16/unwind-dw2.h (DWARF_FRAME_REGISTERS): Change use to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.  Remove conditional definition.
+	* config/i386/cygming-crtbegin.c (EH_FRAME_SECTION_NAME): Change
+	use to __LIBGCC_EH_FRAME_SECTION_NAME__.
+	(JCR_SECTION_NAME): Change use to __LIBGCC_JCR_SECTION_NAME__.
+	* config/i386/cygming-crtend.c (EH_FRAME_SECTION_NAME): Change use
+	to __LIBGCC_EH_FRAME_SECTION_NAME__.
+	(JCR_SECTION_NAME): Change use to __LIBGCC_JCR_SECTION_NAME__
+	* config/mips/linux-unwind.h (STACK_POINTER_REGNUM): Change use to
+	__LIBGCC_STACK_POINTER_REGNUM__.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Change all uses to
+	__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/nios2/linux-unwind.h (STACK_POINTER_REGNUM): Change use
+	to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/pa/hpux-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN): Change
+	all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/pa/linux-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN): Change
+	all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	* config/rs6000/aix-unwind.h (DWARF_ALT_FRAME_RETURN_COLUMN):
+	Change all uses to __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__.
+	(STACK_POINTER_REGNUM): Change all uses to
+	__LIBGCC_STACK_POINTER_REGNUM__.
+	* config/rs6000/darwin-fallback.c (STACK_POINTER_REGNUM): Change
+	use to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/rs6000/linux-unwind.h (STACK_POINTER_REGNUM): Change all
+	uses to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/sparc/linux-unwind.h (DWARF_FRAME_REGISTERS): Change use
+	to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* config/sparc/sol2-unwind.h (DWARF_FRAME_REGISTERS): Change use
+	to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* config/tilepro/linux-unwind.h (STACK_POINTER_REGNUM): Change use
+	to __LIBGCC_STACK_POINTER_REGNUM__.
+	* config/xtensa/unwind-dw2-xtensa.h (DWARF_FRAME_REGISTERS):
+	Remove conditional definition.
+	* crtstuff.c (TEXT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_TEXT_SECTION_ASM_OP__.
+	(EH_FRAME_SECTION_NAME): Change all uses to
+	__LIBGCC_EH_FRAME_SECTION_NAME__.
+	(EH_TABLES_CAN_BE_READ_ONLY): Change all uses to
+	__LIBGCC_EH_TABLES_CAN_BE_READ_ONLY__.
+	(CTORS_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_CTORS_SECTION_ASM_OP__.
+	(DTORS_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_DTORS_SECTION_ASM_OP__.
+	(JCR_SECTION_NAME): Change all uses to
+	__LIBGCC_JCR_SECTION_NAME__.
+	(INIT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_SECTION_ASM_OP__.
+	(INIT_ARRAY_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__.
+	* generic-morestack.c (STACK_GROWS_DOWNWARD): Change all uses to
+	__LIBGCC_STACK_GROWS_DOWNWARD__.
+	* libgcc2.c (INIT_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_SECTION_ASM_OP__.
+	(INIT_ARRAY_SECTION_ASM_OP): Change all uses to
+	__LIBGCC_INIT_ARRAY_SECTION_ASM_OP__.
+	(EH_FRAME_SECTION_NAME): Change all uses to
+	__LIBGCC_EH_FRAME_SECTION_NAME__.
+	* libgcov-profiler.c (VTABLE_USES_DESCRIPTORS): Remove conditional
+	definitions.  Change all uses to
+	__LIBGCC_VTABLE_USES_DESCRIPTORS__.
+	* unwind-dw2.c (STACK_GROWS_DOWNWARD): Change all uses to
+	__LIBGCC_STACK_GROWS_DOWNWARD__.
+	(DWARF_FRAME_REGISTERS): Change all uses to
+	__LIBGCC_DWARF_FRAME_REGISTERS__.
+	(EH_RETURN_STACKADJ_RTX): Change all uses to
+	__LIBGCC_EH_RETURN_STACKADJ_RTX__.
+	* unwind-dw2.h (DWARF_FRAME_REGISTERS): Remove conditional
+	definition.  Change use to __LIBGCC_DWARF_FRAME_REGISTERS__.
+	* unwind-sjlj.c (DONT_USE_BUILTIN_SETJMP): Change all uses to
+	__LIBGCC_DONT_USE_BUILTIN_SETJMP__.
+	(JMP_BUF_SIZE): Change use to __LIBGCC_JMP_BUF_SIZE__.
+
+2014-09-02  Nathan sidwell  <nathan@acm.org>
+
+	* libgcov-interface.c (STRONG_ALIAS): New.
+	(__gcov_flush): Call __gcov_reset_int.
+	(__gcov_reset): Strong alias for ...
+	(__gcov_reset_ing): ... this renamed hidden version.
+	* libgcov.h (__gcov_reset_int): New declaration.
+
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* config/i386/cygming-crtend.c (register_frame_ctor): Move atexit
+	call from here...
+	* config/i386/cygming-crtbegin.c (__gcc_register_frame): to here.
+	(__dso_handle): Define on Cygwin.
+	* config/i386/t-cygming (crtbeginS.o): New rule.
+	* config.host (*-*-cygwin*): Add crtbeginS.o to extra_parts.
+
+	* config/i386/cygming-crtbegin.c (deregister_frame_fn): Fix
+	declaration syntax.
+
+2014-08-13  Steve Ellcey  <sellcey@mips.com>
+
+	* crtstuff.c: Undef caddr_t.
+
+2014-08-12  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips16.S:  Skip when __mips_soft_float is defined.
+
+2014-08-07  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_INTERFACE): Move _gcov_dump ...
+	(LIBGCOV_DRIVER): ... to here.
+	* libgcov.h (gcov_do_dump): New #define.
+	(struct gcov_root): New.
+	(__gcov_root): New declaration.
+	(__gcov_dump_one): Declare.
+	* libgcov-driver.c (gcov_list, gcov_dump_complete,
+	run_accounted): Delete.
+	(gcov_compute_histogram): Add LIST argument, adjust.
+	(compute_summary): Adjust gcov_compute_histogram call.
+	(gcov_do_dump): Not hidden, static in libgcov.
+	(gcov_clear): Move  to interface.c.
+	(__gcov_dump_one): New, broken out of ...
+	(gcov_exit): ... here.  Make static.
+	(__gcov_root): New.
+	(__gcov_init): Adjust.
+	* libgcov-interface.c (gcov_clear, gcov_exit): Remove
+	declarations.
+	(__gcov_flush): Use __gcov_dump_one and __gcov_reset.
+	(gcov_clear): Moved from driver.c.   Add LIST argument.
+	(__gcov_reset): Adjust for changed interfaces.
+	(__gcov_fork): Remove local declaration of __gcov_flush_mx.
+
+2014-08-04  Rohit  <rohitarulraj@freescale.com>
+
+	PR target/60102
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Update
+	based on change in SPE high register numbers and 3 HTM registers.
+
+2014-08-01  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_MERGE, LIBGCOV_PROFILER,
+	LIBGCOV_INTERFACE): Reformat.
+	* libgcov-driver.c (gcov_exit, __gcov_init): Disable when
+	IN_GCOV_TOOL.
+	* libgcov-interface.c: Reformat some comments.
+	(__gcov_flush_mx): Add declaration.  Tidy up definition.
+
+2014-07-31  Alan Modra  <amodra@gmail.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ibm-ldouble.c (typedef union longDblUnion): Delete.
+	(pack_ldouble): New function.
+	(__gcc_qadd): Use it.
+	(__gcc_qmul): Likewise.
+	(__gcc_qdiv): Likewise.
+	(__gcc_qneg): Likewise.
+	(__gcc_stoq): Likewise.
+	(__gcc_dtoq): Likewise.
+
+2014-07-30  J. D. Johnston  <jjohnst@us.ibm.com>
+
+	* config/s390/tpf-unwind.h: Include <stdbool.h>.
+	(__tpf_eh_return): Add original return address as second parameter.
+	Handle cases where unwinder routines were called directly, instead
+	of from within the C++ library.
+
+2014-07-29  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov.h: Move renaming of entry points to lib gcov specific
+	portion.
+	(gcov_do_dump): New rename.
+	(gcov_rewrite): Remove inline, make HIDDEN.
+	* libgcov-driver.c (gcov_clear, gcov_exit): Remove declarations.
+	(gcov_exit_compute_summary): Rename to ...
+	(compute_summary): ... here.  Add LIST argument.
+	(gcov_exit_merge_gcda): Rename to ...
+	(merge_one_data): ... here.
+	(gcov_exit_write_gcda): Rename to ...
+	(write_one_data): ... here.
+	(gcov_exit_merge_summary): Rename to ...
+	(merge_summary): Add RUN_COUNTED argument.
+	(gcov_exit_dump_gcov): Rename to ...
+	(dump_one_gcov): Add RUN_COUNTED argument.
+	(gcov_do_dump): New function, broken out of ...
+	(gcov_exit): ... here.  Call it.
+
+2014-07-27  Anthony Green  <green@moxielogic.com>
+
+	* config.host: Add moxiebox configuration suppport.
+
+2014-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov-driver.c (struct gcov_filename_aux): Rename ...
+	(struct gcov_filename): ... here.  Include buffer and max length
+	fields.
+	(gcov_max_filename): Remove.
+	(gi_filename): Remove.
+	(gcov_exit_compute_summary): Compute max filename here.
+	(gcov_exit_merge_gcda): Add filename parm, adjust.
+	(gcov_exit_merge_summary): Likewise.
+	(gcov_exit_dump_gcov): Adjust for struct gcov_filename changes.
+	(gcov_exit): Likewise.
+	(__gcov_init): Don't calculate max length here.
+	* libgcov_util.c (max_filename_len): Remove.
+	(read_gcda_file): Don't calculate max length here.
+	(gcov_read_profile_dir): Don't propagate here.
+	* libgcov-driver-system.c (alloc_filename_struct): Adjust for
+	struct gcov_filename changes.
+	(gcov_exit_open_gcda_file): Likewise.
+
+2014-07-25  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov-driver.c (set_gcov_dump_complete,
+	reset_gcov_dump_complete, get_gcov_dump_complete): Remove global
+	functions polluting user's namespace.
+	(gcov_exit): Set variable directly.
+	(gcov_clear): Reset variable directly.
+	* libgcov-interface.c (get_gcov_dymp_complete,
+	reset_gov_dump_complete): Remove declarations.
+	(__gcov_reset, __gcov_dump): Don't call them.
+
+2014-07-24  DJ Delorie  <dj@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (deregister_frame_fn): Newly public.
+	(__gcc_deregister_frame): Move logic to detect deregister function
+	to ...
+	(__gcc_register_frame): here, so it's consistent with the register
+	logic.
+
+2014-07-23  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov-driver.c (set_gcov_list): Remove.
+	(gcov_list): Make non-static in GCOV_TOOL.
+	* libgcov.h (GCOV_TOOL_LINKAGE): Remove unused #define.
+
 2014-07-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__sync_lock_release_4): New.

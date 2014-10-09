@@ -36,6 +36,7 @@
 #include "obstack.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "rtl-iter.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -50,7 +51,7 @@
 struct queued_debug_insn_change
 {
   struct queued_debug_insn_change *next;
-  rtx insn;
+  rtx_insn *insn;
   rtx *loc;
   rtx new_rtx;
 };
@@ -81,24 +82,23 @@ static bool skip_debug_insn_p;
 
 static void kill_value_one_regno (unsigned, struct value_data *);
 static void kill_value_regno (unsigned, unsigned, struct value_data *);
-static void kill_value (rtx, struct value_data *);
+static void kill_value (const_rtx, struct value_data *);
 static void set_value_regno (unsigned, enum machine_mode, struct value_data *);
 static void init_value_data (struct value_data *);
 static void kill_clobbered_value (rtx, const_rtx, void *);
 static void kill_set_value (rtx, const_rtx, void *);
-static int kill_autoinc_value (rtx *, void *);
 static void copy_value (rtx, rtx, struct value_data *);
 static bool mode_change_ok (enum machine_mode, enum machine_mode,
 			    unsigned int);
 static rtx maybe_mode_change (enum machine_mode, enum machine_mode,
 			      enum machine_mode, unsigned int, unsigned int);
 static rtx find_oldest_value_reg (enum reg_class, rtx, struct value_data *);
-static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx,
+static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx_insn *,
 				      struct value_data *);
 static bool replace_oldest_value_addr (rtx *, enum reg_class,
-				       enum machine_mode, addr_space_t, rtx,
-				       struct value_data *);
-static bool replace_oldest_value_mem (rtx, rtx, struct value_data *);
+				       enum machine_mode, addr_space_t,
+				       rtx_insn *, struct value_data *);
+static bool replace_oldest_value_mem (rtx, rtx_insn *, struct value_data *);
 static bool copyprop_hardreg_forward_1 (basic_block, struct value_data *);
 extern void debug_value_data (struct value_data *);
 #ifdef ENABLE_CHECKING
@@ -190,16 +190,13 @@ kill_value_regno (unsigned int regno, unsigned int nregs,
    so that we mind the mode the register is in.  */
 
 static void
-kill_value (rtx x, struct value_data *vd)
+kill_value (const_rtx x, struct value_data *vd)
 {
-  rtx orig_rtx = x;
-
   if (GET_CODE (x) == SUBREG)
     {
-      x = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
-			   GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
-      if (x == NULL_RTX)
-	x = SUBREG_REG (orig_rtx);
+      rtx tmp = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
+				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+      x = tmp ? tmp : SUBREG_REG (x);
     }
   if (REG_P (x))
     {
@@ -276,25 +273,24 @@ kill_set_value (rtx x, const_rtx set, void *data)
     }
 }
 
-/* Called through for_each_rtx.  Kill any register used as the base of an
-   auto-increment expression, and install that register as the root of its
-   own value list.  */
+/* Kill any register used in X as the base of an auto-increment expression,
+   and install that register as the root of its own value list.  */
 
-static int
-kill_autoinc_value (rtx *px, void *data)
+static void
+kill_autoinc_value (rtx insn, struct value_data *vd)
 {
-  rtx x = *px;
-  struct value_data *const vd = (struct value_data *) data;
-
-  if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
     {
-      x = XEXP (x, 0);
-      kill_value (x, vd);
-      set_value_regno (REGNO (x), GET_MODE (x), vd);
-      return -1;
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+	{
+	  x = XEXP (x, 0);
+	  kill_value (x, vd);
+	  set_value_regno (REGNO (x), GET_MODE (x), vd);
+	  iter.skip_subrtxes ();
+	}
     }
-
-  return 0;
 }
 
 /* Assert that SRC has been copied to DEST.  Adjust the data structures
@@ -482,7 +478,7 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
    in register class CL.  Return true if successfully replaced.  */
 
 static bool
-replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
+replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx_insn *insn,
 			  struct value_data *vd)
 {
   rtx new_rtx = find_oldest_value_reg (cl, *loc, vd);
@@ -523,7 +519,7 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
 static bool
 replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 			   enum machine_mode mode, addr_space_t as,
-			   rtx insn, struct value_data *vd)
+			   rtx_insn *insn, struct value_data *vd)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -669,7 +665,7 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 /* Similar to replace_oldest_value_reg, but X contains a memory.  */
 
 static bool
-replace_oldest_value_mem (rtx x, rtx insn, struct value_data *vd)
+replace_oldest_value_mem (rtx x, rtx_insn *insn, struct value_data *vd)
 {
   enum reg_class cl;
 
@@ -690,7 +686,7 @@ static void
 apply_debug_insn_changes (struct value_data *vd, unsigned int regno)
 {
   struct queued_debug_insn_change *change;
-  rtx last_insn = vd->e[regno].debug_insn_changes->insn;
+  rtx_insn *last_insn = vd->e[regno].debug_insn_changes->insn;
 
   for (change = vd->e[regno].debug_insn_changes;
        change;
@@ -706,33 +702,28 @@ apply_debug_insn_changes (struct value_data *vd, unsigned int regno)
   apply_change_group ();
 }
 
-/* Called via for_each_rtx, for all used registers in a real
-   insn apply DEBUG_INSN changes that change registers to the
-   used register.  */
-
-static int
-cprop_find_used_regs_1 (rtx *loc, void *data)
-{
-  if (REG_P (*loc))
-    {
-      struct value_data *vd = (struct value_data *) data;
-      if (vd->e[REGNO (*loc)].debug_insn_changes)
-	{
-	  apply_debug_insn_changes (vd, REGNO (*loc));
-	  free_debug_insn_changes (vd, REGNO (*loc));
-	}
-    }
-  return 0;
-}
-
 /* Called via note_uses, for all used registers in a real insn
    apply DEBUG_INSN changes that change registers to the used
    registers.  */
 
 static void
-cprop_find_used_regs (rtx *loc, void *vd)
+cprop_find_used_regs (rtx *loc, void *data)
 {
-  for_each_rtx (loc, cprop_find_used_regs_1, vd);
+  struct value_data *const vd = (struct value_data *) data;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x))
+	{
+	  unsigned int regno = REGNO (x);
+	  if (vd->e[regno].debug_insn_changes)
+	    {
+	      apply_debug_insn_changes (vd, regno);
+	      free_debug_insn_changes (vd, regno);
+	    }
+	}
+    }
 }
 
 /* Perform the forward copy propagation on basic block BB.  */
@@ -741,7 +732,7 @@ static bool
 copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 {
   bool anything_changed = false;
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
@@ -807,7 +798,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* Kill all auto-incremented values.  */
       /* ??? REG_INC is useless, since stack pushes aren't done that way.  */
-      for_each_rtx (&PATTERN (insn), kill_autoinc_value, vd);
+      kill_autoinc_value (insn, vd);
 
       /* Kill all early-clobbered operands.  */
       for (i = 0; i < n_ops; i++)
@@ -1038,7 +1029,17 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     but instead among CLOBBERs on the CALL_INSN, we could wrongly
 	     assume the value in it is still live.  */
 	  if (ksvd.ignore_set_reg)
-	    note_stores (PATTERN (insn), kill_clobbered_value, vd);
+	    {
+	      note_stores (PATTERN (insn), kill_clobbered_value, vd);
+	      for (exp = CALL_INSN_FUNCTION_USAGE (insn);
+		   exp;
+		   exp = XEXP (exp, 1))
+		{
+		  rtx x = XEXP (exp, 0);
+		  if (GET_CODE (x) == CLOBBER)
+		    kill_value (SET_DEST (x), vd);
+		}
+	    }
 	}
 
       /* Notice stores.  */

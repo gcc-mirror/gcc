@@ -38,6 +38,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Dist; use Exp_Dist;
 with Exp_Disp; use Exp_Disp;
+with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -130,9 +131,14 @@ package body Exp_Ch7 is
    --  pointers of N until it find the appropriate node to wrap. If it returns
    --  Empty, it means that no transient scope is needed in this context.
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id);
+   procedure Insert_Actions_In_Scope_Around
+     (N         : Node_Id;
+      Clean     : Boolean;
+      Manage_SS : Boolean);
    --  Insert the before-actions kept in the scope stack before N, and the
-   --  after-actions after N, which must be a member of a list.
+   --  after-actions after N, which must be a member of a list. If flag Clean
+   --  is set, insert any cleanup actions. If flag Manage_SS is set, insert
+   --  calls to mark and release the secondary stack.
 
    function Make_Transient_Block
      (Loc    : Source_Ptr;
@@ -373,11 +379,6 @@ package body Exp_Ch7 is
    function Enclosing_Function (E : Entity_Id) return Entity_Id;
    --  Given an arbitrary entity, traverse the scope chain looking for the
    --  first enclosing function. Return Empty if no function was found.
-
-   procedure Expand_Pragma_Initial_Condition (N : Node_Id);
-   --  Subsidiary to the expansion of package specs and bodies. Generate a
-   --  runtime check needed to verify the assumption introduced by pragma
-   --  Initial_Condition. N denotes the package spec or body.
 
    function Make_Call
      (Loc       : Source_Ptr;
@@ -870,9 +871,7 @@ package body Exp_Ch7 is
       --  types where the designated type is explicitly derived from [Limited_]
       --  Controlled.
 
-      elsif VM_Target /= No_VM
-        and then not Is_Controlled (Desig_Typ)
-      then
+      elsif VM_Target /= No_VM and then not Is_Controlled (Desig_Typ) then
          return;
 
       --  Do not create finalization masters in SPARK mode because they result
@@ -933,7 +932,7 @@ package body Exp_Ch7 is
             --  The default choice is the global pool
 
             else
-               Pool_Id := Get_Global_Pool_For_Access_Type (Ptr_Typ);
+               Pool_Id := RTE (RE_Global_Pool_Object);
                Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
             end if;
 
@@ -1476,12 +1475,7 @@ package body Exp_Ch7 is
          --  Release the secondary stack mark
 
          if Present (Mark_Id) then
-            Append_To (Finalizer_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_SS_Release), Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (Mark_Id, Loc))));
+            Append_To (Finalizer_Stmts, Build_SS_Release_Call (Loc, Mark_Id));
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
@@ -1609,7 +1603,7 @@ package body Exp_Ch7 is
             --  When the finalizer acts solely as a clean up routine, the body
             --  is inserted right after the spec.
 
-            if Acts_As_Clean and then not Has_Ctrl_Objs then
+            if Acts_As_Clean and not Has_Ctrl_Objs then
                Insert_After (Fin_Spec, Fin_Body);
 
             --  In all other cases the body is inserted after either:
@@ -1817,9 +1811,7 @@ package body Exp_Ch7 is
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                  and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                        N_Object_Declaration
-                 and then Is_Finalizable_Transient
-                            (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                                                       N_Object_Declaration
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -1869,9 +1861,8 @@ package body Exp_Ch7 is
 
                elsif Ekind (Obj_Id) = E_Variable
                  and then not In_Library_Level_Package_Body (Obj_Id)
-                 and then
-                   (Is_Simple_Protected_Type (Obj_Typ)
-                     or else Has_Simple_Protected_Object (Obj_Typ))
+                 and then (Is_Simple_Protected_Type (Obj_Typ)
+                            or else Has_Simple_Protected_Object (Obj_Typ))
                then
                   Processing_Actions (Is_Protected => True);
                end if;
@@ -2066,13 +2057,20 @@ package body Exp_Ch7 is
          Has_No_Init  : Boolean := False;
          Is_Protected : Boolean := False)
       is
-         Loc : constant Source_Ptr := Sloc (Decl);
+         Loc    : constant Source_Ptr := Sloc (Decl);
+         Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
 
-         function Build_BIP_Cleanup_Stmts
-           (Func_Id : Entity_Id;
-            Obj_Id  : Entity_Id) return Node_Id;
-         --  Func_Id denotes a build-in-place function. Obj_Id is the return
-         --  object of Func_Id. Generate the following cleanup code:
+         Init_Typ : Entity_Id;
+         --  The initialization type of the related object declaration. Note
+         --  that this is not necessarely the same type as Obj_Typ because of
+         --  possible type derivations.
+
+         Obj_Typ : Entity_Id;
+         --  The type of the related object declaration
+
+         function Build_BIP_Cleanup_Stmts (Func_Id : Entity_Id) return Node_Id;
+         --  Func_Id denotes a build-in-place function. Generate the following
+         --  cleanup code:
          --
          --    if BIPallocfrom > Secondary_Stack'Pos
          --      and then BIPfinalizationmaster /= null
@@ -2090,27 +2088,25 @@ package body Exp_Ch7 is
          --  allocation which Obj_Id renames.
 
          procedure Find_Last_Init
-           (Decl        : Node_Id;
-            Last_Init   : out Node_Id;
+           (Last_Init   : out Node_Id;
             Body_Insert : out Node_Id);
          --  Find the last initialization call related to object declaration
          --  Decl. Last_Init denotes the last initialization call which follows
-         --  Decl. Body_Insert denotes the finalizer body could be potentially
-         --  inserted.
+         --  Decl. Body_Insert denotes a node where the finalizer body could be
+         --  potentially inserted after (if blocks are involved).
 
          -----------------------------
          -- Build_BIP_Cleanup_Stmts --
          -----------------------------
 
          function Build_BIP_Cleanup_Stmts
-           (Func_Id : Entity_Id;
-            Obj_Id  : Entity_Id) return Node_Id
+           (Func_Id : Entity_Id) return Node_Id
          is
             Decls      : constant List_Id := New_List;
             Fin_Mas_Id : constant Entity_Id :=
                            Build_In_Place_Formal
                              (Func_Id, BIP_Finalization_Master);
-            Obj_Typ    : constant Entity_Id := Etype (Func_Id);
+            Func_Typ   : constant Entity_Id := Etype (Func_Id);
             Temp_Id    : constant Entity_Id :=
                            Entity (Prefix (Name (Parent (Obj_Id))));
 
@@ -2146,7 +2142,7 @@ package body Exp_Ch7 is
             --  caller's finalization master.
 
             --  Generate:
-            --    type Ptr_Typ is access Obj_Typ;
+            --    type Ptr_Typ is access Func_Typ;
 
             Ptr_Typ := Make_Temporary (Loc, 'P');
 
@@ -2155,7 +2151,7 @@ package body Exp_Ch7 is
                 Defining_Identifier => Ptr_Typ,
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    Subtype_Indication => New_Occurrence_Of (Obj_Typ, Loc))));
+                    Subtype_Indication => New_Occurrence_Of (Func_Typ, Loc))));
 
             --  Perform minor decoration in order to set the master and the
             --  storage pool attributes.
@@ -2202,13 +2198,13 @@ package body Exp_Ch7 is
 
             --  For constrained or tagged results escalate the condition to
             --  include the allocation format. Generate:
-            --
+
             --    if BIPallocform > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
 
-            if not Is_Constrained (Obj_Typ)
-              or else Is_Tagged_Type (Obj_Typ)
+            if not Is_Constrained (Func_Typ)
+              or else Is_Tagged_Type (Func_Typ)
             then
                declare
                   Alloc : constant Entity_Id :=
@@ -2244,21 +2240,16 @@ package body Exp_Ch7 is
          --------------------
 
          procedure Find_Last_Init
-           (Decl        : Node_Id;
-            Last_Init   : out Node_Id;
+           (Last_Init   : out Node_Id;
             Body_Insert : out Node_Id)
          is
-            function Find_Last_Init_In_Block
-              (Blk      : Node_Id;
-               Init_Typ : Entity_Id) return Node_Id;
+            function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id;
             --  Find the last initialization call within the statements of
-            --  block Blk. Init_Typ is type of the object being initialized.
+            --  block Blk.
 
-            function Is_Init_Call
-              (N        : Node_Id;
-               Init_Typ : Entity_Id) return Boolean;
+            function Is_Init_Call (N : Node_Id) return Boolean;
             --  Determine whether node N denotes one of the initialization
-            --  procedures of type Init_Typ.
+            --  procedures of types Init_Typ or Obj_Typ.
 
             function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
             --  Given a statement which is part of a list, return the next
@@ -2268,10 +2259,7 @@ package body Exp_Ch7 is
             -- Find_Last_Init_In_Block --
             -----------------------------
 
-            function Find_Last_Init_In_Block
-              (Blk      : Node_Id;
-               Init_Typ : Entity_Id) return Node_Id
-            is
+            function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id is
                HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
                Stmt : Node_Id;
 
@@ -2286,9 +2274,9 @@ package body Exp_Ch7 is
                      --  Peek inside nested blocks in case aborts are allowed
 
                      if Nkind (Stmt) = N_Block_Statement then
-                        return Find_Last_Init_In_Block (Stmt, Init_Typ);
+                        return Find_Last_Init_In_Block (Stmt);
 
-                     elsif Is_Init_Call (Stmt, Init_Typ) then
+                     elsif Is_Init_Call (Stmt) then
                         return Stmt;
                      end if;
 
@@ -2303,33 +2291,38 @@ package body Exp_Ch7 is
             -- Is_Init_Call --
             ------------------
 
-            function Is_Init_Call
-              (N        : Node_Id;
-               Init_Typ : Entity_Id) return Boolean
-            is
-               Call_Id   : Entity_Id;
-               Deep_Init : Entity_Id := Empty;
-               Prim_Init : Entity_Id := Empty;
-               Type_Init : Entity_Id := Empty;
+            function Is_Init_Call (N : Node_Id) return Boolean is
+               function Is_Init_Proc_Of
+                 (Subp_Id : Entity_Id;
+                  Typ     : Entity_Id) return Boolean;
+               --  Determine whether subprogram Subp_Id is a valid init proc of
+               --  type Typ.
 
-            begin
-               if Nkind (N) = N_Procedure_Call_Statement
-                 and then Nkind (Name (N)) = N_Identifier
-               then
-                  Call_Id := Entity (Name (N));
+               ---------------------
+               -- Is_Init_Proc_Of --
+               ---------------------
 
-                  --  Obtain all possible initialization routines of the object
-                  --  type and try to match the procedure call against one of
-                  --  them.
+               function Is_Init_Proc_Of
+                 (Subp_Id : Entity_Id;
+                  Typ     : Entity_Id) return Boolean
+               is
+                  Deep_Init : Entity_Id := Empty;
+                  Prim_Init : Entity_Id := Empty;
+                  Type_Init : Entity_Id := Empty;
+
+               begin
+                  --  Obtain all possible initialization routines of the
+                  --  related type and try to match the subprogram entity
+                  --  against one of them.
 
                   --  Deep_Initialize
 
-                  Deep_Init := TSS (Init_Typ, TSS_Deep_Initialize);
+                  Deep_Init := TSS (Typ, TSS_Deep_Initialize);
 
                   --  Primitive Initialize
 
-                  if Is_Controlled (Init_Typ) then
-                     Prim_Init := Find_Prim_Op (Init_Typ, Name_Initialize);
+                  if Is_Controlled (Typ) then
+                     Prim_Init := Find_Prim_Op (Typ, Name_Initialize);
 
                      if Present (Prim_Init) then
                         Prim_Init := Ultimate_Alias (Prim_Init);
@@ -2338,16 +2331,37 @@ package body Exp_Ch7 is
 
                   --  Type initialization routine
 
-                  if Has_Non_Null_Base_Init_Proc (Init_Typ) then
-                     Type_Init := Base_Init_Proc (Init_Typ);
+                  if Has_Non_Null_Base_Init_Proc (Typ) then
+                     Type_Init := Base_Init_Proc (Typ);
                   end if;
 
                   return
-                    (Present (Deep_Init) and then Call_Id = Deep_Init)
+                    (Present (Deep_Init) and then Subp_Id = Deep_Init)
                       or else
-                    (Present (Prim_Init) and then Call_Id = Prim_Init)
+                    (Present (Prim_Init) and then Subp_Id = Prim_Init)
                       or else
-                    (Present (Type_Init) and then Call_Id = Type_Init);
+                    (Present (Type_Init) and then Subp_Id = Type_Init);
+               end Is_Init_Proc_Of;
+
+               --  Local variables
+
+               Call_Id : Entity_Id;
+
+            --  Start of processing for Is_Init_Call
+
+            begin
+               if Nkind (N) = N_Procedure_Call_Statement
+                 and then Nkind (Name (N)) = N_Identifier
+               then
+                  Call_Id := Entity (Name (N));
+
+                  --  Consider both the type of the object declaration and its
+                  --  related initialization type.
+
+                  return
+                    Is_Init_Proc_Of (Call_Id, Init_Typ)
+                      or else
+                    Is_Init_Proc_Of (Call_Id, Obj_Typ);
                end if;
 
                return False;
@@ -2374,13 +2388,12 @@ package body Exp_Ch7 is
 
             --  Local variables
 
-            Obj_Id   : constant Entity_Id := Defining_Entity (Decl);
-            Obj_Typ  : constant Entity_Id := Base_Type (Etype (Obj_Id));
-            Call     : Node_Id;
-            Init_Typ : Entity_Id := Obj_Typ;
-            Is_Conc  : Boolean   := False;
-            Stmt     : Node_Id;
-            Stmt_2   : Node_Id;
+            Call   : Node_Id;
+            Stmt   : Node_Id;
+            Stmt_2 : Node_Id;
+
+            Deep_Init_Found : Boolean := False;
+            --  A flag set when a call to [Deep_]Initialize has been found
 
          --  Start of processing for Find_Last_Init
 
@@ -2393,34 +2406,6 @@ package body Exp_Ch7 is
 
             if Has_No_Init then
                return;
-            end if;
-
-            --  Obtain the proper type of the object being initialized
-
-            loop
-               if Is_Concurrent_Type (Init_Typ)
-                 and then Present (Corresponding_Record_Type (Init_Typ))
-               then
-                  Is_Conc  := True;
-                  Init_Typ := Corresponding_Record_Type (Init_Typ);
-
-               elsif Is_Private_Type (Init_Typ)
-                  and then Present (Full_View (Init_Typ))
-               then
-                  Init_Typ := Full_View (Init_Typ);
-
-               elsif Is_Untagged_Derivation (Init_Typ)
-                 and then not Is_Conc
-               then
-                  Init_Typ := Root_Type (Init_Typ);
-
-               else
-                  exit;
-               end if;
-            end loop;
-
-            if Init_Typ /= Base_Type (Init_Typ) then
-               Init_Typ := Base_Type (Init_Typ);
             end if;
 
             Stmt := Next_Suitable_Statement (Decl);
@@ -2442,7 +2427,7 @@ package body Exp_Ch7 is
             --  In this scenario the declaration of the temporary acts as the
             --  last initialization statement.
 
-            if Is_Limited_Type (Init_Typ)
+            if Is_Limited_Type (Obj_Typ)
               and then Has_Init_Expression (Decl)
               and then No (Expression (Decl))
             then
@@ -2459,6 +2444,15 @@ package body Exp_Ch7 is
 
                   Next (Stmt);
                end loop;
+
+            --  Nothing to do for an object with supporessed initialization.
+            --  Note that this check is not performed at the beginning of the
+            --  routine because a declaration marked with No_Initialization
+            --  may still be initialized by a build-in-place call (the case
+            --  above).
+
+            elsif No_Initialization (Decl) then
+               return;
 
             --  In all other cases the initialization calls follow the related
             --  object. The general structure of object initialization built by
@@ -2482,7 +2476,7 @@ package body Exp_Ch7 is
             --  within a block.
 
             elsif Nkind (Stmt) = N_Block_Statement then
-               Last_Init   := Find_Last_Init_In_Block (Stmt, Init_Typ);
+               Last_Init   := Find_Last_Init_In_Block (Stmt);
                Body_Insert := Stmt;
 
             --  Otherwise the initialization calls follow the related object
@@ -2496,22 +2490,25 @@ package body Exp_Ch7 is
 
                if Present (Stmt_2) then
                   if Nkind (Stmt_2) = N_Block_Statement then
-                     Call := Find_Last_Init_In_Block (Stmt_2, Init_Typ);
+                     Call := Find_Last_Init_In_Block (Stmt_2);
 
                      if Present (Call) then
-                        Last_Init   := Call;
-                        Body_Insert := Stmt_2;
+                        Deep_Init_Found := True;
+                        Last_Init       := Call;
+                        Body_Insert     := Stmt_2;
                      end if;
 
-                  elsif Is_Init_Call (Stmt_2, Init_Typ) then
-                     Last_Init   := Stmt_2;
-                     Body_Insert := Last_Init;
+                  elsif Is_Init_Call (Stmt_2) then
+                     Deep_Init_Found := True;
+                     Last_Init       := Stmt_2;
+                     Body_Insert     := Last_Init;
                   end if;
+               end if;
 
                --  If the object lacks a call to Deep_Initialize, then it must
                --  have a call to its related type init proc.
 
-               elsif Is_Init_Call (Stmt, Init_Typ) then
+               if not Deep_Init_Found and then Is_Init_Call (Stmt) then
                   Last_Init   := Stmt;
                   Body_Insert := Last_Init;
                end if;
@@ -2520,7 +2517,6 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Obj_Id    : constant Entity_Id := Defining_Identifier (Decl);
          Body_Ins  : Node_Id;
          Count_Ins : Node_Id;
          Fin_Call  : Node_Id;
@@ -2529,22 +2525,59 @@ package body Exp_Ch7 is
          Label     : Node_Id;
          Label_Id  : Entity_Id;
          Obj_Ref   : Node_Id;
-         Obj_Typ   : Entity_Id;
 
       --  Start of processing for Process_Object_Declaration
 
       begin
+         --  Handle the object type and the reference to the object
+
          Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
          Obj_Typ := Base_Type (Etype (Obj_Id));
 
-         --  Handle access types
+         loop
+            if Is_Access_Type (Obj_Typ) then
+               Obj_Typ := Directly_Designated_Type (Obj_Typ);
+               Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
 
-         if Is_Access_Type (Obj_Typ) then
-            Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
-            Obj_Typ := Directly_Designated_Type (Obj_Typ);
-         end if;
+            elsif Is_Concurrent_Type (Obj_Typ)
+              and then Present (Corresponding_Record_Type (Obj_Typ))
+            then
+               Obj_Typ := Corresponding_Record_Type (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            elsif Is_Private_Type (Obj_Typ)
+              and then Present (Full_View (Obj_Typ))
+            then
+               Obj_Typ := Full_View (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            elsif Obj_Typ /= Base_Type (Obj_Typ) then
+               Obj_Typ := Base_Type (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            else
+               exit;
+            end if;
+         end loop;
 
          Set_Etype (Obj_Ref, Obj_Typ);
+
+         --  Handle the initialization type of the object declaration
+
+         Init_Typ := Obj_Typ;
+         loop
+            if Is_Private_Type (Init_Typ)
+              and then Present (Full_View (Init_Typ))
+            then
+               Init_Typ := Full_View (Init_Typ);
+
+            elsif Is_Untagged_Derivation (Init_Typ) then
+               Init_Typ := Root_Type (Init_Typ);
+
+            else
+               exit;
+            end if;
+         end loop;
 
          --  Set a new value for the state counter and insert the statement
          --  after the object declaration. Generate:
@@ -2571,7 +2604,7 @@ package body Exp_Ch7 is
          --  either [Deep_]Initialize or the type specific init proc.
 
          else
-            Find_Last_Init (Decl, Count_Ins, Body_Ins);
+            Find_Last_Init (Count_Ins, Body_Ins);
          end if;
 
          Insert_After (Count_Ins, Inc_Decl);
@@ -2754,8 +2787,7 @@ package body Exp_Ch7 is
                   if Is_Build_In_Place_Function (Func_Id)
                     and then Needs_BIP_Finalization_Master (Func_Id)
                   then
-                     Append_To
-                       (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id, Obj_Id));
+                     Append_To (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id));
                   end if;
                end;
             end if;
@@ -2911,13 +2943,13 @@ package body Exp_Ch7 is
         and then
           (not Is_Library_Level_Entity (Spec_Id)
 
-             --  Nested packages are considered to be library level entities,
-             --  but do not need to be processed separately. True library level
-             --  packages have a scope value of 1.
+            --  Nested packages are considered to be library level entities,
+            --  but do not need to be processed separately. True library level
+            --  packages have a scope value of 1.
 
-             or else Scope_Depth_Value (Spec_Id) /= Uint_1
-             or else (Is_Generic_Instance (Spec_Id)
-                       and then Package_Instantiation (Spec_Id) /= N))
+            or else Scope_Depth_Value (Spec_Id) /= Uint_1
+            or else (Is_Generic_Instance (Spec_Id)
+                      and then Package_Instantiation (Spec_Id) /= N))
       then
          return;
       end if;
@@ -3108,8 +3140,11 @@ package body Exp_Ch7 is
       Loc         : Source_Ptr;
       For_Package : Boolean := False)
    is
-      A_Expr : Node_Id;
-      E_Decl : Node_Id;
+      Decl : Node_Id;
+
+      Dummy : Entity_Id;
+      --  This variable captures an unused dummy internal entity, see the
+      --  comment associated with its use.
 
    begin
       pragma Assert (Decls /= No_List);
@@ -3138,56 +3173,61 @@ package body Exp_Ch7 is
       --  does not include routine Raise_From_Controlled_Operation which is the
       --  the sole user of flag Abort.
 
-      --  This is not needed for library-level finalizers as they are called
-      --  by the environment task and cannot be aborted.
+      --  This is not needed for library-level finalizers as they are called by
+      --  the environment task and cannot be aborted.
 
-      if Abort_Allowed
-        and then VM_Target = No_VM
-        and then not For_Package
-      then
-         Data.Abort_Id  := Make_Temporary (Loc, 'A');
+      if VM_Target = No_VM and then not For_Package then
+         if Abort_Allowed then
+            Data.Abort_Id := Make_Temporary (Loc, 'A');
 
-         A_Expr := New_Occurrence_Of (RTE (RE_Triggered_By_Abort), Loc);
+            --  Generate:
+            --    Abort_Id : constant Boolean := <A_Expr>;
 
-         --  Generate:
+            Append_To (Decls,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Data.Abort_Id,
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Boolean, Loc),
+                Expression          =>
+                  New_Occurrence_Of (RTE (RE_Triggered_By_Abort), Loc)));
 
-         --    Abort_Id : constant Boolean := <A_Expr>;
+         --  Abort is not required
 
-         Append_To (Decls,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Data.Abort_Id,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression          => A_Expr));
+         else
+            --  Generate a dummy entity to ensure that the internal symbols are
+            --  in sync when a unit is compiled with and without aborts.
+
+            Dummy := Make_Temporary (Loc, 'A');
+            Data.Abort_Id := Empty;
+         end if;
+
+      --  .NET/JVM or library-level finalizers
 
       else
-         --  No abort, .NET/JVM or library-level finalizers
-
-         Data.Abort_Id  := Empty;
+         Data.Abort_Id := Empty;
       end if;
 
       if Exception_Extra_Info then
-         Data.E_Id      := Make_Temporary (Loc, 'E');
+         Data.E_Id := Make_Temporary (Loc, 'E');
 
          --  Generate:
-
          --    E_Id : Exception_Occurrence;
 
-         E_Decl :=
+         Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Data.E_Id,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Exception_Occurrence), Loc));
-         Set_No_Initialization (E_Decl);
+         Set_No_Initialization (Decl);
 
-         Append_To (Decls, E_Decl);
+         Append_To (Decls, Decl);
 
       else
-         Data.E_Id      := Empty;
+         Data.E_Id := Empty;
       end if;
 
       --  Generate:
-
       --    Raised_Id : Boolean := False;
 
       Append_To (Decls,
@@ -3418,8 +3458,7 @@ package body Exp_Ch7 is
    begin
       if Has_Discriminants (U_Typ)
         and then Nkind (Parent (U_Typ)) = N_Full_Type_Declaration
-        and then
-          Nkind (Type_Definition (Parent (U_Typ))) = N_Record_Definition
+        and then Nkind (Type_Definition (Parent (U_Typ))) = N_Record_Definition
         and then
           Present
             (Variant_Part (Component_List (Type_Definition (Parent (U_Typ)))))
@@ -3924,15 +3963,7 @@ package body Exp_Ch7 is
          if Needs_Sec_Stack_Mark then
             Mark := Make_Temporary (Loc, 'M');
 
-            Append_To (New_Decls,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Mark,
-                Object_Definition   =>
-                  New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
-                Expression          =>
-                  Make_Function_Call (Loc,
-                    Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc))));
-
+            Append_To (New_Decls, Build_SS_Mark_Call (Loc, Mark));
             Set_Uses_Sec_Stack (Scop, False);
          end if;
 
@@ -4228,88 +4259,6 @@ package body Exp_Ch7 is
       end if;
    end Expand_N_Package_Declaration;
 
-   -------------------------------------
-   -- Expand_Pragma_Initial_Condition --
-   -------------------------------------
-
-   procedure Expand_Pragma_Initial_Condition (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Check     : Node_Id;
-      Expr      : Node_Id;
-      Init_Cond : Node_Id;
-      List      : List_Id;
-      Pack_Id   : Entity_Id;
-
-   begin
-      if Nkind (N) = N_Package_Body then
-         Pack_Id := Corresponding_Spec (N);
-
-         if Present (Handled_Statement_Sequence (N)) then
-            List := Statements (Handled_Statement_Sequence (N));
-
-         --  The package body lacks statements, create an empty list
-
-         else
-            List := New_List;
-
-            Set_Handled_Statement_Sequence (N,
-              Make_Handled_Sequence_Of_Statements (Loc, Statements => List));
-         end if;
-
-      elsif Nkind (N) = N_Package_Declaration then
-         Pack_Id := Defining_Entity (N);
-
-         if Present (Visible_Declarations (Specification (N))) then
-            List := Visible_Declarations (Specification (N));
-
-         --  The package lacks visible declarations, create an empty list
-
-         else
-            List := New_List;
-
-            Set_Visible_Declarations (Specification (N), List);
-         end if;
-
-      --  This routine should not be used on anything other than packages
-
-      else
-         raise Program_Error;
-      end if;
-
-      Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
-
-      --  The caller should check whether the package is subject to pragma
-      --  Initial_Condition.
-
-      pragma Assert (Present (Init_Cond));
-
-      Expr :=
-        Get_Pragma_Arg (First (Pragma_Argument_Associations (Init_Cond)));
-
-      --  The assertion expression was found to be illegal, do not generate the
-      --  runtime check as it will repeat the illegality.
-
-      if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
-         return;
-      end if;
-
-      --  Generate:
-      --    pragma Check (Initial_Condition, <Expr>);
-
-      Check :=
-        Make_Pragma (Loc,
-          Chars                        => Name_Check,
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Name_Initial_Condition)),
-
-            Make_Pragma_Argument_Association (Loc,
-              Expression => New_Copy_Tree (Expr))));
-
-      Append_To (List, Check);
-      Analyze (Check);
-   end Expand_Pragma_Initial_Condition;
-
    -----------------------------
    -- Find_Node_To_Be_Wrapped --
    -----------------------------
@@ -4460,25 +4409,6 @@ package body Exp_Ch7 is
       end loop;
    end Find_Node_To_Be_Wrapped;
 
-   -------------------------------------
-   -- Get_Global_Pool_For_Access_Type --
-   -------------------------------------
-
-   function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id is
-   begin
-      --  Access types whose size is smaller than System.Address size can exist
-      --  only on VMS. We can't use the usual global pool which returns an
-      --  object of type Address as truncation will make it invalid. To handle
-      --  this case, VMS has a dedicated global pool that returns addresses
-      --  that fit into 32 bit accesses.
-
-      if Opt.True_VMS_Target and then Esize (T) = 32 then
-         return RTE (RE_Global_Pool_32_Object);
-      else
-         return RTE (RE_Global_Pool_Object);
-      end if;
-   end Get_Global_Pool_For_Access_Type;
-
    ----------------------------------
    -- Has_New_Controlled_Component --
    ----------------------------------
@@ -4551,11 +4481,17 @@ package body Exp_Ch7 is
    -- Insert_Actions_In_Scope_Around --
    ------------------------------------
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id) is
-      Act_After   : constant List_Id :=
-        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (After);
+   procedure Insert_Actions_In_Scope_Around
+     (N         : Node_Id;
+      Clean     : Boolean;
+      Manage_SS : Boolean)
+   is
       Act_Before  : constant List_Id :=
         Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Before);
+      Act_After   : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (After);
+      Act_Cleanup : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup);
       --  Note: We used to use renamings of Scope_Stack.Table (Scope_Stack.
       --  Last), but this was incorrect as Process_Transient_Object may
       --  introduce new scopes and cause a reallocation of Scope_Stack.Table.
@@ -4892,6 +4828,14 @@ package body Exp_Ch7 is
             Next (Stmt);
          end loop;
 
+         if Clean then
+            if Present (Prev_Fin) then
+               Insert_List_Before_And_Analyze (Prev_Fin, Act_Cleanup);
+            else
+               Insert_List_After_And_Analyze (Fin_Insrt, Act_Cleanup);
+            end if;
+         end if;
+
          --  Generate:
          --    if Raised and then not Abort then
          --       Raise_From_Controlled_Operation (E);
@@ -4903,86 +4847,101 @@ package body Exp_Ch7 is
          end if;
       end Process_Transient_Objects;
 
+      --  Local variables
+
+      Loc          : constant Source_Ptr := Sloc (N);
+      Node_To_Wrap : constant Node_Id    := Node_To_Be_Wrapped;
+      First_Obj    : Node_Id;
+      Last_Obj     : Node_Id;
+      Mark_Id      : Entity_Id;
+      Target       : Node_Id;
+
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
-      if No (Act_Before) and then No (Act_After) then
+      if No (Act_Before) and then No (Act_After) and then No (Act_Cleanup) then
          return;
       end if;
 
-      declare
-         Node_To_Wrap : constant Node_Id := Node_To_Be_Wrapped;
-         First_Obj    : Node_Id;
-         Last_Obj     : Node_Id;
-         Target       : Node_Id;
+      --  If the node to be wrapped is the trigger of an asynchronous select,
+      --  it is not part of a statement list. The actions must be inserted
+      --  before the select itself, which is part of some list of statements.
+      --  Note that the triggering alternative includes the triggering
+      --  statement and an optional statement list. If the node to be
+      --  wrapped is part of that list, the normal insertion applies.
 
-      begin
-         --  If the node to be wrapped is the trigger of an asynchronous
-         --  select, it is not part of a statement list. The actions must be
-         --  inserted before the select itself, which is part of some list of
-         --  statements. Note that the triggering alternative includes the
-         --  triggering statement and an optional statement list. If the node
-         --  to be wrapped is part of that list, the normal insertion applies.
+      if Nkind (Parent (Node_To_Wrap)) = N_Triggering_Alternative
+        and then not Is_List_Member (Node_To_Wrap)
+      then
+         Target := Parent (Parent (Node_To_Wrap));
+      else
+         Target := N;
+      end if;
 
-         if Nkind (Parent (Node_To_Wrap)) = N_Triggering_Alternative
-           and then not Is_List_Member (Node_To_Wrap)
-         then
-            Target := Parent (Parent (Node_To_Wrap));
-         else
-            Target := N;
-         end if;
+      First_Obj := Target;
+      Last_Obj  := Target;
 
-         First_Obj := Target;
-         Last_Obj  := Target;
+      --  Add all actions associated with a transient scope into the main tree.
+      --  There are several scenarios here:
 
-         --  Add all actions associated with a transient scope into the main
-         --  tree. There are several scenarios here:
+      --       +--- Before ----+        +----- After ---+
+      --    1) First_Obj ....... Target ........ Last_Obj
 
-         --       +--- Before ----+        +----- After ---+
-         --    1) First_Obj ....... Target ........ Last_Obj
+      --    2) First_Obj ....... Target
 
-         --    2) First_Obj ....... Target
+      --    3)                   Target ........ Last_Obj
 
-         --    3)                   Target ........ Last_Obj
+      --  Flag declarations are inserted before the first object
 
-         if Present (Act_Before) then
+      if Present (Act_Before) then
+         First_Obj := First (Act_Before);
+         Insert_List_Before (Target, Act_Before);
+      end if;
 
-            --  Flag declarations are inserted before the first object
+      --  Finalization calls are inserted after the last object
 
-            First_Obj := First (Act_Before);
+      if Present (Act_After) then
+         Last_Obj := Last (Act_After);
+         Insert_List_After (Target, Act_After);
+      end if;
 
-            Insert_List_Before (Target, Act_Before);
-         end if;
+      --  Mark and release the secondary stack when the context warrants it
 
-         if Present (Act_After) then
+      if Manage_SS then
+         Mark_Id := Make_Temporary (Loc, 'M');
 
-            --  Finalization calls are inserted after the last object
+         --  Generate:
+         --    Mnn : constant Mark_Id := SS_Mark;
 
-            Last_Obj := Last (Act_After);
+         Insert_Before_And_Analyze
+           (First_Obj, Build_SS_Mark_Call (Loc, Mark_Id));
 
-            Insert_List_After (Target, Act_After);
-         end if;
+         --  Generate:
+         --    SS_Release (Mnn);
 
-         --  Check for transient controlled objects associated with Target and
-         --  generate the appropriate finalization actions for them.
+         Insert_After_And_Analyze
+           (Last_Obj, Build_SS_Release_Call (Loc, Mark_Id));
+      end if;
 
-         Process_Transient_Objects
-           (First_Object => First_Obj,
-            Last_Object  => Last_Obj,
-            Related_Node => Target);
+      --  Check for transient controlled objects associated with Target and
+      --  generate the appropriate finalization actions for them.
 
-         --  Reset the action lists
+      Process_Transient_Objects
+        (First_Object => First_Obj,
+         Last_Object  => Last_Obj,
+         Related_Node => Target);
 
-         if Present (Act_Before) then
-            Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped (Before) := No_List;
-         end if;
+      --  Reset the action lists
 
-         if Present (Act_After) then
-            Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped (After) := No_List;
-         end if;
-      end;
+      Scope_Stack.Table
+        (Scope_Stack.Last).Actions_To_Be_Wrapped (Before) := No_List;
+      Scope_Stack.Table
+        (Scope_Stack.Last).Actions_To_Be_Wrapped (After)  := No_List;
+
+      if Clean then
+         Scope_Stack.Table
+           (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup) := No_List;
+      end if;
    end Insert_Actions_In_Scope_Around;
 
    ------------------------------
@@ -5024,7 +4983,7 @@ package body Exp_Ch7 is
       Utyp := Underlying_Type (Base_Type (Utyp));
       Set_Assignment_OK (Ref);
 
-      --  Deal with non-tagged derivation of private views
+      --  Deal with untagged derivation of private views
 
       if Is_Untagged_Derivation (Typ) then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
@@ -6945,9 +6904,7 @@ package body Exp_Ch7 is
 
          --    Deep_Finalize (Obj._parent, False);
 
-         if Is_Tagged_Type (Typ)
-           and then Is_Derived_Type (Typ)
-         then
+         if Is_Tagged_Type (Typ) and then Is_Derived_Type (Typ) then
             declare
                Par_Typ  : constant Entity_Id := Parent_Field_Type (Typ);
                Call     : Node_Id;
@@ -7002,9 +6959,7 @@ package body Exp_Ch7 is
          --  Finalize the object. This action must be performed first before
          --  all components have been finalized.
 
-         if Is_Controlled (Typ)
-           and then not Is_Local
-         then
+         if Is_Controlled (Typ) and then not Is_Local then
             declare
                Fin_Stmt : Node_Id;
                Proc     : Entity_Id;
@@ -7233,7 +7188,7 @@ package body Exp_Ch7 is
       Utyp := Underlying_Type (Base_Type (Utyp));
       Set_Assignment_OK (Ref);
 
-      --  Deal with non-tagged derivation of private views. If the parent type
+      --  Deal with untagged derivation of private views. If the parent type
       --  is a protected type, Deep_Finalize is found on the corresponding
       --  record of the ancestor.
 
@@ -7700,11 +7655,9 @@ package body Exp_Ch7 is
 
       Utyp := Underlying_Type (Base_Type (Utyp));
 
-      --  Deal with non-tagged derivation of private views
+      --  Deal with untagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ)
-        and then not Is_Conc
-      then
+      if Is_Untagged_Derivation (Typ) and then not Is_Conc then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
 
@@ -7829,7 +7782,7 @@ package body Exp_Ch7 is
 
       Utyp := Underlying_Type (Base_Type (Utyp));
 
-      --  Deal with non-tagged derivation of private views. If the parent is
+      --  Deal with untagged derivation of private views. If the parent is
       --  now known to be protected, the finalization routine is the one
       --  defined on the corresponding record of the ancestor (corresponding
       --  records do not automatically inherit operations, but maybe they
@@ -7967,9 +7920,11 @@ package body Exp_Ch7 is
       Set_Parent (Block, Par);
 
       --  Insert actions stuck in the transient scopes as well as all freezing
-      --  nodes needed by those actions.
+      --  nodes needed by those actions. Do not insert cleanup actions here,
+      --  they will be transferred to the newly created block.
 
-      Insert_Actions_In_Scope_Around (Action);
+      Insert_Actions_In_Scope_Around
+        (Action, Clean => False, Manage_SS => False);
 
       Insert := Prev (Action);
       if Present (Insert) then
@@ -8079,7 +8034,7 @@ package body Exp_Ch7 is
    --  declaration into a transient block as usual case, otherwise the object
    --  would be itself declared in the wrong scope. Therefore, all entities (if
    --  any) defined in the transient block are moved to the proper enclosing
-   --  scope, furthermore, if they are controlled variables they are finalized
+   --  scope. Furthermore, if they are controlled variables they are finalized
    --  right after the declaration. The finalization list of the transient
    --  scope is defined as a renaming of the enclosing one so during their
    --  initialization they will be attached to the proper finalization list.
@@ -8095,42 +8050,54 @@ package body Exp_Ch7 is
    --    [Deep_]Finalize (_v2);
 
    procedure Wrap_Transient_Declaration (N : Node_Id) is
-      Encl_S  : Entity_Id;
-      S       : Entity_Id;
-      Uses_SS : Boolean;
+      Curr_S : Entity_Id;
+      Encl_S : Entity_Id;
 
    begin
-      S := Current_Scope;
-      Encl_S := Scope (S);
+      Curr_S := Current_Scope;
+      Encl_S := Scope (Curr_S);
 
-      --  Insert Actions kept in the Scope stack
+      --  Insert all actions inluding cleanup generated while analyzing or
+      --  expanding the transient context back into the tree. Manage the
+      --  secondary stack when the object declaration appears in a library
+      --  level package [body]. This is not needed for .NET/JVM as those do
+      --  not support the secondary stack.
 
-      Insert_Actions_In_Scope_Around (N);
-
-      --  If the declaration is consuming some secondary stack, mark the
-      --  enclosing scope appropriately.
-
-      Uses_SS := Uses_Sec_Stack (S);
+      Insert_Actions_In_Scope_Around
+        (N         => N,
+         Clean     => True,
+         Manage_SS =>
+           VM_Target = No_VM
+             and then Uses_Sec_Stack (Curr_S)
+             and then Nkind (N) = N_Object_Declaration
+             and then Ekind_In (Encl_S, E_Package, E_Package_Body)
+             and then Is_Library_Level_Entity (Encl_S));
       Pop_Scope;
 
-      --  Put the local entities back in the enclosing scope, and set the
-      --  Is_Public flag appropriately.
+      --  Relocate local entities declared within the transient scope to the
+      --  enclosing scope. This action sets their Is_Public flag accordingly.
 
-      Transfer_Entities (S, Encl_S);
+      Transfer_Entities (Curr_S, Encl_S);
 
-      --  Mark the enclosing dynamic scope so that the sec stack will be
-      --  released upon its exit unless this is a function that returns on
-      --  the sec stack in which case this will be done by the caller.
+      --  Mark the enclosing dynamic scope to ensure that the secondary stack
+      --  is properly released upon exiting the said scope. This is not needed
+      --  for .NET/JVM as those do not support the secondary stack.
 
-      if VM_Target = No_VM and then Uses_SS then
-         S := Enclosing_Dynamic_Scope (S);
+      if VM_Target = No_VM and then Uses_Sec_Stack (Curr_S) then
+         Curr_S := Enclosing_Dynamic_Scope (Curr_S);
 
-         if Ekind (S) = E_Function
-           and then Requires_Transient_Scope (Etype (S))
+         --  Do not mark a function that returns on the secondary stack as the
+         --  reclamation is done by the caller.
+
+         if Ekind (Curr_S) = E_Function
+           and then Requires_Transient_Scope (Etype (Curr_S))
          then
             null;
+
+         --  Otherwise mark the enclosing dynamic scope
+
          else
-            Set_Uses_Sec_Stack (S);
+            Set_Uses_Sec_Stack (Curr_S);
             Check_Restriction (No_Secondary_Stack, N);
          end if;
       end if;
@@ -8153,11 +8120,11 @@ package body Exp_Ch7 is
       --    declare
       --       M : constant Mark_Id := SS_Mark;
       --       procedure Finalizer is ...  (See Build_Finalizer)
-      --
+
       --    begin
       --       Temp := <Expr>;                           --  general case
       --       Temp := (if <Expr> then True else False); --  boolean case
-      --
+
       --    at end
       --       Finalizer;
       --    end;

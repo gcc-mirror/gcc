@@ -14,9 +14,9 @@ void fn(void)
   { __typeof__(n) a1; a1=0; }
   { __typeof__(c) a2; a2=0; } /* { dg-error "read-only" "correct error" } */
   { __typeof__((int)n) a3; a3=0; }
-  { __typeof__((int)c) a4; a4=0; } /* { dg-bogus "read-only" "bogus error" { xfail *-*-* } } */
-  { __typeof__((const int)n) a5; a5=0; } /* { dg-error "read-only" "correct error" { xfail *-*-* } } */
-  { __typeof__((const int)c) a6; a6=0; } /* { dg-error "read-only" "correct error" } */
+  { __typeof__((int)c) a4; a4=0; } /* { dg-bogus "read-only" "bogus error" } */
+  { __typeof__((const int)n) a5; a5=0; }
+  { __typeof__((const int)c) a6; a6=0; }
   { __typeof__(0) a7; a7=0; }
   { __typeof__(1) a8; a8=0; }
 

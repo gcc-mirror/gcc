@@ -12,8 +12,6 @@
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
 #include "sanitizer_libc.h"
-#include "sanitizer_stacktrace.h"
-#include "sanitizer_symbolizer.h"
 
 namespace __sanitizer {
 
@@ -195,31 +193,17 @@ void ReportErrorSummary(const char *error_type, const char *file,
   ReportErrorSummary(buff.data());
 }
 
-void ReportErrorSummary(const char *error_type, StackTrace *stack) {
-  if (!common_flags()->print_summary)
-    return;
-  AddressInfo ai;
-#if !SANITIZER_GO
-  if (stack->size > 0 && Symbolizer::Get()->CanReturnFileLineInfo()) {
-    // Currently, we include the first stack frame into the report summary.
-    // Maybe sometimes we need to choose another frame (e.g. skip memcpy/etc).
-    uptr pc = StackTrace::GetPreviousInstructionPc(stack->trace[0]);
-    Symbolizer::Get()->SymbolizePC(pc, &ai, 1);
-  }
-#endif
-  ReportErrorSummary(error_type, ai.file, ai.line, ai.function);
-}
-
 LoadedModule::LoadedModule(const char *module_name, uptr base_address) {
   full_name_ = internal_strdup(module_name);
   base_address_ = base_address;
   n_ranges_ = 0;
 }
 
-void LoadedModule::addAddressRange(uptr beg, uptr end) {
+void LoadedModule::addAddressRange(uptr beg, uptr end, bool executable) {
   CHECK_LT(n_ranges_, kMaxNumberOfAddressRanges);
   ranges_[n_ranges_].beg = beg;
   ranges_[n_ranges_].end = end;
+  exec_[n_ranges_] = executable;
   n_ranges_++;
 }
 
@@ -261,11 +245,6 @@ void DecreaseTotalMmap(uptr size) {
   atomic_fetch_sub(&g_total_mmaped, size, memory_order_relaxed);
 }
 
-static void (*sandboxing_callback)();
-void SetSandboxingCallback(void (*f)()) {
-  sandboxing_callback = f;
-}
-
 }  // namespace __sanitizer
 
 using namespace __sanitizer;  // NOLINT
@@ -296,13 +275,6 @@ void __sanitizer_set_report_path(const char *path) {
     report_path_prefix[len] = '\0';
     log_to_file = true;
   }
-}
-
-void NOINLINE
-__sanitizer_sandbox_on_notify(__sanitizer_sandbox_arguments *args) {
-  PrepareForSandboxing(args);
-  if (sandboxing_callback)
-    sandboxing_callback();
 }
 
 void __sanitizer_report_error_summary(const char *error_summary) {

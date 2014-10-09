@@ -8508,36 +8508,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
 
-;; These are just placeholders so we know where branch tables
-;; begin and end.
-(define_insn "begin_brtab"
-  [(const_int 1)]
-  ""
-  "*
-{
-  /* Only GAS actually supports this pseudo-op.  */
-  if (TARGET_GAS)
-    return \".begin_brtab\";
-  else
-    return \"\";
-}"
-  [(set_attr "type" "move")
-   (set_attr "length" "0")])
-
-(define_insn "end_brtab"
-  [(const_int 2)]
-  ""
-  "*
-{
-  /* Only GAS actually supports this pseudo-op.  */
-  if (TARGET_GAS)
-    return \".end_brtab\";
-  else
-    return \"\";
-}"
-  [(set_attr "type" "move")
-   (set_attr "length" "0")])
-
 ;;; EH does longjmp's from and within the data section.  Thus,
 ;;; an interspace branch is required for the longjmp implementation.
 ;;; Registers r1 and r2 are used as scratch registers for the jump

@@ -25,7 +25,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  typedef __gnu_test::uneq_allocator<int> alloc_type;
+  typedef __gnu_test::propagating_allocator<int, false> alloc_type;
   typedef __gnu_debug::unordered_multiset<int, std::hash<int>,
 					  std::equal_to<int>,
 					  alloc_type> test_type;

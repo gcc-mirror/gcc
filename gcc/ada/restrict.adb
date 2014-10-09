@@ -427,6 +427,7 @@ package body Restrict is
                if VV < 0 then
                   Info.Unknown (R) := True;
                   Info.Count (R) := 1;
+
                else
                   Info.Count (R) := VV;
                end if;
@@ -442,10 +443,11 @@ package body Restrict is
             if VV < 0 then
                Info.Unknown (R) := True;
 
-            --  If checked by maximization, do maximization
+            --  If checked by maximization, nothing to do because the
+            --  check is per-object.
 
             elsif R in Checked_Max_Parameter_Restrictions then
-               Info.Count (R) := Integer'Max (Info.Count (R), VV);
+               null;
 
             --  If checked by adding, do add, checking for overflow
 
@@ -489,7 +491,7 @@ package body Restrict is
       --  No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
-         Check_SPARK_Restriction ("class-wide is not allowed", N);
+         Check_SPARK_05_Restriction ("class-wide is not allowed", N);
       end if;
 
       if UI_Is_In_Int_Range (V) then
@@ -553,6 +555,14 @@ package body Restrict is
       then
          Msg_Issued := True;
          Restriction_Msg (R, N);
+      end if;
+
+      --  For Max_Entries and the like, do not carry forward the violation
+      --  count because it does not affect later declarations.
+
+      if R in Checked_Max_Parameter_Restrictions then
+         Restrictions.Count (R) := 0;
+         Restrictions.Violated (R) := False;
       end if;
    end Check_Restriction;
 
@@ -858,8 +868,8 @@ package body Restrict is
    -- Process_Restriction_Synonyms --
    ----------------------------------
 
-   --  Note: body of this function must be coordinated with list of
-   --  renaming declarations in System.Rident.
+   --  Note: body of this function must be coordinated with list of renaming
+   --  declarations in System.Rident.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id
    is
@@ -1408,11 +1418,11 @@ package body Restrict is
       end if;
    end Set_Restriction_No_Use_Of_Pragma;
 
-   -----------------------------
-   -- Check_SPARK_Restriction --
-   -----------------------------
+   --------------------------------
+   -- Check_SPARK_05_Restriction --
+   --------------------------------
 
-   procedure Check_SPARK_Restriction
+   procedure Check_SPARK_05_Restriction
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False)
@@ -1461,9 +1471,9 @@ package body Restrict is
             Error_Msg_F ("\\| " & Msg, N);
          end if;
       end if;
-   end Check_SPARK_Restriction;
+   end Check_SPARK_05_Restriction;
 
-   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+   procedure Check_SPARK_05_Restriction (Msg1, Msg2 : String; N : Node_Id) is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
 
@@ -1490,7 +1500,7 @@ package body Restrict is
             Error_Msg_F (Msg2, N);
          end if;
       end if;
-   end Check_SPARK_Restriction;
+   end Check_SPARK_05_Restriction;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

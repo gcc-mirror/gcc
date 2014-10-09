@@ -434,12 +434,11 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Reason in RT_CE_Exceptions);
+      pragma Assert (Rkind (Reason) = CE_Reason);
       return
         Make_Raise_Constraint_Error (Sloc,
           Condition => Condition,
-          Reason =>
-            UI_From_Int (RT_Exception_Code'Pos (Reason)));
+          Reason    => UI_From_Int (RT_Exception_Code'Pos (Reason)));
    end Make_Raise_Constraint_Error;
 
    ------------------------------
@@ -452,12 +451,11 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Reason in RT_PE_Exceptions);
+      pragma Assert (Rkind (Reason) = PE_Reason);
       return
         Make_Raise_Program_Error (Sloc,
           Condition => Condition,
-          Reason =>
-            UI_From_Int (RT_Exception_Code'Pos (Reason)));
+          Reason    => UI_From_Int (RT_Exception_Code'Pos (Reason)));
    end Make_Raise_Program_Error;
 
    ------------------------------
@@ -470,12 +468,11 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Reason in RT_SE_Exceptions);
+      pragma Assert (Rkind (Reason) = SE_Reason);
       return
         Make_Raise_Storage_Error (Sloc,
           Condition => Condition,
-          Reason =>
-            UI_From_Int (RT_Exception_Code'Pos (Reason)));
+          Reason    => UI_From_Int (RT_Exception_Code'Pos (Reason)));
    end Make_Raise_Storage_Error;
 
    -------------
@@ -501,9 +498,7 @@ package body Tbuild is
    begin
       Start_String;
       Store_String_Chars (Strval);
-      return
-        Make_String_Literal (Sloc,
-          Strval => End_String);
+      return Make_String_Literal (Sloc, Strval => End_String);
    end Make_String_Literal;
 
    --------------------
@@ -516,8 +511,7 @@ package body Tbuild is
       Related_Node : Node_Id := Empty) return Entity_Id
    is
       Temp : constant Entity_Id :=
-               Make_Defining_Identifier (Loc,
-                 Chars => New_Internal_Name (Id));
+               Make_Defining_Identifier (Loc, Chars => New_Internal_Name (Id));
    begin
       Set_Related_Expression (Temp, Related_Node);
       return Temp;
@@ -692,6 +686,10 @@ package body Tbuild is
          Set_Etype (Occurrence, Def_Id);
       else
          Set_Etype (Occurrence, Etype (Def_Id));
+      end if;
+
+      if Ekind (Def_Id) = E_Enumeration_Literal then
+         Set_Is_Static_Expression (Occurrence, True);
       end if;
 
       return Occurrence;

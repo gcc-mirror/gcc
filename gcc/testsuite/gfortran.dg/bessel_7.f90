@@ -16,7 +16,7 @@
 implicit none
 real,parameter :: values(*) = [0.0, 0.5, 1.0, 0.9, 1.8,2.0,3.0,4.0,4.25,8.0,34.53, 475.78] 
 real,parameter :: myeps(size(values)) = epsilon(0.0) &
-                  * [2, 3, 4, 5, 8, 2, 12, 6, 7, 6, 36, 168 ]
+                  * [2, 3, 4, 5, 8, 2, 13, 6, 7, 6, 36, 168 ]
 ! The following is sufficient for me - the values above are a bit
 ! more tolerant
 !                  * [0, 0, 0, 3, 3, 0, 9, 0, 2, 1, 22, 130 ]

@@ -4,6 +4,7 @@
 
 extern int i;
 
+int
 main()
 {
   __transaction_atomic { i = 0; }

@@ -13,6 +13,7 @@ __m128i bar (char x) {
   return _mm_set_epi8 (x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x);
 }
 
+int
 main() {
   int i, j;
   union u { __m128i v; char c[16]; };

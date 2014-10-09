@@ -29,7 +29,6 @@
 #include <string>
 #include <istream>
 #include <ostream>
-#include <ext/stdio_sync_filebuf.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -65,17 +64,3 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-
-namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template class stdio_sync_filebuf<char>;
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template class stdio_sync_filebuf<wchar_t>;
-#endif
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
-

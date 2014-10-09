@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "stringpool.h"
-#include "gcc-symtab.h"
 #include "varasm.h"
 #include "flags.h"
 #include "function.h"
@@ -51,9 +50,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "targhooks.h"
 #include "cgraph.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "asan.h"
 #include "basic-block.h"
+#include "rtl-iter.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -440,8 +440,8 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
     {
       targetm.asm_out.unique_section (decl, reloc);
       if (DECL_SECTION_NAME (decl))
-        symtab_for_node_and_aliases (symtab_get_node (decl),
-				     set_implicit_section, NULL, true);
+	symtab_node::get (decl)->call_for_symbol_and_aliases
+	  (set_implicit_section, NULL, true);
     }
 }
 
@@ -521,7 +521,7 @@ get_named_text_section (tree decl,
 	  buffer = ACONCAT ((stripped_name, named_section_suffix, NULL));
 	  return get_named_section (decl, buffer, 0);
 	}
-      else if (symtab_get_node (decl)->implicit_section)
+      else if (symtab_node::get (decl)->implicit_section)
 	{
 	  const char *name;
 
@@ -550,7 +550,7 @@ default_function_section (tree decl, enum node_frequency freq,
   /* Old GNU linkers have buggy --gc-section support, which sometimes
      results in .gcc_except_table* sections being garbage collected.  */
   if (decl
-      && symtab_get_node (decl)->implicit_section)
+      && symtab_node::get (decl)->implicit_section)
     return NULL;
 #endif
 
@@ -606,7 +606,7 @@ function_section_1 (tree decl, bool force_cold)
 
   if (decl)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
 
       if (node)
 	{
@@ -856,7 +856,7 @@ set_user_assembler_name (tree decl, const char *name)
   char *starred = (char *) alloca (strlen (name) + 2);
   starred[0] = '*';
   strcpy (starred + 1, name);
-  change_decl_assembler_name (decl, get_identifier (starred));
+  symtab->change_decl_assembler_name (decl, get_identifier (starred));
   SET_DECL_RTL (decl, NULL_RTX);
 }
 
@@ -888,7 +888,7 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
       if (asmspec[0] != 0 && i < 0)
 	{
 	  i = atoi (asmspec);
-	  if (i < FIRST_PSEUDO_REGISTER && i >= 0)
+	  if (i < FIRST_PSEUDO_REGISTER && i >= 0 && reg_names[i][0])
 	    return i;
 	  else
 	    return -2;
@@ -925,7 +925,8 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
 
 	for (i = 0; i < (int) ARRAY_SIZE (table); i++)
 	  if (table[i].name[0]
-	      && ! strcmp (asmspec, table[i].name))
+	      && ! strcmp (asmspec, table[i].name)
+	      && reg_names[table[i].number][0])
 	    return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */
@@ -956,7 +957,10 @@ bool
 bss_initializer_p (const_tree decl)
 {
   return (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node
+	  /* In LTO we have no errors in program; error_mark_node is used
+	     to mark offlined constructors.  */
+	  || (DECL_INITIAL (decl) == error_mark_node
+	      && !in_lto_p)
 	  || (flag_zero_initialized_in_bss
 	      /* Leave constant zeroes in .rodata so they
 		 can be shared.  */
@@ -1017,7 +1021,9 @@ align_variable (tree decl, bool dont_output_data)
 #endif
 #ifdef CONSTANT_ALIGNMENT
 	  if (DECL_INITIAL (decl) != 0
-	      && DECL_INITIAL (decl) != error_mark_node)
+	      /* In LTO we have no errors in program; error_mark_node is used
+		 to mark offlined constructors.  */
+	      && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	    {
 	      unsigned int const_align
 		= CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
@@ -1068,7 +1074,10 @@ get_variable_align (tree decl)
 	align = data_align;
 #endif
 #ifdef CONSTANT_ALIGNMENT
-      if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
+      if (DECL_INITIAL (decl) != 0
+	  /* In LTO we have no errors in program; error_mark_node is used
+	     to mark offlined constructors.  */
+	  && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	{
 	  unsigned int const_align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl),
 							 align);
@@ -1092,12 +1101,19 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 {
   addr_space_t as = ADDR_SPACE_GENERIC;
   int reloc;
-  symtab_node *snode = symtab_get_node (decl);
-  if (snode)
-    decl = symtab_alias_ultimate_target (snode)->decl;
+  varpool_node *vnode = varpool_node::get (decl);
+  if (vnode)
+    {
+      vnode = vnode->ultimate_alias_target ();
+      decl = vnode->decl;
+    }
 
   if (TREE_TYPE (decl) != error_mark_node)
     as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+
+  /* We need the constructor to figure out reloc flag.  */
+  if (vnode)
+    vnode->get_constructor ();
 
   if (DECL_COMMON (decl))
     {
@@ -1210,7 +1226,7 @@ use_blocks_for_decl_p (tree decl)
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
   if (TREE_CODE (decl) == VAR_DECL
-      && (snode = symtab_get_node (decl)) != NULL
+      && (snode = symtab_node::get (decl)) != NULL
       && snode->alias)
     return false;
 
@@ -1357,6 +1373,11 @@ make_decl_rtl (tree decl)
 	  /* As a register variable, it has no section.  */
 	  return;
 	}
+      /* Avoid internal errors from invalid register
+	 specifications.  */
+      SET_DECL_ASSEMBLER_NAME (decl, NULL_TREE);
+      DECL_HARD_REGISTER (decl) = 0;
+      return;
     }
   /* Now handle ordinary static variables and functions (in memory).
      Also handle vars declared register invalidly.  */
@@ -1469,7 +1490,7 @@ assemble_addr_to_section (rtx symbol, section *sec)
 {
   switch_to_section (sec);
   assemble_align (POINTER_SIZE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  assemble_integer (symbol, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
 }
 
 /* Return the numbered .ctors.N (if CONSTRUCTOR_P) or .dtors.N (if
@@ -1600,7 +1621,7 @@ decide_function_section (tree decl)
 
  if (DECL_SECTION_NAME (decl))
     {
-      struct cgraph_node *node = cgraph_get_node (current_function_decl);
+      struct cgraph_node *node = cgraph_node::get (current_function_decl);
       /* Calls to function_section rely on first_function_block_is_cold
 	 being accurate.  */
       first_function_block_is_cold = (node
@@ -1963,6 +1984,9 @@ assemble_variable_contents (tree decl, const char *name,
 
   if (!dont_output_data)
     {
+      /* Caller is supposed to use varpool_get_constructor when it wants
+	 to output the body.  */
+      gcc_assert (!in_lto_p || DECL_INITIAL (decl) != error_mark_node);
       if (DECL_INITIAL (decl)
 	  && DECL_INITIAL (decl) != error_mark_node
 	  && !initializer_zerop (DECL_INITIAL (decl)))
@@ -2231,7 +2255,7 @@ static bool pending_assemble_externals_processed;
 
 /* Avoid O(external_decls**2) lookups in the pending_assemble_externals
    TREE_LIST in assemble_external.  */
-static struct pointer_set_t *pending_assemble_externals_set;
+static hash_set<tree> *pending_assemble_externals_set;
 
 /* True if DECL is a function decl for which no out-of-line copy exists.
    It is assumed that DECL's assembler name has been set.  */
@@ -2285,7 +2309,7 @@ process_pending_assemble_externals (void)
 
   pending_assemble_externals = 0;
   pending_assemble_externals_processed = true;
-  pointer_set_destroy (pending_assemble_externals_set);
+  delete pending_assemble_externals_set;
 #endif
 }
 
@@ -2314,8 +2338,8 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
      Ideally, only final.c would be calling this function, but it is
      not clear whether that would break things somehow.  See PR 17982
      for further discussion.  */
-  gcc_assert (cgraph_state == CGRAPH_STATE_EXPANSION
-	      || cgraph_state == CGRAPH_STATE_FINISHED);
+  gcc_assert (state == EXPANSION
+	      || state == FINISHED);
 #endif
 
   if (!DECL_P (decl) || !DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
@@ -2343,7 +2367,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
       return;
     }
 
-  if (! pointer_set_insert (pending_assemble_externals_set, decl))
+  if (! pending_assemble_externals_set->add (decl))
     pending_assemble_externals = tree_cons (NULL, decl,
 					    pending_assemble_externals);
 #endif
@@ -2387,14 +2411,14 @@ mark_decl_referenced (tree decl)
 	 If we know a method will be emitted in other TU and no new
 	 functions can be marked reachable, just use the external
 	 definition.  */
-      struct cgraph_node *node = cgraph_get_create_node (decl);
+      struct cgraph_node *node = cgraph_node::get_create (decl);
       if (!DECL_EXTERNAL (decl)
 	  && !node->definition)
-	cgraph_mark_force_output_node (node);
+	node->mark_force_output ();
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      varpool_node *node = varpool_node_for_decl (decl);
+      varpool_node *node = varpool_node::get_create (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->force_output = true;
@@ -2622,7 +2646,7 @@ default_assemble_integer (rtx x ATTRIBUTE_UNUSED,
   const char *op = integer_asm_op (size, aligned_p);
   /* Avoid GAS bugs for large values.  Specifically negative values whose
      absolute value fits in a bfd_vma, but not in a bfd_signed_vma.  */
-  if (size > UNITS_PER_WORD && size > POINTER_SIZE / BITS_PER_UNIT)
+  if (size > UNITS_PER_WORD && size > POINTER_SIZE_UNITS)
     return false;
   return op && (assemble_integer_with_op (op, x), true);
 }
@@ -2899,7 +2923,8 @@ const_hash_1 (const tree exp)
 	    break;
 
 	  case LABEL_REF:
-	    hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
+	    hi = (value.offset
+		  + CODE_LABEL_NUMBER (LABEL_REF_LABEL (value.base)) * 13);
 	    break;
 
 	  default:
@@ -3089,8 +3114,8 @@ compare_constant (const tree t1, const tree t2)
 	    break;
 
 	  case LABEL_REF:
-	    ret = (CODE_LABEL_NUMBER (XEXP (value1.base, 0))
-	           == CODE_LABEL_NUMBER (XEXP (value2.base, 0)));
+	    ret = (CODE_LABEL_NUMBER (LABEL_REF_LABEL (value1.base))
+	           == CODE_LABEL_NUMBER (LABEL_REF_LABEL (value2.base)));
 	    break;
 
 	  default:
@@ -3400,7 +3425,7 @@ tree_output_constant_def (tree exp)
     }
 
   decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
-  varpool_finalize_decl (decl);
+  varpool_node::finalize_decl (decl);
   return decl;
 }
 
@@ -3463,19 +3488,17 @@ const_desc_rtx_eq (const void *a, const void *b)
   return rtx_equal_p (x->constant, y->constant);
 }
 
-/* This is the worker function for const_rtx_hash, called via for_each_rtx.  */
+/* Hash one component of a constant.  */
 
-static int
-const_rtx_hash_1 (rtx *xp, void *data)
+static hashval_t
+const_rtx_hash_1 (const_rtx x)
 {
   unsigned HOST_WIDE_INT hwi;
   enum machine_mode mode;
   enum rtx_code code;
-  hashval_t h, *hp;
-  rtx x;
+  hashval_t h;
   int i;
 
-  x = *xp;
   code = GET_CODE (x);
   mode = GET_MODE (x);
   h = (hashval_t) code * 1048573 + mode;
@@ -3521,20 +3544,12 @@ const_rtx_hash_1 (rtx *xp, void *data)
       h ^= fixed_hash (CONST_FIXED_VALUE (x));
       break;
 
-    case CONST_VECTOR:
-      {
-	int i;
-	for (i = XVECLEN (x, 0); i-- > 0; )
-	  h = h * 251 + const_rtx_hash_1 (&XVECEXP (x, 0, i), data);
-      }
-      break;
-
     case SYMBOL_REF:
       h ^= htab_hash_string (XSTR (x, 0));
       break;
 
     case LABEL_REF:
-      h = h * 251 + CODE_LABEL_NUMBER (XEXP (x, 0));
+      h = h * 251 + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x));
       break;
 
     case UNSPEC:
@@ -3546,9 +3561,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       break;
     }
 
-  hp = (hashval_t *) data;
-  *hp = *hp * 509 + h;
-  return 0;
+  return h;
 }
 
 /* Compute a hash value for X, which should be a constant.  */
@@ -3557,7 +3570,9 @@ static hashval_t
 const_rtx_hash (rtx x)
 {
   hashval_t h = 0;
-  for_each_rtx (&x, const_rtx_hash_1, &h);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    h = h * 509 + const_rtx_hash_1 (*iter);
   return h;
 }
 
@@ -3702,7 +3717,7 @@ force_const_mem (enum machine_mode mode, rtx x)
 /* Given a constant pool SYMBOL_REF, return the corresponding constant.  */
 
 rtx
-get_pool_constant (rtx addr)
+get_pool_constant (const_rtx addr)
 {
   return SYMBOL_REF_CONSTANT (addr)->constant;
 }
@@ -3809,7 +3824,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
      CODE_LABEL into a NOTE.  */
   /* ??? This seems completely and utterly wrong.  Certainly it's
      not true for NOTE_INSN_DELETED_LABEL, but I disbelieve proper
-     functioning even with INSN_DELETED_P and friends.  */
+     functioning even with rtx_insn::deleted and friends.  */
 
   tmp = x;
   switch (GET_CODE (tmp))
@@ -3822,8 +3837,8 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
       /* FALLTHRU  */
 
     case LABEL_REF:
-      tmp = XEXP (tmp, 0);
-      gcc_assert (!INSN_DELETED_P (tmp));
+      tmp = LABEL_REF_LABEL (tmp);
+      gcc_assert (!as_a<rtx_insn *> (tmp)->deleted ());
       gcc_assert (!NOTE_P (tmp)
 		  || NOTE_KIND (tmp) != NOTE_INSN_DELETED);
       break;
@@ -3858,38 +3873,38 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
   return;
 }
 
-/* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
-   to as used.  Emit referenced deferred strings.  This function can
-   be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
+/* Mark all constants that are referenced by SYMBOL_REFs in X.
+   Emit referenced deferred strings.  */
 
-static int
-mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
+static void
+mark_constants_in_pattern (rtx insn)
 {
-  rtx x = *current_rtx;
-
-  if (x == NULL_RTX || GET_CODE (x) != SYMBOL_REF)
-    return 0;
-
-  if (CONSTANT_POOL_ADDRESS_P (x))
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
     {
-      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
-      if (desc->mark == 0)
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF)
 	{
-	  desc->mark = 1;
-	  for_each_rtx (&desc->constant, mark_constant, NULL);
+	  if (CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
+	      if (desc->mark == 0)
+		{
+		  desc->mark = 1;
+		  iter.substitute (desc->constant);
+		}
+	    }
+	  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      tree decl = SYMBOL_REF_DECL (x);
+	      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
+		{
+		  n_deferred_constants--;
+		  output_constant_def_contents (CONST_CAST_RTX (x));
+		}
+	    }
 	}
     }
-  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
-    {
-      tree decl = SYMBOL_REF_DECL (x);
-      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
-	{
-	  n_deferred_constants--;
-	  output_constant_def_contents (x);
-	}
-    }
-
-  return -1;
 }
 
 /* Look through appropriate parts of INSN, marking all entries in the
@@ -3898,7 +3913,7 @@ mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
    deferred strings that are used.  */
 
 static void
-mark_constants (rtx insn)
+mark_constants (rtx_insn *insn)
 {
   if (!INSN_P (insn))
     return;
@@ -3906,19 +3921,18 @@ mark_constants (rtx insn)
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
      a constant just because it happens to appear in a REG_EQUIV note.  */
-  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      int i, n = seq->len ();
       for (i = 0; i < n; ++i)
 	{
-	  rtx subinsn = XVECEXP (seq, 0, i);
+	  rtx subinsn = seq->element (i);
 	  if (INSN_P (subinsn))
-	    for_each_rtx (&PATTERN (subinsn), mark_constant, NULL);
+	    mark_constants_in_pattern (subinsn);
 	}
     }
   else
-    for_each_rtx (&PATTERN (insn), mark_constant, NULL);
+    mark_constants_in_pattern (insn);
 }
 
 /* Look through the instructions for this function, and mark all the
@@ -3928,7 +3942,7 @@ mark_constants (rtx insn)
 static void
 mark_constant_pool (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!crtl->uses_const_pool && n_deferred_constants == 0)
     return;
@@ -5217,6 +5231,12 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 static void
 mark_weak (tree decl)
 {
+  if (DECL_WEAK (decl))
+    return;
+
+  struct symtab_node *n = symtab_node::get (decl);
+  if (n && n->refuse_visibility_changes)
+    error ("%+D declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)
@@ -5343,7 +5363,7 @@ weak_finish_1 (tree decl)
 static tree
 find_decl (tree target)
 {
-  symtab_node *node = symtab_node_for_asm (target);
+  symtab_node *node = symtab_node::get_for_asmname (target);
   if (node)
     return node->decl;
   return NULL_TREE;
@@ -5632,18 +5652,18 @@ assemble_alias (tree decl, tree target)
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_get_create_node (decl)->alias = true;
+    cgraph_node::get_create (decl)->alias = true;
   else
-    varpool_node_for_decl (decl)->alias = true;
+    varpool_node::get_create (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
-  if (cgraph_global_info_ready)
+  if (symtab->global_info_ready)
     target_decl = find_decl (target);
   else
     target_decl= NULL;
   if ((target_decl && TREE_ASM_WRITTEN (target_decl))
-      || cgraph_state >= CGRAPH_STATE_EXPANSION)
+      || symtab->state >= EXPANSION)
     do_assemble_alias (decl, target);
   else
     {
@@ -5728,8 +5748,8 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
     {
       tree src = p->from;
       tree dst = p->to;
-      struct cgraph_node *src_n = cgraph_get_node (src);
-      struct cgraph_node *dst_n = cgraph_get_node (dst);
+      struct cgraph_node *src_n = cgraph_node::get (src);
+      struct cgraph_node *dst_n = cgraph_node::get (dst);
 
       /* The function ipa_tm_create_version() marks the clone as needed if
 	 the original function was needed.  But we also mark the clone as
@@ -5753,9 +5773,9 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
 	}
 
       assemble_integer (XEXP (DECL_RTL (src), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
       assemble_integer (XEXP (DECL_RTL (dst), 0),
-			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+			POINTER_SIZE_UNITS, POINTER_SIZE, 1);
     }
 }
 
@@ -5878,9 +5898,9 @@ make_decl_one_only (tree decl, tree comdat_group)
   TREE_PUBLIC (decl) = 1;
 
   if (TREE_CODE (decl) == VAR_DECL)
-    symbol = varpool_node_for_decl (decl);
+    symbol = varpool_node::get_create (decl);
   else
-    symbol = cgraph_get_create_node (decl);
+    symbol = cgraph_node::get_create (decl);
 
   if (SUPPORTS_ONE_ONLY)
     {
@@ -5890,7 +5910,8 @@ make_decl_one_only (tree decl, tree comdat_group)
       symbol->set_comdat_group (comdat_group);
     }
   else if (TREE_CODE (decl) == VAR_DECL
-      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
+           && (DECL_INITIAL (decl) == 0
+	       || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
     DECL_COMMON (decl) = 1;
   else
     {
@@ -5972,7 +5993,7 @@ init_varasm_once (void)
     readonly_data_section = text_section;
 
 #ifdef ASM_OUTPUT_EXTERNAL
-  pending_assemble_externals_set = pointer_set_create ();
+  pending_assemble_externals_set = new hash_set<tree>;
 #endif
 }
 
@@ -6049,6 +6070,7 @@ default_section_type_flags (tree decl, const char *name, int reloc)
   if (strcmp (name, ".bss") == 0
       || strncmp (name, ".bss.", 5) == 0
       || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || strcmp (name, ".persistent.bss") == 0
       || strcmp (name, ".sbss") == 0
       || strncmp (name, ".sbss.", 6) == 0
       || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
@@ -6474,44 +6496,43 @@ default_unique_section (tree decl, int reloc)
   set_decl_section_name (decl, string);
 }
 
+/* Subroutine of compute_reloc_for_rtx for leaf rtxes.  */
+
+static int
+compute_reloc_for_rtx_1 (const_rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      return SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
+    case LABEL_REF:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
    indicates a local relocation.  */
 
 static int
-compute_reloc_for_rtx_1 (rtx *xp, void *data)
+compute_reloc_for_rtx (const_rtx x)
 {
-  int *preloc = (int *) data;
-  rtx x = *xp;
-
   switch (GET_CODE (x))
     {
     case SYMBOL_REF:
-      *preloc |= SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
-      break;
     case LABEL_REF:
-      *preloc |= 1;
-      break;
-    default:
-      break;
-    }
+      return compute_reloc_for_rtx_1 (x);
 
-  return 0;
-}
-
-static int
-compute_reloc_for_rtx (rtx x)
-{
-  int reloc;
-
-  switch (GET_CODE (x))
-    {
     case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      reloc = 0;
-      for_each_rtx (&x, compute_reloc_for_rtx_1, &reloc);
-      return reloc;
+      {
+	int reloc = 0;
+	subrtx_iterator::array_type array;
+	FOR_EACH_SUBRTX (iter, array, x, ALL)
+	  reloc |= compute_reloc_for_rtx_1 (*iter);
+	return reloc;
+      }
 
     default:
       return 0;
@@ -6692,7 +6713,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   if (TREE_CODE (exp) == VAR_DECL && TREE_PUBLIC (exp)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
-      varpool_node *vnode = varpool_get_node (exp);
+      varpool_node *vnode = varpool_node::get (exp);
       if (vnode && (resolution_local_p (vnode->resolution) || vnode->in_other_partition))
 	resolved_locally = true;
       if (vnode
@@ -6701,7 +6722,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     }
   else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
     {
-      struct cgraph_node *node = cgraph_get_node (exp);
+      struct cgraph_node *node = cgraph_node::get (exp);
       if (node
 	  && (resolution_local_p (node->resolution) || node->in_other_partition))
 	resolved_locally = true;
@@ -6752,7 +6773,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   else if (DECL_COMMON (exp)
 	   && !resolved_locally
 	   && (DECL_INITIAL (exp) == NULL
-	       || DECL_INITIAL (exp) == error_mark_node))
+	       || (!in_lto_p && DECL_INITIAL (exp) == error_mark_node)))
     local_p = false;
   /* Otherwise we're left with initialized (or non-common) global data
      which is of necessity defined locally.  */
@@ -6785,14 +6806,14 @@ decl_binds_to_current_def_p (const_tree decl)
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
-      varpool_node *vnode = varpool_get_node (decl);
+      varpool_node *vnode = varpool_node::get (decl);
       if (vnode
 	  && vnode->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (vnode->resolution);
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
       if (node
 	  && node->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (node->resolution);
@@ -6807,7 +6828,7 @@ decl_binds_to_current_def_p (const_tree decl)
     return false;
   if (DECL_COMMON (decl)
       && (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node))
+	  || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
     return false;
   if (DECL_EXTERNAL (decl))
     return false;
@@ -7042,10 +7063,10 @@ place_block_symbol (rtx symbol)
       struct symtab_node *snode;
       decl = SYMBOL_REF_DECL (symbol);
 
-      snode = symtab_get_node (decl);
+      snode = symtab_node::get (decl);
       if (snode->alias)
 	{
-	  rtx target = DECL_RTL (symtab_alias_ultimate_target (snode)->decl);
+	  rtx target = DECL_RTL (snode->ultimate_alias_target ()->decl);
 
 	  place_block_symbol (target);
 	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);
@@ -7572,10 +7593,10 @@ default_asm_output_ident_directive (const char *ident_str)
      to asm_out_file.  Instead, add a fake top-level asm statement.
      This allows the front ends to use this hook without actually
      writing to asm_out_file, to handle #ident or Pragma Ident.  */
-  if (cgraph_state == CGRAPH_STATE_PARSING)
+  if (symtab->state == PARSING)
     {
       char *buf = ACONCAT ((ident_asm_op, "\"", ident_str, "\"\n", NULL));
-      add_asm_node (build_string (strlen (buf), buf));
+      symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
     }
   else
     fprintf (asm_out_file, "%s\"%s\"\n", ident_asm_op, ident_str);

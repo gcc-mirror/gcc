@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-funit-at-a-time" } */
+/* { dg-options "-funit-at-a-time -std=gnu89" } */
 
 int f(int i)
 {

@@ -41,9 +41,9 @@ extern rtx c6x_subword (rtx, bool);
 extern void split_di (rtx *, int, rtx *, rtx *);
 extern bool c6x_valid_mask_p (HOST_WIDE_INT);
 
-extern char c6x_get_unit_specifier (rtx);
+extern char c6x_get_unit_specifier (rtx_insn *);
 
-extern void c6x_final_prescan_insn(rtx insn, rtx *opvec, int noperands);
+extern void c6x_final_prescan_insn(rtx_insn *insn, rtx *opvec, int noperands);
 
 extern int c6x_nsaved_regs (void);
 extern HOST_WIDE_INT c6x_initial_elimination_offset (int, int);

@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "diagnostic.h"
 #include "cgraph.h"
-#include "pointer-set.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -260,9 +259,9 @@ make_alias_for_thunk (tree function)
   if (!flag_syntax_only)
     {
       struct cgraph_node *funcn, *aliasn;
-      funcn = cgraph_get_node (function);
+      funcn = cgraph_node::get (function);
       gcc_checking_assert (funcn);
-      aliasn = cgraph_same_body_alias (funcn, alias, function);
+      aliasn = cgraph_node::create_same_body_alias (alias, function);
       DECL_ASSEMBLER_NAME (function);
       gcc_assert (aliasn != NULL);
     }
@@ -359,13 +358,13 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       tree fn = function;
       struct symtab_node *symbol;
 
-      if ((symbol = symtab_get_node (function))
+      if ((symbol = symtab_node::get (function))
 	  && symbol->alias)
 	{
 	  if (symbol->analyzed)
-	    fn = symtab_alias_ultimate_target (symtab_get_node (function))->decl;
+	    fn = symtab_node::get (function)->ultimate_alias_target ()->decl;
 	  else
-	    fn = symtab_get_node (function)->alias_target;
+	    fn = symtab_node::get (function)->alias_target;
 	}
       resolve_unique_section (fn, 0, flag_function_sections);
 
@@ -375,8 +374,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
 	  /* Output the thunk into the same section as function.  */
 	  set_decl_section_name (thunk_fndecl, DECL_SECTION_NAME (fn));
-	  symtab_get_node (thunk_fndecl)->implicit_section
-	    = symtab_get_node (fn)->implicit_section;
+	  symtab_node::get (thunk_fndecl)->implicit_section
+	    = symtab_node::get (fn)->implicit_section;
 	}
     }
 
@@ -395,14 +394,13 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-  funcn = cgraph_get_node (function);
+  funcn = cgraph_node::get (function);
   gcc_checking_assert (funcn);
-  thunk_node = cgraph_add_thunk (funcn, thunk_fndecl, function,
-				 this_adjusting, fixed_offset, virtual_value,
-				 virtual_offset, alias);
+  thunk_node = funcn->create_thunk (thunk_fndecl, function,
+				    this_adjusting, fixed_offset, virtual_value,
+				    virtual_offset, alias);
   if (DECL_ONE_ONLY (function))
-    symtab_add_to_same_comdat_group (thunk_node,
-				     funcn);
+    thunk_node->add_to_same_comdat_group (funcn);
 
   if (!this_adjusting
       || !targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
@@ -854,7 +852,9 @@ build_stub_type (tree type, int quals, bool rvalue)
 static tree
 build_stub_object (tree reftype)
 {
-  tree stub = build1 (NOP_EXPR, reftype, integer_one_node);
+  if (TREE_CODE (reftype) != REFERENCE_TYPE)
+    reftype = cp_build_reference_type (reftype, /*rval*/true);
+  tree stub = build1 (CONVERT_EXPR, reftype, integer_one_node);
   return convert_from_reference (stub);
 }
 
@@ -891,8 +891,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 	       elt = TREE_CHAIN (elt))
 	    {
 	      tree type = TREE_VALUE (elt);
-	      if (TREE_CODE (type) != REFERENCE_TYPE)
-		type = cp_build_reference_type (type, /*rval*/true);
 	      tree arg = build_stub_object (type);
 	      vec_safe_push (args, arg);
 	    }
@@ -1001,6 +999,115 @@ get_inherited_ctor (tree ctor)
   if (fn == error_mark_node)
     return NULL_TREE;
   return fn;
+}
+
+/* walk_tree helper function for is_trivially_xible.  If *TP is a call,
+   return it if it calls something other than a trivial special member
+   function.  */
+
+static tree
+check_nontriv (tree *tp, int *, void *)
+{
+  tree fn;
+  if (TREE_CODE (*tp) == CALL_EXPR)
+    fn = CALL_EXPR_FN (*tp);
+  else if (TREE_CODE (*tp) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (*tp);
+  else
+    return NULL_TREE;
+
+  if (TREE_CODE (fn) == ADDR_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+
+  if (TREE_CODE (fn) != FUNCTION_DECL
+      || !trivial_fn_p (fn))
+    return fn;
+  return NULL_TREE;
+}
+
+/* Return declval<T>() = declval<U>() treated as an unevaluated operand.  */
+
+static tree
+assignable_expr (tree to, tree from)
+{
+  ++cp_unevaluated_operand;
+  to = build_stub_object (to);
+  from = build_stub_object (from);
+  tree r = cp_build_modify_expr (to, NOP_EXPR, from, tf_none);
+  --cp_unevaluated_operand;
+  return r;
+}
+
+/* The predicate condition for a template specialization
+   is_constructible<T, Args...> shall be satisfied if and only if the
+   following variable definition would be well-formed for some invented
+   variable t: T t(create<Args>()...);
+
+   Return something equivalent in well-formedness and triviality.  */
+
+static tree
+constructible_expr (tree to, tree from)
+{
+  tree expr;
+  if (CLASS_TYPE_P (to))
+    {
+      tree ctype = to;
+      vec<tree, va_gc> *args = NULL;
+      if (TREE_CODE (to) != REFERENCE_TYPE)
+	to = cp_build_reference_type (to, /*rval*/false);
+      tree ob = build_stub_object (to);
+      for (; from; from = TREE_CHAIN (from))
+	vec_safe_push (args, build_stub_object (TREE_VALUE (from)));
+      expr = build_special_member_call (ob, complete_ctor_identifier, &args,
+					ctype, LOOKUP_NORMAL, tf_none);
+      if (expr == error_mark_node)
+	return error_mark_node;
+      /* The current state of the standard vis-a-vis LWG 2116 is that
+	 is_*constructible involves destruction as well.  */
+      if (type_build_dtor_call (ctype))
+	{
+	  tree dtor = build_special_member_call (ob, complete_dtor_identifier,
+						 NULL, ctype, LOOKUP_NORMAL,
+						 tf_none);
+	  if (dtor == error_mark_node)
+	    return error_mark_node;
+	  if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
+	    expr = build2 (COMPOUND_EXPR, void_type_node, expr, dtor);
+	}
+    }
+  else
+    {
+      if (from == NULL_TREE)
+	return build_value_init (to, tf_none);
+      else if (TREE_CHAIN (from))
+	return error_mark_node; // too many initializers
+      from = build_stub_object (TREE_VALUE (from));
+      expr = perform_direct_initialization_if_possible (to, from,
+							/*cast*/false,
+							tf_none);
+    }
+  return expr;
+}
+
+/* Returns true iff TO is trivially assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+bool
+is_trivially_xible (enum tree_code code, tree to, tree from)
+{
+  tree expr;
+  if (code == MODIFY_EXPR)
+    expr = assignable_expr (to, from);
+  else if (from && TREE_CHAIN (from))
+    return false; // only 0- and 1-argument ctors can be trivial
+  else
+    expr = constructible_expr (to, from);
+
+  if (expr == error_mark_node)
+    return false;
+  tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
+  return !nt;
 }
 
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and
@@ -1481,7 +1588,7 @@ maybe_explain_implicit_delete (tree decl)
   if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
-      static struct pointer_set_t *explained;
+      static hash_set<tree> *explained;
 
       special_function_kind sfk;
       location_t loc;
@@ -1489,8 +1596,8 @@ maybe_explain_implicit_delete (tree decl)
       tree ctype;
 
       if (!explained)
-	explained = pointer_set_create ();
-      if (pointer_set_insert (explained, decl))
+	explained = new hash_set<tree>;
+      if (explained->add (decl))
 	return true;
 
       sfk = special_function_p (decl);
@@ -1799,8 +1906,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_ARGUMENTS (fn) = this_parm;
 
   grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL);
-  set_linkage_according_to_type (type, fn);
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_DEFAULTED_FN (fn) = 1;
@@ -1812,6 +1917,9 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_EXTERNAL (fn) = true;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_COMDAT (fn) = 1;
+  set_linkage_according_to_type (type, fn);
+  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
   gcc_assert (!TREE_USED (fn));
 
   /* Restore PROCESSING_TEMPLATE_DECL.  */

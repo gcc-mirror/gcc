@@ -21,71 +21,77 @@
 
 #include <stddef.h>
 
-// ---------------------- Replacement functions ---------------- {{{1
 using namespace __asan;  // NOLINT
 
-// FIXME: Simply defining functions with the same signature in *.obj
-// files overrides the standard functions in *.lib
-// This works well for simple helloworld-like tests but might need to be
-// revisited in the future.
+// MT: Simply defining functions with the same signature in *.obj
+// files overrides the standard functions in the CRT.
+// MD: Memory allocation functions are defined in the CRT .dll,
+// so we have to intercept them before they are called for the first time.
+
+#if ASAN_DYNAMIC
+# define ALLOCATION_FUNCTION_ATTRIBUTE
+#else
+# define ALLOCATION_FUNCTION_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
+#endif
 
 extern "C" {
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void free(void *ptr) {
   GET_STACK_TRACE_FREE;
   return asan_free(ptr, &stack, FROM_MALLOC);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
-void _free_dbg(void* ptr, int) {
+ALLOCATION_FUNCTION_ATTRIBUTE
+void _free_dbg(void *ptr, int) {
   free(ptr);
 }
 
+ALLOCATION_FUNCTION_ATTRIBUTE
 void cfree(void *ptr) {
-  CHECK(!"cfree() should not be used on Windows?");
+  CHECK(!"cfree() should not be used on Windows");
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *malloc(size_t size) {
   GET_STACK_TRACE_MALLOC;
   return asan_malloc(size, &stack);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
-void* _malloc_dbg(size_t size, int , const char*, int) {
+ALLOCATION_FUNCTION_ATTRIBUTE
+void *_malloc_dbg(size_t size, int, const char *, int) {
   return malloc(size);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *calloc(size_t nmemb, size_t size) {
   GET_STACK_TRACE_MALLOC;
   return asan_calloc(nmemb, size, &stack);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
-void* _calloc_dbg(size_t n, size_t size, int, const char*, int) {
-  return calloc(n, size);
+ALLOCATION_FUNCTION_ATTRIBUTE
+void *_calloc_dbg(size_t nmemb, size_t size, int, const char *, int) {
+  return calloc(nmemb, size);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *_calloc_impl(size_t nmemb, size_t size, int *errno_tmp) {
   return calloc(nmemb, size);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *realloc(void *ptr, size_t size) {
   GET_STACK_TRACE_MALLOC;
   return asan_realloc(ptr, size, &stack);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *_realloc_dbg(void *ptr, size_t size, int) {
   CHECK(!"_realloc_dbg should not exist!");
   return 0;
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
-void* _recalloc(void* p, size_t n, size_t elem_size) {
+ALLOCATION_FUNCTION_ATTRIBUTE
+void *_recalloc(void *p, size_t n, size_t elem_size) {
   if (!p)
     return calloc(n, elem_size);
   const size_t size = n * elem_size;
@@ -94,23 +100,23 @@ void* _recalloc(void* p, size_t n, size_t elem_size) {
   return realloc(p, size);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 size_t _msize(void *ptr) {
   GET_CURRENT_PC_BP_SP;
   (void)sp;
   return asan_malloc_usable_size(ptr, pc, bp);
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *_expand(void *memblock, size_t size) {
   // _expand is used in realloc-like functions to resize the buffer if possible.
   // We don't want memory to stand still while resizing buffers, so return 0.
   return 0;
 }
 
-SANITIZER_INTERFACE_ATTRIBUTE
+ALLOCATION_FUNCTION_ATTRIBUTE
 void *_expand_dbg(void *memblock, size_t size) {
-  return 0;
+  return _expand(memblock, size);
 }
 
 // TODO(timurrrr): Might want to add support for _aligned_* allocation
@@ -131,37 +137,38 @@ int _CrtSetReportMode(int, int) {
 }
 }  // extern "C"
 
-using __interception::GetRealFunctionAddress;
-
-// We don't want to include "windows.h" in this file to avoid extra attributes
-// set on malloc/free etc (e.g. dllimport), so declare a few things manually:
-extern "C" int __stdcall VirtualProtect(void* addr, size_t size,
-                                        DWORD prot, DWORD *old_prot);
-const int PAGE_EXECUTE_READWRITE = 0x40;
-
 namespace __asan {
 void ReplaceSystemMalloc() {
-#if defined(_DLL)
-# ifdef _WIN64
-#  error ReplaceSystemMalloc was not tested on x64
-# endif
-  char *crt_malloc;
-  if (GetRealFunctionAddress("malloc", (void**)&crt_malloc)) {
-    // Replace malloc in the CRT dll with a jump to our malloc.
-    DWORD old_prot, unused;
-    CHECK(VirtualProtect(crt_malloc, 16, PAGE_EXECUTE_READWRITE, &old_prot));
-    REAL(memset)(crt_malloc, 0xCC /* int 3 */, 16);  // just in case.
+#if defined(ASAN_DYNAMIC)
+  // We don't check the result because CRT might not be used in the process.
+  __interception::OverrideFunction("free", (uptr)free);
+  __interception::OverrideFunction("malloc", (uptr)malloc);
+  __interception::OverrideFunction("_malloc_crt", (uptr)malloc);
+  __interception::OverrideFunction("calloc", (uptr)calloc);
+  __interception::OverrideFunction("_calloc_crt", (uptr)calloc);
+  __interception::OverrideFunction("realloc", (uptr)realloc);
+  __interception::OverrideFunction("_realloc_crt", (uptr)realloc);
+  __interception::OverrideFunction("_recalloc", (uptr)_recalloc);
+  __interception::OverrideFunction("_recalloc_crt", (uptr)_recalloc);
+  __interception::OverrideFunction("_msize", (uptr)_msize);
+  __interception::OverrideFunction("_expand", (uptr)_expand);
 
-    ptrdiff_t jmp_offset = (char*)malloc - (char*)crt_malloc - 5;
-    crt_malloc[0] = 0xE9;  // jmp, should be followed by an offset.
-    REAL(memcpy)(crt_malloc + 1, &jmp_offset, sizeof(jmp_offset));
-
-    CHECK(VirtualProtect(crt_malloc, 16, old_prot, &unused));
-
-    // FYI: FlushInstructionCache is needed on Itanium etc but not on x86/x64.
-  }
-
-  // FIXME: investigate whether anything else is needed.
+  // Override different versions of 'operator new' and 'operator delete'.
+  // No need to override the nothrow versions as they just wrap the throw
+  // versions.
+  // FIXME: Unfortunately, MSVC miscompiles the statements that take the
+  // addresses of the array versions of these operators,
+  // see https://connect.microsoft.com/VisualStudio/feedbackdetail/view/946992
+  // We might want to try to work around this by [inline] assembly or compiling
+  // parts of the RTL with Clang.
+  void *(*op_new)(size_t sz) = operator new;
+  void (*op_delete)(void *p) = operator delete;
+  void *(*op_array_new)(size_t sz) = operator new[];
+  void (*op_array_delete)(void *p) = operator delete[];
+  __interception::OverrideFunction("??2@YAPAXI@Z", (uptr)op_new);
+  __interception::OverrideFunction("??3@YAXPAX@Z", (uptr)op_delete);
+  __interception::OverrideFunction("??_U@YAPAXI@Z", (uptr)op_array_new);
+  __interception::OverrideFunction("??_V@YAXPAX@Z", (uptr)op_array_delete);
 #endif
 }
 }  // namespace __asan

@@ -3,6 +3,7 @@
 
 extern void bar(void) __attribute__((transaction_callable));
 
+void
 foo()
 {
 	__transaction_relaxed {

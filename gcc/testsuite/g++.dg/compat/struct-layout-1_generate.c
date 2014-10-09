@@ -1,5 +1,5 @@
 /* Structure layout test generator.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2011, 2012
+   Copyright (C) 2004-2014
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 const char *dg_options[] = {
-"/* { dg-options \"%s-I%s\" } */\n",
+"/* { dg-options \"%s-I%s -Wno-abi\" } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -Wno-abi\" { target i?86-*-* x86_64-*-* } } */\n",
 "/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -fno-common -Wno-abi\" { target i?86-*-darwin* x86_64-*-darwin* i?86-*-mingw32* x86_64-*-mingw32* i?86-*-cygwin* } } */\n",

@@ -512,6 +512,7 @@ find_substitution (tree node)
   const int size = vec_safe_length (G.substitutions);
   tree decl;
   tree type;
+  const char *abbr = NULL;
 
   if (DEBUG_MANGLE)
     fprintf (stderr, "  ++ find_substitution (%s at %p)\n",
@@ -530,13 +531,10 @@ find_substitution (tree node)
   if (decl
       && is_std_substitution (decl, SUBID_ALLOCATOR)
       && !CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)))
-    {
-      write_string ("Sa");
-      return 1;
-    }
+    abbr = "Sa";
 
   /* Check for std::basic_string.  */
-  if (decl && is_std_substitution (decl, SUBID_BASIC_STRING))
+  else if (decl && is_std_substitution (decl, SUBID_BASIC_STRING))
     {
       if (TYPE_P (node))
 	{
@@ -555,26 +553,20 @@ find_substitution (tree node)
 					       SUBID_CHAR_TRAITS)
 		  && is_std_substitution_char (TREE_VEC_ELT (args, 2),
 					       SUBID_ALLOCATOR))
-		{
-		  write_string ("Ss");
-		  return 1;
-		}
+		abbr = "Ss";
 	    }
 	}
       else
 	/* Substitute for the template name only if this isn't a type.  */
-	{
-	  write_string ("Sb");
-	  return 1;
-	}
+	abbr = "Sb";
     }
 
   /* Check for basic_{i,o,io}stream.  */
-  if (TYPE_P (node)
-      && cp_type_quals (type) == TYPE_UNQUALIFIED
-      && CLASS_TYPE_P (type)
-      && CLASSTYPE_USE_TEMPLATE (type)
-      && CLASSTYPE_TEMPLATE_INFO (type) != NULL)
+  else if (TYPE_P (node)
+	   && cp_type_quals (type) == TYPE_UNQUALIFIED
+	   && CLASS_TYPE_P (type)
+	   && CLASSTYPE_USE_TEMPLATE (type)
+	   && CLASSTYPE_TEMPLATE_INFO (type) != NULL)
     {
       /* First, check for the template
 	 args <char, std::char_traits<char> > .  */
@@ -587,35 +579,29 @@ find_substitution (tree node)
 	{
 	  /* Got them.  Is this basic_istream?  */
 	  if (is_std_substitution (decl, SUBID_BASIC_ISTREAM))
-	    {
-	      write_string ("Si");
-	      return 1;
-	    }
+	    abbr = "Si";
 	  /* Or basic_ostream?  */
 	  else if (is_std_substitution (decl, SUBID_BASIC_OSTREAM))
-	    {
-	      write_string ("So");
-	      return 1;
-	    }
+	    abbr = "So";
 	  /* Or basic_iostream?  */
 	  else if (is_std_substitution (decl, SUBID_BASIC_IOSTREAM))
-	    {
-	      write_string ("Sd");
-	      return 1;
-	    }
+	    abbr = "Sd";
 	}
     }
 
   /* Check for namespace std.  */
-  if (decl && DECL_NAMESPACE_STD_P (decl))
+  else if (decl && DECL_NAMESPACE_STD_P (decl))
     {
       write_string ("St");
       return 1;
     }
 
+  tree tags = NULL_TREE;
+  if (OVERLOAD_TYPE_P (node))
+    tags = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (type));
   /* Now check the list of available substitutions for this mangling
      operation.  */
-  for (i = 0; i < size; ++i)
+  if (!abbr || tags) for (i = 0; i < size; ++i)
     {
       tree candidate = (*G.substitutions)[i];
       /* NODE is a matched to a candidate if it's the same decl node or
@@ -630,8 +616,19 @@ find_substitution (tree node)
 	}
     }
 
-  /* No substitution found.  */
-  return 0;
+  if (!abbr)
+    /* No substitution found.  */
+    return 0;
+
+  write_string (abbr);
+  if (tags)
+    {
+      /* If there are ABI tags on the abbreviation, it becomes
+	 a substitution candidate.  */
+      write_abi_tags (tags);
+      add_substitution (node);
+    }
+  return 1;
 }
 
 
@@ -667,6 +664,8 @@ write_mangled_name (const tree decl, bool top_level)
 	}
     }
   else if (VAR_P (decl)
+	   /* Variable template instantiations are mangled.  */
+	   && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
 	   /* The names of non-static global variables aren't mangled.  */
 	   && DECL_EXTERNAL_LINKAGE_P (decl)
 	   && (CP_DECL_CONTEXT (decl) == global_namespace
@@ -2859,11 +2858,16 @@ write_expression (tree expr)
 	    {
 	      write_string (operator_name_info[(int)code].mangled_name);
 	      ob = TREE_OPERAND (ob, 0);
+	      write_expression (ob);
 	    }
-	  else
-	    write_string ("dt");
+	  else if (!is_dummy_object (ob))
+	    {
+	      write_string ("dt");
+	      write_expression (ob);
+	    }
+	  /* else, for a non-static data member with no associated object (in
+	     unevaluated context), use the unresolved-name mangling.  */
 
-	  write_expression (ob);
 	  write_member_name (TREE_OPERAND (expr, 1));
 	  return;
 	}
@@ -3487,11 +3491,11 @@ mangle_decl (const tree decl)
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
 	  /* Don't create an alias to an unreferenced function.  */
-	  if (struct cgraph_node *n = cgraph_get_node (decl))
-	    cgraph_same_body_alias (n, alias, decl);
+	  if (struct cgraph_node *n = cgraph_node::get (decl))
+	    n->create_same_body_alias (alias, decl);
 	}
       else
-	varpool_extra_name_alias (alias, decl);
+	varpool_node::create_extra_name_alias (alias, decl);
 #endif
     }
 }

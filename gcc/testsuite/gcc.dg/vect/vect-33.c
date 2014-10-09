@@ -38,7 +38,7 @@ int main (void)
 
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" { target vector_alignment_reachable } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
+/* { dg-final { scan-tree-dump "Vectorizing an unaligned access" "vect" { target { vect_hw_misalign && { ! vect64 } } } } } */
+/* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" { target { vector_alignment_reachable && vect64 } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { { {! vector_alignment_reachable} || {! vect64} } && {! vect_hw_misalign} } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

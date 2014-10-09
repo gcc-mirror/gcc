@@ -1150,7 +1150,10 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var present_temp bool
   Temporary_statement* present_temp =
-    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+    Statement::make_temporary((this->present_->type()->is_sink_type())
+			      ? Type::make_boolean_type()
+			      : this->present_->type(),
+			      NULL, loc);
   b->add_statement(present_temp);
 
   // present_temp = mapaccess2(DESCRIPTOR, MAP, &key_temp, &val_temp)
@@ -1163,7 +1166,6 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
   Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
   Expression* call = Runtime::make_call(Runtime::MAPACCESS2, loc, 4,
 					a1, a2, a3, a4);
-
   ref = Expression::make_temporary_reference(present_temp, loc);
   ref->set_is_lvalue();
   Statement* s = Statement::make_assignment(ref, call, loc);
@@ -1426,7 +1428,10 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var closed_temp bool
   Temporary_statement* closed_temp =
-    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+    Statement::make_temporary((this->closed_->type()->is_sink_type())
+			      ? Type::make_boolean_type()
+			      : this->closed_->type(),
+			      NULL, loc);
   b->add_statement(closed_temp);
 
   // closed_temp = chanrecv2(type, channel, &val_temp)
@@ -2173,7 +2178,11 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
       for (Expression_list::const_iterator p = ce->args()->begin();
 	   p != ce->args()->end();
 	   ++p)
-	vals->push_back(*p);
+	{
+	  if ((*p)->is_constant())
+	    continue;
+	  vals->push_back(*p);
+	}
     }
 
   // Build the struct.
@@ -2276,6 +2285,9 @@ Thunk_statement::build_struct(Function_type* fntype)
 	   p != args->end();
 	   ++p, ++i)
 	{
+	  if ((*p)->is_constant())
+	    continue;
+
 	  char buf[50];
 	  this->thunk_field_param(i, buf, sizeof buf);
 	  fields->push_back(Struct_field(Typed_identifier(buf, (*p)->type(),
@@ -2413,21 +2425,36 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
     ++p;
   bool is_recover_call = ce->is_recover_call();
   Expression* recover_arg = NULL;
-  for (; p != fields->end(); ++p, ++next_index)
+
+  const Expression_list* args = ce->args();
+  if (args != NULL)
     {
-      Expression* thunk_param = Expression::make_var_reference(named_parameter,
-							       location);
-      thunk_param = Expression::make_unary(OPERATOR_MULT, thunk_param,
-					   location);
-      Expression* param = Expression::make_field_reference(thunk_param,
-							   next_index,
-							   location);
-      if (!is_recover_call)
-	call_params->push_back(param);
-      else
+      for (Expression_list::const_iterator arg = args->begin();
+	   arg != args->end();
+	   ++arg)
 	{
-	  go_assert(call_params->empty());
-	  recover_arg = param;
+	  Expression* param;
+	  if ((*arg)->is_constant())
+	    param = *arg;
+	  else
+	    {
+	      Expression* thunk_param =
+		Expression::make_var_reference(named_parameter, location);
+	      thunk_param =
+		Expression::make_unary(OPERATOR_MULT, thunk_param, location);
+	      param = Expression::make_field_reference(thunk_param,
+						       next_index,
+						       location);
+	      ++next_index;
+	    }
+
+	  if (!is_recover_call)
+	    call_params->push_back(param);
+	  else
+	    {
+	      go_assert(call_params->empty());
+	      recover_arg = param;
+	    }
 	}
     }
 

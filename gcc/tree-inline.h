@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
+#include "hash-map.h"
+#include "hash-set.h"
+
 struct cgraph_edge;
 
 /* Indicate the desired behavior wrt call graph edges.  We can either
@@ -62,7 +65,7 @@ struct copy_body_data
 
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
-  struct pointer_map_t *decl_map;
+  hash_map<tree, tree> *decl_map;
 
   /* Create a new decl to replace DECL in the destination function.  */
   tree (*copy_decl) (tree, struct copy_body_data *);
@@ -79,7 +82,7 @@ struct copy_body_data
 
   /* Maps region and landing pad structures from the function being copied
      to duplicates created within the function we inline into.  */
-  struct pointer_map_t *eh_map;
+  hash_map<void *, void *> *eh_map;
 
   /* We use the same mechanism do all sorts of different things.  Rather
      than enumerating the different cases, we categorize the behavior
@@ -114,7 +117,7 @@ struct copy_body_data
   void (*transform_lang_insert_block) (tree);
 
   /* Statements that might be possibly folded.  */
-  struct pointer_set_t *statements_to_fold;
+  hash_set<gimple> *statements_to_fold;
 
   /* Entry basic block to currently copied body.  */
   basic_block entry_bb;
@@ -130,7 +133,7 @@ struct copy_body_data
      equivalents in the function into which it is being inlined, where
      the originals have been mapped to a value rather than to a
      variable.  */
-  struct pointer_map_t *debug_map;
+  hash_map<tree, tree> *debug_map;
  
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */ 
@@ -191,7 +194,7 @@ tree maybe_inline_call_in_expr (tree);
 bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 tree copy_decl_no_change (tree decl, copy_body_data *id);
-int estimate_move_cost (tree type);
+int estimate_move_cost (tree type, bool);
 int estimate_num_insns (gimple, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
 int count_insns_seq (gimple_seq, eni_weights *);

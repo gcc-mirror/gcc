@@ -1,4 +1,3 @@
-/* { dg-do run } */
 
 #include "tree-vect.h"
 
@@ -49,3 +48,5 @@ main ()
   foo ();
   return 0;
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -1,5 +1,5 @@
 // PR c++/59635
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 auto f = [] (auto, ...) { return 0; };
 

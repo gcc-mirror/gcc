@@ -1,4 +1,4 @@
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 template <class T, class U> struct ST;
 template <class T> struct ST<T,T> {};

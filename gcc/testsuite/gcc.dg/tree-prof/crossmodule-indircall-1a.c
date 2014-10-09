@@ -33,6 +33,7 @@ sub(int i)
 __attribute__ ((externally_visible))
 void (*p[2])(int)={add, sub};
 #else
+int
 main()
 {
   return 0;

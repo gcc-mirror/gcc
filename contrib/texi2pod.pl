@@ -389,15 +389,16 @@ sub postprocess
     # Formatting commands.
     # Temporary escape for @r.
     s/\@r\{([^\}]*)\}/R<$1>/g;
+    s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
     s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
-    s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@acronym\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
     s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
     s/\@\///g;
+    s/\@t\{([^\}]*)\}/$1/g;
 
     # keep references of the form @ref{...}, print them bold
     s/\@(?:ref)\{([^\}]*)\}/B<$1>/g;

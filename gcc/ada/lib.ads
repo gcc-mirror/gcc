@@ -347,6 +347,11 @@ package Lib is
    --      The index of the unit within the file for multiple unit per file
    --      mode. Set to zero in normal single unit per file mode.
 
+   --    No_Elab_Code_All
+   --      A flag set when a pragma or aspect No_Elaboration_Code_All applies
+   --      to the unit. This is used to implement the transitive WITH rules
+   --      (and for no other purpose).
+
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
@@ -410,6 +415,7 @@ package Lib is
    function Main_CPU          (U : Unit_Number_Type) return Int;
    function Main_Priority     (U : Unit_Number_Type) return Int;
    function Munit_Index       (U : Unit_Number_Type) return Nat;
+   function No_Elab_Code_All  (U : Unit_Number_Type) return Boolean;
    function OA_Setting        (U : Unit_Number_Type) return Character;
    function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
@@ -426,6 +432,7 @@ package Lib is
    procedure Set_Ident_String      (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading           (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
+   procedure Set_No_Elab_Code_All  (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
    procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
@@ -726,6 +733,7 @@ private
    pragma Inline (Main_CPU);
    pragma Inline (Main_Priority);
    pragma Inline (Munit_Index);
+   pragma Inline (No_Elab_Code_All);
    pragma Inline (OA_Setting);
    pragma Inline (Set_Cunit);
    pragma Inline (Set_Cunit_Entity);
@@ -735,6 +743,7 @@ private
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
+   pragma Inline (Set_No_Elab_Code_All);
    pragma Inline (Set_OA_Setting);
    pragma Inline (Set_Unit_Name);
    pragma Inline (Source_Index);
@@ -760,6 +769,7 @@ private
       Generate_Code     : Boolean;
       Has_RACW          : Boolean;
       Dynamic_Elab      : Boolean;
+      No_Elab_Code_All  : Boolean;
       Filler            : Boolean;
       Loading           : Boolean;
       OA_Setting        : Character;
@@ -789,7 +799,8 @@ private
       Generate_Code     at 57 range 0 ..  7;
       Has_RACW          at 58 range 0 ..  7;
       Dynamic_Elab      at 59 range 0 ..  7;
-      Filler            at 60 range 0 ..  15;
+      No_Elab_Code_All  at 60 range 0 ..  7;
+      Filler            at 61 range 0 ..  7;
       OA_Setting        at 62 range 0 ..  7;
       Loading           at 63 range 0 ..  7;
       SPARK_Mode_Pragma at 64 range 0 .. 31;
@@ -826,13 +837,8 @@ private
 
    --  The following table stores references to pragmas that generate Notes
 
-   type Notes_Entry is record
-      Pragma_Node : Node_Id;
-      Unit        : Unit_Number_Type;
-   end record;
-
    package Notes is new Table.Table (
-     Table_Component_Type => Notes_Entry,
+     Table_Component_Type => Node_Id,
      Table_Index_Type     => Integer,
      Table_Low_Bound      => 1,
      Table_Initial        => Alloc.Notes_Initial,

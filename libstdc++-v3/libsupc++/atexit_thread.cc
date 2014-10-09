@@ -25,8 +25,12 @@
 #include <cstdlib>
 #include <new>
 #include "bits/gthr.h"
+#ifdef _GLIBCXX_THREAD_ATEXIT_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
-#if HAVE___CXA_THREAD_ATEXIT_IMPL
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
 
 extern "C" int __cxa_thread_atexit_impl (void (*func) (void *),
 					 void *arg, void *d);
@@ -38,7 +42,7 @@ __cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *),
   return __cxa_thread_atexit_impl (dtor, obj, dso_handle);
 }
 
-#else /* HAVE___CXA_THREAD_ATEXIT_IMPL */
+#else /* _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL */
 
 namespace {
   // One element in a singly-linked stack of cleanups.
@@ -47,6 +51,9 @@ namespace {
     void (*destructor)(void *);
     void *object;
     elt *next;
+#ifdef _GLIBCXX_THREAD_ATEXIT_WIN32
+    HMODULE dll;
+#endif
   };
 
   // Keep a per-thread list of cleanups in gthread_key storage.
@@ -62,6 +69,11 @@ namespace {
       {
 	elt *old_e = e;
 	e->destructor (e->object);
+#ifdef _GLIBCXX_THREAD_ATEXIT_WIN32
+	/* Decrement DLL count */
+	if (e->dll)
+	  FreeLibrary (e->dll);
+#endif
 	e = e->next;
 	delete (old_e);
       }
@@ -133,6 +145,14 @@ __cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *), void *obj, void */*dso_ha
   new_elt->destructor = dtor;
   new_elt->object = obj;
   new_elt->next = first;
+#ifdef _GLIBCXX_THREAD_ATEXIT_WIN32
+  /* Store the DLL address for a later call to FreeLibrary in new_elt and
+     increment DLL load count.  This blocks the unloading of the DLL
+     before the thread-local dtors have been called.  This does NOT help
+     if FreeLibrary/dlclose is called in excess. */
+  GetModuleHandleExW (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+		      (LPCWSTR) dtor, &new_elt->dll);
+#endif
 
   if (__gthread_active_p ())
     __gthread_setspecific (key, new_elt);
@@ -142,4 +162,4 @@ __cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *), void *obj, void */*dso_ha
   return 0;
 }
 
-#endif /* HAVE___CXA_THREAD_ATEXIT_IMPL */
+#endif /* _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL */

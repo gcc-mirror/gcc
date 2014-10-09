@@ -36,7 +36,7 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
 #include "bitmap.h"
@@ -74,18 +74,6 @@
 #ifndef BLOCK_SOURCE_END_LOCATION
 static location_t block_end_locus_sink;
 #define BLOCK_SOURCE_END_LOCATION(BLOCK) block_end_locus_sink
-#endif
-
-/* For efficient float-to-int rounding, it is necessary to know whether
-   floating-point arithmetic may use wider intermediate results.  When
-   FP_ARITH_MAY_WIDEN is not defined, be conservative and only assume
-   that arithmetic does not widen if double precision is emulated.  */
-#ifndef FP_ARITH_MAY_WIDEN
-#if defined(HAVE_extendsfdf2)
-#define FP_ARITH_MAY_WIDEN HAVE_extendsfdf2
-#else
-#define FP_ARITH_MAY_WIDEN 0
-#endif
 #endif
 
 /* Pointers to front-end tables accessed through macros.  */
@@ -297,8 +285,7 @@ gigi (Node_Id gnat_root,
 {
   Node_Id gnat_iter;
   Entity_Id gnat_literal;
-  tree long_long_float_type, exception_type, t, ftype;
-  tree int64_type = gnat_type_for_size (64, 0);
+  tree t, ftype, int64_type;
   struct elab_info *info;
   int i;
 
@@ -315,10 +302,6 @@ gigi (Node_Id gnat_root,
   List_Headers_Ptr = list_headers_ptr;
 
   type_annotate_only = (gigi_operating_mode == 1);
-
-#if TARGET_ABI_OPEN_VMS
-  vms_float_format = Float_Format;
-#endif
 
   for (i = 0; i < number_file; i++)
     {
@@ -424,14 +407,6 @@ gigi (Node_Id gnat_root,
 			   NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
-  /* malloc32 is a function declaration tree for a function to allocate
-     32-bit memory on a 64-bit system.  Needed only on 64-bit VMS.  */
-  malloc32_decl
-    = create_subprog_decl (get_identifier ("__gnat_malloc32"), NULL_TREE,
-			   ftype, NULL_TREE, is_disabled, true, true, true,
-			   NULL, Empty);
-  DECL_IS_MALLOC (malloc32_decl) = 1;
-
   /* free is a function declaration tree for a function to free memory.  */
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
@@ -442,6 +417,7 @@ gigi (Node_Id gnat_root,
 			   Empty);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
+  int64_type = gnat_type_for_size (64, 0);
   mulv64_decl
     = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
 			   build_function_type_list (int64_type, int64_type,
@@ -569,9 +545,7 @@ gigi (Node_Id gnat_root,
     }
 
   /* Set the types that GCC and Gigi use from the front end.  */
-  exception_type
-    = gnat_to_gnu_entity (Base_Type (standard_exception_type),  NULL_TREE, 0);
-  except_type_node = TREE_TYPE (exception_type);
+  except_type_node = gnat_to_gnu_type (Base_Type (standard_exception_type));
 
   /* Make other functions used for exception processing.  */
   get_excptr_decl
@@ -636,21 +610,8 @@ gigi (Node_Id gnat_root,
       null_fdesc_node = gnat_build_constructor (fdesc_type_node, null_vec);
     }
 
-  long_long_float_type
-    = gnat_to_gnu_entity (Base_Type (standard_long_long_float), NULL_TREE, 0);
-
-  if (TREE_CODE (TREE_TYPE (long_long_float_type)) == INTEGER_TYPE)
-    {
-      /* In this case, the builtin floating point types are VAX float,
-	 so make up a type for use.  */
-      longest_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (longest_float_type_node) = LONG_DOUBLE_TYPE_SIZE;
-      layout_type (longest_float_type_node);
-      record_builtin_type ("longest float type", longest_float_type_node,
-			   false);
-    }
-  else
-    longest_float_type_node = TREE_TYPE (long_long_float_type);
+  longest_float_type_node
+    = get_unpadded_type (Base_Type (standard_long_long_float));
 
   /* Dummy objects to materialize "others" and "all others" in the exception
      tables.  These are exported by a-exexpr-gcc.adb, so see this unit for
@@ -804,12 +765,15 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_Object_Size:
     case Attr_Value_Size:
     case Attr_Component_Size:
+    case Attr_Descriptor_Size:
     case Attr_Max_Size_In_Storage_Elements:
     case Attr_Min:
     case Attr_Max:
     case Attr_Null_Parameter:
     case Attr_Passed_By_Reference:
     case Attr_Mechanism_Code:
+    case Attr_Machine:
+    case Attr_Model:
       return 0;
 
     case Attr_Address:
@@ -1453,7 +1417,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 		  gcc_unreachable ();
 	      }
 
-	    if (Present (Next (gnat_temp)))
+	    /* Deal with optional pattern (but ignore Reason => "...").  */
+	    if (Present (Next (gnat_temp)) && No (Chars (Next (gnat_temp))))
 	      {
 		/* pragma Warnings (On | Off, Name) is handled differently.  */
 		if (Nkind (Expression (Next (gnat_temp))) != N_String_Literal)
@@ -1506,6 +1471,38 @@ Pragma_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
+/* Return an expression for the length of TYPE, an integral type, computed in
+   RESULT_TYPE, another integral type.
+
+   We used to compute the length as MAX (hb - lb + 1, 0) which could overflow
+   when lb == TYPE'First.  We now compute it as (hb >= lb) ? hb - lb + 1 : 0
+   which would only overflow in much rarer cases, for extremely large arrays
+   we expect never to encounter in practice.  Besides, the former computation
+   required the use of potentially constraining signed arithmetics while the
+   latter does not.  Note that the comparison must be done in the original
+   base index type in order to avoid any overflow during the conversion.  */
+
+static tree
+get_type_length (tree type, tree result_type)
+{
+  tree comp_type = get_base_type (result_type);
+  tree base_type = get_base_type (type);
+  tree lb = convert (base_type, TYPE_MIN_VALUE (type));
+  tree hb = convert (base_type, TYPE_MAX_VALUE (type));
+  tree length
+    = build_binary_op (PLUS_EXPR, comp_type,
+		       build_binary_op (MINUS_EXPR, comp_type,
+					convert (comp_type, hb),
+					convert (comp_type, lb)),
+		       convert (comp_type, integer_one_node));
+  length
+    = build_cond_expr (result_type,
+		       build_binary_op (GE_EXPR, boolean_type_node, hb, lb),
+		       convert (result_type, length),
+		       convert (result_type, integer_zero_node));
+  return length;
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Attribute node,
    to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to
    where we should place the result type.  ATTRIBUTE is the attribute ID.  */
@@ -1895,20 +1892,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  else if (attribute == Attr_Last)
 	    gnu_result = TYPE_MAX_VALUE (gnu_type);
 	  else
-	    gnu_result
-	      = build_binary_op
-		(MAX_EXPR, get_base_type (gnu_result_type),
-		 build_binary_op
-		 (PLUS_EXPR, get_base_type (gnu_result_type),
-		  build_binary_op (MINUS_EXPR,
-				   get_base_type (gnu_result_type),
-				   convert (gnu_result_type,
-					    TYPE_MAX_VALUE (gnu_type)),
-				   convert (gnu_result_type,
-					    TYPE_MIN_VALUE (gnu_type))),
-		  convert (gnu_result_type, integer_one_node)),
-		 convert (gnu_result_type, integer_zero_node));
-
+	    gnu_result = get_type_length (gnu_type, gnu_result_type);
 	  break;
 	}
 
@@ -1992,8 +1976,16 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 
 	/* When not optimizing, look up the slot associated with the parameter
-	   and the dimension in the cache and create a new one on failure.  */
-	if (!optimize && Present (gnat_param))
+	   and the dimension in the cache and create a new one on failure.
+	   Don't do this when the actual subtype needs debug info (this happens
+	   with -gnatD): in elaborate_expression_1, we create variables that
+	   hold the bounds, so caching attributes isn't very interesting and
+	   causes dependency issues between these variables and cached
+	   expressions.  */
+	if (!optimize
+	    && Present (gnat_param)
+	    && !(Present (Actual_Subtype (gnat_param))
+		 && Needs_Debug_Info (Actual_Subtype (gnat_param))))
 	  {
 	    FOR_EACH_VEC_SAFE_ELT (f_parm_attr_cache, i, pa)
 	      if (pa->id == gnat_param && pa->dim == Dimension)
@@ -2040,37 +2032,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		gnu_result = pa->length;
 		break;
 	      }
-	    else
-	      {
-		/* We used to compute the length as max (hb - lb + 1, 0),
-		   which could overflow for some cases of empty arrays, e.g.
-		   when lb == index_type'first.  We now compute the length as
-		   (hb >= lb) ? hb - lb + 1 : 0, which would only overflow in
-		   much rarer cases, for extremely large arrays we expect
-		   never to encounter in practice.  In addition, the former
-		   computation required the use of potentially constraining
-		   signed arithmetic while the latter doesn't.  Note that
-		   the comparison must be done in the original index type,
-		   to avoid any overflow during the conversion.  */
-		tree comp_type = get_base_type (gnu_result_type);
-		tree index_type = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type));
-		tree lb = TYPE_MIN_VALUE (index_type);
-		tree hb = TYPE_MAX_VALUE (index_type);
-		gnu_result
-		  = build_binary_op (PLUS_EXPR, comp_type,
-				     build_binary_op (MINUS_EXPR,
-						      comp_type,
-						      convert (comp_type, hb),
-						      convert (comp_type, lb)),
-				     convert (comp_type, integer_one_node));
-		gnu_result
-		  = build_cond_expr (comp_type,
-				     build_binary_op (GE_EXPR,
-						      boolean_type_node,
-						      hb, lb),
-				     gnu_result,
-				     convert (comp_type, integer_zero_node));
-	      }
+
+	    gnu_result
+	      = get_type_length (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)),
+				 gnu_result_type);
 	  }
 
 	/* If this has a PLACEHOLDER_EXPR, qualify it by the object we are
@@ -2334,6 +2299,56 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       }
       break;
 
+    case Attr_Model:
+      /* We treat Model as identical to Machine.  This is true for at least
+	 IEEE and some other nice floating-point systems.  */
+
+      /* ... fall through ... */
+
+    case Attr_Machine:
+      /* The trick is to force the compiler to store the result in memory so
+	 that we do not have extra precision used.  But do this only when this
+	 is necessary, i.e. if FP_ARITH_MAY_WIDEN is true and the precision of
+	 the type is lower than that of the longest floating-point type.  */
+      prefix_unused = true;
+      gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      gnu_result = convert (gnu_result_type, gnu_expr);
+
+      if (fp_arith_may_widen
+	  && TYPE_PRECISION (gnu_result_type)
+	     < TYPE_PRECISION (longest_float_type_node))
+	{
+	  tree rec_type = make_node (RECORD_TYPE);
+	  tree field
+	    = create_field_decl (get_identifier ("OBJ"), gnu_result_type,
+				 rec_type, NULL_TREE, NULL_TREE, 0, 0);
+	  tree rec_val, asm_expr;
+
+	  finish_record_type (rec_type, field, 0, false);
+
+	  rec_val = build_constructor_single (rec_type, field, gnu_result);
+	  rec_val = save_expr (rec_val);
+
+	  asm_expr
+	    = build5 (ASM_EXPR, void_type_node,
+		      build_string (0, ""),
+		      tree_cons (build_tree_list (NULL_TREE,
+						  build_string (2, "=m")),
+				 rec_val, NULL_TREE),
+		      tree_cons (build_tree_list (NULL_TREE,
+						  build_string (1, "m")),
+				 rec_val, NULL_TREE),
+		      NULL_TREE, NULL_TREE);
+	  ASM_VOLATILE_P (asm_expr) = 1;
+
+	  gnu_result
+	    = build_compound_expr (gnu_result_type, asm_expr,
+				   build_component_ref (rec_val, NULL_TREE,
+							field, false));
+	}
+      break;
+
     default:
       /* This abort means that we have an unimplemented attribute.  */
       gcc_unreachable ();
@@ -2347,7 +2362,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       && TREE_SIDE_EFFECTS (gnu_prefix)
       && !Is_Entity_Name (gnat_prefix))
     gnu_result
-      = build_compound_expr  (TREE_TYPE (gnu_result), gnu_prefix, gnu_result);
+      = build_compound_expr (TREE_TYPE (gnu_result), gnu_prefix, gnu_result);
 
   *gnu_result_type_p = gnu_result_type;
   return gnu_result;
@@ -2400,9 +2415,11 @@ Case_Statement_to_gnu (Node_Id gnat_node)
       /* First compile all the different case choices for the current WHEN
 	 alternative.  */
       for (gnat_choice = First (Discrete_Choices (gnat_when));
-	   Present (gnat_choice); gnat_choice = Next (gnat_choice))
+	   Present (gnat_choice);
+	   gnat_choice = Next (gnat_choice))
 	{
 	  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+	  tree label = create_artificial_label (input_location);
 
 	  switch (Nkind (gnat_choice))
 	    {
@@ -2426,8 +2443,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 		{
 		  tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
-		  gnu_low = fold (TYPE_MIN_VALUE (gnu_type));
-		  gnu_high = fold (TYPE_MAX_VALUE (gnu_type));
+		  gnu_low = TYPE_MIN_VALUE (gnu_type);
+		  gnu_high = TYPE_MAX_VALUE (gnu_type);
 		  break;
 		}
 
@@ -2445,20 +2462,13 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      gcc_unreachable ();
 	    }
 
-	  /* If the case value is a subtype that raises Constraint_Error at
-	     run time because of a wrong bound, then gnu_low or gnu_high is
-	     not translated into an INTEGER_CST.  In such a case, we need
-	     to ensure that the when statement is not added in the tree,
-	     otherwise it will crash the gimplifier.  */
-	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
-	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
-	    {
-	      add_stmt_with_node (build_case_label
-				  (gnu_low, gnu_high,
-				   create_artificial_label (input_location)),
-				  gnat_choice);
-	      choices_added_p = true;
-	    }
+	  /* Everything should be folded into constants at this point.  */
+	  gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
+	  gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
+
+	  add_stmt_with_node (build_case_label (gnu_low, gnu_high, label),
+			      gnat_choice);
+	  choices_added_p = true;
 	}
 
       /* This construct doesn't define a scope so we shouldn't push a binding
@@ -2643,8 +2653,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       enum tree_code update_code, test_code, shift_code;
       bool reverse = Reverse_Present (gnat_loop_spec), use_iv = false;
 
-      gnu_low = TYPE_MIN_VALUE (gnu_type);
-      gnu_high = TYPE_MAX_VALUE (gnu_type);
+      gnu_low = convert (gnu_base_type, TYPE_MIN_VALUE (gnu_type));
+      gnu_high = convert (gnu_base_type, TYPE_MAX_VALUE (gnu_type));
 
       /* We must disable modulo reduction for the iteration variable, if any,
 	 in order for the loop comparison to be effective.  */
@@ -2937,61 +2947,6 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
-/* Emit statements to establish __gnat_handle_vms_condition as a VMS condition
-   handler for the current function.  */
-
-/* This is implemented by issuing a call to the appropriate VMS specific
-   builtin.  To avoid having VMS specific sections in the global gigi decls
-   array, we maintain the decls of interest here.  We can't declare them
-   inside the function because we must mark them never to be GC'd, which we
-   can only do at the global level.  */
-
-static GTY(()) tree vms_builtin_establish_handler_decl = NULL_TREE;
-static GTY(()) tree gnat_vms_condition_handler_decl = NULL_TREE;
-
-static void
-establish_gnat_vms_condition_handler (void)
-{
-  tree establish_stmt;
-
-  /* Elaborate the required decls on the first call.  Check on the decl for
-     the gnat condition handler to decide, as this is one we create so we are
-     sure that it will be non null on subsequent calls.  The builtin decl is
-     looked up so remains null on targets where it is not implemented yet.  */
-  if (gnat_vms_condition_handler_decl == NULL_TREE)
-    {
-      vms_builtin_establish_handler_decl
-	= builtin_decl_for
-	  (get_identifier ("__builtin_establish_vms_condition_handler"));
-
-      gnat_vms_condition_handler_decl
-	= create_subprog_decl (get_identifier ("__gnat_handle_vms_condition"),
-			       NULL_TREE,
-			       build_function_type_list (boolean_type_node,
-							 ptr_void_type_node,
-							 ptr_void_type_node,
-							 NULL_TREE),
-			       NULL_TREE, is_disabled, true, true, true, NULL,
-			       Empty);
-
-      /* ??? DECL_CONTEXT shouldn't have been set because of DECL_EXTERNAL.  */
-      DECL_CONTEXT (gnat_vms_condition_handler_decl) = NULL_TREE;
-    }
-
-  /* Do nothing if the establish builtin is not available, which might happen
-     on targets where the facility is not implemented.  */
-  if (vms_builtin_establish_handler_decl == NULL_TREE)
-    return;
-
-  establish_stmt
-    = build_call_n_expr (vms_builtin_establish_handler_decl, 1,
-			 build_unary_op
-			 (ADDR_EXPR, NULL_TREE,
-			  gnat_vms_condition_handler_decl));
-
-  add_stmt (establish_stmt);
-}
-
 /* This page implements a form of Named Return Value optimization modelled
    on the C++ optimization of the same name.  The main difference is that
    we disregard any semantical considerations when applying it here, the
@@ -3054,7 +3009,7 @@ struct nrv_data
   bitmap nrv;
   tree result;
   Node_Id gnat_ret;
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Return true if T is a Named Return Value.  */
@@ -3188,7 +3143,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without_duplicates because it would only
      call us for the first occurrence of NRVs in the function body.  */
-  if (pointer_set_insert (dp->visited, *tp))
+  if (dp->visited->add (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
@@ -3328,7 +3283,7 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without_duplicates because it would only
      call us for the first occurrence of NRVs in the function body.  */
-  if (pointer_set_insert (dp->visited, *tp))
+  if (dp->visited->add (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
@@ -3361,7 +3316,7 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
     return;
 
   /* Prune also the candidates that are referenced by nested functions.  */
-  node = cgraph_get_create_node (fndecl);
+  node = cgraph_node::get_create (fndecl);
   for (node = node->nested; node; node = node->next_nested)
     walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), prune_nrv_r,
 				  &data);
@@ -3376,13 +3331,13 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
   data.nrv = nrv;
   data.result = DECL_RESULT (fndecl);
   data.gnat_ret = gnat_ret;
-  data.visited = pointer_set_create ();
+  data.visited = new hash_set<tree>;
   if (TYPE_RETURN_UNCONSTRAINED_P (TREE_TYPE (fndecl)))
     func = finalize_nrv_unc_r;
   else
     func = finalize_nrv_r;
   walk_tree (&DECL_SAVED_TREE (fndecl), func, &data, NULL);
-  pointer_set_destroy (data.visited);
+  delete data.visited;
 }
 
 /* Return true if RET_VAL can be used as a Named Return Value for the
@@ -3484,69 +3439,6 @@ build_return_expr (tree ret_obj, tree ret_val)
     result_expr = ret_obj;
 
   return build1 (RETURN_EXPR, void_type_node, result_expr);
-}
-
-/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
-   and the GNAT node GNAT_SUBPROG.  */
-
-static void
-build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
-{
-  tree gnu_subprog_type, gnu_subprog_addr, gnu_subprog_call;
-  tree gnu_subprog_param, gnu_stub_param, gnu_param;
-  tree gnu_stub_decl = DECL_FUNCTION_STUB (gnu_subprog);
-  vec<tree, va_gc> *gnu_param_vec = NULL;
-
-  gnu_subprog_type = TREE_TYPE (gnu_subprog);
-
-  /* Initialize the information structure for the function.  */
-  allocate_struct_function (gnu_stub_decl, false);
-  set_cfun (NULL);
-
-  begin_subprog_body (gnu_stub_decl);
-
-  start_stmt_group ();
-  gnat_pushlevel ();
-
-  /* Loop over the parameters of the stub and translate any of them
-     passed by descriptor into a by reference one.  */
-  for (gnu_stub_param = DECL_ARGUMENTS (gnu_stub_decl),
-       gnu_subprog_param = DECL_ARGUMENTS (gnu_subprog);
-       gnu_stub_param;
-       gnu_stub_param = DECL_CHAIN (gnu_stub_param),
-       gnu_subprog_param = DECL_CHAIN (gnu_subprog_param))
-    {
-      if (DECL_BY_DESCRIPTOR_P (gnu_stub_param))
-	{
-	  gcc_assert (DECL_BY_REF_P (gnu_subprog_param));
-	  gnu_param
-	    = convert_vms_descriptor (TREE_TYPE (gnu_subprog_param),
-				      gnu_stub_param,
-				      DECL_PARM_ALT_TYPE (gnu_stub_param),
-				      gnat_subprog);
-	}
-      else
-	gnu_param = gnu_stub_param;
-
-      vec_safe_push (gnu_param_vec, gnu_param);
-    }
-
-  /* Invoke the internal subprogram.  */
-  gnu_subprog_addr = build1 (ADDR_EXPR, build_pointer_type (gnu_subprog_type),
-			     gnu_subprog);
-  gnu_subprog_call = build_call_vec (TREE_TYPE (gnu_subprog_type),
-                                     gnu_subprog_addr, gnu_param_vec);
-
-  /* Propagate the return value, if any.  */
-  if (VOID_TYPE_P (TREE_TYPE (gnu_subprog_type)))
-    add_stmt (gnu_subprog_call);
-  else
-    add_stmt (build_return_expr (DECL_RESULT (gnu_stub_decl),
-				 gnu_subprog_call));
-
-  gnat_poplevel ();
-  end_subprog_body (end_stmt_group ());
-  rest_of_subprog_body_compilation (gnu_stub_decl);
 }
 
 /* Subroutine of gnat_to_gnu to process gnat_node, an N_Subprogram_Body.  We
@@ -3696,22 +3588,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   start_stmt_group ();
   gnat_pushlevel ();
 
-  /* On VMS, establish our condition handler to possibly turn a condition into
-     the corresponding exception if the subprogram has a foreign convention or
-     is exported.
-
-     To ensure proper execution of local finalizations on condition instances,
-     we must turn a condition into the corresponding exception even if there
-     is no applicable Ada handler, and need at least one condition handler per
-     possible call chain involving GNAT code.  OTOH, establishing the handler
-     has a cost so we want to minimize the number of subprograms into which
-     this happens.  The foreign or exported condition is expected to satisfy
-     all the constraints.  */
-  if (TARGET_ABI_OPEN_VMS
-      && (Has_Foreign_Convention (gnat_subprog_id)
-	  || Is_Exported (gnat_subprog_id)))
-    establish_gnat_vms_condition_handler ();
-
   process_decls (Declarations (gnat_node), Empty, Empty, true, true);
 
   /* Generate the code of the subprogram itself.  A return statement will be
@@ -3844,10 +3720,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   rest_of_subprog_body_compilation (gnu_subprog_decl);
-
-  /* If there is a stub associated with the function, build it now.  */
-  if (DECL_FUNCTION_STUB (gnu_subprog_decl))
-    build_function_stub (gnu_subprog_decl, gnat_subprog_id);
 }
 
 /* Return true if GNAT_NODE requires atomic synchronization.  */
@@ -4057,10 +3929,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
       const bool is_by_ref_formal_parm
- 	= is_true_formal_parm
- 	  && (DECL_BY_REF_P (gnu_formal)
-	      || DECL_BY_COMPONENT_PTR_P (gnu_formal)
-	      || DECL_BY_DESCRIPTOR_P (gnu_formal));
+	= is_true_formal_parm
+	  && (DECL_BY_REF_P (gnu_formal)
+	      || DECL_BY_COMPONENT_PTR_P (gnu_formal));
       /* In the Out or In Out case, we must suppress conversions that yield
 	 an lvalue but can nevertheless cause the creation of a temporary,
 	 because we need the real object in this case, either to pass its
@@ -4317,24 +4188,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
 
-      /* Then see if the parameter is passed by descriptor.  */
-      else if (is_true_formal_parm && DECL_BY_DESCRIPTOR_P (gnu_formal))
-	{
-	  gnu_actual = convert (gnu_formal_type, gnu_actual);
-
-	  /* If this is 'Null_Parameter, pass a zero descriptor.  */
-	  if ((TREE_CODE (gnu_actual) == INDIRECT_REF
-	       || TREE_CODE (gnu_actual) == UNCONSTRAINED_ARRAY_REF)
-	      && TREE_PRIVATE (gnu_actual))
-	    gnu_actual
-	      = convert (DECL_ARG_TYPE (gnu_formal), integer_zero_node);
-	  else
-	    gnu_actual = build_unary_op (ADDR_EXPR, NULL_TREE,
-					 fill_vms_descriptor
-					 (TREE_TYPE (TREE_TYPE (gnu_formal)),
-					  gnu_actual, gnat_actual));
-	}
-
       /* Otherwise the parameter is passed by copy.  */
       else
 	{
@@ -4448,10 +4301,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	if (!(present_gnu_tree (gnat_formal)
 	      && TREE_CODE (get_gnu_tree (gnat_formal)) == PARM_DECL
 	      && (DECL_BY_REF_P (get_gnu_tree (gnat_formal))
-		  || (TREE_CODE (get_gnu_tree (gnat_formal)) == PARM_DECL
-		      && ((DECL_BY_COMPONENT_PTR_P (get_gnu_tree (gnat_formal))
-			   || (DECL_BY_DESCRIPTOR_P
-			       (get_gnu_tree (gnat_formal))))))))
+		  || DECL_BY_COMPONENT_PTR_P (get_gnu_tree (gnat_formal))))
 	    && Ekind (gnat_formal) != E_In_Parameter)
 	  {
 	    /* Get the value to assign to this Out or In Out parameter.  It is
@@ -4904,26 +4754,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 	       gnu_except_ptr_stack->last (),
 	       convert (TREE_TYPE (gnu_except_ptr_stack->last ()),
 			build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
-
-	  /* If this is the distinguished exception "Non_Ada_Error" (and we are
-	     in VMS mode), also allow a non-Ada exception (a VMS condition) t
-	     match.  */
-	  if (Is_Non_Ada_Error (Entity (gnat_temp)))
-	    {
-	      tree gnu_comp
-		= build_component_ref
-		  (build_unary_op (INDIRECT_REF, NULL_TREE,
-				   gnu_except_ptr_stack->last ()),
-		   get_identifier ("lang"), NULL_TREE, false);
-
-	      this_choice
-		= build_binary_op
-		  (TRUTH_ORIF_EXPR, boolean_type_node,
-		   build_binary_op (EQ_EXPR, boolean_type_node, gnu_comp,
-				    build_int_cst (TREE_TYPE (gnu_comp), 'V')),
-		   this_choice);
-	    }
-	}
+}
       else
 	gcc_unreachable ();
 
@@ -4971,9 +4802,6 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 
 	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, 0);
 	  gnu_etype = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
-
-	  /* The Non_Ada_Error case for VMS exceptions is handled
-	     by the personality routine.  */
 	}
       else
 	gcc_unreachable ();
@@ -5056,6 +4884,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   const bool body_p = (Nkind (gnat_unit) == N_Package_Body
 		       || Nkind (gnat_unit) == N_Subprogram_Body);
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
+  Entity_Id gnat_entity;
   Node_Id gnat_pragma;
   /* Make the decl for the elaboration procedure.  */
   tree gnu_elab_proc_decl
@@ -5104,33 +4933,31 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   /* Process the unit itself.  */
   add_stmt (gnat_to_gnu (gnat_unit));
 
-  /* If we can inline, generate code for all the inlined subprograms.  */
-  if (optimize)
+  /* Generate code for all the inlined subprograms.  */
+  for (gnat_entity = First_Inlined_Subprogram (gnat_node);
+       Present (gnat_entity);
+       gnat_entity = Next_Inlined_Subprogram (gnat_entity))
     {
-      Entity_Id gnat_entity;
+      Node_Id gnat_body;
 
-      for (gnat_entity = First_Inlined_Subprogram (gnat_node);
-	   Present (gnat_entity);
-	   gnat_entity = Next_Inlined_Subprogram (gnat_entity))
+      /* Without optimization, process only the required subprograms.  */
+      if (!optimize && !Has_Pragma_Inline_Always (gnat_entity))
+	continue;
+
+      gnat_body = Parent (Declaration_Node (gnat_entity));
+      if (Nkind (gnat_body) != N_Subprogram_Body)
 	{
-	  Node_Id gnat_body = Parent (Declaration_Node (gnat_entity));
+	  /* ??? This happens when only the spec of a package is provided.  */
+	  if (No (Corresponding_Body (gnat_body)))
+	    continue;
 
-	  if (Nkind (gnat_body) != N_Subprogram_Body)
-	    {
-	      /* ??? This really should always be present.  */
-	      if (No (Corresponding_Body (gnat_body)))
-		continue;
-	      gnat_body
-		= Parent (Declaration_Node (Corresponding_Body (gnat_body)));
-	    }
-
-	  if (Present (gnat_body))
-	    {
-	      /* Define the entity first so we set DECL_EXTERNAL.  */
-	      gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
-	      add_stmt (gnat_to_gnu (gnat_body));
-	    }
+	  gnat_body
+	    = Parent (Declaration_Node (Corresponding_Body (gnat_body)));
 	}
+
+      /* Define the entity first so we set DECL_EXTERNAL.  */
+      gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+      add_stmt (gnat_to_gnu (gnat_body));
     }
 
   /* Process any pragmas and actions following the unit.  */
@@ -5160,6 +4987,9 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
      stabilization of the renamed entities may create SAVE_EXPRs which
      have been tied to a specific elaboration routine just above.  */
   invalidate_global_renaming_pointers ();
+
+  /* Force the processing for all nodes that remain in the queue.  */
+  process_deferred_decl_context (true);
 }
 
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Raise_xxx_Error,
@@ -5509,13 +5339,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gcc_assert (!TREE_OVERFLOW (gnu_result));
 	}
 
-      /* Convert the Ureal to a vax float (represented on a signed type).  */
-      else if (Vax_Float (Underlying_Type (Etype (gnat_node))))
-	{
-	  gnu_result = UI_To_gnu (Get_Vax_Real_Literal_As_Signed (gnat_node),
-				  gnu_result_type);
-	}
-
       else
 	{
 	  Ureal ur_realval = Realval (gnat_node);
@@ -5713,16 +5536,27 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = alloc_stmt_list ();
       break;
 
+    case N_Exception_Renaming_Declaration:
+      gnat_temp = Defining_Entity (gnat_node);
+      if (Renamed_Entity (gnat_temp) != Empty)
+        gnu_result
+          = gnat_to_gnu_entity (gnat_temp,
+                                gnat_to_gnu (Renamed_Entity (gnat_temp)), 1);
+      else
+        gnu_result = alloc_stmt_list ();
+      break;
+
     case N_Implicit_Label_Declaration:
       gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, 1);
       gnu_result = alloc_stmt_list ();
       break;
 
-    case N_Exception_Renaming_Declaration:
     case N_Number_Declaration:
-    case N_Package_Renaming_Declaration:
     case N_Subprogram_Renaming_Declaration:
+    case N_Package_Renaming_Declaration:
       /* These are fully handled in the front end.  */
+      /* ??? For package renamings, find a way to use GENERIC namespaces so
+	 that we get proper debug information for them.  */
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -5812,8 +5646,18 @@ gnat_to_gnu (Node_Id gnat_node)
 		   TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))),
 		   gnat_temp);
 
-	    gnu_result = build_binary_op (ARRAY_REF, NULL_TREE,
-					  gnu_result, gnu_expr);
+	    gnu_result
+	      = build_binary_op (ARRAY_REF, NULL_TREE, gnu_result, gnu_expr);
+
+	    /* Array accesses are bound-checked so they cannot trap, but this
+	       is valid only if they are not hoisted ahead of the check.  We
+	       need to mark them as no-trap to get decent loop optimizations
+	       in the presence of -fnon-call-exceptions, so we do it when we
+	       know that the original expression had no side-effects.  */
+	    if (TREE_CODE (gnu_result) == ARRAY_REF
+		&& !(Nkind (gnat_temp) == N_Identifier
+		     && Ekind (Entity (gnat_temp)) == E_Constant))
+	      TREE_THIS_NOTRAP (gnu_result) = 1;
 	  }
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -5915,25 +5759,16 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Selected_Component:
       {
-	tree gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
+	Entity_Id gnat_prefix = Prefix (gnat_node);
 	Entity_Id gnat_field = Entity (Selector_Name (gnat_node));
-	Entity_Id gnat_pref_type = Etype (Prefix (gnat_node));
+	tree gnu_prefix = gnat_to_gnu (gnat_prefix);
 	tree gnu_field;
-
-	while (IN (Ekind (gnat_pref_type), Incomplete_Or_Private_Kind)
-	       || IN (Ekind (gnat_pref_type), Access_Kind))
-	  {
-	    if (IN (Ekind (gnat_pref_type), Incomplete_Or_Private_Kind))
-	      gnat_pref_type = Underlying_Type (gnat_pref_type);
-	    else if (IN (Ekind (gnat_pref_type), Access_Kind))
-	      gnat_pref_type = Designated_Type (gnat_pref_type);
-	  }
 
 	gnu_prefix = maybe_implicit_deref (gnu_prefix);
 
 	/* For discriminant references in tagged types always substitute the
 	   corresponding discriminant as the actual selected component.  */
-	if (Is_Tagged_Type (gnat_pref_type))
+	if (Is_Tagged_Type (Underlying_Type (Etype (gnat_prefix))))
 	  while (Present (Corresponding_Discriminant (gnat_field)))
 	    gnat_field = Corresponding_Discriminant (gnat_field);
 
@@ -6142,9 +5977,12 @@ gnat_to_gnu (Node_Id gnat_node)
 		 || Nkind (gnat_range) == N_Expanded_Name)
 	  {
 	    tree gnu_range_type = get_unpadded_type (Entity (gnat_range));
+	    tree gnu_range_base_type = get_base_type (gnu_range_type);
 
-	    gnu_low = TYPE_MIN_VALUE (gnu_range_type);
-	    gnu_high = TYPE_MAX_VALUE (gnu_range_type);
+	    gnu_low
+	      = convert (gnu_range_base_type, TYPE_MIN_VALUE (gnu_range_type));
+	    gnu_high
+	      = convert (gnu_range_base_type, TYPE_MAX_VALUE (gnu_range_type));
 	  }
 	else
 	  gcc_unreachable ();
@@ -6479,40 +6317,79 @@ gnat_to_gnu (Node_Id gnat_node)
 			 atomic_sync_required_p (Name (gnat_node)));
       else
 	{
-	  gnu_rhs
-	    = maybe_unconstrained_array (gnat_to_gnu (Expression (gnat_node)));
+	  const Node_Id gnat_expr = Expression (gnat_node);
+	  const Entity_Id gnat_type
+	    = Underlying_Type (Etype (Name (gnat_node)));
+	  const bool regular_array_type_p
+	    = (Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type));
+	  const bool use_memset_p
+	    = (regular_array_type_p
+	       && Nkind (gnat_expr) == N_Aggregate
+	       && Is_Others_Aggregate (gnat_expr));
+
+	  /* If we'll use memset, we need to find the inner expression.  */
+	  if (use_memset_p)
+	    {
+	      Node_Id gnat_inner
+		= Expression (First (Component_Associations (gnat_expr)));
+	      while (Nkind (gnat_inner) == N_Aggregate
+		     && Is_Others_Aggregate (gnat_inner))
+		gnat_inner
+		  = Expression (First (Component_Associations (gnat_inner)));
+	      gnu_rhs = gnat_to_gnu (gnat_inner);
+	    }
+	  else
+	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
 
 	  /* If range check is needed, emit code to generate it.  */
-	  if (Do_Range_Check (Expression (gnat_node)))
+	  if (Do_Range_Check (gnat_expr))
 	    gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)),
 					gnat_node);
 
+	  /* If atomic synchronization is required, build an atomic store.  */
 	  if (atomic_sync_required_p (Name (gnat_node)))
 	    gnu_result = build_atomic_store (gnu_lhs, gnu_rhs);
+
+	  /* Or else, use memset when the conditions are met.  */
+	  else if (use_memset_p)
+	    {
+	      tree value = fold_convert (integer_type_node, gnu_rhs);
+	      tree to = gnu_lhs;
+	      tree type = TREE_TYPE (to);
+	      tree size
+	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
+	      tree to_ptr = build_fold_addr_expr (to);
+	      tree t = builtin_decl_implicit (BUILT_IN_MEMSET);
+	      if (TREE_CODE (value) == INTEGER_CST)
+		{
+		  tree mask
+		    = build_int_cst (integer_type_node,
+				     ((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
+		  value = int_const_binop (BIT_AND_EXPR, value, mask);
+		}
+	      gnu_result = build_call_expr (t, 3, to_ptr, value, size);
+	    }
+
+	  /* Otherwise build a regular assignment.  */
 	  else
 	    gnu_result
 	      = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
 
-	  /* If the type being assigned is an array type and the two sides are
+	  /* If the assignment type is a regular array and the two sides are
 	     not completely disjoint, play safe and use memmove.  But don't do
 	     it for a bit-packed array as it might not be byte-aligned.  */
 	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
-	      && Is_Array_Type (Etype (Name (gnat_node)))
-	      && !Is_Bit_Packed_Array (Etype (Name (gnat_node)))
+	      && regular_array_type_p
 	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
 	    {
-	      tree to, from, size, to_ptr, from_ptr, t;
-
-	      to = TREE_OPERAND (gnu_result, 0);
-	      from = TREE_OPERAND (gnu_result, 1);
-
-	      size = TYPE_SIZE_UNIT (TREE_TYPE (from));
-	      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, from);
-
-	      to_ptr = build_fold_addr_expr (to);
-	      from_ptr = build_fold_addr_expr (from);
-
-	      t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
+	      tree to = TREE_OPERAND (gnu_result, 0);
+	      tree from = TREE_OPERAND (gnu_result, 1);
+	      tree type = TREE_TYPE (from);
+	      tree size
+	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), from);
+	      tree to_ptr = build_fold_addr_expr (to);
+	      tree from_ptr = build_fold_addr_expr (from);
+	      tree t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
 	   }
 	}
@@ -7457,7 +7334,10 @@ add_stmt_force (tree gnu_stmt)
 void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
-  if (Present (gnat_node))
+  /* Do not emit a location for renamings that come from generic instantiation,
+     they are likely to disturb debugging.  */
+  if (Present (gnat_node)
+      && !renaming_from_generic_instantiation_p (gnat_node))
     set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
@@ -8025,10 +7905,22 @@ process_freeze_entity (Node_Id gnat_node)
   if (gnu_old)
     {
       save_gnu_tree (gnat_entity, NULL_TREE, false);
+
       if (IN (kind, Incomplete_Or_Private_Kind)
-	  && Present (Full_View (gnat_entity))
-	  && present_gnu_tree (Full_View (gnat_entity)))
-	save_gnu_tree (Full_View (gnat_entity), NULL_TREE, false);
+	  && Present (Full_View (gnat_entity)))
+	{
+	  Entity_Id full_view = Full_View (gnat_entity);
+
+	  save_gnu_tree (full_view, NULL_TREE, false);
+
+          if (IN (Ekind (full_view), Private_Kind)
+	      && Present (Underlying_Full_View (full_view)))
+	    {
+	      full_view = Underlying_Full_View (full_view);
+	      save_gnu_tree (full_view, NULL_TREE, false);
+	    }
+	}
+
       if (IN (kind, Type_Kind)
 	  && Present (Class_Wide_Type (gnat_entity))
 	  && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
@@ -8038,17 +7930,23 @@ process_freeze_entity (Node_Id gnat_node)
   if (IN (kind, Incomplete_Or_Private_Kind)
       && Present (Full_View (gnat_entity)))
     {
-      gnu_new = gnat_to_gnu_entity (Full_View (gnat_entity), NULL_TREE, 1);
+      Entity_Id full_view = Full_View (gnat_entity);
+
+      if (IN (Ekind (full_view), Private_Kind)
+	  && Present (Underlying_Full_View (full_view)))
+	full_view = Underlying_Full_View (full_view);
+
+      gnu_new = gnat_to_gnu_entity (full_view, NULL_TREE, 1);
 
       /* Propagate back-annotations from full view to partial view.  */
       if (Unknown_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity, Alignment (Full_View (gnat_entity)));
+	Set_Alignment (gnat_entity, Alignment (full_view));
 
       if (Unknown_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (Full_View (gnat_entity)));
+	Set_Esize (gnat_entity, Esize (full_view));
 
       if (Unknown_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (Full_View (gnat_entity)));
+	Set_RM_Size (gnat_entity, RM_Size (full_view));
 
       /* The above call may have defined this entity (the simplest example
 	 of this is when we have a private enumeral type since the bounds
@@ -8242,31 +8140,36 @@ static tree
 build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 		       tree right, Node_Id gnat_node)
 {
+  const unsigned int precision = TYPE_PRECISION (gnu_type);
   tree lhs = gnat_protect_expr (left);
   tree rhs = gnat_protect_expr (right);
   tree type_max = TYPE_MAX_VALUE (gnu_type);
   tree type_min = TYPE_MIN_VALUE (gnu_type);
-  tree gnu_expr;
-  tree tmp1, tmp2;
   tree zero = convert (gnu_type, integer_zero_node);
-  tree rhs_lt_zero;
-  tree check_pos;
-  tree check_neg;
-  tree check;
-  int precision = TYPE_PRECISION (gnu_type);
+  tree gnu_expr, rhs_lt_zero, tmp1, tmp2;
+  tree check_pos, check_neg, check;
 
-  gcc_assert (!(precision & (precision - 1))); /* ensure power of 2 */
+  /* Assert that the precision is a power of 2.  */
+  gcc_assert ((precision & (precision - 1)) == 0);
 
   /* Prefer a constant or known-positive rhs to simplify checks.  */
   if (!TREE_CONSTANT (rhs)
       && commutative_tree_code (code)
-      && (TREE_CONSTANT (lhs) || (!tree_expr_nonnegative_p (rhs)
-				  && tree_expr_nonnegative_p (lhs))))
+      && (TREE_CONSTANT (lhs)
+	  || (!tree_expr_nonnegative_p (rhs)
+	      && tree_expr_nonnegative_p (lhs))))
     {
       tree tmp = lhs;
       lhs = rhs;
       rhs = tmp;
     }
+
+  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
+
+  /* If we can fold the expression to a constant, just return it.
+     The caller will deal with overflow, no need to generate a check.  */
+  if (TREE_CONSTANT (gnu_expr))
+    return gnu_expr;
 
   rhs_lt_zero = tree_expr_nonnegative_p (rhs)
 		? boolean_false_node
@@ -8284,7 +8187,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   if (!TREE_CONSTANT (rhs))
     {
       /* Even for add/subtract double size to get another base type.  */
-      int needed_precision = precision * 2;
+      const unsigned int needed_precision = precision * 2;
 
       if (code == MULT_EXPR && precision == 64)
 	{
@@ -8295,49 +8198,45 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 						       convert (int_64, rhs)));
 	}
 
-      else if (needed_precision <= BITS_PER_WORD
-	       || (code == MULT_EXPR
-		   && needed_precision <= LONG_LONG_TYPE_SIZE))
+      if (needed_precision <= BITS_PER_WORD
+	  || (code == MULT_EXPR && needed_precision <= LONG_LONG_TYPE_SIZE))
 	{
 	  tree wide_type = gnat_type_for_size (needed_precision, 0);
-
 	  tree wide_result = build_binary_op (code, wide_type,
 					      convert (wide_type, lhs),
 					      convert (wide_type, rhs));
 
-	  tree check = build_binary_op
+	  check = build_binary_op
 	    (TRUTH_ORIF_EXPR, boolean_type_node,
 	     build_binary_op (LT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_min)),
 	     build_binary_op (GT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_max)));
 
-	  tree result = convert (gnu_type, wide_result);
-
 	  return
-	    emit_check (check, result, CE_Overflow_Check_Failed, gnat_node);
+	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 	}
 
-      else if (code == PLUS_EXPR || code == MINUS_EXPR)
+      if (code == PLUS_EXPR || code == MINUS_EXPR)
 	{
 	  tree unsigned_type = gnat_type_for_size (precision, 1);
-	  tree wrapped_expr = convert
-	    (gnu_type, build_binary_op (code, unsigned_type,
+	  tree wrapped_expr
+	    = convert (gnu_type,
+		       build_binary_op (code, unsigned_type,
 					convert (unsigned_type, lhs),
 					convert (unsigned_type, rhs)));
 
-	  tree result = convert
-	    (gnu_type, build_binary_op (code, gnu_type, lhs, rhs));
-
 	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
 	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction.  */
-	  tree check = build_binary_op
-	    (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
-	     build_binary_op (code == PLUS_EXPR ? LT_EXPR : GT_EXPR,
-			      boolean_type_node, wrapped_expr, lhs));
+	  check
+	    = build_binary_op (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
+			       build_binary_op (code == PLUS_EXPR
+						? LT_EXPR : GT_EXPR,
+					        boolean_type_node,
+						wrapped_expr, lhs));
 
 	  return
-	    emit_check (check, result, CE_Overflow_Check_Failed, gnat_node);
+	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 	}
    }
 
@@ -8410,13 +8309,6 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
     default:
       gcc_unreachable();
     }
-
-  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
-
-  /* If we can fold the expression to a constant, just return it.
-     The caller will deal with overflow, no need to generate a check.  */
-  if (TREE_CONSTANT (gnu_expr))
-    return gnu_expr;
 
   check = fold_build3 (COND_EXPR, boolean_type_node, rhs_lt_zero, check_neg,
 		       check_pos);
@@ -8561,11 +8453,12 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   tree gnu_base_type = get_base_type (gnu_type);
   tree gnu_result = gnu_expr;
 
-  /* If we are not doing any checks, the output is an integral type, and
-     the input is not a floating type, just do the conversion.  This
-     shortcut is required to avoid problems with packed array types
-     and simplifies code in all cases anyway.   */
-  if (!rangep && !overflowp && INTEGRAL_TYPE_P (gnu_base_type)
+  /* If we are not doing any checks, the output is an integral type and the
+     input is not a floating-point type, just do the conversion.  This is
+     required for packed array types and is simpler in all cases anyway.   */
+  if (!rangep
+      && !overflowp
+      && INTEGRAL_TYPE_P (gnu_base_type)
       && !FLOAT_TYPE_P (gnu_in_type))
     return convert (gnu_type, gnu_expr);
 
@@ -8650,7 +8543,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 
   /* Now convert to the result base type.  If this is a non-truncating
      float-to-integer conversion, round.  */
-  if (INTEGRAL_TYPE_P (gnu_base_type) && FLOAT_TYPE_P (gnu_in_basetype)
+  if (INTEGRAL_TYPE_P (gnu_base_type)
+      && FLOAT_TYPE_P (gnu_in_basetype)
       && !truncatep)
     {
       REAL_VALUE_TYPE half_minus_pred_half, pred_half;
@@ -8659,15 +8553,11 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
       const struct real_format *fmt;
 
       /* The following calculations depend on proper rounding to even
-	 of each arithmetic operation. In order to prevent excess
+	 of each arithmetic operation.  In order to prevent excess
 	 precision from spoiling this property, use the widest hardware
 	 floating-point type if FP_ARITH_MAY_WIDEN is true.  */
       calc_type
-	= FP_ARITH_MAY_WIDEN ? longest_float_type_node : gnu_in_basetype;
-
-      /* FIXME: Should not have padding in the first place.  */
-      if (TYPE_IS_PADDING_P (calc_type))
-	calc_type = TREE_TYPE (TYPE_FIELDS (calc_type));
+	= fp_arith_may_widen ? longest_float_type_node : gnu_in_basetype;
 
       /* Compute the exact value calc_type'Pred (0.5) at compile time.  */
       fmt = REAL_MODE_FORMAT (TYPE_MODE (calc_type));
@@ -9301,6 +9191,7 @@ set_gnu_expr_location_from_node (tree node, Node_Id gnat_node)
     {
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
       break;
 
     case COMPOUND_EXPR:

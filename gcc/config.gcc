@@ -236,8 +236,8 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   picochip-*				\
- | score-*				\
+# Currently there are no obsolete targets.
+ nothing				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -419,10 +419,7 @@ nds32*)
 nios2-*-*)
 	cpu_type=nios2
 	extra_options="${extra_options} g.opt"
-	;;	
-picochip-*-*)
-        cpu_type=picochip
-        ;;
+	;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
@@ -435,10 +432,6 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	;;
-score*-*-*)
-	cpu_type=score
-	extra_options="${extra_options} g.opt"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -789,7 +782,13 @@ case ${target} in
   ;;
 *-*-rtems*)
   case ${enable_threads} in
-    yes) thread_file='rtems' ;;
+    "" | yes | rtems) thread_file='rtems' ;;
+    posix) thread_file='posix' ;;
+    no) ;;
+    *)
+      echo 'Unknown thread configuration for RTEMS'
+      exit 1
+      ;;
   esac
   tmake_file="${tmake_file} t-rtems"
   extra_options="${extra_options} rtems.opt"
@@ -1167,6 +1166,12 @@ moxie-*-uclinux*)
 moxie-*-rtems*)
 	tmake_file="${tmake_file} moxie/t-moxie"
 	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
+	;;
+moxie-*-moxiebox*)
+	gas=yes
+	gnu_ld=yes
+	tm_file="${tm_file} dbxelf.h elfos.h moxie/moxiebox.h newlib-stdint.h"
+	tmake_file="${tmake_file} moxie/t-moxiebox"
 	;;
 h8300-*-rtems*)
 	tmake_file="${tmake_file} h8300/t-h8300 h8300/t-rtems"
@@ -1548,11 +1553,11 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
-	    tm_file="${tm_file} vxworksae.h i386/vx-common.h i386/vxworksae.h"
+	    tm_file="${tm_file} vxworksae.h i386/vxworks.h i386/vxworksae.h"
 	    tmake_file="${tmake_file} i386/t-vxworks i386/t-vxworksae"
 	    ;;
 	  *)
-	    tm_file="${tm_file} vxworks.h i386/vx-common.h i386/vxworks.h"
+	    tm_file="${tm_file} vxworks.h i386/vxworks.h"
 	    tmake_file="${tmake_file} i386/t-vxworks"
 	    ;;
 	esac
@@ -1562,13 +1567,14 @@ i[34567]86-*-cygwin*)
 	xm_file=i386/xm-cygwin.h
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
-	extra_options="${extra_options} i386/cygming.opt"
+	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
 	extra_objs="winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	default_use_cxa_atexit=yes
 	use_gcc_stdint=wrap
 	;;
 x86_64-*-cygwin*)
@@ -1577,13 +1583,14 @@ x86_64-*-cygwin*)
 	xm_file=i386/xm-cygwin.h
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
-	extra_options="${extra_options} i386/cygming.opt"
+	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
 	extra_objs="winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	default_use_cxa_atexit=yes
 	use_gcc_stdint=wrap
 	tm_defines="${tm_defines} TARGET_CYGWIN64=1"
 	;;
@@ -1931,7 +1938,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips*-mti-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h mips/mti-linux.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h mips/mti-linux.h"
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-mti-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
@@ -1939,7 +1946,7 @@ mips*-mti-linux*)
 	gas=yes
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h"
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-linux64"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
@@ -1963,7 +1970,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
 	extra_options="${extra_options} linux-android.opt"
 	if test x$enable_targets = xall; then
-		tm_file="${tm_file} mips/gnu-user64.h mips/linux64.h"
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
 	tm_file="${tm_file} mips/linux-common.h"
@@ -2136,17 +2142,16 @@ nios2-*-*)
 		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
 		extra_options="${extra_options} nios2/elf.opt"
 		;;
+	nios2-*-rtems*)
+		tm_file="${tm_file} newlib-stdint.h nios2/rtems.h rtems.h"
+		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
+		;;
         esac
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
 	;;
-picochip-*)
-	tm_file="${tm_file} newlib-stdint.h"
-	use_gcc_stdint=wrap
-	tmake_file="picochip/t-picochip t-pnt16-warn"
-        ;;
 # port not yet contributed
 #powerpc-*-openbsd*)
 #	tmake_file="${tmake_file} rs6000/t-fprules"
@@ -2242,7 +2247,7 @@ powerpc-*-rtems*)
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
 	;;
 powerpc*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h rs6000/sysv4.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	extra_objs="$extra_objs rs6000-linux.o"
@@ -2306,12 +2311,16 @@ powerpc*-*-linux*)
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
+powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	extra_headers=ppc-asm.h
 	case ${target} in
+          *-vxworksmils*)
+            tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h rs6000/vxworksmils.h"
+            tmake_file="${tmake_file} rs6000/t-vxworksmils"
+            ;;
 	  *-vxworksae*)
 	    tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h rs6000/vxworksae.h"
 	    tmake_file="${tmake_file} rs6000/t-vxworksae"
@@ -2428,11 +2437,6 @@ s390x-ibm-tpf*)
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	;;
-score-*-elf)
-	gas=yes
-	gnu_ld=yes
-        tm_file="dbxelf.h elfos.h score/elf.h score/score.h newlib-stdint.h"
-        ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
@@ -3511,20 +3515,17 @@ case "${target}" in
 			;;
 		esac
 
-		case "$with_fpu" in
-		"" \
-		| vfp | vfp3 | vfpv3 \
-		| vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd \
-		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
-		| fpv4-sp-d16 | neon-vfpv4 | fp-arm-v8 | neon-fp-armv8 \
-                | crypto-neon-fp-armv8)
-			# OK
-			;;
-		*)
-			echo "Unknown fpu used in --with-fpu=$with_fpu" 2>&1
-			exit 1
-			;;
-		esac
+		# see if it matches any of the entries in arm-fpus.def
+		if [ x"$with_fpu" = x ] \
+		    || grep "^ARM_FPU(\"$with_fpu\"," \
+			    ${srcdir}/config/arm/arm-fpus.def \
+			    > /dev/null; then
+		  # OK
+		  true
+		else
+		  echo "Unknown fpu used in --with-fpu=$with_fpu" 1>&2
+		  exit 1
+		fi
 
 		case "$with_abi" in
 		"" \

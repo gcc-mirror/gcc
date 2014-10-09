@@ -160,7 +160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _State<_TraitsT>				_StateT;
       typedef _Matcher<typename _TraitsT::char_type>	_MatcherT;
 
-      using _NFA_base::_NFA_base;
+      _NFA(const typename _TraitsT::locale_type& __loc, _FlagT __flags)
+      : _NFA_base(__flags)
+      { _M_traits.imbue(__loc); }
 
       // for performance reasons _NFA objects should only be moved not copied
       _NFA(const _NFA&) = delete;
@@ -272,6 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::ostream&
       _M_dot(std::ostream& __ostr) const;
 #endif
+    public:
+      _TraitsT                  _M_traits;
     };
 
   /// Describes a sequence of one or more %_State, its current start

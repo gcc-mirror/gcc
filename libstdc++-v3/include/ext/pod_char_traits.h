@@ -177,7 +177,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static int_type
       eof() 
       {
-	int_type __r = { -1 };
+	int_type __r = { static_cast<typename __gnu_cxx::__conditional_type
+			 <std::__is_integer<int_type>::__value,
+			 int_type, int>::__type>(-1) };
 	return __r;
       }
 

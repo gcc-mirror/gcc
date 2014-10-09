@@ -1119,6 +1119,9 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
   if (!flag_var)
     return;
 
+  if ((diagnostic_t) kind != DK_UNSPECIFIED && dc != NULL)
+    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
+
   if (opts_set != NULL)
     set_flag_var = option_flag_var (opt_index, opts_set);
 
@@ -1198,10 +1201,6 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	}
 	break;
     }
-
-  if ((diagnostic_t) kind != DK_UNSPECIFIED
-      && dc != NULL)
-    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
 }
 
 /* Return the address of the flag variable for option OPT_INDEX in

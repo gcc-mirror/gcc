@@ -48,6 +48,8 @@ varpool_externally_visible_p (struct varpool_node *vnode,
   return 0;
 }
 
+unsigned char pointer_set_contains (struct pointer_set_t *, struct varpool_node *);
+
 unsigned int
 function_and_variable_visibility (unsigned char whole_program)
 {

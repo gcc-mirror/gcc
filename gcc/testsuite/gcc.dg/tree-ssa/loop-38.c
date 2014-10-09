@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -fdump-tree-cunrolli-details" } */
 int a[10];
 int b[11];
+int q (void);
+int
 t(int n)
 {
    int i;

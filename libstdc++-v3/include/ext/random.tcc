@@ -1355,7 +1355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	result_type __a = __param.successful_size();
@@ -1540,6 +1540,89 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 
+  namespace {
+
+    // Helper class for the uniform_on_sphere_distribution generation
+    // function.
+    template<std::size_t _Dimen, typename _RealType>
+      class uniform_on_sphere_helper
+      {
+	typedef typename uniform_on_sphere_distribution<_Dimen, _RealType>::
+	  result_type result_type;
+
+      public:
+	template<typename _NormalDistribution,
+		 typename _UniformRandomNumberGenerator>
+	result_type operator()(_NormalDistribution& __nd,
+			       _UniformRandomNumberGenerator& __urng)
+        {
+	  result_type __ret;
+	  typename result_type::value_type __norm;
+
+	  do
+	    {
+	      auto __sum = _RealType(0);
+
+	      std::generate(__ret.begin(), __ret.end(),
+			    [&__nd, &__urng, &__sum](){
+			      _RealType __t = __nd(__urng);
+			      __sum += __t * __t;
+			      return __t; });
+	      __norm = std::sqrt(__sum);
+	    }
+	  while (__norm == _RealType(0) || ! std::isfinite(__norm));
+
+	  std::transform(__ret.begin(), __ret.end(), __ret.begin(),
+			 [__norm](_RealType __val){ return __val / __norm; });
+
+	  return __ret;
+        }
+      };
+
+
+    template<typename _RealType>
+      class uniform_on_sphere_helper<2, _RealType>
+      {
+	typedef typename uniform_on_sphere_distribution<2, _RealType>::
+	  result_type result_type;
+
+      public:
+	template<typename _NormalDistribution,
+		 typename _UniformRandomNumberGenerator>
+	result_type operator()(_NormalDistribution&,
+			       _UniformRandomNumberGenerator& __urng)
+        {
+	  result_type __ret;
+	  _RealType __sq;
+	  std::__detail::_Adaptor<_UniformRandomNumberGenerator,
+				  _RealType> __aurng(__urng);
+
+	  do
+	    {
+	      __ret[0] = _RealType(2) * __aurng() - _RealType(1);
+	      __ret[1] = _RealType(2) * __aurng() - _RealType(1);
+
+	      __sq = __ret[0] * __ret[0] + __ret[1] * __ret[1];
+	    }
+	  while (__sq == _RealType(0) || __sq > _RealType(1));
+
+#if _GLIBCXX_USE_C99_MATH_TR1
+	  // Yes, we do not just use sqrt(__sq) because hypot() is more
+	  // accurate.
+	  auto __norm = std::hypot(__ret[0], __ret[1]);
+#else
+	  auto __norm = std::sqrt(__sq);
+#endif
+	  __ret[0] /= __norm;
+	  __ret[1] /= __norm;
+
+	  return __ret;
+        }
+      };
+
+  }
+
+
   template<std::size_t _Dimen, typename _RealType>
     template<typename _UniformRandomNumberGenerator>
       typename uniform_on_sphere_distribution<_Dimen, _RealType>::result_type
@@ -1547,18 +1630,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __p)
       {
-	result_type __ret;
-	_RealType __sum = _RealType(0);
-
-	std::generate(__ret.begin(), __ret.end(),
-		      [&__urng, &__sum, this](){ _RealType __t = _M_nd(__urng);
-						 __sum += __t * __t;
-						 return __t; });
-	auto __norm = std::sqrt(__sum);
-	std::transform(__ret.begin(), __ret.end(), __ret.begin(),
-		       [__norm](_RealType __val){ return __val / __norm; });
-
-	return __ret;
+        uniform_on_sphere_helper<_Dimen, _RealType> __helper;
+        return __helper(_M_nd, __urng);
       }
 
   template<std::size_t _Dimen, typename _RealType>

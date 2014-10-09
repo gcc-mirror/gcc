@@ -1341,27 +1341,6 @@ Return machine mode to be used for @code{_Unwind_Word} type.
 The default is to use @code{word_mode}.
 @end deftypefn
 
-@defmac ROUND_TOWARDS_ZERO
-If defined, this macro should be true if the prevailing rounding
-mode is towards zero.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-Not defining this macro is equivalent to returning zero.
-@end defmac
-
-@defmac LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should return true if floats with @var{size}
-bits do not have a NaN or infinity representation, but use the largest
-exponent for normal numbers instead.
-
-Defining this macro only affects the way @file{libgcc.a} emulates
-floating-point arithmetic.
-
-The default definition of this macro returns false for all sizes.
-@end defmac
-
 @deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (const_tree @var{record_type})
 This target hook returns @code{true} if bit-fields in the given
 @var{record_type} are to be laid out following the rules of Microsoft
@@ -1563,36 +1542,6 @@ the target machine.  If you don't define this, the default is
 @code{BITS_PER_UNIT * 16}.
 @end defmac
 
-@defmac LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-Define this macro if @code{LONG_DOUBLE_TYPE_SIZE} is not constant or
-if you want routines in @file{libgcc2.a} for a size other than
-@code{LONG_DOUBLE_TYPE_SIZE}.  If you don't define this, the
-default is @code{LONG_DOUBLE_TYPE_SIZE}.
-@end defmac
-
-@defmac LIBGCC2_HAS_DF_MODE
-Define this macro if neither @code{DOUBLE_TYPE_SIZE} nor
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
-@code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and either @code{DOUBLE_TYPE_SIZE}
-or @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64 then the default is 1,
-otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_XF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{XFmode} but you want @code{XFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 80 then the default is 1, otherwise it is 0.
-@end defmac
-
-@defmac LIBGCC2_HAS_TF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
-@code{TFmode} but you want @code{TFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
-is 128 then the default is 1, otherwise it is 0.
-@end defmac
-
 @defmac LIBGCC2_GNU_PREFIX
 This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
 hook and should be defined if that hook is overriden to be true.  It
@@ -1600,20 +1549,6 @@ causes function names in libgcc to be changed to use a @code{__gnu_}
 prefix for their name rather than the default @code{__}.  A port which
 uses this macro should also arrange to use @file{t-gnu-prefix} in
 the libgcc @file{config.host}.
-@end defmac
-
-@defmac SF_SIZE
-@defmacx DF_SIZE
-@defmacx XF_SIZE
-@defmacx TF_SIZE
-Define these macros to be the size in bits of the mantissa of
-@code{SFmode}, @code{DFmode}, @code{XFmode} and @code{TFmode} values,
-if the defaults in @file{libgcc2.h} are inappropriate.  By default,
-@code{FLT_MANT_DIG} is used for @code{SF_SIZE}, @code{LDBL_MANT_DIG}
-for @code{XF_SIZE} and @code{TF_SIZE}, and @code{DBL_MANT_DIG} or
-@code{LDBL_MANT_DIG} for @code{DF_SIZE} according to whether
-@code{DOUBLE_TYPE_SIZE} or
-@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64.
 @end defmac
 
 @defmac TARGET_FLT_EVAL_METHOD
@@ -4261,6 +4196,14 @@ If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+Define this to return nonzero if libgcc provides support for the 
+floating-point mode @var{mode}, which is known to pass 
+@code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 
+hook returns true for all of @code{SFmode}, @code{DFmode}, 
+@code{XFmode} and @code{TFmode}, if such modes exist.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (enum machine_mode @var{mode})
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given
@@ -4527,16 +4470,6 @@ This target hook returns the mode to be used when accessing raw argument registe
 If you enable it, GCC can save registers around function calls.  This
 makes it possible to use call-clobbered registers to hold variables that
 must live across calls.
-
-@defmac CALLER_SAVE_PROFITABLE (@var{refs}, @var{calls})
-A C expression to determine whether it is worthwhile to consider placing
-a pseudo-register in a call-clobbered hard register and saving and
-restoring it around each function call.  The expression should be 1 when
-this is worth doing, and 0 otherwise.
-
-If you don't define this macro, a default is used which is good on most
-machines: @code{4 * @var{calls} < @var{refs}}.
-@end defmac
 
 @defmac HARD_REGNO_CALLER_SAVE_MODE (@var{regno}, @var{nregs})
 A C expression specifying which mode is required for saving @var{nregs}
@@ -6388,7 +6321,7 @@ it to vary depending on what the instructions are, you must use
 @samp{TARGET_SCHED_VARIABLE_ISSUE}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
+@deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx_insn *@var{insn}, int @var{more})
 This hook is executed by the scheduler after it has scheduled an insn
 from the ready list.  It should return the number of insns which can
 still be issued in the current cycle.  The default is
@@ -6402,7 +6335,7 @@ debug output to.  @var{verbose} is the verbose level provided by
 was scheduled.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx @var{insn}, rtx @var{link}, rtx @var{dep_insn}, int @var{cost})
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx_insn *@var{insn}, rtx @var{link}, rtx_insn *@var{dep_insn}, int @var{cost})
 This function corrects the value of @var{cost} based on the
 relationship between @var{insn} and @var{dep_insn} through the
 dependence @var{link}.  It should return the new value.  The default
@@ -6417,7 +6350,7 @@ acceptable, you could use the hook to modify them too.  See also
 @pxref{Processor pipeline description}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx_insn *@var{insn}, int @var{priority})
 This hook adjusts the integer scheduling priority @var{priority} of
 @var{insn}.  It should return the new priority.  Increase the priority to
 execute @var{insn} earlier, reduce the priority to execute @var{insn}
@@ -6425,7 +6358,7 @@ later.  Do not define this hook if you do not need to adjust the
 scheduling priorities of insns.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_REORDER (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_readyp}, int @var{clock})
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER (FILE *@var{file}, int @var{verbose}, rtx_insn **@var{ready}, int *@var{n_readyp}, int @var{clock})
 This hook is executed by the scheduler after it has scheduled the ready
 list, to allow the machine description to reorder it (for example to
 combine two small instructions together on @samp{VLIW} machines).
@@ -6442,7 +6375,7 @@ can issue this cycle; normally this is just @code{issue_rate}.  See also
 @samp{TARGET_SCHED_REORDER2}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_REORDER2 (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_readyp}, int @var{clock})
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER2 (FILE *@var{file}, int @var{verbose}, rtx_insn **@var{ready}, int *@var{n_readyp}, int @var{clock})
 Like @samp{TARGET_SCHED_REORDER}, but called at a different time.  That
 function is called whenever the scheduler starts a new cycle.  This one
 is called once per iteration over a cycle, immediately after
@@ -6457,14 +6390,14 @@ cycle.  These other insns can then be taken into account properly.
 This hook is used to check whether target platform supports macro fusion.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx @var{condgen}, rtx @var{condjmp})
+@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx_insn *@var{condgen}, rtx_insn *@var{condjmp})
 This hook is used to check whether two insns could be macro fused for
 target microarchitecture. If this hook returns true for the given insn pair
 (@var{condgen} and @var{condjmp}), scheduler will put them into a sched
 group, and they will not be scheduled apart.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx @var{head}, rtx @var{tail})
+@deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx_insn *@var{head}, rtx_insn *@var{tail})
 This hook is called after evaluation forward dependencies of insns in
 chain given by two parameter values (@var{head} and @var{tail}
 correspondingly) but before insns scheduling of the insn chain.  For
@@ -6520,7 +6453,7 @@ when the new simulated processor cycle starts.
 The hook can be used to initialize data used by the previous hook.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_DFA_POST_CYCLE_INSN (void)
+@deftypefn {Target Hook} {rtx_insn *} TARGET_SCHED_DFA_POST_CYCLE_INSN (void)
 The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used
 to changed the state as if the insn were scheduled when the new
 simulated processor cycle finishes.
@@ -6574,7 +6507,7 @@ schedules to choose the best one.
 The default is no multipass scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx @var{insn}, int @var{ready_index})
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx_insn *@var{insn}, int @var{ready_index})
 
 This hook controls what insns from the ready insn queue will be
 considered for the multipass insn scheduling.  If the hook returns
@@ -6595,7 +6528,7 @@ This hook prepares the target backend for a new round of multipass
 scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, rtx @var{insn}, const void *@var{prev_data})
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, rtx_insn *@var{insn}, const void *@var{prev_data})
 This hook is called when multipass scheduling evaluates instruction INSN.
 @end deftypefn
 
@@ -6617,7 +6550,7 @@ This hook initializes target-specific data used in multipass scheduling.
 This hook finalizes target-specific data used in multipass scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx @var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx_insn *@var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
 This hook is called by the insn scheduler before issuing @var{insn}
 on cycle @var{clock}.  If the hook returns nonzero,
 @var{insn} is not issued on this processor cycle.  Instead,
@@ -6679,7 +6612,7 @@ Deallocate internal data in target scheduling context pointed to by @var{tc}.
 Deallocate a store for target scheduling context pointed to by @var{tc}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
+@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx_insn *@var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
 This hook is called by the insn scheduler when @var{insn} has only
 speculative dependencies and therefore can be scheduled speculatively.
 The hook is used to check if the pattern of @var{insn} has a speculative
@@ -6696,7 +6629,7 @@ for @var{insn}.  It should return @code{true}, if the corresponding check
 instruction should branch to recovery code, or @code{false} otherwise.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, unsigned int @var{ds})
+@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx_insn *@var{insn}, rtx_insn *@var{label}, unsigned int @var{ds})
 This hook is called by the insn scheduler to generate a pattern for recovery
 check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
 speculative instruction for which the check should be generated.
@@ -6723,12 +6656,12 @@ bound will be used in case this hook is not implemented: the total number
 of instructions divided by the issue rate.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_DISPATCH (rtx @var{insn}, int @var{x})
+@deftypefn {Target Hook} bool TARGET_SCHED_DISPATCH (rtx_insn *@var{insn}, int @var{x})
 This hook is called by Haifa Scheduler.  It returns true if dispatch scheduling
 is supported in hardware and the condition specified in the parameter is true.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_DISPATCH_DO (rtx @var{insn}, int @var{x})
+@deftypefn {Target Hook} void TARGET_SCHED_DISPATCH_DO (rtx_insn *@var{insn}, int @var{x})
 This hook is called by Haifa Scheduler.  It performs the operation specified
 in its second parameter.
 @end deftypefn
@@ -8508,7 +8441,7 @@ writing conditional output routines in those patterns.
 If this macro is not defined, it is equivalent to a null statement.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *@var{file}, rtx @var{insn}, rtx *@var{opvec}, int @var{noperands})
+@deftypefn {Target Hook} void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *@var{file}, rtx_insn *@var{insn}, rtx *@var{opvec}, int @var{noperands})
 If defined, this target hook is a function which is executed just after the
 output of assembler code for @var{insn}, to change the mode of the assembler
 if necessary.
@@ -8752,7 +8685,7 @@ The default is that no label is emitted.
 If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be used to emit a directive to install a personality hook into the unwind info.  This hook should not be used if dwarf2 unwind info is used.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx @var{insn})
+@deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx_insn *@var{insn})
 This target hook emits assembly directives required to unwind the
 given instruction.  This is only used when @code{TARGET_EXCEPT_UNWIND_INFO}
 returns @code{UI_TARGET}.
@@ -8881,6 +8814,13 @@ register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
 If not defined, the default is to return @code{NULL_RTX}.
 @end deftypefn
 
+@deftypefn {Target Hook} {enum machine_mode} TARGET_DWARF_FRAME_REG_MODE (int @var{regno})
+Given a register, this hook should return the mode which the
+corresponding Dwarf frame register should have.  This is normally
+used to return a smaller mode than the raw mode to prevent call
+clobbered parts of a register altering the frame register size
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_INIT_DWARF_REG_SIZES_EXTRA (tree @var{address})
 If some registers are represented in Dwarf-2 unwind information in
 multiple pieces, define this hook to fill in information about the
@@ -8924,7 +8864,7 @@ to set the variable @var{align_jumps} in the target's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{JUMP_ALIGN}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8939,7 +8879,7 @@ to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip before @var{label} when applying
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
@@ -8959,7 +8899,7 @@ to set the variable @code{align_loops} in the target's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to
 @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is
 defined.
@@ -8976,7 +8916,7 @@ to set the variable @code{align_labels} in the target's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx @var{label})
+@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx_insn *@var{label})
 The maximum number of bytes to skip when applying @code{LABEL_ALIGN}
 to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}
 is defined.
@@ -9599,11 +9539,11 @@ switch is needed / supplied.
 Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. @var{prev_moxde} indicates the mode to switch from. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx @var{insn})
+@deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx @var{insn})
+@deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.  If this macro is defined, it is evaluated for every @var{insn} during mode switching.  It determines the mode that an insn results in (if different from the incoming mode).
 @end deftypefn
 
@@ -10852,7 +10792,7 @@ implementation returns true.  You can use @code{can_use_doloop_if_innermost}
 if the loop must be the innermost, and if there are no other restrictions.
 @end deftypefn
 
-@deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const_rtx @var{insn})
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const rtx_insn *@var{insn})
 
 Take an instruction in @var{insn} and return NULL if it is valid within a
 low-overhead loop, otherwise return a string explaining why doloop
@@ -10865,7 +10805,7 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx @var{insn})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
 Take an instruction in @var{insn} and return @code{false} if the instruction is not appropriate as a combination of two or more instructions.  The default is to accept all instructions.
 @end deftypefn
 
@@ -10880,7 +10820,7 @@ filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const_rtx @var{follower}, const_rtx @var{followee})
+@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const rtx_insn *@var{follower}, const rtx_insn *@var{followee})
 FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
 @end deftypefn
 

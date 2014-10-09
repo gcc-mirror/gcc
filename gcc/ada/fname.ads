@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,8 +83,7 @@ package Fname is
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean;
    --  Similar to Is_Predefined_File_Name. The internal file set is a superset
-   --  of the predefined file set including children of GNAT, and also children
-   --  of DEC for the VMS case.
+   --  of the predefined file set including children of GNAT.
 
    procedure Tree_Read;
    --  Dummy procedure (reads dummy table values from tree file)

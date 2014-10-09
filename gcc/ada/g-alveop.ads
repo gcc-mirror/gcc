@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7884,12 +7884,12 @@ private
    -- Inlining considerations --
    -----------------------------
 
-   --  The intent in the Hard binding case is to eventually map operations
-   --  to hardware instructions. Needless to say, intermediate function calls
-   --  do not fit this purpose, so all the user visible subprograms shall be
-   --  inlined. In the soft case, the bulk of the work is performed by the
-   --  low level routines, and those exported by this unit are short enough
-   --  for the inlining to make sense and even be beneficial, so...
+   --  The intent in the Hard binding case is to eventually map operations to
+   --  hardware instructions. Needless to say, intermediate function calls do
+   --  not fit this purpose, so all the user visible subprograms are inlined.
+   --  In the soft case, the bulk of the work is performed by the low level
+   --  routines, and those exported by this unit are short enough for the
+   --  inlining to make sense and even be beneficial, so...
 
    pragma Inline_Always (vec_abs);
    pragma Inline_Always (vec_abss);

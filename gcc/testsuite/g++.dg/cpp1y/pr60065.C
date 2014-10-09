@@ -1,5 +1,5 @@
 // PR c++/60065
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 // { dg-options "" }
 
 template <int> void foo(auto... x);

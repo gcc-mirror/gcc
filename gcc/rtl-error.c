@@ -29,12 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 
-static location_t location_for_asm (const_rtx);
-static void diagnostic_for_asm (const_rtx, const char *, va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+static location_t location_for_asm (const rtx_insn *);
+static void diagnostic_for_asm (const rtx_insn *, const char *, va_list *,
+				diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
 
 /* Figure the location of the given INSN.  */
 static location_t
-location_for_asm (const_rtx insn)
+location_for_asm (const rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   rtx asmop;
@@ -65,7 +66,7 @@ location_for_asm (const_rtx insn)
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void
-diagnostic_for_asm (const_rtx insn, const char *msg, va_list *args_ptr,
+diagnostic_for_asm (const rtx_insn *insn, const char *msg, va_list *args_ptr,
 		    diagnostic_t kind)
 {
   diagnostic_info diagnostic;
@@ -76,7 +77,7 @@ diagnostic_for_asm (const_rtx insn, const char *msg, va_list *args_ptr,
 }
 
 void
-error_for_asm (const_rtx insn, const char *gmsgid, ...)
+error_for_asm (const rtx_insn *insn, const char *gmsgid, ...)
 {
   va_list ap;
 
@@ -86,7 +87,7 @@ error_for_asm (const_rtx insn, const char *gmsgid, ...)
 }
 
 void
-warning_for_asm (const_rtx insn, const char *gmsgid, ...)
+warning_for_asm (const rtx_insn *insn, const char *gmsgid, ...)
 {
   va_list ap;
 

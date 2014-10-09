@@ -14,6 +14,11 @@ if { [istarget "powerpc-ibm-aix*"] } {
 }
 
 proc check_guality {args} {
+    # Don't count check_guality as PASS, or FAIL etc., that would make
+    # the total PASS count dependent on how many parallel runtest invocations
+    # ran guality.exp.  So save the counts first and restore them afterwards.
+    global test_counts
+    array set saved_test_counts [array get test_counts]
     set result [eval check_compile guality_check executable $args "-g -O0"]
     set lines [lindex $result 0]
     set output [lindex $result 1]
@@ -23,6 +28,7 @@ proc check_guality {args} {
       set ret [string match "*1 PASS, 0 FAIL, 0 UNRESOLVED*" $execout]
     }
     remote_file build delete $output
+    array get test_counts [array get saved_test_counts]
     return $ret
 }
 

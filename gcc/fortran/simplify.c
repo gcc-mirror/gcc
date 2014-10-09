@@ -391,7 +391,7 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 
 
 /* Build a result expression for transformational intrinsics,
-   depending on DIM. */
+   depending on DIM.  */
 
 static gfc_expr *
 transformational_result (gfc_expr *array, gfc_expr *dim, bt type,
@@ -501,7 +501,8 @@ simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *
      REAL, PARAMETER :: array(n, m) = ...
      REAL, PARAMETER :: s(n) = PROD(array, DIM=1)
 
-  where OP == gfc_multiply(). The result might be post processed using post_op. */
+   where OP == gfc_multiply().
+   The result might be post processed using post_op.  */
 
 static gfc_expr *
 simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *dim,
@@ -1882,13 +1883,22 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
+
+  gfc_expr temp;
+
   if (!is_constant_array_expr (vector_a)
       || !is_constant_array_expr (vector_b))
     return NULL;
 
   gcc_assert (vector_a->rank == 1);
   gcc_assert (vector_b->rank == 1);
-  gcc_assert (gfc_compare_types (&vector_a->ts, &vector_b->ts));
+
+  temp.expr_type = EXPR_OP;
+  gfc_clear_ts (&temp.ts);
+  temp.value.op.op = INTRINSIC_NONE;
+  temp.value.op.op1 = vector_a;
+  temp.value.op.op2 = vector_b;
+  gfc_type_convert_binary (&temp, 1);
 
   return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }
@@ -5841,11 +5851,9 @@ gfc_simplify_storage_size (gfc_expr *x,
   if (k == -1)
     return &gfc_bad_expr;
 
-  result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
-				  &x->where);
+  result = gfc_get_constant_expr (BT_INTEGER, k, &x->where);
 
   mpz_set_si (result->value.integer, gfc_element_size (x));
-
   mpz_mul_ui (result->value.integer, result->value.integer, BITS_PER_UNIT);
 
   return range_check (result, "STORAGE_SIZE");
@@ -6089,7 +6097,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   else
     /* FIXME: Returning here avoids a regression in array_simplify_1.f90.
        Replace NULL with gcc_unreachable() after implementing
-       gfc_simplify_cshift(). */
+       gfc_simplify_cshift().  */
     return NULL;
 
   if (source->ts.type == BT_CHARACTER)

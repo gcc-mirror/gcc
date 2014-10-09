@@ -19,6 +19,7 @@ char *bar(char *first, char *last)
      return foo(first, last);
    return 0;
 }
+int
 main() {
    char *p = "a", *q = "b";
    if (p)

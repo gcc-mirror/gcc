@@ -140,8 +140,10 @@ vn_hash_type (tree type)
 static inline hashval_t
 vn_hash_constant_with_type (tree constant)
 {
-  return (iterative_hash_expr (constant, 0)
-	  + vn_hash_type (TREE_TYPE (constant)));
+  inchash::hash hstate;
+  inchash::add_expr (constant, hstate);
+  hstate.merge_hash (vn_hash_type (TREE_TYPE (constant)));
+  return hstate.end ();
 }
 
 /* Compare the constants C1 and C2 with distinguishing type incompatible
@@ -202,24 +204,20 @@ vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 void vn_reference_fold_indirect (vec<vn_reference_op_s> *,
 				 unsigned int *);
-void copy_reference_ops_from_ref (tree, vec<vn_reference_op_s> *);
-void copy_reference_ops_from_call (gimple, vec<vn_reference_op_s> *);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
 				    vec<vn_reference_op_s> );
 tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *);
-vn_reference_t vn_reference_insert (tree, tree, tree, tree);
+void vn_reference_lookup_call (gimple, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   vec<vn_reference_op_s> ,
 					   tree, unsigned int);
 
-hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
 bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
 		    const_vn_nary_op_t const vno2);
 bool vn_nary_may_trap (vn_nary_op_t);
-hashval_t vn_reference_compute_hash (const vn_reference_t);
 bool vn_reference_eq (const_vn_reference_t const, const_vn_reference_t const);
 unsigned int get_max_value_id (void);
 unsigned int get_next_value_id (void);

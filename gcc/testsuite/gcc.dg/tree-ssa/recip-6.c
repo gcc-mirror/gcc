@@ -3,7 +3,7 @@
 
 /* Test inserting in a block that does not contain a division.  */
 
-extern int f2();
+extern int g();
 
 double m, n, o;
 

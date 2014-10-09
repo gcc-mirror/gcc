@@ -97,6 +97,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual
       ~stdio_filebuf();
 
+#if __cplusplus >= 201103L
+      stdio_filebuf(stdio_filebuf&&) = default;
+      stdio_filebuf& operator=(stdio_filebuf&&) = default;
+
+      void
+      swap(stdio_filebuf& __fb)
+      { std::basic_filebuf<_CharT, _Traits>::swap(__fb); }
+#endif
+
       /**
        *  @return  The underlying file descriptor.
        *

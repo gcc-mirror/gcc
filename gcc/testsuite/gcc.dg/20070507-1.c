@@ -36,7 +36,7 @@ int __attribute__((noinline)) foo (char *p_str1)
 
 int __attribute__((noinline)) loop_next (int *p_table, char *p_table_head)
 {
-  static loop_next = 0;
+  static int loop_next = 0;
 
   if (loop_next == 1)
     return 1;

@@ -1,7 +1,7 @@
 /* { dg-options "-O2" } */
 
 __extension__ typedef __INTPTR_TYPE__ intptr_t;
-
+extern void linker_error (void);
 typedef unsigned long long uint64_t;
 
 static inline void cvmx_write64_uint64(uint64_t addr, uint64_t val)

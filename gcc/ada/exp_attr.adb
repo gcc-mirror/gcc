@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -38,7 +39,6 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Gnatvsn;  use Gnatvsn;
@@ -84,6 +84,14 @@ package body Exp_Attr is
    --  value returned is the entity of the constructed function body. We do not
    --  bother to generate a separate spec for this subprogram.
 
+   function Build_Record_VS_Func
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Entity_Id;
+   --  Build function to test Valid_Scalars for record type A_Type. Nod is the
+   --  Valid_Scalars attribute node, used to insert the function body, and the
+   --  value returned is the entity of the constructed function body. We do not
+   --  bother to generate a separate spec for this subprogram.
+
    procedure Compile_Stream_Body_In_Scope
      (N     : Node_Id;
       Decl  : Node_Id;
@@ -98,6 +106,8 @@ package body Exp_Attr is
    --  We suppress checks for array/record reads, since the rule is that these
    --  are like assignments, out of range values due to uninitialized storage,
    --  or other invalid values do NOT cause a Constraint_Error to be raised.
+   --  If we are within an instance body all visibility has been established
+   --  already and there is no need to install the package.
 
    procedure Expand_Access_To_Protected_Op
      (N    : Node_Id;
@@ -202,10 +212,10 @@ package body Exp_Attr is
       Nod    : Node_Id) return Entity_Id
    is
       Loc        : constant Source_Ptr := Sloc (Nod);
+      Func_Id    : constant Entity_Id  := Make_Temporary (Loc, 'V');
       Comp_Type  : constant Entity_Id  := Component_Type (A_Type);
       Body_Stmts : List_Id;
       Index_List : List_Id;
-      Func_Id    : Entity_Id;
       Formals    : List_Id;
 
       function Test_Component return List_Id;
@@ -298,8 +308,6 @@ package body Exp_Attr is
 
    begin
       Index_List := New_List;
-      Func_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
-
       Body_Stmts := Test_One_Dimension (1);
 
       --  Parameter is always (A : A_Typ)
@@ -333,8 +341,278 @@ package body Exp_Attr is
          Set_Debug_Info_Off (Func_Id);
       end if;
 
+      Set_Is_Pure (Func_Id);
       return Func_Id;
    end Build_Array_VS_Func;
+
+   --------------------------
+   -- Build_Record_VS_Func --
+   --------------------------
+
+   --  Generates:
+
+   --    function _Valid_Scalars (X : T) return Boolean is
+   --    begin
+   --       --  Check discriminants
+
+   --       if not X.D1'Valid_Scalars or else
+   --          not X.D2'Valid_Scalars or else
+   --         ...
+   --       then
+   --          return False;
+   --       end if;
+
+   --       --  Check components
+
+   --       if not X.C1'Valid_Scalars or else
+   --          not X.C2'Valid_Scalars or else
+   --          ...
+   --       then
+   --          return False;
+   --       end if;
+
+   --       --  Check variant part
+
+   --       case X.D1 is
+   --          when V1 =>
+   --             if not X.C2'Valid_Scalars or else
+   --                not X.C3'Valid_Scalars or else
+   --               ...
+   --             then
+   --                return False;
+   --             end if;
+   --          ...
+   --          when Vn =>
+   --             if not X.Cn'Valid_Scalars or else
+   --               ...
+   --             then
+   --                return False;
+   --             end if;
+   --       end case;
+
+   --       return True;
+   --    end _Valid_Scalars;
+
+   function Build_Record_VS_Func
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Entity_Id
+   is
+      Loc     : constant Source_Ptr := Sloc (R_Type);
+      Func_Id : constant Entity_Id  := Make_Temporary (Loc, 'V');
+      X       : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_X);
+
+      function Make_VS_Case
+        (E      : Entity_Id;
+         CL     : Node_Id;
+         Discrs : Elist_Id := New_Elmt_List) return List_Id;
+      --  Building block for variant valid scalars. Given a Component_List node
+      --  CL, it generates an 'if' followed by a 'case' statement that compares
+      --  all components of local temporaries named X and Y (that are declared
+      --  as formals at some upper level). E provides the Sloc to be used for
+      --  the generated code.
+
+      function Make_VS_If
+        (E : Entity_Id;
+         L : List_Id) return Node_Id;
+      --  Building block for variant validate scalars. Given the list, L, of
+      --  components (or discriminants) L, it generates a return statement that
+      --  compares all components of local temporaries named X and Y (that are
+      --  declared as formals at some upper level). E provides the Sloc to be
+      --  used for the generated code.
+
+      ------------------
+      -- Make_VS_Case --
+      ------------------
+
+      --  <Make_VS_If on shared components>
+
+      --  case X.D1 is
+      --     when V1 => <Make_VS_Case> on subcomponents
+      --     ...
+      --     when Vn => <Make_VS_Case> on subcomponents
+      --  end case;
+
+      function Make_VS_Case
+        (E      : Entity_Id;
+         CL     : Node_Id;
+         Discrs : Elist_Id := New_Elmt_List) return List_Id
+      is
+         Loc      : constant Source_Ptr := Sloc (E);
+         Result   : constant List_Id    := New_List;
+         Variant  : Node_Id;
+         Alt_List : List_Id;
+
+      begin
+         Append_To (Result, Make_VS_If (E, Component_Items (CL)));
+
+         if No (Variant_Part (CL)) then
+            return Result;
+         end if;
+
+         Variant := First_Non_Pragma (Variants (Variant_Part (CL)));
+
+         if No (Variant) then
+            return Result;
+         end if;
+
+         Alt_List := New_List;
+         while Present (Variant) loop
+            Append_To (Alt_List,
+              Make_Case_Statement_Alternative (Loc,
+                Discrete_Choices => New_Copy_List (Discrete_Choices (Variant)),
+                Statements       =>
+                  Make_VS_Case (E, Component_List (Variant), Discrs)));
+            Next_Non_Pragma (Variant);
+         end loop;
+
+         Append_To (Result,
+           Make_Case_Statement (Loc,
+             Expression   =>
+               Make_Selected_Component (Loc,
+                 Prefix        => Make_Identifier (Loc, Name_X),
+                 Selector_Name => New_Copy (Name (Variant_Part (CL)))),
+             Alternatives => Alt_List));
+
+         return Result;
+      end Make_VS_Case;
+
+      ----------------
+      -- Make_VS_If --
+      ----------------
+
+      --  Generates:
+
+      --    if
+      --      not X.C1'Valid_Scalars
+      --        or else
+      --      not X.C2'Valid_Scalars
+      --        ...
+      --    then
+      --       return False;
+      --    end if;
+
+      --  or a null statement if the list L is empty
+
+      function Make_VS_If
+        (E : Entity_Id;
+         L : List_Id) return Node_Id
+      is
+         Loc        : constant Source_Ptr := Sloc (E);
+         C          : Node_Id;
+         Def_Id     : Entity_Id;
+         Field_Name : Name_Id;
+         Cond       : Node_Id;
+
+      begin
+         if No (L) then
+            return Make_Null_Statement (Loc);
+
+         else
+            Cond := Empty;
+
+            C := First_Non_Pragma (L);
+            while Present (C) loop
+               Def_Id := Defining_Identifier (C);
+               Field_Name := Chars (Def_Id);
+
+               --  The tags need not be checked since they will always be valid
+
+               --  Note also that in the following, we use Make_Identifier for
+               --  the component names. Use of New_Occurrence_Of to identify
+               --  the components would be incorrect because wrong entities for
+               --  discriminants could be picked up in the private type case.
+
+               --  Don't bother with abstract parent in interface case
+
+               if Field_Name = Name_uParent
+                 and then Is_Interface (Etype (Def_Id))
+               then
+                  null;
+
+               --  Don't bother with tag, always valid, and not scalar anyway
+
+               elsif Field_Name = Name_uTag then
+                  null;
+
+               --  Don't bother with component with no scalar components
+
+               elsif not Scalar_Part_Present (Etype (Def_Id)) then
+                  null;
+
+               --  Normal case, generate Valid_Scalars attribute reference
+
+               else
+                  Evolve_Or_Else (Cond,
+                    Make_Op_Not (Loc,
+                      Right_Opnd =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Make_Identifier (Loc, Name_X),
+                              Selector_Name =>
+                                Make_Identifier (Loc, Field_Name)),
+                          Attribute_Name => Name_Valid_Scalars)));
+               end if;
+
+               Next_Non_Pragma (C);
+            end loop;
+
+            if No (Cond) then
+               return Make_Null_Statement (Loc);
+
+            else
+               return
+                 Make_Implicit_If_Statement (E,
+                   Condition       => Cond,
+                   Then_Statements => New_List (
+                     Make_Simple_Return_Statement (Loc,
+                       Expression =>
+                         New_Occurrence_Of (Standard_False, Loc))));
+            end if;
+         end if;
+      end Make_VS_If;
+
+      --  Local Declarations
+
+      Def    : constant Node_Id := Parent (R_Type);
+      Comps  : constant Node_Id := Component_List (Type_Definition (Def));
+      Stmts  : constant List_Id := New_List;
+      Pspecs : constant List_Id := New_List;
+
+   begin
+      Append_To (Pspecs,
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier => X,
+          Parameter_Type      => New_Occurrence_Of (R_Type, Loc)));
+
+      Append_To (Stmts,
+        Make_VS_If (R_Type, Discriminant_Specifications (Def)));
+      Append_List_To (Stmts, Make_VS_Case (R_Type, Comps));
+
+      Append_To (Stmts,
+        Make_Simple_Return_Statement (Loc,
+          Expression => New_Occurrence_Of (Standard_True, Loc)));
+
+      Insert_Action (Nod,
+        Make_Subprogram_Body (Loc,
+          Specification =>
+            Make_Function_Specification (Loc,
+              Defining_Unit_Name       => Func_Id,
+              Parameter_Specifications => Pspecs,
+              Result_Definition => New_Occurrence_Of (Standard_Boolean, Loc)),
+          Declarations               => New_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)),
+        Suppress => Discriminant_Check);
+
+      if not Debug_Generated_Code then
+         Set_Debug_Info_Off (Func_Id);
+      end if;
+
+      Set_Is_Pure (Func_Id);
+      return Func_Id;
+   end Build_Record_VS_Func;
 
    ----------------------------------
    -- Compile_Stream_Body_In_Scope --
@@ -354,6 +632,11 @@ package body Exp_Attr is
       if Is_Hidden (Arr)
         and then not In_Open_Scopes (Scop)
         and then Ekind (Scop) = E_Package
+
+        --  If we are within an instance body, then all visibility has been
+        --  established already and there is no need to install the package.
+
+        and then not In_Instance_Body
       then
          Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
@@ -837,7 +1120,13 @@ package body Exp_Attr is
 
          --  While loops are transformed into:
 
-         --    if <Condition> then
+         --    function Fnn return Boolean is
+         --    begin
+         --       <condition actions>
+         --       return <condition>;
+         --    end Fnn;
+
+         --    if Fnn then
          --       declare
          --          Temp1 : constant <type of Pref1> := <Pref1>;
          --          . . .
@@ -845,7 +1134,7 @@ package body Exp_Attr is
          --       begin
          --          loop
          --             <original source statements with attribute rewrites>
-         --             exit when not <Condition>;
+         --             exit when not Fnn;
          --          end loop;
          --       end;
          --    end if;
@@ -855,23 +1144,81 @@ package body Exp_Attr is
 
          elsif Present (Condition (Scheme)) then
             declare
-               Cond : constant Node_Id := Condition (Scheme);
+               Func_Decl : Node_Id;
+               Func_Id   : Entity_Id;
+               Stmts     : List_Id;
 
             begin
+               --  Wrap the condition of the while loop in a Boolean function.
+               --  This avoids the duplication of the same code which may lead
+               --  to gigi issues with respect to multiple declaration of the
+               --  same entity in the presence of side effects or checks. Note
+               --  that the condition actions must also be relocated to the
+               --  wrapping function.
+
+               --  Generate:
+               --    <condition actions>
+               --    return <condition>;
+
+               if Present (Condition_Actions (Scheme)) then
+                  Stmts := Condition_Actions (Scheme);
+               else
+                  Stmts := New_List;
+               end if;
+
+               Append_To (Stmts,
+                 Make_Simple_Return_Statement (Loc,
+                   Expression => Relocate_Node (Condition (Scheme))));
+
+               --  Generate:
+               --    function Fnn return Boolean is
+               --    begin
+               --       <Stmts>
+               --    end Fnn;
+
+               Func_Id   := Make_Temporary (Loc, 'F');
+               Func_Decl :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              =>
+                     Make_Function_Specification (Loc,
+                       Defining_Unit_Name => Func_Id,
+                       Result_Definition  =>
+                         New_Occurrence_Of (Standard_Boolean, Loc)),
+                   Declarations               => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => Stmts));
+
+               --  The function is inserted before the related loop. Make sure
+               --  to analyze it in the context of the loop's enclosing scope.
+
+               Push_Scope (Scope (Loop_Id));
+               Insert_Action (Loop_Stmt, Func_Decl);
+               Pop_Scope;
+
                --  Transform the original while loop into an infinite loop
                --  where the last statement checks the negated condition. This
                --  placement ensures that the condition will not be evaluated
                --  twice on the first iteration.
 
+               Set_Iteration_Scheme (Loop_Stmt, Empty);
+               Scheme := Empty;
+
                --  Generate:
-               --    exit when not <Cond>:
+               --    exit when not Fnn;
 
                Append_To (Statements (Loop_Stmt),
                  Make_Exit_Statement (Loc,
-                   Condition => Make_Op_Not (Loc, New_Copy_Tree (Cond))));
+                   Condition =>
+                     Make_Op_Not (Loc,
+                       Right_Opnd =>
+                         Make_Function_Call (Loc,
+                           Name => New_Occurrence_Of (Func_Id, Loc)))));
 
                Build_Conditional_Block (Loc,
-                 Cond      => Relocate_Node (Cond),
+                 Cond      =>
+                   Make_Function_Call (Loc,
+                     Name => New_Occurrence_Of (Func_Id, Loc)),
                  Loop_Stmt => Relocate_Node (Loop_Stmt),
                  If_Stmt   => Result,
                  Blk_Stmt  => Blk);
@@ -1006,8 +1353,6 @@ package body Exp_Attr is
 
       --  Step 4: Analyze all bits
 
-      Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
-
       Installed := Current_Scope = Scope (Loop_Id);
 
       --  Depending on the pracement of attribute 'Loop_Entry relative to the
@@ -1022,19 +1367,6 @@ package body Exp_Attr is
 
       if Present (Result) then
          Rewrite (Loop_Stmt, Result);
-
-         --  The insertion of condition actions associated with an iteration
-         --  scheme is usually done by the expansion of loop statements. The
-         --  expansion of Loop_Entry however reuses the iteration scheme to
-         --  build an if statement. As a result any condition actions must be
-         --  inserted before the if statement to avoid references before
-         --  declaration.
-
-         if Present (Scheme) and then Present (Condition_Actions (Scheme)) then
-            Insert_Actions (Loop_Stmt, Condition_Actions (Scheme));
-            Set_Condition_Actions (Scheme, No_List);
-         end if;
-
          Analyze (Loop_Stmt);
 
       --  The conditional block was analyzed when a previous 'Loop_Entry was
@@ -1045,6 +1377,7 @@ package body Exp_Attr is
          Analyze (Temp_Decl);
       end if;
 
+      Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
       Analyze (N);
 
       if not Installed then
@@ -1921,70 +2254,6 @@ package body Exp_Attr is
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
       end Alignment;
-
-      ---------------
-      -- AST_Entry --
-      ---------------
-
-      when Attribute_AST_Entry => AST_Entry : declare
-         Ttyp : Entity_Id;
-         T_Id : Node_Id;
-         Eent : Entity_Id;
-
-         Entry_Ref : Node_Id;
-         --  The reference to the entry or entry family
-
-         Index : Node_Id;
-         --  The index expression for an entry family reference, or
-         --  the Empty if Entry_Ref references a simple entry.
-
-      begin
-         if Nkind (Pref) = N_Indexed_Component then
-            Entry_Ref := Prefix (Pref);
-            Index := First (Expressions (Pref));
-         else
-            Entry_Ref := Pref;
-            Index := Empty;
-         end if;
-
-         --  Get expression for Task_Id and the entry entity
-
-         if Nkind (Entry_Ref) = N_Selected_Component then
-            T_Id :=
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Identity,
-                Prefix         => Prefix (Entry_Ref));
-
-            Ttyp := Etype (Prefix (Entry_Ref));
-            Eent := Entity (Selector_Name (Entry_Ref));
-
-         else
-            T_Id :=
-              Make_Function_Call (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Current_Task), Loc));
-
-            Eent  := Entity (Entry_Ref);
-
-            --  We have to find the enclosing task to get the task type
-            --  There must be one, since we already validated this earlier
-
-            Ttyp := Current_Scope;
-            while not Is_Task_Type (Ttyp) loop
-               Ttyp := Scope (Ttyp);
-            end loop;
-         end if;
-
-         --  Now rewrite the attribute with a call to Create_AST_Handler
-
-         Rewrite (N,
-           Make_Function_Call (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Create_AST_Handler), Loc),
-             Parameter_Associations => New_List (
-               T_Id,
-               Entry_Index_Expression (Loc, Eent, Index, Ttyp))));
-
-         Analyze_And_Resolve (N, RTE (RE_AST_Handler));
-      end AST_Entry;
 
       ---------
       -- Bit --
@@ -2872,11 +3141,28 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_First,
-                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
+                Prefix         =>
+                  New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
+
+         --  For access type, apply access check as needed
 
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
+
+         --  For scalar type, if low bound is a reference to an entity, just
+         --  replace with a direct reference. Note that we can only have a
+         --  reference to a constant entity at this stage, anything else would
+         --  have already been rewritten.
+
+         elsif Is_Scalar_Type (Ptyp) then
+            declare
+               Lo : constant Node_Id := Type_Low_Bound (Ptyp);
+            begin
+               if Is_Entity_Name (Lo) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Lo), Loc));
+               end if;
+            end;
          end if;
 
       ---------------
@@ -3246,13 +3532,10 @@ package body Exp_Attr is
          --  container). In that case rewrite the attribute as a Raise to
          --  prevent any run-time use.
 
-         --  This is not an explicit raise, the Reason code is wrong, we most
-         --  likely need a new Reason code ???
-
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
          end if;
@@ -3538,8 +3821,24 @@ package body Exp_Attr is
                 Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
 
+         --  For access type, apply access check as needed
+
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
+
+         --  For scalar type, if low bound is a reference to an entity, just
+         --  replace with a direct reference. Note that we can only have a
+         --  reference to a constant entity at this stage, anything else would
+         --  have already been rewritten.
+
+         elsif Is_Scalar_Type (Ptyp) then
+            declare
+               Hi : constant Node_Id := Type_High_Bound (Ptyp);
+            begin
+               if Is_Entity_Name (Hi) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Hi), Loc));
+               end if;
+            end;
          end if;
 
       --------------
@@ -3770,10 +4069,13 @@ package body Exp_Attr is
       -------------
 
       --  Transforms 'Machine into a call to the floating-point attribute
-      --  function Machine in Fat_xxx (where xxx is the root type)
+      --  function Machine in Fat_xxx (where xxx is the root type).
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Machine =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       ----------------------
       -- Machine_Rounding --
@@ -4037,10 +4339,13 @@ package body Exp_Attr is
       -----------
 
       --  Transforms 'Model into a call to the floating-point attribute
-      --  function Model in Fat_xxx (where xxx is the root type)
+      --  function Model in Fat_xxx (where xxx is the root type).
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Model =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       -----------------
       -- Object_Size --
@@ -4248,7 +4553,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, Standard_Void_Type);
             return;
          end if;
@@ -4554,10 +4859,9 @@ package body Exp_Attr is
       -- Pred --
       ----------
 
-      --  1. Deal with enumeration types with holes
-      --  2. For floating-point, generate call to attribute function and deal
-      --       with range checking if Check_Float_Overflow mode is set.
-      --  3. For other cases, deal with constraint checking
+      --  1. Deal with enumeration types with holes.
+      --  2. For floating-point, generate call to attribute function.
+      --  3. For other cases, deal with constraint checking.
 
       when Attribute_Pred => Pred :
       declare
@@ -4629,35 +4933,9 @@ package body Exp_Attr is
 
          --  For floating-point, we transform 'Pred into a call to the Pred
          --  floating-point attribute function in Fat_xxx (xxx is root type).
+         --  Note that this function takes care of the overflow case.
 
          elsif Is_Floating_Point_Type (Ptyp) then
-
-            --  Handle case of range check. The Do_Range_Check flag is set only
-            --  in Check_Float_Overflow mode, and what we need is a specific
-            --  check against typ'First, since that is the only overflow case.
-
-            declare
-               Expr : constant Node_Id := First (Exprs);
-            begin
-               if Do_Range_Check (Expr) then
-                  Set_Do_Range_Check (Expr, False);
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr (Expr),
-                          Right_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Attribute_Name => Name_First,
-                              Prefix         =>
-                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason => CE_Overflow_Check_Failed),
-                  Suppress => All_Checks);
-               end if;
-            end;
-
-            --  Transform into call to attribute function
-
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 
@@ -4888,7 +5166,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
          end if;
@@ -5113,9 +5391,12 @@ package body Exp_Attr is
 
       --  Transforms 'Rounding into a call to the floating-point attribute
       --  function Rounding in Fat_xxx (where xxx is the root type)
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Rounding =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       -------------
       -- Scaling --
@@ -5581,9 +5862,9 @@ package body Exp_Attr is
       -- Succ --
       ----------
 
-      --  1. Deal with enumeration types with holes
-      --  2. For floating-point, generate call to attribute function
-      --  3. For other cases, deal with constraint checking
+      --  1. Deal with enumeration types with holes.
+      --  2. For floating-point, generate call to attribute function.
+      --  3. For other cases, deal with constraint checking.
 
       when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
@@ -5652,33 +5933,6 @@ package body Exp_Attr is
          --  floating-point attribute function in Fat_xxx (xxx is root type)
 
          elsif Is_Floating_Point_Type (Ptyp) then
-
-            --  Handle case of range check. The Do_Range_Check flag is set only
-            --  in Check_Float_Overflow mode, and what we need is a specific
-            --  check against typ'Last, since that is the only overflow case.
-
-            declare
-               Expr : constant Node_Id := First (Exprs);
-            begin
-               if Do_Range_Check (Expr) then
-                  Set_Do_Range_Check (Expr, False);
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr (Expr),
-                          Right_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Attribute_Name => Name_Last,
-                              Prefix         =>
-                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason    => CE_Overflow_Check_Failed),
-                    Suppress => All_Checks);
-               end if;
-            end;
-
-            --  Transform into call to attribute function
-
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 
@@ -6010,7 +6264,6 @@ package body Exp_Attr is
          --  it here.
 
          elsif Do_Range_Check (First (Exprs)) then
-            Set_Do_Range_Check (First (Exprs), False);
             Generate_Range_Check (First (Exprs), Etyp, CE_Range_Check_Failed);
          end if;
       end Val;
@@ -6096,18 +6349,31 @@ package body Exp_Attr is
          --  code in the floating-point attribute run-time library.
 
          if Is_Floating_Point_Type (Ptyp) then
-            declare
+            Float_Valid : declare
                Pkg : RE_Id;
                Ftp : Entity_Id;
 
+               function Get_Fat_Entity (Nam : Name_Id) return Entity_Id;
+               --  Return entity for Pkg.Nam
+
+               --------------------
+               -- Get_Fat_Entity --
+               --------------------
+
+               function Get_Fat_Entity (Nam : Name_Id) return Entity_Id is
+                  Exp_Name : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Occurrence_Of (RTE (Pkg), Loc),
+                      Selector_Name => Make_Identifier (Loc, Nam));
+               begin
+                  Find_Selected_Component (Exp_Name);
+                  return Entity (Exp_Name);
+               end Get_Fat_Entity;
+
+            --  Start of processing for Float_Valid
+
             begin
                case Float_Rep (Btyp) is
-
-                  --  For vax fpt types, call appropriate routine in special
-                  --  vax floating point unit. No need to worry about loads in
-                  --  this case, since these types have no signalling NaN's.
-
-                  when VAX_Native => Expand_Vax_Valid (N);
 
                   --  The AAMP back end handles Valid for floating-point types
 
@@ -6119,34 +6385,83 @@ package body Exp_Attr is
                   when IEEE_Binary =>
                      Find_Fat_Info (Ptyp, Ftp, Pkg);
 
-                     --  If the floating-point object might be unaligned, we
-                     --  need to call the special routine Unaligned_Valid,
-                     --  which makes the needed copy, being careful not to
-                     --  load the value into any floating-point register.
-                     --  The argument in this case is obj'Address (see
-                     --  Unaligned_Valid routine in Fat_Gen).
+                     --  If the prefix is a reverse SSO component, or is
+                     --  possibly unaligned, first create a temporary copy
+                     --  that is in native SSO, and properly aligned. Make it
+                     --  Volatile to prevent folding in the back-end. Note
+                     --  that we use an intermediate constrained string type
+                     --  to initialize the temporary, as the value at hand
+                     --  might be invalid, and in that case it cannot be copied
+                     --  using a floating point register.
 
-                     if Is_Possibly_Unaligned_Object (Pref) then
-                        Expand_Fpt_Attribute
-                          (N, Pkg, Name_Unaligned_Valid,
-                           New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix => Relocate_Node (Pref),
-                               Attribute_Name => Name_Address)));
+                     if In_Reverse_Storage_Order_Object (Pref)
+                          or else
+                        Is_Possibly_Unaligned_Object (Pref)
+                     then
+                        declare
+                           Temp : constant Entity_Id :=
+                                    Make_Temporary (Loc, 'F');
 
-                     --  In the normal case where we are sure the object is
-                     --  aligned, we generate a call to Valid, and the argument
-                     --  in this case is obj'Unrestricted_Access (after
-                     --  converting obj to the right floating-point type).
+                           Fat_S : constant Entity_Id :=
+                                     Get_Fat_Entity (Name_S);
+                           --  Constrained string subtype of appropriate size
 
-                     else
-                        Expand_Fpt_Attribute
-                          (N, Pkg, Name_Valid,
-                           New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix => Unchecked_Convert_To (Ftp, Pref),
-                               Attribute_Name => Name_Unrestricted_Access)));
+                           Fat_P : constant Entity_Id :=
+                                     Get_Fat_Entity (Name_P);
+                           --  Access to Fat_S
+
+                           Decl : constant Node_Id :=
+                                    Make_Object_Declaration (Loc,
+                                      Defining_Identifier => Temp,
+                                      Aliased_Present     => True,
+                                      Object_Definition   =>
+                                        New_Occurrence_Of (Ptyp, Loc));
+
+                        begin
+                           Set_Aspect_Specifications (Decl, New_List (
+                             Make_Aspect_Specification (Loc,
+                               Identifier =>
+                                 Make_Identifier (Loc, Name_Volatile))));
+
+                           Insert_Actions (N,
+                             New_List (
+                               Decl,
+
+                               Make_Assignment_Statement (Loc,
+                                 Name =>
+                                   Make_Explicit_Dereference (Loc,
+                                     Prefix =>
+                                       Unchecked_Convert_To (Fat_P,
+                                         Make_Attribute_Reference (Loc,
+                                           Prefix =>
+                                             New_Occurrence_Of (Temp, Loc),
+                                           Attribute_Name =>
+                                             Name_Unrestricted_Access))),
+                                 Expression =>
+                                   Unchecked_Convert_To (Fat_S,
+                                     Relocate_Node (Pref)))),
+
+                             Suppress => All_Checks);
+
+                           Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
+                        end;
                      end if;
+
+                     --  We now have an object of the proper endianness and
+                     --  alignment, and can construct a Valid attribute.
+
+                     --  We make sure the prefix of this valid attribute is
+                     --  marked as not coming from source, to avoid losing
+                     --  warnings from 'Valid looking like a possible update.
+
+                     Set_Comes_From_Source (Pref, False);
+
+                     Expand_Fpt_Attribute
+                       (N, Pkg, Name_Valid,
+                        New_List (
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => Unchecked_Convert_To (Ftp, Pref),
+                            Attribute_Name => Name_Unrestricted_Access)));
                end case;
 
                --  One more task, we still need a range check. Required
@@ -6162,10 +6477,10 @@ package body Exp_Attr is
                       Left_Opnd  => Relocate_Node (N),
                       Right_Opnd =>
                         Make_In (Loc,
-                          Left_Opnd => Convert_To (Btyp, Pref),
+                          Left_Opnd  => Convert_To (Btyp, Pref),
                           Right_Opnd => New_Occurrence_Of (Ptyp, Loc))));
                end if;
-            end;
+            end Float_Valid;
 
          --  Enumeration type with holes
 
@@ -6348,21 +6663,25 @@ package body Exp_Attr is
             Ftyp := Ptyp;
          end if;
 
+         --  Replace by True if no scalar parts
+
+         if not Scalar_Part_Present (Ftyp) then
+            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+
          --  For scalar types, Valid_Scalars is the same as Valid
 
-         if Is_Scalar_Type (Ftyp) then
+         elsif Is_Scalar_Type (Ftyp) then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_Valid,
                 Prefix         => Pref));
-            Analyze_And_Resolve (N, Standard_Boolean);
 
          --  For array types, we construct a function that determines if there
          --  are any non-valid scalar subcomponents, and call the function.
          --  We only do this for arrays whose component type needs checking
 
          elsif Is_Array_Type (Ftyp)
-           and then not No_Scalar_Parts (Component_Type (Ftyp))
+           and then Scalar_Part_Present (Component_Type (Ftyp))
          then
             Rewrite (N,
               Make_Function_Call (Loc,
@@ -6370,14 +6689,25 @@ package body Exp_Attr is
                   New_Occurrence_Of (Build_Array_VS_Func (Ftyp, N), Loc),
                 Parameter_Associations => New_List (Pref)));
 
-            Analyze_And_Resolve (N, Standard_Boolean);
+         --  For record types, we construct a function that determines if there
+         --  are any non-valid scalar subcomponents, and call the function.
 
-         --  For record types, we build a big if expression, applying Valid or
-         --  Valid_Scalars as appropriate to all relevant components.
-
-         elsif (Is_Record_Type (Ptyp) or else Has_Discriminants (Ptyp))
-           and then not No_Scalar_Parts (Ptyp)
+         elsif Is_Record_Type (Ftyp)
+            and then Nkind (Type_Definition (Declaration_Node (Ftyp))) =
+                                                        N_Record_Definition
          then
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Build_Record_VS_Func (Ftyp, N), Loc),
+              Parameter_Associations => New_List (Pref)));
+
+         --  Other record types or types with discriminants
+
+         elsif Is_Record_Type (Ftyp) or else Has_Discriminants (Ptyp) then
+
+            --  Build expression with list of equality tests
+
             declare
                C : Entity_Id;
                X : Node_Id;
@@ -6387,7 +6717,7 @@ package body Exp_Attr is
                X := New_Occurrence_Of (Standard_True, Loc);
                C := First_Component_Or_Discriminant (Ptyp);
                while Present (C) loop
-                  if No_Scalar_Parts (Etype (C)) then
+                  if not Scalar_Part_Present (Etype (C)) then
                      goto Continue;
                   elsif Is_Scalar_Type (Etype (C)) then
                      A := Name_Valid;
@@ -6412,16 +6742,18 @@ package body Exp_Attr is
                end loop;
 
                Rewrite (N, X);
-               Analyze_And_Resolve (N, Standard_Boolean);
             end;
 
-         --  For all other types, result is True (but not static)
+         --  For all other types, result is True
 
          else
             Rewrite (N, New_Occurrence_Of (Standard_Boolean, Loc));
-            Analyze_And_Resolve (N, Standard_Boolean);
-            Set_Is_Static_Expression (N, False);
          end if;
+
+         --  Result is always boolean, but never static
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+         Set_Is_Static_Expression (N, False);
       end Valid_Scalars;
 
       -----------
@@ -6601,7 +6933,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, U_Type);
             return;
          end if;
@@ -6754,6 +7086,7 @@ package body Exp_Attr is
            Attribute_Class                        |
            Attribute_Compiler_Version             |
            Attribute_Default_Bit_Order            |
+           Attribute_Default_Scalar_Storage_Order |
            Attribute_Delta                        |
            Attribute_Denorm                       |
            Attribute_Digits                       |
@@ -7077,78 +7410,36 @@ package body Exp_Attr is
       Fat_Type : out Entity_Id;
       Fat_Pkg  : out RE_Id)
    is
-      Btyp : constant Entity_Id := Base_Type (T);
       Rtyp : constant Entity_Id := Root_Type (T);
-      Digs : constant Nat       := UI_To_Int (Digits_Value (Btyp));
 
    begin
-      --  If the base type is VAX float, then get appropriate VAX float type
+      --  All we do is use the root type (historically this dealt with
+      --  VAX-float .. to be cleaned up further later ???)
 
-      if Vax_Float (Btyp) then
-         case Digs is
-            when 6 =>
-               Fat_Type := RTE (RE_Fat_VAX_F);
-               Fat_Pkg  := RE_Attr_VAX_F_Float;
+      Fat_Type := Rtyp;
 
-            when 9 =>
-               Fat_Type := RTE (RE_Fat_VAX_D);
-               Fat_Pkg  := RE_Attr_VAX_D_Float;
+      if Fat_Type = Standard_Short_Float then
+         Fat_Pkg := RE_Attr_Short_Float;
 
-            when 15 =>
-               Fat_Type := RTE (RE_Fat_VAX_G);
-               Fat_Pkg  := RE_Attr_VAX_G_Float;
+      elsif Fat_Type = Standard_Float then
+         Fat_Pkg := RE_Attr_Float;
 
-            when others =>
-               raise Program_Error;
-         end case;
+      elsif Fat_Type = Standard_Long_Float then
+         Fat_Pkg := RE_Attr_Long_Float;
 
-      --  If root type is VAX float, this is the case where the library has
-      --  been recompiled in VAX float mode, and we have an IEEE float type.
-      --  This is when we use the special IEEE Fat packages.
-
-      elsif Vax_Float (Rtyp) then
-         case Digs is
-            when 6 =>
-               Fat_Type := RTE (RE_Fat_IEEE_Short);
-               Fat_Pkg  := RE_Attr_IEEE_Short;
-
-            when 15 =>
-               Fat_Type := RTE (RE_Fat_IEEE_Long);
-               Fat_Pkg  := RE_Attr_IEEE_Long;
-
-            when others =>
-               raise Program_Error;
-         end case;
-
-      --  If neither the base type nor the root type is VAX_Native then VAX
-      --  float is out of the picture, and we can just use the root type.
-
-      else
-         Fat_Type := Rtyp;
-
-         if Fat_Type = Standard_Short_Float then
-            Fat_Pkg := RE_Attr_Short_Float;
-
-         elsif Fat_Type = Standard_Float then
-            Fat_Pkg := RE_Attr_Float;
-
-         elsif Fat_Type = Standard_Long_Float then
-            Fat_Pkg := RE_Attr_Long_Float;
-
-         elsif Fat_Type = Standard_Long_Long_Float then
-            Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Fat_Type = Standard_Long_Long_Float then
+         Fat_Pkg := RE_Attr_Long_Long_Float;
 
          --  Universal real (which is its own root type) is treated as being
          --  equivalent to Standard.Long_Long_Float, since it is defined to
          --  have the same precision as the longest Float type.
 
-         elsif Fat_Type = Universal_Real then
-            Fat_Type := Standard_Long_Long_Float;
-            Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Fat_Type = Universal_Real then
+         Fat_Type := Standard_Long_Long_Float;
+         Fat_Pkg := RE_Attr_Long_Long_Float;
 
-         else
-            raise Program_Error;
-         end if;
+      else
+         raise Program_Error;
       end if;
    end Find_Fat_Info;
 
@@ -7679,17 +7970,44 @@ package body Exp_Attr is
    function Is_Inline_Floating_Point_Attribute (N : Node_Id) return Boolean is
       Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
+      function Is_GCC_Target return Boolean;
+      --  Return True if we are using a GCC target/back-end
+      --  ??? Note: the implementation is kludgy/fragile
+
+      -------------------
+      -- Is_GCC_Target --
+      -------------------
+
+      function Is_GCC_Target return Boolean is
+      begin
+         return VM_Target = No_VM and then not CodePeer_Mode
+           and then not AAMP_On_Target;
+      end Is_GCC_Target;
+
+   --  Start of processing for Exp_Attr
+
    begin
-      if Nkind (Parent (N)) /= N_Type_Conversion
+      --  Machine and Model can be expanded by the GCC backend only
+
+      if Id = Attribute_Machine or else Id = Attribute_Model then
+         return Is_GCC_Target;
+
+      --  Remaining cases handled by all back ends are Rounding and Truncation
+      --  when appearing as the operand of a conversion to some integer type.
+
+      elsif Nkind (Parent (N)) /= N_Type_Conversion
         or else not Is_Integer_Type (Etype (Parent (N)))
       then
          return False;
       end if;
 
-      --  Should also support 'Machine_Rounding and 'Unbiased_Rounding, but
-      --  required back end support has not been implemented yet ???
+      --  Here we are in the integer conversion context
 
-      return Id = Attribute_Truncation;
+      --  Very probably we should also recognize the cases of Machine_Rounding
+      --  and unbiased rounding in this conversion context, but the back end is
+      --  not yet prepared to handle these cases ???
+
+      return Id = Attribute_Rounding or else Id = Attribute_Truncation;
    end Is_Inline_Floating_Point_Attribute;
 
 end Exp_Attr;

@@ -109,7 +109,7 @@ enum nds32_16bit_address_type
 /* ------------------------------------------------------------------------ */
 
 /* Define maximum numbers of registers for passing arguments.  */
-#define NDS32_MAX_REGS_FOR_ARGS 6
+#define NDS32_MAX_GPR_REGS_FOR_ARGS 6
 
 /* Define the register number for first argument.  */
 #define NDS32_GPR_ARG_FIRST_REGNUM 0
@@ -117,6 +117,10 @@ enum nds32_16bit_address_type
 /* Define the register number for return value.  */
 #define NDS32_GPR_RET_FIRST_REGNUM 0
 
+/* Define the first integer register number.  */
+#define NDS32_FIRST_GPR_REGNUM 0
+/* Define the last integer register number.  */
+#define NDS32_LAST_GPR_REGNUM 31
 
 /* Define double word alignment bits.  */
 #define NDS32_DOUBLE_WORD_ALIGNMENT 64
@@ -154,19 +158,27 @@ enum nds32_16bit_address_type
           b) Otherwise, the register number can be odd or even value.
      2. If it is required ONLY one register,
         the register number can be odd or even value.  */
-#define NDS32_AVAILABLE_REGNUM_FOR_ARG(reg_offset, mode, type)  \
-  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                 \
-   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)      \
-      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)  \
-      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))            \
+#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type)  \
+  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                     \
+   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)          \
+      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)      \
+      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))                \
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers
-   for passing argument.  */
-#define NDS32_ARG_PASS_IN_REG_P(reg_offset, mode, type)      \
-  (((reg_offset) < NDS32_MAX_REGS_FOR_ARGS)                  \
-   && ((reg_offset) + NDS32_NEED_N_REGS_FOR_ARG (mode, type) \
-       <= NDS32_MAX_REGS_FOR_ARGS))
+   for passing argument, which must be entirely in registers.  */
+#define NDS32_ARG_ENTIRE_IN_GPR_REG_P(reg_offset, mode, type)   \
+  ((NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (reg_offset, mode, type) \
+    + NDS32_NEED_N_REGS_FOR_ARG (mode, type))                   \
+   <= (NDS32_GPR_ARG_FIRST_REGNUM                               \
+       + NDS32_MAX_GPR_REGS_FOR_ARGS))
+
+/* This macro is to check if there are still available registers
+   for passing argument, either entirely in registers or partially
+   in registers.  */
+#define NDS32_ARG_PARTIAL_IN_GPR_REG_P(reg_offset, mode, type) \
+  (NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (reg_offset, mode, type) \
+   < NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS)
 
 /* This macro is to check if the register is required to be saved on stack.
    If call_used_regs[regno] == 0, regno is the callee-saved register.
@@ -203,17 +215,18 @@ struct GTY(()) machine_function
   /* The padding bytes in callee-saved area may be required.  */
   int callee_saved_area_padding_bytes;
 
-  /* The first required register that should be saved on stack
-     for va_args (one named argument + nameless arguments).  */
-  int va_args_first_regno;
-  /* The last required register that should be saved on stack
-     for va_args (one named argument + nameless arguments).  */
-  int va_args_last_regno;
-
   /* The first required callee-saved register.  */
   int callee_saved_regs_first_regno;
   /* The last required callee-saved register.  */
   int callee_saved_regs_last_regno;
+
+  /* The padding bytes in varargs area may be required.  */
+  int va_args_area_padding_bytes;
+
+  /* The first required register that should be saved on stack for va_args.  */
+  int va_args_first_regno;
+  /* The last required register that should be saved on stack for va_args.  */
+  int va_args_last_regno;
 
   /* Indicate that whether this function needs
      prologue/epilogue code generation.  */
@@ -226,7 +239,7 @@ struct GTY(()) machine_function
 /* A C structure that contains the arguments information.  */
 typedef struct
 {
-  unsigned int reg_offset;
+  unsigned int gpr_offset;
 } nds32_cumulative_args;
 
 /* ------------------------------------------------------------------------ */
@@ -330,6 +343,9 @@ enum nds32_builtins
 #define TARGET_ISA_V2   (nds32_arch_option == ARCH_V2)
 #define TARGET_ISA_V3   (nds32_arch_option == ARCH_V3)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
+
+#define TARGET_SOFT_FLOAT 1
+#define TARGET_HARD_FLOAT 0
 
 /* ------------------------------------------------------------------------ */
 
@@ -663,7 +679,8 @@ enum reg_class
 
 #define STACK_POINTER_OFFSET 0
 
-#define FIRST_PARM_OFFSET(fundecl) 0
+#define FIRST_PARM_OFFSET(fundecl) \
+  (NDS32_DOUBLE_WORD_ALIGN_P (crtl->args.pretend_args_size) ? 0 : 4)
 
 #define RETURN_ADDR_RTX(count, frameaddr) \
   nds32_return_addr_rtx (count, frameaddr)
@@ -709,7 +726,7 @@ enum reg_class
    'comparison of unsigned expression >= 0 is always true' warning.  */
 #define FUNCTION_ARG_REGNO_P(regno)                                        \
   (((int) regno - NDS32_GPR_ARG_FIRST_REGNUM >= 0)                         \
-   && ((int) regno - NDS32_GPR_ARG_FIRST_REGNUM < NDS32_MAX_REGS_FOR_ARGS))
+   && ((int) regno - NDS32_GPR_ARG_FIRST_REGNUM < NDS32_MAX_GPR_REGS_FOR_ARGS))
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
@@ -812,6 +829,8 @@ enum reg_class
 
 
 /* Position Independent Code.  */
+
+#define PIC_OFFSET_TABLE_REGNUM GP_REGNUM
 
 
 /* Defining the Output Assembler Language.  */

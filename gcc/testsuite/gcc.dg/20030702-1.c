@@ -4,6 +4,8 @@
 /* { dg-options "-O2 -fpic -fprofile-arcs" } */
 /* { dg-skip-if "requires unsupported run-time relocation" { spu-*-* } { "*" } { "" } } */
 
+int fork (void);
+
 void test (void)
 {
   fork ();

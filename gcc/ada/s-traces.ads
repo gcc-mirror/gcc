@@ -34,17 +34,17 @@
 --  Warning : NO dependencies to tasking should be created here
 
 --  This package, and all its children are used to implement debug
---  informations
+--  information
 
 --  A new primitive, Send_Trace_Info (Id : Trace_T; 'data') is introduced.
---  Trace_T is an event identifier, 'data' are the informations to pass
+--  Trace_T is an event identifier, 'data' are the information to pass
 --  with the event. This procedure is used from within the Runtime to send
---  debug informations.
+--  debug information.
 
 --  This primitive is overloaded in System.Traces.Tasking and this package
 
 --  Send_Trace_Info calls Send_Trace, in System.Traces.Send, which is target
---  dependent, to send the debug informations to a debugger, stream ..
+--  dependent, to send the debug information to a debugger, stream ..
 
 --  To add a new event, just add them to the Trace_T type, and write the
 --  corresponding Send_Trace_Info procedure. It may be required for some

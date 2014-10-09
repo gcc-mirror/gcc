@@ -1,5 +1,5 @@
-/* With -fnon-call-exceptions 0 / 0 should not be eliminated.  The .x
-   file sets the option.  */
+/* { dg-options "-fnon-call-exceptions" } */
+/* With -fnon-call-exceptions 0 / 0 should not be eliminated.  */
 
 #ifdef SIGNAL_SUPPRESS
 # define DO_TEST 0
@@ -74,6 +74,9 @@ __aeabi_idiv0 (int return_value)
 #else
 # define DO_TEST 1
 #endif
+
+extern void abort (void);
+extern void exit (int);
 
 #if DO_TEST
 

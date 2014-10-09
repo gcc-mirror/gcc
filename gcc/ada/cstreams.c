@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,6 +30,21 @@
  ****************************************************************************/
 
 /* Routines required for implementing routines in Interfaces.C.Streams.  */
+
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE
+#endif
+#define _FILE_OFFSET_BITS 64
+/* the define above will make off_t a 64bit type on GNU/Linux */
+
+#include <stdio.h>
+#include <sys/types.h>
+
+#ifdef _AIX
+/* needed to avoid conflicting declarations */
+#include <unistd.h>
+#include <sys/mman.h>
+#endif
 
 #ifdef __vxworks
 #include "vxWorks.h"
@@ -104,16 +119,6 @@ int
 __gnat_fileno (FILE *stream)
 {
    return (fileno (stream));
-}
-
-int
-__gnat_is_regular_file_fd (int fd)
-{
-  int ret;
-  GNAT_STRUCT_STAT statbuf;
-
-  ret = GNAT_FSTAT (fd, &statbuf);
-  return (!ret && S_ISREG (statbuf.st_mode));
 }
 
 /* on some systems, the constants for seek are not defined, if so, then
@@ -257,8 +262,8 @@ __gnat_full_name (char *nam, char *buffer)
   return buffer;
 }
 
-#ifdef _WIN64
-  /* On Windows 64 we want to use the fseek/fteel supporting large files. This
+#ifdef _WIN32
+  /* On Windows we want to use the fseek/fteel supporting large files. This
      issue is due to the fact that a long on Win64 is still a 32 bits value */
 __int64
 __gnat_ftell64 (FILE *stream)
@@ -272,17 +277,46 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
   return _fseeki64 (stream, offset, origin);
 }
 
-#else
-long
+#elif defined(linux) || defined(sun) \
+  || defined (__FreeBSD__) || defined(__APPLE__)
+/* section for platforms having ftello/fseeko */
+
+__int64
 __gnat_ftell64 (FILE *stream)
 {
-  return ftell (stream);
+  return (__int64)ftello (stream);
 }
 
 int
-__gnat_fseek64 (FILE *stream, long offset, int origin)
+__gnat_fseek64 (FILE *stream, __int64 offset, int origin)
 {
-  return fseek (stream, offset, origin);
+  /* make sure that the offset is not bigger than the OS off_t, if so return
+     with error as this mean that we are trying to handle files larger than
+     2Gb on a patform not supporting it. */
+  if ((off_t)offset == offset)
+    return fseeko (stream, (off_t) offset, origin);
+  else
+    return -1;
+}
+
+#else
+
+__int64
+__gnat_ftell64 (FILE *stream)
+{
+  return (__int64)ftell (stream);
+}
+
+int
+__gnat_fseek64 (FILE *stream, __int64 offset, int origin)
+{
+  /* make sure that the offset is not bigger than the OS off_t, if so return
+     with error as this mean that we are trying to handle files larger than
+     2Gb on a patform not supporting it. */
+  if ((off_t)offset == offset)
+    return fseek (stream, (off_t) offset, origin);
+  else
+    return -1;
 }
 #endif
 

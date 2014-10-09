@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
@@ -215,7 +215,7 @@ struct stack_var
 static struct stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
-static struct pointer_map_t *decl_to_stack_part;
+static hash_map<tree, size_t> *decl_to_stack_part;
 
 /* Conflict bitmaps go on this obstack.  This allows us to destroy
    all of them in one big sweep.  */
@@ -299,10 +299,10 @@ add_stack_var (tree decl)
 	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
     }
   if (!decl_to_stack_part)
-    decl_to_stack_part = pointer_map_create ();
+    decl_to_stack_part = new hash_map<tree, size_t>;
 
   v = &stack_vars[stack_vars_num];
-  * (size_t *)pointer_map_insert (decl_to_stack_part, decl) = stack_vars_num;
+  decl_to_stack_part->put (decl, stack_vars_num);
 
   v->decl = decl;
   v->size = tree_to_uhwi (DECL_SIZE_UNIT (SSAVAR (decl)));
@@ -374,7 +374,7 @@ visit_op (gimple, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v = (size_t *) pointer_map_contains (decl_to_stack_part, op);
+      size_t *v = decl_to_stack_part->get (op);
       if (v)
 	bitmap_set_bit (active, *v);
     }
@@ -394,8 +394,7 @@ visit_conflict (gimple, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v =
-	(size_t *) pointer_map_contains (decl_to_stack_part, op);
+      size_t *v = decl_to_stack_part->get (op);
       if (v && bitmap_set_bit (active, *v))
 	{
 	  size_t num = *v;
@@ -446,8 +445,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	  if (TREE_CODE (lhs) != VAR_DECL)
 	    continue;
 	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
-	      && (v = (size_t *)
-		  pointer_map_contains (decl_to_stack_part, lhs)))
+	      && (v = decl_to_stack_part->get (lhs)))
 	    bitmap_clear_bit (work, *v);
 	}
       else if (!is_gimple_debug (stmt))
@@ -586,6 +584,26 @@ stack_var_cmp (const void *a, const void *b)
   return 0;
 }
 
+struct part_traits : default_hashmap_traits
+{
+  template<typename T>
+    static bool
+    is_deleted (T &e)
+    { return e.m_value == reinterpret_cast<void *> (1); }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_value == NULL; }
+  template<typename T>
+    static void
+    mark_deleted (T &e)
+    { e.m_value = reinterpret_cast<T> (1); }
+
+  template<typename T>
+    static void
+    mark_empty (T &e)
+      { e.m_value = NULL; }
+};
+
+typedef hash_map<size_t, bitmap, part_traits> part_hashmap;
 
 /* If the points-to solution *PI points to variables that are in a partition
    together with other variables add all partition members to the pointed-to
@@ -593,8 +611,8 @@ stack_var_cmp (const void *a, const void *b)
 
 static void
 add_partitioned_vars_to_ptset (struct pt_solution *pt,
-			       struct pointer_map_t *decls_to_partitions,
-			       struct pointer_set_t *visited, bitmap temp)
+			       part_hashmap *decls_to_partitions,
+			       hash_set<bitmap> *visited, bitmap temp)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -604,7 +622,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
       || pt->vars == NULL
       /* The pointed-to vars bitmap is shared, it is enough to
 	 visit it once.  */
-      || pointer_set_insert (visited, pt->vars))
+      || visited->add (pt->vars))
     return;
 
   bitmap_clear (temp);
@@ -615,8 +633,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
   EXECUTE_IF_SET_IN_BITMAP (pt->vars, 0, i, bi)
     if ((!temp
 	 || !bitmap_bit_p (temp, i))
-	&& (part = (bitmap *) pointer_map_contains (decls_to_partitions,
-						    (void *)(size_t) i)))
+	&& (part = decls_to_partitions->get (i)))
       bitmap_ior_into (temp, *part);
   if (!bitmap_empty_p (temp))
     bitmap_ior_into (pt->vars, temp);
@@ -630,7 +647,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
 static void
 update_alias_info_with_stack_vars (void)
 {
-  struct pointer_map_t *decls_to_partitions = NULL;
+  part_hashmap *decls_to_partitions = NULL;
   size_t i, j;
   tree var = NULL_TREE;
 
@@ -647,8 +664,8 @@ update_alias_info_with_stack_vars (void)
 
       if (!decls_to_partitions)
 	{
-	  decls_to_partitions = pointer_map_create ();
-	  cfun->gimple_df->decls_to_pointers = pointer_map_create ();
+	  decls_to_partitions = new part_hashmap;
+	  cfun->gimple_df->decls_to_pointers = new hash_map<tree, tree>;
 	}
 
       /* Create an SSA_NAME that points to the partition for use
@@ -666,10 +683,8 @@ update_alias_info_with_stack_vars (void)
 	  tree decl = stack_vars[j].decl;
 	  unsigned int uid = DECL_PT_UID (decl);
 	  bitmap_set_bit (part, uid);
-	  *((bitmap *) pointer_map_insert (decls_to_partitions,
-					   (void *)(size_t) uid)) = part;
-	  *((tree *) pointer_map_insert (cfun->gimple_df->decls_to_pointers,
-					 decl)) = name;
+	  decls_to_partitions->put (uid, part);
+	  cfun->gimple_df->decls_to_pointers->put (decl, name);
 	  if (TREE_ADDRESSABLE (decl))
 	    TREE_ADDRESSABLE (name) = 1;
 	}
@@ -684,7 +699,7 @@ update_alias_info_with_stack_vars (void)
   if (decls_to_partitions)
     {
       unsigned i;
-      struct pointer_set_t *visited = pointer_set_create ();
+      hash_set<bitmap> visited;
       bitmap temp = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
       for (i = 1; i < num_ssa_names; i++)
@@ -696,14 +711,13 @@ update_alias_info_with_stack_vars (void)
 	      && POINTER_TYPE_P (TREE_TYPE (name))
 	      && ((pi = SSA_NAME_PTR_INFO (name)) != NULL))
 	    add_partitioned_vars_to_ptset (&pi->pt, decls_to_partitions,
-					   visited, temp);
+					   &visited, temp);
 	}
 
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
-				     decls_to_partitions, visited, temp);
+				     decls_to_partitions, &visited, temp);
 
-      pointer_set_destroy (visited);
-      pointer_map_destroy (decls_to_partitions);
+      delete decls_to_partitions;
       BITMAP_FREE (temp);
     }
 }
@@ -1293,7 +1307,12 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
   else if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
     {
       if (really_expand)
-        expand_one_hard_reg_var (var);
+	{
+	  expand_one_hard_reg_var (var);
+	  if (!DECL_HARD_REGISTER (var))
+	    /* Invalid register specification.  */
+	    expand_one_error_var (var);
+	}
     }
   else if (use_register_for_decl (var))
     {
@@ -1530,7 +1549,7 @@ init_vars_expansion (void)
   bitmap_obstack_initialize (&stack_var_bitmap_obstack);
 
   /* A map from decl to stack partition.  */
-  decl_to_stack_part = pointer_map_create ();
+  decl_to_stack_part = new hash_map<tree, size_t>;
 
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
@@ -1549,7 +1568,7 @@ fini_vars_expansion (void)
   stack_vars = NULL;
   stack_vars_sorted = NULL;
   stack_vars_alloc = stack_vars_num = 0;
-  pointer_map_destroy (decl_to_stack_part);
+  delete decl_to_stack_part;
   decl_to_stack_part = NULL;
 }
 
@@ -1660,13 +1679,12 @@ stack_protect_return_slot_p ()
 
 /* Expand all variables used in the function.  */
 
-static rtx
+static rtx_insn *
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   vec<tree> maybe_local_decls = vNULL;
-  rtx var_end_seq = NULL_RTX;
-  struct pointer_map_t *ssa_name_decls;
+  rtx_insn *var_end_seq = NULL;
   unsigned i;
   unsigned len;
   bool gen_stack_protect_signal = false;
@@ -1686,7 +1704,7 @@ expand_used_vars (void)
 
   init_vars_expansion ();
 
-  ssa_name_decls = pointer_map_create ();
+  hash_map<tree, tree> ssa_name_decls;
   for (i = 0; i < SA.map->num_partitions; i++)
     {
       tree var = partition_to_var (SA.map, i);
@@ -1697,10 +1715,10 @@ expand_used_vars (void)
          we could have coalesced (those with the same type).  */
       if (SSA_NAME_VAR (var) == NULL_TREE)
 	{
-	  void **slot = pointer_map_insert (ssa_name_decls, TREE_TYPE (var));
+	  tree *slot = &ssa_name_decls.get_or_insert (TREE_TYPE (var));
 	  if (!*slot)
-	    *slot = (void *) create_tmp_reg (TREE_TYPE (var), NULL);
-	  replace_ssa_name_symbol (var, (tree) *slot);
+	    *slot = create_tmp_reg (TREE_TYPE (var), NULL);
+	  replace_ssa_name_symbol (var, *slot);
 	}
 
       /* Always allocate space for partitions based on VAR_DECLs.  But for
@@ -1727,7 +1745,6 @@ expand_used_vars (void)
 	    }
 	}
     }
-  pointer_map_destroy (ssa_name_decls);
 
   if (flag_stack_protect == SPCT_FLAG_STRONG)
       gen_stack_protect_signal
@@ -1942,7 +1959,7 @@ expand_used_vars (void)
    generated for STMT should have been appended.  */
 
 static void
-maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx since)
+maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx_insn *since)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1957,7 +1974,7 @@ maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx since)
 
 /* Maps the blocks that do not contain tree labels to rtx labels.  */
 
-static struct pointer_map_t *lab_rtx_for_bb;
+static hash_map<basic_block, rtx_code_label *> *lab_rtx_for_bb;
 
 /* Returns the label_rtx expression for a label starting basic block BB.  */
 
@@ -1967,14 +1984,13 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
   gimple_stmt_iterator gsi;
   tree lab;
   gimple lab_stmt;
-  void **elt;
 
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
-  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+  rtx_code_label **elt = lab_rtx_for_bb->get (bb);
   if (elt)
-    return (rtx) *elt;
+    return *elt;
 
   /* Find the tree label if it is present.  */
 
@@ -1991,9 +2007,9 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
       return label_rtx (lab);
     }
 
-  elt = pointer_map_insert (lab_rtx_for_bb, bb);
-  *elt = gen_label_rtx ();
-  return (rtx) *elt;
+  rtx_code_label *l = gen_label_rtx ();
+  lab_rtx_for_bb->put (bb, l);
+  return l;
 }
 
 
@@ -2003,7 +2019,7 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
    last instruction before the just emitted jump sequence.  */
 
 static void
-maybe_cleanup_end_of_block (edge e, rtx last)
+maybe_cleanup_end_of_block (edge e, rtx_insn *last)
 {
   /* Special case: when jumpif decides that the condition is
      trivial it emits an unconditional jump (and the necessary
@@ -2018,7 +2034,7 @@ maybe_cleanup_end_of_block (edge e, rtx last)
      normally isn't there in a cleaned CFG), fix it here.  */
   if (BARRIER_P (get_last_insn ()))
     {
-      rtx insn;
+      rtx_insn *insn;
       remove_edge (e);
       /* Now, we have a single successor block, if we have insns to
 	 insert on the remaining edge we potentially will insert
@@ -2060,7 +2076,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   edge new_edge;
   edge true_edge;
   edge false_edge;
-  rtx last2, last;
+  rtx_insn *last2, *last;
   enum tree_code code;
   tree op0, op1;
 
@@ -2206,7 +2222,7 @@ mark_transaction_restart_calls (gimple stmt)
     {
       struct tm_restart_node *n = (struct tm_restart_node *) *slot;
       tree list = n->label_or_list;
-      rtx insn;
+      rtx_insn *insn;
 
       for (insn = next_real_insn (get_last_insn ());
 	   !CALL_P (insn);
@@ -2453,7 +2469,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
-  rtx fallthru_label = NULL_RTX;
+  rtx_code_label *fallthru_label = NULL;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
@@ -3297,7 +3313,7 @@ expand_gimple_stmt_1 (gimple stmt)
 	      ;
 	    else if (promoted)
 	      {
-		int unsignedp = SUBREG_PROMOTED_UNSIGNED_P (target);
+		int unsignedp = SUBREG_PROMOTED_SIGN (target);
 		/* If TEMP is a VOIDmode constant, use convert_modes to make
 		   sure that we properly convert it.  */
 		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
@@ -3335,11 +3351,11 @@ expand_gimple_stmt_1 (gimple stmt)
    sets REG_EH_REGION notes if necessary and sets the current source
    location for diagnostics.  */
 
-static rtx
+static rtx_insn *
 expand_gimple_stmt (gimple stmt)
 {
   location_t saved_location = input_location;
-  rtx last = get_last_insn ();
+  rtx_insn *last = get_last_insn ();
   int lp_nr;
 
   gcc_assert (cfun);
@@ -3362,7 +3378,7 @@ expand_gimple_stmt (gimple stmt)
   lp_nr = lookup_stmt_eh_lp (stmt);
   if (lp_nr)
     {
-      rtx insn;
+      rtx_insn *insn;
       for (insn = next_real_insn (last); insn;
 	   insn = next_real_insn (insn))
 	{
@@ -3392,7 +3408,7 @@ expand_gimple_stmt (gimple stmt)
 static basic_block
 expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
 {
-  rtx last2, last;
+  rtx_insn *last2, *last;
   edge e;
   edge_iterator ei;
   int probability;
@@ -3608,7 +3624,7 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
 	    return SUBREG_REG (x);
 	  break;
 	case LABEL_REF:
-	  temp = gen_rtx_LABEL_REF (mode, XEXP (x, 0));
+	  temp = gen_rtx_LABEL_REF (mode, LABEL_REF_LABEL (x));
 	  LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
 	  return temp;
 	case SYMBOL_REF:
@@ -3967,11 +3983,7 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
-      if (POINTER_TYPE_P (TREE_TYPE (exp)))
-	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-      else
-	as = ADDR_SPACE_GENERIC;
-
+      as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
       op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
 					  op0, as);
       if (op0 == NULL_RTX)
@@ -4765,7 +4777,7 @@ expand_debug_source_expr (tree exp)
    deeper than that, create DEBUG_EXPRs and emit DEBUG_INSNs before INSN.  */
 
 static void
-avoid_complex_debug_insns (rtx insn, rtx *exp_p, int depth)
+avoid_complex_debug_insns (rtx_insn *insn, rtx *exp_p, int depth)
 {
   rtx exp = *exp_p;
 
@@ -4817,8 +4829,8 @@ avoid_complex_debug_insns (rtx insn, rtx *exp_p, int depth)
 static void
 expand_debug_locations (void)
 {
-  rtx insn;
-  rtx last = get_last_insn ();
+  rtx_insn *insn;
+  rtx_insn *last = get_last_insn ();
   int save_strict_alias = flag_strict_aliasing;
 
   /* New alias sets while setting up memory attributes cause
@@ -4830,7 +4842,8 @@ expand_debug_locations (void)
     if (DEBUG_INSN_P (insn))
       {
 	tree value = (tree)INSN_VAR_LOCATION_LOC (insn);
-	rtx val, prev_insn, insn2;
+	rtx val;
+	rtx_insn *prev_insn, *insn2;
 	enum machine_mode mode;
 
 	if (value == NULL_TREE)
@@ -4875,10 +4888,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
   gimple stmt = NULL;
-  rtx note, last;
+  rtx_note *note;
+  rtx_insn *last;
   edge e;
   edge_iterator ei;
-  void **elt;
 
   if (dump_file)
     fprintf (dump_file, "\n;; Generating RTL for gimple basic block %d\n",
@@ -4922,7 +4935,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	stmt = NULL;
     }
 
-  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+  rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
     {
@@ -4935,7 +4948,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
 
       if (elt)
-	emit_label ((rtx) *elt);
+	emit_label (*elt);
 
       /* Java emits line number notes in the top of labels.
 	 ??? Make this go away once line number notes are obsoleted.  */
@@ -4947,7 +4960,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
     }
   else
-    note = BB_HEAD (bb) = emit_note (NOTE_INSN_BASIC_BLOCK);
+    BB_HEAD (bb) = note = emit_note (NOTE_INSN_BASIC_BLOCK);
 
   NOTE_BASIC_BLOCK (note) = bb;
 
@@ -5308,14 +5321,14 @@ set_block_levels (tree block, int level)
 static void
 construct_exit_block (void)
 {
-  rtx head = get_last_insn ();
-  rtx end;
+  rtx_insn *head = get_last_insn ();
+  rtx_insn *end;
   basic_block exit_block;
   edge e, e2;
   unsigned ix;
   edge_iterator ei;
   basic_block prev_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
-  rtx orig_end = BB_END (prev_bb);
+  rtx_insn *orig_end = BB_END (prev_bb);
 
   rtl_profile_for_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
@@ -5608,7 +5621,7 @@ pass_expand::execute (function *fun)
   sbitmap blocks;
   edge_iterator ei;
   edge e;
-  rtx var_seq, var_ret_seq;
+  rtx_insn *var_seq, *var_ret_seq;
   unsigned i;
 
   timevar_push (TV_OUT_OF_SSA);
@@ -5792,7 +5805,7 @@ pass_expand::execute (function *fun)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
-  lab_rtx_for_bb = pointer_map_create ();
+  lab_rtx_for_bb = new hash_map<basic_block, rtx_code_label *>;
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
     bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
@@ -5816,7 +5829,7 @@ pass_expand::execute (function *fun)
 
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
-  pointer_map_destroy (lab_rtx_for_bb);
+  delete lab_rtx_for_bb;
   free_histograms ();
 
   construct_exit_block ();
@@ -5824,8 +5837,8 @@ pass_expand::execute (function *fun)
 
   if (var_ret_seq)
     {
-      rtx after = return_label;
-      rtx next = NEXT_INSN (after);
+      rtx_insn *after = return_label;
+      rtx_insn *next = NEXT_INSN (after);
       if (next && NOTE_INSN_BASIC_BLOCK_P (next))
 	after = next;
       emit_insn_after (var_ret_seq, after);
@@ -5853,8 +5866,8 @@ pass_expand::execute (function *fun)
 	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
 		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
 		{
-		  rtx insns = e->insns.r;
-		  e->insns.r = NULL_RTX;
+		  rtx_insn *insns = e->insns.r;
+		  e->insns.r = NULL;
 		  if (NOTE_P (parm_birth_insn)
 		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
 		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);

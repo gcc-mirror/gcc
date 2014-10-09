@@ -513,9 +513,111 @@ init_vectorized_lexer (void)
   search_line_fast = impl;
 }
 
-#elif (GCC_VERSION >= 4005) && defined(__ALTIVEC__)
+#elif defined(_ARCH_PWR8) && defined(__ALTIVEC__)
 
-/* A vection of the fast scanner using AltiVec vectorized byte compares.  */
+/* A vection of the fast scanner using AltiVec vectorized byte compares
+   and VSX unaligned loads (when VSX is available).  This is otherwise
+   the same as the pre-GCC 5 version.  */
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  typedef __attribute__((altivec(vector))) unsigned char vc;
+
+  const vc repl_nl = {
+    '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n', 
+    '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n'
+  };
+  const vc repl_cr = {
+    '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r', 
+    '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r'
+  };
+  const vc repl_bs = {
+    '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', 
+    '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\'
+  };
+  const vc repl_qm = {
+    '?', '?', '?', '?', '?', '?', '?', '?', 
+    '?', '?', '?', '?', '?', '?', '?', '?', 
+  };
+  const vc zero = { 0 };
+
+  vc data, t;
+
+  /* Main loop processing 16 bytes at a time.  */
+  do
+    {
+      vc m_nl, m_cr, m_bs, m_qm;
+
+      data = *((const vc *)s);
+      s += 16;
+
+      m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
+      m_cr = (vc) __builtin_vec_cmpeq(data, repl_cr);
+      m_bs = (vc) __builtin_vec_cmpeq(data, repl_bs);
+      m_qm = (vc) __builtin_vec_cmpeq(data, repl_qm);
+      t = (m_nl | m_cr) | (m_bs | m_qm);
+
+      /* T now contains 0xff in bytes for which we matched one of the relevant
+	 characters.  We want to exit the loop if any byte in T is non-zero.
+	 Below is the expansion of vec_any_ne(t, zero).  */
+    }
+  while (!__builtin_vec_vcmpeq_p(/*__CR6_LT_REV*/3, t, zero));
+
+  /* Restore s to to point to the 16 bytes we just processed.  */
+  s -= 16;
+
+  {
+#define N  (sizeof(vc) / sizeof(long))
+
+    union {
+      vc v;
+      /* Statically assert that N is 2 or 4.  */
+      unsigned long l[(N == 2 || N == 4) ? N : -1];
+    } u;
+    unsigned long l, i = 0;
+
+    u.v = t;
+
+    /* Find the first word of T that is non-zero.  */
+    switch (N)
+      {
+      case 4:
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+      case 2:
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+	l = u.l[i];
+      }
+
+    /* L now contains 0xff in bytes for which we matched one of the
+       relevant characters.  We can find the byte index by finding
+       its bit index and dividing by 8.  */
+#ifdef __BIG_ENDIAN__
+    l = __builtin_clzl(l) >> 3;
+#else
+    l = __builtin_ctzl(l) >> 3;
+#endif
+    return s + l;
+
+#undef N
+  }
+}
+
+#elif (GCC_VERSION >= 4005) && defined(__ALTIVEC__) && defined (__BIG_ENDIAN__)
+
+/* A vection of the fast scanner using AltiVec vectorized byte compares.
+   This cannot be used for little endian because vec_lvsl/lvsr are
+   deprecated for little endian and the code won't work properly.  */
 /* ??? Unfortunately, attribute(target("altivec")) is not yet supported,
    so we can't compile this function without -maltivec on the command line
    (or implied by some other switch).  */
@@ -557,13 +659,8 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
      beginning with all ones and shifting in zeros according to the
      mis-alignment.  The LVSR instruction pulls the exact shift we
      want from the address.  */
-#ifdef __BIG_ENDIAN__
   mask = __builtin_vec_lvsr(0, s);
   mask = __builtin_vec_perm(zero, ones, mask);
-#else
-  mask = __builtin_vec_lvsl(0, s);
-  mask = __builtin_vec_perm(ones, zero, mask);
-#endif
   data &= mask;
 
   /* While altivec loads mask addresses, we still need to align S so
@@ -627,11 +724,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     /* L now contains 0xff in bytes for which we matched one of the
        relevant characters.  We can find the byte index by finding
        its bit index and dividing by 8.  */
-#ifdef __BIG_ENDIAN__
     l = __builtin_clzl(l) >> 3;
-#else
-    l = __builtin_ctzl(l) >> 3;
-#endif
     return s + l;
 
 #undef N
@@ -2322,13 +2415,16 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  if (_cpp_skip_block_comment (pfile))
 	    cpp_error (pfile, CPP_DL_ERROR, "unterminated comment");
 	}
-      else if (c == '/' && (CPP_OPTION (pfile, cplusplus_comments)
-			    || cpp_in_system_header (pfile)))
+      else if (c == '/' && ! CPP_OPTION (pfile, traditional))
 	{
-	  /* Warn about comments only if pedantically GNUC89, and not
+	  /* Don't warn for system headers.  */
+	  if (cpp_in_system_header (pfile))
+	    ;
+	  /* Warn about comments if pedantically GNUC89, and not
 	     in system headers.  */
-	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
-	      && ! buffer->warned_cplusplus_comments)
+	  else if (CPP_OPTION (pfile, lang) == CLK_GNUC89
+		   && CPP_PEDANTIC (pfile)
+		   && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, CPP_DL_PEDWARN,
 			 "C++ style comments are not allowed in ISO C90");
@@ -2336,7 +2432,42 @@ _cpp_lex_direct (cpp_reader *pfile)
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
-
+	  /* Or if specifically desired via -Wc90-c99-compat.  */
+	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+		   && ! CPP_OPTION (pfile, cplusplus)
+		   && ! buffer->warned_cplusplus_comments)
+	    {
+	      cpp_error (pfile, CPP_DL_WARNING,
+			 "C++ style comments are incompatible with C90");
+	      cpp_error (pfile, CPP_DL_WARNING,
+			 "(this will be reported only once per input file)");
+	      buffer->warned_cplusplus_comments = 1;
+	    }
+	  /* In C89/C94, C++ style comments are forbidden.  */
+	  else if ((CPP_OPTION (pfile, lang) == CLK_STDC89
+		    || CPP_OPTION (pfile, lang) == CLK_STDC94))
+	    {
+	      /* But don't be confused about valid code such as
+	         - // immediately followed by *,
+		 - // in a preprocessing directive,
+		 - // in an #if 0 block.  */
+	      if (buffer->cur[1] == '*'
+		  || pfile->state.in_directive
+		  || pfile->state.skipping)
+		{
+		  result->type = CPP_DIV;
+		  break;
+		}
+	      else if (! buffer->warned_cplusplus_comments)
+		{
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "C++ style comments are not allowed in ISO C90");
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "(this will be reported only once per input "
+			     "file)");
+		  buffer->warned_cplusplus_comments = 1;
+		}
+	    }
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
 	    cpp_warning (pfile, CPP_W_COMMENTS, "multi-line comment");
 	}

@@ -955,6 +955,14 @@ package body Lib.Xref is
          if Comes_From_Source (E) then
             Ent := E;
 
+         --  Because a declaration may be generated for a subprogram body
+         --  without declaration in GNATprove mode, for inlining, some
+         --  parameters may end up being marked as not coming from source
+         --  although they are. Take these into account specially.
+
+         elsif GNATprove_Mode and then Ekind (E) in Formal_Kind then
+            Ent := E;
+
          --  Entity does not come from source, but is a derived subprogram and
          --  the derived subprogram comes from source (after one or more
          --  derivations) in which case the reference is to parent subprogram.
@@ -1893,12 +1901,18 @@ package body Lib.Xref is
 
                procedure Check_Type_Reference
                  (Ent            : Entity_Id;
-                  List_Interface : Boolean);
+                  List_Interface : Boolean;
+                  Is_Component   : Boolean := False);
                --  Find whether there is a meaningful type reference for
                --  Ent, and display it accordingly. If List_Interface is
                --  true, then Ent is a progenitor interface of the current
                --  type entity being listed. In that case list it as is,
-               --  without looking for a type reference for it.
+               --  without looking for a type reference for it. Flag is also
+               --  used for index types of an array type, where the caller
+               --  supplies the intended type reference. Is_Component serves
+               --  the same purpose, to display the component type of a
+               --  derived array type, for which only the parent type has
+               --  ben displayed so far.
 
                procedure Output_Instantiation_Refs (Loc : Source_Ptr);
                --  Recursive procedure to output instantiation references for
@@ -1915,7 +1929,8 @@ package body Lib.Xref is
 
                procedure Check_Type_Reference
                  (Ent            : Entity_Id;
-                  List_Interface : Boolean)
+                  List_Interface : Boolean;
+                  Is_Component   : Boolean := False)
                is
                begin
                   if List_Interface then
@@ -1926,6 +1941,13 @@ package body Lib.Xref is
                      Tref  := Ent;
                      Left  := '<';
                      Right := '>';
+
+                  --  The following is not documented in lib-xref.ads ???
+
+                  elsif Is_Component then
+                     Tref  := Ent;
+                     Left  := '(';
+                     Right := ')';
 
                   else
                      Get_Type_Reference (Ent, Tref, Left, Right);
@@ -2515,8 +2537,21 @@ package body Lib.Xref is
 
                      if Is_Array_Type (XE.Key.Ent) then
                         declare
+                           A_Typ : constant Entity_Id := XE.Key.Ent;
                            Indx : Node_Id;
+
                         begin
+                           --  If this is a derived array type, we have
+                           --  output the parent type, so add the component
+                           --  type now.
+
+                           if Is_Derived_Type (A_Typ) then
+                              Check_Type_Reference
+                                (Component_Type (A_Typ), False, True);
+                           end if;
+
+                           --  Add references to index types.
+
                            Indx := First_Index (XE.Key.Ent);
                            while Present (Indx) loop
                               Check_Type_Reference

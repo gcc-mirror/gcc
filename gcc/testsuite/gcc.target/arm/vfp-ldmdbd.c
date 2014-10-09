@@ -13,4 +13,4 @@ foo (double *p, double a, int n)
   while (n--);
 }
 
-/* { dg-final { scan-assembler "fldmdbd" } } */
+/* { dg-final { scan-assembler "vldmdb.64" } } */

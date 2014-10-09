@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ansidecl.h"
 #include "system.h"
 #include "coretypes.h"
+#include "gfortran.h"
 #include "tree.h"
 #include "flags.h"
 #include "langhooks.h"
@@ -38,10 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "target.h"
 #include "debug.h"
-#include "diagnostic.h"
+#include "diagnostic.h" /* For errorcount/warningcount */
 #include "dumpfile.h"
 #include "cgraph.h"
-#include "gfortran.h"
 #include "cpp.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -342,7 +342,7 @@ getdecls (void)
   return current_binding_level->names;
 }
 
-/* Enter a new binding level. */
+/* Enter a new binding level.  */
 
 void
 pushlevel (void)
@@ -410,7 +410,7 @@ poplevel (int keep, int functionbody)
   current_binding_level = current_binding_level->level_chain;
 
   if (functionbody)
-    /* This is the top level block of a function. */
+    /* This is the top level block of a function.  */
     DECL_INITIAL (current_function_decl) = block_node;
   else if (current_binding_level == global_binding_level)
     /* When using gfc_start_block/gfc_finish_block from middle-end hooks,
@@ -563,6 +563,7 @@ gfc_builtin_function (tree decl)
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
 #define ATTR_NOTHROW_LEAF_MALLOC_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_MALLOC)
 #define ATTR_CONST_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_CONST)
+#define ATTR_PURE_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_PURE)
 #define ATTR_NOTHROW_LIST		(ECF_NOTHROW)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
 
@@ -683,6 +684,8 @@ gfc_init_builtin_functions (void)
   tree ftype, ptype;
   tree builtin_types[(int) BT_LAST + 1];
 
+  int attr;
+
   build_builtin_fntypes (mfunc_float, float_type_node);
   build_builtin_fntypes (mfunc_double, double_type_node);
   build_builtin_fntypes (mfunc_longdouble, long_double_type_node);
@@ -770,6 +773,32 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_NEXTAFTERF, "nextafterf",
 		      ATTR_CONST_NOTHROW_LEAF_LIST);
  
+  /* Some built-ins depend on rounding mode. Depending on compilation options, they
+     will be "pure" or "const".  */
+  attr = flag_rounding_math ? ATTR_PURE_NOTHROW_LEAF_LIST : ATTR_CONST_NOTHROW_LEAF_LIST;
+
+  gfc_define_builtin ("__builtin_rintl", mfunc_longdouble[0], 
+		      BUILT_IN_RINTL, "rintl", attr);
+  gfc_define_builtin ("__builtin_rint", mfunc_double[0], 
+		      BUILT_IN_RINT, "rint", attr);
+  gfc_define_builtin ("__builtin_rintf", mfunc_float[0], 
+		      BUILT_IN_RINTF, "rintf", attr);
+
+  gfc_define_builtin ("__builtin_remainderl", mfunc_longdouble[1], 
+		      BUILT_IN_REMAINDERL, "remainderl", attr);
+  gfc_define_builtin ("__builtin_remainder", mfunc_double[1], 
+		      BUILT_IN_REMAINDER, "remainder", attr);
+  gfc_define_builtin ("__builtin_remainderf", mfunc_float[1], 
+		      BUILT_IN_REMAINDERF, "remainderf", attr);
+ 
+  gfc_define_builtin ("__builtin_logbl", mfunc_longdouble[0], 
+		      BUILT_IN_LOGBL, "logbl", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_logb", mfunc_double[0], 
+		      BUILT_IN_LOGB, "logb", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_logbf", mfunc_float[0], 
+		      BUILT_IN_LOGBF, "logbf", ATTR_CONST_NOTHROW_LEAF_LIST);
+
+
   gfc_define_builtin ("__builtin_frexpl", mfunc_longdouble[4], 
 		      BUILT_IN_FREXPL, "frexpl", ATTR_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_frexp", mfunc_double[4], 
@@ -960,6 +989,34 @@ gfc_init_builtin_functions (void)
                                     void_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,
 		      "__builtin_isnan", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isfinite", ftype, BUILT_IN_ISFINITE,
+		      "__builtin_isfinite", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isnormal", ftype, BUILT_IN_ISNORMAL,
+		      "__builtin_isnormal", ATTR_CONST_NOTHROW_LEAF_LIST);
+
+  ftype = build_function_type_list (integer_type_node, void_type_node,
+				    void_type_node, NULL_TREE);
+  gfc_define_builtin ("__builtin_isunordered", ftype, BUILT_IN_ISUNORDERED,
+		      "__builtin_isunordered", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_islessequal", ftype, BUILT_IN_ISLESSEQUAL,
+		      "__builtin_islessequal", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isgreaterequal", ftype,
+		      BUILT_IN_ISGREATEREQUAL, "__builtin_isgreaterequal",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
+
+  ftype = build_function_type_list (integer_type_node,
+                                    float_type_node, NULL_TREE); 
+  gfc_define_builtin("__builtin_signbitf", ftype, BUILT_IN_SIGNBITF,
+		     "signbitf", ATTR_CONST_NOTHROW_LEAF_LIST);
+  ftype = build_function_type_list (integer_type_node,
+                                    double_type_node, NULL_TREE); 
+  gfc_define_builtin("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
+		     "signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
+  ftype = build_function_type_list (integer_type_node,
+                                    long_double_type_node, NULL_TREE); 
+  gfc_define_builtin("__builtin_signbitl", ftype, BUILT_IN_SIGNBITL,
+		     "signbitl", ATTR_CONST_NOTHROW_LEAF_LIST);
+
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
   builtin_types[(int) ENUM] = VALUE;

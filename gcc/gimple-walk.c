@@ -180,7 +180,7 @@ tree
 walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 		struct walk_stmt_info *wi)
 {
-  struct pointer_set_t *pset = (wi) ? wi->pset : NULL;
+  hash_set<tree> *pset = (wi) ? wi->pset : NULL;
   unsigned i;
   tree ret = NULL_TREE;
 

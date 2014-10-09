@@ -9285,7 +9285,7 @@ fi
 
 
 for ac_func in times clock kill getrlimit setrlimit atoll atoq \
-	sysconf strsignal getrusage nl_langinfo \
+	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap setlocale \
 	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked madvise
 do :
@@ -11869,6 +11869,22 @@ elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir
 fi
 
+if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+  if test "x$with_headers" != x; then
+    target_header_dir=$with_headers
+  elif test "x$with_sysroot" = x; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
+  elif test "x$with_build_sysroot" != "x"; then
+    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
+  elif test "x$with_sysroot" = xyes; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+  else
+    target_header_dir="${with_sysroot}${native_system_header_dir}"
+  fi
+else
+  target_header_dir=${native_system_header_dir}
+fi
+
 # If this is a cross-compiler that does not
 # have its own set of headers then define
 # inhibit_libc
@@ -11880,7 +11896,7 @@ fi
 : ${inhibit_libc=false}
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
-     { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
+     { test "x$with_headers" = xno || test ! -f "$target_header_dir/stdio.h"; } ; then
        inhibit_libc=true
 fi
 
@@ -18033,7 +18049,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18036 "configure"
+#line 18052 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18139,7 +18155,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18142 "configure"
+#line 18158 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21528,6 +21544,7 @@ if test "${enable_ld+set}" = set; then :
 fi
 
 
+install_gold_as_default=no
 # Check whether --enable-gold was given.
 if test "${enable_gold+set}" = set; then :
   enableval=$enable_gold; case "${enableval}" in
@@ -21545,8 +21562,6 @@ if test "${enable_gold+set}" = set; then :
    as_fn_error "invalid --enable-gold argument" "$LINENO" 5
    ;;
  esac
-else
-  install_gold_as_default=no
 fi
 
 
@@ -23121,9 +23136,6 @@ $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
  if test $gcc_cv_as_comdat_group_percent = yes; then
    gcc_cv_as_comdat_group_group=no
  else
-   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
-     gcc_cv_as_comdat_group_group=no
-   fi
    case "${target}" in
      # Sun as uses a completely different syntax.
      *-*-solaris2*)
@@ -23173,6 +23185,9 @@ $as_echo "$gcc_cv_as_comdat_group_group" >&6; }
 
        ;;
    esac
+   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
+     gcc_cv_as_comdat_group_group=no
+   fi
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
@@ -26628,22 +26643,6 @@ _ACEOF
 
 fi
 
-if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-  if test "x$with_headers" != x; then
-    target_header_dir=$with_headers
-  elif test "x$with_sysroot" = x; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
-  elif test "x$with_build_sysroot" != "x"; then
-    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
-  elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
-  else
-    target_header_dir="${with_sysroot}${native_system_header_dir}"
-  fi
-else
-  target_header_dir=${native_system_header_dir}
-fi
-
 # Determine the version of glibc, if any, used on the target.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for target glibc version" >&5
 $as_echo_n "checking for target glibc version... " >&6; }
@@ -27888,6 +27887,11 @@ fi
 
 
 
+if test "x${ISLLIBS}" != "x" ; then
+
+$as_echo "#define HAVE_isl 1" >>confdefs.h
+
+fi
 
 
 

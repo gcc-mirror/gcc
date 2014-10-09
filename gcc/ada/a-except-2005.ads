@@ -291,7 +291,7 @@ private
    Max_Tracebacks : constant := 50;
    --  Maximum number of trace backs stored in exception occurrence
 
-   type Tracebacks_Array is array (1 .. Max_Tracebacks) of TBE.Traceback_Entry;
+   subtype Tracebacks_Array is TBE.Tracebacks_Array (1 .. Max_Tracebacks);
    --  Traceback array stored in exception occurrence
 
    type Exception_Occurrence is record

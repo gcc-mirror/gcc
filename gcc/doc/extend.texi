@@ -2180,7 +2180,7 @@ attributes are currently defined for functions on all targets:
 @code{returns_nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
-@code{no_sanitize_undefined},
+@code{no_sanitize_undefined}, @code{no_reorder},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -3471,6 +3471,16 @@ extern void *
 my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
+
+@item no_reorder
+@cindex @code{no_reorder} function or variable attribute
+Do not reorder functions or variables marked @code{no_reorder}
+against each other or top level assembler statements the executable.
+The actual order in the program will depend on the linker command
+line. Static variables marked like this are also not removed.
+This has a similar effect
+as the @option{-fno-toplevel-reorder} option, but only applies to the
+marked symbols.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
@@ -5308,6 +5318,47 @@ normally resides in the data memory (RAM).
 
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
+
+@item io
+@itemx io (@var{addr})
+Variables with the @code{io} attribute are used to address
+memory-mapped peripherals in the io address range.
+If an address is specified, the variable
+is assigned that address, and the value is interpreted as an
+address in the data address space.
+Example:
+
+@smallexample
+volatile int porta __attribute__((io (0x22)));
+@end smallexample
+
+The address specified in the address in the data address range.
+
+Otherwise, the variable it is not assigned an address, but the
+compiler will still use in/out instructions where applicable,
+assuming some other module assigns an address in the io address range.
+Example:
+
+@smallexample
+extern volatile int porta __attribute__((io));
+@end smallexample
+
+@item io_low
+@itemx io_low (@var{addr})
+This is like the @code{io} attribute, but additionally it informs the
+compiler that the object lies in the lower half of the I/O area,
+allowing the use of @code{cbi}, @code{sbi}, @code{sbic} and @code{sbis}
+instructions.
+
+@item address
+@itemx address (@var{addr})
+Variables with the @code{address} attribute are used to address
+memory-mapped peripherals that may lie outside the io address range.
+
+@smallexample
+volatile int porta __attribute__((address (0x600)));
+@end smallexample
+
 @end table
 
 @subsection Blackfin Variable Attributes
@@ -5889,6 +5940,17 @@ particular, if a class is thrown as an exception in one shared object
 and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
+
+@item designated_init
+This attribute may only be applied to structure types.  It indicates
+that any initialization of an object of this type must use designated
+initializers rather than positional initializers.  The intent of this
+attribute is to allow the programmer to indicate that a structure's
+layout may change, and that therefore relying on positional
+initialization will result in future breakage.
+
+GCC emits warnings based on this attribute by default; use
+@option{-Wno-designated-init} to suppress them.
 
 @end table
 
@@ -7896,6 +7958,13 @@ vector. If both @code{b} and @code{c} are scalars and the type of
 @code{true?b:c} has the same size as the element type of @code{a}, then
 @code{b} and @code{c} are converted to a vector type whose elements have
 this type and with the same number of elements as @code{a}.
+
+In C++, the logic operators @code{!, &&, ||} are available for vectors.
+@code{!v} is equivalent to @code{v == 0}, @code{a && b} is equivalent to
+@code{a!=0 & b!=0} and @code{a || b} is equivalent to @code{a!=0 | b!=0}.
+For mixed operations between a scalar @code{s} and a vector @code{v},
+@code{s && v} is equivalent to @code{s?v!=0:0} (the evaluation is
+short-circuit) and @code{v && s} is equivalent to @code{v!=0 & (s?-1:0)}.
 
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
@@ -13867,16 +13936,22 @@ vector bool int vec_cmplt (vector unsigned int, vector unsigned int);
 vector bool int vec_cmplt (vector signed int, vector signed int);
 vector bool int vec_cmplt (vector float, vector float);
 
+vector float vec_cpsgn (vector float, vector float);
+
 vector float vec_ctf (vector unsigned int, const int);
 vector float vec_ctf (vector signed int, const int);
+vector double vec_ctf (vector unsigned long, const int);
+vector double vec_ctf (vector signed long, const int);
 
 vector float vec_vcfsx (vector signed int, const int);
 
 vector float vec_vcfux (vector unsigned int, const int);
 
 vector signed int vec_cts (vector float, const int);
+vector signed long vec_cts (vector double, const int);
 
 vector unsigned int vec_ctu (vector float, const int);
+vector unsigned long vec_ctu (vector double, const int);
 
 void vec_dss (const int);
 
@@ -14712,6 +14787,16 @@ vector float vec_splat (vector float, const int);
 vector signed int vec_splat (vector signed int, const int);
 vector unsigned int vec_splat (vector unsigned int, const int);
 vector bool int vec_splat (vector bool int, const int);
+vector signed long vec_splat (vector signed long, const int);
+vector unsigned long vec_splat (vector unsigned long, const int);
+
+vector signed char vec_splats (signed char);
+vector unsigned char vec_splats (unsigned char);
+vector signed short vec_splats (signed short);
+vector unsigned short vec_splats (unsigned short);
+vector signed int vec_splats (signed int);
+vector unsigned int vec_splats (unsigned int);
+vector float vec_splats (float);
 
 vector float vec_vspltw (vector float, const int);
 vector signed int vec_vspltw (vector signed int, const int);
@@ -15416,17 +15501,32 @@ vector double vec_add (vector double, vector double);
 vector double vec_and (vector double, vector double);
 vector double vec_and (vector double, vector bool long);
 vector double vec_and (vector bool long, vector double);
+vector long vec_and (vector long, vector long);
+vector long vec_and (vector long, vector bool long);
+vector long vec_and (vector bool long, vector long);
+vector unsigned long vec_and (vector unsigned long, vector unsigned long);
+vector unsigned long vec_and (vector unsigned long, vector bool long);
+vector unsigned long vec_and (vector bool long, vector unsigned long);
 vector double vec_andc (vector double, vector double);
 vector double vec_andc (vector double, vector bool long);
 vector double vec_andc (vector bool long, vector double);
+vector long vec_andc (vector long, vector long);
+vector long vec_andc (vector long, vector bool long);
+vector long vec_andc (vector bool long, vector long);
+vector unsigned long vec_andc (vector unsigned long, vector unsigned long);
+vector unsigned long vec_andc (vector unsigned long, vector bool long);
+vector unsigned long vec_andc (vector bool long, vector unsigned long);
 vector double vec_ceil (vector double);
 vector bool long vec_cmpeq (vector double, vector double);
 vector bool long vec_cmpge (vector double, vector double);
 vector bool long vec_cmpgt (vector double, vector double);
 vector bool long vec_cmple (vector double, vector double);
 vector bool long vec_cmplt (vector double, vector double);
+vector double vec_cpsgn (vector double, vector double);
 vector float vec_div (vector float, vector float);
 vector double vec_div (vector double, vector double);
+vector long vec_div (vector long, vector long);
+vector unsigned long vec_div (vector unsigned long, vector unsigned long);
 vector double vec_floor (vector double);
 vector double vec_ld (int, const vector double *);
 vector double vec_ld (int, const double *);
@@ -15436,38 +15536,83 @@ vector unsigned char vec_lvsl (int, const volatile double *);
 vector unsigned char vec_lvsr (int, const volatile double *);
 vector double vec_madd (vector double, vector double, vector double);
 vector double vec_max (vector double, vector double);
+vector signed long vec_mergeh (vector signed long, vector signed long);
+vector signed long vec_mergeh (vector signed long, vector bool long);
+vector signed long vec_mergeh (vector bool long, vector signed long);
+vector unsigned long vec_mergeh (vector unsigned long, vector unsigned long);
+vector unsigned long vec_mergeh (vector unsigned long, vector bool long);
+vector unsigned long vec_mergeh (vector bool long, vector unsigned long);
+vector signed long vec_mergel (vector signed long, vector signed long);
+vector signed long vec_mergel (vector signed long, vector bool long);
+vector signed long vec_mergel (vector bool long, vector signed long);
+vector unsigned long vec_mergel (vector unsigned long, vector unsigned long);
+vector unsigned long vec_mergel (vector unsigned long, vector bool long);
+vector unsigned long vec_mergel (vector bool long, vector unsigned long);
 vector double vec_min (vector double, vector double);
 vector float vec_msub (vector float, vector float, vector float);
 vector double vec_msub (vector double, vector double, vector double);
 vector float vec_mul (vector float, vector float);
 vector double vec_mul (vector double, vector double);
+vector long vec_mul (vector long, vector long);
+vector unsigned long vec_mul (vector unsigned long, vector unsigned long);
 vector float vec_nearbyint (vector float);
 vector double vec_nearbyint (vector double);
 vector float vec_nmadd (vector float, vector float, vector float);
 vector double vec_nmadd (vector double, vector double, vector double);
 vector double vec_nmsub (vector double, vector double, vector double);
 vector double vec_nor (vector double, vector double);
+vector long vec_nor (vector long, vector long);
+vector long vec_nor (vector long, vector bool long);
+vector long vec_nor (vector bool long, vector long);
+vector unsigned long vec_nor (vector unsigned long, vector unsigned long);
+vector unsigned long vec_nor (vector unsigned long, vector bool long);
+vector unsigned long vec_nor (vector bool long, vector unsigned long);
 vector double vec_or (vector double, vector double);
 vector double vec_or (vector double, vector bool long);
 vector double vec_or (vector bool long, vector double);
-vector double vec_perm (vector double,
-                        vector double,
-                        vector unsigned char);
+vector long vec_or (vector long, vector long);
+vector long vec_or (vector long, vector bool long);
+vector long vec_or (vector bool long, vector long);
+vector unsigned long vec_or (vector unsigned long, vector unsigned long);
+vector unsigned long vec_or (vector unsigned long, vector bool long);
+vector unsigned long vec_or (vector bool long, vector unsigned long);
+vector double vec_perm (vector double, vector double, vector unsigned char);
+vector long vec_perm (vector long, vector long, vector unsigned char);
+vector unsigned long vec_perm (vector unsigned long, vector unsigned long,
+                               vector unsigned char);
 vector double vec_rint (vector double);
 vector double vec_recip (vector double, vector double);
 vector double vec_rsqrt (vector double);
 vector double vec_rsqrte (vector double);
 vector double vec_sel (vector double, vector double, vector bool long);
 vector double vec_sel (vector double, vector double, vector unsigned long);
-vector double vec_sub (vector double, vector double);
+vector long vec_sel (vector long, vector long, vector long);
+vector long vec_sel (vector long, vector long, vector unsigned long);
+vector long vec_sel (vector long, vector long, vector bool long);
+vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
+                              vector long);
+vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
+                              vector unsigned long);
+vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
+                              vector bool long);
+vector double vec_splats (double);
+vector signed long vec_splats (signed long);
+vector unsigned long vec_splats (unsigned long);
 vector float vec_sqrt (vector float);
 vector double vec_sqrt (vector double);
 void vec_st (vector double, int, vector double *);
 void vec_st (vector double, int, double *);
+vector double vec_sub (vector double, vector double);
 vector double vec_trunc (vector double);
 vector double vec_xor (vector double, vector double);
 vector double vec_xor (vector double, vector bool long);
 vector double vec_xor (vector bool long, vector double);
+vector long vec_xor (vector long, vector long);
+vector long vec_xor (vector long, vector bool long);
+vector long vec_xor (vector bool long, vector long);
+vector unsigned long vec_xor (vector unsigned long, vector unsigned long);
+vector unsigned long vec_xor (vector unsigned long, vector bool long);
+vector unsigned long vec_xor (vector bool long, vector unsigned long);
 int vec_all_eq (vector double, vector double);
 int vec_all_ge (vector double, vector double);
 int vec_all_gt (vector double, vector double);
@@ -15596,17 +15741,30 @@ vector unsigned long long vec_add (vector unsigned long long,
                                    vector unsigned long long);
 
 int vec_all_eq (vector long long, vector long long);
+int vec_all_eq (vector unsigned long long, vector unsigned long long);
 int vec_all_ge (vector long long, vector long long);
+int vec_all_ge (vector unsigned long long, vector unsigned long long);
 int vec_all_gt (vector long long, vector long long);
+int vec_all_gt (vector unsigned long long, vector unsigned long long);
 int vec_all_le (vector long long, vector long long);
+int vec_all_le (vector unsigned long long, vector unsigned long long);
 int vec_all_lt (vector long long, vector long long);
+int vec_all_lt (vector unsigned long long, vector unsigned long long);
 int vec_all_ne (vector long long, vector long long);
+int vec_all_ne (vector unsigned long long, vector unsigned long long);
+
 int vec_any_eq (vector long long, vector long long);
+int vec_any_eq (vector unsigned long long, vector unsigned long long);
 int vec_any_ge (vector long long, vector long long);
+int vec_any_ge (vector unsigned long long, vector unsigned long long);
 int vec_any_gt (vector long long, vector long long);
+int vec_any_gt (vector unsigned long long, vector unsigned long long);
 int vec_any_le (vector long long, vector long long);
+int vec_any_le (vector unsigned long long, vector unsigned long long);
 int vec_any_lt (vector long long, vector long long);
+int vec_any_lt (vector unsigned long long, vector unsigned long long);
 int vec_any_ne (vector long long, vector long long);
+int vec_any_ne (vector unsigned long long, vector unsigned long long);
 
 vector long long vec_eqv (vector long long, vector long long);
 vector long long vec_eqv (vector bool long long, vector long long);
@@ -15643,6 +15801,14 @@ vector unsigned char vec_eqv (vector unsigned char, vector bool unsigned char);
 vector long long vec_max (vector long long, vector long long);
 vector unsigned long long vec_max (vector unsigned long long,
                                    vector unsigned long long);
+
+vector signed int vec_mergee (vector signed int, vector signed int);
+vector unsigned int vec_mergee (vector unsigned int, vector unsigned int);
+vector bool int vec_mergee (vector bool int, vector bool int);
+
+vector signed int vec_mergeo (vector signed int, vector signed int);
+vector unsigned int vec_mergeo (vector unsigned int, vector unsigned int);
+vector bool int vec_mergeo (vector bool int, vector bool int);
 
 vector long long vec_min (vector long long, vector long long);
 vector unsigned long long vec_min (vector unsigned long long,
@@ -15722,6 +15888,8 @@ vector unsigned int vec_packs (vector unsigned long long,
                                vector unsigned long long);
 
 vector unsigned int vec_packsu (vector long long, vector long long);
+vector unsigned int vec_packsu (vector unsigned long long,
+                                vector unsigned long long);
 
 vector long long vec_rl (vector long long,
                          vector unsigned long long);
@@ -15762,6 +15930,15 @@ vector unsigned long long vec_vaddudm (vector unsigned long long,
 
 vector long long vec_vbpermq (vector signed char, vector signed char);
 vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
+
+vector long long vec_cntlz (vector long long);
+vector unsigned long long vec_cntlz (vector unsigned long long);
+vector int vec_cntlz (vector int);
+vector unsigned int vec_cntlz (vector int);
+vector short vec_cntlz (vector short);
+vector unsigned short vec_cntlz (vector unsigned short);
+vector signed char vec_cntlz (vector signed char);
+vector unsigned char vec_cntlz (vector unsigned char);
 
 vector long long vec_vclz (vector long long);
 vector unsigned long long vec_vclz (vector unsigned long long);

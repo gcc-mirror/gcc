@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                          (Apple OS X Version)                            --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
---  File a-numaux.adb <- a-numaux-darwin.adb
 
 package body Ada.Numerics.Aux is
 

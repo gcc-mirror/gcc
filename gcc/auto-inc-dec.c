@@ -295,7 +295,7 @@ init_decision_table (void)
 
 static struct inc_insn
 {
-  rtx insn;           /* The insn being parsed.  */
+  rtx_insn *insn;     /* The insn being parsed.  */
   rtx pat;            /* The pattern of the insn.  */
   bool reg1_is_const; /* True if reg1 is const, false if reg1 is a reg.  */
   enum form form;
@@ -355,7 +355,7 @@ dump_inc_insn (FILE *file)
 
 static struct mem_insn
 {
-  rtx insn;           /* The insn being parsed.  */
+  rtx_insn *insn;     /* The insn being parsed.  */
   rtx pat;            /* The pattern of the insn.  */
   rtx *mem_loc;       /* The address of the field that holds the mem */
                       /* that is to be replaced.  */
@@ -397,9 +397,9 @@ dump_mem_insn (FILE *file)
    must be compared with the current block.
 */
 
-static rtx *reg_next_use = NULL;
-static rtx *reg_next_inc_use = NULL;
-static rtx *reg_next_def = NULL;
+static rtx_insn **reg_next_use = NULL;
+static rtx_insn **reg_next_inc_use = NULL;
+static rtx_insn **reg_next_def = NULL;
 
 
 /* Move dead note that match PATTERN to TO_INSN from FROM_INSN.  We do
@@ -408,7 +408,7 @@ static rtx *reg_next_def = NULL;
    does not appear that there are any other kinds of relevant notes.  */
 
 static void
-move_dead_notes (rtx to_insn, rtx from_insn, rtx pattern)
+move_dead_notes (rtx_insn *to_insn, rtx_insn *from_insn, rtx pattern)
 {
   rtx note;
   rtx next_note;
@@ -436,10 +436,10 @@ move_dead_notes (rtx to_insn, rtx from_insn, rtx pattern)
 /* Create a mov insn DEST_REG <- SRC_REG and insert it before
    NEXT_INSN.  */
 
-static rtx
-insert_move_insn_before (rtx next_insn, rtx dest_reg, rtx src_reg)
+static rtx_insn *
+insert_move_insn_before (rtx_insn *next_insn, rtx dest_reg, rtx src_reg)
 {
-  rtx insns;
+  rtx_insn *insns;
 
   start_sequence ();
   emit_move_insn (dest_reg, src_reg);
@@ -469,7 +469,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
      handled mov free.  */
 
   basic_block bb = BLOCK_FOR_INSN (mem_insn.insn);
-  rtx mov_insn = NULL;
+  rtx_insn *mov_insn = NULL;
   int regno;
   rtx mem = *mem_insn.mem_loc;
   enum machine_mode mode = GET_MODE (mem);
@@ -611,7 +611,7 @@ try_merge (void)
 
   /* The width of the mem being accessed.  */
   int size = GET_MODE_SIZE (GET_MODE (mem));
-  rtx last_insn = NULL;
+  rtx_insn *last_insn = NULL;
   enum machine_mode reg_mode = GET_MODE (inc_reg);
 
   switch (inc_insn.form)
@@ -738,10 +738,10 @@ try_merge (void)
    NEXT_ARRAY) or defines (if reg_next_def is passed in NEXT_ARRAY)
    REGNO in BB.  */
 
-static rtx
-get_next_ref (int regno, basic_block bb, rtx *next_array)
+static rtx_insn *
+get_next_ref (int regno, basic_block bb, rtx_insn **next_array)
 {
-  rtx insn = next_array[regno];
+  rtx_insn *insn = next_array[regno];
 
   /* Lazy about cleaning out the next_arrays.  */
   if (insn && BLOCK_FOR_INSN (insn) != bb)
@@ -787,7 +787,7 @@ reverse_inc (void)
    processed.  */
 
 static bool
-parse_add_or_inc (rtx insn, bool before_mem)
+parse_add_or_inc (rtx_insn *insn, bool before_mem)
 {
   rtx pat = single_set (insn);
   if (!pat)
@@ -966,9 +966,9 @@ find_address (rtx *address_of_x)
 static bool
 find_inc (bool first_try)
 {
-  rtx insn;
+  rtx_insn *insn;
   basic_block bb = BLOCK_FOR_INSN (mem_insn.insn);
-  rtx other_insn;
+  rtx_insn *other_insn;
   df_ref def;
 
   /* Make sure this reg appears only once in this insn.  */
@@ -1038,9 +1038,9 @@ find_inc (bool first_try)
     {
       /* Make sure that there is no insn that assigns to inc_insn.res
 	 between the mem_insn and the inc_insn.  */
-      rtx other_insn = get_next_ref (REGNO (inc_insn.reg_res),
-				     BLOCK_FOR_INSN (mem_insn.insn),
-				     reg_next_def);
+      rtx_insn *other_insn = get_next_ref (REGNO (inc_insn.reg_res),
+					   BLOCK_FOR_INSN (mem_insn.insn),
+					   reg_next_def);
       if (other_insn != inc_insn.insn)
 	{
 	  if (dump_file)
@@ -1129,7 +1129,7 @@ find_inc (bool first_try)
 	 then we just abandon this.  */
 
       int luid = DF_INSN_LUID (inc_insn.insn);
-      rtx other_insn;
+      rtx_insn *other_insn;
 
       /* Make sure this reg appears only once in this insn.  */
       if (count_occurrences (PATTERN (mem_insn.insn), mem_insn.reg1, 1) != 1)
@@ -1332,8 +1332,8 @@ find_mem (rtx *address_of_x)
 static void
 merge_in_block (int max_reg, basic_block bb)
 {
-  rtx insn;
-  rtx curr;
+  rtx_insn *insn;
+  rtx_insn *curr;
   int success_in_block = 0;
 
   if (dump_file)
@@ -1377,7 +1377,7 @@ merge_in_block (int max_reg, basic_block bb)
 			 clear of c because the inc insn is going to move
 			 into the mem_insn.insn.  */
 		      int luid = DF_INSN_LUID (mem_insn.insn);
-		      rtx other_insn
+		      rtx_insn *other_insn
 			= get_next_ref (REGNO (inc_insn.reg1), bb, reg_next_use);
 
 		      if (other_insn && luid > DF_INSN_LUID (other_insn))
@@ -1513,9 +1513,9 @@ pass_inc_dec::execute (function *fun ATTRIBUTE_UNUSED)
   df_note_add_problem ();
   df_analyze ();
 
-  reg_next_use = XCNEWVEC (rtx, max_reg);
-  reg_next_inc_use = XCNEWVEC (rtx, max_reg);
-  reg_next_def = XCNEWVEC (rtx, max_reg);
+  reg_next_use = XCNEWVEC (rtx_insn *, max_reg);
+  reg_next_inc_use = XCNEWVEC (rtx_insn *, max_reg);
+  reg_next_def = XCNEWVEC (rtx_insn *, max_reg);
   FOR_EACH_BB_FN (bb, fun)
     merge_in_block (max_reg, bb);
 

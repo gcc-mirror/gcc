@@ -432,7 +432,10 @@ ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
 static inline int
 ipa_get_controlled_uses (struct ipa_node_params *info, int i)
 {
-  return info->descriptors[i].controlled_uses;
+  /* FIXME: introducing speuclation causes out of bounds access here.  */
+  if (info->descriptors.length () > (unsigned)i)
+    return info->descriptors[i].controlled_uses;
+  return IPA_UNDESCRIBED_USE;
 }
 
 /* Set the controlled counter of a given parameter.  */
@@ -479,6 +482,7 @@ struct GTY(()) ipa_edge_args
 {
   /* Vector of the callsite's jump function of each parameter.  */
   vec<ipa_jump_func, va_gc> *jump_functions;
+  vec<ipa_polymorphic_call_context, va_gc> *polymorphic_call_contexts;
 };
 
 /* ipa_edge_args access functions.  Please use these to access fields that
@@ -500,6 +504,16 @@ static inline struct ipa_jump_func *
 ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
 {
   return &(*args->jump_functions)[i];
+}
+
+/* Returns a pointer to the polymorphic call context for the ith argument.
+   NULL if contexts are not computed.  */
+static inline struct ipa_polymorphic_call_context *
+ipa_get_ith_polymorhic_call_context (struct ipa_edge_args *args, int i)
+{
+  if (!args->polymorphic_call_contexts)
+    return NULL;
+  return &(*args->polymorphic_call_contexts)[i];
 }
 
 /* Types of vectors holding the infos.  */
@@ -529,6 +543,7 @@ void ipa_free_all_edge_args (void);
 void ipa_free_all_structures_after_ipa_cp (void);
 void ipa_free_all_structures_after_iinln (void);
 void ipa_register_cgraph_hooks (void);
+int count_formal_params (tree fndecl);
 
 /* This function ensures the array of node param infos is big enough to
    accommodate a structure for all nodes and reallocates it if not.  */
@@ -537,10 +552,10 @@ static inline void
 ipa_check_create_node_params (void)
 {
   if (!ipa_node_params_vector.exists ())
-    ipa_node_params_vector.create (cgraph_max_uid);
+    ipa_node_params_vector.create (symtab->cgraph_max_uid);
 
-  if (ipa_node_params_vector.length () <= (unsigned) cgraph_max_uid)
-    ipa_node_params_vector.safe_grow_cleared (cgraph_max_uid + 1);
+  if (ipa_node_params_vector.length () <= (unsigned) symtab->cgraph_max_uid)
+    ipa_node_params_vector.safe_grow_cleared (symtab->cgraph_max_uid + 1);
 }
 
 /* This function ensures the array of edge arguments infos is big enough to
@@ -549,8 +564,9 @@ ipa_check_create_node_params (void)
 static inline void
 ipa_check_create_edge_args (void)
 {
-  if (vec_safe_length (ipa_edge_args_vector) <= (unsigned) cgraph_edge_max_uid)
-    vec_safe_grow_cleared (ipa_edge_args_vector, cgraph_edge_max_uid + 1);
+  if (vec_safe_length (ipa_edge_args_vector)
+      <= (unsigned) symtab->edges_max_uid)
+    vec_safe_grow_cleared (ipa_edge_args_vector, symtab->edges_max_uid + 1);
 }
 
 /* Returns true if the array of edge infos is large enough to accommodate an
@@ -576,16 +592,16 @@ ipa_get_agg_replacements_for_node (struct cgraph_node *node)
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
-					vec<cgraph_edge_p> *new_edges);
+					vec<cgraph_edge *> *new_edges);
 
 /* Indirect edge and binfo processing.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 				   vec<tree> ,
 				   vec<tree> ,
 				   vec<ipa_agg_jump_function_p> );
-struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
+struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
+						    bool speculative = false);
 tree ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *);
-tree ipa_intraprocedural_devirtualization (gimple);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */

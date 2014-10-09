@@ -30,16 +30,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "stor-layout.h"
 #include "ggc.h"
+#include "gfortran.h"
 #include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "flags.h"
-#include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
 #include "trans.h"
 #include "trans-const.h"
 #include "trans-types.h"
 #include "trans-array.h"
+#include "dependency.h"	/* For CAF array alias analysis.  */
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "tree-nested.h"
@@ -926,76 +927,6 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Convert the coindex of a coarray into an image index; the result is
-   image_num =  (idx(1)-lcobound(1)+1) + (idx(2)-lcobound(2)+1)*extent(1)
-              + (idx(3)-lcobound(3)+1)*extent(2) + ...  */
-
-static tree
-caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
-{
-  gfc_ref *ref;
-  tree lbound, ubound, extent, tmp, img_idx;
-  gfc_se se;
-  int i;
-
-  for (ref = e->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
-      break;
-  gcc_assert (ref != NULL);
-
-  img_idx = integer_zero_node;
-  extent = integer_one_node;
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
-    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-      {
-	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
-	gfc_add_block_to_block (block, &se.pre);
-	lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
-	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr,
-			       fold_convert(integer_type_node, lbound));
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
-			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   img_idx, tmp);
-	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
-	  {
-	    ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
-	    extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-	    extent = fold_convert (integer_type_node, extent);
-	  }
-      }
-  else
-    for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-      {
-	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
-	gfc_add_block_to_block (block, &se.pre);
-	lbound = GFC_TYPE_ARRAY_LBOUND (TREE_TYPE (desc), i);
-	lbound = fold_convert (integer_type_node, lbound);
-	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr, lbound);
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
-			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   img_idx, tmp);
-	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
-	  {
-	    ubound = GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (desc), i);
-	    ubound = fold_convert (integer_type_node, ubound);
-	    extent = fold_build2_loc (input_location, MINUS_EXPR,
-				      integer_type_node, ubound, lbound);
-	    extent = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				      extent, integer_one_node);
-	  }
-      }
-  img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-			     img_idx, integer_one_node);
-  return img_idx;
-}
-
-
 /* Fill in the following structure
      struct caf_vector_t {
        size_t nvec;  // size of the vector
@@ -1153,78 +1084,11 @@ conv_caf_vector_subscript (stmtblock_t *block, tree desc, gfc_array_ref *ar)
 }
 
 
-static void
-get_caf_token_offset (tree *token, tree *offset, tree caf_decl, tree se_expr,
-		      gfc_expr *expr)
-{
-  tree tmp;
-
-  /* Coarray token.  */
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
-    {
-      gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
-		    == GFC_ARRAY_ALLOCATABLE
-		  || expr->symtree->n.sym->attr.select_type_temporary);
-      *token = gfc_conv_descriptor_token (caf_decl);
-    }
-  else if (DECL_LANG_SPECIFIC (caf_decl)
-	   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
-    *token = GFC_DECL_TOKEN (caf_decl);
-  else
-    {
-      gcc_assert (GFC_ARRAY_TYPE_P (TREE_TYPE (caf_decl))
-		  && GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl)) != NULL_TREE);
-      *token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (caf_decl));
-    }
-
-  /* Offset between the coarray base address and the address wanted.  */
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl))
-      && (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE
-	  || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_POINTER))
-    *offset = build_int_cst (gfc_array_index_type, 0);
-  else if (DECL_LANG_SPECIFIC (caf_decl)
-	   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
-    *offset = GFC_DECL_CAF_OFFSET (caf_decl);
-  else if (GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl)) != NULL_TREE)
-    *offset = GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl));
-  else
-    *offset = build_int_cst (gfc_array_index_type, 0);
-
-  if (POINTER_TYPE_P (TREE_TYPE (se_expr))
-      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se_expr))))
-    {
-      tmp = build_fold_indirect_ref_loc (input_location, se_expr);
-      tmp = gfc_conv_descriptor_data_get (tmp);
-    }
-  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se_expr)))
-    tmp = gfc_conv_descriptor_data_get (se_expr);
-  else
-    {
-      gcc_assert (POINTER_TYPE_P (TREE_TYPE (se_expr)));
-      tmp = se_expr;
-    }
-
-  *offset = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     *offset, fold_convert (gfc_array_index_type, tmp));
-
-  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
-    tmp = gfc_conv_descriptor_data_get (caf_decl);
-  else
-   {
-     gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl)));
-     tmp = caf_decl;
-   }
-
-  *offset = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			    fold_convert (gfc_array_index_type, *offset),
-			    fold_convert (gfc_array_index_type, tmp));
-}
-
-
 /* Get data from a remote coarray.  */
 
 static void
-gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
+gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
+			    tree may_require_tmp)
 {
   gfc_expr *array_expr;
   gfc_se argse;
@@ -1328,12 +1192,16 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
   caf_decl = gfc_get_tree_for_caf_expr (array_expr);
   if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
     caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-  image_index = caf_get_image_index (&se->pre, array_expr, caf_decl);
-  get_caf_token_offset (&token, &offset, caf_decl, argse.expr, array_expr);
+  image_index = gfc_caf_get_image_index (&se->pre, array_expr, caf_decl);
+  gfc_get_caf_token_offset (&token, &offset, caf_decl, argse.expr, array_expr);
 
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 8,
+  /* No overlap possible as we have generated a temporary.  */
+  if (lhs == NULL_TREE)
+    may_require_tmp = boolean_false_node;
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get, 9,
 			     token, offset, image_index, argse.expr, vec,
-			     dst_var, kind, lhs_kind);
+			     dst_var, kind, lhs_kind, may_require_tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   if (se->ss)
@@ -1353,6 +1221,7 @@ conv_caf_send (gfc_code *code) {
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
+  tree may_require_tmp;
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
 
@@ -1360,6 +1229,8 @@ conv_caf_send (gfc_code *code) {
 
   lhs_expr = code->ext.actual->expr;
   rhs_expr = code->ext.actual->next->expr;
+  may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, false) == 0
+		    ? boolean_false_node : boolean_true_node;
   gfc_init_block (&block);
 
   /* LHS.  */
@@ -1413,7 +1284,8 @@ conv_caf_send (gfc_code *code) {
     {
       gcc_assert (gfc_is_coindexed (rhs_expr));
       gfc_init_se (&rhs_se, NULL);
-      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind);
+      gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind,
+				  may_require_tmp);
       gfc_add_block_to_block (&block, &rhs_se.pre);
       gfc_add_block_to_block (&block, &rhs_se.post);
       gfc_add_block_to_block (&block, &lhs_se.post);
@@ -1425,8 +1297,8 @@ conv_caf_send (gfc_code *code) {
   caf_decl = gfc_get_tree_for_caf_expr (lhs_expr);
   if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
     caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-  image_index = caf_get_image_index (&block, lhs_expr, caf_decl);
-  get_caf_token_offset (&token, &offset, caf_decl, lhs_se.expr, lhs_expr);
+  image_index = gfc_caf_get_image_index (&block, lhs_expr, caf_decl);
+  gfc_get_caf_token_offset (&token, &offset, caf_decl, lhs_se.expr, lhs_expr);
 
   /* RHS.  */
   gfc_init_se (&rhs_se, NULL);
@@ -1480,9 +1352,9 @@ conv_caf_send (gfc_code *code) {
   rhs_kind = build_int_cst (integer_type_node, rhs_expr->ts.kind);
 
   if (!gfc_is_coindexed (rhs_expr))
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 8, token,
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 9, token,
 			     offset, image_index, lhs_se.expr, vec,
-			     rhs_se.expr, lhs_kind, rhs_kind);
+			     rhs_se.expr, lhs_kind, rhs_kind, may_require_tmp);
   else
     {
       tree rhs_token, rhs_offset, rhs_image_index;
@@ -1490,13 +1362,14 @@ conv_caf_send (gfc_code *code) {
       caf_decl = gfc_get_tree_for_caf_expr (rhs_expr);
       if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-      rhs_image_index = caf_get_image_index (&block, rhs_expr, caf_decl);
-      get_caf_token_offset (&rhs_token, &rhs_offset, caf_decl, rhs_se.expr,
-			    rhs_expr);
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 12,
+      rhs_image_index = gfc_caf_get_image_index (&block, rhs_expr, caf_decl);
+      gfc_get_caf_token_offset (&rhs_token, &rhs_offset, caf_decl, rhs_se.expr,
+				rhs_expr);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sendget, 13,
 				 token, offset, image_index, lhs_se.expr, vec,
 				 rhs_token, rhs_offset, rhs_image_index,
-				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind);
+				 rhs_se.expr, rhs_vec, lhs_kind, rhs_kind,
+				 may_require_tmp);
     }
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
@@ -2823,7 +2696,7 @@ conv_intrinsic_system_clock (gfc_code *code)
   else if (count_max)
     arg3 = count_max_se.expr;
 
-  /* Make the function call. */
+  /* Make the function call.  */
   gfc_init_block (&block);
   tmp = build_call_expr_loc (input_location,
 			     kind == 4 ? gfor_fndecl_system_clock4
@@ -5891,62 +5764,131 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   gfc_expr *arg;
   gfc_se argse;
   tree source_bytes;
-  tree type;
   tree tmp;
   tree lower;
   tree upper;
+  tree byte_size;
   int n;
 
+  gfc_init_se (&argse, NULL);
   arg = expr->value.function.actual->expr;
 
-  gfc_init_se (&argse, NULL);
+  if (arg->rank || arg->ts.type == BT_ASSUMED)
+    gfc_conv_expr_descriptor (&argse, arg);
+  else
+    gfc_conv_expr_reference (&argse, arg);
 
-  if (arg->rank == 0)
+  if (arg->ts.type == BT_ASSUMED)
     {
-      if (arg->ts.type == BT_CLASS)
-	gfc_add_data_component (arg);
-
-      gfc_conv_expr_reference (&argse, arg);
-
-      type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
-						 argse.expr));
-
-      /* Obtain the source word length.  */
-      if (arg->ts.type == BT_CHARACTER)
-	se->expr = size_of_string_in_bytes (arg->ts.kind,
-					    argse.string_length);
+      /* This only works if an array descriptor has been passed; thus, extract
+	 the size from the descriptor.  */
+      gcc_assert (TYPE_PRECISION (gfc_array_index_type)
+		  == TYPE_PRECISION (size_type_node));
+      tmp = arg->symtree->n.sym->backend_decl;
+      tmp = DECL_LANG_SPECIFIC (tmp)
+	    && GFC_DECL_SAVED_DESCRIPTOR (tmp) != NULL_TREE
+	    ? GFC_DECL_SAVED_DESCRIPTOR (tmp) : tmp;
+      if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	tmp = build_fold_indirect_ref_loc (input_location, tmp);
+      tmp = fold_convert (size_type_node, gfc_conv_descriptor_dtype (tmp));
+      tmp = fold_build2_loc (input_location, RSHIFT_EXPR, TREE_TYPE (tmp), tmp,
+			     build_int_cst (TREE_TYPE (tmp),
+					    GFC_DTYPE_SIZE_SHIFT));
+      byte_size = fold_convert (gfc_array_index_type, tmp);
+    }
+  else if (arg->ts.type == BT_CLASS)
+    {
+      if (arg->rank)
+	byte_size = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
       else
-	se->expr = fold_convert (gfc_array_index_type, size_in_bytes (type)); 
+	byte_size = gfc_vtable_size_get (argse.expr);
     }
   else
     {
-      source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
-      argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg);
-      type = gfc_get_element_type (TREE_TYPE (argse.expr));
-
-      /* Obtain the argument's word length.  */
       if (arg->ts.type == BT_CHARACTER)
-	tmp = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
+	byte_size = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
       else
-	tmp = fold_convert (gfc_array_index_type,
-			    size_in_bytes (type)); 
-      gfc_add_modify (&argse.pre, source_bytes, tmp);
-
-      /* Obtain the size of the array in bytes.  */
-      for (n = 0; n < arg->rank; n++)
 	{
-	  tree idx;
-	  idx = gfc_rank_cst[n];
-	  lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
-	  upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type, upper, lower);
-	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
-				 gfc_array_index_type, tmp, gfc_index_one_node);
+	  if (arg->rank == 0)
+	    byte_size = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
+								argse.expr));
+	  else
+	    byte_size = gfc_get_element_type (TREE_TYPE (argse.expr));
+	  byte_size = fold_convert (gfc_array_index_type,
+				    size_in_bytes (byte_size));
+	}
+    }
+
+  if (arg->rank == 0)
+    se->expr = byte_size;
+  else
+    {
+      source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
+      gfc_add_modify (&argse.pre, source_bytes, byte_size);
+
+      if (arg->rank == -1)
+	{
+	  tree cond, loop_var, exit_label;
+          stmtblock_t body;
+
+	  tmp = fold_convert (gfc_array_index_type,
+			      gfc_conv_descriptor_rank (argse.expr));
+	  loop_var = gfc_create_var (gfc_array_index_type, "i");
+	  gfc_add_modify (&argse.pre, loop_var, gfc_index_zero_node);
+          exit_label = gfc_build_label_decl (NULL_TREE);
+
+	  /* Create loop:
+	     for (;;)
+		{
+		  if (i >= rank)
+		    goto exit;
+		  source_bytes = source_bytes * array.dim[i].extent;
+		  i = i + 1;
+		}
+	      exit:  */
+	  gfc_start_block (&body);
+	  cond = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
+				  loop_var, tmp);
+	  tmp = build1_v (GOTO_EXPR, exit_label);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp, build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&body, tmp);
+
+	  lower = gfc_conv_descriptor_lbound_get (argse.expr, loop_var);
+	  upper = gfc_conv_descriptor_ubound_get (argse.expr, loop_var);
+	  tmp = gfc_conv_array_extent_dim (lower, upper, NULL);
 	  tmp = fold_build2_loc (input_location, MULT_EXPR,
 				 gfc_array_index_type, tmp, source_bytes);
-	  gfc_add_modify (&argse.pre, source_bytes, tmp);
+	  gfc_add_modify (&body, source_bytes, tmp);
+
+	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, loop_var,
+				 gfc_index_one_node);
+	  gfc_add_modify_loc (input_location, &body, loop_var, tmp);
+
+	  tmp = gfc_finish_block (&body);
+
+	  tmp = fold_build1_loc (input_location, LOOP_EXPR, void_type_node,
+				 tmp);
+	  gfc_add_expr_to_block (&argse.pre, tmp);
+
+	  tmp = build1_v (LABEL_EXPR, exit_label);
+	  gfc_add_expr_to_block (&argse.pre, tmp);
+	}
+      else
+	{
+	  /* Obtain the size of the array in bytes.  */
+	  for (n = 0; n < arg->rank; n++)
+	    {
+	      tree idx;
+	      idx = gfc_rank_cst[n];
+	      lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
+	      upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
+	      tmp = gfc_conv_array_extent_dim (lower, upper, NULL);
+	      tmp = fold_build2_loc (input_location, MULT_EXPR,
+				     gfc_array_index_type, tmp, source_bytes);
+	      gfc_add_modify (&argse.pre, source_bytes, tmp);
+	    }
 	}
       se->expr = source_bytes;
     }
@@ -5970,13 +5912,13 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   if (arg->rank == 0)
     {
       if (arg->ts.type == BT_CLASS)
-      {
-	gfc_add_vptr_component (arg);
-	gfc_add_size_component (arg);
-	gfc_conv_expr (&argse, arg);
-	tmp = fold_convert (result_type, argse.expr);
-	goto done;
-      }
+	{
+	  gfc_add_vptr_component (arg);
+	  gfc_add_size_component (arg);
+	  gfc_conv_expr (&argse, arg);
+	  tmp = fold_convert (result_type, argse.expr);
+	  goto done;
+	}
 
       gfc_conv_expr_reference (&argse, arg);
       type = TREE_TYPE (build_fold_indirect_ref_loc (input_location, 
@@ -5986,6 +5928,12 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
     {
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg);
+      if (arg->ts.type == BT_CLASS)
+	{
+	  tmp = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
+	  tmp = fold_convert (result_type, tmp);
+	  goto done;
+	}
       type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
     
@@ -7186,7 +7134,7 @@ conv_isocbinding_subroutine (gfc_code *code)
   dim = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
 			     loop.loopvar[0], loop.from[0]);
 
-  /* Set bounds and stride. */
+  /* Set bounds and stride.  */
   gfc_conv_descriptor_lbound_set (&body, desc, dim, gfc_index_one_node);
   gfc_conv_descriptor_stride_set (&body, desc, dim, stride);
 
@@ -7195,7 +7143,7 @@ conv_isocbinding_subroutine (gfc_code *code)
   gfc_conv_descriptor_ubound_set (&body, desc, dim, shapese.expr);
   gfc_add_block_to_block (&body, &shapese.post);
 
-  /* Calculate offset. */
+  /* Calculate offset.  */
   gfc_add_modify (&body, offset,
 		  fold_build2_loc (input_location, PLUS_EXPR,
 				   gfc_array_index_type, offset, stride));
@@ -7220,6 +7168,342 @@ conv_isocbinding_subroutine (gfc_code *code)
   gfc_add_expr_to_block (&se.pre, gfc_finish_block (&block));
   gfc_add_block_to_block (&se.pre, &se.post);
   return gfc_finish_block (&se.pre);
+}
+
+
+/* Save and restore floating-point state.  */
+
+tree
+gfc_save_fp_state (stmtblock_t *block)
+{
+  tree type, fpstate, tmp;
+
+  type = build_array_type (char_type_node,
+	                   build_range_type (size_type_node, size_zero_node,
+					     size_int (GFC_FPE_STATE_BUFFER_SIZE)));
+  fpstate = gfc_create_var (type, "fpstate");
+  fpstate = gfc_build_addr_expr (pvoid_type_node, fpstate);
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_entry,
+			     1, fpstate);
+  gfc_add_expr_to_block (block, tmp);
+
+  return fpstate;
+}
+
+
+void
+gfc_restore_fp_state (stmtblock_t *block, tree fpstate)
+{
+  tree tmp;
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_ieee_procedure_exit,
+			     1, fpstate);
+  gfc_add_expr_to_block (block, tmp);
+}
+
+
+/* Generate code for arguments of IEEE functions.  */
+
+static void
+conv_ieee_function_args (gfc_se *se, gfc_expr *expr, tree *argarray,
+			 int nargs)
+{
+  gfc_actual_arglist *actual;
+  gfc_expr *e;
+  gfc_se argse;
+  int arg;
+
+  actual = expr->value.function.actual;
+  for (arg = 0; arg < nargs; arg++, actual = actual->next)
+    {
+      gcc_assert (actual);
+      e = actual->expr;
+
+      gfc_init_se (&argse, se);
+      gfc_conv_expr_val (&argse, e);
+
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      argarray[arg] = argse.expr;
+    }
+}
+
+
+/* Generate code for intrinsics IEEE_IS_NAN, IEEE_IS_FINITE,
+   and IEEE_UNORDERED, which translate directly to GCC type-generic
+   built-ins.  */
+
+static void
+conv_intrinsic_ieee_builtin (gfc_se * se, gfc_expr * expr,
+			     enum built_in_function code, int nargs)
+{
+  tree args[2];
+  gcc_assert ((unsigned) nargs <= sizeof(args)/sizeof(args[0]));
+
+  conv_ieee_function_args (se, expr, args, nargs);
+  se->expr = build_call_expr_loc_array (input_location,
+					builtin_decl_explicit (code),
+					nargs, args);
+  STRIP_TYPE_NOPS (se->expr);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+
+/* Generate code for IEEE_IS_NORMAL intrinsic:
+     IEEE_IS_NORMAL(x) --> (__builtin_isnormal(x) || x == 0)  */
+
+static void
+conv_intrinsic_ieee_is_normal (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, isnormal, iszero;
+
+  /* Convert arg, evaluate it only once.  */
+  conv_ieee_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  isnormal = build_call_expr_loc (input_location,
+				  builtin_decl_explicit (BUILT_IN_ISNORMAL),
+				  1, arg);
+  iszero = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, arg,
+			    build_real_from_int_cst (TREE_TYPE (arg),
+						     integer_zero_node));
+  se->expr = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+			      boolean_type_node, isnormal, iszero);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+
+/* Generate code for IEEE_IS_NEGATIVE intrinsic:
+     IEEE_IS_NEGATIVE(x) --> (__builtin_signbit(x) && !__builtin_isnan(x))  */
+
+static void
+conv_intrinsic_ieee_is_negative (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, signbit, isnan, decl;
+  int argprec;
+
+  /* Convert arg, evaluate it only once.  */
+  conv_ieee_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  isnan = build_call_expr_loc (input_location,
+			       builtin_decl_explicit (BUILT_IN_ISNAN),
+			       1, arg);
+  STRIP_TYPE_NOPS (isnan);
+
+  argprec = TYPE_PRECISION (TREE_TYPE (arg));
+  decl = builtin_decl_for_precision (BUILT_IN_SIGNBIT, argprec);
+  signbit = build_call_expr_loc (input_location, decl, 1, arg);
+  signbit = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			     signbit, integer_zero_node);
+
+  se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+			      boolean_type_node, signbit,
+			      fold_build1_loc (input_location, TRUTH_NOT_EXPR,
+					       TREE_TYPE(isnan), isnan));
+
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+
+/* Generate code for IEEE_LOGB and IEEE_RINT.  */
+
+static void
+conv_intrinsic_ieee_logb_rint (gfc_se * se, gfc_expr * expr,
+			       enum built_in_function code)
+{
+  tree arg, decl, call, fpstate;
+  int argprec;
+
+  conv_ieee_function_args (se, expr, &arg, 1);
+  argprec = TYPE_PRECISION (TREE_TYPE (arg));
+  decl = builtin_decl_for_precision (code, argprec);
+
+  /* Save floating-point state.  */
+  fpstate = gfc_save_fp_state (&se->pre);
+
+  /* Make the function call.  */
+  call = build_call_expr_loc (input_location, decl, 1, arg);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), call);
+
+  /* Restore floating-point state.  */
+  gfc_restore_fp_state (&se->post, fpstate);
+}
+
+
+/* Generate code for IEEE_REM.  */
+
+static void
+conv_intrinsic_ieee_rem (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], decl, call, fpstate;
+  int argprec;
+
+  conv_ieee_function_args (se, expr, args, 2);
+
+  /* If arguments have unequal size, convert them to the larger.  */
+  if (TYPE_PRECISION (TREE_TYPE (args[0]))
+      > TYPE_PRECISION (TREE_TYPE (args[1])))
+    args[1] = fold_convert (TREE_TYPE (args[0]), args[1]);
+  else if (TYPE_PRECISION (TREE_TYPE (args[1]))
+	   > TYPE_PRECISION (TREE_TYPE (args[0])))
+    args[0] = fold_convert (TREE_TYPE (args[1]), args[0]);
+
+  argprec = TYPE_PRECISION (TREE_TYPE (args[0]));
+  decl = builtin_decl_for_precision (BUILT_IN_REMAINDER, argprec);
+
+  /* Save floating-point state.  */
+  fpstate = gfc_save_fp_state (&se->pre);
+
+  /* Make the function call.  */
+  call = build_call_expr_loc_array (input_location, decl, 2, args);
+  se->expr = fold_convert (TREE_TYPE (args[0]), call);
+
+  /* Restore floating-point state.  */
+  gfc_restore_fp_state (&se->post, fpstate);
+}
+
+
+/* Generate code for IEEE_NEXT_AFTER.  */
+
+static void
+conv_intrinsic_ieee_next_after (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], decl, call, fpstate;
+  int argprec;
+
+  conv_ieee_function_args (se, expr, args, 2);
+
+  /* Result has the characteristics of first argument.  */
+  args[1] = fold_convert (TREE_TYPE (args[0]), args[1]);
+  argprec = TYPE_PRECISION (TREE_TYPE (args[0]));
+  decl = builtin_decl_for_precision (BUILT_IN_NEXTAFTER, argprec);
+
+  /* Save floating-point state.  */
+  fpstate = gfc_save_fp_state (&se->pre);
+
+  /* Make the function call.  */
+  call = build_call_expr_loc_array (input_location, decl, 2, args);
+  se->expr = fold_convert (TREE_TYPE (args[0]), call);
+
+  /* Restore floating-point state.  */
+  gfc_restore_fp_state (&se->post, fpstate);
+}
+
+
+/* Generate code for IEEE_SCALB.  */
+
+static void
+conv_intrinsic_ieee_scalb (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], decl, call, huge, type;
+  int argprec, n;
+
+  conv_ieee_function_args (se, expr, args, 2);
+
+  /* Result has the characteristics of first argument.  */
+  argprec = TYPE_PRECISION (TREE_TYPE (args[0]));
+  decl = builtin_decl_for_precision (BUILT_IN_SCALBN, argprec);
+
+  if (TYPE_PRECISION (TREE_TYPE (args[1])) > TYPE_PRECISION (integer_type_node))
+    {
+      /* We need to fold the integer into the range of a C int.  */
+      args[1] = gfc_evaluate_now (args[1], &se->pre);
+      type = TREE_TYPE (args[1]);
+
+      n = gfc_validate_kind (BT_INTEGER, gfc_c_int_kind, false);
+      huge = gfc_conv_mpz_to_tree (gfc_integer_kinds[n].huge,
+				   gfc_c_int_kind);
+      huge = fold_convert (type, huge);
+      args[1] = fold_build2_loc (input_location, MIN_EXPR, type, args[1],
+				 huge);
+      args[1] = fold_build2_loc (input_location, MAX_EXPR, type, args[1],
+				 fold_build1_loc (input_location, NEGATE_EXPR,
+						  type, huge));
+    }
+
+  args[1] = fold_convert (integer_type_node, args[1]);
+
+  /* Make the function call.  */
+  call = build_call_expr_loc_array (input_location, decl, 2, args);
+  se->expr = fold_convert (TREE_TYPE (args[0]), call);
+}
+
+
+/* Generate code for IEEE_COPY_SIGN.  */
+
+static void
+conv_intrinsic_ieee_copy_sign (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], decl, sign;
+  int argprec;
+
+  conv_ieee_function_args (se, expr, args, 2);
+
+  /* Get the sign of the second argument.  */
+  argprec = TYPE_PRECISION (TREE_TYPE (args[1]));
+  decl = builtin_decl_for_precision (BUILT_IN_SIGNBIT, argprec);
+  sign = build_call_expr_loc (input_location, decl, 1, args[1]);
+  sign = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			  sign, integer_zero_node);
+
+  /* Create a value of one, with the right sign.  */
+  sign = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
+			  sign,
+			  fold_build1_loc (input_location, NEGATE_EXPR,
+					   integer_type_node,
+					   integer_one_node),
+			  integer_one_node);
+  args[1] = fold_convert (TREE_TYPE (args[0]), sign);
+
+  argprec = TYPE_PRECISION (TREE_TYPE (args[0]));
+  decl = builtin_decl_for_precision (BUILT_IN_COPYSIGN, argprec);
+
+  se->expr = build_call_expr_loc_array (input_location, decl, 2, args);
+}
+
+
+/* Generate code for an intrinsic function from the IEEE_ARITHMETIC
+   module.  */
+
+bool
+gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
+{
+  const char *name = expr->value.function.name;
+
+#define STARTS_WITH(A,B) (strncmp((A), (B), strlen(B)) == 0)
+
+  if (STARTS_WITH (name, "_gfortran_ieee_is_nan"))
+    conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISNAN, 1);
+  else if (STARTS_WITH (name, "_gfortran_ieee_is_finite"))
+    conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISFINITE, 1);
+  else if (STARTS_WITH (name, "_gfortran_ieee_unordered"))
+    conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISUNORDERED, 2);
+  else if (STARTS_WITH (name, "_gfortran_ieee_is_normal"))
+    conv_intrinsic_ieee_is_normal (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_is_negative"))
+    conv_intrinsic_ieee_is_negative (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_copy_sign"))
+    conv_intrinsic_ieee_copy_sign (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_scalb"))
+    conv_intrinsic_ieee_scalb (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_next_after"))
+    conv_intrinsic_ieee_next_after (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_rem"))
+    conv_intrinsic_ieee_rem (se, expr);
+  else if (STARTS_WITH (name, "_gfortran_ieee_logb"))
+    conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_LOGB);
+  else if (STARTS_WITH (name, "_gfortran_ieee_rint"))
+    conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
+  else
+    /* It is not among the functions we translate directly.  We return
+       false, so a library function call is emitted.  */
+    return false;
+
+#undef STARTS_WITH
+
+  return true;
 }
 
 
@@ -7446,7 +7730,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_CAF_GET:
-      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE);
+      gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, NULL_TREE, NULL_TREE);
       break;
 
     case GFC_ISYM_CMPLX:
@@ -8225,7 +8509,7 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 
 
 static tree
-conv_co_minmaxsum (gfc_code *code)
+conv_co_collective (gfc_code *code)
 {
   gfc_se argse;
   stmtblock_t block, post_block;
@@ -8315,16 +8599,26 @@ conv_co_minmaxsum (gfc_code *code)
     }
 
   /* Generate the function call.  */
-  if (code->resolved_isym->id == GFC_ISYM_CO_MAX)
-    fndecl = gfor_fndecl_co_max;
-  else if (code->resolved_isym->id == GFC_ISYM_CO_MIN)
-    fndecl = gfor_fndecl_co_min;
-  else if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
-    fndecl = gfor_fndecl_co_sum;
-  else
-    gcc_unreachable ();
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_CO_BROADCAST:
+      fndecl = gfor_fndecl_co_broadcast;
+      break;
+    case GFC_ISYM_CO_MAX:
+      fndecl = gfor_fndecl_co_max;
+      break;
+    case GFC_ISYM_CO_MIN:
+      fndecl = gfor_fndecl_co_min;
+      break;
+    case GFC_ISYM_CO_SUM:
+      fndecl = gfor_fndecl_co_sum;
+      break;
+    default: 
+      gcc_unreachable ();
+    }
 
-  if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
+  if (code->resolved_isym->id == GFC_ISYM_CO_SUM
+      || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
     fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
 				  image_index, stat, errmsg, errmsg_len);
   else
@@ -8333,7 +8627,6 @@ conv_co_minmaxsum (gfc_code *code)
   gfc_add_expr_to_block (&block, fndecl);
   gfc_add_block_to_block (&block, &post_block);
 
-  /* Add CALL to CO_SUM/MIN/MAX: array descriptor, vector descriptor, stat, errmsg, strlen, errmsglen */
   return gfc_finish_block (&block);
 }
 
@@ -8444,18 +8737,18 @@ conv_intrinsic_atomic_op (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
-      if (TREE_TYPE (TREE_TYPE (atom)) != TREE_TYPE (TREE_TYPE (value)))
+      if (!POINTER_TYPE_P (TREE_TYPE (value)))
 	{
 	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (atom)), "value");
 	  gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), value));
           value = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       if (code->resolved_isym->id == GFC_ISYM_ATOMIC_DEF)
 	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_atomic_def, 7,
@@ -8597,11 +8890,11 @@ conv_intrinsic_atomic_ref (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       /* Different type, need type conversion.  */
       if (!POINTER_TYPE_P (TREE_TYPE (value)))
@@ -8715,7 +9008,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
 
       if (gfc_is_coindexed (atom_expr))
-	image_index = caf_get_image_index (&block, atom_expr, caf_decl);
+	image_index = gfc_caf_get_image_index (&block, atom_expr, caf_decl);
       else
 	image_index = integer_zero_node;
 
@@ -8734,7 +9027,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
           comp = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
 
-      get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
+      gfc_get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_atomic_cas, 9,
 				 token, offset, image_index, old, comp, new_val,
@@ -9044,10 +9337,14 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_caf_send (code);
       break;
 
+    case GFC_ISYM_CO_REDUCE:
+      gcc_unreachable ();
+      break;
+    case GFC_ISYM_CO_BROADCAST:
     case GFC_ISYM_CO_MIN:
     case GFC_ISYM_CO_MAX:
     case GFC_ISYM_CO_SUM:
-      res = conv_co_minmaxsum (code);
+      res = conv_co_collective (code);
       break;
 
     case GFC_ISYM_SYSTEM_CLOCK:

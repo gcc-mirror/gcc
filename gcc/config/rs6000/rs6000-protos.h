@@ -65,6 +65,7 @@ extern void altivec_expand_stvx_be (rtx, rtx, enum machine_mode, unsigned);
 extern void altivec_expand_stvex_be (rtx, rtx, enum machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
+extern void rs6000_scale_v2df (rtx, rtx, int);
 extern void build_mask64_2_operands (rtx, rtx *);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
@@ -79,9 +80,9 @@ extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
 extern bool direct_move_p (rtx, rtx);
 extern bool quad_load_store_p (rtx, rtx);
-extern bool fusion_gpr_load_p (rtx *, bool);
+extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
-extern const char *emit_fusion_gpr_load (rtx *);
+extern const char *emit_fusion_gpr_load (rtx, rtx);
 extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 							    enum reg_class);
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
@@ -111,7 +112,7 @@ extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
 extern void rs6000_emit_sISEL (enum machine_mode, rtx[]);
 extern void rs6000_emit_sCOND (enum machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (enum machine_mode, rtx[]);
-extern char * output_cbranch (rtx, const char *, int, rtx);
+extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
 extern char * output_e500_flip_gt_bit (rtx, rtx);
 extern const char * output_probe_stack_range (rtx, rtx);
 extern bool rs6000_emit_set_const (rtx, rtx);
@@ -150,11 +151,12 @@ extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_address_for_altivec (rtx);
 extern rtx rs6000_allocate_stack_temp (enum machine_mode, bool, bool);
 extern int rs6000_loop_align (rtx);
-extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool, rtx);
+extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
 extern unsigned int rs6000_data_alignment (tree, unsigned int, enum data_align);
+extern bool rs6000_special_adjust_field_align_p (tree, unsigned int);
 extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
 						     unsigned int);
 extern unsigned int darwin_rs6000_special_round_type_align (tree, unsigned int,
@@ -209,14 +211,14 @@ extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
 
 #if TARGET_MACHO
-char *output_call (rtx, rtx *, int, int);
+char *output_call (rtx_insn *, rtx *, int, int);
 #endif
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);
 #endif
 
-void rs6000_final_prescan_insn (rtx, rtx *operand, int num_operands);
+void rs6000_final_prescan_insn (rtx_insn *, rtx *operand, int num_operands);
 
 extern bool rs6000_hard_regno_mode_ok_p[][FIRST_PSEUDO_REGISTER];
 extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];

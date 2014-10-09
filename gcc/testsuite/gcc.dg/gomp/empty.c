@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fopenmp -fdump-tree-ompexp" } */
 
+int
 main()
 {
 #pragma omp parallel

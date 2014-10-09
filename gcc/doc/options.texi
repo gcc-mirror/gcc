@@ -482,4 +482,15 @@ The option is omitted from the producer string written by
 @item PchIgnore
 Even if this is a target option, this option will not be recorded / compared
 to determine if a precompiled header file matches.
+
+@item CPP(@var{var})
+The state of this option should be kept in sync with the preprocessor
+option @var{var}.  If this property is set, then properties @code{Var}
+and @code{Init} must be set as well.
+
+@item CppReason(@var{CPP_W_Enum})
+This warning option corresponds to @code{cpplib.h} warning reason code
+@var{CPP_W_Enum}.  This should only be used for warning options of the
+C-family front-ends.
+
 @end table

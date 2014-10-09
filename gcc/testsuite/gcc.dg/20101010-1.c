@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-crossjumping" } */
 
+int bar1 ();
+int bar2 ();
+
 int foo (void)
 {
   int len;

@@ -3440,6 +3440,9 @@ class Unsafe_type_conversion_expression : public Expression
   int
   do_traverse(Traverse* traverse);
 
+  bool
+  do_is_immutable() const;
+
   Type*
   do_type()
   { return this->type_; }
@@ -3478,6 +3481,27 @@ Unsafe_type_conversion_expression::do_traverse(Traverse* traverse)
       || Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
+}
+
+// Return whether an unsafe type conversion is immutable.
+
+bool
+Unsafe_type_conversion_expression::do_is_immutable() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+
+  if (type->interface_type() != NULL
+      || expr_type->interface_type() != NULL)
+    return false;
+
+  if (!this->expr_->is_immutable())
+    return false;
+
+  if (Type::are_convertible(type, expr_type, NULL))
+    return true;
+
+  return type->is_basic_type() && expr_type->is_basic_type();
 }
 
 // Convert to backend representation.
@@ -3617,6 +3641,16 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   if (op == OPERATOR_MULT && expr->type()->is_unsafe_pointer_type())
     {
       error_at(this->location(), "invalid indirect of %<unsafe.Pointer%>");
+      return Expression::make_error(this->location());
+    }
+
+  // Check for an invalid pointer dereference.  We need to do this
+  // here because Unary_expression::do_type will return an error type
+  // in this case.  That can cause code to appear erroneous, and
+  // therefore disappear at lowering time, without any error message.
+  if (op == OPERATOR_MULT && expr->type()->points_to() == NULL)
+    {
+      this->report_error(_("expected pointer"));
       return Expression::make_error(this->location());
     }
 
@@ -4105,8 +4139,11 @@ Unary_expression::do_get_backend(Translate_context* context)
 			      && !context->is_const());
 	    }
 	  Bvariable* implicit =
-	    gogo->backend()->implicit_variable(buf, btype, bexpr, copy_to_heap,
+	    gogo->backend()->implicit_variable(buf, btype, true, copy_to_heap,
 					       false, 0);
+	  gogo->backend()->implicit_variable_set_init(implicit, buf, btype,
+						      true, copy_to_heap, false,
+						      bexpr);
 	  bexpr = gogo->backend()->var_expression(implicit, loc);
 	}
       else if ((this->expr_->is_composite_literal()
@@ -5177,10 +5214,13 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
   // Lower struct, array, and some interface comparisons.
   if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
     {
-      if (left->type()->struct_type() != NULL)
+      if (left->type()->struct_type() != NULL
+	  && right->type()->struct_type() != NULL)
 	return this->lower_struct_comparison(gogo, inserter);
       else if (left->type()->array_type() != NULL
-	       && !left->type()->is_slice_type())
+	       && !left->type()->is_slice_type()
+	       && right->type()->array_type() != NULL
+	       && !right->type()->is_slice_type())
 	return this->lower_array_comparison(gogo, inserter);
       else if ((left->type()->interface_type() != NULL
                 && right->type()->interface_type() == NULL)
@@ -9003,8 +9043,51 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 // Flatten a call with multiple results into a temporary.
 
 Expression*
-Call_expression::do_flatten(Gogo*, Named_object*, Statement_inserter* inserter)
+Call_expression::do_flatten(Gogo* gogo, Named_object*,
+			    Statement_inserter* inserter)
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return this;
+
+  // Add temporary variables for all arguments that require type
+  // conversion.
+  Function_type* fntype = this->get_function_type();
+  go_assert(fntype != NULL);
+  if (this->args_ != NULL && !this->args_->empty()
+      && fntype->parameters() != NULL && !fntype->parameters()->empty())
+    {
+      bool is_interface_method =
+	this->fn_->interface_field_reference_expression() != NULL;
+
+      Expression_list *args = new Expression_list();
+      Typed_identifier_list::const_iterator pp = fntype->parameters()->begin();
+      Expression_list::const_iterator pa = this->args_->begin();
+      if (!is_interface_method && fntype->is_method())
+	{
+	  // The receiver argument.
+	  args->push_back(*pa);
+	  ++pa;
+	}
+      for (; pa != this->args_->end(); ++pa, ++pp)
+	{
+	  go_assert(pp != fntype->parameters()->end());
+	  if (Type::are_identical(pp->type(), (*pa)->type(), true, NULL))
+	    args->push_back(*pa);
+	  else
+	    {
+	      Location loc = (*pa)->location();
+	      Expression* arg =
+		Expression::convert_for_assignment(gogo, pp->type(), *pa, loc);
+	      Temporary_statement* temp =
+		Statement::make_temporary(pp->type(), arg, loc);
+	      inserter->insert(temp);
+	      args->push_back(Expression::make_temporary_reference(temp, loc));
+	    }
+	}
+      delete this->args_;
+      this->args_ = args;
+    }
+
   size_t rc = this->result_count();
   if (rc > 1 && this->call_temp_ == NULL)
     {
@@ -9811,7 +9894,10 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 
   Type* type = left->type();
   if (type->is_error())
-    return Expression::make_error(location);
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(location);
+    }
   else if (left->is_type_expression())
     {
       error_at(location, "attempt to index type expression");
@@ -10298,9 +10384,9 @@ Array_index_expression::do_get_backend(Translate_context* context)
       go_assert(saw_errors());
       return context->backend()->error_expression();
     }
-  Expression* start_expr = Expression::make_cast(int_type, this->start_, loc);
+
   Bexpression* bad_index =
-    Expression::check_bounds(start_expr, loc)->get_backend(context);
+    Expression::check_bounds(this->start_, loc)->get_backend(context);
 
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
@@ -13926,6 +14012,65 @@ Expression*
 Expression::make_type_descriptor(Type* type, Location location)
 {
   return new Type_descriptor_expression(type, location);
+}
+
+// An expression which evaluates to a pointer to the Garbage Collection symbol
+// of a type.
+
+class GC_symbol_expression : public Expression
+{
+ public:
+  GC_symbol_expression(Type* type)
+    : Expression(EXPRESSION_GC_SYMBOL, Linemap::predeclared_location()),
+      type_(type)
+  {}
+
+ protected:
+  Type*
+  do_type()
+  { return Type::make_pointer_type(Type::make_void_type()); }
+
+  bool
+  do_is_immutable() const
+  { return true; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  { return this; }
+
+  Bexpression*
+  do_get_backend(Translate_context* context)
+  { return this->type_->gc_symbol_pointer(context->gogo()); }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The type which this gc symbol describes.
+  Type* type_;
+};
+
+// Dump ast representation for a gc symbol expression.
+
+void
+GC_symbol_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "gcdata(";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ")";
+}
+
+// Make a gc symbol expression.
+
+Expression*
+Expression::make_gc_symbol(Type* type)
+{
+  return new GC_symbol_expression(type);
 }
 
 // An expression which evaluates to some characteristic of a type.

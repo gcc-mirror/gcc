@@ -9,10 +9,10 @@ struct X
 
 int f() { return __INT_MAX__; }
 
-signed char a { __INT_MAX__ };     // { dg-warning "narrowing conversion" }
+signed char a { __INT_MAX__ };     // { dg-error "narrowing conversion" }
 signed char b { f() };             // { dg-warning "narrowing conversion" }
-signed char c { X{} };             // { dg-warning "narrowing conversion" }
+signed char c { X{} };             // { dg-error "narrowing conversion" }
 
-signed char ar[] { __INT_MAX__ };  // { dg-warning "narrowing conversion" }
+signed char ar[] { __INT_MAX__ };  // { dg-error "narrowing conversion" }
 signed char br[] { f() };          // { dg-warning "narrowing conversion" }
-signed char cr[] { X{} };          // { dg-warning "narrowing conversion" }
+signed char cr[] { X{} };          // { dg-error "narrowing conversion" }

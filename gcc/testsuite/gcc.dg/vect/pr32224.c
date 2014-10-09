@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 typedef unsigned long int *mp_ptr;
 typedef const unsigned long int *mp_srcptr;
+void
 gmpz_export (void *data)
 {
   mp_srcptr zp;

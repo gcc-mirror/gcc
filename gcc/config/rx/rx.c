@@ -734,7 +734,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
       break;
 
     case 'R':
-      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) < 4);
+      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) <= 4);
       unsigned_load = true;
       /* Fall through.  */
     case 'Q':
@@ -3207,15 +3207,15 @@ rx_align_for_label (rtx lab, int uses_threshold)
 }
 
 static int
-rx_max_skip_for_label (rtx lab)
+rx_max_skip_for_label (rtx_insn *lab)
 {
   int opsize;
-  rtx op;
+  rtx_insn *op;
 
   if (optimize_size)
     return 0;
 
-  if (lab == NULL_RTX)
+  if (lab == NULL)
     return 0;
 
   op = lab;
@@ -3237,7 +3237,7 @@ rx_max_skip_for_label (rtx lab)
 /* Compute the real length of the extending load-and-op instructions.  */
 
 int
-rx_adjust_insn_length (rtx insn, int current_length)
+rx_adjust_insn_length (rtx_insn *insn, int current_length)
 {
   rtx extend, mem, offset;
   bool zero;

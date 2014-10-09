@@ -1,7 +1,87 @@
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libgomp.c/affinity-1.c: Include <sys/wait.h>.
+	* testsuite/libgomp.c/nqueens-1.c: Include <stdlib.h>.
+	* testsuite/libgomp.c/thread-limit-1.c: Include <omp.h>
+	* testsuite/libgomp.c/thread-limit-2.c: Likewise.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libgomp.c/affinity-1.c: Fix implicit declarations.
+	* testsuite/libgomp.c/nqueens-1.c: Likewise.
+	* testsuite/libgomp.c/pr26943-3.c: Likewise.
+	* testsuite/libgomp.c/pr26943-4.c: Likewise.
+	* testsuite/libgomp.c/pr36802-2.c: Likewise.
+	* testsuite/libgomp.c/pr36802-3.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-1.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-2.c: Likewise.
+	* testsuite/libgomp.c/appendix-a/a.15.1.c: Include <omp.h>.
+	* testsuite/libgomp.c/omp-loop02.c: Fix defaulting to int.
+	* testsuite/libgomp.c/omp-parallel-for.c: Likewise.
+	* testsuite/libgomp.c/omp-parallel-if.c: Likewise.
+	* testsuite/libgomp.c/omp-single-1.c: Likewise.
+	* testsuite/libgomp.c/omp-single-2.c: Likewise.
+	* testsuite/libgomp.c/omp_matvec.c: Likewise.
+	* testsuite/libgomp.c/omp_workshare3.c: Likewise.
+	* testsuite/libgomp.c/omp_workshare4.c: Likewise.
+	* testsuite/libgomp.c/shared-1.c: Fix defaulting to int.  Fix implicit
+	declarations.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/61200
+	* testsuite/libgomp.c/pr61200.c: New test.
+
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63248
+	* testsuite/libgomp.c++/pr63248.C: New test.
+
+2014-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_taskgroup_end): If taskgroup->num_children
+	is not zero, but taskgroup->children is NULL and there are
+	any task->children, schedule those instead of waiting.
+	* testsuite/libgomp.c/depend-6.c: New test.
+	* testsuite/libgomp.c/depend-7.c: New test.
+	* testsuite/libgomp.c/depend-8.c: New test.
+	* testsuite/libgomp.c/depend-9.c: New test.
+	* testsuite/libgomp.c/depend-10.c: New test.
+
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task_depend_entry): Add redundant_out field.
+	(struct gomp_taskwait): New type.
+	(struct gomp_task): Add taskwait and parent_depends_on, remove
+	in_taskwait and taskwait_sem fields.
+	(gomp_finish_task): Don't destroy taskwait_sem.
+	* task.c (gomp_init_task): Don't init in_taskwait, instead init
+	taskwait and parent_depends_on.
+	(GOMP_task): For if (0) tasks with depend clause that depend on
+	earlier tasks don't defer them, instead call
+	gomp_task_maybe_wait_for_dependencies to wait for the dependencies.
+	Initialize redundant_out field, for redundant out entries just
+	move them at the end of linked list instead of removing them
+	completely, and set redundant_out flag instead of redundant.
+	(gomp_task_run_pre): Update last_parent_depends_on if scheduling
+	that task.
+	(gomp_task_run_post_handle_dependers): If parent is in
+	gomp_task_maybe_wait_for_dependencies and newly runnable task
+	is not parent_depends_on, queue it in parent->children linked
+	list after all runnable tasks with parent_depends_on set.
+	Adjust for addition of taskwait indirection.
+	(gomp_task_run_post_remove_parent): If parent is in
+	gomp_task_maybe_wait_for_dependencies and task to be removed
+	is parent_depends_on, decrement n_depend and if needed awake
+	parent.  Adjust for addition of taskwait indirection.
+	(GOMP_taskwait): Adjust for addition of taskwait indirection.
+	(gomp_task_maybe_wait_for_dependencies): New function.
+	* testsuite/libgomp.c/depend-5.c: New test.
+
 2014-07-13  Tobias Burnus  <burnus@net-b.de>
 
 	* testsuite/libgomp.fortran/pr34020.f90: Make compile
-	with TS 18508/Fortran 2015
+	with TS 18508/Fortran 2015.
 
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 

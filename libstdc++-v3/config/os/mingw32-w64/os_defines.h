@@ -78,4 +78,9 @@
 #define _GLIBCXX_LLP64 1
 #endif
 
+// Enable use of GetModuleHandleEx (requires Windows XP/2003) in
+// __cxa_thread_atexit to prevent modules from being unloaded before
+// their dtors are called
+#define _GLIBCXX_THREAD_ATEXIT_WIN32 1
+
 #endif

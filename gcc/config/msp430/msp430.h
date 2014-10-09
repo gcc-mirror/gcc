@@ -70,7 +70,6 @@ extern bool msp430x;
 -lgcc							\
 -lcrt							\
 %{msim:-lsim}						\
-%{!msim:-lnosys}					\
 --end-group					   	\
 %{!T*:%{!msim:%{mmcu=*:--script=%*.ld}}}		\
 %{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}}			\
@@ -111,9 +110,6 @@ extern bool msp430x;
 #define FLOAT_TYPE_SIZE 		32
 #define DOUBLE_TYPE_SIZE 		64
 #define LONG_DOUBLE_TYPE_SIZE		64 /*DOUBLE_TYPE_SIZE*/
-
-#define LIBGCC2_HAS_DF_MODE		1
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
 
 #define DEFAULT_SIGNED_CHAR		0
 

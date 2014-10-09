@@ -2,6 +2,9 @@
 /* { dg-options "-Wuninitialized -O2" } */
 /* { dg-message "warnings being treated as errors" "" {target "*-*-*"} 0 } */
 
+void foo (int);
+
+int
 main()
 {
   int a;

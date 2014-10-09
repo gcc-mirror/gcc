@@ -44,7 +44,6 @@
 #include "et-forest.h"
 #include "timevar.h"
 #include "hash-map.h"
-#include "pointer-set.h"
 #include "graphds.h"
 #include "bitmap.h"
 

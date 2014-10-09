@@ -369,11 +369,11 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, bool strict)
 
 const char *
 iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
-			rtx cur_insn)
+			rtx_insn *cur_insn)
 {
   rtx set_reg;
   enum machine_mode mode;
-  rtx next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL_RTX;
+  rtx_insn *next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL;
   int num_nops;
 
   if (type == DELAY_LOAD || type == DELAY_FCMP)
@@ -552,7 +552,7 @@ abort_with_insn (rtx insn, const char * reason)
 /* Return the appropriate instructions to move one operand to another.  */
 
 const char *
-iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
+iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 {
   const char *ret = 0;
   rtx op0 = operands[0];
@@ -1507,7 +1507,7 @@ iq2000_debugger_offset (rtx addr, HOST_WIDE_INT offset)
    of load delays, and also to update the delay slot statistics.  */
 
 void
-final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
+final_prescan_insn (rtx_insn *insn, rtx opvec[] ATTRIBUTE_UNUSED,
 		    int noperands ATTRIBUTE_UNUSED)
 {
   if (dslots_number_nops > 0)
@@ -1541,7 +1541,7 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
        || (GET_CODE (PATTERN (insn)) == RETURN))
 	   && NEXT_INSN (PREV_INSN (insn)) == insn)
     {
-      rtx nop_insn = emit_insn_after (gen_nop (), insn);
+      rtx_insn *nop_insn = emit_insn_after (gen_nop (), insn);
 
       INSN_ADDRESSES_NEW (nop_insn, -1);
     }
@@ -1773,7 +1773,7 @@ iq2000_add_large_offset_to_sp (HOST_WIDE_INT offset)
    operation DWARF_PATTERN.  */
 
 static void
-iq2000_annotate_frame_insn (rtx insn, rtx dwarf_pattern)
+iq2000_annotate_frame_insn (rtx_insn *insn, rtx dwarf_pattern)
 {
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
@@ -2021,7 +2021,8 @@ iq2000_expand_prologue (void)
   if (tsize > 0)
     {
       rtx tsize_rtx = GEN_INT (tsize);
-      rtx adjustment_rtx, insn, dwarf_pattern;
+      rtx adjustment_rtx, dwarf_pattern;
+      rtx_insn *insn;
 
       if (tsize > 32767)
 	{
@@ -2044,7 +2045,7 @@ iq2000_expand_prologue (void)
 
       if (frame_pointer_needed)
 	{
-	  rtx insn = 0;
+	  rtx_insn *insn = 0;
 
 	  insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
 				       stack_pointer_rtx));
@@ -2283,7 +2284,7 @@ iq2000_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
    attributes in the machine-description file.  */
 
 int
-iq2000_adjust_insn_length (rtx insn, int length)
+iq2000_adjust_insn_length (rtx_insn *insn, int length)
 {
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot.  */
@@ -2311,8 +2312,9 @@ iq2000_adjust_insn_length (rtx insn, int length)
    reversed conditional branch around a `jr' instruction.  */
 
 char *
-iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
-				  int float_p, int inverted_p, int length)
+iq2000_output_conditional_branch (rtx_insn *insn, rtx * operands,
+				  int two_operands_p, int float_p,
+				  int inverted_p, int length)
 {
   static char buffer[200];
   /* The kind of comparison we are doing.  */

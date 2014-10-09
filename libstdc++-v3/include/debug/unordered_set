@@ -82,8 +82,10 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_const_local_iterator, unordered_set>	const_local_iterator;
 
+      unordered_set() = default;
+
       explicit
-      unordered_set(size_type __n = 10,
+      unordered_set(size_type __n,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -491,8 +493,10 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_const_local_iterator, unordered_multiset> const_local_iterator;
 
+      unordered_multiset() = default;
+
       explicit
-      unordered_multiset(size_type __n = 10,
+      unordered_multiset(size_type __n,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())

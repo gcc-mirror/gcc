@@ -107,7 +107,7 @@ static struct obstack rename_obstack;
    information about insn operands, and we store it here.  */
 vec<insn_rr_info> insn_rr;
 
-static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
+static void scan_rtx (rtx_insn *, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type);
 static bool build_def_use (basic_block);
 
@@ -219,7 +219,7 @@ record_operand_use (struct du_head *head, struct du_chain *this_du)
 
 static du_head_p
 create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
-		  rtx insn, enum reg_class cl)
+		  rtx_insn *insn, enum reg_class cl)
 {
   struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
   struct du_chain *this_du;
@@ -576,7 +576,7 @@ init_rename_info (struct bb_rename_info *p, basic_block bb)
 	  du_head_p chain;
 	  if (dump_file)
 	    fprintf (dump_file, "opening incoming chain\n");
-	  chain = create_new_chain (i, iri->nregs, NULL, NULL_RTX, NO_REGS);
+	  chain = create_new_chain (i, iri->nregs, NULL, NULL, NO_REGS);
 	  bitmap_set_bit (&p->incoming_open_chains_set, chain->id);
 	}
     }
@@ -721,7 +721,7 @@ regrename_analyze (bitmap bb_mask)
 	  open_chains = NULL;
 	  if (insn_rr.exists ())
 	    {
-	      rtx insn;
+	      rtx_insn *insn;
 	      FOR_BB_INSNS (bb1, insn)
 		{
 		  insn_rr_info *p = &insn_rr[INSN_UID (insn)];
@@ -1020,7 +1020,7 @@ note_sets_clobbers (rtx x, const_rtx set, void *data)
 }
 
 static void
-scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
+scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	      enum op_type type)
 {
   struct du_head **p;
@@ -1175,7 +1175,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
    BASE_REG_CLASS depending on how the register is being considered.  */
 
 static void
-scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
+scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
 		  enum scan_actions action, enum machine_mode mode,
 		  addr_space_t as)
 {
@@ -1325,7 +1325,7 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 }
 
 static void
-scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
+scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	  enum op_type type)
 {
   const char *fmt;
@@ -1455,7 +1455,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
    are processing; the arguments are the same as in hide_operands.  */
 
 static void
-restore_operands (rtx insn, int n_ops, rtx *old_operands, rtx *old_dups)
+restore_operands (rtx_insn *insn, int n_ops, rtx *old_operands, rtx *old_dups)
 {
   int i;
   for (i = 0; i < recog_data.n_dups; i++)
@@ -1472,7 +1472,7 @@ restore_operands (rtx insn, int n_ops, rtx *old_operands, rtx *old_dups)
    record information about the operands in the insn.  */
 
 static void
-record_out_operands (rtx insn, bool earlyclobber, insn_rr_info *insn_info)
+record_out_operands (rtx_insn *insn, bool earlyclobber, insn_rr_info *insn_info)
 {
   int n_ops = recog_data.n_operands;
   const operand_alternative *op_alt = which_op_alt ();
@@ -1522,7 +1522,7 @@ record_out_operands (rtx insn, bool earlyclobber, insn_rr_info *insn_info)
 static bool
 build_def_use (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
   unsigned HOST_WIDE_INT untracked_operands;
 
   fail_current_block = false;
@@ -1619,7 +1619,7 @@ build_def_use (basic_block bb)
 		  enum machine_mode mode = GET_MODE (op);
 		  unsigned this_regno = REGNO (op);
 		  unsigned this_nregs = hard_regno_nregs[this_regno][mode];
-		  create_new_chain (this_regno, this_nregs, NULL, NULL_RTX,
+		  create_new_chain (this_regno, this_nregs, NULL, NULL,
 				    NO_REGS);
 		}
 	    }

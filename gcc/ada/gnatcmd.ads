@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,35 +24,19 @@
 ------------------------------------------------------------------------------
 
 --  This program provides a simple command interface for using GNAT and its
---  associated utilities. The format of switches accepted is intended to
---  be more familiar in style for VMS and DOS users than the standard Unix
---  style switches that are accepted directly.
+--  associated utilities.
 
 --    The program is typically called GNAT when it is installed and
 --    the two possible styles of use are:
 
 --  To call gcc:
 
---    GNAT filename switches
+--    GNAT compile filename switches
 
 --  To call the tool gnatxxx
 
 --    GNAT xxx filename switches
 
---  where xxx is the command name (e.g. MAKE for gnatmake). This command name
---  can be abbreviated by giving a prefix (e.g. GNAT MAK) as long as it
---  remains unique.
-
---  In both cases, filename is in the format appropriate to the operating
---  system in use. The individual commands give more details. In some cases
---  a unit name may be given in place of a file name.
-
---  The switches start with a slash. Switch names can also be abbreviated
---  where no ambiguity arises. The switches associated with each command
---  are specified by the tables that can be found in the body.
-
---  Although by convention we use upper case for command names and switches
---  in the documentation, all command and switch names are case insensitive
---  and may be given in upper case or lower case or a mixture.
+--  where xxx is the command name (e.g. MAKE for gnatmake).
 
 procedure GNATCmd;

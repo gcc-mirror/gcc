@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2008, AdaCore                     --
+--                     Copyright (C) 2003-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,11 +80,10 @@ package body MLib.Tgt.Specific is
 
       Common_Options : constant Argument_List :=
                          Options & new String'(PIC_Option);
-      --  Common set of options to the gcc command performing the link.
-      --  On HPUX, this command eventually resorts to collect2, which may
-      --  generate a C file and compile it on the fly. This compilation shall
-      --  also generate position independent code for the final link to
-      --  succeed.
+      --  Common set of options to the gcc command performing the link. On
+      --  HPUX, this command eventually resorts to collect2, which may generate
+      --  a C file and compile it on the fly. This compilation also generates
+      --  position independent code for the final link to succeed.
    begin
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");

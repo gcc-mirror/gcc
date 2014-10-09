@@ -367,7 +367,7 @@ static rtx junk ATTRIBUTE_UNUSED;\n");
 
   puts ("\
 void\n\
-insn_extract (rtx insn)\n{\n\
+insn_extract (rtx_insn *insn)\n{\n\
   rtx *ro = recog_data.operand;\n\
   rtx **ro_loc = recog_data.operand_loc;\n\
   rtx pat = PATTERN (insn);\n\

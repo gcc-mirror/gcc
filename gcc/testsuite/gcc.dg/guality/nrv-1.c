@@ -8,7 +8,7 @@ struct A
   int i[100];
 };
 
-struct A a1, a3;
+struct A a1 __attribute__((used)), a3;
 
 __attribute__((noinline)) struct A
 f ()

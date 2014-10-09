@@ -200,7 +200,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
       /* Pass group that runs when 1) enabled, 2) there are loops
-	 in the function.  */
+	 in the function.  Make sure to run pass_fix_loops before
+	 to discover/remove loops before running the gate function
+	 of pass_tree_loop.  */
+      NEXT_PASS (pass_fix_loops);
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
 	  NEXT_PASS (pass_tree_loop_init);
@@ -249,6 +252,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_strength_reduction);
+      NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_dominator);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_vrp);
@@ -259,7 +263,6 @@ along with GCC; see the file COPYING3.  If not see
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_cd_dce);
-      NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);

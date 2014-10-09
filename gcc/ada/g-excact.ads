@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,8 +111,8 @@ package GNAT.Exception_Actions is
 
    procedure Core_Dump (Occurrence : Exception_Occurrence);
    --  Dump memory (called a core dump in some systems) if supported by the
-   --  OS (most unix systems and VMS), and abort execution of the application.
-   --  Under Windows this procedure will not dump the memory, it will only
-   --  abort execution.
+   --  OS (most unix systems), and abort execution of the application. Under
+   --  Windows this procedure will not dump the memory, it will only abort
+   --  execution.
 
 end GNAT.Exception_Actions;

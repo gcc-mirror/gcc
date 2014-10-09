@@ -1,3 +1,94 @@
+2014-10-06  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (stream_out): ARG_UNUSED added for last argument.
+
+2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-symtab.c, lto.c: Rename all instances of DECL_ABSTRACT to
+	DECL_ABSTRACT_P.
+
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-partition.c (node_cmp): Update comment.
+	(varpool_node_cmp): Use symtab_node for comparison.
+	(add_sorted_nodes): New function.
+	(lto_balanced_map): Change to keep ordered queue
+	of ordered node. Handle no_reorder attribute.
+
+2014-09-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Register ODR types.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Fix symtab_remove_unreachable_nodes
+	call.
+	(do_whole_program_analysis): Only sanity check that IPA passes cleans up.
+
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_varpool_replace_node): Call compare_virtual_tables.
+
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/62067
+	* lto-lang.c (def_fn_type): Fix error handling wrt va_end.
+
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_read_decls): Adjust for lto_input_block changes.
+
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR lto/62032
+	* lto-lang.c (lto_init): Switch mis-matched arguments.
+
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto-partition.c, lto.c: Use hash_map instead of pointer_map.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto-partition.c, lto-partition.h: Use hash_set instead of
+	pointer_set.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c (hash_canonical_type): Use inchash::hash
+	and use inchash::add_expr.
+	(iterative_hash_canonical_type): Dito.
+
+2014-07-30  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_write_data): New function.
+	* langhooks.c (lhd_append_data): Do not free block.
+	* lto-section-out.c (lto_write_data): New function writing
+	raw data to the current section.
+	(lto_write_stream): Adjust for langhook semantic change.
+	(lto_destroy_simple_output_block): Write header directly.
+	* lto-opts.c (lto_write_options): Write options directly.
+	* lto-streamer-out.c (produce_asm): Write heaeder directly.
+	(lto_output_toplevel_asms): Likewise.
+	(copy_function_or_variable): Copy data directly.
+	(write_global_references): Output index table directly.
+	(lto_output_decl_state_refs): Likewise.
+	(write_symbol): Write data directly.
+	(produce_symtab): Adjust.
+	(produce_asm_for_decls): Output header and refs directly.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c (hash_canonical_type): Call iterative_hstate_expr.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c (hash_canonical_type): Convert to inchash.
+	(iterative_hash_canonical_type): Dito.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c: Include inchash.h
+
 2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (mentions_vars_p_decl_non_common): Skip

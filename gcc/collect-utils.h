@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_COLLECT_UTILS_H
+#define GCC_COLLECT_UTILS_H
+
 /* Provided in collect-utils.c.  */
 extern void notice (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
@@ -42,3 +45,5 @@ extern const char tool_name[];
 /* Called by utils_cleanup.  */
 extern void tool_cleanup (bool);
 extern void maybe_unlink (const char *);
+
+#endif /* GCC_COLLECT_UTILS_H */

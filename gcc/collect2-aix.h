@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_COLLECT2_AIX_H
+#define GCC_COLLECT2_AIX_H
 /* collect2-aix.c requires mmap support.  It should otherwise be
    fairly portable.  */
 #if defined(CROSS_DIRECTORY_STRUCTURE) \
@@ -300,3 +302,5 @@ extern int ldtbread (LDFILE *, long, SYMENT *);
 extern int ldclose (LDFILE *);
 
 #endif
+
+#endif /* GCC_COLLECT2_AIX_H */

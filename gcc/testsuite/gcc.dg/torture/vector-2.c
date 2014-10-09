@@ -8,6 +8,8 @@
 
 #define vector __attribute__((vector_size(16) ))
 
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
+
 vector int f0(vector int t, int a)
 {
  ((int*)&t)[0] = a;

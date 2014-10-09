@@ -1,5 +1,7 @@
 /* PR middle-end/52979 */
 
+/* { dg-require-effective-target int32plus } */
+
 extern void abort (void);
 int c, d, e;
 

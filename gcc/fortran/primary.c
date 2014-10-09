@@ -2839,7 +2839,7 @@ gfc_match_rvalue (gfc_expr **result)
        procedure, yet it is not sure to be the name of a function.  */
     case FL_PROCEDURE:
 
-    /* Procedure Pointer Assignments. */
+    /* Procedure Pointer Assignments.  */
     procptr0:
       if (gfc_matching_procptr_assignment)
 	{

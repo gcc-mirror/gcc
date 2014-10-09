@@ -57,8 +57,6 @@ void streamer_write_hwi (struct output_block *, HOST_WIDE_INT);
 void streamer_write_gcov_count (struct output_block *, gcov_type);
 void streamer_write_string (struct output_block *, struct lto_output_stream *,
 			    const char *, bool);
-unsigned streamer_string_index (struct output_block *, const char *,
-				unsigned int, bool);
 void streamer_write_string_with_length (struct output_block *,
 					struct lto_output_stream *,
 					const char *, unsigned int, bool);
@@ -70,9 +68,10 @@ void streamer_write_uhwi_stream (struct lto_output_stream *,
 				 unsigned HOST_WIDE_INT);
 void streamer_write_hwi_stream (struct lto_output_stream *, HOST_WIDE_INT);
 void streamer_write_gcov_count_stream (struct lto_output_stream *, gcov_type);
+void streamer_write_data_stream (struct lto_output_stream *, const void *,
+				 size_t);
 
 /* In data-streamer-in.c  */
-const char *string_for_index (struct data_in *, unsigned int, unsigned int *);
 const char *streamer_read_string (struct data_in *, struct lto_input_block *);
 const char *streamer_read_indexed_string (struct data_in *,
 					  struct lto_input_block *,

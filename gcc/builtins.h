@@ -39,7 +39,7 @@ struct target_builtins {
   enum machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
 };
 
-extern GTY(()) struct target_builtins default_target_builtins;
+extern struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
 extern struct target_builtins *this_target_builtins;
 #else
@@ -71,29 +71,23 @@ extern void expand_builtin_trap (void);
 extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree);
-extern tree fold_builtin_strcpy (location_t, tree, tree, tree, tree);
-extern tree fold_builtin_strncpy (location_t, tree, tree, tree, tree, tree);
 extern tree fold_fma (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
 extern bool validate_gimple_arglist (const_gimple, ...);
 extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-extern tree fold_builtin_strcat (location_t, tree, tree, tree);
-extern tree fold_builtin_fputs (location_t, tree, tree, bool, bool, tree);
 extern bool fold_builtin_next_arg (tree, bool);
-extern tree fold_builtin_memory_chk (location_t, tree, tree, tree, tree, tree,
-				     tree, bool, enum built_in_function);
-extern tree fold_builtin_stxcpy_chk (location_t, tree, tree, tree, tree, tree,
-				     bool, enum built_in_function);
-extern tree fold_builtin_stxncpy_chk (location_t, tree, tree, tree, tree, tree,
-				      bool, enum built_in_function);
-extern tree gimple_fold_builtin_snprintf_chk (gimple, tree,
-					      enum built_in_function);
 extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
 extern tree fold_call_stmt (gimple, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
+
+extern bool readonly_data_expr (tree exp);
+extern const char *c_getstr (tree);
+extern bool init_target_chars (void);
+extern unsigned HOST_WIDE_INT target_percent;
+extern char target_percent_s[3];
 
 #endif

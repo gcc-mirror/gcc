@@ -39,11 +39,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <getopt.h>
 
 extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
+extern int gcov_profile_overlap (struct gcov_info*, struct gcov_info*);
 extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
 extern struct gcov_info* gcov_read_profile_dir (const char*, int);
-extern void gcov_exit (void);
-extern void set_gcov_list (struct gcov_info *);
+extern void gcov_do_dump (struct gcov_info *, int);
 extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
@@ -109,8 +109,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   if (ret)
     fatal_error ("Cannot change directory to %s", out);
 
-  set_gcov_list (profile);
-  gcov_exit ();
+  gcov_do_dump (profile, 0);
 
   ret = chdir (pwd);
   if (ret)
@@ -370,6 +369,121 @@ do_rewrite (int argc, char **argv)
   return ret;
 }
 
+/* Driver function to computer the overlap score b/w profile D1 and D2.
+   Return 1 on error and 0 if OK.  */
+
+static int
+profile_overlap (const char *d1, const char *d2)
+{
+  struct gcov_info *d1_profile;
+  struct gcov_info *d2_profile;
+
+  d1_profile = gcov_read_profile_dir (d1, 0);
+  if (!d1_profile)
+    return 1;
+
+  if (d2)
+    {
+      d2_profile = gcov_read_profile_dir (d2, 0);
+      if (!d2_profile)
+        return 1;
+
+      return gcov_profile_overlap (d1_profile, d2_profile);
+    }
+
+  return 1;
+}
+
+/* Usage message for profile overlap.  */
+
+static void
+print_overlap_usage_message (int error_p)
+{
+  FILE *file = error_p ? stderr : stdout;
+
+  fnotice (file, "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n");
+  fnotice (file, "    -v, --verbose                       Verbose mode\n");
+  fnotice (file, "    -h, --hotonly                       Only print info for hot objects/functions\n");
+  fnotice (file, "    -f, --function                      Print function level info\n");
+  fnotice (file, "    -F, --fullname                      Print full filename\n");
+  fnotice (file, "    -o, --object                        Print object level info\n");
+  fnotice (file, "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n");
+
+}
+
+static const struct option overlap_options[] =
+{
+  { "verbose",                no_argument,       NULL, 'v' },
+  { "function",               no_argument,       NULL, 'f' },
+  { "fullname",               no_argument,       NULL, 'F' },
+  { "object",                 no_argument,       NULL, 'o' },
+  { "hotonly",                no_argument,       NULL, 'h' },
+  { "hot_threshold",          required_argument, NULL, 't' },
+  { 0, 0, 0, 0 }
+};
+
+/* Print overlap usage and exit.  */
+
+static void
+overlap_usage (void)
+{
+  fnotice (stderr, "Overlap subcomand usage:");
+  print_overlap_usage_message (true);
+  exit (FATAL_EXIT_CODE);
+}
+
+int overlap_func_level;
+int overlap_obj_level;
+int overlap_hot_only;
+int overlap_use_fullname;
+double overlap_hot_threshold = 0.005;
+
+/* Driver for profile overlap sub-command.  */
+
+static int
+do_overlap (int argc, char **argv)
+{
+  int opt;
+  int ret;
+
+  optind = 0;
+  while ((opt = getopt_long (argc, argv, "vfFoht:", overlap_options, NULL)) != -1)
+    {
+      switch (opt)
+        {
+        case 'v':
+          verbose = true;
+          gcov_set_verbose ();
+          break;
+        case 'f':
+          overlap_func_level = 1;
+          break;
+        case 'F':
+          overlap_use_fullname = 1;
+          break;
+        case 'o':
+          overlap_obj_level = 1;
+          break;
+        case 'h':
+          overlap_hot_only = 1;
+          break;
+        case 't':
+          overlap_hot_threshold = atof (optarg);
+          break;
+        default:
+          overlap_usage ();
+        }
+    }
+
+  if (argc - optind == 2)
+    ret = profile_overlap (argv[optind], argv[optind+1]);
+  else
+    overlap_usage ();
+
+  return ret;
+}
+
+
 /* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
    otherwise the output of --help.  */
 
@@ -385,6 +499,7 @@ print_usage (int error_p)
   fnotice (file, "  -v, --version                         Print version number, then exit\n");
   print_merge_usage_message (error_p);
   print_rewrite_usage_message (error_p);
+  print_overlap_usage_message (error_p);
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
            bug_report_url);
   exit (status);
@@ -473,6 +588,8 @@ main (int argc, char **argv)
     return do_merge (argc - optind, argv + optind);
   else if (!strcmp (sub_command, "rewrite"))
     return do_rewrite (argc - optind, argv + optind);
+  else if (!strcmp (sub_command, "overlap"))
+    return do_overlap (argc - optind, argv + optind);
 
   print_usage (true);
 }

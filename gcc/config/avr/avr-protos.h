@@ -33,7 +33,8 @@ extern void avr_register_target_pragmas (void);
 extern void avr_init_expanders (void);
 
 #ifdef TREE_CODE
-extern void avr_asm_output_aligned_decl_common (FILE*, const_tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
+extern void avr_asm_output_aligned_decl_common (FILE*, tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
+extern void avr_asm_asm_output_aligned_bss (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int, void (*) (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int));
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
 
@@ -45,36 +46,36 @@ extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
 
 #ifdef RTX_CODE
 extern int avr_hard_regno_call_part_clobbered (unsigned, enum machine_mode);
-extern const char *output_movqi (rtx insn, rtx operands[], int *l);
-extern const char *output_movhi (rtx insn, rtx operands[], int *l);
-extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
-extern const char *avr_out_tstsi (rtx, rtx*, int*);
-extern const char *avr_out_tsthi (rtx, rtx*, int*);
-extern const char *avr_out_tstpsi (rtx, rtx*, int*);
-extern const char *avr_out_compare (rtx, rtx*, int*);
-extern const char *avr_out_compare64 (rtx, rtx*, int*);
+extern const char *output_movqi (rtx_insn *insn, rtx operands[], int *l);
+extern const char *output_movhi (rtx_insn *insn, rtx operands[], int *l);
+extern const char *output_movsisf (rtx_insn *insn, rtx operands[], int *l);
+extern const char *avr_out_tstsi (rtx_insn *, rtx*, int*);
+extern const char *avr_out_tsthi (rtx_insn *, rtx*, int*);
+extern const char *avr_out_tstpsi (rtx_insn *, rtx*, int*);
+extern const char *avr_out_compare (rtx_insn *, rtx*, int*);
+extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
-extern const char *avr_out_movpsi (rtx, rtx*, int*);
+extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 
-extern const char *ashlqi3_out (rtx insn, rtx operands[], int *len);
-extern const char *ashlhi3_out (rtx insn, rtx operands[], int *len);
-extern const char *ashlsi3_out (rtx insn, rtx operands[], int *len);
+extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashlsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *ashrqi3_out (rtx insn, rtx operands[], int *len);
-extern const char *ashrhi3_out (rtx insn, rtx operands[], int *len);
-extern const char *ashrsi3_out (rtx insn, rtx operands[], int *len);
+extern const char *ashrqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashrhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashrsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *lshrqi3_out (rtx insn, rtx operands[], int *len);
-extern const char *lshrhi3_out (rtx insn, rtx operands[], int *len);
-extern const char *lshrsi3_out (rtx insn, rtx operands[], int *len);
+extern const char *lshrqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *lshrhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *lshrsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *avr_out_ashlpsi3 (rtx, rtx*, int*);
-extern const char *avr_out_ashrpsi3 (rtx, rtx*, int*);
-extern const char *avr_out_lshrpsi3 (rtx, rtx*, int*);
+extern const char *avr_out_ashlpsi3 (rtx_insn *, rtx*, int*);
+extern const char *avr_out_ashrpsi3 (rtx_insn *, rtx*, int*);
+extern const char *avr_out_lshrpsi3 (rtx_insn *, rtx*, int*);
 
 extern bool avr_rotate_bytes (rtx operands[]);
 
-extern const char* avr_out_fract (rtx, rtx[], bool, int*);
+extern const char* avr_out_fract (rtx_insn *, rtx[], bool, int*);
 extern rtx avr_to_int_mode (rtx);
 
 extern void avr_expand_prologue (void);
@@ -84,36 +85,37 @@ extern int avr_epilogue_uses (int regno);
 extern int avr_starting_frame_offset (void);
 
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
-extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
+extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx, rtx*, int* =NULL, int* =NULL, bool =true);
-extern const char* avr_out_round (rtx, rtx*, int* =NULL);
+extern const char* avr_out_round (rtx_insn *, rtx*, int* =NULL);
 extern const char* avr_out_addto_sp (rtx*, int*);
-extern const char* avr_out_xload (rtx, rtx*, int*);
-extern const char* avr_out_movmem (rtx, rtx*, int*);
+extern const char* avr_out_xload (rtx_insn *, rtx*, int*);
+extern const char* avr_out_movmem (rtx_insn *, rtx*, int*);
 extern const char* avr_out_insert_bits (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
 extern bool avr_has_nibble_0xf (rtx);
 
 extern int extra_constraint_Q (rtx x);
-extern int avr_adjust_insn_length (rtx insn, int len);
+extern int avr_adjust_insn_length (rtx_insn *insn, int len);
 extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
-extern const char* avr_out_lpm (rtx, rtx*, int*);
-extern void avr_notice_update_cc (rtx body, rtx insn);
-extern int reg_unused_after (rtx insn, rtx reg);
-extern int _reg_unused_after (rtx insn, rtx reg);
-extern int avr_jump_mode (rtx x, rtx insn);
+extern const char* avr_out_lpm (rtx_insn *, rtx*, int*);
+extern void avr_notice_update_cc (rtx body, rtx_insn *insn);
+extern int reg_unused_after (rtx_insn *insn, rtx reg);
+extern int _reg_unused_after (rtx_insn *insn, rtx reg);
+extern int avr_jump_mode (rtx x, rtx_insn *insn);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
-extern int jump_over_one_insn_p (rtx insn, rtx dest);
+extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
 extern int avr_hard_regno_mode_ok (int regno, enum machine_mode mode);
-extern void avr_final_prescan_insn (rtx insn, rtx *operand, int num_operands);
+extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
+				    int num_operands);
 extern int avr_simplify_comparison_p (enum machine_mode mode,
 				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
-extern void out_shift_with_cnt (const char *templ, rtx insn,
+extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 				rtx operands[], int *len, int t_len);
 extern enum reg_class avr_mode_code_base_reg_class (enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern bool avr_regno_mode_code_ok_for_base_p (int, enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
@@ -123,6 +125,7 @@ extern bool avr_mem_flash_p (rtx);
 extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (enum machine_mode);
+extern rtx avr_eval_addr_attrib (rtx x);
 
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;

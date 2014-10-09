@@ -43,6 +43,56 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 
 
+/* A pass making sure loops are fixed up.  */
+
+namespace {
+
+const pass_data pass_data_fix_loops =
+{
+  GIMPLE_PASS, /* type */
+  "fix_loops", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_fix_loops : public gimple_opt_pass
+{
+public:
+  pass_fix_loops (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fix_loops, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_tree_loop_optimize; }
+
+  virtual unsigned int execute (function *fn);
+}; // class pass_fix_loops
+
+unsigned int
+pass_fix_loops::execute (function *)
+{
+  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+      fix_loop_structure (NULL);
+    }
+  return 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_fix_loops (gcc::context *ctxt)
+{
+  return new pass_fix_loops (ctxt);
+}
+
+
 /* Gate for loop pass group.  The group is controlled by -ftree-loop-optimize
    but we also avoid running it when the IL doesn't contain any loop.  */
 
@@ -57,9 +107,6 @@ gate_loop (function *fn)
   if (!loops_for_fn (fn))
     return true;
 
-  /* Make sure to drop / re-discover loops when necessary.  */
-  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
-    fix_loop_structure (NULL);
   return number_of_loops (fn) > 1;
 }
 
@@ -168,7 +215,7 @@ public:
 }; // class pass_tree_loop_init
 
 unsigned int
-pass_tree_loop_init::execute (function *fun)
+pass_tree_loop_init::execute (function *fun ATTRIBUTE_UNUSED)
 {
   loop_optimizer_init (LOOPS_NORMAL
 		       | LOOPS_HAVE_RECORDED_EXITS);
@@ -177,9 +224,6 @@ pass_tree_loop_init::execute (function *fun)
   /* We might discover new loops, e.g. when turning irreducible
      regions into reducible.  */
   scev_initialize ();
-
-  if (number_of_loops (fun) <= 1)
-    return 0;
 
   return 0;
 }

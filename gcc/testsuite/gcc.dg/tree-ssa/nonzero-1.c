@@ -1,11 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
-extern int a;
+/* { dg-options "-O2" } */
+extern int a; /* { dg-error "declared weak after being used" } */
+int
 t()
 {
   return &a!=0;
 }
 extern int a __attribute__ ((weak));
-
-/* { dg-final { scan-tree-dump-not "return 1" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -36,6 +36,7 @@ sources = \
 	future.cc \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \
+	ios.cc \
 	limits.cc \
 	mutex.cc \
 	placeholders.cc \
@@ -49,7 +50,14 @@ sources = \
 if ENABLE_EXTERN_TEMPLATE
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 inst_sources = \
+	ext11-inst.cc \
 	fstream-inst.cc \
+	ios-inst.cc \
+	iostream-inst.cc \
+	istream-inst.cc \
+	ostream-inst.cc \
+	sstream-inst.cc \
+	streambuf-inst.cc \
 	string-inst.cc \
 	wstring-inst.cc
 else

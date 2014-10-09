@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,7 @@ package body Ada.Calendar is
    --  by Integer in various routines. One ramification of this model is that
    --  the caller site must perform validity checks on returned results.
    --  The end result of this model is the lack of target specific files per
-   --  child of Ada.Calendar (a-calfor, a-calfor-vms, a-calfor-vxwors, etc).
+   --  child of Ada.Calendar (e.g. a-calfor).
 
    -----------------------
    -- Local Subprograms --

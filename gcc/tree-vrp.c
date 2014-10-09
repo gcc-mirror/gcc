@@ -916,6 +916,98 @@ symbolic_range_p (value_range_t *vr)
           || !is_gimple_min_invariant (vr->max));
 }
 
+/* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
+   otherwise.  We only handle additive operations and set NEG to true if the
+   symbol is negated and INV to the invariant part, if any.  */
+
+static tree
+get_single_symbol (tree t, bool *neg, tree *inv)
+{
+  bool neg_;
+  tree inv_;
+
+  if (TREE_CODE (t) == PLUS_EXPR
+      || TREE_CODE (t) == POINTER_PLUS_EXPR
+      || TREE_CODE (t) == MINUS_EXPR)
+    {
+      if (is_gimple_min_invariant (TREE_OPERAND (t, 0)))
+	{
+	  neg_ = (TREE_CODE (t) == MINUS_EXPR);
+	  inv_ = TREE_OPERAND (t, 0);
+	  t = TREE_OPERAND (t, 1);
+	}
+      else if (is_gimple_min_invariant (TREE_OPERAND (t, 1)))
+	{
+	  neg_ = false;
+	  inv_ = TREE_OPERAND (t, 1);
+	  t = TREE_OPERAND (t, 0);
+	}
+      else
+        return NULL_TREE;
+    }
+  else
+    {
+      neg_ = false;
+      inv_ = NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == NEGATE_EXPR)
+    {
+      t = TREE_OPERAND (t, 0);
+      neg_ = !neg_;
+    }
+
+  if (TREE_CODE (t) != SSA_NAME)
+    return NULL_TREE;
+
+  *neg = neg_;
+  *inv = inv_;
+  return t;
+}
+
+/* The reverse operation: build a symbolic expression with TYPE
+   from symbol SYM, negated according to NEG, and invariant INV.  */
+
+static tree
+build_symbolic_expr (tree type, tree sym, bool neg, tree inv)
+{
+  const bool pointer_p = POINTER_TYPE_P (type);
+  tree t = sym;
+
+  if (neg)
+    t = build1 (NEGATE_EXPR, type, t);
+
+  if (integer_zerop (inv))
+    return t;
+
+  return build2 (pointer_p ? POINTER_PLUS_EXPR : PLUS_EXPR, type, t, inv);
+}
+
+/* Return true if value range VR involves exactly one symbol SYM.  */
+
+static bool
+symbolic_range_based_on_p (value_range_t *vr, const_tree sym)
+{
+  bool neg, min_has_symbol, max_has_symbol;
+  tree inv;
+
+  if (is_gimple_min_invariant (vr->min))
+    min_has_symbol = false;
+  else if (get_single_symbol (vr->min, &neg, &inv) == sym)
+    min_has_symbol = true;
+  else
+    return false;
+
+  if (is_gimple_min_invariant (vr->max))
+    max_has_symbol = false;
+  else if (get_single_symbol (vr->max, &neg, &inv) == sym)
+    max_has_symbol = true;
+  else
+    return false;
+
+  return (min_has_symbol || max_has_symbol);
+}
+
 /* Return true if value range VR uses an overflow infinity.  */
 
 static inline bool
@@ -1199,25 +1291,30 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
      both integers.  */
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (val1))
 	      == POINTER_TYPE_P (TREE_TYPE (val2)));
+
   /* Convert the two values into the same type.  This is needed because
      sizetype causes sign extension even for unsigned types.  */
   val2 = fold_convert (TREE_TYPE (val1), val2);
   STRIP_USELESS_TYPE_CONVERSION (val2);
 
   if ((TREE_CODE (val1) == SSA_NAME
+       || (TREE_CODE (val1) == NEGATE_EXPR
+	   && TREE_CODE (TREE_OPERAND (val1, 0)) == SSA_NAME)
        || TREE_CODE (val1) == PLUS_EXPR
        || TREE_CODE (val1) == MINUS_EXPR)
       && (TREE_CODE (val2) == SSA_NAME
+	  || (TREE_CODE (val2) == NEGATE_EXPR
+	      && TREE_CODE (TREE_OPERAND (val2, 0)) == SSA_NAME)
 	  || TREE_CODE (val2) == PLUS_EXPR
 	  || TREE_CODE (val2) == MINUS_EXPR))
     {
       tree n1, c1, n2, c2;
       enum tree_code code1, code2;
 
-      /* If VAL1 and VAL2 are of the form 'NAME [+-] CST' or 'NAME',
+      /* If VAL1 and VAL2 are of the form '[-]NAME [+-] CST' or 'NAME',
 	 return -1 or +1 accordingly.  If VAL1 and VAL2 don't use the
 	 same name, return -2.  */
-      if (TREE_CODE (val1) == SSA_NAME)
+      if (TREE_CODE (val1) == SSA_NAME || TREE_CODE (val1) == NEGATE_EXPR)
 	{
 	  code1 = SSA_NAME;
 	  n1 = val1;
@@ -1239,7 +1336,7 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	    }
 	}
 
-      if (TREE_CODE (val2) == SSA_NAME)
+      if (TREE_CODE (val2) == SSA_NAME || TREE_CODE (val2) == NEGATE_EXPR)
 	{
 	  code2 = SSA_NAME;
 	  n2 = val2;
@@ -1262,11 +1359,15 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	}
 
       /* Both values must use the same name.  */
+      if (TREE_CODE (n1) == NEGATE_EXPR && TREE_CODE (n2) == NEGATE_EXPR)
+	{
+	  n1 = TREE_OPERAND (n1, 0);
+	  n2 = TREE_OPERAND (n2, 0);
+	}
       if (n1 != n2)
 	return -2;
 
-      if (code1 == SSA_NAME
-	  && code2 == SSA_NAME)
+      if (code1 == SSA_NAME && code2 == SSA_NAME)
 	/* NAME == NAME  */
 	return 0;
 
@@ -2209,7 +2310,7 @@ extract_range_from_multiplicative_op_1 (value_range_t *vr,
 }
 
 /* Extract range information from a binary operation CODE based on
-   the ranges of each of its operands, *VR0 and *VR1 with resulting
+   the ranges of each of its operands *VR0 and *VR1 with resulting
    type EXPR_TYPE.  The resulting range is stored in *VR.  */
 
 static void
@@ -2303,11 +2404,12 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
   type = vr0.type;
 
   /* Refuse to operate on VARYING ranges, ranges of different kinds
-     and symbolic ranges.  As an exception, we allow BIT_AND_EXPR
+     and symbolic ranges.  As an exception, we allow BIT_{AND,IOR}
      because we may be able to derive a useful range even if one of
      the operands is VR_VARYING or symbolic range.  Similarly for
-     divisions.  TODO, we may be able to derive anti-ranges in
-     some cases.  */
+     divisions, MIN/MAX and PLUS/MINUS.
+
+     TODO, we may be able to derive anti-ranges in some cases.  */
   if (code != BIT_AND_EXPR
       && code != BIT_IOR_EXPR
       && code != TRUNC_DIV_EXPR
@@ -2318,6 +2420,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       && code != TRUNC_MOD_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
+      && code != PLUS_EXPR
+      && code != MINUS_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2376,50 +2480,115 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
      range and see what we end up with.  */
   if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
-      /* If we have a PLUS_EXPR with two VR_RANGE integer constant
-         ranges compute the precise range for such case if possible.  */
-      if (range_int_cst_p (&vr0)
-	  && range_int_cst_p (&vr1))
+      const bool minus_p = (code == MINUS_EXPR);
+      tree min_op0 = vr0.min;
+      tree min_op1 = minus_p ? vr1.max : vr1.min;
+      tree max_op0 = vr0.max;
+      tree max_op1 = minus_p ? vr1.min : vr1.max;
+      tree sym_min_op0 = NULL_TREE;
+      tree sym_min_op1 = NULL_TREE;
+      tree sym_max_op0 = NULL_TREE;
+      tree sym_max_op1 = NULL_TREE;
+      bool neg_min_op0, neg_min_op1, neg_max_op0, neg_max_op1;
+
+      /* If we have a PLUS or MINUS with two VR_RANGEs, either constant or
+	 single-symbolic ranges, try to compute the precise resulting range,
+	 but only if we know that this resulting range will also be constant
+	 or single-symbolic.  */
+      if (vr0.type == VR_RANGE && vr1.type == VR_RANGE
+	  && (TREE_CODE (min_op0) == INTEGER_CST
+	      || (sym_min_op0
+		  = get_single_symbol (min_op0, &neg_min_op0, &min_op0)))
+	  && (TREE_CODE (min_op1) == INTEGER_CST
+	      || (sym_min_op1
+		  = get_single_symbol (min_op1, &neg_min_op1, &min_op1)))
+	  && (!(sym_min_op0 && sym_min_op1)
+	      || (sym_min_op0 == sym_min_op1
+		  && neg_min_op0 == (minus_p ? neg_min_op1 : !neg_min_op1)))
+	  && (TREE_CODE (max_op0) == INTEGER_CST
+	      || (sym_max_op0
+		  = get_single_symbol (max_op0, &neg_max_op0, &max_op0)))
+	  && (TREE_CODE (max_op1) == INTEGER_CST
+	      || (sym_max_op1
+		  = get_single_symbol (max_op1, &neg_max_op1, &max_op1)))
+	  && (!(sym_max_op0 && sym_max_op1)
+	      || (sym_max_op0 == sym_max_op1
+		  && neg_max_op0 == (minus_p ? neg_max_op1 : !neg_max_op1))))
 	{
-	  signop sgn = TYPE_SIGN (expr_type);
-	  unsigned int prec = TYPE_PRECISION (expr_type);
-	  wide_int type_min = wi::min_value (TYPE_PRECISION (expr_type), sgn);
-	  wide_int type_max = wi::max_value (TYPE_PRECISION (expr_type), sgn);
-	  wide_int wmin, wmax;
+	  const signop sgn = TYPE_SIGN (expr_type);
+	  const unsigned int prec = TYPE_PRECISION (expr_type);
+	  wide_int type_min, type_max, wmin, wmax;
 	  int min_ovf = 0;
 	  int max_ovf = 0;
 
-	  if (code == PLUS_EXPR)
+	  /* Get the lower and upper bounds of the type.  */
+	  if (TYPE_OVERFLOW_WRAPS (expr_type))
 	    {
-	      wmin = wi::add (vr0.min, vr1.min);
-	      wmax = wi::add (vr0.max, vr1.max);
-
-	      /* Check for overflow.  */
-	      if (wi::cmp (vr1.min, 0, sgn) != wi::cmp (wmin, vr0.min, sgn))
-		min_ovf = wi::cmp (vr0.min, wmin, sgn);
-	      if (wi::cmp (vr1.max, 0, sgn) != wi::cmp (wmax, vr0.max, sgn))
-		max_ovf = wi::cmp (vr0.max, wmax, sgn);
+	      type_min = wi::min_value (prec, sgn);
+	      type_max = wi::max_value (prec, sgn);
 	    }
-	  else /* if (code == MINUS_EXPR) */
+	  else
 	    {
-	      wmin = wi::sub (vr0.min, vr1.max);
-	      wmax = wi::sub (vr0.max, vr1.min);
-
-	      if (wi::cmp (0, vr1.max, sgn) != wi::cmp (wmin, vr0.min, sgn))
-		min_ovf = wi::cmp (vr0.min, vr1.max, sgn);
-	      if (wi::cmp (0, vr1.min, sgn) != wi::cmp (wmax, vr0.max, sgn))
-		max_ovf = wi::cmp (vr0.max, vr1.min, sgn);
+	      type_min = vrp_val_min (expr_type);
+	      type_max = vrp_val_max (expr_type);
 	    }
 
-	  /* For non-wrapping arithmetic look at possibly smaller
-	     value-ranges of the type.  */
-	  if (!TYPE_OVERFLOW_WRAPS (expr_type))
+	  /* Combine the lower bounds, if any.  */
+	  if (min_op0 && min_op1)
 	    {
-	      if (vrp_val_min (expr_type))
-		type_min = vrp_val_min (expr_type);
-	      if (vrp_val_max (expr_type))
-		type_max = vrp_val_max (expr_type);
+	      if (minus_p)
+		{
+		  wmin = wi::sub (min_op0, min_op1);
+
+		  /* Check for overflow.  */
+		  if (wi::cmp (0, min_op1, sgn)
+		      != wi::cmp (wmin, min_op0, sgn))
+		    min_ovf = wi::cmp (min_op0, min_op1, sgn);
+		}
+	      else
+		{
+		  wmin = wi::add (min_op0, min_op1);
+
+		  /* Check for overflow.  */
+		  if (wi::cmp (min_op1, 0, sgn)
+		      != wi::cmp (wmin, min_op0, sgn))
+		    min_ovf = wi::cmp (min_op0, wmin, sgn);
+		}
 	    }
+	  else if (min_op0)
+	    wmin = min_op0;
+	  else if (min_op1)
+	    wmin = minus_p ? wi::neg (min_op1) : min_op1;
+	  else
+	    wmin = wi::shwi (0, prec);
+
+	  /* Combine the upper bounds, if any.  */
+	  if (max_op0 && max_op1)
+	    {
+	      if (minus_p)
+		{
+		  wmax = wi::sub (max_op0, max_op1);
+
+		  /* Check for overflow.  */
+		  if (wi::cmp (0, max_op1, sgn)
+		      != wi::cmp (wmax, max_op0, sgn))
+		    max_ovf = wi::cmp (max_op0, max_op1, sgn);
+		}
+	      else
+		{
+		  wmax = wi::add (max_op0, max_op1);
+
+		  if (wi::cmp (max_op1, 0, sgn)
+		      != wi::cmp (wmax, max_op0, sgn))
+		    max_ovf = wi::cmp (max_op0, wmax, sgn);
+		}
+	    }
+	  else if (max_op0)
+	    wmax = max_op0;
+	  else if (max_op1)
+	    wmax = minus_p ? wi::neg (max_op1) : max_op1;
+	  else
+	    wmax = wi::shwi (0, prec);
 
 	  /* Check for type overflow.  */
 	  if (min_ovf == 0)
@@ -2437,6 +2606,15 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		max_ovf = 1;
 	    }
 
+	  /* If we have overflow for the constant part and the resulting
+	     range will be symbolic, drop to VR_VARYING.  */
+	  if ((min_ovf && sym_min_op0 != sym_min_op1)
+	      || (max_ovf && sym_max_op0 != sym_max_op1))
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+
 	  if (TYPE_OVERFLOW_WRAPS (expr_type))
 	    {
 	      /* If overflow wraps, truncate the values and adjust the
@@ -2450,8 +2628,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  min = wide_int_to_tree (expr_type, tmin);
 		  max = wide_int_to_tree (expr_type, tmax);
 		}
-	      else if (min_ovf == -1
-		       && max_ovf == 1)
+	      else if (min_ovf == -1 && max_ovf == 1)
 		{
 		  /* Underflow and overflow, drop to VR_VARYING.  */
 		  set_value_range_to_varying (vr);
@@ -2526,20 +2703,44 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      else
 		max = wide_int_to_tree (expr_type, wmax);
 	    }
+
 	  if (needs_overflow_infinity (expr_type)
 	      && supports_overflow_infinity (expr_type))
 	    {
-	      if (is_negative_overflow_infinity (vr0.min)
-		  || (code == PLUS_EXPR
-		      ? is_negative_overflow_infinity (vr1.min)
-		      : is_positive_overflow_infinity (vr1.max)))
+	      if ((min_op0 && is_negative_overflow_infinity (min_op0))
+		  || (min_op1
+		      && (minus_p
+			  ? is_positive_overflow_infinity (min_op1)
+			  : is_negative_overflow_infinity (min_op1))))
 		min = negative_overflow_infinity (expr_type);
-	      if (is_positive_overflow_infinity (vr0.max)
-		  || (code == PLUS_EXPR
-		      ? is_positive_overflow_infinity (vr1.max)
-		      : is_negative_overflow_infinity (vr1.min)))
+	      if ((max_op0 && is_positive_overflow_infinity (max_op0))
+		  || (max_op1
+		      && (minus_p
+			  ? is_negative_overflow_infinity (max_op1)
+			  : is_positive_overflow_infinity (max_op1))))
 		max = positive_overflow_infinity (expr_type);
 	    }
+
+	  /* If the result lower bound is constant, we're done;
+	     otherwise, build the symbolic lower bound.  */
+	  if (sym_min_op0 == sym_min_op1)
+	    ;
+	  else if (sym_min_op0)
+	    min = build_symbolic_expr (expr_type, sym_min_op0,
+				       neg_min_op0, min);
+	  else if (sym_min_op1)
+	    min = build_symbolic_expr (expr_type, sym_min_op1,
+				       neg_min_op1 ^ minus_p, min);
+
+	  /* Likewise for the upper bound.  */
+	  if (sym_max_op0 == sym_max_op1)
+	    ;
+	  else if (sym_max_op0)
+	    max = build_symbolic_expr (expr_type, sym_max_op0,
+				       neg_max_op0, max);
+	  else if (sym_max_op1)
+	    max = build_symbolic_expr (expr_type, sym_max_op1,
+				       neg_max_op1 ^ minus_p, max);
 	}
       else
 	{
@@ -3024,14 +3225,11 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     gcc_unreachable ();
 
   /* If either MIN or MAX overflowed, then set the resulting range to
-     VARYING.  But we do accept an overflow infinity
-     representation.  */
+     VARYING.  But we do accept an overflow infinity representation.  */
   if (min == NULL_TREE
-      || !is_gimple_min_invariant (min)
-      || (TREE_OVERFLOW (min) && !is_overflow_infinity (min))
+      || (TREE_OVERFLOW_P (min) && !is_overflow_infinity (min))
       || max == NULL_TREE
-      || !is_gimple_min_invariant (max)
-      || (TREE_OVERFLOW (max) && !is_overflow_infinity (max)))
+      || (TREE_OVERFLOW_P (max) && !is_overflow_infinity (max)))
     {
       set_value_range_to_varying (vr);
       return;
@@ -3093,6 +3291,59 @@ extract_range_from_binary_expr (value_range_t *vr,
     set_value_range_to_varying (&vr1);
 
   extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
+
+  /* Try harder for PLUS and MINUS if the range of one operand is symbolic
+     and based on the other operand, for example if it was deduced from a
+     symbolic comparison.  When a bound of the range of the first operand
+     is invariant, we set the corresponding bound of the new range to INF
+     in order to avoid recursing on the range of the second operand.  */
+  if (vr->type == VR_VARYING
+      && (code == PLUS_EXPR || code == MINUS_EXPR)
+      && TREE_CODE (op1) == SSA_NAME
+      && vr0.type == VR_RANGE
+      && symbolic_range_based_on_p (&vr0, op1))
+    {
+      const bool minus_p = (code == MINUS_EXPR);
+      value_range_t n_vr1 = VR_INITIALIZER;
+
+      /* Try with VR0 and [-INF, OP1].  */
+      if (is_gimple_min_invariant (minus_p ? vr0.max : vr0.min))
+	set_value_range (&n_vr1, VR_RANGE, vrp_val_min (expr_type), op1, NULL);
+
+      /* Try with VR0 and [OP1, +INF].  */
+      else if (is_gimple_min_invariant (minus_p ? vr0.min : vr0.max))
+	set_value_range (&n_vr1, VR_RANGE, op1, vrp_val_max (expr_type), NULL);
+
+      /* Try with VR0 and [OP1, OP1].  */
+      else
+	set_value_range (&n_vr1, VR_RANGE, op1, op1, NULL);
+
+      extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &n_vr1);
+    }
+
+  if (vr->type == VR_VARYING
+      && (code == PLUS_EXPR || code == MINUS_EXPR)
+      && TREE_CODE (op0) == SSA_NAME
+      && vr1.type == VR_RANGE
+      && symbolic_range_based_on_p (&vr1, op0))
+    {
+      const bool minus_p = (code == MINUS_EXPR);
+      value_range_t n_vr0 = VR_INITIALIZER;
+
+      /* Try with [-INF, OP0] and VR1.  */
+      if (is_gimple_min_invariant (minus_p ? vr1.max : vr1.min))
+	set_value_range (&n_vr0, VR_RANGE, vrp_val_min (expr_type), op0, NULL);
+
+      /* Try with [OP0, +INF] and VR1.  */
+      else if (is_gimple_min_invariant (minus_p ? vr1.min : vr1.max))
+	set_value_range (&n_vr0, VR_RANGE, op0, vrp_val_max (expr_type), NULL);
+
+      /* Try with [OP0, OP0] and VR1.  */
+      else
+	set_value_range (&n_vr0, VR_RANGE, op0, op0, NULL);
+
+      extract_range_from_binary_expr_1 (vr, code, expr_type, &n_vr0, &vr1);
+    }
 }
 
 /* Extract range information from a unary operation CODE based on
@@ -8938,8 +9189,9 @@ simplify_cond_using_ranges (gimple stmt)
 	      /* If the range overflowed and the user has asked for warnings
 		 when strict overflow semantics were used to optimize code,
 		 issue an appropriate warning.  */
-	      if ((is_negative_overflow_infinity (vr->min)
-		   || is_positive_overflow_infinity (vr->max))
+	      if (cond_code != EQ_EXPR && cond_code != NE_EXPR
+		  && (is_negative_overflow_infinity (vr->min)
+		      || is_positive_overflow_infinity (vr->max))
 		  && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_CONDITIONAL))
 		{
 		  location_t location;

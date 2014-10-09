@@ -622,6 +622,7 @@ EGREP
 GREP
 SED
 LIBTOOL
+gcc_build_dir
 ac_lto_plugin_ldflags
 ac_lto_plugin_warn_cflags
 am__fastdepCC_FALSE
@@ -4124,6 +4125,13 @@ LDFLAGS="$saved_LDFLAGS"
 # Need -Wc to get it through libtool.
 if test "x$have_static_libgcc" = xyes; then
    ac_lto_plugin_ldflags="-Wc,-static-libgcc"
+fi
+
+
+if test x"$host_subdir" = x.; then
+   gcc_build_dir=../gcc
+else
+   gcc_build_dir=../../$host_subdir/gcc
 fi
 
 
@@ -10599,7 +10607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10602 "configure"
+#line 10610 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10705,7 +10713,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10708 "configure"
+#line 10716 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

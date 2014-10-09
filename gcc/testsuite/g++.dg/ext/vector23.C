@@ -1,4 +1,4 @@
-/* { dg-do compile { target c++1y } } */
+/* { dg-do compile { target c++14 } } */
 /* { dg-options "-Wsign-conversion" } */
 // Ignore warning on some powerpc-linux configurations.
 // { dg-prune-output "non-standard ABI extension" }

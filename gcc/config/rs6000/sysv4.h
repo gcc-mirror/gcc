@@ -292,7 +292,7 @@ do {									\
 /* An expression for the alignment of a structure field FIELD if the
    alignment computed in the usual way is COMPUTED.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)				      \
-	((TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)     \
+	(rs6000_special_adjust_field_align_p ((FIELD), (COMPUTED))	      \
 	 ? 128 : COMPUTED)
 
 #undef  BIGGEST_FIELD_ALIGNMENT
@@ -539,6 +539,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 #endif
 
 /* Pass -G xxx to the compiler.  */
+#undef CC1_SPEC
 #define	CC1_SPEC "%{G*} %(cc1_cpu)" \
 "%{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \

@@ -72,26 +72,6 @@
   </section>
 </section>
 
-<section xml:id="containers.sequences.vector" xreflabel="vector"><info><title>vector</title></info>
-<?dbhtml filename="vector.html"?>
-  
-  <para>
-  </para>
-  <section xml:id="sequences.vector.management" xreflabel="Space Overhead Management"><info><title>Space Overhead Management</title></info>
-    
-   <para>
-     In <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
-     message to the list</link>, Daniel Kostecky announced work on an
-     alternate form of <code>std::vector</code> that would support
-     hints on the number of elements to be over-allocated.  The design
-     was also described, along with possible implementation choices.
-   </para>
-   <para>
-     The first two alpha releases were announced <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</link>
-     and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</link>.
-   </para>
-
-  </section></section>
 </section>
 
 <!-- Sect1 02 : Associative -->

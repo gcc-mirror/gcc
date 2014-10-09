@@ -179,7 +179,7 @@ bitmap
 ipa_reference_get_not_read_global (struct cgraph_node *fn)
 {
   ipa_reference_optimization_summary_t info =
-    get_reference_optimization_summary (cgraph_function_node (fn, NULL));
+    get_reference_optimization_summary (fn->function_symbol (NULL));
   if (info)
     return info->statics_not_read;
   else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
@@ -355,14 +355,14 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
        e = e->next_callee)
     {
       enum availability avail;
-      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
+      struct cgraph_node *y = e->callee->function_symbol (&avail);
       if (!y)
 	continue;
 
       /* Only look into nodes we can propagate something.  */
       int flags = flags_from_decl_or_type (y->decl);
-      if (avail > AVAIL_OVERWRITABLE
-	  || (avail == AVAIL_OVERWRITABLE && (flags & ECF_LEAF)))
+      if (avail > AVAIL_INTERPOSABLE
+	  || (avail == AVAIL_INTERPOSABLE && (flags & ECF_LEAF)))
 	{
 	  if (get_reference_vars_info (y))
 	    {
@@ -387,7 +387,7 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
 		 seems so to local analysis.  If we cannot return from
 		 the function, we can safely ignore the call.  */
 	      if ((flags & ECF_PURE)
-		  || cgraph_edge_cannot_lead_to_return (e))
+		  || e->cannot_lead_to_return_p ())
 		continue;
 
 	      union_static_var_sets (x_global->statics_written,
@@ -419,9 +419,9 @@ ipa_init (void)
   all_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
 
   node_removal_hook_holder =
-      cgraph_add_node_removal_hook (&remove_node_data, NULL);
+      symtab->add_cgraph_removal_hook (&remove_node_data, NULL);
   node_duplication_hook_holder =
-      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
+      symtab->add_cgraph_duplication_hook (&duplicate_node_data, NULL);
 }
 
 
@@ -479,7 +479,7 @@ analyze_function (struct cgraph_node *fn)
 	}
     }
 
-  if (cgraph_node_cannot_return (fn))
+  if (fn->cannot_return_p ())
     bitmap_clear (local->statics_written);
 }
 
@@ -550,7 +550,7 @@ generate_summary (void)
 
   if (dump_file)
     FOR_EACH_DEFINED_FUNCTION (node)
-      if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+      if (node->get_availability () >= AVAIL_INTERPOSABLE)
 	{
 	  ipa_reference_local_vars_info_t l;
 	  unsigned int index;
@@ -587,12 +587,11 @@ read_write_all_from_decl (struct cgraph_node *node,
   tree decl = node->decl;
   int flags = flags_from_decl_or_type (decl);
   if ((flags & ECF_LEAF)
-      && cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+      && node->get_availability () <= AVAIL_INTERPOSABLE)
     ;
   else if (flags & ECF_CONST)
     ;
-  else if ((flags & ECF_PURE)
-	   || cgraph_node_cannot_return (node))
+  else if ((flags & ECF_PURE) || node->cannot_return_p ())
     {
       read_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -621,7 +620,7 @@ get_read_write_all_from_node (struct cgraph_node *node,
   struct cgraph_edge *e, *ie;
 
   /* When function is overwritable, we can not assume anything.  */
-  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+  if (node->get_availability () <= AVAIL_INTERPOSABLE)
     read_write_all_from_decl (node, read_all, write_all);
 
   for (e = node->callees;
@@ -629,9 +628,9 @@ get_read_write_all_from_node (struct cgraph_node *node,
        e = e->next_callee)
     {
       enum availability avail;
-      struct cgraph_node *callee = cgraph_function_node (e->callee, &avail);
+      struct cgraph_node *callee = e->callee->function_symbol (&avail);
       gcc_checking_assert (callee);
-      if (avail <= AVAIL_OVERWRITABLE)
+      if (avail <= AVAIL_INTERPOSABLE)
 	read_write_all_from_decl (callee, read_all, write_all);
     }
 
@@ -643,7 +642,7 @@ get_read_write_all_from_node (struct cgraph_node *node,
 	read_all = true;
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, "   indirect call -> read all\n");
-	if (!cgraph_edge_cannot_lead_to_return (ie)
+	if (!ie->cannot_lead_to_return_p ()
 	    && !(ie->indirect_info->ecf_flags & ECF_PURE))
 	  {
 	    if (dump_file && (dump_flags & TDF_DETAILS))
@@ -661,12 +660,12 @@ propagate (void)
 {
   struct cgraph_node *node;
   struct cgraph_node **order =
-    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+    XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   int order_pos;
   int i;
 
   if (dump_file)
-    dump_cgraph (dump_file);
+    cgraph_node::dump_cgraph (dump_file);
 
   ipa_discover_readonly_nonaddressable_vars ();
   generate_summary ();
@@ -702,7 +701,7 @@ propagate (void)
 	fprintf (dump_file, "Starting cycle with %s/%i\n",
 		  node->asm_name (), node->order);
 
-      vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
+      vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (node);
 
       /* If any node in a cycle is read_all or write_all, they all are.  */
       FOR_EACH_VEC_ELT (cycle_nodes, x, w)
@@ -742,7 +741,7 @@ propagate (void)
 		read_all = union_static_var_sets (node_g->statics_read,
 						  w_l->statics_read);
 	      if (!(flags & ECF_PURE)
-		  && !cgraph_node_cannot_return (w))
+		  && !w->cannot_return_p ())
 		write_all = union_static_var_sets (node_g->statics_written,
 						   w_l->statics_written);
 	    }
@@ -778,7 +777,7 @@ propagate (void)
 	  ipa_reference_vars_info_t node_info = get_reference_vars_info (node);
 	  ipa_reference_global_vars_info_t node_g = &node_info->global;
 
-	  vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
+	  vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (node);
 	  FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	    {
 	      ipa_reference_vars_info_t w_ri = get_reference_vars_info (w);
@@ -810,7 +809,7 @@ propagate (void)
 
       node_info = get_reference_vars_info (node);
       if (!node->alias
-	  && (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE
+	  && (node->get_availability () > AVAIL_INTERPOSABLE
 	      || (flags_from_decl_or_type (node->decl) & ECF_LEAF)))
 	{
 	  node_g = &node_info->global;
@@ -1012,9 +1011,9 @@ ipa_reference_read_optimization_summary (void)
   bitmap_obstack_initialize (&optimization_summary_obstack);
 
   node_removal_hook_holder =
-      cgraph_add_node_removal_hook (&remove_node_data, NULL);
+      symtab->add_cgraph_removal_hook (&remove_node_data, NULL);
   node_duplication_hook_holder =
-      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
+      symtab->add_cgraph_duplication_hook (&duplicate_node_data, NULL);
   all_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
 
   while ((file_data = file_data_vec[j++]))
@@ -1055,7 +1054,8 @@ ipa_reference_read_optimization_summary (void)
 
 	      index = streamer_read_uhwi (ib);
 	      encoder = file_data->symtab_node_encoder;
-	      node = cgraph (lto_symtab_encoder_deref (encoder, index));
+	      node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref
+		(encoder, index));
 	      info = XCNEW (struct ipa_reference_optimization_summary_d);
 	      set_reference_optimization_summary (node, info);
 	      info->statics_not_read = BITMAP_ALLOC (&optimization_summary_obstack);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -607,7 +607,7 @@ package Ada.Strings.Bounded is
          High   : Natural)
          renames Super_Slice;
 
-      function "="
+      overriding function "="
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
          renames Equal;

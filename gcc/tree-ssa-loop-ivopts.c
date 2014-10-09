@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -293,7 +293,7 @@ struct ivopts_data
   struct loop *current_loop;
 
   /* Numbers of iterations for all exits of the current loop.  */
-  struct pointer_map_t *niters;
+  hash_map<edge, tree_niter_desc *> *niters;
 
   /* Number of registers used in it.  */
   unsigned regs_used;
@@ -322,6 +322,9 @@ struct ivopts_data
 
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
+
+  /* Cache used by tree_to_aff_combination_expand.  */
+  hash_map<tree, name_expansion *> *name_expansion_cache;
 
   /* The maximum invariant id.  */
   unsigned max_inv_id;
@@ -814,15 +817,15 @@ static struct tree_niter_desc *
 niter_for_exit (struct ivopts_data *data, edge exit)
 {
   struct tree_niter_desc *desc;
-  void **slot;
+  tree_niter_desc **slot;
 
   if (!data->niters)
     {
-      data->niters = pointer_map_create ();
+      data->niters = new hash_map<edge, tree_niter_desc *>;
       slot = NULL;
     }
   else
-    slot = pointer_map_contains (data->niters, exit);
+    slot = data->niters->get (exit);
 
   if (!slot)
     {
@@ -837,11 +840,10 @@ niter_for_exit (struct ivopts_data *data, edge exit)
 	  XDELETE (desc);
 	  desc = NULL;
 	}
-      slot = pointer_map_insert (data->niters, exit);
-      *slot = desc;
+      data->niters->put (exit, desc);
     }
   else
-    desc = (struct tree_niter_desc *) *slot;
+    desc = *slot;
 
   return desc;
 }
@@ -877,6 +879,7 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->iv_candidates.create (20);
   data->inv_expr_tab = new hash_table<iv_inv_expr_hasher> (10);
   data->inv_expr_id = 0;
+  data->name_expansion_cache = NULL;
   decl_rtl_to_reset.create (20);
 }
 
@@ -1704,6 +1707,8 @@ may_be_unaligned_p (tree ref, tree step)
     return false;
 
   unsigned int align = TYPE_ALIGN (TREE_TYPE (ref));
+  if (GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref))) > align)
+    align = GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref)));
 
   unsigned HOST_WIDE_INT bitpos;
   unsigned int ref_align;
@@ -2840,7 +2845,7 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
 /* Returns estimate on cost of computing SEQ.  */
 
 static unsigned
-seq_cost (rtx seq, bool speed)
+seq_cost (rtx_insn *seq, bool speed)
 {
   unsigned cost = 0;
   rtx set;
@@ -2951,12 +2956,13 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 static unsigned
 computation_cost (tree expr, bool speed)
 {
-  rtx seq, rslt;
+  rtx_insn *seq;
+  rtx rslt;
   tree type = TREE_TYPE (expr);
   unsigned cost;
   /* Avoid using hard regs in ways which may be unsupported.  */
   int regno = LAST_VIRTUAL_REGISTER + 1;
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_node::get (current_function_decl);
   enum node_frequency real_frequency = node->frequency;
 
   node->frequency = NODE_FREQUENCY_NORMAL;
@@ -3281,7 +3287,8 @@ get_address_cost (bool symbol_present, bool var_present,
       HOST_WIDE_INT rat, off = 0;
       int old_cse_not_expected, width;
       unsigned sym_p, var_p, off_p, rat_p, add_c;
-      rtx seq, addr, base;
+      rtx_insn *seq;
+      rtx addr, base;
       rtx reg0, reg1;
 
       data = (address_cost_data) xcalloc (1, sizeof (*data));
@@ -3308,6 +3315,18 @@ get_address_cost (bool symbol_present, bool var_present,
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
+	  /* For some TARGET, like ARM THUMB1, the offset should be nature
+	     aligned.  Try an aligned offset if address_mode is not QImode.  */
+	  off = (address_mode == QImode)
+		? 0
+		: ((unsigned HOST_WIDE_INT) 1 << i)
+		    - GET_MODE_SIZE (address_mode);
+	  if (off > 0)
+	    {
+	      XEXP (addr, 1) = gen_int_mode (off, address_mode);
+	      if (memory_address_addr_space_p (mem_mode, addr, as))
+		break;
+	    }
 	}
       if (i == -1)
         off = 0;
@@ -4449,75 +4468,20 @@ iv_elimination_compare (struct ivopts_data *data, struct iv_use *use)
   return (exit->flags & EDGE_TRUE_VALUE ? EQ_EXPR : NE_EXPR);
 }
 
-static tree
-strip_wrap_conserving_type_conversions (tree exp)
-{
-  while (tree_ssa_useless_type_conversion (exp)
-	 && (nowrap_type_p (TREE_TYPE (exp))
-	     == nowrap_type_p (TREE_TYPE (TREE_OPERAND (exp, 0)))))
-    exp = TREE_OPERAND (exp, 0);
-  return exp;
-}
-
-/* Walk the SSA form and check whether E == WHAT.  Fairly simplistic, we
-   check for an exact match.  */
-
-static bool
-expr_equal_p (tree e, tree what)
-{
-  gimple stmt;
-  enum tree_code code;
-
-  e = strip_wrap_conserving_type_conversions (e);
-  what = strip_wrap_conserving_type_conversions (what);
-
-  code = TREE_CODE (what);
-  if (TREE_TYPE (e) != TREE_TYPE (what))
-    return false;
-
-  if (operand_equal_p (e, what, 0))
-    return true;
-
-  if (TREE_CODE (e) != SSA_NAME)
-    return false;
-
-  stmt = SSA_NAME_DEF_STMT (e);
-  if (gimple_code (stmt) != GIMPLE_ASSIGN
-      || gimple_assign_rhs_code (stmt) != code)
-    return false;
-
-  switch (get_gimple_rhs_class (code))
-    {
-    case GIMPLE_BINARY_RHS:
-      if (!expr_equal_p (gimple_assign_rhs2 (stmt), TREE_OPERAND (what, 1)))
-	return false;
-      /* Fallthru.  */
-
-    case GIMPLE_UNARY_RHS:
-    case GIMPLE_SINGLE_RHS:
-      return expr_equal_p (gimple_assign_rhs1 (stmt), TREE_OPERAND (what, 0));
-    default:
-      return false;
-    }
-}
-
 /* Returns true if we can prove that BASE - OFFSET does not overflow.  For now,
    we only detect the situation that BASE = SOMETHING + OFFSET, where the
    calculation is performed in non-wrapping type.
 
    TODO: More generally, we could test for the situation that
 	 BASE = SOMETHING + OFFSET' and OFFSET is between OFFSET' and zero.
-	 This would require knowing the sign of OFFSET.
-
-	 Also, we only look for the first addition in the computation of BASE.
-	 More complex analysis would be better, but introducing it just for
-	 this optimization seems like an overkill.  */
+	 This would require knowing the sign of OFFSET.  */
 
 static bool
-difference_cannot_overflow_p (tree base, tree offset)
+difference_cannot_overflow_p (struct ivopts_data *data, tree base, tree offset)
 {
   enum tree_code code;
   tree e1, e2;
+  aff_tree aff_e1, aff_e2, aff_offset;
 
   if (!nowrap_type_p (TREE_TYPE (base)))
     return false;
@@ -4547,13 +4511,27 @@ difference_cannot_overflow_p (tree base, tree offset)
       e2 = TREE_OPERAND (base, 1);
     }
 
-  /* TODO: deeper inspection may be necessary to prove the equality.  */
+  /* Use affine expansion as deeper inspection to prove the equality.  */
+  tree_to_aff_combination_expand (e2, TREE_TYPE (e2),
+				  &aff_e2, &data->name_expansion_cache);
+  tree_to_aff_combination_expand (offset, TREE_TYPE (offset),
+				  &aff_offset, &data->name_expansion_cache);
+  aff_combination_scale (&aff_offset, -1);
   switch (code)
     {
     case PLUS_EXPR:
-      return expr_equal_p (e1, offset) || expr_equal_p (e2, offset);
+      aff_combination_add (&aff_e2, &aff_offset);
+      if (aff_combination_zero_p (&aff_e2))
+	return true;
+
+      tree_to_aff_combination_expand (e1, TREE_TYPE (e1),
+				      &aff_e1, &data->name_expansion_cache);
+      aff_combination_add (&aff_e1, &aff_offset);
+      return aff_combination_zero_p (&aff_e1);
+
     case POINTER_PLUS_EXPR:
-      return expr_equal_p (e2, offset);
+      aff_combination_add (&aff_e2, &aff_offset);
+      return aff_combination_zero_p (&aff_e2);
 
     default:
       return false;
@@ -4677,7 +4655,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   offset = fold_build2 (MULT_EXPR, TREE_TYPE (cand->iv->step),
 			cand->iv->step,
 			fold_convert (TREE_TYPE (cand->iv->step), a));
-  if (!difference_cannot_overflow_p (cand->iv->base, offset))
+  if (!difference_cannot_overflow_p (data, cand->iv->base, offset))
     return false;
 
   /* Determine the new comparison operator.  */
@@ -5439,35 +5417,39 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
 }
 
 /* Extend set IVS by expressing USE by some of the candidates in it
-   if possible. All important candidates will be considered
-   if IMPORTANT_CANDIDATES is true.  */
+   if possible.  Consider all important candidates if candidates in
+   set IVS don't give any result.  */
 
 static void
 iv_ca_add_use (struct ivopts_data *data, struct iv_ca *ivs,
-	       struct iv_use *use, bool important_candidates)
+	       struct iv_use *use)
 {
   struct cost_pair *best_cp = NULL, *cp;
   bitmap_iterator bi;
-  bitmap cands;
   unsigned i;
+  struct iv_cand *cand;
 
   gcc_assert (ivs->upto >= use->id);
+  ivs->upto++;
+  ivs->bad_uses++;
 
-  if (ivs->upto == use->id)
+  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
     {
-      ivs->upto++;
-      ivs->bad_uses++;
-    }
-
-  cands = (important_candidates ? data->important_candidates : ivs->cands);
-  EXECUTE_IF_SET_IN_BITMAP (cands, 0, i, bi)
-    {
-      struct iv_cand *cand = iv_cand (data, i);
-
+      cand = iv_cand (data, i);
       cp = get_use_iv_cost (data, use, cand);
-
       if (cheaper_cost_pair (cp, best_cp))
 	best_cp = cp;
+    }
+   
+  if (best_cp == NULL)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (data->important_candidates, 0, i, bi)
+	{
+	  cand = iv_cand (data, i);
+	  cp = get_use_iv_cost (data, use, cand);
+	  if (cheaper_cost_pair (cp, best_cp))
+	    best_cp = cp;
+	}
     }
 
   iv_ca_set_cp (data, ivs, use, best_cp);
@@ -5902,18 +5884,9 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
   struct iv_ca_delta *best_delta = NULL, *act_delta;
   struct cost_pair *cp;
 
-  iv_ca_add_use (data, ivs, use, false);
+  iv_ca_add_use (data, ivs, use);
   best_cost = iv_ca_cost (ivs);
-
   cp = iv_ca_cand_for_use (ivs, use);
-  if (!cp)
-    {
-      ivs->upto--;
-      ivs->bad_uses--;
-      iv_ca_add_use (data, ivs, use, true);
-      best_cost = iv_ca_cost (ivs);
-      cp = iv_ca_cand_for_use (ivs, use);
-    }
   if (cp)
     {
       best_delta = iv_ca_delta_add (use, NULL, cp, NULL);
@@ -6704,15 +6677,12 @@ remove_unused_ivs (struct ivopts_data *data)
 }
 
 /* Frees memory occupied by struct tree_niter_desc in *VALUE. Callback
-   for pointer_map_traverse.  */
+   for hash_map::traverse.  */
 
-static bool
-free_tree_niter_desc (const void *key ATTRIBUTE_UNUSED, void **value,
-                      void *data ATTRIBUTE_UNUSED)
+bool
+free_tree_niter_desc (edge const &, tree_niter_desc *const &value, void *)
 {
-  struct tree_niter_desc *const niter = (struct tree_niter_desc *) *value;
-
-  free (niter);
+  free (value);
   return true;
 }
 
@@ -6727,8 +6697,8 @@ free_loop_data (struct ivopts_data *data)
 
   if (data->niters)
     {
-      pointer_map_traverse (data->niters, free_tree_niter_desc, NULL);
-      pointer_map_destroy (data->niters);
+      data->niters->traverse<void *, free_tree_niter_desc> (NULL);
+      delete data->niters;
       data->niters = NULL;
     }
 
@@ -6805,6 +6775,7 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   data->iv_candidates.release ();
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
+  free_affine_expand_cache (&data->name_expansion_cache);
 }
 
 /* Returns true if the loop body BODY includes any function calls.  */

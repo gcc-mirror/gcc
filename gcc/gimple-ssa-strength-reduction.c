@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
@@ -373,7 +373,7 @@ enum count_phis_status
 };
  
 /* Pointer map embodying a mapping from statements to candidates.  */
-static struct pointer_map_t *stmt_cand_map;
+static hash_map<gimple, slsr_cand_t> *stmt_cand_map;
 
 /* Obstack for candidates.  */
 static struct obstack cand_obstack;
@@ -433,9 +433,9 @@ cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
 static hash_table<cand_chain_hasher> *base_cand_map;
 
 /* Pointer map used by tree_to_aff_combination_expand.  */
-static struct pointer_map_t *name_expansions;
+static hash_map<tree, name_expansion *> *name_expansions;
 /* Pointer map embodying a mapping from bases to alternative bases.  */
-static struct pointer_map_t *alt_base_map;
+static hash_map<tree, tree> *alt_base_map;
 
 /* Given BASE, use the tree affine combiniation facilities to
    find the underlying tree expression for BASE, with any
@@ -447,7 +447,7 @@ static struct pointer_map_t *alt_base_map;
 static tree
 get_alternative_base (tree base)
 {
-  tree *result = (tree *) pointer_map_contains (alt_base_map, base);
+  tree *result = alt_base_map->get (base);
 
   if (result == NULL)
     {
@@ -459,13 +459,9 @@ get_alternative_base (tree base)
       aff.offset = 0;
       expr = aff_combination_to_tree (&aff);
 
-      result = (tree *) pointer_map_insert (alt_base_map, base);
-      gcc_assert (!*result);
+      gcc_assert (!alt_base_map->put (base, base == expr ? NULL : expr));
 
-      if (expr == base)
-	*result = NULL;
-      else
-	*result = expr;
+      return expr == base ? NULL : expr;
     }
 
   return *result;
@@ -724,7 +720,7 @@ base_cand_from_table (tree base_in)
   if (!def)
     return (slsr_cand_t) NULL;
 
-  result = (slsr_cand_t *) pointer_map_contains (stmt_cand_map, def);
+  result = stmt_cand_map->get (def);
   
   if (result && (*result)->kind != CAND_REF)
     return *result;
@@ -737,9 +733,7 @@ base_cand_from_table (tree base_in)
 static void
 add_cand_for_stmt (gimple gs, slsr_cand_t c)
 {
-  void **slot = pointer_map_insert (stmt_cand_map, gs);
-  gcc_assert (!*slot);
-  *slot = c;
+  gcc_assert (!stmt_cand_map->put (gs, c));
 }
 
 /* Given PHI which contains a phi statement, determine whether it
@@ -3628,7 +3622,7 @@ pass_strength_reduction::execute (function *fun)
   cand_vec.create (128);
 
   /* Allocate the mapping from statements to candidate indices.  */
-  stmt_cand_map = pointer_map_create ();
+  stmt_cand_map = new hash_map<gimple, slsr_cand_t>;
 
   /* Create the obstack where candidate chains will reside.  */
   gcc_obstack_init (&chain_obstack);
@@ -3637,7 +3631,7 @@ pass_strength_reduction::execute (function *fun)
   base_cand_map = new hash_table<cand_chain_hasher> (500);
 
   /* Allocate the mapping from bases to alternative bases.  */
-  alt_base_map = pointer_map_create ();
+  alt_base_map = new hash_map<tree, tree>;
 
   /* Initialize the loop optimizer.  We need to detect flow across
      back edges, and this gives us dominator information as well.  */
@@ -3654,7 +3648,7 @@ pass_strength_reduction::execute (function *fun)
       dump_cand_chains ();
     }
 
-  pointer_map_destroy (alt_base_map);
+  delete alt_base_map;
   free_affine_expand_cache (&name_expansions);
 
   /* Analyze costs and make appropriate replacements.  */
@@ -3664,7 +3658,7 @@ pass_strength_reduction::execute (function *fun)
   delete base_cand_map;
   base_cand_map = NULL;
   obstack_free (&chain_obstack, NULL);
-  pointer_map_destroy (stmt_cand_map);
+  delete stmt_cand_map;
   cand_vec.release ();
   obstack_free (&cand_obstack, NULL);
 

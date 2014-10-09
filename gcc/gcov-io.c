@@ -39,7 +39,7 @@ static void gcov_allocate (unsigned);
 /* Optimum number of gcov_unsigned_t's read from or written to disk.  */
 #define GCOV_BLOCK_SIZE (1 << 10)
 
-GCOV_LINKAGE struct gcov_var
+GCOV_LINKAGE ATTRIBUTE_HIDDEN struct gcov_var
 {
   FILE *file;
   gcov_position_t start;	/* Position of first byte of block */

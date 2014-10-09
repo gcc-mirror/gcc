@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,10 +253,6 @@ begin
 
             else
                Name0 := 'O' & Translate (Name0, Lower_Case_Map);
-            end if;
-
-            if Name0 = "error" then
-               Name0 := V ("<error>");
             end if;
 
             if not Match (Name0, Chk_Low) then

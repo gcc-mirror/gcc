@@ -120,11 +120,6 @@ do {							 \
     || TREE_CODE (NODE) == ENUMERAL_TYPE)	    \
    && TYPE_BY_REFERENCE_P (NODE))
 
-/* For INTEGER_TYPE, nonzero if this really represents a VAX
-   floating-point type.  */
-#define TYPE_VAX_FLOATING_POINT_P(NODE) \
-  TYPE_LANG_FLAG_3 (INTEGER_TYPE_CHECK (NODE))
-
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to
    its value (only true for RECORD_TYPE).  */
@@ -257,7 +252,11 @@ do {						   \
    bound but they must nevertheless be valid in the GCC type system, otherwise
    the optimizer can pretend that they simply don't exist.  Therefore they
    must be within the range of values allowed by the lower bound in the GCC
-   sense, hence the GCC lower bound be set to that of the base type.  */
+   sense, hence the GCC lower bound be set to that of the base type.
+
+   This lower bound is translated directly without the adjustments that may
+   be required for type compatibility, so it will generally be necessary to
+   convert it to the base type of the numerical type before using it.  */
 #define TYPE_RM_MIN_VALUE(NODE) TYPE_RM_VALUE ((NODE), 1)
 #define SET_TYPE_RM_MIN_VALUE(NODE, X) SET_TYPE_RM_VALUE ((NODE), 1, (X))
 
@@ -269,7 +268,11 @@ do {						   \
    bound but they must nevertheless be valid in the GCC type system, otherwise
    the optimizer can pretend that they simply don't exist.  Therefore they
    must be within the range of values allowed by the upper bound in the GCC
-   sense, hence the GCC upper bound be set to that of the base type.  */
+   sense, hence the GCC upper bound be set to that of the base type.
+
+   This upper bound is translated directly without the adjustments that may
+   be required for type compatibility, so it will generally be necessary to
+   convert it to the base type of the numerical type before using it.  */
 #define TYPE_RM_MAX_VALUE(NODE) TYPE_RM_VALUE ((NODE), 2)
 #define SET_TYPE_RM_MAX_VALUE(NODE, X) SET_TYPE_RM_VALUE ((NODE), 2, (X))
 
@@ -294,15 +297,18 @@ do {						   \
 #define SET_TYPE_MODULUS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
-/* For an INTEGER_TYPE with TYPE_VAX_FLOATING_POINT_P, this is the
-   Digits_Value.  */
-#define TYPE_DIGITS_VALUE(NODE) \
-  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
-#define SET_TYPE_DIGITS_VALUE(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
-
 /* For an INTEGER_TYPE that is the TYPE_DOMAIN of some ARRAY_TYPE, this is
-   the type corresponding to the Ada index type.  */
+   the type corresponding to the Ada index type.  It is necessary to keep
+   these 2 views for every array type because the TYPE_DOMAIN is subject
+   to strong constraints in GENERIC: it must be a subtype of SIZETYPE and
+   may not be superflat, i.e. the upper bound must always be larger or
+   equal to the lower bound minus 1 (i.e. the canonical length formula
+   must always yield a non-negative number), which means that at least
+   one of the bounds may need to be a conditional expression.  There are
+   no such constraints on the TYPE_INDEX_TYPE because gigi is prepared to
+   deal with the superflat case; moreover the TYPE_INDEX_TYPE is used as
+   the index type for the debug info and, therefore, needs to be as close
+   as possible to the source index type.  */
 #define TYPE_INDEX_TYPE(NODE) \
   GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_INDEX_TYPE(NODE, X) \
@@ -388,9 +394,6 @@ do {						   \
    is readonly.  */
 #define DECL_POINTS_TO_READONLY_P(NODE) DECL_LANG_FLAG_4 (NODE)
 
-/* Nonzero in a PARM_DECL if we are to pass by descriptor.  */
-#define DECL_BY_DESCRIPTOR_P(NODE) DECL_LANG_FLAG_5 (PARM_DECL_CHECK (NODE))
-
 /* Nonzero in a VAR_DECL if it is a pointer renaming a global object.  */
 #define DECL_RENAMING_GLOBAL_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
 
@@ -447,19 +450,6 @@ do {						   \
   GET_DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))
 #define SET_DECL_PARALLEL_TYPE(NODE, X) \
   SET_DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE), X)
-
-/* In a FUNCTION_DECL, points to the stub associated with the function
-   if any, otherwise 0.  */
-#define DECL_FUNCTION_STUB(NODE) \
-  GET_DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))
-#define SET_DECL_FUNCTION_STUB(NODE, X) \
-  SET_DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE), X)
-
-/* In a PARM_DECL, points to the alternate TREE_TYPE.  */
-#define DECL_PARM_ALT_TYPE(NODE) \
-  GET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE))
-#define SET_DECL_PARM_ALT_TYPE(NODE, X) \
-  SET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE), X)
 
 
 /* Flags added to ref nodes.  */

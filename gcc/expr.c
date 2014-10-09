@@ -133,7 +133,7 @@ static void store_by_pieces_1 (struct store_by_pieces_d *, unsigned int);
 static void store_by_pieces_2 (insn_gen_fn, machine_mode,
 			       struct store_by_pieces_d *);
 static tree clear_storage_libcall_fn (int);
-static rtx compress_float_constant (rtx, rtx);
+static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 				     HOST_WIDE_INT, enum machine_mode,
@@ -329,7 +329,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_CODE (from) == SUBREG && SUBREG_PROMOTED_VAR_P (from)
       && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (from)))
 	  >= GET_MODE_PRECISION (to_mode))
-      && SUBREG_PROMOTED_UNSIGNED_P (from) == unsignedp)
+      && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
     from = gen_lowpart (to_mode, from), from_mode = to_mode;
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
@@ -363,7 +363,8 @@ convert_move (rtx to, rtx from, int unsignedp)
 
   if (to_real)
     {
-      rtx value, insns;
+      rtx value;
+      rtx_insn *insns;
       convert_optab tab;
 
       gcc_assert ((GET_MODE_PRECISION (from_mode)
@@ -408,6 +409,26 @@ convert_move (rtx to, rtx from, int unsignedp)
     }
 
   /* Handle pointer conversion.  */			/* SPEE 900220.  */
+  /* If the target has a converter from FROM_MODE to TO_MODE, use it.  */
+  {
+    convert_optab ctab;
+
+    if (GET_MODE_PRECISION (from_mode) > GET_MODE_PRECISION (to_mode))
+      ctab = trunc_optab;
+    else if (unsignedp)
+      ctab = zext_optab;
+    else
+      ctab = sext_optab;
+
+    if (convert_optab_handler (ctab, to_mode, from_mode)
+	!= CODE_FOR_nothing)
+      {
+	emit_unop_insn (convert_optab_handler (ctab, to_mode, from_mode),
+			to, from, UNKNOWN);
+	return;
+      }
+  }
+
   /* Targets are expected to provide conversion insns between PxImode and
      xImode for all MODE_PARTIAL_INT modes they use, but no others.  */
   if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT)
@@ -471,7 +492,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_MODE_PRECISION (from_mode) < GET_MODE_PRECISION (to_mode)
       && GET_MODE_PRECISION (to_mode) > BITS_PER_WORD)
     {
-      rtx insns;
+      rtx_insn *insns;
       rtx lowpart;
       rtx fill_value;
       rtx lowfrom;
@@ -703,7 +724,7 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
 
   if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (mode)
-      && SUBREG_PROMOTED_UNSIGNED_P (x) == unsignedp)
+      && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
     x = gen_lowpart (mode, SUBREG_REG (x));
 
   if (GET_MODE (x) != VOIDmode)
@@ -1452,7 +1473,8 @@ static void
 emit_block_move_via_loop (rtx x, rtx y, rtx size,
 			  unsigned int align ATTRIBUTE_UNUSED)
 {
-  rtx cmp_label, top_label, iter, x_addr, y_addr, tmp;
+  rtx_code_label *cmp_label, *top_label;
+  rtx iter, x_addr, y_addr, tmp;
   enum machine_mode x_addr_mode = get_address_mode (x);
   enum machine_mode y_addr_mode = get_address_mode (y);
   enum machine_mode iter_mode;
@@ -1506,7 +1528,7 @@ move_block_to_reg (int regno, rtx x, int nregs, enum machine_mode mode)
   int i;
 #ifdef HAVE_load_multiple
   rtx pat;
-  rtx last;
+  rtx_insn *last;
 #endif
 
   if (nregs == 0)
@@ -1552,7 +1574,7 @@ move_block_from_reg (int regno, rtx x, int nregs)
 #ifdef HAVE_store_multiple
   if (HAVE_store_multiple)
     {
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
       rtx pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
 				    GEN_INT (nregs));
       if (pat)
@@ -3158,7 +3180,7 @@ emit_move_change_mode (enum machine_mode new_mode,
    an integer mode of the same size as MODE.  Returns the instruction
    emitted, or NULL if such a move could not be generated.  */
 
-static rtx
+static rtx_insn *
 emit_move_via_integer (enum machine_mode mode, rtx x, rtx y, bool force)
 {
   enum machine_mode imode;
@@ -3167,19 +3189,19 @@ emit_move_via_integer (enum machine_mode mode, rtx x, rtx y, bool force)
   /* There must exist a mode of the exact size we require.  */
   imode = int_mode_for_mode (mode);
   if (imode == BLKmode)
-    return NULL_RTX;
+    return NULL;
 
   /* The target must support moves in this mode.  */
   code = optab_handler (mov_optab, imode);
   if (code == CODE_FOR_nothing)
-    return NULL_RTX;
+    return NULL;
 
   x = emit_move_change_mode (imode, mode, x, force);
   if (x == NULL_RTX)
-    return NULL_RTX;
+    return NULL;
   y = emit_move_change_mode (imode, mode, y, force);
   if (y == NULL_RTX)
-    return NULL_RTX;
+    return NULL;
   return emit_insn (GEN_FCN (code) (x, y));
 }
 
@@ -3244,7 +3266,7 @@ emit_move_resolve_push (enum machine_mode mode, rtx x)
    X is known to satisfy push_operand, and MODE is known to be complex.
    Returns the last instruction emitted.  */
 
-rtx
+rtx_insn *
 emit_move_complex_push (enum machine_mode mode, rtx x, rtx y)
 {
   enum machine_mode submode = GET_MODE_INNER (mode);
@@ -3287,7 +3309,7 @@ emit_move_complex_push (enum machine_mode mode, rtx x, rtx y)
 /* A subroutine of emit_move_complex.  Perform the move from Y to X
    via two moves of the parts.  Returns the last instruction emitted.  */
 
-rtx
+rtx_insn *
 emit_move_complex_parts (rtx x, rtx y)
 {
   /* Show the output dies here.  This is necessary for SUBREGs
@@ -3306,7 +3328,7 @@ emit_move_complex_parts (rtx x, rtx y)
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X.
    MODE is known to be complex.  Returns the last instruction emitted.  */
 
-static rtx
+static rtx_insn *
 emit_move_complex (enum machine_mode mode, rtx x, rtx y)
 {
   bool try_int;
@@ -3346,7 +3368,7 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
 
   if (try_int)
     {
-      rtx ret;
+      rtx_insn *ret;
 
       /* For memory to memory moves, optimal behavior can be had with the
 	 existing block move logic.  */
@@ -3368,10 +3390,10 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X.
    MODE is known to be MODE_CC.  Returns the last instruction emitted.  */
 
-static rtx
+static rtx_insn *
 emit_move_ccmode (enum machine_mode mode, rtx x, rtx y)
 {
-  rtx ret;
+  rtx_insn *ret;
 
   /* Assume all MODE_CC modes are equivalent; if we have movcc, use it.  */
   if (mode != CCmode)
@@ -3428,11 +3450,12 @@ undefined_operand_subword_p (const_rtx op, int i)
    pattern.  Note that you will get better code if you define such
    patterns, even if they must turn into multiple assembler instructions.  */
 
-static rtx
+static rtx_insn *
 emit_move_multi_word (enum machine_mode mode, rtx x, rtx y)
 {
-  rtx last_insn = 0;
-  rtx seq, inner;
+  rtx_insn *last_insn = 0;
+  rtx_insn *seq;
+  rtx inner;
   bool need_clobber;
   int i;
 
@@ -3508,7 +3531,7 @@ emit_move_multi_word (enum machine_mode mode, rtx x, rtx y)
    Called just like emit_move_insn, but assumes X and Y
    are basically valid.  */
 
-rtx
+rtx_insn *
 emit_move_insn_1 (rtx x, rtx y)
 {
   enum machine_mode mode = GET_MODE (x);
@@ -3527,7 +3550,7 @@ emit_move_insn_1 (rtx x, rtx y)
   if (GET_MODE_CLASS (mode) == MODE_DECIMAL_FLOAT
       || ALL_FIXED_POINT_MODE_P (mode))
     {
-      rtx result = emit_move_via_integer (mode, x, y, true);
+      rtx_insn *result = emit_move_via_integer (mode, x, y, true);
 
       /* If we can't find an integer mode, use multi words.  */
       if (result)
@@ -3545,7 +3568,7 @@ emit_move_insn_1 (rtx x, rtx y)
      fits within a HOST_WIDE_INT.  */
   if (!CONSTANT_P (y) || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
-      rtx ret = emit_move_via_integer (mode, x, y, lra_in_progress);
+      rtx_insn *ret = emit_move_via_integer (mode, x, y, lra_in_progress);
 
       if (ret)
 	{
@@ -3564,12 +3587,13 @@ emit_move_insn_1 (rtx x, rtx y)
 
    Return the last instruction emitted.  */
 
-rtx
+rtx_insn *
 emit_move_insn (rtx x, rtx y)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx y_cst = NULL_RTX;
-  rtx last_insn, set;
+  rtx_insn *last_insn;
+  rtx set;
 
   gcc_assert (mode != BLKmode
 	      && (GET_MODE (y) == mode || GET_MODE (y) == VOIDmode));
@@ -3627,7 +3651,7 @@ emit_move_insn (rtx x, rtx y)
    perform the extension directly from constant or memory, then emit the
    move as an extension.  */
 
-static rtx
+static rtx_insn *
 compress_float_constant (rtx x, rtx y)
 {
   enum machine_mode dstmode = GET_MODE (x);
@@ -3649,7 +3673,8 @@ compress_float_constant (rtx x, rtx y)
        srcmode = GET_MODE_WIDER_MODE (srcmode))
     {
       enum insn_code ic;
-      rtx trunc_y, last_insn;
+      rtx trunc_y;
+      rtx_insn *last_insn;
 
       /* Skip if the target can't extend this way.  */
       ic = can_extend_p (dstmode, srcmode, 0);
@@ -3709,7 +3734,7 @@ compress_float_constant (rtx x, rtx y)
       return last_insn;
     }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 /* Pushing data onto the stack.  */
@@ -3804,7 +3829,7 @@ mem_autoinc_base (rtx mem)
    cannot be trivially extracted, the return value is INT_MIN.  */
 
 HOST_WIDE_INT
-find_args_size_adjust (rtx insn)
+find_args_size_adjust (rtx_insn *insn)
 {
   rtx dest, set, pat;
   int i;
@@ -3927,11 +3952,11 @@ find_args_size_adjust (rtx insn)
 }
 
 int
-fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
+fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
 {
   int args_size = end_args_size;
   bool saw_unknown = false;
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = last; insn != prev; insn = PREV_INSN (insn))
     {
@@ -4060,8 +4085,8 @@ static void
 emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
 {
   int delta, old_delta = stack_pointer_delta;
-  rtx prev = get_last_insn ();
-  rtx last;
+  rtx_insn *prev = get_last_insn ();
+  rtx_insn *last;
 
   emit_single_push_insn_1 (mode, x, type);
 
@@ -5166,7 +5191,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	 side.  This avoids the creation of unnecessary temporaries.
 	 For non-BLKmode, it is more efficient not to do this.  */
 
-      rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+      rtx_code_label *lab1 = gen_label_rtx (), *lab2 = gen_label_rtx ();
 
       do_pending_stack_adjust ();
       NO_DEFER_POP;
@@ -5202,25 +5227,25 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	  && GET_MODE_PRECISION (GET_MODE (target))
 	     == TYPE_PRECISION (TREE_TYPE (exp)))
 	{
-	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
-	      != SUBREG_PROMOTED_UNSIGNED_P (target))
+	  if (!SUBREG_CHECK_PROMOTED_SIGN (target,
+					  TYPE_UNSIGNED (TREE_TYPE (exp))))
 	    {
 	      /* Some types, e.g. Fortran's logical*4, won't have a signed
 		 version, so use the mode instead.  */
 	      tree ntype
 		= (signed_or_unsigned_type_for
-		   (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)));
+		   (SUBREG_PROMOTED_SIGN (target), TREE_TYPE (exp)));
 	      if (ntype == NULL)
 		ntype = lang_hooks.types.type_for_mode
 		  (TYPE_MODE (TREE_TYPE (exp)),
-		   SUBREG_PROMOTED_UNSIGNED_P (target));
+		   SUBREG_PROMOTED_SIGN (target));
 
 	      exp = fold_convert_loc (loc, ntype, exp);
 	    }
 
 	  exp = fold_convert_loc (loc, lang_hooks.types.type_for_mode
 				  (GET_MODE (SUBREG_REG (target)),
-				   SUBREG_PROMOTED_UNSIGNED_P (target)),
+				   SUBREG_PROMOTED_SIGN (target)),
 				  exp);
 
 	  inner_target = SUBREG_REG (target);
@@ -5234,14 +5259,14 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 	{
 	  temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
-				temp, SUBREG_PROMOTED_UNSIGNED_P (target));
+				temp, SUBREG_PROMOTED_SIGN (target));
 	  temp = convert_modes (GET_MODE (SUBREG_REG (target)),
 			        GET_MODE (target), temp,
-			        SUBREG_PROMOTED_UNSIGNED_P (target));
+				SUBREG_PROMOTED_SIGN (target));
 	}
 
       convert_move (SUBREG_REG (target), temp,
-		    SUBREG_PROMOTED_UNSIGNED_P (target));
+		    SUBREG_PROMOTED_SIGN (target));
 
       return NULL_RTX;
     }
@@ -5401,7 +5426,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 		= expand_expr (copy_size, NULL_RTX, VOIDmode,
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL));
-	      rtx label = 0;
+	      rtx_code_label *label = 0;
 
 	      /* Copy that much.  */
 	      copy_size_rtx = convert_to_mode (pointer_mode, copy_size_rtx,
@@ -6188,8 +6213,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  }
 		else
 		  {
-		    rtx loop_start = gen_label_rtx ();
-		    rtx loop_end = gen_label_rtx ();
+		    rtx_code_label *loop_start = gen_label_rtx ();
+		    rtx_code_label *loop_end = gen_label_rtx ();
 		    tree exit_cond;
 
 		    expand_normal (hi_index);
@@ -6581,7 +6606,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 	  rtx temp_target;
-	  if (mode == BLKmode)
+	  if (mode == BLKmode || mode == VOIDmode)
 	    mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
 	  temp_target = gen_reg_rtx (mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
@@ -8006,7 +8031,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
      and return.  */
   if (insn)
     {
-      rtx seq = get_insns ();
+      rtx_insn *seq = get_insns ();
       end_sequence ();
       emit_insn (seq);
       return convert_modes (orig_mode, mode, temp, 0);
@@ -8810,7 +8835,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	       and return.  */
 	    if (insn)
 	      {
-		rtx seq = get_insns ();
+		rtx_insn *seq = get_insns ();
 		end_sequence ();
 		emit_insn (seq);
 		return target;
@@ -9527,7 +9552,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
+	  SUBREG_PROMOTED_SET (temp, unsignedp);
 	  return temp;
 	}
 
@@ -10559,7 +10584,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && integer_onep (DECL_SIZE (TREE_OPERAND (lhs, 1)))
 	    && integer_onep (DECL_SIZE (TREE_OPERAND (TREE_OPERAND (rhs, 1), 1))))
 	  {
-	    rtx label = gen_label_rtx ();
+	    rtx_code_label *label = gen_label_rtx ();
 	    int value = TREE_CODE (rhs) == BIT_IOR_EXPR;
 	    do_jump (TREE_OPERAND (rhs, 1),
 		     value ? label : 0,
@@ -10685,7 +10710,7 @@ is_aligning_offset (const_tree offset, const_tree exp)
       || !tree_fits_uhwi_p (TREE_OPERAND (offset, 1))
       || compare_tree_int (TREE_OPERAND (offset, 1),
 			   BIGGEST_ALIGNMENT / BITS_PER_UNIT) <= 0
-      || !exact_log2 (tree_to_uhwi (TREE_OPERAND (offset, 1)) + 1) < 0)
+      || exact_log2 (tree_to_uhwi (TREE_OPERAND (offset, 1)) + 1) < 0)
     return 0;
 
   /* Look at the first operand of BIT_AND_EXPR and strip any conversion.

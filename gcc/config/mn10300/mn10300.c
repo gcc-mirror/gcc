@@ -2742,21 +2742,15 @@ mn10300_select_cc_mode (enum rtx_code code, rtx x, rtx y ATTRIBUTE_UNUSED)
 }
 
 static inline bool
-is_load_insn (rtx insn)
+set_is_load_p (rtx set)
 {
-  if (GET_CODE (PATTERN (insn)) != SET)
-    return false;
-
-  return MEM_P (SET_SRC (PATTERN (insn)));
+  return MEM_P (SET_SRC (set));
 }
 
 static inline bool
-is_store_insn (rtx insn)
+set_is_store_p (rtx set)
 {
-  if (GET_CODE (PATTERN (insn)) != SET)
-    return false;
-
-  return MEM_P (SET_DEST (PATTERN (insn)));
+  return MEM_P (SET_DEST (set));
 }
 
 /* Update scheduling costs for situations that cannot be
@@ -2766,35 +2760,38 @@ is_store_insn (rtx insn)
    COST is the current cycle cost for DEP.  */
 
 static int
-mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
+mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
-  int timings = get_attr_timings (insn);
+  rtx insn_set;
+  rtx dep_set;
+  int timings;
 
   if (!TARGET_AM33)
     return 1;
 
-  if (GET_CODE (insn) == PARALLEL)
-    insn = XVECEXP (insn, 0, 0);
+  /* We are only interested in pairs of SET. */
+  insn_set = single_set (insn);
+  if (!insn_set)
+    return cost;
 
-  if (GET_CODE (dep) == PARALLEL)
-    dep = XVECEXP (dep, 0, 0);
+  dep_set = single_set (dep);
+  if (!dep_set)
+    return cost;
 
   /* For the AM34 a load instruction that follows a
      store instruction incurs an extra cycle of delay.  */
   if (mn10300_tune_cpu == PROCESSOR_AM34
-      && is_load_insn (dep)
-      && is_store_insn (insn))
+      && set_is_load_p (dep_set)
+      && set_is_store_p (insn_set))
     cost += 1;
 
   /* For the AM34 a non-store, non-branch FPU insn that follows
      another FPU insn incurs a one cycle throughput increase.  */
   else if (mn10300_tune_cpu == PROCESSOR_AM34
-      && ! is_store_insn (insn)
+      && ! set_is_store_p (insn_set)
       && ! JUMP_P (insn)
-      && GET_CODE (PATTERN (dep)) == SET
-      && GET_CODE (PATTERN (insn)) == SET
-      && GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (dep)))) == MODE_FLOAT
-      && GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (insn)))) == MODE_FLOAT)
+      && GET_MODE_CLASS (GET_MODE (SET_SRC (dep_set))) == MODE_FLOAT
+      && GET_MODE_CLASS (GET_MODE (SET_SRC (insn_set))) == MODE_FLOAT)
     cost += 1;
 
   /*  Resolve the conflict described in section 1-7-4 of
@@ -2816,23 +2813,21 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
     return cost;
 
   /* Check that the instruction about to scheduled is an FPU instruction.  */
-  if (GET_CODE (PATTERN (dep)) != SET)
-    return cost;
-
-  if (GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (dep)))) != MODE_FLOAT)
+  if (GET_MODE_CLASS (GET_MODE (SET_SRC (dep_set))) != MODE_FLOAT)
     return cost;
 
   /* Now check to see if the previous instruction is a load or store.  */
-  if (! is_load_insn (insn) && ! is_store_insn (insn))
+  if (! set_is_load_p (insn_set) && ! set_is_store_p (insn_set))
     return cost;
 
   /* XXX: Verify: The text of 1-7-4 implies that the restriction
      only applies when an INTEGER load/store precedes an FPU
      instruction, but is this true ?  For now we assume that it is.  */
-  if (GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (insn)))) != MODE_INT)
+  if (GET_MODE_CLASS (GET_MODE (SET_SRC (insn_set))) != MODE_INT)
     return cost;
 
   /* Extract the latency value from the timings attribute.  */
+  timings = get_attr_timings (insn);
   return timings < 100 ? (timings % 10) : (timings % 100);
 }
 
@@ -2979,14 +2974,14 @@ struct liw_data
    cannot be bundled.  */
 
 static bool
-extract_bundle (rtx insn, struct liw_data * pdata)
+extract_bundle (rtx_insn *insn, struct liw_data * pdata)
 {
   bool allow_consts = true;
   rtx p;
 
   gcc_assert (pdata != NULL);
 
-  if (insn == NULL_RTX)
+  if (insn == NULL)
     return false;
   /* Make sure that we are dealing with a simple SET insn.  */
   p = single_set (insn);
@@ -3105,11 +3100,11 @@ check_liw_constraints (struct liw_data * pliw1, struct liw_data * pliw2)
 static void
 mn10300_bundle_liw (void)
 {
-  rtx r;
+  rtx_insn *r;
 
-  for (r = get_insns (); r != NULL_RTX; r = next_nonnote_nondebug_insn (r))
+  for (r = get_insns (); r != NULL; r = next_nonnote_nondebug_insn (r))
     {
-      rtx insn1, insn2;
+      rtx_insn *insn1, *insn2;
       struct liw_data liw1, liw2;
 
       insn1 = r;
@@ -3135,17 +3130,18 @@ mn10300_bundle_liw (void)
 
       delete_insn (insn2);
 
+      rtx insn2_pat;
       if (liw1.op == LIW_OP_CMP)
-	insn2 = gen_cmp_liw (liw2.dest, liw2.src, liw1.dest, liw1.src,
-			     GEN_INT (liw2.op));
+	insn2_pat = gen_cmp_liw (liw2.dest, liw2.src, liw1.dest, liw1.src,
+				 GEN_INT (liw2.op));
       else if (liw2.op == LIW_OP_CMP)
-	insn2 = gen_liw_cmp (liw1.dest, liw1.src, liw2.dest, liw2.src,
-			     GEN_INT (liw1.op));
+	insn2_pat = gen_liw_cmp (liw1.dest, liw1.src, liw2.dest, liw2.src,
+				 GEN_INT (liw1.op));
       else
-	insn2 = gen_liw (liw1.dest, liw2.dest, liw1.src, liw2.src,
-			 GEN_INT (liw1.op), GEN_INT (liw2.op));
+	insn2_pat = gen_liw (liw1.dest, liw2.dest, liw1.src, liw2.src,
+			     GEN_INT (liw1.op), GEN_INT (liw2.op));
 
-      insn2 = emit_insn_after (insn2, insn1);
+      insn2 = emit_insn_after (insn2_pat, insn1);
       delete_insn (insn1);
       r = insn2;
     }
@@ -3174,7 +3170,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 
   if (LABEL_NUSES (label) > 1)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* This label is used both as an entry point to the loop
 	 and as a loop-back point for the loop.  We need to separate
@@ -3205,18 +3201,18 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
   else
     lcc = gen_Lcc (comparison, label);    
 
-  lcc = emit_jump_insn_before (lcc, branch);
-  mark_jump_label (XVECEXP (PATTERN (lcc), 0, 0), lcc, 0);
-  JUMP_LABEL (lcc) = label;
+  rtx_insn *jump = emit_jump_insn_before (lcc, branch);
+  mark_jump_label (XVECEXP (PATTERN (lcc), 0, 0), jump, 0);
+  JUMP_LABEL (jump) = label;
   DUMP ("Replacing branch insn...", branch);
-  DUMP ("... with Lcc insn:", lcc);  
+  DUMP ("... with Lcc insn:", jump);
   delete_insn (branch);
 }
 
 static bool
 mn10300_block_contains_call (basic_block block)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (block, insn)
     if (CALL_P (insn))
@@ -3279,7 +3275,7 @@ mn10300_scan_for_setlb_lcc (void)
 	reason = "it contains CALL insns";
       else
 	{
-	  rtx branch = BB_END (loop->latch);
+	  rtx_insn *branch = BB_END (loop->latch);
 
 	  gcc_assert (JUMP_P (branch));
 	  if (single_set (branch) == NULL_RTX || ! any_condjump_p (branch))
@@ -3288,7 +3284,7 @@ mn10300_scan_for_setlb_lcc (void)
 	    reason = "it is not a simple loop";
 	  else
 	    {
-	      rtx label;
+	      rtx_insn *label;
 
 	      if (dump_file)
 		flow_loop_dump (loop, dump_file, NULL, 0);

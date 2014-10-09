@@ -5114,7 +5114,7 @@ check_host_association (gfc_expr *e)
   	    {
 	      /* Original was function so point to the new symbol, since
 		 the actual argument list is already attached to the
-		 expression. */
+		 expression.  */
 	      e->value.function.esym = NULL;
 	      e->symtree = st;
 	    }
@@ -7761,7 +7761,7 @@ resolve_select (gfc_code *code, bool select_type)
 	/* Strip all other unreachable cases.  */
 	if (body->ext.block.case_list)
 	  {
-	    for (cp = body->ext.block.case_list; cp->next; cp = cp->next)
+	    for (cp = body->ext.block.case_list; cp && cp->next; cp = cp->next)
 	      {
 		if (cp->next->unreachable)
 		  {
@@ -8471,6 +8471,53 @@ resolve_lock_unlock (gfc_code *code)
       && !gfc_check_vardef_context (code->expr4, false, false, false, 
 				    _("ACQUIRED_LOCK variable")))
     return;
+}
+
+
+static void
+resolve_critical (gfc_code *code)
+{
+  gfc_symtree *symtree;
+  gfc_symbol *lock_type;
+  char name[GFC_MAX_SYMBOL_LEN];
+  static int serial = 0;
+
+  if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+    return;
+
+  symtree = gfc_find_symtree (gfc_current_ns->sym_root,
+			      GFC_PREFIX ("lock_type"));
+  if (symtree)
+    lock_type = symtree->n.sym;
+  else
+    {
+      if (gfc_get_sym_tree (GFC_PREFIX ("lock_type"), gfc_current_ns, &symtree,
+			    false) != 0)
+	gcc_unreachable ();
+      lock_type = symtree->n.sym;
+      lock_type->attr.flavor = FL_DERIVED;
+      lock_type->attr.zero_comp = 1;
+      lock_type->from_intmod = INTMOD_ISO_FORTRAN_ENV;
+      lock_type->intmod_sym_id = ISOFORTRAN_LOCK_TYPE;
+    }
+
+  sprintf(name, GFC_PREFIX ("lock_var") "%d",serial++);
+  if (gfc_get_sym_tree (name, gfc_current_ns, &symtree, false) != 0)
+    gcc_unreachable ();
+
+  code->resolved_sym = symtree->n.sym;
+  symtree->n.sym->attr.flavor = FL_VARIABLE;
+  symtree->n.sym->attr.referenced = 1;
+  symtree->n.sym->attr.artificial = 1;
+  symtree->n.sym->attr.codimension = 1;
+  symtree->n.sym->ts.type = BT_DERIVED;
+  symtree->n.sym->ts.u.derived = lock_type;
+  symtree->n.sym->as = gfc_get_array_spec ();
+  symtree->n.sym->as->corank = 1;
+  symtree->n.sym->as->type = AS_EXPLICIT;
+  symtree->n.sym->as->cotype = AS_EXPLICIT;
+  symtree->n.sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
+						   NULL, 1);
 }
 
 
@@ -9913,7 +9960,10 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:
 	case EXEC_ASSIGN_CALL:
+	  break;
+
 	case EXEC_CRITICAL:
+	  resolve_critical (code);
 	  break;
 
 	case EXEC_SYNC_ALL:
@@ -9967,7 +10017,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    break;
 
 	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
-	     the LHS. */
+	     the LHS.  */
 	  if (code->expr1->expr_type == EXPR_FUNCTION
 	      && code->expr1->value.function.isym
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
@@ -10730,6 +10780,7 @@ apply_default_init_local (gfc_symbol *sym)
      result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
       || (gfc_option.flag_max_stack_var_size == 0 && !sym->attr.result
+	  && !sym->ns->proc_name->attr.recursive
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {
       /* Don't clobber an existing initializer!  */
@@ -11145,30 +11196,6 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		}
 	     }
 	}
-
-      /* PUBLIC interfaces may expose PRIVATE procedures that take types
-	 PRIVATE to the containing module.  */
-      for (iface = sym->generic; iface; iface = iface->next)
-	{
-	  for (arg = gfc_sym_get_dummy_args (iface->sym); arg; arg = arg->next)
-	    {
-	      if (arg->sym
-		  && arg->sym->ts.type == BT_DERIVED
-		  && !arg->sym->ts.u.derived->attr.use_assoc
-		  && !gfc_check_symbol_access (arg->sym->ts.u.derived)
-		  && !gfc_notify_std (GFC_STD_F2003, "Procedure '%s' in "
-				      "PUBLIC interface '%s' at %L takes "
-				      "dummy arguments of '%s' which is "
-				      "PRIVATE", iface->sym->name, 
-				      sym->name, &iface->sym->declared_at, 
-				      gfc_typename(&arg->sym->ts)))
-		{
-		  /* Stop this message from recurring.  */
-		  arg->sym->ts.u.derived->attr.access = ACCESS_PUBLIC;
-		  return false;
-		}
-	     }
-	}
     }
 
   if (sym->attr.function && sym->value && sym->attr.proc != PROC_ST_FUNCTION
@@ -11239,11 +11266,11 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
 
       /* Appendix B.2 of the standard.  Contained functions give an
-	 error anyway.  Fixed-form is likely to be F77/legacy. Deferred
-	 character length is an F2003 feature.  */
-      if (!sym->attr.contained
-	    && gfc_current_form != FORM_FIXED
-	    && !sym->ts.deferred)
+	 error anyway.  Deferred character length is an F2003 feature.
+	 Don't warn on intrinsic conversion functions, which start
+	 with two underscores.  */
+      if (!sym->attr.contained && !sym->ts.deferred
+	  && (sym->name[0] != '_' || sym->name[1] != '_'))
 	gfc_notify_std (GFC_STD_F95_OBS,
 			"CHARACTER(*) function '%s' at %L",
 			sym->name, &sym->declared_at);
@@ -11366,6 +11393,10 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   bool seen_scalar = false;
   gfc_symbol *vtab;
   gfc_component *c;
+  gfc_symbol *parent = gfc_get_derived_super_type (derived);
+
+  if (parent)
+    gfc_resolve_finalizers (parent, finalizable);
 
   /* Return early when not finalizable. Additionally, ensure that derived-type
      components have a their finalizables resolved.  */
@@ -12259,7 +12290,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   super_type = gfc_get_derived_super_type (sym);
 
-  /* F2008, C432. */
+  /* F2008, C432.  */
   if (super_type && sym->attr.coarray_comp && !super_type->attr.coarray_comp)
     {
       gfc_error ("As extending type '%s' at %L has a coarray component, "
@@ -13069,7 +13100,7 @@ resolve_symbol (gfc_symbol *sym)
       as = sym->as;
     }
 
-  /* F2008, C530. */
+  /* F2008, C530.  */
   if (sym->attr.contiguous
       && (!class_attr.dimension
 	  || (as->type != AS_ASSUMED_SHAPE && as->type != AS_ASSUMED_RANK

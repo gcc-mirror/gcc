@@ -105,7 +105,7 @@ static unsigned int frv_type_to_unit[TYPE_UNKNOWN + 1];
 
 /* An array of dummy nop INSNs, one for each type of nop that the
    target supports.  */
-static GTY(()) rtx frv_nops[NUM_NOP_PATTERNS];
+static GTY(()) rtx_insn *frv_nops[NUM_NOP_PATTERNS];
 
 /* The number of nop instructions in frv_nops[].  */
 static unsigned int frv_num_nops;
@@ -271,7 +271,7 @@ static bool frv_print_operand_punct_valid_p	(unsigned char code);
 static void frv_print_operand_memory_reference_reg
 						(FILE *, rtx);
 static void frv_print_operand_memory_reference	(FILE *, rtx, int);
-static int frv_print_operand_jump_hint		(rtx);
+static int frv_print_operand_jump_hint		(rtx_insn *);
 static const char *comparison_string		(enum rtx_code, rtx);
 static rtx frv_function_value			(const_tree, const_tree,
 						 bool);
@@ -325,8 +325,8 @@ static void frv_ifcvt_add_insn			(rtx, rtx, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, enum machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
 static int frv_acc_group_1			(rtx *, void *);
-static unsigned int frv_insn_unit		(rtx);
-static bool frv_issues_to_branch_unit_p		(rtx);
+static unsigned int frv_insn_unit		(rtx_insn *);
+static bool frv_issues_to_branch_unit_p		(rtx_insn *);
 static int frv_cond_flags 			(rtx);
 static bool frv_regstate_conflict_p 		(regstate_t, regstate_t);
 static int frv_registers_conflict_p_1 		(rtx *, void *);
@@ -336,9 +336,9 @@ static void frv_registers_update 		(rtx);
 static void frv_start_packet 			(void);
 static void frv_start_packet_block 		(void);
 static void frv_finish_packet 			(void (*) (void));
-static bool frv_pack_insn_p 			(rtx);
-static void frv_add_insn_to_packet		(rtx);
-static void frv_insert_nop_in_packet		(rtx);
+static bool frv_pack_insn_p 			(rtx_insn *);
+static void frv_add_insn_to_packet		(rtx_insn *);
+static void frv_insert_nop_in_packet		(rtx_insn *);
 static bool frv_for_each_packet 		(void (*) (void));
 static bool frv_sort_insn_group_1		(enum frv_insn_group,
 						 unsigned int, unsigned int,
@@ -1391,7 +1391,7 @@ static int frv_insn_packing_flag;
 static int
 frv_function_contains_far_jump (void)
 {
-  rtx insn = get_insns ();
+  rtx_insn *insn = get_insns ();
   while (insn != NULL
 	 && !(JUMP_P (insn)
 	      && get_attr_far_jump (insn) == FAR_JUMP_YES))
@@ -1405,7 +1405,7 @@ frv_function_contains_far_jump (void)
 static void
 frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  rtx insn, next, last_call;
+  rtx_insn *insn, *next, *last_call;
 
   /* If no frame was created, check whether the function uses a call
      instruction to implement a far jump.  If so, save the link in gr3 and
@@ -1415,7 +1415,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      a stack frame.  */
   if (frv_stack_info ()->total_size == 0 && frv_function_contains_far_jump ())
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* Just to check that the above comment is true.  */
       gcc_assert (!df_regs_ever_live_p (GPR_FIRST + 3));
@@ -1450,7 +1450,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
   /* Locate CALL_ARG_LOCATION notes that have been misplaced
      and move them back to where they should be located.  */
-  last_call = NULL_RTX;
+  last_call = NULL;
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -1465,12 +1465,12 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       if (NEXT_INSN (last_call) == insn)
 	continue;
 
-      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-      PREV_INSN (insn) = last_call;
-      NEXT_INSN (insn) = NEXT_INSN (last_call);
-      PREV_INSN (NEXT_INSN (insn)) = insn;
-      NEXT_INSN (PREV_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+      SET_PREV_INSN (insn) = last_call;
+      SET_NEXT_INSN (insn) = NEXT_INSN (last_call);
+      SET_PREV_INSN (NEXT_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = insn;
       last_call = insn;
     }
 }
@@ -2402,7 +2402,7 @@ frv_asm_output_opcode (FILE *f, const char *ptr)
    function is not called for asm insns.  */
 
 void
-frv_final_prescan_insn (rtx insn, rtx *opvec,
+frv_final_prescan_insn (rtx_insn *insn, rtx *opvec,
 			int noperands ATTRIBUTE_UNUSED)
 {
   if (INSN_P (insn))
@@ -2623,7 +2623,7 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
 #define FRV_JUMP_NOT_LIKELY 0
 
 static int
-frv_print_operand_jump_hint (rtx insn)
+frv_print_operand_jump_hint (rtx_insn *insn)
 {
   rtx note;
   rtx labelref;
@@ -5368,8 +5368,8 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
   /* Scan all of the blocks for registers that must not be allocated.  */
   for (j = 0; j < num_bb; j++)
     {
-      rtx last_insn = BB_END (bb[j]);
-      rtx insn = BB_HEAD (bb[j]);
+      rtx_insn *last_insn = BB_END (bb[j]);
+      rtx_insn *insn = BB_HEAD (bb[j]);
       unsigned int regno;
 
       if (dump_file)
@@ -7058,7 +7058,7 @@ frv_acc_group (rtx insn)
    type attribute, we can cache the results in FRV_TYPE_TO_UNIT[].  */
 
 static unsigned int
-frv_insn_unit (rtx insn)
+frv_insn_unit (rtx_insn *insn)
 {
   enum attr_type type;
 
@@ -7089,7 +7089,7 @@ frv_insn_unit (rtx insn)
 /* Return true if INSN issues to a branch unit.  */
 
 static bool
-frv_issues_to_branch_unit_p (rtx insn)
+frv_issues_to_branch_unit_p (rtx_insn *insn)
 {
   return frv_unit_groups[frv_insn_unit (insn)] == GROUP_B;
 }
@@ -7101,15 +7101,15 @@ struct frv_packet_group {
 
   /* A list of the instructions that belong to this group, in the order
      they appear in the rtl stream.  */
-  rtx insns[ARRAY_SIZE (frv_unit_codes)];
+  rtx_insn *insns[ARRAY_SIZE (frv_unit_codes)];
 
   /* The contents of INSNS after they have been sorted into the correct
      assembly-language order.  Element X issues to unit X.  The list may
      contain extra nops.  */
-  rtx sorted[ARRAY_SIZE (frv_unit_codes)];
+  rtx_insn *sorted[ARRAY_SIZE (frv_unit_codes)];
 
   /* The member of frv_nops[] to use in sorted[].  */
-  rtx nop;
+  rtx_insn *nop;
 };
 
 /* The current state of the packing pass, implemented by frv_pack_insns.  */
@@ -7140,7 +7140,7 @@ static struct {
   struct frv_packet_group groups[NUM_GROUPS];
 
   /* The instructions that make up the current packet.  */
-  rtx insns[ARRAY_SIZE (frv_unit_codes)];
+  rtx_insn *insns[ARRAY_SIZE (frv_unit_codes)];
   unsigned int num_insns;
 } frv_packet;
 
@@ -7344,7 +7344,7 @@ frv_finish_packet (void (*handle_packet) (void))
    the DFA state on success.  */
 
 static bool
-frv_pack_insn_p (rtx insn)
+frv_pack_insn_p (rtx_insn *insn)
 {
   /* See if the packet is already as long as it can be.  */
   if (frv_packet.num_insns == frv_packet.issue_rate)
@@ -7388,7 +7388,7 @@ frv_pack_insn_p (rtx insn)
 /* Add instruction INSN to the current packet.  */
 
 static void
-frv_add_insn_to_packet (rtx insn)
+frv_add_insn_to_packet (rtx_insn *insn)
 {
   struct frv_packet_group *packet_group;
 
@@ -7405,10 +7405,10 @@ frv_add_insn_to_packet (rtx insn)
    add to the end.  */
 
 static void
-frv_insert_nop_in_packet (rtx insn)
+frv_insert_nop_in_packet (rtx_insn *insn)
 {
   struct frv_packet_group *packet_group;
-  rtx last;
+  rtx_insn *last;
 
   packet_group = &frv_packet.groups[frv_unit_groups[frv_insn_unit (insn)]];
   last = frv_packet.insns[frv_packet.num_insns - 1];
@@ -7433,7 +7433,7 @@ frv_insert_nop_in_packet (rtx insn)
 static bool
 frv_for_each_packet (void (*handle_packet) (void))
 {
-  rtx insn, next_insn;
+  rtx_insn *insn, *next_insn;
 
   frv_packet.issue_rate = frv_issue_rate ();
 
@@ -7531,7 +7531,7 @@ frv_sort_insn_group_1 (enum frv_insn_group group,
   unsigned int i;
   state_t test_state;
   size_t dfa_size;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Early success if we've filled all the slots.  */
   if (lower_slot == upper_slot)
@@ -7567,8 +7567,8 @@ frv_sort_insn_group_1 (enum frv_insn_group group,
 static int
 frv_compare_insns (const void *first, const void *second)
 {
-  const rtx *const insn1 = (rtx const *) first,
-    *const insn2 = (rtx const *) second;
+  rtx_insn * const *insn1 = (rtx_insn * const *) first;
+  rtx_insn * const *insn2 = (rtx_insn * const *) second;
   return frv_insn_unit (*insn1) - frv_insn_unit (*insn2);
 }
 
@@ -7788,7 +7788,7 @@ frv_io_union (struct frv_io *x, const struct frv_io *y)
    membar instruction INSN.  */
 
 static void
-frv_extract_membar (struct frv_io *io, rtx insn)
+frv_extract_membar (struct frv_io *io, rtx_insn *insn)
 {
   extract_insn (insn);
   io->type = (enum frv_io_type) INTVAL (recog_data.operand[2]);
@@ -7867,10 +7867,11 @@ frv_io_handle_use (rtx *x, void *data)
 
 static void
 frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
-			   rtx *last_membar)
+			   rtx_insn **last_membar)
 {
   HARD_REG_SET used_regs;
-  rtx next_membar, set, insn;
+  rtx next_membar, set;
+  rtx_insn *insn;
   bool next_is_end_p;
 
   /* NEXT_IO is the next I/O operation to be performed after the current
@@ -8000,7 +8001,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 
 static void
 frv_optimize_membar_global (basic_block bb, struct frv_io *first_io,
-			    rtx membar)
+			    rtx_insn *membar)
 {
   struct frv_io this_io, next_io;
   edge succ;
@@ -8046,11 +8047,11 @@ frv_optimize_membar (void)
 {
   basic_block bb;
   struct frv_io *first_io;
-  rtx *last_membar;
+  rtx_insn **last_membar;
 
   compute_bb_for_insn ();
   first_io = XCNEWVEC (struct frv_io, last_basic_block_for_fn (cfun));
-  last_membar = XCNEWVEC (rtx, last_basic_block_for_fn (cfun));
+  last_membar = XCNEWVEC (rtx_insn *, last_basic_block_for_fn (cfun));
 
   FOR_EACH_BB_FN (bb, cfun)
     frv_optimize_membar_local (bb, &first_io[bb->index],
@@ -8074,7 +8075,7 @@ static void
 frv_align_label (void)
 {
   unsigned int alignment, target, nop;
-  rtx x, last, barrier, label;
+  rtx_insn *x, *last, *barrier, *label;
 
   /* Walk forward to the start of the next packet.  Set ALIGNMENT to the
      maximum alignment of that packet, LABEL to the last label between
@@ -8161,10 +8162,10 @@ frv_reorg_packet (void)
 static void
 frv_register_nop (rtx nop)
 {
-  nop = make_insn_raw (nop);
-  NEXT_INSN (nop) = 0;
-  PREV_INSN (nop) = 0;
-  frv_nops[frv_num_nops++] = nop;
+  rtx_insn *nop_insn = make_insn_raw (nop);
+  SET_NEXT_INSN (nop_insn) = 0;
+  SET_PREV_INSN (nop_insn) = 0;
+  frv_nops[frv_num_nops++] = nop_insn;
 }
 
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  Divide the instructions

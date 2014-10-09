@@ -799,7 +799,7 @@ insert_call_to_register_set (tree class_name,
   TREE_STATIC (initial) = 1;
   DECL_INITIAL (array_arg) = initial;
   relayout_decl (array_arg);
-  varpool_finalize_decl (array_arg);
+  varpool_node::finalize_decl (array_arg);
 
   arg3 = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (array_arg)), array_arg);
 
@@ -1186,9 +1186,9 @@ vtv_generate_init_routine (void)
         DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
 
       gimplify_function_tree (vtv_fndecl);
-      cgraph_add_new_function (vtv_fndecl, false);
+      cgraph_node::add_new_function (vtv_fndecl, false);
 
-      cgraph_process_new_functions ();
+      symtab->process_new_functions ();
 
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
         assemble_vtv_preinit_initializer (vtv_fndecl);
@@ -1248,12 +1248,12 @@ vtable_find_or_create_map_decl (tree base_type)
          we can find and protect them.  */
 
       set_decl_section_name (var_decl, ".vtable_map_vars");
-      symtab_get_node (var_decl)->implicit_section = true;
+      symtab_node::get (var_decl)->implicit_section = true;
       DECL_INITIAL (var_decl) = initial_value;
 
       comdat_linkage (var_decl);
 
-      varpool_finalize_decl (var_decl);
+      varpool_node::finalize_decl (var_decl);
       if (!vtable_map_node)
         vtable_map_node =
                    find_or_create_vtbl_map_node (TYPE_MAIN_VARIANT (base_type));

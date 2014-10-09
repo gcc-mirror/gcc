@@ -1113,7 +1113,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoll atoq \
-	sysconf strsignal getrusage nl_langinfo \
+	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap setlocale \
 	gcc_UNLOCKED_FUNCS madvise)
 
@@ -1924,6 +1924,22 @@ elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir 
 fi
 
+if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+  if test "x$with_headers" != x; then
+    target_header_dir=$with_headers
+  elif test "x$with_sysroot" = x; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
+  elif test "x$with_build_sysroot" != "x"; then
+    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
+  elif test "x$with_sysroot" = xyes; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+  else
+    target_header_dir="${with_sysroot}${native_system_header_dir}"
+  fi
+else
+  target_header_dir=${native_system_header_dir}
+fi
+
 # If this is a cross-compiler that does not
 # have its own set of headers then define
 # inhibit_libc
@@ -1935,7 +1951,7 @@ fi
 : ${inhibit_libc=false}
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
-     { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
+     { test "x$with_headers" = xno || test ! -f "$target_header_dir/stdio.h"; } ; then
        inhibit_libc=true
 fi
 AC_SUBST(inhibit_libc)
@@ -2082,6 +2098,7 @@ AC_ARG_ENABLE(ld,
    ;;
  esac])
 
+install_gold_as_default=no
 AC_ARG_ENABLE(gold,
 [[  --enable-gold[=ARG]     build gold [ARG={default,yes,no}]]],
 [case "${enableval}" in
@@ -2098,8 +2115,7 @@ AC_ARG_ENABLE(gold,
  *)
    AC_MSG_ERROR([invalid --enable-gold argument])
    ;;
- esac],
-[install_gold_as_default=no])
+ esac])
 
 # Identify the linker which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the linker
@@ -2787,9 +2803,6 @@ else
  if test $gcc_cv_as_comdat_group_percent = yes; then
    gcc_cv_as_comdat_group_group=no
  else
-   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
-     gcc_cv_as_comdat_group_group=no
-   fi
    case "${target}" in
      # Sun as uses a completely different syntax.
      *-*-solaris2*)
@@ -2816,6 +2829,9 @@ else
          ,, [$conftest_s])
        ;;
    esac
+   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
+     gcc_cv_as_comdat_group_group=no
+   fi
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
@@ -4443,22 +4459,6 @@ if test x$with_sysroot = x && test x$host = x$target \
 [Define to PREFIX/include if cpp should also search that directory.])
 fi
 
-if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-  if test "x$with_headers" != x; then
-    target_header_dir=$with_headers
-  elif test "x$with_sysroot" = x; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
-  elif test "x$with_build_sysroot" != "x"; then
-    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
-  elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
-  else
-    target_header_dir="${with_sysroot}${native_system_header_dir}"
-  fi
-else
-  target_header_dir=${native_system_header_dir}
-fi
-
 # Determine the version of glibc, if any, used on the target.
 AC_MSG_CHECKING([for target glibc version])
 AC_ARG_WITH([glibc-version],
@@ -5514,6 +5514,9 @@ AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
 AC_ARG_VAR(ISLLIBS,[How to link ISL])
 AC_ARG_VAR(ISLINC,[How to find ISL include files])
+if test "x${ISLLIBS}" != "x" ; then 
+   AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
+fi
 
 AC_ARG_VAR(CLOOGLIBS,[How to link CLOOG])
 AC_ARG_VAR(CLOOGINC,[How to find CLOOG include files])

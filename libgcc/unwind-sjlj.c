@@ -32,11 +32,11 @@
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 
-#ifdef DONT_USE_BUILTIN_SETJMP
+#ifdef __LIBGCC_DONT_USE_BUILTIN_SETJMP__
 #ifndef inhibit_libc
 #include <setjmp.h>
 #else
-typedef void *jmp_buf[JMP_BUF_SIZE];
+typedef void *jmp_buf[__LIBGCC_JMP_BUF_SIZE__];
 extern void longjmp(jmp_buf, int) __attribute__((noreturn));
 #endif
 #else
@@ -70,7 +70,7 @@ struct SjLj_Function_Context
   _Unwind_Personality_Fn personality;
   void *lsda;
 
-#ifdef DONT_USE_BUILTIN_SETJMP
+#ifdef __LIBGCC_DONT_USE_BUILTIN_SETJMP__
   /* We don't know what sort of alignment requirements the system
      jmp_buf has.  We over estimated in except.c, and now we have
      to match that here just in case the system *didn't* have more
@@ -185,7 +185,7 @@ _Unwind_GetCFA (struct _Unwind_Context *context __attribute__((unused)))
 {
   /* ??? Ideally __builtin_setjmp places the CFA in the jmpbuf.  */
 
-#ifndef DONT_USE_BUILTIN_SETJMP
+#ifndef __LIBGCC_DONT_USE_BUILTIN_SETJMP__
   /* This is a crude imitation of the CFA: the saved stack pointer.
      This is roughly the CFA of the frame before CONTEXT.  When using the
      DWARF-2 unwinder _Unwind_GetCFA returns the CFA of the frame described

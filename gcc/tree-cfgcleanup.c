@@ -162,6 +162,23 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
   return retval;
 }
 
+/* Cleanup the GF_CALL_CTRL_ALTERING flag according to
+   to updated gimple_call_flags.  */
+
+static void
+cleanup_call_ctrl_altering_flag (gimple bb_end)
+{
+  if (!is_gimple_call (bb_end)
+      || !gimple_call_ctrl_altering_p (bb_end))
+    return;
+
+  int flags = gimple_call_flags (bb_end);
+  if (((flags & (ECF_CONST | ECF_PURE))
+       && !(flags & ECF_LOOPING_CONST_OR_PURE))
+      || (flags & ECF_LEAF))
+    gimple_call_set_ctrl_altering (bb_end, false);
+}
+
 /* Try to remove superfluous control structures in basic block BB.  Returns
    true if anything changes.  */
 
@@ -181,6 +198,9 @@ cleanup_control_flow_bb (basic_block bb)
     return retval;
 
   stmt = gsi_stmt (gsi);
+
+  /* Try to cleanup ctrl altering flag for call which ends bb.  */
+  cleanup_call_ctrl_altering_flag (stmt);
 
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_SWITCH)
@@ -545,7 +565,20 @@ fixup_noreturn_call (gimple stmt)
 
   /* First split basic block if stmt is not last.  */
   if (stmt != gsi_stmt (gsi_last_bb (bb)))
-    split_block (bb, stmt);
+    {
+      if (stmt == gsi_stmt (gsi_last_nondebug_bb (bb)))
+	{
+	  /* Don't split if there are only debug stmts
+	     after stmt, that can result in -fcompare-debug
+	     failures.  Remove the debug stmts instead,
+	     they should be all unreachable anyway.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  for (gsi_next (&gsi); !gsi_end_p (gsi); )
+	    gsi_remove (&gsi, true);
+	}
+      else
+	split_block (bb, stmt);
+    }
 
   changed |= remove_fallthru_edge (bb->succs);
 
@@ -594,30 +627,24 @@ fixup_noreturn_call (gimple stmt)
    known not to return, and remove the unreachable code.  */
 
 static bool
-split_bbs_on_noreturn_calls (void)
+split_bb_on_noreturn_calls (basic_block bb)
 {
   bool changed = false;
-  gimple stmt;
-  basic_block bb;
+  gimple_stmt_iterator gsi;
 
-  /* Detect cases where a mid-block call is now known not to return.  */
-  if (cfun->gimple_df)
-    while (vec_safe_length (MODIFIED_NORETURN_CALLS (cfun)))
-      {
-	stmt = MODIFIED_NORETURN_CALLS (cfun)->pop ();
-	bb = gimple_bb (stmt);
-	/* BB might be deleted at this point, so verify first
-	   BB is present in the cfg.  */
-	if (bb == NULL
-	    || bb->index < NUM_FIXED_BLOCKS
-	    || bb->index >= last_basic_block_for_fn (cfun)
-	    || BASIC_BLOCK_FOR_FN (cfun, bb->index) != bb
-	    || !gimple_call_noreturn_p (stmt))
-	  continue;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
 
+      if (!is_gimple_call (stmt))
+	continue;
+
+      if (gimple_call_noreturn_p (stmt))
 	changed |= fixup_noreturn_call (stmt);
-      }
+    }
 
+  if (changed)
+    bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
   return changed;
 }
 
@@ -655,8 +682,6 @@ cleanup_tree_cfg_1 (void)
   basic_block bb;
   unsigned i, n;
 
-  retval |= split_bbs_on_noreturn_calls ();
-
   /* Prepare the worklists of altered blocks.  */
   cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
 
@@ -672,7 +697,10 @@ cleanup_tree_cfg_1 (void)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
-	retval |= cleanup_tree_cfg_bb (bb);
+	{
+	  retval |= cleanup_tree_cfg_bb (bb);
+	  retval |= split_bb_on_noreturn_calls (bb);
+	}
     }
 
   /* Now process the altered blocks, as long as any are available.  */
@@ -689,9 +717,9 @@ cleanup_tree_cfg_1 (void)
 
       retval |= cleanup_tree_cfg_bb (bb);
 
-      /* Rerun split_bbs_on_noreturn_calls, in case we have altered any noreturn
+      /* Rerun split_bb_on_noreturn_calls, in case we have altered any noreturn
 	 calls.  */
-      retval |= split_bbs_on_noreturn_calls ();
+      retval |= split_bb_on_noreturn_calls (bb);
     }
 
   end_recording_case_labels ();
@@ -865,16 +893,14 @@ remove_forwarder_block_with_phi (basic_block bb)
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
-	      edge_var_map_vector *head;
-	      edge_var_map *vm;
-	      size_t i;
-
 	      /* If DEF is one of the results of PHI nodes removed during
 		 redirection, replace it with the PHI argument that used
 		 to be on E.  */
-	      head = redirect_edge_var_map_vector (e);
-	      FOR_EACH_VEC_SAFE_ELT (head, i, vm)
+	      vec<edge_var_map> *head = redirect_edge_var_map_vector (e);
+	      size_t length = head ? head->length () : 0;
+	      for (size_t i = 0; i < length; i++)
 		{
+		  edge_var_map *vm = &(*head)[i];
 		  tree old_arg = redirect_edge_var_map_result (vm);
 		  tree new_arg = redirect_edge_var_map_def (vm);
 

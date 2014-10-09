@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define PROFILE_H
 
 /* Additional information about edges. */
-struct edge_info
+struct edge_profile_info
 {
   unsigned int count_valid:1;
 
@@ -35,7 +35,7 @@ struct edge_info
   unsigned int ignore:1;
 };
 
-#define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
+#define EDGE_INFO(e)  ((struct edge_profile_info *) (e)->aux)
 
 /* Smoothes the initial assigned basic block and edge counts using
    a minimum cost flow algorithm. */

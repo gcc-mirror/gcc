@@ -45,19 +45,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Ex: If we define FROM_QQ and TO_SI, the conversion from QQ to SI is
    generated.  */
 
-#ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
+#ifdef __LIBGCC_HAS_SF_MODE__
+#define LIBGCC2_HAS_SF_MODE 1
+#else
+#define LIBGCC2_HAS_SF_MODE 0
 #endif
 
-#ifndef LIBGCC2_HAS_SF_MODE
-#define LIBGCC2_HAS_SF_MODE (BITS_PER_UNIT == 8)
-#endif
-
-#ifndef LIBGCC2_HAS_DF_MODE
-#define LIBGCC2_HAS_DF_MODE \
-  (BITS_PER_UNIT == 8 \
-   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
-       || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
+#ifdef __LIBGCC_HAS_DF_MODE__
+#define LIBGCC2_HAS_DF_MODE 1
+#else
+#define LIBGCC2_HAS_DF_MODE 0
 #endif
 
 typedef          int QItype     __attribute__ ((mode (QI)));

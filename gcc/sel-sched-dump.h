@@ -196,7 +196,7 @@ extern bool sched_dump_to_dot_p;
 
 /* Functions from sel-sched-dump.c.  */
 extern void sel_print (const char *fmt, ...) ATTRIBUTE_PRINTF_1;
-extern const char * sel_print_insn (const_rtx, int);
+extern const char * sel_print_insn (const rtx_insn *, int);
 extern void free_sel_dump_data (void);
 
 extern void block_start (void);

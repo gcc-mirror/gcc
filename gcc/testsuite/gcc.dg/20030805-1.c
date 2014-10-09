@@ -1,7 +1,7 @@
 /* Test that gcc understands that the call to g might clobber i.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fgnu89-inline" } */
 
 __inline int f ()
 {

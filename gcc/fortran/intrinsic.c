@@ -204,6 +204,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	       && specific->id != GFC_ISYM_RANK
 	       && specific->id != GFC_ISYM_SHAPE
 	       && specific->id != GFC_ISYM_SIZE
+	       && specific->id != GFC_ISYM_SIZEOF
 	       && specific->id != GFC_ISYM_UBOUND
 	       && specific->id != GFC_ISYM_C_LOC)
 	{
@@ -2765,8 +2766,9 @@ add_functions (void)
 	     ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
   make_from_module();
 
-  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, ii,
-	     GFC_STD_GNU, gfc_check_sizeof, gfc_simplify_sizeof, NULL,
+  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_INTEGER, ii, GFC_STD_GNU,
+	     gfc_check_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
@@ -3292,6 +3294,14 @@ add_subroutines (void)
   make_from_module();
 
   /* Coarray collectives.  */
+  add_sym_4s ("co_broadcast", GFC_ISYM_CO_BROADCAST, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_broadcast, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      "source_image", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
   add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
 	      gfc_check_co_minmax, NULL, NULL,
@@ -3315,6 +3325,16 @@ add_subroutines (void)
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
+  add_sym_5s ("co_reduce", GFC_ISYM_CO_REDUCE, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_reduce, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
 
   /* The following subroutine is internally used for coarray libray functions.
      "make_from_module" makes it inaccessible for external users.  */

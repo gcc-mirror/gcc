@@ -47,6 +47,12 @@
 
 // See libstdc++/20806.
 #define _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM 1
+
+// Enable use of GetModuleHandleEx (requires Windows XP/2003) in
+// __cxa_thread_atexit to prevent modules from being unloaded before
+// their dtors are called
+#define _GLIBCXX_THREAD_ATEXIT_WIN32 1
+
 #endif
 
 #endif

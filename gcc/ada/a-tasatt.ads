@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--            Copyright (C) 2014, Free Software Foundation, Inc.            --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,28 +41,52 @@ generic
 
 package Ada.Task_Attributes is
 
+   --  Note that this package will use an efficient implementation with no
+   --  locks and no extra dynamic memory allocation if Attribute can fit in a
+   --  System.Address type, and Initial_Value is 0 (null for an access type).
+
+   --  Other types and initial values are supported, but will require
+   --  the use of locking and a level of indirection (meaning extra dynamic
+   --  memory allocation).
+
+   --  The maximum number of task attributes supported by this implementation
+   --  is determined by the constant System.Parameters.Max_Attribute_Count.
+   --  If you exceed this number, Storage_Error will be raised during the
+   --  elaboration of the instantiation of this package.
+
    type Attribute_Handle is access all Attribute;
 
    function Value
-     (T    : Ada.Task_Identification.Task_Id :=
-               Ada.Task_Identification.Current_Task) return Attribute;
+     (T : Ada.Task_Identification.Task_Id :=
+            Ada.Task_Identification.Current_Task) return Attribute;
+   --  Return the value of the corresponding attribute of T. Tasking_Error
+   --  is raised if T is terminated and Program_Error will be raised if T
+   --  is Null_Task_Id.
 
    function Reference
-     (T    : Ada.Task_Identification.Task_Id :=
-               Ada.Task_Identification.Current_Task) return Attribute_Handle;
+     (T : Ada.Task_Identification.Task_Id :=
+            Ada.Task_Identification.Current_Task) return Attribute_Handle;
+   --  Return an access value that designates the corresponding attribute of
+   --  T. Tasking_Error is raised if T is terminated and Program_Error will be
+   --  raised if T is Null_Task_Id.
 
    procedure Set_Value
      (Val : Attribute;
       T   : Ada.Task_Identification.Task_Id :=
               Ada.Task_Identification.Current_Task);
+   --  Finalize the old value of the attribute of T and assign Val to that
+   --  attribute. Tasking_Error is raised if T is terminated and Program_Error
+   --  will be raised if T is Null_Task_Id.
 
    procedure Reinitialize
-     (T :   Ada.Task_Identification.Task_Id :=
-              Ada.Task_Identification.Current_Task);
+     (T : Ada.Task_Identification.Task_Id :=
+            Ada.Task_Identification.Current_Task);
+   --  Same as Set_Value (Initial_Value, T). Tasking_Error is raised if T is
+   --  terminated and Program_Error will be raised if T is Null_Task_Id.
 
 private
    pragma Inline (Value);
+   pragma Inline (Reference);
    pragma Inline (Set_Value);
    pragma Inline (Reinitialize);
-
 end Ada.Task_Attributes;

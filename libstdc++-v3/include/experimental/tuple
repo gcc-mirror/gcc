@@ -1,0 +1,70 @@
+// <experimental/tuple> -*- C++ -*-
+
+// Copyright (C) 2014 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/tuple
+ *  This is a TS C++ Library header.
+ */
+
+#ifndef _GLIBCXX_EXPERIMENTAL_TUPLE
+#define _GLIBCXX_EXPERIMENTAL_TUPLE 1
+
+#pragma GCC system_header
+
+#if __cplusplus <= 201103L
+# include <bits/c++14_warning.h>
+#else
+
+#include <tuple>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace experimental
+{
+inline namespace fundamentals_v1
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template <typename _Fn, typename _Tuple, std::size_t... _Idx>
+    constexpr decltype(auto)
+    __apply_impl(_Fn&& f, _Tuple&& t, std::index_sequence<_Idx...>)
+    { return std::forward<_Fn>(f)(get<_Idx>(forward<_Tuple>(t))...); }
+
+  template <typename _Fn, typename _Tuple>
+    constexpr decltype(auto)
+    apply(_Fn&& f, _Tuple&& t)
+    {
+      using _Indices =
+	std::make_index_sequence<std::tuple_size<std::decay_t<_Tuple>>::value>;
+      return __apply_impl(std::forward<_Fn>(f), std::forward<_Tuple>(t),
+			  _Indices{});
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace fundamentals_v1
+} // namespace experimental
+} // namespace std
+
+#endif // C++14
+
+#endif // _GLIBCXX_EXPERIMENTAL_TUPLE

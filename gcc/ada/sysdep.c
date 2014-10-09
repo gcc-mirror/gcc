@@ -42,6 +42,7 @@
 #endif
 #include "selectLib.h"
 #include "vxWorks.h"
+#include "version.h"
 #if defined (__RTP__)
 #  include "vwModNum.h"
 #endif /* __RTP__ */
@@ -741,7 +742,7 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
                         * 10000000ULL;
 
     /* If GetTimeZoneInformation does not return a value between 0 and 2 then
-       it means that we were not able to retrieve timezone informations. Note
+       it means that we were not able to retrieve timezone information. Note
        that we cannot use here FileTimeToLocalFileTime as Windows will use in
        always in this case the current timezone setting. As suggested on MSDN
        we use the following three system calls to get the right information.
@@ -949,7 +950,7 @@ __gnat_is_file_not_found_error (int errno_val) {
       /* In the case of VxWorks, we also have to take into account various
        * filesystem-specific variants of this error.
        */
-#if ! defined (VTHREADS)
+#if ! defined (VTHREADS) && (_WRS_VXWORKS_MAJOR < 7)
       case S_dosFsLib_FILE_NOT_FOUND:
 #endif
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))

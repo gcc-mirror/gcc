@@ -17,8 +17,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_RTL_ERROR_H
+#define GCC_RTL_ERROR_H
+
 #include "rtl.h"
 #include "diagnostic-core.h"
 
-extern void error_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void warning_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void error_for_asm (const rtx_insn *, const char *,
+			   ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void warning_for_asm (const rtx_insn *, const char *,
+			     ...) ATTRIBUTE_GCC_DIAG(2,3);
+
+#endif /* GCC_RTL_ERROR_H */

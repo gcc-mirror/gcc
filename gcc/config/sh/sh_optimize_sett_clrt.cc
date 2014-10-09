@@ -88,9 +88,9 @@ private:
   struct ccreg_value
   {
     // The insn at which the ccreg value was determined.
-    // Might be NULL_RTX if e.g. an unknown value is recorded for an
+    // Might be NULL if e.g. an unknown value is recorded for an
     // empty basic block.
-    rtx insn;
+    rtx_insn *insn;
 
     // The basic block where the insn was discovered.
     basic_block bb;
@@ -111,14 +111,14 @@ private:
   // Given a start insn and its basic block, recursively determine all
   // possible ccreg values in all basic block paths that can lead to the
   // start insn.
-  void find_last_ccreg_values (rtx start_insn, basic_block bb,
+  void find_last_ccreg_values (rtx_insn *start_insn, basic_block bb,
 			       std::vector<ccreg_value>& values_out,
 			       std::vector<basic_block>& prev_visited_bb) const;
 
   // Given a cbranch insn, its basic block and another basic block, determine
   // the value to which the ccreg will be set after jumping/falling through to
   // the specified target basic block.
-  bool sh_cbranch_ccreg_value (rtx cbranch_insn,
+  bool sh_cbranch_ccreg_value (rtx_insn *cbranch_insn,
 			       basic_block cbranch_insn_bb,
 			       basic_block branch_target_bb) const;
 
@@ -205,7 +205,7 @@ sh_optimize_sett_clrt::execute (function* fun)
   // be optimized.
   basic_block bb;
   FOR_EACH_BB_REVERSE_FN (bb, fun)
-    for (rtx next_i, i = NEXT_INSN (BB_HEAD (bb));
+    for (rtx_insn *next_i, *i = NEXT_INSN (BB_HEAD (bb));
 	 i != NULL_RTX && i != BB_END (bb); i = next_i)
       {
 	next_i = NEXT_INSN (i);
@@ -276,7 +276,7 @@ sh_optimize_sett_clrt::const_setcc_value (rtx pat) const
 
 bool
 sh_optimize_sett_clrt
-::sh_cbranch_ccreg_value (rtx cbranch_insn, basic_block cbranch_insn_bb,
+::sh_cbranch_ccreg_value (rtx_insn *cbranch_insn, basic_block cbranch_insn_bb,
 			  basic_block branch_target_bb) const
 {
   rtx pc_set_rtx = pc_set (cbranch_insn);
@@ -309,7 +309,7 @@ sh_optimize_sett_clrt
 
 void
 sh_optimize_sett_clrt
-::find_last_ccreg_values (rtx start_insn, basic_block bb,
+::find_last_ccreg_values (rtx_insn *start_insn, basic_block bb,
 			  std::vector<ccreg_value>& values_out,
 			  std::vector<basic_block>& prev_visited_bb) const
 {
@@ -322,7 +322,7 @@ sh_optimize_sett_clrt
     log_msg ("(prev visited [bb %d])", prev_visited_bb.back ()->index);
   log_msg ("\n");
 
-  for (rtx i = start_insn; i != NULL_RTX && i != PREV_INSN (BB_HEAD (bb));
+  for (rtx_insn *i = start_insn; i != NULL && i != PREV_INSN (BB_HEAD (bb));
        i = PREV_INSN (i))
     {
       if (!INSN_P (i))

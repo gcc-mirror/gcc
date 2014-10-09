@@ -228,15 +228,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       if (__n > capacity())
 	{
 	  vector __tmp(__n, __val, _M_get_Tp_allocator());
-	  __tmp.swap(*this);
+	  __tmp._M_impl._M_swap_data(this->_M_impl);
 	}
       else if (__n > size())
 	{
 	  std::fill(begin(), end(), __val);
-	  std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
-					__n - size(), __val,
-					_M_get_Tp_allocator());
-	  this->_M_impl._M_finish += __n - size();
+	  this->_M_impl._M_finish =
+	    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
+					  __n - size(), __val,
+					  _M_get_Tp_allocator());
 	}
       else
         _M_erase_at_end(std::fill_n(this->_M_impl._M_start, __n, __val));
@@ -471,11 +471,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	      else
 		{
-		  std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
-						__n - __elems_after,
-						__x_copy,
-						_M_get_Tp_allocator());
-		  this->_M_impl._M_finish += __n - __elems_after;
+		  this->_M_impl._M_finish =
+		    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
+						  __n - __elems_after,
+						  __x_copy,
+						  _M_get_Tp_allocator());
 		  std::__uninitialized_move_a(__position.base(), __old_finish,
 					      this->_M_impl._M_finish,
 					      _M_get_Tp_allocator());
@@ -545,9 +545,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (size_type(this->_M_impl._M_end_of_storage
 			- this->_M_impl._M_finish) >= __n)
 	    {
-	      std::__uninitialized_default_n_a(this->_M_impl._M_finish,
-					       __n, _M_get_Tp_allocator());
-	      this->_M_impl._M_finish += __n;
+	      this->_M_impl._M_finish =
+		std::__uninitialized_default_n_a(this->_M_impl._M_finish,
+						 __n, _M_get_Tp_allocator());
 	    }
 	  else
 	    {
@@ -562,9 +562,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    = std::__uninitialized_move_if_noexcept_a
 		    (this->_M_impl._M_start, this->_M_impl._M_finish,
 		     __new_start, _M_get_Tp_allocator());
-		  std::__uninitialized_default_n_a(__new_finish, __n,
-						   _M_get_Tp_allocator());
-		  __new_finish += __n;
+		  __new_finish =
+		    std::__uninitialized_default_n_a(__new_finish, __n,
+						     _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{

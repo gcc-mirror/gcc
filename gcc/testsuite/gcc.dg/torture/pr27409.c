@@ -10,6 +10,7 @@ struct {
         int g;
 } my_struct;
 
+void foo (thang_t *);
 void function(int blaz)
 {
   thang_t *fp = &my_struct.f;

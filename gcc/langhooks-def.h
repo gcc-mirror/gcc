@@ -203,6 +203,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
 #define LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P hook_bool_tree_false
+#define LANG_HOOKS_FUNCTION_DECL_DELETED_P hook_bool_tree_false
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
@@ -224,6 +225,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_PUSHDECL, \
   LANG_HOOKS_GETDECLS, \
   LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P, \
+  LANG_HOOKS_FUNCTION_DECL_DELETED_P, \
   LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P, \
   LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P, \
   LANG_HOOKS_GET_GENERIC_FUNCTION_DECL, \

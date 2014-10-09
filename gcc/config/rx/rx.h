@@ -130,14 +130,6 @@
 #define DOUBLE_TYPE_SIZE 		(TARGET_64BIT_DOUBLES ? 64 : 32)
 #define LONG_DOUBLE_TYPE_SIZE		DOUBLE_TYPE_SIZE
 
-#ifdef __RX_32BIT_DOUBLES__
-#define LIBGCC2_HAS_DF_MODE		0
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   32
-#else
-#define LIBGCC2_HAS_DF_MODE		1
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
-#endif
-
 #define DEFAULT_SIGNED_CHAR		0
 
 /* RX load/store instructions can handle unaligned addresses.  */
@@ -334,8 +326,8 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   CLASS_MAX_NREGS (0, MODE)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
-  REGNO_REG_CLASS (REGNO) == GR_REGS
+#define HARD_REGNO_MODE_OK(REGNO, MODE)				\
+  (REGNO_REG_CLASS (REGNO) == GR_REGS)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)				\
   (   (   GET_MODE_CLASS (MODE1) == MODE_FLOAT			\
@@ -645,7 +637,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 #define INCOMING_FRAME_SP_OFFSET		4
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4
-#define FRAME_POINTER_CFA_OFFSET(FNDECL)	4
 
 #define TARGET_USE_FPU		(! TARGET_NO_USE_FPU)
 

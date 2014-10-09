@@ -1,3 +1,3991 @@
+2014-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/cpp0x/constexpr-52892-1.C: Error on missing const in C++14.
+	* g++.dg/cpp0x/constexpr-array-ptr7.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag1.C: Add const.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-initlist.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ptrmem.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ptrsub.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-static6.C: Likewise.
+
+2014-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63380
+	* gcc.dg/torture/pr63380-1.c: New testcase.
+	* gcc.dg/torture/pr63380-2.c: Likewise.
+
+2014-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63480
+	* gcc.dg/pr63480.c: New test.
+
+2014-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63445
+	* gcc.dg/Wstrict-overflow-26.c: New testcase.
+
+2014-10-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.dg/vmx/3c-01a.c: Add default options from vmx.exp.
+	* gcc.dg/vmx/ops.c: Likewise.
+	* gcc.dg/vmx/ops-long-1.c: Likewise.
+
+2014-10-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/implicit_4.f90: Fix some dg-error.
+
+2014-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Use
+	dg-additional-options.
+
+2014-10-08  Mark Wielaard  <mjw@redhat.com>
+
+	* g++.dg/debug/dwarf2/deleted-member-function.C: Remove comment marker
+	prefix from scan-assembler-times.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_fd_truncate):
+	Include <string.h>.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59717
+	* gcc.dg/pr59717.c: New test.
+
+2014-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/guality/pr41616-1.c: Use -fgnu89-inline.
+	* gcc.dg/iftrap-1.c: Fix implicit declarations.
+	* gcc.target/powerpc/pr26350.c: Likewise.
+	* gcc.target/powerpc/altivec-consts.c: Likewise.
+	* gcc.target/powerpc/altivec-varargs-1.c: Likewise.
+	* gcc.target/powerpc/le-altivec-consts.c: Likewise.
+	* gcc.target/powerpc/ppc-vector-memcpy.c: Likewise.
+	* gcc.target/powerpc/ppc-vector-memset.c: Likewise.
+	* gcc.target/powerpc/pr47862.c: Likewise.
+	* gcc.target/powerpc/pr48053-1.c: Likewise.
+	* gcc.target/powerpc/pr53487.c: Likewise.
+	* gcc.dg/vect/pr48765.c: Fix implicit declarations and defaulting
+	to int.
+	* gcc.target/powerpc/20050603-1.c: Fix defaulting to int.
+	* gcc.target/powerpc/altivec-2.c: Likewise.
+	* gcc.target/powerpc/pr47755-2.c: Likewise.
+
+2014-10-07  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/lto/pr63270.h: New test.
+	* g++.dg/lto/pr63270_0.C (int main): Implementation replaced with
+	include.
+	* g++.dg/lto/pr63270_2.C: New test.
+
+2014-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto16.adb: New test.
+	* gnat.dg/lto16_pkg.adb: New helper.
+
+2014-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/return4.adb: New test.
+	* gnat.dg/return4_pkg.ad[sb]: New helper.
+
+2014-10-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/attr-deprecated-neg.C: Attribute no longer ignored.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Comment out __cpp_attribute_deprecated test.
+	* g++.dg/cpp1y/feat-cxx11.C: Add __cpp_attribute_deprecated test.
+
+2014-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55250
+	* g++.dg/cpp0x/constexpr-type-decl1.C: New.
+	* g++.dg/cpp0x/constexpr-type-def1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-type-def1.C: Likewise.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/raw-string-3.c: Use -std=gnu89 for C.
+	* g++.dg/lto/pr54625-1_0.c: Fix defaulting to int.
+	* g++.dg/lto/pr54625-2_0.c: Likewise.
+	* gcc.misc-tests/gcov-14.c: Use -fgnu89-inline.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/i386/20040112-1.c: Fix defaulting to int.
+	* gcc.target/i386/avxfp-1.c: Likewise.
+	* gcc.target/i386/avxfp-2.c: Likewise.
+	* gcc.target/i386/cadd.c: Likewise.
+	* gcc.target/i386/cmov2.c: Likewise.
+	* gcc.target/i386/cmov3.c: Likewise.
+	* gcc.target/i386/cmov4.c: Likewise.
+	* gcc.target/i386/cold-attribute-1.c: Likewise.
+	* gcc.target/i386/cvt-1.c: Likewise.
+	* gcc.target/i386/fpcvt-1.c: Likewise.
+	* gcc.target/i386/fpcvt-2.c: Likewise.
+	* gcc.target/i386/fpcvt-3.c: Likewise.
+	* gcc.target/i386/local.c: Likewise.
+	* gcc.target/i386/memcpy-2.c: Likewise.
+	* gcc.target/i386/memcpy-3.c: Likewise.
+	* gcc.target/i386/memset-1.c: Likewise.
+	* gcc.target/i386/minmax-1.c: Likewise.
+	* gcc.target/i386/minmax-2.c: Likewise.
+	* gcc.target/i386/pr45352-2.c: Likewise.
+	* gcc.target/i386/pr46253.c: Likewise.
+	* gcc.target/i386/pr53623.c: Likewise.
+	* gcc.target/i386/pr60902.c: Likewise.
+	* gcc.target/i386/pr57003.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-19.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse4a-extract.c: Likewise.
+	* gcc.target/i386/sse4a-insert.c: Likewise.
+	* gcc.target/i386/ssefp-1.c: Likewise.
+	* gcc.target/i386/ssefp-2.c: Likewise.
+	* gcc.target/i386/testimm-10.c: Likewise.
+	* gcc.target/i386/vectorize4-avx.c: Likewise.
+	* gcc.target/i386/980709-1.c: Fix implicit declarations.
+	* gcc.target/i386/avx-pr57233.c: Likewise.
+	* gcc.target/i386/avx2-pr57233.c: Likewise.
+	* gcc.target/i386/avx2-vpop-check.h: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-7.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-7.c: Likewise.
+	* gcc.target/i386/crc32-4.c: Likewise.
+	* gcc.target/i386/pr20204.c: Likewise.
+	* gcc.target/i386/pr23570.c: Likewise.
+	* gcc.target/i386/pr26449-1.c: Likewise.
+	* gcc.target/i386/pr28839.c: Likewise.
+	* gcc.target/i386/pr37101.c: Likewise.
+	* gcc.target/i386/pr61923.c: Likewise.
+	* gcc.target/i386/shrink_wrap_1.c: Likewise.
+	* gcc.target/i386/sse2-pr57233.c: Likewise.
+	* gcc.target/i386/vect-abs-s16.c: Likewise.
+	* gcc.target/i386/vect-abs-s32.c: Likewise.
+	* gcc.target/i386/vect-abs-s8.c: Likewise.
+	* gcc.target/i386/xop-pr57233.c: Likewise.
+	* gcc.target/i386/xop-rotate2-vector.c: Likewise.
+	* gcc.target/i386/cold-attribute-2.c: Fix defaulting to int.  Fix
+	implicit declarations.
+	* gcc.target/i386/xop-shift1-vector.c: Fix typo.
+	* gcc.target/i386/xop-shift2-vector.c: Likewise.
+	* gcc.target/i386/xop-shift3-vector.c: Likewise.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/20001012-1.c: Fix defaulting to int.
+	* gcc.dg/20001012-2.c: Likewise.
+	* gcc.dg/20001108-1.c: Likewise.
+	* gcc.dg/20010516-1.c: Likewise.
+	* gcc.dg/20011008-2.c: Likewise.
+	* gcc.dg/20030612-1.c: Likewise.
+	* gcc.dg/20040219-1.c: Likewise.
+	* gcc.dg/20050603-2.c: Likewise.
+	* gcc.dg/20070507-1.c: Likewise.
+	* gcc.dg/attr-alias-3.c: Likewise.
+	* gcc.dg/fastmath-1.c: Likewise.
+	* gcc.dg/fork-instrumentation.c: Likewise.
+	* gcc.dg/fwrapv-1.c: Likewise.
+	* gcc.dg/fwrapv-2.c: Likewise.
+	* gcc.dg/memmove-1.c: Likewise.
+	* gcc.dg/non-local-goto-1.c: Likewise.
+	* gcc.dg/non-local-goto-2.c: Likewise.
+	* gcc.dg/noreturn-8.c: Likewise.
+	* gcc.dg/parse-decl-after-if.c: Likewise.
+	* gcc.dg/parse-decl-after-label.c: Likewise.
+	* gcc.dg/pr25795-1.c: Likewise.
+	* gcc.dg/pr25795.c: Likewise.
+	* gcc.dg/pr28574.c: Likewise.
+	* gcc.dg/pr30189.c: Likewise.
+	* gcc.dg/pr31529-2.c: Likewise.
+	* gcc.dg/pr33923.c: Likewise.
+	* gcc.dg/pr34263.c: Likewise.
+	* gcc.dg/pr36194.c: Likewise.
+	* gcc.dg/pr45415.c: Likewise.
+	* gcc.dg/pr47443.c: Likewise.
+	* gcc.dg/pr47763.c: Likewise.
+	* gcc.dg/pr49000.c: Likewise.
+	* gcc.dg/pr50340.c: Likewise.
+	* gcc.dg/webizer.c: Likewise.
+	* gcc.dg/pr59940.c: Likewise.
+	* gcc.dg/pr63186.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-load-int.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-load-int128.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-load-longlong.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-load-short.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-other-int.c: Likewise.
+	* gcc.dg/sms-1.c: Likewise.
+	* gcc.dg/unused-3.c: Likewise.
+	* gcc.dg/varpool-1.c: Likewise.
+	* gcc.dg/pr35899.c: Use -std=gnu89.
+	* gcc.dg/pr59963-1.c: Likewise.
+	* gcc.dg/redecl-15.c: Likewise.
+	* gcc.dg/20041213-1.c: Likewise.
+	* gcc.dg/20080820.c: Likewise.
+	* gcc.dg/920413-1.c: Likewise.
+	* gcc.dg/Wold-style-definition-1.c: Likewise.
+	* gcc.dg/Wmissing-parameter-type-no.c: Likewise.
+	* gcc.dg/decl-nospec-1.c: Likewise.
+	* gcc.dg/decl-nospec-2.c: Likewise.
+	* gcc.dg/decl-nospec-3.c: Likewise.
+	* gcc.dg/bitfld-1.c: Likewise.
+	* gcc.dg/bitfld-9.c: Likewise.
+	* gcc.dg/parm-impl-decl-1.c: Likewise.
+	* gcc.dg/parm-impl-decl-3.c: Likewise.
+	* gcc.dg/pr18596-1.c: Likewise.
+	* gcc.dg/pr18596-2.c: Likewise.
+	* gcc.dg/pr18596-3.c: Likewise.
+	* gcc.dg/pr60139.c: Likewise.
+	* gcc.dg/utf-dflt.c: Likewise.
+	* gcc.dg/utf-dflt2.c: Likewise.
+	* gcc.dg/wtr-func-def-1.c: Likewise.
+	* gcc.dg/declspec-5.c: Likewise.
+	* gcc.dg/declspec-6.c: Likewise.
+	* gcc.dg/ftrapv-2.c: Likewise.
+	* gcc.dg/20020430-1.c: Fix implicit declarations.
+	* gcc.dg/20030702-1.c: Likewise.
+	* gcc.dg/20040127-2.c: Likewise.
+	* gcc.dg/20041122-1.c: Likewise.
+	* gcc.dg/20050309-1.c: Likewise.
+	* gcc.dg/20061026.c: Likewise.
+	* gcc.dg/20101010-1.c: Likewise.
+	* gcc.dg/Werror-1.c: Likewise.
+	* gcc.dg/Werror-10.c: Likewise.
+	* gcc.dg/Werror-11.c: Likewise.
+	* gcc.dg/Werror-12.c: Likewise.
+	* gcc.dg/Werror-2.c: Likewise.
+	* gcc.dg/Werror-3.c: Likewise.
+	* gcc.dg/Werror-4.c: Likewise.
+	* gcc.dg/Werror-5.c: Likewise.
+	* gcc.dg/Werror-6.c: Likewise.
+	* gcc.dg/Werror-7.c: Likewise.
+	* gcc.dg/Werror-8.c: Likewise.
+	* gcc.dg/Wstrict-overflow-20.c: Likewise.
+	* gcc.dg/cpp/trad/macroargs.c: Likewise.
+	* gcc.dg/delay-slot-2.c: Likewise.
+	* gcc.dg/errno-1.c: Likewise.
+	* gcc.dg/globalalias.c: Likewise.
+	* gcc.dg/inline-3.c: Likewise.
+	* gcc.dg/localalias.c: Likewise.
+	* gcc.dg/pr19633-1.c: Likewise.
+	* gcc.dg/pr19633.c: Likewise.
+	* gcc.dg/pr23408.c: Likewise.
+	* gcc.dg/pr23470-1.c: Likewise.
+	* gcc.dg/pr28121.c: Likewise.
+	* gcc.dg/pr28243.c: Likewise.
+	* gcc.dg/pr30260.c: Likewise.
+	* gcc.dg/pr32573.c: Likewise.
+	* gcc.dg/pr33826.c: Likewise.
+	* gcc.dg/pr35065.c: Likewise.
+	* gcc.dg/pr38616.c: Likewise.
+	* gcc.dg/pr39867.c: Likewise.
+	* gcc.dg/pr41470.c: Likewise.
+	* gcc.dg/pr41837.c: Likewise.
+	* gcc.dg/pr44024.c: Likewise.
+	* gcc.dg/pr44699.c: Likewise.
+	* gcc.dg/pr46252.c: Likewise.
+	* gcc.dg/pr46878-1.c: Likewise.
+	* gcc.dg/pr50908-3.c: Likewise.
+	* gcc.dg/pr51796.c: Likewise.
+	* gcc.dg/pr55150-2.c: Likewise.
+	* gcc.dg/pr55833.c: Likewise.
+	* gcc.dg/pr59350.c: Likewise.
+	* gcc.dg/pr59418.c: Likewise.
+	* gcc.dg/pr60647-2.c: Likewise.
+	* gcc.dg/uninit-suppress.c: Likewise.
+	* gcc.dg/uninit-suppress_2.c: Likewise.
+	* gcc.dg/20030805-1.c: Use -fgnu89-inline.
+	* gcc.dg/always_inline.c: Likewise.
+	* gcc.dg/always_inline2.c: Likewise.
+	* gcc.dg/always_inline3.c: Likewise.
+	* gcc.dg/builtin-apply4.c: Likewise.
+	* gcc.dg/declspec-7.c: Likewise.
+	* gcc.dg/inline-1.c: Likewise.
+	* gcc.dg/va-arg-pack-1.c: Likewise.
+	* gcc.dg/winline-2.c: Likewise.
+	* gcc.dg/winline-3.c: Likewise.
+	* gcc.dg/winline-5.c: Likewise.
+	* gcc.dg/winline-6.c: Likewise.
+	* gcc.dg/winline-7.c: Likewise.
+	* gcc.dg/funcorder.c: Fix implicit declarations.  Fix defaulting to
+	int. 
+	* gcc.dg/inline-33.c: Likewise.
+	* gcc.dg/pr27861-1.c: Likewise.
+	* gcc.dg/pr28888.c: Likewise.
+	* gcc.dg/pr29254.c: Likewise.
+	* gcc.dg/pr50908.c: Likewise.
+	* gcc.dg/pr60647-1.c: Likewise.
+	* gcc.dg/pragma-diag-1.c: Likewise.
+	* gcc.dg/pr31529-1.c: Use -fgnu89-inline.  Fix defaulting to int.
+	* gcc.dg/winline-9.c: Likewise.
+	* gcc.dg/pr52808.c: Return 0 instead of nothing.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/ipa/inline-2.c: Fix implicit declarations.
+	* gcc.dg/ipa/inline-4.c: Likewise.
+	* gcc.dg/ipa/inline-5.c: Likewise.
+	* gcc.dg/ipa/pr57539.c: Likewise.
+	* gcc.dg/ipa/inline-6.c: Fix implicit declarations.  Fix
+	defaulting to int.
+	* gcc.dg/ipa/inlinehint-1.c: Likewise.
+	* gcc.dg/ipa/inlinehint-3.c: Likewise.
+	* gcc.dg/ipa/inlinehint-2.c: Fix defaulting to int.
+	* gcc.dg/ipa/ipacost-1.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	* gcc.dg/ipa/pure-const-1.c: Use -fgnu89-inline.  Fix defaulting
+	to int.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/debug/20010207-1.c: Use -fgnu89-inline.  Fix implicit
+	declarations.
+	* gcc.dg/debug/dwarf2-2.c: Fix defaulting to int.
+	* gcc.dg/debug/dwarf2/ipa-cp1.c: Likewise.
+	* gcc.dg/debug/pr42767.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die3.c: Use -fgnu89-inline.
+	* gcc.dg/debug/dwarf2/inline1.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
+	* gcc.dg/debug/pr49522.c: Fix implicit declarations.
+
+2014-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/lto/20080924_0.c: Fix defaulting to int.
+	* gcc.dg/lto/20090213_0.c: Likewise.
+	* gcc.dg/lto/20090706-2_0.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_1.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_2.c: Likewise.
+	* gcc.dg/lto/ipareference2_0.c: Likewise.
+	* gcc.dg/lto/ipareference_0.c: Likewise.
+	* gcc.dg/lto/ipareference_1.c: Likewise.
+	* gcc.dg/lto/pr55703_0.c: Likewise.
+	* gcc.dg/lto/resolutions_0.c: Likewise.
+	* gcc.dg/lto/trans-mem-3_1.c: Likewise.
+	* gcc.dg/lto/20081115_0.c: Fix defaulting to int.  Fix implicit
+	declarations.  Mark function as gnu_inline.
+	* gcc.dg/lto/20081118_0.c: Likewise.
+	* gcc.dg/lto/20081201-1_0.c: Likewise.
+	* gcc.dg/lto/20081115_1.c: Mark function as gnu_inline.
+	* gcc.dg/lto/20081118_1.c: Likewise.
+	* gcc.dg/lto/20081120-1_1.c: Likewise.
+	* gcc.dg/lto/20081201-1_1.c: Likewise.
+	* gcc.dg/lto/20081210-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-1_0.c: Likewise.
+	* gcc.dg/lto/20091006-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-1_1.c: Use -fgnu89-inline.
+	* gcc.dg/lto/20090218-2_1.c: Likewise.
+	* gcc.dg/lto/materialize-1_0.c: Likewise.
+	* gcc.dg/lto/20090218-2_0.c: Fix implicit declarations.
+	* gcc.dg/lto/20091013-1_1.c: Likewise.
+	* gcc.dg/lto/20091013-1_2.c: Likewise.
+	* gcc.dg/lto/20091015-1_2.c: Likewise.
+	* gcc.dg/lto/20091027-1_1.c: Likewise.
+	* gcc.dg/lto/pr48622_0.c: Likewise.
+	* gcc.dg/lto/attr-weakref-1_0.c: Fix implicit declarations. Fix
+	defaulting to int.
+	* gcc.dg/lto/pr47924_0.c: Return 0 instead of nothing.
+
+2014-10-06  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/implicit_14.f90: New.
+	* gfortran.dg/implicit_15.f90: New.
+	* gfortran.dg/implicit_4.f90: Update dg-error.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-42.C: Update template.
+	* g++.dg/ipa/devirt-44.C: Update template.
+	* g++.dg/ipa/devirt-45.C: Update template.
+	* g++.dg/ipa/devirt-46.C: Update template.
+	* g++.dg/ipa/devirt-47.C: Update template.
+	* g++.dg/ipa/devirt-48.C: New testcase.
+
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/63239
+	* g++.dg/debug/dwarf2/deleted-member-function.C: New testcase.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-47.C: New testcase.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61144
+	* gcc.dg/tree-ssa/pr61144.c: New testcase.
+
+2014-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-46.C: New testcase.
+
+2014-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36534
+	* gfortran.dg/widechar_10.f90: New test.
+
+2014-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-42.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-43.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-44.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-45.C: New testcase.
+
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/lvsl-lvsr.c: New test.
+
+2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* g++.dg/ext/altivec-2.C: Compile with -Wno-deprecated to avoid
+	failing with the new warning message.
+	* gcc.dg/vmx/3c-01a.c: Likewise.
+	* gcc.dg/vmx/ops-long-1.c: Likewise.
+	* gcc.dg/vmx/ops.c: Likewise.
+	* gcc.target/powerpc/altivec-20.c: Likewise.
+	* gcc.target/powerpc/altivec-6.c: Likewise.
+	* gcc.target/powerpc/altivec-vec-merge.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-8.c: Likewise.
+	* gcc.target/powerpc/warn-lvsl-lvsr.c: New test.
+
+2014-10-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/tm/debug-1.c: Update regex.
+	* c-c++-common/raw-string-18.c: Update regex.
+	* c-c++-common/raw-string-19.c: Update regex.
+
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63453
+	* gcc.dg/pr63453.c: New test.
+
+2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	PR c++/57198
+	PR c++/58845
+	* g++.dg/ext/vector9.C: Update, not an error anymore.
+	* g++.dg/ext/vector27.C: Replace with new test.
+	* g++.dg/ext/vector28.C: New file.
+	* g++.dg/other/error23.C: Update to a different error.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/vshuf-v8df.c: New test.
+	* gcc.dg/torture/vshuf-v8di.c: New test.
+	* gcc.dg/torture/vshuf-v16sf.c: New test.
+	* gcc.dg/torture/vshuf-v16si.c: New test.
+	* gcc.dg/torture/vshuf-v32hi.c: New test.
+	* gcc.dg/torture/vshuf-v64qi.c: New test.
+	* gcc.dg/torture/vshuf-64.inc: New file.
+
+	PR tree-optimization/61403
+	* gcc.dg/torture/vshuf-32.inc: Add a new test 29.
+
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/gomp/appendix-a/a.35.4.c: Fix implicit declarations.
+	* gcc.dg/gomp/appendix-a/a.35.5.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.6.c: Likewise.
+	* gcc.dg/gomp/asm-1.c: Likewise.
+	* gcc.dg/gomp/for-1.c: Likewise.
+	* gcc.dg/gomp/empty.c: Fix defaulting to int.
+	* gcc.dg/gomp/sharing-3.c: Likewise.
+	* gcc.dg/gomp/udr-3.c: Use -std=gnu89.
+
+2014-10-03  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/torture/pr24626-2.c: Add function declarations.  Fix
+	defaulting to int.
+	* gcc.dg/torture/pr28814.c: Likewise.
+	* gcc.dg/torture/pr57036-1.c: Likewise.
+	* gcc.dg/torture/inline-1.c: Add function declarations.
+	* gcc.dg/torture/pr24626-1.c: Likewise.
+	* gcc.dg/torture/pr24626-3.c: Likewise.
+	* gcc.dg/torture/pr25947-1.c: Likewise.
+	* gcc.dg/torture/pr27409.c: Likewise.
+	* gcc.dg/torture/pr38948.c: Likewise.
+	* gcc.dg/torture/pr44807.c: Likewise.
+	* gcc.dg/torture/pr49603.c: Likewise.
+	* gcc.dg/torture/pr45865.c: Likewise.
+	* gcc.dg/torture/pr51071-2.c: Likewise.
+	* gcc.dg/torture/pr51801.c: Likewise.
+	* gcc.dg/torture/pr52720.c: Likewise.
+	* gcc.dg/torture/pr55124.c: Likewise.
+	* gcc.dg/torture/pr55238.c: Likewise.
+	* gcc.dg/torture/pr55687.c: Likewise.
+	* gcc.dg/torture/pr55888.c: Likewise.
+	* gcc.dg/torture/pr57036-2.c: Likewise.
+	* gcc.dg/torture/pr57147-3.c: Likewise.
+	* gcc.dg/torture/pr57584.c: Likewise.
+	* gcc.dg/torture/pr59993.c: Likewise.
+	* gcc.dg/torture/pr58079.c: Likewise.
+	* gcc.dg/torture/va-arg-25.c: Likewise.
+	* gcc.dg/torture/vector-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/pr31254.c: Fix defaulting to int.
+	* gcc.dg/torture/pr43781.c: Likewise.
+	* gcc.dg/torture/pr52912.c: Likewise.
+	* gcc.dg/torture/pr59139.c: Likewise.
+	* gcc.dg/torture/pr55890-1.c: Likewise.
+	* gcc.dg/torture/pr55890-2.c: Likewise.
+	* gcc.dg/torture/pr59164.c: Likewise.
+	* gcc.dg/torture/pr57393-2.c: Likewise.
+	* gcc.dg/torture/stackalign/comp-goto-1.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_trapping): Likewise.
+	* gcc.dg/torture/pr35227.c: Use -std=gnu89.  Fix defaulting to int.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Use -fgnu89-inline.
+
+2014-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/61200
+	* c-c++-common/gomp/pr61200.c: New test.
+
+	PR target/62128
+	* gcc.dg/torture/vshuf-16.inc (TESTS): Add 2 new permutations.
+	* gcc.dg/torture/vshuf-32.inc (TESTS): Add 5 new permutations.
+
+2014-10-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Fix double negative thinko and
+	add many more tests.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/tree-ssa/20030731-1.c: Use -std=gnu89.
+	* gcc.dg/tree-ssa/20030729-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-8.c: Likewise.
+	* gcc.dg/tree-ssa/20040326-1.c: Likewise.
+	* gcc.dg/tree-ssa/vrp27.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.
+	* gcc.dg/tree-ssa/20040302-1.c: Likewise.
+	* gcc.dg/tree-ssa/vrp09.c: Likewise.
+	* gcc.dg/tree-ssa/inline-7.c: Likewise.
+	* gcc.dg/tree-ssa/attr-alias.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre8.c: Likewise.
+	* gcc.dg/tree-ssa/20041008-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030917-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030917-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030530-2.c: Add function declarations.
+	* gcc.dg/tree-ssa/20030708-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030709-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030710-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030728-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030731-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-7.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-9.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-4.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-5.c: Likewise.
+	* gcc.dg/tree-ssa/20030820-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030820-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030821-1.c: Likewise.
+	* gcc.dg/tree-ssa/20031022-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040209-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040211-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-13.c: Likewise.
+	* gcc.dg/tree-ssa/alias-28.c: Likewise.
+	* gcc.dg/tree-ssa/asm-3.c: Likewise.
+	* gcc.dg/tree-ssa/coalesce-1.c: Likewise.
+	* gcc.dg/tree-ssa/foldstring-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-25.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-26.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-3.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-5.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre7.c: Likewise.
+	* gcc.dg/tree-ssa/pr22117.c: Likewise.
+	* gcc.dg/tree-ssa/pr23744.c: Likewise.
+	* gcc.dg/tree-ssa/pr24117.c: Likewise.
+	* gcc.dg/tree-ssa/pr24840.c: Likewise.
+	* gcc.dg/tree-ssa/pr25734.c: Likewise.
+	* gcc.dg/tree-ssa/pr33723.c: Likewise.
+	* gcc.dg/tree-ssa/pr33920.c: Likewise.
+	* gcc.dg/tree-ssa/pr34146-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr34146.c: Likewise.
+	* gcc.dg/tree-ssa/pr38385.c: Likewise.
+	* gcc.dg/tree-ssa/pr49642-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr49642-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr59597.c: Likewise.
+	* gcc.dg/tree-ssa/sra-1.c: Likewise.
+	* gcc.dg/tree-ssa/sra-2.c: Likewise.
+	* gcc.dg/tree-ssa/sra-5.c: Likewise.
+	* gcc.dg/tree-ssa/sra-6.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-10.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-31.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-29.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Likewise.
+	* gcc.dg/tree-ssa/vrp46.c: Likewise.
+	* gcc.dg/tree-ssa/vrp56.c: Likewise.
+	* gcc.dg/tree-ssa/vrp67.c: Likewise.
+	* gcc.dg/tree-ssa/vrp72.c: Likewise.
+	* gcc.dg/tree-ssa/vrp73.c: Likewise.
+	* gcc.dg/tree-ssa/vrp75.c: Likewise.
+	* gcc.dg/tree-ssa/20030611-1.c: Fix defaulting to int.
+	* gcc.dg/tree-ssa/20030703-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-11.c: Likewise.
+	* gcc.dg/tree-ssa/20030917-3.c: Likewise.
+	* gcc.dg/tree-ssa/20040121-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040216-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040319-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040326-2.c: Likewise.
+	* gcc.dg/tree-ssa/20040729-1.c: Likewise.
+	* gcc.dg/tree-ssa/attr-alias-2.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-1.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-3.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-5.c: Likewise.
+	* gcc.dg/tree-ssa/foldconst-4.c: Likewise.
+	* gcc.dg/tree-ssa/foldconst-5.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-4.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-6.c: Likewise.
+	* gcc.dg/tree-ssa/inline-10.c: Likewise.
+	* gcc.dg/tree-ssa/inline-9.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Likewise.
+	* gcc.dg/tree-ssa/local-pure-const.c: Likewise.
+	* gcc.dg/tree-ssa/nonzero-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr23434.c: Likewise.
+	* gcc.dg/tree-ssa/pr33922.c: Likewise.
+	* gcc.dg/tree-ssa/scev-3.c: Likewise.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+	* gcc.dg/tree-ssa/scev-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dce-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-9.c: Likewise.
+	* gcc.dg/tree-ssa/vrp01.c: Likewise.
+	* gcc.dg/tree-ssa/vrp02.c: Likewise.
+	* gcc.dg/tree-ssa/vrp03.c: Likewise.
+	* gcc.dg/tree-ssa/vrp04.c: Likewise.
+	* gcc.dg/tree-ssa/vrp05.c: Likewise.
+	* gcc.dg/tree-ssa/vrp07.c: Likewise.
+	* gcc.dg/tree-ssa/vrp08.c: Likewise.
+	* gcc.dg/tree-ssa/vrp10.c: Likewise.
+	* gcc.dg/tree-ssa/vrp11.c: Likewise.
+	* gcc.dg/tree-ssa/vrp14.c: Likewise.
+	* gcc.dg/tree-ssa/wholeprogram-1.c: Likewise.
+	* gcc.dg/tree-ssa/writeonly.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-2.c: Add function declarations.  Fix
+	defaulting to int.
+	* gcc.dg/tree-ssa/20030814-1.c: Likewise.
+	* gcc.dg/tree-ssa/20050719-1.c: Likewise.
+	* gcc.dg/tree-ssa/20070302-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-expect-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-expect-2.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-expect-3.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-expect-4.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-expect-5.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-2.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-4.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-9.c: Likewise.
+	* gcc.dg/tree-ssa/foldconst-2.c: Likewise.
+	* gcc.dg/tree-ssa/foldconst-3.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-28.c: Likewise.
+	* gcc.dg/tree-ssa/inline-5.c: Likewise.
+	* gcc.dg/tree-ssa/inline-6.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-split-1.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-split-2.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-2.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-3.c: Likewise.
+	* gcc.dg/tree-ssa/loop-20.c: Likewise.
+	* gcc.dg/tree-ssa/loop-38.c: Likewise.
+	* gcc.dg/tree-ssa/pr20913.c: Likewise.
+	* gcc.dg/tree-ssa/pr21582.c: Likewise.
+	* gcc.dg/tree-ssa/pr24670.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-12.c: Likewise.
+	* gcc.dg/tree-ssa/vrp06.c: Likewise.
+	* gcc.dg/tree-ssa/vrp12.c: Likewise.
+	* gcc.dg/tree-ssa/vrp13.c: Likewise.
+	* gcc.dg/tree-ssa/vrp23.c: Likewise.
+	* gcc.dg/tree-ssa/vrp24.c: Likewise.
+	* gcc.dg/tree-ssa/vrp25.c: Likewise.
+	* gcc.dg/tree-ssa/vrp55.c: Likewise.
+	* gcc.dg/tree-ssa/recip-6.c: Fix typo.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/tm/20091013.c: Fix defaulting to int.
+	* gcc.dg/tm/20091221.c: Likewise.
+	* gcc.dg/tm/debug-1.c: Likewise.
+	* gcc.dg/tm/irrevocable-1.c: Likewise.
+	* gcc.dg/tm/irrevocable-2.c: Likewise.
+	* gcc.dg/tm/irrevocable-3.c: Likewise.
+	* gcc.dg/tm/irrevocable-4.c: Likewise.
+	* gcc.dg/tm/memopt-1.c: Likewise.
+	* gcc.dg/tm/pr52173-1.c: Likewise.
+	* gcc.dg/tm/props-1.c: Likewise.
+	* gcc.dg/tm/props-2.c: Likewise.
+	* gcc.dg/tm/props-3.c: Likewise.
+	* gcc.dg/tm/20100125.c: Fix implicit declarations.
+	* gcc.dg/tm/memopt-11.c: Likewise.
+	* gcc.dg/tm/memopt-12.c: Likewise.
+	* gcc.dg/tm/memopt-16.c: Likewise.
+	* gcc.dg/tm/memopt-3.c: Likewise.
+	* gcc.dg/tm/memopt-4.c: Likewise.
+	* gcc.dg/tm/memopt-5.c: Likewise.
+	* gcc.dg/tm/memopt-6.c: Likewise.
+	* gcc.dg/tm/wrap-4.c: Likewise.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/vect/pr24049.c: Fix implicit declarations.
+	* gcc.dg/vect/pr37730.c: Likewise.
+	* gcc.dg/vect/pr52870.c: Likewise.
+	* gcc.dg/vect/pr60092-2.c: Likewise.
+	* gcc.dg/vect/pr60092.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad.c: Likewise.
+	* gcc.dg/vect/pr26359.c: Fix defaulting to int.
+	* gcc.dg/vect/pr31041.c: Likewise.
+	* gcc.dg/vect/pr32216.c: Likewise.
+	* gcc.dg/vect/pr32224.c: Likewise.
+	* gcc.dg/vect/pr32366.c: Likewise.
+	* gcc.dg/vect/pr33866.c: Likewise.
+	* gcc.dg/vect/pr43430-2.c: Likewise.
+	* gcc.dg/vect/pr43842.c: Likewise.
+	* gcc.dg/vect/vect-1.c: Likewise.
+	* gcc.dg/vect/vect-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-93.c: Likewise.
+	* gcc.dg/vect/pr28952.c: Fix implicit declarations and
+	defaulting to int.
+
+2014-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53025
+	* g++.dg/cpp0x/noexcept23.C: New.
+	* g++.dg/cpp0x/noexcept24.C: Likewise.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/noncompile/20020130-1.c: Use -std=gnu89.
+	* gcc.dg/noncompile/20050120-1.c: Likewise.
+	* gcc.dg/noncompile/old-style-parm-2.c: Likewise.
+	* gcc.dg/noncompile/920616-2.c: Fix defaulting to int.
+	* gcc.dg/noncompile/930301-1.c: Likewise.
+	* gcc.dg/noncompile/930622-1.c: Likewise.
+	* gcc.dg/noncompile/930622-2.c: Likewise.
+	* gcc.dg/noncompile/950825-1.c: Likewise.
+	* gcc.dg/noncompile/invalid_asm.c: Likewise.
+	* gcc.dg/noncompile/scope.c: Likewise.
+	* gcc.dg/noncompile/va-arg-1.c: Likewise.
+	* gcc.dg/noncompile/920923-1.c: Fix implicit declarations.
+	* gcc.dg/noncompile/971104-1.c: Likewise.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Fix defaulting to int.
+	* gcc.dg/tree-prof/crossmodule-indircall-1a.c: Likewise.
+	* gcc.dg/tree-prof/merge_block.c: Likewise.
+	* gcc.dg/tree-prof/peel-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-2.c: Likewise.
+	* gcc.dg/tree-prof/unroll-1.c: Likewise.
+	* gcc.dg/tree-prof/update-cunroll-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-6.c: Likewise.
+	* gcc.dg/tree-prof/cmpsf-1.c: Likewise.
+	* gcc.dg/tree-prof/inliner-1.c: Use -fgnu89-inline.  Fix defaulting
+	to int.
+
+2014-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.c-torture/compile/20000120-2.c: Use -fgnu89-inline.
+	* gcc.c-torture/compile/20011119-1.c: Likewise.
+	* gcc.c-torture/compile/20011119-2.c: Likewise.
+	* gcc.c-torture/compile/20021120-1.c: Likewise.
+	* gcc.c-torture/compile/20021120-2.c: Likewise.
+	* gcc.c-torture/compile/20050215-1.c: Likewise.
+	* gcc.c-torture/compile/20050215-2.c: Likewise.
+	* gcc.c-torture/compile/20050215-3.c: Likewise.
+	* gcc.c-torture/compile/pr37669.c: Likewise.
+	* gcc.c-torture/execute/20020107-1.c: Likewise.
+	* gcc.c-torture/execute/restrict-1.c: Likewise.
+	* gcc.c-torture/compile/20090721-1.c: Fix defaulting to int.
+	* gcc.c-torture/execute/930529-1.c: Likewise.
+	* gcc.c-torture/execute/920612-1.c: Likewise.
+	* gcc.c-torture/execute/920711-1.c: Likewise.
+	* gcc.c-torture/execute/990127-2.c: Likewise.
+	* gcc.c-torture/execute/pr40386.c: Likewise.
+	* gcc.c-torture/execute/pr57124.c: Likewise.
+	* gcc.c-torture/compile/pr34808.c: Add function declarations.
+	* gcc.c-torture/compile/pr42299.c: Likewise.
+	* gcc.c-torture/compile/pr48517.c: Use -std=gnu89.
+	* gcc.c-torture/compile/simd-6.c: Likewise.
+	* gcc.c-torture/execute/pr53645-2.c: Likewise.
+	* gcc.c-torture/execute/pr53645.c: Likewise.
+	* gcc.c-torture/execute/20001121-1.c: Use -fgnu89-inline.  Add function
+	declarations.
+	* gcc.c-torture/execute/980608-1.c: Likewise.
+	* gcc.c-torture/execute/bcp-1.c: Likewise.
+	* gcc.c-torture/execute/p18298.c: Likewise.
+	* gcc.c-torture/execute/unroll-1.c: Likewise.
+	* gcc.c-torture/execute/va-arg-7.c: Likewise.
+	* gcc.c-torture/execute/va-arg-8.c: Likewise.
+	* gcc.c-torture/execute/930526-1.c: Use -fgnu89-inline.  Add function
+	declarations.  Fix defaulting to int.
+	* gcc.c-torture/execute/961223-1.c: Likewise.
+	* gcc.c-torture/execute/loop-2c.c: Use -fgnu89-inline and
+	-Wno-pointer-to-int-cast.  Fix defaulting to int.
+
+2014-10-02  Andrew Pinski  <apinski@cavium.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* lib/ubsan-dg.exp
+	(check_effective_target_fsanitize_address): New function.
+	(ubsan_init): Save off ALWAYS_CXXFLAGS.
+	(ubsan_finish): Restore ALWAYS_CXXFLAGS correctly.
+	* lib/asan-dg.exp
+	(check_effective_target_faddress_sanitizer): Rename to ...
+	(check_effective_target_fsanitize_address): ... this. Change to creating
+	an executable.
+	(asan_init): Save off ALWAYS_CXXFLAGS.
+	(asan_finish): Restore ALWAYS_CXXFLAGS correctly.
+	* lib/tsan-dg.exp
+	(check_effective_target_fthread_sanitizer): Rename to ...
+	(check_effective_target_fsanitize_thread): ... this. Change to creating
+	an executable.
+	(tsan_init): Save off ALWAYS_CXXFLAGS.
+	(tsan_finish): Restore ALWAYS_CXXFLAGS correctly. Set dg-do-what-default
+	to run as a default behaviour.
+	* gcc.dg/ubsan/ubsan.exp: Don't check the return value of ubsan_init.
+	Check check_effective_target_fsanitize_undefined before running the
+	tests.
+	* g++.dg/ubsan/ubsan.exp: Likewise.
+	* gcc.dg/asan/asan.exp: Don't check the return value of asan_init.
+	check_effective_target_fsanitize_address too early.
+	Check check_effective_target_fsanitize_address before running the tests.
+	* g++.dg/asan/asan.exp: Likewise.
+	* gcc.dg/tsan/tsan.exp: Don't check the return value of tsan_init.
+	check_effective_target_fsanitize_thread too early.
+	Check check_effective_target_fsanitize_thread before running the tests.
+	* g++.dg/tsan/tsan.exp: Likewise.
+
+2014-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/combine-clobber.c: New.
+
+2014-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63342
+	* gcc.dg/pr63342.c: New test.
+
+	PR c++/63306
+	* g++.dg/ipa/pr63306.C: New test.
+
+	PR target/63428
+	* gcc.dg/torture/vshuf-4.inc: Move test 122 from EXPTESTS
+	to test 24 in TESTS.
+
+2014-10-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lib/target-supports.exp: Error out with preprocessor condition
+	instead of FOO everywhere.
+
+2014-10-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement SD-6: SG10 Feature Test Recommendations
+	* g++.dg/cpp1y/feat-cxx11-neg.C: New.
+	* g++.dg/cpp1y/feat-cxx11.C: New.
+	* g++.dg/cpp1y/feat-cxx14.C: New.
+	* g++.dg/cpp1y/feat-cxx98.C: New.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: New.
+	* g++.dg/cpp1y/phoobhar.h: New.
+	* g++.dg/cpp1y/testinc/phoobhar.h: New.
+
+2014-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/tree-prof/20050826-2.c: New test.
+	* gcc.dg/tree-prof/cmpsf-1.c: Ditto.
+
+2014-09-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+       PR c++/16564
+       * lib/gcc.exp: Accept "fatal error:" as error prefix.
+       * lib/g++.exp: Likewise.
+       * lib/obj-c++.exp: Likewise.
+       * lib/objc.exp: Likewise.
+       * g++.dg/template/pr16564.C: New test.
+
+2014-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16564
+	* g++.dg/cpp0x/decltype26.C: Adjust.
+	* g++.dg/cpp0x/decltype28.C: Likewise.
+	* g++.dg/cpp0x/decltype29.C: Likewise.
+	* g++.dg/cpp0x/decltype32.C: Likewise.
+	* g++.dg/cpp0x/enum11.C: Likewise.
+	* g++.dg/template/arrow1.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/template/recurse.C: Likewise.
+	* g++.dg/template/recurse2.C: Likewise.
+	* g++.dg/template/vtable2.C: Likewise.
+	* g++.old-deja/g++.pt/infinite1.C: Likewise.
+
+2014-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR preprocessor/58893
+	* gcc.dg/pr58893.c: New test case.
+	* gcc.dg/pr58893-0.h: New include.
+
+2014-09-30  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR middle-end/62120
+	* gcc.target/i386/avx512f-additional-reg-names.c: Use register valid
+	in 32-bit mode.
+	* gcc.target/i386/pr62120.c: New.
+
+2014-09-30  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/simd/vqdmullh_laneq_s16.c: New.
+	* gcc.target/aarch64/simd/vqdmulls_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulls_lane_s32.c: Fix return type.
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmulls_s32):  Fix
+	return type.
+
+2014-09-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/coarray_collectives_9.f90: Fix some dg-error.
+
+2014-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/63282
+	* gcc.c-torture/compile/pr63282.c: New test.
+
+2014-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/vrp94.c: New test.
+	* gnat.dg/opt40.adb: Likewise.
+
+2014-09-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/ops.c: Remove calls to vec_splat, vec_vsplth,
+	vec_vspltw, and vec_vspltb for which the second argument is out of
+	range.
+
+2014-09-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* gcc.c-torture/compile/calls-void.c: New test.
+
+2014-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51385
+	* g++.dg/template/pr51385.C: New.
+
+2014-09-28  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/20140928.c: New test.
+
+2014-09-27  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: Only run on Linux.
+	* gcc.target/i386/record-mcount.c: dito.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/62121
+	* g++.dg/torture/pr62121.C: New testcase.
+
+2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/35545
+	* g++.dg/tree-prof/pr35545.C: New testcase.
+
+2014-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63335.c: Change effective target to
+	vsx_hw.
+
+2014-09-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/shrink_wrap_1.c: Skip ia32.
+
+2014-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/compat/struct-layout-1_generate.c: Add -Wno-abi
+	to default options.
+
+2014-09-25  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/nop-mcount.c: New file.
+	* gcc.target/i386/record-mcount.c: New file.
+
+2014-09-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/vect/pr56933.c: Don't specify "dg-do run" explicitly.
+	* gcc.dg/vect/pr57705.c: Likewise.
+	* gcc.dg/vect/pr57741-2.c: Likewise.
+	* gcc.dg/vect/pr57741-3.c: Likewise.
+	* gcc.dg/vect/pr59591-1.c: Likewise.
+	* gcc.dg/vect/pr59591-2.c: Likewise.
+	* gcc.dg/vect/pr60196-1.c: Likewise.
+	* gcc.dg/vect/pr60196-2.c: Likewise.
+	* gcc.dg/vect/pr60276.c: Likewise.
+	* gcc.dg/vect/pr61680.c: Likewise.
+	* gcc.dg/vect/pr63148.c: Likewise.
+	* gcc.dg/vect/pr63189.c: Likewise.
+	* gcc.dg/vect/vect-mask-load-1.c: Likewise.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Likewise.
+	* gcc.dg/vect/vect-nop-move.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
+2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-34.C: Update template.
+
+2014-09-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/simd/vqshlb_1.c: New.
+
+2014-09-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/i386/shrink_wrap_1.c: New test.
+
+2014-09-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/63335
+	* gcc.target/powerpc/pr63335.c: New test.
+
+2014-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61945
+	* g++.dg/warn/pr61945.C: New test.
+
+2014-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63341
+	* gcc.dg/vect/pr63341-1.c: New test.
+	* gcc.dg/vect/pr63341-2.c: New test.
+
+	PR c++/63249
+	* g++.dg/gomp/pr63249.C: New test.
+	* c-c++-common/gomp/pr63249.c: New test.
+
+2014-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/collectives_3.f90: New.
+	* gfortran.dg/coarray_collectives_9.f90: New.
+	* gfortran.dg/coarray_collectives_10.f90: New.
+	* gfortran.dg/coarray_collectives_11.f90: New.
+	* gfortran.dg/coarray_collectives_12.f90: New.
+
+2014-09-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-17.c: New test.
+
+2014-09-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/shrink_wrap_symbol_ref_1.c: New testcase.
+
+2014-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61405
+	PR c/53874
+	* c-c++-common/pr53874.c: New test.
+	* c-c++-common/pr61405.c: New test.
+
+2014-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vmul_lane_const_lane_1.c: New test.
+
+2014-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63316
+	* c-c++-common/asan/pr63316.c: New test.
+
+2014-09-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63266
+	* gcc.dg/optimize-bswapsi-1.c (swap32_d): New bswap pass test.
+
+2014-09-24  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/pr63210.c: New test.
+
+2014-09-23  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/noreorder.c: New test.
+	* gcc.dg/noreorder2.c: New test.
+	* gcc.dg/noreorder3.c: New test.
+	* gcc.dg/noreorder4.c: New test.
+
+2014-09-23  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/combine_ashiftrt_1.c: New test.
+	* gcc.dg/combine_ashiftrt_2.c: Likewise.
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Remove scan-assembler
+	workarounds for cmge.
+	* gcc.target/aarch64/simd/int_comparisons_1.c: Likewise; also check for
+	absence of mvn.
+
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61857
+	* g++.dg/cpp1y/lambda-init10.C: New.
+
+2014-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63331
+	* gfortran.dg/pr63331.f90: New test.
+
+2014-09-24  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Enable aarch64.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+	* gcc.dg/pr10474.c: Likewise.
+
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/const-volatile.c (i): Mark as used.
+	(ci): Likewise.
+	(pci): Likewise.
+	(pvi): Likewise.
+	(pcvi): Likewise.
+	(cip): Likewise.
+	(foo): Likewise.
+	(cfoo): Likewise.
+
+2014-09-20  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Transform gdb types "short int"
+	and "long int" to plain "short" and "long".
+	* gcc.dg/guality/const-volatile.c (struct bar): New struct
+	containing short and long long fields.
+	(bar): New variable to test the type.
+
+2014-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62155
+	* g++.dg/cpp0x/lambda/lambda-62155.C: New.
+
+2014-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62219
+	* g++.dg/cpp0x/lambda/lambda-template14.C: New.
+
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/vect/vect-reduc-or_1.c: New test.
+	* gcc.dg/vect/vect-reduc-or_2.c: Likewise.
+
+2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_whole_vector_shift):
+	New.
+
+	* gcc.dg/vect/vect-reduc-mul_1.c: New test.
+	* gcc.dg/vect/vect-reduc-mul_2.c: New test.
+
+2014-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63328
+	* c-c++-common/gomp/pr63328.c: New test.
+
+2014-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/63270
+	* g++.dg/lto/pr63270_0.C: New test.
+	* g++.dg/lto/pr63270_1.C: New test.
+
+2014-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-final): Remove check
+	for call_value_rex64_ms_sysv.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-final): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-final): Remove check
+	for call_rex64_ms_sysv.
+
+2014-09-20  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_atomic_5.f90: New
+
+2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/61825
+	* gcc.dg/tree-ssa/nonzero-1.c: Require error to be output.
+
+2014-09-19  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: Only run on x86 Linux.
+	* gcc.dg/pg.c: Dito.
+	* gcc.target/i386/fentry-override.c: Exclude for PIC.
+	* gcc.target/i386/fentry.c: Dito.
+
+2014-09-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/61998
+	* g++.dg/warn/Wsuggest-final-2.C: New testcase.
+
+2014-09-19  Joost VandeVondele  <vondele@gcc.gnu.org>
+
+	PR fortran/63152
+	* gfortran.dg/auto_char_dummy_array_1.f90: Fix undefined behavior.
+	* gfortran.dg/pr63152.f90: New test.
+
+2014-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58328
+	* g++.dg/cpp0x/nsdmi10.C: New.
+
+2014-09-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/ssp-3.c: New.
+	* gcc.dg/ssp-4.c: Likewise.
+
+2014-09-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/dfp-conv1.c: New testcase.
+
+2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* c-c++-common/asan/red-align-1.c: New test.
+	* c-c++-common/asan/red-align-2.c: New test.
+
+2014-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr61053.c: Updated for x32.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/63285
+	* gcc.target/i386/pr63285.c: New test.
+
+2014-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/61360
+	* gcc.target/i386/pr61360.c: New.
+
+2014-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/62017
+	* g++.dg/asan/pr62017.C: New test.
+
+	PR testsuite/63292
+	* gcc.dg/vect/pr59594.c (b): Increase size to N + 2 elements.
+
+2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62232
+	* g++.dg/cpp0x/Wdtor1.C: New.
+
+2014-09-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-exact-underflow.c: New test.
+
+2014-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61745
+	* g++.dg/template/pr61745.C: New.
+
+2014-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61854
+	* gcc.dg/cpp/pr61854-1.c: New test.
+	* gcc.dg/cpp/pr61854-2.c: New test.
+	* gcc.dg/cpp/pr61854-3.c: New test.
+	* gcc.dg/cpp/pr61854-3.h: New test.
+	* gcc.dg/cpp/pr61854-4.c: New test.
+	* gcc.dg/cpp/pr61854-5.c: New test.
+	* gcc.dg/cpp/pr61854-6.c: New test.
+	* gcc.dg/cpp/pr61854-7.c: New test.
+	* gcc.dg/cpp/pr61854-c90.c: New test.
+	* gcc.dg/cpp/pr61854-c94.c: New test.
+
+2014-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63284
+	* gcc.dg/pr63284.c: New test.
+
+	* ada/acats/run_all.sh: Redirect mkdir stderr to /dev/null.
+
+2014-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63241
+	* g++.dg/cpp0x/constexpr-63241.C: New.
+
+2014-09-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/62768
+	* gfortran.dg/filename_null.f90: New test.
+
+2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pg-override.c: Fix a typo.
+
+2014-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pg.c: Fix a typo.
+
+2014-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63258
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-33.c: Remove scan
+	for "vectorization not profitable".
+
+2014-09-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-os-support.h: Remove magic number.
+
+2014-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56408
+	* gfortran.dg/dg.exp (dg-compile-aux-modules): Workaround
+	missing nexted dg-test call support in dejaGNU 1.4.4.
+
+2014-09-15  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.dg/pg-override.c: New test.
+	* gcc.dg/pg.c: New test.
+	* gcc.target/i386/fentry-override.c: New test.
+	* gcc.target/i386/fentry.c: New test.
+
+2014-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56408
+	* gfortran.dg/dg.exp (gfortran_test_path, gfortran_aux_module_flags):
+	New global vars.
+	(dg-compile-aux-modules): New procedure.
+	* gfortran.dg/binding_label_tests_10.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_10_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_11.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_11_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_13.f03: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_13_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/binding_label_tests_26a.f90: Remove comment
+	and keep-modules.
+	* gfortran.dg/binding_label_tests_26b.f90: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/class_45a.f03: Remove keep-modules.
+	* gfortran.dg/class_45b.f03: Use dg-compile-aux-modules
+	and cleanup-modules.
+	* gfortran.dg/class_4a.f03: Use dg-do link, use
+	dg-additional-sources and cleanup-modules, remove keep-modules
+	and update comment.
+	* gfortran.dg/class_4b.f03: Don't compile anywhere, remove
+	keep-modules, adjust comment.
+	* gfortran.dg/class_4c.f03: Don't compile anywhere, remove
+	dg-additional-sources and cleanup-modules.
+	* gfortran.dg/coarray_29_1.f90: Remove keep-modules and
+	associated comment.
+	* gfortran.dg/coarray_29_2.f90: Use dg-compile-aux-modules,
+	remove comment.
+	* gfortran.dg/test_common_binding_labels_2.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/test_common_binding_labels_3.f03: Remove keep-modules.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Remove comment,
+	use dg-compile-aux-modules.
+	* gfortran.dg/whole_file_28.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_29.f90: Remove comment, use
+	dg-compile-aux-modules.
+	* gfortran.dg/whole_file_30.f90: Remove comment and keep-modules.
+	* gfortran.dg/whole_file_31.f90: Remove comment, use
+	dg-compile-aux-modules.
+
+	* lib/gcc-defs.exp (gcc_parallel_test_run_p,
+	gcc_parallel_test_enable): New procedures.  If
+	GCC_RUNTEST_PARALLELIZE_DIR is set in environment, override
+	runtest_file_p to invoke also gcc_parallel_test_run_p.
+	* g++.dg/guality/guality.exp (check_guality): Save/restore
+	test_counts array around the body of the procedure.
+	* gcc.dg/guality/guality.exp (check_guality): Likewise.
+	* g++.dg/plugin/plugin.exp: Run all the tests serially
+	by the first parallel runtest encountering it.
+	* gcc.dg/plugin/plugin.exp: Likewise.
+	* gcc.misc-tests/matrix1.exp: Likewise.
+	* gcc.misc-tests/dhry.exp: Likewise.
+	* gcc.misc-tests/acker1.exp: Likewise.
+	* gcc.misc-tests/linkage.exp: Likewise.
+	* gcc.misc-tests/mg.exp: Likewise.
+	* gcc.misc-tests/mg-2.exp: Likewise.
+	* gcc.misc-tests/sort2.exp: Likewise.
+	* gcc.misc-tests/sieve.exp: Likewise.
+	* gcc.misc-tests/options.exp: Likewise.
+	* gcc.misc-tests/help.exp: Likewise.
+	* go.test/go-test.exp (go-gc-tests): Use
+	gcc_parallel_test_enable {0, 1} around all handling of
+	each test.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Likewise.
+	* ada/acats/run_all.sh: Parallelize using mkdir inside of
+	a shared directory.  Avoid forking and expr uses if
+	shell supports $(()).
+
+2014-09-14  David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/vdup_lane_2.c (force_simd): Emit simd mov.
+
+2014-09-14  James Clarke  <jrtc27@jrtc27.com>
+
+	PR target/61407
+	* gcc.dg/darwin-minversion-1.c: Fixed formatting
+	* gcc.dg/darwin-minversion-2.c: Fixed formatting
+	* gcc.dg/darwin-minversion-3.c: Fixed formatting
+	* gcc.dg/darwin-minversion-4.c: Added test for OS X 10.10
+
+2014-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60862
+	* g++.dg/diagnostic/pr60862.C: New test.
+
+2014-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63237
+	* g++.dg/torture/pr63237.C: New testcase.
+
+2014-09-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vec-andxor1.c: New file.
+
+2014-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/58757
+	* gcc.dg/c11-true_min-1.c: New testcase.
+
+2014-09-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61489
+	* g++.dg/warn/Wmissing-field-initializers-1.C: New.
+	* g++.old-deja/g++.other/warn5.C: Adjust.
+
+2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vset_lane_1.c: New test.
+
+2014-09-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.dg/compat/struct-by-value-13_main.c (struct_by_value_13_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-16a_main.c (struct_by_value_16a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-17a_main.c (struct_by_value_17a_x):
+	Fix declaration.
+	* gcc.dg/compat/struct-by-value-18a_main.c (struct_by_value_18a_x):
+	Fix declaration.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/63186
+	* gcc.dg/pr63186.c: New testcase.
+
+2014-09-10  Xinliang David Li  <davidxl@google.com>
+
+	PR target/63209
+	* gcc.c-torture/execute/pr63209.c: New test.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp: Only run vect-args.c tests
+	if runtest_file_p says they should be run.
+
+2014-09-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vstN_1.c: New test.
+
+2014-09-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_lane_1.c: New test.
+
+2014-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61654
+	* g++.dg/ipa/pr61654.C: New test.
+
+2014-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/attrib-3.c: New test.
+	* c-c++-common/ubsan/nonnull-1.c: New test.
+	* c-c++-common/ubsan/nonnull-2.c: New test.
+	* c-c++-common/ubsan/nonnull-3.c: New test.
+	* c-c++-common/ubsan/nonnull-4.c: New test.
+	* c-c++-common/ubsan/nonnull-5.c: New test.
+
+2014-09-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr63166_0.ii: New testcase.
+	* g++.dg/lto/pr63166_1.ii: New testcase.
+
+2014-09-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/warn-normalized-3.c: Delete useless dg-prune-output.
+
+2014-09-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-15.c: Remove scan-assembler-not for
+	xxpermdi and add commentary about adding it back later; remove
+	unused typedef.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vect-lceilf_1.c: Make input and output arrays global
+	and 16-byte aligned.
+	* gcc.target/arm/vect-lfloorf_1.c: Likewise.
+	* gcc.target/arm/vect-lroundf_1.c: Likewise.
+	* gcc.target/arm/vect-rounding-btruncf.c: Likewise.
+	* gcc.target/arm/vect-rounding-ceilf.c: Likewise.
+	* gcc.target/arm/vect-rounding-floorf.c: Likewise.
+	* gcc.target/arm/vect-rounding-roundf.c: Likewise.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_dup_1.c: New test.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vld1-vst1_1.c: Rewrite to test all variants.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vldN_1.c: New test.
+
+2014-09-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/int_comparisons_1.c: Tighten regexp.
+
+2014-09-09  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/vect-copysignf.c: New testcase.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vfp-1.c: Updated expected assembly.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr51835.c: Update expected assembly.
+	* gcc.target/arm/vfp-1.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbs.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-ldmias.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmdbs.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmias.c: Likewise.
+
+2014-09-09  Tony Wang  <tony.wang@arm.com>
+
+	* gcc.target/arm/xordi3-opt.c: Disable this
+	test case for thumb1 target.
+	* gcc.target/arm/iordi3-opt.c: Ditto.
+
+2014-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61749
+	* gcc.target/aarch64/vqdml_lane_intrinsics-bad_1.c: New test.
+
+2014-09-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c: New test.
+
+2014-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60196
+	PR tree-optimization/63189
+	* gcc.dg/vect/pr63189.c: New test.
+	* gcc.dg/vect/pr60196-1.c: New test.
+	* gcc.dg/vect/pr60196-2.c: New test.
+
+2014-09-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-16.c: New test.
+
+2014-09-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/i386/pr62208.c: New test.
+
+2014-09-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/56194
+	* g++.dg/init/const9.C: Skip scan-assembler-not "rodata" on hppa*-*-*.
+
+	* g++.dg/ipa/pr61800.C: Require visibility.
+
+	* gcc.dg/pr61868.c: Require lto.
+
+2014-09-05  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/62146
+	* testsuite/g++.dg/opt/pr62146.C: New.
+
+2014-09-05  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* gcc.dg/vect/vect-109.c: Skip predicate added.
+	* gcc.dg/vect/vect-93.c: Test check fixed.
+	* gcc.dg/vect/bb-slp-10.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_arm_vect_no_misalign):
+	Check unaligned feature.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (*): Replace all
+	int{32,16,8}x1_t with int{32,16,8}_t.
+	* gcc.target/aarch64/simd/vqdmlalh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmullh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulls_lane_s32.c: Likewise.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vget_high_1.c: New test.
+	* gcc.target/aarch64/vget_low_1.c: Likewise.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/int_comparisons.x: New file.
+	* gcc.target/aarch64/simd/int_comparisons_1.c: New test.
+	* gcc.target/aarch64/simd/int_comparisons_2.c: Ditto.
+
+2014-09-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vrbit_1.c: New test.
+
+2014-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63148
+	* gcc.dg/vect/pr63148.c: New testcase.
+	* c-c++-common/pr19807-1.c: Likewise.
+	* g++.dg/tree-ssa/pr19807.C: Adjust.
+	* g++.dg/tree-ssa/tmmti-2.C: Remove.
+
+2014-09-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/55701
+	* gcc.target/arm/memset-inline-1.c: New test.
+	* gcc.target/arm/memset-inline-2.c: New test.
+	* gcc.target/arm/memset-inline-3.c: New test.
+	* gcc.target/arm/memset-inline-4.c: New test.
+	* gcc.target/arm/memset-inline-5.c: New test.
+	* gcc.target/arm/memset-inline-6.c: New test.
+	* gcc.target/arm/memset-inline-7.c: New test.
+	* gcc.target/arm/memset-inline-8.c: New test.
+	* gcc.target/arm/memset-inline-9.c: New test.
+	* gcc.target/arm/memset-inline-10.c: New test.
+
+2014-09-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr44683.c: Remove dg-options for sh*-*-*.
+
+2014-09-04  Guozhi Wei  <carrot@google.com>
+
+	PR target/62040
+	* gcc.target/aarch64/pr62040.c: New test.
+
+2014-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/endif-pedantic2.c: More general options do not
+	override specific ones, but specific ones do.
+
+2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-13.c: New test.
+	* gcc.target/powerpc/swaps-p8-14.c: New test.
+	* gcc.target/powerpc/swaps-p8-15.c: New test.
+
+2014-09-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-extract-1.c:  Test 0th doubleword
+	regardless of endianness.
+
+2014-09-02  Fritz Reese  <Reese-Fritz@zai.com>
+
+	PR fortran/62174
+	* gfortran.dg/cray_pointers_11.f90: New.
+
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/62015
+	* g++.dg/ipa/pr62015.C: New test.
+
+2014-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61986
+	* gcc.dg/ipa/pr61986.c: New test.
+
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62294
+	* gcc.dg/pr62294.c: New test.
+	* gcc.dg/pr62294.h: New file.
+
+2014-09-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr39228.c: Use dg-add-options instead
+	of dg-options.  Add "inline" keyword to test functions.
+
+2014-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/62024
+	* g++.dg/cpp0x/pr62024.C: New test.
+	* gcc.dg/pr62024.c: New test.
+
+2014-09-03  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/adx-addcarryx32-1.c: Test addcarry, subborrow.
+	* gcc.target/i386/adx-addcarryx32-2.c: Ditto.
+	* gcc.target/i386/adx-addcarryx32-3.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-1.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-2.c: Ditto.
+	* gcc.target/i386/adx-addcarryx64-3.c: Ditto.
+
+2014-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/61078
+	* gcc.target/s390/pr61078.c: New testcase.
+
+2014-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/20111227-2.c: Compile only for x86 targets.
+	* gcc.dg/20111227-3.c: Ditto.
+
+2014-09-03  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* lib/gcc-dg.exp (set-target-env-var): Change env to ::env.
+
+2014-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/61881
+	PR fortran/61888
+	PR fortran/57305
+	* gfortran.dg/sizeof_4.f90: New.
+
+2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Add tests for vec_ctf,
+	vec_cts, and vec_ctu.
+	* gcc.target/powerpc/builtins-2.c: Likewise.
+
+2014-09-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C [!STACK_SIZE && !__FreeBSD__]
+	[!__sun__ && !__hpux__] (arena_size): Scale according to
+	target pointer size.
+
+2014-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/62270
+	* gfortran.dg/pointer_intent_7.f90: Adjust dg-error.
+
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62275
+	* gcc.target/arm/vect-lceilf_1.c: New test.
+	* gcc.target/arm/vect-lfloorf_1.c: Likewise.
+	* gcc.target/arm/vect-lroundf_1.c: Likewise.
+
+2014-09-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62275
+	* gcc.target/arm/lceil-vcvt_1.c: New test.
+	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
+	* gcc.target/arm/lround-vcvt_1.c: Likewise.
+
+2014-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1453
+	* g++.dg/cpp0x/constexpr-volatile.C: New.
+	* g++.dg/ext/is_literal_type2.C: Likewise.
+
+2014-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* c-c++-common/cilk-plus/CK/cilk-fors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk-for-2.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk-for-3.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_errors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain_errors.c: New test.
+	* c-c++-common/cilk-plus/CK/cilk_for_ptr_iter.c: New test.
+	* c-c++-common/cilk-plus/CK/nested_cilk_for.c: New test.
+	* g++.dg/cilk-plus/CK/cf3.cc: New test.
+	* g++.dg/cilk-plus/CK/cilk-for-tplt.cc: New test.
+	* g++.dg/cilk-plus/CK/for1.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_iter.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_rev_iter.cc: New test.
+	* g++.dg/cilk-plus/CK/stl_test.cc: New test.
+
+2014-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62695
+	* gfortran.dg/pr62695.f90: New testcase.
+
+2014-09-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/62312
+	* gcc.c-torture/compile/pr62312.c: New.
+
+2014-09-01  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/tree-ssa/loop-19.c: Exclude classic FPU Power targets.
+
+2014-09-01  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_cortex_m):
+	Return right away if !arm*-*-*.
+
+2014-09-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/unsorted/386.c: Move to ...
+	* gcc.c-torture/compile/386.c: ... here.
+	* gcc.c-torture/unsorted/86.c: Move to ...
+	* gcc.c-torture/compile/86.c: ... here.
+	* gcc.c-torture/unsorted/a1.c: Move to ...
+	* gcc.c-torture/compile/a1.c: ... here.
+	* gcc.c-torture/unsorted/a3.c: Move to ...
+	* gcc.c-torture/compile/a3.c: ... here.
+	* gcc.c-torture/unsorted/aaa.c: Move to ...
+	* gcc.c-torture/compile/aaa.c: ... here.
+	* gcc.c-torture/unsorted/aa.c: Move to ...
+	* gcc.c-torture/compile/aa.c: ... here.
+	* gcc.c-torture/unsorted/abs.c: Move to ...
+	* gcc.c-torture/compile/abs.c: ... here.
+	* gcc.c-torture/unsorted/a.c: Move to ...
+	* gcc.c-torture/compile/a.c: ... here.
+	* gcc.c-torture/unsorted/ac.c: Move to ...
+	* gcc.c-torture/compile/ac.c: ... here.
+	* gcc.c-torture/unsorted/acc.c: Move to ...
+	* gcc.c-torture/compile/acc.c: ... here.
+	* gcc.c-torture/unsorted/add386.c: Move to ...
+	* gcc.c-torture/compile/add386.c: ... here.
+	* gcc.c-torture/unsorted/add.c: Move to ...
+	* gcc.c-torture/compile/add.c: ... here.
+	* gcc.c-torture/unsorted/addcc.c: Move to ...
+	* gcc.c-torture/compile/addcc.c: ... here.
+	* gcc.c-torture/unsorted/andm.c: Move to ...
+	* gcc.c-torture/compile/andm.c: ... here.
+	* gcc.c-torture/unsorted/andmem.c: Move to ...
+	* gcc.c-torture/compile/andmem.c: ... here.
+	* gcc.c-torture/unsorted/andn.c: Move to ...
+	* gcc.c-torture/compile/andn.c: ... here.
+	* gcc.c-torture/unsorted/andok.c: Move to ...
+	* gcc.c-torture/compile/andok.c: ... here.
+	* gcc.c-torture/unsorted/andsi.c: Move to ...
+	* gcc.c-torture/compile/andsi.c: ... here.
+	* gcc.c-torture/unsorted/andsparc.c: Move to ...
+	* gcc.c-torture/compile/andsparc.c: ... here.
+	* gcc.c-torture/unsorted/aos.c: Move to ...
+	* gcc.c-torture/compile/aos.c: ... here.
+	* gcc.c-torture/unsorted/arr.c: Move to ...
+	* gcc.c-torture/compile/arr.c: ... here.
+	* gcc.c-torture/unsorted/as.c: Move to ...
+	* gcc.c-torture/compile/as.c: ... here.
+	* gcc.c-torture/unsorted/ase.c: Move to ...
+	* gcc.c-torture/compile/ase.c: ... here.
+	* gcc.c-torture/unsorted/b1.c: Move to ...
+	* gcc.c-torture/compile/b1.c: ... here.
+	* gcc.c-torture/unsorted/b2.c: Move to ...
+	* gcc.c-torture/compile/b2.c: ... here.
+	* gcc.c-torture/unsorted/b3.c: Move to ...
+	* gcc.c-torture/compile/b3.c: ... here.
+	* gcc.c-torture/unsorted/b88.c: Move to ...
+	* gcc.c-torture/compile/b88.c: ... here.
+	* gcc.c-torture/unsorted/bad.c: Move to ...
+	* gcc.c-torture/compile/bad.c: ... here.
+	* gcc.c-torture/unsorted/band.c: Move to ...
+	* gcc.c-torture/compile/band.c: ... here.
+	* gcc.c-torture/unsorted/bb0.c: Move to ...
+	* gcc.c-torture/compile/bb0.c: ... here.
+	* gcc.c-torture/unsorted/bb1.c: Move to ...
+	* gcc.c-torture/compile/bb1.c: ... here.
+	* gcc.c-torture/unsorted/bbb.c: Move to ...
+	* gcc.c-torture/compile/bbb.c: ... here.
+	* gcc.c-torture/unsorted/b.c: Move to ...
+	* gcc.c-torture/compile/b.c: ... here.
+	* gcc.c-torture/unsorted/bc.c: Move to ...
+	* gcc.c-torture/compile/bc.c: ... here.
+	* gcc.c-torture/unsorted/bcopy.c: Move to ...
+	* gcc.c-torture/compile/bcopy.c: ... here.
+	* gcc.c-torture/unsorted/bf.c: Move to ...
+	* gcc.c-torture/compile/bf.c: ... here.
+	* gcc.c-torture/unsorted/bfins.c: Move to ...
+	* gcc.c-torture/compile/bfins.c: ... here.
+	* gcc.c-torture/unsorted/bfx.c: Move to ...
+	* gcc.c-torture/compile/bfx.c: ... here.
+	* gcc.c-torture/unsorted/bge.c: Move to ...
+	* gcc.c-torture/compile/bge.c: ... here.
+	* gcc.c-torture/unsorted/bit.c: Move to ...
+	* gcc.c-torture/compile/bit.c: ... here.
+	* gcc.c-torture/unsorted/bitf.c: Move to ...
+	* gcc.c-torture/compile/bitf.c: ... here.
+	* gcc.c-torture/unsorted/bitw.c: Move to ...
+	* gcc.c-torture/compile/bitw.c: ... here.
+	* gcc.c-torture/unsorted/blk.c: Move to ...
+	* gcc.c-torture/compile/blk.c: ... here.
+	* gcc.c-torture/unsorted/bt386.c: Move to ...
+	* gcc.c-torture/compile/bt386.c: ... here.
+	* gcc.c-torture/unsorted/bt.c: Move to ...
+	* gcc.c-torture/compile/bt.c: ... here.
+	* gcc.c-torture/unsorted/BUG11.c: Move to ...
+	* gcc.c-torture/compile/BUG11.c: ... here.
+	* gcc.c-torture/unsorted/BUG12.c: Move to ...
+	* gcc.c-torture/compile/BUG12.c: ... here.
+	* gcc.c-torture/unsorted/BUG13.c: Move to ...
+	* gcc.c-torture/compile/BUG13.c: ... here.
+	* gcc.c-torture/unsorted/BUG16.c: Move to ...
+	* gcc.c-torture/compile/BUG16.c: ... here.
+	* gcc.c-torture/unsorted/BUG17.c: Move to ...
+	* gcc.c-torture/compile/BUG17.c: ... here.
+	* gcc.c-torture/unsorted/BUG18.c: Move to ...
+	* gcc.c-torture/compile/BUG18.c: ... here.
+	* gcc.c-torture/unsorted/BUG1.c: Move to ...
+	* gcc.c-torture/compile/BUG1.c: ... here.
+	* gcc.c-torture/unsorted/BUG21.c: Move to ...
+	* gcc.c-torture/compile/BUG21.c: ... here.
+	* gcc.c-torture/unsorted/BUG22.c: Move to ...
+	* gcc.c-torture/compile/BUG22.c: ... here.
+	* gcc.c-torture/unsorted/BUG23.c: Move to ...
+	* gcc.c-torture/compile/BUG23.c: ... here.
+	* gcc.c-torture/unsorted/BUG24.c: Move to ...
+	* gcc.c-torture/compile/BUG24.c: ... here.
+	* gcc.c-torture/unsorted/BUG25.c: Move to ...
+	* gcc.c-torture/compile/BUG25.c: ... here.
+	* gcc.c-torture/unsorted/BUG2.c: Move to ...
+	* gcc.c-torture/compile/BUG2.c: ... here.
+	* gcc.c-torture/unsorted/BUG3.c: Move to ...
+	* gcc.c-torture/compile/BUG3.c: ... here.
+	* gcc.c-torture/unsorted/BUG4.c: Move to ...
+	* gcc.c-torture/compile/BUG4.c: ... here.
+	* gcc.c-torture/unsorted/BUG5.c: Move to ...
+	* gcc.c-torture/compile/BUG5.c: ... here.
+	* gcc.c-torture/unsorted/BUG6.c: Move to ...
+	* gcc.c-torture/compile/BUG6.c: ... here.
+	* gcc.c-torture/unsorted/bug.c: Move to ...
+	* gcc.c-torture/compile/bug.c: ... here.
+	* gcc.c-torture/unsorted/bugc.c: Move to ...
+	* gcc.c-torture/compile/bugc.c: ... here.
+	* gcc.c-torture/unsorted/buns.c: Move to ...
+	* gcc.c-torture/compile/buns.c: ... here.
+	* gcc.c-torture/unsorted/bx.c: Move to ...
+	* gcc.c-torture/compile/bx.c: ... here.
+	* gcc.c-torture/unsorted/c1.c: Move to ...
+	* gcc.c-torture/compile/c1.c: ... here.
+	* gcc.c-torture/unsorted/c2.c: Move to ...
+	* gcc.c-torture/compile/c2.c: ... here.
+	* gcc.c-torture/unsorted/call386.c: Move to ...
+	* gcc.c-torture/compile/call386.c: ... here.
+	* gcc.c-torture/unsorted/call.c: Move to ...
+	* gcc.c-torture/compile/call.c: ... here.
+	* gcc.c-torture/unsorted/callind.c: Move to ...
+	* gcc.c-torture/compile/callind.c: ... here.
+	* gcc.c-torture/unsorted/c.c: Move to ...
+	* gcc.c-torture/compile/c.c: ... here.
+	* gcc.c-torture/unsorted/cc.c: Move to ...
+	* gcc.c-torture/compile/cc.c: ... here.
+	* gcc.c-torture/unsorted/charmtst.c: Move to ...
+	* gcc.c-torture/compile/charmtst.c: ... here.
+	* gcc.c-torture/unsorted/cmb.c: Move to ...
+	* gcc.c-torture/compile/cmb.c: ... here.
+	* gcc.c-torture/unsorted/cmp.c: Move to ...
+	* gcc.c-torture/compile/cmp.c: ... here.
+	* gcc.c-torture/unsorted/cmphi.c: Move to ...
+	* gcc.c-torture/compile/cmphi.c: ... here.
+	* gcc.c-torture/unsorted/cmpsi386.c: Move to ...
+	* gcc.c-torture/compile/cmpsi386.c: ... here.
+	* gcc.c-torture/unsorted/cmul.c: Move to ...
+	* gcc.c-torture/compile/cmul.c: ... here.
+	* gcc.c-torture/unsorted/cn1.c: Move to ...
+	* gcc.c-torture/compile/cn1.c: ... here.
+	* gcc.c-torture/unsorted/comb.c: Move to ...
+	* gcc.c-torture/compile/comb.c: ... here.
+	* gcc.c-torture/unsorted/consec.c: Move to ...
+	* gcc.c-torture/compile/consec.c: ... here.
+	* gcc.c-torture/unsorted/const.c: Move to ...
+	* gcc.c-torture/compile/const.c: ... here.
+	* gcc.c-torture/unsorted/conv.c: Move to ...
+	* gcc.c-torture/compile/conv.c: ... here.
+	* gcc.c-torture/unsorted/conv_tst.c: Move to ...
+	* gcc.c-torture/compile/conv_tst.c: ... here.
+	* gcc.c-torture/unsorted/cp.c: Move to ...
+	* gcc.c-torture/compile/cp.c: ... here.
+	* gcc.c-torture/unsorted/csebug.c: Move to ...
+	* gcc.c-torture/compile/csebug.c: ... here.
+	* gcc.c-torture/unsorted/cvt.c: Move to ...
+	* gcc.c-torture/compile/cvt.c: ... here.
+	* gcc.c-torture/unsorted/dblbug.c: Move to ...
+	* gcc.c-torture/compile/dblbug.c: ... here.
+	* gcc.c-torture/unsorted/dbl_parm.c: Move to ...
+	* gcc.c-torture/compile/dbl_parm.c: ... here.
+	* gcc.c-torture/unsorted/d.c: Move to ...
+	* gcc.c-torture/compile/d.c: ... here.
+	* gcc.c-torture/unsorted/ddd.c: Move to ...
+	* gcc.c-torture/compile/ddd.c: ... here.
+	* gcc.c-torture/unsorted/dead.c: Move to ...
+	* gcc.c-torture/compile/dead.c: ... here.
+	* gcc.c-torture/unsorted/delay.c: Move to ...
+	* gcc.c-torture/compile/delay.c: ... here.
+	* gcc.c-torture/unsorted/DFcmp.c: Move to ...
+	* gcc.c-torture/compile/DFcmp.c: ... here.  Require int32plus.
+	* gcc.c-torture/unsorted/di.c: Move to ...
+	* gcc.c-torture/compile/di.c: ... here.
+	* gcc.c-torture/unsorted/dic.c: Move to ...
+	* gcc.c-torture/compile/dic.c: ... here.
+	* gcc.c-torture/unsorted/dilayout.c: Move to ...
+	* gcc.c-torture/compile/dilayout.c: ... here.
+	* gcc.c-torture/unsorted/dimove.c: Move to ...
+	* gcc.c-torture/compile/dimove.c: ... here.
+	* gcc.c-torture/unsorted/dimul.c: Move to ...
+	* gcc.c-torture/compile/dimul.c: ... here.
+	* gcc.c-torture/unsorted/div.c: Move to ...
+	* gcc.c-torture/compile/div.c: ... here.
+	* gcc.c-torture/unsorted/divdf.c: Move to ...
+	* gcc.c-torture/compile/divdf.c: ... here.
+	* gcc.c-torture/unsorted/dm.c: Move to ...
+	* gcc.c-torture/compile/dm.c: ... here.
+	* gcc.c-torture/unsorted/dshift.c: Move to ...
+	* gcc.c-torture/compile/dshift.c: ... here.
+	* gcc.c-torture/unsorted/e.c: Move to ...
+	* gcc.c-torture/compile/e.c: ... here.
+	* gcc.c-torture/unsorted/ex.c: Move to ...
+	* gcc.c-torture/compile/ex.c: ... here.
+	* gcc.c-torture/unsorted/ext.c: Move to ...
+	* gcc.c-torture/compile/ext.c: ... here.
+	* gcc.c-torture/unsorted/f1.c: Move to ...
+	* gcc.c-torture/compile/f1.c: ... here.
+	* gcc.c-torture/unsorted/f2.c: Move to ...
+	* gcc.c-torture/compile/f2.c: ... here.
+	* gcc.c-torture/unsorted/fdmul.c: Move to ...
+	* gcc.c-torture/compile/fdmul.c: ... here.
+	* gcc.c-torture/unsorted/float.c: Move to ...
+	* gcc.c-torture/compile/float.c: ... here.
+	* gcc.c-torture/unsorted/flo.c: Move to ...
+	* gcc.c-torture/compile/flo.c: ... here.
+	* gcc.c-torture/unsorted/flt_const.c: Move to ...
+	* gcc.c-torture/compile/flt_const.c: ... here.
+	* gcc.c-torture/unsorted/fnul.c: Move to ...
+	* gcc.c-torture/compile/fnul.c: ... here.
+	* gcc.c-torture/unsorted/foo.c: Move to ...
+	* gcc.c-torture/compile/foo.c: ... here.
+	* gcc.c-torture/unsorted/forgetcc.c: Move to ...
+	* gcc.c-torture/compile/forgetcc.c: ... here.
+	* gcc.c-torture/unsorted/fq.c: Move to ...
+	* gcc.c-torture/compile/fq.c: ... here.
+	* gcc.c-torture/unsorted/g.c: Move to ...
+	* gcc.c-torture/compile/g.c: ... here.
+	* gcc.c-torture/unsorted/gen_tst.c: Move to ...
+	* gcc.c-torture/compile/gen_tst.c: ... here.
+	* gcc.c-torture/unsorted/glob.c: Move to ...
+	* gcc.c-torture/compile/glob.c: ... here.
+	* gcc.c-torture/unsorted/gronk.c: Move to ...
+	* gcc.c-torture/compile/gronk.c: ... here.
+	* gcc.c-torture/unsorted/hibug.c: Move to ...
+	* gcc.c-torture/compile/hibug.c: ... here.
+	* gcc.c-torture/unsorted/hi.c: Move to ...
+	* gcc.c-torture/compile/hi.c: ... here.
+	* gcc.c-torture/unsorted/HIcmp.c: Move to ...
+	* gcc.c-torture/compile/HIcmp.c: ... here.
+	* gcc.c-torture/unsorted/HIset.c: Move to ...
+	* gcc.c-torture/compile/HIset.c: ... here.
+	* gcc.c-torture/unsorted/i.c: Move to ...
+	* gcc.c-torture/compile/i.c: ... here.
+	* gcc.c-torture/unsorted/i++.c: Move to ...
+	* gcc.c-torture/compile/i++.c: ... here.
+	* gcc.c-torture/unsorted/ic.c: Move to ...
+	* gcc.c-torture/compile/ic.c: ... here.
+	* gcc.c-torture/unsorted/icmp.c: Move to ...
+	* gcc.c-torture/compile/icmp.c: ... here.
+	* gcc.c-torture/unsorted/ifreg.c: Move to ...
+	* gcc.c-torture/compile/ifreg.c: ... here.
+	* gcc.c-torture/unsorted/imm.c: Move to ...
+	* gcc.c-torture/compile/imm.c: ... here.
+	* gcc.c-torture/unsorted/isinf.c: Move to ...
+	* gcc.c-torture/compile/isinf.c: ... here.
+	* gcc.c-torture/unsorted/jmp.c: Move to ...
+	* gcc.c-torture/compile/jmp.c: ... here.
+	* gcc.c-torture/unsorted/jumptab.c: Move to ...
+	* gcc.c-torture/compile/jumptab.c: ... here.
+	* gcc.c-torture/unsorted/layout.c: Move to ...
+	* gcc.c-torture/compile/layout.c: ... here.
+	* gcc.c-torture/unsorted/lbug.c: Move to ...
+	* gcc.c-torture/compile/lbug.c: ... here.
+	* gcc.c-torture/unsorted/l.c: Move to ...
+	* gcc.c-torture/compile/l.c: ... here.
+	* gcc.c-torture/unsorted/ll1.c: Move to ...
+	* gcc.c-torture/compile/ll1.c: ... here.
+	* gcc.c-torture/unsorted/llbug.c: Move to ...
+	* gcc.c-torture/compile/llbug.c: ... here.
+	* gcc.c-torture/unsorted/lll.c: Move to ...
+	* gcc.c-torture/compile/lll.c: ... here.
+	* gcc.c-torture/unsorted/load8.c: Move to ...
+	* gcc.c-torture/compile/load8.c: ... here.
+	* gcc.c-torture/unsorted/loadhicc.c: Move to ...
+	* gcc.c-torture/compile/loadhicc.c: ... here.
+	* gcc.c-torture/unsorted/log2.c: Move to ...
+	* gcc.c-torture/compile/log2.c: ... here.
+	* gcc.c-torture/unsorted/logic.c: Move to ...
+	* gcc.c-torture/compile/logic.c: ... here.
+	* gcc.c-torture/unsorted/loop-1.c: Move to ...
+	* gcc.c-torture/compile/loop-1.c: ... here.
+	* gcc.c-torture/unsorted/loop386.c: Move to ...
+	* gcc.c-torture/compile/loop386.c: ... here.
+	* gcc.c-torture/unsorted/lop.c: Move to ...
+	* gcc.c-torture/compile/lop.c: ... here.
+	* gcc.c-torture/unsorted/m1.c: Move to ...
+	* gcc.c-torture/compile/m1.c: ... here.
+	* gcc.c-torture/unsorted/m2.c: Move to ...
+	* gcc.c-torture/compile/m2.c: ... here.
+	* gcc.c-torture/unsorted/m5.c: Move to ...
+	* gcc.c-torture/compile/m5.c: ... here.
+	* gcc.c-torture/unsorted/m68.c: Move to ...
+	* gcc.c-torture/compile/m68.c: ... here.
+	* gcc.c-torture/unsorted/mbyte.c: Move to ...
+	* gcc.c-torture/compile/mbyte.c: ... here.
+	* gcc.c-torture/unsorted/mchar.c: Move to ...
+	* gcc.c-torture/compile/mchar.c: ... here.
+	* gcc.c-torture/unsorted/mcmp.c: Move to ...
+	* gcc.c-torture/compile/mcmp.c: ... here.
+	* gcc.c-torture/unsorted/mdouble.c: Move to ...
+	* gcc.c-torture/compile/mdouble.c: ... here.
+	* gcc.c-torture/unsorted/memtst.c: Move to ...
+	* gcc.c-torture/compile/memtst.c: ... here.
+	* gcc.c-torture/unsorted/miscomp.c: Move to ...
+	* gcc.c-torture/compile/miscomp.c: ... here.
+	* gcc.c-torture/unsorted/mm.c: Move to ...
+	* gcc.c-torture/compile/mm.c: ... here.
+	* gcc.c-torture/unsorted/mod.c: Move to ...
+	* gcc.c-torture/compile/mod.c: ... here.
+	* gcc.c-torture/unsorted/modcc.c: Move to ...
+	* gcc.c-torture/compile/modcc.c: ... here.
+	* gcc.c-torture/unsorted/move.c: Move to ...
+	* gcc.c-torture/compile/move.c: ... here.
+	* gcc.c-torture/unsorted/move_qhi.c: Move to ...
+	* gcc.c-torture/compile/move_qhi.c: ... here.
+	* gcc.c-torture/unsorted/mregtst.c: Move to ...
+	* gcc.c-torture/compile/mregtst.c: ... here.
+	* gcc.c-torture/unsorted/msp.c: Move to ...
+	* gcc.c-torture/compile/msp.c: ... here.
+	* gcc.c-torture/unsorted/mtst.c: Move to ...
+	* gcc.c-torture/compile/mtst.c: ... here.
+	* gcc.c-torture/unsorted/mu.c: Move to ...
+	* gcc.c-torture/compile/mu.c: ... here.
+	* gcc.c-torture/unsorted/mul.c: Move to ...
+	* gcc.c-torture/compile/mul.c: ... here.
+	* gcc.c-torture/unsorted/mword1.c: Move to ...
+	* gcc.c-torture/compile/mword1.c: ... here.
+	* gcc.c-torture/unsorted/mword.c: Move to ...
+	* gcc.c-torture/compile/mword.c: ... here.
+	* gcc.c-torture/unsorted/n1.c: Move to ...
+	* gcc.c-torture/compile/n1.c: ... here.
+	* gcc.c-torture/unsorted/nand.c: Move to ...
+	* gcc.c-torture/compile/nand.c: ... here.
+	* gcc.c-torture/unsorted/n.c: Move to ...
+	* gcc.c-torture/compile/n.c: ... here.
+	* gcc.c-torture/unsorted/neg.c: Move to ...
+	* gcc.c-torture/compile/neg.c: ... here.
+	* gcc.c-torture/unsorted/o.c: Move to ...
+	* gcc.c-torture/compile/o.c: ... here.
+	* gcc.c-torture/unsorted/omit.c: Move to ...
+	* gcc.c-torture/compile/omit.c: ... here.
+	* gcc.c-torture/unsorted/opout.c: Move to ...
+	* gcc.c-torture/compile/opout.c: ... here.
+	* gcc.c-torture/unsorted/opt.c: Move to ...
+	* gcc.c-torture/compile/opt.c: ... here.
+	* gcc.c-torture/unsorted/or386.c: Move to ...
+	* gcc.c-torture/compile/or386.c: ... here.
+	* gcc.c-torture/unsorted/or.c: Move to ...
+	* gcc.c-torture/compile/or.c: ... here.
+	* gcc.c-torture/unsorted/parms.c: Move to ...
+	* gcc.c-torture/compile/parms.c: ... here.
+	* gcc.c-torture/unsorted/pass.c: Move to ...
+	* gcc.c-torture/compile/pass.c: ... here.
+	* gcc.c-torture/unsorted/p.c: Move to ...
+	* gcc.c-torture/compile/p.c: ... here.
+	* gcc.c-torture/unsorted/pmt.c: Move to ...
+	* gcc.c-torture/compile/pmt.c: ... here.
+	* gcc.c-torture/unsorted/poor.c: Move to ...
+	* gcc.c-torture/compile/poor.c: ... here.
+	* gcc.c-torture/unsorted/pp.c: Move to ...
+	* gcc.c-torture/compile/pp.c: ... here.
+	* gcc.c-torture/unsorted/pret-arg.c: Move to ...
+	* gcc.c-torture/compile/pret-arg.c: ... here.
+	* gcc.c-torture/unsorted/pyr2.c: Move to ...
+	* gcc.c-torture/compile/pyr2.c: ... here.
+	* gcc.c-torture/unsorted/PYRBUG.c: Move to ...
+	* gcc.c-torture/compile/PYRBUG.c: ... here.
+	* gcc.c-torture/unsorted/pyr.c: Move to ...
+	* gcc.c-torture/compile/pyr.c: ... here.
+	* gcc.c-torture/unsorted/q.c: Move to ...
+	* gcc.c-torture/compile/q.c: ... here.
+	* gcc.c-torture/unsorted/QIcmp.c: Move to ...
+	* gcc.c-torture/compile/QIcmp.c: ... here.
+	* gcc.c-torture/unsorted/QIset.c: Move to ...
+	* gcc.c-torture/compile/QIset.c: ... here.
+	* gcc.c-torture/unsorted/r1.c: Move to ...
+	* gcc.c-torture/compile/r1.c: ... here.
+	* gcc.c-torture/unsorted/r.c: Move to ...
+	* gcc.c-torture/compile/r.c: ... here.
+	* gcc.c-torture/unsorted/rel.c: Move to ...
+	* gcc.c-torture/compile/rel.c: ... here.
+	* gcc.c-torture/unsorted/rmsc.c: Move to ...
+	* gcc.c-torture/compile/rmsc.c: ... here.
+	* gcc.c-torture/unsorted/round.c: Move to ...
+	* gcc.c-torture/compile/round.c: ... here.
+	* gcc.c-torture/unsorted/run.c: Move to ...
+	* gcc.c-torture/compile/run.c: ... here.
+	* gcc.c-torture/unsorted/sar.c: Move to ...
+	* gcc.c-torture/compile/sar.c: ... here.
+	* gcc.c-torture/unsorted/s.c: Move to ...
+	* gcc.c-torture/compile/s.c: ... here.
+	* gcc.c-torture/unsorted/scal.c: Move to ...
+	* gcc.c-torture/compile/scal.c: ... here.
+	* gcc.c-torture/unsorted/sc.c: Move to ...
+	* gcc.c-torture/compile/sc.c: ... here.
+	* gcc.c-torture/unsorted/scc.c: Move to ...
+	* gcc.c-torture/compile/scc.c: ... here.
+	* gcc.c-torture/unsorted/scond.c: Move to ...
+	* gcc.c-torture/compile/scond.c: ... here.
+	* gcc.c-torture/unsorted/selfrec.c: Move to ...
+	* gcc.c-torture/compile/selfrec.c: ... here.
+	* gcc.c-torture/unsorted/seq.c: Move to ...
+	* gcc.c-torture/compile/seq.c: ... here.
+	* gcc.c-torture/unsorted/set386.c: Move to ...
+	* gcc.c-torture/compile/set386.c: ... here.
+	* gcc.c-torture/unsorted/set88.c: Move to ...
+	* gcc.c-torture/compile/set88.c: ... here.
+	* gcc.c-torture/unsorted/SFset.c: Move to ...
+	* gcc.c-torture/compile/SFset.c: ... here.  Require int32plus.
+	* gcc.c-torture/unsorted/shand.c: Move to ...
+	* gcc.c-torture/compile/shand.c: ... here.
+	* gcc.c-torture/unsorted/sh.c: Move to ...
+	* gcc.c-torture/compile/sh.c: ... here.
+	* gcc.c-torture/unsorted/shft.c: Move to ...
+	* gcc.c-torture/compile/shft.c: ... here.
+	* gcc.c-torture/unsorted/shift.c: Move to ...
+	* gcc.c-torture/compile/shift.c: ... here.
+	* gcc.c-torture/unsorted/shloop.c: Move to ...
+	* gcc.c-torture/compile/shloop.c: ... here.
+	* gcc.c-torture/unsorted/shm.c: Move to ...
+	* gcc.c-torture/compile/shm.c: ... here.
+	* gcc.c-torture/unsorted/SIcmp.c: Move to ...
+	* gcc.c-torture/compile/SIcmp.c: ... here.
+	* gcc.c-torture/unsorted/signext2.c: Move to ...
+	* gcc.c-torture/compile/signext2.c: ... here.
+	* gcc.c-torture/unsorted/signext.c: Move to ...
+	* gcc.c-torture/compile/signext.c: ... here.
+	* gcc.c-torture/unsorted/sim.c: Move to ...
+	* gcc.c-torture/compile/sim.c: ... here.
+	* gcc.c-torture/unsorted/simple.c: Move to ...
+	* gcc.c-torture/compile/simple.c: ... here.
+	* gcc.c-torture/unsorted/SIset.c: Move to ...
+	* gcc.c-torture/compile/SIset.c: ... here.
+	* gcc.c-torture/unsorted/sne.c: Move to ...
+	* gcc.c-torture/compile/sne.c: ... here.
+	* gcc.c-torture/unsorted/sound.c: Move to ...
+	* gcc.c-torture/compile/sound.c: ... here.
+	* gcc.c-torture/unsorted/sparcbug.c: Move to ...
+	* gcc.c-torture/compile/sparcbug.c: ... here.
+	* gcc.c-torture/unsorted/speed.c: Move to ...
+	* gcc.c-torture/compile/speed.c: ... here.
+	* gcc.c-torture/unsorted/stor.c: Move to ...
+	* gcc.c-torture/compile/stor.c: ... here.
+	* gcc.c-torture/unsorted/store0.c: Move to ...
+	* gcc.c-torture/compile/store0.c: ... here.
+	* gcc.c-torture/unsorted/storecc.c: Move to ...
+	* gcc.c-torture/compile/storecc.c: ... here.
+	* gcc.c-torture/unsorted/str.c: Move to ...
+	* gcc.c-torture/compile/str.c: ... here.
+	* gcc.c-torture/unsorted/stru.c: Move to ...
+	* gcc.c-torture/compile/stru.c: ... here.
+	* gcc.c-torture/unsorted/structret.c: Move to ...
+	* gcc.c-torture/compile/structret.c: ... here.
+	* gcc.c-torture/unsorted/stuct.c: Move to ...
+	* gcc.c-torture/compile/stuct.c: ... here.
+	* gcc.c-torture/unsorted/sub32.c: Move to ...
+	* gcc.c-torture/compile/sub32.c: ... here.
+	* gcc.c-torture/unsorted/subcc.c: Move to ...
+	* gcc.c-torture/compile/subcc.c: ... here.
+	* gcc.c-torture/unsorted/subcse.c: Move to ...
+	* gcc.c-torture/compile/subcse.c: ... here.
+	* gcc.c-torture/unsorted/sym.c: Move to ...
+	* gcc.c-torture/compile/sym.c: ... here.
+	* gcc.c-torture/unsorted/symconst.c: Move to ...
+	* gcc.c-torture/compile/symconst.c: ... here.
+	* gcc.c-torture/unsorted/t.c: Move to ...
+	* gcc.c-torture/compile/t.c: ... here.
+	* gcc.c-torture/unsorted/test.c: Move to ...
+	* gcc.c-torture/compile/test.c: ... here.
+	* gcc.c-torture/unsorted/test-flow.c: Move to ...
+	* gcc.c-torture/compile/test-flow.c: ... here.
+	* gcc.c-torture/unsorted/test-loop.c: Move to ...
+	* gcc.c-torture/compile/test-loop.c: ... here.
+	* gcc.c-torture/unsorted/time.c: Move to ...
+	* gcc.c-torture/compile/time.c: ... here.
+	* gcc.c-torture/unsorted/tmp.c: Move to ...
+	* gcc.c-torture/compile/tmp.c: ... here.
+	* gcc.c-torture/unsorted/trivial.c: Move to ...
+	* gcc.c-torture/compile/trivial.c: ... here.
+	* gcc.c-torture/unsorted/trunc.c: Move to ...
+	* gcc.c-torture/compile/trunc.c: ... here.
+	* gcc.c-torture/unsorted/u.c: Move to ...
+	* gcc.c-torture/compile/u.c: ... here.
+	* gcc.c-torture/unsorted/udconvert.c: Move to ...
+	* gcc.c-torture/compile/udconvert.c: ... here.
+	* gcc.c-torture/unsorted/udivmod4.c: Move to ...
+	* gcc.c-torture/compile/udivmod4.c: ... here.
+	* gcc.c-torture/unsorted/UHIcmp.c: Move to ...
+	* gcc.c-torture/compile/UHIcmp.c: ... here.
+	* gcc.c-torture/unsorted/uns.c: Move to ...
+	* gcc.c-torture/compile/uns.c: ... here.
+	* gcc.c-torture/unsorted/uns_tst.c: Move to ...
+	* gcc.c-torture/compile/uns_tst.c: ... here.
+	* gcc.c-torture/unsorted/UQIcmp.c: Move to ...
+	* gcc.c-torture/compile/UQIcmp.c: ... here.
+	* gcc.c-torture/unsorted/USIcmp.c: Move to ...
+	* gcc.c-torture/compile/USIcmp.c: ... here.
+	* gcc.c-torture/unsorted/uuarg.c: Move to ...
+	* gcc.c-torture/compile/uuarg.c: ... here.
+	* gcc.c-torture/unsorted/v.c: Move to ...
+	* gcc.c-torture/compile/v.c: ... here.
+	* gcc.c-torture/unsorted/w.c: Move to ...
+	* gcc.c-torture/compile/w.c: ... here.
+	* gcc.c-torture/unsorted/ww.c: Move to ...
+	* gcc.c-torture/compile/ww.c: ... here.
+	* gcc.c-torture/unsorted/xb.c: Move to ...
+	* gcc.c-torture/compile/xb.c: ... here.
+	* gcc.c-torture/unsorted/xbg.c: Move to ...
+	* gcc.c-torture/compile/xbg.c: ... here.
+	* gcc.c-torture/unsorted/x.c: Move to ...
+	* gcc.c-torture/compile/x.c: ... here.
+	* gcc.c-torture/unsorted/xc.c: Move to ...
+	* gcc.c-torture/compile/xc.c: ... here.
+	* gcc.c-torture/unsorted/xcsebug.c: Move to ...
+	* gcc.c-torture/compile/xcsebug.c: ... here.
+	* gcc.c-torture/unsorted/xdi.c: Move to ...
+	* gcc.c-torture/compile/xdi.c: ... here.
+	* gcc.c-torture/unsorted/xfoo.c: Move to ...
+	* gcc.c-torture/compile/xfoo.c: ... here.
+	* gcc.c-torture/unsorted/xi.c: Move to ...
+	* gcc.c-torture/compile/xi.c: ... here.
+	* gcc.c-torture/unsorted/xlop.c: Move to ...
+	* gcc.c-torture/compile/xlop.c: ... here.
+	* gcc.c-torture/unsorted/xmtst.c: Move to ...
+	* gcc.c-torture/compile/xmtst.c: ... here.
+	* gcc.c-torture/unsorted/xneg.c: Move to ...
+	* gcc.c-torture/compile/xneg.c: ... here.
+	* gcc.c-torture/unsorted/xopt.c: Move to ...
+	* gcc.c-torture/compile/xopt.c: ... here.
+	* gcc.c-torture/unsorted/xor.c: Move to ...
+	* gcc.c-torture/compile/xor.c: ... here.
+	* gcc.c-torture/unsorted/xorn.c: Move to ...
+	* gcc.c-torture/compile/xorn.c: ... here.
+	* gcc.c-torture/unsorted/xp.c: Move to ...
+	* gcc.c-torture/compile/xp.c: ... here.
+	* gcc.c-torture/unsorted/xpp.c: Move to ...
+	* gcc.c-torture/compile/xpp.c: ... here.
+	* gcc.c-torture/unsorted/xs.c: Move to ...
+	* gcc.c-torture/compile/xs.c: ... here.
+	* gcc.c-torture/unsorted/xsh.c: Move to ...
+	* gcc.c-torture/compile/xsh.c: ... here.
+	* gcc.c-torture/unsorted/xz.c: Move to ...
+	* gcc.c-torture/compile/xz.c: ... here.
+	* gcc.c-torture/unsorted/xzz.c: Move to ...
+	* gcc.c-torture/compile/xzz.c: ... here.
+
+2014-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/20010129-1.c: Fix typo in -mtune.
+	(abort, exit): Declare.
+
+2014-09-01  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61897
+	PR sanitizer/62140
+	* c-c++-common/asan/pr62140-1.c: New test.
+	* c-c++-common/asan/pr62140-2.c: New test.
+
+2014-08-31  Fritz Reese  <Reese-Fritz@zai.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62309
+	* gcc/testsuite/gfortran.dg/auto_save_2.f90: New.
+
+2014-08-31  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: New.
+
+2014-08-30  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/20140828-1.c: New testcase.
+
+2014-08-29  DJ Delorie  <dj@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_size32plus):
+	Increase size to avoid false positives on 24-bit address spaces.
+	* gcc.c-torture/compile/limits-stringlit.c: Skip if msp430.
+	* gcc.dg/lto/pr54709_1.c: Fix memcpy prototype.
+	* gcc.dg/torture/pta-ptrarith-3.c: Use __SIZE_TYPE__ instead of "int".
+	* gcc.dg/torture/pr36373-10.c: Use __SIZE_TYPE__ if present.
+	* gcc.dg/torture/pr57864.c: Use __SIZE_TYPE__.
+	* gcc.dg/torture/pr26763-2.c: Use __SIZE_TYPE__ instead of "int".
+	* gcc.dg/tree-ssa/isolate-3.c: Use __SIZE_TYPE__ instead of "long unsigned int".
+	* gcc.dg/pr52549.c: Use __SIZE_TYPE__ if present.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54002
+	* g++.dg/cpp0x/constexpr-54002.C: New.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56991
+	* g++.dg/cpp0x/constexpr-56991.C: New.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57764
+	* g++.dg/cpp0x/constexpr-57764.C: New.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59938
+	* g++.dg/cpp0x/constexpr-59938.C: New.
+
+2014-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61484
+	* g++.dg/cpp0x/constexpr-61484.C: New.
+
+2014-08-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Add tests for vec_xl, vec_xst,
+	vec_round, vec_splat, vec_div, and vec_mul.
+	* gcc.target/powerpc/builtins-2.c: New test.
+
+2014-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62283
+	* gfortran.dg/vect/pr62283.f: New testcase.
+	* gcc.dg/tree-ssa/cunroll-5.c: Adjust.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/vect-33.c: Likewise.
+
+2014-08-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/pr62089.c: Fix test on 32-bit platforms.
+
+2014-08-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR cpp/23827 - standard C++ should not have hex float preprocessor
+	tokens
+	* g++.dg/cpp/pr23827_cxx11.C: New.
+	* g++.dg/cpp/pr23827_cxx98.C: New.
+	* g++.dg/cpp/pr23827_cxx98_neg.C: New.
+	* gcc.dg/cpp/pr23827_c90.c: New.
+	* gcc.dg/cpp/pr23827_c90_neg.c: New.
+	* gcc.dg/cpp/pr23827_c99.c: New.
+
+2014-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52892
+	* g++.dg/cpp0x/constexpr-52892-1.C: New.
+	* g++.dg/cpp0x/constexpr-52892-2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-52282-1.C: Likewise.
+
+2014-08-27  Guozhi Wei  <carrot@google.com>
+
+	PR target/62262
+	* gcc.target/aarch64/pr62262.c: New test.
+
+2014-08-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/60606
+	PR target/61330
+	* gcc.dg/torture/pr60606-1.c, gcc.target/arm/pr60606-2.c,
+	gcc.target/arm/pr60606-3.c, gcc.target/arm/pr60606-4.c: New tests.
+
+2014-08-26  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
+	failure on s390*-*-linux-gnu.
+
+2014-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62175
+	* g++.dg/torture/pr62175.C: New testcase.
+
+2014-08-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/execute/execute.exp: Replace with slightly adapted
+	copy of compile/compile.exp.
+	* gcc.c-torture/execute/20010122-1.c: Skip if -fomit-frame-pointer.
+	* gcc.c-torture/execute/20010129-1.c: Add -mtune=i686 if compiling for
+	i?86-*.
+	* gcc.c-torture/execute/20020404-1.c: Require int32plus.  Skip if
+	m32c-*-*.
+	* gcc.c-torture/execute/20021024-1.c: Require int32plus.
+	* gcc.c-torture/execute/20021127-1.c: Add -std=c99 option.
+	* gcc.c-torture/execute/20030125-1.c: Require c99_runtime.
+	* gcc.c-torture/execute/20030216-1.c: Skip if -O1.
+	* gcc.c-torture/execute/20030222-1.c: Skip on spu-*-*.
+	* gcc.c-torture/execute/20040629-1.c: Require int32plus.
+	* gcc.c-torture/execute/20040703-1.c: Likewise.
+	* gcc.c-torture/execute/20040705-1.c: Likewise.
+	* gcc.c-torture/execute/20040705-2.c: Likewise.
+	* gcc.c-torture/execute/20040709-1.c: Likewise.
+	* gcc.c-torture/execute/20040709-2.c: Likewise.
+	* gcc.c-torture/execute/20040811-1.c: Likewise.
+	* gcc.c-torture/execute/20050316-1.c: Likewise.  Add -Wno-psabi.
+	* gcc.c-torture/execute/20050316-2.c: Use -mno-mmx -Wno-psabi when
+	compiling for x86_64-* or i?86-*.
+	* gcc.c-torture/execute/20050604-1.c: Likewise.
+	* gcc.c-torture/execute/20050316-3.c: Add -Wno-psabi option.
+	* gcc.c-torture/execute/20050604-1.c: Use -mno-mmx when	compiling
+	for x86_64-* or i?86-*.
+	* gcc.c-torture/execute/20061101-1.c: Require int32plus.
+	* gcc.c-torture/execute/20061220-1.c: Skip on rl78-*.
+	* gcc.c-torture/execute/20081117-1.c: Require int32plus.
+	* gcc.c-torture/execute/20101011-1.c: Add -fnon-call-exceptions
+	option.
+	* gcc.c-torture/execute/20111227-2.c: Moved to...
+	* gcc.dg/20111227-2.c: ... here.  Add -free option.
+	* gcc.c-torture/execute/20111227-3.c: Likewise move to...
+	* gcc.dg/20111227-3.c: ... here.  Add -free option.
+	* gcc.c-torture/execute/20120919-1.c: Require int32plus.
+	* gcc.c-torture/execute/920612-1.c: Add -fwrapv option.  Add
+	declarations for abort and exit.
+	* gcc.c-torture/execute/920711-1.c: Likewise.
+	* gcc.c-torture/execute/930529-1.c: Likewise.
+	* gcc.c-torture/execute/980709-1.c: Xfail if on AIX with -msoft-float.
+	* gcc.c-torture/execute/981130-1.c: Xfail on m32r-* with scheduling.
+	* gcc.c-torture/execute/990127-1.c: Add delcarations for abort and
+	exit.
+	* gcc.c-torture/execute/990127-2.c: Add -mpc64 option if compiling
+	for i?86-* or x86_64-*.  Add declarations for abort and exit.
+	* gcc.c-torture/execute/990413-2.c: Skip if not compiling for
+	i?86-* or x86_64-*.
+	* gcc.c-torture/execute/990826-0.c: Xfail if on AIX with -msoft-float.
+	* gcc.c-torture/execute/bf64-1.c: Xfail on mcore-*.
+	* gcc.c-torture/execute/bitfld-4.c: Require int32plus.
+	* gcc.c-torture/execute/cmpsi-2.c: Likewise.
+	* gcc.c-torture/execute/eeprof-1.c: Add -finstrument-functions option.
+	Xfail on powerpc-ibm-aix*.  Add declaration for abort.
+	* gcc.c-torture/execute/ipa-sra-2.c: Require int32plus.
+	* gcc.c-torture/execute/loop-2f.c: Require mmap.  Skip if on
+	m68k-linux.
+	* gcc.c-torture/execute/loop-2g.c: Likewise.
+	* gcc.c-torture/execute/mode-dependent-address.c: Require stdint_types.
+	* gcc.c-torture/execute/nest-align-1.c: Add -mno-eabi option for
+	powerpc-*-eabi*.
+	* gcc.c-torture/execute/pr19689.c: Require int32plus.
+	* gcc.c-torture/execute/pr22493-1.c: Add -fwrapv option.
+	* gcc.c-torture/execute/pr23047.c: Likewise.
+	* gcc.c-torture/execute/pr23135.c: Add -Wno-psabi option.  Add
+	declarations for abort and exit.
+	* gcc.c-torture/execute/pr29797-1.c: Require int32plus.
+	* gcc.c-torture/execute/pr31448.c: Likewise.
+	* gcc.c-torture/execute/pr35456.c: Skip on vax.
+	* gcc.c-torture/execute/pr37573.c: Require int32plus.
+	* gcc.c-torture/execute/pr38151.c: Add -Wno-psabi option.
+	* gcc.c-torture/execute/pr39228.c: Add -mieee for sh* and alpha*.
+	Skip on spu-*.
+	* gcc.c-torture/execute/pr39501.c: Add -ffast-math option.  Add
+	declarations for abort and exit.
+	* gcc.c-torture/execute/pr40386.c: Add declarations for abort and exit.
+	* gcc.c-torture/execute/pr43220.c: Require int32plus.
+	* gcc.c-torture/execute/pr44583.c: Add -mieee option for sh*.
+	* gcc.c-torture/execute/pr45262.c: Require int32plus.
+	* gcc.c-torture/execute/pr47237.c: Xfail on nios2-*.
+	* gcc.c-torture/execute/pr51581-1.c: Require int32plus.
+	* gcc.c-torture/execute/pr51582-2.c: Likewise.
+	* gcc.c-torture/execute/pr52979-1.c: Likewise.
+	* gcc.c-torture/execute/pr52979-2.c: Likewise.
+	* gcc.c-torture/execute/pr56799.c: Likewise.
+	* gcc.c-torture/execute/pr57124.c: Likewise.  Add -fno-strict-overflow
+	option.  Add declarations for abort and exit.
+	* gcc.c-torture/execute/pr57344-2.c: Require int32plus.
+	* gcc.c-torture/execute/pr58570.c: Likewise.
+	* gcc.c-torture/execute/pr60822.c: Likewise.
+	* gcc.c-torture/execute/pr7284-1.c: Likewise.
+	* gcc.c-torture/execute/shiftdi.c: Likewise.
+	* gcc.c-torture/execute/simd-4.c: Require stdint_types.
+	* gcc.c-torture/execute/strncmp-1.c: Xfail if vxworks_kernel.
+	* gcc.c-torture/execute/usmul.c: Require int32plus.
+	* gcc.c-torture/execute/vrp-5.c: Likewise.
+	* gcc.c-torture/execute/vrp-6.c: Likewise.
+	* gcc.c-torture/execute/zerolen-2.c: Skip on epiphany-*.
+	* gcc.c-torture/execute/20010122-1.x: Delete.
+	* gcc.c-torture/execute/20010129-1.x: Delete.
+	* gcc.c-torture/execute/20020404-1.x: Delete.
+	* gcc.c-torture/execute/20021024-1.x: Delete.
+	* gcc.c-torture/execute/20021127-1.x: Delete.
+	* gcc.c-torture/execute/20030125-1.x: Delete.
+	* gcc.c-torture/execute/20030216-1.x: Delete.
+	* gcc.c-torture/execute/20030222-1.x: Delete.
+	* gcc.c-torture/execute/20040629-1.x: Delete.
+	* gcc.c-torture/execute/20040703-1.x: Delete.
+	* gcc.c-torture/execute/20040705-1.x: Delete.
+	* gcc.c-torture/execute/20040705-2.x: Delete.
+	* gcc.c-torture/execute/20040709-1.x: Delete.
+	* gcc.c-torture/execute/20040709-2.x: Delete.
+	* gcc.c-torture/execute/20040811-1.x: Delete.
+	* gcc.c-torture/execute/20050316-1.x: Delete.
+	* gcc.c-torture/execute/20050316-2.x: Delete.
+	* gcc.c-torture/execute/20050316-3.x: Delete.
+	* gcc.c-torture/execute/20050604-1.x: Delete.
+	* gcc.c-torture/execute/20061101-1.x: Delete.
+	* gcc.c-torture/execute/20061220-1.x: Delete.
+	* gcc.c-torture/execute/20081117-1.x: Delete.
+	* gcc.c-torture/execute/20101011-1.x: Delete.
+	* gcc.c-torture/execute/20120919-1.x: Delete.
+	* gcc.c-torture/execute/920612-1.x: Delete.
+	* gcc.c-torture/execute/920710-1.x: Delete.
+	* gcc.c-torture/execute/920711-1.x: Delete.
+	* gcc.c-torture/execute/930529-1.x: Delete.
+	* gcc.c-torture/execute/931004-12.x: Delete.
+	* gcc.c-torture/execute/980709-1.x: Delete.
+	* gcc.c-torture/execute/981130-1.x: Delete.
+	* gcc.c-torture/execute/990127-2.x: Delete.
+	* gcc.c-torture/execute/990413-2.x: Delete.
+	* gcc.c-torture/execute/990826-0.x: Delete.
+	* gcc.c-torture/execute/bf64-1.x: Delete.
+	* gcc.c-torture/execute/bitfld-4.x: Delete.
+	* gcc.c-torture/execute/cmpsi-2.x: Delete.
+	* gcc.c-torture/execute/cvt-1.x: Delete.
+	* gcc.c-torture/execute/eeprof-1.x: Delete.
+	* gcc.c-torture/execute/ipa-sra-2.x: Delete.
+	* gcc.c-torture/execute/loop-2f.x: Delete.
+	* gcc.c-torture/execute/loop-2g.x: Delete.
+	* gcc.c-torture/execute/mode-dependent-address.x: Delete.
+	* gcc.c-torture/execute/nest-align-1.x: Delete.
+	* gcc.c-torture/execute/pr19689.x: Delete.
+	* gcc.c-torture/execute/pr22493-1.x: Delete.
+	* gcc.c-torture/execute/pr23047.x: Delete.
+	* gcc.c-torture/execute/pr23135.x: Delete.
+	* gcc.c-torture/execute/pr29797-1.x: Delete.
+	* gcc.c-torture/execute/pr31448.x: Delete.
+	* gcc.c-torture/execute/pr35456.x: Delete.
+	* gcc.c-torture/execute/pr37573.x: Delete.
+	* gcc.c-torture/execute/pr38151.x: Delete.
+	* gcc.c-torture/execute/pr39228.x: Delete.
+	* gcc.c-torture/execute/pr39501.x: Delete.
+	* gcc.c-torture/execute/pr40386.x: Delete.
+	* gcc.c-torture/execute/pr43220.x: Delete.
+	* gcc.c-torture/execute/pr44683.x: Delete.
+	* gcc.c-torture/execute/pr45262.x: Delete.
+	* gcc.c-torture/execute/pr47237.x: Delete.
+	* gcc.c-torture/execute/pr51581-1.x: Delete.
+	* gcc.c-torture/execute/pr51581-2.x: Delete.
+	* gcc.c-torture/execute/pr52979-1.x: Delete.
+	* gcc.c-torture/execute/pr52979-2.x: Delete.
+	* gcc.c-torture/execute/pr53366-1.x: Delete.
+	* gcc.c-torture/execute/pr56799.x: Delete.
+	* gcc.c-torture/execute/pr57124.x: Delete.
+	* gcc.c-torture/execute/pr57344-2.x: Delete.
+	* gcc.c-torture/execute/pr58570.x: Delete.
+	* gcc.c-torture/execute/pr60822.x: Delete.
+	* gcc.c-torture/execute/pr7284-1.x: Delete.
+	* gcc.c-torture/execute/shiftdi.x: Delete.
+	* gcc.c-torture/execute/simd-4.x: Delete.
+	* gcc.c-torture/execute/strncmp-1.x: Delete.
+	* gcc.c-torture/execute/usmul.x: Delete.
+	* gcc.c-torture/execute/vrp-5.x: Delete.
+	* gcc.c-torture/execute/vrp-6.x: Delete.
+	* gcc.c-torture/execute/zerolen-2.x: Delete.
+
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.pt/var1.C: Use c++14, not c++1y, in dg-error.
+
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34938
+	* g++.dg/template/pr34938-1.C: New.
+	* g++.dg/template/pr34938-2.C: Likewise.
+
+2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61996
+	* gcc.target/sh/pr61996.c: New.
+
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/cplusplus.C: New.
+	* g++.dg/cpp0x/cplusplus_0x.C: New.
+	* g++.dg/cpp0x/auto3.C: Change c++1y to c++14.
+	* g++.dg/cpp0x/auto41.C: Ditto.
+	* g++.dg/cpp0x/auto9.C: Ditto.
+	* g++.dg/cpp0x/initlist26.C: Ditto.
+	* g++.dg/cpp0x/pr59111.C: Ditto.
+	* g++.dg/cpp0x/trailing2.C: Ditto.
+	* g++.dg/cpp1y/attr-deprecated.C: Ditto.
+	* g++.dg/cpp1y/auto-dtor1.C: Ditto.
+	* g++.dg/cpp1y/auto-fn1.C: Ditto.
+	* g++.dg/cpp1y/auto-fn2.C: Ditto.
+	* g++.dg/cpp1y/auto-fn3.C: Ditto.
+	* g++.dg/cpp1y/auto-fn4.C: Ditto.
+	* g++.dg/cpp1y/auto-fn5.C: Ditto.
+	* g++.dg/cpp1y/auto-fn6.C: Ditto.
+	* g++.dg/cpp1y/auto-fn7.C: Ditto.
+	* g++.dg/cpp1y/auto-fn8.C: Ditto.
+	* g++.dg/cpp1y/auto-fn9.C: Ditto.
+	* g++.dg/cpp1y/auto-fn10.C: Ditto.
+	* g++.dg/cpp1y/auto-fn11.C: Ditto.
+	* g++.dg/cpp1y/auto-fn12.C: Ditto.
+	* g++.dg/cpp1y/auto-fn13.C: Ditto.
+	* g++.dg/cpp1y/auto-fn14.C: Ditto.
+	* g++.dg/cpp1y/auto-fn15.C: Ditto.
+	* g++.dg/cpp1y/auto-fn16.C: Ditto.
+	* g++.dg/cpp1y/auto-fn17.C: Ditto.
+	* g++.dg/cpp1y/auto-fn18.C: Ditto.
+	* g++.dg/cpp1y/auto-fn19.C: Ditto.
+	* g++.dg/cpp1y/auto-fn20.C: Ditto.
+	* g++.dg/cpp1y/auto-fn21.C: Ditto.
+	* g++.dg/cpp1y/auto-fn22.C: Ditto.
+	* g++.dg/cpp1y/auto-fn23.C: Ditto.
+	* g++.dg/cpp1y/auto-fn24.C: Ditto.
+	* g++.dg/cpp1y/auto-fn25.C: Ditto.
+	* g++.dg/cpp1y/auto-mangle1.C: Ditto.
+	* g++.dg/cpp1y/auto-neg1.C: Ditto.
+	* g++.dg/cpp1y/digit-sep.C: Ditto.
+	* g++.dg/cpp1y/digit-sep-neg.C: Ditto.
+	* g++.dg/cpp1y/digit-sep-cxx11-neg.C: Ditto.
+	* g++.dg/cpp1y/fn-generic-member-ool.C: Ditto.
+	* g++.dg/cpp1y/lambda-deduce-mult.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-cfun.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-dep.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-udt.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-variadic.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-vla1.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-x.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-xcfun.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-xudt.C: Ditto.
+	* g++.dg/cpp1y/lambda-init.C: Ditto.
+	* g++.dg/cpp1y/lambda-init1.C: Ditto.
+	* g++.dg/cpp1y/lambda-init2.C: Ditto.
+	* g++.dg/cpp1y/lambda-init3.C: Ditto.
+	* g++.dg/cpp1y/lambda-init4.C: Ditto.
+	* g++.dg/cpp1y/lambda-init5.C: Ditto.
+	* g++.dg/cpp1y/lambda-init6.C: Ditto.
+	* g++.dg/cpp1y/lambda-init7.C: Ditto.
+	* g++.dg/cpp1y/lambda-init8.C: Ditto.
+	* g++.dg/cpp1y/lambda-init9.C: Ditto.
+	* g++.dg/cpp1y/mangle1.C: Ditto.
+	* g++.dg/cpp1y/pr57640.C: Ditto.
+	* g++.dg/cpp1y/pr57644.C: Ditto.
+	* g++.dg/cpp1y/pr58500.C: Ditto.
+	* g++.dg/cpp1y/pr58533.C: Ditto.
+	* g++.dg/cpp1y/pr58534.C: Ditto.
+	* g++.dg/cpp1y/pr58535.C: Ditto.
+	* g++.dg/cpp1y/pr58536.C: Ditto.
+	* g++.dg/cpp1y/pr58548.C: Ditto.
+	* g++.dg/cpp1y/pr58549.C: Ditto.
+	* g++.dg/cpp1y/pr58637.C: Ditto.
+	* g++.dg/cpp1y/pr58708.C: Ditto.
+	* g++.dg/cpp1y/pr59110.C: Ditto.
+	* g++.dg/cpp1y/pr59112.C: Ditto.
+	* g++.dg/cpp1y/pr59113.C: Ditto.
+	* g++.dg/cpp1y/pr59629.C: Ditto.
+	* g++.dg/cpp1y/pr59635.C: Ditto.
+	* g++.dg/cpp1y/pr59636.C: Ditto.
+	* g++.dg/cpp1y/pr59638.C: Ditto.
+	* g++.dg/cpp1y/pr59867.C: Ditto.
+	* g++.dg/cpp1y/pr60033.C: Ditto.
+	* g++.dg/cpp1y/pr60052.C: Ditto.
+	* g++.dg/cpp1y/pr60053.C: Ditto.
+	* g++.dg/cpp1y/pr60054.C: Ditto.
+	* g++.dg/cpp1y/pr60064.C: Ditto.
+	* g++.dg/cpp1y/pr60065.C: Ditto.
+	* g++.dg/cpp1y/pr60190.C: Ditto.
+	* g++.dg/cpp1y/pr60311.C: Ditto.
+	* g++.dg/cpp1y/pr60332.C: Ditto.
+	* g++.dg/cpp1y/pr60376.C: Ditto.
+	* g++.dg/cpp1y/pr60377.C: Ditto.
+	* g++.dg/cpp1y/pr60384.C: Ditto.
+	* g++.dg/cpp1y/pr60390.C: Ditto.
+	* g++.dg/cpp1y/pr60391.C: Ditto.
+	* g++.dg/cpp1y/pr60393.C: Ditto.
+	* g++.dg/cpp1y/pr60573.C: Ditto.
+	* g++.dg/cpp1y/pr60626.C: Ditto.
+	* g++.dg/cpp1y/pr60627.C: Ditto.
+	* g++.dg/cpp1y/regress1.C: Ditto.
+	* g++.dg/cpp1y/system-binary-constants-1.C: Ditto.
+	* g++.dg/cpp1y/udlit-char-template.C: Ditto.
+	* g++.dg/cpp1y/udlit-char-template-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-empty-string-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-enc-prefix-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-userdef-string.C: Ditto.
+	* g++.dg/cpp1y/var-templ1.C: Ditto.
+	* g++.dg/cpp1y/var-templ2.C: Ditto.
+	* g++.dg/cpp1y/var-templ3.C: Ditto.
+	* g++.dg/cpp1y/var-templ4.C: Ditto.
+	* g++.dg/cpp1y/var-templ5.C: Ditto.
+	* g++.dg/cpp1y/var-templ6.C: Ditto.
+	* g++.dg/cpp1y/var-templ7.C: Ditto.
+	* g++.dg/cpp1y/vla1.C: Ditto.
+	* g++.dg/cpp1y/vla2.C: Ditto.
+	* g++.dg/cpp1y/vla3.C: Ditto.
+	* g++.dg/cpp1y/vla4.C: Ditto.
+	* g++.dg/cpp1y/vla5.C: Ditto.
+	* g++.dg/cpp1y/vla8.C: Ditto.
+	* g++.dg/cpp1y/vla9.C: Ditto.
+	* g++.dg/cpp1y/vla10.C: Ditto.
+	* g++.dg/cpp1y/vla11.C: Ditto.
+	* g++.dg/cpp1y/vla12.C: Ditto.
+	* g++.dg/cpp1y/vla13.C: Ditto.
+	* g++.dg/cpp1y/vla-initlist1.C: Ditto.
+	* g++.dg/ext/vector23.C: Ditto.
+	* g++.dg/ext/vla11.C: Ditto.
+	* gcc/testsuite/g++.dg/ubsan/cxx1y-vla.C: Ditto.
+	* g++.dg/warn/Wvla-2.C: Ditto.
+	* g++.dg/debug/dwarf2/auto1.C: Ditto.
+	* g++.dg/cpp1z/typename-tmpl-tmpl-parm-ped-neg.C: Ditto.
+	* g++.dg/cpp1y/cplusplus.C: Check for exact date.
+	* g++.dg/cpp1y/system-binary-constants-1.C: Check C++14 instead of C++1y
+	in error message.
+	* g++.dg/system-binary-constants-1.C: Ditto.
+	* g++.dg/cpp1y/cplusplus_1y.C: New.
+	* g++.dg/cpp1z/cplusplus.C: New.
+	* lib/target-supports.exp:
+	(check_effective_target_c++1y*): Rename to check_effective_target_c++14*
+	(check_effective_target_c++11_only): Call check_effective_target_c++14;
+	(check_effective_target_c++11_down): Ditto.
+
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-c++-common/pr62199.c: New test.
+	* c-c++-common/pr62199-2.c: New test.
+	* g++.dg/warn/Wparentheses-25.C: Drop XFAILs.
+
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/57709
+	* g++.dg/Wshadow.C: New test.
+
+2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/62135
+	* gfortran.dg/pr62135.f90: New test.
+
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* g++.dg/warn/wdate-time.C: Remove.
+	* gcc.dg/wdate-time.c: Move from here...
+	* c-c++-common/wdate-time.c: ... to here.
+
+2014-08-22  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* gfortran.dg/use_without_only_1.f90: New test.
+
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* c-c++-common/cilk-plus/AN/pr62008.c: New test.
+
+2014-08-22  Tony Wang  <tony.wang@arm.com>
+
+	* g++.dg/tls/thread_local6.C: Skip this test case when target uses
+	dejagnu wrapper.
+
+2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62214
+	* gfortran.dg/array_assignment_5.f90:  New test.
+
+2014-08-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): Add nios2.
+	* gcc.dg/tree-ssa/reassoc-33.c: Skip for nios2.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/interposition.c: Require fpic effective target
+	for test using -fPIC.
+	* gcc.dg/lto/pr61526_0.c: Likewise.
+
+2014-08-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-37.C: Update template.
+	* g++.dg/ipa/devirt-40.C: New testcase.
+
+2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62112
+	* gcc.dg/tree-ssa/pr62112-1.c: New file.
+	* gcc.dg/tree-ssa/pr62112-2.c: Likewise.
+	* gcc.c-torture/execute/pr35472.c: Add noclone attribute.
+	* gcc.c-torture/execute/20071219-1.c: Likewise.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/builtins-1.c: New test.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-1.c: New test.
+	* gcc.target/powerpc/swaps-p8-2.c: New test.
+	* gcc.target/powerpc/swaps-p8-3.c: New test.
+	* gcc.target/powerpc/swaps-p8-4.c: New test.
+	* gcc.target/powerpc/swaps-p8-5.c: New test.
+	* gcc.target/powerpc/swaps-p8-6.c: New test.
+	* gcc.target/powerpc/swaps-p8-7.c: New test.
+	* gcc.target/powerpc/swaps-p8-8.c: New test.
+	* gcc.target/powerpc/swaps-p8-9.c: New test.
+	* gcc.target/powerpc/swaps-p8-10.c: New test.
+	* gcc.target/powerpc/swaps-p8-11.c: New test.
+	* gcc.target/powerpc/swaps-p8-12.c: New test.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ctor-empty-1.c: Update template.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-37.C: Fix testcase.
+
+2014-08-20  Martin Jambor  <mjambor@suse.cz>
+	    Wei Mi  <wmi@google.com>
+
+	PR ipa/60449
+	PR middle-end/61776
+	* testsuite/gcc.dg/lto/pr60449_1.c: New test.
+	* testsuite/gcc.dg/lto/pr60449_0.c: New test.
+	* testsuite/gcc.dg/pr61776.c: New test.
+
+2014-08-20  Steve Ellcey  <sellcey@mips.com>
+
+	PR middle-end/49191
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	Add function description.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-17.C: Update template.
+	* testsuite/g++.dg/ipa/devirt-16.C: Update template.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/59304
+	* opts-common.c (set_option): Call diagnostic_classify_diagnostic
+	before setting the option.
+	* diagnostic.c (diagnostic_classify_diagnostic): Record
+	command-line status.
+
+2014-08-20  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/restrict.c: Add `used' attribute to all variables.
+
+2014-08-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/gcc-defs.exp (${tool}_check_unsupported_p):
+	Return memory full when we have a tiny target and relocation
+	truncation occurs.
+	* lib/gcc-dg.exp (gcc-dg-prune): Likewise.
+	* lib/objc.exp (${tool}_check_unsupported_p): Likewise.
+	* lib/target-supports.exp (check_effective_target_tiny): New function.
+
+2014-08-20  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* gfortran.dg/errnocheck_1.f90: New test.
+	* gfortran.dg/associative_1.f90: New test.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR preprocessor/51303
+	* gcc.dg/cpp/Wmissingdirs.c: Test for the warning option.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/60975
+	PR c/53063
+	* gcc.dg/cpp/Wvariadic-1p.c: New test.
+
+2014-08-19  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports.exp 
+	(check_effective_target_arm_v8_neon_ok_nocache): Add
+	"-march-armv8-a" to compile flags.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-c++-common/Wbool-compare-1.c: New test.
+
+2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/45584
+	* gcc.dg/pr13519-1.c: Adjust.
+
+2014-08-19  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/const-volatile.c: Add `used' attribute to pi.
+
+2014-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/59051
+	* gcc.dg/guality/restrict.c: New test.
+
+2014-08-19  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Handle type:var for gdb ptype
+	matching. Catch '<unknown type in ' to recognize older gdb versions.
+	* gcc.dg/guality/const-volatile.c: New test.
+
+2014-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on *-*-solaris2.1[1-9]* &&
+	!gas.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wc99-c11-compat-1.c: New test.
+	* gcc.dg/Wc99-c11-compat-2.c: New test.
+	* gcc.dg/Wc99-c11-compat-3.c: New test.
+	* gcc.dg/Wc99-c11-compat-4.c: New test.
+	* gcc.dg/Wc99-c11-compat-5.c: New test.
+	* gcc.dg/Wc99-c11-compat-6.c: New test.
+	* gcc.dg/Wc99-c11-compat-7.c: New test.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wc90-c99-compat-4.c: Remove all dg-warnings.
+	* gcc.dg/Wc90-c99-compat-5.c: Remove all dg-errors.
+	* gcc.dg/Wc90-c99-compat-7.c: New test.
+	* gcc.dg/Wc90-c99-compat-8.c: New test.
+	* gcc.dg/Wdeclaration-after-statement-4.c: New test.
+
+2014-08-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/52952
+	* gcc.dg/redecl-4.c: Add column markers.
+	* gcc.dg/format/bitfld-1.c: Likewise.
+	* gcc.dg/format/attr-2.c: Likewise.
+	* gcc.dg/format/attr-6.c: Likewise.
+	* gcc.dg/format/array-1.c: Likewise.
+	* gcc.dg/format/attr-7.c: Likewise.
+	* gcc.dg/format/asm_fprintf-1.c: Likewise.
+	* gcc.dg/format/attr-4.c: Likewise.
+	* gcc.dg/format/branch-1.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise.
+
+2014-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* guality/nrv-1.c: Add `used' attribute to a1.
+
+2014-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62090
+	* gcc.dg/pr62090-2.c: New testcase.
+
+2014-08-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* g++.dg/ipa/pr61800.C: New.
+
+2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+	* c-c++-common/asan/pr62089.c: New test.
+	* c-c++-common/asan/bitfield-1.c: New test.
+	* c-c++-common/asan/bitfield-2.c: New test.
+	* c-c++-common/asan/bitfield-3.c: New test.
+	* c-c++-common/asan/bitfield-4.c: New test.
+
+2014-08-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR tree-optimization/52904
+	* gcc.dg/pr52904.c: New test.
+
+2014-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/finalize_27.f90: New.
+
+2014-08-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20140816-1.c: New testcase.
+
+2014-08-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52819
+	* g++.dg/template/pr52819.C: New.
+
+2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62142
+	* gfortran.dg/realloc_on_assign_24.f90:  New test.
+
+2014-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62072
+	Revert:
+	2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* g++.dg/template/pr57466.C: New.
+	* g++.dg/cpp0x/pr57466.C: Likewise.
+	* g++.dg/template/unify6.C: Update.
+
+	* g++.dg/cpp0x/sfinae52.C: New.
+
+2014-08-15  Ilya Tocar  <tocarip@gmail.com>
+
+	PR target/61878
+	* gcc.target/i386/avx512f-typecast-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpged-1.c: Add new intrinsic.
+	* gcc.target/i386/avx512f-vpcmpged-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtud-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpgtud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-2.c: Ditto.
+
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62131
+	* gfortran.dg/gomp/pr62131.f90: New test.
+
+2014-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62031
+	* gcc.dg/torture/pr62031.c: New testcase.
+
+2014-08-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: New test.
+
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-38.C: New testcase.
+
+2014-08-14  Marek Polacek  <polacek@redhat.com>
+
+	DR 458
+	* gcc.dg/c11-stdatomic-2.c: New test.
+
+2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62106
+	* gfortran.dg/array_constructor_49.f90:  New test.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54377
+	* g++.dg/template/pr54377.C: New.
+	* g++.dg/cpp0x/pr54377.C: Likewise.
+	* g++.dg/cpp0x/alias-decl-2.C: Adjust.
+	* g++.dg/cpp0x/pr51226.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/parse/too-many-tmpl-args1.C: Likewise.
+	* g++.dg/template/dtor3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/spec28.C: Likewise.
+	* g++.old-deja/g++.brendan/crash8.C: Likewise.
+	* g++.old-deja/g++.pt/ttp7.C: Likewise.
+
+2014-08-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/62004
+	PR rtl-optimization/62030
+	* gcc.dg/pr62004.c: New test.
+	* gcc.dg/pr62030.c: Same.
+	* gcc.target/mips/pr62030-octeon.c: Same.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/alias-decl-4.C: Adjust for parser change.
+	* g++.dg/cpp0x/decltype2.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/pr60249.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex10.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/cpp0x/variadic74.C: Likewise.
+	* g++.dg/parse/error10.C: Likewise.
+	* g++.dg/parse/error15.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/template/crash106.C: Likewise.
+	* g++.dg/template/crash89.C: Likewise.
+	* g++.dg/template/nontype7.C: Likewise.
+	* g++.dg/template/void3.C: Likewise.
+	* g++.dg/template/void7.C: Likewise.
+
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62090
+	* gcc.dg/pr62090.c: New testcase.
+
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/62079
+	* g++.dg/pr62079.C: New testcase.
+
+2014-08-14  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/max-insns-skipped.c: New test.
+
+2014-08-14  Bin Cheng  <bin.cheng@arm.com>
+
+	* c-c++-common/addrtmp.c: Add bind_pic_locally option.
+
+2014-08-12  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/concat.c: Add dg-options.
+	* gcc.dg/func-outside-2.c: Add __extension__.
+	* gcc.dg/pr19967.c: Use -std=c99.
+	* gcc.dg/pr22458-1.c: Add dg-options.
+	* gcc.dg/pr33676.c: Add dg-options.
+	* gcc.dg/gnu-predef-1.c: New test.
+	* gcc.dg/c90-func-1.c: New test.
+	* gcc.dg/c90-func-2.c: New test.
+	* gcc.dg/c90-func-2.h: New test.
+
+2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target/supports.exp
+	(check_effective_target_arm_v8_neon_ok_nocache): Check for armv8
+	or later.
+
+	* gcc.dg/pr59418.c: Don't add ARM options for a Thumb1 multilib.
+
+	* gcc.target/arm/neon-vext-execute.c: Skip if the test won't run
+	on Neon hardware.
+
+	* gcc.target/arm/pr48784.c: Skip for thumb1 multilib.
+	* gcc.target/arm/pr59985.c: Likewise.
+
+2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61962
+	* c-c++-common/cilk-plus/AN/pr61962.c: New test.
+
+2014-08-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/62103
+	* gcc.c-torture/execute/bitfld-6.c: New test.
+
+2014-08-11  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/frame-pointer-1.c: Skip if Thumb is not supported.
+	* gcc.target/arm/pr56184.C: Likewise.
+	* gcc.target/arm/pr59896.c: Likewise.
+	* gcc.target/arm/stack-red-zone.c: Likewise.
+	* gcc.target/arm/thumb-find-work-register.c: Likewise.
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb1_ok,
+	check_effective_target_arm_thumb2_ok): Test with code that passes
+	an argument and returns a result.
+
+2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62075
+	* gcc.dg/vect/pr62075.c: New testcase.
+
+2014-08-11  Felix Yang  <fei.yang0953@gmail.com>
+
+	PR tree-optimization/62073
+	* gcc.dg/vect/pr62073.c: New test.
+
+2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62070
+	* gcc.dg/pr62070.c: New testcase.
+
+2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/inc.c: Update test.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-9.c: Likewise.
+
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* gcc.dg/Wc90-c99-compat-1.c: New test.
+	* gcc.dg/Wc90-c99-compat-2.c: New test.
+	* gcc.dg/Wc90-c99-compat-3.c: New test.
+	* gcc.dg/Wc90-c99-compat-4.c: New test.
+	* gcc.dg/Wc90-c99-compat-5.c: New test.
+	* gcc.dg/Wc90-c99-compat-6.c: New test.
+	* gcc.dg/wvla-1.c: Adjust dg-warning.
+	* gcc.dg/wvla-2.c: Adjust dg-warning.
+	* gcc.dg/wvla-4.c: Adjust dg-warning.
+	* gcc.dg/wvla-6.c: Adjust dg-warning.
+
+2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/61999
+	* gfortran.dg/dot_product_3.f90:  New test case.
+
+2014-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-35.C: Fix template.
+	* g++.dg/ipa/devirt-36.C: Likewise.
+	* g++.dg/ipa/devirt-37.C: New testcase.
+
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/Wnarrowing1.C: Adjust for errors.
+	* g++.dg/cpp0x/enum29.C: Adjust.
+
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/strlenopt-8.c: Remove XFAIL.
+	* gcc.dg/tree-prof/stringop-2.c: Adjust.
+	* gfortran.dg/array_memcpy_4.f90: Likewise.
+	* gfortran.dg/trim_optimize_1.f90: Likewise.
+	* gfortran.dg/trim_optimize_2.f90: Likewise.
+
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/zero_sign_ext_test.c: New test.
+
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/torture/pr61772.c: Skip lto running.
+
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/60707
+	* gfortran.dg/pr45636.f90: xfail on 32-bit hppa*-*-*.
+
+2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-35.C: New testcase.
+	* g++.dg/ipa/devirt-36.C: New testcase.
+
+2014-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51312
+	* g++.dg/cpp0x/enum29.C: New.
+
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Undefine _POSIX_C_SOURCE before
+	defining in dg-options.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
+	* gcc.dg/atomic/stdatomic-flag.c: Add xfail comment.
+
+	* gcc.dg/memcpy-5.c: Add -fno-common option on hppa*-*-hpux*.
+
+	* gcc.c-torture/compile/pr60655-1.c: Don't add -fdata-sections option
+	on 32-bit hppa-hpux.
+
+	* gcc.dg/pr57233.c: Add -fno-common option on hppa*-*-hpux*.
+	* c-c++-common/pr50459.c: Likewise.
+
+2014-08-07  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Include float.h instead of
+	values.h, change MAXDOUBLE for DBL_MAX.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Include float.h instead of
+	values.h, change MAXFLOAT for FLT_MAX.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Do not include values.h.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr61756.c: Remove arm-specific dg-options.
+
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-reassoc-3.c: New test.
+
+2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/struct-size.c: New.
+
+2014-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Remove test.
+	* lib/target-supports.exp (check_effective_target_glibc)
+	(check_effective_target_glibc_2_12_or_later)
+	(check_effective_target_glibc_2_11_or_earlier): Remove proc.
+
+2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/get_address_cost_aligned_max_offset.c: New test.
+
+2014-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43906
+	* g++.dg/warn/Waddress-1.C: New.
+
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Remove an extraneous brace.
+
+2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/61923
+	* gcc.target/i386/pr61923.c: New test.
+
+2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vdup_n_2.c: New test.
+
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Also exclude powerpc*-*-linux*, except if
+	powerpc_elfv2.
+
+2014-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: Rewritten.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlals_lane_s32):
+	Fix types.
+	(test_vqdmlsls_lane_s32): Likewise.
+	* gcc.target/aarch64/simd/vqdmlals_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_lane_s32.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vqdmlalh_laneq_s16_1.c: New test.
+	* gcc.target/aarch64/simd/vqdmlals_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhs_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhs_laneq_s32_1.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vmul_f64_1.c: New test.
+	* gcc.target/aarch64/simd/vmul_n_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_lane_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_laneq_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_lane_f32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_laneq_f32_1.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/torture/ftrapv-1.c: Correct usage of dg-require-fork.
+
+2014-08-04  Rohit  <rohitarulraj@freescale.com>
+
+	PR target/60102
+	* gcc.target/powerpc/pr60102.c: New testcase.
+
+2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61713
+	* gcc.dg/pr61756.c: New test.
+
+2014-08-04  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Use xfail for broken glibc
+	version instead of required-target.
+	* lib/target-supports.exp
+	(check_effective_target_not_glibc_2_11_or_earlier): Replace by ...
+	(check_effective_target_glibc_2_11_or_earlier): ... this.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/discr6.ad[sb]: Remove, no longer relevant.
+	* gnat.dg/specs/debug1.ads: Adjust.
+	* gnat.dg/specs/formal_type.ads: Fix error in test.
+
+2014-08-03  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/case-bogus-1.c: New test.
+
+2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15339
+	* g++.dg/other/default9.C: New.
+	* g++.dg/other/default10.C: Likewise.
+	* g++.dg/other/default3.C: Remove xfail.
+
+2014-08-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/warn/Wsuggest-final.C: New testcase.
+	* g++.dg/ipa/devirt-34.C: Fix.
+
+2014-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init-2.c: New test.
+
+2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 217 again
+	* g++.dg/tc1/dr217-2.C: New.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61963
+	* c-c++-common/cilk-plus/AN/pr61963.c: New test.
+
+2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-c++-common/cilk-plus/AN/pr61455.c: New test.
+	* c-c++-common/cilk-plus/AN/pr61455-2.c: Likewise.
+
+2014-08-01  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/legitimize_stack_var_before_reload_1.c: New
+	testcase.
+
+2014-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61762
+	* gcc.dg/pr61762.c: Align the string to make the testcase work
+	on strict-align targets.
+
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/align-1.c: New test.
+	* c-c++-common/ubsan/align-2.c: New test.
+	* c-c++-common/ubsan/align-3.c: New test.
+	* c-c++-common/ubsan/align-4.c: New test.
+	* c-c++-common/ubsan/align-5.c: New test.
+	* c-c++-common/ubsan/attrib-4.c: New test.
+	* g++.dg/ubsan/align-1.C: New test.
+	* g++.dg/ubsan/align-2.C: New test.
+	* g++.dg/ubsan/align-3.C: New test.
+	* g++.dg/ubsan/attrib-1.C: New test.
+	* g++.dg/ubsan/null-1.C: New test.
+	* g++.dg/ubsan/null-2.C: New test.
+
+2014-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_glibc)
+	(check_effective_target_glibc_2_12_or_later)
+	(check_effective_target_not_glibc_2_11_or_earlier): New proc.
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Require effective target
+	not_glibc_2_11_or_earlier.
+
+2014-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr51879-7.c: Remove superfluous declaration of bar.
+
+2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vpaddd_f64): New.
+	(test_vpaddd_s64): Likewise.
+	(test_vpaddd_s64): Likewise.
+	* gcc.target/aarch64/simd/vpaddd_f64: New.
+	* gcc.target/aarch64/simd/vpaddd_s64: New.
+	* gcc.target/aarch64/simd/vpaddd_u64: New.
+
+2014-07-31  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/61948
+	* gcc.target/arm/pr61948.c: New test case.
+
+2014-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61964
+	* gcc.dg/torture/pr61964.c: New testcase.
+
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-c++-common/addrtmp.c: New file.
+	* c-c++-common/uninit-G.c: Adapt.
+
+2014-07-31  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR lto/61868
+	* gcc.dg/pr61868.c: New test.
+
+2014-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57397
+	* g++.dg/cpp0x/vt-57397-1.C: New.
+	* g++.dg/cpp0x/vt-57397-2.C: Likewise.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/case_null.adb, gnat.dg/specs/debug1.ads: Adjust tests.
+
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init.c: New file.
+
+2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-34.C: New testcase.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: Fix testcase.
+
+2014-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/fold-abs-5.c: New test.
+	* gcc.dg/Wstrict-overflow-25.c: XFAIL everywhere.
+	* gcc.dg/fold-compare-8.c: Likewise.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/52478
+	* gcc.dg/torture/ftrapv-1.c: New testcase.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61921
+	* gfortran.dg/pr61921.f90: New testcase.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: New testcase.
+
+2014-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61861
+	* gcc.dg/pr61861.c: New test.
+
+2014-07-27  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c: Fix the uninitialized
+	variable problem.
+
+2014-07-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/61926
+	* gcc.target/mips/const-anchor-1.c, gcc.target/mips/const-anchor-2.c:
+	Reverse argument order.
+	* gcc.target/mips/const-anchor-3.c, gcc.target/mips/const-anchor-4.c:
+	New XFAILed tests that match the original order.
+
+2014-07-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61077
+	* gcc.dg/pr61077.c: Use \[^\n\]* instead of .* in the regexp.
+
+2014-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/61881
+	PR fortran/61888
+	PR fortran/57305
+	* gfortran.dg/sizeof_2.f90: Change dg-error.
+	* gfortran.dg/sizeof_4.f90: New.
+	* gfortran.dg/storage_size_1.f08: Correct expected
+	value.
+
+2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/44551
+	* gcc.target/i386/pr44551-1.c: New file.
+
+2014-07-25  Xinliang David Li  <davidxl@google.com>
+
+	* g++.dg/tree-prof/tree-prof.exp: Define macros.
+	* g++.dg/tree-prof/reorder_class1.h: New file.
+	* g++.dg/tree-prof/reorder_class2.h: New file.
+	* g++.dg/tree-prof/reorder.C: New test.
+	* g++.dg/tree-prof/morefunc.C: New test.
+
+2014-07-25  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4051 - Allow typename in a template template parameter
+	* lib/target-supports.exp (check_effective_target_c++1y): Now
+	means C++1y and up.
+	(check_effective_target_c++1y_down): New.
+	(check_effective_target_c++1z_only): New.
+	(check_effective_target_c++1z): New.
+	* g++.dg/cpp1z/typename-tmpl-tmpl-parm.C: New.
+	* g++.dg/cpp1z/typename-tmpl-tmpl-parm-neg.C: New.
+	* g++.dg/cpp1z/typename-tmpl-tmpl-parm-.C: New.
+
+2014-07-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/storage_size_5.f90: New.
+
+2014-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61762
+	PR middle-end/61894
+	* gcc.dg/pr61762.c: New testcase.
+	* gcc.dg/fold-cstring.c: Likewise.
+	* gcc.dg/fold-cvect.c: Likewise.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-warn-3.c: New test.
+
+	* gcc.c-torture/execute/20050316-1.x: Add -Wno-psabi.
+	* gcc.c-torture/execute/20050604-1.x: Add -Wno-psabi.
+	* gcc.c-torture/execute/20050316-3.x: New file.  Add -Wno-psabi.
+	* gcc.c-torture/execute/pr23135.x: Likewise.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-warn-2.c: New test.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-warn-1.c: New test.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.dg/compat/struct-layout-1.exp: Load g++-dg.exp.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_1.c: Match optimized instruction
+	sequences.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_1.c: Match optimized instruction
+	sequences.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+	* gcc.target/aarch64/test_fp_attribute_1.c: Likewise.
+
+2014-07-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-2.C (main): Always return zero.
+
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/61823
+	* gcc.dg/torture/pr43879_1.c: Add -fno-inline.
+
+2014-07-24  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_arm_nothumb):
+	Also check for __arm__.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_12.c: Match optimized instruction
+	sequences.
+
+2014-07-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57653
+	* c-c++-common/pr57653.c: New test.
+	* c-c++-common/pr57653.h: New file.
+	* c-c++-common/pr57653-2.c: New test.
+	* c-c++-common/pr57653-2.h: New file.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_common.h: New file.
+	* gcc.target/aarch64/test_frame_1.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_3.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_5.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+	* gcc.target/aarch64/test_frame_9.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+	* gcc.target/aarch64/test_frame_11.c: Likewise.
+	* gcc.target/aarch64/test_frame_12.c: Likewise.
+	* gcc.target/aarch64/test_frame_13.c: Likewise.
+	* gcc.target/aarch64/test_frame_14.c: Likewise.
+	* gcc.target/aarch64/test_frame_15.c: Likewise.
+
+2014-07-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/bounds-2.c (fn4): Adjust to check the array size
+	in the structure.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.dg/ira-shrinkwrap-prep-1.c (target): Add arm_nothumb.
+	* gcc.dg/ira-shrinkwrap-prep-2.c (target): Likewise.
+	* gcc.dg/pr10474.c (target): Likewise.
+
+2014-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* pr61160-3.C (main): Return zero.
+
+2014-07-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/simd/vexts64_1.c: Remove #include, inline test body.
+	* gcc.target/arm/simd/vextu64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_s64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_u64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_s64.x: Remove.
+	* gcc.target/aarch64/simd/ext_u64.x: Remove.
+
+2014-07-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61822
+	* gcc.dg/vect/cond-reduc-1.c: Add missed dg directive.
+
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vbsl_f64_1.c: New test.
+
+2014-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fuse-caller-save-xmm.c (dg-options): Use
+	-msse2 -mno-avx instead of -msse.
+
+2014-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/imm-devirt-2.C (dg-final): Improve einline dump string.
+	* gcc.dg/pr44024.c (dg-options): Add -O1.
+	(dg-final): Check for the condition.
+	* gcc.dg/vect/pr61680.c (dg-final): Cleanup vect tree dump.
+
+2014-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/55701
+	* gcc.target/arm/memset-inline-1.c: New test.
+	* gcc.target/arm/memset-inline-2.c: New test.
+	* gcc.target/arm/memset-inline-3.c: New test.
+	* gcc.target/arm/memset-inline-4.c: New test.
+	* gcc.target/arm/memset-inline-5.c: New test.
+	* gcc.target/arm/memset-inline-6.c: New test.
+	* gcc.target/arm/memset-inline-7.c: New test.
+	* gcc.target/arm/memset-inline-8.c: New test.
+	* gcc.target/arm/memset-inline-9.c: New test.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-rec.c: Allow underscore prefix
+	to bar symbol in scan-assembler-times call check.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Allow LC0 without dot prefix
+	for darwin in scan-assembler-times check.
+	* gcc.target/i386/fuse-caller-save.c: Remove cfi-related
+	scan-assembler-not checks.  Add checks for insns.
+	(main): Remove.
+	* gcc.target/i386/fuse-caller-save-rec.c: Remove cfi-related
+	scan-assembler-not checks.  Copy checks from i386/fuse-caller-save.c.
+	(main): Remove.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Add -fomit-frame-pointer to
+	dg-options.  Add checks for insns with xmm registers.  Remove
+	cfi_def_cfa_offset checks.  Generalize checks containing %rsp.
+	(main): Remove.
+
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61855
+	* gcc.target/i386/pr61855.c: New test.
+
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack20.ad[sb]: New test.
+	* gnat.dg/pack20_pkg.ads: New helper.
+
+2014-07-20  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Support multiple files in one
+	package for compiledir tests.
+
+2014-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61852
+	* gcc.dg/pr61852.c: New test.
+
 2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/stack-usage-2.c: Adjust.
@@ -64,8 +4052,9 @@
 
 2014-07-16  Arnaud Charlet  <charlet@adacore.com>
 
-	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,
-	gnat.db/specs/size_clause2.ads: Update test case.
+	* gnat.dg/specs/alignment2.ads: Update.
+	* gnat.dg/specs/size_clause1.ads: Likewise.
+	* gnat.dg/specs/size_clause2.ads: Likewise.
 
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
@@ -265,7 +4254,7 @@
 2014-07-09  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR testsuite/61453
-	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	* gfortran.dg/bind_c_array_params_2.f90:
 	Adjust regexp for more targets.
 
 2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
@@ -2310,9 +6299,9 @@
 
 2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
 
-	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	* gfortran.dg/bind_c_array_params_2.f90:
 	Adjust regexp for -flto.
-	* gfortran.dg/gfortran.dg/pr48636-2.f90: Likewise.
+	* gfortran.dg/pr48636-2.f90: Likewise.
 	* gfortran.dg/pr52835.f90: Likewise.
 
 2014-05-23  Vladimir Makarov  <vmakarov@redhat.com>

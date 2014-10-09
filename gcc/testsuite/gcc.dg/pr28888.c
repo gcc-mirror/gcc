@@ -3,6 +3,8 @@
 
 static const unsigned char _c30[] =
   "statistic of allocated integer registers:";
+void Out__LongInt ();
+int
 Allocate__WriteStats (void)
 {
   register int i0, i1, i2, i3, i4, i5;

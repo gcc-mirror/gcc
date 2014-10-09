@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,9 +156,9 @@ package System.Interrupts is
    function Is_Ignored (Interrupt : Interrupt_ID) return Boolean;
    --  Comment needed ???
 
-   --  Note : Direct calls to sigaction, sigprocmask, thr_sigsetmask or any
+   --  Note : Direct calls to sigaction, sigprocmask, thr_sigsetmask, or any
    --  other low-level interface that changes the signal action or signal mask
-   --  needs a careful thought.
+   --  needs careful thought.
 
    --  One may achieve the effect of system calls first making RTS blocked (by
    --  calling Block_Interrupt) for the signal under consideration. This will
@@ -191,8 +191,8 @@ package System.Interrupts is
    --  with it (types to be used are New_Handler_Item and New_Handler_Array).
    --  On finalization, we need to restore the handlers that were installed
    --  before the elaboration of the PO, so we need to store these previous
-   --  handlers. This is also done by Install_Handlers, the room for these
-   --  informations is provided by adding a discriminant which is the number
+   --  handlers. This is also done by Install_Handlers, the room for this
+   --  information is provided by adding a discriminant which is the number
    --  of Attach_Handler pragmas and an array of this size in the protection
    --  type, Static_Interrupt_Protection.
 

@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cilk.h"
 #include "c-ubsan.h"
-#include "pointer-set.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -74,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 static tree
 ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
 {
-  struct pointer_set_t *pset = (struct pointer_set_t *) data;
+  hash_set<tree> *pset = (hash_set<tree> *) data;
 
   /* Since walk_tree doesn't call the callback function on the decls
      in BIND_EXPR_VARS, we have to walk them manually.  */
@@ -96,7 +95,20 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
     }
   else if (TREE_CODE (*tp) == ADDR_EXPR
 	   && TREE_CODE (TREE_OPERAND (*tp, 0)) == ARRAY_REF)
-    ubsan_maybe_instrument_array_ref (&TREE_OPERAND (*tp, 0), true);
+    {
+      ubsan_maybe_instrument_array_ref (&TREE_OPERAND (*tp, 0), true);
+      /* Make sure ubsan_maybe_instrument_array_ref is not called again
+	 on the ARRAY_REF, the above call might not instrument anything
+	 as the index might be constant or masked, so ensure it is not
+	 walked again and walk its subtrees manually.  */
+      tree aref = TREE_OPERAND (*tp, 0);
+      pset->add (aref);
+      *walk_subtrees = 0;
+      walk_tree (&TREE_OPERAND (aref, 0), ubsan_walk_array_refs_r, pset, pset);
+      walk_tree (&TREE_OPERAND (aref, 1), ubsan_walk_array_refs_r, pset, pset);
+      walk_tree (&TREE_OPERAND (aref, 2), ubsan_walk_array_refs_r, pset, pset);
+      walk_tree (&TREE_OPERAND (aref, 3), ubsan_walk_array_refs_r, pset, pset);
+    }
   else if (TREE_CODE (*tp) == ARRAY_REF)
     ubsan_maybe_instrument_array_ref (tp, false);
   return NULL_TREE;
@@ -116,10 +128,9 @@ c_genericize (tree fndecl)
 
   if (flag_sanitize & SANITIZE_BOUNDS)
     {
-      struct pointer_set_t *pset = pointer_set_create ();
-      walk_tree (&DECL_SAVED_TREE (fndecl), ubsan_walk_array_refs_r, pset,
-		 pset);
-      pointer_set_destroy (pset);
+      hash_set<tree> pset;
+      walk_tree (&DECL_SAVED_TREE (fndecl), ubsan_walk_array_refs_r, &pset,
+		 &pset);
     }
 
   /* Dump the C-specific tree IR.  */
@@ -143,7 +154,7 @@ c_genericize (tree fndecl)
     }
 
   /* Dump all nested functions now.  */
-  cgn = cgraph_get_create_node (fndecl);
+  cgn = cgraph_node::get_create (fndecl);
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
     c_genericize (cgn->decl);
 }

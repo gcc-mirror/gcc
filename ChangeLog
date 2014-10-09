@@ -1,3 +1,199 @@
+2014-10-03  Jing Yu  <jingyu@google.com>
+
+	* configure.ac: Add aarch64 to list of targets that support gold.
+	* configure: Regenerate.
+
+2014-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* MAINTAINERS:  Add myself as libstdc++ special modes maintainer.
+
+2014-09-29  Catherine Moore  <clm@codesourcery.com>
+
+	* MAINTAINERS:  Add myself as MIPS maintainer.
+
+2014-09-28  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* MAINTAINERS: Move myself to MIPS maintainers.
+
+2014-09-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* MAINTAINERS: Put all email addresses between '<' and '>'.
+
+2014-09-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself to reviewers (Fortran).
+
+2014-09-01  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Add LTO_EXPORTS.
+	POSTSTAGE1_FLAGS_TO_PASS):  Add LTO_FLAGS_TO_PASS.
+	* Makefile.in: Regenerate.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Delete
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): NEXT_INSN/PREV_INSN are done.
+
+2014-08-27  Sebastian Pop  <s.pop@samsung.com>
+
+	* config/isl.m4 (_ISL_CHECK_CT_PROG): Removed.
+	(ISL_CHECK_VERSION): Check for functionality added to ISL 0.12 instead
+	of checking for version number.
+	* configure: Regenerated.
+	* configure.ac (ISL_CHECK_VERSION): Do not use ISL version number.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 5 (additional rtx_def subclasses)
+	is done; begin phase 6 (use extra rtx_def subclasses).
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 4 (removal of "scaffolding") is
+	done; begin phase 5 (additional rtx_def subclasses).
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): DF_REF_INSN is done.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): SET_BB_HEAD, SET_BB_END,
+	SET_BB_HEADER are done.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): SET_DEP_PRO and SET_DEP_CON are
+	done.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Remove SET_VINSN_INSN_RTX.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Remove SET_BND_TO.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Remove SET_BB_NOTE_LIST.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Remove SET_BB_FOOTER.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 3 (per-file commits within
+	"config" subdirs) is done; begin phase 4 (removal of
+	"scaffolding").
+
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 2 (per-file commits in main source
+	dir) is done; begin phase 3 (per-file commits within "config"
+	subdirs).
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 1 ("scaffolding") is done; begin
+	phase 2 (per-file commits in main source dir).
+
+2014-08-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* configure: Regenerated.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BND_TO
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BB_NOTE_LIST.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_VINSN_INSN_RTX.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_DEP_PRO, SET_DEP_CON.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add DF_REF_INSN.
+
+2014-08-19  Joost VandeVondele <vondele@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-19  Christopher Faylor  <me.gnu@cgf.cx>
+
+	* MAINTAINERS: Remove myself
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Add SET_NEXT_INSN, SET_PREV_INSN.
+
+2014-08-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BB_HEAD, SET_BB_END,
+	SET_BB_HEADER, SET_BB_FOOTER
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: New file
+
+2014-08-18 Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Eliminate ClooG installation dependency.
+	* configure: Regenerate.
+	* Makefile.tpl: Add definition of ISLLIBS and HOST_ISLLIBS.
+	* Makefile.in: Regenerate.
+
+2014-08-15  Ilya Verbin  <iverbin@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-15  Ilya Tocar  <tocarip@gmail.com> 
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-01  Jiong Wang  <jiong.wang@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-07-28  Anthony Green  <green@moxielogic.com>
+
+	Import from savannah.gnu.org:
+	* config.sub: Update to 2014-07-28 version.
+
+2014-07-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* MAINTAINERS: Remove my MIPS maintainer entry.
+
+2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* configure.ac (alpha*-*-linux*): Use mh-alpha-linux.
+	* configure: Regenerate.
+
+2014-07-24  James Norris  <jnorris@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-07-20  Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Accept only CLooG 0.18.1.
+	* configure: Regenerate.
+
 2014-07-17  Roman Gareev  <gareevroman@gmail.com>
 
 	* configure.ac: Don't accept isl 0.11.

@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_DWARF2ASM_H
+#define GCC_DWARF2ASM_H
 
 extern void dw2_assemble_integer (int, rtx);
 
@@ -86,3 +88,5 @@ extern void dw2_asm_output_delta_sleb128 (const char *, const char *,
 					  const char *, ...)
      ATTRIBUTE_NULL_PRINTF_3;
 #endif
+
+#endif /* GCC_DWARF2ASM_H */

@@ -1,3 +1,14 @@
+2014-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/powerpc/linux64.S: Emit .note.GNU-stack even when
+	POWERPC64 is not defined.
+	* src/powerpc/linux64_closure.S: Likewise.  Also test _CALL_ELF == 2.
+
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* src/alpha/ffi.c: Do not include stdlib.h.
+	(ffi_closure_osf_inner) <default>: Use FFI_ASSERT instead of abort.
+
 2014-07-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/lib/libffi.exp (libffi-dg-runtest): Change interface

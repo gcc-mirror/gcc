@@ -3,9 +3,10 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Os -g" } */
-/* { dg-options "-march=armv7-a -mfloat-abi=hard -Os -g" { target arm*-*-* } } */
+/* { dg-options "-march=armv7-a -mfloat-abi=hard -Os -g" { target { arm*-*-* && { ! arm_thumb1 } } } } */
 
 extern int printf (const char *__format, ...);
+double bar (const char *, int);
 
 void
 foo (const char *pptr, int caplen)

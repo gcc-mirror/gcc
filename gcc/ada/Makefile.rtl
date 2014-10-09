@@ -18,7 +18,7 @@
 #<http://www.gnu.org/licenses/>.
 
 # This makefile fragment is included in the ada Makefile (both Unix
-# and NT and VMS versions).
+# and Windows).
 
 # Its purpose is to allow the separate maintainence of the list of
 # GNATRTL objects, which frequently changes.
@@ -44,7 +44,6 @@ GNATRTL_TASKING_OBJS= \
   g-signal$(objext) \
   g-tastus$(objext) \
   g-thread$(objext) \
-  s-asthan$(objext) \
   s-inmaop$(objext) \
   s-interr$(objext) \
   s-intman$(objext) \
@@ -99,12 +98,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-calend$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
+  a-cbdlli$(objext) \
   a-cbhama$(objext) \
   a-cbhase$(objext) \
-  a-cborse$(objext) \
-  a-cbdlli$(objext) \
   a-cbmutr$(objext) \
   a-cborma$(objext) \
+  a-cborse$(objext) \
   a-cbprqu$(objext) \
   a-cbsyqu$(objext) \
   a-cdlili$(objext) \
@@ -121,8 +120,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-charac$(objext) \
   a-chlat1$(objext) \
   a-chlat9$(objext) \
-  a-chtgbo$(objext) \
   a-chtgbk$(objext) \
+  a-chtgbo$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \
@@ -130,10 +129,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-cidlli$(objext) \
   a-cihama$(objext) \
   a-cihase$(objext) \
+  a-cimutr$(objext) \
   a-ciorma$(objext) \
   a-ciormu$(objext) \
   a-ciorse$(objext) \
   a-clrefi$(objext) \
+  a-cobove$(objext) \
+  a-cofove$(objext) \
   a-cogeso$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \
@@ -143,10 +145,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-colien$(objext) \
   a-colire$(objext) \
   a-comlin$(objext) \
+  a-comutr$(objext) \
   a-contai$(objext) \
   a-convec$(objext) \
-  a-cobove$(objext) \
-  a-cofove$(objext) \
   a-coorma$(objext) \
   a-coormu$(objext) \
   a-coorse$(objext) \
@@ -156,8 +157,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-crbtgk$(objext) \
   a-crbtgo$(objext) \
   a-crdlli$(objext) \
-  a-comutr$(objext) \
-  a-cimutr$(objext) \
   a-csquin$(objext) \
   a-cuprqu$(objext) \
   a-cusyqu$(objext) \
@@ -207,12 +206,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-nlcoar$(objext) \
   a-nlcoty$(objext) \
   a-nlelfu$(objext) \
-  a-nlrear$(objext) \
   a-nllcar$(objext) \
   a-nllcef$(objext) \
   a-nllcty$(objext) \
   a-nllefu$(objext) \
   a-nllrar$(objext) \
+  a-nlrear$(objext) \
   a-nscefu$(objext) \
   a-nscoty$(objext) \
   a-nselfu$(objext) \
@@ -224,8 +223,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-numaux$(objext) \
   a-numeri$(objext) \
   a-nurear$(objext) \
-  a-rbtgbo$(objext) \
   a-rbtgbk$(objext) \
+  a-rbtgbo$(objext) \
   a-rbtgso$(objext) \
   a-sbecin$(objext) \
   a-sbhcin$(objext) \
@@ -408,9 +407,11 @@ GNATRTL_NONTASKING_OBJS= \
   g-excact$(objext) \
   g-except$(objext) \
   g-exctra$(objext) \
+  s-exctra$(objext) \
   g-expect$(objext) \
   g-exptty$(objext) \
   g-flocon$(objext) \
+  g-forstr$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
   g-hesorg$(objext) \
@@ -457,6 +458,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-timsta$(objext) \
   g-traceb$(objext) \
   g-trasym$(objext) \
+  s-trasym$(objext) \
   g-tty$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
@@ -469,7 +471,6 @@ GNATRTL_NONTASKING_OBJS= \
   i-cexten$(objext) \
   i-cobol$(objext) \
   i-cpoint$(objext) \
-  i-cpp$(objext) \
   i-cstrea$(objext) \
   i-cstrin$(objext) \
   i-fortra$(objext) \
@@ -511,8 +512,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-crc32$(objext)  \
   s-crtl$(objext)   \
   s-diflio$(objext) \
-  s-dim$(objext)    \
   s-diinio$(objext) \
+  s-dim$(objext)    \
   s-dimkio$(objext) \
   s-dimmks$(objext) \
   s-direio$(objext) \
@@ -538,15 +539,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-filatt$(objext) \
   s-fileio$(objext) \
-  s-filofl$(objext) \
   s-finmas$(objext) \
   s-finroo$(objext) \
-  s-fishfl$(objext) \
   s-flocon$(objext) \
   s-fore$(objext)   \
-  s-fvadfl$(objext) \
-  s-fvaffl$(objext) \
-  s-fvagfl$(objext) \
   s-gearop$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
@@ -672,7 +668,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-traent$(objext) \
   s-unstyp$(objext) \
   s-utf_32$(objext) \
-  s-vaflop$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
   s-valdec$(objext) \
@@ -688,7 +683,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \
-  s-vmexta$(objext) \
   s-wchcnv$(objext) \
   s-wchcon$(objext) \
   s-wchjis$(objext) \

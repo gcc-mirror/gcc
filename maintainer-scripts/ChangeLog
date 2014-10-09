@@ -1,3 +1,11 @@
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Change trunk snapshots from 4.10 to 5.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* update_web_docs_svn: Simplify build of gnat_ugn.
+
 2014-06-12  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Remove 4.7 snapshot entry.

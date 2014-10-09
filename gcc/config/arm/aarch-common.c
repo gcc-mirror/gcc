@@ -41,15 +41,16 @@
    implementations.  This function identifies such pairs.  */
 
 int
-aarch_crypto_can_dual_issue (rtx producer, rtx consumer)
+aarch_crypto_can_dual_issue (rtx_insn *producer_insn, rtx_insn *consumer_insn)
 {
+  rtx producer_set, consumer_set;
   rtx producer_src, consumer_src;
 
-  producer = single_set (producer);
-  consumer = single_set (consumer);
+  producer_set = single_set (producer_insn);
+  consumer_set = single_set (consumer_insn);
 
-  producer_src = producer ? SET_SRC (producer) : NULL;
-  consumer_src = consumer ? SET_SRC (consumer) : NULL;
+  producer_src = producer_set ? SET_SRC (producer_set) : NULL;
+  consumer_src = consumer_set ? SET_SRC (consumer_set) : NULL;
 
   if (producer_src && consumer_src
       && GET_CODE (producer_src) == UNSPEC && GET_CODE (consumer_src) == UNSPEC
@@ -58,9 +59,9 @@ aarch_crypto_can_dual_issue (rtx producer, rtx consumer)
           || (XINT (producer_src, 1) == UNSPEC_AESD
               && XINT (consumer_src, 1) == UNSPEC_AESIMC)))
   {
-    unsigned int regno = REGNO (SET_DEST (producer));
+    unsigned int regno = REGNO (SET_DEST (producer_set));
 
-    return REGNO (SET_DEST (consumer)) == regno
+    return REGNO (SET_DEST (consumer_set)) == regno
            && REGNO (XVECEXP (consumer_src, 0, 0)) == regno;
   }
 

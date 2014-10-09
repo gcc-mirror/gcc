@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -690,6 +690,24 @@ package body Ada.Containers.Ordered_Sets is
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               Tree : Tree_Type renames Control.Container.Tree;
+               B : Natural renames Tree.Busy;
+               L : Natural renames Tree.Lock;
+            begin
+               B := B + 1;
+               L := L + 1;
+            end;
+         end if;
+      end Adjust;
+
       -------------
       -- Ceiling --
       -------------
@@ -793,6 +811,32 @@ package body Ada.Containers.Ordered_Sets is
          end if;
       end Exclude;
 
+      --------------
+      -- Finalize --
+      --------------
+
+      procedure Finalize (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               Tree : Tree_Type renames Control.Container.Tree;
+               B    : Natural renames Tree.Busy;
+               L    : Natural renames Tree.Lock;
+            begin
+               B := B - 1;
+               L := L - 1;
+            end;
+
+            if not (Key (Control.Pos) = Control.Old_Key.all) then
+               Delete (Control.Container.all, Key (Control.Pos));
+               raise Program_Error;
+            end if;
+
+            Control.Container := null;
+            Control.Old_Key   := null;
+         end if;
+      end Finalize;
+
       ----------
       -- Find --
       ----------
@@ -890,11 +934,24 @@ package body Ada.Containers.Ordered_Sets is
            (Vet (Container.Tree, Position.Node),
             "bad cursor in function Reference_Preserving_Key");
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
+         declare
+            Tree : Tree_Type renames Container.Tree;
+            B : Natural renames Tree.Busy;
+            L : Natural renames Tree.Lock;
 
-         return (Element => Position.Node.Element'Access);
+         begin
+            return R : constant Reference_Type :=
+              (Element  => Position.Node.Element'Access,
+                 Control =>
+                   (Controlled with
+                     Container => Container'Access,
+                     Pos       => Position,
+                     Old_Key   => new Key_Type'(Key (Position))))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key
@@ -908,11 +965,24 @@ package body Ada.Containers.Ordered_Sets is
             raise Constraint_Error with "key not in set";
          end if;
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
+         declare
+            Tree : Tree_Type renames Container.Tree;
+            B : Natural renames Tree.Busy;
+            L : Natural renames Tree.Lock;
 
-         return (Element => Node.Element'Access);
+         begin
+            return R : constant Reference_Type :=
+              (Element  => Node.Element'Access,
+                 Control =>
+                   (Controlled with
+                     Container => Container'Access,
+                     Pos       => Find (Container, Key),
+                     Old_Key   => new Key_Type'(Key)))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       -------------

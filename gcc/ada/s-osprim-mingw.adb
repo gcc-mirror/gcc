@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,15 +87,15 @@ package body System.OS_Primitives is
    --  the base data for the changes to get undetected.
 
    type Signature_Type is mod 2**32;
-   Signature     : Signature_Type := 0;
+   Signature : Signature_Type := 0;
    pragma Atomic (Signature);
 
    procedure Get_Base_Time (Data : out Clock_Data);
    --  Retrieve the base time and base ticks. These values will be used by
    --  clock to compute the current time by adding to it a fraction of the
-   --  performance counter. This is for the implementation of a
-   --  high-resolution clock. Note that this routine does not change the base
-   --  monotonic values used by the monotonic clock.
+   --  performance counter. This is for the implementation of a high-resolution
+   --  clock. Note that this routine does not change the base monotonic values
+   --  used by the monotonic clock.
 
    -----------
    -- Clock --

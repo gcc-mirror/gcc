@@ -255,7 +255,7 @@ typedef struct ext_cand
   enum machine_mode mode;
 
   /* The instruction where it lives.  */
-  rtx insn;
+  rtx_insn *insn;
 } ext_cand;
 
 
@@ -279,7 +279,7 @@ static int max_insn_uid;
    assign it to the register.  */
 
 static bool
-combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
+combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 {
   rtx orig_src = SET_SRC (*orig_set);
   rtx new_set;
@@ -383,7 +383,7 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
    DEF_INSN is the if_then_else insn.  */
 
 static bool
-transform_ifelse (ext_cand *cand, rtx def_insn)
+transform_ifelse (ext_cand *cand, rtx_insn *def_insn)
 {
   rtx set_insn = PATTERN (def_insn);
   rtx srcreg, dstreg, srcreg2;
@@ -429,7 +429,7 @@ transform_ifelse (ext_cand *cand, rtx def_insn)
    of the definitions onto DEST.  */
 
 static struct df_link *
-get_defs (rtx insn, rtx reg, vec<rtx> *dest)
+get_defs (rtx_insn *insn, rtx reg, vec<rtx_insn *> *dest)
 {
   df_ref use;
   struct df_link *ref_chain, *ref_link;
@@ -467,7 +467,7 @@ get_defs (rtx insn, rtx reg, vec<rtx> *dest)
    and store x1 and x2 in REG_1 and REG_2.  */
 
 static bool
-is_cond_copy_insn (rtx insn, rtx *reg1, rtx *reg2)
+is_cond_copy_insn (rtx_insn *insn, rtx *reg1, rtx *reg2)
 {
   rtx expr = single_set (insn);
 
@@ -516,10 +516,10 @@ typedef struct ext_state
   /* In order to avoid constant alloc/free, we keep these
      4 vectors live through the entire find_and_remove_re and just
      truncate them each time.  */
-  vec<rtx> defs_list;
-  vec<rtx> copies_list;
-  vec<rtx> modified_list;
-  vec<rtx> work_list;
+  vec<rtx_insn *> defs_list;
+  vec<rtx_insn *> copies_list;
+  vec<rtx_insn *> modified_list;
+  vec<rtx_insn *> work_list;
 
   /* For instructions that have been successfully modified, this is
      the original mode from which the insn is extending and
@@ -540,7 +540,7 @@ typedef struct ext_state
    success.  */
 
 static bool
-make_defs_and_copies_lists (rtx extend_insn, const_rtx set_pat,
+make_defs_and_copies_lists (rtx_insn *extend_insn, const_rtx set_pat,
 			    ext_state *state)
 {
   rtx src_reg = XEXP (SET_SRC (set_pat), 0);
@@ -558,7 +558,7 @@ make_defs_and_copies_lists (rtx extend_insn, const_rtx set_pat,
   /* Perform transitive closure for conditional copies.  */
   while (!state->work_list.is_empty ())
     {
-      rtx def_insn = state->work_list.pop ();
+      rtx_insn *def_insn = state->work_list.pop ();
       rtx reg1, reg2;
 
       gcc_assert (INSN_UID (def_insn) < max_insn_uid);
@@ -594,7 +594,7 @@ make_defs_and_copies_lists (rtx extend_insn, const_rtx set_pat,
    return NULL.  This is similar to single_set, except that
    single_set allows multiple SETs when all but one is dead.  */
 static rtx *
-get_sub_rtx (rtx def_insn)
+get_sub_rtx (rtx_insn *def_insn)
 {
   enum rtx_code code = GET_CODE (PATTERN (def_insn));
   rtx *sub_rtx = NULL;
@@ -632,7 +632,7 @@ get_sub_rtx (rtx def_insn)
    on the SET pattern.  */
 
 static bool
-merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
+merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
 {
   enum machine_mode ext_src_mode;
   rtx *sub_rtx;
@@ -693,7 +693,7 @@ get_extended_src_reg (rtx src)
 static bool
 combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 {
-  rtx def_insn;
+  rtx_insn *def_insn;
   bool merge_successful = true;
   int i;
   int defs_ix;
@@ -743,8 +743,16 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (!SCALAR_INT_MODE_P (GET_MODE (SET_DEST (PATTERN (cand->insn)))))
 	return false;
 
+      enum machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
+      rtx src_reg = get_extended_src_reg (SET_SRC (PATTERN (cand->insn)));
+
+      /* Ensure the number of hard registers of the copy match.  */
+      if (HARD_REGNO_NREGS (REGNO (src_reg), dst_mode)
+	  != HARD_REGNO_NREGS (REGNO (src_reg), GET_MODE (src_reg)))
+	return false;
+
       /* There's only one reaching def.  */
-      rtx def_insn = state->defs_list[0];
+      rtx_insn *def_insn = state->defs_list[0];
 
       /* The defining statement must not have been modified either.  */
       if (state->modified[INSN_UID (def_insn)].kind != EXT_MODIFIED_NONE)
@@ -792,12 +800,12 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       start_sequence ();
       rtx pat = PATTERN (cand->insn);
       rtx new_dst = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
-                                 REGNO (XEXP (SET_SRC (pat), 0)));
+                                 REGNO (get_extended_src_reg (SET_SRC (pat))));
       rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
                                  REGNO (SET_DEST (pat)));
       emit_move_insn (new_dst, new_src);
 
-      rtx insn = get_insns();
+      rtx_insn *insn = get_insns();
       end_sequence ();
       if (NEXT_INSN (insn))
 	return false;
@@ -909,7 +917,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 /* Add an extension pattern that could be eliminated.  */
 
 static void
-add_removable_extension (const_rtx expr, rtx insn,
+add_removable_extension (const_rtx expr, rtx_insn *insn,
 			 vec<ext_cand> *insn_list,
 			 unsigned *def_map)
 {
@@ -982,7 +990,8 @@ find_removable_extensions (void)
 {
   vec<ext_cand> insn_list = vNULL;
   basic_block bb;
-  rtx insn, set;
+  rtx_insn *insn;
+  rtx set;
   unsigned *def_map = XCNEWVEC (unsigned, max_insn_uid);
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -1009,11 +1018,11 @@ static void
 find_and_remove_re (void)
 {
   ext_cand *curr_cand;
-  rtx curr_insn = NULL_RTX;
+  rtx_insn *curr_insn = NULL;
   int num_re_opportunities = 0, num_realized = 0, i;
   vec<ext_cand> reinsn_list;
-  auto_vec<rtx> reinsn_del_list;
-  auto_vec<rtx> reinsn_copy_list;
+  auto_vec<rtx_insn *> reinsn_del_list;
+  auto_vec<rtx_insn *> reinsn_copy_list;
   ext_state state;
 
   /* Construct DU chain to get all reaching definitions of each
@@ -1082,8 +1091,8 @@ find_and_remove_re (void)
      from the new destination to the old destination.  */
   for (unsigned int i = 0; i < reinsn_copy_list.length (); i += 2)
     {
-      rtx curr_insn = reinsn_copy_list[i];
-      rtx def_insn = reinsn_copy_list[i + 1];
+      rtx_insn *curr_insn = reinsn_copy_list[i];
+      rtx_insn *def_insn = reinsn_copy_list[i + 1];
 
       /* Use the mode of the destination of the defining insn
 	 for the mode of the copy.  This is necessary if the

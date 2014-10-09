@@ -41,7 +41,6 @@
 #include "dwarf2.h"
 #include "timevar.h"
 #include "tree.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"
@@ -898,7 +897,8 @@ tilepro_legitimize_tls_address (rtx addr)
       case TLS_MODEL_GLOBAL_DYNAMIC:
       case TLS_MODEL_LOCAL_DYNAMIC:
 	{
-	  rtx r0, temp1, temp2, temp3, got, last;
+	  rtx r0, temp1, temp2, temp3, got;
+	  rtx_insn *last;
 
 	  ret = gen_reg_rtx (Pmode);
 	  r0 = gen_rtx_REG (Pmode, 0);
@@ -918,7 +918,8 @@ tilepro_legitimize_tls_address (rtx addr)
 	}
       case TLS_MODEL_INITIAL_EXEC:
 	{
-	  rtx temp1, temp2, temp3, got, last;
+	  rtx temp1, temp2, temp3, got;
+	  rtx_insn *last;
 
 	  ret = gen_reg_rtx (Pmode);
 	  temp1 = gen_reg_rtx (Pmode);
@@ -940,7 +941,8 @@ tilepro_legitimize_tls_address (rtx addr)
 	}
       case TLS_MODEL_LOCAL_EXEC:
 	{
-	  rtx temp1, last;
+	  rtx temp1;
+	  rtx_insn *last;
 
 	  ret = gen_reg_rtx (Pmode);
 	  temp1 = gen_reg_rtx (Pmode);
@@ -2423,7 +2425,7 @@ tilepro_emit_conditional_move (rtx cmp)
 /* Return true if INSN is annotated with a REG_BR_PROB note that
    indicates it's a branch that's predicted taken.  */
 static bool
-cbranch_predicted_p (rtx insn)
+cbranch_predicted_p (rtx_insn *insn)
 {
   rtx x = find_reg_note (insn, REG_BR_PROB, 0);
 
@@ -2441,7 +2443,7 @@ cbranch_predicted_p (rtx insn)
 /* Output assembly code for a specific branch instruction, appending
    the branch prediction flag to the opcode if appropriate.  */
 static const char *
-tilepro_output_simple_cbranch_with_opcode (rtx insn, const char *opcode,
+tilepro_output_simple_cbranch_with_opcode (rtx_insn *insn, const char *opcode,
 					   int regop, bool netreg_p,
 					   bool reverse_predicted)
 {
@@ -2456,7 +2458,7 @@ tilepro_output_simple_cbranch_with_opcode (rtx insn, const char *opcode,
 /* Output assembly code for a specific branch instruction, appending
    the branch prediction flag to the opcode if appropriate.  */
 const char *
-tilepro_output_cbranch_with_opcode (rtx insn, rtx *operands,
+tilepro_output_cbranch_with_opcode (rtx_insn *insn, rtx *operands,
 				    const char *opcode,
 				    const char *rev_opcode,
 				    int regop, bool netreg_p)
@@ -2507,7 +2509,7 @@ tilepro_output_cbranch_with_opcode (rtx insn, rtx *operands,
 
 /* Output assembly code for a conditional branch instruction.  */
 const char *
-tilepro_output_cbranch (rtx insn, rtx *operands, bool reversed)
+tilepro_output_cbranch (rtx_insn *insn, rtx *operands, bool reversed)
 {
   enum rtx_code code = GET_CODE (operands[1]);
   const char *opcode;
@@ -3303,7 +3305,7 @@ frame_emit_store (int regno, int regno_note, rtx addr, rtx cfa,
 /* Emit a load in the stack frame to load REGNO from address ADDR.
    Add a REG_CFA_RESTORE note to CFA_RESTORES if CFA_RESTORES is
    non-null.  Return the emitted insn.  */
-static rtx
+static rtx_insn *
 frame_emit_load (int regno, rtx addr, rtx *cfa_restores)
 {
   rtx reg = gen_rtx_REG (Pmode, regno);
@@ -3316,16 +3318,16 @@ frame_emit_load (int regno, rtx addr, rtx *cfa_restores)
 
 /* Helper function to set RTX_FRAME_RELATED_P on instructions,
    including sequences.  */
-static rtx
+static rtx_insn *
 set_frame_related_p (void)
 {
-  rtx seq = get_insns ();
-  rtx insn;
+  rtx_insn *seq = get_insns ();
+  rtx_insn *insn;
 
   end_sequence ();
 
   if (!seq)
-    return NULL_RTX;
+    return NULL;
 
   if (INSN_P (seq))
     {
@@ -3356,14 +3358,14 @@ set_frame_related_p (void)
    large register and using 'add'.
 
    This happens after reload, so we need to expand it ourselves.  */
-static rtx
+static rtx_insn *
 emit_sp_adjust (int offset, int *next_scratch_regno, bool frame_related,
 		rtx reg_notes)
 {
   rtx to_add;
   rtx imm_rtx = gen_int_si (offset);
 
-  rtx insn;
+  rtx_insn *insn;
   if (satisfies_constraint_J (imm_rtx))
     {
       /* We can add this using a single addi or addli.  */
@@ -3687,7 +3689,7 @@ tilepro_expand_epilogue (bool sibcall_p)
   rtx reg_save_addr[ROUND_ROBIN_SIZE] = {
     NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX
   };
-  rtx last_insn, insn;
+  rtx_insn *last_insn, *insn;
   unsigned int which_scratch;
   int offset, start_offset, regno;
   rtx cfa_restores = NULL_RTX;
@@ -3909,7 +3911,7 @@ tilepro_frame_pointer_required (void)
    by attributes in the machine-description file.  This is where we
    account for bundles.  */
 int
-tilepro_adjust_insn_length (rtx insn, int length)
+tilepro_adjust_insn_length (rtx_insn *insn, int length)
 {
   enum machine_mode mode = GET_MODE (insn);
 
@@ -3953,7 +3955,8 @@ get_jump_target (rtx branch)
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-tilepro_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+tilepro_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
+			   int cost)
 {
   /* If we have a true dependence, INSN is a call, and DEP_INSN
      defines a register that is needed by the call (argument or stack
@@ -3973,8 +3976,8 @@ tilepro_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
 /* Skip over irrelevant NOTEs and such and look for the next insn we
    would consider bundling.  */
-static rtx
-next_insn_to_bundle (rtx r, rtx end)
+static rtx_insn *
+next_insn_to_bundle (rtx_insn *r, rtx_insn *end)
 {
   for (; r != end; r = NEXT_INSN (r))
     {
@@ -3984,7 +3987,7 @@ next_insn_to_bundle (rtx r, rtx end)
 	return r;
     }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 
@@ -3997,8 +4000,8 @@ tilepro_gen_bundles (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
   {
-    rtx insn, next;
-    rtx end = NEXT_INSN (BB_END (bb));
+    rtx_insn *insn, *next;
+    rtx_insn *end = NEXT_INSN (BB_END (bb));
 
     for (insn = next_insn_to_bundle (BB_HEAD (bb), end); insn; insn = next)
       {
@@ -4032,9 +4035,9 @@ tilepro_gen_bundles (void)
 
 /* Helper function for tilepro_fixup_pcrel_references.  */
 static void
-replace_pc_relative_symbol_ref (rtx insn, rtx opnds[4], bool first_insn_p)
+replace_pc_relative_symbol_ref (rtx_insn *insn, rtx opnds[4], bool first_insn_p)
 {
-  rtx new_insns;
+  rtx_insn *new_insns;
 
   start_sequence ();
 
@@ -4073,7 +4076,7 @@ replace_pc_relative_symbol_ref (rtx insn, rtx opnds[4], bool first_insn_p)
 
 /* Returns whether INSN is a pc-relative addli insn.   */
 static bool
-match_addli_pcrel (rtx insn)
+match_addli_pcrel (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   rtx unspec;
@@ -4096,7 +4099,7 @@ match_addli_pcrel (rtx insn)
 
 /* Helper function for tilepro_fixup_pcrel_references.  */
 static void
-replace_addli_pcrel (rtx insn)
+replace_addli_pcrel (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   rtx set_src;
@@ -4130,7 +4133,7 @@ replace_addli_pcrel (rtx insn)
 
 /* Returns whether INSN is a pc-relative auli insn.   */
 static bool
-match_auli_pcrel (rtx insn)
+match_auli_pcrel (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   rtx high;
@@ -4157,7 +4160,7 @@ match_auli_pcrel (rtx insn)
 
 /* Helper function for tilepro_fixup_pcrel_references.  */
 static void
-replace_auli_pcrel (rtx insn)
+replace_auli_pcrel (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   rtx set_src;
@@ -4231,7 +4234,7 @@ replace_auli_pcrel (rtx insn)
 static void
 tilepro_fixup_pcrel_references (void)
 {
-  rtx insn, next_insn;
+  rtx_insn *insn, *next_insn;
   bool same_section_as_entry = true;
 
   for (insn = get_insns (); insn; insn = next_insn)
@@ -4268,8 +4271,8 @@ reorder_var_tracking_notes (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
   {
-    rtx insn, next;
-    rtx queue = NULL_RTX;
+    rtx_insn *insn, *next;
+    rtx_insn *queue = NULL;
     bool in_bundle = false;
 
     for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
@@ -4283,11 +4286,11 @@ reorder_var_tracking_notes (void)
 	      {
 		while (queue)
 		  {
-		    rtx next_queue = PREV_INSN (queue);
-		    PREV_INSN (NEXT_INSN (insn)) = queue;
-		    NEXT_INSN (queue) = NEXT_INSN (insn);
-		    NEXT_INSN (insn) = queue;
-		    PREV_INSN (queue) = insn;
+		    rtx_insn *next_queue = PREV_INSN (queue);
+		    SET_PREV_INSN (NEXT_INSN (insn)) = queue;
+		    SET_NEXT_INSN (queue) = NEXT_INSN (insn);
+		    SET_NEXT_INSN (insn) = queue;
+		    SET_PREV_INSN (queue) = insn;
 		    queue = next_queue;
 		  }
 		in_bundle = false;
@@ -4299,11 +4302,11 @@ reorder_var_tracking_notes (void)
 	  {
 	    if (in_bundle)
 	      {
-		rtx prev = PREV_INSN (insn);
-		PREV_INSN (next) = prev;
-		NEXT_INSN (prev) = next;
+		rtx_insn *prev = PREV_INSN (insn);
+		SET_PREV_INSN (next) = prev;
+		SET_NEXT_INSN (prev) = next;
 
-		PREV_INSN (insn) = queue;
+		SET_PREV_INSN (insn) = queue;
 		queue = insn;
 	      }
 	  }
@@ -4372,7 +4375,8 @@ tilepro_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			     HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 			     tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
@@ -4871,7 +4875,7 @@ static enum machine_mode insn_mode;
 
 /* Implement FINAL_PRESCAN_INSN.  This is used to emit bundles.  */
 void
-tilepro_final_prescan_insn (rtx insn)
+tilepro_final_prescan_insn (rtx_insn *insn)
 {
   /* Record this for tilepro_asm_output_opcode to examine.  */
   insn_mode = GET_MODE (insn);

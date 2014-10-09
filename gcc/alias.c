@@ -42,12 +42,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
-#include "pointer-set.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
+#include "rtl-iter.h"
 
 /* The aliasing API provided here solves related but different problems:
 
@@ -302,10 +302,9 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       && ! is_global_var (base)
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep;
-      namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers, base);
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (base);
       if (namep)
-	ref->base = build_simple_mem_ref (*(tree *)namep);
+	ref->base = build_simple_mem_ref (*namep);
     }
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
@@ -1522,7 +1521,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return REGNO (x) == REGNO (y);
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
@@ -1853,27 +1852,18 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
   return 1;
 }
 
-/* Callback for for_each_rtx, that returns 1 upon encountering a VALUE
-   whose UID is greater than the int uid that D points to.  */
-
-static int
-refs_newer_value_cb (rtx *x, void *d)
-{
-  if (GET_CODE (*x) == VALUE && CSELIB_VAL_PTR (*x)->uid > *(int *)d)
-    return 1;
-
-  return 0;
-}
-
 /* Return TRUE if EXPR refers to a VALUE whose uid is greater than
    that of V.  */
 
 static bool
-refs_newer_value_p (rtx expr, rtx v)
+refs_newer_value_p (const_rtx expr, rtx v)
 {
   int minuid = CSELIB_VAL_PTR (v)->uid;
-
-  return for_each_rtx (&expr, refs_newer_value_cb, &minuid);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, expr, NONCONST)
+    if (GET_CODE (*iter) == VALUE && CSELIB_VAL_PTR (*iter)->uid > minuid)
+      return true;
+  return false;
 }
 
 /* Convert the address X into something we can use.  This is done by returning
@@ -2840,7 +2830,8 @@ init_alias_analysis (void)
   int changed, pass;
   int i;
   unsigned int ui;
-  rtx insn, val;
+  rtx_insn *insn;
+  rtx val;
   int rpo_cnt;
   int *rpo;
 

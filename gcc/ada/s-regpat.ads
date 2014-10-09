@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2010, AdaCore                     --
+--                     Copyright (C) 1996-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,8 +78,10 @@ package System.Regpat is
    --            ::= [^ range range ...]  -- matches any character not listed
    --            ::= .                    -- matches any single character
    --                                     -- except newlines
-   --            ::= ( expr )             -- parens used for grouping
-   --            ::= \ num                -- reference to num-th parenthesis
+   --            ::= ( expr )             -- parenthesis used for grouping
+   --            ::= (?: expr )           -- non-capturing parenthesis
+   --            ::= \ num                -- reference to num-th capturing
+   --                                        parenthesis
 
    --     range  ::= char - char          -- matches chars in given range
    --            ::= nchr
@@ -344,6 +346,9 @@ package System.Regpat is
    --  matches substring, or to No_Match if no match. Matches (N) is for the
    --  N'th parenthesized subexpressions; Matches (0) is for the whole
    --  expression.
+   --
+   --  Non-capturing parenthesis (introduced with (?:...)) can not be
+   --  retrieved and do not count in the match array index.
    --
    --  For instance, if your regular expression is: "a((b*)c+)(d+)", then
    --                                                 12      3

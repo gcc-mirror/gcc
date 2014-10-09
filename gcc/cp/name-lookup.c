@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "c-family/c-pragma.h"
 #include "params.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 
 /* The bindings for a particular name in a particular scope.  */
 
@@ -1239,9 +1239,24 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
 	      if (member && !TREE_STATIC (member))
 		{
-		  /* Location of previous decl is not useful in this case.  */
-		  warning (OPT_Wshadow, "declaration of %qD shadows a member of 'this'",
-			   x);
+		  if (BASELINK_P (member))
+		    member = BASELINK_FUNCTIONS (member);
+		  member = OVL_CURRENT (member);
+	
+		  /* Do not warn if a variable shadows a function, unless
+		     the variable is a function or a pointer-to-function.  */
+		  if (TREE_CODE (member) != FUNCTION_DECL
+		      || TREE_CODE (x) == FUNCTION_DECL
+		      || TYPE_PTRFN_P (TREE_TYPE (x))
+		      || TYPE_PTRMEMFUNC_P (TREE_TYPE (x)))
+		    {
+		      if (warning_at (input_location, OPT_Wshadow,
+				      "declaration of %qD shadows a member of %qT",
+				      x, current_nonlambda_class_type ())
+			  && DECL_P (member))
+			inform (DECL_SOURCE_LOCATION (member),
+				"shadowed declaration is here");
+		    }
 		}
 	      else if (oldglobal != NULL_TREE
 		       && (VAR_P (oldglobal)
@@ -5152,7 +5167,7 @@ struct arg_lookup
   vec<tree, va_gc> *namespaces;
   vec<tree, va_gc> *classes;
   tree functions;
-  struct pointer_set_t *fn_set;
+  hash_set<tree> *fn_set;
 };
 
 static bool arg_assoc (struct arg_lookup*, tree);
@@ -5175,7 +5190,7 @@ add_function (struct arg_lookup *k, tree fn)
   if (!is_overloaded_fn (fn))
     /* All names except those of (possibly overloaded) functions and
        function templates are ignored.  */;
-  else if (k->fn_set && pointer_set_insert (k->fn_set, fn))
+  else if (k->fn_set && k->fn_set->add (fn))
     /* It's already in the list.  */;
   else if (!k->functions)
     k->functions = fn;
@@ -5639,9 +5654,9 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
       /* We shouldn't be here if lookup found something other than
 	 namespace-scope functions.  */
       gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_CURRENT (fns)));
-      k.fn_set = pointer_set_create ();
+      k.fn_set = new hash_set<tree>;
       for (ovl = fns; ovl; ovl = OVL_NEXT (ovl))
-	pointer_set_insert (k.fn_set, OVL_CURRENT (ovl));
+	k.fn_set->add (OVL_CURRENT (ovl));
     }
   else
     k.fn_set = NULL;
@@ -5661,8 +5676,7 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 
   release_tree_vector (k.classes);
   release_tree_vector (k.namespaces);
-  if (k.fn_set)
-    pointer_set_destroy (k.fn_set);
+  delete k.fn_set;
     
   return fns;
 }

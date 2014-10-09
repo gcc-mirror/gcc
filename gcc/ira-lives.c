@@ -723,7 +723,7 @@ make_early_clobber_and_input_conflicts (void)
 /* Mark early clobber hard registers of the current INSN as live (if
    LIVE_P) or dead.  Return true if there are such registers.  */
 static bool
-mark_hard_reg_early_clobbers (rtx insn, bool live_p)
+mark_hard_reg_early_clobbers (rtx_insn *insn, bool live_p)
 {
   df_ref def;
   bool set_p = false;
@@ -985,7 +985,7 @@ bb_has_abnormal_call_pred (basic_block bb)
    we find a SET rtx that we can use to deduce that a register can be cheaply
    caller-saved.  Return such a register, or NULL_RTX if none is found.  */
 static rtx
-find_call_crossed_cheap_reg (rtx insn)
+find_call_crossed_cheap_reg (rtx_insn *insn)
 {
   rtx cheap_reg = NULL_RTX;
   rtx exp = CALL_INSN_FUNCTION_USAGE (insn);
@@ -1004,7 +1004,7 @@ find_call_crossed_cheap_reg (rtx insn)
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       rtx reg = SET_SRC (exp);
-      rtx prev = PREV_INSN (insn);
+      rtx_insn *prev = PREV_INSN (insn);
       while (prev && !(INSN_P (prev)
 		       && BLOCK_FOR_INSN (prev) != bb))
 	{
@@ -1052,7 +1052,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
   int i, freq;
   unsigned int j;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   bitmap_iterator bi;
   bitmap reg_live_out;
   unsigned int px;
@@ -1323,7 +1323,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       curr_point++;
 
     }
-  /* Propagate register pressure to upper loop tree nodes: */
+  /* Propagate register pressure to upper loop tree nodes.  */
   if (loop_tree_node != ira_loop_tree_root)
     for (i = 0; i < ira_pressure_classes_num; i++)
       {

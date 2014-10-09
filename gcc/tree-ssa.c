@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -49,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"
+#include "hash-map.h"
 #include "hashtab.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */
-static struct pointer_map_t *edge_var_maps;
+static hash_map<edge, auto_vec<edge_var_map> > *edge_var_maps;
 
 
 /* Add a mapping with PHI RESULT and PHI DEF associated with edge E.  */
@@ -64,23 +64,17 @@ static struct pointer_map_t *edge_var_maps;
 void
 redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
 {
-  void **slot;
-  edge_var_map_vector *head;
   edge_var_map new_node;
 
   if (edge_var_maps == NULL)
-    edge_var_maps = pointer_map_create ();
+    edge_var_maps = new hash_map<edge, auto_vec<edge_var_map> >;
 
-  slot = pointer_map_insert (edge_var_maps, e);
-  head = (edge_var_map_vector *) *slot;
-  if (!head)
-    vec_safe_reserve (head, 5);
+  auto_vec<edge_var_map> &slot = edge_var_maps->get_or_insert (e);
   new_node.def = def;
   new_node.result = result;
   new_node.locus = locus;
 
-  vec_safe_push (head, new_node);
-  *slot = head;
+  slot.safe_push (new_node);
 }
 
 
@@ -89,82 +83,52 @@ redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
 void
 redirect_edge_var_map_clear (edge e)
 {
-  void **slot;
-  edge_var_map_vector *head;
-
   if (!edge_var_maps)
     return;
 
-  slot = pointer_map_contains (edge_var_maps, e);
+  auto_vec<edge_var_map> *head = edge_var_maps->get (e);
 
-  if (slot)
-    {
-      head = (edge_var_map_vector *) *slot;
-      vec_free (head);
-      *slot = NULL;
-    }
+  if (head)
+    head->release ();
 }
 
 
 /* Duplicate the redirected var mappings in OLDE in NEWE.
 
-   Since we can't remove a mapping, let's just duplicate it.  This assumes a
-   pointer_map can have multiple edges mapping to the same var_map (many to
-   one mapping), since we don't remove the previous mappings.  */
+   This assumes a hash_map can have multiple edges mapping to the same
+   var_map (many to one mapping), since we don't remove the previous mappings.
+   */
 
 void
 redirect_edge_var_map_dup (edge newe, edge olde)
 {
-  void **new_slot, **old_slot;
-  edge_var_map_vector *head;
-
   if (!edge_var_maps)
     return;
 
-  new_slot = pointer_map_insert (edge_var_maps, newe);
-  old_slot = pointer_map_contains (edge_var_maps, olde);
-  if (!old_slot)
+  auto_vec<edge_var_map> *new_head = &edge_var_maps->get_or_insert (newe);
+  auto_vec<edge_var_map> *old_head = edge_var_maps->get (olde);
+  if (!old_head)
     return;
-  head = (edge_var_map_vector *) *old_slot;
 
-  edge_var_map_vector *new_head = NULL;
-  if (head)
-    new_head = vec_safe_copy (head);
-  else
-    vec_safe_reserve (new_head, 5);
-  *new_slot = new_head;
+  new_head->safe_splice (*old_head);
 }
 
 
 /* Return the variable mappings for a given edge.  If there is none, return
    NULL.  */
 
-edge_var_map_vector *
+vec<edge_var_map> *
 redirect_edge_var_map_vector (edge e)
 {
-  void **slot;
-
   /* Hey, what kind of idiot would... you'd be surprised.  */
   if (!edge_var_maps)
     return NULL;
 
-  slot = pointer_map_contains (edge_var_maps, e);
+  auto_vec<edge_var_map> *slot = edge_var_maps->get (e);
   if (!slot)
     return NULL;
 
-  return (edge_var_map_vector *) *slot;
-}
-
-/* Used by redirect_edge_var_map_destroy to free all memory.  */
-
-static bool
-free_var_map_entry (const void *key ATTRIBUTE_UNUSED,
-		    void **value,
-		    void *data ATTRIBUTE_UNUSED)
-{
-  edge_var_map_vector *head = (edge_var_map_vector *) *value;
-  vec_free (head);
-  return true;
+  return slot;
 }
 
 /* Clear the edge variable mappings.  */
@@ -172,12 +136,8 @@ free_var_map_entry (const void *key ATTRIBUTE_UNUSED,
 void
 redirect_edge_var_map_destroy (void)
 {
-  if (edge_var_maps)
-    {
-      pointer_map_traverse (edge_var_maps, free_var_map_entry, NULL);
-      pointer_map_destroy (edge_var_maps);
-      edge_var_maps = NULL;
-    }
+  delete edge_var_maps;
+  edge_var_maps = NULL;
 }
 
 
@@ -223,12 +183,11 @@ void
 flush_pending_stmts (edge e)
 {
   gimple phi;
-  edge_var_map_vector *v;
   edge_var_map *vm;
   int i;
   gimple_stmt_iterator gsi;
 
-  v = redirect_edge_var_map_vector (e);
+  vec<edge_var_map> *v = redirect_edge_var_map_vector (e);
   if (!v)
     return;
 
@@ -1198,7 +1157,7 @@ delete_tree_ssa (void)
   cfun->gimple_df->default_defs = NULL;
   pt_solution_reset (&cfun->gimple_df->escaped);
   if (cfun->gimple_df->decls_to_pointers != NULL)
-    pointer_map_destroy (cfun->gimple_df->decls_to_pointers);
+    delete cfun->gimple_df->decls_to_pointers;
   cfun->gimple_df->decls_to_pointers = NULL;
   cfun->gimple_df->modified_noreturn_calls = NULL;
   cfun->gimple_df = NULL;

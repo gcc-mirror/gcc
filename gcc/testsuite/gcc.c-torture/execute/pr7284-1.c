@@ -2,6 +2,7 @@
    DR#081), not undefined.  Bug 7284 from Al Grant (AlGrant at
    myrealbox.com).  */
 
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-std=c89" } */
 
 extern void abort (void);

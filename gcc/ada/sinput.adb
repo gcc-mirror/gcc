@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,6 +302,17 @@ package body Sinput is
       end case;
    end Check_For_BOM;
 
+   -----------------------------
+   -- Comes_From_Inlined_Body --
+   -----------------------------
+
+   function Comes_From_Inlined_Body (S : Source_Ptr) return Boolean is
+      SIE : Source_File_Record renames
+              Source_File.Table (Get_Source_File_Index (S));
+   begin
+      return SIE.Inlined_Body;
+   end Comes_From_Inlined_Body;
+
    -----------------------
    -- Get_Column_Number --
    -----------------------
@@ -331,11 +342,22 @@ package body Sinput is
          while S < P loop
             if Src (S) = HT then
                C := (C - 1) / 8 * 8 + (8 + 1);
+               S := S + 1;
+
+            --  Deal with wide character case, but don't include brackets
+            --  notation in this circuit, since we know that this will
+            --  display unencoded (no one encodes brackets notation).
+
+            elsif Src (S) /= '[' and then Is_Start_Of_Wide_Char (Src, S) then
+               C := C + 1;
+               Skip_Wide (Src, S);
+
+            --  Normal (non-wide) character case or brackets sequence
+
             else
                C := C + 1;
+               S := S + 1;
             end if;
-
-            S := S + 1;
          end loop;
 
          return C;

@@ -1,7 +1,10 @@
 /* Check statements that are eliminated by inlining.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-inline-details -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
+
 struct a {int a,b,c,d,e;};
+void t(int);
+void t2();
 
 void
 accessfield (struct a a)

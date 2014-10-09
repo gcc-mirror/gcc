@@ -1,3 +1,4 @@
+/* { dg-options "-fgnu89-inline" } */
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
 #define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)

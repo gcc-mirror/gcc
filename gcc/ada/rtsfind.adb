@@ -1126,10 +1126,10 @@ package body Rtsfind is
 
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
-      --  on the current target. Also check that the PCS is compatible with
-      --  the code generator version. On such targets (VMS, Vxworks, others?)
-      --  we provide a minimal body for System.Rpc that only supplies an
-      --  implementation of Partition_Id.
+      --  on the current target. Also check that the PCS is compatible with the
+      --  code generator version. On such targets (Vxworks, others?) we provide
+      --  a minimal body for System.Rpc that only supplies an implementation of
+      --  Partition_Id.
 
       function Find_Local_Entity (E : RE_Id) return Entity_Id;
       --  This function is used when entity E is in this compilation's main

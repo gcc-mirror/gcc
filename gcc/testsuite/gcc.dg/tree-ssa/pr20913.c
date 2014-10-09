@@ -5,6 +5,8 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -fno-tree-dominator-opts" } */
 
+void link_error (void);
+
 int
 foo (int a, int b, int c, int d)
 {
@@ -28,6 +30,7 @@ foo (int a, int b, int c, int d)
     }
 }
 
+int
 main()
 {
   foo (1, 2, 3, 4);

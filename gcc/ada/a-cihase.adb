@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2139,6 +2139,24 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            Hash      => Hash,
            Equivalent_Keys => Equivalent_Key_Node);
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               HT : Hash_Table_Type renames Control.Container.HT;
+               B  : Natural renames HT.Busy;
+               L  : Natural renames HT.Lock;
+            begin
+               B := B + 1;
+               L := L + 1;
+            end;
+         end if;
+      end Adjust;
+
       ------------------------
       -- Constant_Reference --
       ------------------------
@@ -2249,6 +2267,32 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Free (X);
       end Exclude;
 
+      --------------
+      -- Finalize --
+      --------------
+
+      procedure Finalize (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               HT : Hash_Table_Type renames Control.Container.HT;
+               B  : Natural renames HT.Busy;
+               L  : Natural renames HT.Lock;
+            begin
+               B := B - 1;
+               L := L - 1;
+            end;
+
+            if Hash (Key (Control.Old_Pos)) /= Control.Old_Hash then
+               HT_Ops.Delete_Node_At_Index
+                 (Control.Container.HT, Control.Index, Control.Old_Pos.Node);
+               raise Program_Error;
+            end if;
+
+            Control.Container := null;
+         end if;
+      end Finalize;
+
       ----------
       -- Find --
       ----------
@@ -2322,19 +2366,31 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            (Vet (Position),
             "bad cursor in function Reference_Preserving_Key");
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
-
-         return (Element => Position.Node.Element.all'Access);
+         declare
+            HT : Hash_Table_Type renames Container.HT;
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Position.Node.Element.all'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                              Index     => HT_Ops.Index (HT, Position.Node),
+                              Old_Pos   => Position,
+                              Old_Hash  => Hash (Key (Position))))
+         do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access :=
-           Key_Keys.Find (Container.HT, Key);
+         Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
 
       begin
          if Node = null then
@@ -2345,11 +2401,25 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             raise Program_Error with "Node has no element";
          end if;
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Key has not
-         --  changed.  ???
-
-         return (Element => Node.Element.all'Access);
+         declare
+            HT : Hash_Table_Type renames Container.HT;
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
+            P  : constant Cursor := Find (Container, Key);
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Node.Element.all'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                              Index     => HT_Ops.Index (HT, P.Node),
+                              Old_Pos   => P,
+                              Old_Hash  => Hash (Key)))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       -------------
@@ -2361,8 +2431,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key       : Key_Type;
          New_Item  : Element_Type)
       is
-         Node : constant Node_Access :=
-           Key_Keys.Find (Container.HT, Key);
+         Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
 
       begin
          if Node = null then

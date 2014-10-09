@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Debug;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -61,6 +60,7 @@ package body Prj is
    --  Initial size for extensible buffer used in Add_To_Buffer
 
    The_Empty_String : Name_Id := No_Name;
+   The_Dot_String   : Name_Id := No_Name;
 
    Debug_Level : Integer := 0;
    --  Current indentation level for debug traces
@@ -141,8 +141,7 @@ package body Prj is
       while Last + S'Length > To'Last loop
          declare
             New_Buffer : constant  String_Access :=
-                           new String (1 .. 2 * Last);
-
+                           new String (1 .. 2 * To'Length);
          begin
             New_Buffer (1 .. Last) := To (1 .. Last);
             Free (To);
@@ -188,7 +187,7 @@ package body Prj is
       pragma Warnings (Off, Dont_Care);
 
    begin
-      if not Debug.Debug_Flag_N then
+      if not Opt.Keep_Temporary_Files  then
          if Current_Verbosity = High then
             Write_Line ("Removing temp file: " & Get_Name_String (Path));
          end if;
@@ -218,7 +217,7 @@ package body Prj is
       Proj : Project_List;
 
    begin
-      if not Debug.Debug_Flag_N then
+      if not Opt.Keep_Temporary_Files then
          if Project_Tree /= null then
             Proj := Project_Tree.Projects;
             while Proj /= null loop
@@ -255,7 +254,7 @@ package body Prj is
       Path : Path_Name_Type;
 
    begin
-      if not Debug.Debug_Flag_N then
+      if not Opt.Keep_Temporary_Files then
          for Index in
            1 .. Temp_Files_Table.Last (Shared.Private_Part.Temp_Files)
          loop
@@ -277,8 +276,7 @@ package body Prj is
 
       --  If any of the environment variables ADA_PRJ_INCLUDE_FILE or
       --  ADA_PRJ_OBJECTS_FILE has been set, then reset their value to
-      --  the empty string. On VMS, this has the effect of deassigning
-      --  the logical names.
+      --  the empty string.
 
       if Shared.Private_Part.Current_Source_Path_File /= No_Path then
          Setenv (Project_Include_Path_File, "");
@@ -309,6 +307,15 @@ package body Prj is
             return Extend_Name (Source_File_Name, ALI_Dependency_Suffix);
       end case;
    end Dependency_Name;
+
+   ----------------
+   -- Dot_String --
+   ----------------
+
+   function Dot_String return Name_Id is
+   begin
+      return The_Dot_String;
+   end Dot_String;
 
    ----------------
    -- Empty_File --
@@ -1060,6 +1067,10 @@ package body Prj is
          Name_Len := 0;
          The_Empty_String := Name_Find;
 
+         Name_Len := 1;
+         Name_Buffer (1) := '.';
+         The_Dot_String := Name_Find;
+
          Prj.Attr.Initialize;
 
          --  Make sure that new reserved words after Ada 95 may be used as
@@ -1445,6 +1456,20 @@ package body Prj is
          Array_Table.Init            (Tree.Shared.Arrays);
          Package_Table.Init          (Tree.Shared.Packages);
 
+         --  Create Dot_String_List
+
+         String_Element_Table.Append
+           (Tree.Shared.String_Elements,
+            String_Element'
+              (Value         => The_Dot_String,
+               Index         => 0,
+               Display_Value => The_Dot_String,
+               Location      => No_Location,
+               Flag          => False,
+               Next          => Nil_String));
+         Tree.Shared.Dot_String_List :=
+           String_Element_Table.Last (Tree.Shared.String_Elements);
+
          --  Private part table
 
          Temp_Files_Table.Init (Tree.Shared.Private_Part.Temp_Files);
@@ -1715,7 +1740,7 @@ package body Prj is
             Context : Project_Context;
             Dummy   : in out Boolean)
          is
-            pragma Unreferenced (Dummy, Tree);
+            pragma Unreferenced (Tree);
 
             List : Project_List;
             Prj2 : Project_Id;
@@ -2102,7 +2127,7 @@ package body Prj is
 
          if Project.Qualifier in Aggregate_Project then
             Ctx :=
-              (In_Aggregate_Lib      => True,
+              (In_Aggregate_Lib      => Project.Qualifier = Aggregate_Library,
                From_Encapsulated_Lib =>
                  Context.From_Encapsulated_Lib
                    or else Project.Standalone_Library = Encapsulated);

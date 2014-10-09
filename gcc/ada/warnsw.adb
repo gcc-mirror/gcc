@@ -636,7 +636,6 @@ package body Warnsw is
             else
                return False;
             end if;
-            return False;
       end case;
 
       return True;
@@ -648,35 +647,36 @@ package body Warnsw is
 
    procedure WA_Warnings is
    begin
-      Check_Unreferenced                  := True;
-      Check_Unreferenced_Formals          := True;
-      Check_Withs                         := True;
-      Constant_Condition_Warnings         := True;
-      Implementation_Unit_Warnings        := True;
-      Ineffective_Inline_Warnings         := True;
-      Warn_On_Ada_2005_Compatibility      := True;
-      Warn_On_Ada_2012_Compatibility      := True;
-      Warn_On_Assertion_Failure           := True;
-      Warn_On_Assumed_Low_Bound           := True;
-      Warn_On_Bad_Fixed_Value             := True;
-      Warn_On_Biased_Representation       := True;
-      Warn_On_Constant                    := True;
-      Warn_On_Export_Import               := True;
-      Warn_On_Modified_Unread             := True;
-      Warn_On_No_Value_Assigned           := True;
-      Warn_On_Non_Local_Exception         := True;
-      Warn_On_Object_Renames_Function     := True;
-      Warn_On_Obsolescent_Feature         := True;
-      Warn_On_Overlap                     := True;
-      Warn_On_Parameter_Order             := True;
-      Warn_On_Questionable_Missing_Parens := True;
-      Warn_On_Redundant_Constructs        := True;
-      Warn_On_Reverse_Bit_Order           := True;
-      Warn_On_Size_Alignment              := True;
-      Warn_On_Suspicious_Contract         := True;
-      Warn_On_Unchecked_Conversion        := True;
-      Warn_On_Unrecognized_Pragma         := True;
-      Warn_On_Unrepped_Components         := True;
+      Check_Unreferenced                  := True; -- -gnatwf/-gnatwu
+      Check_Unreferenced_Formals          := True; -- -gnatwf/-gnatwu
+      Check_Withs                         := True; -- -gnatwu
+      Constant_Condition_Warnings         := True; -- -gnatwc
+      Implementation_Unit_Warnings        := True; -- -gnatwi
+      Ineffective_Inline_Warnings         := True; -- -gnatwp
+      Warn_On_Ada_2005_Compatibility      := True; -- -gnatwy
+      Warn_On_Ada_2012_Compatibility      := True; -- -gnatwy
+      Warn_On_Assertion_Failure           := True; -- -gnatw.a
+      Warn_On_Assumed_Low_Bound           := True; -- -gnatww
+      Warn_On_Bad_Fixed_Value             := True; -- -gnatwb
+      Warn_On_Biased_Representation       := True; -- -gnatw.b
+      Warn_On_Constant                    := True; -- -gnatwk
+      Warn_On_Export_Import               := True; -- -gnatwx
+      Warn_On_Modified_Unread             := True; -- -gnatwm
+      Warn_On_No_Value_Assigned           := True; -- -gnatwv
+      Warn_On_Non_Local_Exception         := True; -- -gnatw.x
+      Warn_On_Object_Renames_Function     := True; -- -gnatw.r
+      Warn_On_Obsolescent_Feature         := True; -- -gnatwj
+      Warn_On_Overlap                     := True; -- -gnatw.i
+      Warn_On_Parameter_Order             := True; -- -gnatw.p
+      Warn_On_Questionable_Missing_Parens := True; -- -gnatwq
+      Warn_On_Redundant_Constructs        := True; -- -gnatwr
+      Warn_On_Reverse_Bit_Order           := True; -- -gnatw.v
+      Warn_On_Size_Alignment              := True; -- -gnatw.z
+      Warn_On_Suspicious_Contract         := True; -- -gnatw.t
+      Warn_On_Suspicious_Modulus_Value    := True; -- -gnatw.m
+      Warn_On_Unchecked_Conversion        := True; -- -gnatwz
+      Warn_On_Unrecognized_Pragma         := True; -- -gnatwg
+      Warn_On_Unrepped_Components         := True; -- -gnatw.c
    end WA_Warnings;
 
 end Warnsw;

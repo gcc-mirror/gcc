@@ -976,7 +976,7 @@
       REAL_VALUE_TYPE offset;
       rtx limit;
       rtx tmp = gen_reg_rtx (SFmode);
-      rtx label = gen_label_rtx ();
+      rtx_code_label *label = gen_label_rtx ();
       rtx bit31;
       rtx cc1 = gen_rtx_REG (CC_FPmode, CCFP_REGNUM);
       rtx cmp = gen_rtx_LT (VOIDmode, cc1, CONST0_RTX (SFmode));
@@ -1687,7 +1687,7 @@
         (compare:CC (match_operand:SI 1 "gpr_operand"  "r")
                     (match_operand:SI 2 "arith_int_operand" "L")))
    (set (match_operand:SI 0 "gpr_operand" "=r")
-        (plus:SI (match_dup 1) (match_operand:SI 3 "const_int_operand" "L")))]
+        (plus:SI (match_dup 1) (match_operand:SI 3 "const_int_operand" "CnL")))]
   "INTVAL (operands[2]) == -INTVAL (operands[3])"
   "sub %0,%1,%2"
   [(set_attr "type" "compare")])

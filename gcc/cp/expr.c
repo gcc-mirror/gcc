@@ -74,6 +74,14 @@ cplus_expand_constant (tree cst)
       }
       break;
 
+    case CONSTRUCTOR:
+      {
+	constructor_elt *elt;
+	unsigned HOST_WIDE_INT idx;
+	FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (cst), idx, elt)
+	  elt->value = cplus_expand_constant (elt->value);
+      }
+
     default:
       /* There's nothing to do.  */
       break;

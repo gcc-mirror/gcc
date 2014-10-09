@@ -18,6 +18,11 @@ struct rtx_def
   } u;
 };
 
+void arf (void);
+void nit (void);
+void frob (void);
+
+void
 sss (rtx insn, int code1, int code2, int code3)
 {
   _Bool D1562;

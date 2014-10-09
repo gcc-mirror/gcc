@@ -44,6 +44,15 @@ if $tracelevel then {
 # Load support procs.
 load_lib plugin-support.exp
 
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p plugin] {
+    return
+}
+gcc_parallel_test_enable 0
+
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
@@ -80,3 +89,5 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/plugindir*.\[cSi\]]] \
 
 # All done.
 dg-finish
+
+gcc_parallel_test_enable 1

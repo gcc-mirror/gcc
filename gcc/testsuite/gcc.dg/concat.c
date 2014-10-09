@@ -1,6 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
+/* { dg-options "" } */
 
 /* Test we output an error for concatenation of artificial strings.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,8 +92,8 @@ package body Sinput.C is
 
       Len := Integer (File_Length (Source_File_FD));
 
-      --  Set Hi so that length is one more than the physical length,
-      --  allowing for the extra EOF character at the end of the buffer
+      --  Set Hi so that length is one more than the physical length, allowing
+      --  for the extra EOF character at the end of the buffer
 
       Hi := Lo + Source_Ptr (Len);
 
@@ -112,9 +112,9 @@ package body Sinput.C is
       begin
          --  Allocate source buffer, allowing extra character at end for EOF
 
-         --  Some systems (e.g. VMS) have file types that require one
-         --  read per line, so read until we get the Len bytes or until
-         --  there are no more characters.
+         --  Some systems have file types that require one read per line,
+         --  so read until we get the Len bytes or until there are no more
+         --  characters.
 
          Hi := Lo;
          loop
@@ -126,8 +126,8 @@ package body Sinput.C is
          Actual_Ptr (Hi) := EOF;
 
          --  Now we need to work out the proper virtual origin pointer to
-         --  return. This is exactly Actual_Ptr (0)'Address, but we have
-         --  to be careful to suppress checks to compute this address.
+         --  return. This is exactly Actual_Ptr (0)'Address, but we have to
+         --  be careful to suppress checks to compute this address.
 
          declare
             pragma Suppress (All_Checks);

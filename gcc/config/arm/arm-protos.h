@@ -126,7 +126,6 @@ extern int arm_max_const_double_inline_cost (void);
 extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
-extern const char *fp_immediate_constant (rtx);
 extern void arm_emit_call_insn (rtx, rtx, bool);
 extern const char *output_call (rtx *);
 extern const char *output_call_mem (rtx *);
@@ -137,20 +136,20 @@ extern const char *output_move_quad (rtx *);
 extern int arm_count_output_move_double_insns (rtx *);
 extern const char *output_move_vfp (rtx *operands);
 extern const char *output_move_neon (rtx *operands);
-extern int arm_attr_length_move_neon (rtx);
-extern int arm_address_offset_is_imm (rtx);
+extern int arm_attr_length_move_neon (rtx_insn *);
+extern int arm_address_offset_is_imm (rtx_insn *);
 extern const char *output_add_immediate (rtx *);
 extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);
 extern const char *output_return_instruction (rtx, bool, bool, bool);
 extern void arm_poke_function_name (FILE *, const char *);
-extern void arm_final_prescan_insn (rtx);
+extern void arm_final_prescan_insn (rtx_insn *);
 extern int arm_debugger_arg_offset (int, rtx);
 extern bool arm_is_long_call_p (tree);
 extern int    arm_emit_vector_const (FILE *, rtx);
 extern void arm_emit_fp16_const (rtx c);
 extern const char * arm_output_load_gr (rtx *);
-extern const char *vfp_output_fstmd (rtx *);
+extern const char *vfp_output_vstmd (rtx *);
 extern void arm_output_multireg_pop (rtx *, bool, rtx, bool, bool);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
@@ -185,8 +184,8 @@ extern int is_called_in_ARM_mode (tree);
 extern int thumb_shiftable_const (unsigned HOST_WIDE_INT);
 #ifdef RTX_CODE
 extern enum arm_cond_code maybe_get_arm_condition_code (rtx);
-extern void thumb1_final_prescan_insn (rtx);
-extern void thumb2_final_prescan_insn (rtx);
+extern void thumb1_final_prescan_insn (rtx_insn *);
+extern void thumb2_final_prescan_insn (rtx_insn *);
 extern const char *thumb_load_double_from_address (rtx *);
 extern const char *thumb_output_move_mem_multiple (int, rtx *);
 extern const char *thumb_call_via_reg (rtx);
@@ -254,7 +253,7 @@ struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   const struct cpu_cost_table *insn_extra_cost;
-  bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
+  bool (*sched_adjust_cost) (rtx_insn *, rtx, rtx_insn *, int *);
   int constant_limit;
   /* Maximum number of instructions to conditionalise.  */
   int max_insns_skipped;
@@ -278,6 +277,10 @@ struct tune_params
   /* Prefer 32-bit encoding instead of 16-bit encoding where subset of flags
      would be set.  */
   bool disparage_partial_flag_setting_t16_encodings;
+  /* Prefer to inline string operations like memset by using Neon.  */
+  bool string_ops_prefer_neon;
+  /* Maximum number of instructions to inline calls to memset.  */
+  int max_insns_inline_memset;
 };
 
 extern const struct tune_params *current_tune;
@@ -290,6 +293,7 @@ extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 #endif /* RTX_CODE */
 
+extern bool arm_gen_setmem (rtx *);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 

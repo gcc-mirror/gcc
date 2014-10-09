@@ -588,7 +588,7 @@ Wmissing-noreturn
 Common Alias(Wsuggest-attribute=noreturn)
 
 Wodr
-Common Warning
+Common Var(warn_odr_violations) Init(1) Warning
 Warn about some C++ One Definition Rule violations during link time optimization
 
 Woverflow
@@ -604,8 +604,12 @@ Common Var(warn_padded) Warning
 Warn when padding is required to align structure members
 
 Wpedantic
-Common Var(pedantic) Warning
+Common Var(pedantic) Init(0) Warning
 Issue warnings needed for strict compliance to the standard
+
+Wreturn-local-addr
+Common Var(warn_return_local_addr) Init(1) Warning
+Warn about returning a pointer/reference to a local or temporary variable.
 
 Wshadow
 Common Var(warn_shadow) Warning
@@ -646,6 +650,14 @@ Warn about functions which might be candidates for __attribute__((pure))
 Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn))
+
+Wsuggest-final-types
+Common Var(warn_suggest_final_types) Warning
+Warn about C++ polymorphic types where adding final keyword would improve code quality
+
+Wsuggest-final-methods
+Common Var(warn_suggest_final_methods) Warning
+Warn about C++ virtual methods where adding final keyword would improve code quality
 
 Wsystem-headers
 Common Var(warn_system_headers) Warning
@@ -1108,6 +1120,11 @@ fdump-noaddr
 Common Report Var(flag_dump_noaddr)
 Suppress output of addresses in debugging dumps
 
+freport-bug
+Common Driver Var(flag_report_bug)
+Collect and dump debug information into temporary file if ICE in C/C++
+compiler occured.
+
 fdump-passes
 Common Var(flag_dump_passes) Init(0)
 Dump optimization passes
@@ -1256,7 +1273,7 @@ Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
  
 fgraphite-code-generator=
-Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_CLOOG)
+Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_ISL)
 Choose code generator of Graphite
 
 Enum
@@ -1547,6 +1564,10 @@ Specify the algorithm to partition symbols and vars at linktime
 flto-compression-level=
 Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
+
+flto-odr-type-merging
+Common Report Var(flag_lto_odr_type_mering) Init(1)
+Merge C++ types using One Definition Rule
 
 flto-report
 Common Report Var(flag_lto_report) Init(0)

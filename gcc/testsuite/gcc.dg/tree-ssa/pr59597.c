@@ -4,6 +4,7 @@
 typedef unsigned short u16;
 typedef unsigned char u8;
 typedef unsigned int u32;
+long int random(int);
 #define NNN 10
 
 u32 f[NNN], t[NNN];

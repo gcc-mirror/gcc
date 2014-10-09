@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "langhooks.h"
 #include "diagnostic.h"
+#include "tree-diagnostic.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
 #include "incpath.h"
@@ -115,7 +116,7 @@ static bool done_preinclude;
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
-static void set_std_cxx1y (int);
+static void set_std_cxx14 (int);
 static void set_std_cxx1z (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
@@ -164,6 +165,19 @@ c_common_option_lang_mask (void)
   return lang_flags[c_language];
 }
 
+/* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
+static void
+c_diagnostic_finalizer (diagnostic_context *context,
+			diagnostic_info *diagnostic)
+{
+  diagnostic_show_locus (context, diagnostic);
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro expansion.  */
+  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
+  pp_destroy_prefix (context->printer);
+  pp_newline_and_flush (context->printer);
+}
+
 /* Common diagnostics initialization.  */
 void
 c_common_initialize_diagnostics (diagnostic_context *context)
@@ -179,7 +193,7 @@ c_common_initialize_diagnostics (diagnostic_context *context)
 	 diagnostic message.  */
       diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
     }
-
+  diagnostic_finalizer (context) = c_diagnostic_finalizer;
   context->opt_permissive = OPT_fpermissive;
 }
 
@@ -367,83 +381,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wall:
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
 
-      cpp_opts->warn_trigraphs = value;
-      cpp_opts->warn_comments = value;
       cpp_opts->warn_num_sign_change = value;
-      break;
-
-    case OPT_Wbuiltin_macro_redefined:
-      cpp_opts->warn_builtin_macro_redefined = value;
-      break;
-
-    case OPT_Wcomment:
-      cpp_opts->warn_comments = value;
-      break;
-
-    case OPT_Wc___compat:
-      cpp_opts->warn_cxx_operator_names = value;
-      break;
-
-    case OPT_Wdeprecated:
-      cpp_opts->cpp_warn_deprecated = value;
-      break;
-
-    case OPT_Wendif_labels:
-      cpp_opts->warn_endif_labels = value;
-      break;
-
-    case OPT_Winvalid_pch:
-      cpp_opts->warn_invalid_pch = value;
-      break;
-
-    case OPT_Wliteral_suffix:
-      cpp_opts->warn_literal_suffix = value;
-      break;
-
-    case OPT_Wlong_long:
-      cpp_opts->cpp_warn_long_long = value;
-      break;
-
-    case OPT_Wmissing_include_dirs:
-      cpp_opts->warn_missing_include_dirs = value;
-      break;
-
-    case OPT_Wmultichar:
-      cpp_opts->warn_multichar = value;
-      break;
-
-    case OPT_Wnormalized_:
-      if (kind == DK_ERROR)
-	{
-	  gcc_assert (!arg);
-	  inform (input_location, "-Werror=normalized=: set -Wnormalized=nfc");
-	  cpp_opts->warn_normalize = normalized_C;
-	}
-      else
-	{
-	  if (!value || (arg && strcasecmp (arg, "none") == 0))
-	    cpp_opts->warn_normalize = normalized_none;
-	  else if (!arg || strcasecmp (arg, "nfkc") == 0)
-	    cpp_opts->warn_normalize = normalized_KC;
-	  else if (strcasecmp (arg, "id") == 0)
-	    cpp_opts->warn_normalize = normalized_identifier_C;
-	  else if (strcasecmp (arg, "nfc") == 0)
-	    cpp_opts->warn_normalize = normalized_C;
-	  else
-	    error ("argument %qs to %<-Wnormalized%> not recognized", arg);
-	  break;
-	}
-
-    case OPT_Wtraditional:
-      cpp_opts->cpp_warn_traditional = value;
-      break;
-
-    case OPT_Wtrigraphs:
-      cpp_opts->warn_trigraphs = value;
-      break;
-
-    case OPT_Wundef:
-      cpp_opts->warn_undef = value;
       break;
 
     case OPT_Wunknown_pragmas:
@@ -661,14 +599,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	error ("output filename specified twice");
       break;
 
-      /* We need to handle the -Wpedantic switch here, rather than in
-	 c_common_post_options, so that a subsequent -Wno-endif-labels
-	 is not overridden.  */
-    case OPT_Wpedantic:
-      cpp_opts->cpp_pedantic = 1;
-      cpp_opts->warn_endif_labels = 1;
-      break;
-
     case OPT_print_objc_runtime_info:
       print_struct_values = 1;
       break;
@@ -693,12 +623,12 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	}
       break;
 
-    case OPT_std_c__1y:
-    case OPT_std_gnu__1y:
+    case OPT_std_c__14:
+    case OPT_std_gnu__14:
       if (!preprocessing_asm_p)
 	{
-	  set_std_cxx1y (code == OPT_std_c__1y /* ISO */);
-	  if (code == OPT_std_c__1y)
+	  set_std_cxx14 (code == OPT_std_c__14 /* ISO */);
+	  if (code == OPT_std_c__14)
 	    cpp_opts->ext_numeric_literals = 0;
 	}
       break;
@@ -755,10 +685,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_v:
       verbose = true;
       break;
-
-    case OPT_Wabi:
-      warn_psabi = value;
-      break;
     }
 
   switch (c_language)
@@ -794,7 +720,8 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     default:
       gcc_unreachable ();
     }
-  
+
+  cpp_handle_option_auto (&global_options, scode, cpp_opts);
   return result;
 }
 
@@ -1030,6 +957,7 @@ c_common_post_options (const char **pfilename)
   cb->file_change = cb_file_change;
   cb->dir_change = cb_dir_change;
   cpp_post_options (parse_in);
+  init_global_opts_from_cpp (&global_options, cpp_get_options (parse_in));
 
   input_location = UNKNOWN_LOCATION;
 
@@ -1294,22 +1222,19 @@ sanitize_cpp_opts (void)
 
   cpp_opts->unsigned_char = !flag_signed_char;
   cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
-  cpp_opts->warn_date_time = cpp_warn_date_time;
 
   /* Wlong-long is disabled by default. It is enabled by:
       [-Wpedantic | -Wtraditional] -std=[gnu|c]++98 ; or
-      [-Wpedantic | -Wtraditional] -std=non-c99 .
+      [-Wpedantic | -Wtraditional] -std=non-c99 
 
-      Either -Wlong-long or -Wno-long-long override any other settings.  */
+      Either -Wlong-long or -Wno-long-long override any other settings.
+      ??? These conditions should be handled in c.opt.  */
   if (warn_long_long == -1)
-    warn_long_long = ((pedantic || warn_traditional)
-		      && (c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99));
-  cpp_opts->cpp_warn_long_long = warn_long_long;
-
-  /* Similarly with -Wno-variadic-macros.  No check for c99 here, since
-     this also turns off warnings about GCCs extension.  */
-  cpp_opts->warn_variadic_macros
-    = cpp_warn_variadic_macros && (pedantic || warn_traditional);
+    {
+      warn_long_long = ((pedantic || warn_traditional)
+			&& (c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99));
+      cpp_opts->cpp_warn_long_long = warn_long_long;
+    }
 
   /* If we're generating preprocessor output, emit current directory
      if explicitly requested or if debugging information is enabled.
@@ -1438,6 +1363,12 @@ c_finish_options (void)
 static void
 push_command_line_include (void)
 {
+  /* This can happen if disabled by -imacros for example.
+     Punt so that we don't set "<command-line>" as the filename for
+     the header.  */
+  if (include_cursor > deferred_count)
+    return;
+
   if (!done_preinclude)
     {
       done_preinclude = true;
@@ -1576,31 +1507,32 @@ set_std_cxx11 (int iso)
   cxx_dialect = cxx11;
 }
 
-/* Set the C++ 201y draft standard (without GNU extensions if ISO).  */
+/* Set the C++ 2014 draft standard (without GNU extensions if ISO).  */
 static void
-set_std_cxx1y (int iso)
+set_std_cxx14 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX1Y: CLK_GNUCXX1Y);
+  cpp_set_lang (parse_in, iso ? CLK_CXX14: CLK_GNUCXX14);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
   /* C++11 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
-  cxx_dialect = cxx1y;
+  cxx_dialect = cxx14;
 }
 
 /* Set the C++ 201z draft standard (without GNU extensions if ISO).  */
 static void
 set_std_cxx1z (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX1Y: CLK_GNUCXX1Y);
+  cpp_set_lang (parse_in, iso ? CLK_CXX1Z: CLK_GNUCXX1Z);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
   /* C++11 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
+  flag_isoc11 = 1;
   cxx_dialect = cxx1z;
 }
 

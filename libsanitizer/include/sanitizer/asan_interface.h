@@ -60,6 +60,22 @@ extern "C" {
   // Print the description of addr (useful when debugging in gdb).
   void __asan_describe_address(void *addr);
 
+  // Useful for calling from the debugger to get the allocation stack trace
+  // and thread ID for a heap address. Stores up to 'size' frames into 'trace',
+  // returns the number of stored frames or 0 on error.
+  size_t __asan_get_alloc_stack(void *addr, void **trace, size_t size,
+                                int *thread_id);
+
+  // Useful for calling from the debugger to get the free stack trace
+  // and thread ID for a heap address. Stores up to 'size' frames into 'trace',
+  // returns the number of stored frames or 0 on error.
+  size_t __asan_get_free_stack(void *addr, void **trace, size_t size,
+                               int *thread_id);
+
+  // Useful for calling from the debugger to get the current shadow memory
+  // mapping.
+  void __asan_get_shadow_mapping(size_t *shadow_scale, size_t *shadow_offset);
+
   // This is an internal function that is called to report an error.
   // However it is still a part of the interface because users may want to
   // set a breakpoint on this function in a debugger.
@@ -81,46 +97,12 @@ extern "C" {
   // the program crashes before ASan report is printed.
   void __asan_on_error();
 
-  // Returns the estimated number of bytes that will be reserved by allocator
-  // for request of "size" bytes. If ASan allocator can't allocate that much
-  // memory, returns the maximal possible allocation size, otherwise returns
-  // "size".
-  size_t __asan_get_estimated_allocated_size(size_t size);
-  // Returns 1 if p was returned by the ASan allocator and is not yet freed.
-  // Otherwise returns 0.
-  int __asan_get_ownership(const void *p);
-  // Returns the number of bytes reserved for the pointer p.
-  // Requires (get_ownership(p) == true) or (p == 0).
-  size_t __asan_get_allocated_size(const void *p);
-  // Number of bytes, allocated and not yet freed by the application.
-  size_t __asan_get_current_allocated_bytes();
-  // Number of bytes, mmaped by asan allocator to fulfill allocation requests.
-  // Generally, for request of X bytes, allocator can reserve and add to free
-  // lists a large number of chunks of size X to use them for future requests.
-  // All these chunks count toward the heap size. Currently, allocator never
-  // releases memory to OS (instead, it just puts freed chunks to free lists).
-  size_t __asan_get_heap_size();
-  // Number of bytes, mmaped by asan allocator, which can be used to fulfill
-  // allocation requests. When a user program frees memory chunk, it can first
-  // fall into quarantine and will count toward __asan_get_free_bytes() later.
-  size_t __asan_get_free_bytes();
-  // Number of bytes in unmapped pages, that are released to OS. Currently,
-  // always returns 0.
-  size_t __asan_get_unmapped_bytes();
   // Prints accumulated stats to stderr. Used for debugging.
   void __asan_print_accumulated_stats();
 
   // This function may be optionally provided by user and should return
   // a string containing ASan runtime options. See asan_flags.h for details.
   const char* __asan_default_options();
-
-  // Malloc hooks that may be optionally provided by user.
-  // __asan_malloc_hook(ptr, size) is called immediately after
-  //   allocation of "size" bytes, which returned "ptr".
-  // __asan_free_hook(ptr) is called immediately before
-  //   deallocation of "ptr".
-  void __asan_malloc_hook(void *ptr, size_t size);
-  void __asan_free_hook(void *ptr);
 
   // The following 2 functions facilitate garbage collection in presence of
   // asan's fake stack.

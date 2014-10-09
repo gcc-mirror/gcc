@@ -315,6 +315,10 @@ for (i = 0; i < n_langs; i++) {
     print "                           const struct cl_option_handlers *handlers, "
     print "                           diagnostic_context *dc);                   "
 }
+print "void cpp_handle_option_auto (const struct gcc_options * opts, size_t scode,"
+print "                             struct cpp_options * cpp_opts);"
+print "void init_global_opts_from_cpp(struct gcc_options * opts,      "
+print "                               const struct cpp_options * cpp_opts);"    
 print "#endif";
 print "#endif";
 print "";
@@ -474,6 +478,33 @@ print "  OPT_SPECIAL_ignore,"
 print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"
+print ""
+print "#ifdef GCC_C_COMMON_H"
+print "/* Mapping from cpp message reasons to the options that enable them.  */"
+print "#include <cpplib.h>"
+print "struct cpp_reason_option_codes_t"
+print "{"
+print "  const int reason;		/* cpplib message reason.  */"
+print "  const int option_code;	/* gcc option that controls this message.  */"
+print "};"
+print ""
+print "static const struct cpp_reason_option_codes_t cpp_reason_option_codes[] = {"
+for (i = 0; i < n_opts; i++) {
+    # With identical flags, pick only the last one.  The
+    # earlier loop ensured that it has all flags merged,
+    # and a nonempty help text if one of the texts was nonempty.
+    while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
+        i++;
+    }
+    cpp_reason = nth_arg(0, opt_args("CppReason", flags[i]));
+    if (cpp_reason != "") {
+        cpp_reason = cpp_reason ",";
+        printf("  {%-40s %s},\n", cpp_reason, opt_enum(opts[i]))
+    }
+}
+printf("  {%-40s 0},\n", "CPP_W_NONE,")
+print "};"
+print "#endif"
 print ""
 print "#endif /* OPTIONS_H */"
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@
 
 --  This version is for NT
 
-with Ada.Streams;             use Ada.Streams;
 with Ada.Unchecked_Conversion;
 with Interfaces.C.Strings;    use Interfaces.C.Strings;
 with System;                  use System;
@@ -334,11 +333,11 @@ package body GNAT.Sockets.Thin is
             exit;
 
          else
-            pragma Assert (Stream_Element_Count (Res) <= Current_Iovec.Length);
+            pragma Assert (Interfaces.C.size_t (Res) <= Current_Iovec.Length);
 
             Count := Count + Res;
             Current_Iovec.Length :=
-              Current_Iovec.Length - Stream_Element_Count (Res);
+              Current_Iovec.Length - Interfaces.C.size_t (Res);
             Current_Iovec.Base :=
               To_Access (Current_Iovec.Base.all'Address
                 + Storage_Offset (Res));
@@ -507,7 +506,7 @@ package body GNAT.Sockets.Thin is
 
          --  Exit now if the buffer is not fully transmitted
 
-         exit when Stream_Element_Count (Res) < Iovec (J).Length;
+         exit when Interfaces.C.size_t (Res) < Iovec (J).Length;
       end loop;
 
       return System.CRTL.ssize_t (Count);

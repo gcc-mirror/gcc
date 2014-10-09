@@ -2,6 +2,7 @@
 int a[1000];
 int b = 256;
 int c = 257;
+int
 main ()
 {
   int i;

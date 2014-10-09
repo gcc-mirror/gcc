@@ -38,6 +38,7 @@
 
 #include <bits/c++config.h>
 #include <bits/c++io.h>  // for __c_lock and __c_file
+#include <bits/move.h>   // for swap
 #include <ios>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -60,6 +61,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       __basic_file(__c_lock* __lock = 0) throw ();
+
+#if __cplusplus >= 201103L
+      __basic_file(__basic_file&& __rv, __c_lock* __lock = 0) noexcept
+      : _M_cfile(__rv._M_cfile), _M_cfile_created(__rv._M_cfile_created)
+      {
+	__rv._M_cfile = nullptr;
+	__rv._M_cfile_created = false;
+      }
+
+      __basic_file& operator=(const __basic_file&) = delete;
+      __basic_file& operator=(__basic_file&&) = delete;
+
+      void
+      swap(__basic_file& __f) noexcept
+      {
+	std::swap(_M_cfile, __f._M_cfile);
+	std::swap(_M_cfile_created, __f._M_cfile_created);
+      }
+#endif
 
       __basic_file* 
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);

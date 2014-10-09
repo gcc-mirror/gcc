@@ -343,13 +343,17 @@ build_value_init (tree type, tsubst_flags_t complain)
   if (CLASS_TYPE_P (type)
       && type_build_ctor_call (type))
     {
-      tree ctor = build_aggr_init_expr
-	(type,
+      tree ctor =
 	 build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    NULL, type, LOOKUP_NORMAL,
-				    complain));
-      if (ctor == error_mark_node
-	  || type_has_user_provided_default_constructor (type))
+				    complain);
+      if (ctor == error_mark_node)
+	return ctor;
+      tree fn = NULL_TREE;
+      if (TREE_CODE (ctor) == CALL_EXPR)
+	fn = get_callee_fndecl (ctor);
+      ctor = build_aggr_init_expr (type, ctor);
+      if (fn && user_provided_p (fn))
 	return ctor;
       else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
@@ -419,12 +423,18 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		 over TYPE_FIELDs will result in correct initialization of
 		 all of the subobjects.  */
 	      value = build_value_init (ftype, complain);
+	      value = maybe_constant_init (value);
 
 	      if (value == error_mark_node)
 		return error_mark_node;
 
-	      if (value)
-		CONSTRUCTOR_APPEND_ELT(v, field, value);
+	      CONSTRUCTOR_APPEND_ELT(v, field, value);
+
+	      /* We shouldn't have gotten here for anything that would need
+		 non-trivial initialization, and gimplify_init_ctor_preeval
+		 would need to be fixed to allow it.  */
+	      gcc_assert (TREE_CODE (value) != TARGET_EXPR
+			  && TREE_CODE (value) != AGGR_INIT_EXPR);
 	    }
 
 	  /* Build a constructor to contain the zero- initializations.  */
@@ -462,20 +472,18 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	    ce.index = build2 (RANGE_EXPR, sizetype, size_zero_node, max_index);
 
 	  ce.value = build_value_init (TREE_TYPE (type), complain);
-	  if (ce.value)
-	    {
-	      if (ce.value == error_mark_node)
-		return error_mark_node;
+	  ce.value = maybe_constant_init (ce.value);
+	  if (ce.value == error_mark_node)
+	    return error_mark_node;
 
-	      vec_alloc (v, 1);
-	      v->quick_push (ce);
+	  vec_alloc (v, 1);
+	  v->quick_push (ce);
 
-	      /* We shouldn't have gotten here for anything that would need
-		 non-trivial initialization, and gimplify_init_ctor_preeval
-		 would need to be fixed to allow it.  */
-	      gcc_assert (TREE_CODE (ce.value) != TARGET_EXPR
-			  && TREE_CODE (ce.value) != AGGR_INIT_EXPR);
-	    }
+	  /* We shouldn't have gotten here for anything that would need
+	     non-trivial initialization, and gimplify_init_ctor_preeval
+	     would need to be fixed to allow it.  */
+	  gcc_assert (TREE_CODE (ce.value) != TARGET_EXPR
+		      && TREE_CODE (ce.value) != AGGR_INIT_EXPR);
 	}
 
       /* Build a constructor to contain the initializations.  */
@@ -3412,7 +3420,6 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree try_block = NULL_TREE;
   int num_initialized_elts = 0;
   bool is_global;
-  tree const_init = NULL_TREE;
   tree obase = base;
   bool xvalue = false;
   bool errors = false;
@@ -3545,19 +3552,24 @@ build_vec_init (tree base, tree maxindex, tree init,
       try_block = begin_try_block ();
     }
 
-  /* If the initializer is {}, then all elements are initialized from {}.
-     But for non-classes, that's the same as value-initialization.  */
+  /* Should we try to create a constant initializer?  */
+  bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
+		    && TREE_CONSTANT (maxindex)
+		    && init && TREE_CODE (init) == CONSTRUCTOR
+		    && (literal_type_p (inner_elt_type)
+			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
+  vec<constructor_elt, va_gc> *const_vec = NULL;
+  bool saw_non_const = false;
+  /* If we're initializing a static array, we want to do static
+     initialization of any elements with constant initializers even if
+     some are non-constant.  */
+  bool do_static_init = (DECL_P (obase) && TREE_STATIC (obase));
+
+  bool empty_list = false;
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 0)
-    {
-      if (CLASS_TYPE_P (type))
-	/* Leave init alone.  */;
-      else
-	{
-	  init = NULL_TREE;
-	  explicit_value_init_p = true;
-	}
-    }
+    /* Skip over the handling of non-empty init lists.  */
+    empty_list = true;
 
   /* Maybe pull out constant value when from_array? */
 
@@ -3567,21 +3579,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 brace-enclosed initializers.  */
       unsigned HOST_WIDE_INT idx;
       tree field, elt;
-      /* Should we try to create a constant initializer?  */
-      bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
-			&& TREE_CONSTANT (maxindex)
-			&& (literal_type_p (inner_elt_type)
-			    || TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
       /* If the constructor already has the array type, it's been through
 	 digest_init, so we shouldn't try to do anything more.  */
       bool digested = same_type_p (atype, TREE_TYPE (init));
-      bool saw_non_const = false;
-      bool saw_const = false;
-      /* If we're initializing a static array, we want to do static
-	 initialization of any elements with constant initializers even if
-	 some are non-constant.  */
-      bool do_static_init = (DECL_P (obase) && TREE_STATIC (obase));
-      vec<constructor_elt, va_gc> *new_vec;
       from_array = 0;
 
       if (length_check)
@@ -3597,9 +3597,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
 
       if (try_const)
-	vec_alloc (new_vec, CONSTRUCTOR_NELTS (init));
-      else
-	new_vec = NULL;
+	vec_alloc (const_vec, CONSTRUCTOR_NELTS (init));
 
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
 	{
@@ -3620,21 +3618,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    errors = true;
 	  if (try_const)
 	    {
-	      tree e = one_init;
-	      if (TREE_CODE (e) == EXPR_STMT)
-		e = TREE_OPERAND (e, 0);
-	      if (TREE_CODE (e) == CONVERT_EXPR
-		  && VOID_TYPE_P (TREE_TYPE (e)))
-		e = TREE_OPERAND (e, 0);
-	      e = maybe_constant_init (e);
+	      tree e = maybe_constant_init (one_init);
 	      if (reduced_constant_expression_p (e))
 		{
-		  CONSTRUCTOR_APPEND_ELT (new_vec, field, e);
+		  CONSTRUCTOR_APPEND_ELT (const_vec, field, e);
 		  if (do_static_init)
 		    one_init = NULL_TREE;
 		  else
 		    one_init = build2 (INIT_EXPR, type, baseref, e);
-		  saw_const = true;
 		}
 	      else
 		{
@@ -3643,7 +3634,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		      tree value = build_zero_init (TREE_TYPE (e), NULL_TREE,
 						    true);
 		      if (value)
-			CONSTRUCTOR_APPEND_ELT (new_vec, field, value);
+			CONSTRUCTOR_APPEND_ELT (const_vec, field, value);
 		    }
 		  saw_non_const = true;
 		}
@@ -3667,24 +3658,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    finish_expr_stmt (one_init);
 	}
 
-      if (try_const)
-	{
-	  if (!saw_non_const)
-	    const_init = build_constructor (atype, new_vec);
-	  else if (do_static_init && saw_const)
-	    DECL_INITIAL (obase) = build_constructor (atype, new_vec);
-	  else
-	    vec_free (new_vec);
-	}
-
-      /* Any elements without explicit initializers get {}.  */
-      if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
-	init = build_constructor (init_list_type_node, NULL);
-      else
-	{
-	  init = NULL_TREE;
-	  explicit_value_init_p = true;
-	}
+      /* Any elements without explicit initializers get T{}.  */
+      empty_list = true;
     }
   else if (from_array)
     {
@@ -3729,6 +3704,26 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_for_expr (elt_init, for_stmt);
 
       to = build1 (INDIRECT_REF, type, base);
+
+      /* If the initializer is {}, then all elements are initialized from T{}.
+	 But for non-classes, that's the same as value-initialization.  */
+      if (empty_list)
+	{
+	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
+	    {
+	      if (BRACE_ENCLOSED_INITIALIZER_P (init)
+		  && CONSTRUCTOR_NELTS (init) == 0)
+		/* Reuse it.  */;
+	      else
+		init = build_constructor (init_list_type_node, NULL);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	    }
+	  else
+	    {
+	      init = NULL_TREE;
+	      explicit_value_init_p = true;
+	    }
+	}
 
       if (from_array)
 	{
@@ -3787,8 +3782,38 @@ build_vec_init (tree base, tree maxindex, tree init,
       if (elt_init == error_mark_node)
 	errors = true;
 
+      if (try_const)
+	{
+	  tree e = maybe_constant_init (elt_init);
+	  if (reduced_constant_expression_p (e))
+	    {
+	      if (initializer_zerop (e))
+		/* Don't fill the CONSTRUCTOR with zeros.  */
+		e = NULL_TREE;
+	      if (do_static_init)
+		elt_init = NULL_TREE;
+	    }
+	  else
+	    {
+	      saw_non_const = true;
+	      if (do_static_init)
+		e = build_zero_init (TREE_TYPE (e), NULL_TREE, true);
+	    }
+
+	  if (e)
+	    {
+	      int max = tree_to_shwi (maxindex)+1;
+	      for (; num_initialized_elts < max; ++num_initialized_elts)
+		{
+		  tree field = size_int (num_initialized_elts);
+		  CONSTRUCTOR_APPEND_ELT (const_vec, field, e);
+		}
+	    }
+	}
+
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-      finish_expr_stmt (elt_init);
+      if (elt_init)
+	finish_expr_stmt (elt_init);
       current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
       finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base, 0,
@@ -3834,6 +3859,24 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
 
+  current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
+
+  if (errors)
+    return error_mark_node;
+
+  if (try_const)
+    {
+      if (!saw_non_const)
+	{
+	  tree const_init = build_constructor (atype, const_vec);
+	  return build2 (INIT_EXPR, atype, obase, const_init);
+	}
+      else if (do_static_init && !vec_safe_is_empty (const_vec))
+	DECL_INITIAL (obase) = build_constructor (atype, const_vec);
+      else
+	vec_free (const_vec);
+    }
+
   /* Now make the result have the correct type.  */
   if (TREE_CODE (atype) == ARRAY_TYPE)
     {
@@ -3843,12 +3886,6 @@ build_vec_init (tree base, tree maxindex, tree init,
       TREE_NO_WARNING (stmt_expr) = 1;
     }
 
-  current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
-
-  if (const_init)
-    return build2 (INIT_EXPR, atype, obase, const_init);
-  if (errors)
-    return error_mark_node;
   return stmt_expr;
 }
 

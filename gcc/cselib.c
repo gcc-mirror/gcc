@@ -67,7 +67,7 @@ static cselib_val *cselib_lookup_mem (rtx, int);
 static void cselib_invalidate_regno (unsigned int, enum machine_mode);
 static void cselib_invalidate_mem (rtx);
 static void cselib_record_set (rtx, cselib_val *, cselib_val *);
-static void cselib_record_sets (rtx);
+static void cselib_record_sets (rtx_insn *);
 
 struct expand_value_data
 {
@@ -152,7 +152,7 @@ static hash_table<cselib_hasher> *cselib_preserved_hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
-static rtx cselib_current_insn;
+static rtx_insn *cselib_current_insn;
 
 /* The unique id that the next create value will take.  */
 static unsigned int next_uid;
@@ -258,7 +258,7 @@ void (*cselib_discard_hook) (cselib_val *);
    represented in the array sets[n_sets].  new_val_min can be used to
    tell whether values present in sets are introduced by this
    instruction.  */
-void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
+void (*cselib_record_sets_hook) (rtx_insn *insn, struct cselib_set *sets,
 				 int n_sets);
 
 #define PRESERVED_VALUE_P(RTX) \
@@ -961,7 +961,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
       return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
 
     case LABEL_REF:
-      return XEXP (x, 0) == XEXP (y, 0);
+      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
     case MEM:
       /* We have to compare any autoinc operations in the addresses
@@ -1167,7 +1167,7 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
 	 differences and differences between each stage's debugging dumps.  */
       hash += (((unsigned int) LABEL_REF << 7)
-	       + CODE_LABEL_NUMBER (XEXP (x, 0)));
+	       + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x)));
       return hash ? hash : (unsigned int) LABEL_REF;
 
     case SYMBOL_REF:
@@ -1948,7 +1948,7 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
 /* Wrapper for cselib_subst_to_values, that indicates X is in INSN.  */
 
 rtx
-cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx insn)
+cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx_insn *insn)
 {
   rtx ret;
   gcc_assert (!cselib_current_insn);
@@ -2089,7 +2089,7 @@ cselib_lookup_1 (rtx x, enum machine_mode mode,
 
 cselib_val *
 cselib_lookup_from_insn (rtx x, enum machine_mode mode,
-			 int create, enum machine_mode memmode, rtx insn)
+			 int create, enum machine_mode memmode, rtx_insn *insn)
 {
   cselib_val *ret;
 
@@ -2401,10 +2401,10 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 /* Make ELT and X's VALUE equivalent to each other at INSN.  */
 
 void
-cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx insn)
+cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx_insn *insn)
 {
   cselib_val *nelt;
-  rtx save_cselib_current_insn = cselib_current_insn;
+  rtx_insn *save_cselib_current_insn = cselib_current_insn;
 
   gcc_checking_assert (elt);
   gcc_checking_assert (PRESERVED_VALUE_P (elt->val_rtx));
@@ -2464,12 +2464,12 @@ cselib_record_autoinc_cb (rtx mem ATTRIBUTE_UNUSED, rtx op ATTRIBUTE_UNUSED,
 
   data->n_sets++;
 
-  return -1;
+  return 0;
 }
 
 /* Record the effects of any sets and autoincs in INSN.  */
 static void
-cselib_record_sets (rtx insn)
+cselib_record_sets (rtx_insn *insn)
 {
   int n_sets = 0;
   int i;
@@ -2523,7 +2523,7 @@ cselib_record_sets (rtx insn)
 
   data.sets = sets;
   data.n_sets = n_sets_before_autoinc = n_sets;
-  for_each_inc_dec (&insn, cselib_record_autoinc_cb, &data);
+  for_each_inc_dec (PATTERN (insn), cselib_record_autoinc_cb, &data);
   n_sets = data.n_sets;
 
   /* Look up the values that are read.  Do this before invalidating the
@@ -2627,7 +2627,7 @@ fp_setter_insn (rtx insn)
 /* Record the effects of INSN.  */
 
 void
-cselib_process_insn (rtx insn)
+cselib_process_insn (rtx_insn *insn)
 {
   int i;
   rtx x;
@@ -2641,13 +2641,13 @@ cselib_process_insn (rtx insn)
       && !cselib_preserve_constants)
     {
       cselib_reset_table (next_uid);
-      cselib_current_insn = NULL_RTX;
+      cselib_current_insn = NULL;
       return;
     }
 
   if (! INSN_P (insn))
     {
-      cselib_current_insn = NULL_RTX;
+      cselib_current_insn = NULL;
       return;
     }
 
@@ -2697,7 +2697,7 @@ cselib_process_insn (rtx insn)
       && fp_setter_insn (insn))
     cselib_invalidate_rtx (stack_pointer_rtx);
 
-  cselib_current_insn = NULL_RTX;
+  cselib_current_insn = NULL;
 
   if (n_useless_values > MAX_USELESS_VALUES
       /* remove_useless_values is linear in the hash table size.  Avoid

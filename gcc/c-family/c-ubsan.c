@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "asan.h"
 #include "internal-fn.h"
+#include "stor-layout.h"
+#include "builtins.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */
@@ -97,8 +99,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_overflow_data", &loc, NULL,
-				     ubsan_type_descriptor (type), NULL_TREE);
+      tree data = ubsan_create_data ("__ubsan_overflow_data", 1, &loc,
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -144,12 +147,12 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 			build_int_cst (TREE_TYPE (tt), 0));
     }
 
-  /* For signed x << y, in C++11/C++14, the following:
+  /* For signed x << y, in C++11 and later, the following:
      x < 0 || ((unsigned) x >> (precm1 - y))
      if > 1, is undefined.  */
   if (code == LSHIFT_EXPR
       && !TYPE_UNSIGNED (TREE_TYPE (op0))
-      && (cxx_dialect == cxx11 || cxx_dialect == cxx1y))
+      && (cxx_dialect >= cxx11))
     {
       tree x = fold_build2 (MINUS_EXPR, integer_type_node, precm1, op1);
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
@@ -189,9 +192,10 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_shift_data", &loc, NULL,
+      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc,
 				     ubsan_type_descriptor (type0),
-				     ubsan_type_descriptor (type1), NULL_TREE);
+				     ubsan_type_descriptor (type1), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
 
       enum built_in_function bcode
@@ -220,8 +224,9 @@ ubsan_instrument_vla (location_t loc, tree size)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_vla_data", &loc, NULL,
-				     ubsan_type_descriptor (type), NULL_TREE);
+      tree data = ubsan_create_data ("__ubsan_vla_data", 1, &loc,
+				     ubsan_type_descriptor (type), NULL_TREE,
+				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
 	= flag_sanitize_recover
@@ -246,8 +251,8 @@ ubsan_instrument_return (location_t loc)
      builtins.  Reinitialize them if needed.  */
   initialize_sanitizer_builtins ();
 
-  tree data = ubsan_create_data ("__ubsan_missing_return_data", &loc,
-				 NULL, NULL_TREE);
+  tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
+				 NULL_TREE, NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN);
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
 }
@@ -303,6 +308,19 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
         return NULL_TREE;
     }
 
+  /* Don't emit instrumentation in the most common cases.  */
+  tree idx = NULL_TREE;
+  if (TREE_CODE (*index) == INTEGER_CST)
+    idx = *index;
+  else if (TREE_CODE (*index) == BIT_AND_EXPR
+	   && TREE_CODE (TREE_OPERAND (*index, 1)) == INTEGER_CST)
+    idx = TREE_OPERAND (*index, 1);
+  if (idx
+      && TREE_CODE (bound) == INTEGER_CST
+      && tree_int_cst_sgn (idx) >= 0
+      && tree_int_cst_le (idx, bound))
+    return NULL_TREE;
+
   *index = save_expr (*index);
   /* Create a "(T *) 0" tree node to describe the array type.  */
   tree zero_with_type = build_int_cst (build_pointer_type (type), 0);
@@ -349,4 +367,100 @@ ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 	  *expr_p = t;
 	}
     }
+}
+
+static tree
+ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree type,
+					  enum ubsan_null_ckind ckind)
+{
+  tree orig_op = op;
+  bool instrument = false;
+  unsigned int mina = 0;
+
+  if (current_function_decl == NULL_TREE
+      || lookup_attribute ("no_sanitize_undefined",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return NULL_TREE;
+
+  if (flag_sanitize & SANITIZE_ALIGNMENT)
+    {
+      mina = min_align_of_type (type);
+      if (mina <= 1)
+	mina = 0;
+    }
+  while ((TREE_CODE (op) == NOP_EXPR
+	  || TREE_CODE (op) == NON_LVALUE_EXPR)
+	 && TREE_CODE (TREE_TYPE (op)) == POINTER_TYPE)
+    op = TREE_OPERAND (op, 0);
+  if (TREE_CODE (op) == NOP_EXPR
+      && TREE_CODE (TREE_TYPE (op)) == REFERENCE_TYPE)
+    {
+      if (mina && mina > min_align_of_type (TREE_TYPE (TREE_TYPE (op))))
+	instrument = true;
+    }
+  else
+    {
+      if ((flag_sanitize & SANITIZE_NULL) && TREE_CODE (op) == ADDR_EXPR)
+	{
+	  bool strict_overflow_p = false;
+	  /* tree_single_nonzero_warnv_p will not return true for non-weak
+	     non-automatic decls with -fno-delete-null-pointer-checks,
+	     which is disabled during -fsanitize=null.  We don't want to
+	     instrument those, just weak vars though.  */
+	  int save_flag_delete_null_pointer_checks
+	    = flag_delete_null_pointer_checks;
+	  flag_delete_null_pointer_checks = 1;
+	  if (!tree_single_nonzero_warnv_p (op, &strict_overflow_p)
+	      || strict_overflow_p)
+	    instrument = true;
+	  flag_delete_null_pointer_checks
+	    = save_flag_delete_null_pointer_checks;
+	}
+      else if (flag_sanitize & SANITIZE_NULL)
+	instrument = true;
+      if (mina && mina > get_pointer_alignment (op) / BITS_PER_UNIT)
+	instrument = true;
+    }
+  if (!instrument)
+    return NULL_TREE;
+  op = save_expr (orig_op);
+  tree kind = build_int_cst (TREE_TYPE (op), ckind);
+  tree align = build_int_cst (pointer_sized_int_node, mina);
+  tree call
+    = build_call_expr_internal_loc (loc, IFN_UBSAN_NULL, void_type_node,
+				    3, op, kind, align);
+  TREE_SIDE_EFFECTS (call) = 1;
+  return fold_build2 (COMPOUND_EXPR, TREE_TYPE (op), call, op);
+}
+
+/* Instrument a NOP_EXPR to REFERENCE_TYPE if needed.  */
+
+void
+ubsan_maybe_instrument_reference (tree stmt)
+{
+  tree op = TREE_OPERAND (stmt, 0);
+  op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
+						 TREE_TYPE (TREE_TYPE (stmt)),
+						 UBSAN_REF_BINDING);
+  if (op)
+    TREE_OPERAND (stmt, 0) = op;
+}
+
+/* Instrument a CALL_EXPR to a method if needed.  */
+
+void
+ubsan_maybe_instrument_member_call (tree stmt, bool is_ctor)
+{
+  if (call_expr_nargs (stmt) == 0)
+    return;
+  tree op = CALL_EXPR_ARG (stmt, 0);
+  if (op == error_mark_node
+      || !POINTER_TYPE_P (TREE_TYPE (op)))
+    return;
+  op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
+						 TREE_TYPE (TREE_TYPE (op)),
+						 is_ctor ? UBSAN_CTOR_CALL
+						 : UBSAN_MEMBER_CALL);
+  if (op)
+    CALL_EXPR_ARG (stmt, 0) = op;
 }

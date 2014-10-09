@@ -21,8 +21,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.8.3.* Class template hypergeometric_distribution [rand.dist.ext.hypergeometric]
-// 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
+// Class template hypergeometric_distribution
+// 26.5.1.6 Random number distribution requirements [rand.req.dist]
 
 #include <ext/random>
 

@@ -73,6 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef integral_constant<_Tp, __v>   type;
       constexpr operator value_type() const { return value; }
 #if __cplusplus > 201103L
+
+#define __cpp_lib_integral_constant_callable 201304
+
       constexpr value_type operator()() const { return value; }
 #endif
     };
@@ -480,6 +483,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_function<_Res(_ArgTypes......) const volatile &&>
     : public true_type { };
 
+#define __cpp_lib_is_null_pointer 201309
+
   template<typename>
     struct __is_null_pointer_helper
     : public false_type { };
@@ -601,7 +606,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_trivial(_Tp)>
     { };
 
-  // is_trivially_copyable (still unimplemented)
+  // is_trivially_copyable
+  template<typename _Tp>
+    struct is_trivially_copyable
+    : public integral_constant<bool, __is_trivially_copyable(_Tp)>
+    { };
 
   /// is_standard_layout
   template<typename _Tp>
@@ -633,6 +642,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_polymorphic
     : public integral_constant<bool, __is_polymorphic(_Tp)>
     { };
+
+#if __cplusplus >= 201402L
+#define __cpp_lib_is_final 201402L
+  /// is_final
+  template<typename _Tp>
+    struct is_final
+    : public integral_constant<bool, __is_final(_Tp)>
+    { };
+#endif
 
   /// is_abstract
   template<typename _Tp>
@@ -1268,19 +1286,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nt_move_assignable_impl<_Tp>
     { };
 
-  /// is_trivially_constructible (still unimplemented)
+  /// is_trivially_constructible
+  template<typename _Tp, typename... _Args>
+    struct is_trivially_constructible
+    : public __and_<is_constructible<_Tp, _Args...>, integral_constant<bool,
+			__is_trivially_constructible(_Tp, _Args...)>>::type
+    { };
   
-  /// is_trivially_default_constructible (still unimplemented)
+  /// is_trivially_default_constructible
+  template<typename _Tp>
+    struct is_trivially_default_constructible
+    : public is_trivially_constructible<_Tp>::type
+    { };
 
-  /// is_trivially_copy_constructible (still unimplemented)
+  /// is_trivially_copy_constructible
+  template<typename _Tp>
+    struct is_trivially_copy_constructible
+    : public __and_<is_copy_constructible<_Tp>, 
+		    integral_constant<bool,
+			__is_trivially_constructible(_Tp, const _Tp&)>>::type
+    { };
+  
+  /// is_trivially_move_constructible
+  template<typename _Tp>
+    struct is_trivially_move_constructible
+    : public __and_<is_move_constructible<_Tp>, 
+		    integral_constant<bool,
+			__is_trivially_constructible(_Tp, _Tp&&)>>::type
+    { };
 
-  /// is_trivially_move_constructible (still unimplemented)
+  /// is_trivially_assignable
+  template<typename _Tp, typename _Up>
+    struct is_trivially_assignable
+    : public __and_<is_assignable<_Tp, _Up>, 
+		    integral_constant<bool,
+			__is_trivially_assignable(_Tp, _Up)>>::type
+    { };
 
-  /// is_trivially_assignable (still unimplemented)
+  /// is_trivially_copy_assignable
+  template<typename _Tp>
+    struct is_trivially_copy_assignable
+    : public __and_<is_copy_assignable<_Tp>, 
+		    integral_constant<bool,
+			__is_trivially_assignable(_Tp&, const _Tp&)>>::type
+    { };
 
-  /// is_trivially_copy_assignable (still unimplemented)
-
-  /// is_trivially_move_assignable (still unimplemented)
+  /// is_trivially_move_assignable
+  template<typename _Tp>
+    struct is_trivially_move_assignable
+    : public __and_<is_move_assignable<_Tp>, 
+		    integral_constant<bool,
+			__is_trivially_assignable(_Tp&, _Tp&&)>>::type
+    { };
 
   /// is_trivially_destructible
   template<typename _Tp>
@@ -1451,6 +1508,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus > 201103L
+
+#define __cpp_lib_transformation_trait_aliases 201304
+
   /// Alias template for remove_const
   template<typename _Tp>
     using remove_const_t = typename remove_const<_Tp>::type;
@@ -2089,6 +2149,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class result_of;
 
   // Sfinae-friendly result_of implementation:
+
+#define __cpp_lib_result_of_sfinae 201210
 
   // [func.require] paragraph 1 bullet 1:
   struct __result_of_memfun_ref_impl

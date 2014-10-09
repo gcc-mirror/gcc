@@ -82,24 +82,17 @@ static bitmap need_eh_cleanup;
 
 
 /* A helper of dse_optimize_stmt.
-   Given a GIMPLE_ASSIGN in STMT, find a candidate statement *USE_STMT that
-   may prove STMT to be dead.
+   Given a GIMPLE_ASSIGN in STMT that writes to REF, find a candidate
+   statement *USE_STMT that may prove STMT to be dead.
    Return TRUE if the above conditions are met, otherwise FALSE.  */
 
 static bool
-dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
+dse_possible_dead_store_p (ao_ref *ref, gimple stmt, gimple *use_stmt)
 {
   gimple temp;
   unsigned cnt = 0;
 
   *use_stmt = NULL;
-
-  /* Self-assignments are zombies.  */
-  if (operand_equal_p (gimple_assign_rhs1 (stmt), gimple_assign_lhs (stmt), 0))
-    {
-      *use_stmt = stmt;
-      return true;
-    }
 
   /* Find the first dominated statement that clobbers (part of) the
      memory stmt stores to with no intermediate statement that may use
@@ -164,8 +157,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 		temp = use_stmt;
 	    }
 	  /* If the statement is a use the store is not dead.  */
-	  else if (ref_maybe_used_by_stmt_p (use_stmt,
-					     gimple_assign_lhs (stmt)))
+	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
 	    {
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
@@ -191,7 +183,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 	 just pretend the stmt makes itself dead.  Otherwise fail.  */
       if (!temp)
 	{
-	  if (stmt_may_clobber_global_p (stmt))
+	  if (ref_may_alias_global_p (ref))
 	    return false;
 
 	  temp = stmt;
@@ -199,7 +191,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 	}
     }
   /* Continue walking until we reach a kill.  */
-  while (!stmt_kills_ref_p (temp, gimple_assign_lhs (stmt)));
+  while (!stmt_kills_ref_p (temp, ref));
 
   *use_stmt = temp;
 
@@ -228,23 +220,78 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
   if (!gimple_vdef (stmt))
     return;
 
-  /* We know we have virtual definitions.  If this is a GIMPLE_ASSIGN
-     that's not also a function call, then record it into our table.  */
-  if (is_gimple_call (stmt) && gimple_call_fndecl (stmt))
-    return;
-
   /* Don't return early on *this_2(D) ={v} {CLOBBER}.  */
   if (gimple_has_volatile_ops (stmt)
       && (!gimple_clobber_p (stmt)
 	  || TREE_CODE (gimple_assign_lhs (stmt)) != MEM_REF))
     return;
 
+  /* We know we have virtual definitions.  We can handle assignments and
+     some builtin calls.  */
+  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+	{
+	  case BUILT_IN_MEMCPY:
+	  case BUILT_IN_MEMMOVE:
+	  case BUILT_IN_MEMSET:
+	    {
+	      gimple use_stmt;
+	      ao_ref ref;
+	      tree size = NULL_TREE;
+	      if (gimple_call_num_args (stmt) == 3)
+		size = gimple_call_arg (stmt, 2);
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      ao_ref_init_from_ptr_and_size (&ref, ptr, size);
+	      if (!dse_possible_dead_store_p (&ref, stmt, &use_stmt))
+		return;
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "  Deleted dead call '");
+		  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
+		  fprintf (dump_file, "'\n");
+		}
+
+	      tree lhs = gimple_call_lhs (stmt);
+	      if (lhs)
+		{
+		  gimple new_stmt = gimple_build_assign (lhs, ptr);
+		  unlink_stmt_vdef (stmt);
+		  if (gsi_replace (gsi, new_stmt, true))
+		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+		}
+	      else
+		{
+		  /* Then we need to fix the operand of the consuming stmt.  */
+		  unlink_stmt_vdef (stmt);
+
+		  /* Remove the dead store.  */
+		  if (gsi_remove (gsi, true))
+		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+		}
+	      break;
+	    }
+	  default:
+	    return;
+	}
+    }
+
   if (is_gimple_assign (stmt))
     {
       gimple use_stmt;
 
-      if (!dse_possible_dead_store_p (stmt, &use_stmt))
-	return;
+      /* Self-assignments are zombies.  */
+      if (operand_equal_p (gimple_assign_rhs1 (stmt),
+			   gimple_assign_lhs (stmt), 0))
+	use_stmt = stmt;
+      else
+	{
+	  ao_ref ref;
+	  ao_ref_init (&ref, gimple_assign_lhs (stmt));
+  	  if (!dse_possible_dead_store_p (&ref, stmt, &use_stmt))
+	    return;
+	}
 
       /* Now we know that use_stmt kills the LHS of stmt.  */
 
@@ -252,23 +299,6 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	 another clobber stmt.  */
       if (gimple_clobber_p (stmt)
 	  && !gimple_clobber_p (use_stmt))
-	return;
-
-      basic_block bb;
-
-      /* If use_stmt is or might be a nop assignment, e.g. for
-	   struct { ... } S a, b, *p; ...
-	   b = a; b = b;
-	 or
-	   b = a; b = *p; where p might be &b,
-	 or
-           *p = a; *p = b; where p might be &b,
-	 or
-           *p = *u; *p = *v; where p might be v, then USE_STMT
-         acts as a use as well as definition, so store in STMT
-         is not dead.  */
-      if (stmt != use_stmt
-	  && ref_maybe_used_by_stmt_p (use_stmt, gimple_assign_lhs (stmt)))
 	return;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -282,7 +312,7 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
       unlink_stmt_vdef (stmt);
 
       /* Remove the dead store.  */
-      bb = gimple_bb (stmt);
+      basic_block bb = gimple_bb (stmt);
       if (gsi_remove (gsi, true))
 	bitmap_set_bit (need_eh_cleanup, bb->index);
 

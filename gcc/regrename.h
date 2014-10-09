@@ -56,7 +56,7 @@ struct du_chain
   struct du_chain *next_use;
 
   /* The insn where the register appears.  */
-  rtx insn;
+  rtx_insn *insn;
   /* The location inside the insn.  */
   rtx *loc;
   /* The register class required by the insn at this location.  */

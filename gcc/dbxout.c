@@ -371,9 +371,9 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
-  debug_nothing_rtx,		         /* label */
+  debug_nothing_rtx_code_label,	         /* label */
   dbxout_handle_pch,		         /* handle_pch */
-  debug_nothing_rtx,		         /* var_location */
+  debug_nothing_rtx_insn,	         /* var_location */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
   0,                                     /* start_end_main_source_file */
@@ -407,9 +407,9 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
-  debug_nothing_rtx,		         /* label */
+  debug_nothing_rtx_code_label,	         /* label */
   dbxout_handle_pch,		         /* handle_pch */
-  debug_nothing_rtx,		         /* var_location */
+  debug_nothing_rtx_insn,	         /* var_location */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,	         /* set_name */
   0,                                     /* start_end_main_source_file */
@@ -1618,7 +1618,7 @@ dbxout_type_methods (tree type)
 
 	  /* Also ignore abstract methods; those are only interesting to
 	     the DWARF backends.  */
-	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT (fndecl))
+	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT_P (fndecl))
 	    continue;
 
 	  /* Redundantly output the plain name, since that's what gdb
@@ -2429,7 +2429,7 @@ dbxout_expand_expr (tree expr)
 	  /* If this is a var that might not be actually output,
 	     return NULL, otherwise stabs might reference an undefined
 	     symbol.  */
-	  varpool_node *node = varpool_get_node (expr);
+	  varpool_node *node = varpool_node::get (expr);
 	  if (!node || !node->definition)
 	    return NULL;
 	}
@@ -2484,12 +2484,9 @@ dbxout_expand_expr (tree expr)
 /* Helper function for output_used_types.  Queue one entry from the
    used types hash to be output.  */
 
-static int
-output_used_types_helper (void **slot, void *data)
+bool
+output_used_types_helper (tree const &type, vec<tree> *types_p)
 {
-  tree type = (tree) *slot;
-  vec<tree> *types_p = (vec<tree> *) data;
-
   if ((TREE_CODE (type) == RECORD_TYPE
        || TREE_CODE (type) == UNION_TYPE
        || TREE_CODE (type) == QUAL_UNION_TYPE
@@ -2502,7 +2499,7 @@ output_used_types_helper (void **slot, void *data)
 	   && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
     types_p->quick_push (TYPE_NAME (type));
 
-  return 1;
+  return true;
 }
 
 /* This is a qsort callback which sorts types and declarations into a
@@ -2544,8 +2541,9 @@ output_used_types (void)
       int i;
       tree type;
 
-      types.create (htab_elements (cfun->used_types_hash));
-      htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
+      types.create (cfun->used_types_hash->elements ());
+      cfun->used_types_hash->traverse<vec<tree> *, output_used_types_helper>
+       	(&types);
 
       /* Sort by UID to prevent dependence on hash table ordering.  */
       types.qsort (output_types_sort);

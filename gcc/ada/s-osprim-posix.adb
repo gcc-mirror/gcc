@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,16 +54,21 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      type timeval is array (1 .. 2) of Long_Integer;
+
+      type timeval is array (1 .. 3) of Long_Integer;
+      --  The timeval array is sized to contain Long_Long_Integer sec and
+      --  Long_Integer usec. If Long_Long_Integer'Size = Long_Integer'Size then
+      --  it will be overly large but that will not effect the implementation
+      --  since it is not accessed directly.
 
       procedure timeval_to_duration
         (T    : not null access timeval;
-         sec  : not null access Long_Integer;
+         sec  : not null access Long_Long_Integer;
          usec : not null access Long_Integer);
       pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
 
       Micro  : constant := 10**6;
-      sec    : aliased Long_Integer;
+      sec    : aliased Long_Long_Integer;
       usec   : aliased Long_Integer;
       TV     : aliased timeval;
       Result : Integer;

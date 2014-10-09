@@ -263,11 +263,15 @@ package body Sem_Elab is
    function Is_Finalization_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a [Deep_]Finalize procedure
 
-   procedure Output_Calls (N : Node_Id);
+   procedure Output_Calls
+     (N               : Node_Id;
+      Check_Elab_Flag : Boolean);
    --  Outputs chain of calls stored in the Elab_Call table. The caller has
    --  already generated the main warning message, so the warnings generated
    --  are all continuation messages. The argument is the call node at which
-   --  the messages are to be placed.
+   --  the messages are to be placed. When Check_Elab_Flag is set, calls are
+   --  enumerated only when flag Elab_Warning is set for the dynamic case or
+   --  when flag Elab_Info_Messages is set for the static case.
 
    function Same_Elaboration_Scope (Scop1, Scop2 : Entity_Id) return Boolean;
    --  Given two scopes, determine whether they are the same scope from an
@@ -497,6 +501,48 @@ package body Sem_Elab is
       Generate_Warnings : Boolean := True;
       In_Init_Proc      : Boolean := False)
    is
+      Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
+      --  Indicates if we have Access attribute case
+
+      procedure Elab_Warning
+        (Msg_D : String;
+         Msg_S : String;
+         Ent   : Node_Or_Entity_Id);
+       --  Generate a call to Error_Msg_NE with parameters Msg_D or Msg_S (for
+       --  dynamic or static elaboration model), N and Ent. Msg_D is a real
+       --  warning (output if Msg_D is non-null and Elab_Warnings is set),
+       --  Msg_S is an info message (output if Elab_Info_Messages is set.
+
+      ------------------
+      -- Elab_Warning --
+      ------------------
+
+      procedure Elab_Warning
+        (Msg_D : String;
+         Msg_S : String;
+         Ent   : Node_Or_Entity_Id)
+      is
+      begin
+         --  Dynamic elaboration checks, real warning
+
+         if Dynamic_Elaboration_Checks then
+            if not Access_Case then
+               if Msg_D /= "" and then Elab_Warnings then
+                  Error_Msg_NE (Msg_D, N, Ent);
+               end if;
+            end if;
+
+         --  Static elaboration checks, info message
+
+         else
+            if Elab_Info_Messages then
+               Error_Msg_NE (Msg_S, N, Ent);
+            end if;
+         end if;
+      end Elab_Warning;
+
+      --  Local variables
+
       Loc  : constant Source_Ptr := Sloc (N);
       Ent  : Entity_Id;
       Decl : Node_Id;
@@ -525,9 +571,6 @@ package body Sem_Elab is
       Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
       --  Indicates if we have instantiation case
 
-      Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
-      --  Indicates if we have Access attribute case
-
       Caller_Unit_Internal : Boolean;
       Callee_Unit_Internal : Boolean;
 
@@ -543,6 +586,8 @@ package body Sem_Elab is
       --  if a pragma Elaborate (_All) applies to that scope, in which case
       --  warnings on the scope are also suppressed. For the internal case,
       --  we ignore this flag.
+
+   --  Start of processing for Check_A_Call
 
    begin
       --  If the call is known to be within a local Suppress Elaboration
@@ -873,101 +918,64 @@ package body Sem_Elab is
            and then (Elab_Warnings or Elab_Info_Messages)
            and then Generate_Warnings
          then
-            Generate_Elab_Warnings : declare
-               procedure Elab_Warning
-                 (Msg_D : String;
-                  Msg_S : String;
-                  Ent   : Node_Or_Entity_Id);
-               --  Generate a call to Error_Msg_NE with parameters Msg_D or
-               --  Msg_S (for dynamic or static elaboration model), N and Ent.
-               --  Msg_D is a real warning (output if Msg_D is non-null and
-               --  Elab_Warnings is set), Msg_S is an info message (output if
-               --  Elab_Info_Messages is set.
+            --  Instantiation case
 
-               ------------------
-               -- Elab_Warning --
-               ------------------
+            if Inst_Case then
+               Elab_Warning
+                 ("instantiation of& may raise Program_Error?l?",
+                  "info: instantiation of& during elaboration?$?", Ent);
 
-               procedure Elab_Warning
-                 (Msg_D : String;
-                  Msg_S : String;
-                  Ent   : Node_Or_Entity_Id)
-               is
-               begin
-                  --  Dynamic elaboration checks, real warning
+            --  Indirect call case, info message only in static elaboration
+            --  case, because the attribute reference itself cannot raise an
+            --  exception.
 
-                  if Dynamic_Elaboration_Checks then
-                     if not Access_Case then
-                        if Msg_D /= "" and then Elab_Warnings then
-                           Error_Msg_NE (Msg_D, N, Ent);
-                        end if;
-                     end if;
+            elsif Access_Case then
+               Elab_Warning
+                 ("", "info: access to& during elaboration?$?", Ent);
 
-                  --  Static elaboration checks, info message
+            --  Subprogram call case
 
-                  else
-                     if Elab_Info_Messages then
-                        Error_Msg_NE (Msg_S, N, Ent);
-                     end if;
-                  end if;
-               end Elab_Warning;
-
-            --  Start of processing for Generate_Elab_Warnings
-
-            begin
-               --  Instantiation case
-
-               if Inst_Case then
+            else
+               if Nkind (Name (N)) in N_Has_Entity
+                 and then Is_Init_Proc (Entity (Name (N)))
+                 and then Comes_From_Source (Ent)
+               then
                   Elab_Warning
-                    ("instantiation of& may raise Program_Error?l?",
-                     "info: instantiation of& during elaboration?$?", Ent);
-
-               --  Indirect call case, info message only in static elaboration
-               --  case, because the attribute reference itself cannot raise
-               --  an exception.
-
-               elsif Access_Case then
-                  Elab_Warning
-                    ("", "info: access to& during elaboration?$?", Ent);
-
-               --  Subprogram call case
-
-               else
-                  if Nkind (Name (N)) in N_Has_Entity
-                    and then Is_Init_Proc (Entity (Name (N)))
-                    and then Comes_From_Source (Ent)
-                  then
-                     Elab_Warning
-                       ("implicit call to & may raise Program_Error?l?",
-                        "info: implicit call to & during elaboration?$?",
-                        Ent);
-
-                  else
-                     Elab_Warning
-                       ("call to & may raise Program_Error?l?",
-                        "info: call to & during elaboration?$?",
-                        Ent);
-                  end if;
-               end if;
-
-               Error_Msg_Qual_Level := Nat'Last;
-
-               if Nkind (N) in N_Subprogram_Instantiation then
-                  Elab_Warning
-                    ("\missing pragma Elaborate for&?l?",
-                     "\implicit pragma Elaborate for& generated?$?",
-                     W_Scope);
+                    ("implicit call to & may raise Program_Error?l?",
+                     "info: implicit call to & during elaboration?$?",
+                     Ent);
 
                else
                   Elab_Warning
-                    ("\missing pragma Elaborate_All for&?l?",
-                     "\implicit pragma Elaborate_All for & generated?$?",
-                     W_Scope);
+                    ("call to & may raise Program_Error?l?",
+                     "info: call to & during elaboration?$?",
+                     Ent);
                end if;
-            end Generate_Elab_Warnings;
+            end if;
+
+            Error_Msg_Qual_Level := Nat'Last;
+
+            if Nkind (N) in N_Subprogram_Instantiation then
+               Elab_Warning
+                 ("\missing pragma Elaborate for&?l?",
+                  "\implicit pragma Elaborate for& generated?$?",
+                  W_Scope);
+
+            else
+               Elab_Warning
+                 ("\missing pragma Elaborate_All for&?l?",
+                  "\implicit pragma Elaborate_All for & generated?$?",
+                  W_Scope);
+            end if;
 
             Error_Msg_Qual_Level := 0;
-            Output_Calls (N);
+
+            --  Take into account the flags related to elaboration warning
+            --  messages when enumerating the various calls involved. This
+            --  ensures the proper pairing of the main warning and the
+            --  clarification messages generated by Output_Calls.
+
+            Output_Calls (N, Check_Elab_Flag => True);
 
             --  Set flag to prevent further warnings for same unit unless in
             --  All_Errors_Mode.
@@ -1206,6 +1214,17 @@ package body Sem_Elab is
 
       elsif Inside_A_Generic
         and then No (Enclosing_Generic_Body (N))
+      then
+         return;
+      end if;
+
+      --  Nothing to do if this is a call to a postcondition, which is always
+      --  within a subprogram body, even though the current scope may be the
+      --  enclosing scope of the subprogram.
+
+      if Nkind (N) = N_Procedure_Call_Statement
+        and then Is_Entity_Name (Name (N))
+        and then Chars (Entity (Name (N))) = Name_uPostconditions
       then
          return;
       end if;
@@ -2245,13 +2264,15 @@ package body Sem_Elab is
 
                --  Create object declaration for elaboration entity, and put it
                --  just in front of the spec of the subprogram or generic unit,
-               --  in the same scope as this unit.
+               --  in the same scope as this unit. The subprogram may be over-
+               --  loaded, so make the name of elaboration entity unique by
+               --  means of a numeric suffix.
 
                declare
                   Loce : constant Source_Ptr := Sloc (E);
                   Ent  : constant Entity_Id  :=
                            Make_Defining_Identifier (Loc,
-                             Chars => New_External_Name (Chars (E), 'E'));
+                             Chars => New_External_Name (Chars (E), 'E', -1));
 
                begin
                   Set_Elaboration_Entity (E, Ent);
@@ -2316,7 +2337,12 @@ package body Sem_Elab is
 
             Error_Msg_N ("\Program_Error ]<l<", N);
 
-            Output_Calls (N);
+            --  There is no need to query the elaboration warning message flags
+            --  because the main message is an error, not a warning, therefore
+            --  all the clarification messages produces by Output_Calls must be
+            --  emitted unconditionally.
+
+            Output_Calls (N, Check_Elab_Flag => False);
          end if;
       end if;
 
@@ -2414,8 +2440,8 @@ package body Sem_Elab is
                       Decl);
                   Error_Msg_N ("\Program_Error [<<", Decl);
 
-               elsif
-                 Present (Corresponding_Body (Unit_Declaration_Node (Proc)))
+               elsif Present
+                       (Corresponding_Body (Unit_Declaration_Node (Proc)))
                then
                   Append_Elmt (Proc, Intra_Procs);
                end if;
@@ -3053,14 +3079,32 @@ package body Sem_Elab is
    -- Output_Calls --
    ------------------
 
-   procedure Output_Calls (N : Node_Id) is
-      Ent : Entity_Id;
+   procedure Output_Calls
+     (N               : Node_Id;
+      Check_Elab_Flag : Boolean)
+   is
+      function Emit (Flag : Boolean) return Boolean;
+      --  Determine whether to emit an error message based on the combination
+      --  of flags Check_Elab_Flag and Flag.
 
       function Is_Printable_Error_Name (Nm : Name_Id) return Boolean;
       --  An internal function, used to determine if a name, Nm, is either
       --  a non-internal name, or is an internal name that is printable
       --  by the error message circuits (i.e. it has a single upper
       --  case letter at the end).
+
+      ----------
+      -- Emit --
+      ----------
+
+      function Emit (Flag : Boolean) return Boolean is
+      begin
+         if Check_Elab_Flag then
+            return Flag;
+         else
+            return True;
+         end if;
+      end Emit;
 
       -----------------------------
       -- Is_Printable_Error_Name --
@@ -3080,6 +3124,10 @@ package body Sem_Elab is
          end if;
       end Is_Printable_Error_Name;
 
+      --  Local variables
+
+      Ent : Entity_Id;
+
    --  Start of processing for Output_Calls
 
    begin
@@ -3091,27 +3139,31 @@ package body Sem_Elab is
          --  Dynamic elaboration model, warnings controlled by -gnatwl
 
          if Dynamic_Elaboration_Checks then
-            if Is_Generic_Unit (Ent) then
-               Error_Msg_NE ("\\?l?& instantiated #", N, Ent);
-            elsif Is_Init_Proc (Ent) then
-               Error_Msg_N ("\\?l?initialization procedure called #", N);
-            elsif Is_Printable_Error_Name (Chars (Ent)) then
-               Error_Msg_NE ("\\?l?& called #", N, Ent);
-            else
-               Error_Msg_N ("\\?l?called #", N);
+            if Emit (Elab_Warnings) then
+               if Is_Generic_Unit (Ent) then
+                  Error_Msg_NE ("\\?l?& instantiated #", N, Ent);
+               elsif Is_Init_Proc (Ent) then
+                  Error_Msg_N ("\\?l?initialization procedure called #", N);
+               elsif Is_Printable_Error_Name (Chars (Ent)) then
+                  Error_Msg_NE ("\\?l?& called #", N, Ent);
+               else
+                  Error_Msg_N ("\\?l?called #", N);
+               end if;
             end if;
 
          --  Static elaboration model, info messages controlled by -gnatel
 
          else
-            if Is_Generic_Unit (Ent) then
-               Error_Msg_NE ("\\?$?& instantiated #", N, Ent);
-            elsif Is_Init_Proc (Ent) then
-               Error_Msg_N ("\\?$?initialization procedure called #", N);
-            elsif Is_Printable_Error_Name (Chars (Ent)) then
-               Error_Msg_NE ("\\?$?& called #", N, Ent);
-            else
-               Error_Msg_N ("\\?$?called #", N);
+            if Emit (Elab_Info_Messages) then
+               if Is_Generic_Unit (Ent) then
+                  Error_Msg_NE ("\\?$?& instantiated #", N, Ent);
+               elsif Is_Init_Proc (Ent) then
+                  Error_Msg_N ("\\?$?initialization procedure called #", N);
+               elsif Is_Printable_Error_Name (Chars (Ent)) then
+                  Error_Msg_NE ("\\?$?& called #", N, Ent);
+               else
+                  Error_Msg_N ("\\?$?called #", N);
+               end if;
             end if;
          end if;
       end loop;

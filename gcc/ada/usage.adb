@@ -528,7 +528,7 @@ begin
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
                                                   "but not read");
-   Write_Line ("        .m*  turn on warnings for suspicious modulus value");
+   Write_Line ("        .m*+ turn on warnings for suspicious modulus value");
    Write_Line ("        .M   turn off warnings for suspicious modulus value");
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        .n   turn on info messages for atomic " &

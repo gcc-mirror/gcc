@@ -1,5 +1,6 @@
 #include <stdarg.h>
 
+void
 f (int x, ...)
 {
   va_list args;

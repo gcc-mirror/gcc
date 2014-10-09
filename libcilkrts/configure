@@ -605,6 +605,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 link_cilkrts
+XLDFLAGS
+XCFLAGS
 lt_cv_dlopen_libs
 toolexeclibdir
 toolexecdir
@@ -11057,7 +11059,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11060 "configure"
+#line 11062 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11163,7 +11165,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11166 "configure"
+#line 11168 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14421,6 +14423,51 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Check to see if -pthread or -lpthread is needed.  Prefer the former.
+# Note that the CILK_SELF_SPEC in gcc.c may force -pthread.
+# In case the pthread.h system header is not found, this test will fail.
+XCFLAGS=""
+XLDFLAGS=""
+CFLAGS="$CFLAGS -pthread"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+   void *g(void *d) { return NULL; }
+int
+main ()
+{
+pthread_t t; pthread_create(&t,NULL,g,NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  XCFLAGS=" -Wc,-pthread"
+else
+  CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+     void *g(void *d) { return NULL; }
+int
+main ()
+{
+pthread_t t; pthread_create(&t,NULL,g,NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+else
+  as_fn_error "Pthreads are required to build libcilkrts" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
 # Check for pthread_{,attr_}[sg]etaffinity_np.
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14452,48 +14499,24 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
-# Check to see if -pthread or -lpthread is needed.  Prefer the former.
-# Note that the CILK_SELF_SPEC in gcc.c may force -pthread.
-# In case the pthread.h system header is not found, this test will fail.
-CFLAGS="$CFLAGS -pthread"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <pthread.h>
-   void *g(void *d) { return NULL; }
-int
-main ()
-{
-pthread_t t; pthread_create(&t,NULL,g,NULL);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+# Every c++ lib is linking by default with -nostdlib, which leads to the
+# fact, that proper pthread library will not be given at link time. We have
+# to hard-code that.
+case "${target}" in
 
-else
-  CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <pthread.h>
-     void *g(void *d) { return NULL; }
-int
-main ()
-{
-pthread_t t; pthread_create(&t,NULL,g,NULL);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+  *android*)
+    XLDFLAGS="$XLDFLAGS -lc"
+     ;;
+  *)
+    XLDFLAGS="$XLDFLAGS -lpthread"
+    ;;
 
-else
-  as_fn_error "Pthreads are required to build libcilkrts" "$LINENO" 5
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
+esac
+
+
+
+
+CFLAGS="$save_CFLAGS"
 
 if test $enable_shared = yes; then
   link_cilkrts="-lcilkrts %{static: $LIBS}"

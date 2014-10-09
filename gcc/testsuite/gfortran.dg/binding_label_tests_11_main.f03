@@ -1,6 +1,5 @@
 ! { dg-do compile }
-! This file must be compiled AFTER binding_label_tests_11.f03, which it 
-! should be because dejagnu will sort the files.
+! { dg-compile-aux-modules "binding_label_tests_11.f03" }
 module binding_label_tests_11_main
   use iso_c_binding, only: c_int
   implicit none

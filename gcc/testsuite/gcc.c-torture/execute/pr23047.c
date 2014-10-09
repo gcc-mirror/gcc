@@ -1,3 +1,4 @@
+/* { dg-options "-fwrapv" } */
 #include <limits.h>
 extern void abort ();
 extern void exit (int);

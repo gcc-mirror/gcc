@@ -5,6 +5,7 @@ void abort(void);
 void exit(int);
 
 typedef unsigned int u8 __attribute__ ((mode (QI)));
+u8 ashift_qi_1 (u8);
 
 u8
 ashift_qi_0 (u8 n)

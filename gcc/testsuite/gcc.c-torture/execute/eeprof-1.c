@@ -1,3 +1,8 @@
+/* { dg-options "-finstrument-functions" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } "*" "" } */
+
+extern void abort (void);
+
 #define ASSERT(X)	if (!(X)) abort ();
 #define NOCHK __attribute__ ((no_instrument_function))
 

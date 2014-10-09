@@ -167,9 +167,6 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	;;
-score*-*-*)
-	cpu_type=score
-	;;
 sparc64*-*-*)
 	cpu_type=sparc
 	;;
@@ -322,13 +319,15 @@ esac
 case ${host} in
 aarch64*-*-elf)
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
+	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
 aarch64*-*-linux*)
+	extra_parts="$extra_parts crtfastmath.o"
 	md_unwind_header=aarch64/linux-unwind.h
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee t-crtfm alpha/t-linux"
@@ -614,7 +613,7 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
 i[34567]86-*-cygwin*)
-	extra_parts="crtbegin.o crtend.o crtfastmath.o"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtfastmath.o"
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$enable_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
@@ -630,7 +629,7 @@ i[34567]86-*-cygwin*)
 	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-cygwin i386/t-crtfm i386/t-chkstk t-dfprules"
 	;;
 x86_64-*-cygwin*)
-	extra_parts="crtbegin.o crtend.o crtfastmath.o"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtfastmath.o"
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$enable_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
@@ -692,8 +691,8 @@ x86_64-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
-	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtfastmath.o"
 	;;
 i[34567]86-*-interix[3-9]*)
 	tmake_file="$tmake_file i386/t-interix i386/t-chkstk"
@@ -881,9 +880,9 @@ mmix-knuth-mmixware)
 mn10300-*-*)
 	tmake_file=t-fdpbit
 	;;
-moxie-*-elf | moxie-*-uclinux*)
+moxie-*-elf | moxie-*-moxiebox* | moxie-*-uclinux*)
 	tmake_file="moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
+	extra_parts="$extra_parts crti.o crtn.o crtbegin.o crtend.o"
 	;;
 moxie-*-rtems*)
 	tmake_file="$tmake_file moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
@@ -928,9 +927,6 @@ nios2-*-*)
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"
 	;;
-picochip-*-*)
-	tmake_file="picochip/t-picochip t-fpbit"
-        ;;
 powerpc-*-darwin*)
 	case ${host} in
 	*-*-darwin9* | *-*-darwin[12][0-9]*)
@@ -998,7 +994,7 @@ powerpc*-*-linux*)
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
+powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
 	;;
 powerpc-*-lynxos*)
@@ -1052,10 +1048,6 @@ s390x-ibm-tpf*)
 	extra_parts="crtbeginS.o crtendS.o"
 	md_unwind_header=s390/tpf-unwind.h
 	;;
-score-*-elf)
-	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
-        ;;
 sh-*-elf* | sh[12346l]*-*-elf*)
 	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crt1.o crti.o crtn.o crtbeginS.o crtendS.o \

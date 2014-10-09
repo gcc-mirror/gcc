@@ -99,7 +99,7 @@
 (define_insn "*addqi3_real"
   [(set (match_operand:QI          0 "nonimmediate_operand"  "=rvWabWhlWh1,rvWabWhlWh1,a,*bcdehl")
 	(plus:QI (match_operand:QI 1 "general_operand"  "%0,0,0,0")
-		 (match_operand:QI 2 "general_operand" "K,L,RWhlWh1i,a")))
+		 (match_operand:QI 2 "general_operand" "K,L,RWhlWh1Wabi,a")))
    ]
   "rl78_real_insns_ok ()"
   "@
@@ -157,7 +157,7 @@
   [(set (match_operand:HI 0 "register_operand" "=A,A")
         (mult:HI (match_operand:HI 1 "rl78_nonfar_operand" "0,0")
                  (match_operand:HI 2 "rl78_24_operand" "N,i")))]
-  "rl78_real_insns_ok ()"
+  "rl78_real_insns_ok () && !TARGET_G10"
   "@
    shlw\t%0, 1
    shlw\t%0, 2"
@@ -167,7 +167,7 @@
   [(set (match_operand:HI 0 "nonimmediate_operand" "=A")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "general_operand" "%a"))
                  (zero_extend:HI (match_operand:QI 2 "general_operand" "x"))))]
-  "rl78_real_insns_ok ()"
+  "rl78_real_insns_ok () && !TARGET_G10"
   "mulu\t%2"
 )
 

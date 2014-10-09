@@ -148,13 +148,19 @@ __gnat_pipe (int *fd)
 }
 
 int
-__gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
+__gnat_expect_poll (int *fd,
+                    int num_fd,
+                    int timeout,
+                    int *dead_process,
+                    int *is_set)
 {
 #define MAX_DELAY 100
 
   int i, delay, infinite = 0;
   DWORD avail;
   HANDLE handles[num_fd];
+
+  *dead_process = 0;
 
   for (i = 0; i < num_fd; i++)
     is_set[i] = 0;
@@ -174,8 +180,10 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
       for (i = 0; i < num_fd; i++)
         {
           if (!PeekNamedPipe (handles [i], NULL, 0, NULL, &avail, NULL))
-            return -1;
-
+            {
+              *dead_process = i + 1;
+              return -1;
+            }
           if (avail > 0)
             {
               is_set[i] = 1;
@@ -245,7 +253,11 @@ __gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
 }
 
 int
-__gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
+__gnat_expect_poll (int *fd,
+                    int num_fd,
+                    int timeout,
+                    int *dead_process,
+                    int *is_set)
 {
   int i, num, ready = 0;
   unsigned int status;
@@ -257,6 +269,8 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
     int dev;
   } iosb;
   char buf [256];
+
+  *dead_process = 0;
 
   for (i = 0; i < num_fd; i++)
     is_set[i] = 0;
@@ -279,8 +293,9 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 
 	  if ((status & 1) != 1)
 	    {
-	      ready = -1;
-	      return ready;
+              ready = -1;
+              dead_process = i + 1;
+              return ready;
 	    }
 	}
     }
@@ -395,7 +410,11 @@ __gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
 }
 
 int
-__gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
+__gnat_expect_poll (int *fd,
+                    int num_fd,
+                    int timeout,
+                    int *dead_process,
+                    int *is_set)
 {
   struct timeval tv;
   SELECT_MASK rset;
@@ -405,6 +424,8 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
   int ready;
   int i;
   int received;
+
+  *dead_process = 0;
 
   tv.tv_sec  = timeout / 1000;
   tv.tv_usec = (timeout % 1000) * 1000;
@@ -458,6 +479,7 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 	            if (ei.request == TIOCCLOSE)
 		      {
 		        ioctl (fd[i], TIOCREQSET, &ei);
+                        dead_process = i + 1;
 		        return -1;
 		      }
 
@@ -510,10 +532,12 @@ __gnat_expect_portable_execvp (int *pid ATTRIBUTE_UNUSED,
 
 int
 __gnat_expect_poll (int *fd ATTRIBUTE_UNUSED,
-		    int num_fd ATTRIBUTE_UNUSED,
-		    int timeout ATTRIBUTE_UNUSED,
-		    int *is_set ATTRIBUTE_UNUSED)
+                    int num_fd ATTRIBUTE_UNUSED,
+                    int timeout ATTRIBUTE_UNUSED,
+                    int *dead_process ATTRIBUTE_UNUSED,
+                    int *is_set ATTRIBUTE_UNUSED)
 {
+  *dead_process = 0;
   return -1;
 }
 #endif

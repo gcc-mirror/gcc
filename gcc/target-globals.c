@@ -67,37 +67,23 @@ struct target_globals default_target_globals = {
 struct target_globals *
 save_target_globals (void)
 {
-  struct target_globals *g;
-  struct target_globals_extra {
-    struct target_globals g;
-    struct target_flag_state flag_state;
-    struct target_optabs optabs;
-    struct target_cfgloop cfgloop;
-    struct target_builtins builtins;
-    struct target_gcse gcse;
-    struct target_bb_reorder bb_reorder;
-    struct target_lower_subreg lower_subreg;
-  } *p;
-  p = (struct target_globals_extra *)
-      ggc_internal_cleared_alloc (sizeof (struct target_globals_extra));
-  g = (struct target_globals *) p;
-  g->flag_state = &p->flag_state;
-  g->regs = ggc_internal_cleared_alloc (sizeof (struct target_regs));
+  struct target_globals *g = ggc_cleared_alloc <target_globals> ();
+  g->flag_state = XCNEW (struct target_flag_state);
+  g->regs = XCNEW (struct target_regs);
   g->rtl = ggc_cleared_alloc<target_rtl> ();
-  g->recog = ggc_internal_cleared_alloc (sizeof (struct target_recog));
-  g->hard_regs
-    = ggc_internal_cleared_alloc (sizeof (struct target_hard_regs));
-  g->reload = ggc_internal_cleared_alloc (sizeof (struct target_reload));
-  g->expmed =  ggc_internal_cleared_alloc (sizeof (struct target_expmed));
-  g->optabs = &p->optabs;
+  g->recog = XCNEW (struct target_recog);
+  g->hard_regs = XCNEW (struct target_hard_regs);
+  g->reload = XCNEW (struct target_reload);
+  g->expmed = XCNEW (struct target_expmed);
+  g->optabs = XCNEW (struct target_optabs);
   g->libfuncs = ggc_cleared_alloc<target_libfuncs> ();
-  g->cfgloop = &p->cfgloop;
-  g->ira = ggc_internal_cleared_alloc (sizeof (struct target_ira));
-  g->ira_int = ggc_internal_cleared_alloc (sizeof (struct target_ira_int));
-  g->builtins = &p->builtins;
-  g->gcse = &p->gcse;
-  g->bb_reorder = &p->bb_reorder;
-  g->lower_subreg = &p->lower_subreg;
+  g->cfgloop = XCNEW (struct target_cfgloop);
+  g->ira = XCNEW (struct target_ira);
+  g->ira_int = XCNEW (struct target_ira_int);
+  g->builtins = XCNEW (struct target_builtins);
+  g->gcse = XCNEW (struct target_gcse);
+  g->bb_reorder = XCNEW (struct target_bb_reorder);
+  g->lower_subreg = XCNEW (struct target_lower_subreg);
   restore_target_globals (g);
   init_reg_sets ();
   target_reinit ();
@@ -131,6 +117,30 @@ save_target_globals_default_opts ()
       return globals;
     }
   return save_target_globals ();
+}
+
+target_globals::~target_globals ()
+{
+  /* default_target_globals points to static data so shouldn't be freed.  */
+  if (this != &default_target_globals)
+    {
+      ira_int->~target_ira_int ();
+      hard_regs->finalize ();
+      XDELETE (flag_state);
+      XDELETE (regs);
+      XDELETE (recog);
+      XDELETE (hard_regs);
+      XDELETE (reload);
+      XDELETE (expmed);
+      XDELETE (optabs);
+      XDELETE (cfgloop);
+      XDELETE (ira);
+      XDELETE (ira_int);
+      XDELETE (builtins);
+      XDELETE (gcse);
+      XDELETE (bb_reorder);
+      XDELETE (lower_subreg);
+    }
 }
 
 #endif

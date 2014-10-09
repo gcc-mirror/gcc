@@ -52,6 +52,8 @@ struct sim_state
   sim_cpu cpu[1];
 };
 typedef address_word instruction_address;
+void trace_result_word1 ();
+int
 do_dror (SIM_DESC sd, instruction_address cia, int MY_INDEX, unsigned64 x,
 	 unsigned64 y)
 {

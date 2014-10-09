@@ -60,7 +60,7 @@ CFLAGS=-g
 PICFLAG = @PICFLAG@
 GNATLIBFLAGS= -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS= -g -O2
-GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) \
+GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) $(CFLAGS_FOR_TARGET) \
 	-fexceptions -DIN_RTS @have_getipinfo@
 
 host_subdir = @host_subdir@

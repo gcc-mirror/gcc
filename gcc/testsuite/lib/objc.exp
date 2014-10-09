@@ -124,7 +124,7 @@ proc objc_init { args } {
     }
 
     set gcc_warning_prefix "warning:"
-    set gcc_error_prefix "error:"
+    set gcc_error_prefix "(fatal )?error:"
 
     objc_maybe_build_wrapper "${tmpdir}/objc-testglue.o"
 
@@ -356,6 +356,10 @@ if { [info procs prune_warnings] == "" } then {
 proc ${tool}_check_unsupported_p { output } {
     if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
 	return "memory full"
+    }
+    if { [regexp "(^|\n)\[^\n\]*: relocation truncated to fit" $output]
+          && [check_effective_target_tiny] } {
+        return "memory full"
     }
     return ""
 }

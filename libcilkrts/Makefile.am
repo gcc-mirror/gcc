@@ -43,9 +43,9 @@ GENERAL_FLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/runtime -I$(top_srcdir)/
 # Enable Intel Cilk Plus extension
 GENERAL_FLAGS += -fcilkplus
 
-AM_CFLAGS = $(GENERAL_FLAGS) -std=c99
+AM_CFLAGS = $(XCFLAGS) $(GENERAL_FLAGS) -std=c99
 AM_CPPFLAGS = $(GENERAL_FLAGS)
-AM_LDFLAGS = -lpthread 
+AM_LDFLAGS = $(XLDFLAGS)
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -92,7 +92,8 @@ include include/internal/rev.mk
 
 #libcilkrts_la_LDFLAGS  = -rpath '$(libdir)'
 libcilkrts_la_LDFLAGS = -version-info 5:0:0
-libcilkrts_la_LDFLAGS += -lpthread @lt_cv_dlopen_libs@
+libcilkrts_la_LDFLAGS += @lt_cv_dlopen_libs@
+libcilkrts_la_LDFLAGS += $(AM_LDFLAGS)
 
 # If we're building on Linux, use the Linux version script
 if LINUX_LINKER_SCRIPT

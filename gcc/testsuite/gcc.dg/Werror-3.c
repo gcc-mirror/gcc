@@ -3,6 +3,7 @@
 
 /* Make sure the command line option enables the warning.  */
 
+void grill ();
 void __attribute__((dj)) bar() { }	/* { dg-warning ".* attribute directive ignored" } */
 
 int i;

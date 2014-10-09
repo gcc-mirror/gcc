@@ -1,5 +1,5 @@
 // PR c++/55149
-// { dg-do compile { target c++1y } }
+// { dg-do compile { target c++14 } }
 
 template<unsigned int TA>
  struct SA

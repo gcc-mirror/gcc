@@ -398,7 +398,7 @@
 (define_predicate "general_extend_operand"
   (match_code "subreg,reg,mem,truncate")
 {
-  if (GET_CODE (op) == TRUNCATE)
+  if (reload_completed && GET_CODE (op) == TRUNCATE)
     return arith_operand (op, mode);
 
   if (MEM_P (op) || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op))))
@@ -489,6 +489,10 @@
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
 
+      if (! ALLOW_INDEXED_ADDRESS
+	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
+	return false;
+
       if ((mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
@@ -566,6 +570,10 @@
     {
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
+
+      if (! ALLOW_INDEXED_ADDRESS
+	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
+	return false;
 
       if ((mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS

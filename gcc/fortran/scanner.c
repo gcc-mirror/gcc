@@ -324,19 +324,16 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (stat (q, &st))
     {
       if (errno != ENOENT)
-	gfc_warning_now ("Include directory \"%s\": %s", path,
-			 xstrerror(errno));
-      else
-	{
-	  /* FIXME:  Also support -Wmissing-include-dirs.  */
-	  if (warn)
-	    gfc_warning_now ("Nonexistent include directory \"%s\"", path);
-	}
+	gfc_warning_cmdline ("Include directory %qs: %s", path,
+			     xstrerror(errno));
+      else if (warn)
+	gfc_warning_cmdline (OPT_Wmissing_include_dirs,
+			     "Nonexistent include directory %qs", path);
       return;
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_now ("\"%s\" is not a directory", path);
+      gfc_warning_cmdline ("%qs is not a directory", path);
       return;
     }
 
@@ -1788,7 +1785,7 @@ preprocessor_line (gfc_char_t *c)
     {
        /* FIXME: we leak the old filename because a pointer to it may be stored
           in the linemap.  Alternative could be using GC or updating linemap to
-          point to the new name, but there is no API for that currently. */
+          point to the new name, but there is no API for that currently.  */
       current_file->filename = xstrdup (filename);
     }
 
@@ -1925,7 +1922,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	input = gfc_open_file (realfilename);
       if (input == NULL)
 	{
-	  gfc_error_now ("Can't open file '%s'", filename);
+	  gfc_error_cmdline ("Can't open file %qs", filename);
 	  return false;
 	}
     }

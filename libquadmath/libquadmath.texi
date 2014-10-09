@@ -199,7 +199,7 @@ The following mathematical functions are available:
 @item @code{scalblnq}: compute exponent using @code{FLT_RADIX}
 @item @code{scalbnq}: compute exponent using @code{FLT_RADIX}
 @item @code{signbitq}: return sign bit
-@item @code{sincosq}: calculate sine and cosine simulataneously
+@item @code{sincosq}: calculate sine and cosine simultaneously
 @item @code{sinhq}: hyperbolic sine function
 @item @code{sinq}: sine function
 @item @code{sqrtq}: square root function

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version for x86)                        --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,16 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the basic computational interface for the generic
---  elementary functions. The C library version interfaces with the routines
---  in the C mathematical library, and is thus quite portable, although it may
---  not necessarily meet the requirements for accuracy in the numerics annex.
---  One advantage of using this package is that it will interface directly to
---  hardware instructions, such as the those provided on the Intel x86.
-
---  Note: there are two versions of this package. One using the 80-bit x86
---  long double format (which is this version), and one using 64-bit IEEE
---  double (see file a-numaux.ads).
+--  This version is for the x86 using the 80-bit x86 long double format
 
 package Ada.Numerics.Aux is
    pragma Pure;

@@ -1,6 +1,8 @@
 /* { dg-do run } */
 
-#if (__SIZEOF_LONG_LONG__ == __SIZEOF_POINTER__)
+#ifdef __SIZE_TYPE__
+typedef __SIZE_TYPE__ uintptr_t;
+#elif (__SIZEOF_LONG_LONG__ == __SIZEOF_POINTER__)
 typedef unsigned long long uintptr_t;
 #elif (__SIZEOF_LONG__ == __SIZEOF_POINTER__)
 typedef unsigned long uintptr_t;

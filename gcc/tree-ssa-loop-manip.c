@@ -761,17 +761,6 @@ gimple_duplicate_loop_to_header_edge (struct loop *loop, edge e,
   if (!loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
     return false;
 
-#ifdef ENABLE_CHECKING
-  /* ???  This forces needless update_ssa calls after processing each
-     loop instead of just once after processing all loops.  We should
-     instead verify that loop-closed SSA form is up-to-date for LOOP
-     only (and possibly SSA form).  For now just skip verifying if
-     there are to-be renamed variables.  */
-  if (!need_ssa_update_p (cfun)
-      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    verify_loop_closed_ssa (true);
-#endif
-
   first_new_block = last_basic_block_for_fn (cfun);
   if (!duplicate_loop_to_header_edge (loop, e, ndupl, wont_exit,
 				      orig, to_remove, flags))

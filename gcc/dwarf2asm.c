@@ -390,7 +390,7 @@ size_of_encoded_value (int encoding)
   switch (encoding & 0x07)
     {
     case DW_EH_PE_absptr:
-      return POINTER_SIZE / BITS_PER_UNIT;
+      return POINTER_SIZE_UNITS;
     case DW_EH_PE_udata2:
       return 2;
     case DW_EH_PE_udata4:
@@ -920,7 +920,7 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
 
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
   assemble_variable (decl, 1, 1, 1);
-  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  assemble_integer (sym_ref, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
 
   return 0;
 }

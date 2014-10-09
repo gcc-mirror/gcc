@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -883,10 +882,9 @@ mark_addressable (tree x)
       && cfun->gimple_df != NULL
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep
-	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, x); 
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (x);
       if (namep)
-	TREE_ADDRESSABLE (*(tree *)namep) = 1;
+	TREE_ADDRESSABLE (*namep) = 1;
     }
 }
 

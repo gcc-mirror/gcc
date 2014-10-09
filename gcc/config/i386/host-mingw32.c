@@ -83,7 +83,7 @@ mingw32_gt_pch_alloc_granularity (void)
    open file descriptor if the host would like to probe with mmap.  */
 
 static void *
-mingw32_gt_pch_get_address (size_t size, int fd  ATTRIBUTE_UNUSED)
+mingw32_gt_pch_get_address (size_t size, int)
 {
   void* res;
   size = (size + va_granularity - 1) & ~(va_granularity - 1);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@ package body Prj.Attr is
 
    --  Data for predefined attributes and packages
 
-   --  Names are in lower case and end with '#'
+   --  Names are in lower case and end with '#' or 'D'
 
    --  Package names are preceded by 'P'
 
@@ -55,11 +55,17 @@ package body Prj.Attr is
    --    'c' same as 'b', with optional index
 
    --  The third optional letter is
-   --     'R' to indicate that the attribute is read-only
-   --     'O' to indicate that others is allowed as an index for an associative
-   --     array
+   --     'R' the attribute is read-only
+   --     'O' others is allowed as an index for an associative array
 
-   --  End is indicated by two consecutive '#'
+   --  If the character after the name in lower case letter is a 'D' (for
+   --  default), then 'D' must be followed by an enumeration value of type
+   --  Attribute_Default_Value, followed by a '#'.
+
+   --  Example:
+   --    "SVobject_dirDdot_value#"
+
+   --  End is indicated by two consecutive '#'.
 
    Initialization_Data : constant String :=
 
@@ -76,9 +82,9 @@ package body Prj.Attr is
 
    --  Directories
 
-   "SVobject_dir#" &
-   "SVexec_dir#" &
-   "LVsource_dirs#" &
+   "SVobject_dirDdot_value#" &
+   "SVexec_dirDobject_dir_value#" &
+   "LVsource_dirsDdot_value#" &
    "Lainherit_source_path#" &
    "LVexcluded_source_dirs#" &
    "LVignore_source_sub_dirs#" &
@@ -129,7 +135,7 @@ package body Prj.Attr is
    "Satoolchain_description#" &
    "Saobject_generated#" &
    "Saobjects_linked#" &
-   "SVtarget#" &
+   "SVtargetDtarget_value#" &
 
    --  Configuration - Libraries
 
@@ -416,6 +422,21 @@ package body Prj.Attr is
       Package_Names (Last_Package_Name) := new String'(Name);
    end Add_Package_Name;
 
+   --------------------------
+   -- Attribute_Default_Of --
+   --------------------------
+
+   function Attribute_Default_Of
+     (Attribute : Attribute_Node_Id) return Attribute_Default_Value
+   is
+   begin
+      if Attribute = Empty_Attribute then
+         return Empty_Value;
+      else
+         return Attrs.Table (Attribute.Value).Default;
+      end if;
+   end Attribute_Default_Of;
+
    -----------------------
    -- Attribute_Kind_Of --
    -----------------------
@@ -482,6 +503,7 @@ package body Prj.Attr is
       First_Attribute   : Attr_Node_Id      := Attr.First_Attribute;
       Read_Only         : Boolean;
       Others_Allowed    : Boolean;
+      Default           : Attribute_Default_Value;
 
       function Attribute_Location return String;
       --  Returns a string depending if we are in the project level attributes
@@ -611,9 +633,11 @@ package body Prj.Attr is
 
             Read_Only := False;
             Others_Allowed := False;
+            Default := Empty_Value;
 
             if Initialization_Data (Start) = 'R' then
                Read_Only := True;
+               Default := Read_Only_Value;
                Start := Start + 1;
 
             elsif Initialization_Data (Start) = 'O' then
@@ -623,12 +647,40 @@ package body Prj.Attr is
 
             Finish := Start;
 
-            while Initialization_Data (Finish) /= '#' loop
+            while Initialization_Data (Finish) /= '#'
+                    and then
+                  Initialization_Data (Finish) /= 'D'
+            loop
                Finish := Finish + 1;
             end loop;
 
             Attribute_Name :=
               Name_Id_Of (Initialization_Data (Start .. Finish - 1));
+
+            if Initialization_Data (Finish) = 'D' then
+               Start := Finish + 1;
+
+               Finish := Start;
+               while Initialization_Data (Finish) /= '#' loop
+                  Finish := Finish + 1;
+               end loop;
+
+               declare
+                  Default_Name : constant String :=
+                                   Initialization_Data (Start .. Finish - 1);
+                  pragma Unsuppress (All_Checks);
+               begin
+                  Default := Attribute_Default_Value'Value (Default_Name);
+               exception
+                  when Constraint_Error =>
+                     Osint.Fail
+                       ("illegal default value """ &
+                        Default_Name &
+                        """ for attribute " &
+                        Get_Name_String (Attribute_Name));
+               end;
+            end if;
+
             Attrs.Increment_Last;
 
             if Current_Attribute = Empty_Attr then
@@ -662,6 +714,7 @@ package body Prj.Attr is
                Attr_Kind      => Attr_Kind,
                Read_Only      => Read_Only,
                Others_Allowed => Others_Allowed,
+               Default        => Default,
                Next           => Empty_Attr);
             Start := Finish + 1;
          end if;
@@ -769,8 +822,9 @@ package body Prj.Attr is
       In_Package         : Package_Node_Id;
       Attr_Kind          : Defined_Attribute_Kind;
       Var_Kind           : Defined_Variable_Kind;
-      Index_Is_File_Name : Boolean := False;
-      Opt_Index          : Boolean := False)
+      Index_Is_File_Name : Boolean                 := False;
+      Opt_Index          : Boolean                 := False;
+      Default            : Attribute_Default_Value := Empty_Value)
    is
       Attr_Name       : Name_Id;
       First_Attr      : Attr_Node_Id := Empty_Attr;
@@ -840,6 +894,7 @@ package body Prj.Attr is
          Attr_Kind      => Real_Attr_Kind,
          Read_Only      => False,
          Others_Allowed => False,
+         Default        => Default,
          Next           => First_Attr);
 
       Package_Attributes.Table (In_Package.Value).First_Attribute :=
@@ -952,6 +1007,7 @@ package body Prj.Attr is
             Attr_Kind      => Attr_Kind,
             Read_Only      => False,
             Others_Allowed => False,
+            Default        => Attributes (Index).Default,
             Next           => First_Attr);
          First_Attr := Attrs.Last;
       end loop;

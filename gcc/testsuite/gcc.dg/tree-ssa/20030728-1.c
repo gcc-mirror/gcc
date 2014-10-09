@@ -16,17 +16,13 @@ struct tree_common
   enum tree_code code:8;
 };
 
-
-
-
-
 union tree_node
 {
   struct tree_common common;
 };
 
-
-
+int foo (int);
+int get_alias_set (tree);
 
 int
 objects_must_conflict_p (t1, t2)

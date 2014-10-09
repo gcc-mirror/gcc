@@ -14,6 +14,15 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+# Return 1 if compilation with -fsanitize=undefined is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_fsanitize_undefined {} {
+    return [check_no_compiler_messages fsanitize_undefined executable {
+	int main (void) { return 0; }
+    } "-fsanitize=undefined"]
+}
+
 #
 # ubsan_link_flags -- compute library path and flags to find libubsan.
 # (originally from g++.exp)
@@ -61,6 +70,7 @@ proc ubsan_init { args } {
     global ALWAYS_CXXFLAGS
     global TOOL_OPTIONS
     global ubsan_saved_TEST_ALWAYS_FLAGS
+    global ubsan_saved_ALWAYS_CXXFLAGS
 
     set link_flags ""
     if ![is_remote host] {
@@ -75,6 +85,7 @@ proc ubsan_init { args } {
 	set ubsan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
     }
     if [info exists ALWAYS_CXXFLAGS] {
+	set ubsan_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
@@ -83,10 +94,6 @@ proc ubsan_init { args } {
 	    set TEST_ALWAYS_FLAGS "$link_flags"
 	}
     }
-    if { $link_flags != "" } {
-	return 1
-    }
-    return 0
 }
 
 #
@@ -96,10 +103,16 @@ proc ubsan_init { args } {
 proc ubsan_finish { args } {
     global TEST_ALWAYS_FLAGS
     global ubsan_saved_TEST_ALWAYS_FLAGS
+    global ubsan_saved_ALWAYS_CXXFLAGS
 
-    if [info exists ubsan_saved_TEST_ALWAYS_FLAGS] {
-	set TEST_ALWAYS_FLAGS $ubsan_saved_TEST_ALWAYS_FLAGS
+    if [info exists ubsan_saved_ALWAYS_CXXFLAGS ] {
+	set ALWAYS_CXXFLAGS $ubsan_saved_ALWAYS_CXXFLAGS
     } else {
-	unset TEST_ALWAYS_FLAGS
+	if [info exists ubsan_saved_TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS $ubsan_saved_TEST_ALWAYS_FLAGS
+	} else {
+	    unset TEST_ALWAYS_FLAGS
+	}
     }
+    restore_ld_library_path_env_vars
 }

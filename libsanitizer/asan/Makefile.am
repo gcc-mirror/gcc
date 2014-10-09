@@ -17,7 +17,7 @@ nodist_toolexeclib_HEADERS = libasan_preinit.o
 asan_files = \
 	asan_activation.cc \
 	asan_allocator2.cc \
-	asan_dll_thunk.cc \
+	asan_debugging.cc \
 	asan_fake_stack.cc \
 	asan_globals.cc \
 	asan_interceptors.cc \
@@ -34,7 +34,9 @@ asan_files = \
 	asan_stack.cc \
 	asan_stats.cc \
 	asan_thread.cc \
-	asan_win.cc
+	asan_win.cc \
+	asan_win_dll_thunk.cc \
+	asan_win_dynamic_runtime_thunk.cc
 
 libasan_la_SOURCES = $(asan_files)
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/lsan/libsanitizer_lsan.la

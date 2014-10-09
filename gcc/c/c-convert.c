@@ -72,8 +72,7 @@ convert (tree type, tree expr)
   location_t loc = EXPR_LOCATION (expr);
 
   if (type == error_mark_node
-      || expr == error_mark_node
-      || TREE_TYPE (expr) == error_mark_node)
+      || error_operand_p (expr))
     return error_mark_node;
 
   if ((invalid_conv_diag

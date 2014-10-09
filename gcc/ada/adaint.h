@@ -53,12 +53,23 @@ extern "C" {
 
 #if defined (__GLIBC__) || defined (sun)
 #define GNAT_FOPEN fopen64
+#define GNAT_OPEN open64
 #define GNAT_STAT stat64
 #define GNAT_FSTAT fstat64
 #define GNAT_LSTAT lstat64
 #define GNAT_STRUCT_STAT struct stat64
+
+#elif defined(_WIN32)
+#define GNAT_FOPEN fopen64
+#define GNAT_OPEN open
+#define GNAT_STAT stat64
+#define GNAT_FSTAT fstat64
+#define GNAT_LSTAT lstat
+#define GNAT_STRUCT_STAT struct stat64
+
 #else
 #define GNAT_FOPEN fopen
+#define GNAT_OPEN open
 #define GNAT_STAT stat
 #define GNAT_FSTAT fstat
 #define GNAT_LSTAT lstat
@@ -71,6 +82,8 @@ typedef long long OS_Time;
 #else
 typedef long OS_Time;
 #endif
+
+#define __int64 long long
 
 /* A lazy cache for the attributes of a file. On some systems, a single call to
    stat() will give all this information, so it is better than doing a system
@@ -94,7 +107,7 @@ struct file_attributes {
   unsigned char directory;
 
   OS_Time timestamp;
-  long file_length;
+  __int64 file_length;
 };
 /* WARNING: changing the size here might require changing the constant
  * File_Attributes_Size in osint.ads (which should be big enough to
@@ -135,10 +148,10 @@ extern int    __gnat_rename                        (char *, char *);
 extern int    __gnat_chdir                         (char *);
 extern int    __gnat_rmdir                         (char *);
 
-extern FILE  *__gnat_fopen			   (char *, char *, int,
-						    char *);
+extern FILE  *__gnat_fopen			   (char *, char *, int);
 extern FILE  *__gnat_freopen			   (char *, char *, FILE *,
-				                    int, char *);
+				                    int);
+extern int    __gnat_open                          (char *, int);
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);
@@ -146,8 +159,9 @@ extern int    __gnat_create_output_file            (char *);
 extern int    __gnat_create_output_file_new        (char *);
 
 extern int    __gnat_open_append                   (char *, int);
-extern long   __gnat_file_length                   (int);
-extern long   __gnat_named_file_length             (char *);
+extern long   __gnat_file_length_long              (int);
+extern __int64 __gnat_file_length                  (int);
+extern __int64 __gnat_named_file_length            (char *);
 extern void   __gnat_tmp_name			   (char *);
 extern DIR   *__gnat_opendir                       (char *);
 extern char  *__gnat_readdir                       (DIR *, char *, int *);
@@ -172,7 +186,7 @@ extern int    __gnat_is_executable_file      (char *name);
 
 extern void   __gnat_reset_attributes (struct file_attributes *);
 extern int    __gnat_error_attributes (struct file_attributes *);
-extern long   __gnat_file_length_attr        (int, char *, struct file_attributes *);
+extern __int64 __gnat_file_length_attr       (int, char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_name_attr    (char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_fd_attr      (int,    struct file_attributes *);
 extern int    __gnat_file_exists_attr        (char *, struct file_attributes *);
@@ -250,6 +264,10 @@ extern int    __gnat_lseek			   (int, long, int);
 extern int    __gnat_set_close_on_exec		   (int, int);
 extern int    __gnat_dup			   (int);
 extern int    __gnat_dup2			   (int, int);
+
+/* large file support */
+extern __int64 __gnat_ftell64                      (FILE *);
+extern int     __gnat_fseek64                      (FILE *, __int64, int);
 
 extern int    __gnat_number_of_cpus                (void);
 

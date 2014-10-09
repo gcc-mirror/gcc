@@ -4650,16 +4650,14 @@ mark_referenced_methods (void)
       chain = CLASS_CLS_METHODS (impent->imp_context);
       while (chain)
 	{
-	  cgraph_mark_force_output_node (
-			   cgraph_get_create_node (METHOD_DEFINITION (chain)));
+	  cgraph_node::get_create (METHOD_DEFINITION (chain))->mark_force_output ();
 	  chain = DECL_CHAIN (chain);
 	}
 
       chain = CLASS_NST_METHODS (impent->imp_context);
       while (chain)
 	{
-	  cgraph_mark_force_output_node (
-			   cgraph_get_create_node (METHOD_DEFINITION (chain)));
+	  cgraph_node::get_create (METHOD_DEFINITION (chain))->mark_force_output ();
 	  chain = DECL_CHAIN (chain);
 	}
     }

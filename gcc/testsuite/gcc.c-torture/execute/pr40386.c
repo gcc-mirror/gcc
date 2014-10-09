@@ -1,4 +1,8 @@
 /* { dg-options "-fno-ira-share-spill-slots" } */
+
+extern void abort (void);
+extern void exit (int);
+
 #define CHAR_BIT 8
 
 #define ROR(a,b) (((a) >> (b)) | ((a) << ((sizeof (a) * CHAR_BIT) - (b))))
@@ -21,6 +25,7 @@ long long ll = LL_VALUE;
 int shift1 = SHIFT1;
 int shift2 = SHIFT2;
 
+int
 main ()
 {
   if (ROR (c, shift1) != ROR (CHAR_VALUE, SHIFT1))

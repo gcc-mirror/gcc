@@ -250,8 +250,8 @@ In order to handle cases such as above the RTL pass does the following:
 
 struct set_of_reg
 {
-  // The insn where the search stopped or NULL_RTX.
-  rtx insn;
+  // The insn where the search stopped or NULL.
+  rtx_insn *insn;
 
   // The set rtx of the specified reg if found, NULL_RTX otherwise.
   // Notice that the set rtx can also be in a parallel.
@@ -281,14 +281,14 @@ struct set_of_reg
 // Given a reg rtx and a start insn find the insn (in the same basic block)
 // that sets the reg.
 static set_of_reg
-find_set_of_reg_bb (rtx reg, rtx insn)
+find_set_of_reg_bb (rtx reg, rtx_insn *insn)
 {
   set_of_reg result = { insn, NULL_RTX };
 
-  if (!REG_P (reg) || insn == NULL_RTX)
+  if (!REG_P (reg) || insn == NULL)
     return result;
 
-  for (result.insn = insn; result.insn != NULL_RTX;
+  for (result.insn = insn; result.insn != NULL;
        result.insn = prev_nonnote_insn_bb (result.insn))
     {
       if (BARRIER_P (result.insn))
@@ -338,7 +338,7 @@ is_adjacent_bb (basic_block a, basic_block b)
 
 // Internal function of trace_reg_uses.
 static void
-trace_reg_uses_1 (rtx reg, rtx start_insn, basic_block bb, int& count,
+trace_reg_uses_1 (rtx reg, rtx_insn *start_insn, basic_block bb, int& count,
 		  std::vector<basic_block>& visited_bb, rtx abort_at_insn)
 {
   if (bb == NULL)
@@ -360,7 +360,7 @@ trace_reg_uses_1 (rtx reg, rtx start_insn, basic_block bb, int& count,
   if (end_insn == NULL_RTX)
     log_return_void ("[bb %d] end_insn is null\n", bb->index);
 
-  for (rtx i = NEXT_INSN (start_insn); i != end_insn; i = NEXT_INSN (i))
+  for (rtx_insn *i = NEXT_INSN (start_insn); i != end_insn; i = NEXT_INSN (i))
     {
       if (INSN_P (i))
 	{
@@ -396,7 +396,7 @@ trace_reg_uses_1 (rtx reg, rtx start_insn, basic_block bb, int& count,
 // that insn.  If the insn 'abort_at_insn' uses the specified reg, it is also
 // counted.
 static int
-trace_reg_uses (rtx reg, rtx start_insn, rtx abort_at_insn)
+trace_reg_uses (rtx reg, rtx_insn *start_insn, rtx abort_at_insn)
 {
   log_msg ("\ntrace_reg_uses\nreg = ");
   log_rtx (reg);
@@ -463,7 +463,7 @@ private:
   // A ccreg trace for a conditional branch.
   struct cbranch_trace
   {
-    rtx cbranch_insn;
+    rtx_insn *cbranch_insn;
     branch_condition_type_t cbranch_type;
 
     // The comparison against zero right before the conditional branch.
@@ -473,7 +473,7 @@ private:
     // the BB of the cbranch itself and might be empty.
     std::list<bb_entry> bb_entries;
 
-    cbranch_trace (rtx insn)
+    cbranch_trace (rtx_insn *insn)
     : cbranch_insn (insn),
       cbranch_type (unknown_branch_condition),
       setcc ()
@@ -537,7 +537,8 @@ private:
     set_not_found,
     other_set_found
   };
-  record_return_t record_set_of_reg (rtx reg, rtx start_insn, bb_entry& e);
+  record_return_t record_set_of_reg (rtx reg, rtx_insn *start_insn,
+                                     bb_entry& e);
 
   // Tells whether the cbranch insn of the specified bb_entry can be removed
   // safely without triggering any side effects.
@@ -562,7 +563,7 @@ private:
   rtx make_not_reg_insn (rtx dst_reg, rtx src_reg) const;
 
   // Create an insn rtx that inverts the ccreg.
-  rtx make_inv_ccreg_insn (void) const;
+  rtx_insn *make_inv_ccreg_insn (void) const;
 
   // Adds the specified insn to the set of modified or newly added insns that
   // might need splitting at the end of the pass.
@@ -584,7 +585,7 @@ private:
 
   // Given a branch insn, try to optimize its branch condition.
   // If any insns are modified or added they are added to 'm_touched_insns'.
-  void try_optimize_cbranch (rtx i);
+  void try_optimize_cbranch (rtx_insn *i);
 };
 
 
@@ -670,7 +671,7 @@ sh_treg_combine::is_inverted_ccreg (const_rtx x) const
 }
 
 sh_treg_combine::record_return_t
-sh_treg_combine::record_set_of_reg (rtx reg, rtx start_insn,
+sh_treg_combine::record_set_of_reg (rtx reg, rtx_insn *start_insn,
 				    bb_entry& new_entry)
 {
   log_msg ("\n[bb %d]\n", new_entry.bb->index);
@@ -680,7 +681,7 @@ sh_treg_combine::record_set_of_reg (rtx reg, rtx start_insn,
 
   new_entry.cstore_type = cstore_unknown;
 
-  for (rtx i = start_insn; i != NULL_RTX; )
+  for (rtx_insn *i = start_insn; i != NULL; )
     {
       new_entry.cstore = find_set_of_reg_bb (reg, i);
 
@@ -791,7 +792,7 @@ sh_treg_combine::can_remove_cstore (const bb_entry& e,
   // must not be a usage of the copied regs between the reg-reg copies.
   // Otherwise we assume that the result of the cstore is used in some
   // other way.
-  rtx prev_insn = e.cstore.insn;
+  rtx_insn *prev_insn = e.cstore.insn;
   for (std::vector<set_of_reg>::const_reverse_iterator i =
 	   e.cstore_reg_reg_copies.rbegin ();
        i != e.cstore_reg_reg_copies.rend (); ++i)
@@ -898,13 +899,13 @@ sh_treg_combine::make_not_reg_insn (rtx dst_reg, rtx src_reg) const
   return i;
 }
 
-rtx
+rtx_insn *
 sh_treg_combine::make_inv_ccreg_insn (void) const
 {
   start_sequence ();
-  rtx i = emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
-				  gen_rtx_fmt_ee (XOR, GET_MODE (m_ccreg),
-						  m_ccreg, const1_rtx)));
+  rtx_insn *i = emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
+                                        gen_rtx_fmt_ee (XOR, GET_MODE (m_ccreg),
+                                                        m_ccreg, const1_rtx)));
   end_sequence ();
   return i;
 }
@@ -1221,7 +1222,7 @@ sh_treg_combine::try_eliminate_cstores (cbranch_trace& trace,
   // invert the ccreg as a replacement for one of them.
   if (cstore_count != 0 && inv_cstore_count != 0)
     {
-      rtx i = make_inv_ccreg_insn ();
+      rtx_insn *i = make_inv_ccreg_insn ();
       if (recog_memoized (i) < 0)
 	{
 	  log_msg ("failed to match ccreg inversion insn:\n");
@@ -1262,7 +1263,7 @@ sh_treg_combine::try_eliminate_cstores (cbranch_trace& trace,
 }
 
 void
-sh_treg_combine::try_optimize_cbranch (rtx insn)
+sh_treg_combine::try_optimize_cbranch (rtx_insn *insn)
 {
   cbranch_trace trace (insn);
 
@@ -1468,7 +1469,7 @@ sh_treg_combine::execute (function *fun)
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
-      rtx i = BB_END (bb);
+      rtx_insn *i = BB_END (bb);
       if (any_condjump_p (i) && onlyjump_p (i))
 	try_optimize_cbranch (i);
     }

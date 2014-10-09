@@ -2115,8 +2115,8 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	  for (Typed_identifier_list::const_iterator p = til.begin();
 	       p != til.end();
 	       ++p)
-	    exprs->push_back(this->id_to_expression(p->name(),
-						    p->location()));
+	    exprs->push_back(this->id_to_expression(p->name(), p->location(),
+						    true));
 
 	  Expression_list* more_exprs =
 	    this->expression_list(NULL, true, may_be_composite_lit);
@@ -2509,7 +2509,10 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 	    }
 	  case Named_object::NAMED_OBJECT_VAR:
 	  case Named_object::NAMED_OBJECT_RESULT_VAR:
-	    this->mark_var_used(named_object);
+	    // Any left-hand-side can be a sink, so if this can not be
+	    // a sink, then it must be a use of the variable.
+	    if (!may_be_sink)
+	      this->mark_var_used(named_object);
 	    return Expression::make_var_reference(named_object, location);
 	  case Named_object::NAMED_OBJECT_SINK:
 	    if (may_be_sink)
@@ -2724,7 +2727,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      Gogo* gogo = this->gogo_;
 	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
 								  is_exported),
-					   location);
+					   location, false);
 	      is_name = true;
 	    }
 	  else
@@ -2867,7 +2870,10 @@ Parse::function_lit()
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
-    return Expression::make_type(type, location);
+    {
+      hold_enclosing_vars.swap(this->enclosing_vars_);
+      return Expression::make_type(type, location);
+    }
 
   bool hold_is_erroneous_function = this->is_erroneous_function_;
   if (fntype_is_error)
@@ -3241,7 +3247,8 @@ Parse::call(Expression* func)
 // Return an expression for a single unqualified identifier.
 
 Expression*
-Parse::id_to_expression(const std::string& name, Location location)
+Parse::id_to_expression(const std::string& name, Location location,
+			bool is_lhs)
 {
   Named_object* in_function;
   Named_object* named_object = this->gogo_->lookup(name, &in_function);
@@ -3260,7 +3267,8 @@ Parse::id_to_expression(const std::string& name, Location location)
       return Expression::make_const_reference(named_object, location);
     case Named_object::NAMED_OBJECT_VAR:
     case Named_object::NAMED_OBJECT_RESULT_VAR:
-      this->mark_var_used(named_object);
+      if (!is_lhs)
+	this->mark_var_used(named_object);
       return Expression::make_var_reference(named_object, location);
     case Named_object::NAMED_OBJECT_SINK:
       return Expression::make_sink(location);
@@ -5025,7 +5033,7 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
 	  *val = this->id_to_expression(gogo->pack_hidden_name(recv_var,
 							       is_rv_exported),
-					recv_var_loc);
+					recv_var_loc, true);
 	  saw_comma = true;
 	}
       else
@@ -5727,6 +5735,13 @@ Parse::verify_not_sink(Expression* expr)
       error_at(expr->location(), "cannot use _ as value");
       expr = Expression::make_error(expr->location());
     }
+
+  // If this can not be a sink, and it is a variable, then we are
+  // using the variable, not just assigning to it.
+  Var_expression* ve = expr->var_expression();
+  if (ve != NULL)
+    this->mark_var_used(ve->named_object());
+
   return expr;
 }
 

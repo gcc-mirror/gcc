@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,8 @@ package body Prj.PP is
    Not_Tested : array (Project_Node_Kind) of Boolean := (others => True);
 
    procedure Indicate_Tested (Kind : Project_Node_Kind);
-   --  Set the corresponding component of array Not_Tested to False.
-   --  Only called by pragmas Debug.
+   --  Set the corresponding component of array Not_Tested to False. Only
+   --  called by Debug pragmas.
 
    ---------------------
    -- Indicate_Tested --
@@ -84,14 +84,15 @@ package body Prj.PP is
       procedure Start_Line (Indent : Natural);
       --  Outputs the indentation at the beginning of the line
 
+      procedure Output_Project_File (S : Name_Id);
+      --  Output a project file name in one single string literal
+
       procedure Output_String (S : Name_Id; Indent : Natural);
-      procedure Output_String (S : Path_Name_Type; Indent : Natural);
       --  Outputs a string using the default output procedures
 
       procedure Write_Empty_Line (Always : Boolean := False);
       --  Outputs an empty line, only if the previous line was not empty
-      --  already and either Always is True or Minimize_Empty_Lines is
-      --  False.
+      --  already and either Always is True or Minimize_Empty_Lines is False.
 
       procedure Write_Line (S : String);
       --  Outputs S followed by a new line
@@ -100,12 +101,12 @@ package body Prj.PP is
         (S         : String;
          Indent    : Natural;
          Truncated : Boolean := False);
-      --  Outputs S using Write_Str, starting a new line if line would
-      --  become too long, when Truncated = False.
-      --  When Truncated = True, only the part of the string that can fit on
-      --  the line is output.
+      --  Outputs S using Write_Str, starting a new line if line would become
+      --  too long, when Truncated = False. When Truncated = True, only the
+      --  part of the string that can fit on the line is output.
 
       procedure Write_End_Of_Line_Comment (Node : Project_Node_Id);
+      --  Needs comment???
 
       Write_Char : Write_Char_Ap := Output.Write_Char'Access;
       Write_Eol  : Write_Eol_Ap := Output.Write_Eol'Access;
@@ -199,6 +200,28 @@ package body Prj.PP is
          Column := Column + Name_Len;
       end Output_Name;
 
+      -------------------------
+      -- Output_Project_File --
+      -------------------------
+
+      procedure Output_Project_File (S : Name_Id) is
+         File_Name : constant String := Get_Name_String (S);
+
+      begin
+         Write_Char ('"');
+
+         for J in File_Name'Range loop
+            if File_Name (J) = '"' then
+               Write_Char ('"');
+               Write_Char ('"');
+            else
+               Write_Char (File_Name (J));
+            end if;
+         end loop;
+
+         Write_Char ('"');
+      end Output_Project_File;
+
       -------------------
       -- Output_String --
       -------------------
@@ -254,11 +277,6 @@ package body Prj.PP is
 
          Write_Char ('"');
          Column := Column + 1;
-      end Output_String;
-
-      procedure Output_String (S : Path_Name_Type; Indent : Natural) is
-      begin
-         Output_String (Name_Id (S), Indent);
       end Output_String;
 
       ----------------
@@ -323,15 +341,16 @@ package body Prj.PP is
       procedure Write_String
         (S         : String;
          Indent    : Natural;
-         Truncated : Boolean := False) is
+         Truncated : Boolean := False)
+      is
          Length : Natural := S'Length;
+
       begin
          if Column = 0 and then Indent /= 0 then
             Start_Line (Indent + Increment);
          end if;
 
-         --  If the string would not fit on the line,
-         --  start a new line.
+         --  If the string would not fit on the line, start a new line
 
          if Column + Length > Max_Line_Length then
             if Truncated then
@@ -358,9 +377,7 @@ package body Prj.PP is
       procedure Print (Node : Project_Node_Id; Indent : Natural) is
       begin
          if Present (Node) then
-
             case Kind_Of (Node, In_Tree) is
-
                when N_Project  =>
                   pragma Debug (Indicate_Tested (N_Project));
                   if Present (First_With_Clause_Of (Node, In_Tree)) then
@@ -386,7 +403,7 @@ package body Prj.PP is
                         Write_String ("library ", Indent);
                      when Configuration =>
                         Write_String ("configuration ", Indent);
-                     when Dry =>
+                     when Abstract_Project =>
                         Write_String ("abstract ", Indent);
                   end case;
 
@@ -407,9 +424,8 @@ package body Prj.PP is
                         Write_String ("all ", Indent);
                      end if;
 
-                     Output_String
-                       (Extended_Project_Path_Of (Node, In_Tree),
-                        Indent);
+                     Output_Project_File
+                       (Name_Id (Extended_Project_Path_Of (Node, In_Tree)));
                   end if;
 
                   Write_String (" is", Indent);
@@ -440,9 +456,8 @@ package body Prj.PP is
                   pragma Debug (Indicate_Tested (N_With_Clause));
 
                   --  The with clause will sometimes contain an invalid name
-                  --  when we are importing a virtual project from an
-                  --  extending all project. Do not output anything in this
-                  --  case
+                  --  when we are importing a virtual project from an extending
+                  --  all project. Do not output anything in this case.
 
                   if Name_Of (Node, In_Tree) /= No_Name
                     and then String_Value_Of (Node, In_Tree) /= No_Name
@@ -460,7 +475,10 @@ package body Prj.PP is
                         Write_String ("with ", Indent);
                      end if;
 
-                     Output_String (String_Value_Of (Node, In_Tree), Indent);
+                     --  Output the project name without concatenation, even if
+                     --  the line is too long.
+
+                     Output_Project_File (String_Value_Of (Node, In_Tree));
 
                      if Is_Not_Last_In_List (Node, In_Tree) then
                         Write_String (", ", Indent);
@@ -522,8 +540,7 @@ package body Prj.PP is
                      Print (First_Comment_After (Node, In_Tree),
                             Indent + Increment);
 
-                     if First_Declarative_Item_Of (Node, In_Tree) /=
-                          Empty_Node
+                     if First_Declarative_Item_Of (Node, In_Tree) /= Empty_Node
                      then
                         Print
                           (First_Declarative_Item_Of (Node, In_Tree),
@@ -557,8 +574,7 @@ package body Prj.PP is
                   begin
                      while Present (String_Node) loop
                         Output_String
-                          (String_Value_Of (String_Node, In_Tree),
-                           Indent);
+                          (String_Value_Of (String_Node, In_Tree), Indent);
                         String_Node :=
                           Next_Literal_String (String_Node, In_Tree);
 
@@ -579,8 +595,7 @@ package body Prj.PP is
                   if Source_Index_Of (Node, In_Tree) /= 0 then
                      Write_String (" at", Indent);
                      Write_String
-                       (Source_Index_Of (Node, In_Tree)'Img,
-                        Indent);
+                       (Source_Index_Of (Node, In_Tree)'Img, Indent);
                   end if;
 
                when N_Attribute_Declaration =>
@@ -593,14 +608,12 @@ package body Prj.PP is
                   if Associative_Array_Index_Of (Node, In_Tree) /= No_Name then
                      Write_String (" (", Indent);
                      Output_String
-                       (Associative_Array_Index_Of (Node, In_Tree),
-                        Indent);
+                       (Associative_Array_Index_Of (Node, In_Tree), Indent);
 
                      if Source_Index_Of (Node, In_Tree) /= 0 then
                         Write_String (" at", Indent);
                         Write_String
-                          (Source_Index_Of (Node, In_Tree)'Img,
-                           Indent);
+                          (Source_Index_Of (Node, In_Tree)'Img, Indent);
                      end if;
 
                      Write_String (")", Indent);
@@ -614,17 +627,14 @@ package body Prj.PP is
                   else
                      --  Full associative array declaration
 
-                     if
-                       Present (Associative_Project_Of (Node, In_Tree))
-                     then
+                     if Present (Associative_Project_Of (Node, In_Tree)) then
                         Output_Name
                           (Name_Of
                              (Associative_Project_Of (Node, In_Tree),
                               In_Tree),
                            Indent);
 
-                        if
-                          Present (Associative_Package_Of (Node, In_Tree))
+                        if Present (Associative_Package_Of (Node, In_Tree))
                         then
                            Write_String (".", Indent);
                            Output_Name
@@ -634,8 +644,7 @@ package body Prj.PP is
                               Indent);
                         end if;
 
-                     elsif
-                       Present (Associative_Package_Of (Node, In_Tree))
+                     elsif Present (Associative_Package_Of (Node, In_Tree))
                      then
                         Output_Name
                           (Name_Of
@@ -705,7 +714,7 @@ package body Prj.PP is
 
                   declare
                      Expression : Project_Node_Id :=
-                       First_Expression_In_List (Node, In_Tree);
+                                    First_Expression_In_List (Node, In_Tree);
 
                   begin
                      while Present (Expression) loop
@@ -783,7 +792,6 @@ package body Prj.PP is
                   declare
                      Index : constant Name_Id :=
                                Associative_Array_Index_Of (Node, In_Tree);
-
                   begin
                      if Index /= No_Name then
                         Write_String (" (", Indent);
@@ -804,7 +812,7 @@ package body Prj.PP is
                      while Present (Case_Item) loop
                         if Present
                             (First_Declarative_Item_Of (Case_Item, In_Tree))
-                           or else not Eliminate_Empty_Case_Constructions
+                          or else not Eliminate_Empty_Case_Constructions
                         then
                            Is_Non_Empty := True;
                            exit;
@@ -819,8 +827,7 @@ package body Prj.PP is
                         Start_Line (Indent);
                         Write_String ("case ", Indent);
                         Print
-                          (Case_Variable_Reference_Of (Node, In_Tree),
-                           Indent);
+                          (Case_Variable_Reference_Of (Node, In_Tree), Indent);
                         Write_String (" is", Indent);
                         Write_End_Of_Line_Comment (Node);
                         Print
@@ -867,6 +874,7 @@ package body Prj.PP is
                         declare
                            Label : Project_Node_Id :=
                                      First_Choice_Of (Node, In_Tree);
+
                         begin
                            while Present (Label) loop
                               Print (Label, Indent);
@@ -975,7 +983,8 @@ package body Prj.PP is
 
    procedure wpr
      (Project : Prj.Tree.Project_Node_Id;
-      In_Tree : Prj.Tree.Project_Node_Tree_Ref) is
+      In_Tree : Prj.Tree.Project_Node_Tree_Ref)
+   is
    begin
       Pretty_Print (Project, In_Tree, Backward_Compatibility => False);
    end wpr;

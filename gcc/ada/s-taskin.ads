@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,10 @@ package System.Tasking is
 
    --  Sometimes we need to hold two ATCB locks at the same time. To allow us
    --  to order the locking, each ATCB is given a unique serial number. If one
-   --  needs to hold locks on several ATCBs at once, the locks with lower
-   --  serial numbers must be locked first.
+   --  needs to hold locks on two ATCBs at once, the lock with lower serial
+   --  number must be locked first. We avoid holding three or more ATCB locks,
+   --  because that can easily lead to complications that cause race conditions
+   --  and deadlocks.
 
    --  We don't always need to check the serial numbers, since the serial
    --  numbers are assigned sequentially, and so:
@@ -669,7 +671,7 @@ package System.Tasking is
       --  Task_Info pragma.
 
       Analyzer  : System.Stack_Usage.Stack_Analyzer;
-      --  For storing informations used to measure the stack usage
+      --  For storing information used to measure the stack usage
 
       Global_Task_Lock_Nesting : Natural;
       --  This is the current nesting level of calls to
@@ -936,22 +938,13 @@ package System.Tasking is
    type Entry_Call_Array is array (ATC_Level_Index) of
      aliased Entry_Call_Record;
 
-   type Direct_Index is range 0 .. Parameters.Default_Attribute_Count;
-   subtype Direct_Index_Range is Direct_Index range 1 .. Direct_Index'Last;
-   --  Attributes with indexes in this range are stored directly in the task
-   --  control block. Such attributes must be Address-sized. Other attributes
-   --  will be held in dynamically allocated records chained off of the task
-   --  control block.
-
-   type Direct_Attribute_Element is mod Memory_Size;
-   pragma Atomic (Direct_Attribute_Element);
-
-   type Direct_Attribute_Array is
-     array (Direct_Index_Range) of aliased Direct_Attribute_Element;
-
-   type Direct_Index_Vector is mod 2 ** Parameters.Default_Attribute_Count;
-   --  This is a bit-vector type, used to store information about
-   --  the usage of the direct attribute fields.
+   type Atomic_Address is mod Memory_Size;
+   pragma Atomic (Atomic_Address);
+   type Attribute_Array is
+     array (1 .. Parameters.Max_Attribute_Count) of Atomic_Address;
+   --  Array of task attributes. The value (Atomic_Address) will either be
+   --  converted to a task attribute if it fits, or to a pointer to a record
+   --  by Ada.Task_Attributes.
 
    type Task_Serial_Number is mod 2 ** 64;
    --  Used to give each task a unique serial number
@@ -1137,15 +1130,8 @@ package System.Tasking is
       --  User-writeable location, for use in debugging tasks; also provides a
       --  simple task specific data.
 
-      Direct_Attributes : Direct_Attribute_Array;
-      --  For task attributes that have same size as Address
-
-      Is_Defined : Direct_Index_Vector := 0;
-      --  Bit I is 1 iff Direct_Attributes (I) is defined
-
-      Indirect_Attributes : Access_Address;
-      --  A pointer to chain of records for other attributes that are not
-      --  address-sized, including all tagged types.
+      Attributes : Attribute_Array := (others => 0);
+      --  Task attributes
 
       Entry_Queues : Task_Entry_Queue_Array (1 .. Entry_Num);
       --  An array of task entry queues

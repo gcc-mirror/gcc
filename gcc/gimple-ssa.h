@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_SSA_H
 #define GCC_GIMPLE_SSA_H
 
+#include "hash-map.h"
 #include "tree-ssa-operands.h"
 
 /* This structure is used to map a gimple statement to a label,
@@ -53,7 +54,7 @@ struct GTY(()) gimple_df {
 
   /* A map of decls to artificial ssa-names that point to the partition
      of the decl.  */
-  struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
+  hash_map<tree, tree> * GTY((skip(""))) decls_to_pointers;
 
   /* Free list of SSA_NAMEs.  */
   vec<tree, va_gc> *free_ssanames;

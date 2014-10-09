@@ -60,12 +60,12 @@ typedef _list_t _xlist_t;
 #define _XLIST_NEXT(L) (_LIST_NEXT (L))
 
 /* Instruction.  */
-typedef rtx insn_t;
+typedef rtx_insn *insn_t;
 
 /* List of insns.  */
-typedef _xlist_t ilist_t;
-#define ILIST_INSN(L) (_XLIST_X (L))
-#define ILIST_NEXT(L) (_XLIST_NEXT (L))
+typedef _list_t ilist_t;
+#define ILIST_INSN(L) ((L)->u.insn)
+#define ILIST_NEXT(L) (_LIST_NEXT (L))
 
 /* This lists possible transformations that done locally, i.e. in
    moveup_expr.  */
@@ -278,7 +278,7 @@ struct _fence
   tc_t tc;
 
   /* A vector of insns that are scheduled but not yet completed.  */
-  vec<rtx, va_gc> *executing_insns;
+  vec<rtx_insn *, va_gc> *executing_insns;
 
   /* A vector indexed by UIDs that caches the earliest cycle on which
      an insn can be scheduled on this fence.  */
@@ -288,13 +288,13 @@ struct _fence
   int ready_ticks_size;
 
   /* Insn, which has been scheduled last on this fence.  */
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
 
   /* The last value of can_issue_more variable on this fence.  */
   int issue_more;
 
   /* If non-NULL force the next scheduled insn to be SCHED_NEXT.  */
-  rtx sched_next;
+  rtx_insn *sched_next;
 
   /* True if fill_insns processed this fence.  */
   BOOL_BITFIELD processed_p : 1;
@@ -352,6 +352,7 @@ struct _list_node
   union
   {
     rtx x;
+    insn_t insn;
     struct _bnd bnd;
     expr_def expr;
     struct _fence fence;
@@ -510,17 +511,48 @@ typedef _list_iterator _xlist_iterator;
 #define _FOR_EACH_X_1(X, I, LP) _FOR_EACH_1 (x, (X), (I), (LP))
 
 
-/* ilist_t functions.  Instruction lists are simply RTX lists.  */
+/* ilist_t functions.  */
 
-#define ilist_add(LP, INSN) (_xlist_add ((LP), (INSN)))
-#define ilist_remove(LP) (_xlist_remove (LP))
-#define ilist_clear(LP) (_xlist_clear (LP))
-#define ilist_is_in_p(L, INSN) (_xlist_is_in_p ((L), (INSN)))
-#define ilist_iter_remove(IP) (_xlist_iter_remove (IP))
+static inline void
+ilist_add (ilist_t *lp, insn_t insn)
+{
+  _list_add (lp);
+  ILIST_INSN (*lp) = insn;
+}
+#define ilist_remove(LP) (_list_remove (LP))
+#define ilist_clear(LP) (_list_clear (LP))
 
-typedef _xlist_iterator ilist_iterator;
-#define FOR_EACH_INSN(INSN, I, L) _FOR_EACH_X (INSN, I, L)
-#define FOR_EACH_INSN_1(INSN, I, LP) _FOR_EACH_X_1 (INSN, I, LP)
+static inline bool
+ilist_is_in_p (ilist_t l, insn_t insn)
+{
+  while (l)
+    {
+      if (ILIST_INSN (l) == insn)
+        return true;
+      l = ILIST_NEXT (l);
+    }
+
+  return false;
+}
+
+/* Used through _FOR_EACH.  */
+static inline bool
+_list_iter_cond_insn (ilist_t l, insn_t *ip)
+{
+  if (l)
+    {
+      *ip = ILIST_INSN (l);
+      return true;
+    }
+
+  return false;
+}
+
+#define ilist_iter_remove(IP) (_list_iter_remove (IP))
+
+typedef _list_iterator ilist_iterator;
+#define FOR_EACH_INSN(INSN, I, L) _FOR_EACH (insn, (INSN), (I), (L))
+#define FOR_EACH_INSN_1(INSN, I, LP) _FOR_EACH_1 (insn, (INSN), (I), (LP))
 
 
 /* Av set iterators.  */
@@ -623,7 +655,7 @@ struct idata_def
 struct vinsn_def
 {
   /* Associated insn.  */
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   /* Its description.  */
   struct idata_def id;
@@ -807,7 +839,7 @@ extern flist_t fences;
 extern rtx nop_pattern;
 
 /* An insn that 'contained' in EXIT block.  */
-extern rtx exit_insn;
+extern rtx_insn *exit_insn;
 
 /* Provide a separate luid for the insn.  */
 #define INSN_INIT_TODO_LUID (1)
@@ -896,7 +928,7 @@ struct sel_region_bb_info_def
 {
   /* This insn stream is constructed in such a way that it should be
      traversed by PREV_INSN field - (*not* NEXT_INSN).  */
-  rtx note_list;
+  rtx_insn *note_list;
 
   /* Cached availability set at the beginning of a block.
      See also AV_LEVEL () for conditions when this av_set can be used.  */
@@ -1009,8 +1041,8 @@ struct succs_info
 /* Some needed definitions.  */
 extern basic_block after_recovery;
 
-extern insn_t sel_bb_head (basic_block);
-extern insn_t sel_bb_end (basic_block);
+extern rtx_insn *sel_bb_head (basic_block);
+extern rtx_insn *sel_bb_end (basic_block);
 extern bool sel_bb_empty_p (basic_block);
 extern bool in_current_region_p (basic_block);
 
@@ -1221,7 +1253,7 @@ _succ_iter_start (insn_t *succp, insn_t insn, int flags)
 }
 
 static inline bool
-_succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
+_succ_iter_cond (succ_iterator *ip, insn_t *succp, insn_t insn,
                  bool check (edge, succ_iterator *))
 {
   if (!ip->bb_end)
@@ -1580,14 +1612,14 @@ extern bool insn_at_boundary_p (insn_t);
 
 /* Basic block and CFG functions.  */
 
-extern insn_t sel_bb_head (basic_block);
+extern rtx_insn *sel_bb_head (basic_block);
 extern bool sel_bb_head_p (insn_t);
-extern insn_t sel_bb_end (basic_block);
+extern rtx_insn *sel_bb_end (basic_block);
 extern bool sel_bb_end_p (insn_t);
 extern bool sel_bb_empty_p (basic_block);
 
 extern bool in_current_region_p (basic_block);
-extern basic_block fallthru_bb_of_jump (rtx);
+extern basic_block fallthru_bb_of_jump (const rtx_insn *);
 
 extern void sel_init_bbs (bb_vec_t);
 extern void sel_finish_bbs (void);
@@ -1596,7 +1628,7 @@ extern struct succs_info * compute_succs_info (insn_t, short);
 extern void free_succs_info (struct succs_info *);
 extern bool sel_insn_has_single_succ_p (insn_t, int);
 extern bool sel_num_cfg_preds_gt_1 (insn_t);
-extern int get_seqno_by_preds (rtx);
+extern int get_seqno_by_preds (rtx_insn *);
 
 extern bool bb_ends_ebb_p (basic_block);
 extern bool in_same_ebb_p (insn_t, insn_t);
@@ -1626,9 +1658,9 @@ extern void sel_register_cfg_hooks (void);
 extern void sel_unregister_cfg_hooks (void);
 
 /* Expression transformation routines.  */
-extern rtx create_insn_rtx_from_pattern (rtx, rtx);
-extern vinsn_t create_vinsn_from_insn_rtx (rtx, bool);
-extern rtx create_copy_of_insn_rtx (rtx);
+extern rtx_insn *create_insn_rtx_from_pattern (rtx, rtx);
+extern vinsn_t create_vinsn_from_insn_rtx (rtx_insn *, bool);
+extern rtx_insn *create_copy_of_insn_rtx (rtx);
 extern void change_vinsn_in_expr (expr_t, vinsn_t);
 
 /* Various initialization functions.  */

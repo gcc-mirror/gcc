@@ -4,6 +4,8 @@
 
 #include "xop-check.h"
 
+int do_main (void);
+
 static void
 xop_test (void)
 {

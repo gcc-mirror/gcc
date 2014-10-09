@@ -2262,10 +2262,14 @@ package body Sem_Dim is
 
          --  Provide minimal semantic information on dimension expressions,
          --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing.
+         --  ASIS tools, in particular pretty-printing. If generating code
+         --  standard operator resolution will take place.
 
-         Set_Entity (N, Standard_Op_Minus);
-         Set_Etype  (N, Standard_Integer);
+         if ASIS_Mode then
+            Set_Entity (N, Standard_Op_Minus);
+            Set_Etype  (N, Standard_Integer);
+         end if;
+
          return Result;
       end Process_Minus;
 
@@ -2294,10 +2298,14 @@ package body Sem_Dim is
 
          --  Provide minimal semantic information on dimension expressions,
          --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing.
+         --  ASIS tools, in particular pretty-printing. If generating code
+         --  standard operator resolution will take place.
 
-         Set_Entity (N, Standard_Op_Divide);
-         Set_Etype  (N, Standard_Integer);
+         if ASIS_Mode then
+            Set_Entity (N, Standard_Op_Divide);
+            Set_Etype  (N, Standard_Integer);
+         end if;
+
          return Result;
       end Process_Divide;
 

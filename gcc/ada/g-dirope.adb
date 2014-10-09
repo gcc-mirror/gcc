@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2012, AdaCore                     --
+--                     Copyright (C) 1998-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -693,7 +693,7 @@ package body GNAT.Directory_Operations is
    end Read;
 
    -------------------------
-   -- Read_Is_Thread_Sage --
+   -- Read_Is_Thread_Safe --
    -------------------------
 
    function Read_Is_Thread_Safe return Boolean is

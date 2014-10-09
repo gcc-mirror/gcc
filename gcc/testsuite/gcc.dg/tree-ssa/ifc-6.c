@@ -2,6 +2,7 @@
 /* { dg-options "-c -O2 -ftree-vectorize" { target *-*-* } } */
 
 static int x;
+void
 foo (int n, int *A)
 {
   int i;

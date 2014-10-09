@@ -1468,6 +1468,12 @@
 #endif
 
 
+/* Define to 1 if you have the `popen' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_POPEN
+#endif
+
+
 /* Define to 1 if you have the `putchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_PUTCHAR_UNLOCKED
@@ -1693,12 +1699,15 @@
 #undef HAVE_WORKING_VFORK
 #endif
 
+/* Define if isl is in use. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_isl
+#endif
 
 /* Define if cloog is in use. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_cloog
 #endif
-
 
 /* Define if F_SETLKW supported by fcntl. */
 #ifndef USED_FOR_TARGET

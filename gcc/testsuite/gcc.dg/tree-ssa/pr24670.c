@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
+void add128 (long long int *);
+
 __inline__ void
 shift128Right (int count, long long int *z1Ptr)
 {
@@ -12,6 +14,7 @@ shift128Right (int count, long long int *z1Ptr)
   *z1Ptr = z1;
 }
 
+void
 float128_rem ()
 {
   signed int expDiff;

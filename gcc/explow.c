@@ -357,7 +357,7 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
       break;
 
     case LABEL_REF:
-      temp = gen_rtx_LABEL_REF (to_mode, XEXP (x, 0));
+      temp = gen_rtx_LABEL_REF (to_mode, LABEL_REF_LABEL (x));
       LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
       return temp;
       break;
@@ -518,8 +518,9 @@ memory_address_addr_space (enum machine_mode mode, rtx x, addr_space_t as)
   return x;
 }
 
-/* Convert a mem ref into one with a valid memory address.
-   Pass through anything else unchanged.  */
+/* If REF is a MEM with an invalid address, change it into a valid address.
+   Pass through anything else unchanged.  REF must be an unshared rtx and
+   the function may modify it in-place.  */
 
 rtx
 validize_mem (rtx ref)
@@ -531,8 +532,7 @@ validize_mem (rtx ref)
 				   MEM_ADDR_SPACE (ref)))
     return ref;
 
-  /* Don't alter REF itself, since that is probably a stack slot.  */
-  return replace_equiv_address (ref, XEXP (ref, 0));
+  return replace_equiv_address (ref, XEXP (ref, 0), true);
 }
 
 /* If X is a memory reference to a member of an object block, try rewriting
@@ -649,7 +649,8 @@ copy_to_mode_reg (enum machine_mode mode, rtx x)
 rtx
 force_reg (enum machine_mode mode, rtx x)
 {
-  rtx temp, insn, set;
+  rtx temp, set;
+  rtx_insn *insn;
 
   if (REG_P (x))
     return x;
@@ -880,7 +881,8 @@ static bool suppress_reg_args_size;
 static void
 adjust_stack_1 (rtx adjust, bool anti_p)
 {
-  rtx temp, insn;
+  rtx temp;
+  rtx_insn *insn;
 
 #ifndef STACK_GROWS_DOWNWARD
   /* Hereafter anti_p means subtract_p.  */
@@ -1160,7 +1162,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 			      unsigned required_align, bool cannot_accumulate)
 {
   HOST_WIDE_INT stack_usage_size = -1;
-  rtx final_label, final_target, target;
+  rtx_code_label *final_label;
+  rtx final_target, target;
   unsigned extra_align = 0;
   bool must_align;
 
@@ -1184,7 +1187,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
         {
 	  /* Look into the last emitted insn and see if we can deduce
 	     something for the register.  */
-	  rtx insn, set, note;
+	  rtx_insn *insn;
+	  rtx set, note;
 	  insn = get_last_insn ();
 	  if ((set = single_set (insn)) && rtx_equal_p (SET_DEST (set), size))
 	    {
@@ -1313,7 +1317,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	current_function_has_unbounded_dynamic_stack_size = 1;
     }
 
-  final_label = NULL_RTX;
+  final_label = NULL;
   final_target = NULL_RTX;
 
   /* If we are splitting the stack, we need to ask the backend whether
@@ -1325,9 +1329,10 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
      least it doesn't cause a stack overflow.  */
   if (flag_split_stack)
     {
-      rtx available_label, ask, space, func;
+      rtx_code_label *available_label;
+      rtx ask, space, func;
 
-      available_label = NULL_RTX;
+      available_label = NULL;
 
 #ifdef HAVE_split_stack_space_check
       if (HAVE_split_stack_space_check)
@@ -1420,7 +1425,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       if (crtl->limit_stack)
 	{
 	  rtx available;
-	  rtx space_available = gen_label_rtx ();
+	  rtx_code_label *space_available = gen_label_rtx ();
 #ifdef STACK_GROWS_DOWNWARD
 	  available = expand_binop (Pmode, sub_optab,
 				    stack_pointer_rtx, stack_limit_rtx,
@@ -1622,9 +1627,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
   else
     {
       rtx rounded_size, rounded_size_op, test_addr, last_addr, temp;
-      rtx loop_lab = gen_label_rtx ();
-      rtx end_lab = gen_label_rtx ();
-
+      rtx_code_label *loop_lab = gen_label_rtx ();
+      rtx_code_label *end_lab = gen_label_rtx ();
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
@@ -1770,8 +1774,8 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
   else
     {
       rtx rounded_size, rounded_size_op, last_addr, temp;
-      rtx loop_lab = gen_label_rtx ();
-      rtx end_lab = gen_label_rtx ();
+      rtx_code_label *loop_lab = gen_label_rtx ();
+      rtx_code_label *end_lab = gen_label_rtx ();
 
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */

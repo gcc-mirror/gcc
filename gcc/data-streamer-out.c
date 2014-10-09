@@ -32,13 +32,56 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "data-streamer.h"
 
+
+/* Adds a new block to output stream OBS.  */
+
+void
+lto_append_block (struct lto_output_stream *obs)
+{
+  struct lto_char_ptr_base *new_block;
+
+  gcc_assert (obs->left_in_block == 0);
+
+  if (obs->first_block == NULL)
+    {
+      /* This is the first time the stream has been written
+	 into.  */
+      obs->block_size = 1024;
+      new_block = (struct lto_char_ptr_base*) xmalloc (obs->block_size);
+      obs->first_block = new_block;
+    }
+  else
+    {
+      struct lto_char_ptr_base *tptr;
+      /* Get a new block that is twice as big as the last block
+	 and link it into the list.  */
+      obs->block_size *= 2;
+      new_block = (struct lto_char_ptr_base*) xmalloc (obs->block_size);
+      /* The first bytes of the block are reserved as a pointer to
+	 the next block.  Set the chain of the full block to the
+	 pointer to the new block.  */
+      tptr = obs->current_block;
+      tptr->ptr = (char *) new_block;
+    }
+
+  /* Set the place for the next char at the first position after the
+     chain to the next block.  */
+  obs->current_pointer
+    = ((char *) new_block) + sizeof (struct lto_char_ptr_base);
+  obs->current_block = new_block;
+  /* Null out the newly allocated block's pointer to the next block.  */
+  new_block->ptr = NULL;
+  obs->left_in_block = obs->block_size - sizeof (struct lto_char_ptr_base);
+}
+
+
 /* Return index used to reference STRING of LEN characters in the string table
    in OB.  The string might or might not include a trailing '\0'.
    Then put the index onto the INDEX_STREAM.  
    When PERSISTENT is set, the string S is supposed to not change during
    duration of the OB and thus OB can keep pointer into it.  */
 
-unsigned
+static unsigned
 streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
 		       bool persistent)
 {
@@ -71,7 +114,7 @@ streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
       new_slot->slot_num = start;
       *slot = new_slot;
       streamer_write_uhwi_stream (string_stream, len);
-      lto_output_data_stream (string_stream, string, len);
+      streamer_write_data_stream (string_stream, string, len);
       return start + 1;
     }
   else
@@ -304,3 +347,34 @@ streamer_write_gcov_count_stream (struct lto_output_stream *obs, gcov_type work)
   gcc_assert ((HOST_WIDE_INT) work == work);
   streamer_write_hwi_stream (obs, work);
 }
+
+/* Write raw DATA of length LEN to the output block OB.  */
+
+void
+streamer_write_data_stream (struct lto_output_stream *obs, const void *data,
+			    size_t len)
+{
+  while (len)
+    {
+      size_t copy;
+
+      /* No space left.  */
+      if (obs->left_in_block == 0)
+	lto_append_block (obs);
+
+      /* Determine how many bytes to copy in this loop.  */
+      if (len <= obs->left_in_block)
+	copy = len;
+      else
+	copy = obs->left_in_block;
+
+      /* Copy the data and do bookkeeping.  */
+      memcpy (obs->current_pointer, data, copy);
+      obs->current_pointer += copy;
+      obs->total_size += copy;
+      obs->left_in_block -= copy;
+      data = (const char *) data + copy;
+      len -= copy;
+    }
+}
+

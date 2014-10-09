@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,9 +41,7 @@ package Ada.Streams is
 
    type Stream_Element is mod 2 ** Standard'Storage_Unit;
 
-   type Stream_Element_Offset is range
-     -(2 ** (Standard'Address_Size - 1)) ..
-     +(2 ** (Standard'Address_Size - 1)) - 1;
+   type Stream_Element_Offset is range -(2 ** 63) .. +(2 ** 63) - 1;
 
    subtype Stream_Element_Count is
       Stream_Element_Offset range 0 .. Stream_Element_Offset'Last;

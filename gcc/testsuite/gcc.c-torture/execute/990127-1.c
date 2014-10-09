@@ -1,3 +1,6 @@
+extern void abort (void);
+extern void exit (int);
+
 main()
 {
     int a,b,c;

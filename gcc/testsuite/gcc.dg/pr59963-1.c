@@ -1,6 +1,6 @@
 /* PR c/59963 */
 /* { dg-do compile } */
-/* { dg-options "-Wdouble-promotion" } */
+/* { dg-options "-std=gnu89 -Wdouble-promotion" } */
 
 extern void baz ();
 extern void qux (int, ...);

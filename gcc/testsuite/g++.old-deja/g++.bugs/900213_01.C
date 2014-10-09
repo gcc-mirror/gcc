@@ -12,7 +12,7 @@
 // keywords: non-static members, member pointers, scope resolution
 
 struct struct0 {
-  int struct0_data_member_0;		/* { dg-error "" } gets error from below */
+  int struct0_data_member_0;		/* { dg-message "" } gets error from below */
   int struct0_function_member_0 ();
 };
 

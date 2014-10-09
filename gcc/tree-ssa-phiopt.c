@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -72,9 +72,9 @@ static bool abs_replacement (basic_block, basic_block,
 static bool neg_replacement (basic_block, basic_block,
 			     edge, edge, gimple, tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
-				    struct pointer_set_t *);
+				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
-static struct pointer_set_t * get_non_trapping (void);
+static hash_set<tree> * get_non_trapping ();
 static void replace_phi_edge_with_variable (basic_block, edge, gimple, tree);
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
@@ -176,7 +176,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
   basic_block *bb_order;
   unsigned n, i;
   bool cfgchanged = false;
-  struct pointer_set_t *nontrap = 0;
+  hash_set<tree> *nontrap = 0;
 
   if (do_store_elim)
     /* Calculate the set of non-trapping memory accesses.  */
@@ -363,7 +363,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
   free (bb_order);
 
   if (do_store_elim)
-    pointer_set_destroy (nontrap);
+    delete nontrap;
   /* If the CFG has changed, we should cleanup the CFG.  */
   if (cfgchanged && do_store_elim)
     {
@@ -1469,7 +1469,7 @@ ssa_names_hasher::equal (const value_type *n1, const compare_type *n2)
 class nontrapping_dom_walker : public dom_walker
 {
 public:
-  nontrapping_dom_walker (cdi_direction direction, pointer_set_t *ps)
+  nontrapping_dom_walker (cdi_direction direction, hash_set<tree> *ps)
     : dom_walker (direction), m_nontrapping (ps), m_seen_ssa_names (128) {}
 
   virtual void before_dom_children (basic_block);
@@ -1484,7 +1484,7 @@ private:
      the RHS.  */
   void add_or_mark_expr (basic_block, tree, bool);
 
-  pointer_set_t *m_nontrapping;
+  hash_set<tree> *m_nontrapping;
 
   /* The hash table for remembering what we've seen.  */
   hash_table<ssa_names_hasher> m_seen_ssa_names;
@@ -1572,7 +1572,7 @@ nontrapping_dom_walker::add_or_mark_expr (basic_block bb, tree exp, bool store)
 	 then we can't trap.  */
       if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
 	{
-	  pointer_set_insert (m_nontrapping, exp);
+	  m_nontrapping->add (exp);
 	}
       else
         {
@@ -1601,11 +1601,11 @@ nontrapping_dom_walker::add_or_mark_expr (basic_block bb, tree exp, bool store)
    It will do a dominator walk over the whole function, and it will
    make use of the bb->aux pointers.  It returns a set of trees
    (the MEM_REFs itself) which can't trap.  */
-static struct pointer_set_t *
+static hash_set<tree> *
 get_non_trapping (void)
 {
   nt_call_phase = 0;
-  pointer_set_t *nontrap = pointer_set_create ();
+  hash_set<tree> *nontrap = new hash_set<tree>;
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1634,7 +1634,7 @@ get_non_trapping (void)
 
 static bool
 cond_store_replacement (basic_block middle_bb, basic_block join_bb,
-			edge e0, edge e1, struct pointer_set_t *nontrap)
+			edge e0, edge e1, hash_set<tree> *nontrap)
 {
   gimple assign = last_and_only_stmt (middle_bb);
   tree lhs, rhs, name, name2;
@@ -1659,7 +1659,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   /* Prove that we can move the store down.  We could also check
      TREE_THIS_NOTRAP here, but in that case we also could move stores,
      whose value is not available readily, which we want to avoid.  */
-  if (!pointer_set_contains (nontrap, lhs))
+  if (!nontrap->contains (lhs))
     return false;
 
   /* Now we've checked the constraints, so do the transformation:

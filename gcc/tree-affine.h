@@ -20,6 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
    to make things simpler; this is sufficient in most cases.  */
 
+#ifndef GCC_TREE_AFFINE_H
+#define GCC_TREE_AFFINE_H
+
+#include "hash-map.h"
 #include "wide-int.h"
 
 #define MAX_AFF_ELTS 8
@@ -60,6 +64,8 @@ struct aff_tree
   tree rest;
 };
 
+struct name_expansion;
+
 widest_int wide_int_ext_for_comb (const widest_int &, aff_tree *);
 void aff_combination_const (aff_tree *, tree, const widest_int &);
 void aff_combination_elt (aff_tree *, tree, tree);
@@ -73,11 +79,11 @@ void tree_to_aff_combination (tree, tree, aff_tree *);
 tree aff_combination_to_tree (aff_tree *);
 void unshare_aff_combination (aff_tree *);
 bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, widest_int *);
-void aff_combination_expand (aff_tree *, struct pointer_map_t **);
+void aff_combination_expand (aff_tree *, hash_map<tree, name_expansion *> **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
-				     struct pointer_map_t **);
+				     hash_map<tree, name_expansion *> **);
 tree get_inner_reference_aff (tree, aff_tree *, widest_int *);
-void free_affine_expand_cache (struct pointer_map_t **);
+void free_affine_expand_cache (hash_map<tree, name_expansion *> **);
 bool aff_comb_cannot_overlap_p (aff_tree *, const widest_int &,
 				const widest_int &);
 
@@ -96,3 +102,5 @@ aff_combination_zero_p (aff_tree *aff)
 
   return false;
 }
+
+#endif /* GCC_TREE_AFFINE_H */

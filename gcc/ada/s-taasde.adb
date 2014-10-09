@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,14 +60,14 @@ package body System.Tasking.Async_Delays is
    function To_System is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_Id);
 
-   Timer_Server_ID : ST.Task_Id;
-
    Timer_Attention : Boolean := False;
    pragma Atomic (Timer_Attention);
 
    task Timer_Server is
       pragma Interrupt_Priority (System.Any_Priority'Last);
    end Timer_Server;
+
+   Timer_Server_ID : constant ST.Task_Id := To_System (Timer_Server'Identity);
 
    --  The timer queue is a circular doubly linked list, ordered by absolute
    --  wakeup time. The first item in the queue is Timer_Queue.Succ.
@@ -76,6 +76,21 @@ package body System.Tasking.Async_Delays is
    --  gets back to the queue header block.
 
    Timer_Queue : aliased Delay_Block;
+
+   package Init_Timer_Queue is end Init_Timer_Queue;
+   pragma Unreferenced (Init_Timer_Queue);
+   --  Initialize the Timer_Queue. This is a package to work around the
+   --  fact that statements are syntactically illegal here. We want this
+   --  initialization to happen before the Timer_Server is activated. A
+   --  build-in-place function would also work, but that's not supported
+   --  on all platforms (e.g. cil).
+
+   package body Init_Timer_Queue is
+   begin
+      Timer_Queue.Succ := Timer_Queue'Unchecked_Access;
+      Timer_Queue.Pred := Timer_Queue'Unchecked_Access;
+      Timer_Queue.Resume_Time := Duration'Last;
+   end Init_Timer_Queue;
 
    ------------------------
    -- Cancel_Async_Delay --
@@ -138,9 +153,9 @@ package body System.Tasking.Async_Delays is
       STI.Undefer_Abort_Nestable (D.Self_Id);
    end Cancel_Async_Delay;
 
-   ---------------------------
-   -- Enqueue_Time_Duration --
-   ---------------------------
+   ----------------------
+   -- Enqueue_Duration --
+   ----------------------
 
    function Enqueue_Duration
      (T : Duration;
@@ -270,23 +285,11 @@ package body System.Tasking.Async_Delays is
    ------------------
 
    task body Timer_Server is
-      function Get_Next_Wakeup_Time return Duration;
-      --  Used to initialize Next_Wakeup_Time, but also to ensure that
-      --  Make_Independent is called during the elaboration of this task.
-
-      --------------------------
-      -- Get_Next_Wakeup_Time --
-      --------------------------
-
-      function Get_Next_Wakeup_Time return Duration is
-      begin
-         STU.Make_Independent;
-         return Duration'Last;
-      end Get_Next_Wakeup_Time;
+      Ignore : constant Boolean := STU.Make_Independent;
 
       --  Local Declarations
 
-      Next_Wakeup_Time : Duration := Get_Next_Wakeup_Time;
+      Next_Wakeup_Time : Duration := Duration'Last;
       Timedout         : Boolean;
       Yielded          : Boolean;
       Now              : Duration;
@@ -296,7 +299,7 @@ package body System.Tasking.Async_Delays is
       pragma Unreferenced (Timedout, Yielded);
 
    begin
-      Timer_Server_ID := STPO.Self;
+      pragma Assert (Timer_Server_ID = STPO.Self);
 
       --  Since this package may be elaborated before System.Interrupt,
       --  we need to call Setup_Interrupt_Mask explicitly to ensure that
@@ -400,13 +403,4 @@ package body System.Tasking.Async_Delays is
       end loop;
    end Timer_Server;
 
-   ------------------------------
-   -- Package Body Elaboration --
-   ------------------------------
-
-begin
-   Timer_Queue.Succ := Timer_Queue'Access;
-   Timer_Queue.Pred := Timer_Queue'Access;
-   Timer_Queue.Resume_Time := Duration'Last;
-   Timer_Server_ID := To_System (Timer_Server'Identity);
 end System.Tasking.Async_Delays;

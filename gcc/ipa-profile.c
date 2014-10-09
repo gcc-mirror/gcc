@@ -208,7 +208,7 @@ ipa_profile_generate_summary (void)
 		       counter 2 is total number of executions.  */
 		    if (h->hvalue.counters[2])
 		      {
-			struct cgraph_edge * e = cgraph_edge (node, stmt);
+			struct cgraph_edge * e = node->get_edge (stmt);
 			if (e && !e->indirect_unknown_callee)
 			  continue;
 			e->indirect_info->common_target_id
@@ -379,13 +379,13 @@ contains_hot_call_p (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
-    if (cgraph_maybe_hot_edge_p (e))
+    if (e->maybe_hot_p ())
       return true;
     else if (!e->inline_failed
 	     && contains_hot_call_p (e->callee))
       return true;
   for (e = node->indirect_calls; e; e = e->next_callee)
-    if (cgraph_maybe_hot_edge_p (e))
+    if (e->maybe_hot_p ())
       return true;
   return false;
 }
@@ -408,7 +408,8 @@ ipa_propagate_frequency (struct cgraph_node *node)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", node->name ());
 
-  cgraph_for_node_and_aliases (node, ipa_propagate_frequency_1, &d, true);
+  node->call_for_symbol_thunks_and_aliases (ipa_propagate_frequency_1, &d,
+					    true);
 
   if ((d.only_called_at_startup && !d.only_called_at_exit)
       && !node->only_called_at_startup)
@@ -602,16 +603,15 @@ ipa_profile (void)
 			fprintf (dump_file,
 				 "Not speculating: probability is too low.\n");
 		    }
-		  else if (!cgraph_maybe_hot_edge_p (e))
+		  else if (!e->maybe_hot_p ())
 		    {
 		      nuseless++;
 		      if (dump_file)
 			fprintf (dump_file,
 				 "Not speculating: call is cold.\n");
 		    }
-		  else if (cgraph_function_body_availability (n2)
-			   <= AVAIL_OVERWRITABLE
-			   && symtab_can_be_discarded (n2))
+		  else if (n2->get_availability () <= AVAIL_INTERPOSABLE
+			   && n2->can_be_discarded_p ())
 		    {
 		      nuseless++;
 		      if (dump_file)
@@ -625,17 +625,16 @@ ipa_profile (void)
 			 control flow goes to this particular implementation
 			 of N2.  Speculate on the local alias to allow inlining.
 		       */
-		      if (!symtab_can_be_discarded (n2))
+		      if (!n2->can_be_discarded_p ())
 			{
 			  cgraph_node *alias;
-			  alias = cgraph (symtab_nonoverwritable_alias
-					   (n2));
+			  alias = dyn_cast<cgraph_node *> (n2->noninterposable_alias ());
 			  if (alias)
 			    n2 = alias;
 			}
 		      nconverted++;
-		      cgraph_turn_edge_to_speculative
-			(e, n2,
+		      e->make_speculative
+			(n2,
 			 apply_scale (e->count,
 				      e->indirect_info->common_target_probability),
 			 apply_scale (e->frequency,
@@ -670,7 +669,7 @@ ipa_profile (void)
 	     nuseless, nuseless * 100.0 / nindirect,
 	     nconverted, nconverted * 100.0 / nindirect);
 
-  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {

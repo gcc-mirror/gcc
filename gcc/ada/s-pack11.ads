@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,11 +39,21 @@ package System.Pack_11 is
    type Bits_11 is mod 2 ** Bits;
    for Bits_11'Size use Bits;
 
-   function Get_11 (Arr : System.Address; N : Natural) return Bits_11;
+   --  In all subprograms below, Rev_SSO is set True if the array has the
+   --  non-default scalar storage order.
+
+   function Get_11
+     (Arr     : System.Address;
+      N       : Natural;
+      Rev_SSO : Boolean) return Bits_11 with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is extracted and returned.
 
-   procedure Set_11 (Arr : System.Address; N : Natural; E : Bits_11);
+   procedure Set_11
+     (Arr     : System.Address;
+      N       : Natural;
+      E       : Bits_11;
+      Rev_SSO : Boolean) with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is set to the given value.
 

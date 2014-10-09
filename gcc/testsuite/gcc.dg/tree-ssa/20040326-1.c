@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-inline-functions" } */
+/* { dg-options "-O2 -fno-inline-functions -std=gnu89" } */
 /* { dg-do run } */
 /* When there are no call-clobbered variables, we should still create
    a .GLOBAL_VAR to model the side effects of functions.  Without it,

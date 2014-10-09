@@ -1,3 +1,46 @@
+2014-09-26  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_substitution): Handle abi tags on abbreviation.
+
+2014-09-26  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* pex-common.h (struct pex_funcs): Add new parameter for open_write field.
+	* pex-unix.c (pex_unix_open_write): Add support for new parameter.
+	* pex-djgpp.c (pex_djgpp_open_write): Likewise.
+	* pex-win32.c (pex_win32_open_write): Likewise.
+	* pex-common.c (pex_run_in_environment): Likewise.
+
+2014-09-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (CFILES): Add d-demangle.c.
+	(REQUIRED_OFILES): Add d-demangle.o.
+	* cplus-dem.c (libiberty_demanglers): Add dlang_demangling case.
+	(cplus_demangle): Likewise.
+	* d-demangle.c: New file.
+	* testsuite/Makefile.in (really-check): Add check-d-demangle.
+	* testsuite/d-demangle-expected: New file.
+
+2014-09-19  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object-elf.c (simple_object_elf_write_ehdr): Correctly
+	handle objects with more than SHN_LORESERVE sections.
+	(simple_object_elf_write_shdr): Add sh_link parameter.
+	(simple_object_elf_write_to_file): Correctly handle objects with
+	more than SHN_LORESERVE sections.
+
+2014-08-29  Andrew Burgess  <aburgess@broadcom.com>
+
+	* cp-demangle.c (d_dump): Only access field from s_fixed part of
+	the union for DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_count_templates_scopes): Likewise.
+
+2014-08-13  Gary Benson  <gbenson@redhat.com>
+
+	* testsuite/demangler-fuzzer.c: New file.
+	* testsuite/Makefile.in (fuzz-demangler): New rule.
+	(demangler-fuzzer): Likewise.
+	(mostlyclean): Clean up demangler fuzzer.
+
 2014-06-11  Andrew Burgess  <aburgess@broadcom.com>
 
 	* cplus-dem.c (do_type): Call string_delete even if the call to

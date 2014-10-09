@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-tree-ccp -fdump-tree-vrp1" } */
 
+void h (void);
+
 int g (int i, int j)
 {
   int t = 0;

@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-cfgcleanup.h"
 #include "tree-nested.h"
+#include "params.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -101,7 +102,10 @@ init_ic_make_global_vars (void)
     {
       ic_void_ptr_var
 	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		      get_identifier ("__gcov_indirect_call_callee"),
+		      get_identifier (
+			      (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
+			       "__gcov_indirect_call_topn_callee" :
+			       "__gcov_indirect_call_callee")),
 		      ptr_void);
       TREE_PUBLIC (ic_void_ptr_var) = 1;
       DECL_EXTERNAL (ic_void_ptr_var) = 1;
@@ -112,7 +116,7 @@ init_ic_make_global_vars (void)
   if (targetm.have_tls)
     set_decl_tls_model (ic_void_ptr_var, decl_default_tls_model (ic_void_ptr_var));
 
-  varpool_finalize_decl (ic_void_ptr_var);
+  varpool_node::finalize_decl (ic_void_ptr_var);
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
@@ -131,7 +135,10 @@ init_ic_make_global_vars (void)
     {
       ic_gcov_type_ptr_var
 	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		      get_identifier ("__gcov_indirect_call_counters"),
+		      get_identifier (
+			      (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
+			       "__gcov_indirect_call_topn_counters" :
+		               "__gcov_indirect_call_counters")),
 		      gcov_type_ptr);
       TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
       DECL_EXTERNAL (ic_gcov_type_ptr_var) = 1;
@@ -142,7 +149,7 @@ init_ic_make_global_vars (void)
   if (targetm.have_tls)
     set_decl_tls_model (ic_gcov_type_ptr_var, decl_default_tls_model (ic_gcov_type_ptr_var));
 
-  varpool_finalize_decl (ic_gcov_type_ptr_var);
+  varpool_node::finalize_decl (ic_gcov_type_ptr_var);
 }
 
 /* Create the type and function decls for the interface with gcov.  */
@@ -226,8 +233,10 @@ gimple_init_edge_profiler (void)
 					      ptr_void,
 					      NULL_TREE);
 	  tree_indirect_call_profiler_fn
-		  = build_fn_decl ("__gcov_indirect_call_profiler_v2",
-					 ic_profiler_fn_type);
+		  = build_fn_decl ( (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
+				     "__gcov_indirect_call_topn_profiler":
+				     "__gcov_indirect_call_profiler_v2"),
+				   ic_profiler_fn_type);
         }
       TREE_NOTHROW (tree_indirect_call_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_indirect_call_profiler_fn)
@@ -398,6 +407,12 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
 
+  if ( (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) &&
+        tag == GCOV_COUNTER_V_INDIR) ||
+       (!PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) &&
+        tag == GCOV_COUNTER_ICALL_TOPNV))
+    return;
+
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
 				      true, NULL_TREE, true, GSI_SAME_STMT);
 
@@ -427,12 +442,12 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 void
 gimple_gen_ic_func_profiler (void)
 {
-  struct cgraph_node * c_node = cgraph_get_node (current_function_decl);
+  struct cgraph_node * c_node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
   gimple stmt1, stmt2;
   tree tree_uid, cur_func, void0;
 
-  if (cgraph_only_called_directly_p (c_node))
+  if (c_node->only_called_directly_p ())
     return;
 
   gimple_init_edge_profiler ();
@@ -442,8 +457,7 @@ gimple_gen_ic_func_profiler (void)
     stmt1: __gcov_indirect_call_profiler_v2 (profile_id,
 					     &current_function_decl)
    */
-  gsi =
-					     gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))));
+  gsi = gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))));
 
   cur_func = force_gimple_operand_gsi (&gsi,
 				       build_addr (current_function_decl,
@@ -451,7 +465,7 @@ gimple_gen_ic_func_profiler (void)
 				       true, NULL_TREE,
 				       true, GSI_SAME_STMT);
   tree_uid = build_int_cst
-	      (gcov_type_node, cgraph_get_node (current_function_decl)->profile_id);
+	      (gcov_type_node, cgraph_node::get (current_function_decl)->profile_id);
   /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
   if (flag_lto)
     {
@@ -565,7 +579,7 @@ tree_profiling (void)
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.c:ipa_passes().  */
-  gcc_assert (cgraph_state == CGRAPH_STATE_IPA_SSA);
+  gcc_assert (symtab->state == IPA_SSA);
 
   init_node_map (true);
 
@@ -576,6 +590,13 @@ tree_profiling (void)
 
       /* Don't profile functions produced for builtin stuff.  */
       if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
+	continue;
+
+      /* Do not instrument extern inline functions when testing coverage.
+	 While this is not perfectly consistent (early inlined extern inlines
+	 will get acocunted), testsuite expects that.  */
+      if (DECL_EXTERNAL (node->decl)
+	  && flag_test_coverage)
 	continue;
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
@@ -615,8 +636,8 @@ tree_profiling (void)
       if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
-      cgraph_set_const_flag (node, false, false);
-      cgraph_set_pure_flag (node, false, false);
+      node->set_const_flag (false, false);
+      node->set_pure_flag (false, false);
     }
 
   /* Update call statements and rebuild the cgraph.  */
@@ -650,7 +671,7 @@ tree_profiling (void)
       cleanup_tree_cfg ();
       update_ssa (TODO_update_ssa);
 
-      rebuild_cgraph_edges ();
+      cgraph_edge::rebuild_edges ();
 
       pop_cfun ();
     }

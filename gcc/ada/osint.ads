@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,9 +43,9 @@ pragma Elaborate_All (System.OS_Lib);
 
 package Osint is
 
-   Multi_Unit_Index_Character : Character := '~';
+   Multi_Unit_Index_Character : constant Character := '~';
    --  The character before the index of the unit in a multi-unit source in ALI
-   --  and object file names. Changed to '$' on VMS.
+   --  and object file names.
 
    Ada_Include_Path          : constant String := "ADA_INCLUDE_PATH";
    Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";
@@ -63,8 +63,9 @@ package Osint is
    type File_Type is (Source, Library, Config, Definition, Preprocessing_Data);
 
    function Find_File
-     (N : File_Name_Type;
-      T : File_Type) return File_Name_Type;
+     (N         : File_Name_Type;
+      T         : File_Type;
+      Full_Name : Boolean := False) return File_Name_Type;
    --  Finds a source, library or config file depending on the value of T
    --  following the directory search order rules unless N is the name of the
    --  file just read with Next_Main_File and already contains directory
@@ -76,6 +77,10 @@ package Osint is
    --  set and the file name ends in ".dg", in which case we look for the
    --  generated file only in the current directory, since that is where it is
    --  always built.
+   --
+   --  In the case of configuration files, full path names are needed for some
+   --  ASIS queries. The flag Full_Name indicates that the name of the file
+   --  should be normalized to include a full path.
 
    function Get_File_Names_Case_Sensitive return Int;
    pragma Import (C, Get_File_Names_Case_Sensitive,
@@ -201,33 +206,27 @@ package Osint is
    function To_Canonical_File_List
      (Wildcard_Host_File : String;
       Only_Dirs          : Boolean) return String_Access_List_Access;
-   --  Expand a wildcard host syntax file or directory specification (e.g. on
-   --  a VMS host, any file or directory spec that contains: "*", or "%", or
-   --  "...") and return a list of valid Unix syntax file or directory specs.
-   --  If Only_Dirs is True, then only return directories.
+   --  Expand a wildcard host syntax file or directory specification and return
+   --  a list of valid Unix syntax file or directory specs. If Only_Dirs is
+   --  True, then only return directories.
 
    function To_Canonical_Dir_Spec
      (Host_Dir     : String;
       Prefix_Style : Boolean) return String_Access;
-   --  Convert a host syntax directory specification (e.g. on a VMS host:
-   --  "SYS$DEVICE:[DIR]") to canonical (Unix) syntax (e.g. "/sys$device/dir").
-   --  If Prefix_Style then make it a valid file specification prefix. A file
-   --  specification prefix is a directory specification that can be appended
-   --  with a simple file specification to yield a valid absolute or relative
-   --  path to a file. On a conversion to Unix syntax this simply means the
-   --  spec has a trailing slash ("/").
+   --  Convert a host syntax directory specification to canonical (Unix)
+   --  syntax. If Prefix_Style then make it a valid file specification prefix.
+   --  A file specification prefix is a directory specification that can be
+   --  appended with a simple file specification to yield a valid absolute
+   --  or relative path to a file. On a conversion to Unix syntax this simply
+   --  means the spec has a trailing slash ("/").
 
    function To_Canonical_File_Spec
      (Host_File : String) return String_Access;
-   --  Convert a host syntax file specification (e.g. on a VMS host:
-   --  "SYS$DEVICE:[DIR]FILE.EXT;69 to canonical (Unix) syntax (e.g.
-   --  "/sys$device/dir/file.ext.69").
+   --  Convert a host syntax file specification to canonical (Unix) syntax
 
    function To_Canonical_Path_Spec
      (Host_Path : String) return String_Access;
-   --  Convert a host syntax Path specification (e.g. on a VMS host:
-   --  "SYS$DEVICE:[BAR],DISK$USER:[FOO] to canonical (Unix) syntax (e.g.
-   --  "/sys$device/foo:disk$user/foo").
+   --  Convert a host syntax Path specification to canonical (Unix) syntax
 
    function To_Host_Dir_Spec
      (Canonical_Dir : String;
@@ -254,7 +253,7 @@ package Osint is
    --  Returns the runtime shared library in the form -l<name>-<version> where
    --  version is the GNAT runtime library option for the platform. For example
    --  this routine called with Name set to "gnat" will return "-lgnat-5.02"
-   --  on UNIX and Windows and -lgnat_5_02 on VMS.
+   --  on UNIX and Windows.
 
    ---------------------
    -- File attributes --
@@ -730,6 +729,15 @@ private
    --  message and exit with fatal error if file cannot be created. The Fmode
    --  parameter is set to either Text or Binary (for details see description
    --  of System.OS_Lib.Create_File).
+
+   procedure Open_File_To_Append_And_Check
+     (Fdesc : out File_Descriptor;
+      Fmode : Mode);
+   --  Opens the file whose name (NUL terminated) is in Name_Buffer (with the
+   --  length in Name_Len), and place the resulting descriptor in Fdesc. Issue
+   --  message and exit with fatal error if file cannot be opened. The Fmode
+   --  parameter is set to either Text or Binary (for details see description
+   --  of System.OS_Lib.Open_Append).
 
    type Program_Type is (Compiler, Binder, Make, Gnatls, Unspecified);
    --  Program currently running

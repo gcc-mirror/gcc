@@ -384,6 +384,9 @@ FUNC:_ZNKSt14basic_ofstreamIwSt11char_traitsIwEE7is_openEv@GLIBCXX_3.4
 FUNC:_ZNKSt14error_category10equivalentERKSt10error_codei@@GLIBCXX_3.4.11
 FUNC:_ZNKSt14error_category10equivalentEiRKSt15error_condition@@GLIBCXX_3.4.11
 FUNC:_ZNKSt14error_category23default_error_conditionEi@@GLIBCXX_3.4.11
+FUNC:_ZNKSt15__exception_ptr13exception_ptr20__cxa_exception_typeEv@@CXXABI_1.3.3
+FUNC:_ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv@@CXXABI_1.3.3
+FUNC:_ZNKSt15__exception_ptr13exception_ptrntEv@@CXXABI_1.3.3
 FUNC:_ZNKSt15basic_streambufIcSt11char_traitsIcEE4gptrEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_streambufIcSt11char_traitsIcEE4pptrEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_streambufIcSt11char_traitsIcEE5ebackEv@@GLIBCXX_3.4
@@ -1207,6 +1210,7 @@ FUNC:_ZNSt11range_errorD0Ev@@GLIBCXX_3.4
 FUNC:_ZNSt11range_errorD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt11range_errorD2Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorC1ENSt15regex_constants10error_typeE@@GLIBCXX_3.4.20
+FUNC:_ZNSt11regex_errorC2ENSt15regex_constants10error_typeE@@GLIBCXX_3.4.21
 FUNC:_ZNSt11regex_errorD0Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD1Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD2Ev@@GLIBCXX_3.4.15
@@ -1291,6 +1295,17 @@ FUNC:_ZNSt12strstreambufD2Ev@@GLIBCXX_3.4
 FUNC:_ZNSt12system_errorD0Ev@@GLIBCXX_3.4.11
 FUNC:_ZNSt12system_errorD1Ev@@GLIBCXX_3.4.11
 FUNC:_ZNSt12system_errorD2Ev@@GLIBCXX_3.4.11
+FUNC:_ZNSt13__future_base11_State_baseD0Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base11_State_baseD1Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base11_State_baseD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base12_Result_baseC1Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base12_Result_baseC2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base12_Result_baseD0Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base12_Result_baseD1Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base12_Result_baseD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base19_Async_state_commonD0Ev@@GLIBCXX_3.4.17
+FUNC:_ZNSt13__future_base19_Async_state_commonD1Ev@@GLIBCXX_3.4.17
+FUNC:_ZNSt13__future_base19_Async_state_commonD2Ev@@GLIBCXX_3.4.17
 FUNC:_ZNSt13bad_exceptionD0Ev@@GLIBCXX_3.4
 FUNC:_ZNSt13bad_exceptionD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt13bad_exceptionD2Ev@@GLIBCXX_3.4
@@ -1586,6 +1601,18 @@ FUNC:_ZNSt15_List_node_base7_M_hookEPS_@@GLIBCXX_3.4.14
 FUNC:_ZNSt15_List_node_base7reverseEv@@GLIBCXX_3.4
 FUNC:_ZNSt15_List_node_base8transferEPS_S0_@@GLIBCXX_3.4
 FUNC:_ZNSt15_List_node_base9_M_unhookEv@@GLIBCXX_3.4.14
+FUNC:_ZNSt15__exception_ptr13exception_ptr4swapERS0_@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC1ERKS0_@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC1Ev@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC2ERKS0_@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrC2Ev@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrD1Ev@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptrD2Ev@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptr13exception_ptraSERKS0_@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptreqERKNS_13exception_ptrES2_@@CXXABI_1.3.3
+FUNC:_ZNSt15__exception_ptrneERKNS_13exception_ptrES2_@@CXXABI_1.3.3
 FUNC:_ZNSt15basic_streambufIcSt11char_traitsIcEE10pubseekoffExSt12_Ios_SeekdirSt13_Ios_Openmode@@GLIBCXX_3.4
 FUNC:_ZNSt15basic_streambufIcSt11char_traitsIcEE10pubseekposESt4fposI11__mbstate_tESt13_Ios_Openmode@@GLIBCXX_3.4
 FUNC:_ZNSt15basic_streambufIcSt11char_traitsIcEE12__safe_gbumpEi@@GLIBCXX_3.4.16
@@ -1769,6 +1796,9 @@ FUNC:_ZNSt16invalid_argumentC2ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt16invalid_argumentD0Ev@@GLIBCXX_3.4
 FUNC:_ZNSt16invalid_argumentD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt16invalid_argumentD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt16nested_exceptionD0Ev@@CXXABI_1.3.5
+FUNC:_ZNSt16nested_exceptionD1Ev@@CXXABI_1.3.5
+FUNC:_ZNSt16nested_exceptionD2Ev@@CXXABI_1.3.5
 FUNC:_ZNSt17__timepunct_cacheIcEC1Ej@@GLIBCXX_3.4
 FUNC:_ZNSt17__timepunct_cacheIcEC2Ej@@GLIBCXX_3.4
 FUNC:_ZNSt17__timepunct_cacheIcED0Ev@@GLIBCXX_3.4
@@ -1963,6 +1993,7 @@ FUNC:_ZNSt6localeD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt6localeD2Ev@@GLIBCXX_3.4
 FUNC:_ZNSt6localeaSERKS_@@GLIBCXX_3.4
 FUNC:_ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEE@@GLIBCXX_3.4.11
+FUNC:_ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEEPFvvE@@GLIBCXX_3.4.21
 FUNC:_ZNSt6thread20hardware_concurrencyEv@@GLIBCXX_3.4.17
 FUNC:_ZNSt6thread4joinEv@@GLIBCXX_3.4.11
 FUNC:_ZNSt6thread6detachEv@@GLIBCXX_3.4.11
@@ -2214,6 +2245,8 @@ FUNC:_ZSt17__copy_streambufsIcSt11char_traitsIcEEiPSt15basic_streambufIT_T0_ES6_
 FUNC:_ZSt17__copy_streambufsIwSt11char_traitsIwEEiPSt15basic_streambufIT_T0_ES6_@@GLIBCXX_3.4.6
 FUNC:_ZSt17__throw_bad_allocv@@GLIBCXX_3.4
 FUNC:_ZSt17__verify_groupingPKcjRKSs@@GLIBCXX_3.4.10
+FUNC:_ZSt17current_exceptionv@@CXXABI_1.3.3
+FUNC:_ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE@@CXXABI_1.3.3
 FUNC:_ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base@@GLIBCXX_3.4
 FUNC:_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base@@GLIBCXX_3.4
 FUNC:_ZSt18_Rb_tree_incrementPKSt18_Rb_tree_node_base@@GLIBCXX_3.4
@@ -2511,6 +2544,7 @@ OBJECT:0:CXXABI_1.3.5
 OBJECT:0:CXXABI_1.3.6
 OBJECT:0:CXXABI_1.3.7
 OBJECT:0:CXXABI_1.3.8
+OBJECT:0:CXXABI_1.3.9
 OBJECT:0:CXXABI_TM_1
 OBJECT:0:GLIBCXX_3.4
 OBJECT:0:GLIBCXX_3.4.1
@@ -2526,6 +2560,7 @@ OBJECT:0:GLIBCXX_3.4.18
 OBJECT:0:GLIBCXX_3.4.19
 OBJECT:0:GLIBCXX_3.4.2
 OBJECT:0:GLIBCXX_3.4.20
+OBJECT:0:GLIBCXX_3.4.21
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4
 OBJECT:0:GLIBCXX_3.4.5
@@ -2549,6 +2584,7 @@ OBJECT:12:_ZTIN9__gnu_cxx13stdio_filebufIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx13stdio_filebufIwSt11char_traitsIwEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx18stdio_sync_filebufIwSt11char_traitsIwEEE@@GLIBCXX_3.4
+OBJECT:12:_ZTINSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:12:_ZTINSt8ios_base7failureE@@GLIBCXX_3.4
 OBJECT:12:_ZTISt10bad_typeid@@GLIBCXX_3.4
 OBJECT:12:_ZTISt10istrstream@@GLIBCXX_3.4
@@ -2722,6 +2758,7 @@ OBJECT:16:_ZTTSt19basic_ostringstreamIwSt11char_traitsIwESaIwEE@@GLIBCXX_3.4
 OBJECT:16:_ZTVNSt6locale5facetE@@GLIBCXX_3.4
 OBJECT:16:_ZTVSt11__timepunctIcE@@GLIBCXX_3.4
 OBJECT:16:_ZTVSt11__timepunctIwE@@GLIBCXX_3.4
+OBJECT:16:_ZTVSt16nested_exception@@CXXABI_1.3.5
 OBJECT:16:_ZTVSt8ios_base@@GLIBCXX_3.4
 OBJECT:16:_ZTVSt9basic_iosIcSt11char_traitsIcEE@@GLIBCXX_3.4
 OBJECT:16:_ZTVSt9basic_iosIwSt11char_traitsIwEE@@GLIBCXX_3.4
@@ -3035,6 +3072,9 @@ OBJECT:1:_ZSt7nothrow@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIwE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt15underflow_error@@GLIBCXX_3.4
+OBJECT:20:_ZTVNSt13__future_base11_State_baseE@@GLIBCXX_3.4.15
+OBJECT:20:_ZTVNSt13__future_base12_Result_baseE@@GLIBCXX_3.4.15
+OBJECT:20:_ZTVNSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:20:_ZTVNSt8ios_base7failureE@@GLIBCXX_3.4
 OBJECT:20:_ZTVSt10bad_typeid@@GLIBCXX_3.4
 OBJECT:20:_ZTVSt10lock_error@@GLIBCXX_3.4.11
@@ -3225,6 +3265,7 @@ OBJECT:40:_ZTVSt19basic_ostringstreamIcSt11char_traitsIcESaIcEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt19basic_ostringstreamIwSt11char_traitsIwESaIwEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt8time_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt8time_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE@@GLIBCXX_3.4
+OBJECT:41:_ZTSNSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:41:_ZTSSt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
 OBJECT:41:_ZTSSt15basic_streambufIwSt11char_traitsIwEE@@GLIBCXX_3.4
 OBJECT:44:_ZTVN10__cxxabiv117__class_type_infoE@@CXXABI_1.3
@@ -3620,6 +3661,8 @@ OBJECT:8:_ZTIDn@@CXXABI_1.3.5
 OBJECT:8:_ZTIDs@@CXXABI_1.3.3
 OBJECT:8:_ZTIN10__cxxabiv115__forced_unwindE@@CXXABI_1.3.2
 OBJECT:8:_ZTIN10__cxxabiv119__foreign_exceptionE@@CXXABI_1.3.2
+OBJECT:8:_ZTINSt13__future_base11_State_baseE@@GLIBCXX_3.4.15
+OBJECT:8:_ZTINSt13__future_base12_Result_baseE@@GLIBCXX_3.4.15
 OBJECT:8:_ZTINSt6locale5facetE@@GLIBCXX_3.4
 OBJECT:8:_ZTISt10ctype_base@@GLIBCXX_3.4
 OBJECT:8:_ZTISt10money_base@@GLIBCXX_3.4
@@ -3628,6 +3671,7 @@ OBJECT:8:_ZTISt13messages_base@@GLIBCXX_3.4
 OBJECT:8:_ZTISt14error_category@@GLIBCXX_3.4.11
 OBJECT:8:_ZTISt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
 OBJECT:8:_ZTISt15basic_streambufIwSt11char_traitsIwEE@@GLIBCXX_3.4
+OBJECT:8:_ZTISt16nested_exception@@CXXABI_1.3.5
 OBJECT:8:_ZTISt8ios_base@@GLIBCXX_3.4
 OBJECT:8:_ZTISt9exception@@GLIBCXX_3.4
 OBJECT:8:_ZTISt9time_base@@GLIBCXX_3.4

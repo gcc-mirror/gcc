@@ -105,6 +105,9 @@ struct diagnostic_context
   /* Maximum width of the source line printed.  */
   int caret_max_width;
 
+  /* Character used for caret diagnostics.  */
+  char caret_char;
+
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
   bool show_option_requested;
@@ -295,5 +298,8 @@ void diagnostic_file_cache_fini (void);
 
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (diagnostic_context *, const char *);
+
+extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
+
 
 #endif /* ! GCC_DIAGNOSTIC_H */

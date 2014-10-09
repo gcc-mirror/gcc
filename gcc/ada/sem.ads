@@ -245,12 +245,18 @@ package Sem is
 
    In_Assertion_Expr : Nat := 0;
    --  This is set non-zero if we are within the expression of an assertion
-   --  pragma or aspect. It is a counter which is incremented at the start
-   --  of expanding such an expression, and decremented on completion of
-   --  expanding that expression. Probably a boolean would be good enough,
-   --  since we think that such expressions cannot nest, but that might not
-   --  be true in the future (e.g. if let expressions are added to Ada) so
-   --  we prepare for that future possibility by making it a counter.
+   --  pragma or aspect. It is a counter which is incremented at the start of
+   --  expanding such an expression, and decremented on completion of expanding
+   --  that expression. Probably a boolean would be good enough, since we think
+   --  that such expressions cannot nest, but that might not be true in the
+   --  future (e.g. if let expressions are added to Ada) so we prepare for that
+   --  future possibility by making it a counter. As with In_Spec_Expression,
+   --  it must be recursively saved and restored for a Semantics call.
+
+   In_Default_Expr : Boolean := False;
+   --  Switch to indicate that we are analyzing a default component expression.
+   --  As with In_Spec_Expression, it must be recursively saved and restored
+   --  for a Semantics call.
 
    In_Inlined_Body : Boolean := False;
    --  Switch to indicate that we are analyzing and resolving an inlined body.
@@ -486,6 +492,12 @@ package Sem is
       Save_SPARK_Mode_Pragma : Node_Id;
       --  Setting of SPARK_Mode_Pragma on entry to restore on exit
 
+      Save_Default_SSO : Character;
+      --  Setting of Default_SSO on entry to restore on exit
+
+      Save_Uneval_Old : Character;
+      --  Setting of Uneval_Old on entry to restore on exit
+
       Is_Transient : Boolean;
       --  Marks transient scopes (see Exp_Ch7 body for details)
 
@@ -532,6 +544,9 @@ package Sem is
       --  Standard_Standard can be pushed anew on the scope stack to start a
       --  new active section (see comment above).
 
+      Locked_Shared_Objects : Elist_Id;
+      --  List of shared passive protected objects that have been locked in
+      --  this transient scope (always No_Elist for non-transient scopes).
    end record;
 
    package Scope_Stack is new Table.Table (
@@ -642,16 +657,18 @@ package Sem is
    --  external (more global) to it.
 
    procedure Enter_Generic_Scope (S : Entity_Id);
-   --  Shall be called each time a Generic subprogram or package scope is
-   --  entered. S is the entity of the scope.
+   --  Called each time a Generic subprogram or package scope is entered. S is
+   --  the entity of the scope.
+   --
    --  ??? At the moment, only called for package specs because this mechanism
    --  is only used for avoiding freezing of external references in generics
    --  and this can only be an issue if the outer generic scope is a package
    --  spec (otherwise all external entities are already frozen)
 
    procedure Exit_Generic_Scope  (S : Entity_Id);
-   --  Shall be called each time a Generic subprogram or package scope is
-   --  exited. S is the entity of the scope.
+   --  Called each time a Generic subprogram or package scope is exited. S is
+   --  the entity of the scope.
+   --
    --  ??? At the moment, only called for package specs exit.
 
    function Explicit_Suppress (E : Entity_Id; C : Check_Id) return Boolean;
@@ -666,13 +683,14 @@ package Sem is
    generic
       with procedure Action (Item : Node_Id);
    procedure Walk_Library_Items;
-   --  Primarily for use by CodePeer. Must be called after semantic analysis
-   --  (and expansion) are complete. Walks each relevant library item, calling
-   --  Action for each, in an order such that one will not run across forward
-   --  references. Each Item passed to Action is the declaration or body of
-   --  a library unit, including generics and renamings. The first item is
-   --  the N_Package_Declaration node for package Standard. Bodies are not
-   --  included, except for the main unit itself, which always comes last.
+   --  Primarily for use by CodePeer and GNATprove. Must be called after
+   --  semantic analysis (and expansion in the case of CodePeer) are complete.
+   --  Walks each relevant library item, calling Action for each, in an order
+   --  such that one will not run across forward references. Each Item passed
+   --  to Action is the declaration or body of a library unit, including
+   --  generics and renamings. The first item is the N_Package_Declaration node
+   --  for package Standard. Bodies are not included, except for the main unit
+   --  itself, which always comes last.
    --
    --  Item is never a subunit
    --

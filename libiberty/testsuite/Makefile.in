@@ -45,11 +45,14 @@ all:
 # CHECK is set to "really_check" or the empty string by configure.
 check: @CHECK@
 
-really-check: check-cplus-dem check-pexecute check-expandargv
+really-check: check-cplus-dem check-d-demangle check-pexecute check-expandargv
 
 # Run some tests of the demangler.
 check-cplus-dem: test-demangle $(srcdir)/demangle-expected
 	./test-demangle < $(srcdir)/demangle-expected
+
+check-d-demangle: test-demangle $(srcdir)/d-demangle-expected
+	./test-demangle < $(srcdir)/d-demangle-expected
 
 # Check the pexecute code.
 check-pexecute: test-pexecute
@@ -58,6 +61,10 @@ check-pexecute: test-pexecute
 # Check the expandargv functionality
 check-expandargv: test-expandargv
 	./test-expandargv
+
+# Run the demangler fuzzer
+fuzz-demangler: demangler-fuzzer
+	./demangler-fuzzer
 
 TEST_COMPILE = $(CC) @DEFS@ $(LIBCFLAGS) -I.. -I$(INCDIR) $(HDEFINES)
 test-demangle: $(srcdir)/test-demangle.c ../libiberty.a
@@ -72,6 +79,10 @@ test-expandargv: $(srcdir)/test-expandargv.c ../libiberty.a
 	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-expandargv \
 		$(srcdir)/test-expandargv.c ../libiberty.a
 
+demangler-fuzzer: $(srcdir)/demangler-fuzzer.c ../libiberty.a
+	$(TEST_COMPILE) -o demangler-fuzzer \
+		$(srcdir)/demangler-fuzzer.c ../libiberty.a
+
 # Standard (either GNU or Cygnus) rules we don't use.
 html install-html info install-info clean-info dvi pdf install-pdf \
 install etags tags installcheck:
@@ -81,6 +92,7 @@ mostlyclean:
 	rm -f test-demangle
 	rm -f test-pexecute
 	rm -f test-expandargv
+	rm -f demangler-fuzzer
 	rm -f core
 clean: mostlyclean
 distclean: clean

@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "target.h"
 #include "except.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "basic-block.h"
@@ -66,9 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Handle a "shared" attribute;
    arguments as in struct attribute_spec.handler.  */
 tree
-ix86_handle_shared_attribute (tree *node, tree name,
-			      tree args ATTRIBUTE_UNUSED,
-			      int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+ix86_handle_shared_attribute (tree *node, tree name, tree, int,
+			      bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != VAR_DECL)
     {
@@ -83,9 +81,7 @@ ix86_handle_shared_attribute (tree *node, tree name,
 /* Handle a "selectany" attribute;
    arguments as in struct attribute_spec.handler.  */
 tree
-ix86_handle_selectany_attribute (tree *node, tree name,
-			         tree args ATTRIBUTE_UNUSED,
-			         int flags ATTRIBUTE_UNUSED,
+ix86_handle_selectany_attribute (tree *node, tree name, tree, int,
 				 bool *no_add_attrs)
 {
   /* The attribute applies only to objects that are initialized and have
@@ -264,8 +260,7 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
    user-specified visibility attributes.  */
 
 void
-i386_pe_assemble_visibility (tree decl,
-			     int vis ATTRIBUTE_UNUSED)
+i386_pe_assemble_visibility (tree decl, int)
 {
   if (!decl
       || !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
@@ -292,7 +287,7 @@ i386_pe_mangle_decl_assembler_name (tree decl, tree id)
    a file stream.  */
 
 tree
-i386_pe_mangle_assembler_name (const char *name ATTRIBUTE_UNUSED)
+i386_pe_mangle_assembler_name (const char *name)
 {
   const char *skipped = name + (*name == '*' ? 1 : 0);
   const char *stripped = targetm.strip_name_encoding (skipped);
@@ -467,7 +462,7 @@ i386_pe_reloc_rw_mask (void)
 #define SECTION_PE_SHARED	SECTION_MACH_DEP
 
 unsigned int
-i386_pe_section_type_flags (tree decl, const char *name, int reloc)
+i386_pe_section_type_flags (tree decl, const char *, int reloc)
 {
   unsigned int flags;
 
@@ -560,7 +555,7 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
 void
 i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 					const char *name, HOST_WIDE_INT size,
-					HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+					HOST_WIDE_INT align)
 {
   HOST_WIDE_INT rounded;
 
@@ -1154,7 +1149,7 @@ seh_frame_related_expr (FILE *f, struct seh_frame_state *seh, rtx pat)
    required for unwind of this insn.  */
 
 void
-i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx insn)
+i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -1276,8 +1271,7 @@ i386_pe_start_function (FILE *f, const char *name, tree decl)
 }
 
 void
-i386_pe_end_function (FILE *f, const char *name ATTRIBUTE_UNUSED,
-		      tree decl ATTRIBUTE_UNUSED)
+i386_pe_end_function (FILE *f, const char *, tree)
 {
   i386_pe_seh_fini (f);
 }

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-pretty-print.h"
 #include "hashtab.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "gimple-expr.h"
 #include "cgraph.h"
 #include "langhooks.h"
@@ -103,14 +103,14 @@ debug_generic_stmt (tree t)
 DEBUG_FUNCTION void
 debug_tree_chain (tree t)
 {
-  struct pointer_set_t *seen = pointer_set_create ();
+  hash_set<tree> seen;
 
   while (t)
     {
       print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS|TDF_UID);
       fprintf (stderr, " ");
       t = TREE_CHAIN (t);
-      if (pointer_set_insert (seen, t))
+      if (seen.add (t))
 	{
 	  fprintf (stderr, "... [cycled back to ");
 	  print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS|TDF_UID);
@@ -119,8 +119,6 @@ debug_tree_chain (tree t)
 	}
     }
   fprintf (stderr, "\n");
-
-  pointer_set_destroy (seen);
 }
 
 /* Prints declaration DECL to the FILE with details specified by FLAGS.  */
@@ -363,6 +361,13 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_right_paren (buffer);
       break;
 
+    case OMP_CLAUSE__CILK_FOR_COUNT_:
+      pp_string (buffer, "_Cilk_for_count_(");
+      dump_generic_node (buffer, OMP_CLAUSE_OPERAND (clause, 0),
+			 spc, flags, false);
+      pp_right_paren (buffer);
+      break;
+
     case OMP_CLAUSE_NOWAIT:
       pp_string (buffer, "nowait");
       break;
@@ -412,6 +417,9 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 	  break;
 	case OMP_CLAUSE_SCHEDULE_AUTO:
 	  pp_string (buffer, "auto");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_CILKFOR:
+	  pp_string (buffer, "cilk-for grain");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -669,7 +677,7 @@ dump_omp_clauses (pretty_printer *buffer, tree clause, int spc, int flags)
 
 /* Dump location LOC to BUFFER.  */
 
-static void
+void
 dump_location (pretty_printer *buffer, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
@@ -678,9 +686,11 @@ dump_location (pretty_printer *buffer, location_t loc)
   if (xloc.file)
     {
       pp_string (buffer, xloc.file);
-      pp_string (buffer, " : ");
+      pp_string (buffer, ":");
     }
   pp_decimal_int (buffer, xloc.line);
+  pp_colon (buffer);
+  pp_decimal_int (buffer, xloc.column);
   pp_string (buffer, "] ");
 }
 
@@ -2423,6 +2433,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma simd");
       goto dump_omp_loop;
 
+    case CILK_FOR:
+      /* This label points one line after dumping the clauses.
+	 For _Cilk_for the clauses are dumped after the _Cilk_for (...)
+	 parameters are printed out.  */
+      goto dump_omp_loop_cilk_for;
+
     case OMP_DISTRIBUTE:
       pp_string (buffer, "#pragma omp distribute");
       goto dump_omp_loop;
@@ -2451,18 +2467,22 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     dump_omp_loop:
       dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 
+    dump_omp_loop_cilk_for:
       if (!(flags & TDF_SLIM))
 	{
 	  int i;
 
 	  if (OMP_FOR_PRE_BODY (node))
 	    {
-	      newline_and_indent (buffer, spc + 2);
+	      if (TREE_CODE (node) == CILK_FOR)
+		pp_string (buffer, "  ");
+	      else
+		newline_and_indent (buffer, spc + 2);
 	      pp_left_brace (buffer);
 	      spc += 4;
 	      newline_and_indent (buffer, spc);
 	      dump_generic_node (buffer, OMP_FOR_PRE_BODY (node),
-		  spc, flags, false);
+				 spc, flags, false);
 	    }
 	  if (OMP_FOR_INIT (node))
 	    {
@@ -2470,8 +2490,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	      for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (node)); i++)
 		{
 		  spc += 2;
-		  newline_and_indent (buffer, spc);
-		  pp_string (buffer, "for (");
+		  if (TREE_CODE (node) != CILK_FOR || OMP_FOR_PRE_BODY (node))
+		    newline_and_indent (buffer, spc);
+		  if (TREE_CODE (node) == CILK_FOR)
+		    pp_string (buffer, "_Cilk_for (");
+		  else
+		    pp_string (buffer, "for (");
 		  dump_generic_node (buffer,
 				     TREE_VEC_ELT (OMP_FOR_INIT (node), i),
 				     spc, flags, false);
@@ -2485,6 +2509,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 				     spc, flags, false);
 		  pp_right_paren (buffer);
 		}
+	      if (TREE_CODE (node) == CILK_FOR)
+		dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 	    }
 	  if (OMP_FOR_BODY (node))
 	    {
@@ -3456,7 +3482,7 @@ void
 dump_function_header (FILE *dump_file, tree fdecl, int flags)
 {
   const char *dname, *aname;
-  struct cgraph_node *node = cgraph_get_node (fdecl);
+  struct cgraph_node *node = cgraph_node::get (fdecl);
   struct function *fun = DECL_STRUCT_FUNCTION (fdecl);
 
   dname = lang_hooks.decl_printable_name (fdecl, 2);

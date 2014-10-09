@@ -616,13 +616,13 @@ package body System.Interrupts is
    end Is_Blocked;
 
    task body Server_Task is
+      Ignore : constant Boolean := Utilities.Make_Independent;
+
       Desc    : Handler_Desc renames Descriptors (Interrupt);
       Self_Id : constant Task_Id := STPO.Self;
       Temp    : Parameterless_Handler;
 
    begin
-      Utilities.Make_Independent;
-
       loop
          while Interrupt_Count (Interrupt) > 0 loop
             Interrupt_Count (Interrupt) := Interrupt_Count (Interrupt) - 1;

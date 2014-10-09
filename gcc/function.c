@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "toplev.h"
+#include "rtl-iter.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -115,13 +116,13 @@ vec<tree, va_gc> *types_used_by_cur_var_decl;
 static struct temp_slot *find_temp_slot_from_address (rtx);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, enum machine_mode, tree);
-static void reorder_blocks_1 (rtx, tree, vec<tree> *);
+static void reorder_blocks_1 (rtx_insn *, tree, vec<tree> *);
 static int all_blocks (tree, tree *);
 static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx, rtx, htab_t *) ATTRIBUTE_UNUSED;
+static void record_insns (rtx_insn *, rtx, htab_t *) ATTRIBUTE_UNUSED;
 static bool contains (const_rtx, htab_t);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
@@ -1300,7 +1301,7 @@ emit_initial_value_sets (void)
 {
   struct initial_value_struct *ivs = crtl->hard_reg_initial_vals;
   int i;
-  rtx seq;
+  rtx_insn *seq;
 
   if (ivs == 0)
     return 0;
@@ -1431,57 +1432,60 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
   return new_rtx;
 }
 
-/* A subroutine of instantiate_virtual_regs, called via for_each_rtx.
-   Instantiate any virtual registers present inside of *LOC.  The expression
-   is simplified, as much as possible, but is not to be considered "valid"
-   in any sense implied by the target.  If any change is made, set CHANGED
-   to true.  */
+/* A subroutine of instantiate_virtual_regs.  Instantiate any virtual
+   registers present inside of *LOC.  The expression is simplified,
+   as much as possible, but is not to be considered "valid" in any sense
+   implied by the target.  Return true if any change is made.  */
 
-static int
-instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
+static bool
+instantiate_virtual_regs_in_rtx (rtx *loc)
 {
-  HOST_WIDE_INT offset;
-  bool *changed = (bool *) data;
-  rtx x, new_rtx;
-
-  x = *loc;
-  if (x == 0)
-    return 0;
-
-  switch (GET_CODE (x))
+  if (!*loc)
+    return false;
+  bool changed = false;
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
     {
-    case REG:
-      new_rtx = instantiate_new_reg (x, &offset);
-      if (new_rtx)
+      rtx *loc = *iter;
+      if (rtx x = *loc)
 	{
-	  *loc = plus_constant (GET_MODE (x), new_rtx, offset);
-	  if (changed)
-	    *changed = true;
+	  rtx new_rtx;
+	  HOST_WIDE_INT offset;
+	  switch (GET_CODE (x))
+	    {
+	    case REG:
+	      new_rtx = instantiate_new_reg (x, &offset);
+	      if (new_rtx)
+		{
+		  *loc = plus_constant (GET_MODE (x), new_rtx, offset);
+		  changed = true;
+		}
+	      iter.skip_subrtxes ();
+	      break;
+
+	    case PLUS:
+	      new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
+	      if (new_rtx)
+		{
+		  XEXP (x, 0) = new_rtx;
+		  *loc = plus_constant (GET_MODE (x), x, offset, true);
+		  changed = true;
+		  iter.skip_subrtxes ();
+		  break;
+		}
+
+	      /* FIXME -- from old code */
+	      /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
+		 we can commute the PLUS and SUBREG because pointers into the
+		 frame are well-behaved.  */
+	      break;
+
+	    default:
+	      break;
+	    }
 	}
-      return -1;
-
-    case PLUS:
-      new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
-      if (new_rtx)
-	{
-	  XEXP (x, 0) = new_rtx;
-	  *loc = plus_constant (GET_MODE (x), x, offset, true);
-	  if (changed)
-	    *changed = true;
-	  return -1;
-	}
-
-      /* FIXME -- from old code */
-	  /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
-	     we can commute the PLUS and SUBREG because pointers into the
-	     frame are well-behaved.  */
-      break;
-
-    default:
-      break;
     }
-
-  return 0;
+  return changed;
 }
 
 /* A subroutine of instantiate_virtual_regs_in_insn.  Return true if X
@@ -1497,12 +1501,13 @@ safe_insn_predicate (int code, int operand, rtx x)
    registers present inside of insn.  The result will be a valid insn.  */
 
 static void
-instantiate_virtual_regs_in_insn (rtx insn)
+instantiate_virtual_regs_in_insn (rtx_insn *insn)
 {
   HOST_WIDE_INT offset;
   int insn_code, i;
   bool any_change = false;
-  rtx set, new_rtx, x, seq;
+  rtx set, new_rtx, x;
+  rtx_insn *seq;
 
   /* There are some special cases to be handled first.  */
   set = single_set (insn);
@@ -1517,7 +1522,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	{
 	  start_sequence ();
 
-	  for_each_rtx (&SET_SRC (set), instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&SET_SRC (set));
 	  x = simplify_gen_binary (PLUS, GET_MODE (new_rtx), SET_SRC (set),
 				   gen_int_mode (-offset, GET_MODE (new_rtx)));
 	  x = force_operand (x, new_rtx);
@@ -1620,10 +1625,8 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
-	    bool changed = false;
 
-	    for_each_rtx (&addr, instantiate_virtual_regs_in_rtx, &changed);
-	    if (!changed)
+	    if (!instantiate_virtual_regs_in_rtx (&addr))
 	      continue;
 
 	    start_sequence ();
@@ -1789,7 +1792,7 @@ instantiate_decl_rtl (rtx x)
 	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
     return;
 
-  for_each_rtx (&XEXP (x, 0), instantiate_virtual_regs_in_rtx, NULL);
+  instantiate_virtual_regs_in_rtx (&XEXP (x, 0));
 }
 
 /* Helper for instantiate_decls called via walk_tree: Process all decls
@@ -1898,7 +1901,7 @@ instantiate_decls (tree fndecl)
 static unsigned int
 instantiate_virtual_regs (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
@@ -1926,20 +1929,18 @@ instantiate_virtual_regs (void)
 	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
 	  continue;
 	else if (DEBUG_INSN_P (insn))
-	  for_each_rtx (&INSN_VAR_LOCATION (insn),
-			instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&INSN_VAR_LOCATION (insn));
 	else
 	  instantiate_virtual_regs_in_insn (insn);
 
-	if (INSN_DELETED_P (insn))
+	if (insn->deleted ())
 	  continue;
 
-	for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
+	instantiate_virtual_regs_in_rtx (&REG_NOTES (insn));
 
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
 	if (CALL_P (insn))
-	  for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
-			instantiate_virtual_regs_in_rtx, NULL);
+	  instantiate_virtual_regs_in_rtx (&CALL_INSN_FUNCTION_USAGE (insn));
       }
 
   /* Instantiate the virtual registers in the DECLs for debugging purposes.  */
@@ -2190,8 +2191,8 @@ struct assign_parm_data_all
   struct args_size stack_args_size;
   tree function_result_decl;
   tree orig_fnargs;
-  rtx first_conversion_insn;
-  rtx last_conversion_insn;
+  rtx_insn *first_conversion_insn;
+  rtx_insn *last_conversion_insn;
   HOST_WIDE_INT pretend_args_size;
   HOST_WIDE_INT extra_pretend_bytes;
   int reg_parm_stack_space;
@@ -2662,13 +2663,14 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The Irix 6 ABI has examples of this.  */
       if (GET_CODE (entry_parm) == PARALLEL)
-	emit_group_store (validize_mem (stack_parm), entry_parm,
+	emit_group_store (validize_mem (copy_rtx (stack_parm)), entry_parm,
 			  data->passed_type,
 			  int_size_in_bytes (data->passed_type));
       else
 	{
 	  gcc_assert (data->partial % UNITS_PER_WORD == 0);
-	  move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
+	  move_block_from_reg (REGNO (entry_parm),
+			       validize_mem (copy_rtx (stack_parm)),
 			       data->partial / UNITS_PER_WORD);
 	}
 
@@ -2837,7 +2839,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       else
 	gcc_assert (!size || !(PARM_BOUNDARY % BITS_PER_WORD));
 
-      mem = validize_mem (stack_parm);
+      mem = validize_mem (copy_rtx (stack_parm));
 
       /* Handle values in multiple non-contiguous locations.  */
       if (GET_CODE (entry_parm) == PARALLEL)
@@ -2972,7 +2974,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      assign_parm_find_data_types and expand_expr_real_1.  */
 
   equiv_stack_parm = data->stack_parm;
-  validated_mem = validize_mem (data->entry_parm);
+  validated_mem = validize_mem (copy_rtx (data->entry_parm));
 
   need_conversion = (data->nominal_mode != data->passed_mode
 		     || promoted_nominal_mode != data->promoted_mode);
@@ -3017,7 +3019,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  && insn_operand_matches (icode, 1, op1))
 	{
 	  enum rtx_code code = unsignedp ? ZERO_EXTEND : SIGN_EXTEND;
-	  rtx insn, insns, t = op1;
+	  rtx_insn *insn, *insns;
+	  rtx t = op1;
 	  HARD_REG_SET hardregs;
 
 	  start_sequence ();
@@ -3036,9 +3039,9 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	    }
 	  else
 	    t = op1;
-	  insn = gen_extend_insn (op0, t, promoted_nominal_mode,
-				  data->passed_mode, unsignedp);
-	  emit_insn (insn);
+	  rtx pat = gen_extend_insn (op0, t, promoted_nominal_mode,
+				     data->passed_mode, unsignedp);
+	  emit_insn (pat);
 	  insns = get_insns ();
 
 	  moved = true;
@@ -3093,7 +3096,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  /* The argument is already sign/zero extended, so note it
 	     into the subreg.  */
 	  SUBREG_PROMOTED_VAR_P (tempreg) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (tempreg, unsignedp);
+	  SUBREG_PROMOTED_SET (tempreg, unsignedp);
 	}
 
       /* TREE_USED gets set erroneously during expand_assignment.  */
@@ -3171,8 +3174,9 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       && reg_mentioned_p (virtual_incoming_args_rtx,
 			  XEXP (data->stack_parm, 0)))
     {
-      rtx linsn = get_last_insn ();
-      rtx sinsn, set;
+      rtx_insn *linsn = get_last_insn ();
+      rtx_insn *sinsn;
+      rtx set;
 
       /* Mark complex types separately.  */
       if (GET_CODE (parmreg) == CONCAT)
@@ -3228,7 +3232,7 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       /* Conversion is required.  */
       rtx tempreg = gen_reg_rtx (GET_MODE (data->entry_parm));
 
-      emit_move_insn (tempreg, validize_mem (data->entry_parm));
+      emit_move_insn (tempreg, validize_mem (copy_rtx (data->entry_parm)));
 
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       to_conversion = true;
@@ -3265,8 +3269,8 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  set_mem_attributes (data->stack_parm, parm, 1);
 	}
 
-      dest = validize_mem (data->stack_parm);
-      src = validize_mem (data->entry_parm);
+      dest = validize_mem (copy_rtx (data->stack_parm));
+      src = validize_mem (copy_rtx (data->entry_parm));
 
       if (MEM_P (src))
 	{
@@ -4155,9 +4159,10 @@ clear_block_marks (tree block)
 }
 
 static void
-reorder_blocks_1 (rtx insns, tree current_block, vec<tree> *p_block_stack)
+reorder_blocks_1 (rtx_insn *insns, tree current_block,
+		  vec<tree> *p_block_stack)
 {
-  rtx insn;
+  rtx_insn *insn;
   tree prev_beg = NULL_TREE, prev_end = NULL_TREE;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -4550,6 +4555,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
       cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
+
+      if (!profile_flag && !flag_instrument_function_entry_exit)
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl) = 1;
     }
 }
 
@@ -4656,7 +4664,7 @@ void
 stack_protect_epilogue (void)
 {
   tree guard_decl = targetm.stack_protect_guard ();
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   rtx x, y, tmp;
 
   x = expand_normal (crtl->stack_protect_guard);
@@ -4687,7 +4695,7 @@ stack_protect_epilogue (void)
      except adding the prediction by hand.  */
   tmp = get_last_insn ();
   if (JUMP_P (tmp))
-    predict_insn_def (tmp, PRED_NORETURN, TAKEN);
+    predict_insn_def (as_a <rtx_insn *> (tmp), PRED_NORETURN, TAKEN);
 
   expand_call (targetm.stack_protect_fail (), NULL_RTX, /*ignore=*/true);
   free_temp_slots ();
@@ -4978,9 +4986,9 @@ do_warn_unused_parameter (tree fn)
 /* Set the location of the insn chain starting at INSN to LOC.  */
 
 static void
-set_insn_locations (rtx insn, int loc)
+set_insn_locations (rtx_insn *insn, int loc)
 {
-  while (insn != NULL_RTX)
+  while (insn != NULL)
     {
       if (INSN_P (insn))
 	INSN_LOCATION (insn) = loc;
@@ -5005,7 +5013,7 @@ expand_function_end (void)
      space for another stack frame.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     {
-      rtx insn, seq;
+      rtx_insn *insn, *seq;
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	if (CALL_P (insn))
@@ -5261,7 +5269,7 @@ get_arg_pointer_save_area (void)
 	 generated stack slot may not be a valid memory address, so we
 	 have to check it and fix it if necessary.  */
       start_sequence ();
-      emit_move_insn (validize_mem (ret),
+      emit_move_insn (validize_mem (copy_rtx (ret)),
                       crtl->args.internal_arg_pointer);
       seq = get_insns ();
       end_sequence ();
@@ -5280,9 +5288,9 @@ get_arg_pointer_save_area (void)
    for the first time.  */
 
 static void
-record_insns (rtx insns, rtx end, htab_t *hashp)
+record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
 {
-  rtx tmp;
+  rtx_insn *tmp;
   htab_t hash = *hashp;
 
   if (hash == NULL)
@@ -5331,9 +5339,10 @@ contains (const_rtx insn, htab_t hash)
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
+      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i;
-      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	if (htab_find (hash, XVECEXP (PATTERN (insn), 0, i)))
+      for (i = seq->len () - 1; i >= 0; i--)
+	if (htab_find (hash, seq->element (i)))
 	  return true;
       return false;
     }
@@ -5419,7 +5428,7 @@ set_return_jump_label (rtx returnjump)
 #if defined (HAVE_return) || defined (HAVE_simple_return)
 /* Return true if there are any active insns between HEAD and TAIL.  */
 bool
-active_insn_between (rtx head, rtx tail)
+active_insn_between (rtx_insn *head, rtx_insn *tail)
 {
   while (tail)
     {
@@ -5454,7 +5463,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 
   FOR_EACH_VEC_ELT (src_bbs, i, bb)
     {
-      rtx jump = BB_END (bb);
+      rtx_insn *jump = BB_END (bb);
 
       if (!JUMP_P (jump) || JUMP_LABEL (jump) != label)
 	continue;
@@ -5609,9 +5618,9 @@ thread_prologue_and_epilogue_insns (void)
   vec<edge> unconverted_simple_returns = vNULL;
   bitmap_head bb_flags;
 #endif
-  rtx returnjump;
-  rtx seq ATTRIBUTE_UNUSED, epilogue_end ATTRIBUTE_UNUSED;
-  rtx prologue_seq ATTRIBUTE_UNUSED, split_prologue_seq ATTRIBUTE_UNUSED;
+  rtx_insn *returnjump;
+  rtx_insn *epilogue_end ATTRIBUTE_UNUSED;
+  rtx_insn *prologue_seq ATTRIBUTE_UNUSED, *split_prologue_seq ATTRIBUTE_UNUSED;
   edge e, entry_edge, orig_entry_edge, exit_fallthru_edge;
   edge_iterator ei;
 
@@ -5620,9 +5629,8 @@ thread_prologue_and_epilogue_insns (void)
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   inserted = false;
-  seq = NULL_RTX;
-  epilogue_end = NULL_RTX;
-  returnjump = NULL_RTX;
+  epilogue_end = NULL;
+  returnjump = NULL;
 
   /* Can't deal with multiple successors of the entry block at the
      moment.  Function should always have at least one entry
@@ -5631,7 +5639,7 @@ thread_prologue_and_epilogue_insns (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   orig_entry_edge = entry_edge;
 
-  split_prologue_seq = NULL_RTX;
+  split_prologue_seq = NULL;
   if (flag_split_stack
       && (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (cfun->decl))
 	  == NULL))
@@ -5651,12 +5659,12 @@ thread_prologue_and_epilogue_insns (void)
 #endif
     }
 
-  prologue_seq = NULL_RTX;
+  prologue_seq = NULL;
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
       start_sequence ();
-      seq = gen_prologue ();
+      rtx_insn *seq = safe_as_a <rtx_insn *> (gen_prologue ());
       emit_insn (seq);
 
       /* Insert an explicit USE for the frame pointer
@@ -5764,7 +5772,7 @@ thread_prologue_and_epilogue_insns (void)
      EPILOGUE_BEG note and mark the insns as epilogue insns.  */
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      rtx prev, last, trial;
+      rtx_insn *prev, *last, *trial;
 
       if (e->flags & EDGE_FALLTHRU)
 	continue;
@@ -5793,7 +5801,7 @@ thread_prologue_and_epilogue_insns (void)
     {
       start_sequence ();
       epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
-      seq = gen_epilogue ();
+      rtx_insn *seq = as_a <rtx_insn *> (gen_epilogue ());
       if (seq)
 	emit_jump_insn (seq);
 
@@ -5873,7 +5881,7 @@ epilogue_done:
 							     )
     {
       basic_block bb = e->src;
-      rtx insn = BB_END (bb);
+      rtx_insn *insn = BB_END (bb);
       rtx ep_seq;
 
       if (!CALL_P (insn)
@@ -5894,7 +5902,7 @@ epilogue_done:
 	  start_sequence ();
 	  emit_note (NOTE_INSN_EPILOGUE_BEG);
 	  emit_insn (ep_seq);
-	  seq = get_insns ();
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
 
 	  /* Retain a map of the epilogue insns.  Used in life analysis to
@@ -5912,7 +5920,7 @@ epilogue_done:
 #ifdef HAVE_epilogue
   if (epilogue_end)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
 
       /* Similarly, move any line notes that appear after the epilogue.
          There is no need, however, to be quite so anal about the existence
@@ -5952,7 +5960,7 @@ reposition_prologue_and_epilogue_notes (void)
   if (prologue_insn_hash != NULL)
     {
       size_t len = htab_elements (prologue_insn_hash);
-      rtx insn, last = NULL, note = NULL;
+      rtx_insn *insn, *last = NULL, *note = NULL;
 
       /* Scan from the beginning until we reach the last prologue insn.  */
       /* ??? While we do have the CFG intact, there are two problems:
@@ -6003,7 +6011,7 @@ reposition_prologue_and_epilogue_notes (void)
 
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
 	{
-	  rtx insn, first = NULL, note = NULL;
+	  rtx_insn *insn, *first = NULL, *note = NULL;
 	  basic_block bb = e->src;
 
 	  /* Scan from the beginning until we reach the first epilogue insn. */
@@ -6088,14 +6096,10 @@ used_types_insert_helper (tree type, struct function *func)
 {
   if (type != NULL && func != NULL)
     {
-      void **slot;
-
       if (func->used_types_hash == NULL)
-	func->used_types_hash = htab_create_ggc (37, htab_hash_pointer,
-						 htab_eq_pointer, NULL);
-      slot = htab_find_slot (func->used_types_hash, type, INSERT);
-      if (*slot == NULL)
-	*slot = type;
+	func->used_types_hash = hash_set<tree>::create_ggc (37);
+
+      func->used_types_hash->add (type);
     }
 }
 
@@ -6333,7 +6337,7 @@ make_pass_thread_prologue_and_epilogue (gcc::context *ctxt)
      asm ("": "=mr" (inout_2) : "0" (inout_2));  */
 
 static void
-match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
+match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 {
   int i;
   bool changed = false;
@@ -6345,7 +6349,8 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
   memset (output_matched, 0, noutputs * sizeof (bool));
   for (i = 0; i < ninputs; i++)
     {
-      rtx input, output, insns;
+      rtx input, output;
+      rtx_insn *insns;
       const char *constraint = ASM_OPERANDS_INPUT_CONSTRAINT (op, i);
       char *end;
       int match, j;
@@ -6465,7 +6470,8 @@ unsigned
 pass_match_asm_constraints::execute (function *fun)
 {
   basic_block bb;
-  rtx insn, pat, *p_sets;
+  rtx_insn *insn;
+  rtx pat, *p_sets;
   int noutputs;
 
   if (!crtl->has_asm_statement)

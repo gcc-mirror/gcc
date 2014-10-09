@@ -27,6 +27,13 @@ if test "x$have_static_libgcc" = xyes; then
 fi
 AC_SUBST(ac_lto_plugin_ldflags)
 
+if test x"$host_subdir" = x.; then
+   gcc_build_dir=../gcc
+else
+   gcc_build_dir=../../$host_subdir/gcc
+fi
+AC_SUBST(gcc_build_dir)
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

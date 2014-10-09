@@ -22,7 +22,7 @@
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                         
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
 -- now maintained by Ada Core Technologies Inc. in cooperation with Florida --

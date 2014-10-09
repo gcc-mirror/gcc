@@ -67,13 +67,13 @@
   { return func (A, B, C, imm1, imm2, imm3); }
 
 #define test_3v(func, op1_type, op2_type, op3_type, imm)		\
-  _CONCAT(_,func) (op1_type A, op2_type B,				\
-		   op3_type C, int const I)				\
+  int _CONCAT(_,func) (op1_type A, op2_type B,				\
+		       op3_type C, int const I)				\
   { func (A, B, C, imm); }
 
 #define test_3vx(func, op1_type, op2_type, op3_type, imm1, imm2)   \
-  _CONCAT(_,func) (op1_type A, op2_type B,             \
-           op3_type C, int const I, int const L)       \
+  int _CONCAT(_,func) (op1_type A, op2_type B,             	   \
+		       op3_type C, int const I, int const L)       \
   { func (A, B, C, imm1, imm2); }
 
 #define test_4(func, type, op1_type, op2_type, op3_type, op4_type, imm)	\
@@ -93,8 +93,8 @@
 
 
 #define test_4v(func, op1_type, op2_type, op3_type, op4_type, imm)	\
-  _CONCAT(_,func) (op1_type A, op2_type B,				\
-		   op3_type C, op4_type D, int const I)			\
+  int _CONCAT(_,func) (op1_type A, op2_type B,				\
+		       op3_type C, op4_type D, int const I)		\
   { func (A, B, C, D, imm); }
 
 

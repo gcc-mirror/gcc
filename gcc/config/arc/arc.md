@@ -4771,7 +4771,7 @@
    (use (match_operand 4 "const_int_operand" "C_0,X,X"))]
   ""
 {
-  rtx scan;
+  rtx_insn *scan;
   int len, size = 0;
   int n_insns = 0;
   rtx loop_start = operands[4];
@@ -4812,8 +4812,8 @@
     {
       if (!INSN_P (scan))
 	continue;
-      if (GET_CODE (PATTERN (scan)) == SEQUENCE)
-	scan = XVECEXP (PATTERN (scan), 0, 0);
+      if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (scan)))
+	scan = seq->insn (0);
       if (JUMP_P (scan))
 	{
 	  if (recog_memoized (scan) != CODE_FOR_doloop_end_i)
@@ -4821,7 +4821,7 @@
 	      n_insns += 2;
 	      if (simplejump_p (scan))
 		{
-		  scan = XEXP (SET_SRC (PATTERN (scan)), 0);
+		  scan = as_a <rtx_insn *> (XEXP (SET_SRC (PATTERN (scan)), 0));
 		  continue;
 		}
 	      if (JUMP_LABEL (scan)

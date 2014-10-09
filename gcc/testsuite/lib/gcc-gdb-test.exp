@@ -19,7 +19,12 @@
 #
 # Argument 0 is the line number on which to put a breakpoint
 # Argument 1 is the name of the variable to be checked
-# Argument 2 is the expected value of the variable
+#   possibly prefixed with type: to get the type of the variable
+#   instead of the value of the variable (the default).
+# Argument 2 is the expected value (or type) of the variable
+#   When asking for the value, the expected value is produced
+#   calling print on it in gdb. When asking for the type it is
+#   the literal string with extra whitespace removed.
 # Argument 3 handles expected failures and the like
 proc gdb-test { args } {
     if { ![isnative] || [is_remote target] } { return }
@@ -39,6 +44,16 @@ proc gdb-test { args } {
     upvar 2 name testcase
     upvar 2 prog prog
 
+    # The command to run on the variable
+    set arg1 [lindex $args 1]
+    if { [string equal -length 5 "type:" $arg1] == 1 } {
+	set command "ptype"
+	set var [string range $arg1 5 end]
+    } else {
+	set command "print"
+	set var $arg1
+    }
+
     set gdb_name $::env(GUALITY_GDB_NAME)
     set testname "$testcase line [lindex $args 0] [lindex $args 1] == [lindex $args 2]"
     set output_file "[file rootname [file tail $prog]].exe"
@@ -47,8 +62,14 @@ proc gdb-test { args } {
     set fd [open $cmd_file "w"]
     puts $fd "break [lindex $args 0]"
     puts $fd "run"
-    puts $fd "print [lindex $args 1]"
-    puts $fd "print [lindex $args 2]"
+    puts $fd "$command $var"
+    if { $command == "print" } {
+	# For values, let gdb interpret them by printing them.
+	puts $fd "print [lindex $args 2]"
+    } else {
+	# Since types can span multiple lines, we need an end marker.
+	puts $fd "echo TYPE_END\\n"
+    }
     puts $fd "quit"
     close $fd
 
@@ -62,12 +83,13 @@ proc gdb-test { args } {
 
     remote_expect target [timeout_value] {
 	# Too old GDB
-	-re "Unhandled dwarf expression|Error in sourced command file" {
+	-re "Unhandled dwarf expression|Error in sourced command file|<unknown type in " {
 	    unsupported "$testname"
 	    remote_close target
 	    file delete $cmd_file
 	    return
 	}
+	# print var; print expected
 	-re {[\n\r]\$1 = ([^\n\r]*)[\n\r]+\$2 = ([^\n\r]*)[\n\r]} {
 	    set first $expect_out(1,string)
 	    set second $expect_out(2,string)
@@ -77,6 +99,27 @@ proc gdb-test { args } {
 		# We need the -- to disambiguate $first from an option,
 		# as it may be negative.
 		send_log -- "$first != $second\n"
+		fail "$testname"
+	    }
+	    remote_close target
+	    file delete $cmd_file
+	    return
+	}
+	# ptype var;
+	-re {[\n\r]type = (.*)[\n\r][\n\r]TYPE_END[\n\r]} {
+	    set type $expect_out(1,string)
+	    # Squash all extra whitespace/newlines that gdb might use for
+	    # "pretty printing" into one so result is just one line.
+	    regsub -all {[\n\r\t ]+} $type " " type
+	    # Old gdb might output "long int" instead of just "long"
+	    # and "short int" instead of just "short". Canonicalize.
+	    regsub -all {\mlong int\M} $type "long" type
+	    regsub -all {\mshort int\M} $type "short" type
+	    set expected [lindex $args 2]
+	    if { $type == $expected } {
+		pass "$testname"
+	    } else {
+		send_log -- "$type != $expected\n"
 		fail "$testname"
 	    }
 	    remote_close target

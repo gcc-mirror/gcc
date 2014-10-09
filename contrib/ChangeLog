@@ -1,3 +1,53 @@
+2014-10-04  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-all-tests: Don't test score-*.
+	* config-list.mk: Likewise.
+
+2014-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* dg-extract-results.py (output_variation): Always sort if do_sum.
+
+2014-09-22  Tom de Vries  <tom@codesourcery.com>
+
+	* mklog: Add --inline option.
+
+2014-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* dg-extract-results.py (Prog.result_re): Include options in test name.
+
+2014-09-19  Olivier Hainque  <hainque@adacore.com>
+
+	* config-list.mk (LIST): Add powerpc-wrs-vxworksmils.
+
+2014-09-18  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config-list.mk (LIST): Add v850-rtems.
+
+2014-09-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config-list.mk (LIST): Add arm-rtems.
+	Add nios2-rtems.  Remove extra option from powerpc-rtems.
+
+2014-09-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-all-tests: Don't test picochip.
+	* config-list.mk: Likewise.
+
+2014-08-11  Mingjie Xing <mingjie.xing@gmail.com>
+
+	* texi2pod.pl (postprocess): Move command process for '@sc' to the
+	front of '@dfn'.  Add a new command process for '@t{...}', just print
+	the content.
+
+2014-07-21  Trevor Saunders  <tsaunders@mozilla.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* mklog: Run mklog as a filter.
+
+2014-07-21  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* mklog: Read name and email from git config when available.
+
 2014-06-28  Richard Biener  <rguenther@suse.de>
 
 	* gennews: Use gcc-3.0/index.html.

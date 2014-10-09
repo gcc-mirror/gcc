@@ -1,4 +1,5 @@
 /* Test atomic_flag routines for existence and execution.  */
+/* The test needs a lockless atomic implementation.  */
 /* { dg-do run { xfail hppa*-*-hpux* } } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 

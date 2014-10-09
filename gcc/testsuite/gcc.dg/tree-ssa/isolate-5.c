@@ -17,6 +17,9 @@ struct d_info
   int num_comps;
 };
 
+void foo (int);
+void bar (int);
+
 static struct demangle_component *
 d_make_empty (struct d_info *di)
 {

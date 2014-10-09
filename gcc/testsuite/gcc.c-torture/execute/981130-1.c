@@ -1,3 +1,4 @@
+/* { dg-xfail-if "alias analysis conflicts with instruction scheduling" { m32r-*-* } { "-O2" "-O1" "-O0" "-Os"} { "" } } */
 struct s { int a; int b;};
 struct s s1;
 struct s s2 = { 1, 2, };

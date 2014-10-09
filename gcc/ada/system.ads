@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Compiler Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -148,7 +148,6 @@ private
    Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
-   OpenVMS                   : constant Boolean := False;
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;

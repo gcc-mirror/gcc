@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package System.Tasking.Utilities is
    -- Task_Stage Related routines --
    ---------------------------------
 
-   procedure Make_Independent;
+   function Make_Independent return Boolean;
    --  Move the current task to the outermost level (level 2) of the master
    --  hierarchy of the environment task. That is one level further out
    --  than normal tasks defined in library-level packages (level 3). The
@@ -63,9 +63,34 @@ package System.Tasking.Utilities is
    --  will change the task's parent. This assumption is particularly
    --  important for master level completion and for the computation of
    --  Independent_Task_Count.
+   --
+   --  NOTE WELL: Make_Independent should be called before the task reaches its
+   --  "begin", like this:
+   --
+   --     task body Some_Independent_Task is
+   --        ...
+   --        Ignore : constant Boolean := Make_Independent;
+   --        ...
+   --     begin
+   --
+   --  The return value is meaningless; the only reason this is a function is
+   --  to get around the Ada limitation that makes a procedure call
+   --  syntactically illegal before the "begin".
+   --
+   --  Calling it before "begin" ensures that the call completes before the
+   --  activating task can proceed. This is important for preventing race
+   --  conditions. For example, if the environment task reaches
+   --  Finalize_Global_Tasks before some task has finished Make_Independent,
+   --  the program can hang.
+   --
+   --  Note also that if a package declares independent tasks, it should not
+   --  initialize its package-body data after "begin" of the package, because
+   --  that's where the tasks are activated. Initializing such data before the
+   --  task activation helps prevent the tasks from accessing uninitialized
+   --  data.
 
    Independent_Task_Count : Natural := 0;
-   --  Number of independent task. This counter is incremented each time
+   --  Number of independent tasks. This counter is incremented each time
    --  Make_Independent is called. Note that if a server task terminates,
    --  this counter will not be decremented. Since Make_Independent locks
    --  the environment task (because every independent task depends on it),

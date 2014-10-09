@@ -104,6 +104,8 @@ unpack0_r4 (gfc_array_r4 *ret, const gfc_array_r4 *vector,
   else
     {
       dim = GFC_DESCRIPTOR_RANK (ret);
+      /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
+      rstride[0] = 1;
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
@@ -249,6 +251,8 @@ unpack1_r4 (gfc_array_r4 *ret, const gfc_array_r4 *vector,
   else
     {
       dim = GFC_DESCRIPTOR_RANK (ret);
+      /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
+      rstride[0] = 1;
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;

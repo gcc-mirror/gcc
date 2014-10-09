@@ -6,6 +6,7 @@ struct gl_visual {
 struct gl_context {
     struct gl_visual *Visual;
 };
+void foo (char *);
 void quickdraw_rgb( struct gl_context * ctx,
 		    int width, int height)
 {

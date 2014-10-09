@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,8 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with System.Exception_Tables.
 
+with System.Traceback_Entries;
+
 package System.Traceback is
 
    ----------------
@@ -46,23 +48,22 @@ package System.Traceback is
    ----------------
 
    procedure Call_Chain
-     (Traceback   : System.Address;
+     (Traceback   : in out System.Traceback_Entries.Tracebacks_Array;
       Max_Len     : Natural;
       Len         : out Natural;
       Exclude_Min : System.Address := System.Null_Address;
       Exclude_Max : System.Address := System.Null_Address;
       Skip_Frames : Natural := 1);
-   --  Store up to Max_Len code locations in Traceback, corresponding to
-   --  the current call chain.
+   --  Store up to Max_Len code locations in Traceback, corresponding to the
+   --  current call chain.
    --
-   --    Traceback is the address of an array of addresses where the
-   --    result will be stored.
+   --    Traceback is an array of addresses where the result will be stored.
    --
    --    Max_Len is the length of the Traceback array. If the call chain is
    --    longer than this, then additional entries are discarded, and the
    --    traceback is missing some of the highest level entries.
    --
-   --    Len is the returned number of addresses stored in the Traceback array
+   --    Len is the number of addresses returned in the Traceback array
    --
    --    Exclude_Min/Exclude_Max, if non null, provide a range of addresses
    --    to ignore from the computation of the traceback.
@@ -77,10 +78,22 @@ package System.Traceback is
    --  number of stored entries. The first entry is the most recent call,
    --  and the last entry is the highest level call.
 
+   procedure Call_Chain
+     (Traceback   : System.Address;
+      Max_Len     : Natural;
+      Len         : out Natural;
+      Exclude_Min : System.Address := System.Null_Address;
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1);
+   --  Same as the previous version, but takes Traceback as an Address. The
+   --  previous version is preferred. ???This version should be removed from
+   --  this spec, and calls replaced with calls to the previous version. This
+   --  declaration can be moved to the bodies (s-traceb.adb, s-traceb-hpux.adb,
+   --  and s-traceb-mastop.adb), but it should not be visible to clients.
+
    function C_Call_Chain
      (Traceback : System.Address;
-      Max_Len   : Natural)
-      return      Natural;
+      Max_Len   : Natural) return Natural;
    pragma Export (C, C_Call_Chain, "system__traceback__c_call_chain");
    --  Version that can be used directly from C
 

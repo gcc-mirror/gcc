@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,7 +108,16 @@ package body Adabkend is
 
          elsif Switch_Chars (First .. Last) = "o" then
             if First = Last then
-               Opt.Output_File_Name_Present := True;
+               if Opt.Output_File_Name_Present then
+
+                  --  Ignore extra -o when -gnatO has already been specified
+
+                  Next_Arg := Next_Arg + 1;
+
+               else
+                  Opt.Output_File_Name_Present := True;
+               end if;
+
                return;
             else
                Fail ("invalid switch: " & Switch_Chars);
@@ -237,10 +246,11 @@ package body Adabkend is
 
                --  In GNATprove_Mode, such an object file is never written, and
                --  the call to Set_Output_Object_File_Name may fail (e.g. when
-               --  the object file name does not have the expected suffix). So
-               --  we skip that call when GNATprove_Mode is set.
+               --  the object file name does not have the expected suffix).
+               --  So we skip that call when GNATprove_Mode is set. Same for
+               --  CodePeer_Mode.
 
-               elsif GNATprove_Mode then
+               elsif GNATprove_Mode or CodePeer_Mode then
                   Output_File_Name_Seen := True;
 
                else

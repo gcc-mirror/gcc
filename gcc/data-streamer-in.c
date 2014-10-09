@@ -36,10 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Read a string from the string table in DATA_IN using input block
    IB.  Write the length to RLEN.  */
 
-const char *
+static const char *
 string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
 {
-  struct lto_input_block str_tab;
   unsigned int len;
   const char *result;
 
@@ -50,8 +49,7 @@ string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
     }
 
   /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
-  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc - 1,
-			data_in->strings_len);
+  lto_input_block str_tab (data_in->strings, loc - 1, data_in->strings_len);
   len = streamer_read_uhwi (&str_tab);
   *rlen = len;
 

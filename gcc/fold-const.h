@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 extern int folding_initializer;
 
 /* Convert between trees and native memory representation.  */
-extern int native_encode_expr (const_tree, unsigned char *, int);
+extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
 
 /* Fold constants as much as possible in an expression.

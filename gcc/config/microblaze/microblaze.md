@@ -518,8 +518,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "d")
 		  (match_operand:DI 2 "arith_operand32" "d")))]
   ""
-  "@
-   rsub\t%L0,%L2,%L1\;rsubc\t%M0,%M2,%M1"
+  "rsub\t%L0,%L2,%L1\;rsubc\t%M0,%M2,%M1"
   [(set_attr "type"	"darith")
   (set_attr "mode"	"DI")
   (set_attr "length"	"8")])
@@ -1830,8 +1829,8 @@
 	(plus:SI (match_operand:SI 0 "register_operand" "d")
 		 (label_ref:SI (match_operand 1 "" ""))))
   (use (label_ref:SI (match_dup 1)))]
- "NEXT_INSN (operands[1]) != 0
-  && GET_CODE (PATTERN (NEXT_INSN (operands[1]))) == ADDR_DIFF_VEC
+ "NEXT_INSN (as_a <rtx_insn *> (operands[1])) != 0
+  && GET_CODE (PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[1])))) == ADDR_DIFF_VEC
   && flag_pic"
   {
     output_asm_insn ("addk\t%0,%0,r20",operands);
@@ -2063,7 +2062,7 @@
   (set_attr "length"	"4")])
 
 (define_insn "call_internal1"
-  [(call (mem (match_operand:SI 0 "call_insn_simple_operand" "ri"))
+  [(call (mem (match_operand:VOID 0 "call_insn_simple_operand" "ri"))
 	 (match_operand:SI 1 "" "i"))
   (clobber (reg:SI R_SR))]
   ""

@@ -75,12 +75,6 @@ package body Exp_Disp is
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
    --  of the default primitive operations.
 
-   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
-   --  Find specific type of a class-wide type, and handle the case of an
-   --  incomplete type coming either from a limited_with clause or from an
-   --  incomplete type declaration. Shouldn't this be in Sem_Util? It seems
-   --  like a general purpose semantic routine ???
-
    function Has_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Has_DT);
    --  Returns true if we generate a dispatch table for tagged type Typ
@@ -1191,6 +1185,19 @@ package body Exp_Disp is
          end if;
 
          return;
+
+      --  A static conversion to an interface type that is not classwide is
+      --  curious but legal if the interface operation is a null procedure.
+      --  If the operation is abstract it will be rejected later.
+
+      elsif Is_Static
+        and then Is_Interface (Etype (N))
+        and then not Is_Class_Wide_Type (Etype (N))
+        and then Comes_From_Source (N)
+      then
+         Rewrite (N, Unchecked_Convert_To (Etype (N), N));
+         Analyze (N);
+         return;
       end if;
 
       if not Is_Static then
@@ -1973,25 +1980,6 @@ package body Exp_Disp is
          end;
       end if;
    end Expand_Interface_Thunk;
-
-   ------------------------
-   -- Find_Specific_Type --
-   ------------------------
-
-   function Find_Specific_Type (CW : Entity_Id) return Entity_Id is
-      Typ : Entity_Id := Root_Type (CW);
-
-   begin
-      if Ekind (Typ) = E_Incomplete_Type then
-         if From_Limited_With (Typ) then
-            Typ := Non_Limited_View (Typ);
-         else
-            Typ := Full_View (Typ);
-         end if;
-      end if;
-
-      return Typ;
-   end Find_Specific_Type;
 
    --------------------------
    -- Has_CPP_Constructors --
@@ -3672,18 +3660,17 @@ package body Exp_Disp is
         (Subp        : Entity_Id;
          Tagged_Type : Entity_Id;
          Typ         : Entity_Id);
-      --  Verify that all non-tagged types in the profile of a subprogram
-      --  are frozen at the point the subprogram is frozen. This enforces
-      --  the rule on RM 13.14 (14) as modified by AI05-019. At the point a
-      --  subprogram is frozen, enough must be known about it to build the
-      --  activation record for it, which requires at least that the size of
-      --  all parameters be known. Controlling arguments are by-reference,
-      --  and therefore the rule only applies to non-tagged types.
-      --  Typical violation of the rule involves an object declaration that
-      --  freezes a tagged type, when one of its primitive operations has a
-      --  type in its profile whose full view has not been analyzed yet.
-      --  More complex cases involve composite types that have one private
-      --  unfrozen subcomponent.
+      --  Verify that all untagged types in the profile of a subprogram are
+      --  frozen at the point the subprogram is frozen. This enforces the rule
+      --  on RM 13.14 (14) as modified by AI05-019. At the point a subprogram
+      --  is frozen, enough must be known about it to build the activation
+      --  record for it, which requires at least that the size of all
+      --  parameters be known. Controlling arguments are by-reference,
+      --  and therefore the rule only applies to untagged types. Typical
+      --  violation of the rule involves an object declaration that freezes a
+      --  tagged type, when one of its primitive operations has a type in its
+      --  profile whose full view has not been analyzed yet. More complex cases
+      --  involve composite types that have one private unfrozen subcomponent.
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -8438,10 +8425,10 @@ package body Exp_Disp is
               Make_Defining_Identifier (Loc,
                 Chars => Make_Init_Proc_Name (Typ));
 
-            --  Case 1: Constructor of non-tagged type
+            --  Case 1: Constructor of untagged type
 
             --  If the C++ class has no virtual methods then the matching Ada
-            --  type is a non-tagged record type. In such case there is no need
+            --  type is an untagged record type. In such case there is no need
             --  to generate a wrapper of the C++ constructor because the _tag
             --  component is not available.
 

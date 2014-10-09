@@ -642,7 +642,8 @@ experimental_headers = \
 	${experimental_srcdir}/any \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/string_view \
-	${experimental_srcdir}/string_view.tcc
+	${experimental_srcdir}/string_view.tcc \
+	${experimental_srcdir}/tuple
 
 # This is the common subset of C++ files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
@@ -1223,24 +1224,28 @@ else
 install-data-local: install-freestanding-headers
 endif
 
-# This is a subset of the full install-headers rule.  We only need <cstddef>,
-# <limits>, <cstdlib>, <cstdarg>, <new>, <typeinfo>, <exception>, and any
-# files which they include (and which we provide).  The last three headers
-# are installed by libsupc++, so only the first four and the sub-includes
-# are copied here.
+# This is a subset of the full install-headers rule.  We only need <ciso646>,
+# <cstddef>, <cfloat>, <limits>, <climits>, <cstdint>, <cstdlib>, <new>,
+# <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
+# <cstdbool>, <type_traits>, <atomic>, and any files which they include (and
+# which we provide).
+# <new>, <typeinfo>, <exception>, and <initializer_list> are installed by
+# libsupc++, so only the others and the sub-includes are copied here.
 install-freestanding-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
+	for file in c++0x_warning.h atomic_base.h; do \
+	  $(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/$${file} $(DESTDIR)${gxx_include_dir}/bits; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
-	$(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/c++0x_warning.h \
-	  $(DESTDIR)${gxx_include_dir}/bits
 	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
 	  ${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	$(INSTALL_DATA) ${std_builddir}/limits $(DESTDIR)${gxx_include_dir}/${std_builddir}
+	for file in limits type_traits atomic; do \
+	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
-	for file in cstddef cstdlib cstdarg; do \
+	for file in ciso646 cstddef cfloat climits cstdint cstdlib \
+	  cstdalign cstdarg cstdbool; do \
 	  $(INSTALL_DATA) ${c_base_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
 
 # The real deal.

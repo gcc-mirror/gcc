@@ -30,7 +30,7 @@ void
 foo (int i, int *ip, double d)
 {
   tformatprintf ("%d", i);
-  tformatprintf ("%"); /* { dg-warning "format" "attribute format printf" } */
+  tformatprintf ("%"); /* { dg-warning "18:format" "attribute format printf" } */
   tformat__printf__ ("%d", i);
   tformat__printf__ ("%"); /* { dg-warning "format" "attribute format __printf__" } */
   tformatscanf ("%d", ip);

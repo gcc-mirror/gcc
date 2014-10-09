@@ -1658,8 +1658,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 		    {
 		      error ("ambiguous default type conversion from %qT",
 			     basetype);
-		      error ("  candidate conversions include %qD and %qD",
-			     winner, cand);
+		      inform (input_location,
+			      "  candidate conversions include %qD and %qD",
+			      winner, cand);
 		    }
 		  return error_mark_node;
 		}

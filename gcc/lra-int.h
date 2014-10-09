@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.	If not see
 <http://www.gnu.org/licenses/>.	 */
 
+#ifndef GCC_LRA_INT_H
+#define GCC_LRA_INT_H
+
 #include "lra.h"
 #include "bitmap.h"
 #include "recog.h"
@@ -218,7 +221,7 @@ struct lra_insn_recog_data
   /* SP offset before the insn relative to one at the func start.  */
   HOST_WIDE_INT sp_offset;
   /* The insn itself.  */
-  rtx insn;
+  rtx_insn *insn;
   /* Common data for insns with the same ICODE.  Asm insns (their
      ICODE is negative) do not share such structures.  */
   struct lra_static_insn_data *insn_static_data;
@@ -280,38 +283,39 @@ extern lra_insn_recog_data_t *lra_insn_recog_data;
 
 extern int lra_curr_reload_num;
 
-extern void lra_push_insn (rtx);
+extern void lra_push_insn (rtx_insn *);
 extern void lra_push_insn_by_uid (unsigned int);
-extern void lra_push_insn_and_update_insn_regno_info (rtx);
-extern rtx lra_pop_insn (void);
+extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);
+extern rtx_insn *lra_pop_insn (void);
 extern unsigned int lra_insn_stack_length (void);
 
 extern rtx lra_create_new_reg_with_unique_value (enum machine_mode, rtx,
 						 enum reg_class, const char *);
 extern void lra_set_regno_unique_value (int);
-extern void lra_invalidate_insn_data (rtx);
-extern void lra_set_insn_deleted (rtx);
-extern void lra_delete_dead_insn (rtx);
+extern void lra_invalidate_insn_data (rtx_insn *);
+extern void lra_set_insn_deleted (rtx_insn *);
+extern void lra_delete_dead_insn (rtx_insn *);
 extern void lra_emit_add (rtx, rtx, rtx);
 extern void lra_emit_move (rtx, rtx);
 extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 
-extern void lra_process_new_insns (rtx, rtx, rtx, const char *);
+extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
+				   const char *);
 
-extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx);
-extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx);
-extern void lra_set_used_insn_alternative (rtx, int);
+extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx_insn *);
+extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx_insn *);
+extern void lra_set_used_insn_alternative (rtx_insn *, int);
 extern void lra_set_used_insn_alternative_by_uid (int, int);
 
-extern void lra_invalidate_insn_regno_info (rtx);
-extern void lra_update_insn_regno_info (rtx);
+extern void lra_invalidate_insn_regno_info (rtx_insn *);
+extern void lra_update_insn_regno_info (rtx_insn *);
 extern struct lra_insn_reg *lra_get_insn_regs (int);
 
 extern void lra_free_copies (void);
 extern void lra_create_copy (int, int, int);
 extern lra_copy_t lra_get_copy (int);
 extern bool lra_former_scratch_p (int);
-extern bool lra_former_scratch_operand_p (rtx, int);
+extern bool lra_former_scratch_operand_p (rtx_insn *, int);
 
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
@@ -384,7 +388,8 @@ extern void lra_final_code_change (void);
 
 extern void lra_debug_elim_table (void);
 extern int lra_get_elimination_hard_regno (int);
-extern rtx lra_eliminate_regs_1 (rtx, rtx, enum machine_mode, bool, bool, bool);
+extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, enum machine_mode, bool,
+				 bool, bool);
 extern void lra_eliminate (bool, bool);
 
 extern void lra_eliminate_reg_if_possible (rtx *);
@@ -450,7 +455,7 @@ lra_update_operator_dups (lra_insn_recog_data_t id)
 
 /* Return info about INSN.  Set up the info if it is not done yet.  */
 static inline lra_insn_recog_data_t
-lra_get_insn_recog_data (rtx insn)
+lra_get_insn_recog_data (rtx_insn *insn)
 {
   lra_insn_recog_data_t data;
   unsigned int uid = INSN_UID (insn);
@@ -499,3 +504,5 @@ lra_assign_reg_val (int from, int to)
   lra_reg_info[to].val = lra_reg_info[from].val;
   lra_reg_info[to].offset = lra_reg_info[from].offset;
 }
+
+#endif /* GCC_LRA_INT_H */

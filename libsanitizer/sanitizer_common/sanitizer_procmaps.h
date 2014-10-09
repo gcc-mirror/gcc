@@ -24,6 +24,9 @@ struct ProcSelfMapsBuff {
   uptr mmaped_size;
   uptr len;
 };
+
+// Reads process memory map in an OS-specific way.
+void ReadProcMaps(ProcSelfMapsBuff *proc_maps);
 #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX
 
 class MemoryMappingLayout {
@@ -55,7 +58,7 @@ class MemoryMappingLayout {
   // platform-specific files.
 # if SANITIZER_FREEBSD || SANITIZER_LINUX
   ProcSelfMapsBuff proc_self_maps_;
-  char *current_;
+  const char *current_;
 
   // Static mappings cache.
   static ProcSelfMapsBuff cached_proc_self_maps_;
@@ -83,6 +86,11 @@ void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size);
 
 // Returns code range for the specified module.
 bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end);
+
+bool IsDecimal(char c);
+uptr ParseDecimal(const char **p);
+bool IsHex(char c);
+uptr ParseHex(const char **p);
 
 }  // namespace __sanitizer
 

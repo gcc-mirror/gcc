@@ -262,6 +262,22 @@ no)
   ;;
 esac
 
+AC_ARG_ENABLE([explicit-exception-frame-registration],
+  [AC_HELP_STRING([--enable-explicit-exception-frame-registration],
+     [register exception tables explicitly at module start, for use
+      e.g. for compatibility with installations without PT_GNU_EH_FRAME support])],
+[
+force_explicit_eh_registry=
+if test "$enable_explicit_exception_frame_registration" = yes; then
+  if test "$enable_sjlj_exceptions" = yes; then
+    AC_MSG_ERROR([Can't enable both of --enable-sjlj-exceptions
+                  and --enable-explicit-exception-frame-registration])
+  fi
+  force_explicit_eh_registry=-DUSE_EH_FRAME_REGISTRY_ALWAYS
+fi
+])
+AC_SUBST([force_explicit_eh_registry])
+
 AC_LIB_PROG_LD_GNU
 
 AC_MSG_CHECKING([for thread model used by GCC])

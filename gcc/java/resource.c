@@ -79,7 +79,7 @@ compile_resource_data (const char *name, const char *buffer, int length)
   layout_decl (decl, 0);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
-  varpool_finalize_decl (decl);
+  varpool_node::finalize_decl (decl);
 
   vec_safe_push (resources, decl);
 }

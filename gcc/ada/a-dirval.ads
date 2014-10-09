@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,6 @@ private package Ada.Directories.Validity is
 
    function Is_Path_Name_Case_Sensitive return Boolean;
    --  Returns True if file and path names are case-sensitive
-
-   function OpenVMS return Boolean;
-   --  Return True when OS is OpenVMS
 
    function Windows return Boolean;
    --  Return True when OS is Windows

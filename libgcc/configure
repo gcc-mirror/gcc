@@ -566,6 +566,7 @@ sfp_machine_header
 set_use_emutls
 set_have_cc_tls
 vis_hide
+force_explicit_eh_registry
 fixed_point
 enable_decimal_float
 decimal_float
@@ -664,6 +665,7 @@ with_build_libsubdir
 enable_decimal_float
 with_system_libunwind
 enable_sjlj_exceptions
+enable_explicit_exception_frame_registration
 enable_tls
 '
       ac_precious_vars='build_alias
@@ -1301,6 +1303,10 @@ Optional Features:
 			to use
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
+  --enable-explicit-exception-frame-registration
+                          register exception tables explicitly at module
+                          start, for use e.g. for compatibility with
+                          installations without PT_GNU_EH_FRAME support
   --enable-tls            Use thread-local storage [default=yes]
 
 Optional Packages:
@@ -4269,6 +4275,22 @@ no)
   as_fn_error "unable to detect exception model" "$LINENO" 5
   ;;
 esac
+
+# Check whether --enable-explicit-exception-frame-registration was given.
+if test "${enable_explicit_exception_frame_registration+set}" = set; then :
+  enableval=$enable_explicit_exception_frame_registration;
+force_explicit_eh_registry=
+if test "$enable_explicit_exception_frame_registration" = yes; then
+  if test "$enable_sjlj_exceptions" = yes; then
+    as_fn_error "Can't enable both of --enable-sjlj-exceptions
+                  and --enable-explicit-exception-frame-registration" "$LINENO" 5
+  fi
+  force_explicit_eh_registry=-DUSE_EH_FRAME_REGISTRY_ALWAYS
+fi
+
+fi
+
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
 $as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }

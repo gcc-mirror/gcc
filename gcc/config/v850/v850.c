@@ -792,10 +792,13 @@ v850_output_addr_const_extra (FILE * file, rtx x)
      nothing, since the table will not be used.
      (cf gcc.c-torture/compile/990801-1.c).  */
   if (GET_CODE (x) == MINUS
-      && GET_CODE (XEXP (x, 0)) == LABEL_REF
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == CODE_LABEL
-      && INSN_DELETED_P (XEXP (XEXP (x, 0), 0)))
-    return true;
+      && GET_CODE (XEXP (x, 0)) == LABEL_REF)
+    {
+      rtx_code_label *label
+	= dyn_cast<rtx_code_label *> (XEXP (XEXP (x, 0), 0));
+      if (label && label->deleted ())
+	return true;
+    }
 
   output_addr_const (file, x);
   return true;
@@ -1114,15 +1117,15 @@ ep_memory_operand (rtx op, enum machine_mode mode, int unsigned_load)
    taking care to save and preserve the ep.  */
 
 static void
-substitute_ep_register (rtx first_insn,
-                        rtx last_insn,
+substitute_ep_register (rtx_insn *first_insn,
+                        rtx_insn *last_insn,
                         int uses,
                         int regno,
                         rtx * p_r1,
                         rtx * p_ep)
 {
   rtx reg = gen_rtx_REG (Pmode, regno);
-  rtx insn;
+  rtx_insn *insn;
 
   if (!*p_r1)
     {
@@ -1227,8 +1230,8 @@ v850_reorg (void)
   struct
   {
     int uses;
-    rtx first_insn;
-    rtx last_insn;
+    rtx_insn *first_insn;
+    rtx_insn *last_insn;
   }
   regs[FIRST_PSEUDO_REGISTER];
 
@@ -1236,7 +1239,7 @@ v850_reorg (void)
   int use_ep = FALSE;
   rtx r1 = NULL_RTX;
   rtx ep = NULL_RTX;
-  rtx insn;
+  rtx_insn *insn;
   rtx pattern;
 
   /* If not ep mode, just return now.  */
@@ -1246,8 +1249,8 @@ v850_reorg (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       regs[i].uses = 0;
-      regs[i].first_insn = NULL_RTX;
-      regs[i].last_insn = NULL_RTX;
+      regs[i].first_insn = NULL;
+      regs[i].last_insn = NULL;
     }
 
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
@@ -1280,8 +1283,8 @@ v850_reorg (void)
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    {
 	      regs[i].uses = 0;
-	      regs[i].first_insn = NULL_RTX;
-	      regs[i].last_insn = NULL_RTX;
+	      regs[i].first_insn = NULL;
+	      regs[i].last_insn = NULL;
 	    }
 	  break;
 
@@ -1413,8 +1416,8 @@ v850_reorg (void)
 			  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 			    {
 			      regs[i].uses = 0;
-			      regs[i].first_insn = NULL_RTX;
-			      regs[i].last_insn = NULL_RTX;
+			      regs[i].first_insn = NULL;
+			      regs[i].last_insn = NULL;
 			    }
 			}
 		    }
@@ -1422,8 +1425,8 @@ v850_reorg (void)
 		  for (i = regno; i < endregno; i++)
 		    {
 		      regs[i].uses = 0;
-		      regs[i].first_insn = NULL_RTX;
-		      regs[i].last_insn = NULL_RTX;
+		      regs[i].first_insn = NULL;
+		      regs[i].last_insn = NULL;
 		    }
 		}
 	    }
@@ -1989,7 +1992,7 @@ expand_epilogue (void)
 
 /* Update the condition code from the insn.  */
 void
-notice_update_cc (rtx body, rtx insn)
+notice_update_cc (rtx body, rtx_insn *insn)
 {
   switch (get_attr_cc (insn))
     {
@@ -3092,7 +3095,7 @@ v850_memory_move_cost (enum machine_mode mode,
 }
 
 int
-v850_adjust_insn_length (rtx insn, int length)
+v850_adjust_insn_length (rtx_insn *insn, int length)
 {
   if (TARGET_V850E3V5_UP)
     {

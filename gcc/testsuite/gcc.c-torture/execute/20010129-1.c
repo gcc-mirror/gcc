@@ -1,3 +1,8 @@
+/* { dg-options "-mtune=i686" { target { { i?86*-*-* } && ilp32 } } } */
+
+extern void abort (void);
+extern void exit (int);
+
 long baz1 (void *a)
 {
   static long l;

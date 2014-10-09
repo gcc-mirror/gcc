@@ -132,7 +132,7 @@ build_libs="build-libiberty"
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
-#
+#f
 host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
@@ -331,7 +331,8 @@ case "${ENABLE_GOLD}" in
     if test "$is_elf" = "yes"; then
       # Check for target supported by gold.
       case "${target}" in
-        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* | tilegx*-*-*)
+        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
+        | aarch64*-*-* | tilegx*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -1177,6 +1178,9 @@ case "${host}" in
   *-mingw*)
     host_makefile_frag="config/mh-mingw"
     ;;
+  alpha*-*-linux*)
+    host_makefile_frag="config/mh-alpha-linux"
+    ;;
   hppa*-hp-hpux10*)
     host_makefile_frag="config/mh-pa-hpux10"
     ;;
@@ -1641,16 +1645,15 @@ AC_ARG_WITH(isl,
     Equivalent to --with-isl-include=PATH/include
     plus --with-isl-lib=PATH/lib])])
 
-# Treat either --without-cloog or --without-isl as a request to disable
+# Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
-if test "x$with_isl" != "xno" &&
-   test "x$with_cloog" != "xno"; then
+if test "x$with_isl" != "xno"; then
   # Check for ISL
   dnl Provide configure switches and initialize islinc & isllibs
   dnl with user input.
   ISL_INIT_FLAGS
   dnl The versions of ISL that work for Graphite
-  ISL_CHECK_VERSION(0,12)
+  ISL_CHECK_VERSION()
   dnl Only execute fail-action, if ISL has been requested.
   ISL_IF_FAILED([
     AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
@@ -1661,10 +1664,7 @@ if test "x$with_isl" != "xno" &&
     dnl with user input.
     CLOOG_INIT_FLAGS
     dnl The versions of CLooG that work for Graphite.
-    CLOOG_CHECK_VERSION(0,17,0)
-    if test "${gcc_cv_cloog}" = no ; then
-      CLOOG_CHECK_VERSION(0,18,0)
-    fi
+    CLOOG_CHECK_VERSION(0,18,1)
 
     dnl Only execute fail-action, if CLooG has been requested.
     CLOOG_IF_FAILED([
@@ -1672,11 +1672,9 @@ if test "x$with_isl" != "xno" &&
   fi
 fi
 
-# If either the ISL or the CLooG check failed, disable builds of in-tree
-# variants of both
+# If the ISL check failed, disable builds of in-tree
+# variants of both ISL and CLooG
 if test "x$with_isl" = xno ||
-   test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs cloog isl"
   islinc=
@@ -1684,10 +1682,19 @@ if test "x$with_isl" = xno ||
   clooglibs=
 fi
 
+# If the CLooG check failed, disable builds of in-tree
+# variants of CLooG
+if test "x$with_cloog" = xno ||
+   test "x$gcc_cv_cloog" = xno; then
+  noconfigdirs="$noconfigdirs cloog isl"
+  clooginc=
+  clooglibs=
+fi
+
+AC_SUBST(isllibs)
 AC_SUBST(islinc)
 AC_SUBST(clooglibs)
 AC_SUBST(clooginc)
-
 
 # Check for LTO support.
 AC_ARG_ENABLE(lto,
@@ -2812,7 +2819,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | cloog)
+    mpc | mpfr | gmp | isl | cloog)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any

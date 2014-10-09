@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,8 +140,8 @@ package System.Soft_Links is
    --  Undefer task abort (non-tasking case, does nothing)
 
    procedure Abort_Handler_NT;
-   --  Handle task abort (non-tasking case, does nothing). Currently, only VMS
-   --  uses this.
+   --  Handle task abort (non-tasking case, does nothing). Currently, no port
+   --  makes use of this, but we retain the interface for possible future use.
 
    procedure Update_Exception_NT (X : EO := Current_Target_Exception);
    --  Handle exception setting. This routine is provided for targets that
@@ -300,7 +300,7 @@ package System.Soft_Links is
    --  Wrapper to the possible user specified traceback decorator to be
    --  called during automatic output of exception data.
 
-   --  The nullity of this wrapper shall correspond to the nullity of the
+   --  The null value of this wrapper correspond sto the null value of the
    --  current actual decorator. This is ensured first by the null initial
    --  value of the corresponding variables, and then by Set_Trace_Decorator
    --  in g-exctra.adb.

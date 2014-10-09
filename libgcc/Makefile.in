@@ -50,6 +50,8 @@ target_noncanonical = @target_noncanonical@
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PARTS = @extra_parts@
 
+FORCE_EXPLICIT_EH_REGISTRY = @force_explicit_eh_registry@
+
 extra-parts = libgcc-extra-parts
 
 # Multilib support variables.
@@ -283,7 +285,7 @@ INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
-  -fno-stack-protector \
+  -fbuilding-libgcc -fno-stack-protector $(FORCE_EXPLICIT_EH_REGISTRY) \
   $(INHIBIT_LIBC_CFLAGS)
 
 # Extra flags to use when compiling crt{begin,end}.o.
@@ -852,14 +854,17 @@ include $(iterator)
 
 # Build libgcov components.
 
-LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single _gcov_merge_delta _gcov_merge_ior \
-     _gcov_merge_time_profile
-LIBGCOV_PROFILER = _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
-    _gcov_indirect_call_profiler _gcov_average_profiler _gcov_ior_profiler \
-    _gcov_indirect_call_profiler_v2 _gcov_time_profiler
-LIBGCOV_INTERFACE = _gcov_flush _gcov_fork _gcov_execl _gcov_execlp _gcov_execle \
-    _gcov_execv _gcov_execvp _gcov_execve _gcov_reset _gcov_dump
-LIBGCOV_DRIVER = _gcov 
+LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single _gcov_merge_delta	\
+	_gcov_merge_ior _gcov_merge_time_profile _gcov_merge_icall_topn
+LIBGCOV_PROFILER = _gcov_interval_profiler _gcov_pow2_profiler		\
+	_gcov_one_value_profiler _gcov_indirect_call_profiler		\
+ 	_gcov_average_profiler _gcov_ior_profiler			\
+	_gcov_indirect_call_profiler_v2 _gcov_time_profiler		\
+	_gcov_indirect_call_topn_profiler
+LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\
+	_gcov_execl _gcov_execlp					\
+	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset
+LIBGCOV_DRIVER = _gcov
 
 libgcov-merge-objects = $(patsubst %,%$(objext),$(LIBGCOV_MERGE))
 libgcov-profiler-objects = $(patsubst %,%$(objext),$(LIBGCOV_PROFILER))

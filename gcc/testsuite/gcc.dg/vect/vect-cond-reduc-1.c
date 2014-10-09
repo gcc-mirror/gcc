@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_condition } */
 
 #define N 512
 int a[N];

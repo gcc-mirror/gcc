@@ -2,6 +2,7 @@
 
 __extension__ typedef __INTPTR_TYPE__ intptr_t;
 typedef unsigned long long uint64_t;
+extern void linker_error (void);
 
 static inline void cvmx_write64_uint64(uint64_t addr, uint64_t val)
 {

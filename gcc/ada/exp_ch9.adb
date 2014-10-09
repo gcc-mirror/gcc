@@ -2425,7 +2425,7 @@ package body Exp_Ch9 is
 
          --  If an inherited subprogram is implemented by a protected procedure
          --  or an entry, then the first parameter of the inherited subprogram
-         --  shall be of mode OUT or IN OUT, or access-to-variable parameter.
+         --  must be of mode OUT or IN OUT, or access-to-variable parameter.
 
          if Ekind (Iface_Op) = E_Procedure
            and then Present (Parameter_Specifications (Iface_Op_Spec))
@@ -2497,10 +2497,12 @@ package body Exp_Ch9 is
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc,
-                    Chars          => Chars (Defining_Identifier (Formal))),
-                    In_Present     => In_Present  (Formal),
-                    Out_Present    => Out_Present (Formal),
-                    Parameter_Type => Param_Type));
+                    Chars                  => Chars
+                                             (Defining_Identifier (Formal))),
+                    In_Present             => In_Present  (Formal),
+                    Out_Present            => Out_Present (Formal),
+                    Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                    Parameter_Type         => Param_Type));
 
             Next (Formal);
          end loop;
@@ -2511,8 +2513,7 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Wrapper_Spec
 
    begin
-      --  There is no point in building wrappers for non-tagged concurrent
-      --  types.
+      --  No point in building wrappers for untagged concurrent types
 
       pragma Assert (Is_Tagged_Type (Obj_Typ));
 
@@ -4755,7 +4756,8 @@ package body Exp_Ch9 is
                   --  case of limited type. We cannot assign it unless the
                   --  Assignment_OK flag is set first. An out formal of an
                   --  access type must also be initialized from the actual,
-                  --  as stated in RM 6.4.1 (13).
+                  --  as stated in RM 6.4.1 (13), but no constraint is applied
+                  --  before the call.
 
                   if Ekind (Formal) /= E_Out_Parameter
                     or else Is_Access_Type (Etype (Formal))
@@ -4767,6 +4769,13 @@ package body Exp_Ch9 is
                        Make_Assignment_Statement (Loc,
                          Name => N_Var,
                          Expression => Relocate_Node (Actual)));
+
+                     --  If actual is an out parameter of a null-excluding
+                     --  access type, there is access check on entry, so set
+                     --  Suppress_Assignment_Checks on the generated statement
+                     --  that assigns the actual to the parameter block
+
+                     Set_Suppress_Assignment_Checks (Last (Stats));
                   end if;
 
                   Append (N_Node, Decls);
@@ -8870,6 +8879,12 @@ package body Exp_Ch9 is
       --  to the internal body, for possible inlining later on. The source
       --  operation is invisible to the back-end and is never actually called.
 
+      function Discriminated_Size (Comp : Entity_Id) return Boolean;
+      --  If a component size is not static then a warning will be emitted
+      --  in Ravenscar or other restricted contexts. When a component is non-
+      --  static because of a discriminant constraint we can specialize the
+      --  warning by mentioning discriminants explicitly.
+
       procedure Expand_Entry_Declaration (Comp : Entity_Id);
       --  Create the subprograms for the barrier and for the body, and append
       --  then to Entry_Bodies_Array.
@@ -8897,9 +8912,66 @@ package body Exp_Ch9 is
          end if;
       end Check_Inlining;
 
-      ---------------------------------
-      -- Check_Static_Component_Size --
-      ---------------------------------
+      ------------------------
+      -- Discriminated_Size --
+      ------------------------
+
+      function Discriminated_Size (Comp : Entity_Id) return Boolean is
+         Typ   : constant Entity_Id := Etype (Comp);
+         Index : Node_Id;
+
+         function Non_Static_Bound (Bound : Node_Id) return Boolean;
+         --  Check whether the bound of an index is non-static and does denote
+         --  a discriminant, in which case any protected object of the type
+         --  will have a non-static size.
+
+         ----------------------
+         -- Non_Static_Bound --
+         ----------------------
+
+         function Non_Static_Bound (Bound : Node_Id) return Boolean is
+         begin
+            if Is_OK_Static_Expression (Bound) then
+               return False;
+
+            elsif Is_Entity_Name (Bound)
+              and then Present (Discriminal_Link (Entity (Bound)))
+            then
+               return False;
+
+            else
+               return True;
+            end if;
+         end Non_Static_Bound;
+
+      --  Start of processing for Discriminated_Size
+
+      begin
+         if not Is_Array_Type (Typ) then
+            return False;
+         end if;
+
+         if Ekind (Typ) = E_Array_Subtype then
+            Index := First_Index (Typ);
+            while Present (Index) loop
+               if Non_Static_Bound (Low_Bound (Index))
+                 or else Non_Static_Bound (High_Bound (Index))
+               then
+                  return False;
+               end if;
+
+               Next_Index (Index);
+            end loop;
+
+            return True;
+         end if;
+
+         return False;
+      end Discriminated_Size;
+
+      ---------------------------
+      -- Static_Component_Size --
+      ---------------------------
 
       function Static_Component_Size (Comp : Entity_Id) return Boolean is
          Typ : constant Entity_Id := Etype (Comp);
@@ -9093,11 +9165,26 @@ package body Exp_Ch9 is
                      Check_Restriction (No_Implicit_Heap_Allocations, Priv);
 
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then
-                     Error_Msg_N ("component has non-static size??", Priv);
-                     Error_Msg_NE
-                       ("\creation of protected object of type& will violate"
-                        & " restriction No_Implicit_Heap_Allocations??",
-                        Priv, Prot_Typ);
+                     if not Discriminated_Size (Defining_Identifier (Priv))
+                     then
+
+                        --  Any object of the type will be  non-static.
+
+                        Error_Msg_N ("component has non-static size??", Priv);
+                        Error_Msg_NE
+                          ("\creation of protected object of type& will"
+                           & " violate restriction "
+                           & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
+                     else
+
+                        --  Object will be non-static if discriminants are.
+
+                        Error_Msg_NE
+                          ("creation of protected object of type& with "
+                           &  "non-static discriminants  will violate"
+                           & " restriction No_Implicit_Heap_Allocations??",
+                           Priv, Prot_Typ);
+                     end if;
                   end if;
                end if;
 
@@ -10539,14 +10626,13 @@ package body Exp_Ch9 is
          Params : constant List_Id := New_List;
 
       begin
-         Append (
+         Append_To (Params,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Qnam, Loc),
-             Attribute_Name => Name_Unchecked_Access),
-           Params);
-         Append (Select_Mode,                  Params);
-         Append (New_Occurrence_Of (Ann, Loc),  Params);
-         Append (New_Occurrence_Of (Xnam, Loc), Params);
+             Attribute_Name => Name_Unchecked_Access));
+         Append_To (Params, Select_Mode);
+         Append_To (Params, New_Occurrence_Of (Ann, Loc));
+         Append_To (Params, New_Occurrence_Of (Xnam, Loc));
 
          return
            Make_Procedure_Call_Statement (Loc,
@@ -11266,6 +11352,7 @@ package body Exp_Ch9 is
             Append (Cases, Stats);
          end;
       end if;
+
       Append (End_Lab, Stats);
 
       --  Replace accept statement with appropriate block
@@ -11675,7 +11762,7 @@ package body Exp_Ch9 is
       if Present (Taskdef)
         and then Has_Storage_Size_Pragma (Taskdef)
         and then
-          Is_Static_Expression
+          Is_OK_Static_Expression
             (Expression
                (First (Pragma_Argument_Associations
                          (Get_Rep_Pragma (TaskId, Name_Storage_Size)))))
@@ -12731,6 +12818,14 @@ package body Exp_Ch9 is
          Concval := Prefix (Prefix (Nam));
          Ename   := Selector_Name (Prefix (Nam));
          Index   := First (Expressions (Nam));
+      end if;
+
+      --  Through indirection, the type may actually be a limited view of a
+      --  concurrent type. When compiling a call, the non-limited view of the
+      --  type is visible.
+
+      if From_Limited_With (Etype (Concval)) then
+         Set_Etype (Concval, Non_Limited_View (Etype (Concval)));
       end if;
    end Extract_Entry;
 

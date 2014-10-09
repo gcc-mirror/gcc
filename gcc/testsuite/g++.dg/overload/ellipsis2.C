@@ -1,4 +1,5 @@
 // PR c++/60253
+// { dg-options "-Wconditionally-supported" }
 
 struct A
 {
@@ -10,4 +11,4 @@ struct B
   B(...);
 };
 
-B b(0, A());  // { dg-error "cannot pass" }
+B b(0, A());  // { dg-message "pass" }

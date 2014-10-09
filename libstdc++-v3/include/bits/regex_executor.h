@@ -125,8 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_is_word(_CharT __ch) const
       {
 	static const _CharT __s[2] = { 'w' };
-	return _M_re._M_traits.isctype
-	  (__ch, _M_re._M_traits.lookup_classname(__s, __s+1));
+	return _M_re._M_automaton->_M_traits.isctype
+	  (__ch, _M_re._M_automaton->_M_traits.lookup_classname(__s, __s+1));
       }
 
       bool
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  explicit
 	  _State_info(_StateIdT __start, size_t __n)
-	  : _M_start(__start), _M_visited_states(new bool[__n]())
+	  : _M_visited_states(new bool[__n]()), _M_start(__start)
 	  { }
 
 	  bool _M_visited(_StateIdT __i)

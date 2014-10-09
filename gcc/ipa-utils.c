@@ -55,12 +55,12 @@ ipa_print_order (FILE* out,
   fprintf (out, "\n\n ordered call graph: %s\n", note);
 
   for (i = count - 1; i >= 0; i--)
-    dump_cgraph_node (out, order[i]);
+    order[i]->dump (out);
   fprintf (out, "\n");
   fflush (out);
 }
 
-
+
 struct searchc_env {
   struct cgraph_node **stack;
   int stack_size;
@@ -103,14 +103,14 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
     {
       struct ipa_dfs_info * w_info;
       enum availability avail;
-      struct cgraph_node *w = cgraph_function_or_thunk_node (edge->callee, &avail);
+      struct cgraph_node *w = edge->callee->ultimate_alias_target (&avail);
 
       if (!w || (ignore_edge && ignore_edge (edge)))
         continue;
 
       if (w->aux
-	  && (avail > AVAIL_OVERWRITABLE
-	      || (env->allow_overwritable && avail == AVAIL_OVERWRITABLE)))
+	  && (avail > AVAIL_INTERPOSABLE
+	      || (env->allow_overwritable && avail == AVAIL_INTERPOSABLE)))
 	{
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  if (w_info->new_node)
@@ -173,7 +173,7 @@ ipa_reduced_postorder (struct cgraph_node **order,
   struct cgraph_node *node;
   struct searchc_env env;
   splay_tree_node result;
-  env.stack = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  env.stack = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   env.stack_size = 0;
   env.result = order;
   env.order_pos = 0;
@@ -184,11 +184,11 @@ ipa_reduced_postorder (struct cgraph_node **order,
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      enum availability avail = cgraph_function_body_availability (node);
+      enum availability avail = node->get_availability ();
 
-      if (avail > AVAIL_OVERWRITABLE
+      if (avail > AVAIL_INTERPOSABLE
 	  || (allow_overwritable
-	      && (avail == AVAIL_OVERWRITABLE)))
+	      && (avail == AVAIL_INTERPOSABLE)))
 	{
 	  /* Reuse the info if it is already there.  */
 	  struct ipa_dfs_info *info = (struct ipa_dfs_info *) node->aux;
@@ -240,10 +240,10 @@ ipa_free_postorder_info (void)
 /* Get the set of nodes for the cycle in the reduced call graph starting
    from NODE.  */
 
-vec<cgraph_node_ptr> 
+vec<cgraph_node *>
 ipa_get_nodes_in_cycle (struct cgraph_node *node)
 {
-  vec<cgraph_node_ptr> v = vNULL;
+  vec<cgraph_node *> v = vNULL;
   struct ipa_dfs_info *node_dfs_info;
   while (node)
     {
@@ -262,7 +262,7 @@ ipa_edge_within_scc (struct cgraph_edge *cs)
 {
   struct ipa_dfs_info *caller_dfs = (struct ipa_dfs_info *) cs->caller->aux;
   struct ipa_dfs_info *callee_dfs;
-  struct cgraph_node *callee = cgraph_function_node (cs->callee, NULL);
+  struct cgraph_node *callee = cs->callee->function_symbol ();
 
   callee_dfs = (struct ipa_dfs_info *) callee->aux;
   return (caller_dfs
@@ -292,7 +292,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
   struct ipa_ref *ref = NULL;
 
   struct postorder_stack *stack =
-    XCNEWVEC (struct postorder_stack, cgraph_n_nodes);
+    XCNEWVEC (struct postorder_stack, symtab->cgraph_count);
 
   /* We have to deal with cycles nicely, so use a depth first traversal
      output algorithm.  Ignore the fact that some functions won't need
@@ -307,7 +307,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	      || (!node->address_taken
 		  && !node->global.inlined_to
 		  && !node->alias && !node->thunk.thunk_p
-		  && !cgraph_only_called_directly_p (node))))
+		  && !node->only_called_directly_p ())))
 	{
 	  stack_size = 0;
           stack[stack_size].node = node;
@@ -329,7 +329,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 			 functions to non-always-inline functions.  */
 		      if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->decl)
 			  && !DECL_DISREGARD_INLINE_LIMITS
-			    (cgraph_function_node (edge->callee, NULL)->decl))
+			    (edge->callee->function_symbol ()->decl))
 			node2 = NULL;
 		    }
 		  for (; stack[stack_size].node->iterate_referring (
@@ -381,264 +381,6 @@ get_base_var (tree t)
 }
 
 
-/* Create a new cgraph node set.  */
-
-cgraph_node_set
-cgraph_node_set_new (void)
-{
-  cgraph_node_set new_node_set;
-
-  new_node_set = XCNEW (struct cgraph_node_set_def);
-  new_node_set->map = pointer_map_create ();
-  new_node_set->nodes.create (0);
-  return new_node_set;
-}
-
-
-/* Add cgraph_node NODE to cgraph_node_set SET.  */
-
-void
-cgraph_node_set_add (cgraph_node_set set, struct cgraph_node *node)
-{
-  void **slot;
-
-  slot = pointer_map_insert (set->map, node);
-
-  if (*slot)
-    {
-      int index = (size_t) *slot - 1;
-      gcc_checking_assert ((set->nodes[index]
-		           == node));
-      return;
-    }
-
-  *slot = (void *)(size_t) (set->nodes.length () + 1);
-
-  /* Insert into node vector.  */
-  set->nodes.safe_push (node);
-}
-
-
-/* Remove cgraph_node NODE from cgraph_node_set SET.  */
-
-void
-cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
-{
-  void **slot, **last_slot;
-  int index;
-  struct cgraph_node *last_node;
-
-  slot = pointer_map_contains (set->map, node);
-  if (slot == NULL || !*slot)
-    return;
-
-  index = (size_t) *slot - 1;
-  gcc_checking_assert (set->nodes[index]
-	      	       == node);
-
-  /* Remove from vector. We do this by swapping node with the last element
-     of the vector.  */
-  last_node = set->nodes.pop ();
-  if (last_node != node)
-    {
-      last_slot = pointer_map_contains (set->map, last_node);
-      gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
-
-      /* Move the last element to the original spot of NODE.  */
-      set->nodes[index] = last_node;
-    }
-
-  /* Remove element from hash table.  */
-  *slot = NULL;
-}
-
-
-/* Find NODE in SET and return an iterator to it if found.  A null iterator
-   is returned if NODE is not in SET.  */
-
-cgraph_node_set_iterator
-cgraph_node_set_find (cgraph_node_set set, struct cgraph_node *node)
-{
-  void **slot;
-  cgraph_node_set_iterator csi;
-
-  slot = pointer_map_contains (set->map, node);
-  if (slot == NULL || !*slot)
-    csi.index = (unsigned) ~0;
-  else
-    csi.index = (size_t)*slot - 1;
-  csi.set = set;
-
-  return csi;
-}
-
-
-/* Dump content of SET to file F.  */
-
-void
-dump_cgraph_node_set (FILE *f, cgraph_node_set set)
-{
-  cgraph_node_set_iterator iter;
-
-  for (iter = csi_start (set); !csi_end_p (iter); csi_next (&iter))
-    {
-      struct cgraph_node *node = csi_node (iter);
-      fprintf (f, " %s/%i", node->name (), node->order);
-    }
-  fprintf (f, "\n");
-}
-
-
-/* Dump content of SET to stderr.  */
-
-DEBUG_FUNCTION void
-debug_cgraph_node_set (cgraph_node_set set)
-{
-  dump_cgraph_node_set (stderr, set);
-}
-
-
-/* Free varpool node set.  */
-
-void
-free_cgraph_node_set (cgraph_node_set set)
-{
-  set->nodes.release ();
-  pointer_map_destroy (set->map);
-  free (set);
-}
-
-
-/* Create a new varpool node set.  */
-
-varpool_node_set
-varpool_node_set_new (void)
-{
-  varpool_node_set new_node_set;
-
-  new_node_set = XCNEW (struct varpool_node_set_def);
-  new_node_set->map = pointer_map_create ();
-  new_node_set->nodes.create (0);
-  return new_node_set;
-}
-
-
-/* Add varpool_node NODE to varpool_node_set SET.  */
-
-void
-varpool_node_set_add (varpool_node_set set, varpool_node *node)
-{
-  void **slot;
-
-  slot = pointer_map_insert (set->map, node);
-
-  if (*slot)
-    {
-      int index = (size_t) *slot - 1;
-      gcc_checking_assert ((set->nodes[index]
-		           == node));
-      return;
-    }
-
-  *slot = (void *)(size_t) (set->nodes.length () + 1);
-
-  /* Insert into node vector.  */
-  set->nodes.safe_push (node);
-}
-
-
-/* Remove varpool_node NODE from varpool_node_set SET.  */
-
-void
-varpool_node_set_remove (varpool_node_set set, varpool_node *node)
-{
-  void **slot, **last_slot;
-  int index;
-  varpool_node *last_node;
-
-  slot = pointer_map_contains (set->map, node);
-  if (slot == NULL || !*slot)
-    return;
-
-  index = (size_t) *slot - 1;
-  gcc_checking_assert (set->nodes[index]
-	      	       == node);
-
-  /* Remove from vector. We do this by swapping node with the last element
-     of the vector.  */
-  last_node = set->nodes.pop ();
-  if (last_node != node)
-    {
-      last_slot = pointer_map_contains (set->map, last_node);
-      gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
-
-      /* Move the last element to the original spot of NODE.  */
-      set->nodes[index] = last_node;
-    }
-
-  /* Remove element from hash table.  */
-  *slot = NULL;
-}
-
-
-/* Find NODE in SET and return an iterator to it if found.  A null iterator
-   is returned if NODE is not in SET.  */
-
-varpool_node_set_iterator
-varpool_node_set_find (varpool_node_set set, varpool_node *node)
-{
-  void **slot;
-  varpool_node_set_iterator vsi;
-
-  slot = pointer_map_contains (set->map, node);
-  if (slot == NULL || !*slot)
-    vsi.index = (unsigned) ~0;
-  else
-    vsi.index = (size_t)*slot - 1;
-  vsi.set = set;
-
-  return vsi;
-}
-
-
-/* Dump content of SET to file F.  */
-
-void
-dump_varpool_node_set (FILE *f, varpool_node_set set)
-{
-  varpool_node_set_iterator iter;
-
-  for (iter = vsi_start (set); !vsi_end_p (iter); vsi_next (&iter))
-    {
-      varpool_node *node = vsi_node (iter);
-      fprintf (f, " %s", node->name ());
-    }
-  fprintf (f, "\n");
-}
-
-
-/* Free varpool node set.  */
-
-void
-free_varpool_node_set (varpool_node_set set)
-{
-  set->nodes.release ();
-  pointer_map_destroy (set->map);
-  free (set);
-}
-
-
-/* Dump content of SET to stderr.  */
-
-DEBUG_FUNCTION void
-debug_varpool_node_set (varpool_node_set set)
-{
-  dump_varpool_node_set (stderr, set);
-}
-
-
 /* SRC and DST are going to be merged.  Take SRC's profile and merge it into
    DST so it is not going to be lost.  Destroy SRC's body on the way.  */
 
@@ -660,19 +402,14 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (dst->tp_first_run > src->tp_first_run && src->tp_first_run)
     dst->tp_first_run = src->tp_first_run;
 
-  if (src->profile_id)
-    {
-      if (!dst->profile_id)
-	dst->profile_id = src->profile_id;
-      else
-	gcc_assert (src->profile_id == dst->profile_id);
-    }
+  if (src->profile_id && !dst->profile_id)
+    dst->profile_id = src->profile_id;
 
   if (!dst->count)
     return;
-  if (cgraph_dump_file)
+  if (symtab->dump_file)
     {
-      fprintf (cgraph_dump_file, "Merging profiles of %s/%i to %s/%i\n",
+      fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
 	       xstrdup (src->name ()), src->order,
 	       xstrdup (dst->name ()), dst->order);
     }
@@ -712,23 +449,23 @@ ipa_merge_profiles (struct cgraph_node *dst,
       gcc_assert (!*slot);
       *slot = state;
     }
-  cgraph_get_body (src);
-  cgraph_get_body (dst);
+  src->get_body ();
+  dst->get_body ();
   srccfun = DECL_STRUCT_FUNCTION (src->decl);
   dstcfun = DECL_STRUCT_FUNCTION (dst->decl);
   if (n_basic_blocks_for_fn (srccfun)
       != n_basic_blocks_for_fn (dstcfun))
     {
-      if (cgraph_dump_file)
-	fprintf (cgraph_dump_file,
+      if (symtab->dump_file)
+	fprintf (symtab->dump_file,
 		 "Giving up; number of basic block mismatch.\n");
       match = false;
     }
   else if (last_basic_block_for_fn (srccfun)
 	   != last_basic_block_for_fn (dstcfun))
     {
-      if (cgraph_dump_file)
-	fprintf (cgraph_dump_file,
+      if (symtab->dump_file)
+	fprintf (symtab->dump_file,
 		 "Giving up; last block mismatch.\n");
       match = false;
     }
@@ -743,8 +480,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 	  if (dstbb == NULL)
 	    {
-	      if (cgraph_dump_file)
-		fprintf (cgraph_dump_file,
+	      if (symtab->dump_file)
+		fprintf (symtab->dump_file,
 			 "No matching block for bb %i.\n",
 			 srcbb->index);
 	      match = false;
@@ -752,8 +489,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	    }
 	  if (EDGE_COUNT (srcbb->succs) != EDGE_COUNT (dstbb->succs))
 	    {
-	      if (cgraph_dump_file)
-		fprintf (cgraph_dump_file,
+	      if (symtab->dump_file)
+		fprintf (symtab->dump_file,
 			 "Edge count mistmatch for bb %i.\n",
 			 srcbb->index);
 	      match = false;
@@ -765,8 +502,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      edge dste = EDGE_SUCC (dstbb, i);
 	      if (srce->dest->index != dste->dest->index)
 		{
-		  if (cgraph_dump_file)
-		    fprintf (cgraph_dump_file,
+		  if (symtab->dump_file)
+		    fprintf (symtab->dump_file,
 			     "Succ edge mistmatch for bb %i.\n",
 			     srce->dest->index);
 		  match = false;
@@ -814,7 +551,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 			     (dst->decl,
 			      gimple_bb (e->call_stmt));
 	}
-      cgraph_release_function_body (src);
+      src->release_body ();
       inline_update_overall_summary (dst);
     }
   /* TODO: if there is no match, we can scale up.  */
@@ -826,9 +563,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 bool
 recursive_call_p (tree func, tree dest)
 {
-  struct cgraph_node *dest_node = cgraph_get_create_node (dest);
-  struct cgraph_node *cnode = cgraph_get_create_node (func);
+  struct cgraph_node *dest_node = cgraph_node::get_create (dest);
+  struct cgraph_node *cnode = cgraph_node::get_create (func);
 
-  return symtab_semantically_equivalent_p (dest_node,
-					   cnode);
+  return dest_node->semantically_equivalent_p (cnode);
 }

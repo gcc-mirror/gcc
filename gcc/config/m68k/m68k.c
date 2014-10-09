@@ -125,9 +125,9 @@ struct m68k_address {
   int scale;
 };
 
-static int m68k_sched_adjust_cost (rtx, rtx, rtx, int);
+static int m68k_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int m68k_sched_issue_rate (void);
-static int m68k_sched_variable_issue (FILE *, int, rtx, int);
+static int m68k_sched_variable_issue (FILE *, int, rtx_insn *, int);
 static void m68k_sched_md_init_global (FILE *, int, int);
 static void m68k_sched_md_finish_global (FILE *, int);
 static void m68k_sched_md_init (FILE *, int, int);
@@ -911,7 +911,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
    whether or not this is pre-decrement (if STORE_P) or post-increment
    (if !STORE_P) operation.  */
 
-static rtx
+static rtx_insn *
 m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 		 unsigned int count, unsigned int regno,
 		 unsigned int mask, bool store_p, bool adjust_stack_p)
@@ -951,7 +951,7 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 /* Make INSN a frame-related instruction.  */
 
 static void
-m68k_set_frame_related (rtx insn)
+m68k_set_frame_related (rtx_insn *insn)
 {
   rtx body;
   int i;
@@ -1742,7 +1742,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 }
 
 const char *
-output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
+output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos)
 {
   operands[0] = countop;
   operands[1] = dataop;
@@ -1933,12 +1933,12 @@ m68k_jump_table_ref_p (rtx x)
   if (GET_CODE (x) != LABEL_REF)
     return false;
 
-  x = XEXP (x, 0);
-  if (!NEXT_INSN (x) && !PREV_INSN (x))
+  rtx_insn *insn = as_a <rtx_insn *> (XEXP (x, 0));
+  if (!NEXT_INSN (insn) && !PREV_INSN (insn))
     return true;
 
-  x = next_nonnote_insn (x);
-  return x && JUMP_TABLE_DATA_P (x);
+  insn = next_nonnote_insn (insn);
+  return insn && JUMP_TABLE_DATA_P (insn);
 }
 
 /* Return true if X is a legitimate address for values of mode MODE.
@@ -2320,7 +2320,7 @@ m68k_final_prescan_insn_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
 /* Prescan insn before outputing assembler for it.  */
 
 void
-m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
+m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
 			 rtx *operands, int n_operands)
 {
   int i;
@@ -2358,7 +2358,7 @@ m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
 static rtx
 m68k_move_to_reg (rtx x, rtx orig, rtx reg)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (reg == NULL_RTX)
     {
@@ -2495,7 +2495,7 @@ static rtx
 m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
 {
   rtx a0;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   /* Emit the call sequence.  */
@@ -2555,7 +2555,7 @@ m68k_call_m68k_read_tp (void)
 {
   rtx a0;
   rtx eqv;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   start_sequence ();
@@ -4799,10 +4799,10 @@ print_operand_address (FILE *file, rtx addr)
    clear insn.  */
 
 bool
-strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
+strict_low_part_peephole_ok (enum machine_mode mode, rtx_insn *first_insn,
                              rtx target)
 {
-  rtx p = first_insn;
+  rtx_insn *p = first_insn;
 
   while ((p = PREV_INSN (p)))
     {
@@ -5042,7 +5042,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this_slot, offset, addr, mem, insn, tmp;
+  rtx this_slot, offset, addr, mem, tmp;
+  rtx_insn *insn;
 
   /* Avoid clobbering the struct value reg by using the
      static chain reg as a temporary.  */
@@ -5413,7 +5414,7 @@ sched_address_type (enum machine_mode mode, rtx addr_rtx)
 
 /* Return X or Y (depending on OPX_P) operand of INSN.  */
 static rtx
-sched_get_operand (rtx insn, bool opx_p)
+sched_get_operand (rtx_insn *insn, bool opx_p)
 {
   int i;
 
@@ -5436,7 +5437,7 @@ sched_get_operand (rtx insn, bool opx_p)
 /* Return type of INSN's operand X (if OPX_P) or operand Y (if !OPX_P).
    If ADDRESS_P is true, return type of memory location operand refers to.  */
 static enum attr_op_type
-sched_attr_op_type (rtx insn, bool opx_p, bool address_p)
+sched_attr_op_type (rtx_insn *insn, bool opx_p, bool address_p)
 {
   rtx op;
 
@@ -5555,7 +5556,7 @@ sched_attr_op_type (rtx insn, bool opx_p, bool address_p)
    Return type of INSN's operand X.
    If ADDRESS_P is true, return type of memory location operand refers to.  */
 enum attr_opx_type
-m68k_sched_attr_opx_type (rtx insn, int address_p)
+m68k_sched_attr_opx_type (rtx_insn *insn, int address_p)
 {
   switch (sched_attr_op_type (insn, true, address_p != 0))
     {
@@ -5598,7 +5599,7 @@ m68k_sched_attr_opx_type (rtx insn, int address_p)
    Return type of INSN's operand Y.
    If ADDRESS_P is true, return type of memory location operand refers to.  */
 enum attr_opy_type
-m68k_sched_attr_opy_type (rtx insn, int address_p)
+m68k_sched_attr_opy_type (rtx_insn *insn, int address_p)
 {
   switch (sched_attr_op_type (insn, false, address_p != 0))
     {
@@ -5639,7 +5640,7 @@ m68k_sched_attr_opy_type (rtx insn, int address_p)
 
 /* Return size of INSN as int.  */
 static int
-sched_get_attr_size_int (rtx insn)
+sched_get_attr_size_int (rtx_insn *insn)
 {
   int size;
 
@@ -5724,7 +5725,7 @@ sched_get_attr_size_int (rtx insn)
 
 /* Return size of INSN as attribute enum value.  */
 enum attr_size
-m68k_sched_attr_size (rtx insn)
+m68k_sched_attr_size (rtx_insn *insn)
 {
   switch (sched_get_attr_size_int (insn))
     {
@@ -5745,7 +5746,7 @@ m68k_sched_attr_size (rtx insn)
 /* Return operand X or Y (depending on OPX_P) of INSN,
    if it is a MEM, or NULL overwise.  */
 static enum attr_op_type
-sched_get_opxy_mem_type (rtx insn, bool opx_p)
+sched_get_opxy_mem_type (rtx_insn *insn, bool opx_p)
 {
   if (opx_p)
     {
@@ -5801,7 +5802,7 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 /* Implement op_mem attribute.  */
 enum attr_op_mem
-m68k_sched_attr_op_mem (rtx insn)
+m68k_sched_attr_op_mem (rtx_insn *insn)
 {
   enum attr_op_type opx;
   enum attr_op_type opy;
@@ -5920,8 +5921,8 @@ static state_t sched_adjust_cost_state;
 /* Implement adjust_cost scheduler hook.
    Return adjusted COST of dependency LINK between DEF_INSN and INSN.  */
 static int
-m68k_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx def_insn,
-			int cost)
+m68k_sched_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
+			rtx_insn *def_insn, int cost)
 {
   int delay;
 
@@ -6031,7 +6032,7 @@ static int sched_mem_unit_code;
 static int
 m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED,
-			   rtx insn, int can_issue_more)
+			   rtx_insn *insn, int can_issue_more)
 {
   int insn_size;
 
@@ -6125,12 +6126,12 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
   /* Check that all instructions have DFA reservations and
      that all instructions can be issued from a clean state.  */
   {
-    rtx insn;
+    rtx_insn *insn;
     state_t state;
 
     state = alloca (state_size ());
 
-    for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    for (insn = get_insns (); insn != NULL; insn = NEXT_INSN (insn))
       {
  	if (INSN_P (insn) && recog_memoized (insn) >= 0)
 	  {
@@ -6288,7 +6289,7 @@ m68k_sched_dfa_post_advance_cycle (void)
 /* Return X or Y (depending on OPX_P) operand of INSN,
    if it is an integer register, or NULL overwise.  */
 static rtx
-sched_get_reg_operand (rtx insn, bool opx_p)
+sched_get_reg_operand (rtx_insn *insn, bool opx_p)
 {
   rtx op = NULL;
 
@@ -6321,7 +6322,7 @@ sched_get_reg_operand (rtx insn, bool opx_p)
 /* Return true, if X or Y (depending on OPX_P) operand of INSN
    is a MEM.  */
 static bool
-sched_mem_operand_p (rtx insn, bool opx_p)
+sched_mem_operand_p (rtx_insn *insn, bool opx_p)
 {
   switch (sched_get_opxy_mem_type (insn, opx_p))
     {
@@ -6337,7 +6338,7 @@ sched_mem_operand_p (rtx insn, bool opx_p)
 /* Return X or Y (depending on OPX_P) operand of INSN,
    if it is a MEM, or NULL overwise.  */
 static rtx
-sched_get_mem_operand (rtx insn, bool must_read_p, bool must_write_p)
+sched_get_mem_operand (rtx_insn *insn, bool must_read_p, bool must_write_p)
 {
   bool opx_p;
   bool opy_p;
@@ -6370,7 +6371,7 @@ sched_get_mem_operand (rtx insn, bool must_read_p, bool must_write_p)
 /* Return non-zero if PRO modifies register used as part of
    address in CON.  */
 int
-m68k_sched_address_bypass_p (rtx pro, rtx con)
+m68k_sched_address_bypass_p (rtx_insn *pro, rtx_insn *con)
 {
   rtx pro_x;
   rtx con_mem_read;
@@ -6392,7 +6393,7 @@ m68k_sched_address_bypass_p (rtx pro, rtx con)
    if PRO modifies register used as index in CON,
    return scale of indexed memory access in CON.  Return zero overwise.  */
 static int
-sched_get_indexed_address_scale (rtx pro, rtx con)
+sched_get_indexed_address_scale (rtx_insn *pro, rtx_insn *con)
 {
   rtx reg;
   rtx mem;
@@ -6421,7 +6422,7 @@ sched_get_indexed_address_scale (rtx pro, rtx con)
 /* Return non-zero if PRO modifies register used
    as index with scale 2 or 4 in CON.  */
 int
-m68k_sched_indexed_address_bypass_p (rtx pro, rtx con)
+m68k_sched_indexed_address_bypass_p (rtx_insn *pro, rtx_insn *con)
 {
   gcc_assert (sched_cfv4_bypass_data.pro == NULL
 	      && sched_cfv4_bypass_data.con == NULL

@@ -56,11 +56,11 @@ extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
 extern int tls_symbolic_operand (rtx);
 
-extern bool s390_match_ccmode (rtx, enum machine_mode);
+extern bool s390_match_ccmode (rtx_insn *, enum machine_mode);
 extern enum machine_mode s390_tm_ccmode (rtx, rtx, bool);
 extern enum machine_mode s390_select_ccmode (enum rtx_code, rtx, rtx);
 extern rtx s390_emit_compare (enum rtx_code, rtx, rtx);
-extern rtx s390_emit_jump (rtx, rtx);
+extern rtx_insn *s390_emit_jump (rtx, rtx);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool tls_symbolic_reference_mentioned_p (rtx);
 extern bool legitimate_la_operand_p (rtx);
@@ -92,7 +92,7 @@ extern void s390_expand_atomic (enum machine_mode, enum rtx_code,
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_back_chain_rtx (void);
-extern rtx s390_emit_call (rtx, rtx, rtx, rtx);
+extern rtx_insn *s390_emit_call (rtx, rtx, rtx, rtx);
 extern void s390_expand_logical_operator (enum rtx_code,
 					  enum machine_mode, rtx *);
 extern bool s390_logical_operator_ok_p (rtx *);
@@ -103,8 +103,8 @@ extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, enum machine_mode, unsigned int);
 extern int s390_label_align (rtx);
-extern int s390_agen_dep_p (rtx, rtx);
-extern rtx s390_load_got (void);
+extern int s390_agen_dep_p (rtx_insn *, rtx_insn *);
+extern rtx_insn *s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
 extern void s390_emit_tpf_eh_return (rtx);
 extern bool s390_legitimate_address_without_index_p (rtx);

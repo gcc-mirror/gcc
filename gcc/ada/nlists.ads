@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,7 +149,6 @@ package Nlists is
    --  No_List. (No_List is not considered to be the same as an empty list).
 
    function List_Length (List : List_Id) return Nat;
-   pragma Inline (List_Length);
    --  Returns number of items in the given list. It is an error to call
    --  this function with No_List (No_List is not considered to be the same
    --  as an empty list).
@@ -226,9 +225,9 @@ package Nlists is
 
    procedure Append (Node : Node_Or_Entity_Id; To : List_Id);
    --  Appends Node at the end of node list To. Node must be a non-empty node
-   --  that is not already a member of a node list, and To must be a
-   --  node list. An attempt to append an error node is ignored without
-   --  complaint and the list is unchanged.
+   --  that is not already a member of a node list, and To must be a node list.
+   --  An attempt to append an error node is ignored without complaint and the
+   --  list is unchanged.
 
    procedure Append_To (To : List_Id; Node : Node_Or_Entity_Id);
    pragma Inline (Append_To);

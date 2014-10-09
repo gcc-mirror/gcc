@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_TARGHOOKS_H
+#define GCC_TARGHOOKS_H
+
 extern bool default_legitimate_address_p (enum machine_mode, rtx, bool);
 
 extern void default_external_libcall (rtx);
@@ -67,6 +70,7 @@ extern bool default_print_operand_punct_valid_p (unsigned char);
 extern tree default_mangle_assembler_name (const char *);
 
 extern bool default_scalar_mode_supported_p (enum machine_mode);
+extern bool default_libgcc_floating_mode_supported_p (enum machine_mode);
 extern bool targhook_words_big_endian (void);
 extern bool targhook_float_words_big_endian (void);
 extern bool default_float_exceptions_rounding_supported_p (void);
@@ -75,7 +79,7 @@ extern bool default_fixed_point_supported_p (void);
 
 extern bool default_has_ifunc_p (void);
 
-extern const char * default_invalid_within_doloop (const_rtx);
+extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (tree, tree, tree);
 
@@ -188,12 +192,13 @@ extern enum unwind_info_type default_debug_unwind_info (void);
 
 extern void default_canonicalize_comparison (int *, rtx *, rtx *, bool);
 
-extern int default_label_align_after_barrier_max_skip (rtx);
-extern int default_loop_align_max_skip (rtx);
-extern int default_label_align_max_skip (rtx);
-extern int default_jump_align_max_skip (rtx);
+extern int default_label_align_after_barrier_max_skip (rtx_insn *);
+extern int default_loop_align_max_skip (rtx_insn *);
+extern int default_label_align_max_skip (rtx_insn *);
+extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
+extern enum machine_mode default_dwarf_frame_reg_mode (int);
 extern enum machine_mode default_get_reg_raw_mode (int);
 extern bool default_keep_leaf_when_profiled ();
 
@@ -210,3 +215,5 @@ extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 extern bool can_use_doloop_if_innermost (const widest_int &,
 					 const widest_int &,
 					 unsigned int, bool);
+
+#endif /* GCC_TARGHOOKS_H */

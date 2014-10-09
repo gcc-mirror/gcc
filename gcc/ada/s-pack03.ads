@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Handing of packed arrays with Component_Size = 3
+--  Handling of packed arrays with Component_Size = 3
 
 package System.Pack_03 is
    pragma Preelaborate;
@@ -39,11 +39,21 @@ package System.Pack_03 is
    type Bits_03 is mod 2 ** Bits;
    for Bits_03'Size use Bits;
 
-   function Get_03 (Arr : System.Address; N : Natural) return Bits_03;
+   --  In all subprograms below, Rev_SSO is set True if the array has the
+   --  non-default scalar storage order.
+
+   function Get_03
+     (Arr     : System.Address;
+      N       : Natural;
+      Rev_SSO : Boolean) return Bits_03 with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is extracted and returned.
 
-   procedure Set_03 (Arr : System.Address; N : Natural; E : Bits_03);
+   procedure Set_03
+     (Arr     : System.Address;
+      N       : Natural;
+      E       : Bits_03;
+      Rev_SSO : Boolean) with Inline;
    --  Arr is the address of the packed array, N is the zero-based
    --  subscript. This element is set to the given value.
 

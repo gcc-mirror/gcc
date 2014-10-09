@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 
 int j_;
+void g (void);
 int jpgDecode_convert (unsigned i)
 {
   __label__ label;

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgraphite-identity -fdump-tree-graphite-all" } */
+/* { dg-options "-O2 -fgraphite-identity -fdump-tree-graphite-all  -fgraphite-code-generator=isl" } */
 
 int a[100];
 
@@ -38,7 +38,5 @@ foo (int bar, int n, int k)
 
 */
 
-
-/* { dg-final { scan-tree-dump-times "MIN_EXPR\[^\\n\\r]*;" 4 "graphite" } } */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR\[^\\n\\r]*;" 4 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "for\[^\n\]+\n\[^\n\]+if" 0 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

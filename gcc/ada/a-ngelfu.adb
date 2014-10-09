@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -509,12 +509,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Cos (X : Float_Type'Base) return Float_Type'Base is
    begin
-      if X = 0.0 then
+      if abs X < Sqrt_Epsilon then
          return 1.0;
-
-      elsif abs X < Sqrt_Epsilon then
-         return 1.0;
-
       end if;
 
       return Float_Type'Base (Aux.Cos (Double (X)));

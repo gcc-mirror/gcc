@@ -239,7 +239,7 @@ rest_of_decl_compilation (tree decl,
 	  if (in_lto_p && !at_end)
 	    ;
 	  else if (finalize && TREE_CODE (decl) != FUNCTION_DECL)
-	    varpool_finalize_decl (decl);
+	    varpool_node::finalize_decl (decl);
 	}
 
 #ifdef ASM_FINISH_DECLARE_OBJECT
@@ -267,7 +267,7 @@ rest_of_decl_compilation (tree decl,
     ;
   else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl)
 	   && TREE_STATIC (decl))
-    varpool_node_for_decl (decl);
+    varpool_node::get_create (decl);
 }
 
 /* Called after finishing a record, union or enumeral type.  */
@@ -333,8 +333,8 @@ execute_all_early_local_passes (void)
      none of the sub-passes are IPA passes and do not create new
      functions, this is ok.  We're setting this value for the benefit
      of IPA passes that follow.  */
-  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
-    cgraph_state = CGRAPH_STATE_IPA_SSA;
+  if (symtab->state < IPA_SSA)
+    symtab->state = IPA_SSA;
   return 0;
 }
 
@@ -350,7 +350,9 @@ const pass_data pass_data_early_local_passes =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_remove_functions, /* todo_flags_finish */
+  /* todo_flags_finish is executed before subpases. For this reason
+     it makes no sense to remove unreachable functions here.  */
+  0, /* todo_flags_finish */
 };
 
 class pass_early_local_passes : public simple_ipa_opt_pass
@@ -1080,7 +1082,7 @@ is_pass_explicitly_enabled_or_disabled (opt_pass *pass,
   if (!slot)
     return false;
 
-  cgraph_uid = func ? cgraph_get_node (func)->uid : 0;
+  cgraph_uid = func ? cgraph_node::get (func)->uid : 0;
   if (func && DECL_ASSEMBLER_NAME_SET_P (func))
     aname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func));
 
@@ -1478,7 +1480,7 @@ do_per_function (void (*callback) (function *, void *data), void *data)
     {
       struct cgraph_node *node;
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->analyzed && gimple_has_body_p (node->decl)
+	if (node->analyzed && (gimple_has_body_p (node->decl) && !in_lto_p)
 	    && (!node->clone_of || node->decl != node->clone_of->decl))
 	  callback (DECL_STRUCT_FUNCTION (node->decl), data);
     }
@@ -1488,7 +1490,7 @@ do_per_function (void (*callback) (function *, void *data), void *data)
    keep the array visible to garbage collector to avoid reading collected
    out nodes.  */
 static int nnodes;
-static GTY ((length ("nnodes"))) cgraph_node_ptr *order;
+static GTY ((length ("nnodes"))) cgraph_node **order;
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
@@ -1504,7 +1506,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
   else
     {
       gcc_assert (!order);
-      order = ggc_vec_alloc<cgraph_node_ptr> (cgraph_n_nodes);
+      order = ggc_vec_alloc<cgraph_node *> (symtab->cgraph_count);
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
         order[i]->process = 1;
@@ -1515,7 +1517,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
 	  /* Allow possibly removed nodes to be garbage collected.  */
 	  order[i] = NULL;
 	  node->process = 0;
-	  if (cgraph_function_with_gimple_body_p (node))
+	  if (node->has_gimple_body_p ())
 	    callback (DECL_STRUCT_FUNCTION (node->decl), data);
 	}
     }
@@ -1730,7 +1732,7 @@ execute_function_todo (function *fn, void *data)
     rebuild_frequencies ();
 
   if (flags & TODO_rebuild_cgraph_edges)
-    rebuild_cgraph_edges ();
+    cgraph_edge::rebuild_edges ();
 
   /* If we've seen errors do not bother running any verifiers.  */
   if (!seen_error ())
@@ -1812,13 +1814,13 @@ execute_todo (unsigned int flags)
   if (flags & TODO_remove_functions)
     {
       gcc_assert (!cfun);
-      symtab_remove_unreachable_nodes (true, dump_file);
+      symtab->remove_unreachable_nodes (true, dump_file);
     }
 
   if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
-      dump_symtab (dump_file);
+      symtab_node::dump_table (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);
@@ -2015,7 +2017,7 @@ execute_all_ipa_transforms (void)
   struct cgraph_node *node;
   if (!cfun)
     return;
-  node = cgraph_get_node (current_function_decl);
+  node = cgraph_node::get (current_function_decl);
 
   if (node->ipa_transforms_to_apply.exists ())
     {
@@ -2102,16 +2104,16 @@ execute_one_pass (opt_pass *pass)
       bool applied = false;
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->analyzed
-	    && cgraph_function_with_gimple_body_p (node)
+	    && node->has_gimple_body_p ()
 	    && (!node->clone_of || node->decl != node->clone_of->decl))
 	  {
 	    if (!node->global.inlined_to
 		&& node->ipa_transforms_to_apply.exists ())
 	      {
-		cgraph_get_body (node);
+		node->get_body ();
 		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 		execute_all_ipa_transforms ();
-		rebuild_cgraph_edges ();
+		cgraph_edge::rebuild_edges ();
 		free_dominance_info (CDI_DOMINATORS);
 		free_dominance_info (CDI_POST_DOMINATORS);
 		pop_cfun ();
@@ -2119,7 +2121,7 @@ execute_one_pass (opt_pass *pass)
 	      }
 	  }
       if (applied)
-        symtab_remove_unreachable_nodes (true, dump_file);
+	symtab->remove_unreachable_nodes (false, dump_file);
       /* Restore current_pass.  */
       current_pass = pass;
     }
@@ -2174,7 +2176,7 @@ execute_one_pass (opt_pass *pass)
     }
 
   if (!current_function_decl)
-    cgraph_process_new_functions ();
+    symtab->process_new_functions ();
 
   pass_fini_dump_file (pass);
 
@@ -2312,15 +2314,15 @@ ipa_write_summaries (void)
      cgraph_expand_all_functions.  This mostly facilitates debugging,
      since it causes the gimple file to be processed in the same order
      as the source code.  */
-  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   order_pos = ipa_reverse_postorder (order);
-  gcc_assert (order_pos == cgraph_n_nodes);
+  gcc_assert (order_pos == symtab->cgraph_count);
 
   for (i = order_pos - 1; i >= 0; i--)
     {
       struct cgraph_node *node = order[i];
 
-      if (cgraph_function_with_gimple_body_p (node))
+      if (node->has_gimple_body_p ())
 	{
 	  /* When streaming out references to statements as part of some IPA
 	     pass summary, the statements need to have uids assigned and the
@@ -2553,7 +2555,7 @@ execute_ipa_pass_list (opt_pass *pass)
 	    gcc_unreachable ();
 	}
       gcc_assert (!current_function_decl);
-      cgraph_process_new_functions ();
+      symtab->process_new_functions ();
       pass = pass->next;
     }
   while (pass);
@@ -2648,13 +2650,13 @@ bool
 function_called_by_processed_nodes_p (void)
 {
   struct cgraph_edge *e;
-  for (e = cgraph_get_node (current_function_decl)->callers;
+  for (e = cgraph_node::get (current_function_decl)->callers;
        e;
        e = e->next_caller)
     {
       if (e->caller->decl == current_function_decl)
         continue;
-      if (!cgraph_function_with_gimple_body_p (e->caller))
+      if (!e->caller->has_gimple_body_p ())
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;
@@ -2664,7 +2666,7 @@ function_called_by_processed_nodes_p (void)
   if (dump_file && e)
     {
       fprintf (dump_file, "Already processed call to:\n");
-      dump_cgraph_node (dump_file, e->caller);
+      e->caller->dump (dump_file);
     }
   return e != NULL;
 }

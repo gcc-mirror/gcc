@@ -537,6 +537,7 @@ convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
   if (to->len + flen > to->asize)
     {
       to->asize = to->len + flen;
+      to->asize += to->asize / 4;
       to->text = XRESIZEVEC (uchar, to->text, to->asize);
     }
   memcpy (to->text + to->len, from, flen);
@@ -608,13 +609,13 @@ convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
 #define APPLY_CONVERSION(CONVERTER, FROM, FLEN, TO) \
    CONVERTER.func (CONVERTER.cd, FROM, FLEN, TO)
 
-struct conversion
+struct cpp_conversion
 {
   const char *pair;
   convert_f func;
   iconv_t fake_cd;
 };
-static const struct conversion conversion_tab[] = {
+static const struct cpp_conversion conversion_tab[] = {
   { "UTF-8/UTF-32LE", convert_utf8_utf32, (iconv_t)0 },
   { "UTF-8/UTF-32BE", convert_utf8_utf32, (iconv_t)1 },
   { "UTF-8/UTF-16LE", convert_utf8_utf16, (iconv_t)0 },
@@ -995,6 +996,10 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   if (!CPP_OPTION (pfile, cplusplus) && !CPP_OPTION (pfile, c99))
     cpp_error (pfile, CPP_DL_WARNING,
 	       "universal character names are only valid in C++ and C99");
+  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+	   && !CPP_OPTION (pfile, cplusplus))
+    cpp_error (pfile, CPP_DL_WARNING,
+	       "C99's universal character names are incompatible with C90");
   else if (CPP_WTRADITIONAL (pfile) && identifier_pos == 0)
     cpp_warning (pfile, CPP_W_TRADITIONAL,
 	         "the meaning of '\\%c' is different in traditional C",

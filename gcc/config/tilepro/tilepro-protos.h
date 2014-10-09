@@ -44,11 +44,11 @@ extern void tilepro_expand_umulsi3_highpart (rtx, rtx, rtx);
 extern bool tilepro_emit_setcc (rtx[], enum machine_mode);
 extern void tilepro_emit_conditional_branch (rtx[], enum machine_mode);
 extern rtx tilepro_emit_conditional_move (rtx);
-extern const char *tilepro_output_cbranch_with_opcode (rtx, rtx *,
+extern const char *tilepro_output_cbranch_with_opcode (rtx_insn *, rtx *,
 						       const char *,
 						       const char *, int,
 						       bool);
-extern const char *tilepro_output_cbranch (rtx, rtx *, bool);
+extern const char *tilepro_output_cbranch (rtx_insn *, rtx *, bool);
 extern void tilepro_expand_tablejump (rtx, rtx);
 extern void tilepro_expand_builtin_vector_binop (rtx (*)(rtx, rtx, rtx),
 						 enum machine_mode, rtx,
@@ -62,10 +62,10 @@ extern void tilepro_expand_epilogue (bool);
 extern int tilepro_initial_elimination_offset (int, int);
 extern rtx tilepro_return_addr (int, rtx);
 extern rtx tilepro_eh_return_handler_rtx (void);
-extern int tilepro_adjust_insn_length (rtx, int);
+extern int tilepro_adjust_insn_length (rtx_insn *, int);
 
 extern int tilepro_asm_preferred_eh_data_format (int, int);
-extern void tilepro_final_prescan_insn (rtx);
+extern void tilepro_final_prescan_insn (rtx_insn *);
 extern const char *tilepro_asm_output_opcode (FILE *, const char *);
 extern void tilepro_function_profiler (FILE *, int);
 

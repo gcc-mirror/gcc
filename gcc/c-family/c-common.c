@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "c-common.h"
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
@@ -32,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "flags.h"
 #include "c-pragma.h"
-#include "c-common.h"
 #include "c-objc.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -300,7 +300,7 @@ const struct fname_var_t fname_vars[] =
 struct visibility_flags visibility_options;
 
 static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
-static tree check_case_value (tree);
+static tree check_case_value (location_t, tree);
 static bool check_case_bounds (location_t, tree, tree, tree *, tree *);
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
@@ -327,6 +327,8 @@ static tree handle_error_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 static tree handle_externally_visible_attribute (tree *, tree, tree, int,
+						 bool *);
+static tree handle_no_reorder_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transparent_union_attribute (tree *, tree, tree,
@@ -380,6 +382,7 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -417,6 +420,7 @@ const struct c_common_resword c_common_reswords[] =
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
   { "_Cilk_sync",       RID_CILK_SYNC,  0 },
+  { "_Cilk_for",        RID_CILK_FOR,   0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY | D_EXT },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY | D_EXT },
@@ -468,7 +472,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
   { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
   { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
-  { "__is_convertible_to", RID_IS_CONVERTIBLE_TO, D_CXXONLY },
   { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
@@ -477,6 +480,9 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
   { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
   { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
+  { "__is_trivially_assignable", RID_IS_TRIVIALLY_ASSIGNABLE, D_CXXONLY },
+  { "__is_trivially_constructible", RID_IS_TRIVIALLY_CONSTRUCTIBLE, D_CXXONLY },
+  { "__is_trivially_copyable", RID_IS_TRIVIALLY_COPYABLE, D_CXXONLY },
   { "__is_union",	RID_IS_UNION,	D_CXXONLY },
   { "__label__",	RID_LABEL,	0 },
   { "__null",		RID_NULL,	0 },
@@ -650,6 +656,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_unused_attribute, false },
   { "externally_visible",     0, 0, true,  false, false,
 			      handle_externally_visible_attribute, false },
+  { "no_reorder",	      0, 0, true, false, false,
+                              handle_no_reorder_attribute, false },
   /* The same comments as for noreturn attributes apply to const ones.  */
   { "const",                  0, 0, true,  false, false,
 			      handle_const_attribute, false },
@@ -773,6 +781,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_alloc_align_attribute, false },
   { "assume_aligned",	      1, 2, false, true, true,
 			      handle_assume_aligned_attribute, false },
+  { "designated_init",        0, 0, false, true, false,
+			      handle_designated_init_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -1667,6 +1677,10 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	   || INTEGRAL_TYPE_P (TREE_TYPE (op_right))))
     return;
 
+  /* The range computations only work with scalars.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (op_left))
+      || VECTOR_TYPE_P (TREE_TYPE (op_right)))
+    return;
 
   /* We first test whether either side separately is trivially true
      (with OR) or trivially false (with AND).  If so, do not warn.
@@ -1724,21 +1738,15 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 
 /* Warn about logical not used on the left hand side operand of a comparison.
    This function assumes that the LHS is inside of TRUTH_NOT_EXPR.
-   Do not warn if the LHS or RHS is of a boolean or a vector type.  */
+   Do not warn if RHS is of a boolean type.  */
 
 void
 warn_logical_not_parentheses (location_t location, enum tree_code code,
-			      tree lhs, tree rhs)
+			      tree rhs)
 {
-  if (TREE_CODE_CLASS (code) != tcc_comparison)
-    return;
-  if (TREE_TYPE (lhs) == NULL_TREE
-      || TREE_TYPE (rhs) == NULL_TREE)
-    ;
-  else if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
-	   || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE
-	   || VECTOR_TYPE_P (TREE_TYPE (lhs))
-	   || VECTOR_TYPE_P (TREE_TYPE (rhs)))
+  if (TREE_CODE_CLASS (code) != tcc_comparison
+      || TREE_TYPE (rhs) == NULL_TREE
+      || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE)
     return;
 
   warning_at (location, OPT_Wlogical_not_parentheses,
@@ -3346,7 +3354,7 @@ verify_sequence_points (tree expr)
 /* Validate the expression after `case' and apply default promotions.  */
 
 static tree
-check_case_value (tree value)
+check_case_value (location_t loc, tree value)
 {
   if (value == NULL_TREE)
     return value;
@@ -3356,7 +3364,7 @@ check_case_value (tree value)
     value = perform_integral_promotions (value);
   else if (value != error_mark_node)
     {
-      error ("case label does not reduce to an integer constant");
+      error_at (loc, "case label does not reduce to an integer constant");
       value = error_mark_node;
     }
 
@@ -4962,26 +4970,6 @@ c_common_get_alias_set (tree t)
   return -1;
 }
 
-/* Return the least alignment required for type TYPE.  */
-
-unsigned int
-min_align_of_type (tree type)
-{
-  unsigned int align = TYPE_ALIGN (type);
-  align = MIN (align, BIGGEST_ALIGNMENT);
-#ifdef BIGGEST_FIELD_ALIGNMENT
-  align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
-#endif
-  unsigned int field_align = align;
-#ifdef ADJUST_FIELD_ALIGN
-  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			   type);
-  field_align = ADJUST_FIELD_ALIGN (field, field_align);
-#endif
-  align = MIN (align, field_align);
-  return align / BITS_PER_UNIT;
-}
-
 /* Compute the value of 'sizeof (TYPE)' or '__alignof__ (TYPE)', where
    the IS_SIZEOF parameter indicates which operator is being applied.
    The COMPLAIN flag controls whether we should diagnose possibly
@@ -6010,14 +5998,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   type = TREE_TYPE (cond);
   if (low_value)
     {
-      low_value = check_case_value (low_value);
+      low_value = check_case_value (loc, low_value);
       low_value = convert_and_check (loc, type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
   if (high_value)
     {
-      high_value = check_case_value (high_value);
+      high_value = check_case_value (loc, high_value);
       high_value = convert_and_check (loc, type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
@@ -6975,6 +6963,30 @@ handle_externally_visible_attribute (tree *pnode, tree name,
   return NULL_TREE;
 }
 
+/* Handle the "no_reorder" attribute. Arguments as in
+   struct attribute_spec.handler. */
+
+static tree
+handle_no_reorder_attribute (tree *pnode,
+			     tree name,
+			     tree,
+			     int,
+			     bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if ((TREE_CODE (node) != FUNCTION_DECL && TREE_CODE (node) != VAR_DECL)
+	&& !(TREE_STATIC (node) || DECL_EXTERNAL (node)))
+    {
+      warning (OPT_Wattributes,
+		"%qE attribute only affects top level objects",
+		name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "const" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -7779,6 +7791,19 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
       *no_add_attrs = true;
     }
 
+  if (decl_in_symtab_p (*node))
+    {
+      struct symtab_node *n = symtab_node::get (decl);
+      if (n && n->refuse_visibility_changes)
+	{
+	  if (is_alias)
+	    error ("%+D declared alias after being used", decl);
+	  else
+	    error ("%+D declared ifunc after being used", decl);
+	}
+    }
+
+
   return NULL_TREE;
 }
 
@@ -7853,6 +7878,13 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	 and that isn't supported; and because it wants to add it to
 	 the list of weak decls, which isn't helpful.  */
       DECL_WEAK (*node) = 1;
+    }
+
+  if (decl_in_symtab_p (*node))
+    {
+      struct symtab_node *n = symtab_node::get (*node);
+      if (n && n->refuse_visibility_changes)
+	error ("%+D declared weakref after being used", *node);
     }
 
   return NULL_TREE;
@@ -9275,6 +9307,21 @@ handle_returns_nonnull_attribute (tree *node, tree, tree, int,
   return NULL_TREE;
 }
 
+/* Handle a "designated_init" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_designated_init_attribute (tree *node, tree name, tree, int,
+				  bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != RECORD_TYPE)
+    {
+      error ("%qE attribute is only valid on %<struct%> type", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 
 /* Check for valid arguments being passed to a function with FNTYPE.
    There are NARGS arguments in the array ARGARRAY.  */
@@ -9673,44 +9720,15 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
 #undef catenate_messages
 }
 
-/* Mapping for cpp message reasons to the options that enable them.  */
-
-struct reason_option_codes_t
-{
-  const int reason;		/* cpplib message reason.  */
-  const int option_code;	/* gcc option that controls this message.  */
-};
-
-static const struct reason_option_codes_t option_codes[] = {
-  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
-  {CPP_W_COMMENTS,			OPT_Wcomment},
-  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
-  {CPP_W_MULTICHAR,			OPT_Wmultichar},
-  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
-  {CPP_W_LONG_LONG,			OPT_Wlong_long},
-  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
-  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
-  {CPP_W_BUILTIN_MACRO_REDEFINED,	OPT_Wbuiltin_macro_redefined},
-  {CPP_W_UNDEF,				OPT_Wundef},
-  {CPP_W_UNUSED_MACROS,			OPT_Wunused_macros},
-  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
-  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
-  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
-  {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
-  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
-  {CPP_W_DATE_TIME,			OPT_Wdate_time},
-  {CPP_W_NONE,				0}
-};
-
 /* Return the gcc option code associated with the reason for a cpp
    message, or 0 if none.  */
 
 static int
 c_option_controlling_cpp_error (int reason)
 {
-  const struct reason_option_codes_t *entry;
+  const struct cpp_reason_option_codes_t *entry;
 
-  for (entry = option_codes; entry->reason != CPP_W_NONE; entry++)
+  for (entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE; entry++)
     {
       if (entry->reason == reason)
 	return entry->option_code;
@@ -11612,6 +11630,39 @@ maybe_warn_unused_local_typedefs (void)
     }
 
   vec_free (l->local_typedefs);
+}
+
+/* Warn about boolean expression compared with an integer value different
+   from true/false.  Warns also e.g. about "(i1 == i2) == 2".
+   LOC is the location of the comparison, CODE is its code, OP0 and OP1
+   are the operands of the comparison.  The caller must ensure that
+   either operand is a boolean expression.  */
+
+void
+maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
+			 tree op1)
+{
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    return;
+
+  tree cst = (TREE_CODE (op0) == INTEGER_CST)
+	     ? op0 : (TREE_CODE (op1) == INTEGER_CST) ? op1 : NULL_TREE;
+  if (!cst)
+    return;
+
+  if (!integer_zerop (cst) && !integer_onep (cst))
+    {
+      int sign = (TREE_CODE (op0) == INTEGER_CST)
+		 ? tree_int_cst_sgn (cst) : -tree_int_cst_sgn (cst);
+      if (code == EQ_EXPR
+	  || ((code == GT_EXPR || code == GE_EXPR) && sign < 0)
+	  || ((code == LT_EXPR || code == LE_EXPR) && sign > 0))
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always false", cst);
+      else
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always true", cst);
+    }
 }
 
 /* The C and C++ parsers both use vectors to hold function arguments.

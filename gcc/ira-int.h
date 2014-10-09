@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_IRA_INT_H
+#define GCC_IRA_INT_H
+
 #include "cfgloop.h"
 #include "ira.h"
 #include "alloc-pool.h"
@@ -280,6 +283,9 @@ struct ira_allocno
   /* Mode of the allocno which is the mode of the corresponding
      pseudo-register.  */
   ENUM_BITFIELD (machine_mode) mode : 8;
+  /* Widest mode of the allocno which in at least one case could be
+     for paradoxical subregs where wmode > mode.  */
+  ENUM_BITFIELD (machine_mode) wmode : 8;
   /* Register class which should be used for allocation for given
      allocno.  NO_REGS means that we should use memory.  */
   ENUM_BITFIELD (reg_class) aclass : 16;
@@ -312,7 +318,7 @@ struct ira_allocno
      number (0, ...) - 2.  Value -1 is used for allocnos spilled by the
      reload (at this point pseudo-register has only one allocno) which
      did not get stack slot yet.  */
-  short int hard_regno;
+  signed int hard_regno : 16;
   /* Allocnos with the same regno are linked by the following member.
      Allocnos corresponding to inner loops are first in the list (it
      corresponds to depth-first traverse of the loops).  */
@@ -433,6 +439,7 @@ struct ira_allocno
 #define ALLOCNO_BAD_SPILL_P(A) ((A)->bad_spill_p)
 #define ALLOCNO_ASSIGNED_P(A) ((A)->assigned_p)
 #define ALLOCNO_MODE(A) ((A)->mode)
+#define ALLOCNO_WMODE(A) ((A)->wmode)
 #define ALLOCNO_PREFS(A) ((A)->allocno_prefs)
 #define ALLOCNO_COPIES(A) ((A)->allocno_copies)
 #define ALLOCNO_HARD_REG_COSTS(A) ((A)->hard_reg_costs)
@@ -571,7 +578,7 @@ struct ira_allocno_copy
      for the copy created to remove register shuffle is NULL.  In last
      case the copy frequency is smaller than the corresponding insn
      execution frequency.  */
-  rtx insn;
+  rtx_insn *insn;
   /* All copies with the same allocno as FIRST are linked by the two
      following members.  */
   ira_copy_t prev_first_allocno_copy, next_first_allocno_copy;
@@ -770,6 +777,11 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_next (&(ITER)))
 
 struct target_ira_int {
+  ~target_ira_int ();
+
+  void free_ira_costs ();
+  void free_register_move_costs ();
+
   /* Initialized once.  It is a maximal possible size of the allocated
      struct costs.  */
   int x_max_struct_costs_size;
@@ -960,7 +972,7 @@ extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (enum machine_mode);
-extern void ira_setup_alts (rtx insn, HARD_REG_SET &alts);
+extern void ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts);
 extern int ira_get_dup_out_num (int op_num, HARD_REG_SET &alts);
 
 /* ira-build.c */
@@ -1009,9 +1021,11 @@ extern void ira_add_allocno_pref (ira_allocno_t, int, int);
 extern void ira_remove_pref (ira_pref_t);
 extern void ira_remove_allocno_prefs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
-				   int, bool, rtx, ira_loop_tree_node_t);
+				   int, bool, rtx_insn *,
+				   ira_loop_tree_node_t);
 extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
-					bool, rtx, ira_loop_tree_node_t);
+					bool, rtx_insn *,
+					ira_loop_tree_node_t);
 
 extern int *ira_allocate_cost_vector (reg_class_t);
 extern void ira_free_cost_vector (int *, reg_class_t);
@@ -1023,7 +1037,6 @@ extern void ira_destroy (void);
 /* ira-costs.c */
 extern void ira_init_costs_once (void);
 extern void ira_init_costs (void);
-extern void ira_finish_costs_once (void);
 extern void ira_costs (void);
 extern void ira_tune_allocno_costs (void);
 
@@ -1501,3 +1514,5 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 
 extern rtx ira_create_new_reg (rtx);
 extern int first_moveable_pseudo, last_moveable_pseudo;
+
+#endif /* GCC_IRA_INT_H */

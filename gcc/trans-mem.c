@@ -2369,7 +2369,7 @@ expand_call_tm (struct tm_region *region,
       return false;
     }
 
-  node = cgraph_get_node (fn_decl);
+  node = cgraph_node::get (fn_decl);
   /* All calls should have cgraph here.  */
   if (!node)
     {
@@ -2389,7 +2389,7 @@ expand_call_tm (struct tm_region *region,
 	{
 	  gimple_call_set_fndecl (stmt, repl);
 	  update_stmt (stmt);
-	  node = cgraph_create_node (repl);
+	  node = cgraph_node::create (repl);
 	  node->local.tm_may_enter_irr = false;
 	  return expand_call_tm (region, gsi);
 	}
@@ -4032,7 +4032,7 @@ struct tm_ipa_cg_data
   bool want_irr_scan_normal;
 };
 
-typedef vec<cgraph_node_ptr> cgraph_node_queue;
+typedef vec<cgraph_node *> cgraph_node_queue;
 
 /* Return the ipa data associated with NODE, allocating zeroed memory
    if necessary.  TRAVERSE_ALIASES is true if we must traverse aliases
@@ -4044,7 +4044,7 @@ get_cg_data (struct cgraph_node **node, bool traverse_aliases)
   struct tm_ipa_cg_data *d;
 
   if (traverse_aliases && (*node)->alias)
-    *node = cgraph_alias_target (*node);
+    *node = (*node)->get_alias_target ();
 
   d = (struct tm_ipa_cg_data *) (*node)->aux;
 
@@ -4128,7 +4128,7 @@ ipa_tm_scan_calls_block (cgraph_node_queue *callees_p,
 	      if (find_tm_replacement_function (fndecl))
 		continue;
 
-	      node = cgraph_get_node (fndecl);
+	      node = cgraph_node::get (fndecl);
 	      gcc_assert (node != NULL);
 	      d = get_cg_data (&node, true);
 
@@ -4174,7 +4174,7 @@ ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
 
   // ??? copy_bbs should maintain cgraph edges for the blocks as it is
   // copying them, rather than forcing us to do this externally.
-  rebuild_cgraph_edges ();
+  cgraph_edge::rebuild_edges ();
 
   // ??? In ipa_uninstrument_transaction we don't try to update dominators
   // because copy_bbs doesn't return a VEC like iterate_fix_dominators expects.
@@ -4295,7 +4295,7 @@ ipa_tm_scan_irr_block (basic_block bb)
 		if (find_tm_replacement_function (fn))
 		  break;
 
-		node = cgraph_get_node (fn);
+		node = cgraph_node::get (fn);
 		d = get_cg_data (&node, true);
 
 		/* Return true if irrevocable, but above all, believe
@@ -4468,7 +4468,7 @@ ipa_tm_decrement_clone_counts (basic_block bb, bool for_clone)
 	      if (find_tm_replacement_function (fndecl))
 		continue;
 
-	      tnode = cgraph_get_node (fndecl);
+	      tnode = cgraph_node::get (fndecl);
 	      d = get_cg_data (&tnode, true);
 
 	      pcallers = (for_clone ? &d->tm_callers_clone
@@ -4610,7 +4610,7 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
 
   /* If we aren't seeing the final version of the function we don't
      know what it will contain at runtime.  */
-  if (cgraph_function_body_availability (node) < AVAIL_AVAILABLE)
+  if (node->get_availability () < AVAIL_AVAILABLE)
     return true;
 
   /* If the function must go irrevocable, then of course true.  */
@@ -4631,7 +4631,7 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
      result in one of the bits above being set so that we will not
      have to recurse next time.  */
   if (node->alias)
-    return ipa_tm_mayenterirr_function (cgraph_get_node (node->thunk.alias));
+    return ipa_tm_mayenterirr_function (cgraph_node::get (node->thunk.alias));
 
   /* What remains is unmarked local functions without items that force
      the function to go irrevocable.  */
@@ -4715,7 +4715,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	      if (is_tm_callable (fndecl))
 		continue;
 
-	      if (cgraph_local_info (fndecl)->tm_may_enter_irr)
+	      if (cgraph_node::local_info (fndecl)->tm_may_enter_irr)
 		error_at (gimple_location (stmt),
 			  "unsafe function call %qD within "
 			  "atomic transaction", fndecl);
@@ -4789,7 +4789,7 @@ tm_mangle (tree old_asm_id)
 static inline void
 ipa_tm_mark_force_output_node (struct cgraph_node *node)
 {
-  cgraph_mark_force_output_node (node);
+  node->mark_force_output ();
   node->analyzed = true;
 }
 
@@ -4843,11 +4843,13 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   /* Perform the same remapping to the comdat group.  */
   if (DECL_ONE_ONLY (new_decl))
-    varpool_get_node (new_decl)->set_comdat_group (tm_mangle (decl_comdat_group_id (old_decl)));
+    varpool_node::get (new_decl)->set_comdat_group
+      (tm_mangle (decl_comdat_group_id (old_decl)));
 
-  new_node = cgraph_same_body_alias (NULL, new_decl, info->new_decl);
+  new_node = cgraph_node::create_same_body_alias (new_decl, info->new_decl);
   new_node->tm_clone = true;
   new_node->externally_visible = info->old_node->externally_visible;
+  new_node->no_reorder = info->old_node->no_reorder;
   /* ?? Do not traverse aliases here.  */
   get_cg_data (&node, false)->clone = new_node;
 
@@ -4883,17 +4885,18 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   /* Perform the same remapping to the comdat group.  */
   if (DECL_ONE_ONLY (new_decl))
-    varpool_get_node (new_decl)->set_comdat_group (tm_mangle (DECL_COMDAT_GROUP (old_decl)));
+    varpool_node::get (new_decl)->set_comdat_group
+      (tm_mangle (DECL_COMDAT_GROUP (old_decl)));
 
   gcc_assert (!old_node->ipa_transforms_to_apply.exists ());
-  new_node = cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
+  new_node = old_node->create_version_clone (new_decl, vNULL, NULL);
   new_node->local.local = false;
   new_node->externally_visible = old_node->externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
   get_cg_data (&old_node, true)->clone = new_node;
 
-  if (cgraph_function_body_availability (old_node) >= AVAIL_OVERWRITABLE)
+  if (old_node->get_availability () >= AVAIL_INTERPOSABLE)
     {
       /* Remap extern inline to static inline.  */
       /* ??? Is it worth trying to use make_decl_one_only?  */
@@ -4911,7 +4914,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   record_tm_clone_pair (old_decl, new_decl);
 
-  cgraph_call_function_insertion_hooks (new_node);
+  symtab->call_cgraph_insertion_hooks (new_node);
   if (old_node->force_output
       || old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
@@ -4923,8 +4926,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
     struct create_version_alias_info data;
     data.old_node = old_node;
     data.new_decl = new_decl;
-    cgraph_for_node_and_aliases (old_node, ipa_tm_create_version_alias,
-				 &data, true);
+    old_node->call_for_symbol_thunks_and_aliases (ipa_tm_create_version_alias,
+						&data, true);
   }
 }
 
@@ -4946,12 +4949,11 @@ ipa_tm_insert_irr_call (struct cgraph_node *node, struct tm_region *region,
   gsi = gsi_after_labels (bb);
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 
-  cgraph_create_edge (node,
-	       cgraph_get_create_node
-		  (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
-		      g, 0,
-		      compute_call_stmt_bb_frequency (node->decl,
-						      gimple_bb (g)));
+  node->create_edge (cgraph_node::get_create
+		       (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
+		     g, 0,
+		     compute_call_stmt_bb_frequency (node->decl,
+						     gimple_bb (g)));
 }
 
 /* Construct a call to TM_GETTMCLONE and insert it before GSI.  */
@@ -4976,9 +4978,9 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 	 technically taking the address of the original function and
 	 its clone.  Explain this so inlining will know this function
 	 is needed.  */
-      cgraph_mark_address_taken_node (cgraph_get_node (fndecl));
+      cgraph_node::get (fndecl)->mark_address_taken () ;
       if (clone)
-	cgraph_mark_address_taken_node (cgraph_get_node (clone));
+	cgraph_node::get (clone)->mark_address_taken ();
     }
 
   safe = is_tm_safe (TREE_TYPE (old_fn));
@@ -4999,9 +5001,9 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
-  cgraph_create_edge (node, cgraph_get_create_node (gettm_fn), g, 0,
-		      compute_call_stmt_bb_frequency (node->decl,
-						      gimple_bb (g)));
+  node->create_edge (cgraph_node::get_create (gettm_fn), g, 0,
+		     compute_call_stmt_bb_frequency (node->decl,
+						     gimple_bb (g)));
 
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */
@@ -5041,6 +5043,9 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   }
 
   update_stmt (stmt);
+  cgraph_edge *e = cgraph_node::get (current_function_decl)->get_edge (stmt);
+  if (e && e->indirect_info)
+    e->indirect_info->polymorphic = false;
 
   return true;
 }
@@ -5057,7 +5062,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
 {
   gimple stmt = gsi_stmt (*gsi);
   struct cgraph_node *new_node;
-  struct cgraph_edge *e = cgraph_edge (node, stmt);
+  struct cgraph_edge *e = node->get_edge (stmt);
   tree fndecl = gimple_call_fndecl (stmt);
 
   /* For indirect calls, pass the address through the runtime.  */
@@ -5087,7 +5092,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
   fndecl = find_tm_replacement_function (fndecl);
   if (fndecl)
     {
-      new_node = cgraph_get_create_node (fndecl);
+      new_node = cgraph_node::get_create (fndecl);
 
       /* ??? Mark all transaction_wrap functions tm_may_enter_irr.
 
@@ -5130,7 +5135,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
       fndecl = new_node->decl;
     }
 
-  cgraph_redirect_edge_callee (e, new_node);
+  e->redirect_callee (new_node);
   gimple_call_set_fndecl (stmt, fndecl);
 }
 
@@ -5292,7 +5297,7 @@ ipa_tm_execute (void)
   unsigned int i;
 
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  cgraph_node::verify_cgraph_nodes ();
 #endif
 
   bitmap_obstack_initialize (&tm_obstack);
@@ -5301,7 +5306,7 @@ ipa_tm_execute (void)
   /* For all local functions marked tm_callable, queue them.  */
   FOR_EACH_DEFINED_FUNCTION (node)
     if (is_tm_callable (node->decl)
-	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+	&& node->get_availability () >= AVAIL_INTERPOSABLE)
       {
 	d = get_cg_data (&node, true);
 	maybe_push_queue (node, &tm_callees, &d->in_callee_queue);
@@ -5310,7 +5315,7 @@ ipa_tm_execute (void)
   /* For all local reachable functions...  */
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->lowered
-	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+	&& node->get_availability () >= AVAIL_INTERPOSABLE)
       {
 	/* ... marked tm_pure, record that fact for the runtime by
 	   indicating that the pure function is its own tm_callable.
@@ -5350,7 +5355,7 @@ ipa_tm_execute (void)
   for (i = 0; i < tm_callees.length (); ++i)
     {
       node = tm_callees[i];
-      a = cgraph_function_body_availability (node);
+      a = node->get_availability ();
       d = get_cg_data (&node, true);
 
       /* Put it in the worklist so we can scan the function later
@@ -5365,7 +5370,7 @@ ipa_tm_execute (void)
       else if (a <= AVAIL_NOT_AVAILABLE
 	       && !is_tm_safe_or_pure (node->decl))
 	ipa_tm_note_irrevocable (node, &irr_worklist);
-      else if (a >= AVAIL_OVERWRITABLE)
+      else if (a >= AVAIL_INTERPOSABLE)
 	{
 	  if (!tree_versionable_function_p (node->decl))
 	    ipa_tm_note_irrevocable (node, &irr_worklist);
@@ -5375,7 +5380,7 @@ ipa_tm_execute (void)
 		 we need not scan the callees now, as the base will do.  */
 	      if (node->alias)
 		{
-		  node = cgraph_get_node (node->thunk.alias);
+		  node = cgraph_node::get (node->thunk.alias);
 		  d = get_cg_data (&node, true);
 		  maybe_push_queue (node, &tm_callees, &d->in_callee_queue);
 		  continue;
@@ -5461,7 +5466,7 @@ ipa_tm_execute (void)
       /* Propagate back to referring aliases as well.  */
       FOR_EACH_ALIAS (node, ref)
 	{
-	  caller = cgraph (ref->referring);
+	  caller = dyn_cast<cgraph_node *> (ref->referring);
 	  if (!caller->local.tm_may_enter_irr)
 	    {
 	      /* ?? Do not traverse aliases here.  */
@@ -5475,7 +5480,7 @@ ipa_tm_execute (void)
      other functions.  */
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->lowered
-	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+	&& node->get_availability () >= AVAIL_INTERPOSABLE)
       {
 	d = get_cg_data (&node, true);
 	if (is_tm_safe (node->decl))
@@ -5495,7 +5500,7 @@ ipa_tm_execute (void)
       if (node->cpp_implicit_alias)
 	continue;
 
-      a = cgraph_function_body_availability (node);
+      a = node->get_availability ();
       d = get_cg_data (&node, true);
 
       if (a <= AVAIL_NOT_AVAILABLE)
@@ -5523,7 +5528,7 @@ ipa_tm_execute (void)
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->lowered
-	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+	&& node->get_availability () >= AVAIL_INTERPOSABLE)
       {
 	d = get_cg_data (&node, true);
 	if (d->all_tm_regions)
@@ -5540,7 +5545,7 @@ ipa_tm_execute (void)
     node->aux = NULL;
 
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  cgraph_node::verify_cgraph_nodes ();
 #endif
 
   return 0;

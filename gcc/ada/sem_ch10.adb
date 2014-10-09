@@ -87,6 +87,10 @@ package body Sem_Ch10 is
    --  Check whether the source for the body of a compilation unit must be
    --  included in a standalone library.
 
+   procedure Check_No_Elab_Code_All (N : Node_Id);
+   --  Carries out possible tests for violation of No_Elab_Code all for withed
+   --  units in the Context_Items of unit N.
+
    procedure Check_Private_Child_Unit (N : Node_Id);
    --  If a with_clause mentions a private child unit, the compilation unit
    --  must be a member of the same family, as described in 10.1.2.
@@ -108,13 +112,6 @@ package body Sem_Ch10 is
    --  Generate cross-reference information for the parents of child units
    --  and of subunits. N is a defining_program_unit_name, and P_Id is the
    --  immediate parent scope.
-
-   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id;
-   --  Get defining entity of parent unit of a child unit. In most cases this
-   --  is the defining entity of the unit, but for a child instance whose
-   --  parent needs a body for inlining, the instantiation node of the parent
-   --  has not yet been rewritten as a package declaration, and the entity has
-   --  to be retrieved from the Instance_Spec of the unit.
 
    function Has_With_Clause
      (C_Unit     : Node_Id;
@@ -242,7 +239,7 @@ package body Sem_Ch10 is
    --  on the context. Note that in contrast with the handling of private
    --  types, the limited view and the non-limited view of a type are treated
    --  as separate entities, and no entity exchange needs to take place, which
-   --  makes the implementation must simpler than could be feared.
+   --  makes the implementation much simpler than could be feared.
 
    ------------------------------
    -- Analyze_Compilation_Unit --
@@ -512,6 +509,13 @@ package body Sem_Ch10 is
               and then not Implicit_With (Clause)
               and then not Limited_Present (Clause)
               and then not Elaborate_Present (Clause)
+
+              --  With_clauses introduced for renamings of parent clauses
+              --  are not marked implicit because they need to be properly
+              --  installed, but they do not come from source and do not
+              --  require warnings.
+
+              and then Comes_From_Source (Clause)
             then
                --  Package body-to-spec check
 
@@ -1196,8 +1200,15 @@ package body Sem_Ch10 is
 
       Set_Analyzed (N);
 
+      --  Call Check_Package_Body so that a body containing subprograms with
+      --  Inline_Always can be made available for front end inlining.
+
       if Nkind (Unit_Node) = N_Package_Declaration
         and then Get_Cunit_Unit_Number (N) /= Main_Unit
+
+        --  We don't need to do this if the Expander is not active, since there
+        --  is no code to inline.
+
         and then Expander_Active
       then
          declare
@@ -1209,7 +1220,8 @@ package body Sem_Ch10 is
             Save_Style_Check_Options (Options);
             Reset_Style_Check_Options;
             Opt.Warning_Mode := Suppress;
-            Check_Body_For_Inlining (N, Defining_Entity (Unit_Node));
+
+            Check_Package_Body_For_Inlining (N, Defining_Entity (Unit_Node));
 
             Reset_Style_Check_Options;
             Set_Style_Check_Options (Options);
@@ -1271,6 +1283,13 @@ package body Sem_Ch10 is
 
          Pop_Scope;
       end if;
+
+      --  If No_Elaboration_Code_All was encountered, this is where we do the
+      --  transitive test of with'ed units to make sure they have the aspect.
+      --  This is delayed till the end of analyzing the compilation unit to
+      --  ensure that the pragma/aspect, if present, has been analyzed.
+
+      Check_No_Elab_Code_All (N);
    end Analyze_Compilation_Unit;
 
    ---------------------
@@ -1312,7 +1331,7 @@ package body Sem_Ch10 is
 
       --  a) The first pass analyzes non-limited with-clauses and also any
       --     configuration pragmas (we need to get the latter analyzed right
-      --     away, since they can affect processing of subsequent items.
+      --     away, since they can affect processing of subsequent items).
 
       --  b) The second pass analyzes limited_with clauses (Ada 2005: AI-50217)
 
@@ -1325,18 +1344,25 @@ package body Sem_Ch10 is
            and then not Limited_Present (Item)
          then
             --  Skip analyzing with clause if no unit, nothing to do (this
-            --  happens for a with that references a non-existent unit). Skip
-            --  as well if this is a with_clause for the main unit, which
-            --  happens if a subunit has a useless with_clause on its parent.
+            --  happens for a with that references a non-existent unit).
 
             if Present (Library_Unit (Item)) then
+
+               --  Skip analyzing with clause if this is a with_clause for
+               --  the main unit, which happens if a subunit has a useless
+               --  with_clause on its parent.
+
                if Library_Unit (Item) /= Cunit (Current_Sem_Unit) then
                   Analyze (Item);
+
+               --  Here for the case of a useless with for the main unit
 
                else
                   Set_Entity (Name (Item), Cunit_Entity (Current_Sem_Unit));
                end if;
             end if;
+
+            --  Do version update (skipped for implicit with)
 
             if not Implicit_With (Item) then
                Version_Update (N, Library_Unit (Item));
@@ -1616,6 +1642,7 @@ package body Sem_Ch10 is
                Set_Corresponding_Stub (Unit (Comp_Unit), N);
                Analyze_Subunit (Comp_Unit);
                Set_Library_Unit (N, Comp_Unit);
+               Set_Corresponding_Body (N, Defining_Entity (Unit (Comp_Unit)));
             end if;
 
          elsif Unum = No_Unit
@@ -1705,15 +1732,22 @@ package body Sem_Ch10 is
       --  should be ignored, except that if we are building trees for ASIS
       --  usage we want to annotate the stub properly. If the main unit is
       --  itself a subunit, another subunit is irrelevant unless it is a
-      --  subunit of the current one.
+      --  subunit of the current one, that is to say appears in the current
+      --  source tree.
 
       elsif Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
         and then Subunit_Name /= Unit_Name (Main_Unit)
       then
-         if ASIS_Mode
-           and then Scope (Defining_Entity (N)) = Cunit_Entity (Main_Unit)
-         then
-            Optional_Subunit;
+         if ASIS_Mode then
+            declare
+               PB : constant Node_Id := Proper_Body (Unit (Cunit (Main_Unit)));
+            begin
+               if Nkind_In (PB, N_Package_Body, N_Subprogram_Body)
+                 and then List_Containing (N) = Declarations (PB)
+               then
+                  Optional_Subunit;
+               end if;
+            end;
          end if;
 
          --  But before we return, set the flag for unloaded subunits. This
@@ -2038,6 +2072,7 @@ package body Sem_Ch10 is
 
       begin
          Analyze_Context (N);
+         Check_No_Elab_Code_All (N);
 
          --  Make withed units immediately visible. If child unit, make the
          --  ultimate parent immediately visible.
@@ -3098,24 +3133,6 @@ package body Sem_Ch10 is
       end if;
    end Generate_Parent_References;
 
-   -----------------------
-   -- Get_Parent_Entity --
-   -----------------------
-
-   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id is
-   begin
-      if Nkind (Unit) = N_Package_Body
-        and then Nkind (Original_Node (Unit)) = N_Package_Instantiation
-      then
-         return Defining_Entity
-                  (Specification (Instance_Spec (Original_Node (Unit))));
-      elsif Nkind (Unit) = N_Package_Instantiation then
-         return Defining_Entity (Specification (Instance_Spec (Unit)));
-      else
-         return Defining_Entity (Unit);
-      end if;
-   end Get_Parent_Entity;
-
    ---------------------
    -- Has_With_Clause --
    ---------------------
@@ -3591,7 +3608,7 @@ package body Sem_Ch10 is
       procedure Check_Private_Limited_Withed_Unit (Item : Node_Id);
       --  Check that if a limited_with clause of a given compilation_unit
       --  mentions a descendant of a private child of some library unit, then
-      --  the given compilation_unit shall be the declaration of a private
+      --  the given compilation_unit must be the declaration of a private
       --  descendant of that library unit, or a public descendant of such. The
       --  code is analogous to that of Check_Private_Child_Unit but we cannot
       --  use entities on the limited with_clauses because their units have not
@@ -5678,13 +5695,11 @@ package body Sem_Ch10 is
             -------------------
 
             procedure Process_State (State : Node_Id) is
-               Loc  : constant Source_Ptr := Sloc (State);
-               Elmt : Node_Id;
-               Id   : Entity_Id;
-               Name : Name_Id;
-
+               Loc   : constant Source_Ptr := Sloc (State);
+               Decl  : Node_Id;
                Dummy : Entity_Id;
-               pragma Unreferenced (Dummy);
+               Elmt  : Node_Id;
+               Id    : Entity_Id;
 
             begin
                --  Multiple abstract states appear as an aggregate
@@ -5693,9 +5708,9 @@ package body Sem_Ch10 is
                   Elmt := First (Expressions (State));
                   while Present (Elmt) loop
                      Process_State (Elmt);
-
                      Next (Elmt);
                   end loop;
+
                   return;
 
                --  A null state has no abstract view
@@ -5707,12 +5722,12 @@ package body Sem_Ch10 is
                --  extension aggregate.
 
                elsif Nkind (State) = N_Extension_Aggregate then
-                  Name := Chars (Ancestor_Part (State));
+                  Decl := Ancestor_Part (State);
 
                --  Simple state declaration
 
                elsif Nkind (State) = N_Identifier then
-                  Name := Chars (State);
+                  Decl := State;
 
                --  Possibly an illegal state declaration
 
@@ -5720,14 +5735,26 @@ package body Sem_Ch10 is
                   return;
                end if;
 
-               --  Construct a dummy state for the purposes of establishing a
-               --  non-limited => limited view relation. Note that the dummy
-               --  state is not added to list Abstract_States to avoid multiple
-               --  definitions.
+               --  Abstract states are elaborated when the related pragma is
+               --  elaborated. Since the withed package is not analyzed yet,
+               --  the entities of the abstract states are not available. To
+               --  overcome this complication, create the entities now and
+               --  store them in their respective declarations. The entities
+               --  are later used by routine Create_Abstract_State to declare
+               --  and enter the states into visibility.
 
-               Id := Make_Defining_Identifier (Loc, New_External_Name (Name));
-               Set_Parent     (Id, State);
-               Decorate_State (Id, Scop);
+               if No (Entity (Decl)) then
+                  Id := Make_Defining_Identifier (Loc, Chars (Decl));
+
+                  Set_Entity     (Decl, Id);
+                  Set_Parent     (Id, State);
+                  Decorate_State (Id, Scop);
+
+               --  Otherwise the package was previously withed
+
+               else
+                  Id := Entity (Decl);
+               end if;
 
                Build_Shadow_Entity (Id, Scop, Dummy);
             end Process_State;
@@ -6039,6 +6066,41 @@ package body Sem_Ch10 is
       Set_First_Private_Entity (Shadow_Pack, Private_Shadow);
       Set_Limited_View_Installed (Spec);
    end Build_Limited_Views;
+
+   ----------------------------
+   -- Check_No_Elab_Code_All --
+   ----------------------------
+
+   procedure Check_No_Elab_Code_All (N : Node_Id) is
+   begin
+      if Present (No_Elab_Code_All_Pragma)
+        and then In_Extended_Main_Source_Unit (N)
+        and then Present (Context_Items (N))
+      then
+         declare
+            CL : constant List_Id := Context_Items (N);
+            CI : Node_Id;
+
+         begin
+            CI := First (CL);
+            while Present (CI) loop
+               if Nkind (CI) = N_With_Clause
+                 and then not
+                   No_Elab_Code_All (Get_Source_Unit (Library_Unit (CI)))
+               then
+                  Error_Msg_Sloc := Sloc (No_Elab_Code_All_Pragma);
+                  Error_Msg_N
+                    ("violation of No_Elaboration_Code_All#", CI);
+                  Error_Msg_NE
+                    ("\unit& does not have No_Elaboration_Code_All",
+                     CI, Entity (Name (CI)));
+               end if;
+
+               Next (CI);
+            end loop;
+         end;
+      end if;
+   end Check_No_Elab_Code_All;
 
    -------------------------------
    -- Check_Body_Needed_For_SAL --

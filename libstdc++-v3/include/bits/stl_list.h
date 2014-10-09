@@ -377,8 +377,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _List_base(_List_base&& __x) noexcept
       : _M_impl(std::move(__x._M_get_Node_allocator()))
       {
-	_M_init();
-	__detail::_List_node_base::swap(_M_impl._M_node, __x._M_impl._M_node);
+	auto* const __xnode = std::__addressof(__x._M_impl._M_node);
+	if (__xnode->_M_next == __xnode)
+	  _M_init();
+	else
+	  {
+	    auto* const __node = std::__addressof(_M_impl._M_node);
+	    __node->_M_next = __xnode->_M_next;
+	    __node->_M_prev = __xnode->_M_prev;
+	    __node->_M_next->_M_prev = __node->_M_prev->_M_next = __node;
+	    __xnode->_M_next = __xnode->_M_prev = __xnode;
+	  }
       }
 #endif
 

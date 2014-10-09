@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,13 +70,8 @@ package System.Task_Primitives is
    --  Ada_Task_Control_Block.
 
    subtype Task_Address is System.Address;
-   --  In some versions of Task_Primitives, notably for VMS, Task_Address is
-   --  the short version of address defined in System.Aux_DEC. To avoid
-   --  dragging Aux_DEC into tasking packages a tasking specific subtype is
-   --  defined here.
-
    Task_Address_Size : constant := Standard'Address_Size;
-   --  The size of Task_Address
+   --  Type used for task addresses and its size
 
    Alternate_Stack_Size : constant := 0;
    --  No alternate signal stack is used on this platform

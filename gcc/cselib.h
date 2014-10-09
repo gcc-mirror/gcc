@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_CSELIB_H
+#define GCC_CSELIB_H
+
 /* Describe a value.  */
 struct cselib_val {
   /* The hash value.  */
@@ -46,7 +49,7 @@ struct elt_loc_list {
   /* An rtl expression that holds the value.  */
   rtx loc;
   /* The insn that made the equivalence.  */
-  rtx setting_insn;
+  rtx_insn *setting_insn;
 };
 
 /* Describe a single set that is part of an insn.  */
@@ -65,17 +68,17 @@ enum cselib_record_what
 };
 
 extern void (*cselib_discard_hook) (cselib_val *);
-extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
+extern void (*cselib_record_sets_hook) (rtx_insn *insn, struct cselib_set *sets,
 					int n_sets);
 
 extern cselib_val *cselib_lookup (rtx, enum machine_mode,
 				  int, enum machine_mode);
 extern cselib_val *cselib_lookup_from_insn (rtx, enum machine_mode,
-					    int, enum machine_mode, rtx);
+					    int, enum machine_mode, rtx_insn *);
 extern void cselib_init (int);
 extern void cselib_clear_table (void);
 extern void cselib_finish (void);
-extern void cselib_process_insn (rtx);
+extern void cselib_process_insn (rtx_insn *);
 extern bool fp_setter_insn (rtx);
 extern enum machine_mode cselib_reg_set_mode (const_rtx);
 extern int rtx_equal_for_cselib_p (rtx, rtx);
@@ -87,7 +90,7 @@ extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
 extern bool cselib_dummy_expand_value_rtx_cb (rtx, bitmap, int,
 					      cselib_expand_callback, void *);
 extern rtx cselib_subst_to_values (rtx, enum machine_mode);
-extern rtx cselib_subst_to_values_from_insn (rtx, enum machine_mode, rtx);
+extern rtx cselib_subst_to_values_from_insn (rtx, enum machine_mode, rtx_insn *);
 extern void cselib_invalidate_rtx (rtx);
 
 extern void cselib_reset_table (unsigned int);
@@ -96,7 +99,7 @@ extern void cselib_preserve_value (cselib_val *);
 extern bool cselib_preserved_value_p (cselib_val *);
 extern void cselib_preserve_only_values (void);
 extern void cselib_preserve_cfa_base_value (cselib_val *, unsigned int);
-extern void cselib_add_permanent_equiv (cselib_val *, rtx, rtx);
+extern void cselib_add_permanent_equiv (cselib_val *, rtx, rtx_insn *);
 extern bool cselib_have_permanent_equivalences (void);
 extern void cselib_set_value_sp_based (cselib_val *);
 extern bool cselib_sp_based_value_p (cselib_val *);
@@ -120,3 +123,5 @@ canonical_cselib_val (cselib_val *val)
   gcc_checking_assert (canonical_cselib_val (canon) == canon);
   return canon;
 }
+
+#endif /* GCC_CSELIB_H */

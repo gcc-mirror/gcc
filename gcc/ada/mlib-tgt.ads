@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,8 +132,8 @@ package MLib.Tgt is
    --  "libtoto.so" will be a symbolic link to "libtoto.so.2.1" which
    --  will be the actual library file.
    --
-   --  Symbol_Data is used for some platforms, including VMS, to generate
-   --  the symbols to be exported by the library.
+   --  Symbol_Data is used for some platforms, to generate the symbols to be
+   --  exported by the library (not certain if it is currently in use or not).
    --
    --  Note: Depending on the OS, some of the parameters may not be taken into
    --  account. For example, on Linux, Interfaces, Symbol_Data and Auto_Init
