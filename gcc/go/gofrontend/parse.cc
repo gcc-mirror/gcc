@@ -3836,6 +3836,12 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
       this->unget_token(Token::make_identifier_token(identifier, is_exported,
 						     location));
     }
+  else if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
+    {
+      Typed_identifier_list til;
+      this->range_clause_decl(&til, p_range_clause);
+      return NULL;
+    }
 
   Expression* exp = this->expression(PRECEDENCE_NORMAL, true,
 				     may_be_composite_lit,
@@ -5278,7 +5284,7 @@ Parse::for_clause(Expression** cond, Block** post)
     }
 }
 
-// RangeClause = IdentifierList ( "=" | ":=" ) "range" Expression .
+// RangeClause = [ IdentifierList ( "=" | ":=" ) ] "range" Expression .
 
 // This is the := version.  It is called with a list of identifiers.
 
@@ -5291,7 +5297,6 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
 
   p_range_clause->found = true;
 
-  go_assert(til->size() >= 1);
   if (til->size() > 2)
     error_at(this->location(), "too many variables for range clause");
 
@@ -5299,6 +5304,9 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
   Expression* expr = this->expression(PRECEDENCE_NORMAL, false, false, NULL,
 				      NULL);
   p_range_clause->range = expr;
+
+  if (til->empty())
+    return;
 
   bool any_new = false;
 
@@ -5346,6 +5354,9 @@ Parse::range_clause_expr(const Expression_list* vals,
   this->advance_token();
   p_range_clause->range = this->expression(PRECEDENCE_NORMAL, false, false,
 					   NULL, NULL);
+
+  if (vals->empty())
+    return;
 
   p_range_clause->index = vals->front();
   if (vals->size() == 1)

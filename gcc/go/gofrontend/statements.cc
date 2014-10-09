@@ -5305,8 +5305,12 @@ Statement::make_for_statement(Block* init, Expression* cond, Block* post,
 int
 For_range_statement::do_traverse(Traverse* traverse)
 {
-  if (this->traverse_expression(traverse, &this->index_var_) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
+  if (this->index_var_ != NULL)
+    {
+      if (this->traverse_expression(traverse, &this->index_var_)
+	  == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
+    }
   if (this->value_var_ != NULL)
     {
       if (this->traverse_expression(traverse, &this->value_var_)
@@ -5434,25 +5438,27 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   if (iter_init != NULL)
     body->add_statement(Statement::make_block_statement(iter_init, loc));
 
-  Statement* assign;
-  Expression* index_ref = Expression::make_temporary_reference(index_temp, loc);
-  if (this->value_var_ == NULL)
+  if (this->index_var_ != NULL)
     {
-      assign = Statement::make_assignment(this->index_var_, index_ref, loc);
-    }
-  else
-    {
-      Expression_list* lhs = new Expression_list();
-      lhs->push_back(this->index_var_);
-      lhs->push_back(this->value_var_);
+      Statement* assign;
+      Expression* index_ref =
+	Expression::make_temporary_reference(index_temp, loc);
+      if (this->value_var_ == NULL)
+	assign = Statement::make_assignment(this->index_var_, index_ref, loc);
+      else
+	{
+	  Expression_list* lhs = new Expression_list();
+	  lhs->push_back(this->index_var_);
+	  lhs->push_back(this->value_var_);
 
-      Expression_list* rhs = new Expression_list();
-      rhs->push_back(index_ref);
-      rhs->push_back(Expression::make_temporary_reference(value_temp, loc));
+	  Expression_list* rhs = new Expression_list();
+	  rhs->push_back(index_ref);
+	  rhs->push_back(Expression::make_temporary_reference(value_temp, loc));
 
-      assign = Statement::make_tuple_assignment(lhs, rhs, loc);
+	  assign = Statement::make_tuple_assignment(lhs, rhs, loc);
+	}
+      body->add_statement(assign);
     }
-  body->add_statement(assign);
 
   body->add_statement(Statement::make_block_statement(this->statements_, loc));
 
