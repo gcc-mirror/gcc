@@ -7,6 +7,10 @@
 	* include/std/atomic (atomic): Add assertion for trivially copyable.
 	* testsuite/29_atomics/atomic/60695.cc: Adjust line number.
 
+	PR libstdc++/61909
+	* include/std/functional (__is_location_invariant): Treat all
+	trivially copyable types as location invariant.
+
 2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/60132

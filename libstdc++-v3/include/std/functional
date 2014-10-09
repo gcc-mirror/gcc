@@ -1743,11 +1743,12 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   /**
    *  Trait identifying "location-invariant" types, meaning that the
    *  address of the object (or any of its members) will not escape.
-   *  Also implies a trivial copy constructor and assignment operator.
+   *  Trivially copyable types are location-invariant and users can
+   *  specialize this trait for other types.
    */
   template<typename _Tp>
     struct __is_location_invariant
-    : __or_<is_pointer<_Tp>, is_member_pointer<_Tp>>::type
+    : is_trivially_copyable<_Tp>::type
     { };
 
   class _Undefined_class;
