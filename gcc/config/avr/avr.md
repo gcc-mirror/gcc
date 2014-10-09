@@ -585,7 +585,7 @@
   ""
   {
     rtx dest = operands[0];
-    rtx src  = operands[1];
+    rtx src  = avr_eval_addr_attrib (operands[1]);
 
     if (avr_mem_flash_p (dest))
       DONE;
@@ -5014,7 +5014,7 @@
 ;; Clear/set/test a single bit in I/O address space.
 
 (define_insn "*cbi"
-  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (and:QI (mem:QI (match_dup 0))
                 (match_operand:QI 1 "single_zero_operand" "n")))]
   ""
@@ -5026,7 +5026,7 @@
    (set_attr "cc" "none")])
 
 (define_insn "*sbi"
-  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (ior:QI (mem:QI (match_dup 0))
                 (match_operand:QI 1 "single_one_operand" "n")))]
   ""
@@ -5043,7 +5043,7 @@
         (if_then_else
          (match_operator 0 "eqne_operator"
                          [(zero_extract:QIHI
-                           (mem:QI (match_operand 1 "low_io_address_operand" "n"))
+                           (mem:QI (match_operand 1 "low_io_address_operand" "i"))
                            (const_int 1)
                            (match_operand 2 "const_int_operand" "n"))
                           (const_int 0)])
@@ -5067,7 +5067,7 @@
   [(set (pc)
         (if_then_else
          (match_operator 0 "gelt_operator"
-                         [(mem:QI (match_operand 1 "low_io_address_operand" "n"))
+                         [(mem:QI (match_operand 1 "low_io_address_operand" "i"))
                           (const_int 0)])
          (label_ref (match_operand 2 "" ""))
          (pc)))]
@@ -5382,7 +5382,7 @@
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
   "!AVR_HAVE_JMP_CALL
-   || !(avr_current_device->dev_attribute & AVR_ERRATA_SKIP)"
+   || !TARGET_SKIP_BUG"
   {
     if (operands[2] == CONST0_RTX (<MODE>mode))
       operands[2] = zero_reg_rtx;
@@ -6240,7 +6240,7 @@
 ;; in contrast to a IN/BST/BLD/OUT sequence we need less registers and the
 ;; operation on I/O is atomic.
 (define_insn "*insv.io"
-  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n,n,n"))
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i,i,i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n,n,n"))
         (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))]
@@ -6253,7 +6253,7 @@
    (set_attr "cc" "none")])
 
 (define_insn "*insv.not.io"
-  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n"))
         (not:QI (match_operand:QI 2 "register_operand"                     "r")))]
