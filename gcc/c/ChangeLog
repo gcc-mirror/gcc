@@ -1,3 +1,9 @@
+2014-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63480
+	* c-typeck.c (pop_init_level): Don't warn about initializing
+	with { }.
+
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59717
