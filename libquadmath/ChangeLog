@@ -1,3 +1,10 @@
+2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libquadmath/55821
+	* Makefile.am: Conditionally define info_TEXINFOS and
+	libquadmath_TEXINFOS.
+	* Makefile.in: Regenerate.
+
 2014-10-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libquadmath/63487
