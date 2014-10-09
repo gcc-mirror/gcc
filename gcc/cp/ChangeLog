@@ -1,3 +1,10 @@
+2014-10-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63437
+	* cp-tree.h (REF_PARENTHESIZED_P): Also allow INDIRECT_REF.
+	* semantics.c (force_paren_expr): And set it.
+	* typeck.c (check_return_expr): And handle it.
+
 2014-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	* decl.c (grokdeclarator): constexpr only implies const in C++11.
