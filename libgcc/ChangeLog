@@ -1,3 +1,42 @@
+2014-10-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* soft-fp/double.h: Update from glibc.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+	* config/c6x/eqd.c (__c6xabi_eqd): Update call to FP_CMP_EQ_D.
+	* config/c6x/eqf.c (__c6xabi_eqf): Update call to FP_CMP_EQ_S.
+	* config/c6x/ged.c (__c6xabi_ged): Update call to FP_CMP_D.
+	* config/c6x/gef.c (__c6xabi_gef): Update call to FP_CMP_S.
+	* config/c6x/gtd.c (__c6xabi_gtd): Update call to FP_CMP_D.
+	* config/c6x/gtf.c (__c6xabi_gtf): Update call to FP_CMP_S.
+	* config/c6x/led.c (__c6xabi_led): Update call to FP_CMP_D.
+	* config/c6x/lef.c (__c6xabi_lef): Update call to FP_CMP_S.
+	* config/c6x/ltd.c (__c6xabi_ltd): Update call to FP_CMP_D.
+	* config/c6x/ltf.c (__c6xabi_ltf): Update call to FP_CMP_S.
+
 2014-10-08  Rong Xu  <xur@google.com>
 
 	* libgcov-util.c (read_gcda_file): Fix format.

@@ -39,7 +39,7 @@ __extendxftf2 (XFtype a)
   FP_DECL_Q (R);
   TFtype r;
 
-  FP_INIT_ROUNDMODE;
+  FP_INIT_TRAPPING_EXCEPTIONS;
   FP_UNPACK_RAW_E (A, a);
 #if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
   FP_EXTEND (Q, E, 4, 4, R, A);
