@@ -2,7 +2,7 @@
 
 struct B
 {
-  constexpr operator int() { return 4; }
+  constexpr operator int() const { return 4; }
 };
 
 template <int I>

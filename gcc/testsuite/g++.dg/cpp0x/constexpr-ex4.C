@@ -3,7 +3,7 @@
 struct A
 {
   constexpr A(int) { }
-  constexpr operator int() { return 1; };
+  constexpr operator int() const { return 1; };
 };
 
 template <class T>

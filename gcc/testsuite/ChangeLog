@@ -1,3 +1,18 @@
+2014-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/cpp0x/constexpr-52892-1.C: Error on missing const in C++14.
+	* g++.dg/cpp0x/constexpr-array-ptr7.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag1.C: Add const.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-initlist.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ptrmem.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ptrsub.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-static6.C: Likewise.
+
 2014-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63380

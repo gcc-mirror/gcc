@@ -5,7 +5,7 @@ template <class T>
 struct A
 {
   T t;
-  constexpr int f() { return 42; } // { dg-error "enclosing class" }
+  constexpr int f() const { return 42; } // { dg-error "enclosing class" }
 };
 
 struct B { B(); operator int(); };
