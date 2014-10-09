@@ -1424,9 +1424,9 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	}
 
       type = extr_type_from_vtbl_ptr_store (stmt, tci, &offset);
-      gcc_assert (!type || TYPE_MAIN_VARIANT (type) == type);
       if (type == error_mark_node)
 	return false;
+      gcc_assert (!type || TYPE_MAIN_VARIANT (type) == type);
       if (!type)
 	{
 	  if (dump_file)
