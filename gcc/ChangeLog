@@ -1,3 +1,13 @@
+2014-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/57003
+	* regcprop.c (copyprop_hardreg_forward_1): If ksvd.ignore_set_reg,
+	also check CALL_INSN_FUNCTION_USAGE for clobbers again after
+	killing regs_invalidated_by_call.
+
 2014-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
