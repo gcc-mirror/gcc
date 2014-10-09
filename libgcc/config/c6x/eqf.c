@@ -38,9 +38,7 @@ CMPtype __c6xabi_eqf(SFtype a, SFtype b)
 
   FP_UNPACK_RAW_S(A, a);
   FP_UNPACK_RAW_S(B, b);
-  FP_CMP_EQ_S(r, A, B);
-  if (r && (FP_ISSIGNAN_S(A) || FP_ISSIGNAN_S(B)))
-    FP_SET_EXCEPTION(FP_EX_INVALID);
+  FP_CMP_EQ_S(r, A, B, 1);
   FP_HANDLE_EXCEPTIONS;
 
   return !r;

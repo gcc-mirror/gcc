@@ -42,9 +42,7 @@ __gesf2 (SFtype a, SFtype b)
   FP_INIT_EXCEPTIONS;
   FP_UNPACK_RAW_S (A, a);
   FP_UNPACK_RAW_S (B, b);
-  FP_CMP_S (r, A, B, -2);
-  if (r == -2)
-    FP_SET_EXCEPTION (FP_EX_INVALID);
+  FP_CMP_S (r, A, B, -2, 2);
   FP_HANDLE_EXCEPTIONS;
 
   return r;
