@@ -1,3 +1,9 @@
+2014-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63380
+	* gcc.dg/torture/pr63380-1.c: New testcase.
+	* gcc.dg/torture/pr63380-2.c: Likewise.
+
 2014-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63480
