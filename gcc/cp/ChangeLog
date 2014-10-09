@@ -1,5 +1,9 @@
 2014-10-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63309
+	* parser.c (cp_parser_class_head): push_template_decl for members
+	of templates, too.
+
 	PR c++/63415
 	* pt.c (value_dependent_expression_p) [CONSTRUCTOR]: Check the type.
 	(iterative_hash_template_arg): Likewise.
