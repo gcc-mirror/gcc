@@ -3000,6 +3000,12 @@ package body Sprint is
          when N_Raise_Statement =>
             Write_Indent_Str_Sloc ("raise ");
             Sprint_Node (Name (Node));
+
+            if Present (Expression (Node)) then
+               Write_Str_With_Col_Check_Sloc (" with ");
+               Sprint_Node (Expression (Node));
+            end if;
+
             Write_Char (';');
 
          when N_Range =>
