@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2013, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2014, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1432,7 +1432,7 @@ __gnat_adjust_context (unsigned char *unw, ULONG64 rsp)
 {
   unsigned int len;
 
-  /* Version = 1, no flags, no prolog.  */
+  /* Version = 1, no flags, no prologue.  */
   if (unw[0] != 1 || unw[1] != 0)
     return;
   len = unw[2];
@@ -1442,7 +1442,7 @@ __gnat_adjust_context (unsigned char *unw, ULONG64 rsp)
   unw += 4;
   while (len > 0)
     {
-      /* Offset in prolog = 0.  */
+      /* Offset in prologue = 0.  */
       if (unw[0] != 0)
 	return;
       switch (unw[1] & 0xf)

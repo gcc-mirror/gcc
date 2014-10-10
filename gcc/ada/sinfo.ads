@@ -1093,7 +1093,7 @@ package Sinfo is
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
    --    check is required for the allocation, or in an N_Subprogram_Body node
-   --    to indicate that a stack check is required in the subprogram prolog.
+   --    to indicate that a stack check is required in the subprogram prologue.
    --    The N_Allocator case is handled by the routine that expands the call
    --    to the runtime routine. The N_Subprogram_Body case is handled by the
    --    backend, and all the semantics does is set the flag.

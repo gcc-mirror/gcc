@@ -564,7 +564,7 @@ package body Ada.Exceptions is
 
    --  None of these procedures ever returns (they raise an exception). By
    --  using pragma No_Return, we ensure that any junk code after the call,
-   --  such as normal return epilog stuff, can be eliminated).
+   --  such as normal return epilogue stuff, can be eliminated).
 
    pragma No_Return (Rcheck_CE_Access_Check);
    pragma No_Return (Rcheck_CE_Null_Access_Parameter);

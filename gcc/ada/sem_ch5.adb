@@ -2855,7 +2855,10 @@ package body Sem_Ch5 is
       --  container iteration.
 
       function Is_Wrapped_In_Block (N : Node_Id) return Boolean;
-      --  Determine whether node N is the sole statement of a block
+      --  Determine whether loop statement N has been wrapped in a block to
+      --  capture finalization actions that may be generated for container
+      --  iterators. Prevents infinite recursion when block is analyzed.
+      --  Routine is a noop if loop is single statement within source block.
 
       ---------------------------
       -- Is_Container_Iterator --
@@ -2919,14 +2922,27 @@ package body Sem_Ch5 is
       -------------------------
 
       function Is_Wrapped_In_Block (N : Node_Id) return Boolean is
-         HSS : constant Node_Id := Parent (N);
+         HSS  : Node_Id;
+         Stat : Node_Id;
 
       begin
-         return
-           Nkind (HSS) = N_Handled_Sequence_Of_Statements
-             and then Nkind (Parent (HSS)) = N_Block_Statement
-             and then First (Statements (HSS)) = N
-             and then No (Next (First (Statements (HSS))));
+         if Ekind (Current_Scope) /= E_Block then
+            return False;
+
+         else
+            HSS  :=
+              Handled_Statement_Sequence (Parent (Block_Node (Current_Scope)));
+
+            --  Skip leading pragmas that may be introduced for invariant and
+            --  predicate checks.
+
+            Stat := First (Statements (HSS));
+            while Present (Stat) and then Nkind (Stat) = N_Pragma loop
+               Stat := Next (Stat);
+            end loop;
+
+            return Stat = N and then No (Next (Stat));
+         end if;
       end Is_Wrapped_In_Block;
 
       --  Local declarations
