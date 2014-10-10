@@ -365,6 +365,8 @@ AC_SUBST(libtool_VERSION)
 
 GLIBCXX_ENABLE_LIBSTDCXX_VISIBILITY([yes])
 
+GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI([yes])
+
 ac_ldbl_compat=no
 case "$target" in
   powerpc*-*-linux* | \

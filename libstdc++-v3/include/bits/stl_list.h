@@ -295,7 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// See bits/stl_deque.h's _Deque_base for an explanation.
   template<typename _Tp, typename _Alloc>
-    class _List_base
+    class _GLIBCXX_DEFAULT_ABI_TAG _List_base
     {
     protected:
       // NOTA BENE
@@ -315,6 +315,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         _Node_alloc_type;
 
       typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+
+      static size_t
+      _S_distance(const __detail::_List_node_base* __first,
+		  const __detail::_List_node_base* __last)
+      {
+	size_t __n = 0;
+	while (__first != __last)
+	  {
+	    __first = __first->_M_next;
+	    ++__n;
+	  }
+	return __n;
+      }
 
       struct _List_impl
       : public _Node_alloc_type
@@ -337,6 +350,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       };
 
       _List_impl _M_impl;
+
+#if _GLIBCXX_USE_CXX11_ABI
+      size_t	 _M_size;
+
+      size_t _M_get_size() const { return _M_size; }
+
+      void _M_set_size(size_t __n) { _M_size = __n; }
+
+      void _M_inc_size(size_t __n) { _M_size += __n; }
+
+      void _M_dec_size(size_t __n) { _M_size -= __n; }
+
+      size_t
+      _M_distance(const __detail::_List_node_base* __first,
+		  const __detail::_List_node_base* __last) const
+      { return _S_distance(__first, __last); }
+
+      // return the stored size
+      size_t _M_node_count() const { return _M_size; }
+#else
+      // dummy implementations used when the size is not stored
+      size_t _M_get_size() const { return 0; }
+      void _M_set_size(size_t) { }
+      void _M_inc_size(size_t) { }
+      void _M_dec_size(size_t) { }
+      size_t _M_distance(const void*, const void*) const { return 0; }
+
+      // count the number of nodes
+      size_t _M_node_count() const
+      {
+	return _S_distance(_M_impl._M_node._M_next,
+			   std::__addressof(_M_impl._M_node));
+      }
+#endif
 
       _List_node<_Tp>*
       _M_get_node()
@@ -386,7 +433,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __node->_M_next = __xnode->_M_next;
 	    __node->_M_prev = __xnode->_M_prev;
 	    __node->_M_next->_M_prev = __node->_M_prev->_M_next = __node;
-	    __xnode->_M_next = __xnode->_M_prev = __xnode;
+	    _M_set_size(__x._M_get_size());
+	    __x._M_init();
 	  }
       }
 #endif
@@ -403,6 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
         this->_M_impl._M_node._M_next = &this->_M_impl._M_node;
         this->_M_impl._M_node._M_prev = &this->_M_impl._M_node;
+	_M_set_size(0);
       }
     };
 
@@ -453,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  %empty. 
   */
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
-    class list : protected _List_base<_Tp, _Alloc>
+    class _GLIBCXX_DEFAULT_ABI_TAG list : protected _List_base<_Tp, _Alloc>
     {
       // concept requirements
       typedef typename _Alloc::value_type                _Alloc_value_type;
@@ -893,7 +942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  Returns the number of elements in the %list.  */
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return std::distance(begin(), end()); }
+      { return this->_M_node_count(); }
 
       /**  Returns the size() of the largest possible %list.  */
       size_type
@@ -1295,6 +1344,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__detail::_List_node_base::swap(this->_M_impl._M_node, 
 					__x._M_impl._M_node);
 
+	size_t __xsize = __x._M_get_size();
+	__x._M_set_size(this->_M_get_size());
+	this->_M_set_size(__xsize);
+
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 431. Swapping containers with unequal allocators.
 	std::__alloc_swap<typename _Base::_Node_alloc_type>::
@@ -1339,6 +1392,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	    this->_M_transfer(__position._M_const_cast(),
 			      __x.begin(), __x.end());
+
+	    this->_M_inc_size(__x._M_get_size());
+	    __x._M_set_size(0);
 	  }
       }
 
@@ -1385,6 +1441,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	this->_M_transfer(__position._M_const_cast(),
 			  __i._M_const_cast(), __j);
+
+	this->_M_inc_size(1);
+	__x._M_dec_size(1);
       }
 
 #if __cplusplus >= 201103L
@@ -1442,6 +1501,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 	    if (this != &__x)
 	      _M_check_equal_allocators(__x);
+
+	    size_t __n = this->_M_distance(__first._M_node, __last._M_node);
+	    this->_M_inc_size(__n);
+	    __x._M_dec_size(__n);
 
 	    this->_M_transfer(__position._M_const_cast(),
 			      __first._M_const_cast(),
@@ -1688,6 +1751,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
         _Node* __tmp = _M_create_node(__x);
         __tmp->_M_hook(__position._M_node);
+	this->_M_inc_size(1);
       }
 #else
      template<typename... _Args>
@@ -1696,6 +1760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        {
 	 _Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
 	 __tmp->_M_hook(__position._M_node);
+	 this->_M_inc_size(1);
        }
 #endif
 
@@ -1703,6 +1768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_erase(iterator __position) _GLIBCXX_NOEXCEPT
       {
+	this->_M_dec_size(1);
         __position._M_node->_M_unhook();
         _Node* __n = static_cast<_Node*>(__position._M_node);
 #if __cplusplus >= 201103L

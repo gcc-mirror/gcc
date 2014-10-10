@@ -643,6 +643,8 @@ baseline_dir
 HWCAP_FLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
+ENABLE_CXX11_ABI_FALSE
+ENABLE_CXX11_ABI_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
 libtool_VERSION
@@ -880,6 +882,7 @@ with_system_libunwind
 enable_linux_futex
 enable_symvers
 enable_libstdcxx_visibility
+enable_libstdcxx_cxx11_abi
 enable_libstdcxx_threads
 with_gxx_include_dir
 enable_version_specific_runtime_libs
@@ -1575,6 +1578,8 @@ Optional Features:
                           [default=yes]
   --enable-libstdcxx-visibility
                           enables visibility safe usage [default=yes]
+  --disable-libstdcxx-cxx11-abi
+                          disable the C++11-conforming ABI
   --enable-libstdcxx-threads
                           enable C++11 threads support [default=auto]
   --enable-version-specific-runtime-libs
@@ -11526,7 +11531,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11529 "configure"
+#line 11534 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11632,7 +11637,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11635 "configure"
+#line 11640 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15052,7 +15057,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 15055 "configure"
+#line 15060 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15404,7 +15409,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15407 "configure"
+#line 15412 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15439,7 +15444,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15442 "configure"
+#line 15447 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15474,7 +15479,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15477 "configure"
+#line 15482 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15510,7 +15515,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15513 "configure"
+#line 15518 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15589,7 +15594,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15592 "configure"
+#line 15597 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15631,7 +15636,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15634 "configure"
+#line 15639 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15665,7 +15670,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15668 "configure"
+#line 15673 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -78157,6 +78162,21 @@ fi
 $as_echo "$as_me: visibility supported: $enable_libstdcxx_visibility" >&6;}
 
 
+
+  # Check whether --enable-libstdcxx-cxx11-abi was given.
+if test "${enable_libstdcxx_cxx11_abi+set}" = set; then :
+  enableval=$enable_libstdcxx_cxx11_abi;
+else
+  enable_libstdcxx_cxx11_abi=yes
+fi
+
+  if test x"$enable_libstdcxx_cxx11_abi" != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: C++11-conforming ABI is disabled" >&5
+$as_echo "$as_me: C++11-conforming ABI is disabled" >&6;}
+  fi
+
+
+
 ac_ldbl_compat=no
 case "$target" in
   powerpc*-*-linux* | \
@@ -79309,6 +79329,15 @@ else
 fi
 
 
+    if test $enable_libstdcxx_cxx11_abi = yes; then
+  ENABLE_CXX11_ABI_TRUE=
+  ENABLE_CXX11_ABI_FALSE='#'
+else
+  ENABLE_CXX11_ABI_TRUE='#'
+  ENABLE_CXX11_ABI_FALSE=
+fi
+
+
     if test $ac_ldbl_compat = yes; then
   GLIBCXX_LDBL_COMPAT_TRUE=
   GLIBCXX_LDBL_COMPAT_FALSE='#'
@@ -79724,6 +79753,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then
   as_fn_error "conditional \"ENABLE_VISIBILITY\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_CXX11_ABI_TRUE}" && test -z "${ENABLE_CXX11_ABI_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_CXX11_ABI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_LDBL_COMPAT_TRUE}" && test -z "${GLIBCXX_LDBL_COMPAT_FALSE}"; then

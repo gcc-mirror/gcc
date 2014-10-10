@@ -1,3 +1,46 @@
+2014-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/49561
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Define.
+	* configure.ac: Use GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI.
+	* configure: Regenerate.
+	* include/Makefile.am (stamp-cxx11-abi): New target.
+	(c++config.h): Set _GLIBCXX_USE_CXX11_ABI macro.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Add _GLIBCXX_USE_CXX11_ABI placeholder and
+	define _GLIBCXX_DEFAULT_ABI_TAG.
+	* include/bits/list.tcc (list::emplace(const_iterator, _Args&...)):
+	Increment size.
+	(list::emplace(const_iterator, const value_type&)): Likewise.
+	(list::merge(list&), list::merge(list&, _StrictWeakOrdering)): Adjust
+	list sizes.
+	* include/bits/stl_list.h (_List_base, list): Add ABI tag macro.
+	(_List_base::_M_size): New data member in cxx11 ABI mode.
+	(_List_base::_S_distance(_List_node_base*, _List_node_base*)): New
+	function.
+	(_List_base::_M_get_size(), _List_base::_M_set_size(size_t),
+	_List_base::_M_inc_size(size_t), _List_base::_M_dec_size(size_t),
+	_List_base::_M_distance, _List_base::_M_node_count): New functions for
+	accessing list size correctly for the ABI mode.
+	(_List_base::_List_base(_List_base&&)): Copy size and reset source.
+	(_List_base::_M_init()): Initialize size member.
+	(list::size()): Use _List_base::_M_node_count.
+	(list::swap(list&)): Swap sizes.
+	(list::splice(iterator, list&)): Update sizes.
+	(list::splice(iterator, list&, iterator)): Likewise.
+	(list::insert(iterator, const value_type&)): Update size.
+	(list::insert(iterator, _Args&&...)): Likewise.
+	(list::_M_erase(iterator)): Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Adjust.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust.
+
 2014-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update.
