@@ -1,5 +1,42 @@
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch7.adb, einfo.adb, einfo.ads, sem_prag.adb, sem_ch12.adb,
+	freeze.adb, sem_util.adb, sem_res.adb, exp_ch6.adb, exp_ch13.adb,
+	sem_ch6.adb, sem_cat.adb, sem_disp.adb
+	(Is_Subprogram_Or_Generic_Subprogram): New primitive. Use this primitive
+	throughout where appropriate.
+
+2014-10-10  Bob Duff  <duff@adacore.com>
+
+	* a-coinho-shared.ads: Minor reformatting.
+	* s-traceb.adb: Minor clean up.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb (Scan_ALI): Read and process new GP flag on ALI P line.
+	* ali.ads (GNATprove_Mode): New component in ALI table.
+	(GNATprove_Mode_Specified): New global.
+	* gnatbind.adb (Gnatbind): Give fatal error if any file compiled
+	in GNATProve mode.
+	* lib-writ.ads, lib-writ.adb (GP): New flag on P line for
+	GNATProve_Mode.
+
+2014-10-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): Adding assertion.
+	(Build_Init_Statement): Ensure that statements
+	associated with the parent components are located at the beginning
+	of the returned list of statements.
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Inherit_Aspects_At_Freeze_Node): If the full
+	view of a private type T that has a type invariant is a scalar
+	or constrained array type, the base type created for the full
+	view has the same type invariant.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.ads, sem_ch12.adb, exp_util.adb, i-fortra.ads: Minor code
 	reorganization.
 

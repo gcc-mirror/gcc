@@ -615,9 +615,7 @@ package body Sem_Cat is
 
       E := Current_Scope;
       loop
-         if Is_Subprogram (E)
-              or else
-            Is_Generic_Subprogram (E)
+         if Is_Subprogram_Or_Generic_Subprogram (E)
               or else
             Is_Concurrent_Type (E)
          then

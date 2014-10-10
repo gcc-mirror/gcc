@@ -1129,8 +1129,7 @@ package body Einfo is
                        E_Package_Body,
                        E_Subprogram_Body,
                        E_Variable)
-          or else Is_Generic_Subprogram (Id)
-          or else Is_Subprogram (Id));
+          or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Node34 (Id);
    end Contract;
 
@@ -3405,6 +3404,13 @@ package body Einfo is
       return Ekind (Id) in Subprogram_Kind;
    end Is_Subprogram;
 
+   function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B is
+   begin
+      return Ekind (Id) in Subprogram_Kind
+               or else
+             Ekind (Id) in Generic_Subprogram_Kind;
+   end Is_Subprogram_Or_Generic_Subprogram;
+
    function Is_Task_Type                        (Id : E) return B is
    begin
       return Ekind (Id) in Task_Kind;
@@ -3593,15 +3599,14 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind_In (Id, E_Entry,
-         E_Entry_Family,
-         E_Generic_Package,
-         E_Package,
-         E_Package_Body,
-         E_Subprogram_Body,
-         E_Variable,
-         E_Void)
-         or else Is_Generic_Subprogram (Id)
-         or else Is_Subprogram (Id));
+                         E_Entry_Family,
+                         E_Generic_Package,
+                         E_Package,
+                         E_Package_Body,
+                         E_Subprogram_Body,
+                         E_Variable,
+                         E_Void)
+          or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Node34 (Id, V);
    end Set_Contract;
 

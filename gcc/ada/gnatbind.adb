@@ -776,6 +776,13 @@ begin
          raise Unrecoverable_Error;
       end if;
 
+      --  Quit with message if we had a GNATprove file
+
+      if GNATprove_Mode_Specified then
+         Error_Msg ("one or more files compiled in GNATprove mode");
+         raise Unrecoverable_Error;
+      end if;
+
       --  Output list of ALI files in closure
 
       if Output_ALI_List then

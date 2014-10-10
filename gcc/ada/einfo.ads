@@ -2974,6 +2974,10 @@ package Einfo is
 --       Applies to all entities, true for function, procedure and operator
 --       entities.
 
+--    Is_Subprogram_Or_Generic_Subprogram
+--       Applies to all entities, true for function procedure and operator
+--       entities, and also for the corresponding generic entities.
+
 --    Is_Synchronized_Interface (synthesized)
 --       Defined in types that are interfaces. True if interface is declared
 --       synchronized, task, or protected, or is derived from a synchronized
@@ -6964,6 +6968,7 @@ package Einfo is
    function Is_Scalar_Type                      (Id : E) return B;
    function Is_Signed_Integer_Type              (Id : E) return B;
    function Is_Subprogram                       (Id : E) return B;
+   function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B;
    function Is_Task_Type                        (Id : E) return B;
    function Is_Type                             (Id : E) return B;
 
@@ -8800,6 +8805,7 @@ package Einfo is
    pragma Inline (Is_Base_Type);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
+   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
    pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);
    pragma Inline (Known_RM_Size);

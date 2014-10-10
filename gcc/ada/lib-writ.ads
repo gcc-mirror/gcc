@@ -192,6 +192,9 @@ package Lib.Writ is
    --              the units in this file, where x is the first character
    --              (upper case) of the policy name (e.g. 'C' for Concurrent).
 
+   --         GP   Set if this compilation was done in GNATprove mode, either
+   --              from direct use of GNATprove, or from use of -gnatdF.
+
    --         Lx   A valid Locking_Policy pragma applies to all the units in
    --              this file, where x is the first character (upper case) of
    --              the policy name (e.g. 'C' for Ceiling_Locking).
@@ -200,7 +203,9 @@ package Lib.Writ is
    --              were not compiled to produce an object. This can occur as a
    --              result of the use of -gnatc, or if no object can be produced
    --              (e.g. when a package spec is compiled instead of the body,
-   --              or a subunit on its own).
+   --              or a subunit on its own). Note that in GNATprove mode, we
+   --              do produce an object. The object is not suitable for binding
+   --              and linking, but we do not set NO, instead we set GP.
 
    --         NR   No_Run_Time. Indicates that a pragma No_Run_Time applies
    --              to all units in the file.

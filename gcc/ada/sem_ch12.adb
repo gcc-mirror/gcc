@@ -3543,9 +3543,7 @@ package body Sem_Ch12 is
          else
             E := First_Entity (Gen_Unit);
             while Present (E) loop
-               if Is_Subprogram (E)
-                 and then Is_Inlined (E)
-               then
+               if Is_Subprogram (E) and then Is_Inlined (E) then
                   return True;
                end if;
 
@@ -6558,7 +6556,7 @@ package body Sem_Ch12 is
 
          if Ekind (Scop) = E_Generic_Package
            or else (Is_Subprogram (Scop)
-                      and then Nkind (Unit_Declaration_Node (Scop)) =
+                     and then Nkind (Unit_Declaration_Node (Scop)) =
                                         N_Generic_Subprogram_Declaration)
          then
             Elmt := First_Elmt (Inner_Instances (Inner));
