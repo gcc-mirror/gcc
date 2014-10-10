@@ -2662,6 +2662,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 					gimple_call_arg (stmt, 1),
 					gimple_call_arg (stmt, 2));
 	  break;
+	case IFN_UBSAN_OBJECT_SIZE:
+	  if (integer_all_onesp (gimple_call_arg (stmt, 2))
+	      || (TREE_CODE (gimple_call_arg (stmt, 1)) == INTEGER_CST
+		  && TREE_CODE (gimple_call_arg (stmt, 2)) == INTEGER_CST
+		  && tree_int_cst_le (gimple_call_arg (stmt, 1),
+				      gimple_call_arg (stmt, 2))))
+	    {
+	      gsi_replace (gsi, gimple_build_nop (), true);
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
+	      return true;
+	    }
+	  break;
 	case IFN_UBSAN_CHECK_ADD:
 	  subcode = PLUS_EXPR;
 	  break;

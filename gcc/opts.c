@@ -1513,6 +1513,8 @@ common_handle_option (struct gcc_options *opts,
 	      { "returns-nonnull-attribute",
 		SANITIZE_RETURNS_NONNULL_ATTRIBUTE,
 		sizeof "returns-nonnull-attribute" - 1 },
+	      { "object-size", SANITIZE_OBJECT_SIZE,
+		sizeof "object-size" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;

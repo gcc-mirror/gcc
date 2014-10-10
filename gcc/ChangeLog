@@ -1,3 +1,21 @@
+2014-10-10  Marek Polacek  <polacek@redhat.com>
+
+	* asan.c (pass_sanopt::execute): Handle IFN_UBSAN_OBJECT_SIZE.
+	* doc/invoke.texi: Document -fsanitize=object-size.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_OBJECT_SIZE and
+	or it into SANITIZE_UNDEFINED.
+	* gimple-fold.c (gimple_fold_call): Optimize IFN_UBSAN_OBJECT_SIZE.
+	* internal-fn.c (expand_UBSAN_OBJECT_SIZE): New function.
+	* internal-fn.def (UBSAN_OBJECT_SIZE): Define.
+	* opts.c (common_handle_option): Handle -fsanitize=object-size.
+	* ubsan.c: Include tree-object-size.h.
+	(ubsan_type_descriptor): Call tree_to_uhwi instead of tree_to_shwi. 
+	(ubsan_expand_bounds_ifn): Use false instead of 0.
+	(ubsan_expand_objsize_ifn): New function.
+	(instrument_object_size): New function.
+	(pass_ubsan::execute): Add object size instrumentation.
+	* ubsan.h (ubsan_expand_objsize_ifn): Declare.
+
 2014-10-10  Richard Henderson  <rth@redhat.com>
 
 	PR target/63404
