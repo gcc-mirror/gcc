@@ -1977,6 +1977,11 @@ package body Sem_Prag is
                elsif Ekind (Item_Id) = E_Constant then
                   SPARK_Msg_N ("global item cannot denote a constant", Item);
 
+               --  A formal object may act as a global item inside a generic
+
+               elsif Is_Formal_Object (Item_Id) then
+                  null;
+
                --  The only legal references are those to abstract states and
                --  variables (SPARK RM 6.1.4(4)).
 

@@ -3153,7 +3153,7 @@ package body Errout is
       E   : Node_Or_Entity_Id)
    is
    begin
-      if SPARK_Mode = On then
+      if SPARK_Mode /= Off then
          Error_Msg_NE (Msg, N, E);
       end if;
    end SPARK_Msg_NE;
