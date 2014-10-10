@@ -1,3 +1,10 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63495
+	* stor-layout.c (min_align_of_type): Don't decrease alignment
+	through BIGGEST_FIELD_ALIGNMENT or ADJUST_FIELD_ALIGN if
+	TYPE_USER_ALIGN is set.
+
 2014-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/63483
