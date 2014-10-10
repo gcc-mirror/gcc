@@ -3018,14 +3018,16 @@ package body Sem_Ch13 is
                   --  of a package declaration, the pragma needs to be inserted
                   --  in the list of declarations for the associated package.
                   --  There is no issue of visibility delay for these aspects.
-                  --  Aspect is legal on a local instantiation of a library-
-                  --  level generic unit.
 
                   if A_Id in Library_Unit_Aspects
                     and then
                       Nkind_In (N, N_Package_Declaration,
                                    N_Generic_Package_Declaration)
                     and then Nkind (Parent (N)) /= N_Compilation_Unit
+
+                    --  Aspect is legal on a local instantiation of a library-
+                    --  level generic unit.
+
                     and then not Is_Generic_Instance (Defining_Entity (N))
                   then
                      Error_Msg_N

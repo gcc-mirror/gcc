@@ -1,3 +1,14 @@
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, gnat1drv.adb, sem_ch13.adb: Minor reformatting and
+	code clean up.
+
+2014-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_OK_Volatile_Context): Allow
+	a volatile object reference to appear as the expression of a
+	type conversion.
+
 2014-10-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications, Library_Unit_Aspects):
