@@ -1,3 +1,7 @@
+2014-10-10  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_id_expression): Check for error_mark_node.
+
 2014-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63207
