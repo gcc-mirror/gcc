@@ -63,6 +63,7 @@ package body Opt is
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
+      Prefix_Exception_Messages_Config      := Prefix_Exception_Messages;
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
       Uneval_Old_Config                     := Uneval_Old;
@@ -102,6 +103,7 @@ package body Opt is
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
+      Prefix_Exception_Messages      := Save.Prefix_Exception_Messages;
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
       Uneval_Old                     := Save.Uneval_Old;
@@ -142,6 +144,7 @@ package body Opt is
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
+      Save.Prefix_Exception_Messages      := Prefix_Exception_Messages;
       Save.SPARK_Mode                     := SPARK_Mode;
       Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
       Save.Uneval_Old                     := Uneval_Old;
@@ -174,6 +177,7 @@ package body Opt is
          External_Name_Imp_Casing    := Lowercase;
          Optimize_Alignment          := 'O';
          Persistent_BSS_Mode         := False;
+         Prefix_Exception_Messages   := True;
          Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
@@ -221,6 +225,7 @@ package body Opt is
          Optimize_Alignment          := Optimize_Alignment_Config;
          Optimize_Alignment_Local    := False;
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
+         Prefix_Exception_Messages   := Prefix_Exception_Messages_Config;
          SPARK_Mode                  := SPARK_Mode_Config;
          SPARK_Mode_Pragma           := SPARK_Mode_Pragma_Config;
          Uneval_Old                  := Uneval_Old_Config;
@@ -235,6 +240,8 @@ package body Opt is
 
          Init_Or_Norm_Scalars := Initialize_Scalars or Normalize_Scalars;
       end if;
+
+      --  Values set for all units
 
       Default_Pool                   := Default_Pool_Config;
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;

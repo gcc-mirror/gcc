@@ -29,6 +29,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Intr; use Exp_Intr;
 with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -1564,6 +1565,22 @@ package body Exp_Ch11 is
       --  and there is nothing else to do.
 
       if Present (Expression (N)) then
+
+         --  Adjust message to deal with Prefix_Exception_Messages. We only
+         --  add the prefix to string literals, if the message is being
+         --  constructed, we assume it already deals with uniqueness.
+
+         if Prefix_Exception_Messages
+           and then Nkind (Expression (N)) = N_String_Literal
+         then
+            Name_Len := 0;
+            Add_Source_Info (Loc, Name_Enclosing_Entity);
+            Add_Str_To_Name_Buffer (": ");
+            Add_String_To_Name_Buffer (Strval (Expression (N)));
+            Rewrite (Expression (N),
+              Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len)));
+            Analyze_And_Resolve (Expression (N), Standard_String);
+         end if;
 
          --  Avoid passing exception-name'identity in runtimes in which this
          --  argument is not used. This avoids generating undefined references

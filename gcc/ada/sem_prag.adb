@@ -17753,6 +17753,18 @@ package body Sem_Prag is
             end if;
          end Preelaborate;
 
+         -------------------------------
+         -- Prefix_Exception_Messages --
+         -------------------------------
+
+         --  pragma Prefix_Exception_Messages;
+
+         when Pragma_Prefix_Exception_Messages =>
+            GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
+            Check_Arg_Count (0);
+            Prefix_Exception_Messages := True;
+
          --------------
          -- Priority --
          --------------
@@ -24739,7 +24751,7 @@ package body Sem_Prag is
    --  whether appearance of some name in a given pragma is to be considered
    --  as a reference for the purposes of warnings about unreferenced objects.
 
-   --  -1  indicates that references in any argument position are significant
+   --  -1  indicates that appearence in any argument is significant
    --  0   indicates that appearance in any argument is not significant
    --  +n  indicates that appearance as argument n is significant, but all
    --      other arguments are not significant
@@ -24881,14 +24893,15 @@ package body Sem_Prag is
       Pragma_Optimize_Alignment             => -1,
       Pragma_Overflow_Mode                  =>  0,
       Pragma_Overriding_Renamings           =>  0,
-      Pragma_Ordered                        =>  0,
+      Pragma_Ordered                        => -1,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,
       Pragma_Part_Of                        => -1,
       Pragma_Partition_Elaboration_Policy   => -1,
       Pragma_Passive                        => -1,
       Pragma_Persistent_BSS                 =>  0,
-      Pragma_Polling                        => -1,
+      Pragma_Polling                        =>  0,
+      Pragma_Prefix_Exception_Messages      =>  0,
       Pragma_Post                           => -1,
       Pragma_Postcondition                  => -1,
       Pragma_Post_Class                     => -1,
