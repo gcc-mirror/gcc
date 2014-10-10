@@ -1,5 +1,11 @@
 2014-10-10  Jason Merrill  <jason@redhat.com>
 
+	* method.c (implicitly_declare_fn): Handle deleted lambda default
+	ctor and copy assop here.
+	* class.c (check_bases_and_members): Not here.
+	(add_implicitly_declared_members): And don't set
+	CLASSTYPE_LAZY_MOVE_ASSIGN.
+
 	* semantics.c (finish_id_expression): Check for error_mark_node.
 
 2014-10-09  Jason Merrill  <jason@redhat.com>
