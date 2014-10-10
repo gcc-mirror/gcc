@@ -2458,18 +2458,6 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  /* Read-only memory is by definition never modified, and therefore can't
-     conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't die.  */
-  if (MEM_READONLY_P (x))
-    return 0;
-
-  /* If we have MEMs referring to different address spaces (which can
-     potentially overlap), we cannot easily tell from the addresses
-     whether the references overlap.  */
-  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
-
   if (! mem_addr)
     {
       mem_addr = XEXP (mem, 0);
@@ -2492,6 +2480,22 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 	    mem_addr = get_addr (mem_addr);
 	}
     }
+
+  /* Read-only memory is by definition never modified, and therefore can't
+     conflict with anything.  However, don't assume anything when AND
+     addresses are involved and leave to the code below to determine
+     dependence.  We don't expect to find read-only set on MEM, but
+     stupid user tricks can produce them, so don't die.  */
+  if (MEM_READONLY_P (x)
+      && GET_CODE (x_addr) != AND
+      && GET_CODE (mem_addr) != AND)
+    return 0;
+
+  /* If we have MEMs referring to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
 
   base = find_base_term (x_addr);
   if (base && (GET_CODE (base) == LABEL_REF
@@ -2576,16 +2580,6 @@ write_dependence_p (const_rtx mem,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  /* A read from read-only memory can't conflict with read-write memory.  */
-  if (!writep && MEM_READONLY_P (mem))
-    return 0;
-
-  /* If we have MEMs referring to different address spaces (which can
-     potentially overlap), we cannot easily tell from the addresses
-     whether the references overlap.  */
-  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
-
   mem_addr = XEXP (mem, 0);
   if (!x_addr)
     {
@@ -2602,6 +2596,21 @@ write_dependence_p (const_rtx mem,
 	    mem_addr = get_addr (mem_addr);
 	}
     }
+
+  /* A read from read-only memory can't conflict with read-write memory.
+     Don't assume anything when AND addresses are involved and leave to
+     the code below to determine dependence.  */
+  if (!writep
+      && MEM_READONLY_P (mem)
+      && GET_CODE (x_addr) != AND
+      && GET_CODE (mem_addr) != AND)
+    return 0;
+
+  /* If we have MEMs referring to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
 
   base = find_base_term (mem_addr);
   if (! writep
@@ -2690,18 +2699,6 @@ may_alias_p (const_rtx mem, const_rtx x)
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  /* Read-only memory is by definition never modified, and therefore can't
-     conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't die.  */
-  if (MEM_READONLY_P (x))
-    return 0;
-
-  /* If we have MEMs referring to different address spaces (which can
-     potentially overlap), we cannot easily tell from the addresses
-     whether the references overlap.  */
-  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
-
   x_addr = XEXP (x, 0);
   mem_addr = XEXP (mem, 0);
   if (!((GET_CODE (x_addr) == VALUE
@@ -2714,6 +2711,22 @@ may_alias_p (const_rtx mem, const_rtx x)
       x_addr = get_addr (x_addr);
       mem_addr = get_addr (mem_addr);
     }
+
+  /* Read-only memory is by definition never modified, and therefore can't
+     conflict with anything.  However, don't assume anything when AND
+     addresses are involved and leave to the code below to determine
+     dependence.  We don't expect to find read-only set on MEM, but
+     stupid user tricks can produce them, so don't die.  */
+  if (MEM_READONLY_P (x)
+      && GET_CODE (x_addr) != AND
+      && GET_CODE (mem_addr) != AND)
+    return 0;
+
+  /* If we have MEMs referring to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
 
   rtx x_base = find_base_term (x_addr);
   rtx mem_base = find_base_term (mem_addr);
