@@ -1672,7 +1672,7 @@ package body Sem_Ch12 is
                      if GNATprove_Mode
                        and then
                          Present
-                           (Get_First_Parent_With_Ext_Axioms_For_Entity
+                           (Containing_Package_With_Ext_Axioms
                               (Defining_Entity (Analyzed_Formal)))
                        and then Ekind (Defining_Entity (Analyzed_Formal)) =
                                                                     E_Function

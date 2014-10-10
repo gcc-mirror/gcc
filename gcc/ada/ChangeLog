@@ -1,3 +1,8 @@
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads, sem_ch12.adb, exp_util.adb, i-fortra.ads: Minor code
+	reorganization.
+
 2014-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust comment.
