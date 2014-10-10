@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -570,20 +570,25 @@ package body Ada.Strings.Wide_Wide_Maps is
    function To_Sequence
      (Set : Wide_Wide_Character_Set) return Wide_Wide_Character_Sequence
    is
-      SS : constant Wide_Wide_Character_Ranges_Access := Set.Set;
-
-      Result : Wide_Wide_String (Positive range 1 .. 2 ** 16);
-      N      : Natural := 0;
+      SS    : constant Wide_Wide_Character_Ranges_Access := Set.Set;
+      N     : Natural := 0;
+      Count : Natural := 0;
 
    begin
       for J in SS'Range loop
-         for K in SS (J).Low .. SS (J).High loop
-            N := N + 1;
-            Result (N) := K;
-         end loop;
+         Count :=
+           Count + (Wide_Wide_Character'Pos (SS (J).High) -
+                    Wide_Wide_Character'Pos (SS (J).Low) + 1);
       end loop;
 
-      return Result (1 .. N);
+      return Result : Wide_Wide_String (1 .. Count) do
+         for J in SS'Range loop
+            for K in SS (J).Low .. SS (J).High loop
+               N := N + 1;
+               Result (N) := K;
+            end loop;
+         end loop;
+      end return;
    end To_Sequence;
 
    ------------

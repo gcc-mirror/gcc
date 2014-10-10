@@ -10706,10 +10706,11 @@ package body Sem_Ch13 is
             Set_Has_Inheritable_Invariants (Typ);
          end if;
 
-      --  If the full view of the type is a scalar type or array type, the
-      --  implicit base type created for it has the same invariant.
+      --  If we have a subtype with invariants, whose base type does not have
+      --  invariants, copy these invariants to the base type. This happens for
+      --  the case of implicit base types created for scalar and array types.
 
-      elsif Has_Invariants (Typ) and then Base_Type (Typ) /= Typ
+      elsif Has_Invariants (Typ)
         and then not Has_Invariants (Base_Type (Typ))
       then
          Set_Has_Invariants (Base_Type (Typ));
