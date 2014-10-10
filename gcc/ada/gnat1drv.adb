@@ -585,7 +585,12 @@ procedure Gnat1drv is
 
       --  Treat -gnatn as equivalent to -gnatN for non-GCC targets
 
-      if Inline_Active and then not Front_End_Inlining then
+      if Inline_Active and not Front_End_Inlining then
+
+         --  We really should have a tag for this, what if we added a new
+         --  back end some day, it would not be true for this test, but it
+         --  would be non-GCC, so this is a bit troublesome ???
+
          Front_End_Inlining := VM_Target /= No_VM or else AAMP_On_Target;
       end if;
 

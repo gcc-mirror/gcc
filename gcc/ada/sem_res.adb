@@ -6696,6 +6696,18 @@ package body Sem_Res is
          then
             return True;
 
+         --  The volatile object appears as the expression of a type conversion
+         --  occurring in a non-interfering context.
+
+         elsif Nkind_In (Context, N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
+           and then Expression (Context) = Obj_Ref
+           and then Is_OK_Volatile_Context
+                      (Context => Parent (Context),
+                       Obj_Ref => Context)
+         then
+            return True;
+
          --  Allow references to volatile objects in various checks. This is
          --  not a direct SPARK 2014 requirement.
 
