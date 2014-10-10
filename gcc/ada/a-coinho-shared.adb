@@ -26,7 +26,7 @@
 ------------------------------------------------------------------------------
 
 --  Note: special attention must be paid to the case of simultaneous access
---  to internal shared objects and elements by difference tasks. The Reference
+--  to internal shared objects and elements by different tasks. The Reference
 --  counter of internal shared object is the only component protected using
 --  atomic operations; other components and elements can be modified only when
 --  reference counter is equal to one (so there are no other references to this

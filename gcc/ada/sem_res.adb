@@ -9947,6 +9947,17 @@ package body Sem_Res is
       then
          Subtype_Id := Typ;
 
+      --  Do not generate a string literal subtype for the default expression
+      --  of a formal parameter in GNATprove mode. This is because the string
+      --  subtype is associated with the freezing actions of the subprogram,
+      --  however freezing is disabled in GNATprove mode and as a result the
+      --  subtype is unavailable.
+
+      elsif GNATprove_Mode
+        and then Nkind (Parent (N)) = N_Parameter_Specification
+      then
+         Subtype_Id := Typ;
+
       --  Otherwise we must create a string literal subtype. Note that the
       --  whole idea of string literal subtypes is simply to avoid the need
       --  for building a full fledged array subtype for each literal.

@@ -868,8 +868,8 @@ package Errout is
 
    procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id);
    pragma Inline (SPARK_Msg_N);
-   --  Same as Error_Msg_N, but the error is reported only when SPARK_Mode is
-   --  "on". The routine is inlined because it acts as a simple wrapper.
+   --  Same as Error_Msg_N, but the error is suppressed if SPARK_Mode is Off.
+   --  The routine is inlined because it acts as a simple wrapper.
 
    procedure SPARK_Msg_NE
      (Msg : String;
@@ -878,6 +878,7 @@ package Errout is
    pragma Inline (SPARK_Msg_NE);
    --  Same as Error_Msg_NE, but the error is reported only when SPARK_Mode is
    --  "on". The routine is inlined because it acts as a simple wrapper.
+   --  Is it right that this is so different from SPARK_Msg_N???
 
    ------------------------------------
    -- Utility Interface for Back End --

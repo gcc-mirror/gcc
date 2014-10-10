@@ -3138,7 +3138,7 @@ package body Errout is
 
    procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
    begin
-      if SPARK_Mode = On then
+      if SPARK_Mode /= Off then
          Error_Msg_N (Msg, N);
       end if;
    end SPARK_Msg_N;

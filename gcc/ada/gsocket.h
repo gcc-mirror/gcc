@@ -29,8 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(__nucleus__) || defined(VTHREADS) || defined(__ANDROID__) \
-  || defined(__PikeOS__)
+#if defined(__nucleus__) || defined(VTHREADS) || defined(__PikeOS__)
 
 /* Sockets not supported on these platforms.  */
 #undef HAVE_SOCKETS
@@ -204,8 +203,13 @@
 #include <netdb.h>
 #endif
 
+#ifdef __ANDROID__
+#include <unistd.h>
+#include <sys/select.h>
+#endif
+
 #if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || \
-    defined (_WIN32) || defined (__APPLE__)
+    defined (_WIN32) || defined (__APPLE__) || defined (__ANDROID__)
 # define HAVE_THREAD_SAFE_GETxxxBYyyy 1
 
 #elif defined (linux) || defined (__GLIBC__) || \

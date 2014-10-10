@@ -1,3 +1,40 @@
+2014-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-coinho-shared.adb: Minor typo fix.
+	* prj-env.ads: Minor reformatting.
+
+2014-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_String_Literal): Do not
+	generate a string literal subtype for the default expression of
+	a formal parameter in GNATprove mode.
+
+2014-10-10  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (SPARK_Msg_N): Issue error unless SPARK_Mode is Off.
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Analyze
+	declaration for loop parameter before rest of loop, and set
+	entity kind to prevent assignments to it in the user code.
+	* sem_ch3.adb (Analyze_Object_Contract): No contracts apply to the
+	loop parameter in an element iteration over o formal container.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document use of user-level routines to handle
+	e.g. col major arrays.
+
+2014-10-10  Doug Rupp  <rupp@adacore.com>
+
+	* s-osinte-android.adb: Fix misspelling.
+	* gsocket.h: Tweak the Android quirks.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads (SPARK_Msg_N): Fix spec to match change in body.
+
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb: Minor code reorganization.
