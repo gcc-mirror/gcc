@@ -1703,7 +1703,6 @@ package body Freeze is
       E := From;
       while Present (E) loop
          if Is_Subprogram (E) then
-
             if not Default_Expressions_Processed (E) then
                Process_Default_Expressions (E, After);
             end if;

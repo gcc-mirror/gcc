@@ -4321,7 +4321,7 @@ package body Sem_Util is
    function Current_Subprogram return Entity_Id is
       Scop : constant Entity_Id := Current_Scope;
    begin
-      if Is_Subprogram (Scop) or else Is_Generic_Subprogram (Scop) then
+      if Is_Subprogram_Or_Generic_Subprogram (Scop) then
          return Scop;
       else
          return Enclosing_Subprogram (Scop);
@@ -16491,8 +16491,7 @@ package body Sem_Util is
          while not Comes_From_Source (Val_Actual)
            and then Nkind (Val_Actual) in N_Entity
            and then (Ekind (Val_Actual) = E_Enumeration_Literal
-                      or else Is_Subprogram (Val_Actual)
-                      or else Is_Generic_Subprogram (Val_Actual))
+                      or else Is_Subprogram_Or_Generic_Subprogram (Val_Actual))
            and then Present (Alias (Val_Actual))
          loop
             Val_Actual := Alias (Val_Actual);

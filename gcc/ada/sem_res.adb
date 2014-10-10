@@ -4289,9 +4289,7 @@ package body Sem_Res is
             then
                Error_Msg_N ("class-wide argument not allowed here!", A);
 
-               if Is_Subprogram (Nam)
-                 and then Comes_From_Source (Nam)
-               then
+               if Is_Subprogram (Nam) and then Comes_From_Source (Nam) then
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
                     ("& is not a dispatching operation of &!", A, Nam);

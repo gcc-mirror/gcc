@@ -10705,6 +10705,15 @@ package body Sem_Ch13 is
          if Class_Present (Get_Rep_Item (Typ, Name_Invariant)) then
             Set_Has_Inheritable_Invariants (Typ);
          end if;
+
+      --  If the full view of the type is a scalar type or array type, the
+      --  implicit base type created for it has the same invariant.
+
+      elsif Has_Invariants (Typ) and then Base_Type (Typ) /= Typ
+        and then not Has_Invariants (Base_Type (Typ))
+      then
+         Set_Has_Invariants (Base_Type (Typ));
+         Set_Invariant_Procedure (Base_Type (Typ), Invariant_Procedure (Typ));
       end if;
 
       --  Volatile

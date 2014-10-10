@@ -5825,9 +5825,8 @@ package body Exp_Ch6 is
         Defining_Identifier
           (First (Parameter_Specifications (Parent (Corr))));
 
-      if Is_Subprogram (Proc)
-        and then Proc /= Corr
-      then
+      if Is_Subprogram (Proc) and then Proc /= Corr then
+
          --  Protected function or procedure
 
          Set_Entity (Rec, Param);

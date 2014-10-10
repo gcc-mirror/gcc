@@ -2808,7 +2808,7 @@ package body Sem_Ch7 is
 
       --  Body required if subprogram
 
-      elsif Is_Subprogram (P) or else Is_Generic_Subprogram (P) then
+      elsif Is_Subprogram_Or_Generic_Subprogram (P) then
          return True;
 
       --  Treat a block as requiring a body
@@ -2937,7 +2937,7 @@ package body Sem_Ch7 is
 
       --  Body required if subprogram
 
-      elsif Is_Subprogram (P) or else Is_Generic_Subprogram (P) then
+      elsif Is_Subprogram_Or_Generic_Subprogram (P) then
          Error_Msg_N ("info: & requires body (subprogram case)?Y?", P);
 
       --  Body required if generic parent has Elaborate_Body
