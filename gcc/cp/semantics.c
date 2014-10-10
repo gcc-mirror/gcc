@@ -3272,7 +3272,11 @@ finish_id_expression (tree id_expression,
       /* Disallow uses of local variables from containing functions, except
 	 within lambda-expressions.  */
       if (outer_automatic_var_p (decl))
-	decl = process_outer_var_ref (decl, tf_warning_or_error);
+	{
+	  decl = process_outer_var_ref (decl, tf_warning_or_error);
+	  if (decl == error_mark_node)
+	    return error_mark_node;
+	}
 
       /* Also disallow uses of function parameters outside the function
 	 body, except inside an unevaluated context (i.e. decltype).  */
