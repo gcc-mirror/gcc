@@ -1,3 +1,11 @@
+2014-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/63483
+	* alias.c (true_dependence_1): Do not exit early for MEM_READONLY_P
+	references when alignment ANDs are involved.
+	(write_dependence_p): Ditto.
+	(may_alias_p): Ditto.
+
 2014-10-10  Marek Polacek  <polacek@redhat.com>
 
 	* asan.c (pass_sanopt::execute): Handle IFN_UBSAN_OBJECT_SIZE.
