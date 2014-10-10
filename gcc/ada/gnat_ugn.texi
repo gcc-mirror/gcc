@@ -2960,14 +2960,15 @@ constructors are defined on the C++ side and imported from the Ada
 side, and latter the reverse case.
 
 The root of our derivation will be the @code{Animal} class, with a
-single private attribute (the @code{Age} of the animal) and two public
-primitives to set and get the value of this attribute.
+single private attribute (the @code{Age} of the animal), a constructor,
+and two public primitives to set and get the value of this attribute.
 
 @smallexample
 @b{class} Animal @{
  @b{public}:
    @b{virtual} void Set_Age (int New_Age);
    @b{virtual} int Age ();
+   Animal() @{Age_Count = 0;@};
  @b{private}:
    int Age_Count;
 @};
@@ -3013,19 +3014,19 @@ how to import these C++ declarations from the Ada side:
 @smallexample @c ada
 @b{with} Interfaces.C.Strings; @b{use} Interfaces.C.Strings;
 @b{package} Animals @b{is}
-  @b{type} Carnivore @b{is} interface;
+  @b{type} Carnivore @b{is} @b{limited} interface;
   @b{pragma} Convention (C_Plus_Plus, Carnivore);
   @b{function} Number_Of_Teeth (X : Carnivore)
      @b{return} Natural @b{is} @b{abstract};
 
-  @b{type} Domestic @b{is} interface;
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{type} Domestic @b{is} @b{limited} interface;
+  @b{pragma} Convention (C_Plus_Plus, Domestic);
   @b{procedure} Set_Owner
     (X    : @b{in} @b{out} Domestic;
      Name : Chars_Ptr) @b{is} @b{abstract};
 
-  @b{type} Animal @b{is} @b{tagged} @b{record}
-    Age : Natural := 0;
+  @b{type} Animal @b{is} @b{tagged} @b{limited} @b{record}
+    Age : Natural;
   @b{end} @b{record};
   @b{pragma} Import (C_Plus_Plus, Animal);
 
@@ -3035,13 +3036,17 @@ how to import these C++ declarations from the Ada side:
   @b{function} Age (X : Animal) @b{return} Integer;
   @b{pragma} Import (C_Plus_Plus, Age);
 
+  @b{function} New_Animal @b{return} Animal;
+  @b{pragma} CPP_Constructor (New_Animal);
+  @b{pragma} Import (CPP, New_Animal, "_ZN6AnimalC1Ev");
+
   @b{type} Dog @b{is} @b{new} Animal @b{and} Carnivore @b{and} Domestic @b{with} @b{record}
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
   @b{end} @b{record};
   @b{pragma} Import (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Natural;
   @b{pragma} Import (C_Plus_Plus, Number_Of_Teeth);
 
   @b{procedure} Set_Owner (A : @b{in} @b{out} Dog; Name : Chars_Ptr);
@@ -3100,19 +3105,19 @@ them to C++, using the same hierarchy of our previous example:
 @b{with} Interfaces.C.Strings;
 @b{use} Interfaces.C.Strings;
 @b{package} Animals @b{is}
-  @b{type} Carnivore @b{is} interface;
+  @b{type} Carnivore @b{is} @b{limited} interface;
   @b{pragma} Convention (C_Plus_Plus, Carnivore);
   @b{function} Number_Of_Teeth (X : Carnivore)
      @b{return} Natural @b{is} @b{abstract};
 
-  @b{type} Domestic @b{is} interface;
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{type} Domestic @b{is} @b{limited} interface;
+  @b{pragma} Convention (C_Plus_Plus, Domestic);
   @b{procedure} Set_Owner
     (X    : @b{in} @b{out} Domestic;
      Name : Chars_Ptr) @b{is} @b{abstract};
 
   @b{type} Animal @b{is} @b{tagged} @b{record}
-    Age : Natural := 0;
+    Age : Natural;
   @b{end} @b{record};
   @b{pragma} Convention (C_Plus_Plus, Animal);
 
@@ -3122,13 +3127,16 @@ them to C++, using the same hierarchy of our previous example:
   @b{function} Age (X : Animal) @b{return} Integer;
   @b{pragma} Export (C_Plus_Plus, Age);
 
+  @b{function} New_Animal @b{return} Animal'Class;
+  @b{pragma} Export (C_Plus_Plus, New_Animal);
+
   @b{type} Dog @b{is} @b{new} Animal @b{and} Carnivore @b{and} Domestic @b{with} @b{record}
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
   @b{end} @b{record};
   @b{pragma} Convention (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Natural;
   @b{pragma} Export (C_Plus_Plus, Number_Of_Teeth);
 
   @b{procedure} Set_Owner (A : @b{in} @b{out} Dog; Name : Chars_Ptr);
@@ -3139,7 +3147,8 @@ them to C++, using the same hierarchy of our previous example:
 @b{end} Animals;
 @end smallexample
 
-Compared with our previous example the only difference is the use of
+Compared with our previous example the only differences are the use of
+@code{pragma Convention} (instead of @code{pragma Import}), and the use of
 @code{pragma Export} to indicate to the GNAT compiler that the primitives will
 be available to C++. Thanks to the ABI compatibility, on the C++ side there is
 nothing else to be done; as explained above, the only requirement is that all

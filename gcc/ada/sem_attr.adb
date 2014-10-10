@@ -11021,13 +11021,21 @@ package body Sem_Attr is
 
                else
                   Assoc := First (Component_Associations (Aggr));
+
                   while Present (Assoc) loop
                      Comp := First (Choices (Assoc));
+                     Expr := Expression (Assoc);
 
                      if Nkind (Comp) /= N_Others_Choice
                        and then not Error_Posted (Comp)
                      then
-                        Resolve (Expression (Assoc), Etype (Entity (Comp)));
+                        Resolve (Expr, Etype (Entity (Comp)));
+
+                        if Is_Scalar_Type (Etype (Entity (Comp)))
+                          and then not Is_OK_Static_Expression (Expr)
+                        then
+                           Set_Do_Range_Check (Expr);
+                        end if;
                      end if;
 
                      Next (Assoc);
