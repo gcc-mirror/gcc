@@ -1,3 +1,19 @@
+2014-10-10  Kyrylo Tkachov<kyrylo.tkachov@arm.com>
+            Ramana Radhakrishnan<ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.h (FINAL_PRESCAN_INSN): Define.
+	(ADJUST_INSN_LENGTH): Define.
+	* config/aarch64/aarch64.opt (mfix-cortex-a53-835769): New option.
+	* config/aarch64/aarch64.c (is_mem_p): New function.
+	(is_memory_op): Likewise.
+	(aarch64_prev_real_insn): Likewise.
+	(is_madd_op): Likewise.
+	(dep_between_memop_and_curr): Likewise.
+	(aarch64_madd_needs_nop): Likewise.
+	(aarch64_final_prescan_insn): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document -mfix-cortex-a53-835769
+	and -mno-fix-cortex-a53-835769 options.
+
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63464
