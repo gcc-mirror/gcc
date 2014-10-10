@@ -1,5 +1,9 @@
 2014-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/Makefile.in: Regenerate.
+
+2014-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/49561
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Define.
 	* configure.ac: Use GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI.
