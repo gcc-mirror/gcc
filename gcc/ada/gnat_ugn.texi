@@ -20890,11 +20890,11 @@ When you use the @code{next} command in a function, the current source
 location will advance to the next statement as usual. A special case
 arises in the case of a @code{return} statement.
 
-Part of the code for a return statement is the ``epilog'' of the function.
+Part of the code for a return statement is the ``epilogue'' of the function.
 This is the code that returns to the caller. There is only one copy of
-this epilog code, and it is typically associated with the last return
+this epilogue code, and it is typically associated with the last return
 statement in the function if there is more than one return. In some
-implementations, this epilog is associated with the first statement
+implementations, this epilogue is associated with the first statement
 of the function.
 
 The result is that if you use the @code{next} command from a return

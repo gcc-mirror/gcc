@@ -1,3 +1,14 @@
+2014-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sinfo.ads, gnat_ugn.texi, a-except.adb, a-except-2005.adb,
+	raise-gcc.c Spelling changes (prolog => prologue, epilog => epilogue).
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Is_Wrapped_In_Block): Handle properly blocks that
+	contain pragmas generated for loop invariants and type predicates.
+	Clarify use of this subprogram.
+
 2014-10-10  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Global_Item): Accept formal objects in Global
