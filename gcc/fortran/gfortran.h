@@ -2759,7 +2759,7 @@ extern int gfc_character_storage_size;
 void gfc_clear_new_implicit (void);
 bool gfc_add_new_implicit_range (int, int);
 bool gfc_merge_new_implicit (gfc_typespec *);
-void gfc_set_implicit_none (bool, bool);
+void gfc_set_implicit_none (bool, bool, locus *);
 void gfc_check_function_type (gfc_namespace *);
 bool gfc_is_intrinsic_typename (const char *);
 

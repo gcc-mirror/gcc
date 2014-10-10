@@ -1,3 +1,12 @@
+2014-10-10  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_set_implicit_none): Update prototype.
+	* symbol.c (gfc_set_implicit_none): Take and
+	use error location. Move diagnostic from here to ...
+	* decl.c (gfc_match_implicit_none): ... here. And
+	update call. Handle empty implicit-none-spec.
+	(gfc_match_implicit): Handle statement-separator ";".
+
 2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* f95-lang.c (gfc_init_builtin_functions): Add more floating-point
