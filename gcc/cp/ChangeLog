@@ -1,5 +1,9 @@
 2014-10-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63415
+	* pt.c (value_dependent_expression_p) [CONSTRUCTOR]: Check the type.
+	(iterative_hash_template_arg): Likewise.
+
 	PR c++/63437
 	* cp-tree.h (REF_PARENTHESIZED_P): Also allow INDIRECT_REF.
 	* semantics.c (force_paren_expr): And set it.
