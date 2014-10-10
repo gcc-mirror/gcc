@@ -1,3 +1,10 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63495
+	* c-common.c (min_align_of_type): Don't decrease alignment
+	through BIGGEST_FIELD_ALIGNMENT or ADJUST_FIELD_ALIGN if
+	TYPE_USER_ALIGN is set.
+
 2014-10-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement SD-6: SG10 Feature Test Recommendations

@@ -1,3 +1,8 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63495
+	* gcc.target/i386/pr63495.c: New test.
+
 2014-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63379
