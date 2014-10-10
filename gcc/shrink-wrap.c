@@ -176,17 +176,40 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
   basic_block next_block;
   edge live_edge;
 
-  /* Look for a simple register copy.  */
-  set = single_set (insn);
-  if (!set)
+  /* Look for a simple register assignment.  We don't use single_set here
+     because we can't deal with any CLOBBERs, USEs, or REG_UNUSED secondary
+     destinations.  */
+  if (!INSN_P (insn))
+    return false;
+  set = PATTERN (insn);
+  if (GET_CODE (set) != SET)
     return false;
   src = SET_SRC (set);
   dest = SET_DEST (set);
 
-  if (!REG_P (src))
+  /* For the destination, we want only a register.  Also disallow STACK
+     or FRAME related adjustments.  They are likely part of the prologue,
+     so keep them in the entry block.  */
+  if (!REG_P (dest)
+      || dest == stack_pointer_rtx
+      || dest == frame_pointer_rtx
+      || dest == hard_frame_pointer_rtx)
+    return false;
+
+  /* For the source, we want one of:
+      (1) A (non-overlapping) register
+      (2) A constant,
+      (3) An expression involving no more than one register.
+
+     That last point comes from the code following, which was originally
+     written to handle only register move operations, and still only handles
+     a single source register when checking for overlaps.  Happily, the
+     same checks can be applied to expressions like (plus reg const).  */
+
+  if (CONSTANT_P (src))
+    ;
+  else if (!REG_P (src))
     {
-      unsigned int reg_num = 0;
-      unsigned int nonconstobj_num = 0;
       rtx src_inner = NULL_RTX;
 
       if (can_throw_internal (insn))
@@ -196,29 +219,49 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       FOR_EACH_SUBRTX_VAR (iter, array, src, ALL)
 	{
 	  rtx x = *iter;
-	  if (REG_P (x))
+	  switch (GET_RTX_CLASS (GET_CODE (x)))
 	    {
-	      reg_num++;
-	      src_inner = x;
+	    case RTX_CONST_OBJ:
+	    case RTX_COMPARE:
+	    case RTX_COMM_COMPARE:
+	    case RTX_BIN_ARITH:
+	    case RTX_COMM_ARITH:
+	    case RTX_UNARY:
+	    case RTX_TERNARY:
+	      /* Constant or expression.  Continue.  */
+	      break;
+
+	    case RTX_OBJ:
+	    case RTX_EXTRA:
+	      switch (GET_CODE (x))
+		{
+		case UNSPEC:
+		case SUBREG:
+		case STRICT_LOW_PART:
+		case PC:
+		  /* Ok.  Continue.  */
+		  break;
+
+		case REG:
+		  /* Fail if we see a second inner register.  */
+		  if (src_inner != NULL)
+		    return false;
+		  src_inner = x;
+		  break;
+
+		default:
+		  return false;
+		}
+	      break;
+
+	    default:
+	      return false;
 	    }
-	  else if (!CONSTANT_P (x) && OBJECT_P (x))
-	    nonconstobj_num++;
 	}
 
-      if (nonconstobj_num > 0
-	  || reg_num > 1)
-	src = NULL_RTX;
-      else if (reg_num == 1)
+      if (src_inner != NULL)
 	src = src_inner;
     }
-
-  if (!REG_P (dest) || src == NULL_RTX
-      /* STACK or FRAME related adjustment might be part of prologue.
-	 So keep them in the entry block.  */
-      || dest == stack_pointer_rtx
-      || dest == frame_pointer_rtx
-      || dest == hard_frame_pointer_rtx)
-    return false;
 
   /* Make sure that the source register isn't defined later in BB.  */
   if (REG_P (src))
