@@ -1,3 +1,13 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63464
+	* tree-switch-conversion.c (struct case_bit_test): Remove
+	hi and lo fields, add wide_int mask field.
+	(emit_case_bit_tests): Add MAXVAL argument, rewrite uses of
+	hi/lo fields into wide_int mask operations, optimize by pretending
+	minval to be 0 if maxval is small enough.
+	(process_switch): Adjust caller.
+
 2014-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63379
