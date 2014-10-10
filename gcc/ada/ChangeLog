@@ -1,3 +1,26 @@
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_intr.adb (Write_Entity_Name): Moved to outer level
+	(Write_Entity_Name): Properly handle operator names
+	(Expand_Source_Info): New procedure.
+	* exp_intr.ads (Add_Source_Info): New procedure.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* butil.ads: Minor reformatting.
+	* sem_ch5.adb: Code clean up.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Handle
+	Prefix_Exception_Messages.
+	* opt.adb: Handle new flags Prefix_Exception_Message[_Config].
+	* opt.ads: New flags Prefix_Exception_Message[_Config].
+	* par-prag.adb: New dummy entry for pragma Prefix_Exception_Messages.
+	* snames.ads-tmpl: Add entries for new pragma Prefix_Exception_Messages.
+	* sem_prag.adb: Implement new pragma Prefix_Exception_Messages
+	* gnat_rm.texi: Document pragma Prefix_Exception_Messages.
+
 2014-10-10  Gary Dismukes  <dismukes@adacore.com>
 
 	* sinfo.ads, gnat_ugn.texi, a-except.adb, a-except-2005.adb,

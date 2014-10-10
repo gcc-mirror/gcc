@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package Butil is
    function Is_Internal_Unit return Boolean;
    --  Given a unit name stored in Name_Buffer with length in Name_Len,
    --  returns True if this is the name of an internal unit or a child of
-   --  an internal. Similar in usage to Is_Predefined_Unit.
+   --  an internal unit. Similar in usage to Is_Predefined_Unit.
 
    --  Note: the following functions duplicate functionality in Uname, but
    --  we want to avoid bringing Uname into the binder since it generates

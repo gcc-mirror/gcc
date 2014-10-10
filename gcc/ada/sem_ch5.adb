@@ -2926,7 +2926,12 @@ package body Sem_Ch5 is
          Stat : Node_Id;
 
       begin
-         if Ekind (Current_Scope) /= E_Block then
+
+         --  Check if current scope is a block that is not a transient block.
+
+         if Ekind (Current_Scope) /= E_Block
+           or else No (Block_Node (Current_Scope))
+         then
             return False;
 
          else

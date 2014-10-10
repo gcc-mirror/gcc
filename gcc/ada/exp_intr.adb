@@ -36,7 +36,6 @@ with Exp_Code; use Exp_Code;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
@@ -115,6 +114,96 @@ package body Exp_Intr is
    --    Name_Enclosing_Entity      - expand string name of enclosing entity
    --    Name_Compilation_Date      - expand string with compilation date
    --    Name_Compilation_Time      - expand string with compilation time
+
+   procedure Write_Entity_Name (E : Entity_Id);
+   --  Recursive procedure to construct string for qualified name of enclosing
+   --  program unit. The qualification stops at an enclosing scope has no
+   --  source name (block or loop). If entity is a subprogram instance, skip
+   --  enclosing wrapper package. The name is appended to the current contents
+   --  of Name_Buffer, incrementing Name_Len.
+
+   ---------------------
+   -- Add_Source_Info --
+   ---------------------
+
+   procedure Add_Source_Info (Loc : Source_Ptr; Nam : Name_Id) is
+      Ent : Entity_Id;
+
+      Save_NB : constant String  := Name_Buffer (1 .. Name_Len);
+      Save_NL : constant Natural := Name_Len;
+      --  Save current Name_Buffer contents
+
+   begin
+      Name_Len := 0;
+
+      --  Line
+
+      case Nam is
+
+         when Name_Line =>
+            Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (Loc)));
+
+         when Name_File =>
+            Get_Decoded_Name_String
+              (Reference_Name (Get_Source_File_Index (Loc)));
+
+         when Name_Source_Location =>
+            Build_Location_String (Loc);
+
+         when Name_Enclosing_Entity =>
+
+            --  Skip enclosing blocks to reach enclosing unit
+
+            Ent := Current_Scope;
+            while Present (Ent) loop
+               exit when Ekind (Ent) /= E_Block
+                 and then Ekind (Ent) /= E_Loop;
+               Ent := Scope (Ent);
+            end loop;
+
+            --  Ent now points to the relevant defining entity
+
+            Write_Entity_Name (Ent);
+
+         when Name_Compilation_Date =>
+            declare
+               subtype S13 is String (1 .. 3);
+               Months : constant array (1 .. 12) of S13 :=
+                          ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+               M1 : constant Character := Opt.Compilation_Time (6);
+               M2 : constant Character := Opt.Compilation_Time (7);
+
+               MM : constant Natural range 1 .. 12 :=
+                      (Character'Pos (M1) - Character'Pos ('0')) * 10 +
+                 (Character'Pos (M2) - Character'Pos ('0'));
+
+            begin
+               --  Reformat ISO date into MMM DD YYYY (__DATE__) format
+
+               Name_Buffer (1 .. 3)  := Months (MM);
+               Name_Buffer (4)       := ' ';
+               Name_Buffer (5 .. 6)  := Opt.Compilation_Time (9 .. 10);
+               Name_Buffer (7)       := ' ';
+               Name_Buffer (8 .. 11) := Opt.Compilation_Time (1 .. 4);
+               Name_Len := 11;
+            end;
+
+         when Name_Compilation_Time =>
+            Name_Buffer (1 .. 8) := Opt.Compilation_Time (12 .. 19);
+            Name_Len := 8;
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      --  Prepend original Name_Buffer contents
+
+      Name_Buffer (Save_NL + 1 .. Save_NL + Name_Len) :=
+        Name_Buffer (1 .. Name_Len);
+      Name_Buffer (1 .. Save_NL) := Save_NB;
+   end Add_Source_Info;
 
    ---------------------------------
    -- Expand_Binary_Operator_Call --
@@ -718,61 +807,6 @@ package body Exp_Intr is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : Entity_Id;
 
-      procedure Write_Entity_Name (E : Entity_Id);
-      --  Recursive procedure to construct string for qualified name of
-      --  enclosing program unit. The qualification stops at an enclosing
-      --  scope has no source name (block or loop). If entity is a subprogram
-      --  instance, skip enclosing wrapper package.
-
-      -----------------------
-      -- Write_Entity_Name --
-      -----------------------
-
-      procedure Write_Entity_Name (E : Entity_Id) is
-         SDef : Source_Ptr;
-         TDef : constant Source_Buffer_Ptr :=
-                  Source_Text (Get_Source_File_Index (Sloc (E)));
-
-      begin
-         --  Nothing to do if at outer level
-
-         if Scope (E) = Standard_Standard then
-            null;
-
-         --  If scope comes from source, write its name
-
-         elsif Comes_From_Source (Scope (E)) then
-            Write_Entity_Name (Scope (E));
-            Add_Char_To_Name_Buffer ('.');
-
-         --  If in wrapper package skip past it
-
-         elsif Is_Wrapper_Package (Scope (E)) then
-            Write_Entity_Name (Scope (Scope (E)));
-            Add_Char_To_Name_Buffer ('.');
-
-         --  Otherwise nothing to output (happens in unnamed block statements)
-
-         else
-            null;
-         end if;
-
-         --  Loop to output the name
-
-         --  This is not right wrt wide char encodings ??? ()
-
-         SDef := Sloc (E);
-         while TDef (SDef) in '0' .. '9'
-           or else TDef (SDef) >= 'A'
-           or else TDef (SDef) = ASCII.ESC
-         loop
-            Add_Char_To_Name_Buffer (TDef (SDef));
-            SDef := SDef + 1;
-         end loop;
-      end Write_Entity_Name;
-
-   --  Start of processing for Expand_Source_Info
-
    begin
       --  Integer cases
 
@@ -1362,4 +1396,70 @@ package body Exp_Intr is
       Analyze (N);
    end Expand_To_Pointer;
 
+   -----------------------
+   -- Write_Entity_Name --
+   -----------------------
+
+   procedure Write_Entity_Name (E : Entity_Id) is
+      SDef : Source_Ptr;
+      TDef : constant Source_Buffer_Ptr :=
+               Source_Text (Get_Source_File_Index (Sloc (E)));
+
+   begin
+      --  Nothing to do if at outer level
+
+      if Scope (E) = Standard_Standard then
+         null;
+
+         --  If scope comes from source, write its name
+
+      elsif Comes_From_Source (Scope (E)) then
+         Write_Entity_Name (Scope (E));
+         Add_Char_To_Name_Buffer ('.');
+
+         --  If in wrapper package skip past it
+
+      elsif Is_Wrapper_Package (Scope (E)) then
+         Write_Entity_Name (Scope (Scope (E)));
+         Add_Char_To_Name_Buffer ('.');
+
+         --  Otherwise nothing to output (happens in unnamed block statements)
+
+      else
+         null;
+      end if;
+
+      --  Output the name
+
+      SDef := Sloc (E);
+
+      --  Check for operator name in quotes
+
+      if TDef (SDef) = '"' then
+         Add_Char_To_Name_Buffer ('"');
+
+         --  Loop to output characters of operator name and terminating quote
+
+         loop
+            SDef := SDef + 1;
+            Add_Char_To_Name_Buffer (TDef (SDef));
+            exit when TDef (SDef) = '"';
+         end loop;
+
+      --  Normal case of identifier
+
+      else
+         --  Loop to output the name
+
+         --  This is not right wrt wide char encodings ??? ()
+
+         while TDef (SDef) in '0' .. '9'
+           or else TDef (SDef) >= 'A'
+           or else TDef (SDef) = ASCII.ESC
+         loop
+            Add_Char_To_Name_Buffer (TDef (SDef));
+            SDef := SDef + 1;
+         end loop;
+      end if;
+   end Write_Entity_Name;
 end Exp_Intr;
