@@ -3067,11 +3067,103 @@ outer_var_p (tree decl)
 
 /* As above, but also checks that DECL is automatic.  */
 
-static bool
+bool
 outer_automatic_var_p (tree decl)
 {
   return (outer_var_p (decl)
 	  && !TREE_STATIC (decl));
+}
+
+/* DECL satisfies outer_automatic_var_p.  Possibly complain about it or
+   rewrite it for lambda capture.  */
+
+tree
+process_outer_var_ref (tree decl, tsubst_flags_t complain)
+{
+  if (cp_unevaluated_operand)
+    /* It's not a use (3.2) if we're in an unevaluated context.  */
+    return decl;
+
+  tree context = DECL_CONTEXT (decl);
+  tree containing_function = current_function_decl;
+  tree lambda_stack = NULL_TREE;
+  tree lambda_expr = NULL_TREE;
+  tree initializer = convert_from_reference (decl);
+
+  /* Mark it as used now even if the use is ill-formed.  */
+  mark_used (decl);
+
+  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
+     support for an approach in which a reference to a local
+     [constant] automatic variable in a nested class or lambda body
+     would enter the expression as an rvalue, which would reduce
+     the complexity of the problem"
+
+     FIXME update for final resolution of core issue 696.  */
+  if (decl_maybe_constant_var_p (decl))
+    {
+      if (processing_template_decl)
+	/* In a template, the constant value may not be in a usable
+	   form, so wait until instantiation time.  */
+	return decl;
+      else if (decl_constant_var_p (decl))
+	return integral_constant_value (decl);
+    }
+
+  if (parsing_nsdmi ())
+    containing_function = NULL_TREE;
+  else
+    /* If we are in a lambda function, we can move out until we hit
+       1. the context,
+       2. a non-lambda function, or
+       3. a non-default capturing lambda function.  */
+    while (context != containing_function
+	   && LAMBDA_FUNCTION_P (containing_function))
+      {
+	lambda_expr = CLASSTYPE_LAMBDA_EXPR
+	  (DECL_CONTEXT (containing_function));
+
+	if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
+	    == CPLD_NONE)
+	  break;
+
+	lambda_stack = tree_cons (NULL_TREE,
+				  lambda_expr,
+				  lambda_stack);
+
+	containing_function
+	  = decl_function_context (containing_function);
+      }
+
+  if (lambda_expr && TREE_CODE (decl) == VAR_DECL
+      && DECL_ANON_UNION_VAR_P (decl))
+    {
+      if (complain & tf_error)
+	error ("cannot capture member %qD of anonymous union", decl);
+      return error_mark_node;
+    }
+  if (context == containing_function)
+    {
+      decl = add_default_capture (lambda_stack,
+				  /*id=*/DECL_NAME (decl),
+				  initializer);
+    }
+  else if (lambda_expr)
+    {
+      if (complain & tf_error)
+	error ("%qD is not captured", decl);
+      return error_mark_node;
+    }
+  else
+    {
+      if (complain & tf_error)
+	error (VAR_P (decl)
+	       ? G_("use of local variable with automatic storage from containing function")
+	       : G_("use of parameter from containing function"));
+      inform (input_location, "%q+#D declared here", decl);
+      return error_mark_node;
+    }
+  return decl;
 }
 
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
@@ -3179,90 +3271,8 @@ finish_id_expression (tree id_expression,
 
       /* Disallow uses of local variables from containing functions, except
 	 within lambda-expressions.  */
-      if (!outer_var_p (decl))
-	/* OK */;
-      else if (TREE_STATIC (decl)
-	       /* It's not a use (3.2) if we're in an unevaluated context.  */
-	       || cp_unevaluated_operand)
-	/* OK */;
-      else
-	{
-	  tree context = DECL_CONTEXT (decl);
-	  tree containing_function = current_function_decl;
-	  tree lambda_stack = NULL_TREE;
-	  tree lambda_expr = NULL_TREE;
-	  tree initializer = convert_from_reference (decl);
-
-	  /* Mark it as used now even if the use is ill-formed.  */
-	  mark_used (decl);
-
-	  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
-	     support for an approach in which a reference to a local
-	     [constant] automatic variable in a nested class or lambda body
-	     would enter the expression as an rvalue, which would reduce
-	     the complexity of the problem"
-
-	     FIXME update for final resolution of core issue 696.  */
-	  if (decl_maybe_constant_var_p (decl))
-	    {
-	      if (processing_template_decl)
-		/* In a template, the constant value may not be in a usable
-		   form, so wait until instantiation time.  */
-		return decl;
-	      else if (decl_constant_var_p (decl))
-		return integral_constant_value (decl);
-	    }
-
-	  if (parsing_nsdmi ())
-	    containing_function = NULL_TREE;
-	  /* If we are in a lambda function, we can move out until we hit
-	     1. the context,
-	     2. a non-lambda function, or
-	     3. a non-default capturing lambda function.  */
-	  else while (context != containing_function
-		      && LAMBDA_FUNCTION_P (containing_function))
-	    {
-	      lambda_expr = CLASSTYPE_LAMBDA_EXPR
-		(DECL_CONTEXT (containing_function));
-
-	      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
-		  == CPLD_NONE)
-		break;
-
-	      lambda_stack = tree_cons (NULL_TREE,
-					lambda_expr,
-					lambda_stack);
-
-	      containing_function
-		= decl_function_context (containing_function);
-	    }
-
-	  if (lambda_expr && TREE_CODE (decl) == VAR_DECL
-	      && DECL_ANON_UNION_VAR_P (decl))
-	    {
-	      error ("cannot capture member %qD of anonymous union", decl);
-	      return error_mark_node;
-	    }
-	  if (context == containing_function)
-	    {
-	      decl = add_default_capture (lambda_stack,
-					  /*id=*/DECL_NAME (decl),
-					  initializer);
-	    }
-	  else if (lambda_expr)
-	    {
-	      error ("%qD is not captured", decl);
-	      return error_mark_node;
-	    }
-	  else
-	    {
-	      error (VAR_P (decl)
-		     ? G_("use of local variable with automatic storage from containing function")
-		     : G_("use of parameter from containing function"));
-	      inform (input_location, "%q+#D declared here", decl);
-	      return error_mark_node;
-	    }
-	}
+      if (outer_automatic_var_p (decl))
+	decl = process_outer_var_ref (decl, tf_warning_or_error);
 
       /* Also disallow uses of function parameters outside the function
 	 body, except inside an unevaluated context (i.e. decltype).  */
