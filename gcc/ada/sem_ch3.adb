@@ -3062,6 +3062,12 @@ package body Sem_Ch3 is
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
+      --  The loop parameter in an element iterator over a formal container
+      --  is declared with an object declaration but no contracts apply.
+
+      elsif Ekind (Obj_Id) = E_Loop_Parameter then
+         null;
+
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
          --  The following checks are only relevant when SPARK_Mode is on as

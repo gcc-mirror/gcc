@@ -20865,6 +20865,14 @@ that denote descendant nodes and parent node, as well as varied
 semantic information. To study this example in more detail, you might want to
 look at the body of the PN procedure in the stated file.
 
+Another useful application of this capability is to deal with situations of
+complex data which are not handled suitably by GDB. For example, if you specify
+Convention Fortran for a multi-dimensional array, GDB does not know that
+the ordering of array elements has been switched and will not properly
+address the array elements. In such a case, instead of trying to print the
+elements directly from GDB, you can write a callable procedure that prints
+the elements in the desired format.
+
 @node Using the Next Command in a Function
 @section Using the Next Command in a Function
 
