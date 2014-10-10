@@ -1,3 +1,7 @@
+2014-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lra-assigns.c (assign_by_spills): Error out on spill failure.
+
 2014-10-09  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* pa-polymorphic-call.c (check_stmt_for_type_change): Move
