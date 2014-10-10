@@ -3526,6 +3526,29 @@ case "$target" in
         done
       fi
     fi
+    # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
+    AC_ARG_ENABLE(fix-cortex-a53-835769,
+    [
+AS_HELP_STRING([--enable-fix-cortex-a53-835769],
+        [enable workaround for AArch64 Cortex-A53 erratum 835769 by default])
+AS_HELP_STRING([--disable-fix-cortex-a53-835769],
+        [disable workaround for AArch64 Cortex-A53 erratum 835769 by default])
+    ],
+      [
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_835769_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            AC_MSG_ERROR(['$enableval' is an invalid value for --enable-fix-cortex-a53-835769.\
+  Valid choices are 'yes' and 'no'.])
+            ;;
+
+        esac
+      ],
+    [])
     ;;
 
   # All TARGET_ABI_OSF targets.
