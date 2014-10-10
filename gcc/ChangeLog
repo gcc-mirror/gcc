@@ -1,3 +1,9 @@
+2014-10-10  Richard Henderson  <rth@redhat.com>
+
+	PR target/63404
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Don't use single_set.
+	Restrict the set of expressions we're willing to move.
+
 2014-10-10  Jeff Law  <law@redhat.com>
 
 	* ira.c (struct equivalence): Promote INIT_INSNs field to
