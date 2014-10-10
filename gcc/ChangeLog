@@ -1,3 +1,9 @@
+2014-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63380
+	* tree-ssa-tail-merge.c (stmt_local_def): Exclude stmts that
+	may trap.
+
 2014-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61969
