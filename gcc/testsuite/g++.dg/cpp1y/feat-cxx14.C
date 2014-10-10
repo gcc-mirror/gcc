@@ -1,4 +1,4 @@
-// { dg-do compile { target c++14 } }
+// { dg-do compile { target c++1y } }
 // { dg-options "-I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
 
 // Begin C++11 tests.
@@ -125,10 +125,9 @@
 #  error "__cpp_aggregate_nsdmi"
 #endif
 
-#ifndef __cpp_variable_templates
+//  Variable templates not in yet.
+#ifdef __cpp_variable_templates
 #  error "__cpp_variable_templates"
-#elif __cpp_variable_templates != 201304
-#  error "__cpp_variable_templates != 201304"
 #endif
 
 #ifndef __cpp_digit_separators
