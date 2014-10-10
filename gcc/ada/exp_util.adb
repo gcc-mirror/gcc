@@ -1742,6 +1742,79 @@ package body Exp_Util is
       end if;
    end Component_May_Be_Bit_Aligned;
 
+   ----------------------------------------
+   -- Containing_Package_With_Ext_Axioms --
+   ----------------------------------------
+
+   function Containing_Package_With_Ext_Axioms
+     (E : Entity_Id) return Entity_Id
+   is
+      Decl : Node_Id;
+
+   begin
+      if Ekind (E) = E_Package then
+         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Parent (E));
+         else
+            Decl := Parent (E);
+         end if;
+      end if;
+
+      --  E is the package or generic package which is externally axiomatized
+
+      if Ekind_In (E, E_Package, E_Generic_Package)
+        and then Has_Annotate_Pragma_For_External_Axiomatization (E)
+      then
+         return E;
+      end if;
+
+      --  If E's scope is axiomatized, E is axiomatized.
+
+      declare
+         First_Ax_Parent_Scope : Entity_Id := Empty;
+
+      begin
+         if Present (Scope (E)) then
+            First_Ax_Parent_Scope :=
+              Containing_Package_With_Ext_Axioms (Scope (E));
+         end if;
+
+         if Present (First_Ax_Parent_Scope) then
+            return First_Ax_Parent_Scope;
+         end if;
+
+         --  otherwise, if E is a package instance, it is axiomatized if the
+         --  corresponding generic package is axiomatized.
+
+         if Ekind (E) = E_Package
+           and then Present (Generic_Parent (Decl))
+         then
+            return
+              Containing_Package_With_Ext_Axioms (Generic_Parent (Decl));
+         else
+            return Empty;
+         end if;
+      end;
+   end Containing_Package_With_Ext_Axioms;
+
+   -------------------------------
+   -- Convert_To_Actual_Subtype --
+   -------------------------------
+
+   procedure Convert_To_Actual_Subtype (Exp : Entity_Id) is
+      Act_ST : Entity_Id;
+
+   begin
+      Act_ST := Get_Actual_Subtype (Exp);
+
+      if Act_ST = Etype (Exp) then
+         return;
+      else
+         Rewrite (Exp, Convert_To (Act_ST, Relocate_Node (Exp)));
+         Analyze_And_Resolve (Exp, Act_ST);
+      end if;
+   end Convert_To_Actual_Subtype;
+
    -----------------------------------
    -- Corresponding_Runtime_Package --
    -----------------------------------
@@ -1792,24 +1865,6 @@ package body Exp_Util is
 
       return Pkg_Id;
    end Corresponding_Runtime_Package;
-
-   -------------------------------
-   -- Convert_To_Actual_Subtype --
-   -------------------------------
-
-   procedure Convert_To_Actual_Subtype (Exp : Entity_Id) is
-      Act_ST : Entity_Id;
-
-   begin
-      Act_ST := Get_Actual_Subtype (Exp);
-
-      if Act_ST = Etype (Exp) then
-         return;
-      else
-         Rewrite (Exp, Convert_To (Act_ST, Relocate_Node (Exp)));
-         Analyze_And_Resolve (Exp, Act_ST);
-      end if;
-   end Convert_To_Actual_Subtype;
 
    -----------------------------------
    -- Current_Sem_Unit_Declarations --
@@ -3294,62 +3349,6 @@ package body Exp_Util is
          Process_Current_Value_Condition (Condition (CV), Sens);
       end;
    end Get_Current_Value_Condition;
-
-   -------------------------------------------------
-   -- Get_First_Parent_With_Ext_Axioms_For_Entity --
-   -------------------------------------------------
-
-   function Get_First_Parent_With_Ext_Axioms_For_Entity
-     (E : Entity_Id) return Entity_Id
-   is
-      Decl : Node_Id;
-
-   begin
-      if Ekind (E) = E_Package then
-         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Parent (E));
-         else
-            Decl := Parent (E);
-         end if;
-      end if;
-
-      --  E is the package or generic package which is externally axiomatized
-
-      if Ekind_In (E, E_Package, E_Generic_Package)
-        and then Has_Annotate_Pragma_For_External_Axiomatization (E)
-      then
-         return E;
-      end if;
-
-      --  If E's scope is axiomatized, E is axiomatized.
-
-      declare
-         First_Ax_Parent_Scope : Entity_Id := Empty;
-
-      begin
-         if Present (Scope (E)) then
-            First_Ax_Parent_Scope :=
-              Get_First_Parent_With_Ext_Axioms_For_Entity (Scope (E));
-         end if;
-
-         if Present (First_Ax_Parent_Scope) then
-            return First_Ax_Parent_Scope;
-         end if;
-
-         --  otherwise, if E is a package instance, it is axiomatized if the
-         --  corresponding generic package is axiomatized.
-
-         if Ekind (E) = E_Package
-           and then Present (Generic_Parent (Decl))
-         then
-            return
-              Get_First_Parent_With_Ext_Axioms_For_Entity
-                (Generic_Parent (Decl));
-         else
-            return Empty;
-         end if;
-      end;
-   end Get_First_Parent_With_Ext_Axioms_For_Entity;
 
    ---------------------
    -- Get_Stream_Size --

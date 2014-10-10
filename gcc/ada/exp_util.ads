@@ -311,6 +311,11 @@ package Exp_Util is
    --  it is harmless, so it is easier to do it in all cases, rather than
    --  conditionalize it in GNAT 5 or beyond.
 
+   function Containing_Package_With_Ext_Axioms
+     (E : Entity_Id) return Entity_Id;
+   --  Returns the package entity with an external axiomatization containing E,
+   --  if any, or Empty if none.
+
    procedure Convert_To_Actual_Subtype (Exp : Node_Id);
    --  The Etype of an expression is the nominal type of the expression,
    --  not the actual subtype. Often these are the same, but not always.
@@ -541,11 +546,6 @@ package Exp_Util is
    --  The caller can use this result to determine the value (for the case of
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
-
-   function Get_First_Parent_With_Ext_Axioms_For_Entity
-     (E : Entity_Id) return Entity_Id;
-   --  Returns the package entity with an external axiomatization containing E,
-   --  if any, or Empty if none.
 
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
