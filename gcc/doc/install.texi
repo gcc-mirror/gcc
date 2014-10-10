@@ -3766,6 +3766,16 @@ Binutils pre 2.24 does not have support for selecting @option{-mabi} and
 does not support ILP32.  If it is used to build GCC 4.9 or later, GCC will
 not support option @option{-mabi=ilp32}.
 
+To enable a workaround for the Cortex-A53 erratum number 835769 by default
+(for all CPUs regardless of -mcpu option given) at configure time use the
+@option{--enable-fix-cortex-a53-835769} option.  This will enable the fix by
+default and can be explicitly disabled during during compilation by passing the
+@option{-mno-fix-cortex-a53-835769} option.  Conversely,
+@option{--disable-fix-cortex-a53-835769} will disable the workaround by
+default.  The workaround is disabled by default if neither of
+@option{--enable-fix-cortex-a53-835769} or
+@option{--disable-fix-cortex-a53-835769} is given at configure time.
+
 @html
 <hr />
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->

@@ -5256,6 +5256,15 @@ aarch64_override_options (void)
   aarch64_tune = selected_tune->core;
   aarch64_tune_params = selected_tune->tune;
 
+  if (aarch64_fix_a53_err835769 == 2)
+    {
+#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+      aarch64_fix_a53_err835769 = 1;
+#else
+      aarch64_fix_a53_err835769 = 0;
+#endif
+    }
+
   aarch64_override_options_after_change ();
 }
 
