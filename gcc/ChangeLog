@@ -1,3 +1,9 @@
+2014-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR/63376
+	* cgraphunit.c (symbol_table::process_new_functions): Missing call
+	for call_cgraph_insertion_hooks added.
+
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/63495
