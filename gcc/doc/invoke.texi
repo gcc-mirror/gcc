@@ -5578,6 +5578,12 @@ This option enables checking of alignment of pointers when they are
 dereferenced, or when a reference is bound to insufficiently aligned target,
 or when a method or constructor is invoked on insufficiently aligned object.
 
+@item -fsanitize=object-size
+@opindex fsanitize=object-size
+This option enables instrumentation of memory references using the
+@code{__builtin_object_size} function.  Various out of bounds pointer
+accesses are detected.
+
 @item -fsanitize=float-divide-by-zero
 @opindex fsanitize=float-divide-by-zero
 Detect floating-point division by zero.  Unlike other similar options,

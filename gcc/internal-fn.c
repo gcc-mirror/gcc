@@ -184,6 +184,14 @@ expand_UBSAN_BOUNDS (gimple stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in the sanopt pass.  */
 
 static void
+expand_UBSAN_OBJECT_SIZE (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
 expand_ASAN_CHECK (gimple stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();

@@ -1,3 +1,17 @@
+2014-10-10  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/object-size-1.c: New test.
+	* c-c++-common/ubsan/object-size-2.c: New test.
+	* c-c++-common/ubsan/object-size-3.c: New test.
+	* c-c++-common/ubsan/object-size-4.c: New test.
+	* c-c++-common/ubsan/object-size-5.c: New test.
+	* c-c++-common/ubsan/object-size-6.c: New test.
+	* c-c++-common/ubsan/object-size-7.c: New test.
+	* c-c++-common/ubsan/object-size-8.c: New test.
+	* c-c++-common/ubsan/object-size-9.c: New test.
+	* g++.dg/ubsan/object-size-1.C: New test.
+	* gcc.dg/ubsan/object-size-9.c: New test.
+
 2014-10-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* lib/asan-dg.exp (asan_link_flags): Save ld_library_path.
