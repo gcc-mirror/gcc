@@ -1,3 +1,13 @@
+2014-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63476
+	* tree-ssa-pre.c (struct bb_bitmap_sets): Add vop_on_exit member.
+	(BB_LIVE_VOP_ON_EXIT): New define.
+	(create_expression_by_pieces): Assign VUSEs to stmts.
+	(compute_avail): Track BB_LIVE_VOP_ON_EXIT.
+	(pass_pre::execute): Assert virtual SSA form is up-to-date
+	after insertion.
+
 2014-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lra-assigns.c (assign_by_spills): Error out on spill failure.
