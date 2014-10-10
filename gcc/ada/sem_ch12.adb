@@ -954,10 +954,19 @@ package body Sem_Ch12 is
       --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
-      function Build_Wrapper
+      function Build_Function_Wrapper
         (Formal : Entity_Id;
          Actual : Entity_Id := Empty) return Node_Id;
-      --  In GNATProve mode, create a wrapper function for actuals that are
+      --  In GNATprove mode, create a wrapper function for actuals that are
+      --  functions with any number of formal parameters, in order to propagate
+      --  their contract to the renaming declarations generated for them.
+      --  If the actual is absent, the formal has a default, and the name of
+      --  the function is that of the formal.
+
+      function Build_Operator_Wrapper
+        (Formal : Entity_Id;
+         Actual : Entity_Id := Empty) return Node_Id;
+      --  In GNATprove mode, create a wrapper function for actuals that are
       --  operators, in order to propagate their contract to the renaming
       --  declarations generated for them. If the actual is absent, this is
       --  a formal with a default, and the name of the operator is that of the
@@ -1010,11 +1019,84 @@ package body Sem_Ch12 is
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
 
-      -------------------
-      -- Build_Wrapper --
-      -------------------
+      ----------------------------
+      -- Build_Function_Wrapper --
+      ----------------------------
 
-      function Build_Wrapper
+      function Build_Function_Wrapper
+        (Formal : Entity_Id;
+         Actual : Entity_Id := Empty) return Node_Id
+      is
+         Loc       : constant Source_Ptr := Sloc (I_Node);
+         Actuals   : List_Id;
+         Decl      : Node_Id;
+         Func_Name : Node_Id;
+         Func      : Entity_Id;
+         N_Parms   : Natural;
+         Profile   : List_Id;
+         Spec      : Node_Id;
+         F         : Entity_Id;
+         New_F     : Entity_Id;
+
+      begin
+         --  If there is no actual, the formal has a default and is retrieved
+         --  by name. Otherwise the wrapper encloses a call to the actual.
+
+         if No (Actual) then
+            Func_Name := Make_Identifier (Loc, Chars (Formal));
+         else
+            Func_Name := New_Occurrence_Of (Entity (Actual), Loc);
+         end if;
+
+         Func := Make_Defining_Identifier (Loc, Chars (Formal));
+         Set_Ekind (Func, E_Function);
+         Set_Is_Generic_Actual_Subprogram (Func);
+
+         Actuals := New_List;
+         Profile := New_List;
+
+         F := First_Formal (Formal);
+         N_Parms := 0;
+         while Present (F) loop
+
+            --  Create new formal for profile of wrapper, and add a reference
+            --  to it in the list of actuals for the enclosing call.
+
+            New_F := Make_Temporary
+                       (Loc, Character'Val (Character'Pos ('A') + N_Parms));
+            Append_To (Profile,
+              Make_Parameter_Specification (Loc,
+              Defining_Identifier => New_F,
+              Parameter_Type      =>
+                Make_Identifier (Loc, Chars => Chars (Etype (F)))));
+
+            Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
+            Next_Formal (F);
+            N_Parms := N_Parms + 1;
+         end loop;
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Func,
+             Parameter_Specifications => Profile,
+             Result_Definition        =>
+               Make_Identifier (Loc, Chars (Etype (Formal))));
+         Decl :=
+           Make_Expression_Function (Loc,
+             Specification => Spec,
+             Expression    =>
+               Make_Function_Call (Loc,
+                 Name                   => Func_Name,
+                 Parameter_Associations => Actuals));
+
+         return Decl;
+      end Build_Function_Wrapper;
+
+      ----------------------------
+      -- Build_Operator_Wrapper --
+      ----------------------------
+
+      function Build_Operator_Wrapper
         (Formal : Entity_Id;
          Actual : Entity_Id := Empty) return Node_Id
       is
@@ -1029,8 +1111,7 @@ package body Sem_Ch12 is
          Func    : Entity_Id;
          Op_Name : Name_Id;
          Spec    : Node_Id;
-
-         L, R   : Node_Id;
+         L, R    : Node_Id;
 
       begin
          if No (Actual) then
@@ -1089,52 +1170,52 @@ package body Sem_Ch12 is
 
          elsif Is_Binary then
             if Op_Name = Name_Op_And then
-               Expr := Make_Op_And (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_And      (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Or then
-               Expr := Make_Op_Or (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Or       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Xor then
-               Expr := Make_Op_Xor (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Xor      (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Eq then
-               Expr := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Eq       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Ne then
-               Expr := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Ne       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Le then
-               Expr := Make_Op_Le (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Le       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Gt then
-               Expr := Make_Op_Gt (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Gt       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Ge then
-               Expr := Make_Op_Ge (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Ge       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Lt then
-               Expr := Make_Op_Lt (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Lt       (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Add then
-               Expr := Make_Op_Add (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Add      (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Subtract then
                Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Concat then
-               Expr := Make_Op_Concat (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Concat   (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Multiply then
                Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Divide then
-               Expr := Make_Op_Divide (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Divide   (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Mod then
-               Expr := Make_Op_Mod (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Mod      (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Rem then
-               Expr := Make_Op_Rem (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Rem      (Loc, Left_Opnd => L, Right_Opnd => R);
             elsif Op_Name = Name_Op_Expon then
-               Expr := Make_Op_Expon (Loc, Left_Opnd => L, Right_Opnd => R);
+               Expr := Make_Op_Expon    (Loc, Left_Opnd => L, Right_Opnd => R);
             end if;
 
          --  Unary operators
 
          else
             if Op_Name = Name_Op_Add then
-               Expr := Make_Op_Plus (Loc, Right_Opnd => L);
+               Expr := Make_Op_Plus  (Loc, Right_Opnd => L);
             elsif Op_Name = Name_Op_Subtract then
                Expr := Make_Op_Minus (Loc, Right_Opnd => L);
             elsif Op_Name = Name_Op_Abs then
-               Expr := Make_Op_Abs (Loc, Right_Opnd => L);
+               Expr := Make_Op_Abs   (Loc, Right_Opnd => L);
             elsif Op_Name = Name_Op_Not then
-               Expr := Make_Op_Not (Loc, Right_Opnd => L);
+               Expr := Make_Op_Not   (Loc, Right_Opnd => L);
             end if;
          end if;
 
@@ -1151,7 +1232,7 @@ package body Sem_Ch12 is
              Expression    => Expr);
 
          return Decl;
-      end Build_Wrapper;
+      end Build_Operator_Wrapper;
 
       ----------------------------------------
       -- Check_Overloaded_Formal_Subprogram --
@@ -1694,13 +1775,13 @@ package body Sem_Ch12 is
 
                               Append_To
                                 (Assoc,
-                                 Build_Wrapper
+                                 Build_Operator_Wrapper
                                    (Defining_Entity (Analyzed_Formal), Match));
 
                            else
                               Append_To (Assoc,
-                                         Instantiate_Formal_Subprogram
-                                           (Formal, Match, Analyzed_Formal));
+                                 Build_Function_Wrapper
+                                   (Defining_Entity (Analyzed_Formal), Match));
                            end if;
 
                         --  Ditto if formal is an operator with a default.
@@ -1710,15 +1791,15 @@ package body Sem_Ch12 is
                                                     N_Defining_Operator_Symbol
                         then
                            Append_To (Assoc,
-                             Build_Wrapper
+                             Build_Operator_Wrapper
                                (Defining_Entity (Analyzed_Formal)));
 
                         --  Otherwise create renaming declaration.
 
                         else
                            Append_To (Assoc,
-                             Instantiate_Formal_Subprogram
-                               (Formal, Match, Analyzed_Formal));
+                             Build_Function_Wrapper
+                               (Defining_Entity (Analyzed_Formal)));
                         end if;
 
                      else
@@ -9552,10 +9633,13 @@ package body Sem_Ch12 is
 
       Loc := Sloc (Defining_Unit_Name (New_Spec));
 
-      --  Create new entity for the actual (New_Copy_Tree does not)
+      --  Create new entity for the actual (New_Copy_Tree does not), and
+      --  indicate that it is an actual.
 
       Set_Defining_Unit_Name
         (New_Spec, Make_Defining_Identifier (Loc, Chars (Formal_Sub)));
+      Set_Ekind (Defining_Unit_Name (New_Spec), Ekind (Analyzed_S));
+      Set_Is_Generic_Actual_Subprogram (Defining_Unit_Name (New_Spec));
 
       --  Create new entities for the each of the formals in the specification
       --  of the renaming declaration built for the actual.

@@ -11021,7 +11021,6 @@ package body Sem_Attr is
 
                else
                   Assoc := First (Component_Associations (Aggr));
-
                   while Present (Assoc) loop
                      Comp := First (Choices (Assoc));
                      Expr := Expression (Assoc);

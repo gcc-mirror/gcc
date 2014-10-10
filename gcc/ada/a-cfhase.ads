@@ -76,7 +76,8 @@ package Ada.Containers.Formal_Hashed_Sets is
      Iterable => (First       => First,
                   Next        => Next,
                   Has_Element => Has_Element,
-                  Element     => Element);
+                  Element     => Element),
+     Default_Initial_Condition;
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;

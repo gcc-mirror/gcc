@@ -1858,11 +1858,10 @@ package body Freeze is
       --  package. Recurse on inner generic packages.
 
       function Freeze_Profile (E : Entity_Id) return Boolean;
-      --  Freeze formals and return type of subprogram.
-      --  If some type in the profile is a limited view, freezing of the entity
-      --  will take place elsewhere, and the function returns False.
-      --  This routine will be modified if and when we can implement AI05-019
-      --  efficiently.
+      --  Freeze formals and return type of subprogram. If some type in the
+      --  profile is a limited view, freezing of the entity will take place
+      --  elsewhere, and the function returns False. This routine will be
+      --  modified if and when we can implement AI05-019 efficiently ???
 
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze record type, including freezing component types, and freezing
@@ -2557,8 +2556,8 @@ package body Freeze is
                          Attribute_Name => Name_Range_Length);
                      Analyze_And_Resolve (Ilen);
 
-                     --  No attempt is made to check number of elements
-                     --  if not compile time known.
+                     --  No attempt is made to check number of elements if not
+                     --  compile time known.
 
                      if Nkind (Ilen) /= N_Integer_Literal then
                         Elmts := Uint_0;
@@ -2601,9 +2600,9 @@ package body Freeze is
             end if;
          end if;
 
-         --  If any of the index types was an enumeration type with a
-         --  non-standard rep clause, then we indicate that the array type
-         --  is always packed (even if it is not bit packed).
+         --  If any of the index types was an enumeration type with a non-
+         --  standard rep clause, then we indicate that the array type is
+         --  always packed (even if it is not bit packed).
 
          if Non_Standard_Enum then
             Set_Has_Non_Standard_Rep (Base_Type (Arr));
@@ -2704,9 +2703,9 @@ package body Freeze is
          while Present (Formal) loop
             F_Type := Etype (Formal);
 
-            --  AI05-0151: incomplete types can appear in a profile.
-            --  By the time the entity is frozen, the full view must
-            --  be available, unless it is a limited view.
+            --  AI05-0151: incomplete types can appear in a profile. By the
+            --  time the entity is frozen, the full view must be available,
+            --  unless it is a limited view.
 
             if Is_Incomplete_Type (F_Type)
               and then Present (Full_View (F_Type))
@@ -2724,12 +2723,11 @@ package body Freeze is
               and then not Is_Generic_Type (F_Type)
               and then not Is_Derived_Type (F_Type)
             then
-               --  If the type of a formal is incomplete, subprogram
-               --  is being frozen prematurely. Within an instance
-               --  (but not within a wrapper package) this is an
-               --  artifact of our need to regard the end of an
-               --  instantiation as a freeze point. Otherwise it is
-               --  a definite error.
+               --  If the type of a formal is incomplete, subprogram is being
+               --  frozen prematurely. Within an instance (but not within a
+               --  wrapper package) this is an artifact of our need to regard
+               --  the end of an instantiation as a freeze point. Otherwise it
+               --  is a definite error.
 
                if In_Instance then
                   Set_Is_Frozen (E, False);
@@ -2741,13 +2739,12 @@ package body Freeze is
                then
                   Error_Msg_Node_1 := F_Type;
                   Error_Msg
-                    ("type& must be fully defined before this point",
-                      Loc);
+                    ("type & must be fully defined before this point", Loc);
                end if;
             end if;
 
-            --  Check suspicious parameter for C function. These tests
-            --  apply only to exported/imported subprograms.
+            --  Check suspicious parameter for C function. These tests apply
+            --  only to exported/imported subprograms.
 
             if Warn_On_Export_Import
               and then Comes_From_Source (E)
@@ -2780,20 +2777,22 @@ package body Freeze is
                  and then not Has_Size_Clause (F_Type)
                  and then VM_Target = No_VM
                then
-                  Error_Msg_N ("& is an 8-bit Ada Boolean?x?", Formal);
-                  Error_Msg_N ("\use appropriate corresponding type in C "
+                  Error_Msg_N
+                    ("& is an 8-bit Ada Boolean?x?", Formal);
+                  Error_Msg_N
+                    ("\use appropriate corresponding type in C "
                      & "(e.g. char)?x?", Formal);
 
                --  Check suspicious tagged type
 
                elsif (Is_Tagged_Type (F_Type)
-                       or else (Is_Access_Type (F_Type)
-                                  and then
-                                    Is_Tagged_Type
-                                      (Designated_Type (F_Type))))
+                       or else
+                        (Is_Access_Type (F_Type)
+                          and then Is_Tagged_Type (Designated_Type (F_Type))))
                  and then Convention (E) = Convention_C
                then
-                  Error_Msg_N ("?x?& involves a tagged type which does not "
+                  Error_Msg_N
+                    ("?x?& involves a tagged type which does not "
                      & "correspond to any C type!", Formal);
 
                --  Check wrong convention subprogram pointer
@@ -2801,7 +2800,8 @@ package body Freeze is
                elsif Ekind (F_Type) = E_Access_Subprogram_Type
                  and then not Has_Foreign_Convention (F_Type)
                then
-                  Error_Msg_N ("?x?subprogram pointer & should "
+                  Error_Msg_N
+                    ("?x?subprogram pointer & should "
                      & "have foreign convention!", Formal);
                   Error_Msg_Sloc := Sloc (F_Type);
                   Error_Msg_NE
@@ -2814,8 +2814,8 @@ package body Freeze is
                Error_Msg_Qual_Level := 0;
             end if;
 
-            --  Check for unconstrained array in exported foreign
-            --  convention case.
+            --  Check for unconstrained array in exported foreign convention
+            --  case.
 
             if Has_Foreign_Convention (E)
               and then not Is_Imported (E)
@@ -2830,17 +2830,16 @@ package body Freeze is
             then
                Error_Msg_Qual_Level := 1;
 
-               --  If this is an inherited operation, place the
-               --  warning on the derived type declaration, rather
-               --  than on the original subprogram.
+               --  If this is an inherited operation, place the warning on
+               --  the derived type declaration, rather than on the original
+               --  subprogram.
 
                if Nkind (Original_Node (Parent (E))) = N_Full_Type_Declaration
                then
                   Warn_Node := Parent (E);
 
                   if Formal = First_Formal (E) then
-                     Error_Msg_NE
-                       ("??in inherited operation&", Warn_Node, E);
+                     Error_Msg_NE ("??in inherited operation&", Warn_Node, E);
                   end if;
                else
                   Warn_Node := Formal;
@@ -2987,8 +2986,7 @@ package body Freeze is
             end if;
 
             --  Give warning for suspicious return of a result of an
-            --  unconstrained array type in a foreign convention
-            --  function.
+            --  unconstrained array type in a foreign convention function.
 
             if Has_Foreign_Convention (E)
 
@@ -2997,19 +2995,18 @@ package body Freeze is
               and then Is_Array_Type (R_Type)
               and then not Is_Constrained (R_Type)
 
-              --  Exclude imported routines, the warning does not
-              --  belong on the import, but rather on the routine
-              --  definition.
+              --  Exclude imported routines, the warning does not belong on
+              --  the import, but rather on the routine definition.
 
               and then not Is_Imported (E)
 
-              --  Exclude VM case, since both .NET and JVM can handle
-              --  return of unconstrained arrays without a problem.
+              --  Exclude VM case, since both .NET and JVM can handle return
+              --  of unconstrained arrays without a problem.
 
               and then VM_Target = No_VM
 
-              --  Check that general warning is enabled, and that it
-              --  is not suppressed for this particular case.
+              --  Check that general warning is enabled, and that it is not
+              --  suppressed for this particular case.
 
               and then Warn_On_Export_Import
               and then not Has_Warnings_Off (E)
