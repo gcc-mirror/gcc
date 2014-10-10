@@ -4748,11 +4748,9 @@ pragma No_Run_Time;
 
 @noindent
 This is an obsolete configuration pragma that historically was used to
-setup what is now called the "zero footprint" library. It causes any
-library units outside this basic library to be ignored. The use of
-this pragma has been superseded by the general configurable run-time
-capability of @code{GNAT} where the compiler takes into account whatever
-units happen to be accessible in the library.
+set up a runtime library with no object code. It is now used only for
+internal testing. The pragma has been superseded by the reconfigurable
+runtime capability of @code{GNAT}.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing

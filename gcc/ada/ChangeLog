@@ -1,3 +1,17 @@
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor code reorganization.
+
+2014-10-10  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_rm.texi: Text now indicates pragma No_Run_Time is not
+	for users.
+
+2014-10-10  Vadim Godunko  <godunko@adacore.com>
+
+	* a-coinho-shared.adb: Add minor comment.
+	* a-stzmap.adb (To_Sequence): Compute size of result array.
+
 2014-10-10  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Build_Init_Procedure): Complete the condition of an
