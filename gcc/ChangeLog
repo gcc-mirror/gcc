@@ -1,3 +1,9 @@
+2014-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63379
+	* tree-vect-slp.c (vect_get_constant_vectors): Do not compute
+	a neutral operand for min/max when it is not a reduction chain.
+
 2014-10-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

@@ -1,3 +1,8 @@
+2014-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63379
+	* gcc.dg/vect/pr63379.c: New testcase.
+
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/59488
