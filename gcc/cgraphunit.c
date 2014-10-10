@@ -329,6 +329,7 @@ symbol_table::process_new_functions (void)
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
+	  call_cgraph_insertion_hooks (node);
 	  break;
 
 	case EXPANSION:
