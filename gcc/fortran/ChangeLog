@@ -1,3 +1,9 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/59488
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for parameters or vtables.
+
 2014-09-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from trunk

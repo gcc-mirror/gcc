@@ -115,6 +115,16 @@ gfc_omp_predetermined_sharing (tree decl)
   if (GFC_DECL_RESULT (decl) && ! DECL_HAS_VALUE_EXPR_P (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
+  /* These are either array or derived parameters, or vtables.
+     In the former cases, the OpenMP standard doesn't consider them to be
+     variables at all (they can't be redefined), but they can nevertheless appear
+     in parallel/task regions and for default(none) purposes treat them as shared.
+     For vtables likely the same handling is desirable.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && TREE_READONLY (decl)
+      && TREE_STATIC (decl))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
 

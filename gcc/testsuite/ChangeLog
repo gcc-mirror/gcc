@@ -1,3 +1,9 @@
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/59488
+	* gfortran.dg/gomp/pr59488-1.f90: New test.
+	* gfortran.dg/gomp/pr59488-2.f90: New test.
+
 2014-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63342
