@@ -1,3 +1,8 @@
+2014-10-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): Complete the condition of an
+	if-stmt to match its current documentation.
+
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb, einfo.adb, einfo.ads, sem_prag.adb, sem_ch12.adb,

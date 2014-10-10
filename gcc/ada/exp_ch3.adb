@@ -2371,16 +2371,11 @@ package body Exp_Ch3 is
                   --  such case the initialization of the _parent field was not
                   --  generated.
 
-                  if not Is_Interface (Etype (Rec_Ent)) then
-                     declare
-                        First_Stmt : constant Node_Id := Remove_Head (Stmts);
-                     begin
-                        pragma Assert
-                          (Nkind (First_Stmt) = N_Procedure_Call_Statement
-                             and then
-                           Is_Init_Proc (Name (First_Stmt)));
-                        Prepend_To (Body_Stmts, First_Stmt);
-                     end;
+                  if not Is_Interface (Etype (Rec_Ent))
+                    and then Nkind (First (Stmts)) = N_Procedure_Call_Statement
+                    and then Is_Init_Proc (Name (First (Stmts)))
+                  then
+                     Prepend_To (Body_Stmts, Remove_Head (Stmts));
                   end if;
 
                   Append_List_To (Body_Stmts, Stmts);
@@ -2664,9 +2659,9 @@ package body Exp_Ch3 is
 
       function Build_Init_Statements (Comp_List : Node_Id) return List_Id is
          Checks       : constant List_Id := New_List;
-         Actions      : List_Id   := No_List;
+         Actions      : List_Id          := No_List;
+         Counter_Id   : Entity_Id        := Empty;
          Comp_Loc     : Source_Ptr;
-         Counter_Id   : Entity_Id := Empty;
          Decl         : Node_Id;
          Has_POC      : Boolean;
          Id           : Entity_Id;
@@ -2980,8 +2975,7 @@ package body Exp_Ch3 is
                   else
                      Append_List_To (Stmts, Actions);
 
-                     --  Preserve the initialization state in the current
-                     --  counter
+                     --  Preserve initialization state in the current counter
 
                      if Needs_Finalization (Typ) then
                         if No (Counter_Id) then
