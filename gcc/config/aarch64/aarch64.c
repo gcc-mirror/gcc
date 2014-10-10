@@ -6452,6 +6452,128 @@ aarch64_mangle_type (const_tree type)
   return NULL;
 }
 
+static int
+is_mem_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  return MEM_P (*x);
+}
+
+static bool
+is_memory_op (rtx mem_insn)
+{
+   rtx pattern = PATTERN (mem_insn);
+   return for_each_rtx (&pattern, is_mem_p, NULL);
+}
+
+/* Find the first rtx before insn that will generate an assembly
+   instruction.  */
+
+static rtx
+aarch64_prev_real_insn (rtx insn)
+{
+  if (!insn)
+    return NULL;
+
+  do
+    {
+      insn = prev_real_insn (insn);
+    }
+  while (insn && recog_memoized (insn) < 0);
+
+  return insn;
+}
+
+static bool
+is_madd_op (enum attr_type t1)
+{
+  unsigned int i;
+  /* A number of these may be AArch32 only.  */
+  enum attr_type mlatypes[] = {
+    TYPE_MLA, TYPE_MLAS, TYPE_SMLAD, TYPE_SMLADX, TYPE_SMLAL, TYPE_SMLALD,
+    TYPE_SMLALS, TYPE_SMLALXY, TYPE_SMLAWX, TYPE_SMLAWY, TYPE_SMLAXY,
+    TYPE_SMMLA, TYPE_UMLAL, TYPE_UMLALS,TYPE_SMLSD, TYPE_SMLSDX, TYPE_SMLSLD
+  };
+
+  for (i = 0; i < sizeof (mlatypes) / sizeof (enum attr_type); i++)
+    {
+      if (t1 == mlatypes[i])
+	return true;
+    }
+
+  return false;
+}
+
+/* Check if there is a register dependency between a load and the insn
+   for which we hold recog_data.  */
+
+static bool
+dep_between_memop_and_curr (rtx memop)
+{
+  rtx load_reg;
+  int opno;
+
+  if (!memop)
+    return false;
+
+  if (!REG_P (SET_DEST (memop)))
+    return false;
+
+  load_reg = SET_DEST (memop);
+  for (opno = 0; opno < recog_data.n_operands; opno++)
+    {
+      rtx operand = recog_data.operand[opno];
+      if (REG_P (operand)
+          && reg_overlap_mentioned_p (load_reg, operand))
+        return true;
+
+    }
+  return false;
+}
+
+bool
+aarch64_madd_needs_nop (rtx insn)
+{
+  enum attr_type attr_type;
+  rtx prev;
+  rtx body;
+
+  if (!aarch64_fix_a53_err835769)
+    return false;
+
+  if (recog_memoized (insn) < 0)
+    return false;
+
+  attr_type = get_attr_type (insn);
+  if (!is_madd_op (attr_type))
+    return false;
+
+  prev = aarch64_prev_real_insn (insn);
+  if (!prev)
+    return false;
+
+  body = single_set (prev);
+
+  /* If the previous insn is a memory op and there is no dependency between
+     it and the madd, emit a nop between them.  If we know the previous insn is
+     a memory op but body is NULL, emit the nop to be safe, it's probably a
+     load/store pair insn.  */
+  if (is_memory_op (prev)
+      && GET_MODE (recog_data.operand[0]) == DImode
+      && (!dep_between_memop_and_curr (body)))
+    return true;
+
+  return false;
+
+}
+
+void
+aarch64_final_prescan_insn (rtx insn)
+{
+  if (aarch64_madd_needs_nop (insn))
+    fprintf (asm_out_file, "\tnop // between mem op and mult-accumulate\n");
+}
+
+
 /* Return the equivalent letter for size.  */
 static char
 sizetochar (int size)
