@@ -32,11 +32,13 @@ proc tsan_link_flags { paths } {
     global srcdir
     global ld_library_path
     global shlib_ext
+    global tsan_saved_library_path
 
     set gccpath ${paths}
     set flags ""
 
     set shlib_ext [get_shlib_extension]
+    set tsan_saved_library_path $ld_library_path
 
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/tsan/.libs/libtsan.a"]
@@ -127,6 +129,8 @@ proc tsan_finish { args } {
     global tsan_saved_ALWAYS_CXXFLAGS
     global dg-do-what-default
     global tsan_saved_dg-do-what-default
+    global tsan_saved_library_path
+    global ld_library_path
 
     if [info exists tsan_saved_ALWAYS_CXXFLAGS ] {
 	set ALWAYS_CXXFLAGS $tsan_saved_ALWAYS_CXXFLAGS
@@ -143,5 +147,6 @@ proc tsan_finish { args } {
     } else {
 	unset dg-do-what-default
     }
-    restore_ld_library_path_env_vars
+    set ld_library_path $tsan_saved_library_path
+    set_ld_library_path_env_vars
 }

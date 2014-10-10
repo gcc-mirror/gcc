@@ -1,3 +1,18 @@
+2014-10-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* lib/asan-dg.exp (asan_link_flags): Save ld_library_path.
+	(asan_finish): Remove restore_ld_library_path_env_vars.
+	Restore ld_library_path with saved value. Restore LD_LIBRARY_PATH
+	related env variables by calling set_ld_library_path_env_vars.
+	* lib/tsan-dg.exp (tsan_link_flags): Save ld_library_path.
+	(tsan_finish): Remove restore_ld_library_path_env_vars.
+	Restore ld_library_path with saved value. Restore LD_LIBRARY_PATH
+	related env variables by calling set_ld_library_path_env_vars.
+	* lib/ubsan-dg.exp (ubsan_link_flags): Save ld_library_path.
+	(ubsan_finish): Remove restore_ld_library_path_env_vars.
+	Restore ld_library_path with saved value. Restore LD_LIBRARY_PATH
+	related env variables by calling set_ld_library_path_env_vars.
+
 2014-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63379
