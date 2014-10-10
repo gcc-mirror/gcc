@@ -583,6 +583,12 @@ procedure Gnat1drv is
          end if;
       end if;
 
+      --  Treat -gnatn as equivalent to -gnatN for non-GCC targets
+
+      if Inline_Active and then not Front_End_Inlining then
+         Front_End_Inlining := VM_Target /= No_VM or else AAMP_On_Target;
+      end if;
+
       --  Set back end inlining indication
 
       Back_End_Inlining :=

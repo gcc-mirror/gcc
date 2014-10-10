@@ -4004,7 +4004,17 @@ package body Freeze is
             --  any extra formal parameters are created since we now know
             --  whether the subprogram will use a foreign convention.
 
-            if not Is_Internal (E) then
+            --  In Ada 2012, freezing a subprogram does not always freeze
+            --  the corresponding profile (see AI05-019). An attribute
+            --  reference is not a freezing point of the profile.
+            --  Other constructs that should not freeze ???
+
+            if Ada_Version > Ada_2005
+              and then Nkind (N) = N_Attribute_Reference
+            then
+               null;
+
+            elsif not Is_Internal (E) then
                declare
                   F_Type    : Entity_Id;
                   R_Type    : Entity_Id;

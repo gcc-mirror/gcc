@@ -1,3 +1,21 @@
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, Library_Unit_Aspects):
+	Aspect specification is legal on a local instantiation of a
+	library-level generic unit.
+
+2014-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set Front_End_Inlining
+	if inlining has been enabled via -gnatn and the target is not GCC.
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Freezing a subprogram does
+	not always freeze its profile.	In particular, an attribute
+	reference that takes the access type does not freeze the types
+	of the formals.
+
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb (Adjust_Name_Case): New procedure.
