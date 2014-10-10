@@ -2400,17 +2400,19 @@ min_align_of_type (tree type)
 {
   unsigned int align = TYPE_ALIGN (type);
   align = MIN (align, BIGGEST_ALIGNMENT);
+  if (!TYPE_USER_ALIGN (type))
+    {
 #ifdef BIGGEST_FIELD_ALIGNMENT
-  align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
+      align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
 #endif
-  unsigned int field_align = align;
+      unsigned int field_align = align;
 #ifdef ADJUST_FIELD_ALIGN
-  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			   type);
-  field_align = ADJUST_FIELD_ALIGN (field, field_align);
-  ggc_free (field);
+      tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, type);
+      field_align = ADJUST_FIELD_ALIGN (field, field_align);
+      ggc_free (field);
 #endif
-  align = MIN (align, field_align);
+      align = MIN (align, field_align);
+    }
   return align / BITS_PER_UNIT;
 }
 
