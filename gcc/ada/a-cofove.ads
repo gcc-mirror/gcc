@@ -81,7 +81,8 @@ package Ada.Containers.Formal_Vectors is
      Iterable => (First       => First,
                   Next        => Next,
                   Has_Element => Has_Element,
-                  Element     => Element);
+                  Element     => Element),
+     Default_Initial_Condition;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);

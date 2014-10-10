@@ -1,5 +1,28 @@
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb, sem_attr.adb: Minor reformatting.
+
+2014-10-10  Johannes Kanig  <kanig@adacore.com>
+
+	* a-cfdlli.ads, a-cfhama.ads, a-cfhase.ads, a-cforma.ads,
+	a-cforse.ads, a-cofove.ads: add "Default_Initial_Condition"
+	to container type.
+
+2014-10-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Do_Autoconf): In Codepeer mode, do not try to get
+	any configuration switches from the project file.
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Wrapper): Renamed as Build_Operator_Wrapper.
+	(Build_Function_Wrapper): New function, to construct a wrapper
+	function for actuals that are functions with an arbitrary
+	number of parameters. Used in GNATProve mode to simplify proof
+	propagation in instantiations.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb, gnat1drv.adb, sem_ch13.adb: Minor reformatting and
 	code clean up.
 

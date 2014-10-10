@@ -69,7 +69,8 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
      Iterable => (First       => First,
                   Next        => Next,
                   Has_Element => Has_Element,
-                  Element     => Element);
+                  Element     => Element),
+     Default_Initial_Condition;
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
