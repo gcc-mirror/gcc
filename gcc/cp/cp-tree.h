@@ -5879,6 +5879,8 @@ extern void finish_template_decl		(tree);
 extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
+extern bool outer_automatic_var_p		(tree);
+extern tree process_outer_var_ref		(tree, tsubst_flags_t);
 extern tree finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,

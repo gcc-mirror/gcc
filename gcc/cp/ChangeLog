@@ -1,3 +1,11 @@
+2014-10-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63207
+	* semantics.c (outer_var_p): Non-static.
+	(process_outer_var_ref): Split out from finish_id_expression.
+	* pt.c (tsubst_copy_and_build): Call them.
+	* cp-tree.h: Declare them.
+
 2014-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (check_constexpr_ctor_body_1): New.

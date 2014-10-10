@@ -15460,6 +15460,7 @@ tsubst_copy_and_build (tree t,
     case PARM_DECL:
       {
 	tree r = tsubst_copy (t, args, complain, in_decl);
+	/* ??? We're doing a subset of finish_id_expression here.  */
 	if (VAR_P (r)
 	    && !processing_template_decl
 	    && !cp_unevaluated_operand
@@ -15471,6 +15472,8 @@ tsubst_copy_and_build (tree t,
 		 a call to its wrapper.  */
 	      r = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	  }
+	else if (outer_automatic_var_p (r))
+	  r = process_outer_var_ref (r, complain);
 
 	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
 	  /* If the original type was a reference, we'll be wrapped in
