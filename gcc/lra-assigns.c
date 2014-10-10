@@ -1289,6 +1289,7 @@ assign_by_spills (void)
 	  /* We did not assign hard regs to reload pseudos after two iterations.
 	     Either it's an asm and something is wrong with the constraints, or
 	     we have run out of spill registers; error out in either case.  */
+	  bool asm_p = false;
 	  bitmap_head failed_reload_insns;
 
 	  bitmap_initialize (&failed_reload_insns, &reg_obstack);
@@ -1309,6 +1310,7 @@ assign_by_spills (void)
 	      insn = lra_insn_recog_data[u]->insn;
 	      if (asm_noperands (PATTERN (insn)) >= 0)
 		{
+		  asm_p = true;
 		  error_for_asm (insn,
 				 "%<asm%> operand has impossible constraints");
 		  /* Avoid further trouble with this insn.
@@ -1329,7 +1331,7 @@ assign_by_spills (void)
 		      lra_set_insn_deleted (insn);
 		    }
 		}
-	      else
+	      else if (!asm_p)
 		{
 		  error ("unable to find a register to spill");
 		  fatal_insn ("this is the insn:", insn);
