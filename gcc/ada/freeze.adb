@@ -4415,6 +4415,23 @@ package body Freeze is
               and then Ekind (E) /= E_Generic_Function
             then
                Freeze_And_Append (Etype (E), N, Result);
+
+               --  For an object of an anonymous array type, aspects on the
+               --  object declaration apply to the type itself. This is the
+               --  case for Atomic_Components, Volatile_Components, and
+               --  Independent_Components. In these cases analysis of the
+               --  generated pragma will mark the anonymous types accordingly,
+               --  and the object itself does not require a freeze node.
+
+               if Ekind (E) = E_Variable
+                 and then Is_Itype (Etype (E))
+                 and then Is_Array_Type (Etype (E))
+                 and then Has_Delayed_Aspects (E)
+               then
+                  Set_Has_Delayed_Aspects (E, False);
+                  Set_Has_Delayed_Freeze (E, False);
+                  Set_Freeze_Node (E, Empty);
+               end if;
             end if;
 
             --  Special processing for objects created by object declaration

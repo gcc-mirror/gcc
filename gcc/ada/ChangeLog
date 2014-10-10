@@ -1,5 +1,30 @@
 2014-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb (Adjust_Name_Case): New procedure.
+	(Set_Msg_Node): Use Adjust_Name_Case.
+	* errout.ads (Adjust_Name_Case): New procedure.
+	* exp_intr.adb (Add_Source_Info): Minor code reorganization
+	(use Ekind_In).
+	(Write_Entity_Name): Use Errout.Adjust_Name_Case.
+	* sem_prag.adb (Is_Non_Significant_Pragma_Reference): Review
+	and fix up entries in Sig_Flags, and correct logical errors in
+	function itself.
+	* sprint.adb (Sprint_Node_Actual): Properly print string for
+	raise statement.
+
+2014-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): For an object of an
+	anonymous array type with delayed aspects, defer freezing of
+	type until object itself is frozen.
+	* freeze.adb (Freeze_Entity): When freezing an object of an
+	anonymous array type with delayed aspects, remove freeze node of
+	object after freezing type, to prevent out-of-order elaboration
+	in the back-end. The initialization call for the object has
+	already been constructed when expanding the object declaration.
+
+2014-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* exp_intr.adb (Write_Entity_Name): Moved to outer level
 	(Write_Entity_Name): Properly handle operator names
 	(Expand_Source_Info): New procedure.
