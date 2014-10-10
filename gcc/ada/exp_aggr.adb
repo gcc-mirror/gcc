@@ -856,8 +856,8 @@ package body Exp_Aggr is
          if not Is_Enumeration_Type (Index_Base) then
             Expr :=
               Make_Op_Add (Loc,
-                           Left_Opnd  => Duplicate_Subexpr (To),
-                           Right_Opnd => Make_Integer_Literal (Loc, U_Val));
+                Left_Opnd  => Duplicate_Subexpr (To),
+                Right_Opnd => Make_Integer_Literal (Loc, U_Val));
 
          --  If we are dealing with enumeration return
          --    Index_Base'Val (Index_Base'Pos (To) + Val)
@@ -872,8 +872,8 @@ package body Exp_Aggr is
 
             Expr_Pos :=
               Make_Op_Add (Loc,
-                           Left_Opnd  => To_Pos,
-                           Right_Opnd => Make_Integer_Literal (Loc, U_Val));
+                Left_Opnd  => To_Pos,
+                Right_Opnd => Make_Integer_Literal (Loc, U_Val));
 
             Expr :=
               Make_Attribute_Reference
