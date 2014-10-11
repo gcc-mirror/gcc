@@ -56,7 +56,7 @@ expand_block_move (rtx *operands)
   /* If we could use mov.l to move words and dest is word-aligned, we
      can use movua.l for loads and still generate a relatively short
      and efficient sequence.  */
-  if (TARGET_SH4A_ARCH && align < 4
+  if (TARGET_SH4A && align < 4
       && MEM_ALIGN (operands[0]) >= 32
       && can_move_by_pieces (bytes, 32))
     {

@@ -1074,14 +1074,14 @@
        (and (match_test "satisfies_constraint_I08 (op)")
 	    (match_test "mode != QImode")
 	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A_ARCH"))))
+	    (match_test "TARGET_SH4A"))))
 
 (define_predicate "atomic_logical_operand"
   (ior (match_code "subreg,reg")
        (and (match_test "satisfies_constraint_K08 (op)")
 	    (match_test "mode != QImode")
 	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A_ARCH"))))
+	    (match_test "TARGET_SH4A"))))
 
 ;; A predicate describing the T bit register in any form.
 (define_predicate "t_reg_operand"

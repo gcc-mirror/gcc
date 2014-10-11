@@ -1,3 +1,13 @@
+2014-10-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_SH4A_ARCH): Remove macro.
+	* config/sh/sh.h: Replace uses of TARGET_SH4A_ARCH with TARGET_SH4A.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh-mem.cc: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/predicates.md: Likewise.
+	* config/sh/sync.md: Likewise.
+
 2014-10-11  Martin Liska  <mliska@suse.cz>
 
 	PR/63376
