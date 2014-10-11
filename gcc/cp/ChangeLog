@@ -1,5 +1,8 @@
 2014-10-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63194
+	* method.c (defaulted_late_check): Call maybe_instantiate_noexcept.
+
 	* method.c (implicitly_declare_fn): Handle deleted lambda default
 	ctor and copy assop here.
 	* class.c (check_bases_and_members): Not here.

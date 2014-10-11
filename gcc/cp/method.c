@@ -1979,6 +1979,7 @@ defaulted_late_check (tree fn)
      is explicitly defaulted on its first declaration, (...) it is
      implicitly considered to have the same exception-specification as if
      it had been implicitly declared.  */
+  maybe_instantiate_noexcept (fn);
   tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
   if (!fn_spec)
     {
