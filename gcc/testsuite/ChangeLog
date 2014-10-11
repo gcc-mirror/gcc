@@ -1,8 +1,13 @@
+2014-10-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* gfortran.dg/ieee/intrinsics_1.f90: New test.
+
 2014-10-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_shared): New
 	function.
-        * g++.dg/ipa/devirt-28a.C: Check if -shared is supported.
+	* g++.dg/ipa/devirt-28a.C: Check if -shared is supported.
 
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 

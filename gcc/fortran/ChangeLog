@@ -1,3 +1,15 @@
+2014-10-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* simplify.c (gfc_simplify_atan): Use mpfr_zero_p to check for zeros.
+	(gfc_simplify_log): Likewise.
+	(gfc_simplify_scale): Likewise.
+	(gfc_simplify_exponent): Handle infinities and NaNs.
+	(gfc_simplify_fraction): Handle infinities.
+	(gfc_simplify_rrspacing): Handle signed zeros and NaNs.
+	(gfc_simplify_set_exponent): Handle infinities and NaNs.
+	(gfc_simplify_spacing): Handle zeros, infinities and NaNs.
+
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/59488

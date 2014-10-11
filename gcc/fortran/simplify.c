@@ -1169,7 +1169,7 @@ gfc_simplify_atan2 (gfc_expr *y, gfc_expr *x)
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (mpfr_sgn (y->value.real) == 0 && mpfr_sgn (x->value.real) == 0)
+  if (mpfr_zero_p (y->value.real) && mpfr_zero_p (x->value.real))
     {
       gfc_error ("If first argument of ATAN2 %L is zero, then the "
 		 "second argument must not be zero", &x->where);
@@ -2191,7 +2191,7 @@ gfc_simplify_exp (gfc_expr *x)
 gfc_expr *
 gfc_simplify_exponent (gfc_expr *x)
 {
-  int i;
+  long int val;
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -2200,16 +2200,25 @@ gfc_simplify_exponent (gfc_expr *x)
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &x->where);
 
-  gfc_set_model (x->value.real);
+  /* EXPONENT(inf) = EXPONENT(nan) = HUGE(0) */
+  if (mpfr_inf_p (x->value.real) || mpfr_nan_p (x->value.real))
+    {
+      int i = gfc_validate_kind (BT_INTEGER, gfc_default_integer_kind, false);
+      mpz_set (result->value.integer, gfc_integer_kinds[i].huge);
+      return result;
+    }
 
-  if (mpfr_sgn (x->value.real) == 0)
+  /* EXPONENT(+/- 0.0) = 0  */
+  if (mpfr_zero_p (x->value.real))
     {
       mpz_set_ui (result->value.integer, 0);
       return result;
     }
 
-  i = (int) mpfr_get_exp (x->value.real);
-  mpz_set_si (result->value.integer, i);
+  gfc_set_model (x->value.real);
+
+  val = (long int) mpfr_get_exp (x->value.real);
+  mpz_set_si (result->value.integer, val);
 
   return range_check (result, "EXPONENT");
 }
@@ -2373,6 +2382,13 @@ gfc_simplify_fraction (gfc_expr *x)
 
   result = gfc_get_constant_expr (BT_REAL, x->ts.kind, &x->where);
 
+  /* FRACTION(inf) = NaN.  */
+  if (mpfr_inf_p (x->value.real))
+    {
+      mpfr_set_nan (result->value.real);
+      return result;
+    }
+
 #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
 
   /* MPFR versions before 3.1.0 do not include mpfr_frexp.  
@@ -2403,6 +2419,7 @@ gfc_simplify_fraction (gfc_expr *x)
 
 #else
 
+  /* mpfr_frexp() correctly handles zeros and NaNs.  */
   mpfr_frexp (&e, result->value.real, x->value.real, GFC_RND_MODE);
 
 #endif
@@ -3809,8 +3826,8 @@ gfc_simplify_log (gfc_expr *x)
       break;
 
     case BT_COMPLEX:
-      if ((mpfr_sgn (mpc_realref (x->value.complex)) == 0)
-	  && (mpfr_sgn (mpc_imagref (x->value.complex)) == 0))
+      if (mpfr_zero_p (mpc_realref (x->value.complex))
+	  && mpfr_zero_p (mpc_imagref (x->value.complex)))
 	{
 	  gfc_error ("Complex argument of LOG at %L cannot be zero",
 		     &x->where);
@@ -5191,16 +5208,30 @@ gfc_simplify_rrspacing (gfc_expr *x)
   i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   result = gfc_get_constant_expr (BT_REAL, x->ts.kind, &x->where);
-  mpfr_abs (result->value.real, x->value.real, GFC_RND_MODE);
 
-  /* Special case x = -0 and 0.  */
-  if (mpfr_sgn (result->value.real) == 0)
+  /* RRSPACING(+/- 0.0) = 0.0  */
+  if (mpfr_zero_p (x->value.real))
     {
       mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
       return result;
     }
 
+  /* RRSPACING(inf) = NaN  */
+  if (mpfr_inf_p (x->value.real))
+    {
+      mpfr_set_nan (result->value.real);
+      return result;
+    }
+
+  /* RRSPACING(NaN) = same NaN  */
+  if (mpfr_nan_p (x->value.real))
+    {
+      mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+      return result;
+    }
+
   /* | x * 2**(-e) | * 2**p.  */
+  mpfr_abs (result->value.real, x->value.real, GFC_RND_MODE);
   e = - (long int) mpfr_get_exp (x->value.real);
   mpfr_mul_2si (result->value.real, result->value.real, e, GFC_RND_MODE);
 
@@ -5223,7 +5254,7 @@ gfc_simplify_scale (gfc_expr *x, gfc_expr *i)
 
   result = gfc_get_constant_expr (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpfr_sgn (x->value.real) == 0)
+  if (mpfr_zero_p (x->value.real))
     {
       mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
       return result;
@@ -5591,9 +5622,18 @@ gfc_simplify_set_exponent (gfc_expr *x, gfc_expr *i)
 
   result = gfc_get_constant_expr (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpfr_sgn (x->value.real) == 0)
+  /* SET_EXPONENT (+/-0.0, I) = +/- 0.0
+     SET_EXPONENT (NaN) = same NaN  */
+  if (mpfr_zero_p (x->value.real) || mpfr_nan_p (x->value.real))
     {
-      mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
+      mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+      return result;
+    }
+
+  /* SET_EXPONENT (inf) = NaN  */
+  if (mpfr_inf_p (x->value.real))
+    {
+      mpfr_set_nan (result->value.real);
       return result;
     }
 
@@ -5979,14 +6019,26 @@ gfc_simplify_spacing (gfc_expr *x)
     return NULL;
 
   i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
-
   result = gfc_get_constant_expr (BT_REAL, x->ts.kind, &x->where);
 
-  /* Special case x = 0 and -0.  */
-  mpfr_abs (result->value.real, x->value.real, GFC_RND_MODE);
-  if (mpfr_sgn (result->value.real) == 0)
+  /* SPACING(+/- 0.0) = SPACING(TINY(0.0)) = TINY(0.0)  */
+  if (mpfr_zero_p (x->value.real))
     {
       mpfr_set (result->value.real, gfc_real_kinds[i].tiny, GFC_RND_MODE);
+      return result;
+    }
+
+  /* SPACING(inf) = NaN  */
+  if (mpfr_inf_p (x->value.real))
+    {
+      mpfr_set_nan (result->value.real);
+      return result;
+    }
+
+  /* SPACING(NaN) = same NaN  */
+  if (mpfr_nan_p (x->value.real))
+    {
+      mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
       return result;
     }
 
