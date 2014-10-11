@@ -1,6 +1,6 @@
 // PR c++/58678
 // { dg-options "-O3 -flto -shared -fPIC -Wl,--no-undefined" }
-// { dg-do link { target { gld && fpic } } }
+// { dg-do link { target { { gld && fpic } && shared } } }
 
 struct A {
   virtual ~A();
