@@ -70,13 +70,9 @@ extern int code_for_indirect_jump_scratch;
 #undef TARGET_SH4
 #define TARGET_SH4 ((target_flags & MASK_SH4) != 0 && TARGET_SH1)
 
-/* Nonzero if we're generating code for the common subset of
-   instructions present on both SH4a and SH4al-dsp.  */
-#define TARGET_SH4A_ARCH TARGET_SH4A
-
 /* Nonzero if we're generating code for SH4a, unless the use of the
    FPU is disabled (which makes it compatible with SH4al-dsp).  */
-#define TARGET_SH4A_FP (TARGET_SH4A_ARCH && TARGET_FPU_ANY)
+#define TARGET_SH4A_FP (TARGET_SH4A && TARGET_FPU_ANY)
 
 /* Nonzero if we should generate code using the SHcompact instruction
    set and 32-bit ABI.  */

@@ -818,7 +818,7 @@ sh_option_override (void)
       assembler_dialect = 1;
       sh_cpu = PROCESSOR_SH4;
     }
-  if (TARGET_SH4A_ARCH)
+  if (TARGET_SH4A)
     {
       assembler_dialect = 1;
       sh_cpu = PROCESSOR_SH4A;
@@ -11597,7 +11597,7 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
   if (TARGET_HARD_SH4 || TARGET_SH5)
     {
       if (!TARGET_INLINE_IC_INVALIDATE
-	  || (!(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE))
+	  || (!(TARGET_SH4A || TARGET_SH4_300) && TARGET_USERMODE))
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
 					    FUNCTION_ORDINARY),
 			   LCT_NORMAL, VOIDmode, 1, tramp, SImode);
