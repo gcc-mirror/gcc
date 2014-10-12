@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-hasher.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "tm_p.h"
@@ -3690,26 +3691,32 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   return result;
 }
 
+struct conv_type_hasher : ggc_hasher<tree>
+{
+  static hashval_t hash (tree);
+  static bool equal (tree, tree);
+};
+
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
    operator to TYPE.  The nodes are IDENTIFIERs whose TREE_TYPE is the
    TYPE.  */
 
-static GTY ((param_is (union tree_node))) htab_t conv_type_names;
+static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
 
 /* Hash a node (VAL1) in the table.  */
 
-static hashval_t
-hash_type (const void *val)
+hashval_t
+conv_type_hasher::hash (tree val)
 {
-  return (hashval_t) TYPE_UID (TREE_TYPE ((const_tree) val));
+  return (hashval_t) TYPE_UID (TREE_TYPE (val));
 }
 
 /* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
 
-static int
-compare_type (const void *val1, const void *val2)
+bool
+conv_type_hasher::equal (tree val1, tree val2)
 {
-  return TREE_TYPE ((const_tree) val1) == (const_tree) val2;
+  return TREE_TYPE (val1) == val2;
 }
 
 /* Return an identifier for the mangled unqualified name for a
@@ -3719,25 +3726,25 @@ compare_type (const void *val1, const void *val2)
 tree
 mangle_conv_op_name_for_type (const tree type)
 {
-  void **slot;
+  tree *slot;
   tree identifier;
 
   if (type == error_mark_node)
     return error_mark_node;
 
   if (conv_type_names == NULL)
-    conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
+    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
 
-  slot = htab_find_slot_with_hash (conv_type_names, type,
-				   (hashval_t) TYPE_UID (type), INSERT);
-  identifier = (tree)*slot;
+  slot = conv_type_names->find_slot_with_hash (type,
+					       (hashval_t) TYPE_UID (type),
+					       INSERT);
+  identifier = *slot;
   if (!identifier)
     {
       char buffer[64];
 
        /* Create a unique name corresponding to TYPE.  */
-      sprintf (buffer, "operator %lu",
-	       (unsigned long) htab_elements (conv_type_names));
+      sprintf (buffer, "operator %lu", conv_type_names->elements ());
       identifier = get_identifier (buffer);
       *slot = identifier;
 

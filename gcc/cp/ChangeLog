@@ -1,3 +1,9 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cp-gimplify.c, cp-tree.h, decl.c, mangle.c, name-lookup.c,
+	pt.c, semantics.c, tree.c, typeck2.c: Use hash_table instead of
+	hashtab.
+
 2014-10-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62115

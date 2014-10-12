@@ -774,7 +774,7 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
   /* Initialize the initialized (static) class table. */
   if (access_flags & ACC_STATIC)
     DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl) =
-      htab_create_ggc (50, htab_hash_pointer, htab_eq_pointer, NULL);
+      hash_table<ict_hasher>::create_ggc (50);
 
   DECL_CHAIN (fndecl) = TYPE_METHODS (this_class);
   TYPE_METHODS (this_class) = fndecl;
@@ -3070,14 +3070,12 @@ build_assertion_table_entry (tree code, tree op1, tree op2)
 /* Add an entry to the type assertion table. Callback used during hashtable
    traversal.  */
 
-static int
-add_assertion_table_entry (void **htab_entry, void *ptr)
+int
+add_assertion_table_entry (type_assertion **slot, vec<constructor_elt, va_gc> **v)
 {
   tree entry;
   tree code_val, op1_utf8, op2_utf8;
-  vec<constructor_elt, va_gc> **v
-      = ((vec<constructor_elt, va_gc> **) ptr);
-  type_assertion *as = (type_assertion *) *htab_entry;
+  type_assertion *as = *slot;
 
   code_val = build_int_cst (NULL_TREE, as->assertion_code);
 
@@ -3103,11 +3101,12 @@ static tree
 emit_assertion_table (tree klass)
 {
   tree null_entry, ctor, table_decl;
-  htab_t assertions_htab = TYPE_ASSERTIONS (klass);
+  hash_table<type_assertion_hasher> *assertions_htab = TYPE_ASSERTIONS (klass);
   vec<constructor_elt, va_gc> *v = NULL;
 
   /* Iterate through the hash table.  */
-  htab_traverse (assertions_htab, add_assertion_table_entry, &v);
+  assertions_htab
+    ->traverse<vec<constructor_elt, va_gc> **, add_assertion_table_entry> (&v);
 
   /* Finish with a null entry.  */
   null_entry = build_assertion_table_entry (integer_zero_node,
@@ -3146,36 +3145,28 @@ init_class_processing (void)
   gcc_obstack_init (&temporary_obstack);
 }
 
-static hashval_t java_treetreehash_hash (const void *);
-static int java_treetreehash_compare (const void *, const void *);
-
 /* A hash table mapping trees to trees.  Used generally.  */
 
 #define JAVA_TREEHASHHASH_H(t) ((hashval_t)TYPE_UID (t))
 
-static hashval_t
-java_treetreehash_hash (const void *k_p)
+hashval_t
+treetreehasher::hash (treetreehash_entry *k)
 {
-  const struct treetreehash_entry *const k
-    = (const struct treetreehash_entry *) k_p;
   return JAVA_TREEHASHHASH_H (k->key);
 }
 
-static int
-java_treetreehash_compare (const void * k1_p, const void * k2_p)
+bool
+treetreehasher::equal (treetreehash_entry *k1, tree k2)
 {
-  const struct treetreehash_entry *const k1
-    = (const struct treetreehash_entry *) k1_p;
-  const_tree const k2 = (const_tree) k2_p;
   return (k1->key == k2);
 }
 
 tree 
-java_treetreehash_find (htab_t ht, tree t)
+java_treetreehash_find (hash_table<treetreehasher> *ht, tree t)
 {
   struct treetreehash_entry *e;
   hashval_t hv = JAVA_TREEHASHHASH_H (t);
-  e = (struct treetreehash_entry *) htab_find_with_hash (ht, t, hv);
+  e = ht->find_with_hash (t, hv);
   if (e == NULL)
     return NULL;
   else
@@ -3183,13 +3174,12 @@ java_treetreehash_find (htab_t ht, tree t)
 }
 
 tree *
-java_treetreehash_new (htab_t ht, tree t)
+java_treetreehash_new (hash_table<treetreehasher> *ht, tree t)
 {
-  void **e;
   struct treetreehash_entry *tthe;
   hashval_t hv = JAVA_TREEHASHHASH_H (t);
 
-  e = htab_find_slot_with_hash (ht, t, hv, INSERT);
+  treetreehash_entry **e = ht->find_slot_with_hash (t, hv, INSERT);
   if (*e == NULL)
     {
       tthe = ggc_cleared_alloc<treetreehash_entry> ();
@@ -3197,15 +3187,14 @@ java_treetreehash_new (htab_t ht, tree t)
       *e = tthe;
     }
   else
-    tthe = (struct treetreehash_entry *) *e;
+    tthe = *e;
   return &tthe->value;
 }
 
-htab_t
+hash_table<treetreehasher> *
 java_treetreehash_create (size_t size)
 {
-  return htab_create_ggc (size, java_treetreehash_hash,
-			  java_treetreehash_compare, NULL);
+  return hash_table<treetreehasher>::create_ggc (size);
 }
 
 /* Break down qualified IDENTIFIER into package and class-name components.

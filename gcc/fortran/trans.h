@@ -575,10 +575,18 @@ void gfc_generate_module_vars (gfc_namespace *);
 /* Get the appropriate return statement for a procedure.  */
 tree gfc_generate_return (void);
 
-struct GTY(()) module_htab_entry {
+struct module_decl_hasher : ggc_hasher<tree_node *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (tree);
+  static bool equal (tree, const char *);
+};
+
+struct GTY((for_user)) module_htab_entry {
   const char *name;
   tree namespace_decl;
-  htab_t GTY ((param_is (union tree_node))) decls;
+  hash_table<module_decl_hasher> *GTY (()) decls;
 };
 
 struct module_htab_entry *gfc_find_module (const char *);

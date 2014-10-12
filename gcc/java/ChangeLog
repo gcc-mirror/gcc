@@ -1,3 +1,8 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c, decl.c, except.c, expr.c, java-tree.h, lang.c: Use
+	hash_table instead of hashtab.
+
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
 	* jvgenmain.c (main): Provide declarations for JvRunMain{,Name}.

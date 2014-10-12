@@ -76,7 +76,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
 
 /* Description of the loop exit.  */
 
-struct GTY (()) loop_exit {
+struct GTY ((for_user)) loop_exit {
   /* The exit edge.  */
   edge e;
 
@@ -86,6 +86,15 @@ struct GTY (()) loop_exit {
 
   /* Next element in the list of loops from that E exits.  */
   struct loop_exit *next_e;
+};
+
+struct loop_exit_hasher : ggc_hasher<loop_exit *>
+{
+  typedef edge compare_type;
+
+  static hashval_t hash (loop_exit *);
+  static bool equal (loop_exit *, edge);
+  static void remove (loop_exit *);
 };
 
 typedef struct loop *loop_p;
@@ -229,7 +238,7 @@ struct GTY (()) loops {
   /* Maps edges to the list of their descriptions as loop exits.  Edges
      whose sources or destinations have loop_father == NULL (which may
      happen during the cfg manipulations) should not appear in EXITS.  */
-  htab_t GTY((param_is (struct loop_exit))) exits;
+  hash_table<loop_exit_hasher> *GTY(()) exits;
 
   /* Pointer to root of loop hierarchy tree.  */
   struct loop *tree_root;

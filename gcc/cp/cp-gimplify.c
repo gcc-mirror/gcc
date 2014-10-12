@@ -758,20 +758,18 @@ is_invisiref_parm (const_tree t)
 
 /* Return true if the uid in both int tree maps are equal.  */
 
-int
-cxx_int_tree_map_eq (const void *va, const void *vb)
+bool
+cxx_int_tree_map_hasher::equal (cxx_int_tree_map *a, cxx_int_tree_map *b)
 {
-  const struct cxx_int_tree_map *a = (const struct cxx_int_tree_map *) va;
-  const struct cxx_int_tree_map *b = (const struct cxx_int_tree_map *) vb;
   return (a->uid == b->uid);
 }
 
 /* Hash a UID in a cxx_int_tree_map.  */
 
 unsigned int
-cxx_int_tree_map_hash (const void *item)
+cxx_int_tree_map_hasher::hash (cxx_int_tree_map *item)
 {
-  return ((const struct cxx_int_tree_map *)item)->uid;
+  return item->uid;
 }
 
 /* A stable comparison routine for use with splay trees and DECLs.  */
@@ -911,9 +909,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     {
       struct cxx_int_tree_map *h, in;
       in.uid = DECL_UID (stmt);
-      h = (struct cxx_int_tree_map *)
-	  htab_find_with_hash (cp_function_chain->extern_decl_map,
-			       &in, in.uid);
+      h = cp_function_chain->extern_decl_map->find_with_hash (&in, in.uid);
       if (h)
 	{
 	  *stmt_p = h->to;

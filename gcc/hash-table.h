@@ -198,6 +198,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ggc.h"
 #include "hashtab.h"
+#include <new>
 
 template<typename, typename, typename> class hash_map;
 template<typename, typename> class hash_set;
@@ -300,6 +301,38 @@ pointer_hash <Type>::equal (const value_type &existing,
 {
   return existing == candidate;
 }
+
+/* Hasher for entry in gc memory.  */
+
+template<typename T>
+struct ggc_hasher
+{
+  typedef T value_type;
+  typedef T compare_type;
+  typedef int store_values_directly;
+
+  static void remove (T) {}
+
+  static void
+  ggc_mx (T p)
+  {
+    extern void gt_ggc_mx (T &);
+    gt_ggc_mx (p);
+  }
+
+  static void
+  pch_nx (T &p)
+  {
+  extern void gt_pch_nx (T &);
+  gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (T &p, gt_pointer_operator op, void *cookie)
+  {
+    op (&p, cookie);
+  }
+};
 
 
 /* Table of primes and their inversion information.  */
@@ -1004,6 +1037,16 @@ public:
   explicit hash_table (size_t, bool ggc = false);
   ~hash_table ();
 
+  /* Create a hash_table in gc memory.  */
+
+  static hash_table *
+  create_ggc (size_t n)
+  {
+    hash_table *table = ggc_alloc<hash_table> ();
+    new (table) hash_table (n, true);
+    return table;
+  }
+
   /* Current size (in entries) of the hash table.  */
   size_t size () const { return m_size; }
 
@@ -1110,9 +1153,15 @@ public:
 private:
   template<typename T> friend void gt_ggc_mx (hash_table<T> *);
   template<typename T> friend void gt_pch_nx (hash_table<T> *);
-  template<typename T> friend void hashtab_entry_note_pointers (void *, void *, gt_pointer_operator, void *);
-  template<typename T, typename U, typename V> friend void gt_pch_nx (hash_map<T, U, V> *, gt_pointer_operator, void *);
-  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *, gt_pointer_operator, void *);
+  template<typename T> friend void
+    hashtab_entry_note_pointers (void *, void *, gt_pointer_operator, void *);
+  template<typename T, typename U, typename V> friend void
+  gt_pch_nx (hash_map<T, U, V> *, gt_pointer_operator, void *);
+  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *,
+							  gt_pointer_operator,
+							  void *);
+  template<typename T> friend void gt_pch_nx (hash_table<T> *,
+					      gt_pointer_operator, void *);
 
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
@@ -1598,7 +1647,7 @@ template<typename D>
 static void
 gt_pch_nx (hash_table<D> *h)
 {
-  bool success ATTRIBUTE_UNUSED
+  bool success
     = gt_pch_note_object (h->m_entries, h, hashtab_entry_note_pointers<D>);
   gcc_checking_assert (success);
   for (size_t i = 0; i < h->m_size; i++)
@@ -1609,6 +1658,13 @@ gt_pch_nx (hash_table<D> *h)
 
       D::pch_nx (h->m_entries[i]);
     }
+}
+
+template<typename D>
+static inline void
+gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
+{
+  op (&h->m_entries, cookie);
 }
 
 #endif /* TYPED_HASHTAB_H */

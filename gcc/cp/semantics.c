@@ -7579,35 +7579,38 @@ ensure_literal_type_for_constexpr_object (tree decl)
 
 /* Representation of entries in the constexpr function definition table.  */
 
-typedef struct GTY(()) constexpr_fundef {
+struct GTY((for_user)) constexpr_fundef {
   tree decl;
   tree body;
-} constexpr_fundef;
+};
+
+struct constexpr_fundef_hasher : ggc_hasher<constexpr_fundef *>
+{
+  static hashval_t hash (constexpr_fundef *);
+  static bool equal (constexpr_fundef *, constexpr_fundef *);
+};
 
 /* This table holds all constexpr function definitions seen in
    the current translation unit.  */
 
-static GTY ((param_is (constexpr_fundef))) htab_t constexpr_fundef_table;
+static GTY (()) hash_table<constexpr_fundef_hasher> *constexpr_fundef_table;
 
 /* Utility function used for managing the constexpr function table.
    Return true if the entries pointed to by P and Q are for the
    same constexpr function.  */
 
-static inline int
-constexpr_fundef_equal (const void *p, const void *q)
+inline bool
+constexpr_fundef_hasher::equal (constexpr_fundef *lhs, constexpr_fundef *rhs)
 {
-  const constexpr_fundef *lhs = (const constexpr_fundef *) p;
-  const constexpr_fundef *rhs = (const constexpr_fundef *) q;
   return lhs->decl == rhs->decl;
 }
 
 /* Utility function used for managing the constexpr function table.
    Return a hash value for the entry pointed to by Q.  */
 
-static inline hashval_t
-constexpr_fundef_hash (const void *p)
+inline hashval_t
+constexpr_fundef_hasher::hash (constexpr_fundef *fundef)
 {
-  const constexpr_fundef *fundef = (const constexpr_fundef *) p;
   return DECL_UID (fundef->decl);
 }
 
@@ -7621,7 +7624,7 @@ retrieve_constexpr_fundef (tree fun)
     return NULL;
 
   fundef.decl = fun;
-  return (constexpr_fundef *) htab_find (constexpr_fundef_table, &fundef);
+  return constexpr_fundef_table->find (&fundef);
 }
 
 /* Check whether the parameter and return types of FUN are valid for a
@@ -8236,14 +8239,12 @@ register_constexpr_fundef (tree fun, tree body)
 
   /* Create the constexpr function table if necessary.  */
   if (constexpr_fundef_table == NULL)
-    constexpr_fundef_table = htab_create_ggc (101,
-                                              constexpr_fundef_hash,
-                                              constexpr_fundef_equal,
-                                              ggc_free);
+    constexpr_fundef_table
+      = hash_table<constexpr_fundef_hasher>::create_ggc (101);
+
   entry.decl = fun;
   entry.body = body;
-  slot = (constexpr_fundef **)
-    htab_find_slot (constexpr_fundef_table, &entry, INSERT);
+  slot = constexpr_fundef_table->find_slot (&entry, INSERT);
 
   gcc_assert (*slot == NULL);
   *slot = ggc_alloc<constexpr_fundef> ();
@@ -8296,7 +8297,7 @@ explain_invalid_constexpr_fn (tree fun)
    along with the bindings of parameters to their arguments, for
    the purpose of compile time evaluation.  */
 
-typedef struct GTY(()) constexpr_call {
+struct GTY((for_user)) constexpr_call {
   /* Description of the constexpr function definition.  */
   constexpr_fundef *fundef;
   /* Parameter bindings environment.  A TREE_LIST where each TREE_PURPOSE
@@ -8314,39 +8315,42 @@ typedef struct GTY(()) constexpr_call {
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
   hashval_t hash;
-} constexpr_call;
+};
+
+struct constexpr_call_hasher : ggc_hasher<constexpr_call *>
+{
+  static hashval_t hash (constexpr_call *);
+  static bool equal (constexpr_call *, constexpr_call *);
+		     };
 
 /* A table of all constexpr calls that have been evaluated by the
    compiler in this translation unit.  */
 
-static GTY ((param_is (constexpr_call))) htab_t constexpr_call_table;
+static GTY (()) hash_table<constexpr_call_hasher> *constexpr_call_table;
 
 static tree cxx_eval_constant_expression (const constexpr_call *, tree,
 					  bool, bool, bool *, bool *);
 
 /* Compute a hash value for a constexpr call representation.  */
 
-static hashval_t
-constexpr_call_hash (const void *p)
+inline hashval_t
+constexpr_call_hasher::hash (constexpr_call *info)
 {
-  const constexpr_call *info = (const constexpr_call *) p;
   return info->hash;
 }
 
-/* Return 1 if the objects pointed to by P and Q represent calls
+/* Return true if the objects pointed to by P and Q represent calls
    to the same constexpr function with the same arguments.
-   Otherwise, return 0.  */
+   Otherwise, return false.  */
 
-static int
-constexpr_call_equal (const void *p, const void *q)
+bool
+constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
 {
-  const constexpr_call *lhs = (const constexpr_call *) p;
-  const constexpr_call *rhs = (const constexpr_call *) q;
   tree lhs_bindings;
   tree rhs_bindings;
   if (lhs == rhs)
     return 1;
-  if (!constexpr_fundef_equal (lhs->fundef, rhs->fundef))
+  if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return 0;
   lhs_bindings = lhs->bindings;
   rhs_bindings = rhs->bindings;
@@ -8369,10 +8373,7 @@ static void
 maybe_initialize_constexpr_call_table (void)
 {
   if (constexpr_call_table == NULL)
-    constexpr_call_table = htab_create_ggc (101,
-                                            constexpr_call_hash,
-                                            constexpr_call_equal,
-                                            ggc_free);
+    constexpr_call_table = hash_table<constexpr_call_hasher>::create_ggc (101);
 }
 
 /* Return true if T designates the implied `this' parameter.  */
@@ -8681,12 +8682,11 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 
   new_call.hash
     = iterative_hash_template_arg (new_call.bindings,
-				   constexpr_fundef_hash (new_call.fundef));
+				   constexpr_fundef_hasher::hash (new_call.fundef));
 
   /* If we have seen this call before, we are done.  */
   maybe_initialize_constexpr_call_table ();
-  slot = (constexpr_call **)
-    htab_find_slot (constexpr_call_table, &new_call, INSERT);
+  slot = constexpr_call_table->find_slot (&new_call, INSERT);
   entry = *slot;
   if (entry == NULL)
     {

@@ -135,7 +135,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 /* Structure that holds information about declarations whose type was
    incomplete and we could not check whether it was abstract or not.  */
 
-struct GTY((chain_next ("%h.next"))) pending_abstract_type {
+struct GTY((chain_next ("%h.next"), for_user)) pending_abstract_type {
   /* Declaration which we are checking for abstractness. It is either
      a DECL node, or an IDENTIFIER_NODE if we do not have a full
      declaration available.  */
@@ -155,15 +155,19 @@ struct GTY((chain_next ("%h.next"))) pending_abstract_type {
   struct pending_abstract_type* next;
 };
 
+struct abstract_type_hasher : ggc_hasher<pending_abstract_type *>
+{
+  typedef tree compare_type;
+  static hashval_t hash (pending_abstract_type *);
+  static bool equal (pending_abstract_type *, tree);
+};
 
 /* Compute the hash value of the node VAL. This function is used by the
    hash table abstract_pending_vars.  */
 
-static hashval_t
-pat_calc_hash (const void* val)
+hashval_t
+abstract_type_hasher::hash (pending_abstract_type *pat)
 {
-  const struct pending_abstract_type *pat =
-     (const struct pending_abstract_type *) val;
   return (hashval_t) TYPE_UID (pat->type);
 }
 
@@ -171,21 +175,16 @@ pat_calc_hash (const void* val)
 /* Compare node VAL1 with the type VAL2. This function is used by the
    hash table abstract_pending_vars.  */
 
-static int
-pat_compare (const void* val1, const void* val2)
+bool
+abstract_type_hasher::equal (pending_abstract_type *pat1, tree type2)
 {
-  const struct pending_abstract_type *const pat1 =
-     (const struct pending_abstract_type *) val1;
-  const_tree const type2 = (const_tree)val2;
-
   return (pat1->type == type2);
 }
 
 /* Hash table that maintains pending_abstract_type nodes, for which we still
    need to check for type abstractness.  The key of the table is the type
    of the declaration.  */
-static GTY ((param_is (struct pending_abstract_type)))
-htab_t abstract_pending_vars = NULL;
+static GTY (()) hash_table<abstract_type_hasher> *abstract_pending_vars = NULL;
 
 static int abstract_virtuals_error_sfinae (tree, tree, abstract_class_use, tsubst_flags_t);
 
@@ -197,7 +196,6 @@ static int abstract_virtuals_error_sfinae (tree, tree, abstract_class_use, tsubs
 void
 complete_type_check_abstract (tree type)
 {
-  void **slot;
   struct pending_abstract_type *pat;
   location_t cur_loc = input_location;
 
@@ -207,11 +205,12 @@ complete_type_check_abstract (tree type)
     return;
 
   /* Retrieve the list of pending declarations for this type.  */
-  slot = htab_find_slot_with_hash (abstract_pending_vars, type,
-				   (hashval_t)TYPE_UID (type), NO_INSERT);
+  pending_abstract_type **slot
+    = abstract_pending_vars->find_slot_with_hash (type, TYPE_UID (type),
+						  NO_INSERT);
   if (!slot)
     return;
-  pat = (struct pending_abstract_type*)*slot;
+  pat = *slot;
   gcc_assert (pat);
 
   /* If the type is not abstract, do not do anything.  */
@@ -244,7 +243,7 @@ complete_type_check_abstract (tree type)
 	}
     }
 
-  htab_clear_slot (abstract_pending_vars, slot);
+  abstract_pending_vars->clear_slot (slot);
 
   input_location = cur_loc;
 }
@@ -282,17 +281,17 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
      name.  */
   if (!COMPLETE_TYPE_P (type) && (complain & tf_error))
     {
-      void **slot;
       struct pending_abstract_type *pat;
 
       gcc_assert (!decl || DECL_P (decl) || identifier_p (decl));
 
       if (!abstract_pending_vars)
-	abstract_pending_vars = htab_create_ggc (31, &pat_calc_hash,
-						&pat_compare, NULL);
+	abstract_pending_vars
+	  = hash_table<abstract_type_hasher>::create_ggc (31);
 
-      slot = htab_find_slot_with_hash (abstract_pending_vars, type,
-				      (hashval_t)TYPE_UID (type), INSERT);
+      pending_abstract_type **slot
+       	= abstract_pending_vars->find_slot_with_hash (type, TYPE_UID (type),
+						      INSERT);
 
       pat = ggc_alloc<pending_abstract_type> ();
       pat->type = type;
@@ -302,7 +301,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 		    ? DECL_SOURCE_LOCATION (decl)
 		    : input_location);
 
-      pat->next = (struct pending_abstract_type *) *slot;
+      pat->next = *slot;
       *slot = pat;
 
       return 0;

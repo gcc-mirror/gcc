@@ -486,7 +486,7 @@ struct GTY(()) noswitch_section {
 };
 
 /* Information about a section, which may be named or unnamed.  */
-union GTY ((desc ("SECTION_STYLE (&(%h))"))) section {
+union GTY ((desc ("SECTION_STYLE (&(%h))"), for_user)) section {
   struct section_common GTY ((skip)) common;
   struct named_section GTY ((tag ("SECTION_NAMED"))) named;
   struct unnamed_section GTY ((tag ("SECTION_UNNAMED"))) unnamed;
