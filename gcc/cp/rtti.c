@@ -608,10 +608,6 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  errstr = _("source is of incomplete class type");
 	  goto fail;
 	}
-
-      /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
-      expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
-				   LOOKUP_NORMAL, NULL_TREE, complain);
     }
 
   /* The dynamic_cast operator shall not cast away constness.  */
@@ -630,6 +626,11 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     if (binfo)
       return build_static_cast (type, expr, complain);
   }
+
+  /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
+  if (tc == REFERENCE_TYPE)
+    expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
+				 LOOKUP_NORMAL, NULL_TREE, complain);
 
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */
   if (TYPE_POLYMORPHIC_P (TREE_TYPE (exprtype)))

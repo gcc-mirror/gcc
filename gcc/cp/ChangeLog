@@ -1,5 +1,10 @@
 2014-10-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/62115
+	* class.c (build_base_path): Preserve rvalueness.
+	* call.c (convert_like_real) [ck_base]: Let convert_to_base handle &/*.
+	* rtti.c (build_dynamic_cast_1): Call convert_to_reference later.
+
 	PR c++/63194
 	* method.c (defaulted_late_check): Call maybe_instantiate_noexcept.
 

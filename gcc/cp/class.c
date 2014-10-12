@@ -251,6 +251,7 @@ build_base_path (enum tree_code code,
   int want_pointer = TYPE_PTR_P (TREE_TYPE (expr));
   bool has_empty = false;
   bool virtual_access;
+  bool rvalue = false;
 
   if (expr == error_mark_node || binfo == error_mark_node || !binfo)
     return error_mark_node;
@@ -324,8 +325,11 @@ build_base_path (enum tree_code code,
     }
 
   if (!want_pointer)
-    /* This must happen before the call to save_expr.  */
-    expr = cp_build_addr_expr (expr, complain);
+    {
+      rvalue = !real_lvalue_p (expr);
+      /* This must happen before the call to save_expr.  */
+      expr = cp_build_addr_expr (expr, complain);
+    }
   else
     expr = mark_rvalue_use (expr);
 
@@ -351,9 +355,7 @@ build_base_path (enum tree_code code,
       || in_template_function ())
     {
       expr = build_nop (ptr_target_type, expr);
-      if (!want_pointer)
-	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
-      return expr;
+      goto indout;
     }
 
   /* If we're in an NSDMI, we don't have the full constructor context yet
@@ -364,9 +366,7 @@ build_base_path (enum tree_code code,
     {
       expr = build1 (CONVERT_EXPR, ptr_target_type, expr);
       CONVERT_EXPR_VBASE_PATH (expr) = true;
-      if (!want_pointer)
-	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
-      return expr;
+      goto indout;
     }
 
   /* Do we need to check for a null pointer?  */
@@ -402,6 +402,8 @@ build_base_path (enum tree_code code,
     {
       expr = cp_build_indirect_ref (expr, RO_NULL, complain);
       expr = build_simple_base_path (expr, binfo);
+      if (rvalue)
+	expr = move (expr);
       if (want_pointer)
 	expr = build_address (expr);
       target_type = TREE_TYPE (expr);
@@ -478,8 +480,13 @@ build_base_path (enum tree_code code,
   else
     null_test = NULL;
 
+ indout:
   if (!want_pointer)
-    expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+    {
+      expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+      if (rvalue)
+	expr = move (expr);
+    }
 
  out:
   if (null_test)
