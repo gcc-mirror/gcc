@@ -1,6 +1,16 @@
+2014-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/59401
+	* config/sh/sh-protos (sh_find_equiv_gbr_addr): Use rtx_insn* instead
+	of rtx.
+	* config/sh/sh.c (sh_find_equiv_gbr_addr): Use def chains instead of
+	insn walking.
+	(sh_find_equiv_gbr_addr): Do nothing if input mem is already a GBR
+	address.  Use def chains to handle GBR clobbering call insns.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
-* asan.c, cfgloop.c, cfgloop.h, cgraph.c, cgraph.h,
+	* asan.c, cfgloop.c, cfgloop.h, cgraph.c, cgraph.h,
 	config/darwin.c, config/m32c/m32c.c, config/mep/mep.c,
 	config/mips/mips.c, config/rs6000/rs6000.c, dwarf2out.c,
 	function.c, function.h, gimple-ssa.h, libfuncs.h, optabs.c,
@@ -32,7 +42,7 @@
 
 2014-10-11  Martin Liska  <mliska@suse.cz>
 
-	PR/63376
+	PR middle-end/63376
 	* cgraphunit.c (symbol_table::process_new_functions): Missing call
 	for call_cgraph_insertion_hooks added.
 
