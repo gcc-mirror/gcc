@@ -358,4 +358,9 @@ gt_pch_nx (int)
 {
 }
 
+static inline void
+gt_pch_nx (unsigned int)
+{
+}
+
 #endif

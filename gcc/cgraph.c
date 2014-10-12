@@ -103,30 +103,34 @@ struct cgraph_2node_hook_list {
   struct cgraph_2node_hook_list *next;
 };
 
+/* Hash descriptor for cgraph_function_version_info.  */
+
+struct function_version_hasher : ggc_hasher<cgraph_function_version_info *>
+{
+  static hashval_t hash (cgraph_function_version_info *);
+  static bool equal (cgraph_function_version_info *,
+		     cgraph_function_version_info *);
+};
+
 /* Map a cgraph_node to cgraph_function_version_info using this htab.
    The cgraph_function_version_info has a THIS_NODE field that is the
    corresponding cgraph_node..  */
 
-static GTY((param_is (cgraph_function_version_info))) htab_t
-  cgraph_fnver_htab = NULL;
+static GTY(()) hash_table<function_version_hasher> *cgraph_fnver_htab = NULL;
 
 /* Hash function for cgraph_fnver_htab.  */
-static hashval_t
-cgraph_fnver_htab_hash (const void *ptr)
+hashval_t
+function_version_hasher::hash (cgraph_function_version_info *ptr)
 {
-  int uid = ((const cgraph_function_version_info *)ptr)->this_node->uid;
+  int uid = ptr->this_node->uid;
   return (hashval_t)(uid);
 }
 
 /* eq function for cgraph_fnver_htab.  */
-static int
-cgraph_fnver_htab_eq (const void *p1, const void *p2)
+bool
+function_version_hasher::equal (cgraph_function_version_info *n1,
+			       	cgraph_function_version_info *n2)
 {
-  const cgraph_function_version_info *n1
-    = (const cgraph_function_version_info *)p1;
-  const cgraph_function_version_info *n2
-    = (const cgraph_function_version_info *)p2;
-
   return n1->this_node->uid == n2->this_node->uid;
 }
 
@@ -138,17 +142,13 @@ static GTY(()) struct cgraph_function_version_info *
 cgraph_function_version_info *
 cgraph_node::function_version (void)
 {
-  cgraph_function_version_info *ret;
   cgraph_function_version_info key;
   key.this_node = this;
 
   if (cgraph_fnver_htab == NULL)
     return NULL;
 
-  ret = (cgraph_function_version_info *)
-    htab_find (cgraph_fnver_htab, &key);
-
-  return ret;
+  return cgraph_fnver_htab->find (&key);
 }
 
 /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
@@ -156,19 +156,15 @@ cgraph_node::function_version (void)
 cgraph_function_version_info *
 cgraph_node::insert_new_function_version (void)
 {
-  void **slot;
-  
   version_info_node = NULL;
   version_info_node = ggc_cleared_alloc<cgraph_function_version_info> ();
   version_info_node->this_node = this;
 
   if (cgraph_fnver_htab == NULL)
-    cgraph_fnver_htab = htab_create_ggc (2, cgraph_fnver_htab_hash,
-				         cgraph_fnver_htab_eq, NULL);
+    cgraph_fnver_htab = hash_table<function_version_hasher>::create_ggc (2);
 
-  slot = htab_find_slot (cgraph_fnver_htab, version_info_node, INSERT);
-  gcc_assert (slot != NULL);
-  *slot = version_info_node;
+  *cgraph_fnver_htab->find_slot (version_info_node, INSERT)
+    = version_info_node;
   return version_info_node;
 }
 
@@ -195,7 +191,7 @@ cgraph_node::delete_function_version (tree decl)
     decl_v->next->prev = decl_v->prev;
 
   if (cgraph_fnver_htab != NULL)
-    htab_remove_elt (cgraph_fnver_htab, decl_v);
+    cgraph_fnver_htab->remove_elt (decl_v);
 
   decl_node->remove ();
 }
@@ -596,18 +592,18 @@ cgraph_node::get_for_asmname (tree asmname)
 
 /* Returns a hash value for X (which really is a cgraph_edge).  */
 
-static hashval_t
-edge_hash (const void *x)
+hashval_t
+cgraph_edge_hasher::hash (cgraph_edge *e)
 {
-  return htab_hash_pointer (((const cgraph_edge *) x)->call_stmt);
+  return htab_hash_pointer (e->call_stmt);
 }
 
 /* Return nonzero if the call_stmt of of cgraph_edge X is stmt *Y.  */
 
-static int
-edge_eq (const void *x, const void *y)
+inline bool
+cgraph_edge_hasher::equal (cgraph_edge *x, gimple y)
 {
-  return ((const cgraph_edge *) x)->call_stmt == y;
+  return x->call_stmt == y;
 }
 
 /* Add call graph edge E to call site hash of its caller.  */
@@ -615,12 +611,10 @@ edge_eq (const void *x, const void *y)
 static inline void
 cgraph_update_edge_in_call_site_hash (cgraph_edge *e)
 {
-  void **slot;
-  slot = htab_find_slot_with_hash (e->caller->call_site_hash,
-				   e->call_stmt,
-				   htab_hash_pointer (e->call_stmt),
-				   INSERT);
-  *slot = e;
+  gimple call = e->call_stmt;
+  *e->caller->call_site_hash->find_slot_with_hash (call,
+						   htab_hash_pointer (call),
+						   INSERT) = e;
 }
 
 /* Add call graph edge E to call site hash of its caller.  */
@@ -628,15 +622,13 @@ cgraph_update_edge_in_call_site_hash (cgraph_edge *e)
 static inline void
 cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
 {
-  void **slot;
   /* There are two speculative edges for every statement (one direct,
      one indirect); always hash the direct one.  */
   if (e->speculative && e->indirect_unknown_callee)
     return;
-  slot = htab_find_slot_with_hash (e->caller->call_site_hash,
-				   e->call_stmt,
-				   htab_hash_pointer (e->call_stmt),
-				   INSERT);
+  cgraph_edge **slot = e->caller->call_site_hash->find_slot_with_hash
+				   (e->call_stmt,
+				    htab_hash_pointer (e->call_stmt), INSERT);
   if (*slot)
     {
       gcc_assert (((cgraph_edge *)*slot)->speculative);
@@ -658,9 +650,8 @@ cgraph_node::get_edge (gimple call_stmt)
   int n = 0;
 
   if (call_site_hash)
-    return (cgraph_edge *)
-      htab_find_with_hash (call_site_hash, call_stmt,
-      	                   htab_hash_pointer (call_stmt));
+    return call_site_hash->find_with_hash (call_stmt,
+					   htab_hash_pointer (call_stmt));
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best
@@ -684,7 +675,7 @@ cgraph_node::get_edge (gimple call_stmt)
 
   if (n > 100)
     {
-      call_site_hash = htab_create_ggc (120, edge_hash, edge_eq, NULL);
+      call_site_hash = hash_table<cgraph_edge_hasher>::create_ggc (120);
       for (e2 = callees; e2; e2 = e2->next_callee)
 	cgraph_add_edge_to_call_site_hash (e2);
       for (e2 = indirect_calls; e2; e2 = e2->next_callee)
@@ -722,9 +713,8 @@ cgraph_edge::set_call_stmt (gimple new_stmt, bool update_speculative)
   if (caller->call_site_hash
       && (!speculative || !indirect_unknown_callee))
     {
-      htab_remove_elt_with_hash (caller->call_site_hash,
-				 call_stmt,
-				 htab_hash_pointer (call_stmt));
+      caller->call_site_hash->remove_elt_with_hash
+	(call_stmt, htab_hash_pointer (call_stmt));
     }
 
   cgraph_edge *e = this;
@@ -942,9 +932,8 @@ cgraph_edge::remove_caller (void)
 	caller->callees = next_callee;
     }
   if (caller->call_site_hash)
-    htab_remove_elt_with_hash (caller->call_site_hash,
-			       call_stmt,
-			       htab_hash_pointer (call_stmt));
+    caller->call_site_hash->remove_elt_with_hash (call_stmt,
+						  htab_hash_pointer (call_stmt));
 }
 
 /* Put the edge onto the free list.  */
@@ -1564,7 +1553,7 @@ cgraph_node::remove_callees (void)
   callees = NULL;
   if (call_site_hash)
     {
-      htab_delete (call_site_hash);
+      call_site_hash->empty ();
       call_site_hash = NULL;
     }
 }
@@ -1743,7 +1732,7 @@ cgraph_node::remove (void)
   decl = NULL;
   if (call_site_hash)
     {
-      htab_delete (call_site_hash);
+      call_site_hash->empty ();
       call_site_hash = NULL;
     }
 

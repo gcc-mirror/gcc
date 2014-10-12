@@ -703,9 +703,15 @@ extern int virtuals_instantiated;
 /* Nonzero if at least one trampoline has been created.  */
 extern int trampolines_created;
 
-struct GTY(()) types_used_by_vars_entry {
+struct GTY((for_user)) types_used_by_vars_entry {
   tree type;
   tree var_decl;
+};
+
+struct used_type_hasher : ggc_hasher<types_used_by_vars_entry *>
+{
+  static hashval_t hash (types_used_by_vars_entry *);
+  static bool equal (types_used_by_vars_entry *, types_used_by_vars_entry *);
 };
 
 /* Hash table making the relationship between a global variable
@@ -713,11 +719,8 @@ struct GTY(()) types_used_by_vars_entry {
    entry is a referenced type, and the value is the DECL of the global
    variable. types_use_by_vars_do_hash and types_used_by_vars_eq below are
    the hash and equality functions to use for this hash table.  */
-extern GTY((param_is (struct types_used_by_vars_entry))) htab_t
-  types_used_by_vars_hash;
+extern GTY(()) hash_table<used_type_hasher> *types_used_by_vars_hash;
 
-hashval_t types_used_by_vars_do_hash (const void*);
-int types_used_by_vars_eq (const void *, const void *);
 void types_used_by_var_decl_insert (tree type, tree var_decl);
 
 /* During parsing of a global variable, this vector contains the types

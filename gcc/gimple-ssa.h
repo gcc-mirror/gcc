@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GIMPLE_SSA_H
 
 #include "hash-map.h"
+#include "tree-hasher.h"
 #include "tree-ssa-operands.h"
 
 /* This structure is used to map a gimple statement to a label,
@@ -30,6 +31,25 @@ along with GCC; see the file COPYING3.  If not see
 struct GTY(()) tm_restart_node {
   gimple stmt;
   tree label_or_list;
+};
+
+struct ssa_name_hasher : ggc_hasher<tree>
+{
+  /* Hash a tree in a uid_decl_map.  */
+
+  static hashval_t
+  hash (tree item)
+  {
+    return item->ssa_name.var->decl_minimal.uid;
+  }
+
+  /* Return true if the DECL_UID in both trees are equal.  */
+
+  static bool
+  equal (tree a, tree b)
+{
+  return (a->ssa_name.var->decl_minimal.uid == b->ssa_name.var->decl_minimal.uid);
+}
 };
 
 /* Gimple dataflow datastructure. All publicly available fields shall have
@@ -63,7 +83,7 @@ struct GTY(()) gimple_df {
      means that the first reference to this variable in the function is a
      USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
      for this variable with an empty defining statement.  */
-  htab_t GTY((param_is (union tree_node))) default_defs;
+  hash_table<ssa_name_hasher> *default_defs;
 
   /* True if there are any symbols that need to be renamed.  */
   unsigned int ssa_renaming_needed : 1;

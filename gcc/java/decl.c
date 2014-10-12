@@ -1846,8 +1846,8 @@ end_java_method (void)
 	 variable to the block_body */
       fbody = DECL_SAVED_TREE (fndecl);
       block_body = BIND_EXPR_BODY (fbody);
-      htab_traverse (DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
-		     attach_init_test_initialization_flags, block_body);
+      hash_table<treetreehasher> *ht = DECL_FUNCTION_INIT_TEST_TABLE (fndecl);
+      ht->traverse<tree, attach_init_test_initialization_flags> (block_body);
     }
 
   finish_method (fndecl);

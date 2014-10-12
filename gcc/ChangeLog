@@ -1,3 +1,25 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+* asan.c, cfgloop.c, cfgloop.h, cgraph.c, cgraph.h,
+	config/darwin.c, config/m32c/m32c.c, config/mep/mep.c,
+	config/mips/mips.c, config/rs6000/rs6000.c, dwarf2out.c,
+	function.c, function.h, gimple-ssa.h, libfuncs.h, optabs.c,
+	output.h, rtl.h, sese.c, symtab.c, tree-cfg.c, tree-dfa.c,
+	tree-ssa.c, varasm.c: Use hash-table instead of hashtab.
+	* doc/gty.texi (for_user): Document new option.
+	* gengtype.c (create_user_defined_type): Don't try to get a struct for
+	char.
+	(walk_type): Don't error out on for_user option.
+	(write_func_for_structure): Emit user marking routines if requested by
+	for_user option.
+	(write_local_func_for_structure): Likewise.
+	(main): Mark types with for_user option as used.
+	* ggc.h (gt_pch_nx): Add overload for unsigned int.
+	* hash-map.h (hash_map::hash_entry::pch_nx_helper): AddOverloads.
+	* hash-table.h (ggc_hasher): New struct.
+	(hash_table::create_ggc): New function.
+	(gt_pch_nx): New overload for hash_table.
+
 2014-10-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_SH4A_ARCH): Remove macro.

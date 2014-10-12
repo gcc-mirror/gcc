@@ -83,15 +83,6 @@ symbol_table::decl_assembler_name_hash (const_tree asmname)
 }
 
 
-/* Returns a hash code for P.  */
-
-hashval_t
-symbol_table::hash_node_by_assembler_name (const void *p)
-{
-  const symtab_node *n = (const symtab_node *) p;
-  return (hashval_t) decl_assembler_name_hash (DECL_ASSEMBLER_NAME (n->decl));
-}
-
 /* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
 
 bool
@@ -150,14 +141,6 @@ symbol_table::decl_assembler_name_equal (tree decl, const_tree asmname)
 
 /* Returns nonzero if P1 and P2 are equal.  */
 
-int
-symbol_table::eq_assembler_name (const void *p1, const void *p2)
-{
-  const symtab_node *n1 = (const symtab_node *) p1;
-  const_tree name = (const_tree)p2;
-  return (decl_assembler_name_equal (n1->decl, name));
-}
-
 /* Insert NODE to assembler name hash.  */
 
 void
@@ -170,19 +153,18 @@ symbol_table::insert_to_assembler_name_hash (symtab_node *node,
 		       && !node->next_sharing_asm_name);
   if (assembler_name_hash)
     {
-      void **aslot;
+      symtab_node **aslot;
       cgraph_node *cnode;
       tree decl = node->decl;
 
       tree name = DECL_ASSEMBLER_NAME (node->decl);
 
-      aslot = htab_find_slot_with_hash (assembler_name_hash, name,
-					decl_assembler_name_hash (name),
-					INSERT);
+      hashval_t hash = decl_assembler_name_hash (name);
+      aslot = assembler_name_hash->find_slot_with_hash (name, hash, INSERT);
       gcc_assert (*aslot != node);
       node->next_sharing_asm_name = (symtab_node *)*aslot;
       if (*aslot != NULL)
-	((symtab_node *)*aslot)->previous_sharing_asm_name = node;
+	(*aslot)->previous_sharing_asm_name = node;
       *aslot = node;
 
       /* Update also possible inline clones sharing a decl.  */
@@ -217,13 +199,13 @@ symbol_table::unlink_from_assembler_name_hash (symtab_node *node,
       else
 	{
 	  tree name = DECL_ASSEMBLER_NAME (node->decl);
-          void **slot;
-	  slot = htab_find_slot_with_hash (assembler_name_hash, name,
-					   decl_assembler_name_hash (name),
-					   NO_INSERT);
+          symtab_node **slot;
+	  hashval_t hash = decl_assembler_name_hash (name);
+	  slot = assembler_name_hash->find_slot_with_hash (name, hash,
+							   NO_INSERT);
 	  gcc_assert (*slot == node);
 	  if (!node->next_sharing_asm_name)
-	    htab_clear_slot (assembler_name_hash, slot);
+	    assembler_name_hash->clear_slot (slot);
 	  else
 	    *slot = node->next_sharing_asm_name;
 	}
@@ -256,9 +238,7 @@ symbol_table::symtab_initialize_asm_name_hash (void)
   symtab_node *node;
   if (!assembler_name_hash)
     {
-      assembler_name_hash =
-	htab_create_ggc (10, hash_node_by_assembler_name, eq_assembler_name,
-			 NULL);
+      assembler_name_hash = hash_table<asmname_hasher>::create_ggc (10);
       FOR_EACH_SYMBOL (node)
 	insert_to_assembler_name_hash (node, false);
     }
@@ -322,20 +302,17 @@ resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
 
 /* Hash sections by their names.  */
 
-static hashval_t
-hash_section_hash_entry (const void *p)
+hashval_t
+section_name_hasher::hash (section_hash_entry *n)
 {
-  const section_hash_entry *n = (const section_hash_entry *) p;
   return htab_hash_string (n->name);
 }
 
 /* Return true if section P1 name equals to P2.  */
 
-static int
-eq_sections (const void *p1, const void *p2)
+bool
+section_name_hasher::equal (section_hash_entry *n1, const char *name)
 {
-  const section_hash_entry *n1 = (const section_hash_entry *) p1;
-  const char *name = (const char *)p2;
   return n1->name == name || !strcmp (n1->name, name);
 }
 
@@ -936,16 +913,16 @@ symtab_node *
 symtab_node::get_for_asmname (const_tree asmname)
 {
   symtab_node *node;
-  void **slot;
 
   symtab->symtab_initialize_asm_name_hash ();
-  slot = htab_find_slot_with_hash (symtab->assembler_name_hash, asmname,
-				   symtab->decl_assembler_name_hash (asmname),
-				   NO_INSERT);
+  hashval_t hash = symtab->decl_assembler_name_hash (asmname);
+  symtab_node **slot
+    = symtab->assembler_name_hash->find_slot_with_hash (asmname, hash,
+							NO_INSERT);
 
   if (slot)
     {
-      node = (symtab_node *) *slot;
+      node = *slot;
       return node;
     }
   return NULL;
@@ -1382,7 +1359,7 @@ void
 symtab_node::set_section_for_node (const char *section)
 {
   const char *current = get_section ();
-  void **slot;
+  section_hash_entry **slot;
 
   if (current == section
       || (current && section
@@ -1394,11 +1371,11 @@ symtab_node::set_section_for_node (const char *section)
       x_section->ref_count--;
       if (!x_section->ref_count)
 	{
-	  slot = htab_find_slot_with_hash (symtab->section_hash, x_section->name,
-					   htab_hash_string (x_section->name),
-					   INSERT);
+	  hashval_t hash = htab_hash_string (x_section->name);
+	  slot = symtab->section_hash->find_slot_with_hash (x_section->name,
+							    hash, INSERT);
 	  ggc_free (x_section);
-	  htab_clear_slot (symtab->section_hash, slot);
+	  symtab->section_hash->clear_slot (slot);
 	}
       x_section = NULL;
     }
@@ -1408,11 +1385,10 @@ symtab_node::set_section_for_node (const char *section)
       return;
     }
   if (!symtab->section_hash)
-    symtab->section_hash = htab_create_ggc (10, hash_section_hash_entry,
-				    eq_sections, NULL);
-  slot = htab_find_slot_with_hash (symtab->section_hash, section,
-				   htab_hash_string (section),
-				   INSERT);
+    symtab->section_hash = hash_table<section_name_hasher>::create_ggc (10);
+  slot = symtab->section_hash->find_slot_with_hash (section,
+						    htab_hash_string (section),
+						    INSERT);
   if (*slot)
     x_section = (section_hash_entry *)*slot;
   else

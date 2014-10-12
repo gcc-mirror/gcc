@@ -766,22 +766,19 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		   middle end.  */
 		{
 		  struct cxx_int_tree_map *h;
-		  void **loc;
 
 		  TREE_PUBLIC (x) = TREE_PUBLIC (t);
 
 		  if (cp_function_chain->extern_decl_map == NULL)
 		    cp_function_chain->extern_decl_map
-		      = htab_create_ggc (20, cxx_int_tree_map_hash,
-					 cxx_int_tree_map_eq, NULL);
+		      = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
 
 		  h = ggc_alloc<cxx_int_tree_map> ();
 		  h->uid = DECL_UID (x);
 		  h->to = t;
-		  loc = htab_find_slot_with_hash
-			  (cp_function_chain->extern_decl_map, h,
-			   h->uid, INSERT);
-		  *(struct cxx_int_tree_map **) loc = h;
+		  cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+		    ->find_slot (h, INSERT);
+		  *loc = h;
 		}
 	    }
 	  else if (TREE_CODE (t) == PARM_DECL)

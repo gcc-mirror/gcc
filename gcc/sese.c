@@ -618,9 +618,9 @@ if_region_set_false_region (ifsese if_region, sese region)
   edge exit_region = SESE_EXIT (region);
   basic_block before_region = entry_region->src;
   basic_block last_in_region = exit_region->src;
-  void **slot = htab_find_slot_with_hash (current_loops->exits, exit_region,
-					  htab_hash_pointer (exit_region),
-					  NO_INSERT);
+  hashval_t hash = htab_hash_pointer (exit_region);
+  loop_exit **slot
+    = current_loops->exits->find_slot_with_hash (exit_region, hash, NO_INSERT);
 
   entry_region->flags = false_edge->flags;
   false_edge->flags = exit_region->flags;
@@ -644,11 +644,11 @@ if_region_set_false_region (ifsese if_region, sese region)
       struct loop_exit *loop_exit = ggc_cleared_alloc<struct loop_exit> ();
 
       memcpy (loop_exit, *((struct loop_exit **) slot), sizeof (struct loop_exit));
-      htab_clear_slot (current_loops->exits, slot);
+      current_loops->exits->clear_slot (slot);
 
-      slot = htab_find_slot_with_hash (current_loops->exits, false_edge,
-				       htab_hash_pointer (false_edge),
-				       INSERT);
+							hashval_t hash = htab_hash_pointer (false_edge);
+      slot = current_loops->exits->find_slot_with_hash (false_edge, hash,
+							INSERT);
       loop_exit->e = false_edge;
       *slot = loop_exit;
       false_edge->src->loop_father->exits->next = loop_exit;

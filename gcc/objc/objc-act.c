@@ -253,7 +253,7 @@ vec<tree, va_gc> *local_variables_to_volatilize = NULL;
 /* Store all constructed constant strings in a hash table so that
    they get uniqued properly.  */
 
-struct GTY(()) string_descriptor {
+struct GTY((for_user)) string_descriptor {
   /* The literal argument .  */
   tree literal;
 
@@ -261,7 +261,13 @@ struct GTY(()) string_descriptor {
   tree constructor;
 };
 
-static GTY((param_is (struct string_descriptor))) htab_t string_htab;
+struct objc_string_hasher : ggc_hasher<string_descriptor *>
+{
+  static hashval_t hash (string_descriptor *);
+  static bool equal (string_descriptor *, string_descriptor *);
+};
+
+static GTY(()) hash_table<objc_string_hasher> *string_htab;
 
 FILE *gen_declaration_file;
 
@@ -3107,10 +3113,10 @@ my_build_string_pointer (int len, const char *str)
   return build1 (ADDR_EXPR, ptrtype, string);
 }
 
-static hashval_t
-string_hash (const void *ptr)
+hashval_t
+objc_string_hasher::hash (string_descriptor *ptr)
 {
-  const_tree const str = ((const struct string_descriptor *)ptr)->literal;
+  const_tree const str = ptr->literal;
   const unsigned char *p = (const unsigned char *) TREE_STRING_POINTER (str);
   int i, len = TREE_STRING_LENGTH (str);
   hashval_t h = len;
@@ -3121,11 +3127,11 @@ string_hash (const void *ptr)
   return h;
 }
 
-static int
-string_eq (const void *ptr1, const void *ptr2)
+bool
+objc_string_hasher::equal (string_descriptor *ptr1, string_descriptor *ptr2)
 {
-  const_tree const str1 = ((const struct string_descriptor *)ptr1)->literal;
-  const_tree const str2 = ((const struct string_descriptor *)ptr2)->literal;
+  const_tree const str1 = ptr1->literal;
+  const_tree const str2 = ptr2->literal;
   int len1 = TREE_STRING_LENGTH (str1);
 
   return (len1 == TREE_STRING_LENGTH (str2)
@@ -3147,7 +3153,6 @@ objc_build_string_object (tree string)
   int length;
   tree addr;
   struct string_descriptor *desc, key;
-  void **loc;
 
   /* We should be passed a STRING_CST.  */
   gcc_checking_assert (TREE_CODE (string) == STRING_CST);
@@ -3198,8 +3203,8 @@ objc_build_string_object (tree string)
 
   /* Perhaps we already constructed a constant string just like this one? */
   key.literal = string;
-  loc = htab_find_slot (string_htab, &key, INSERT);
-  desc = (struct string_descriptor *) *loc;
+  string_descriptor **loc = string_htab->find_slot (&key, INSERT);
+  desc = *loc;
 
   if (!desc)
     {
@@ -5776,8 +5781,7 @@ hash_init (void)
   alias_name_map = objc_map_alloc_ggc (200);
 
   /* Initialize the hash table used to hold the constant string objects.  */
-  string_htab = htab_create_ggc (31, string_hash,
-				   string_eq, NULL);
+  string_htab = hash_table<objc_string_hasher>::create_ggc (31);
 }
 
 /* Use the following to add a method to class_method_map or
