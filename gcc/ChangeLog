@@ -1,3 +1,9 @@
+2014-10-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libfortran/63471
+        * config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define _REENTRANT
+        when _HPUX_SOURCE is defined.
+
 2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62127
