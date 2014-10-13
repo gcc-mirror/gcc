@@ -1235,7 +1235,7 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 	  if (dump_file)
 	    fprintf (dump_file, "    wrong offset %i!=%i or size %i\n",
 		     (int)offset, (int)tci->offset, (int)size);
-	  return offset + GET_MODE_BITSIZE (Pmode) <= offset
+	  return offset + GET_MODE_BITSIZE (Pmode) <= tci->offset
 	         || (max_size != -1
 		     && tci->offset + GET_MODE_BITSIZE (Pmode) > offset + max_size)
 		 ? error_mark_node : NULL;
