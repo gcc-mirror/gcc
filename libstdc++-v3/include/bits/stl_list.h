@@ -332,7 +332,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       struct _List_impl
       : public _Node_alloc_type
       {
+#if _GLIBCXX_USE_CXX11_ABI
+	_List_node<size_t> _M_node;
+#else
 	__detail::_List_node_base _M_node;
+#endif
 
 	_List_impl()
 	: _Node_alloc_type(), _M_node()
@@ -352,15 +356,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _List_impl _M_impl;
 
 #if _GLIBCXX_USE_CXX11_ABI
-      size_t	 _M_size;
+      size_t _M_get_size() const { return _M_impl._M_node._M_data; }
 
-      size_t _M_get_size() const { return _M_size; }
+      void _M_set_size(size_t __n) { _M_impl._M_node._M_data = __n; }
 
-      void _M_set_size(size_t __n) { _M_size = __n; }
+      void _M_inc_size(size_t __n) { _M_impl._M_node._M_data += __n; }
 
-      void _M_inc_size(size_t __n) { _M_size += __n; }
-
-      void _M_dec_size(size_t __n) { _M_size -= __n; }
+      void _M_dec_size(size_t __n) { _M_impl._M_node._M_data -= __n; }
 
       size_t
       _M_distance(const __detail::_List_node_base* __first,
@@ -368,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _S_distance(__first, __last); }
 
       // return the stored size
-      size_t _M_node_count() const { return _M_size; }
+      size_t _M_node_count() const { return _M_impl._M_node._M_data; }
 #else
       // dummy implementations used when the size is not stored
       size_t _M_get_size() const { return 0; }
