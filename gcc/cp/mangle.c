@@ -3744,7 +3744,8 @@ mangle_conv_op_name_for_type (const tree type)
       char buffer[64];
 
        /* Create a unique name corresponding to TYPE.  */
-      sprintf (buffer, "operator %lu", conv_type_names->elements ());
+      sprintf (buffer, "operator %lu",
+	       (unsigned long) conv_type_names->elements ());
       identifier = get_identifier (buffer);
       *slot = identifier;
 

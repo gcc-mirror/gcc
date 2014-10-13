@@ -22324,12 +22324,12 @@ void
 print_template_statistics (void)
 {
   fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", decl_specializations->size (),
-	   decl_specializations->elements (),
+	   "%f collisions\n", (long) decl_specializations->size (),
+	   (long) decl_specializations->elements (),
 	   decl_specializations->collisions ());
   fprintf (stderr, "type_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", type_specializations->size (),
-	   type_specializations->elements (),
+	   "%f collisions\n", (long) type_specializations->size (),
+	   (long) type_specializations->elements (),
 	   type_specializations->collisions ());
 }
 
