@@ -1,3 +1,27 @@
+2014-10-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.h (DBX_REGISTER_NUMBER): Pass format argument
+	to rs6000_dbx_register_number.
+	(DWARF_FRAME_REGNUM): Redefine as identity map.
+	(DWARF2_FRAME_REG_OUT): Call rs6000_dbx_register_number.
+	* config/rs6000/rs6000-protos.h (rs6000_dbx_register_number): Update.
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Add format
+	argument to handle .debug_frame and .eh_frame directly.  Always
+	translate SPE high register numbers.  Add special treatment for CR,
+	but only in .debug_frame.  Respect RS6000_USE_DWARF_NUMBERING.
+
+	* config/rs6000/sysv.h (DBX_REGISTER_NUMBER): Do not undefine.
+	* config/rs6000/freebsd.h (DBX_REGISTER_NUMBER): Remove.
+	(RS6000_USE_DWARF_NUMBERING): Define.
+	* config/rs6000/freebsd64.h (DBX_REGISTER_NUMBER): Remove.
+	(RS6000_USE_DWARF_NUMBERING): Define.
+	* config/rs6000/netbsd.h (DBX_REGISTER_NUMBER): Remove.
+	(RS6000_USE_DWARF_NUMBERING): Define.
+	* config/rs6000/lynx.h (DBX_REGISTER_NUMBER): Remove.
+	(RS6000_USE_DWARF_NUMBERING): Define.
+	* config/rs6000/aix.h (RS6000_USE_DWARF_NUMBERING): Define.
+	* config/rs6000/darwin.h (RS6000_USE_DWARF_NUMBERING): Define.
+
 2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/i386.c (ix86_address_cost): Lower cost for

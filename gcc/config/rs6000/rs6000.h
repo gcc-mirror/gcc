@@ -947,23 +947,16 @@ enum data_align { align_abi, align_opt, align_both };
   ((r) >= 1200 ? ((r) - 1200 + (DWARF_FRAME_REGISTERS - 32)) : (r))
 
 /* Use standard DWARF numbering for DWARF debugging information.  */
-#define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
+#define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number ((REGNO), 0)
 
 /* Use gcc hard register numbering for eh_frame.  */
-#define DWARF_FRAME_REGNUM(REGNO) \
-  (SPE_HIGH_REGNO_P (REGNO) ? ((REGNO) - FIRST_SPE_HIGH_REGNO + 1200) : (REGNO))
+#define DWARF_FRAME_REGNUM(REGNO) (REGNO)
 
 /* Map register numbers held in the call frame info that gcc has
    collected using DWARF_FRAME_REGNUM to those that should be output in
-   .debug_frame and .eh_frame.  We continue to use gcc hard reg numbers
-   for .eh_frame, but use the numbers mandated by the various ABIs for
-   .debug_frame.  rs6000_emit_prologue has translated any combination of
-   CR2, CR3, CR4 saves to a save of CR2.  The actual code emitted saves
-   the whole of CR, so we map CR2_REGNO to the DWARF reg for CR.  */
-#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH)	\
-  ((FOR_EH) ? (REGNO)				\
-   : (REGNO) == CR2_REGNO ? 64			\
-   : DBX_REGISTER_NUMBER (REGNO))
+   .debug_frame and .eh_frame.  */
+#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) \
+  rs6000_dbx_register_number ((REGNO), (FOR_EH)? 2 : 1)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
