@@ -99,7 +99,8 @@
 #undef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 
-#define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
+/* Use standard DWARF numbering for DWARF debugging information.  */
+#define RS6000_USE_DWARF_NUMBERING
 
 #ifdef CRT_BEGIN
 /* This function is part of crtbegin*.o which is at the beginning of
