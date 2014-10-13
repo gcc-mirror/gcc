@@ -1,3 +1,8 @@
+2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/63496
+	* ipa-polymorphic-call.c (extr_type_from_vtbl_ptr_store): Fix pasto.
+
 2014-10-13  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* asan.c (instrument_derefs): BIT_FIELD_REF added.
