@@ -87,4 +87,46 @@
 #  include <backward/auto_ptr.h>
 #endif
 
+#if __cplusplus >= 201103L
+#  include <cstdint>
+#  ifdef _GLIBCXX_USE_C99_STDINT_TR1
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+/**
+ *  @brief Fit aligned storage in buffer.
+ *
+ *  [ptr.align]
+ *
+ *  This function tries to fit @a __size bytes of storage with alignment
+ *  @a __align into the buffer @a __ptr of size @a __space bytes.  If such
+ *  a buffer fits then @a __ptr is changed to point to the first byte of the
+ *  aligned storage and @a __space is reduced by the bytes used for alignment.
+ *
+ *  @param __align   A fundamental or extended alignment value.
+ *  @param __size    Size of the aligned storage required.
+ *  @param __ptr     Pointer to a buffer of @a __space bytes.
+ *  @param __space   Size of the buffer pointed to by @a __ptr.
+ *  @return the updated pointer if the aligned storage fits, otherwise nullptr.
+ */
+inline void*
+align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
+{
+  const size_t __diff = __align - reinterpret_cast<uintptr_t>(__ptr) % __align;
+  if (__diff + __size >= __space)
+    return nullptr;
+  else
+    {
+      __space -= __diff;
+      __ptr = static_cast<char*>(__ptr) + __diff;
+      return __ptr;
+    }
+}
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // C++11
+
 #endif /* _GLIBCXX_MEMORY */
