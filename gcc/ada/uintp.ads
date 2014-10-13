@@ -90,6 +90,18 @@ package Uintp is
    Uint_Minus_80  : constant Uint;
    Uint_Minus_128 : constant Uint;
 
+   type UI_Vector is array (Pos range <>) of Int;
+   --  Vector containing the integer values of a Uint value
+
+   --  Note: An earlier version of this package used pointers of arrays of Ints
+   --  (dynamically allocated) for the Uint type. The change leads to a few
+   --  less natural idioms used throughout this code, but eliminates all uses
+   --  of the heap except for the table package itself. For example, Uint
+   --  parameters are often converted to UI_Vectors for internal manipulation.
+   --  This is done by creating the local UI_Vector using the function N_Digits
+   --  on the Uint to find the size needed for the vector, and then calling
+   --  Init_Operand to copy the values out of the table into the vector.
+
    -----------------
    -- Subprograms --
    -----------------
@@ -251,6 +263,22 @@ package Uintp is
    --  Approximate number of binary bits in given universal integer. This
    --  function is used for capacity checks, and it can be one bit off
    --  without affecting its usage.
+
+   function Vector_To_Uint
+     (In_Vec   : UI_Vector;
+      Negative : Boolean) return Uint;
+   --  Functions that calculate values in UI_Vectors, call this function to
+   --  create and return the Uint value. In_Vec contains the multiple precision
+   --  (Base) representation of a non-negative value. Leading zeroes are
+   --  permitted. Negative is set if the desired result is the negative of the
+   --  given value. The result will be either the appropriate directly
+   --  represented value, or a table entry in the proper canonical format is
+   --  created and returned.
+   --
+   --  Note that Init_Operand puts a signed value in the result vector, but
+   --  Vector_To_Uint is always presented with a non-negative value. The
+   --  processing of signs is something that is done by the caller before
+   --  calling Vector_To_Uint.
 
    ---------------------
    -- Output Routines --
@@ -493,18 +521,6 @@ private
    --  defined arrays of the digits of the Universal Integers. The type
    --  UI_Vector is defined for this purpose and some internal subprograms
    --  used for converting from one to the other are defined.
-
-   type UI_Vector is array (Pos range <>) of Int;
-   --  Vector containing the integer values of a Uint value
-
-   --  Note: An earlier version of this package used pointers of arrays of Ints
-   --  (dynamically allocated) for the Uint type. The change leads to a few
-   --  less natural idioms used throughout this code, but eliminates all uses
-   --  of the heap except for the table package itself. For example, Uint
-   --  parameters are often converted to UI_Vectors for internal manipulation.
-   --  This is done by creating the local UI_Vector using the function N_Digits
-   --  on the Uint to find the size needed for the vector, and then calling
-   --  Init_Operand to copy the values out of the table into the vector.
 
    type Uint_Entry is record
       Length : Pos;
