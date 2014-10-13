@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-maltivec -mabi=altivec -std=gnu99 -mno-vsx -Wno-deprecated" } */
 #include <altivec.h>
 #include <stdlib.h>
 extern char * *var_char_ptr;

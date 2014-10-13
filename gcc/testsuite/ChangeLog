@@ -1,3 +1,31 @@
+2014-10-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r215880
+	2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* g++.dg/ext/altivec-2.C: Compile with -Wno-deprecated to avoid
+	failing with the new warning message.
+	* gcc.dg/vmx/3c-01a.c: Likewise.
+	* gcc.dg/vmx/ops-long-1.c: Likewise.
+	* gcc.dg/vmx/ops.c: Likewise.
+	* gcc.target/powerpc/altivec-20.c: Likewise.
+	* gcc.target/powerpc/altivec-6.c: Likewise.
+	* gcc.target/powerpc/altivec-vec-merge.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-8.c: Likewise.
+	* gcc.target/powerpc/warn-lvsl-lvsr.c: New test.
+
+	Backport from mainline r215882
+	2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/lvsl-lvsr.c: New test.
+
+	Backport from mainline r216017
+	2014-10-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.dg/vmx/3c-01a.c: Add default options from vmx.exp.
+	* gcc.dg/vmx/ops.c: Likewise.
+	* gcc.dg/vmx/ops-long-1.c: Likewise.
+
 2014-10-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline r216117.
