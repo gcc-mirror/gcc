@@ -1,3 +1,8 @@
+2014-10-13  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+
+	* include/std/memory (align): Define.
+	* testsuite/20_util/align/1.cc: New.
+
 2014-10-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/61347
