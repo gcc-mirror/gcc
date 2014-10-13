@@ -1,3 +1,49 @@
+2014-10-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/8340
+	PR middle-end/47602
+	PR rtl-optimization/55458
+	* config/i386/i386.c (ix86_use_pseudo_pic_reg): New.
+	(ix86_init_pic_reg): New.
+	(ix86_select_alt_pic_regnum): Add check on pseudo register.
+	(ix86_save_reg): Likewise.
+	(ix86_expand_prologue): Remove PIC register initialization
+	now performed in ix86_init_pic_reg.
+	(ix86_output_function_epilogue): Add check on pseudo register.
+	(set_pic_reg_ever_alive): New.
+	(legitimize_pic_address): Replace df_set_regs_ever_live with new
+	set_pic_reg_ever_alive.
+	(legitimize_tls_address): Likewise.
+	(ix86_pic_register_p): New check.
+	(ix86_delegitimize_address): Add check on pseudo register.
+	(ix86_expand_call): Insert move from pseudo PIC register to ABI
+	defined REAL_PIC_OFFSET_TABLE_REGNUM.
+	(TARGET_INIT_PIC_REG): New.
+	(TARGET_USE_PSEUDO_PIC_REG): New.
+	* config/i386/i386.h (PIC_OFFSET_TABLE_REGNUM): Return INVALID_REGNUM
+	if pic_offset_table_rtx exists.
+	* doc/tm.texi.in (TARGET_USE_PSEUDO_PIC_REG, TARGET_INIT_PIC_REG):
+	Document.
+	* doc/tm.texi: Regenerate.
+	* function.c (assign_parms): Generate pseudo register for PIC.
+	* init-regs.c (initialize_uninitialized_regs): Ignor pseudo PIC
+	register.
+	* ira-color.c (color_pass): Add check on pseudo register.
+	* ira-emit.c (change_loop): Don't create copies for PIC pseudo
+	register.
+	* ira.c (split_live_ranges_for_shrink_wrap): Add check on pseudo
+	register.
+	(ira): Add target specific PIC register initialization.
+	(do_reload): Keep PIC pseudo register.
+	* lra-assigns.c (spill_for): Add checks on pseudo register.
+	* lra-constraints.c (contains_symbol_ref_p): New.
+	(lra_constraints): Enable lra risky transformations when PIC is pseudo
+	register.
+	* shrink-wrap.c (try_shrink_wrapping): Add check on pseudo register.
+	* target.def (use_pseudo_pic_reg): New.
+	(init_pic_reg): New.
+
 2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/x86-tune.def (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY):

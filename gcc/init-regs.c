@@ -80,6 +80,11 @@ initialize_uninitialized_regs (void)
 	      if (regno < FIRST_PSEUDO_REGISTER)
 		continue;
 
+	      /* Ignore pseudo PIC register.  */
+	      if (pic_offset_table_rtx
+		  && regno == REGNO (pic_offset_table_rtx))
+		continue;
+
 	      /* Do not generate multiple moves for the same regno.
 		 This is common for sequences of subreg operations.
 		 They would be deleted during combine but there is no

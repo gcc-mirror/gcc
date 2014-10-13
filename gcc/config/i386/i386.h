@@ -1233,12 +1233,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define REAL_PIC_OFFSET_TABLE_REGNUM  BX_REG
 
-#define PIC_OFFSET_TABLE_REGNUM				\
-  ((TARGET_64BIT && (ix86_cmodel == CM_SMALL_PIC	\
-                     || TARGET_PECOFF))		\
-   || !flag_pic ? INVALID_REGNUM			\
-   : reload_completed ? REGNO (pic_offset_table_rtx)	\
-   : REAL_PIC_OFFSET_TABLE_REGNUM)
+#define PIC_OFFSET_TABLE_REGNUM						\
+  ((TARGET_64BIT && (ix86_cmodel == CM_SMALL_PIC			\
+                     || TARGET_PECOFF))					\
+   || !flag_pic								\
+   ? INVALID_REGNUM							\
+   : pic_offset_table_rtx						\
+     ? INVALID_REGNUM							\
+     : REAL_PIC_OFFSET_TABLE_REGNUM)
 
 #define GOT_SYMBOL_NAME "_GLOBAL_OFFSET_TABLE_"
 

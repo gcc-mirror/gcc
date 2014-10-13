@@ -3798,6 +3798,35 @@ contains_reg_p (rtx x, bool hard_reg_p, bool spilled_p)
   return false;
 }
 
+/* Return true if X contains a symbol reg.  */
+static bool
+contains_symbol_ref_p (rtx x)
+{
+  int i, j;
+  const char *fmt;
+  enum rtx_code code;
+
+  code = GET_CODE (x);
+  if (code == SYMBOL_REF)
+    return true;
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (contains_symbol_ref_p (XEXP (x, i)))
+	    return true;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (contains_symbol_ref_p (XVECEXP (x, i, j)))
+	      return true;
+	}
+    }
+  return false;
+}
+
 /* Process all regs in location *LOC and change them on equivalent
    substitution.  Return true if any change was done.  */
 static bool
@@ -4020,7 +4049,11 @@ lra_constraints (bool first_p)
       ("Maximum number of LRA constraint passes is achieved (%d)\n",
        LRA_MAX_CONSTRAINT_ITERATION_NUMBER);
   changed_p = false;
-  lra_risky_transformations_p = false;
+  if (pic_offset_table_rtx
+      && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+    lra_risky_transformations_p = true;
+  else
+    lra_risky_transformations_p = false;
   new_insn_uid_start = get_max_uid ();
   new_regno_start = first_p ? lra_constraint_new_regno_start : max_reg_num ();
   /* Mark used hard regs for target stack size calulations.  */
@@ -4088,7 +4121,12 @@ lra_constraints (bool first_p)
 		   paradoxical subregs.  */
 		|| (MEM_P (x)
 		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-			> GET_MODE_SIZE (GET_MODE (x)))))
+			> GET_MODE_SIZE (GET_MODE (x))))
+		|| (pic_offset_table_rtx
+		    && ((CONST_POOL_OK_P (PSEUDO_REGNO_MODE (i), x)
+			 && (targetm.preferred_reload_class
+			     (x, lra_get_allocno_class (i)) == NO_REGS))
+			|| contains_symbol_ref_p (x))))
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;

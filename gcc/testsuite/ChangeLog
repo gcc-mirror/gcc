@@ -1,3 +1,13 @@
+2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/8340
+	PR middle-end/47602
+	PR rtl-optimization/55458
+	* gcc.target/i386/pic-1.c: Remove dg-error as test should pass now.
+	* gcc.target/i386/pr55458.c: Likewise.
+	* gcc.target/i386/pr47602.c: New.
+	* gcc.target/i386/pr23098.c: Move to XFAIL.
+
 2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62127

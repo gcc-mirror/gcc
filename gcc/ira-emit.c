@@ -620,7 +620,10 @@ change_loop (ira_loop_tree_node_t node)
 		  /* don't create copies because reload can spill an
 		     allocno set by copy although the allocno will not
 		     get memory slot.  */
-		  || ira_equiv_no_lvalue_p (regno)))
+		  || ira_equiv_no_lvalue_p (regno)
+		  || (pic_offset_table_rtx != NULL
+		      && (ALLOCNO_REGNO (allocno)
+			  == (int) REGNO (pic_offset_table_rtx)))))
 	    continue;
 	  original_reg = allocno_emit_reg (allocno);
 	  if (parent_allocno == NULL
