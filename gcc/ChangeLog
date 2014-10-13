@@ -1,3 +1,9 @@
+2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62127
+	* tree.c (remap_type_1): When remapping array, remap
+	also its type.
+
 2014-10-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.in: (check-%): Update comment, as RUNTESTFLAGS no

@@ -1,3 +1,8 @@
+2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62127
+	* g++.dg/torture/pr62127.C: New testcase.
+
 2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* c-c++-common/asan/bitfield-5.c: New test.
