@@ -3245,9 +3245,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (ALLOCNO_CLASS (subloop_allocno) == rclass);
 	  ira_assert (bitmap_bit_p (subloop_node->all_allocnos,
 				    ALLOCNO_NUM (subloop_allocno)));
-	  if ((flag_ira_region == IRA_REGION_MIXED)
-	      && (loop_tree_node->reg_pressure[pclass]
-		  <= ira_class_hard_regs_num[pclass]))
+	  if ((flag_ira_region == IRA_REGION_MIXED
+	       && (loop_tree_node->reg_pressure[pclass]
+		   <= ira_class_hard_regs_num[pclass]))
+	      || (pic_offset_table_rtx != NULL
+		  && regno == (int) REGNO (pic_offset_table_rtx)))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{

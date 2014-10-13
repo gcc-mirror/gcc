@@ -4896,7 +4896,7 @@ split_live_ranges_for_shrink_wrap (void)
   FOR_BB_INSNS (first, insn)
     {
       rtx dest = interesting_dest_for_shprep (insn, call_dom);
-      if (!dest)
+      if (!dest || dest == pic_offset_table_rtx)
 	continue;
 
       rtx newreg = NULL_RTX;
@@ -5047,6 +5047,9 @@ ira (FILE *f)
   int rebuild_p;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
+
+  /* Perform target specific PIC register initialization.  */
+  targetm.init_pic_reg ();
 
   ira_conflicts_p = optimize > 0;
 
@@ -5299,9 +5302,17 @@ do_reload (void)
 {
   basic_block bb;
   bool need_dce;
+  unsigned pic_offset_table_regno = INVALID_REGNUM;
 
   if (flag_ira_verbose < 10)
     ira_dump_file = dump_file;
+
+  /* If pic_offset_table_rtx is a pseudo register, then keep it so
+     after reload to avoid possible wrong usages of hard reg assigned
+     to it.  */
+  if (pic_offset_table_rtx
+      && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+    pic_offset_table_regno = REGNO (pic_offset_table_rtx);
 
   timevar_push (TV_RELOAD);
   if (ira_use_lra_p)
@@ -5406,6 +5417,9 @@ do_reload (void)
                 "frame pointer required, but reserved");
       inform (DECL_SOURCE_LOCATION (decl), "for %qD", decl);
     }
+
+  if (pic_offset_table_regno != INVALID_REGNUM)
+    pic_offset_table_rtx = gen_rtx_REG (Pmode, pic_offset_table_regno);
 
   timevar_pop (TV_IRA);
 }

@@ -1,7 +1,7 @@
 /* PR rtl-optimization/23098 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
-/* { dg-final { scan-assembler-not "\.LC\[0-9\]" { xfail *-*-vxworks* } } } */
+/* { dg-final { scan-assembler-not "\.LC\[0-9\]" { xfail *-*-* } } } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target fpic } */
 
