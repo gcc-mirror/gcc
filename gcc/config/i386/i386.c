@@ -12455,9 +12455,18 @@ ix86_address_cost (rtx x, enum machine_mode, addr_space_t, bool)
 	      || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)))
     cost++;
 
+  /* When address base or index is "pic_offset_table_rtx" we don't increase
+     address cost.  When a memopt with "pic_offset_table_rtx" is not invariant
+     itself it most likely means that base or index is not invariant.
+     Therefore only "pic_offset_table_rtx" could be hoisted out, which is not
+     profitable for x86.  */
   if (parts.base
+      && (!pic_offset_table_rtx
+	  || REGNO (pic_offset_table_rtx) != REGNO(parts.base))
       && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER)
       && parts.index
+      && (!pic_offset_table_rtx
+	  || REGNO (pic_offset_table_rtx) != REGNO(parts.index))
       && (!REG_P (parts.index) || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)
       && parts.base != parts.index)
     cost++;

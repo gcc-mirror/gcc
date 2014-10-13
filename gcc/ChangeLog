@@ -1,3 +1,8 @@
+2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (ix86_address_cost): Lower cost for
+	when address contains GOT register.
+
 2014-10-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
