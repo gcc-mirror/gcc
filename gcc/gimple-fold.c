@@ -5295,3 +5295,20 @@ rewrite_to_defined_overflow (gimple stmt)
 
   return stmts;
 }
+
+/* Return OP converted to TYPE by emitting a conversion statement on SEQ
+   if required using location LOC.  Note that OP will be returned
+   unmodified if GIMPLE does not require an explicit conversion between
+   its type and TYPE.  */
+
+tree
+gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
+{
+  if (useless_type_conversion_p (type, TREE_TYPE (op)))
+    return op;
+  op = fold_convert_loc (loc, type, op);
+  gimple_seq stmts = NULL;
+  op = force_gimple_operand (op, &stmts, true, NULL_TREE);
+  gimple_seq_add_seq_without_update (seq, stmts);
+  return op;
+}
