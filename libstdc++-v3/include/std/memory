@@ -113,14 +113,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 inline void*
 align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
 {
-  const size_t __diff = __align - reinterpret_cast<uintptr_t>(__ptr) % __align;
-  if (__diff + __size >= __space)
+  const auto __intptr = reinterpret_cast<uintptr_t>(__ptr);
+  const auto __aligned = (__intptr - 1u + __align) & -__align;
+  const auto __diff = __aligned - __intptr;
+  if ((__size + __diff) > __space)
     return nullptr;
   else
     {
       __space -= __diff;
-      __ptr = static_cast<char*>(__ptr) + __diff;
-      return __ptr;
+      return __ptr = reinterpret_cast<void*>(__aligned);
     }
 }
 

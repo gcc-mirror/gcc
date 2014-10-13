@@ -1,3 +1,9 @@
+2014-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57350
+	* include/std/memory (align): Do not adjust correctly aligned address.
+	* testsuite/20_util/align/2.cc: New.
+
 2014-10-13  Siva Chandra Reddy  <sivachandra@google.com>
 
 	* python/libstdcxx/v6/xmethods.py: Add xmethods for std::array,
