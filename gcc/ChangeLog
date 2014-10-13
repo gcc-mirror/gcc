@@ -1,3 +1,9 @@
+2014-10-13  Richard Henderson  <rth@redhat.com>
+
+	* combine-stack-adj.c (no_unhandled_cfa): New.
+	(maybe_merge_cfa_adjust): New.
+	(combine_stack_adjustments_for_block): Use them.
+
 2014-10-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (TAGS): Tag ../include files.
