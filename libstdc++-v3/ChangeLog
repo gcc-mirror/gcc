@@ -1,3 +1,13 @@
+2014-10-13  Siva Chandra Reddy  <sivachandra@google.com>
+
+	* python/libstdcxx/v6/xmethods.py: Add xmethods for std::array,
+	std::deque, std::forward_list, std::list, std::vector.
+	* testsuite/libstdc++-xmethods/array.cc: New file.
+	* testsuite/libstdc++-xmethods/deque.cc: Likewise.
+	* testsuite/libstdc++-xmethods/forwardlist.cc: Likewise.
+	* testsuite/libstdc++-xmethods/list.cc: Likewise.
+	* testsuite/libstdc++-xmethods/vector.cc: Add tests.
+
 2014-10-13  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
 	* include/std/memory (align): Define.

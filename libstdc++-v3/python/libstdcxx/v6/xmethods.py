@@ -1,4 +1,4 @@
-# Xmethods for libstc++.
+# Xmethods for libstdc++.
 
 # Copyright (C) 2014 Free Software Foundation, Inc.
 
@@ -21,45 +21,406 @@ import re
 
 matcher_name_prefix = 'libstdc++::'
 
-# Xmethods for std::vector
+class LibStdCxxXMethod(gdb.xmethod.XMethod):
+    def __init__(self, name, worker_class):
+        gdb.xmethod.XMethod.__init__(self, name)
+        self.worker_class = worker_class
 
-class VectorSizeWorker(gdb.xmethod.XMethodWorker):
-    def __init__(self):
-        self.name = 'size'
-        self.enabled = True
+# Xmethods for std::array
+
+class ArrayWorkerBase(gdb.xmethod.XMethodWorker):
+    def __init__(self, valtype, size):
+        self._valtype = valtype
+        self._size = size
+
+    def null_value(self):
+        nullptr = gdb.parse_and_eval('(void *) 0')
+        return nullptr.cast(self._valtype.pointer()).dereference()
+
+class ArraySizeWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
 
     def get_arg_types(self):
         return None
 
     def __call__(self, obj):
-        return obj['_M_impl']['_M_finish'] - obj['_M_impl']['_M_start']
+        return self._size
 
-class VectorSubscriptWorker(gdb.xmethod.XMethodWorker):
-    def __init__(self):
-        self.name = 'operator[]'
-        self.enabled = True
+class ArrayEmptyWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
+
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return (int(self._size) == 0)
+
+class ArrayFrontWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
+
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        if int(self._size) > 0:
+            return obj['_M_elems'][0]
+        else:
+            return self.null_value()
+
+class ArrayBackWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
+
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        if int(self._size) > 0:
+            return obj['_M_elems'][self._size - 1]
+        else:
+            return self.null_value()
+
+class ArrayAtWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
 
     def get_arg_types(self):
         return gdb.lookup_type('std::size_t')
 
+    def __call__(self, obj, index):
+        if int(index) >= int(self._size):
+            raise IndexError('Array index "%d" should not be >= %d.' %
+                             ((int(index), self._size)))
+        return obj['_M_elems'][index]
+
+class ArraySubscriptWorker(ArrayWorkerBase):
+    def __init__(self, valtype, size):
+        ArrayWorkerBase.__init__(self, valtype, size)
+
+    def get_arg_types(self):
+        return gdb.lookup_type('std::size_t')
+
+    def __call__(self, obj, index):
+        if int(self._size) > 0:
+            return obj['_M_elems'][index]
+        else:
+            return self.null_value()
+
+class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        gdb.xmethod.XMethodMatcher.__init__(self,
+                                            matcher_name_prefix + 'array')
+        self._method_dict = {
+            'size': LibStdCxxXMethod('size', ArraySizeWorker),
+            'empty': LibStdCxxXMethod('empty', ArrayEmptyWorker),
+            'front': LibStdCxxXMethod('front', ArrayFrontWorker),
+            'back': LibStdCxxXMethod('back', ArrayBackWorker),
+            'at': LibStdCxxXMethod('at', ArrayAtWorker),
+            'operator[]': LibStdCxxXMethod('operator[]', ArraySubscriptWorker),
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::array<.*>$', class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        try:
+            value_type = class_type.template_argument(0)
+            size = class_type.template_argument(1)
+        except:
+            return None
+        return method.worker_class(value_type, size)
+
+# Xmethods for std::deque
+
+class DequeWorkerBase(gdb.xmethod.XMethodWorker):
+    def __init__(self, elemtype):
+        self._bufsize = (512 / elemtype.sizeof) or 1
+
+    def size(self, obj):
+        first_node = obj['_M_impl']['_M_start']['_M_node']
+        last_node = obj['_M_impl']['_M_finish']['_M_node']
+        cur = obj['_M_impl']['_M_finish']['_M_cur']
+        first = obj['_M_impl']['_M_finish']['_M_first']
+        return (last_node - first_node) * self._bufsize + (cur - first)
+
+    def index(self, obj, index):
+        first_node = obj['_M_impl']['_M_start']['_M_node']
+        index_node = first_node + index / self._bufsize
+        return index_node[0][index % self._bufsize]
+
+class DequeEmptyWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return (obj['_M_impl']['_M_start']['_M_cur'] ==
+                obj['_M_impl']['_M_finish']['_M_cur'])
+
+class DequeSizeWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return self.size(obj)
+
+class DequeFrontWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return obj['_M_impl']['_M_start']['_M_cur'][0]
+
+class DequeBackWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        if (obj['_M_impl']['_M_finish']['_M_cur'] ==
+            obj['_M_impl']['_M_finish']['_M_first']):
+            prev_node = obj['_M_impl']['_M_finish']['_M_node'] - 1
+            return prev_node[0][self._bufsize - 1]
+        else:
+            return obj['_M_impl']['_M_finish']['_M_cur'][-1]
+
+class DequeSubscriptWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return gdb.lookup_type('std::size_t')
+
     def __call__(self, obj, subscript):
-        return obj['_M_impl']['_M_start'][subscript]
+        return self.index(obj, subscript)
+
+class DequeAtWorker(DequeWorkerBase):
+    def get_arg_types(self):
+        return gdb.lookup_type('std::size_t')
+
+    def __call__(self, obj, index):
+        deque_size = int(self.size(obj))
+        if int(index) >= deque_size:
+            raise IndexError('Deque index "%d" should not be >= %d.' %
+                             (int(index), deque_size))
+        else:
+           return self.index(obj, index)
+
+class DequeMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        gdb.xmethod.XMethodMatcher.__init__(self,
+                                            matcher_name_prefix + 'deque')
+        self._method_dict = {
+            'empty': LibStdCxxXMethod('empty', DequeEmptyWorker),
+            'size': LibStdCxxXMethod('size', DequeSizeWorker),
+            'front': LibStdCxxXMethod('front', DequeFrontWorker),
+            'back': LibStdCxxXMethod('back', DequeBackWorker),
+            'operator[]': LibStdCxxXMethod('operator[]', DequeSubscriptWorker),
+            'at': LibStdCxxXMethod('at', DequeAtWorker)
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::deque<.*>$', class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        return method.worker_class(class_type.template_argument(0))
+
+# Xmethods for std::forward_list
+
+class ForwardListWorkerBase(gdb.xmethod.XMethodMatcher):
+    def __init__(self, elem_type, node_type):
+        self._elem_type = elem_type
+        self._node_type = node_type
+
+    def get_arg_types(self):
+        return None
+
+class ForwardListEmptyWorker(ForwardListWorkerBase):
+    def __call__(self, obj):
+        return obj['_M_impl']['_M_head']['_M_next'] == 0
+
+class ForwardListFrontWorker(ForwardListWorkerBase):
+    def __call__(self, obj):
+        node = obj['_M_impl']['_M_head']['_M_next'].cast(self._node_type)
+        elem_address = node['_M_storage']['_M_storage'].address
+        return elem_address.cast(self._elem_type.pointer()).dereference()
+
+class ForwardListMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        matcher_name = matcher_name_prefix + 'forward_list'
+        gdb.xmethod.XMethodMatcher.__init__(self, matcher_name)
+        self._method_dict = {
+            'empty': LibStdCxxXMethod('empty', ForwardListEmptyWorker),
+            'front': LibStdCxxXMethod('front', ForwardListFrontWorker)
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::forward_list<.*>$', class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        elem_type = class_type.template_argument(0)
+        node_type = gdb.lookup_type(str(class_type) + '::_Node').pointer()
+        return method.worker_class(elem_type, node_type)
+
+# Xmethods for std::list
+
+class ListWorkerBase(gdb.xmethod.XMethodWorker):
+    def __init__(self, node_type):
+        self._node_type = node_type
+
+    def get_arg_types(self):
+        return None
+
+class ListEmptyWorker(ListWorkerBase):
+    def __call__(self, obj):
+        base_node = obj['_M_impl']['_M_node']
+        if base_node['_M_next'] == base_node.address:
+            return True
+        else:
+            return False
+
+class ListSizeWorker(ListWorkerBase):
+    def __call__(self, obj):
+        begin_node = obj['_M_impl']['_M_node']['_M_next']
+        end_node = obj['_M_impl']['_M_node'].address
+        size = 0
+        while begin_node != end_node:
+            begin_node = begin_node['_M_next']
+            size += 1
+        return size
+
+class ListFrontWorker(ListWorkerBase):
+    def __call__(self, obj):
+        node = obj['_M_impl']['_M_node']['_M_next'].cast(self._node_type)
+        return node['_M_data']
+
+class ListBackWorker(ListWorkerBase):
+    def __call__(self, obj):
+        prev_node = obj['_M_impl']['_M_node']['_M_prev'].cast(self._node_type)
+        return prev_node['_M_data']
+
+class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        gdb.xmethod.XMethodMatcher.__init__(self,
+                                            matcher_name_prefix + 'list')
+        self._method_dict = {
+            'empty': LibStdCxxXMethod('empty', ListEmptyWorker),
+            'size': LibStdCxxXMethod('size', ListSizeWorker),
+            'front': LibStdCxxXMethod('front', ListFrontWorker),
+            'back': LibStdCxxXMethod('back', ListBackWorker)
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::list<.*>$', class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        node_type = gdb.lookup_type(str(class_type) + '::_Node').pointer()
+        return method.worker_class(node_type)
+
+# Xmethods for std::vector
+
+class VectorWorkerBase(gdb.xmethod.XMethodWorker):
+    def __init__(self, elemtype):
+        self._elemtype = elemtype
+
+    def size(self, obj):
+        if self._elemtype.code == gdb.TYPE_CODE_BOOL:
+            start = obj['_M_impl']['_M_start']['_M_p']
+            finish = obj['_M_impl']['_M_finish']['_M_p']
+            finish_offset = obj['_M_impl']['_M_finish']['_M_offset']
+            bit_size = start.dereference().type.sizeof * 8
+            return (finish - start) * bit_size + finish_offset
+        else:
+            return obj['_M_impl']['_M_finish'] - obj['_M_impl']['_M_start']
+
+    def get(self, obj, index):
+        if self._elemtype.code == gdb.TYPE_CODE_BOOL:
+            start = obj['_M_impl']['_M_start']['_M_p']
+            bit_size = start.dereference().type.sizeof * 8
+            valp = start + index / bit_size
+            offset = index % bit_size
+            return (valp.dereference() & (1 << offset)) > 0
+        else:
+            return obj['_M_impl']['_M_start'][index]
+
+class VectorEmptyWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return int(self.size(obj)) == 0
+
+class VectorSizeWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return self.size(obj)
+
+class VectorFrontWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return self.get(obj, 0)
+
+class VectorBackWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return None
+
+    def __call__(self, obj):
+        return self.get(obj, int(self.size(obj)) - 1)
+
+class VectorAtWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return gdb.lookup_type('std::size_t')
+
+    def __call__(self, obj, index):
+        size = int(self.size(obj))
+        if int(index) >= size:
+            raise IndexError('Vector index "%d" should not be >= %d.' %
+                             ((int(index), size)))
+        return self.get(obj, int(index))
+
+class VectorSubscriptWorker(VectorWorkerBase):
+    def get_arg_types(self):
+        return gdb.lookup_type('std::size_t')
+
+    def __call__(self, obj, subscript):
+        return self.get(obj, int(subscript))
 
 class VectorMethodsMatcher(gdb.xmethod.XMethodMatcher):
     def __init__(self):
         gdb.xmethod.XMethodMatcher.__init__(self,
                                             matcher_name_prefix + 'vector')
-        self._subscript_worker = VectorSubscriptWorker()
-        self._size_worker = VectorSizeWorker()
-        self.methods = [self._subscript_worker, self._size_worker]
+        self._method_dict = {
+            'size': LibStdCxxXMethod('size', VectorSizeWorker),
+            'empty': LibStdCxxXMethod('empty', VectorEmptyWorker),
+            'front': LibStdCxxXMethod('front', VectorFrontWorker),
+            'back': LibStdCxxXMethod('back', VectorBackWorker),
+            'at': LibStdCxxXMethod('at', VectorAtWorker),
+            'operator[]': LibStdCxxXMethod('operator[]',
+                                           VectorSubscriptWorker),
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
         if not re.match('^std::vector<.*>$', class_type.tag):
             return None
-        if method_name == 'operator[]' and self._subscript_worker.enabled:
-            return self._subscript_worker
-        elif method_name == 'size' and self._size_worker.enabled:
-            return self._size_worker
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        return method.worker_class(class_type.template_argument(0))
 
 # Xmethods for std::unique_ptr
 
@@ -99,5 +460,9 @@ class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
             return self._get_worker
 
 def register_libstdcxx_xmethods(locus):
+    gdb.xmethod.register_xmethod_matcher(locus, ArrayMethodsMatcher())
+    gdb.xmethod.register_xmethod_matcher(locus, ForwardListMethodsMatcher())
+    gdb.xmethod.register_xmethod_matcher(locus, DequeMethodsMatcher())
+    gdb.xmethod.register_xmethod_matcher(locus, ListMethodsMatcher())
     gdb.xmethod.register_xmethod_matcher(locus, VectorMethodsMatcher())
     gdb.xmethod.register_xmethod_matcher(locus, UniquePtrMethodsMatcher())
