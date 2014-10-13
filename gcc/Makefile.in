@@ -3776,6 +3776,7 @@ TAGS: lang.tags
 	  fi;						\
 	done;						\
 	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
+	      ../include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
 	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \

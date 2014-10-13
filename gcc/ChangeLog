@@ -1,3 +1,7 @@
+2014-10-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (TAGS): Tag ../include files.
+
 2014-10-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.h (DBX_REGISTER_NUMBER): Pass format argument
