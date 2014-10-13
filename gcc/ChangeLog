@@ -1,3 +1,8 @@
+2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY):
+	Remove m_SILVERMONT and m_INTEL from the tune.
+
 2014-10-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libfortran/63471
