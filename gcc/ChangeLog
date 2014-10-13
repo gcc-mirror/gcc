@@ -1,3 +1,22 @@
+2014-10-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r215880
+	2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Issue a warning message when vec_lvsl or vec_lvsr is used with a
+	little endian target.
+
+	Backport from mainline r215882
+	2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* altivec.md (altivec_lvsl): New define_expand.
+	(altivec_lvsl_direct): Rename define_insn from altivec_lvsl.
+	(altivec_lvsr): New define_expand.
+	(altivec_lvsr_direct): Rename define_insn from altivec_lvsr.
+	* rs6000.c (rs6000_expand_builtin): Change to use
+	altivec_lvs[lr]_direct; remove commented-out code.
+
 2014-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
