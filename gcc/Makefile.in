@@ -3632,10 +3632,9 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 		$(check_p_numbers)))
 
 # For parallelized check-% targets, this decides whether parallelization
-# is desirable (if -jN is used and RUNTESTFLAGS doesn't contain anything
-# but optional --target_board or --extra_opts arguments).  If desirable,
-# recursive make is run with check-parallel-$lang{,1,2,3,4,5} etc. goals,
-# which can be executed in parallel, as they are run in separate directories.
+# is desirable (if -jN is used).  If desirable, recursive make is run with
+# check-parallel-$lang{,1,2,3,4,5} etc. goals, which can be executed in
+# parallel, as they are run in separate directories.
 # check-parallel-$lang{,1,2,3,4,5} etc. goals invoke runtest with
 # GCC_RUNTEST_PARALLELIZE_DIR var in the environment and runtest_file_p
 # dejaGNU procedure is overridden to additionally synchronize through
