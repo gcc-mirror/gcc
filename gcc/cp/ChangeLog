@@ -1,3 +1,9 @@
+2014-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* mangle.c (mangle_conv_op_name_for_type): Cast elements to
+	unsigned long.
+	(print_template_statistics): Cast size and elements to long.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cp-gimplify.c, cp-tree.h, decl.c, mangle.c, name-lookup.c,
