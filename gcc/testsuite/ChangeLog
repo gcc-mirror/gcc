@@ -1,3 +1,7 @@
+2014-09-19  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* c-c++-common/asan/bitfield-5.c: New test.
+
 2014-10-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63419

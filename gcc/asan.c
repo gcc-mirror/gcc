@@ -1711,6 +1711,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     case INDIRECT_REF:
     case MEM_REF:
     case VAR_DECL:
+    case BIT_FIELD_REF:
       break;
       /* FALLTHRU */
     default:

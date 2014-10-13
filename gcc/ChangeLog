@@ -1,3 +1,7 @@
+2014-10-13  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* asan.c (instrument_derefs): BIT_FIELD_REF added.
+
 2014-10-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63419
