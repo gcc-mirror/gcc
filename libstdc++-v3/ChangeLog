@@ -1,3 +1,20 @@
+2014-10-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/61347
+	PR libstdc++/63345
+	* include/bits/list.tcc (_List_base::_M_clear()): Delay cast so it
+	isn't done for the sentinel.
+	* include/bits/stl_list.h (_List_base::_M_size): Move...
+	(_List_base::_List_impl::_M_node): ... here.
+	(_List_base::_M_get_size(), _List_base::_M_set_size(size_t),
+	_List_base::_M_inc_size(size_t), _List_base::_M_dec_size(size_t),
+	_List_base::_M_node_count): Adapt to the move.
+	* 23_containers/list/requirements/dr438/assign_neg.cc: Update
+	line number.
+	* 23_containers/list/requirements/dr438/constructor_1_neg.cc: Likewise.
+	* 23_containers/list/requirements/dr438/constructor_2_neg.cc: Likewise.
+	* 23_containers/list/requirements/dr438/insert_neg.cc: Likewise.
+
 2014-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/Makefile.in: Regenerate.
