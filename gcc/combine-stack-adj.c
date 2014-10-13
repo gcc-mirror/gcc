@@ -190,6 +190,44 @@ record_one_stack_ref (rtx_insn *insn, rtx *ref, struct csa_reflist *next_reflist
   return ml;
 }
 
+/* We only know how to adjust the CFA; no other frame-related changes
+   may appear in any insn to be deleted.  */
+
+static bool
+no_unhandled_cfa (rtx_insn *insn)
+{
+  if (!RTX_FRAME_RELATED_P (insn))
+    return true;
+
+  /* No CFA notes at all is a legacy interpretation like
+     FRAME_RELATED_EXPR, and is context sensitive within
+     the prologue state machine.  We can't handle that here.  */
+  bool has_cfa_adjust = false;
+
+  for (rtx link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    switch (REG_NOTE_KIND (link))
+      {
+      default:
+        break;
+      case REG_CFA_ADJUST_CFA:
+	has_cfa_adjust = true;
+	break;
+
+      case REG_FRAME_RELATED_EXPR:
+      case REG_CFA_DEF_CFA:
+      case REG_CFA_OFFSET:
+      case REG_CFA_REGISTER:
+      case REG_CFA_EXPRESSION:
+      case REG_CFA_RESTORE:
+      case REG_CFA_SET_VDRAP:
+      case REG_CFA_WINDOW_SAVE:
+      case REG_CFA_FLUSH_QUEUE:
+	return false;
+      }
+
+  return has_cfa_adjust;
+}
+
 /* Attempt to apply ADJUST to the stack adjusting insn INSN, as well
    as each of the memories and stack references in REFLIST.  Return true
    on success.  */
@@ -318,6 +356,44 @@ maybe_move_args_size_note (rtx_insn *last, rtx_insn *insn, bool after)
     }
   else
     add_reg_note (last, REG_ARGS_SIZE, XEXP (note, 0));
+}
+
+/* Merge any REG_CFA_ADJUST_CFA note from SRC into DST.
+   AFTER is true iff DST follows SRC in the instruction stream.  */
+
+static void
+maybe_merge_cfa_adjust (rtx_insn *dst, rtx_insn *src, bool after)
+{
+  rtx snote = NULL, dnote = NULL;
+  rtx sexp, dexp;
+  rtx exp1, exp2;
+
+  if (RTX_FRAME_RELATED_P (src))
+    snote = find_reg_note (src, REG_CFA_ADJUST_CFA, NULL_RTX);
+  if (snote == NULL)
+    return;
+  sexp = XEXP (snote, 0);
+
+  if (RTX_FRAME_RELATED_P (dst))
+    dnote = find_reg_note (dst, REG_CFA_ADJUST_CFA, NULL_RTX);
+  if (dnote == NULL)
+    {
+      add_reg_note (dst, REG_CFA_ADJUST_CFA, sexp);
+      return;
+    }
+  dexp = XEXP (dnote, 0);
+
+  gcc_assert (GET_CODE (sexp) == SET);
+  gcc_assert (GET_CODE (dexp) == SET);
+
+  if (after)
+    exp1 = dexp, exp2 = sexp;
+  else
+    exp1 = sexp, exp2 = dexp;
+
+  SET_SRC (exp1) = simplify_replace_rtx (SET_SRC (exp1), SET_DEST (exp2),
+					 SET_SRC (exp2));
+  XEXP (dnote, 0) = exp1;
 }
 
 /* Return the next (or previous) active insn within BB.  */
@@ -491,12 +567,15 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      /* Combine an allocation into the first instruction.  */
 	      if (STACK_GROWS_DOWNWARD ? this_adjust <= 0 : this_adjust >= 0)
 		{
-		  if (try_apply_stack_adjustment (last_sp_set, reflist,
-						  last_sp_adjust + this_adjust,
-						  this_adjust))
+		  if (no_unhandled_cfa (insn)
+		      && try_apply_stack_adjustment (last_sp_set, reflist,
+						     last_sp_adjust
+						     + this_adjust,
+						     this_adjust))
 		    {
 		      /* It worked!  */
 		      maybe_move_args_size_note (last_sp_set, insn, false);
+		      maybe_merge_cfa_adjust (last_sp_set, insn, false);
 		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;
 		      continue;
@@ -508,12 +587,15 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      else if (STACK_GROWS_DOWNWARD
 		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
 		{
-		  if (try_apply_stack_adjustment (insn, reflist,
-						  last_sp_adjust + this_adjust,
-						  -last_sp_adjust))
+		  if (no_unhandled_cfa (last_sp_set)
+		      && try_apply_stack_adjustment (insn, reflist,
+						     last_sp_adjust
+						     + this_adjust,
+						     -last_sp_adjust))
 		    {
 		      /* It worked!  */
 		      maybe_move_args_size_note (insn, last_sp_set, true);
+		      maybe_merge_cfa_adjust (insn, last_sp_set, true);
 		      delete_insn (last_sp_set);
 		      last_sp_set = insn;
 		      last_sp_adjust += this_adjust;
@@ -528,9 +610,10 @@ combine_stack_adjustments_for_block (basic_block bb)
 		 delete the old deallocation insn.  */
 	      if (last_sp_set)
 		{
-		  if (last_sp_adjust == 0)
+		  if (last_sp_adjust == 0 && no_unhandled_cfa (last_sp_set))
 		    {
 		      maybe_move_args_size_note (insn, last_sp_set, true);
+		      maybe_merge_cfa_adjust (insn, last_sp_set, true);
 		      delete_insn (last_sp_set);
 		    }
 		  else

@@ -1,3 +1,7 @@
+2014-10-13  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/torture/20141013.C: New.
+
 2014-10-13  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/8340
