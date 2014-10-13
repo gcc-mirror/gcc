@@ -1,3 +1,11 @@
+2014-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+            Alan Modra  <amodra@gmail.com>
+
+	PR ada/63225
+	* uintp.adb (Vector_To_Uint): Move from here to...
+	* uintp.ads (UI_Vector): Make public.
+	(Vector_To_Uint): ...here.
+
 2014-08-12  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* socket.c: For RTEMS, use correct prototype of gethostbyname_r().
