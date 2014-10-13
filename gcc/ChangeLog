@@ -1,3 +1,10 @@
+2014-10-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtlanal.c (generic_subrtx_iterator <T>::add_subrtxes_to_queue):
+	Add the parts of an insn in reverse order, with the pattern at
+	the top of the queue.  Detect when we're iterating over a SEQUENCE
+	pattern and in that case just consider patterns of subinstructions.
+
 2014-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/59401

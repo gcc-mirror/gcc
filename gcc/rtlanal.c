@@ -128,29 +128,58 @@ generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
 						    value_type *base,
 						    size_t end, rtx_type x)
 {
-  const char *format = GET_RTX_FORMAT (GET_CODE (x));
+  enum rtx_code code = GET_CODE (x);
+  const char *format = GET_RTX_FORMAT (code);
   size_t orig_end = end;
-  for (int i = 0; format[i]; ++i)
-    if (format[i] == 'e')
-      {
-	value_type subx = T::get_value (x->u.fld[i].rt_rtx);
-	if (__builtin_expect (end < LOCAL_ELEMS, true))
-	  base[end++] = subx;
-	else
-	  base = add_single_to_queue (array, base, end++, subx);
-      }
-    else if (format[i] == 'E')
-      {
-	int length = GET_NUM_ELEM (x->u.fld[i].rt_rtvec);
-	rtx *vec = x->u.fld[i].rt_rtvec->elem;
-	if (__builtin_expect (end + length <= LOCAL_ELEMS, true))
-	  for (int j = 0; j < length; j++)
-	    base[end++] = T::get_value (vec[j]);
-	else
-	  for (int j = 0; j < length; j++)
-	    base = add_single_to_queue (array, base, end++,
-					T::get_value (vec[j]));
-      }
+  if (__builtin_expect (INSN_P (x), false))
+    {
+      /* Put the pattern at the top of the queue, since that's what
+	 we're likely to want most.  It also allows for the SEQUENCE
+	 code below.  */
+      for (int i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; --i)
+	if (format[i] == 'e')
+	  {
+	    value_type subx = T::get_value (x->u.fld[i].rt_rtx);
+	    if (__builtin_expect (end < LOCAL_ELEMS, true))
+	      base[end++] = subx;
+	    else
+	      base = add_single_to_queue (array, base, end++, subx);
+	  }
+    }
+  else
+    for (int i = 0; format[i]; ++i)
+      if (format[i] == 'e')
+	{
+	  value_type subx = T::get_value (x->u.fld[i].rt_rtx);
+	  if (__builtin_expect (end < LOCAL_ELEMS, true))
+	    base[end++] = subx;
+	  else
+	    base = add_single_to_queue (array, base, end++, subx);
+	}
+      else if (format[i] == 'E')
+	{
+	  unsigned int length = GET_NUM_ELEM (x->u.fld[i].rt_rtvec);
+	  rtx *vec = x->u.fld[i].rt_rtvec->elem;
+	  if (__builtin_expect (end + length <= LOCAL_ELEMS, true))
+	    for (unsigned int j = 0; j < length; j++)
+	      base[end++] = T::get_value (vec[j]);
+	  else
+	    for (unsigned int j = 0; j < length; j++)
+	      base = add_single_to_queue (array, base, end++,
+					  T::get_value (vec[j]));
+	  if (code == SEQUENCE && end == length)
+	    /* If the subrtxes of the sequence fill the entire array then
+	       we know that no other parts of a containing insn are queued.
+	       The caller is therefore iterating over the sequence as a
+	       PATTERN (...), so we also want the patterns of the
+	       subinstructions.  */
+	    for (unsigned int j = 0; j < length; j++)
+	      {
+		typename T::rtx_type x = T::get_rtx (base[j]);
+		if (INSN_P (x))
+		  base[j] = T::get_value (PATTERN (x));
+	      }
+	}
   return end - orig_end;
 }
 
