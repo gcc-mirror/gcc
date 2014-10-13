@@ -1,3 +1,11 @@
+2014-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63419
+	* gimple-fold.h (gimple_convert): New function.
+	* gimple-fold.c (gimple_convert): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces): Use gimple_convert
+	to split out required conversions early.
+
 2014-10-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtlanal.c (generic_subrtx_iterator <T>::add_subrtxes_to_queue):

@@ -45,4 +45,11 @@ extern tree gimple_fold_indirect_ref (tree);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple);
 
+extern tree gimple_convert (gimple_seq *, location_t, tree, tree);
+inline tree
+gimple_convert (gimple_seq *seq, tree type, tree op)
+{
+  return gimple_convert (seq, UNKNOWN_LOCATION, type, op);
+}
+
 #endif  /* GCC_GIMPLE_FOLD_H */
