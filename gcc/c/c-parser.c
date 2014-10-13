@@ -4654,6 +4654,18 @@ c_parser_compound_statement_nostart (c_parser *parser)
   mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 }
 
+/* Parse all consecutive labels. */
+
+static void
+c_parser_all_labels (c_parser *parser)
+{
+  while (c_parser_next_token_is_keyword (parser, RID_CASE)
+	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
+	 || (c_parser_next_token_is (parser, CPP_NAME)
+	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
+    c_parser_label (parser);
+}
+
 /* Parse a label (C90 6.6.1, C99 6.8.1).
 
    label:
@@ -4854,11 +4866,7 @@ c_parser_label (c_parser *parser)
 static void
 c_parser_statement (c_parser *parser)
 {
-  while (c_parser_next_token_is_keyword (parser, RID_CASE)
-	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
-	 || (c_parser_next_token_is (parser, CPP_NAME)
-	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
-    c_parser_label (parser);
+  c_parser_all_labels (parser);
   c_parser_statement_after_labels (parser);
 }
 
@@ -5090,11 +5098,7 @@ c_parser_if_body (c_parser *parser, bool *if_p)
 {
   tree block = c_begin_compound_stmt (flag_isoc99);
   location_t body_loc = c_parser_peek_token (parser)->location;
-  while (c_parser_next_token_is_keyword (parser, RID_CASE)
-	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
-	 || (c_parser_next_token_is (parser, CPP_NAME)
-	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
-    c_parser_label (parser);
+  c_parser_all_labels (parser);
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
@@ -5121,11 +5125,7 @@ c_parser_else_body (c_parser *parser)
 {
   location_t else_loc = c_parser_peek_token (parser)->location;
   tree block = c_begin_compound_stmt (flag_isoc99);
-  while (c_parser_next_token_is_keyword (parser, RID_CASE)
-	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
-	 || (c_parser_next_token_is (parser, CPP_NAME)
-	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
-    c_parser_label (parser);
+  c_parser_all_labels (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       location_t loc = c_parser_peek_token (parser)->location;

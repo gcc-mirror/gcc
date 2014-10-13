@@ -1,3 +1,9 @@
+2014-10-13  Anthony Brandon  <anthony.brandon@gmail.com>
+
+        * c-parser.c (c_parser_all_labels): New function to replace
+	the duplicate code.
+        (c_parser_statement): Call the new function.
+
 2014-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63480
