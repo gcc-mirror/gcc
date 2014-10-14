@@ -41210,6 +41210,8 @@ emit_reduc_half (rtx dest, rtx src, int i)
 				    GEN_INT (i / 2));
 	}
       break;
+    case V64QImode:
+    case V32HImode:
     case V16SImode:
     case V16SFmode:
     case V8DImode:
