@@ -1,3 +1,47 @@
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_insn "avx512f_blendm<mode>"): Delete.
+	(define_insn "<avx512>_blendm<VI48_AVX512VL:mode>"): New.
+	(define_insn "<avx512>_blendm<VI12_AVX512VL:mode>"): Ditto..
+	(define_mode_attr cmp_imm_predicate): Add V8SF, V4DF, V8SI, V4DI, V4SF,
+	V2DF, V4SI, V2DI, V32HI, V64QI, V16HI, V32QI, V8HI, V16QI modes.
+	(define_insn
+	"avx512f_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>"):
+	Remove.
+	(define_insn
+	"<avx512>_cmp<VI48_AVX512VL:mode>3<mask_scalar_merge_name><round_saeonly_name>"):
+	New.
+	(define_insn
+	"<avx512>_cmp<VI12_AVX512VL:mode>3<mask_scalar_merge_name><round_saeonly_name>"):
+	Ditto.
+	(define_insn "<mask_codefor>avx512f_vec_dup<mode><mask_name>"): Delete.
+	(define_insn "<avx512>_vec_dup<V48_AVX512VL:mode><mask_name>"): New.
+	(define_insn "<avx512>_vec_dup<V12_AVX512VL:mode><mask_name>"): Ditto.
+	(define_insn "<mask_codefor>avx512f_vec_dup_gpr<mode><mask_name>"):
+	Delete.
+	(define_insn
+	"<mask_codefor><avx512>_vec_dup_gpr<VI48_AVX512VL:mode><mask_name>"):
+	New.
+	(define_insn
+	"<mask_codefor><avx512>_vec_dup_gpr<VI12_AVX512VL:mode><mask_name>"):
+	Ditto.
+	(define_insn·"<mask_codefor>avx512f_vec_dup_mem<mode><mask_name>"):
+	Delete.
+	(define_insn
+	"<mask_codefor><avx512>_vec_dup_mem<VI48_AVX512VL:mode><mask_name>"):
+	New.
+	(define_insn
+	"<mask_codefor><avx512>_vec_dup_mem<VI12_AVX512VL:mode><mask_name>"):
+	Ditto.
+
 2014-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63512
