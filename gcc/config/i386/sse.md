@@ -456,12 +456,6 @@
    (V4SI "vec") (V8SI "avx2")
    (V2DI "vec") (V4DI "avx2")])
 
-(define_mode_attr avx2_avx512f
-  [(V4SI "avx2") (V8SI "avx2") (V16SI "avx512f")
-   (V2DI "avx2") (V4DI "avx2") (V8DI "avx512f")
-   (V8SF "avx2") (V16SF "avx512f")
-   (V4DF "avx2") (V8DF "avx512f")])
-
 (define_mode_attr avx2_avx512
   [(V4SI "avx2") (V8SI "avx2") (V16SI "avx512f")
    (V2DI "avx2") (V4DI "avx2") (V8DI "avx512f")
