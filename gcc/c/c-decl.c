@@ -9711,10 +9711,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_INT_N_2:
 	    case RID_INT_N_3:
 	      specs->int_n_idx = i - RID_INT_N_0;
-	      if (!in_system_header_at (input_location)
-		  /* As a special exception, allow a type that's used
-		     for __SIZE_TYPE__.  */
-		  && int_n_data[specs->int_n_idx].bitsize != POINTER_SIZE)
+	      if (!in_system_header_at (input_location))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C does not support %<__int%d%> types",
 			 int_n_data[specs->int_n_idx].bitsize);
