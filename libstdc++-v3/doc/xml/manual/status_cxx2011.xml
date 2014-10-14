@@ -539,10 +539,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.6.5</entry>
       <entry>Align</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -2139,7 +2138,7 @@ particular release.
       <entry>Formatting and manipulators</entry>
       <entry>Partial</entry>
       <entry>
-        Missing <code>get_time</code> and <code>put_time</code> manipulators.
+        Missing <code>get_time</code> manipulator.
       </entry>
     </row>
     <row>

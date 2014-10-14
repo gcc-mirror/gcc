@@ -803,6 +803,13 @@ requirements of the license of GCC.
     <listitem><para>The traditional HP / SGI return type and value is blessed
 		    by the resolution of the DR.
     </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#1339">1339</link>:
+       <emphasis>uninitialized_fill_n should return the end of its range</emphasis>
+    </term>
+    <listitem><para>Return the end of the filled range.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>
