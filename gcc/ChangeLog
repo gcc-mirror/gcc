@@ -8,6 +8,31 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_c_enum "unspec"): Add UNSPEC_PMADDWD512.
+	(define_mode_iterator VI2_AVX2): Add V32HI mode.
+	(define_expand "mul<mode>3<mask_name>"): Add masking.
+	(define_insn "*mul<mode>3<mask_name>"): Ditto.
+	(define_expand "<s>mul<mode>3_highpart<mask_name>"): Ditto.
+	(define_insn "*<s>mul<mode>3_highpart<mask_name>"): Ditto.
+	(define_insn "avx512bw_pmaddwd512<mode><mask_name>"): New.
+	(define_mode_attr SDOT_PMADD_SUF): Ditto.
+	(define_expand "sdot_prod<mode>"): Add <SDOT_PMADD_SUF>.
+	(define_insn "<sse2_avx2>_packssdw<mask_name>"): Add masking.
+	(define_insn "*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>"): Ditto.
+	(define_insn "avx2_packusdw"): Delete.
+	(define_insn "sse4_1_packusdw"): Ditto.
+	(define_insn "<sse4_1_avx2>_packusdw<mask_name>"): New.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_insn "vec_dup<mode>"): Update constraints.
 
 2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>

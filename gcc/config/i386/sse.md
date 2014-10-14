@@ -132,6 +132,7 @@
   ;; For AVX512BW support
   UNSPEC_DBPSADBW
   UNSPEC_PMADDUBSW512
+  UNSPEC_PMADDWD512
   UNSPEC_PSHUFHW
   UNSPEC_PSHUFLW
 
@@ -300,7 +301,7 @@
   [(V32QI "TARGET_AVX2") V16QI])
 
 (define_mode_iterator VI2_AVX2
-  [(V16HI "TARGET_AVX2") V8HI])
+  [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI])
 
 (define_mode_iterator VI2_AVX512F
   [(V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI])
@@ -9135,28 +9136,30 @@
   DONE;
 })
 
-(define_expand "mul<mode>3"
+(define_expand "mul<mode>3<mask_name>"
   [(set (match_operand:VI2_AVX2 0 "register_operand")
 	(mult:VI2_AVX2 (match_operand:VI2_AVX2 1 "nonimmediate_operand")
 		       (match_operand:VI2_AVX2 2 "nonimmediate_operand")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
 
-(define_insn "*mul<mode>3"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
-        (mult:VI2_AVX2 (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,v")
-                       (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,vm")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
+(define_insn "*mul<mode>3<mask_name>"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
+	(mult:VI2_AVX2 (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,v")
+		       (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (MULT, <MODE>mode, operands)
+   && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    pmullw\t{%2, %0|%0, %2}
-   vpmullw\t{%2, %1, %0|%0, %1, %2}"
+   vpmullw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseimul")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "<s>mul<mode>3_highpart"
+(define_expand "<s>mul<mode>3_highpart<mask_name>"
   [(set (match_operand:VI2_AVX2 0 "register_operand")
 	(truncate:VI2_AVX2
 	  (lshiftrt:<ssedoublemode>
@@ -9166,23 +9169,26 @@
 	      (any_extend:<ssedoublemode>
 		(match_operand:VI2_AVX2 2 "nonimmediate_operand")))
 	    (const_int 16))))]
-  "TARGET_SSE2"
+  "TARGET_SSE2
+   && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
 
-(define_insn "*<s>mul<mode>3_highpart"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
+(define_insn "*<s>mul<mode>3_highpart<mask_name>"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
 	(truncate:VI2_AVX2
 	  (lshiftrt:<ssedoublemode>
 	    (mult:<ssedoublemode>
 	      (any_extend:<ssedoublemode>
-		(match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,x"))
+		(match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,v"))
 	      (any_extend:<ssedoublemode>
-		(match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,xm")))
+		(match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,vm")))
 	    (const_int 16))))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (MULT, <MODE>mode, operands)
+   && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    pmulh<u>w\t{%2, %0|%0, %2}
-   vpmulh<u>w\t{%2, %1, %0|%0, %1, %2}"
+   vpmulh<u>w\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseimul")
    (set_attr "prefix_data16" "1,*")
@@ -9425,6 +9431,18 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_insn "avx512bw_pmaddwd512<mode><mask_name>"
+  [(set (match_operand:<sseunpackmode> 0 "register_operand" "=v")
+          (unspec:<sseunpackmode>
+            [(match_operand:VI2_AVX2 1 "register_operand" "v")
+             (match_operand:VI2_AVX2 2 "nonimmediate_operand" "vm")]
+             UNSPEC_PMADDWD512))]
+   "TARGET_AVX512BW && <mask_mode512bit_condition>"
+   "vpmaddwd\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}";
+  [(set_attr "type" "sseiadd")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
 (define_expand "avx2_pmaddwd"
   [(set (match_operand:V8SI 0 "register_operand")
 	(plus:V8SI
@@ -9665,6 +9683,9 @@
   DONE;
 })
 
+(define_mode_attr SDOT_PMADD_SUF
+  [(V32HI "512v32hi") (V16HI "") (V8HI "")])
+
 (define_expand "sdot_prod<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI2_AVX2 1 "register_operand")
@@ -9673,7 +9694,7 @@
   "TARGET_SSE2"
 {
   rtx t = gen_reg_rtx (<sseunpackmode>mode);
-  emit_insn (gen_<sse2_avx2>_pmaddwd (t, operands[1], operands[2]));
+  emit_insn (gen_<sse2_avx2>_pmaddwd<SDOT_PMADD_SUF> (t, operands[1], operands[2]));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			  gen_rtx_PLUS (<sseunpackmode>mode,
 					operands[3], t)));
@@ -10857,17 +10878,17 @@
    (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<sse2_avx2>_packssdw"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
+(define_insn "<sse2_avx2>_packssdw<mask_name>"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
 	(vec_concat:VI2_AVX2
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,xm"))))]
-  "TARGET_SSE2"
+	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,vm"))))]
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packssdw\t{%2, %0|%0, %2}
-   vpackssdw\t{%2, %1, %0|%0, %1, %2}"
+   vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
@@ -13349,29 +13370,30 @@
   ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
 })
 
-(define_insn "*<ssse3_avx2>_pmulhrsw<mode>3"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
+(define_insn "*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
 	(truncate:VI2_AVX2
 	  (lshiftrt:<ssedoublemode>
 	    (plus:<ssedoublemode>
 	      (lshiftrt:<ssedoublemode>
 		(mult:<ssedoublemode>
 		  (sign_extend:<ssedoublemode>
-		    (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,x"))
+		    (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,v"))
 		  (sign_extend:<ssedoublemode>
-		    (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,xm")))
+		    (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,vm")))
 		(const_int 14))
 	      (match_operand:VI2_AVX2 3 "const1_operand"))
 	    (const_int 1))))]
-  "TARGET_SSSE3 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
+  "TARGET_SSSE3 && <mask_mode512bit_condition> && <mask_avx512bw_condition>
+   && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
   "@
    pmulhrsw\t{%2, %0|%0, %2}
-   vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
+   vpmulhrsw\t{%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseimul")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*ssse3_pmulhrswv4hi3"
@@ -13743,36 +13765,22 @@
    (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_packusdw"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
-	(vec_concat:V16HI
-	  (us_truncate:V8HI
-	    (match_operand:V8SI 1 "register_operand" "x"))
-	  (us_truncate:V8HI
-	    (match_operand:V8SI 2 "nonimmediate_operand" "xm"))))]
-  "TARGET_AVX2"
-  "vpackusdw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
-
-(define_insn "sse4_1_packusdw"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
-	(vec_concat:V8HI
-	  (us_truncate:V4HI
-	    (match_operand:V4SI 1 "register_operand" "0,x"))
-	  (us_truncate:V4HI
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm,xm"))))]
-  "TARGET_SSE4_1"
+(define_insn "<sse4_1_avx2>_packusdw<mask_name>"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
+	(vec_concat:VI2_AVX2
+	  (us_truncate:<ssehalfvecmode>
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
+	  (us_truncate:<ssehalfvecmode>
+	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,vm"))))]
+  "TARGET_SSE4_1 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packusdw\t{%2, %0|%0, %2}
-   vpackusdw\t{%2, %1, %0|%0, %1, %2}"
+   vpackusdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "TI")])
+   (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse4_1_avx2>_pblendvb"
   [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,x")
