@@ -1,3 +1,14 @@
+2014-10-14  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+
+	PR libstdc++/54354
+	* include/std/iomanip (_Put_time): New struct.
+	(put_time): New manipulator.
+	(operator<<): New overloaded function.
+	* testsuite/27_io/manipulators/extended/put_time/char/1.cc: New.
+	* testsuite/27_io/manipulators/extended/put_time/char/2.cc: New.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/1.cc: New.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/2.cc: New.
+
 2014-10-14  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstdc++/57440
