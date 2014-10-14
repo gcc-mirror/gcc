@@ -1,3 +1,10 @@
+2014-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/62019
+	* tree-eh.c (tree_could_trap) <FUNCTION_DECL>: Revamp and really
+	do not choke on null node.
+	<VAR_DECL>: Likewise.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* machmode.h (int_n_data_t): New.
