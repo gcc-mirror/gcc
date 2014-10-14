@@ -17540,8 +17540,10 @@ ix86_expand_vector_logical_operator (enum rtx_code code, enum machine_mode mode,
 	{
 	case V4SFmode:
 	case V8SFmode:
+	case V16SFmode:
 	case V2DFmode:
 	case V4DFmode:
+	case V8DFmode:
 	  dst = gen_reg_rtx (GET_MODE (SUBREG_REG (op1)));
 	  if (GET_CODE (op2) == CONST_VECTOR)
 	    {
