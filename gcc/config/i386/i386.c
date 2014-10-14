@@ -34108,6 +34108,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx512f_cmpv16si3_mask:
 	      case CODE_FOR_avx512f_ucmpv8di3_mask:
 	      case CODE_FOR_avx512f_ucmpv16si3_mask:
+	      case CODE_FOR_avx512vl_cmpv4di3_mask:
+	      case CODE_FOR_avx512vl_cmpv8si3_mask:
+	      case CODE_FOR_avx512vl_ucmpv4di3_mask:
+	      case CODE_FOR_avx512vl_ucmpv8si3_mask:
+	      case CODE_FOR_avx512vl_cmpv2di3_mask:
+	      case CODE_FOR_avx512vl_cmpv4si3_mask:
+	      case CODE_FOR_avx512vl_ucmpv2di3_mask:
+	      case CODE_FOR_avx512vl_ucmpv4si3_mask:
 		error ("the last argument must be a 3-bit immediate");
 		return const0_rtx;
 

@@ -7,6 +7,32 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c
+	(ix86_expand_args_builtin): Handle CODE_FOR_avx512vl_cmpv4di3_mask,
+	CODE_FOR_avx512vl_cmpv8si3_mask, CODE_FOR_avx512vl_ucmpv4di3_mask,
+	CODE_FOR_avx512vl_ucmpv8si3_mask, CODE_FOR_avx512vl_cmpv2di3_mask,
+	CODE_FOR_avx512vl_cmpv4si3_mask, CODE_FOR_avx512vl_ucmpv2di3_mask,
+	CODE_FOR_avx512vl_ucmpv4si3_mask.
+	* config/i386/sse.md
+	(define_insn "avx512f_ucmp<mode>3<mask_scalar_merge_name>"): Delete.
+	"<avx512>_ucmp<VI12_AVX512VL:mode>3<mask_scalar_merge_name>"):New.
+	(define_insn
+	"<avx512>_ucmp<VI48_AVX512VL:mode>3<mask_scalar_merge_name>"):Ditto.
+	(define_expand "<avx512>_eq<mode>3<mask_scalar_merge_name>"): Ditto.
+	(define_insn "<avx512>_eq<mode>3<mask_scalar_merge_name>_1"): Ditto.
+	(define_insn "<avx512>_gt<mode>3<mask_scalar_merge_name>"): Ditto.
+	(define_insn "<avx512>_testm<mode>3<mask_scalar_merge_name>"): Ditto.
+	(define_insn "<avx512>_testnm<mode>3<mask_scalar_merge_name>"): Ditto.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_expand "vec_widen_umult_even_v8si<mask_name>"): Add masking.
 	(define_insn "*vec_widen_umult_even_v8si<mask_name>"): Ditto.
