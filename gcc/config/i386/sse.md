@@ -514,6 +514,8 @@
 (define_mode_iterator VI48_256 [V8SI V4DI])
 (define_mode_iterator VI48_512 [V16SI V8DI])
 (define_mode_iterator VI4_256_8_512 [V8SI V8DI])
+(define_mode_iterator VI_AVX512BW
+  [V16SI V8DI (V32HI "TARGET_AVX512BW") (V64QI "TARGET_AVX512BW")])
 
 ;; Int-float size matches
 (define_mode_iterator VI4F_128 [V4SI V4SF])
@@ -2337,9 +2339,9 @@
 })
 
 (define_expand "reduc_<code>_<mode>"
-  [(umaxmin:VI48_512
-     (match_operand:VI48_512 0 "register_operand")
-     (match_operand:VI48_512 1 "register_operand"))]
+  [(umaxmin:VI_AVX512BW
+     (match_operand:VI_AVX512BW 0 "register_operand")
+     (match_operand:VI_AVX512BW 1 "register_operand"))]
   "TARGET_AVX512F"
 {
   ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);

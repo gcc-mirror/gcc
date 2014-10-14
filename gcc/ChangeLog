@@ -7,6 +7,21 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c
+	(emit_reduc_half): Handle V64QI and V32HI mode.
+	* config/i386/sse.md
+	(define_mode_iterator VI_AVX512BW): New.
+	(define_expand "reduc_<code>_<mode>"): Use VI512_48F_12BW.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
         * config/i386/sse.md
         (define_mode_iterator REDUC_SMINMAX_MODE): Add V64QI and V32HI modes.
 
