@@ -10096,15 +10096,17 @@
     }
 })
 
-(define_insn "*sse4_1_<code><mode>3"
-  [(set (match_operand:VI14_128 0 "register_operand" "=x,x")
+(define_insn "*sse4_1_<code><mode>3<mask_name>"
+  [(set (match_operand:VI14_128 0 "register_operand" "=x,v")
 	(smaxmin:VI14_128
-	  (match_operand:VI14_128 1 "nonimmediate_operand" "%0,x")
-	  (match_operand:VI14_128 2 "nonimmediate_operand" "xm,xm")))]
-  "TARGET_SSE4_1 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+	  (match_operand:VI14_128 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VI14_128 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE4_1
+   && <mask_mode512bit_condition>
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<maxmin_int><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "prefix_extra" "1,*")
@@ -10177,15 +10179,17 @@
     }
 })
 
-(define_insn "*sse4_1_<code><mode>3"
-  [(set (match_operand:VI24_128 0 "register_operand" "=x,x")
+(define_insn "*sse4_1_<code><mode>3<mask_name>"
+  [(set (match_operand:VI24_128 0 "register_operand" "=x,v")
 	(umaxmin:VI24_128
-	  (match_operand:VI24_128 1 "nonimmediate_operand" "%0,x")
-	  (match_operand:VI24_128 2 "nonimmediate_operand" "xm,xm")))]
-  "TARGET_SSE4_1 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+	  (match_operand:VI24_128 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VI24_128 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE4_1
+   && <mask_mode512bit_condition>
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<maxmin_int><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "prefix_extra" "1,*")
