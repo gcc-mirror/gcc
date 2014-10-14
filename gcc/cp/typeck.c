@@ -270,6 +270,7 @@ cp_common_type (tree t1, tree t2)
   enum tree_code code1 = TREE_CODE (t1);
   enum tree_code code2 = TREE_CODE (t2);
   tree attributes;
+  int i;
 
 
   /* In what follows, we slightly generalize the rules given in [expr] so
@@ -364,16 +365,19 @@ cp_common_type (tree t1, tree t2)
 		    : long_long_integer_type_node);
 	  return build_type_attribute_variant (t, attributes);
 	}
-      if (int128_integer_type_node != NULL_TREE
-	  && (same_type_p (TYPE_MAIN_VARIANT (t1),
-			   int128_integer_type_node)
-	      || same_type_p (TYPE_MAIN_VARIANT (t2),
-			      int128_integer_type_node)))
+      for (i = 0; i < NUM_INT_N_ENTS; i ++)
 	{
-	  tree t = ((TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
-		    ? int128_unsigned_type_node
-		    : int128_integer_type_node);
-	  return build_type_attribute_variant (t, attributes);
+	  if (int_n_enabled_p [i]
+	      && (same_type_p (TYPE_MAIN_VARIANT (t1),
+			       int_n_trees[i].signed_type)
+		  || same_type_p (TYPE_MAIN_VARIANT (t2),
+				  int_n_trees[i].signed_type)))
+	    {
+	      tree t = ((TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
+			? int_n_trees[i].unsigned_type
+			: int_n_trees[i].signed_type);
+	      return build_type_attribute_variant (t, attributes);
+	    }
 	}
 
       /* Go through the same procedure, but for longs.  */

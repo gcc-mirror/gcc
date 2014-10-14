@@ -1,3 +1,22 @@
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* c-pretty-print.c (pp_c_integer_constant): Check for all __intN
+	types, not just __int128.
+	* c-cppbuiltin.c (c_cpp_builtins): Add builtins for all __intN
+	types, not just __int128.
+	(cpp_atomic_builtins): Round pointer sizes up.
+	(type_suffix): Use type precision, not specific types.
+	* c-common.c (c_common_reswords): Remove __int128 special case.
+	(c_common_type_for_size): Check for all __intN types, not just
+	__int128.
+	(c_common_type_for_mode): Likewise.
+	(c_common_signed_or_unsigned_type): Likewise.
+	(c_build_bitfield_integer_type): Likewise.
+	(c_common_nodes_and_builtins): Likewise.
+	(keyword_begins_type_specifier): Likewise.
+	* c-common.h (rid): Remove RID_INT128 and add RID_INT_N_* for all
+	__intN variants.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-common.c: Use hash_table instead of hashtab.

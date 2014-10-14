@@ -61,12 +61,10 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 	tree short_integer_type_node;
 	tree long_integer_type_node;
 	tree long_long_integer_type_node;
-	tree int128_integer_type_node;
 
 	tree short_unsigned_type_node;
 	tree long_unsigned_type_node;
 	tree long_long_unsigned_type_node;
-	tree int128_unsigned_type_node;
 
 	tree truthvalue_type_node;
 	tree truthvalue_false_node;
@@ -468,7 +466,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
-  { "__int128",		RID_INT128,	0 },
   { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
   { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
   { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
@@ -3449,6 +3446,8 @@ check_case_bounds (location_t loc, tree type, tree orig_type,
 tree
 c_common_type_for_size (unsigned int bits, int unsignedp)
 {
+  int i;
+
   if (bits == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
@@ -3465,10 +3464,11 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
 
-  if (int128_integer_type_node
-      && bits == TYPE_PRECISION (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& bits == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (bits == TYPE_PRECISION (widest_integer_literal_type_node))
     return (unsignedp ? widest_unsigned_literal_type_node
@@ -3532,6 +3532,7 @@ tree
 c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   tree t;
+  int i;
 
   if (mode == TYPE_MODE (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
@@ -3548,9 +3549,11 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
 
-  if (int128_integer_type_node
-      && mode == TYPE_MODE (int128_integer_type_node))
-    return unsignedp ? int128_unsigned_type_node : int128_integer_type_node;
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& mode == int_n_data[i].m)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (mode == TYPE_MODE (widest_integer_literal_type_node))
     return unsignedp ? widest_unsigned_literal_type_node
@@ -3748,6 +3751,7 @@ tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
   tree type1;
+  int i;
 
   /* This block of code emulates the behavior of the old
      c_common_unsigned_type. In particular, it returns
@@ -3766,10 +3770,14 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
   if (type1 == long_long_integer_type_node || type1 == long_long_unsigned_type_node)
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
-  if (int128_integer_type_node
-      && (type1 == int128_integer_type_node
-	  || type1 == int128_unsigned_type_node))
-    return unsignedp ? int128_unsigned_type_node : int128_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& (type1 == int_n_trees[i].unsigned_type
+	    || type1 == int_n_trees[i].signed_type))
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   if (type1 == widest_integer_literal_type_node || type1 == widest_unsigned_literal_type_node)
     return unsignedp ? widest_unsigned_literal_type_node : widest_integer_literal_type_node;
 #if HOST_BITS_PER_WIDE_INT >= 64
@@ -3884,9 +3892,14 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
   if (TYPE_OK (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
-  if (int128_integer_type_node && TYPE_OK (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& TYPE_MODE (type) == int_n_data[i].m
+	&& TYPE_PRECISION (type) == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   if (TYPE_OK (widest_integer_literal_type_node))
     return (unsignedp ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
@@ -3913,6 +3926,8 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
 tree
 c_build_bitfield_integer_type (unsigned HOST_WIDE_INT width, int unsignedp)
 {
+  int i;
+
   /* Extended integer types of the same width as a standard type have
      lesser rank, so those of the same width as int promote to int or
      unsigned int and are valid for printf formats expecting int or
@@ -3930,10 +3945,11 @@ c_build_bitfield_integer_type (unsigned HOST_WIDE_INT width, int unsignedp)
   if (width == TYPE_PRECISION (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
-  if (int128_integer_type_node
-      && width == TYPE_PRECISION (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& width == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
   return build_nonstandard_integer_type (width, unsignedp);
 }
 
@@ -5338,6 +5354,7 @@ c_common_nodes_and_builtins (void)
   tree array_domain_type;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
+  int i;
 
   build_common_tree_nodes (flag_signed_char, flag_short_double);
 
@@ -5354,13 +5371,19 @@ c_common_nodes_and_builtins (void)
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
   record_builtin_type (RID_MAX, "long unsigned int",
 		       long_unsigned_type_node);
-  if (int128_integer_type_node != NULL_TREE)
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
     {
-      record_builtin_type (RID_INT128, "__int128",
-			   int128_integer_type_node);
-      record_builtin_type (RID_MAX, "__int128 unsigned",
-			   int128_unsigned_type_node);
+      char name[25];
+
+      sprintf (name, "__int%d", int_n_data[i].bitsize);
+      record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), xstrdup (name),
+			   int_n_trees[i].signed_type);
+      sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+      record_builtin_type (RID_MAX, xstrdup (name),
+			   int_n_trees[i].unsigned_type);
     }
+
   if (c_dialect_cxx ())
     record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
   record_builtin_type (RID_MAX, "long long int",
@@ -5396,6 +5419,8 @@ c_common_nodes_and_builtins (void)
 					 TYPE_DECL, NULL_TREE,
 					 intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
+  /* Note that this is different than the __int128 type that's part of
+     the generic __intN support.  */
   if (targetm.scalar_mode_supported_p (TImode))
     lang_hooks.decls.pushdecl (build_decl (UNKNOWN_LOCATION,
 					   TYPE_DECL,
@@ -11762,7 +11787,6 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_FLOAT:
     case RID_DOUBLE:
     case RID_VOID:
-    case RID_INT128:
     case RID_UNSIGNED:
     case RID_LONG:
     case RID_SHORT:
@@ -11785,6 +11809,10 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_ENUM:
       return true;
     default:
+      if (keyword >= RID_FIRST_INT_N
+	  && keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	  && int_n_enabled_p[keyword-RID_FIRST_INT_N])
+	return true;
       return false;
     }
 }

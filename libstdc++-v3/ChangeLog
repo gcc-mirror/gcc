@@ -1,3 +1,12 @@
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* src/c++11/limits.cc: Add support for __intN types.
+	* include/std/type_traits: Likewise.
+	* include/std/limits: Likewise.
+	* include/c_std/cstdlib: Likewise.
+	* include/bits/cpp_type_traits.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+
 2014-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/align/1.cc: Add dg-require-stdint.

@@ -947,7 +947,6 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
     case RID_SHORT:
     case RID_INT:
     case RID_LONG:
-    case RID_INT128:
     case RID_SIGNED:
     case RID_UNSIGNED:
     case RID_FLOAT:
@@ -962,6 +961,10 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
       return true;
 
     default:
+      if (token->keyword >= RID_FIRST_INT_N
+	  && token->keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	  && int_n_enabled_p[token->keyword - RID_FIRST_INT_N])
+	return true;
       return false;
     }
 }
@@ -14664,6 +14667,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 {
   tree type = NULL_TREE;
   cp_token *token;
+  int idx;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -14697,12 +14701,19 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	decl_specs->explicit_int_p = true;
       type = integer_type_node;
       break;
-    case RID_INT128:
-      if (!int128_integer_type_node)
+    case RID_INT_N_0:
+    case RID_INT_N_1:
+    case RID_INT_N_2:
+    case RID_INT_N_3:
+      idx = token->keyword - RID_INT_N_0;
+      if (! int_n_enabled_p [idx])
 	break;
       if (decl_specs)
-        decl_specs->explicit_int128_p = true;
-      type = int128_integer_type_node;
+	{
+	  decl_specs->explicit_intN_p = true;
+	  decl_specs->int_n_idx = idx;
+	}
+      type = int_n_trees [idx].signed_type;
       break;
     case RID_LONG:
       if (decl_specs)

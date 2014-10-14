@@ -1901,6 +1901,21 @@ finalize (bool no_backend)
   lang_hooks.finish ();
 }
 
+static bool
+standard_type_bitsize (int bitsize)
+{
+  /* As a special exception, we always want __int128 enabled if possible.  */
+  if (bitsize == 128)
+    return false;
+  if (bitsize == CHAR_TYPE_SIZE
+      || bitsize == SHORT_TYPE_SIZE
+      || bitsize == INT_TYPE_SIZE
+      || bitsize == LONG_TYPE_SIZE
+      || bitsize == LONG_LONG_TYPE_SIZE)
+    return true;
+  return false;
+}
+
 /* Initialize the compiler, and compile the input file.  */
 static void
 do_compile (void)
@@ -1916,6 +1931,8 @@ do_compile (void)
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
     {
+      int i;
+
       timevar_start (TV_PHASE_SETUP);
 
       /* This must be run always, because it is needed to compute the FP
@@ -1923,6 +1940,16 @@ do_compile (void)
 	 default FP formats.  */
       init_adjust_machine_modes ();
       init_derived_machine_modes ();
+
+      /* This must happen after the backend has a chance to process
+	 command line options, but before the parsers are
+	 initialized.  */
+      for (i = 0; i < NUM_INT_N_ENTS; i ++)
+	if (targetm.scalar_mode_supported_p (int_n_data[i].m)
+	    && ! standard_type_bitsize (int_n_data[i].bitsize))
+	  int_n_enabled_p[i] = true;
+	else
+	  int_n_enabled_p[i] = false;
 
       /* Set up the back-end if requested.  */
       if (!no_backend)

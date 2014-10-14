@@ -771,6 +771,8 @@ cpp_iec_559_complex_value (void)
 void
 c_cpp_builtins (cpp_reader *pfile)
 {
+  int i;
+
   /* -undef turns off target-specific built-ins.  */
   if (flag_undef)
     return;
@@ -888,6 +890,23 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_minmax ("__WINT_MIN__", "__WINT_MAX__", wint_type_node);
   builtin_define_type_max ("__PTRDIFF_MAX__", ptrdiff_type_node);
   builtin_define_type_max ("__SIZE_MAX__", size_type_node);
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i])
+      {
+	char buf[35+20+20];
+
+	/* These are used to configure the C++ library.  */
+
+	if (!flag_iso || int_n_data[i].bitsize == POINTER_SIZE)
+	  {
+	    sprintf (buf, "__GLIBCXX_TYPE_INT_N_%d=__int%d", i, int_n_data[i].bitsize);
+	    cpp_define (parse_in, buf);
+
+	    sprintf (buf, "__GLIBCXX_BITSIZE_INT_N_%d=%d", i, int_n_data[i].bitsize);
+	    cpp_define (parse_in, buf);
+	  }
+      }
 
   /* stdint.h and the testsuite need to know these.  */
   builtin_define_stdint_macros ();
@@ -1169,9 +1188,14 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201307");
 
-  if (int128_integer_type_node != NULL_TREE)
-    builtin_define_type_sizeof ("__SIZEOF_INT128__",
-			        int128_integer_type_node);
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i])
+      {
+	char buf[15+20];
+	sprintf(buf, "__SIZEOF_INT%d__", int_n_data[i].bitsize);
+	builtin_define_type_sizeof (buf,
+				    int_n_trees[i].signed_type);
+      }
   builtin_define_type_sizeof ("__SIZEOF_WCHAR_T__", wchar_type_node);
   builtin_define_type_sizeof ("__SIZEOF_WINT_T__", wint_type_node);
   builtin_define_type_sizeof ("__SIZEOF_PTRDIFF_T__",
@@ -1445,12 +1469,15 @@ type_suffix (tree type)
   static const char *const suffixes[] = { "", "U", "L", "UL", "LL", "ULL" };
   int unsigned_suffix;
   int is_long;
+  int tp = TYPE_PRECISION (type);
 
   if (type == long_long_integer_type_node
-      || type == long_long_unsigned_type_node)
+      || type == long_long_unsigned_type_node
+      || tp > TYPE_PRECISION (long_integer_type_node))
     is_long = 2;
   else if (type == long_integer_type_node
-	   || type == long_unsigned_type_node)
+	   || type == long_unsigned_type_node
+	   || tp > TYPE_PRECISION (integer_type_node))
     is_long = 1;
   else if (type == integer_type_node
 	   || type == unsigned_type_node
