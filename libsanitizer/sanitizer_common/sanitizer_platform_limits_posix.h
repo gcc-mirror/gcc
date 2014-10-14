@@ -67,6 +67,14 @@ namespace __sanitizer {
   const unsigned struct___old_kernel_stat_sz = 0;
   const unsigned struct_kernel_stat_sz = 144;
   const unsigned struct_kernel_stat64_sz = 104;
+#elif defined(__sparc__) && defined(__arch64__)
+  const unsigned struct___old_kernel_stat_sz = 0;
+  const unsigned struct_kernel_stat_sz = 104;
+  const unsigned struct_kernel_stat64_sz = 144;
+#elif defined(__sparc__) && !defined(__arch64__)
+  const unsigned struct___old_kernel_stat_sz = 0;
+  const unsigned struct_kernel_stat_sz = 64;
+  const unsigned struct_kernel_stat64_sz = 104;
 #endif
   struct __sanitizer_perf_event_attr {
     unsigned type;
@@ -145,6 +153,18 @@ namespace __sanitizer {
     unsigned __seq;
     u64 __unused1;
     u64 __unused2;
+#elif defined(__sparc__)
+# if defined(__arch64__)
+    unsigned mode;
+    unsigned short __pad1;
+# else
+    unsigned short __pad1;
+    unsigned short mode;
+    unsigned short __pad2;
+# endif
+    unsigned short __seq;
+    unsigned long long __unused1;
+    unsigned long long __unused2;
 #else
     unsigned short mode;
     unsigned short __pad1;
@@ -162,6 +182,26 @@ namespace __sanitizer {
 
   struct __sanitizer_shmid_ds {
     __sanitizer_ipc_perm shm_perm;
+  #if defined(__sparc__)
+  # if !defined(__arch64__)
+    u32 __pad1;
+  # endif
+    long shm_atime;
+  # if !defined(__arch64__)
+    u32 __pad2;
+  # endif
+    long shm_dtime;
+  # if !defined(__arch64__)
+    u32 __pad3;
+  # endif
+    long shm_ctime;
+    uptr shm_segsz;
+    int shm_cpid;
+    int shm_lpid;
+    unsigned long shm_nattch;
+    unsigned long __glibc_reserved1;
+    unsigned long __glibc_reserved2;
+  #else    
   #ifndef __powerpc__
     uptr shm_segsz;
   #elif !defined(__powerpc64__)
@@ -199,6 +239,7 @@ namespace __sanitizer {
     uptr __unused4;
     uptr __unused5;
   #endif
+#endif
   };
   #endif  // SANITIZER_LINUX && !SANITIZER_ANDROID
 
@@ -365,7 +406,11 @@ namespace __sanitizer {
       void (*sa_sigaction)(int sig, void *siginfo, void *uctx);
     };
     __sanitizer_sigset_t sa_mask;
+#if defined(__sparc__)
+    unsigned long sa_flags;
+#else
     int sa_flags;
+#endif
 #if SANITIZER_LINUX
     void (*sa_restorer)();
 #endif
@@ -511,7 +556,16 @@ namespace __sanitizer {
   };
 #endif
 
-#define IOC_SIZE(nr) (((nr) >> 16) & 0x3fff)
+#if defined(__sparc__)
+// In sparc the 14 bits SIZE field overlaps with the
+// least significant bit of DIR, so either IOC_READ or
+// IOC_WRITE shall be 1 in order to get a non-zero SIZE.
+# define IOC_SIZE(nr)                       \
+  ((((((nr) >> 29) & 0x7) & (4U|2U)) == 0)? \
+   0 : (((nr) >> 16) & 0x3fff))
+#else
+# define IOC_SIZE(nr) (((nr) >> 16) & 0x3fff)
+#endif
 
   extern unsigned struct_arpreq_sz;
   extern unsigned struct_ifreq_sz;
