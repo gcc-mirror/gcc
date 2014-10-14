@@ -350,7 +350,7 @@
 
 ;; ??? This should probably be dropped in favor of VIMAX_AVX2.
 (define_mode_iterator SSESCALARMODE
-  [(V2TI "TARGET_AVX2") TI])
+  [(V4TI "TARGET_AVX512BW") (V2TI "TARGET_AVX2") TI])
 
 (define_mode_iterator VI12_AVX2
   [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX2") V16QI
@@ -13455,11 +13455,33 @@
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI")])
 
+(define_insn "<ssse3_avx2>_palignr<mode>_mask"
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=v")
+        (vec_merge:VI1_AVX2
+	  (unspec:VI1_AVX2
+	    [(match_operand:VI1_AVX2 1 "register_operand" "v")
+	     (match_operand:VI1_AVX2 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n")]
+	    UNSPEC_PALIGNR)
+	(match_operand:VI1_AVX2 4 "vector_move_operand" "0C")
+	(match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
+  "TARGET_AVX512BW && (<MODE_SIZE> == 64 || TARGET_AVX512VL)"
+{
+  operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
+  return "vpalignr\t{%3, %2, %1, %0%{%5%}%N4|%0%{%5%}%N4, %1, %2, %3}";
+}
+  [(set_attr "type" "sseishft")
+   (set_attr "atom_unit" "sishuf")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "<ssse3_avx2>_palignr<mode>"
-  [(set (match_operand:SSESCALARMODE 0 "register_operand" "=x,x")
+  [(set (match_operand:SSESCALARMODE 0 "register_operand" "=x,v")
 	(unspec:SSESCALARMODE
-	  [(match_operand:SSESCALARMODE 1 "register_operand" "0,x")
-	   (match_operand:SSESCALARMODE 2 "nonimmediate_operand" "xm,xm")
+	  [(match_operand:SSESCALARMODE 1 "register_operand" "0,v")
+	   (match_operand:SSESCALARMODE 2 "nonimmediate_operand" "xm,vm")
 	   (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n,n")]
 	  UNSPEC_PALIGNR))]
   "TARGET_SSSE3"
