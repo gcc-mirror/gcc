@@ -5723,7 +5723,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
       break;
 
     case TRUTH_NOT_EXPR:
-      if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg)))
+      if (VECTOR_TYPE_P (TREE_TYPE (arg)))
 	return cp_build_binary_op (input_location, EQ_EXPR, arg,
 				   build_zero_cst (TREE_TYPE (arg)), complain);
       arg = perform_implicit_conversion (boolean_type_node, arg,
