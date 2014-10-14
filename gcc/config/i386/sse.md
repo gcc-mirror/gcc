@@ -2692,15 +2692,15 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "<sse>_andnot<mode>3"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(and:VF
-	  (not:VF
-	    (match_operand:VF 1 "register_operand" "0,v"))
-	  (match_operand:VF 2 "nonimmediate_operand" "xm,vm")))]
-  "TARGET_SSE"
+(define_insn "<sse>_andnot<mode>3<mask_name>"
+  [(set (match_operand:VF_128_256 0 "register_operand" "=x,v")
+	(and:VF_128_256
+	  (not:VF_128_256
+	    (match_operand:VF_128_256 1 "register_operand" "0,v"))
+	  (match_operand:VF_128_256 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE && <mask_avx512vl_condition>"
 {
-  static char buf[32];
+  static char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -2720,17 +2720,17 @@
       ops = "andn%s\t{%%2, %%0|%%0, %%2}";
       break;
     case 1:
-      ops = "vandn%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
+      ops = "vandn%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* There is no vandnp[sd].  Use vpandnq.  */
-  if (<MODE_SIZE> == 64)
+  /* There is no vandnp[sd] in avx512f.  Use vpandn[qd].  */
+  if (<mask_applied> && !TARGET_AVX512DQ)
     {
-      suffix = "q";
-      ops = "vpandn%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
+      suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
+      ops = "vpandn%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
@@ -2750,30 +2750,63 @@
 	       ]
 	       (const_string "<MODE>")))])
 
-(define_expand "<code><mode>3"
+
+(define_insn "<sse>_andnot<mode>3<mask_name>"
+  [(set (match_operand:VF_512 0 "register_operand" "=v")
+	(and:VF_512
+	  (not:VF_512
+	    (match_operand:VF_512 1 "register_operand" "v"))
+	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512F"
+{
+  static char buf[128];
+  const char *ops;
+  const char *suffix;
+
+  suffix = "<ssemodesuffix>";
+  ops = "";
+
+  /* There is no vandnp[sd] in avx512f.  Use vpandn[qd].  */
+  if (!TARGET_AVX512DQ)
+    {
+      suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
+      ops = "p";
+    }
+
+  snprintf (buf, sizeof (buf),
+	    "v%sandn%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}",
+	    ops, suffix);
+  return buf;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "<code><mode>3<mask_name>"
   [(set (match_operand:VF_128_256 0 "register_operand")
-	(any_logic:VF_128_256
-	  (match_operand:VF_128_256 1 "nonimmediate_operand")
-	  (match_operand:VF_128_256 2 "nonimmediate_operand")))]
-  "TARGET_SSE"
+       (any_logic:VF_128_256
+         (match_operand:VF_128_256 1 "nonimmediate_operand")
+         (match_operand:VF_128_256 2 "nonimmediate_operand")))]
+  "TARGET_SSE && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_expand "<code><mode>3"
+(define_expand "<code><mode>3<mask_name>"
   [(set (match_operand:VF_512 0 "register_operand")
-       (fpint_logic:VF_512
+       (any_logic:VF_512
          (match_operand:VF_512 1 "nonimmediate_operand")
          (match_operand:VF_512 2 "nonimmediate_operand")))]
   "TARGET_AVX512F"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*<code><mode>3"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(any_logic:VF
-	  (match_operand:VF 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VF 2 "nonimmediate_operand" "xm,vm")))]
-  "TARGET_SSE && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+(define_insn "*<code><mode>3<mask_name>"
+  [(set (match_operand:VF_128_256 0 "register_operand" "=x,v")
+	(any_logic:VF_128_256
+	  (match_operand:VF_128_256 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VF_128_256 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE && <mask_avx512vl_condition>
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
-  static char buf[32];
+  static char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -2793,17 +2826,17 @@
       ops = "<logic>%s\t{%%2, %%0|%%0, %%2}";
       break;
     case 1:
-      ops = "v<logic>%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
+      ops = "v<logic>%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* There is no v<logic>p[sd].  Use vp<logic>q.  */
-  if (<MODE_SIZE> == 64)
+  /* There is no v<logic>p[sd] in avx512f.  Use vp<logic>[dq].  */
+  if (<mask_applied> && !TARGET_AVX512DQ)
     {
-      suffix = "q";
-      ops = "vp<logic>%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
+      suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
+      ops = "vp<logic>%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
@@ -2822,6 +2855,36 @@
 		 (const_string "V4SF")
 	       ]
 	       (const_string "<MODE>")))])
+
+(define_insn "*<code><mode>3<mask_name>"
+  [(set (match_operand:VF_512 0 "register_operand" "=v")
+	(any_logic:VF_512
+	  (match_operand:VF_512 1 "nonimmediate_operand" "%v")
+	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512F && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+{
+  static char buf[128];
+  const char *ops;
+  const char *suffix;
+
+  suffix = "<ssemodesuffix>";
+  ops = "";
+
+  /* There is no v<logic>p[sd] in avx512f.  Use vp<logic>[dq].  */
+  if ((<MODE_SIZE> == 64 || <mask_applied>) && !TARGET_AVX512DQ)
+    {
+      suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
+      ops = "p";
+    }
+
+  snprintf (buf, sizeof (buf),
+	   "v%s<logic>%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}",
+	   ops, suffix);
+  return buf;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
@@ -3031,23 +3094,6 @@
 		 (const_string "V4SF")
 	       ]
 	       (const_string "TI")))])
-
-;; There are no floating point xor for V16SF and V8DF in avx512f
-;; but we need them for negation.  Instead we use int versions of
-;; xor.  Maybe there could be a better way to do that.
-
-(define_mode_attr avx512flogicsuff
-  [(V16SF "d") (V8DF "q")])
-
-(define_insn "avx512f_<logic><mode>"
-  [(set (match_operand:VF_512 0 "register_operand" "=v")
-	(fpint_logic:VF_512
-	  (match_operand:VF_512 1 "register_operand" "v")
-	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512F"
-  "vp<logic><avx512flogicsuff>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix" "evex")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -10539,16 +10585,31 @@
     {
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
-
-      tmp = "pandn<ssemodesuffix>";
-      break;
-
     case MODE_OI:
-      gcc_assert (TARGET_AVX2);
+      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
     case MODE_TI:
-      gcc_assert (TARGET_SSE2);
-
-      tmp = "pandn";
+      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      switch (<MODE>mode)
+      {
+        case V16SImode:
+        case V8DImode:
+          if (TARGET_AVX512F)
+          {
+            tmp = "pandn<ssemodesuffix>";
+            break;
+          }
+        case V8SImode:
+        case V4DImode:
+        case V4SImode:
+        case V2DImode:
+          if (TARGET_AVX512VL)
+          {
+            tmp = "pandn<ssemodesuffix>";
+            break;
+          }
+        default:
+          tmp = TARGET_AVX512VL ? "pandnq" : "pandn";
+      }
       break;
 
    case MODE_V16SF:
@@ -10633,16 +10694,31 @@
     {
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
-
-      tmp = "p<logic><ssemodesuffix>";
-      break;
-
     case MODE_OI:
-      gcc_assert (TARGET_AVX2);
+      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
     case MODE_TI:
-      gcc_assert (TARGET_SSE2);
-
-      tmp = "p<logic>";
+      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      switch (<MODE>mode)
+      {
+        case V16SImode:
+        case V8DImode:
+          if (TARGET_AVX512F)
+          {
+            tmp = "p<logic><ssemodesuffix>";
+            break;
+          }
+        case V8SImode:
+        case V4DImode:
+        case V4SImode:
+        case V2DImode:
+          if (TARGET_AVX512VL)
+          {
+            tmp = "p<logic><ssemodesuffix>";
+            break;
+          }
+        default:
+          tmp = TARGET_AVX512VL ? "p<logic>q" : "p<logic>";
+      }
       break;
 
    case MODE_V16SF:

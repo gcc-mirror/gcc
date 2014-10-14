@@ -8,6 +8,32 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_insn "<sse>_andnot<VF_128_256:mode>3<mask_name>"): Add masking,
+	use VF_128_256 mode iterator and update assembler emit code.
+	(define_insn "<sse>_andnot<VF_512:mode>3<mask_name>"): New.
+	(define_expand "<any_logic:code><VF_128_256:mode>3<mask_name>"):
+	Add masking, use VF_128_256 mode iterator.
+	(define_expand "<any_logic:code><VF_512:mode>3<mask_name>"): New.
+	(define_insn "*<any_logic:code><VF_128_256:mode>3<mask_name>"):
+	Add masking, use VF_128_256 mode iterator and update assembler emit
+	code.
+	(define_insn "*<any_logic:code><VF_512:mode>3<mask_name>"): New.
+	(define_mode_attr avx512flogicsuff): Delete.
+	(define_insn "avx512f_<logic><mode>"): Ditto.
+	(define_insn "*andnot<mode>3<mask_name>"): Update MODE_XI, MODE_OI,
+	MODE_TI.
+	(define_insn "<mask_codefor><code><mode>3<mask_name>"): Ditto.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_mode_iterator VI128_128 [V16QI V8HI V2DI]): Delete.
 	(define_expand "vashr<mode>3<mask_name>"): Add masking,
 	use VI12_128 mode iterator.
