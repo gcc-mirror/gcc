@@ -1,3 +1,14 @@
+2014-10-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63260
+	* config/sh/sh.md (negsf2, negsf2_i, negdf2, negdf2_i, abssf2,
+	abssf2_i, absdf2, absdf2_i): Remove fp_mode attribute.  Remove use
+	of FPSCR.
+	(negsf2_i): Rename to *negsf2_i.
+	(abssf2_i): Rename to *abssf2_i.
+	(negdf2_i): Rename to *negdf2_i.
+	(absdf2_i): Rename to *absdf2_i.
+
 2014-10-14  Felix Yang  <felix.yang@huawei.com>
 	    Jeff Law  <law@redhat.com>
 

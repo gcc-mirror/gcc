@@ -1,3 +1,8 @@
+2014-10-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63260
+	* gcc.target/sh/pr63260.c: New.
+
 2014-10-13  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/torture/20141013.C: New.
@@ -30,8 +35,8 @@
 
 	PR target/59401
 	PR target/54760
-	* gcc.target/pr54760-5.c: New.
-	* gcc.target/pr54760-6.c: New.
+	* gcc.target/sh/pr54760-5.c: New.
+	* gcc.target/sh/pr54760-6.c: New.
 	* gcc.target/sh/pr59401-1.c: New.
 
 2014-10-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>

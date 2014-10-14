@@ -12792,16 +12792,9 @@ label:
 })
 
 (define_expand "negsf2"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
-	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH2E)
-    {
-      expand_sf_unop (&gen_negsf2_i, operands);
-      DONE;
-    }
-})
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU")
 
 (define_insn "*negsf2_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -12810,14 +12803,12 @@ label:
   "fneg.s	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "negsf2_i"
+(define_insn "*negsf2_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
   "TARGET_SH2E"
   "fneg	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "single")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
@@ -12916,16 +12907,9 @@ label:
    (set_attr "fp_mode" "single")])
 
 (define_expand "abssf2"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
-	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH2E)
-    {
-      expand_sf_unop (&gen_abssf2_i, operands);
-      DONE;
-    }
-})
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU")
 
 (define_insn "*abssf2_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -12934,14 +12918,12 @@ label:
   "fabs.s	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "abssf2_i"
+(define_insn "*abssf2_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
   "TARGET_SH2E"
   "fabs	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "single")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "adddf3"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
@@ -13247,14 +13229,7 @@ label:
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
-    {
-      expand_df_unop (&gen_negdf2_i, operands);
-      DONE;
-    }
-})
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU")
 
 (define_insn "*negdf2_media"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
@@ -13263,14 +13238,12 @@ label:
   "fneg.d	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "negdf2_i"
+(define_insn "*negdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
-	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fneg	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "double")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
@@ -13303,14 +13276,7 @@ label:
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
-    {
-      expand_df_unop (&gen_absdf2_i, operands);
-      DONE;
-    }
-})
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU")
 
 (define_insn "*absdf2_media"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
@@ -13319,14 +13285,12 @@ label:
   "fabs.d	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "absdf2_i"
+(define_insn "*absdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
-	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fabs	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "double")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
