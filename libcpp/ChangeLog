@@ -1,3 +1,18 @@
+2014-10-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/line-map.h (linemap_location_from_macro_expansion_p):
+	const struct line_maps * argument.
+	(linemap_position_for_line_and_column): const struct line_map *
+	argument.
+	* line-map.c (linemap_add_macro_token): Use correct argument name
+	in comment.
+	(linemap_position_for_line_and_column): const struct line_map *
+	argument.
+	(linemap_macro_map_loc_to_def_point): Fix comment. Make static.
+	(linemap_location_from_macro_expansion_p): const struct line_maps *
+	argument.
+	(linemap_resolve_location): Fix argument names in comment.
+
 2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* lex.c (search_line_fast): Add new version to be used for Power8

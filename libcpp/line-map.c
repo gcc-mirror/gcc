@@ -484,7 +484,7 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
    (which is a virtual location or a source location if the caller is
    itself a macro expansion or not).
 
-   MACRO_DEFINITION_LOC is the location in the macro definition,
+   ORIG_PARM_REPLACEMENT_LOC is the location in the macro definition,
    either of the token itself or of a macro parameter that it
    replaces.  */
 
@@ -621,7 +621,7 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
    column.  */
 
 source_location
-linemap_position_for_line_and_column (struct line_map *map,
+linemap_position_for_line_and_column (const struct line_map *map,
 				      linenum_type line,
 				      unsigned column)
 {
@@ -772,15 +772,13 @@ linemap_macro_map_loc_to_exp_point (const struct line_map *map,
   return MACRO_MAP_EXPANSION_POINT_LOCATION (map);
 }
 
-/* If LOCATION is the source location of a token that belongs to a
-   macro replacement-list -- as part of a macro expansion -- then
-   return the location of the token at the definition point of the
-   macro.  Otherwise, return LOCATION.  SET is the set of maps
-   location come from.  ORIGINAL_MAP is an output parm. If non NULL,
-   the function sets *ORIGINAL_MAP to the ordinary (non-macro) map the
-   returned location comes from.  */
+/* LOCATION is the source location of a token that belongs to a macro
+   replacement-list as part of the macro expansion denoted by MAP.
 
-source_location
+   Return the location of the token at the definition point of the
+   macro.  */
+
+static source_location
 linemap_macro_map_loc_to_def_point (const struct line_map *map,
 				    source_location location)
 {
@@ -940,7 +938,7 @@ linemap_location_in_system_header_p (struct line_maps *set,
    otherwise.  */
 
 bool
-linemap_location_from_macro_expansion_p (struct line_maps *set,
+linemap_location_from_macro_expansion_p (const struct line_maps *set,
 					 source_location location)
 {
   if (IS_ADHOC_LOC (location))
@@ -1233,9 +1231,9 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    function-like macro, then the function behaves as if LRK was set to
    LRK_SPELLING_LOCATION.
 
-   If LOC_MAP is not NULL, *LOC_MAP is set to the map encoding the
+   If MAP is not NULL, *MAP is set to the map encoding the
    returned location.  Note that if the returned location wasn't originally
-   encoded by a map, the *MAP is set to NULL.  This can happen if LOC
+   encoded by a map, then *MAP is set to NULL.  This can happen if LOC
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
 
