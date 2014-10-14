@@ -891,22 +891,23 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_max ("__PTRDIFF_MAX__", ptrdiff_type_node);
   builtin_define_type_max ("__SIZE_MAX__", size_type_node);
 
-  for (i = 0; i < NUM_INT_N_ENTS; i ++)
-    if (int_n_enabled_p[i])
-      {
-	char buf[35+20+20];
+  if (c_dialect_cxx ())
+    for (i = 0; i < NUM_INT_N_ENTS; i ++)
+      if (int_n_enabled_p[i])
+	{
+	  char buf[35+20+20];
 
-	/* These are used to configure the C++ library.  */
+	  /* These are used to configure the C++ library.  */
 
-	if (!flag_iso || int_n_data[i].bitsize == POINTER_SIZE)
-	  {
-	    sprintf (buf, "__GLIBCXX_TYPE_INT_N_%d=__int%d", i, int_n_data[i].bitsize);
-	    cpp_define (parse_in, buf);
+	  if (!flag_iso || int_n_data[i].bitsize == POINTER_SIZE)
+	    {
+	      sprintf (buf, "__GLIBCXX_TYPE_INT_N_%d=__int%d", i, int_n_data[i].bitsize);
+	      cpp_define (parse_in, buf);
 
-	    sprintf (buf, "__GLIBCXX_BITSIZE_INT_N_%d=%d", i, int_n_data[i].bitsize);
-	    cpp_define (parse_in, buf);
-	  }
-      }
+	      sprintf (buf, "__GLIBCXX_BITSIZE_INT_N_%d=%d", i, int_n_data[i].bitsize);
+	      cpp_define (parse_in, buf);
+	    }
+	}
 
   /* stdint.h and the testsuite need to know these.  */
   builtin_define_stdint_macros ();
