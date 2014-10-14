@@ -21040,6 +21040,12 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	    }
 	  break;
 
+	case V64QImode:
+	  gen = gen_avx512bw_blendmv64qi;
+	  break;
+	case V32HImode:
+	  gen = gen_avx512bw_blendmv32hi;
+	  break;
 	case V16SImode:
 	  gen = gen_avx512f_blendmv16si;
 	  break;
@@ -21356,6 +21362,8 @@ ix86_expand_int_vcond (rtx operands[])
 		}
 	      break;
 
+	    case V64QImode:
+	    case V32HImode:
 	    case V32QImode:
 	    case V16HImode:
 	    case V16QImode:
