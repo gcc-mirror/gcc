@@ -10840,21 +10840,21 @@
   DONE;
 })
 
-(define_insn "<sse2_avx2>_packsswb"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,x")
+(define_insn "<sse2_avx2>_packsswb<mask_name>"
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,v")
 	(vec_concat:VI1_AVX2
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,xm"))))]
-  "TARGET_SSE2"
+	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,vm"))))]
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packsswb\t{%2, %0|%0, %2}
-   vpacksswb\t{%2, %1, %0|%0, %1, %2}"
+   vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse2_avx2>_packssdw"
@@ -10874,17 +10874,17 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<sse2_avx2>_packuswb"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,x")
+(define_insn "<sse2_avx2>_packuswb<mask_name>"
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,v")
 	(vec_concat:VI1_AVX2
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,xm"))))]
-  "TARGET_SSE2"
+	    (match_operand:<sseunpackmode> 2 "nonimmediate_operand" "xm,vm"))))]
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packuswb\t{%2, %0|%0, %2}
-   vpackuswb\t{%2, %1, %0|%0, %1, %2}"
+   vpackuswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
