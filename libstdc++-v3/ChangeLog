@@ -1,3 +1,8 @@
+2014-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/align/1.cc: Add dg-require-stdint.
+	* testsuite/20_util/align/2.cc: Likewise.
+
 2014-10-14  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
 	PR libstdc++/54354
