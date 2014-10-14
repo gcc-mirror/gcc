@@ -1,3 +1,8 @@
+2014-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63512
+	* g++.dg/torture/pr63512.C: New testcase.
+
 2014-10-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/63260
