@@ -9125,11 +9125,11 @@
    (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_expand "mul<mode>3"
+(define_expand "mul<mode>3<mask_name>"
   [(set (match_operand:VI1_AVX2 0 "register_operand")
 	(mult:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand")
 		       (match_operand:VI1_AVX2 2 "register_operand")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
 {
   ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
   DONE;
