@@ -228,6 +228,21 @@ msp430_option_override (void)
     optimize_size = 1;
 }
 
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P msp430_scalar_mode_supported_p
+
+static bool
+msp430_scalar_mode_supported_p (enum machine_mode m)
+{
+  if (m == PSImode && msp430x)
+    return true;
+#if 0
+  if (m == TImode)
+    return true;
+#endif
+  return default_scalar_mode_supported_p (m);
+}
+
 
 
 /* Storage Layout */
@@ -255,6 +270,27 @@ msp430_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
     return 1;
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
 	  / UNITS_PER_WORD);
+}
+
+/* Implements HARD_REGNO_NREGS_HAS_PADDING.  */
+int
+msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
+				     enum machine_mode mode)
+{
+  if (mode == PSImode && msp430x)
+    return 1;
+  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
+	  / UNITS_PER_WORD);
+}
+
+/* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
+int
+msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
+				     enum machine_mode mode)
+{
+  if (mode == PSImode)
+    return 2;
+  return msp430_hard_regno_nregs (regno, mode);
 }
 
 /* Implements HARD_REGNO_MODE_OK.  */
@@ -370,7 +406,7 @@ msp430_addr_space_pointer_mode (addr_space_t addrspace)
 static enum machine_mode
 msp430_unwind_word_mode (void)
 {
-  return TARGET_LARGE ? SImode : HImode;
+  return TARGET_LARGE ? PSImode : HImode;
 }
 
 /* Determine if one named address space is a subset of another.  */
@@ -883,6 +919,52 @@ msp430_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
     default:
       return false;
     }
+}
+
+#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P msp430_addr_space_legitimate_address_p
+
+bool
+msp430_addr_space_legitimate_address_p (enum machine_mode mode,
+					rtx x,
+					bool strict,
+					addr_space_t as ATTRIBUTE_UNUSED)
+{
+  return msp430_legitimate_address_p (mode, x, strict);
+}
+
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER msp430_asm_integer
+static bool
+msp430_asm_integer (rtx x, unsigned int size, int aligned_p)
+{
+  int c = GET_CODE (x);
+
+  if (size == 3 && GET_MODE (x) == PSImode)
+    size = 4;
+
+  switch (size)
+    {
+    case 4:
+      if (c == SYMBOL_REF || c == CONST || c == LABEL_REF || c == CONST_INT)
+	{
+	  fprintf (asm_out_file, "\t.long\t");
+	  output_addr_const (asm_out_file, x);
+	  fputc ('\n', asm_out_file);
+	  return true;
+	}
+      break;
+    }
+  return default_assemble_integer (x, size, aligned_p);
+}
+
+#undef  TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA msp430_asm_output_addr_const_extra
+static bool
+msp430_asm_output_addr_const_extra (FILE *file, rtx x)
+{
+  debug_rtx(x);
+  return false;
 }
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
@@ -1753,6 +1835,33 @@ msp430_expand_eh_return (rtx eh_handler)
   emit_move_insn (tmp, ra);
 }
 
+#undef  TARGET_INIT_DWARF_REG_SIZES_EXTRA
+#define TARGET_INIT_DWARF_REG_SIZES_EXTRA msp430_init_dwarf_reg_sizes_extra
+void
+msp430_init_dwarf_reg_sizes_extra (tree address)
+{
+  int i;
+  rtx addr = expand_normal (address);
+  rtx mem = gen_rtx_MEM (BLKmode, addr);
+
+  if (!msp430x)
+    return;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      unsigned int dnum = DWARF_FRAME_REGNUM (i);
+      unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
+
+      if (rnum < DWARF_FRAME_REGISTERS)
+	{
+	  HOST_WIDE_INT offset = rnum * GET_MODE_SIZE (QImode);
+
+	  emit_move_insn (adjust_address (mem, QImode, offset),
+			  gen_int_mode (4, QImode));
+	}
+    }
+}
+
 /* This is a list of MD patterns that implement fixed-count shifts.  */
 static struct
 {
@@ -2485,7 +2594,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'X':
       /* This is used to turn, for example, an ADD opcode into an ADDX
 	 opcode when we're using 20-bit addresses.  */
-      if (TARGET_LARGE)
+      if (TARGET_LARGE || GET_MODE (op) == PSImode)
 	fprintf (file, "X");
       /* We don't care which operand we use, but we want 'X' in the MD
 	 file, so we do it this way.  */
