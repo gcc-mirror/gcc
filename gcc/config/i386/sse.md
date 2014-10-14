@@ -9173,7 +9173,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "vec_widen_umult_even_v8si"
+(define_expand "vec_widen_umult_even_v8si<mask_name>"
   [(set (match_operand:V4DI 0 "register_operand")
 	(mult:V4DI
 	  (zero_extend:V4DI
@@ -9186,29 +9186,30 @@
 	      (match_operand:V8SI 2 "nonimmediate_operand")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))))]
-  "TARGET_AVX2"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, V8SImode, operands);")
 
-(define_insn "*vec_widen_umult_even_v8si"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
+(define_insn "*vec_widen_umult_even_v8si<mask_name>"
+  [(set (match_operand:V4DI 0 "register_operand" "=v")
 	(mult:V4DI
 	  (zero_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 1 "nonimmediate_operand" "%x")
+	      (match_operand:V8SI 1 "nonimmediate_operand" "%v")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))
 	  (zero_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 2 "nonimmediate_operand" "xm")
+	      (match_operand:V8SI 2 "nonimmediate_operand" "vm")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))))]
-  "TARGET_AVX2 && ix86_binary_operator_ok (MULT, V8SImode, operands)"
-  "vpmuludq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2 && <mask_avx512vl_condition>
+   && ix86_binary_operator_ok (MULT, V8SImode, operands)"
+  "vpmuludq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseimul")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_expand "vec_widen_umult_even_v4si"
+(define_expand "vec_widen_umult_even_v4si<mask_name>"
   [(set (match_operand:V2DI 0 "register_operand")
 	(mult:V2DI
 	  (zero_extend:V2DI
@@ -9219,28 +9220,29 @@
 	    (vec_select:V2SI
 	      (match_operand:V4SI 2 "nonimmediate_operand")
 	      (parallel [(const_int 0) (const_int 2)])))))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);")
 
-(define_insn "*vec_widen_umult_even_v4si"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
+(define_insn "*vec_widen_umult_even_v4si<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=x,v")
 	(mult:V2DI
 	  (zero_extend:V2DI
 	    (vec_select:V2SI
-	      (match_operand:V4SI 1 "nonimmediate_operand" "%0,x")
+	      (match_operand:V4SI 1 "nonimmediate_operand" "%0,v")
 	      (parallel [(const_int 0) (const_int 2)])))
 	  (zero_extend:V2DI
 	    (vec_select:V2SI
-	      (match_operand:V4SI 2 "nonimmediate_operand" "xm,xm")
+	      (match_operand:V4SI 2 "nonimmediate_operand" "xm,vm")
 	      (parallel [(const_int 0) (const_int 2)])))))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V4SImode, operands)"
+  "TARGET_SSE2 && <mask_avx512vl_condition>
+   && ix86_binary_operator_ok (MULT, V4SImode, operands)"
   "@
    pmuludq\t{%2, %0|%0, %2}
-   vpmuludq\t{%2, %1, %0|%0, %1, %2}"
+   vpmuludq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseimul")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "TI")])
 
 (define_expand "vec_widen_smult_even_v16si<mask_name>"
@@ -9288,7 +9290,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "vec_widen_smult_even_v8si"
+(define_expand "vec_widen_smult_even_v8si<mask_name>"
   [(set (match_operand:V4DI 0 "register_operand")
 	(mult:V4DI
 	  (sign_extend:V4DI
@@ -9301,30 +9303,31 @@
 	      (match_operand:V8SI 2 "nonimmediate_operand")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))))]
-  "TARGET_AVX2"
+  "TARGET_AVX2 && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, V8SImode, operands);")
 
-(define_insn "*vec_widen_smult_even_v8si"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
+(define_insn "*vec_widen_smult_even_v8si<mask_name>"
+  [(set (match_operand:V4DI 0 "register_operand" "=v")
 	(mult:V4DI
 	  (sign_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 1 "nonimmediate_operand" "x")
+	      (match_operand:V8SI 1 "nonimmediate_operand" "v")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))
 	  (sign_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 2 "nonimmediate_operand" "xm")
+	      (match_operand:V8SI 2 "nonimmediate_operand" "vm")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))))]
-  "TARGET_AVX2 && ix86_binary_operator_ok (MULT, V8SImode, operands)"
-  "vpmuldq\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX2
+   && ix86_binary_operator_ok (MULT, V8SImode, operands)"
+  "vpmuldq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseimul")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_expand "sse4_1_mulv2siv2di3"
+(define_expand "sse4_1_mulv2siv2di3<mask_name>"
   [(set (match_operand:V2DI 0 "register_operand")
 	(mult:V2DI
 	  (sign_extend:V2DI
@@ -9335,24 +9338,25 @@
 	    (vec_select:V2SI
 	      (match_operand:V4SI 2 "nonimmediate_operand")
 	      (parallel [(const_int 0) (const_int 2)])))))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);")
 
-(define_insn "*sse4_1_mulv2siv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
+(define_insn "*sse4_1_mulv2siv2di3<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=x,v")
 	(mult:V2DI
 	  (sign_extend:V2DI
 	    (vec_select:V2SI
-	      (match_operand:V4SI 1 "nonimmediate_operand" "%0,x")
+	      (match_operand:V4SI 1 "nonimmediate_operand" "%0,v")
 	      (parallel [(const_int 0) (const_int 2)])))
 	  (sign_extend:V2DI
 	    (vec_select:V2SI
-	      (match_operand:V4SI 2 "nonimmediate_operand" "xm,xm")
+	      (match_operand:V4SI 2 "nonimmediate_operand" "xm,vm")
 	      (parallel [(const_int 0) (const_int 2)])))))]
-  "TARGET_SSE4_1 && ix86_binary_operator_ok (MULT, V4SImode, operands)"
+  "TARGET_SSE4_1 && <mask_avx512vl_condition>
+   && ix86_binary_operator_ok (MULT, V4SImode, operands)"
   "@
    pmuldq\t{%2, %0|%0, %2}
-   vpmuldq\t{%2, %1, %0|%0, %1, %2}"
+   vpmuldq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseimul")
    (set_attr "prefix_data16" "1,*")
@@ -9490,6 +9494,17 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
+
+(define_insn "avx512dq_mul<mode>3<mask_name>"
+  [(set (match_operand:VI8 0 "register_operand" "=v")
+	(mult:VI8
+	  (match_operand:VI8 1 "register_operand" "v")
+	  (match_operand:VI8 2 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512DQ && <mask_mode512bit_condition>"
+  "vpmullq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sseimul")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "mul<mode>3<mask_name>"
   [(set (match_operand:VI4_AVX512F 0 "register_operand")
