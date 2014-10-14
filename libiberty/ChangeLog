@@ -1,3 +1,12 @@
+2014-10-14  Joel Brobecker  <brobecker@adacore.com>
+
+	* d-demangle.c: Replace strtold with strtod in global comment.
+	(strtold): Remove declaration.
+	(strtod): New declaration.
+	(dlang_parse_real): Declare value as double instead of long
+	double.  Replace call to strtold by call to strtod.
+	Update format in call to snprintf.
+
 2014-09-26  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_substitution): Handle abi tags on abbreviation.
