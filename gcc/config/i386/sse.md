@@ -130,6 +130,8 @@
   UNSPEC_SHA256RNDS2
 
   ;; For AVX512BW support
+  UNSPEC_DBPSADBW
+  UNSPEC_PMADDUBSW512
   UNSPEC_PSHUFHW
   UNSPEC_PSHUFLW
 
@@ -13236,6 +13238,20 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
+;; The correct representation for this is absolutely enormous, and
+;; surely not generally useful.
+(define_insn "avx512bw_pmaddubsw512<mode><mask_name>"
+  [(set (match_operand:VI2_AVX512VL 0 "register_operand" "=v")
+          (unspec:VI2_AVX512VL
+            [(match_operand:<dbpsadbwmode> 1 "register_operand" "v")
+             (match_operand:<dbpsadbwmode> 2 "nonimmediate_operand" "vm")]
+             UNSPEC_PMADDUBSW512))]
+   "TARGET_AVX512BW"
+   "vpmaddubsw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}";
+  [(set_attr "type" "sseiadd")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
 (define_insn "ssse3_pmaddubsw128"
   [(set (match_operand:V8HI 0 "register_operand" "=x,x")
 	(ss_plus:V8HI
@@ -17901,6 +17917,23 @@
    "vgetmant<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %2<round_saeonly_op4>, %3}";
    [(set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
+
+;; The correct representation for this is absolutely enormous, and
+;; surely not generally useful.
+(define_insn "<mask_codefor>avx512bw_dbpsadbw<mode><mask_name>"
+  [(set (match_operand:VI2_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI2_AVX512VL
+	  [(match_operand:<dbpsadbwmode> 1 "register_operand" "v")
+	   (match_operand:<dbpsadbwmode> 2 "nonimmediate_operand" "vm")
+	   (match_operand:SI 3 "const_0_to_255_operand")]
+	  UNSPEC_DBPSADBW))]
+   "TARGET_AVX512BW"
+  "vdbpsadbw\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
+  [(set_attr "isa" "avx")
+   (set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "clz<mode>2<mask_name>"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
