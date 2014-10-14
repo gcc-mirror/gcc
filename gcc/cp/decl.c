@@ -8802,7 +8802,7 @@ grokdeclarator (const cp_declarator *declarator,
 {
   tree type = NULL_TREE;
   int longlong = 0;
-  int explicit_int128 = 0;
+  int explicit_intN = 0;
   int virtualp, explicitp, friendp, inlinep, staticp;
   int explicit_int = 0;
   int explicit_char = 0;
@@ -8875,7 +8875,7 @@ grokdeclarator (const cp_declarator *declarator,
   short_p = decl_spec_seq_has_spec_p (declspecs, ds_short);
   long_p = decl_spec_seq_has_spec_p (declspecs, ds_long);
   longlong = decl_spec_seq_has_spec_p (declspecs, ds_long_long);
-  explicit_int128 = declspecs->explicit_int128_p;
+  explicit_intN = declspecs->explicit_intN_p;
   thread_p = decl_spec_seq_has_spec_p (declspecs, ds_thread);
 
   if (decl_context == FUNCDEF)
@@ -9221,16 +9221,18 @@ grokdeclarator (const cp_declarator *declarator,
 
   ctype = NULL_TREE;
 
-  if (explicit_int128)
+  if (explicit_intN)
     {
-      if (int128_integer_type_node == NULL_TREE)
-	{
-	  error ("%<__int128%> is not supported by this target");
-	  explicit_int128 = false;
-	}
+      if (! int_n_enabled_p[declspecs->int_n_idx])
+       {
+         error ("%<__int%d%> is not supported by this target",
+		int_n_data[declspecs->int_n_idx].bitsize);
+         explicit_intN = false;
+       }
       else if (pedantic && ! in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic,
-		 "ISO C++ does not support %<__int128%> for %qs", name);
+       pedwarn (input_location, OPT_Wpedantic,
+                "ISO C++ does not support %<__int%d%> for %qs",
+		int_n_data[declspecs->int_n_idx].bitsize,  name);
     }
 
   /* Now process the modifiers that were specified
@@ -9262,7 +9264,7 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("%<short%> invalid for %qs", name);
       else if ((long_p || short_p) && TREE_CODE (type) != INTEGER_TYPE)
 	error ("%<long%> or %<short%> invalid for %qs", name);
-      else if ((long_p || short_p || explicit_char || explicit_int) && explicit_int128)
+      else if ((long_p || short_p || explicit_char || explicit_int) && explicit_intN)
 	error ("%<long%>, %<int%>, %<short%>, or %<char%> invalid for %qs", name);
       else if ((long_p || short_p) && explicit_char)
 	error ("%<long%> or %<short%> specified with char for %qs", name);
@@ -9278,7 +9280,7 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	{
 	  ok = 1;
-	  if (!explicit_int && !defaulted_int && !explicit_char && !explicit_int128 && pedantic)
+	  if (!explicit_int && !defaulted_int && !explicit_char && !explicit_intN && pedantic)
 	    {
 	      pedwarn (input_location, OPT_Wpedantic, 
 		       "long, short, signed or unsigned used invalidly for %qs",
@@ -9320,8 +9322,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TREE_CODE (type) == INTEGER_TYPE
 	  && !same_type_p (TYPE_MAIN_VARIANT (type), wchar_type_node)))
     {
-      if (explicit_int128)
-	type = int128_unsigned_type_node;
+      if (explicit_intN)
+	type = int_n_trees[declspecs->int_n_idx].unsigned_type;
       else if (longlong)
 	type = long_long_unsigned_type_node;
       else if (long_p)
@@ -9337,8 +9339,8 @@ grokdeclarator (const cp_declarator *declarator,
     }
   else if (signed_p && type == char_type_node)
     type = signed_char_type_node;
-  else if (explicit_int128)
-    type = int128_integer_type_node;
+  else if (explicit_intN)
+    type = int_n_trees[declspecs->int_n_idx].signed_type;
   else if (longlong)
     type = long_long_integer_type_node;
   else if (long_p)
@@ -9354,7 +9356,7 @@ grokdeclarator (const cp_declarator *declarator,
 	 "complex double", but if any modifiers at all are specified it is
 	 the complex form of TYPE.  E.g, "complex short" is
 	 "complex short int".  */
-      else if (defaulted_int && ! longlong && ! explicit_int128
+      else if (defaulted_int && ! longlong && ! explicit_intN
 	       && ! (long_p || short_p || signed_p || unsigned_p))
 	type = complex_double_type_node;
       else if (type == integer_type_node)

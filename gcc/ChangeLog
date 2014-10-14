@@ -1,3 +1,43 @@
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* machmode.h (int_n_data_t): New.
+	(int_n_enabled_p): New.
+	(int_n_data): New.
+	* tree.c (int_n_enabled_p): New.
+	(int_n_trees): New.
+	(make_or_reuse_type): Check for all __intN types, not just
+	__int128.
+	(build_common_tree_nodes): Likewise.  Also fill in integer_typs[]
+	entries.
+	* tree.h (int128_integer_type_node): Remove.
+	(int128_unsigned_type_node): Remove.
+	(int_n_trees_t): New.
+	(int_n_enabled_p): New.
+	(int_n_trees): New.
+	* toplev.c (standard_type_bitsize): New.
+	(do_compile): Check which __intN types are enabled for the current
+	run.
+	* builtin-types.def (BT_INT128): Remove.
+	(BT_UINT128): Remove.
+	* machmode.def: Add macro to create __int128 for all targets.
+	* stor-layout.c (mode_for_size): Support __intN types.
+	(smallest_mode_for_size): Likewise.
+	(initialize_sizetypes): Support __intN types.
+	* genmodes.c (struct mode_data): Add int_n field.
+	(blank_mode): Likewise.
+	(INT_N): New.
+	(make_int_n): New.
+	(emit_insn_modes_h): Count __intN entries and define
+	NUM_INT_N_ENTS.
+	(emit_mode_int_n): New.
+	(emit_insn_modes_c): Call it.
+	* gimple.c (gimple_signed_or_unsigned_type): Check for all __intN
+	types, not just __int128.
+	* tree-core.h (integer_type_kind): Remove __int128-specific
+	entries, reserve spots for __intN entries.
+
+	* config/msp430/msp430-modes.def (PSI): Add.
+
 2014-10-14  Kito Cheng  <kito@0xlab.org>
 
 	* ira.c: Fix typo in comment.

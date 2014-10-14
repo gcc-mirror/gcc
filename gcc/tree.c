@@ -236,6 +236,9 @@ static void attribute_hash_list (const_tree, inchash::hash &);
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
 
+bool int_n_enabled_p[NUM_INT_N_ENTS];
+struct int_n_trees_t int_n_trees [NUM_INT_N_ENTS];
+
 unsigned char tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Number of operands for each OpenMP clause.  */
@@ -9445,6 +9448,8 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 static tree
 make_or_reuse_type (unsigned size, int unsignedp)
 {
+  int i;
+
   if (size == INT_TYPE_SIZE)
     return unsignedp ? unsigned_type_node : integer_type_node;
   if (size == CHAR_TYPE_SIZE)
@@ -9456,9 +9461,12 @@ make_or_reuse_type (unsigned size, int unsignedp)
   if (size == LONG_LONG_TYPE_SIZE)
     return (unsignedp ? long_long_unsigned_type_node
             : long_long_integer_type_node);
-  if (size == 128 && int128_integer_type_node)
-    return (unsignedp ? int128_unsigned_type_node
-            : int128_integer_type_node);
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (size == int_n_data[i].bitsize
+	&& int_n_enabled_p[i])
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (unsignedp)
     return make_unsigned_type (size);
@@ -9574,6 +9582,8 @@ build_atomic_base (tree type, unsigned int align)
 void
 build_common_tree_nodes (bool signed_char, bool short_double)
 {
+  int i;
+
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
@@ -9601,17 +9611,20 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   long_unsigned_type_node = make_unsigned_type (LONG_TYPE_SIZE);
   long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
   long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
-#if HOST_BITS_PER_WIDE_INT >= 64
-    /* TODO: This isn't correct, but as logic depends at the moment on
-       host's instead of target's wide-integer.
-       If there is a target not supporting TImode, but has an 128-bit
-       integer-scalar register, this target check needs to be adjusted. */
-    if (targetm.scalar_mode_supported_p (TImode))
-      {
-        int128_integer_type_node = make_signed_type (128);
-        int128_unsigned_type_node = make_unsigned_type (128);
-      }
-#endif
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    {
+      int_n_trees[i].signed_type = make_signed_type (int_n_data[i].bitsize);
+      int_n_trees[i].unsigned_type = make_unsigned_type (int_n_data[i].bitsize);
+      TYPE_SIZE (int_n_trees[i].signed_type) = bitsize_int (int_n_data[i].bitsize);
+      TYPE_SIZE (int_n_trees[i].unsigned_type) = bitsize_int (int_n_data[i].bitsize);
+
+      if (int_n_data[i].bitsize > LONG_LONG_TYPE_SIZE)
+	{
+	  integer_types[itk_intN_0 + i * 2] = int_n_trees[i].signed_type;
+	  integer_types[itk_unsigned_intN_0 + i * 2] = int_n_trees[i].unsigned_type;
+	}
+    }
 
   /* Define a boolean type.  This type only represents boolean values but
      may be larger than char depending on the value of BOOL_TYPE_SIZE.  */
@@ -9630,7 +9643,24 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
     size_type_node = short_unsigned_type_node;
   else
-    gcc_unreachable ();
+    {
+      int i;
+
+      size_type_node = NULL_TREE;
+      for (i = 0; i < NUM_INT_N_ENTS; i++)
+	if (int_n_enabled_p[i])
+	  {
+	    char name[50];
+	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+
+	    if (strcmp (name, SIZE_TYPE) == 0)
+	      {
+		size_type_node = int_n_trees[i].unsigned_type;
+	      }
+	  }
+      if (size_type_node == NULL_TREE)
+	gcc_unreachable ();
+    }
 
   /* Fill in the rest of the sized types.  Reuse existing type nodes
      when possible.  */

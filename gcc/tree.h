@@ -3426,8 +3426,6 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define long_unsigned_type_node		integer_types[itk_unsigned_long]
 #define long_long_integer_type_node	integer_types[itk_long_long]
 #define long_long_unsigned_type_node	integer_types[itk_unsigned_long_long]
-#define int128_integer_type_node	integer_types[itk_int128]
-#define int128_unsigned_type_node	integer_types[itk_unsigned_int128]
 
 /* True if NODE is an erroneous expression.  */
 
@@ -4799,6 +4797,17 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 /* Return a tree representing the lower bound of the array mentioned in
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_low_bound (tree);
+
+
+struct GTY(()) int_n_trees_t {
+  /* These parts are initialized at runtime */
+  tree signed_type;
+  tree unsigned_type;
+};
+
+/* This is also in machmode.h */
+extern bool int_n_enabled_p[NUM_INT_N_ENTS];
+extern GTY(()) struct int_n_trees_t int_n_trees[NUM_INT_N_ENTS];
 
 /* Like bit_position, but return as an integer.  It must be representable in
    that way (since it could be a signed value, we don't have the

@@ -113,6 +113,16 @@ c_parse_init (void)
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) c_common_reswords[i].rid] = id;
     }
+
+  for (i = 0; i < NUM_INT_N_ENTS; i++)
+    {
+      /* We always create the symbols but they aren't always supported.  */
+      char name[50];
+      sprintf (name, "__int%d", int_n_data[i].bitsize);
+      id = get_identifier (xstrdup (name));
+      C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
+      C_IS_RESERVED_WORD (id) = 1;
+    }
 }
 
 /* The C lexer intermediates between the lexer in cpplib and c-lex.c
@@ -483,7 +493,6 @@ c_token_starts_typename (c_token *token)
 	{
 	case RID_UNSIGNED:
 	case RID_LONG:
-	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -511,6 +520,10 @@ c_token_starts_typename (c_token *token)
 	case RID_AUTO_TYPE:
 	  return true;
 	default:
+	  if (token->keyword >= RID_FIRST_INT_N
+	      && token->keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	      && int_n_enabled_p[token->keyword - RID_FIRST_INT_N])
+	    return true;
 	  return false;
 	}
     case CPP_LESS:
@@ -641,7 +654,6 @@ c_token_starts_declspecs (c_token *token)
 	case RID_THREAD:
 	case RID_UNSIGNED:
 	case RID_LONG:
-	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -670,6 +682,10 @@ c_token_starts_declspecs (c_token *token)
 	case RID_AUTO_TYPE:
 	  return true;
 	default:
+	  if (token->keyword >= RID_FIRST_INT_N
+	      && token->keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	      && int_n_enabled_p[token->keyword - RID_FIRST_INT_N])
+	    return true;
 	  return false;
 	}
     case CPP_LESS:
@@ -2158,7 +2174,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    type-specifier:
      typeof-specifier
      __auto_type
-     __int128
+     __intN
      _Decimal32
      _Decimal64
      _Decimal128
@@ -2312,7 +2328,6 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  /* Fall through.  */
 	case RID_UNSIGNED:
 	case RID_LONG:
-	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -2328,6 +2343,10 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_FRACT:
 	case RID_ACCUM:
 	case RID_SAT:
+	case RID_INT_N_0:
+	case RID_INT_N_1:
+	case RID_INT_N_2:
+	case RID_INT_N_3:
 	  if (!typespec_ok)
 	    goto out;
 	  attrs_ok = true;
@@ -3738,7 +3757,6 @@ c_parser_attribute_any_word (c_parser *parser)
 	case RID_STATIC:
 	case RID_UNSIGNED:
 	case RID_LONG:
-	case RID_INT128:
 	case RID_CONST:
 	case RID_EXTERN:
 	case RID_REGISTER:
@@ -3768,6 +3786,10 @@ c_parser_attribute_any_word (c_parser *parser)
 	case RID_TRANSACTION_CANCEL:
 	case RID_ATOMIC:
 	case RID_AUTO_TYPE:
+	case RID_INT_N_0:
+	case RID_INT_N_1:
+	case RID_INT_N_2:
+	case RID_INT_N_3:
 	  ok = true;
 	  break;
 	default:
@@ -8992,7 +9014,6 @@ c_parser_objc_selector (c_parser *parser)
     case RID_ALIGNOF:
     case RID_UNSIGNED:
     case RID_LONG:
-    case RID_INT128:
     case RID_CONST:
     case RID_SHORT:
     case RID_VOLATILE:
@@ -9013,6 +9034,10 @@ c_parser_objc_selector (c_parser *parser)
     case RID_BOOL:
     case RID_ATOMIC:
     case RID_AUTO_TYPE:
+    case RID_INT_N_0:
+    case RID_INT_N_1:
+    case RID_INT_N_2:
+    case RID_INT_N_3:
       c_parser_consume_token (parser);
       return value;
     default:

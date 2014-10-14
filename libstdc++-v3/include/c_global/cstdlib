@@ -174,10 +174,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   abs(long long __x) { return __builtin_llabs (__x); }
 #endif
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
-  inline __int128
-  abs(__int128 __x) { return __x >= 0 ? __x : -__x; }
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+  inline __GLIBCXX_TYPE_INT_N_0
+  abs(__GLIBCXX_TYPE_INT_N_0 __x) { return __x >= 0 ? __x : -__x; }
 #endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+  inline __GLIBCXX_TYPE_INT_N_1
+  abs(__GLIBCXX_TYPE_INT_N_1 __x) { return __x >= 0 ? __x : -__x; }
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+  inline __GLIBCXX_TYPE_INT_N_2
+  abs(__GLIBCXX_TYPE_INT_N_2 __x) { return __x >= 0 ? __x : -__x; }
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+  inline __GLIBCXX_TYPE_INT_N_3
+  abs(__GLIBCXX_TYPE_INT_N_3 __x) { return __x >= 0 ? __x : -__x; }
+#endif
+
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

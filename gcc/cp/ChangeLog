@@ -1,3 +1,18 @@
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* typeck.c (cp_common_type): Check for all __intN types, not just
+	__int128.
+	* decl.c (grokdeclarator): Likewise.
+	* rtti.c (emit_support_tinfos): Check for all __intN types, not just
+	__int128.
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Check
+	for all __intN types, not just __int128.
+	(cp_parser_simple_type_specifier): Likewise.
+	* mangle.c (integer_type_codes): Remove int128-specific codes.
+	* cp-tree.h (cp_decl_specifier_seq): Add int_n_idx to store which
+	__intN was specified.
+	* lex.c (init_reswords): Reserve all __intN keywords.
+
 2014-10-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* typeck.c (cp_build_unary_op) [TRUTH_NOT_EXPR]: Accept float vectors.

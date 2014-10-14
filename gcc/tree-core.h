@@ -570,8 +570,16 @@ enum integer_type_kind {
   itk_unsigned_long,
   itk_long_long,
   itk_unsigned_long_long,
-  itk_int128,
-  itk_unsigned_int128,
+
+  itk_intN_0,
+  itk_unsigned_intN_0,
+  itk_intN_1,
+  itk_unsigned_intN_1,
+  itk_intN_2,
+  itk_unsigned_intN_2,
+  itk_intN_3,
+  itk_unsigned_intN_3,
+
   itk_none
 };
 

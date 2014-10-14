@@ -91,7 +91,6 @@ enum rid
 
   /* C */
   RID_INT,     RID_CHAR,   RID_FLOAT,    RID_DOUBLE, RID_VOID,
-  RID_INT128,
   RID_ENUM,    RID_STRUCT, RID_UNION,    RID_IF,     RID_ELSE,
   RID_WHILE,   RID_DO,     RID_FOR,      RID_SWITCH, RID_CASE,
   RID_DEFAULT, RID_BREAK,  RID_CONTINUE, RID_RETURN, RID_GOTO,
@@ -189,6 +188,23 @@ enum rid
 
   RID_FIRST_ADDR_SPACE = RID_ADDR_SPACE_0,
   RID_LAST_ADDR_SPACE = RID_ADDR_SPACE_15,
+
+  /* __intN keywords.  The _N_M here doesn't correspond to the intN
+     in the keyword; use the bitsize in int_n_t_data_t[M] for that.
+     For example, if int_n_t_data_t[0].bitsize is 13, then RID_INT_N_0
+     is for __int13.  */
+
+  /* Note that the range to use is RID_FIRST_INT_N through
+     RID_FIRST_INT_N + NUM_INT_N_ENTS - 1 and c-parser.c has a list of
+     all RID_INT_N_* in a case statement.  */
+
+  RID_INT_N_0,
+  RID_INT_N_1,
+  RID_INT_N_2,
+  RID_INT_N_3,
+
+  RID_FIRST_INT_N = RID_INT_N_0,
+  RID_LAST_INT_N = RID_INT_N_3,
 
   RID_MAX,
 

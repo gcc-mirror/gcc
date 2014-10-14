@@ -242,13 +242,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned long long>
     : public true_type { };
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  // Conditionalizing on __STRICT_ANSI__ here will break any port that
+  // uses one of these types for size_t.
+#if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
-    struct __is_integral_helper<__int128>
+    struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_0>
     : public true_type { };
 
   template<>
-    struct __is_integral_helper<unsigned __int128>
+    struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_0>
+    : public true_type { };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+  template<>
+    struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_1>
+    : public true_type { };
+
+  template<>
+    struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_1>
+    : public true_type { };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+  template<>
+    struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_2>
+    : public true_type { };
+
+  template<>
+    struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_2>
+    : public true_type { };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+  template<>
+    struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_3>
+    : public true_type { };
+
+  template<>
+    struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
 #endif
 
@@ -1661,10 +1690,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+#if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
-    struct __make_unsigned<__int128>
-    { typedef unsigned __int128 __type; };
+    struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
+    { typedef unsigned __GLIBCXX_TYPE_INT_N_0 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+  template<>
+    struct __make_unsigned<__GLIBCXX_TYPE_INT_N_1>
+    { typedef unsigned __GLIBCXX_TYPE_INT_N_1 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+  template<>
+    struct __make_unsigned<__GLIBCXX_TYPE_INT_N_2>
+    { typedef unsigned __GLIBCXX_TYPE_INT_N_2 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+  template<>
+    struct __make_unsigned<__GLIBCXX_TYPE_INT_N_3>
+    { typedef unsigned __GLIBCXX_TYPE_INT_N_3 __type; };
 #endif
 
   // Select between integral and enum: not possible to be both.
@@ -1758,10 +1802,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+#if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
-    struct __make_signed<unsigned __int128>
-    { typedef __int128 __type; };
+    struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
+    { typedef __GLIBCXX_TYPE_INT_N_0 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+  template<>
+    struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_1>
+    { typedef __GLIBCXX_TYPE_INT_N_1 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+  template<>
+    struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_2>
+    { typedef __GLIBCXX_TYPE_INT_N_2 __type; };
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+  template<>
+    struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_3>
+    { typedef __GLIBCXX_TYPE_INT_N_3 __type; };
 #endif
 
   // Select between integral and enum: not possible to be both.
