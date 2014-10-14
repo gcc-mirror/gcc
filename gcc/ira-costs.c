@@ -118,7 +118,7 @@ struct cost_classes
   /* Container of the cost classes.  */
   enum reg_class classes[N_REG_CLASSES];
   /* Map reg class -> index of the reg class in the previous array.
-     -1 if it is not a cost classe.  */
+     -1 if it is not a cost class.  */
   int index[N_REG_CLASSES];
   /* Map hard regno index of first class in array CLASSES containing
      the hard regno, -1 otherwise.  */
@@ -277,7 +277,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
    decrease number of cost classes for the pseudo, if hard registers
    of some important classes can not hold a value of MODE.  So the
    pseudo can not get hard register of some important classes and cost
-   calculation for such important classes is only waisting CPU
+   calculation for such important classes is only wasting CPU
    time.  */
 static void
 setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
@@ -314,7 +314,7 @@ setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
   regno_cost_classes[regno] = classes_ptr;
 }
 
-/* Finilize info about the cost classes for each pseudo.  */
+/* Finalize info about the cost classes for each pseudo.  */
 static void
 finish_regno_cost_classes (void)
 {
@@ -1238,7 +1238,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
      then we may want to adjust the cost of that register class to -1.
 
      Avoid the adjustment if the source does not die to avoid
-     stressing of register allocator by preferrencing two colliding
+     stressing of register allocator by preferencing two colliding
      registers into single class.
 
      Also avoid the adjustment if a copy between hard registers of the

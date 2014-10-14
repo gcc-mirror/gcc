@@ -1,3 +1,13 @@
+2014-10-14  Kito Cheng  <kito@0xlab.org>
+
+	* ira.c: Fix typo in comment.
+	* ira.h: Ditto.
+	* ira-build.c: Ditto.
+	* ira-color.c: Ditto.
+	* ira-emit.c: Ditto.
+	* ira-int.h: Ditto.
+	* ira-lives.c: Ditto.
+
 2014-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/63475

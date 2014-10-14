@@ -777,7 +777,7 @@ modify_move_list (move_t list)
 
   if (list == NULL)
     return NULL;
-  /* Creat move deps.  */
+  /* Create move deps.  */
   curr_tick++;
   for (move = list; move != NULL; move = move->next)
     {
@@ -812,7 +812,7 @@ modify_move_list (move_t list)
 	  move->deps_num = n;
 	}
     }
-  /* Toplogical sorting:  */
+  /* Topological sorting:  */
   move_vec.truncate (0);
   for (move = list; move != NULL; move = move->next)
     traverse_moves (move);
