@@ -2897,6 +2897,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    }
 
 	  gimple_set_vuse (stmt, BB_LIVE_VOP_ON_EXIT (block));
+	  gimple_set_modified (stmt, true);
 	}
       gimple_seq_add_seq (stmts, forced_stmts);
     }
@@ -2904,6 +2905,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   name = make_temp_ssa_name (exprtype, NULL, "pretmp");
   newstmt = gimple_build_assign (name, folded);
   gimple_set_vuse (newstmt, BB_LIVE_VOP_ON_EXIT (block));
+  gimple_set_modified (newstmt, true);
   gimple_set_plf (newstmt, NECESSARY, false);
 
   gimple_seq_add_stmt (stmts, newstmt);
