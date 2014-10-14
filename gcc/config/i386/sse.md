@@ -503,7 +503,6 @@
 (define_mode_iterator VI12_128 [V16QI V8HI])
 (define_mode_iterator VI14_128 [V16QI V4SI])
 (define_mode_iterator VI124_128 [V16QI V8HI V4SI])
-(define_mode_iterator VI128_128 [V16QI V8HI V2DI])
 (define_mode_iterator VI24_128 [V8HI V4SI])
 (define_mode_iterator VI248_128 [V8HI V4SI V2DI])
 (define_mode_iterator VI48_128 [V4SI V2DI])
@@ -15529,17 +15528,36 @@
 	  (match_operand:VI48_256 2 "nonimmediate_operand")))]
   "TARGET_AVX2")
 
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VI128_128 0 "register_operand")
-	(ashiftrt:VI128_128
-	  (match_operand:VI128_128 1 "register_operand")
-	  (match_operand:VI128_128 2 "nonimmediate_operand")))]
-  "TARGET_XOP"
+(define_expand "vashr<mode>3<mask_name>"
+  [(set (match_operand:VI12_128 0 "register_operand")
+	(ashiftrt:VI12_128
+	  (match_operand:VI12_128 1 "register_operand")
+	  (match_operand:VI12_128 2 "nonimmediate_operand")))]
+  "TARGET_XOP || (TARGET_AVX512BW && TARGET_AVX512VL)"
 {
-  rtx neg = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_neg<mode>2 (neg, operands[2]));
-  emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], neg));
-  DONE;
+  if (TARGET_XOP)
+    {
+      rtx neg = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], neg));
+      DONE;
+    }
+})
+
+(define_expand "vashrv2di3<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(ashiftrt:V2DI
+	  (match_operand:V2DI 1 "register_operand")
+	  (match_operand:V2DI 2 "nonimmediate_operand")))]
+  "TARGET_XOP || TARGET_AVX512VL"
+{
+  if (TARGET_XOP)
+    {
+      rtx neg = gen_reg_rtx (V2DImode);
+      emit_insn (gen_negv2di2 (neg, operands[2]));
+      emit_insn (gen_xop_shav2di3 (operands[0], operands[1], neg));
+      DONE;
+    }
 })
 
 (define_expand "vashrv4si3"

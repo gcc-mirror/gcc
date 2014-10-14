@@ -7,6 +7,21 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_mode_iterator VI128_128 [V16QI V8HI V2DI]): Delete.
+	(define_expand "vashr<mode>3<mask_name>"): Add masking,
+	use VI12_128 mode iterator.
+	(define_expand "ashrv2di3<mask_name>"): New.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c
 	(ix86_expand_args_builtin): Handle CODE_FOR_avx512vl_cmpv4di3_mask,
 	CODE_FOR_avx512vl_cmpv8si3_mask, CODE_FOR_avx512vl_ucmpv4di3_mask,
