@@ -531,7 +531,7 @@ extern ira_object_t *ira_object_id_map;
 /* The size of the previous array.  */
 extern int ira_objects_num;
 
-/* The following structure represents a hard register prefererence of
+/* The following structure represents a hard register preference of
    allocno.  The preference represent move insns or potential move
    insns usually because of two operand insn constraints.  One move
    operand is a hard register.  */
@@ -546,7 +546,7 @@ struct ira_allocno_pref
   int freq;
   /* Given allocno.  */
   ira_allocno_t allocno;
-  /* All prefernces with the same allocno are linked by the following
+  /* All preferences with the same allocno are linked by the following
      member.  */
   ira_pref_t next_pref;
 };

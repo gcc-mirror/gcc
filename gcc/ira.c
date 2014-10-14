@@ -153,7 +153,7 @@ along with GCC; see the file COPYING3.  If not see
          calculates its initial (non-accumulated) cost of memory and
          each hard-register of its allocno class (file ira-cost.c).
 
-       * IRA creates live ranges of each allocno, calulates register
+       * IRA creates live ranges of each allocno, calculates register
          pressure for each pressure class in each region, sets up
          conflict hard registers for each allocno and info about calls
          the allocno lives through (file ira-lives.c).
@@ -245,7 +245,7 @@ along with GCC; see the file COPYING3.  If not see
          hard-register for allocnos conflicting with given allocno.
 
        * Chaitin-Briggs coloring assigns as many pseudos as possible
-         to hard registers.  After coloringh we try to improve
+         to hard registers.  After coloring we try to improve
          allocation with cost point of view.  We improve the
          allocation by spilling some allocnos and assigning the freed
          hard registers to other allocnos if it decreases the overall
@@ -307,7 +307,7 @@ along with GCC; see the file COPYING3.  If not see
        rebuilding would be, but is much faster.
 
      o After IR flattening, IRA tries to assign hard registers to all
-       spilled allocnos.  This is impelemented by a simple and fast
+       spilled allocnos.  This is implemented by a simple and fast
        priority coloring algorithm (see function
        ira_reassign_conflict_allocnos::ira-color.c).  Here new allocnos
        created during the code change pass can be assigned to hard
@@ -328,7 +328,7 @@ along with GCC; see the file COPYING3.  If not see
          in places where the pseudo-register lives.
 
    IRA uses a lot of data representing the target processors.  These
-   data are initilized in file ira.c.
+   data are initialized in file ira.c.
 
    If function has no loops (or the loops are ignored when
    -fira-algorithm=CB is used), we have classic Chaitin-Briggs
@@ -898,7 +898,7 @@ setup_pressure_classes (void)
 	  IOR_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
       }
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      /* Some targets (like SPARC with ICC reg) have alocatable regs
+      /* Some targets (like SPARC with ICC reg) have allocatable regs
 	 for which no reg class is defined.  */
       if (REGNO_REG_CLASS (i) == NO_REGS)
 	SET_HARD_REG_BIT (ignore_hard_regs, i);
@@ -959,7 +959,7 @@ setup_uniform_class_p (void)
 /* Set up IRA_ALLOCNO_CLASSES, IRA_ALLOCNO_CLASSES_NUM,
    IRA_IMPORTANT_CLASSES, and IRA_IMPORTANT_CLASSES_NUM.
 
-   Target may have many subtargets and not all target hard regiters can
+   Target may have many subtargets and not all target hard registers can
    be used for allocation, e.g. x86 port in 32-bit mode can not use
    hard registers introduced in x86-64 like r8-r15).  Some classes
    might have the same allocatable hard registers, e.g.  INDEX_REGS
@@ -1019,7 +1019,7 @@ setup_allocno_and_important_classes (void)
   classes[n] = LIM_REG_CLASSES;
 
   /* Set up classes which can be used for allocnos as classes
-     conatining non-empty unique sets of allocatable hard
+     containing non-empty unique sets of allocatable hard
      registers.  */
   ira_allocno_classes_num = 0;
   for (i = 0; (cl = classes[i]) != LIM_REG_CLASSES; i++)
@@ -1313,7 +1313,7 @@ setup_reg_class_relations (void)
 	      if (important_class_p[cl3]
 		  && hard_reg_set_subset_p (temp_hard_regset, union_set))
 		{
-		  /* CL3 allocatbale hard register set is inside of
+		  /* CL3 allocatable hard register set is inside of
 		     union of allocatable hard register sets of CL1
 		     and CL2.  */
 		  COPY_HARD_REG_SET
@@ -1366,7 +1366,7 @@ setup_reg_class_relations (void)
     }
 }
 
-/* Output all unifrom and important classes into file F.  */
+/* Output all uniform and important classes into file F.  */
 static void
 print_unform_and_important_classes (FILE *f)
 {
@@ -2774,7 +2774,7 @@ setup_preferred_alternate_classes_for_new_pseudos (int start)
 }
 
 
-/* The number of entries allocated in teg_info.  */
+/* The number of entries allocated in reg_info.  */
 static int allocated_reg_info_size;
 
 /* Regional allocation can create new pseudo-registers.  This function
@@ -3349,7 +3349,7 @@ update_equiv_regs (void)
   init_alias_analysis ();
 
   /* Scan insns and set pdx_subregs[regno] if the reg is used in a
-     paradoxical subreg. Don't set such reg sequivalent to a mem,
+     paradoxical subreg. Don't set such reg equivalent to a mem,
      because lra will not substitute such equiv memory in order to
      prevent access beyond allocated memory for paradoxical memory subreg.  */
   FOR_EACH_BB_FN (bb, cfun)
@@ -4776,7 +4776,7 @@ interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
   return dest;
 }
 
-/* If insn is interesting for parameter range-splitting shring-wrapping
+/* If insn is interesting for parameter range-splitting shrink-wrapping
    preparation, i.e. it is a single set from a hard register to a pseudo, which
    is live at CALL_DOM (if non-NULL, otherwise this check is omitted), or a
    parallel statement with only one such statement, return the destination.
