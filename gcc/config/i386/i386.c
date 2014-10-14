@@ -11999,7 +11999,10 @@ ix86_expand_split_stack_prologue (void)
 		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
 
   if (split_stack_fn == NULL_RTX)
-    split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+    {
+      split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+      SYMBOL_REF_FLAGS (split_stack_fn) |= SYMBOL_FLAG_LOCAL;
+    }
   fn = split_stack_fn;
 
   /* Get more stack space.  We pass in the desired stack space and the
@@ -12044,9 +12047,11 @@ ix86_expand_split_stack_prologue (void)
 	  gcc_assert ((args_size & 0xffffffff) == args_size);
 
 	  if (split_stack_fn_large == NULL_RTX)
-	    split_stack_fn_large =
-	      gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
-
+	    {
+	      split_stack_fn_large =
+	        gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
+	      SYMBOL_REF_FLAGS (split_stack_fn_large) |= SYMBOL_FLAG_LOCAL;
+	    }
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
 	      rtx_code_label *label;
