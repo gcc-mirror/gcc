@@ -2902,12 +2902,14 @@ struct equivalence
 
   /* Loop depth is used to recognize equivalences which appear
      to be present within the same loop (or in an inner loop).  */
-  int loop_depth;
+  short loop_depth;
   /* Nonzero if this had a preexisting REG_EQUIV note.  */
-  int is_arg_equivalence;
+  unsigned char is_arg_equivalence : 1;
   /* Set when an attempt should be made to replace a register
      with the associated src_p entry.  */
-  char replace;
+  unsigned char replace : 1;
+  /* Set if this register has no known equivalence.  */
+  unsigned char no_equiv : 1;
 };
 
 /* reg_equiv[N] (where N is a pseudo reg number) is the equivalence
@@ -3255,6 +3257,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
   if (!REG_P (reg))
     return;
   regno = REGNO (reg);
+  reg_equiv[regno].no_equiv = 1;
   list = reg_equiv[regno].init_insns;
   if (list && list->insn () == NULL)
     return;
@@ -3381,7 +3384,7 @@ update_equiv_regs (void)
 
 	  /* If this insn contains more (or less) than a single SET,
 	     only mark all destinations as having no known equivalence.  */
-	  if (set == 0)
+	  if (set == NULL_RTX)
 	    {
 	      note_stores (PATTERN (insn), no_equiv, NULL);
 	      continue;
@@ -3476,16 +3479,49 @@ update_equiv_regs (void)
 	  if (note && GET_CODE (XEXP (note, 0)) == EXPR_LIST)
 	    note = NULL_RTX;
 
-	  if (DF_REG_DEF_COUNT (regno) != 1
-	      && (! note
+	  if (DF_REG_DEF_COUNT (regno) != 1)
+	    {
+	      bool equal_p = true;
+	      rtx_insn_list *list;
+
+	      /* If we have already processed this pseudo and determined it
+		 can not have an equivalence, then honor that decision.  */
+	      if (reg_equiv[regno].no_equiv)
+		continue;
+
+	      if (! note
 		  || rtx_varies_p (XEXP (note, 0), 0)
 		  || (reg_equiv[regno].replacement
 		      && ! rtx_equal_p (XEXP (note, 0),
-					reg_equiv[regno].replacement))))
-	    {
-	      no_equiv (dest, set, NULL);
-	      continue;
+					reg_equiv[regno].replacement)))
+		{
+		  no_equiv (dest, set, NULL);
+		  continue;
+		}
+
+	      list = reg_equiv[regno].init_insns;
+	      for (; list; list = list->next ())
+		{
+		  rtx note_tmp;
+		  rtx_insn *insn_tmp;
+
+		  insn_tmp = list->insn ();
+		  note_tmp = find_reg_note (insn_tmp, REG_EQUAL, NULL_RTX);
+		  gcc_assert (note_tmp);
+		  if (! rtx_equal_p (XEXP (note, 0), XEXP (note_tmp, 0)))
+		    {
+		      equal_p = false;
+		      break;
+		    }
+		}
+
+	      if (! equal_p)
+		{
+		  no_equiv (dest, set, NULL);
+		  continue;
+		}
 	    }
+
 	  /* Record this insn as initializing this register.  */
 	  reg_equiv[regno].init_insns
 	    = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv[regno].init_insns);
@@ -3514,10 +3550,9 @@ update_equiv_regs (void)
 	     a register used only in one basic block from a MEM.  If so, and the
 	     MEM remains unchanged for the life of the register, add a REG_EQUIV
 	     note.  */
-
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
-	  if (note == 0 && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
+	  if (note == NULL_RTX && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
 	      && MEM_P (SET_SRC (set))
 	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
 	    note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (SET_SRC (set)));
@@ -3547,7 +3582,7 @@ update_equiv_regs (void)
 
 	      reg_equiv[regno].replacement = x;
 	      reg_equiv[regno].src_p = &SET_SRC (set);
-	      reg_equiv[regno].loop_depth = loop_depth;
+	      reg_equiv[regno].loop_depth = (short) loop_depth;
 
 	      /* Don't mess with things live during setjmp.  */
 	      if (REG_LIVE_LENGTH (regno) >= 0 && optimize)
@@ -3677,7 +3712,7 @@ update_equiv_regs (void)
 		  rtx equiv_insn;
 
 		  if (! reg_equiv[regno].replace
-		      || reg_equiv[regno].loop_depth < loop_depth
+		      || reg_equiv[regno].loop_depth < (short) loop_depth
 		      /* There is no sense to move insns if live range
 			 shrinkage or register pressure-sensitive
 			 scheduling were done because it will not

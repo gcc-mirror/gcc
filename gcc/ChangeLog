@@ -1,3 +1,14 @@
+2014-10-14  Felix Yang  <felix.yang@huawei.com>
+	    Jeff Law  <law@redhat.com>
+
+	* ira.c (struct equivalence): Change member "is_arg_equivalence" and
+	"replace" into boolean bitfields; turn member "loop_depth" into a short
+	integer; add new member "no_equiv" and "reserved".
+	(no_equiv): Set no_equiv of struct equivalence if register is marked
+	as having no known equivalence.
+	(update_equiv_regs): Check all definitions for a multiple-set
+	register to make sure that the RHS have the same value.
+
 2014-10-13  Richard Henderson  <rth@redhat.com>
 
 	* combine-stack-adj.c (no_unhandled_cfa): New.
