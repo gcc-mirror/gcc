@@ -13273,6 +13273,41 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
+(define_insn "avx512bw_umulhrswv32hi3<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(truncate:V32HI
+	  (lshiftrt:V32SI
+	    (plus:V32SI
+	      (lshiftrt:V32SI
+		(mult:V32SI
+		  (sign_extend:V32SI
+		    (match_operand:V32HI 1 "nonimmediate_operand" "%v"))
+		  (sign_extend:V32SI
+		    (match_operand:V32HI 2 "nonimmediate_operand" "vm")))
+		(const_int 14))
+	      (const_vector:V32HI [(const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)
+				   (const_int 1) (const_int 1)]))
+	    (const_int 1))))]
+  "TARGET_AVX512BW"
+  "vpmulhrsw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sseimul")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
 (define_insn "ssse3_pmaddubsw128"
   [(set (match_operand:V8HI 0 "register_operand" "=x,x")
 	(ss_plus:V8HI
@@ -13349,6 +13384,29 @@
 
 (define_mode_iterator PMULHRSW
   [V4HI V8HI (V16HI "TARGET_AVX2")])
+
+(define_expand "<ssse3_avx2>_pmulhrsw<mode>3_mask"
+  [(set (match_operand:PMULHRSW 0 "register_operand")
+	(vec_merge:PMULHRSW
+	  (truncate:PMULHRSW
+	    (lshiftrt:<ssedoublemode>
+	      (plus:<ssedoublemode>
+	        (lshiftrt:<ssedoublemode>
+		  (mult:<ssedoublemode>
+		    (sign_extend:<ssedoublemode>
+		      (match_operand:PMULHRSW 1 "nonimmediate_operand"))
+		    (sign_extend:<ssedoublemode>
+		      (match_operand:PMULHRSW 2 "nonimmediate_operand")))
+		  (const_int 14))
+	        (match_dup 5))
+	      (const_int 1)))
+	  (match_operand:PMULHRSW 3 "register_operand")
+	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
+  "TARGET_AVX512BW && TARGET_AVX512VL"
+{
+  operands[5] = CONST1_RTX(<MODE>mode);
+  ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
+})
 
 (define_expand "<ssse3_avx2>_pmulhrsw<mode>3"
   [(set (match_operand:PMULHRSW 0 "register_operand")

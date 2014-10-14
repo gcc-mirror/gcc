@@ -7,6 +7,19 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+        * config/i386/sse.md
+        (define_insn "avx512bw_umulhrswv32hi3<mask_name>"): New.
+        (define_expand "<ssse3_avx2>_pmulhrsw<mode>3_mask"): Ditto.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_c_enum "unspec"): Add UNSPEC_PMADDWD512.
 	(define_mode_iterator VI2_AVX2): Add V32HI mode.
