@@ -1,3 +1,32 @@
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430-modes.def (PSI): Add.
+
+	* config/msp430/msp430-protos.h (msp430_hard_regno_nregs_has_padding): New.
+	(msp430_hard_regno_nregs_with_padding): New.
+	* config/msp430/msp430.c (msp430_scalar_mode_supported_p): New.
+	(msp430_hard_regno_nregs_has_padding): New.
+	(msp430_hard_regno_nregs_with_padding): New.
+	(msp430_unwind_word_mode): Use PSImode instead of SImode.
+	(msp430_addr_space_legitimate_address_p): New.
+	(msp430_asm_integer): New.
+	(msp430_init_dwarf_reg_sizes_extra): New.
+	(msp430_print_operand): Use X suffix for PSImode even in small model.
+	* config/msp430/msp430.h (POINTER_SIZE): Use 20 bits, not 32.
+	(PTR_SIZE): ...but 4 bytes for EH.
+	(SIZE_TYPE): Use __int20.
+	(PTRDIFF_TYPE): Likewise.
+	(INCOMING_FRAME_SP_OFFSET): Adjust.
+	* config/msp430/msp430.md (movqi_topbyte): New.
+	(movpsi): Use fixed suffixes.
+	(movsipsi2): Enable for 430X, not large model.
+	(extendhipsi2): Likewise.
+	(zero_extendhisi2): Likewise.
+	(zero_extendhisipsi2): Likewise.
+	(extend_and_shift1_hipsi2): Likewise.
+	(extendpsisi2): Likewise.
+	(*bitbranch<mode>4_z): Fix suffix logic.
+
 2014-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/62019
