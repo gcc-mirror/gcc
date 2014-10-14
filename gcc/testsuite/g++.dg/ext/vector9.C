@@ -7,4 +7,5 @@ void foo()
 {
   v4f v;
   !(v4i)v;
+  !v;
 }

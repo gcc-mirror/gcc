@@ -1,3 +1,7 @@
+2014-10-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* typeck.c (cp_build_unary_op) [TRUTH_NOT_EXPR]: Accept float vectors.
+
 2014-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* mangle.c (mangle_conv_op_name_for_type): Cast elements to

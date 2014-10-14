@@ -1,3 +1,7 @@
+2014-10-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector9.C: Test ! with float vectors.
+
 2014-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63512
