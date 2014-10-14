@@ -19,6 +19,8 @@
 
 // C++11 [ptr.align] (20.6.5): std::align
 
+// { dg-require-cstdint "" }
+
 #include <memory>
 #include <testsuite_hooks.h>
 
