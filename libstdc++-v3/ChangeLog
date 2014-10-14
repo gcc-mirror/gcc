@@ -3,6 +3,10 @@
 	* testsuite/20_util/align/1.cc: Add dg-require-stdint.
 	* testsuite/20_util/align/2.cc: Likewise.
 
+	* doc/xml/manual/intro.xml: Update.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/*: Regenerate.
+
 2014-10-14  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
 	PR libstdc++/54354
