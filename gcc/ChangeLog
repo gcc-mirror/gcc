@@ -8,6 +8,18 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_insn "vec_dup<mode>"): Update constraints.
+
+2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_mode_iterator SSESCALARMODE): Add V4TI mode.
 	(define_insn "<ssse3_avx2>_palignr<mode>_mask"): New.
 	(define_insn "<ssse3_avx2>_palignr<mode>"): Add EVEX version.

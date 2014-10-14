@@ -16256,9 +16256,9 @@
   [V8SI V8SF V4DI V4DF])
 
 (define_insn "vec_dup<mode>"
-  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x,x")
+  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,v,x")
 	(vec_duplicate:AVX_VEC_DUP_MODE
-	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,x,?x")))]
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,v,?x")))]
   "TARGET_AVX"
   "@
    vbroadcast<ssescalarmodesuffix>\t{%1, %0|%0, %1}
