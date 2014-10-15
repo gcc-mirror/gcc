@@ -1,3 +1,22 @@
+2014-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/predicates.md (define_predicate "constm1_operand"): New.
+	* config/i386/sse.md
+	(define_c_enum "unspec"): Add UNSPEC_CVTINT2MASK.
+	(define_insn "<avx512>_cvt<ssemodesuffix>2mask<VI12_AVX512VL:mode>"): New.
+	(define_insn "<avx512>_cvt<ssemodesuffix>2mask<VI48_AVX512VL:mode>"): Ditto.
+	(define_expand "<avx512>_cvtmask2<ssemodesuffix><VI12_AVX512VL:mode>"): Ditto.
+	(define_insn "*<avx512>_cvtmask2<ssemodesuffix><VI12_AVX512VL:mode>"): Ditto.
+	(define_expand "<avx512>_cvtmask2<ssemodesuffix><VI48_AVX512VL:mode>"): Ditto.
+	(define_insn "*<avx512>_cvtmask2<ssemodesuffix><VI48_AVX512VL:mode>"): Ditto.
+
 2014-10-15  Renlin Li <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h (ARM_DEFAULT_PCS, arm_pcs_variant): Delete.
