@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++1y" }
+// { dg-options "-std=gnu++14" }
 // XFAIL pending resolution of PR libstdc++/58777
 // { dg-do compile { xfail *-*-* } }
 // { dg-excess-errors "" }
