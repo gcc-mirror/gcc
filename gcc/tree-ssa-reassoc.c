@@ -2250,8 +2250,13 @@ optimize_range_tests_diff (enum tree_code opcode, tree type,
   if (tree_log2 (tem1) < 0)
     return false;
 
+  type = unsigned_type_for (type);
+  tem1 = fold_convert (type, tem1);
+  tem2 = fold_convert (type, tem2);
+  lowi = fold_convert (type, lowi);
   mask = fold_build1 (BIT_NOT_EXPR, type, tem1);
-  tem1 = fold_binary (MINUS_EXPR, type, rangei->exp, lowi);
+  tem1 = fold_binary (MINUS_EXPR, type,
+		      fold_convert (type, rangei->exp), lowi);
   tem1 = fold_build2 (BIT_AND_EXPR, type, tem1, mask);
   lowj = build_int_cst (type, 0);
   if (update_range_test (rangei, rangej, 1, opcode, ops, tem1,
