@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <string>
 #include <testsuite_hooks.h>

@@ -1,5 +1,359 @@
 2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/capacity/char/shrink_to_fit.cc:
+	Prefer -std=gnu++11.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/
+	moveable2.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/
+	front_back.cc: Likewise.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/
+	front_back.cc: Likewise.
+	* testsuite/21_strings/basic_string/init-list.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/
+	move_assign.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/
+	move_assign.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/dr1261.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stod.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stof.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stoi.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stol.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stold.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stoll.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stoul.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/to_string.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/dr1261.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stod.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stof.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stoi.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stol.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stold.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stoll.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stoul.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/to_wstring.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/char/4.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/wchar_t/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/wchar_t/4.cc: Likewise.
+	* testsuite/21_strings/basic_string/range_access/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/range_access/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	citerators.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	exception/basic.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	exception/generation_prohibited.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	exception/propagation_consistent.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	char16_t/typedefs.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	char32_t/typedefs.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access.cc: Likewise.
+	* testsuite/24_iterators/istream_iterator/cons/constexpr.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/
+	cons/constexpr.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/
+	requirements/dr445.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/dr2061.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: Likewise.
+	* testsuite/24_iterators/operations/40497.cc: Likewise.
+	* testsuite/24_iterators/operations/next.cc: Likewise.
+	* testsuite/24_iterators/operations/prev.cc: Likewise.
+	* testsuite/24_iterators/range_access.cc: Likewise.
+	* testsuite/25_algorithms/all_of/1.cc: Likewise.
+	* testsuite/25_algorithms/all_of/check_type.cc: Likewise.
+	* testsuite/25_algorithms/all_of/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/all_of/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/any_of/1.cc: Likewise.
+	* testsuite/25_algorithms/any_of/check_type.cc: Likewise.
+	* testsuite/25_algorithms/any_of/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/any_of/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_if/check_type.cc: Likewise.
+	* testsuite/25_algorithms/copy_if/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_if/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/3.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/4.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/50119.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/1.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/check_type.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/for_each/1.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/49559.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/1.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/1.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/1.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/check_type.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/1.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/check_type.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/max/3.cc: Likewise.
+	* testsuite/25_algorithms/max/37547.cc: Likewise.
+	* testsuite/25_algorithms/max/4.cc: Likewise.
+	* testsuite/25_algorithms/max/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/25_algorithms/max/requirements/
+	explicit_instantiation/pod2.cc: Likewise.
+	* testsuite/25_algorithms/min/3.cc: Likewise.
+	* testsuite/25_algorithms/min/37547.cc: Likewise.
+	* testsuite/25_algorithms/min/4.cc: Likewise.
+	* testsuite/25_algorithms/min/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/25_algorithms/min/requirements/
+	explicit_instantiation/pod2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/1.cc: Likewise.
+	* testsuite/25_algorithms/minmax/2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/25_algorithms/minmax/37547.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/
+	explicit_instantiation/pod2.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/1.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/check_type.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/move/1.cc: Likewise.
+	* testsuite/25_algorithms/move/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/move/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/move/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/
+	deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/next_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/none_of/1.cc: Likewise.
+	* testsuite/25_algorithms/none_of/check_type.cc: Likewise.
+	* testsuite/25_algorithms/none_of/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/none_of/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/
+	check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/1.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/check_type.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/1.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/check_type.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/prev_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/remove/moveable.cc: Likewise.
+	* testsuite/25_algorithms/remove_if/moveable.cc: Likewise.
+	* testsuite/25_algorithms/reverse/moveable.cc: Likewise.
+	* testsuite/25_algorithms/rotate/moveable.cc: Likewise.
+	* testsuite/25_algorithms/rotate/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/1.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/sort/check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/
+	check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/pr52822.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/49559.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/
+	check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/swap/noexcept.cc: Likewise.
+	* testsuite/25_algorithms/swap_ranges/moveable.cc: Likewise.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise.
+	* testsuite/26_numerics/complex/50880.cc: Likewise.
+	* testsuite/26_numerics/complex/51083.cc: Likewise.
+	* testsuite/26_numerics/complex/comparison_operators/
+	constexpr.cc: Likewise.
+	* testsuite/26_numerics/complex/cons/48760_c++0x.cc: Likewise.
+	* testsuite/26_numerics/complex/cons/constexpr.cc: Likewise.
+	* testsuite/26_numerics/complex/cons/constexpr_primary.cc: Likewise.
+	* testsuite/26_numerics/complex/dr387_2.cc: Likewise.
+	* testsuite/26_numerics/complex/dr781_dr1137.cc: Likewise.
+	* testsuite/26_numerics/complex/dr844.cc: Likewise.
+	* testsuite/26_numerics/complex/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/complex/value_operations/
+	constexpr.cc: Likewise.
+	* testsuite/26_numerics/headers/cfenv/types_std_c++0x.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/51083.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++0x.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/dr550.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/types_std_c++0x.cc: Likewise.
+	* testsuite/26_numerics/headers/random/types_std_c++0x.cc: Likewise.
+	* testsuite/26_numerics/iota/1.cc: Likewise.
+	* testsuite/26_numerics/iota/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/26_numerics/iota/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/valarray/dr630-2.cc: Likewise.
+	* testsuite/26_numerics/valarray/init-list.cc: Likewise.
+	* testsuite/26_numerics/valarray/moveable.cc: Likewise.
+	* testsuite/26_numerics/valarray/noexcept_move_construct.cc: Likewise.
+	* testsuite/26_numerics/valarray/range_access.cc: Likewise.
+	* testsuite/26_numerics/valarray/swap.cc: Likewise.
+
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/17_intro/freestanding.cc: Prefer -std=gnu++11.
 	* testsuite/17_intro/headers/c++200x/42319.cc: Likewise.
 	* testsuite/17_intro/headers/c++200x/all_no_exceptions.cc: Likewise.
