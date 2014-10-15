@@ -871,21 +871,23 @@ recompute_probabilities (basic_block bb)
   edge_iterator ei;
   FOR_EACH_EDGE (esucc, ei, bb->succs)
     {
-      if (bb->count)
+      if (!bb->count)
+        continue;
+
+      /* Prevent overflow computation due to insane profiles.  */
+      if (esucc->count < bb->count)
         esucc->probability = GCOV_COMPUTE_SCALE (esucc->count,
                                                  bb->count);
-      if (esucc->probability > REG_BR_PROB_BASE)
-        {
-	  /* Can happen with missing/guessed probabilities, since we
-	     may determine that more is flowing along duplicated
-	     path than joiner succ probabilities allowed.
-	     Counts and freqs will be insane after jump threading,
-	     at least make sure probability is sane or we will
-	     get a flow verification error.
-	     Not much we can do to make counts/freqs sane without
-	     redoing the profile estimation.  */
-	  esucc->probability = REG_BR_PROB_BASE;
-	}
+      else
+        /* Can happen with missing/guessed probabilities, since we
+           may determine that more is flowing along duplicated
+           path than joiner succ probabilities allowed.
+           Counts and freqs will be insane after jump threading,
+           at least make sure probability is sane or we will
+           get a flow verification error.
+           Not much we can do to make counts/freqs sane without
+           redoing the profile estimation.  */
+        esucc->probability = REG_BR_PROB_BASE;
     }
 }
 
