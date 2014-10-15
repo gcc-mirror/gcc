@@ -26,9 +26,23 @@
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
-      builtin_define ("__aarch64__");			\
+      builtin_define ("__aarch64__");                   \
+      builtin_define ("__ARM_64BIT_STATE");             \
+      builtin_define ("__ARM_ARCH_ISA_A64");            \
+      builtin_define ("__ARM_FEATURE_CLZ");             \
+      builtin_define ("__ARM_FEATURE_IDIV");            \
+      builtin_define ("__ARM_FEATURE_UNALIGNED");       \
+      builtin_define ("__ARM_PCS_AAPCS64");             \
+      builtin_define_with_int_value                     \
+        ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);  \
+      builtin_define_with_int_value                     \
+        ("__ARM_SIZEOF_MINIMAL_ENUM",                   \
+         flag_short_enums? 1 : 4);                      \
       if (TARGET_BIG_END)				\
-	builtin_define ("__AARCH64EB__");		\
+        {                                               \
+          builtin_define ("__AARCH64EB__");             \
+          builtin_define ("__ARM_BIG_ENDIAN");          \
+        }                                               \
       else						\
 	builtin_define ("__AARCH64EL__");		\
 							\
