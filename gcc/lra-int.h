@@ -251,9 +251,10 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #define LRA_LOSER_COST_FACTOR 6
 #define LRA_MAX_REJECT 600
 
-/* Maximum allowed number of constraint pass iterations after the last
-   spill pass.	It is for preventing LRA cycling in a bug case.	 */
-#define LRA_MAX_CONSTRAINT_ITERATION_NUMBER 30
+/* Maximum allowed number of assignment pass iterations after the
+   latest spill pass when any former reload pseudo was spilled.  It is
+   for preventing LRA cycling in a bug case.  */
+#define LRA_MAX_ASSIGNMENT_ITERATION_NUMBER 30
 
 /* The maximal number of inheritance/split passes in LRA.  It should
    be more 1 in order to perform caller saves transformations and much
@@ -266,7 +267,7 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #define LRA_MAX_INHERITANCE_PASSES 2
 
 #if LRA_MAX_INHERITANCE_PASSES <= 0 \
-    || LRA_MAX_INHERITANCE_PASSES >= LRA_MAX_CONSTRAINT_ITERATION_NUMBER - 8
+    || LRA_MAX_INHERITANCE_PASSES >= LRA_MAX_ASSIGNMENT_ITERATION_NUMBER - 8
 #error wrong LRA_MAX_INHERITANCE_PASSES value
 #endif
 
@@ -331,7 +332,6 @@ extern void lra_init_equiv (void);
 extern int lra_constraint_offset (int, enum machine_mode);
 
 extern int lra_constraint_iter;
-extern int lra_constraint_iter_after_spill;
 extern bool lra_risky_transformations_p;
 extern int lra_inheritance_iter;
 extern int lra_undo_inheritance_iter;
@@ -368,6 +368,8 @@ extern void lra_setup_reload_pseudo_preferenced_hard_reg (int, int, int);
 
 /* lra-assigns.c: */
 
+extern int lra_assignment_iter;
+extern int lra_assignment_iter_after_spill;
 extern void lra_setup_reg_renumber (int, int, bool);
 extern bool lra_assign (void);
 
