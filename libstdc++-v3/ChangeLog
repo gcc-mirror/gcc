@@ -1,3 +1,8 @@
+2014-10-15  Daniel Krugler  <daniel.kruegler@gmail.com>
+
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Enable tests predicated on PR c++/53000.
+
 2014-10-15  François Dumont  <fdumont@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

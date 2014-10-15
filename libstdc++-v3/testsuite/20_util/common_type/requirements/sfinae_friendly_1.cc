@@ -21,9 +21,6 @@
 #include <type_traits>
 #include <initializer_list>
 
-//TODO: Uncomment this once gcc bug 53000 has been resolved:
-//#define HAS_53000_FIXED
-
 // Helper types:
 struct has_type_impl
 {
@@ -246,15 +243,17 @@ static_assert(is_type<std::common_type<UConv1, const Abstract*&>,
 static_assert(is_type<std::common_type<UConv1, UConv2>, Abstract*>(), "");
 static_assert(is_type<std::common_type<UConv1&, UConv2&>, Abstract*>(), "");
 
-#ifdef HAS_53000_FIXED
 static_assert(is_type<std::common_type<Abstract&&, Abstract&&>,
 	      Abstract>(), "");
 static_assert(is_type<std::common_type<const Abstract&&,
+				       const Abstract&&>, Abstract>(), "");
+static_assert(is_type<std::common_type<volatile Abstract&&,
 				       volatile Abstract&&>, Abstract>(), "");
 static_assert(is_type<std::common_type<Ukn&&, Ukn&&>, Ukn>(), "");
-static_assert(is_type<std::common_type<const Ukn&&, volatile Ukn&&>,
+static_assert(is_type<std::common_type<const Ukn&&, const Ukn&&>,
 	      Ukn>(), "");
-#endif
+static_assert(is_type<std::common_type<volatile Ukn&&, volatile Ukn&&>,
+	      Ukn>(), "");
 
 static_assert(is_type<std::common_type<X1, X2>, RX12>(), "");
 static_assert(is_type<std::common_type<X2, X1>, RX21>(), "");
