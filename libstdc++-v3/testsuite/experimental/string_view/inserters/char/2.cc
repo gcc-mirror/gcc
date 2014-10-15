@@ -22,7 +22,7 @@
 // working, not to mention other major details like char_traits, and
 // all of the string_view class.
 
-// { dg-options "-std=gnu++1y" }
+// { dg-options "-std=gnu++14" }
 // { dg-require-fileio "" }
 
 #include <experimental/string_view>
