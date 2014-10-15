@@ -1,3 +1,7 @@
+2014-10-15  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/pr63419.C: Add -Wno-psabi.
+
 2014-10-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-prof/peel-1.c: Update.
