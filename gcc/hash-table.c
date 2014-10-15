@@ -22,7 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 /* This file implements a typed hash table.
    The implementation borrows from libiberty's hashtab.  */
 
+#ifdef GENERATOR_FILE
+#include "bconfig.h"
+#else
 #include "config.h"
+#endif
 #include "system.h"
 #include "coretypes.h"
 #include "hash-table.h"
