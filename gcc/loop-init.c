@@ -357,7 +357,6 @@ pass_loop2::gate (function *fun)
   if (optimize > 0
       && (flag_move_loop_invariants
 	  || flag_unswitch_loops
-	  || flag_peel_loops
 	  || flag_unroll_loops
 #ifdef HAVE_doloop_end
 	  || (flag_branch_on_count_reg && HAVE_doloop_end)
@@ -537,7 +536,7 @@ make_pass_rtl_move_loop_invariants (gcc::context *ctxt)
 
 namespace {
 
-const pass_data pass_data_rtl_unroll_and_peel_loops =
+const pass_data pass_data_rtl_unroll_loops =
 {
   RTL_PASS, /* type */
   "loop2_unroll", /* name */
@@ -550,11 +549,11 @@ const pass_data pass_data_rtl_unroll_and_peel_loops =
   0, /* todo_flags_finish */
 };
 
-class pass_rtl_unroll_and_peel_loops : public rtl_opt_pass
+class pass_rtl_unroll_loops : public rtl_opt_pass
 {
 public:
-  pass_rtl_unroll_and_peel_loops (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_rtl_unroll_and_peel_loops, ctxt)
+  pass_rtl_unroll_loops (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_unroll_loops, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -565,10 +564,10 @@ public:
 
   virtual unsigned int execute (function *);
 
-}; // class pass_rtl_unroll_and_peel_loops
+}; // class pass_rtl_unroll_loops
 
 unsigned int
-pass_rtl_unroll_and_peel_loops::execute (function *fun)
+pass_rtl_unroll_loops::execute (function *fun)
 {
   if (number_of_loops (fun) > 1)
     {
@@ -576,14 +575,12 @@ pass_rtl_unroll_and_peel_loops::execute (function *fun)
       if (dump_file)
 	df_dump (dump_file);
 
-      if (flag_peel_loops)
-	flags |= UAP_PEEL;
       if (flag_unroll_loops)
 	flags |= UAP_UNROLL;
       if (flag_unroll_all_loops)
 	flags |= UAP_UNROLL_ALL;
 
-      unroll_and_peel_loops (flags);
+      unroll_loops (flags);
     }
   return 0;
 }
@@ -591,9 +588,9 @@ pass_rtl_unroll_and_peel_loops::execute (function *fun)
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_rtl_unroll_and_peel_loops (gcc::context *ctxt)
+make_pass_rtl_unroll_loops (gcc::context *ctxt)
 {
-  return new pass_rtl_unroll_and_peel_loops (ctxt);
+  return new pass_rtl_unroll_loops (ctxt);
 }
 
 
