@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <algorithm>
 #include <testsuite_iterators.h>
