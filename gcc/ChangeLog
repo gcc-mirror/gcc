@@ -1,3 +1,9 @@
+2014-10-15  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Update to reflect that GNU11 is the default
+	mode for C.
+	* c-common.h (c_language_kind): Update comment.
+
 2014-10-15  Richard Biener  <rguenther@suse.de>
 
 	* hash-table.c: Include bconfig.h if building for the host.

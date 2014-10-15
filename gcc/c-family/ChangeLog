@@ -1,3 +1,7 @@
+2014-10-15  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_init_options): Make -std=gnu11 the default for C.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* c-pretty-print.c (pp_c_integer_constant): Check for all __intN

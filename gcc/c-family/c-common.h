@@ -461,7 +461,7 @@ struct GTY(()) sorted_fields_type {
 
 typedef enum c_language_kind
 {
-  clk_c		= 0,		/* C90, C94 or C99 */
+  clk_c		= 0,		/* C90, C94, C99 or C11 */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
   clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
