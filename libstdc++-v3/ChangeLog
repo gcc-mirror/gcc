@@ -1,3 +1,8 @@
+2014-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (complex::real, complex::imag): Add const.
+	* testsuite/26_numerics/complex/value_operations/constexpr2.cc: New.
+
 2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/limits: Remove stray semicolon.
