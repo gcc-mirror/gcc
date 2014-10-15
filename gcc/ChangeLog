@@ -1,3 +1,8 @@
+2014-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-reassoc.c (optimize_range_tests_diff): Perform
+	MINUS_EXPR in unsigned type to avoid undefined behavior.
+
 2014-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_size): Do not promote arguments.
