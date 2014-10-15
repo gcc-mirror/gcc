@@ -20,7 +20,7 @@
 	cxx_eval_unary_expression, cxx_eval_binary_expression,
 	cxx_eval_conditional_expression, cxx_eval_array_reference,
 	cxx_eval_component_reference, cxx_eval_bit_field_ref,
-	cxx_eval_logical_expression, base_field_constructor_elt, 
+	cxx_eval_logical_expression, base_field_constructor_elt,
 	cxx_eval_bare_aggregate, cxx_eval_vec_init_1, cxx_eval_vec_init,
 	cxx_fold_indirect_ref, cxx_eval_indirect_ref, non_const_var_error,
 	cxx_eval_trinary_expression, var_in_constexpr_fn,
