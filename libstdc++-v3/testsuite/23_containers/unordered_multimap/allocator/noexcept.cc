@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-options "-std=gnu++11" }
 
 #include <unordered_map>
 #include <testsuite_allocator.h>

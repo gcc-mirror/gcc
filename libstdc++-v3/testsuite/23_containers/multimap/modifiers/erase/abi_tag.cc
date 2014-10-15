@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options -std=c++11 }
+// { dg-options -std=gnu++11 }
 // { dg-require-normal-mode "" }
 
 // Copyright (C) 2013-2014 Free Software Foundation, Inc.

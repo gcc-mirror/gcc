@@ -19,7 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
 // { dg-error "not a valid type" "" { target *-*-* } 31 }
 

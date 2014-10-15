@@ -17,7 +17,7 @@
 
 // 28.6 [re.badexp]
 
-// { dg-options "-std=c++11" }
+// { dg-options "-std=gnu++11" }
 
 #include <regex>
 
