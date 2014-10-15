@@ -2629,7 +2629,11 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		      gsi_insert_before (gsi, new_stmt, GSI_NEW_STMT);
 		    }
 		  else
-		    gsi_replace (gsi, new_stmt, true);
+		    {
+		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		      gsi_replace (gsi, new_stmt, false);
+		    }
 		  return true;
 		}
 	    }

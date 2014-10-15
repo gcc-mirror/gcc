@@ -1,3 +1,9 @@
+2014-10-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_call): Properly keep virtual
+	SSA form up-to-date when devirtualizing a call to
+	__builtin_unreachable and avoid fixing up EH info here.
+
 2014-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
