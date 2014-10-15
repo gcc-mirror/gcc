@@ -1,3 +1,32 @@
+2014-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* loop-unroll.c: (decide_unrolling_and_peeling): Rename to
+	(decide_unrolling): ... this one.
+	(peel_loops_completely): Remove.
+	(decide_peel_simple): Remove.
+	(decide_peel_once_rolling): Remove.
+	(decide_peel_completely): Remove.
+	(peel_loop_simple): Remove.
+	(peel_loop_completely): Remove.
+	(unroll_and_peel_loops): Rename to ...
+	(unroll_loops): ... this one; handle only unrolling.
+	* cfgloop.h (lpt_dec): Remove LPT_PEEL_COMPLETELY and
+	LPT_PEEL_SIMPLE.
+	(UAP_PEEL): Remove.
+	(unroll_and_peel_loops): Remove.
+	(unroll_loops): New.
+	* passes.def: Replace
+	pass_rtl_unroll_and_peel_loops by pass_rtl_unroll_loops.
+	* loop-init.c (gate_rtl_unroll_and_peel_loops,
+	rtl_unroll_and_peel_loops): Rename to ...
+	(gate_rtl_unroll_loops, rtl_unroll_loops): ... these; update.
+	(pass_rtl_unroll_and_peel_loops): Rename to ...
+	(pass_rtl_unroll_loops): ... this one.
+	* tree-pass.h (make_pass_rtl_unroll_and_peel_loops): Remove.
+	(make_pass_rtl_unroll_loops): New.
+	* tree-ssa-loop-ivcanon.c: (estimated_peeled_sequence_size, try_peel_loop): New.
+	(canonicalize_loop_induction_variables): Update.
+
 2014-10-14  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.h (TARGET_HARD_FLOAT_POSTINC): new macro.

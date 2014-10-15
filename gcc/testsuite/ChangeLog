@@ -1,3 +1,12 @@
+2014-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/peel-1.c: Update.
+	* gcc.dg/tree-prof/unroll-1.c: Update.
+	* gcc.dg/gcc.dg/unroll_1.c: Update.
+	* gcc.dg/gcc.dg/unroll_2.c: Update.
+	* gcc.dg/gcc.dg/unroll_3.c: Update.
+	* gcc.dg/gcc.dg/unroll_4.c: Update.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* g++.dg/abi/mangle64.C: New.

@@ -28,9 +28,12 @@ along with GCC; see the file COPYING3.  If not see
    variables.  In that case the created optimization possibilities are likely
    to pay up.
 
-   Additionally in case we detect that it is beneficial to unroll the
-   loop completely, we do it right here to expose the optimization
-   possibilities to the following passes.  */
+   We also perform
+     - complette unrolling (or peeling) when the loops is rolling few enough
+       times
+     - simple peeling (i.e. copying few initial iterations prior the loop)
+       when number of iteration estimate is known (typically by the profile
+       info).  */
 
 #include "config.h"
 #include "system.h"
@@ -657,11 +660,12 @@ try_unroll_loop_completely (struct loop *loop,
 			    HOST_WIDE_INT maxiter,
 			    location_t locus)
 {
-  unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
+  unsigned HOST_WIDE_INT n_unroll = 0, ninsns, max_unroll, unr_insns;
   gimple cond;
   struct loop_size size;
   bool n_unroll_found = false;
   edge edge_to_cancel = NULL;
+  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
 
   /* See if we proved number of iterations to be low constant.
 
@@ -821,6 +825,8 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
+      dump_printf_loc (report_flags, locus,
+                       "loop turned into non-loop; it never loops.\n");
 
       initialize_original_copy_tables ();
       wont_exit = sbitmap_alloc (n_unroll + 1);
@@ -902,6 +908,133 @@ try_unroll_loop_completely (struct loop *loop,
   return true;
 }
 
+/* Return number of instructions after peeling.  */
+static unsigned HOST_WIDE_INT
+estimated_peeled_sequence_size (struct loop_size *size,
+			        unsigned HOST_WIDE_INT npeel)
+{
+  return MAX (npeel * (HOST_WIDE_INT) (size->overall
+			     	       - size->eliminated_by_peeling), 1);
+}
+
+/* If the loop is expected to iterate N times and is
+   small enough, duplicate the loop body N+1 times before
+   the loop itself.  This way the hot path will never
+   enter the loop.  
+   Parameters are the same as for try_unroll_loops_completely */
+
+static bool
+try_peel_loop (struct loop *loop,
+	       edge exit, tree niter,
+	       HOST_WIDE_INT maxiter)
+{
+  int npeel;
+  struct loop_size size;
+  int peeled_size;
+  sbitmap wont_exit;
+  unsigned i;
+  vec<edge> to_remove = vNULL;
+  edge e;
+
+  /* If the iteration bound is known and large, then we can safely eliminate
+     the check in peeled copies.  */
+  if (TREE_CODE (niter) != INTEGER_CST)
+    exit = NULL;
+
+  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0)
+    return false;
+
+  /* Peel only innermost loops.  */
+  if (loop->inner)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: outer loop\n");
+      return false;
+    }
+
+  if (!optimize_loop_for_speed_p (loop))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: cold loop\n");
+      return false;
+    }
+
+  /* Check if there is an estimate on the number of iterations.  */
+  npeel = estimated_loop_iterations_int (loop);
+  if (npeel < 0)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: number of iterations is not "
+	         "estimated\n");
+      return false;
+    }
+  if (maxiter >= 0 && maxiter <= npeel)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: upper bound is known so can "
+		 "unroll complettely\n");
+      return false;
+    }
+
+  /* We want to peel estimated number of iterations + 1 (so we never
+     enter the loop on quick path).  Check against PARAM_MAX_PEEL_TIMES
+     and be sure to avoid overflows.  */
+  if (npeel > PARAM_VALUE (PARAM_MAX_PEEL_TIMES) - 1)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: rolls too much "
+		 "(%i + 1 > --param max-peel-times)\n", npeel);
+      return false;
+    }
+  npeel++;
+
+  /* Check peeled loops size.  */
+  tree_estimate_loop_size (loop, exit, NULL, &size,
+			   PARAM_VALUE (PARAM_MAX_PEELED_INSNS));
+  if ((peeled_size = estimated_peeled_sequence_size (&size, npeel))
+      > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: peeled sequence size is too large "
+		 "(%i insns > --param max-peel-insns)", peeled_size);
+      return false;
+    }
+
+  /* Duplicate possibly eliminating the exits.  */
+  initialize_original_copy_tables ();
+  wont_exit = sbitmap_alloc (npeel + 1);
+  bitmap_ones (wont_exit);
+  bitmap_clear_bit (wont_exit, 0);
+  if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					     npeel, wont_exit,
+					     exit, &to_remove,
+					     DLTHE_FLAG_UPDATE_FREQ
+					     | DLTHE_FLAG_COMPLETTE_PEEL))
+    {
+      free_original_copy_tables ();
+      free (wont_exit);
+      return false;
+    }
+  FOR_EACH_VEC_ELT (to_remove, i, e)
+    {
+      bool ok = remove_path (e);
+      gcc_assert (ok);
+    }
+  free (wont_exit);
+  free_original_copy_tables ();
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Peeled loop %d, %i times.\n",
+	       loop->num, npeel);
+    }
+  if (loop->any_upper_bound)
+    loop->nb_iterations_upper_bound -= npeel;
+  loop->nb_iterations_estimate = 0;
+  /* Make sure to mark loop cold so we do not try to peel it more.  */
+  scale_loop_profile (loop, 1, 0);
+  loop->header->count = 0;
+  return true;
+}
 /* Adds a canonical induction variable to LOOP if suitable.
    CREATE_IV is true if we may create a new iv.  UL determines
    which loops we are allowed to completely unroll.  If TRY_EVAL is true, we try
@@ -980,6 +1113,9 @@ canonicalize_loop_induction_variables (struct loop *loop,
       && niter && !chrec_contains_undetermined (niter)
       && exit && just_once_each_iteration_p (loop, exit->src))
     create_canonical_iv (loop, exit, niter);
+
+  if (ul == UL_ALL)
+    modified |= try_peel_loop (loop, exit, niter, maxiter);
 
   return modified;
 }
