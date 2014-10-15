@@ -2735,8 +2735,10 @@ finish_member_declaration (tree decl)
 					      /*friend_p=*/0);
 	}
     }
-  /* Enter the DECL into the scope of the class.  */
-  else if (pushdecl_class_level (decl))
+  /* Enter the DECL into the scope of the class, if the class
+     isn't a closure (whose fields are supposed to be unnamed).  */
+  else if (CLASSTYPE_LAMBDA_EXPR (current_class_type)
+	   || pushdecl_class_level (decl))
     {
       if (TREE_CODE (decl) == USING_DECL)
 	{

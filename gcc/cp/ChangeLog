@@ -1,5 +1,9 @@
 2014-10-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56710
+	* semantics.c (finish_member_declaration): Don't push closure
+	members.
+
 	PR c++/58624
 	* pt.c (tsubst_copy_and_build) [VAR_DECL]: Use TLS wrapper.
 	* semantics.c (finish_id_expression): Don't call TLS wrapper in a
