@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-additional-options "-static-libgcc" { target *-*-mingw* } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 

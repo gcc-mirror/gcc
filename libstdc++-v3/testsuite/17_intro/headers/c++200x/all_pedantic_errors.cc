@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -pedantic-errors" }
+// { dg-options "-std=gnu++11 -pedantic-errors" }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.
 //
