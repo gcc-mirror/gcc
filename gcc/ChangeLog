@@ -1,3 +1,12 @@
+2014-10-14  Andrew Pinski  <apinski@cavium.com>
+
+	Revert:
+	2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+        PR middle-end/49721
+        * explow.c (convert_memory_address_addr_space): Also permute the
+        conversion and addition of constant for zero-extend.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430-modes.def (PSI): Add.
