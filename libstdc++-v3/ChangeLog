@@ -1,5 +1,24 @@
 2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/20_util/add_const/requirements/alias_decl.cc: New.
+	* testsuite/20_util/add_cv/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/add_pointer/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/add_volatile/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/aligned_storage/requirements/alias_decl.cc:
+	Likewise.
+	* testsuite/20_util/aligned_union/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/remove_all_extents/requirements/alias_decl.cc:
+	Likewise.
+	* testsuite/20_util/remove_const/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/remove_cv/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/remove_extent/requirements/alias_decl.cc: Likewise.
+	* testsuite/20_util/remove_pointer/requirements/alias_decl.cc:
+	Likewise.
+	* testsuite/20_util/remove_volatile/requirements/alias_decl.cc:
+	Likewise.
+
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/limits: Remove stray spaces after backslash.
 	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
 	line number.
