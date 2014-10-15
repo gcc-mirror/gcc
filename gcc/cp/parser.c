@@ -23779,8 +23779,6 @@ cp_parser_commit_to_tentative_parse (cp_parser* parser)
 static void
 cp_parser_abort_tentative_parse (cp_parser* parser)
 {
-  gcc_assert (parser->context->status != CP_PARSER_STATUS_KIND_COMMITTED
-	      || errorcount > 0);
   cp_parser_simulate_error (parser);
   /* Now, pretend that we want to see if the construct was
      successfully parsed.  */

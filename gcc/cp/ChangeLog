@@ -1,5 +1,10 @@
 2014-10-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63455
+	Revert:
+	* parser.c (cp_parser_abort_tentative_parse): Make sure we haven't
+	committed to this tentative parse.
+
 	PR c++/63415
 	* pt.c (value_dependent_expression_p) [CONSTRUCTOR]: Check the type.
 	(iterative_hash_template_arg): Likewise.
