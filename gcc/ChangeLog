@@ -1,3 +1,20 @@
+2014-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR go/59432
+	* config/i386/sync.md (atomic_compare_and_swap<dwi>_doubleword):
+	Remove the second alternative.
+	(regprefix): Remove mode attribute.
+	(atomic_compare_and_swap<mode>): Do not fixup operand 2.
+	* config/i386/predicates.md (cmpxchg8b_pic_memory_operand): Remove.
+
+	Revert:
+	2013-11-05  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/sync.md (atomic_compare_and_swap<dwi>_doubleword):
+	If possible, add .cfi directives to record change to bx.
+	* config/i386/i386.c (ix86_emit_cfi): New function.
+	* config/i386/i386-protos.h (ix86_emit_cfi): Declare.
+
 2014-10-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/62026
