@@ -1,3 +1,10 @@
+2014-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	Revert:
+	* parser.c (cp_parser_abort_tentative_parse): Make sure we haven't
+	committed to this tentative parse.
+
 2014-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63415
