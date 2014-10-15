@@ -922,7 +922,7 @@
 			 (match_operand:SI 2 "fpmem_offset_operand" "i"))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
@@ -938,11 +938,43 @@
 	(match_operand:SF 2 "register_operand" "f"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
   return "ssiu\t%2, %0, %1";
+}
+  [(set_attr "type"	"fstore")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*lsip"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (match_operand:SI 1 "register_operand" "+a")))
+   (set (match_dup 1)
+	(plus:SI (match_dup 1)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "lsip\t%0, %1, %2";
+}
+  [(set_attr "type"	"fload")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*ssip"
+  [(set (mem:SF (match_operand:SI 0 "register_operand" "+a"))
+	(match_operand:SF 1 "register_operand" "f"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "ssip\t%1, %0, %2";
 }
   [(set_attr "type"	"fstore")
    (set_attr "mode"	"SF")
