@@ -618,6 +618,15 @@
   return op == CONST0_RTX (mode);
 })
 
+;; Match -1.
+(define_predicate "constm1_operand"
+  (match_code "const_int,const_double,const_vector")
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  return op == CONSTM1_RTX (mode);
+})
+
 ;; Match one or vector filled with ones.
 (define_predicate "const1_operand"
   (match_code "const_int,const_double,const_vector")

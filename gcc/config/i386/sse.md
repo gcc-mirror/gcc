@@ -135,6 +135,7 @@
   UNSPEC_PMADDWD512
   UNSPEC_PSHUFHW
   UNSPEC_PSHUFLW
+  UNSPEC_CVTINT2MASK
 
   ;; For AVX512DQ support
   UNSPEC_REDUCE
@@ -4959,6 +4960,72 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V8DF")])
+
+(define_insn "<avx512>_cvt<ssemodesuffix>2mask<mode>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
+	(unspec:<avx512fmaskmode>
+	 [(match_operand:VI12_AVX512VL 1 "register_operand" "v")]
+	 UNSPEC_CVTINT2MASK))]
+  "TARGET_AVX512BW"
+  "vpmov<ssemodesuffix>2m\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_cvt<ssemodesuffix>2mask<mode>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
+	(unspec:<avx512fmaskmode>
+	 [(match_operand:VI48_AVX512VL 1 "register_operand" "v")]
+	 UNSPEC_CVTINT2MASK))]
+  "TARGET_AVX512DQ"
+  "vpmov<ssemodesuffix>2m\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "<avx512>_cvtmask2<ssemodesuffix><mode>"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
+	(vec_merge:VI12_AVX512VL
+	  (match_dup 2)
+	  (match_dup 3)
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512BW"
+  {
+    operands[2] = CONSTM1_RTX (<MODE>mode);
+    operands[3] = CONST0_RTX (<MODE>mode);
+  })
+
+(define_insn "*<avx512>_cvtmask2<ssemodesuffix><mode>"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 2 "constm1_operand")
+	  (match_operand:VI12_AVX512VL 3 "const0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand" "Yk")))]
+  "TARGET_AVX512BW"
+  "vpmovm2<ssemodesuffix>\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "<avx512>_cvtmask2<ssemodesuffix><mode>"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(vec_merge:VI48_AVX512VL
+	  (match_dup 2)
+	  (match_dup 3)
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512DQ"
+  "{
+    operands[2] = CONSTM1_RTX (<MODE>mode);
+    operands[3] = CONST0_RTX (<MODE>mode);
+  }")
+
+(define_insn "*<avx512>_cvtmask2<ssemodesuffix><mode>"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI48_AVX512VL
+	  (match_operand:VI48_AVX512VL 2 "constm1_operand")
+	  (match_operand:VI48_AVX512VL 3 "const0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand" "Yk")))]
+  "TARGET_AVX512DQ"
+  "vpmovm2<ssemodesuffix>\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "sse2_cvtps2pd<mask_name>"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
