@@ -1,3 +1,7 @@
+2014-10-15  Renlin Li <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.h (ARM_DEFAULT_PCS, arm_pcs_variant): Delete.
+
 2014-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-reassoc.c (optimize_range_tests_diff): Perform
