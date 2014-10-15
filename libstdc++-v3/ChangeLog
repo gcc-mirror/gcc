@@ -1,5 +1,89 @@
 2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/17_intro/freestanding.cc: Prefer -std=gnu++11.
+	* testsuite/17_intro/headers/c++200x/42319.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/all_no_exceptions.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/all_no_rtti.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/all_pedantic_errors.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/operator_names.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/stdc++.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/stdc++_multiple_inclusion.cc:
+	Likewise.
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Likewise.
+	* testsuite/18_support/exception_ptr/40296.cc: Likewise.
+	* testsuite/18_support/exception_ptr/current_exception.cc: Likewise.
+	* testsuite/18_support/exception_ptr/lifespan.cc: Likewise.
+	* testsuite/18_support/exception_ptr/make_exception_ptr.cc: Likewise.
+	* testsuite/18_support/exception_ptr/move.cc: Likewise.
+	* testsuite/18_support/exception_ptr/requirements.cc: Likewise.
+	* testsuite/18_support/exception_ptr/requirements_neg.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+	* testsuite/18_support/headers/cstdint/types_std_c++0x.cc: Likewise.
+	* testsuite/18_support/initializer_list/constexpr.cc: Likewise.
+	* testsuite/18_support/initializer_list/range_access.cc: Likewise.
+	* testsuite/18_support/initializer_list/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/18_support/initializer_list/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/18_support/initializer_list/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/18_support/nested_exception/51438.cc: Likewise.
+	* testsuite/18_support/nested_exception/cons.cc: Likewise.
+	* testsuite/18_support/nested_exception/nested_ptr.cc: Likewise.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc: Likewise.
+	* testsuite/18_support/nested_exception/rethrow_nested.cc: Likewise.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: Likewise.
+	* testsuite/18_support/numeric_limits/40856.cc: Likewise.
+	* testsuite/18_support/numeric_limits/char16_32_t.cc: Likewise.
+	* testsuite/18_support/numeric_limits/cons/default_c++0x.cc: Likewise.
+	* testsuite/18_support/numeric_limits/dr559.cc: Likewise.
+	* testsuite/18_support/numeric_limits/lowest.cc: Likewise.
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Likewise.
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/18_support/type_info/fundamental.cc: Likewise.
+	* testsuite/18_support/type_info/hash_code.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/cons/default.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/operators/not_equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/cons/39882.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/modifiers/39882.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/cons/1.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/cons/39881.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/modifiers/39881.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/bool.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/bool_neg.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/34538.cc: Likewise.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/19_diagnostics/logic_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/39880.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/19_diagnostics/system_error/what-1.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-2.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-4.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-big.cc: Likewise.
+
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/20_util/bind/57899.cc: Prefer -std=gnu++11.
 	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
 	Likewise.
