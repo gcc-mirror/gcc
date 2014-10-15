@@ -316,7 +316,7 @@ break_out_memory_refs (rtx x)
 static rtx
 convert_memory_address_addr_space_1 (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
-				     bool in_const)
+				     bool in_const ATTRIBUTE_UNUSED)
 {
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
