@@ -1,3 +1,39 @@
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (is_instantiation_of_constexpr, literal_type_p,
+	ensure_literal_type_for_constexpr_object,
+	constexpr_fundef_hasher::equal, constexpr_fundef_hasher::hash,
+	retrieve_constexpr_fundef, is_valid_constexpr_fn,
+	build_anon_member_initialization, build_data_member_initialization,
+	check_constexpr_bind_expr_vars, check_constexpr_ctor_body_1,
+	check_constexpr_ctor_body, sort_constexpr_mem_initializers,
+	build_constexpr_constructor_member_initializers, constexpr_fn_retval,
+	massage_constexpr_body, cx_check_missing_mem_inits,
+	register_constexpr_fundef, explain_invalid_constexpr_fn,
+	constexpr_call_hasher::hash, constexpr_call_hasher::equal,
+	maybe_initialize_constexpr_call_table, get_function_named_in_call,
+	get_nth_callarg, lookup_parameter_binding,
+	cxx_eval_builtin_function_call, adjust_temp_type,
+	cxx_bind_parameters_in_call, push_cx_call_context,
+	pop_cx_call_context, cx_error_context, cxx_eval_call_expression,
+	reduced_constant_expression_p, verify_constant,
+	cxx_eval_unary_expression, cxx_eval_binary_expression,
+	cxx_eval_conditional_expression, cxx_eval_array_reference,
+	cxx_eval_component_reference, cxx_eval_bit_field_ref,
+	cxx_eval_logical_expression, base_field_constructor_elt, 
+	cxx_eval_bare_aggregate, cxx_eval_vec_init_1, cxx_eval_vec_init,
+	cxx_fold_indirect_ref, cxx_eval_indirect_ref, non_const_var_error,
+	cxx_eval_trinary_expression, var_in_constexpr_fn,
+	cxx_eval_constant_expression, cxx_eval_outermost_constant_expr,
+	is_sub_constant_expr, cxx_constant_value, maybe_constant_value,
+	maybe_constant_init, potential_constant_expression_1,
+	potential_constant_expression, potential_rvalue_constant_expression,
+	require_potential_constant_expression,
+	require_potential_rvalue_constant_expression): Moved definitions...
+	* constexpr.c: ... here, new file.
+	* Make-lang.in: Update.
+	* config-lang.in: Likewise.
+
 2014-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63455
