@@ -1,5 +1,12 @@
 2014-10-14  Max Filippov  <jcmvbkbc@gmail.com>
 
+	* config/xtensa/xtensa.h (TARGET_HARD_FLOAT_POSTINC): new macro.
+	* config/xtensa/xtensa.md (*lsiu, *ssiu): add dependency on
+	!TARGET_HARD_FLOAT_POSTINC.
+	(*lsip, *ssip): new instructions.
+
+2014-10-14  Max Filippov  <jcmvbkbc@gmail.com>
+
 	* config/xtensa/xtensa.md (divsf3, *recipsf2, sqrtsf2, *rsqrtsf2):
 	remove.
 
