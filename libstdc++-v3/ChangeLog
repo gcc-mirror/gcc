@@ -1,3 +1,8 @@
+2014-10-15  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Handle mid-destruction
+	dynamic_cast more gracefully.
+
 2014-10-14  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstdc++/57440
