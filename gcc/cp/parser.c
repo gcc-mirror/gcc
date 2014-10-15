@@ -1,4 +1,4 @@
-/* C++ Parser.
+/* -*- C++ -*- Parser.
    Copyright (C) 2000-2014 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -1154,6 +1154,34 @@ cp_lexer_rollback_tokens (cp_lexer* lexer)
 
   lexer->next_token = lexer->saved_tokens.pop ();
 }
+
+/* RAII wrapper around the above functions, with sanity checking.  Creating
+   a variable saves tokens, which are committed when the variable is
+   destroyed unless they are explicitly rolled back by calling the rollback
+   member function.  */
+
+struct saved_token_sentinel
+{
+  cp_lexer *lexer;
+  unsigned len;
+  bool commit;
+  saved_token_sentinel(cp_lexer *lexer): lexer(lexer), commit(true)
+  {
+    len = lexer->saved_tokens.length ();
+    cp_lexer_save_tokens (lexer);
+  }
+  void rollback ()
+  {
+    cp_lexer_rollback_tokens (lexer);
+    commit = false;
+  }
+  ~saved_token_sentinel()
+  {
+    if (commit)
+      cp_lexer_commit_tokens (lexer);
+    gcc_assert (lexer->saved_tokens.length () == len);
+  }
+};
 
 /* Print a representation of the TOKEN on the STREAM.  */
 
@@ -4107,6 +4135,65 @@ complain_flags (bool decltype_p)
   return complain;
 }
 
+/* We're about to parse a collection of statements.  If we're currently
+   parsing tentatively, set up a firewall so that any nested
+   cp_parser_commit_to_tentative_parse won't affect the current context.  */
+
+static cp_token_position
+cp_parser_start_tentative_firewall (cp_parser *parser)
+{
+  if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+    return 0;
+
+  cp_parser_parse_tentatively (parser);
+  cp_parser_commit_to_topmost_tentative_parse (parser);
+  return cp_lexer_token_position (parser->lexer, false);
+}
+
+/* We've finished parsing the collection of statements.  Wrap up the
+   firewall and replace the relevant tokens with the parsed form.  */
+
+static void
+cp_parser_end_tentative_firewall (cp_parser *parser, cp_token_position start,
+				  tree expr)
+{
+  if (!start)
+    return;
+
+  /* Finish the firewall level.  */
+  cp_parser_parse_definitely (parser);
+  /* And remember the result of the parse for when we try again.  */
+  cp_token *token = cp_lexer_token_at (parser->lexer, start);
+  token->type = CPP_PREPARSED_EXPR;
+  token->u.value = expr;
+  token->keyword = RID_MAX;
+  cp_lexer_purge_tokens_after (parser->lexer, start);
+}
+
+/* Parse a GNU statement-expression, i.e. ({ stmts }), except for the
+   enclosing parentheses.  */
+
+static tree
+cp_parser_statement_expr (cp_parser *parser)
+{
+  cp_token_position start = cp_parser_start_tentative_firewall (parser);
+
+  /* Consume the '('.  */
+  cp_lexer_consume_token (parser->lexer);
+  /* Start the statement-expression.  */
+  tree expr = begin_stmt_expr ();
+  /* Parse the compound-statement.  */
+  cp_parser_compound_statement (parser, expr, false, false);
+  /* Finish up.  */
+  expr = finish_stmt_expr (expr, false);
+  /* Consume the ')'.  */
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+    cp_parser_skip_to_end_of_statement (parser);
+
+  cp_parser_end_tentative_firewall (parser, start, expr);
+  return expr;
+}
+
 /* Expressions [gram.expr] */
 
 /* Parse a primary-expression.
@@ -4193,6 +4280,7 @@ cp_parser_primary_expression (cp_parser *parser,
     case CPP_CHAR32:
     case CPP_WCHAR:
     case CPP_NUMBER:
+    case CPP_PREPARSED_EXPR:
       if (TREE_CODE (token->u.value) == USERDEF_LITERAL)
 	return cp_parser_userdef_numeric_literal (parser);
       token = cp_lexer_consume_token (parser->lexer);
@@ -4272,6 +4360,36 @@ cp_parser_primary_expression (cp_parser *parser,
 				       true);
 
     case CPP_OPEN_PAREN:
+      /* If we see `( { ' then we are looking at the beginning of
+	 a GNU statement-expression.  */
+      if (cp_parser_allow_gnu_extensions_p (parser)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_BRACE))
+	{
+	  /* Statement-expressions are not allowed by the standard.  */
+	  pedwarn (token->location, OPT_Wpedantic,
+		   "ISO C++ forbids braced-groups within expressions");
+
+	  /* And they're not allowed outside of a function-body; you
+	     cannot, for example, write:
+
+	     int i = ({ int j = 3; j + 1; });
+
+	     at class or namespace scope.  */
+	  if (!parser->in_function_body
+	      || parser->in_template_argument_list_p)
+	    {
+	      error_at (token->location,
+			"statement-expressions are not allowed outside "
+			"functions nor in template-argument lists");
+	      cp_parser_skip_to_end_of_block_or_statement (parser);
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+		cp_lexer_consume_token (parser->lexer);
+	      return error_mark_node;
+	    }
+	  else
+	    return cp_parser_statement_expr (parser);
+	}
+      /* Otherwise it's a normal parenthesized expression.  */
       {
 	tree expr;
 	bool saved_greater_than_is_operator_p;
@@ -4283,57 +4401,22 @@ cp_parser_primary_expression (cp_parser *parser,
 	saved_greater_than_is_operator_p
 	  = parser->greater_than_is_operator_p;
 	parser->greater_than_is_operator_p = true;
-	/* If we see `( { ' then we are looking at the beginning of
-	   a GNU statement-expression.  */
-	if (cp_parser_allow_gnu_extensions_p (parser)
-	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-	  {
-	    /* Statement-expressions are not allowed by the standard.  */
-	    pedwarn (token->location, OPT_Wpedantic, 
-		     "ISO C++ forbids braced-groups within expressions");
 
-	    /* And they're not allowed outside of a function-body; you
-	       cannot, for example, write:
+	/* Parse the parenthesized expression.  */
+	expr = cp_parser_expression (parser, idk, cast_p, decltype_p);
+	/* Let the front end know that this expression was
+	   enclosed in parentheses. This matters in case, for
+	   example, the expression is of the form `A::B', since
+	   `&A::B' might be a pointer-to-member, but `&(A::B)' is
+	   not.  */
+	expr = finish_parenthesized_expr (expr);
+	/* DR 705: Wrapping an unqualified name in parentheses
+	   suppresses arg-dependent lookup.  We want to pass back
+	   CP_ID_KIND_QUALIFIED for suppressing vtable lookup
+	   (c++/37862), but none of the others.  */
+	if (*idk != CP_ID_KIND_QUALIFIED)
+	  *idk = CP_ID_KIND_NONE;
 
-		 int i = ({ int j = 3; j + 1; });
-
-	       at class or namespace scope.  */
-	    if (!parser->in_function_body
-		|| parser->in_template_argument_list_p)
-	      {
-		error_at (token->location,
-			  "statement-expressions are not allowed outside "
-			  "functions nor in template-argument lists");
-		cp_parser_skip_to_end_of_block_or_statement (parser);
-		expr = error_mark_node;
-	      }
-	    else
-	      {
-		/* Start the statement-expression.  */
-		expr = begin_stmt_expr ();
-		/* Parse the compound-statement.  */
-		cp_parser_compound_statement (parser, expr, false, false);
-		/* Finish up.  */
-		expr = finish_stmt_expr (expr, false);
-	      }
-	  }
-	else
-	  {
-	    /* Parse the parenthesized expression.  */
-	    expr = cp_parser_expression (parser, idk, cast_p, decltype_p);
-	    /* Let the front end know that this expression was
-	       enclosed in parentheses. This matters in case, for
-	       example, the expression is of the form `A::B', since
-	       `&A::B' might be a pointer-to-member, but `&(A::B)' is
-	       not.  */
-	    expr = finish_parenthesized_expr (expr);
-	    /* DR 705: Wrapping an unqualified name in parentheses
-	       suppresses arg-dependent lookup.  We want to pass back
-	       CP_ID_KIND_QUALIFIED for suppressing vtable lookup
-	       (c++/37862), but none of the others.  */
-	    if (*idk != CP_ID_KIND_QUALIFIED)
-	      *idk = CP_ID_KIND_NONE;
-	  }
 	/* The `>' token might be the end of a template-id or
 	   template-parameter-list now.  */
 	parser->greater_than_is_operator_p
@@ -8869,6 +8952,7 @@ cp_parser_lambda_expression (cp_parser* parser)
   tree type;
   bool ok = true;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
+  cp_token_position start = 0;
 
   LAMBDA_EXPR_LOCATION (lambda_expr) = token->location;
 
@@ -8878,6 +8962,15 @@ cp_parser_lambda_expression (cp_parser* parser)
 	{
 	  error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
 		    "lambda-expression in unevaluated context");
+	  token->error_reported = true;
+	}
+      ok = false;
+    }
+  else if (parser->in_template_argument_list_p)
+    {
+      if (!token->error_reported)
+	{
+	  error_at (token->location, "lambda-expression in template-argument");
 	  token->error_reported = true;
 	}
       ok = false;
@@ -8929,7 +9022,13 @@ cp_parser_lambda_expression (cp_parser* parser)
     ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
     if (ok)
-      cp_parser_lambda_body (parser, lambda_expr);
+      {
+	if (!cp_parser_error_occurred (parser)
+	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
+	    && cp_parser_start_tentative_firewall (parser))
+	  start = token;
+	cp_parser_lambda_body (parser, lambda_expr);
+      }
     else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
       {
 	if (cp_parser_skip_to_closing_brace (parser))
@@ -8967,9 +9066,13 @@ cp_parser_lambda_expression (cp_parser* parser)
   insert_pending_capture_proxies ();
 
   if (ok)
-    return build_lambda_object (lambda_expr);
+    lambda_expr = build_lambda_object (lambda_expr);
   else
-    return error_mark_node;
+    lambda_expr = error_mark_node;
+
+  cp_parser_end_tentative_firewall (parser, start, lambda_expr);
+
+  return lambda_expr;
 }
 
 /* Parse the beginning of a lambda expression.
@@ -9503,7 +9606,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   /* There is no statement yet.  */
   statement = NULL_TREE;
 
-  cp_lexer_save_tokens (parser->lexer);
+  saved_token_sentinel saved_tokens (parser->lexer);
   attrs_location = cp_lexer_peek_token (parser->lexer)->location;
   if (c_dialect_objc ())
     /* In obj-c++, seeing '[[' might be the either the beginning of
@@ -9668,7 +9771,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	    {
 	      /*  Attributes should be parsed as part of the the
 		  declaration, so let's un-parse them.  */
-	      cp_lexer_rollback_tokens (parser->lexer);
+	      saved_tokens.rollback();
 	      std_attrs = NULL_TREE;
 	    }
 

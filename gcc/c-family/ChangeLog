@@ -1,3 +1,9 @@
+2014-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	* c-common.h (CPP_PREPARSED_EXPR): New.
+	(N_CP_TTYPES): Adjust.
+
 2014-10-15  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.c (c_common_init_options): Make -std=gnu11 the default for C.
