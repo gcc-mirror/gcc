@@ -1,3 +1,11 @@
+2014-10-15  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63500
+	* include/debug/functions.h (__foreign_iterator_aux2): Do not check for
+	foreign iterators if input iterators returns rvalue reference.
+	* testsuite/23_containers/vector/63500.cc: New.
+
 2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/21_strings/basic_string/capacity/char/shrink_to_fit.cc:
