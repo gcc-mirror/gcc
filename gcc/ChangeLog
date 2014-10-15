@@ -1,3 +1,11 @@
+2014-10-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/62026
+	* cgraphclones.c (duplicate_thunk_for_node): Get body to have args
+	to duplicate.
+	* lto-streamer-out.c (lto_output): Handle correctly thunks that was born
+	at WPA time.
+
 2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63448

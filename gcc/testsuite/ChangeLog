@@ -1,3 +1,8 @@
+2014-10-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/62026
+	* lto/pr62026.C: New testcase.
+
 2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63448
