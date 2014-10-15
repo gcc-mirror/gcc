@@ -1,3 +1,7 @@
+2014-10-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
 2014-10-12  Manuel López-Ibáñez <manu@gcc.gnu.org>
 
 	* INSTALL/README: Do not mention CVS.
