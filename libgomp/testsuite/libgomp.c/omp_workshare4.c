@@ -15,6 +15,7 @@
 #define N       50
 #define CHUNKSIZE   5
 
+int
 main ()  {
 
 int i, chunk, tid;

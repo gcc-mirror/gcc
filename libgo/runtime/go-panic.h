@@ -38,9 +38,12 @@ extern void __go_print_string (struct String);
 
 extern struct __go_empty_interface __go_recover (void);
 
-extern _Bool __go_can_recover (const void *);
+extern _Bool __go_can_recover (void *);
 
-extern void __go_makefunc_can_recover (const void *retaddr);
+extern void __go_makefunc_can_recover (void *retaddr);
+
+struct Location;
+extern void __go_makefunc_ffi_can_recover (struct Location *, int);
 
 extern void __go_makefunc_returning (void);
 

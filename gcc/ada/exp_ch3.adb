@@ -2371,7 +2371,10 @@ package body Exp_Ch3 is
                   --  such case the initialization of the _parent field was not
                   --  generated.
 
-                  if not Is_Interface (Etype (Rec_Ent)) then
+                  if not Is_Interface (Etype (Rec_Ent))
+                    and then Nkind (First (Stmts)) = N_Procedure_Call_Statement
+                    and then Is_Init_Proc (Name (First (Stmts)))
+                  then
                      Prepend_To (Body_Stmts, Remove_Head (Stmts));
                   end if;
 
@@ -2655,15 +2658,16 @@ package body Exp_Ch3 is
       ---------------------------
 
       function Build_Init_Statements (Comp_List : Node_Id) return List_Id is
-         Checks     : constant List_Id := New_List;
-         Actions    : List_Id   := No_List;
-         Comp_Loc   : Source_Ptr;
-         Counter_Id : Entity_Id := Empty;
-         Decl       : Node_Id;
-         Has_POC    : Boolean;
-         Id         : Entity_Id;
-         Stmts      : List_Id;
-         Typ        : Entity_Id;
+         Checks       : constant List_Id := New_List;
+         Actions      : List_Id          := No_List;
+         Counter_Id   : Entity_Id        := Empty;
+         Comp_Loc     : Source_Ptr;
+         Decl         : Node_Id;
+         Has_POC      : Boolean;
+         Id           : Entity_Id;
+         Parent_Stmts : List_Id;
+         Stmts        : List_Id;
+         Typ          : Entity_Id;
 
          procedure Increment_Counter (Loc : Source_Ptr);
          --  Generate an "increment by one" statement for the current counter
@@ -2727,6 +2731,7 @@ package body Exp_Ch3 is
             return New_List (Make_Null_Statement (Loc));
          end if;
 
+         Parent_Stmts := New_List;
          Stmts := New_List;
 
          --  Loop through visible declarations of task types and protected
@@ -2956,28 +2961,41 @@ package body Exp_Ch3 is
                end if;
 
                if Present (Checks) then
-                  Append_List_To (Stmts, Checks);
+                  if Chars (Id) = Name_uParent then
+                     Append_List_To (Parent_Stmts, Checks);
+                  else
+                     Append_List_To (Stmts, Checks);
+                  end if;
                end if;
 
                if Present (Actions) then
-                  Append_List_To (Stmts, Actions);
+                  if Chars (Id) = Name_uParent then
+                     Append_List_To (Parent_Stmts, Actions);
 
-                  --  Preserve the initialization state in the current counter
+                  else
+                     Append_List_To (Stmts, Actions);
 
-                  if Chars (Id) /= Name_uParent
-                    and then Needs_Finalization (Typ)
-                  then
-                     if No (Counter_Id) then
-                        Make_Counter (Comp_Loc);
+                     --  Preserve initialization state in the current counter
+
+                     if Needs_Finalization (Typ) then
+                        if No (Counter_Id) then
+                           Make_Counter (Comp_Loc);
+                        end if;
+
+                        Increment_Counter (Comp_Loc);
                      end if;
-
-                     Increment_Counter (Comp_Loc);
                   end if;
                end if;
             end if;
 
             Next_Non_Pragma (Decl);
          end loop;
+
+         --  The parent field must be initialized first because variable
+         --  size components of the parent affect the location of all the
+         --  new components.
+
+         Prepend_List_To (Stmts, Parent_Stmts);
 
          --  Set up tasks and protected object support. This needs to be done
          --  before any component with a per-object access discriminant

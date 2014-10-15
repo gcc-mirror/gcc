@@ -1140,7 +1140,8 @@ noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
 
 /* If STMT can be proved to be an assignment to the virtual method table
    pointer of ANALYZED_OBJ and the type associated with the new table
-   identified, return the type.  Otherwise return NULL_TREE.  */
+   identified, return the type.  Otherwise return NULL_TREE if type changes
+   in unknown way or ERROR_MARK_NODE if type is unchanged.  */
 
 static tree
 extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
@@ -1167,15 +1168,6 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
   else
     {
       base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
-      if (offset != tci->offset
-	  || size != POINTER_SIZE
-	  || max_size != POINTER_SIZE)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "    wrong offset %i!=%i or size %i\n",
-		     (int)offset, (int)tci->offset, (int)size);
-	  return NULL_TREE;
-	}
       if (DECL_P (tci->instance))
 	{
 	  if (base != tci->instance)
@@ -1193,18 +1185,34 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 	}
       else if (TREE_CODE (base) == MEM_REF)
 	{
-	  if (!operand_equal_p (tci->instance, TREE_OPERAND (base, 0), 0)
-	      || !integer_zerop (TREE_OPERAND (base, 1)))
+	  if (!operand_equal_p (tci->instance, TREE_OPERAND (base, 0), 0))
 	    {
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "    base mem ref:");
 		  print_generic_expr (dump_file, base, TDF_SLIM);
-		  fprintf (dump_file, " has nonzero offset or does not match instance:");
+		  fprintf (dump_file, " does not match instance:");
 		  print_generic_expr (dump_file, tci->instance, TDF_SLIM);
 		  fprintf (dump_file, "\n");
 		}
 	      return NULL_TREE;
+	    }
+	  if (!integer_zerop (TREE_OPERAND (base, 1)))
+	    {
+	      if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "    base mem ref:");
+		      print_generic_expr (dump_file, base, TDF_SLIM);
+		      fprintf (dump_file, " has non-representable offset:");
+		      print_generic_expr (dump_file, tci->instance, TDF_SLIM);
+		      fprintf (dump_file, "\n");
+		    }
+		  return NULL_TREE;
+		}
+	      else
+	        offset += tree_to_shwi (TREE_OPERAND (base, 1)) * BITS_PER_UNIT;
 	    }
 	}
       else if (!operand_equal_p (tci->instance, base, 0)
@@ -1218,7 +1226,19 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 	      print_generic_expr (dump_file, tci->instance, TDF_SLIM);
 	      fprintf (dump_file, " with offset %i\n", (int)tci->offset);
 	    }
-	  return NULL_TREE;
+	  return tci->offset > GET_MODE_BITSIZE (Pmode) ? error_mark_node : NULL_TREE;
+	}
+      if (offset != tci->offset
+	  || size != POINTER_SIZE
+	  || max_size != POINTER_SIZE)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "    wrong offset %i!=%i or size %i\n",
+		     (int)offset, (int)tci->offset, (int)size);
+	  return offset + GET_MODE_BITSIZE (Pmode) <= offset
+	         || (max_size != -1
+		     && tci->offset + GET_MODE_BITSIZE (Pmode) > offset + max_size)
+		 ? error_mark_node : NULL;
 	}
     }
 
@@ -1404,6 +1424,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	}
 
       type = extr_type_from_vtbl_ptr_store (stmt, tci, &offset);
+      if (type == error_mark_node)
+	return false;
       gcc_assert (!type || TYPE_MAIN_VARIANT (type) == type);
       if (!type)
 	{

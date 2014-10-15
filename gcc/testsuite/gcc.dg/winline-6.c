@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Winline -O2 --param large-function-growth=0 --param large-function-insns=1" } */
+/* { dg-options "-Winline -O2 --param large-function-growth=0 --param large-function-insns=1 -fgnu89-inline" } */
 
 void big (void);
 inline int q(void) /* { dg-warning "large-function-growth" } */

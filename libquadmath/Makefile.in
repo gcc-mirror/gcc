@@ -175,7 +175,7 @@ DVIS = libquadmath.dvi
 PDFS = libquadmath.pdf
 PSS = libquadmath.ps
 HTMLS = libquadmath.html
-TEXINFOS = libquadmath.texi
+TEXINFOS =
 TEXI2DVI = texi2dvi
 TEXI2PDF = $(TEXI2DVI) --pdf --batch
 MAKEINFOHTML = $(MAKEINFO) --html
@@ -418,8 +418,10 @@ TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 
 # Defines info, dvi, pdf and html targets
 MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
-info_TEXINFOS = libquadmath.texi
-libquadmath_TEXINFOS = libquadmath-vers.texi
+@BUILD_LIBQUADMATH_FALSE@info_TEXINFOS = 
+@BUILD_LIBQUADMATH_TRUE@info_TEXINFOS = libquadmath.texi
+@BUILD_LIBQUADMATH_FALSE@libquadmath_TEXINFOS = 
+@BUILD_LIBQUADMATH_TRUE@libquadmath_TEXINFOS = libquadmath-vers.texi
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

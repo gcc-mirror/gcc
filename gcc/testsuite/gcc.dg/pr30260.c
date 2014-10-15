@@ -3,6 +3,8 @@
 /* { dg-options "-pedantic -O" } */
 #include <limits.h>
 
+void link_error (void);
+
 enum A {
   A1 = 0, 
   A2 = A1 - 1

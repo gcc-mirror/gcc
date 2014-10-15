@@ -1,5 +1,6 @@
 extern void abort (void);
 
+int
 main()
 {
   int i = 0;

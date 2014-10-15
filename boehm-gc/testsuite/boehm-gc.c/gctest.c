@@ -1701,6 +1701,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmd, int n)
 
 
 #ifdef PCR
+int
 test()
 {
     PCR_Th_T * th1;
@@ -1738,6 +1739,7 @@ void * thr_run_one_test(void * arg)
 #endif
 
 #if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
+int
 main()
 {
     thread_t th1;
@@ -1781,6 +1783,7 @@ main()
   --> bad news
 #endif
 
+int
 main()
 {
     pthread_t th1;

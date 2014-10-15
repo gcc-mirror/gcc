@@ -1,5 +1,5 @@
 /* { dg-do run { xfail *-*-* } } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fgnu89-inline" } */
 
 #include "guality.h"
 

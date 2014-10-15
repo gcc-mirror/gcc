@@ -2098,10 +2098,7 @@ package body Sem_Disp is
                      and then
                        Is_Interface (Find_Dispatching_Type (Parent_Op)));
 
-               if Is_Subprogram         (Parent_Op)
-                    or else
-                  Is_Generic_Subprogram (Parent_Op)
-               then
+               if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
                   Store_IS (Parent_Op);
                end if;
             end loop;
@@ -2134,10 +2131,7 @@ package body Sem_Disp is
                      --  The following test eliminates some odd cases in which
                      --  Ekind (Prim) is Void, to be investigated further ???
 
-                     if not (Is_Subprogram         (Prim)
-                                or else
-                             Is_Generic_Subprogram (Prim))
-                     then
+                     if not Is_Subprogram_Or_Generic_Subprogram (Prim) then
                         null;
 
                      --  For [generic] subprogram, look at interface alias

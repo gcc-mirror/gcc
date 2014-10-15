@@ -1,5 +1,6 @@
 /* { dg-options "-fshow-column" } */
 
+void
 foo()
 {
       char d;

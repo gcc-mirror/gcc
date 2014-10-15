@@ -273,15 +273,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (e->caller->decl);
   tree callee_tree
     = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
-  struct function *caller_cfun = DECL_STRUCT_FUNCTION (e->caller->decl);
-  struct function *callee_cfun
-    = callee ? DECL_STRUCT_FUNCTION (callee->decl) : NULL;
-
-  if (!caller_cfun && e->caller->clone_of)
-    caller_cfun = DECL_STRUCT_FUNCTION (e->caller->clone_of->decl);
-
-  if (!callee_cfun && callee && callee->clone_of)
-    callee_cfun = DECL_STRUCT_FUNCTION (callee->clone_of->decl);
+  struct function *caller_fun = e->caller->get_fun ();
+  struct function *callee_fun = callee ? callee->get_fun () : NULL;
 
   gcc_assert (e->inline_failed);
 
@@ -296,7 +289,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       inlinable = false;
     }
   else if (!inline_summary (callee)->inlinable 
-	   || (caller_cfun && fn_contains_cilk_spawn_p (caller_cfun)))
+	   || (caller_fun && fn_contains_cilk_spawn_p (caller_fun)))
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       inlinable = false;
@@ -333,8 +326,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
      caller cannot.
      FIXME: this is obviously wrong for LTO where STRUCT_FUNCTION is missing.
      Move the flag into cgraph node or mirror it in the inline summary.  */
-  else if (callee_cfun && callee_cfun->can_throw_non_call_exceptions
-	   && !(caller_cfun && caller_cfun->can_throw_non_call_exceptions))
+  else if (callee_fun && callee_fun->can_throw_non_call_exceptions
+	   && !(caller_fun && caller_fun->can_throw_non_call_exceptions))
     {
       e->inline_failed = CIF_NON_CALL_EXCEPTIONS;
       inlinable = false;

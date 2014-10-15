@@ -40,6 +40,7 @@ enum ubsan_print_style {
 
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
+extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);
 extern tree ubsan_instrument_unreachable (location_t);
 extern tree ubsan_create_data (const char *, int, const location_t *, ...);
 extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);

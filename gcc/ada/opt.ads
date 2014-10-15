@@ -1188,6 +1188,10 @@ package Opt is
    --  Set to True if polling for asynchronous abort is enabled by using
    --  the -gnatP option for GNAT.
 
+   Prefix_Exception_Messages : Boolean := False;
+   --  GNAT
+   --  Set True to prefix exception messages with entity-name:
+
    Preprocessing_Data_File : String_Ptr := null;
    --  GNAT
    --  Set by switch -gnatep=. The file name of the preprocessing data file.
@@ -1950,6 +1954,9 @@ package Opt is
    --  flag is used to set the initial value for Polling_Required at the start
    --  of analyzing each unit.
 
+   Prefix_Exception_Messages_Config : Boolean;
+   --  The setting of Prefix_Exception_Messages from configuration pragmas
+
    SPARK_Mode_Config : SPARK_Mode_Type := None;
    --  GNAT
    --  The setting of SPARK_Mode from configuration pragmas
@@ -2197,6 +2204,7 @@ private
       Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
+      Prefix_Exception_Messages      : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
       SPARK_Mode_Pragma              : Node_Id;
       Uneval_Old                     : Character;

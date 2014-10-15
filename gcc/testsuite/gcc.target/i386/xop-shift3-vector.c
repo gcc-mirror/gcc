@@ -27,7 +27,7 @@ right_uns_shift32 (void)
 
 int main ()
 {
-  right_uns_shfit32 ();
+  right_uns_shift32 ();
   exit (0);
 }
 

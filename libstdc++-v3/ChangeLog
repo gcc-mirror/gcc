@@ -1,3 +1,165 @@
+2014-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.in: Regenerate.
+
+2014-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/49561
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Define.
+	* configure.ac: Use GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI.
+	* configure: Regenerate.
+	* include/Makefile.am (stamp-cxx11-abi): New target.
+	(c++config.h): Set _GLIBCXX_USE_CXX11_ABI macro.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Add _GLIBCXX_USE_CXX11_ABI placeholder and
+	define _GLIBCXX_DEFAULT_ABI_TAG.
+	* include/bits/list.tcc (list::emplace(const_iterator, _Args&...)):
+	Increment size.
+	(list::emplace(const_iterator, const value_type&)): Likewise.
+	(list::merge(list&), list::merge(list&, _StrictWeakOrdering)): Adjust
+	list sizes.
+	* include/bits/stl_list.h (_List_base, list): Add ABI tag macro.
+	(_List_base::_M_size): New data member in cxx11 ABI mode.
+	(_List_base::_S_distance(_List_node_base*, _List_node_base*)): New
+	function.
+	(_List_base::_M_get_size(), _List_base::_M_set_size(size_t),
+	_List_base::_M_inc_size(size_t), _List_base::_M_dec_size(size_t),
+	_List_base::_M_distance, _List_base::_M_node_count): New functions for
+	accessing list size correctly for the ABI mode.
+	(_List_base::_List_base(_List_base&&)): Copy size and reset source.
+	(_List_base::_M_init()): Initialize size member.
+	(list::size()): Use _List_base::_M_node_count.
+	(list::swap(list&)): Swap sizes.
+	(list::splice(iterator, list&)): Update sizes.
+	(list::splice(iterator, list&, iterator)): Likewise.
+	(list::insert(iterator, const value_type&)): Update size.
+	(list::insert(iterator, _Args&&...)): Likewise.
+	(list::_M_erase(iterator)): Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Adjust.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Adjust.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust.
+
+2014-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
+	PR libstdc++/63322
+	* include/std/atomic (atomic): Add assertion for trivially copyable.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust line number.
+
+	PR libstdc++/61909
+	* include/std/functional (__is_location_invariant): Treat all
+	trivially copyable types as location invariant.
+
+2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/60132
+	* include/std/type_traits (is_trivially_copyable,
+	is_trivially_constructible, is_trivially_default_constructible,
+	is_trivially_copy_constructible, is_trivially_move_constructible,
+	is_trivially_assignable, is_trivially_copy_assignable,
+	is_trivially_move_assignable): New.
+	* testsuite/20_util/is_trivially_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copyable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/
+	value.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_trivially_move_constructible/value.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets.tcc (num_put::_M_insert_float): Do not
+	pass precision when using hexfloat format.
+	* src/c++98/locale_facets.cc (__num_base::_S_format_float): Always
+	output precision if C99 hexfloat conversion specifiers not available.
+
+2014-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (regex_token_iterator::_M_end_of_seq): Add
+	const qualifier.
+
+2014-10-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_counter_type.h
+	(counter_type::operator<(const counter_type&)): Update
+	less_compare_count.
+	* testsuite/25_algorithms/make_heap/complexity.cc: New.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: New.
+	* testsuite/25_algorithms/push_heap/complexity.cc: New.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: New.
+
+2014-10-06  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59987
+	* doc/xml/manual/status_cxx2011.xml: Remove hexfloat from notes.
+	* doc/html/manual/status.html: Regenerate.
+	* include/bits/ios_base.h (hexfloat): New function.
+	(defaultfloat): New function.
+	* src/c++98/locale_facets.cc (__num_base::_S_format_float): Support
+	hexadecimal floating point format.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	New file.
+
+2014-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/tuple: New
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+	* testsuite/experimental/feat-lib-fund.cc: Test for new header.
+	* testsuite/experimental/tuple/apply.cc: New.
+
 2014-10-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/63456

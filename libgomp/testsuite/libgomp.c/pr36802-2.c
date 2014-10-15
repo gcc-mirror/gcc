@@ -1,6 +1,9 @@
 /* PR middle-end/36802 */
 
 extern void abort (void);
+extern int omp_set_dynamic (int);
+extern void omp_set_nested (int);
+extern int omp_get_num_threads (void);
 
 int q;
 

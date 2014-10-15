@@ -1,3 +1,7 @@
+2014-10-12  Manuel López-Ibáñez <manu@gcc.gnu.org>
+
+	* INSTALL/README: Do not mention CVS.
+
 2014-10-03  Jing Yu  <jingyu@google.com>
 
 	* configure.ac: Add aarch64 to list of targets that support gold.

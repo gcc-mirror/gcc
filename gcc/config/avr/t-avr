@@ -67,8 +67,29 @@ gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
   $(srcdir)/config/avr/avr-arch.h
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
 
+gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.c \
+  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
+  $(srcdir)/config/avr/avr-arch.h
+	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
+
 $(srcdir)/doc/avr-mmcu.texi: gen-avr-mmcu-texi$(build_exeext)
 	$(RUN_GEN) ./$< > $@
+
+s-device-specs: gen-avr-mmcu-specs$(build_exeext)
+	rm -rf device-specs
+	mkdir device-specs && cd device-specs && $(RUN_GEN) ../$<
+	$(STAMP) s-device-specs
+
+GCC_PASSES+=s-device-specs
+
+install-driver: install-device-specs
+
+install-device-specs: s-device-specs installdirs
+	-rm -rf $(DESTDIR)$(libsubdir)/device-specs
+	mkdir $(DESTDIR)$(libsubdir)/device-specs
+	-for file in device-specs/*; do \
+	$(INSTALL_PROGRAM) $${file} $(DESTDIR)$(libsubdir)/$${file}; \
+	done
 
 # Map -mmcu= to the right multilib variant
 # MULTILIB_OPTIONS

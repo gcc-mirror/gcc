@@ -5,7 +5,7 @@
    Source: Neil Booth, 26 Jan 2002.
 */
 
-/* { dg-options -pedantic } */
+/* { dg-options "-pedantic -std=gnu89" } */
 
 enum foo {e1 = 0, e2, e3, e4, e5};
 

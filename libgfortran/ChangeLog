@@ -1,3 +1,11 @@
+2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_helper.c (ieee_is_finite_*, ieee_is_nan_*,
+	ieee_is_negative_*, ieee_is_normal_*, ieee_copy_sign_*,
+	ieee_unordered_*, ieee_logb_*, ieee_rint_*, ieee_scalb_*,
+	ieee_rem_*, ieee_next_after_*): Remove functions.
+	* gfortran.map (GFORTRAN_1.5): Remove corresponding symbols.
+
 2014-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/63460

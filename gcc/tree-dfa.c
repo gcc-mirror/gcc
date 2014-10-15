@@ -322,7 +322,7 @@ ssa_default_def (struct function *fn, tree var)
 	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
-  return (tree) htab_find_with_hash (DEFAULT_DEFS (fn), &in, DECL_UID (var));
+  return DEFAULT_DEFS (fn)->find_with_hash ((tree)&in, DECL_UID (var));
 }
 
 /* Insert the pair VAR's UID, DEF into the default_defs hashtable
@@ -333,7 +333,6 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
-  void **loc;
 
   gcc_assert (TREE_CODE (var) == VAR_DECL
 	      || TREE_CODE (var) == PARM_DECL
@@ -342,25 +341,26 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
   ind.uid = DECL_UID (var);
   if (!def)
     {
-      loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
-				      DECL_UID (var), NO_INSERT);
+      tree *loc = DEFAULT_DEFS (fn)->find_slot_with_hash ((tree)&in,
+							  DECL_UID (var),
+							  NO_INSERT);
       if (loc)
 	{
 	  SSA_NAME_IS_DEFAULT_DEF (*(tree *)loc) = false;
-	  htab_clear_slot (DEFAULT_DEFS (fn), loc);
+	  DEFAULT_DEFS (fn)->clear_slot (loc);
 	}
       return;
     }
   gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
-  loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
-                                  DECL_UID (var), INSERT);
+  tree *loc = DEFAULT_DEFS (fn)->find_slot_with_hash ((tree)&in,
+						      DECL_UID (var), INSERT);
 
   /* Default definition might be changed by tail call optimization.  */
   if (*loc)
-    SSA_NAME_IS_DEFAULT_DEF (*(tree *) loc) = false;
+    SSA_NAME_IS_DEFAULT_DEF (*loc) = false;
 
    /* Mark DEF as the default definition for VAR.  */
-  *(tree *) loc = def;
+  *loc = def;
   SSA_NAME_IS_DEFAULT_DEF (def) = true;
 }
 

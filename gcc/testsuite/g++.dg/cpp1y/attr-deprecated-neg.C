@@ -1,23 +1,24 @@
 // { dg-do compile { target c++11_only } }
+// { dg-options "-pedantic" }
 
-class [[deprecated]] A // { dg-warning "attribute directive ignored" }
+class [[deprecated]] A // { dg-warning "'deprecated' is a C..14 feature" }
 {
 };
 
-[[deprecated]]
+[[deprecated]] // { dg-warning "'deprecated' is a C..14 feature" }
 int
-foo(int n) // { dg-warning "attribute directive ignored" }
+foo(int n)
 {
   return 42 + n;
 }
 
-class [[deprecated("B has been superceded by C")]] B // { dg-warning "attribute directive ignored" }
+class [[deprecated("B has been superceded by C")]] B // { dg-warning "'deprecated' is a C..14 feature" }
 {
 };
 
-[[deprecated("bar is unsafe; use foobar instead")]]
+[[deprecated("bar is unsafe; use foobar instead")]] // { dg-warning "'deprecated' is a C..14 feature" }
 int
-bar(int n) // { dg-warning "attribute directive ignored" }
+bar(int n)
 {
   return 42 + n - 1;
 }
@@ -47,12 +48,12 @@ foobar(int n)
 int
 main()
 {
-  A aaa;
-  int n = foo(12);
+  A aaa; // { dg-warning "is deprecated" }
+  int n = foo(12); // { dg-warning "is deprecated" }
 
-  B bbb;
-  int m = bar(666);
+  B bbb; // { dg-warning "is deprecated" }
+  int m = bar(666); // { dg-warning "is deprecated" }
 
-  C ccc;
-  int l = foobar(8);
+  C ccc; // { dg-warning "is deprecated" "" { target { c++14 } } }
+  int l = foobar(8); // { dg-warning "is deprecated" "" { target { c++14 } } }
 }

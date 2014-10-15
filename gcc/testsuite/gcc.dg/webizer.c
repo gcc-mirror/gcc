@@ -18,6 +18,7 @@ int block = 0;
 double ckt_size_factor ;
 
 __attribute__ ((noinline))
+int
 configure2()
 {
   block = 0 ;
@@ -29,6 +30,7 @@ configure2()
   }
 }
 
+int
 main()
 {
   configure2();

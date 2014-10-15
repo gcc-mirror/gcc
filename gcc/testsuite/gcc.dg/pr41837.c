@@ -13,6 +13,10 @@ typedef struct { T3 h; } T6;
 typedef struct { int i; } *T7;
 struct S3 { T6 j; T7 k; };
 
+void f5 (T4);
+void f6 (void (*)(T4));
+void f7 (void (*)(T5, T1 *));
+
 void
 f1 (T4 x)
 {

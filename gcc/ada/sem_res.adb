@@ -4289,9 +4289,7 @@ package body Sem_Res is
             then
                Error_Msg_N ("class-wide argument not allowed here!", A);
 
-               if Is_Subprogram (Nam)
-                 and then Comes_From_Source (Nam)
-               then
+               if Is_Subprogram (Nam) and then Comes_From_Source (Nam) then
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
                     ("& is not a dispatching operation of &!", A, Nam);
@@ -6692,6 +6690,18 @@ package body Sem_Res is
                                   N_Selected_Component,
                                   N_Slice)
            and then Prefix (Context) = Obj_Ref
+           and then Is_OK_Volatile_Context
+                      (Context => Parent (Context),
+                       Obj_Ref => Context)
+         then
+            return True;
+
+         --  The volatile object appears as the expression of a type conversion
+         --  occurring in a non-interfering context.
+
+         elsif Nkind_In (Context, N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
+           and then Expression (Context) = Obj_Ref
            and then Is_OK_Volatile_Context
                       (Context => Parent (Context),
                        Obj_Ref => Context)
@@ -9946,6 +9956,17 @@ package body Sem_Res is
                                                   N_Attribute_Reference,
                                                   N_Qualified_Expression,
                                                   N_Type_Conversion)
+      then
+         Subtype_Id := Typ;
+
+      --  Do not generate a string literal subtype for the default expression
+      --  of a formal parameter in GNATprove mode. This is because the string
+      --  subtype is associated with the freezing actions of the subprogram,
+      --  however freezing is disabled in GNATprove mode and as a result the
+      --  subtype is unavailable.
+
+      elsif GNATprove_Mode
+        and then Nkind (Parent (N)) = N_Parameter_Specification
       then
          Subtype_Id := Typ;
 

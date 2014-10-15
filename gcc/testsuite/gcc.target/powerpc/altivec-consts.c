@@ -6,6 +6,7 @@
 /* Check that "easy" AltiVec constants are correctly synthesized.  */
 
 extern void abort (void);
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 typedef __attribute__ ((vector_size (16))) unsigned char v16qi;
 typedef __attribute__ ((vector_size (16))) unsigned short v8hi;

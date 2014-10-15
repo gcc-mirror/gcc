@@ -31,9 +31,10 @@
 #  error "__cpp_digit_separators" // { dg-error "error" }
 #endif
 
-#ifndef __cpp_attribute_deprecated
-#  error "__cpp_attribute_deprecated" // { dg-error "error" }
-#endif
+//  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
+//#ifndef __cpp_attribute_deprecated
+//#  error "__cpp_attribute_deprecated"
+//#endif
 
 #ifndef __cpp_runtime_arrays
 #  error "__cpp_runtime_arrays" // { dg-error "error" }

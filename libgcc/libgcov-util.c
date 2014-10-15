@@ -319,59 +319,59 @@ read_gcda_file (const char *filename)
 
       tag = gcov_read_unsigned ();
       if (!tag)
-	break;
+        break;
       length = gcov_read_unsigned ();
       base = gcov_position ();
       mask = GCOV_TAG_MASK (tag) >> 1;
       for (tag_depth = 4; mask; mask >>= 8)
-	{
-	  if (((mask & 0xff) != 0xff))
-	    {
-	      warning (0, "%s:tag `%x' is invalid\n", filename, tag);
-	      break;
-	    }
-	  tag_depth--;
-	}
+        {
+          if (((mask & 0xff) != 0xff))
+            {
+              warning (0, "%s:tag `%x' is invalid\n", filename, tag);
+              break;
+            }
+          tag_depth--;
+        }
       for (format = tag_table; format->name; format++)
-	if (format->tag == tag)
-	  goto found;
+        if (format->tag == tag)
+          goto found;
       format = &tag_table[GCOV_TAG_IS_COUNTER (tag) ? 2 : 1];
     found:;
       if (tag)
-	{
-	  if (depth && depth < tag_depth)
-	    {
-	      if (!GCOV_TAG_IS_SUBTAG (tags[depth - 1], tag))
-		warning (0, "%s:tag `%x' is incorrectly nested\n",
-			filename, tag);
-	    }
-	  depth = tag_depth;
-	  tags[depth - 1] = tag;
-	}
+        {
+          if (depth && depth < tag_depth)
+            {
+              if (!GCOV_TAG_IS_SUBTAG (tags[depth - 1], tag))
+                warning (0, "%s:tag `%x' is incorrectly nested\n",
+                         filename, tag);
+            }
+          depth = tag_depth;
+          tags[depth - 1] = tag;
+        }
 
       if (format->proc)
         {
-	  unsigned long actual_length;
+          unsigned long actual_length;
 
-	  (*format->proc) (tag, length);
+          (*format->proc) (tag, length);
 
-	  actual_length = gcov_position () - base;
-	  if (actual_length > length)
-	    warning (0, "%s:record size mismatch %lu bytes overread\n",
-		    filename, actual_length - length);
-	  else if (length > actual_length)
-	    warning (0, "%s:record size mismatch %lu bytes unread\n",
-		    filename, length - actual_length);
-	}
+          actual_length = gcov_position () - base;
+          if (actual_length > length)
+            warning (0, "%s:record size mismatch %lu bytes overread\n",
+                     filename, actual_length - length);
+          else if (length > actual_length)
+            warning (0, "%s:record size mismatch %lu bytes unread\n",
+                     filename, length - actual_length);
+       }
 
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
-	{
-	  warning (0, error < 0 ? "%s:counter overflow at %lu\n" :
-		                  "%s:read error at %lu\n", filename,
-		  (long unsigned) gcov_position ());
-	  break;
-	}
+        {
+          warning (0, error < 0 ? "%s:counter overflow at %lu\n" :
+                                  "%s:read error at %lu\n", filename,
+                   (long unsigned) gcov_position ());
+          break;
+        }
     }
 
   read_gcda_finalize (obj_info);
@@ -577,7 +577,8 @@ gcov_merge (struct gcov_info *info1, struct gcov_info *info2, int w)
    Return NULL if there is no match.  */
 
 static struct gcov_info *
-find_match_gcov_info (struct gcov_info **array, int size, struct gcov_info *info)
+find_match_gcov_info (struct gcov_info **array, int size,
+		      struct gcov_info *info)
 {
   struct gcov_info *gi_ptr;
   struct gcov_info *ret = NULL;
@@ -746,6 +747,25 @@ __gcov_single_counter_op (gcov_type *counters, unsigned n_counters,
     }
 }
 
+/* Performing FN upon indirect-call profile counters.  */
+
+static void
+__gcov_icall_topn_counter_op (gcov_type *counters, unsigned n_counters,
+                              counter_op_fn fn, void *data1, void *data2)
+{
+  unsigned i;
+
+  gcc_assert (!(n_counters % GCOV_ICALL_TOPN_NCOUNTS));
+  for (i = 0; i < n_counters; i += GCOV_ICALL_TOPN_NCOUNTS)
+    {
+      unsigned j;
+      gcov_type *value_array = &counters[i + 1];
+
+      for (j = 0; j < GCOV_ICALL_TOPN_NCOUNTS - 1; j += 2)
+        value_array[j + 1] = fn (value_array[j + 1], data1, data2);
+    }
+}
+
 /* Scaling the counter value V by multiplying *(float*) DATA1.  */
 
 static gcov_type
@@ -853,7 +873,530 @@ gcov_profile_normalize (struct gcov_info *profile, gcov_type max_val)
 
   scale_factor = (float)max_val / curr_max_val;
   if (verbose)
-    fnotice (stdout, "max_val is %lld\n", (long long) curr_max_val);
+    fnotice (stdout, "max_val is %"PRId64"\n", curr_max_val);
 
   return gcov_profile_scale (profile, scale_factor, 0, 0);
+}
+
+/* The following variables are defined in gcc/gcov-tool.c.  */
+extern int overlap_func_level;
+extern int overlap_obj_level;
+extern int overlap_hot_only;
+extern int overlap_use_fullname;
+extern double overlap_hot_threshold;
+
+/* Compute the overlap score of two values. The score is defined as:
+    min (V1/SUM_1, V2/SUM_2)  */
+
+static double
+calculate_2_entries (const unsigned long v1, const unsigned long v2,
+                     const double sum_1, const double sum_2)
+{
+  double val1 = (sum_1 == 0.0 ? 0.0 : v1/sum_1);
+  double val2 = (sum_2 == 0.0 ? 0.0 : v2/sum_2);
+
+  if (val2 < val1)
+    val1 = val2;
+
+  return val1;
+}
+
+/*  Compute the overlap score between GCOV_INFO1 and GCOV_INFO2.
+    SUM_1 is the sum_all for profile1 where GCOV_INFO1 belongs.
+    SUM_2 is the sum_all for profile2 where GCOV_INFO2 belongs.
+    This function also updates cumulative score CUM_1_RESULT and
+    CUM_2_RESULT.  */
+
+static double
+compute_one_gcov (const struct gcov_info *gcov_info1,
+                  const struct gcov_info *gcov_info2,
+                  const double sum_1, const double sum_2,
+                  double *cum_1_result, double *cum_2_result)
+{
+  unsigned f_ix;
+  double ret = 0;
+  double cum_1 = 0, cum_2 = 0;
+  const struct gcov_info *gcov_info = 0;
+  double *cum_p;
+  double sum;
+
+  gcc_assert (gcov_info1 || gcov_info2);
+  if (!gcov_info1)
+    {
+      gcov_info = gcov_info2;
+      cum_p = cum_2_result;
+      sum = sum_2;
+      *cum_1_result = 0;
+    } else
+  if (!gcov_info2)
+    {
+      gcov_info = gcov_info1;
+      cum_p = cum_1_result;
+      sum = sum_1;
+      *cum_2_result = 0;
+    }
+
+  if (gcov_info)
+  {
+    for (f_ix = 0; f_ix < gcov_info->n_functions; f_ix++)
+      {
+        unsigned t_ix;
+        const struct gcov_fn_info *gfi_ptr = gcov_info->functions[f_ix];
+        if (!gfi_ptr || gfi_ptr->key != gcov_info)
+          continue;
+        const struct gcov_ctr_info *ci_ptr = gfi_ptr->ctrs;
+        for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
+          {
+            unsigned c_num;
+
+            if (!gcov_info->merge[t_ix])
+              continue;
+
+            for (c_num = 0; c_num < ci_ptr->num; c_num++)
+              {
+                cum_1 += ci_ptr->values[c_num] / sum;
+              }
+            ci_ptr++;
+          }
+      }
+    *cum_p = cum_1;
+    return 0.0;
+  }
+
+  for (f_ix = 0; f_ix < gcov_info1->n_functions; f_ix++)
+    {
+      unsigned t_ix;
+      double func_cum_1 = 0.0;
+      double func_cum_2 = 0.0;
+      double func_val = 0.0;
+      int nonzero = 0;
+      int hot = 0;
+      const struct gcov_fn_info *gfi_ptr1 = gcov_info1->functions[f_ix];
+      const struct gcov_fn_info *gfi_ptr2 = gcov_info2->functions[f_ix];
+
+      if (!gfi_ptr1 || gfi_ptr1->key != gcov_info1)
+        continue;
+      if (!gfi_ptr2 || gfi_ptr2->key != gcov_info2)
+        continue;
+
+      const struct gcov_ctr_info *ci_ptr1 = gfi_ptr1->ctrs;
+      const struct gcov_ctr_info *ci_ptr2 = gfi_ptr2->ctrs;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
+        {
+          unsigned c_num;
+
+          if (!gcov_info1->merge[t_ix])
+            continue;
+
+          for (c_num = 0; c_num < ci_ptr1->num; c_num++)
+            {
+              if (ci_ptr1->values[c_num] | ci_ptr2->values[c_num])
+                {
+                  func_val += calculate_2_entries (ci_ptr1->values[c_num],
+                                          ci_ptr2->values[c_num],
+                                          sum_1, sum_2);
+
+                  func_cum_1 += ci_ptr1->values[c_num] / sum_1;
+                  func_cum_2 += ci_ptr2->values[c_num] / sum_2;
+                  nonzero = 1;
+                  if (ci_ptr1->values[c_num] / sum_1 >= overlap_hot_threshold ||
+                      ci_ptr2->values[c_num] / sum_2 >= overlap_hot_threshold)
+                    hot = 1;
+                }
+            }
+          ci_ptr1++;
+          ci_ptr2++;
+        }
+      ret += func_val;
+      cum_1 += func_cum_1;
+      cum_2 += func_cum_2;
+      if (overlap_func_level && nonzero && (!overlap_hot_only || hot))
+        {
+          printf("   \tfunc_id=%10d \toverlap =%6.5f%% (%5.5f%% %5.5f%%)\n",
+                 gfi_ptr1->ident, func_val*100, func_cum_1*100, func_cum_2*100);
+        }
+    }
+  *cum_1_result = cum_1;
+  *cum_2_result = cum_2;
+  return ret;
+}
+
+/* Test if all counter values in this GCOV_INFO are cold.
+   "Cold" is defined as the counter value being less than
+   or equal to THRESHOLD.  */
+
+static bool
+gcov_info_count_all_cold (const struct gcov_info *gcov_info,
+                          gcov_type threshold)
+{
+  unsigned f_ix;
+
+  for (f_ix = 0; f_ix < gcov_info->n_functions; f_ix++)
+    {
+      unsigned t_ix;
+      const struct gcov_fn_info *gfi_ptr = gcov_info->functions[f_ix];
+
+      if (!gfi_ptr || gfi_ptr->key != gcov_info)
+        continue;
+      const struct gcov_ctr_info *ci_ptr = gfi_ptr->ctrs;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
+        {
+          unsigned c_num;
+
+          if (!gcov_info->merge[t_ix])
+            continue;
+
+          for (c_num = 0; c_num < ci_ptr->num; c_num++)
+            {
+              if (ci_ptr->values[c_num] > threshold)
+                return false;
+            }
+          ci_ptr++;
+        }
+    }
+
+  return true;
+}
+
+/* Test if all counter values in this GCOV_INFO are 0.  */
+
+static bool
+gcov_info_count_all_zero (const struct gcov_info *gcov_info)
+{
+  return gcov_info_count_all_cold (gcov_info, 0);
+}
+
+/* A pair of matched GCOV_INFO.
+   The flag is a bitvector:
+     b0: obj1's all counts are 0;
+     b1: obj1's all counts are cold (but no 0);
+     b2: obj1 is hot;
+     b3: no obj1 to match obj2;
+     b4: obj2's all counts are 0;
+     b5: obj2's all counts are cold (but no 0);
+     b6: obj2 is hot;
+     b7: no obj2 to match obj1;
+ */
+struct overlap_t {
+   const struct gcov_info *obj1;
+   const struct gcov_info *obj2;
+   char flag;
+};
+
+#define FLAG_BOTH_ZERO(flag) ((flag & 0x1) && (flag & 0x10))
+#define FLAG_BOTH_COLD(flag) ((flag & 0x2) && (flag & 0x20))
+#define FLAG_ONE_HOT(flag) ((flag & 0x4) || (flag & 0x40))
+
+/* Cumlative overlap dscore for profile1 and profile2.  */
+static double overlap_sum_1, overlap_sum_2;
+
+/* sum_all for profile1 and profile2.  */
+static gcov_type p1_sum_all, p2_sum_all;
+
+/* run_max for profile1 and profile2.  */
+static gcov_type p1_run_max, p2_run_max;
+
+/* The number of gcda files in the profiles.  */
+static unsigned gcda_files[2];
+
+/* The number of unique gcda files in the profiles
+   (not existing in the other profile).  */
+static unsigned unique_gcda_files[2];
+
+/* The number of gcda files that all counter values are 0.  */
+static unsigned zero_gcda_files[2];
+
+/* The number of gcda files that all counter values are cold (but not 0).  */
+static unsigned cold_gcda_files[2];
+
+/* The number of gcda files that includes hot counter values.  */
+static unsigned hot_gcda_files[2];
+
+/* The number of gcda files with hot count value in either profiles.  */
+static unsigned both_hot_cnt;
+
+/* The number of gcda files with all counts cold (but not 0) in
+   both profiles. */
+static unsigned both_cold_cnt;
+
+/* The number of gcda files with all counts 0 in both profiles.  */
+static unsigned both_zero_cnt;
+
+/* Extract the basename of the filename NAME.  */
+
+static char *
+extract_file_basename (const char *name)
+{
+  char *str;
+  int len = 0;
+  char *path = xstrdup (name);
+  char sep_str[2];
+
+  sep_str[0] = DIR_SEPARATOR;
+  sep_str[1] = 0;
+  str = strstr(path, sep_str);
+  do{
+      len = strlen(str) + 1;
+      path = &path[strlen(path) - len + 2];
+      str = strstr(path, sep_str);
+  } while(str);
+
+  return path;
+}
+
+/* Utility function to get the filename.  */
+
+static const char *
+get_file_basename (const char *name)
+{
+  if (overlap_use_fullname)
+    return name;
+  return extract_file_basename (name);
+}
+
+/* A utility function to set the flag for the gcda files.  */
+
+static void
+set_flag (struct overlap_t *e)
+{
+  char flag = 0;
+
+  if (!e->obj1)
+    {
+      unique_gcda_files[1]++;
+      flag = 0x8;
+    }
+  else
+    {
+      gcda_files[0]++;
+      if (gcov_info_count_all_zero (e->obj1))
+        {
+          zero_gcda_files[0]++;
+          flag = 0x1;
+        }
+      else
+      if (gcov_info_count_all_cold (e->obj1, overlap_sum_1
+			      * overlap_hot_threshold))
+        {
+          cold_gcda_files[0]++;
+          flag = 0x2;
+        }
+      else
+        {
+          hot_gcda_files[0]++;
+          flag = 0x4;
+        }
+    }
+
+  if (!e->obj2)
+    {
+      unique_gcda_files[0]++;
+      flag |= (0x8 << 4);
+    }
+  else
+    {
+      gcda_files[1]++;
+      if (gcov_info_count_all_zero (e->obj2))
+        {
+          zero_gcda_files[1]++;
+          flag |= (0x1 << 4);
+        }
+      else
+      if (gcov_info_count_all_cold (e->obj2, overlap_sum_2
+			      * overlap_hot_threshold))
+        {
+          cold_gcda_files[1]++;
+          flag |= (0x2 << 4);
+        }
+      else
+        {
+          hot_gcda_files[1]++;
+          flag |= (0x4 << 4);
+        }
+    }
+
+  gcc_assert (flag);
+  e->flag = flag;
+}
+
+/* Test if INFO1 and INFO2 are from the matched source file.
+   Return 1 if they match; return 0 otherwise.  */
+
+static int
+matched_gcov_info (const struct gcov_info *info1, const struct gcov_info *info2)
+{
+  /* For FDO, we have to match the name. This can be expensive.
+     Maybe we should use hash here.  */
+  if (strcmp (info1->filename, info2->filename))
+    return 0;
+
+  if (info1->n_functions != info2->n_functions)
+    {
+      fnotice (stderr, "mismatched profiles in %s (%d functions"
+                       " vs %d functions)\n",
+                       info1->filename,
+                       info1->n_functions,
+                       info2->n_functions);
+      return 0;
+    }
+  return 1;
+}
+
+/* Defined in libgcov-driver.c.  */
+extern gcov_unsigned_t compute_summary (struct gcov_info *,
+                 struct gcov_summary *, size_t *);
+
+/* Compute the overlap score of two profiles with the head of GCOV_LIST1 and
+   GCOV_LIST1. Return a number ranging from [0.0, 1.0], with 0.0 meaning no
+   match and 1.0 meaning a perfect match.  */
+
+static double
+calculate_overlap (struct gcov_info *gcov_list1,
+                   struct gcov_info *gcov_list2)
+{
+  struct gcov_summary this_prg;
+  unsigned list1_cnt = 0, list2_cnt= 0, all_cnt;
+  unsigned int i, j;
+  size_t max_length;
+  const struct gcov_info *gi_ptr;
+  struct overlap_t *all_infos;
+
+  compute_summary (gcov_list1, &this_prg, &max_length);
+  overlap_sum_1 = (double) (this_prg.ctrs[0].sum_all);
+  p1_sum_all = this_prg.ctrs[0].sum_all;
+  p1_run_max = this_prg.ctrs[0].run_max;
+  compute_summary (gcov_list2, &this_prg, &max_length);
+  overlap_sum_2 = (double) (this_prg.ctrs[0].sum_all);
+  p2_sum_all = this_prg.ctrs[0].sum_all;
+  p2_run_max = this_prg.ctrs[0].run_max;
+
+  for (gi_ptr = gcov_list1; gi_ptr; gi_ptr = gi_ptr->next)
+    list1_cnt++;
+  for (gi_ptr = gcov_list2; gi_ptr; gi_ptr = gi_ptr->next)
+    list2_cnt++;
+  all_cnt = list1_cnt + list2_cnt;
+  all_infos = (struct overlap_t *) xmalloc (sizeof (struct overlap_t)
+               * all_cnt * 2);
+  gcc_assert (all_infos);
+
+  i = 0;
+  for (gi_ptr = gcov_list1; gi_ptr; gi_ptr = gi_ptr->next, i++)
+    {
+      all_infos[i].obj1 = gi_ptr;
+      all_infos[i].obj2 = 0;
+    }
+
+  for (gi_ptr = gcov_list2; gi_ptr; gi_ptr = gi_ptr->next, i++)
+    {
+      all_infos[i].obj1 = 0;
+      all_infos[i].obj2 = gi_ptr;
+    }
+
+  for (i = list1_cnt; i < all_cnt; i++)
+    {
+      if (all_infos[i].obj2 == 0)
+        continue;
+      for (j = 0; j < list1_cnt; j++)
+        {
+          if (all_infos[j].obj2 != 0)
+            continue;
+          if (matched_gcov_info (all_infos[i].obj2, all_infos[j].obj1))
+            {
+              all_infos[j].obj2 = all_infos[i].obj2;
+              all_infos[i].obj2 = 0;
+              break;
+            }
+        }
+    }
+
+  for (i = 0; i < all_cnt; i++)
+    if (all_infos[i].obj1 || all_infos[i].obj2)
+      {
+        set_flag (all_infos + i);
+        if (FLAG_ONE_HOT (all_infos[i].flag))
+            both_hot_cnt++;
+        if (FLAG_BOTH_COLD(all_infos[i].flag))
+            both_cold_cnt++;
+        if (FLAG_BOTH_ZERO(all_infos[i].flag))
+            both_zero_cnt++;
+      }
+
+  double prg_val = 0;
+  double sum_val = 0;
+  double sum_cum_1 = 0;
+  double sum_cum_2 = 0;
+
+  for (i = 0; i < all_cnt; i++)
+    {
+      double val;
+      double cum_1, cum_2;
+      const char *filename;
+
+      if (all_infos[i].obj1 == 0 && all_infos[i].obj2 == 0)
+        continue;
+      if (FLAG_BOTH_ZERO (all_infos[i].flag))
+          continue;
+
+      if (all_infos[i].obj1)
+        filename = get_file_basename (all_infos[i].obj1->filename);
+      else
+        filename = get_file_basename (all_infos[i].obj2->filename);
+
+      if (overlap_func_level)
+        printf("\n   processing %36s:\n", filename);
+
+      val = compute_one_gcov (all_infos[i].obj1, all_infos[i].obj2,
+          overlap_sum_1, overlap_sum_2, &cum_1, &cum_2);
+
+      if (overlap_obj_level && (!overlap_hot_only || FLAG_ONE_HOT (all_infos[i].flag)))
+        {
+          printf("   obj=%36s  overlap = %6.2f%% (%5.2f%% %5.2f%%)\n",
+                  filename, val*100, cum_1*100, cum_2*100);
+          sum_val += val;
+          sum_cum_1 += cum_1;
+          sum_cum_2 += cum_2;
+        }
+
+      prg_val += val;
+
+    }
+
+  if (overlap_obj_level)
+    printf("   SUM:%36s  overlap = %6.2f%% (%5.2f%% %5.2f%%)\n",
+           "", sum_val*100, sum_cum_1*100, sum_cum_2*100);
+
+  printf ("  Statistics:\n"
+          "                    profile1_#     profile2_#       overlap_#\n");
+  printf ("    gcda files:  %12u\t%12u\t%12u\n", gcda_files[0], gcda_files[1],
+                                          gcda_files[0]-unique_gcda_files[0]);
+  printf ("  unique files:  %12u\t%12u\n", unique_gcda_files[0],
+                                        unique_gcda_files[1]);
+  printf ("     hot files:  %12u\t%12u\t%12u\n", hot_gcda_files[0],
+                                            hot_gcda_files[1], both_hot_cnt);
+  printf ("    cold files:  %12u\t%12u\t%12u\n", cold_gcda_files[0],
+                                            cold_gcda_files[1], both_cold_cnt);
+  printf ("    zero files:  %12u\t%12u\t%12u\n", zero_gcda_files[0],
+                                            zero_gcda_files[1], both_zero_cnt);
+  printf ("       sum_all:  %12"PRId64"\t%12"PRId64"\n", p1_sum_all, p2_sum_all);
+  printf ("       run_max:  %12"PRId64"\t%12"PRId64"\n", p1_run_max, p2_run_max);
+
+  return prg_val;
+}
+
+/* Computer the overlap score of two lists of gcov_info objects PROFILE1 and PROFILE2.
+   Return 0 on success: without mismatch. Reutrn 1 on error.  */
+
+int
+gcov_profile_overlap (struct gcov_info *profile1, struct gcov_info *profile2)
+{
+  double result;
+
+  result = calculate_overlap (profile1, profile2);
+
+  if (result > 0)
+    {
+      printf("\nProgram level overlap result is %3.2f%%\n\n", result*100);
+      return 0;
+    }
+  return 1;
 }

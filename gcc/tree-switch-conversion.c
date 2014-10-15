@@ -246,8 +246,7 @@ This transformation was contributed by Roger Sayle, see this e-mail:
 
 struct case_bit_test
 {
-  HOST_WIDE_INT hi;
-  HOST_WIDE_INT lo;
+  wide_int mask;
   edge target_edge;
   tree label;
   int bits;
@@ -294,13 +293,14 @@ case_bit_test_cmp (const void *p1, const void *p2)
     are not guaranteed to be of the same type as INDEX_EXPR
     (the gimplifier doesn't change the type of case label values,
     and MINVAL and RANGE are derived from those values).
+    MAXVAL is MINVAL + RANGE.
 
     There *MUST* be MAX_CASE_BIT_TESTS or less unique case
     node targets.  */
 
 static void
 emit_case_bit_tests (gimple swtch, tree index_expr,
-		     tree minval, tree range)
+		     tree minval, tree range, tree maxval)
 {
   struct case_bit_test test[MAX_CASE_BIT_TESTS];
   unsigned int i, j, k;
@@ -324,6 +324,8 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   tree word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
   tree word_mode_zero = fold_convert (word_type_node, integer_zero_node);
   tree word_mode_one = fold_convert (word_type_node, integer_one_node);
+  int prec = TYPE_PRECISION (word_type_node);
+  wide_int wone = wi::one (prec);
 
   memset (&test, 0, sizeof (test));
 
@@ -348,8 +350,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       if (k == count)
 	{
 	  gcc_checking_assert (count < MAX_CASE_BIT_TESTS);
-	  test[k].hi = 0;
-	  test[k].lo = 0;
+	  test[k].mask = wi::zero (prec);
 	  test[k].target_edge = e;
 	  test[k].label = label;
 	  test[k].bits = 1;
@@ -367,13 +368,38 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 					    CASE_HIGH (cs), minval));
 
       for (j = lo; j <= hi; j++)
-        if (j >= HOST_BITS_PER_WIDE_INT)
-	  test[k].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
-	else
-	  test[k].lo |= (HOST_WIDE_INT) 1 << j;
+	test[k].mask |= wi::lshift (wone, j);
     }
 
   qsort (test, count, sizeof (*test), case_bit_test_cmp);
+
+  /* If all values are in the 0 .. BITS_PER_WORD-1 range, we can get rid of
+     the minval subtractions, but it might make the mask constants more
+     expensive.  So, compare the costs.  */
+  if (compare_tree_int (minval, 0) > 0
+      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
+    {
+      int cost_diff;
+      HOST_WIDE_INT m = tree_to_uhwi (minval);
+      rtx reg = gen_raw_REG (word_mode, 10000);
+      bool speed_p = optimize_bb_for_speed_p (gimple_bb (swtch));
+      cost_diff = set_rtx_cost (gen_rtx_PLUS (word_mode, reg,
+					      GEN_INT (-m)), speed_p);
+      for (i = 0; i < count; i++)
+	{
+	  rtx r = immed_wide_int_const (test[i].mask, word_mode);
+	  cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	  r = immed_wide_int_const (wi::lshift (test[i].mask, m), word_mode);
+	  cost_diff -= set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	}
+      if (cost_diff > 0)
+	{
+	  for (i = 0; i < count; i++)
+	    test[i].mask = wi::lshift (test[i].mask, m);
+	  minval = build_zero_cst (TREE_TYPE (minval));
+	  range = maxval;
+	}
+    }
 
   /* We generate two jumps to the default case label.
      Split the default edge, so that we don't have to do any PHI node
@@ -446,13 +472,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
         if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
-      HOST_WIDE_INT a[2];
-
-      a[0] = test[k].lo;
-      a[1] = test[k].hi;
-      tmp = wide_int_to_tree (word_type_node,
-			      wide_int::from_array (a, 2,
-						    TYPE_PRECISION (word_type_node)));
+      tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
@@ -1369,8 +1389,8 @@ process_switch (gimple swtch)
 	{
 	  if (dump_file)
 	    fputs ("  expanding as bit test is preferable\n", dump_file);
-	  emit_case_bit_tests (swtch, info.index_expr,
-			       info.range_min, info.range_size);
+	  emit_case_bit_tests (swtch, info.index_expr, info.range_min,
+			       info.range_size, info.range_max);
 	  loops_state_set (LOOPS_NEED_FIXUP);
 	  return NULL;
 	}

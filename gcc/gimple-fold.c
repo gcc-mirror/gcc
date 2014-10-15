@@ -2662,6 +2662,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 					gimple_call_arg (stmt, 1),
 					gimple_call_arg (stmt, 2));
 	  break;
+	case IFN_UBSAN_OBJECT_SIZE:
+	  if (integer_all_onesp (gimple_call_arg (stmt, 2))
+	      || (TREE_CODE (gimple_call_arg (stmt, 1)) == INTEGER_CST
+		  && TREE_CODE (gimple_call_arg (stmt, 2)) == INTEGER_CST
+		  && tree_int_cst_le (gimple_call_arg (stmt, 1),
+				      gimple_call_arg (stmt, 2))))
+	    {
+	      gsi_replace (gsi, gimple_build_nop (), true);
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
+	      return true;
+	    }
+	  break;
 	case IFN_UBSAN_CHECK_ADD:
 	  subcode = PLUS_EXPR;
 	  break;
@@ -5281,4 +5294,21 @@ rewrite_to_defined_overflow (gimple stmt)
   gimple_seq_add_stmt (&stmts, cvt);
 
   return stmts;
+}
+
+/* Return OP converted to TYPE by emitting a conversion statement on SEQ
+   if required using location LOC.  Note that OP will be returned
+   unmodified if GIMPLE does not require an explicit conversion between
+   its type and TYPE.  */
+
+tree
+gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
+{
+  if (useless_type_conversion_p (type, TREE_TYPE (op)))
+    return op;
+  op = fold_convert_loc (loc, type, op);
+  gimple_seq stmts = NULL;
+  op = force_gimple_operand (op, &stmts, true, NULL_TREE);
+  gimple_seq_add_seq_without_update (seq, stmts);
+  return op;
 }

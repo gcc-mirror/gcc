@@ -114,16 +114,9 @@ static int new_flag[GFC_LETTERS];
 /* Handle a correctly parsed IMPLICIT NONE.  */
 
 void
-gfc_set_implicit_none (bool type, bool external)
+gfc_set_implicit_none (bool type, bool external, locus *loc)
 {
   int i;
-
-  if (gfc_current_ns->seen_implicit_none
-      || gfc_current_ns->has_implicit_none_export)
-    {
-      gfc_error_now ("Duplicate IMPLICIT NONE statement at %C");
-      return;
-    }
 
   if (external)
     gfc_current_ns->has_implicit_none_export = 1;
@@ -135,8 +128,8 @@ gfc_set_implicit_none (bool type, bool external)
 	{
 	  if (gfc_current_ns->set_flag[i])
 	    {
-	      gfc_error_now ("IMPLICIT NONE (type) statement at %C following an "
-			     "IMPLICIT statement");
+	      gfc_error_now ("IMPLICIT NONE (type) statement at %L following an "
+			     "IMPLICIT statement", loc);
 	      return;
 	    }
 	  gfc_clear_ts (&gfc_current_ns->default_type[i]);

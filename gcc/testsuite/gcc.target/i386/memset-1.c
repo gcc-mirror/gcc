@@ -36,6 +36,7 @@ static union {
 
 char A = 'A';
 
+int
 main ()
 {
   int off, len, i;

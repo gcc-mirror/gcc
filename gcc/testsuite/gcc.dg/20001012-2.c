@@ -28,6 +28,7 @@ double baz (const char *x)
   return (__extension__ ((union { unsigned __l __attribute__((__mode__(__SI__))); float __d; }) { __l: 0x3f800000UL }).__d);
 }
 
+int
 main ()
 {
   if (baz("") != 1.0)

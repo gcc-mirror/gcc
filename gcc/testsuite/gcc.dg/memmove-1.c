@@ -11,6 +11,7 @@ domem (void *dest, const void *src, int len)
 {
 	__builtin_memmove (dest, src, len);
 }
+int
 t()
 {
 	domem (b,a,100);

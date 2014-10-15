@@ -103,8 +103,7 @@ in these kind of counters.
 @section Invoking @command{gcov-tool}
 
 @smallexample
-gcov-tool @r{[}@var{global-options}@r{]} SUB_COMMAND
-@r{[}@var{sub_command-options}@r{]} @var{profile_dir}
+gcov-tool @r{[}@var{global-options}@r{]} SUB_COMMAND @r{[}@var{sub_command-options}@r{]} @var{profile_dir}
 @end smallexample
 
 @command{gcov-tool} accepts the following options:
@@ -123,6 +122,15 @@ gcov-tool rewrite [rewrite-options] @var{directory}
      [@option{-o}|@option{--output} @var{directory}]
      [@option{-s}|@option{--scale} @var{float_or_simple-frac_value}]
      [@option{-n}|@option{--normalize} @var{long_long_value}]
+
+gcov-tool overlap [overlap-options] @var{directory1} @var{directory2}
+     [@option{-v}|@option{--verbose}]
+     [@option{-h}|@option{--hotonly}]
+     [@option{-f}|@option{--function}]
+     [@option{-F}|@option{--fullname}]
+     [@option{-o}|@option{--object}]
+     [@option{-t}|@option{--hot_threshold}] @var{float}
+
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7), gcc(1), gcov(1) and the Info entry for
@@ -182,8 +190,42 @@ or simple fraction value form, such 1, 2, 2/3, and 5/3.
 @itemx --normalize <long_long_value>
 Normalize the profile. The specified value is the max counter value
 in the new profile.
-
 @end table
+
+@item overlap
+Computer the overlap score between the two specified profile directories.
+The overlap score is computed based on the arc profiles. It is defined as
+the sum of min (p1_counter[i] / p1_sum_all, p2_counter[i] / p2_sum_all),
+for all arc counter i, where p1_counter[i] and p2_counter[i] are two
+matched counters and p1_sum_all and p2_sum_all are the sum of counter
+values in profile 1 and profile 2, respectively.
+
+@table @gcctabopt
+@item -v
+@itemx --verbose
+Set the verbose mode.
+
+@item -h
+@itemx --hotonly
+Only print info for hot objects/functions.
+
+@item -f
+@itemx --function
+Print function level overlap score.
+
+@item -F
+@itemx --fullname
+Print full gcda filename.
+
+@item -o
+@itemx --object
+Print object level overlap score.
+
+@item -t @var{float}
+@itemx --hot_threshold <float>
+Set the threshold for hot counter value.
+@end table
+
 @end table
 
 @c man end

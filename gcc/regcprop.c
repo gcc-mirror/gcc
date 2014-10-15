@@ -1029,7 +1029,17 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     but instead among CLOBBERs on the CALL_INSN, we could wrongly
 	     assume the value in it is still live.  */
 	  if (ksvd.ignore_set_reg)
-	    note_stores (PATTERN (insn), kill_clobbered_value, vd);
+	    {
+	      note_stores (PATTERN (insn), kill_clobbered_value, vd);
+	      for (exp = CALL_INSN_FUNCTION_USAGE (insn);
+		   exp;
+		   exp = XEXP (exp, 1))
+		{
+		  rtx x = XEXP (exp, 0);
+		  if (GET_CODE (x) == CLOBBER)
+		    kill_value (SET_DEST (x), vd);
+		}
+	    }
 	}
 
       /* Notice stores.  */

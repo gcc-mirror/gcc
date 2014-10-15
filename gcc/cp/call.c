@@ -6341,10 +6341,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  /* We are going to bind a reference directly to a base-class
 	     subobject of EXPR.  */
 	  /* Build an expression for `*((base*) &expr)'.  */
-	  expr = cp_build_addr_expr (expr, complain);
-	  expr = convert_to_base (expr, build_pointer_type (totype),
+	  expr = convert_to_base (expr, totype,
 				  !c_cast_p, /*nonnull=*/true, complain);
-	  expr = cp_build_indirect_ref (expr, RO_IMPLICIT_CONVERSION, complain);
 	  return expr;
 	}
 
@@ -6896,6 +6894,25 @@ mark_versions_used (tree fn)
     }
 }
 
+/* Build a call to "the copy constructor" for the type of A, even if it
+   wouldn't be selected by normal overload resolution.  Used for
+   diagnostics.  */
+
+static tree
+call_copy_ctor (tree a, tsubst_flags_t complain)
+{
+  tree ctype = TYPE_MAIN_VARIANT (TREE_TYPE (a));
+  tree binfo = TYPE_BINFO (ctype);
+  tree copy = get_copy_ctor (ctype, complain);
+  copy = build_baselink (binfo, binfo, copy, NULL_TREE);
+  tree ob = build_dummy_object (ctype);
+  vec<tree, va_gc>* args = make_tree_vector_single (a);
+  tree r = build_new_method_call (ob, copy, &args, NULL_TREE,
+				  LOOKUP_NORMAL, NULL, complain);
+  release_tree_vector (args);
+  return r;
+}
+
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
    ARGS is a TREE_LIST of the unconverted arguments to the call.  FLAGS is a
@@ -7234,6 +7251,16 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (magic_varargs_p (fn))
 	/* Do no conversions for magic varargs.  */
 	a = mark_type_use (a);
+      else if (DECL_CONSTRUCTOR_P (fn)
+	       && same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (fn),
+							     TREE_TYPE (a)))
+	{
+	  /* Avoid infinite recursion trying to call A(...).  */
+	  if (complain & tf_error)
+	    /* Try to call the actual copy constructor for a good error.  */
+	    call_copy_ctor (a, complain);
+	  return error_mark_node;
+	}
       else
 	a = convert_arg_to_ellipsis (a, complain);
       argarray[j++] = a;

@@ -37,7 +37,7 @@ sse4a_test_extrqi (long long in)
   return (v_out.i[0]);
 }
 
-static chk (long long i1, long long i2)
+static int chk (long long i1, long long i2)
 {
   int n_fails =0;
   if (i1 != i2) 

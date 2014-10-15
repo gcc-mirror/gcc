@@ -42,7 +42,7 @@ enum symtab_type
 /* Section names are stored as reference counted strings in GGC safe hashtable
    (to make them survive through PCH).  */
 
-struct GTY(()) section_hash_entry_d
+struct GTY((for_user)) section_hash_entry_d
 {
   int ref_count;
   char *name;  /* As long as this datastructure stays in GGC, we can not put
@@ -51,6 +51,14 @@ struct GTY(()) section_hash_entry_d
 };
 
 typedef struct section_hash_entry_d section_hash_entry;
+
+struct section_name_hasher : ggc_hasher<section_hash_entry *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (section_hash_entry *);
+  static bool equal (section_hash_entry *, const char *);
+};
 
 enum availability
 {
@@ -704,7 +712,7 @@ struct GTY(()) cgraph_simd_clone {
 };
 
 /* Function Multiversioning info.  */
-struct GTY(()) cgraph_function_version_info {
+struct GTY((for_user)) cgraph_function_version_info {
   /* The cgraph_node for which the function version info is stored.  */
   cgraph_node *this_node;
   /* Chains all the semantically identical function versions.  The
@@ -742,6 +750,14 @@ enum cgraph_inline_failed_type_t
 };
 
 struct cgraph_edge;
+
+struct cgraph_edge_hasher : ggc_hasher<cgraph_edge *>
+{
+  typedef gimple compare_type;
+
+  static hashval_t hash (cgraph_edge *);
+  static bool equal (cgraph_edge *, gimple);
+};
 
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
@@ -918,6 +934,9 @@ public:
      target code (i.e. RTL).  Functions that are compiled to RTL and beyond
      are free'd in final.c via free_after_compilation().  */
   void release_body (bool keep_arguments = false);
+
+  /* Return the DECL_STRUCT_FUNCTION of the function.  */
+  struct function *get_fun (void);
 
   /* cgraph_node is no longer nested function; update cgraph accordingly.  */
   void unnest (void);
@@ -1172,7 +1191,7 @@ public:
   cgraph_node *clone_of;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
-  htab_t GTY((param_is (cgraph_edge))) call_site_hash;
+  hash_table<cgraph_edge_hasher> *GTY(()) call_site_hash;
   /* Declaration node used to be clone of. */
   tree former_clone_of;
 
@@ -1398,7 +1417,8 @@ struct GTY(()) cgraph_indirect_call_info
   unsigned vptr_changed : 1;
 };
 
-struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
+struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
+	    for_user)) cgraph_edge {
   friend class cgraph_node;
 
   /* Remove the edge in the cgraph.  */
@@ -1730,6 +1750,20 @@ enum symtab_state
   FINISHED
 };
 
+struct asmname_hasher
+{
+  typedef symtab_node *value_type;
+  typedef const_tree compare_type;
+  typedef int store_values_directly;
+
+  static hashval_t hash (symtab_node *n);
+  static bool equal (symtab_node *n, const_tree t);
+  static void ggc_mx (symtab_node *n);
+  static void pch_nx (symtab_node *&);
+  static void pch_nx (symtab_node *&, gt_pointer_operator, void *);
+  static void remove (symtab_node *) {}
+};
+
 class GTY((tag ("SYMTAB"))) symbol_table
 {
 public:
@@ -1966,10 +2000,10 @@ public:
   bool cpp_implicit_aliases_done;
 
   /* Hash table used to hold sectoons.  */
-  htab_t GTY((param_is (section_hash_entry))) section_hash;
+  hash_table<section_name_hasher> *GTY(()) section_hash;
 
   /* Hash table used to convert assembler names into nodes.  */
-  htab_t GTY((param_is (symtab_node))) assembler_name_hash;
+  hash_table<asmname_hasher> *assembler_name_hash;
 
   /* Hash table used to hold init priorities.  */
   hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
@@ -2002,11 +2036,7 @@ private:
   /* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
   static bool decl_assembler_name_equal (tree decl, const_tree asmname);
 
-  /* Returns a hash code for P.  */
-  static hashval_t hash_node_by_assembler_name (const void *p);
-
-  /* Returns nonzero if P1 and P2 are equal.  */
-  static int eq_assembler_name (const void *p1, const void *p2);
+  friend struct asmname_hasher;
 
   /* List of hooks triggered when an edge is removed.  */
   cgraph_edge_hook_list * GTY((skip)) m_first_edge_removal_hook;
@@ -2027,6 +2057,41 @@ private:
 extern GTY(()) symbol_table *symtab;
 
 extern vec<cgraph_node *> cgraph_new_nodes;
+
+inline hashval_t
+asmname_hasher::hash (symtab_node *n)
+{
+  return symbol_table::decl_assembler_name_hash
+    (DECL_ASSEMBLER_NAME (n->decl));
+}
+
+inline bool
+asmname_hasher::equal (symtab_node *n, const_tree t)
+{
+  return symbol_table::decl_assembler_name_equal (n->decl, t);
+}
+
+extern void gt_ggc_mx (symtab_node *&);
+
+inline void
+asmname_hasher::ggc_mx (symtab_node *n)
+{
+  gt_ggc_mx (n);
+}
+
+extern void gt_pch_nx (symtab_node *&);
+
+inline void
+asmname_hasher::pch_nx (symtab_node *&n)
+{
+  gt_pch_nx (n);
+}
+
+inline void
+asmname_hasher::pch_nx (symtab_node *&n, gt_pointer_operator op, void *cookie)
+{
+  op (&n, cookie);
+}
 
 /* In cgraph.c  */
 void release_function_body (tree);
@@ -2482,7 +2547,7 @@ tree add_new_static_var (tree type);
    Each constant in memory thus far output is recorded
    in `const_desc_table'.  */
 
-struct GTY(()) constant_descriptor_tree {
+struct GTY((for_user)) constant_descriptor_tree {
   /* A MEM for the constant.  */
   rtx rtl;
 
@@ -2541,8 +2606,14 @@ varpool_node::all_refs_explicit_p ()
 	  && !force_output);
 }
 
+struct tree_descriptor_hasher : ggc_hasher<constant_descriptor_tree *>
+{
+  static hashval_t hash (constant_descriptor_tree *);
+  static bool equal (constant_descriptor_tree *, constant_descriptor_tree *);
+};
+
 /* Constant pool accessor function.  */
-htab_t constant_pool_htab (void);
+hash_table<tree_descriptor_hasher> *constant_pool_htab (void);
 
 /* Return node that alias is aliasing.  */
 

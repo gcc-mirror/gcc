@@ -1275,6 +1275,7 @@ begin
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |
            Pragma_Polling                        |
+           Pragma_Prefix_Exception_Messages      |
            Pragma_Persistent_BSS                 |
            Pragma_Post                           |
            Pragma_Postcondition                  |

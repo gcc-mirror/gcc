@@ -4061,69 +4061,53 @@ mep_can_inline_p (tree caller, tree callee)
 struct GTY(()) pragma_entry {
   int used;
   int flag;
-  const char *funcname;
 };
-typedef struct pragma_entry pragma_entry;
+
+struct pragma_traits : default_hashmap_traits
+{
+  static hashval_t hash (const char *s) { return htab_hash_string (s); }
+  static bool
+  equal_keys (const char *a, const char *b)
+  {
+    return strcmp (a, b) == 0;
+  }
+};
 
 /* Hash table of farcall-tagged sections.  */
-static GTY((param_is (pragma_entry))) htab_t pragma_htab;
-
-static int
-pragma_entry_eq (const void *p1, const void *p2)
-{
-  const pragma_entry *old = (const pragma_entry *) p1;
-  const char *new_name = (const char *) p2;
-
-  return strcmp (old->funcname, new_name) == 0;
-}
-
-static hashval_t
-pragma_entry_hash (const void *p)
-{
-  const pragma_entry *old = (const pragma_entry *) p;
-  return htab_hash_string (old->funcname);
-}
+static GTY(()) hash_map<const char *, pragma_entry, pragma_traits> *
+  pragma_htab;
 
 static void
 mep_note_pragma_flag (const char *funcname, int flag)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
-    pragma_htab = htab_create_ggc (31, pragma_entry_hash,
-				    pragma_entry_eq, NULL);
+    pragma_htab
+      = hash_map<const char *, pragma_entry, pragma_traits>::create_ggc (31);
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, funcname,
-			      htab_hash_string (funcname), INSERT);
-
-  if (!*slot)
+  bool existed;
+  const char *name = ggc_strdup (funcname);
+  pragma_entry *slot = &pragma_htab->get_or_insert (name, &existed);
+  if (!existed)
     {
-      *slot = ggc_alloc<pragma_entry> ();
-      (*slot)->flag = 0;
-      (*slot)->used = 0;
-      (*slot)->funcname = ggc_strdup (funcname);
+      slot->flag = 0;
+      slot->used = 0;
     }
-  (*slot)->flag |= flag;
+  slot->flag |= flag;
 }
 
 static bool
 mep_lookup_pragma_flag (const char *funcname, int flag)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
     return false;
 
   if (funcname[0] == '@' && funcname[2] == '.')
     funcname += 3;
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, funcname,
-			      htab_hash_string (funcname), NO_INSERT);
-  if (slot && *slot && ((*slot)->flag & flag))
+  pragma_entry *slot = pragma_htab->get (funcname);
+  if (slot && (slot->flag & flag))
     {
-      (*slot)->used |= flag;
+      slot->used |= flag;
       return true;
     }
   return false;
@@ -4153,14 +4137,13 @@ mep_note_pragma_disinterrupt (const char *funcname)
   mep_note_pragma_flag (funcname, FUNC_DISINTERRUPT);
 }
 
-static int
-note_unused_pragma_disinterrupt (void **slot, void *data ATTRIBUTE_UNUSED)
+bool
+note_unused_pragma_disinterrupt (const char *const &s, const pragma_entry &e,
+				 void *)
 {
-  const pragma_entry *d = (const pragma_entry *)(*slot);
-
-  if ((d->flag & FUNC_DISINTERRUPT)
-      && !(d->used & FUNC_DISINTERRUPT))
-    warning (0, "\"#pragma disinterrupt %s\" not used", d->funcname);
+  if ((e.flag & FUNC_DISINTERRUPT)
+      && !(e.used & FUNC_DISINTERRUPT))
+    warning (0, "\"#pragma disinterrupt %s\" not used", s);
   return 1;
 }
 
@@ -4168,7 +4151,7 @@ void
 mep_file_cleanups (void)
 {
   if (pragma_htab)
-    htab_traverse (pragma_htab, note_unused_pragma_disinterrupt, NULL);
+    pragma_htab->traverse<void *, note_unused_pragma_disinterrupt> (NULL);
 }
 
 /* These three functions provide a bridge between the pramgas that

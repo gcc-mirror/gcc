@@ -1,3 +1,7 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* objc-act.c: use hash_table instead of hashtab.
+
 2014-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check_objc_parallelize): Change to just an upper

@@ -5,6 +5,7 @@ typedef long int intmax_t;
 typedef long unsigned int uintmax_t;
 extern void *xmalloc (size_t) __attribute__ ((__malloc__));
 extern const char *trim_filename (const char *);
+extern void error (const char *, ...);
 
 static __inline void *
 __inline_memcpy_chk (void *__dest, const void *__src, size_t __len)

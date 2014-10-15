@@ -12,6 +12,9 @@ struct T
   struct S s;
 };
 
+void link_error (void);
+int bar (struct S, int);
+
 void
 foo (int a, struct T b)
 {

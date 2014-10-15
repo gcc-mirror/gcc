@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
+
 void *x (void *pdst, const void *psrc, unsigned int pn)
 {
   register void *return_dst = pdst;

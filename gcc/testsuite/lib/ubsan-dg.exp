@@ -32,11 +32,13 @@ proc ubsan_link_flags { paths } {
     global srcdir
     global ld_library_path
     global shlib_ext
+    global ubsan_saved_library_path
 
     set gccpath ${paths}
     set flags ""
 
     set shlib_ext [get_shlib_extension]
+    set ubsan_saved_library_path $ld_library_path
 
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.a"]
@@ -104,6 +106,8 @@ proc ubsan_finish { args } {
     global TEST_ALWAYS_FLAGS
     global ubsan_saved_TEST_ALWAYS_FLAGS
     global ubsan_saved_ALWAYS_CXXFLAGS
+    global ubsan_saved_library_path
+    global ld_library_path
 
     if [info exists ubsan_saved_ALWAYS_CXXFLAGS ] {
 	set ALWAYS_CXXFLAGS $ubsan_saved_ALWAYS_CXXFLAGS
@@ -114,5 +118,6 @@ proc ubsan_finish { args } {
 	    unset TEST_ALWAYS_FLAGS
 	}
     }
-    restore_ld_library_path_env_vars
+    set ld_library_path $ubsan_saved_library_path
+    set_ld_library_path_env_vars
 }

@@ -3983,11 +3983,7 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
-      if (POINTER_TYPE_P (TREE_TYPE (exp)))
-	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-      else
-	as = ADDR_SPACE_GENERIC;
-
+      as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
       op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
 					  op0, as);
       if (op0 == NULL_RTX)

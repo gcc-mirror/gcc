@@ -224,7 +224,7 @@ struct GTY(()) block_symbol {
 
 /* Describes a group of objects that are to be placed together in such
    a way that their relative positions are known.  */
-struct GTY(()) object_block {
+struct GTY((for_user)) object_block {
   /* The section in which these objects should be placed.  */
   section *sect;
 

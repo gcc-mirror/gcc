@@ -89,6 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	_Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
 	__tmp->_M_hook(__position._M_const_cast()._M_node);
+	this->_M_inc_size(1);
 	return iterator(__tmp);
       }
 #endif
@@ -104,6 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Node* __tmp = _M_create_node(__x);
       __tmp->_M_hook(__position._M_const_cast()._M_node);
+      this->_M_inc_size(1);
       return iterator(__tmp);
     }
 
@@ -353,6 +355,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      ++__first1;
 	  if (__first2 != __last2)
 	    _M_transfer(__last1, __first2, __last2);
+
+	  this->_M_inc_size(__x._M_get_size());
+	  __x._M_set_size(0);
 	}
     }
 
@@ -387,6 +392,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		++__first1;
 	    if (__first2 != __last2)
 	      _M_transfer(__last1, __first2, __last2);
+
+	    this->_M_inc_size(__x._M_get_size());
+	    __x._M_set_size(0);
 	  }
       }
 

@@ -2368,15 +2368,15 @@ initialize_sanitizer_builtins (void)
 /* Called via htab_traverse.  Count number of emitted
    STRING_CSTs in the constant hash table.  */
 
-static int
-count_string_csts (void **slot, void *data)
+int
+count_string_csts (constant_descriptor_tree **slot,
+		   unsigned HOST_WIDE_INT *data)
 {
-  struct constant_descriptor_tree *desc
-    = (struct constant_descriptor_tree *) *slot;
+  struct constant_descriptor_tree *desc = *slot;
   if (TREE_CODE (desc->value) == STRING_CST
       && TREE_ASM_WRITTEN (desc->value)
       && asan_protect_global (desc->value))
-    ++*((unsigned HOST_WIDE_INT *) data);
+    ++*data;
   return 1;
 }
 
@@ -2389,20 +2389,18 @@ struct asan_add_string_csts_data
   vec<constructor_elt, va_gc> *v;
 };
 
-/* Called via htab_traverse.  Call asan_add_global
+/* Called via hash_table::traverse.  Call asan_add_global
    on emitted STRING_CSTs from the constant hash table.  */
 
-static int
-add_string_csts (void **slot, void *data)
+int
+add_string_csts (constant_descriptor_tree **slot,
+		 asan_add_string_csts_data *aascd)
 {
-  struct constant_descriptor_tree *desc
-    = (struct constant_descriptor_tree *) *slot;
+  struct constant_descriptor_tree *desc = *slot;
   if (TREE_CODE (desc->value) == STRING_CST
       && TREE_ASM_WRITTEN (desc->value)
       && asan_protect_global (desc->value))
     {
-      struct asan_add_string_csts_data *aascd
-	= (struct asan_add_string_csts_data *) data;
       asan_add_global (SYMBOL_REF_DECL (XEXP (desc->rtl, 0)),
 		       aascd->type, aascd->v);
     }
@@ -2440,8 +2438,9 @@ asan_finish_file (void)
     if (TREE_ASM_WRITTEN (vnode->decl)
 	&& asan_protect_global (vnode->decl))
       ++gcount;
-  htab_t const_desc_htab = constant_pool_htab ();
-  htab_traverse (const_desc_htab, count_string_csts, &gcount);
+  hash_table<tree_descriptor_hasher> *const_desc_htab = constant_pool_htab ();
+  const_desc_htab->traverse<unsigned HOST_WIDE_INT *, count_string_csts>
+    (&gcount);
   if (gcount)
     {
       tree type = asan_global_struct (), var, ctor;
@@ -2465,7 +2464,8 @@ asan_finish_file (void)
       struct asan_add_string_csts_data aascd;
       aascd.type = TREE_TYPE (type);
       aascd.v = v;
-      htab_traverse (const_desc_htab, add_string_csts, &aascd);
+      const_desc_htab->traverse<asan_add_string_csts_data *, add_string_csts>
+       	(&aascd);
       ctor = build_constructor (type, v);
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
@@ -2878,6 +2878,9 @@ pass_sanopt::execute (function *fun)
 		  break;
 		case IFN_UBSAN_BOUNDS:
 		  no_next = ubsan_expand_bounds_ifn (&gsi);
+		  break;
+		case IFN_UBSAN_OBJECT_SIZE:
+		  no_next = ubsan_expand_objsize_ifn (&gsi);
 		  break;
 		case IFN_ASAN_CHECK:
 		  {

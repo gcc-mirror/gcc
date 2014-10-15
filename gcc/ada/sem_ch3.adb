@@ -3062,6 +3062,12 @@ package body Sem_Ch3 is
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
+      --  The loop parameter in an element iterator over a formal container
+      --  is declared with an object declaration but no contracts apply.
+
+      elsif Ekind (Obj_Id) = E_Loop_Parameter then
+         null;
+
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
          --  The following checks are only relevant when SPARK_Mode is on as
@@ -3401,11 +3407,21 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-      --  If not a deferred constant, then object declaration freezes its type
+      --  If not a deferred constant, then the object declaration freezes
+      --  its type, unless the object is of an anonymous type and has delayed
+      --  aspects. In that case the type is frozen when the object itself is.
 
       else
          Check_Fully_Declared (T, N);
-         Freeze_Before (N, T);
+
+         if Has_Delayed_Aspects (Id)
+           and then Is_Array_Type (T)
+           and then Is_Itype (T)
+         then
+            Set_Has_Delayed_Freeze (T);
+         else
+            Freeze_Before (N, T);
+         end if;
       end if;
 
       --  If the object was created by a constrained array definition, then

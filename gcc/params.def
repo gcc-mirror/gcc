@@ -882,6 +882,14 @@ DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
          "use internal function id in profile lookup",
           0, 0, 1)
 
+/* When the parameter is 1, track the most frequent N target
+   addresses in indirect-call profile. This disables
+   indirect_call_profiler_v2 which tracks single target.  */
+DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
+         "indir-call-topn-profile",
+         "track topn target addresses in indirect-call profile",
+          0, 0, 1)
+
 /* Avoid SLP vectorization of large basic blocks.  */
 DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
           "slp-max-insns-in-bb",

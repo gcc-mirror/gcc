@@ -988,20 +988,32 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	__num_base::_S_format_float(__io, __fbuf, __mod);
 
 #ifdef _GLIBCXX_USE_C99
+	// Precision is always used except for hexfloat format.
+	const bool __use_prec =
+	  (__io.flags() & ios_base::floatfield) != ios_base::floatfield;
+
 	// First try a buffer perhaps big enough (most probably sufficient
 	// for non-ios_base::fixed outputs)
 	int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	__len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-				      __fbuf, __prec, __v);
+	if (__use_prec)
+	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					__fbuf, __prec, __v);
+	else
+	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					__fbuf, __v);
 
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1;
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	    __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					  __fbuf, __prec, __v);
+	    if (__use_prec)
+	      __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					    __fbuf, __prec, __v);
+	    else
+	      __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					    __fbuf, __v);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs

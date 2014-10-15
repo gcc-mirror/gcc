@@ -1,3 +1,98 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cp-gimplify.c, cp-tree.h, decl.c, mangle.c, name-lookup.c,
+	pt.c, semantics.c, tree.c, typeck2.c: Use hash_table instead of
+	hashtab.
+
+2014-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62115
+	* class.c (build_base_path): Preserve rvalueness.
+	* call.c (convert_like_real) [ck_base]: Let convert_to_base handle &/*.
+	* rtti.c (build_dynamic_cast_1): Call convert_to_reference later.
+
+	PR c++/63194
+	* method.c (defaulted_late_check): Call maybe_instantiate_noexcept.
+
+	* method.c (implicitly_declare_fn): Handle deleted lambda default
+	ctor and copy assop here.
+	* class.c (check_bases_and_members): Not here.
+	(add_implicitly_declared_members): And don't set
+	CLASSTYPE_LAZY_MOVE_ASSIGN.
+
+	* semantics.c (finish_id_expression): Check for error_mark_node.
+
+2014-10-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63207
+	* semantics.c (outer_var_p): Non-static.
+	(process_outer_var_ref): Split out from finish_id_expression.
+	* pt.c (tsubst_copy_and_build): Call them.
+	* cp-tree.h: Declare them.
+
+2014-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (check_constexpr_ctor_body_1): New.
+	(check_constexpr_ctor_body): Use it; add bool parameter.
+	(build_data_member_initialization): Handle BIND_EXPR and
+	USING_STMT in the main conditional.
+	(build_constexpr_constructor_member_initializers): Do not
+	handle BIND_EXPR here.
+	(constexpr_fn_retval): Handle BIND_EXPR in the switch.
+	(massage_constexpr_body): Don't do it here.
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Adjust check_constexpr_ctor_body call.
+	(cp_parser_compound_statement): Do not pedwarn for compound-statement
+	in constexpr function in C++14 mode.
+	* cp-tree.h (check_constexpr_ctor_body): Update declaration.
+
+2014-10-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63309
+	* parser.c (cp_parser_class_head): push_template_decl for members
+	of templates, too.
+
+	PR c++/63415
+	* pt.c (value_dependent_expression_p) [CONSTRUCTOR]: Check the type.
+	(iterative_hash_template_arg): Likewise.
+
+	PR c++/63437
+	* cp-tree.h (REF_PARENTHESIZED_P): Also allow INDIRECT_REF.
+	* semantics.c (force_paren_expr): And set it.
+	* typeck.c (check_return_expr): And handle it.
+
+2014-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (grokdeclarator): constexpr only implies const in C++11.
+
+2014-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63405
+	* pt.c (tsubst_pack_expansion): Limit simple expansion to type packs.
+
+	PR c++/63485
+	* tree.c (build_cplus_array_type): Look for a type with no
+	typedef-name or attributes.
+
+	* call.c (call_copy_ctor): New.
+	(build_over_call): Use it to avoid infinite recursion on invalid code.
+
+2014-10-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cp_tree_equal) [TRAIT_EXPR]: Use cp_tree_equal for type2.
+
+2014-10-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* cp/parser.c: Allow [[deprecated]] for C++11.  Issue a pedwarn.
+
+2014-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55250
+	* semantics.c (check_constexpr_bind_expr_vars): New.
+	(check_constexpr_ctor_body, massage_constexpr_body): Use it.
+	(build_constexpr_constructor_member_initializers): Handle
+	BIND_EXPR in the main conditional.
+
 2014-10-02  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/63239

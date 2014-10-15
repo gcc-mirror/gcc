@@ -251,6 +251,7 @@ build_base_path (enum tree_code code,
   int want_pointer = TYPE_PTR_P (TREE_TYPE (expr));
   bool has_empty = false;
   bool virtual_access;
+  bool rvalue = false;
 
   if (expr == error_mark_node || binfo == error_mark_node || !binfo)
     return error_mark_node;
@@ -324,8 +325,11 @@ build_base_path (enum tree_code code,
     }
 
   if (!want_pointer)
-    /* This must happen before the call to save_expr.  */
-    expr = cp_build_addr_expr (expr, complain);
+    {
+      rvalue = !real_lvalue_p (expr);
+      /* This must happen before the call to save_expr.  */
+      expr = cp_build_addr_expr (expr, complain);
+    }
   else
     expr = mark_rvalue_use (expr);
 
@@ -351,9 +355,7 @@ build_base_path (enum tree_code code,
       || in_template_function ())
     {
       expr = build_nop (ptr_target_type, expr);
-      if (!want_pointer)
-	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
-      return expr;
+      goto indout;
     }
 
   /* If we're in an NSDMI, we don't have the full constructor context yet
@@ -364,9 +366,7 @@ build_base_path (enum tree_code code,
     {
       expr = build1 (CONVERT_EXPR, ptr_target_type, expr);
       CONVERT_EXPR_VBASE_PATH (expr) = true;
-      if (!want_pointer)
-	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
-      return expr;
+      goto indout;
     }
 
   /* Do we need to check for a null pointer?  */
@@ -402,6 +402,8 @@ build_base_path (enum tree_code code,
     {
       expr = cp_build_indirect_ref (expr, RO_NULL, complain);
       expr = build_simple_base_path (expr, binfo);
+      if (rvalue)
+	expr = move (expr);
       if (want_pointer)
 	expr = build_address (expr);
       target_type = TREE_TYPE (expr);
@@ -478,8 +480,13 @@ build_base_path (enum tree_code code,
   else
     null_test = NULL;
 
+ indout:
   if (!want_pointer)
-    expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+    {
+      expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+      if (rvalue)
+	expr = move (expr);
+    }
 
  out:
   if (null_test)
@@ -3158,7 +3165,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       TYPE_HAS_COPY_ASSIGN (t) = 1;
       TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
-      if (move_ok)
+      if (move_ok && !LAMBDA_TYPE_P (t))
 	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
     }
 
@@ -5624,13 +5631,6 @@ check_bases_and_members (tree t)
 
   if (LAMBDA_TYPE_P (t))
     {
-      /* "The closure type associated with a lambda-expression has a deleted
-	 default constructor and a deleted copy assignment operator."  */
-      TYPE_NEEDS_CONSTRUCTING (t) = 1;
-      TYPE_HAS_COMPLEX_DFLT (t) = 1;
-      TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
-      CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 0;
-
       /* "This class type is not an aggregate."  */
       CLASSTYPE_NON_AGGREGATE (t) = 1;
     }

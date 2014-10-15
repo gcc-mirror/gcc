@@ -27,7 +27,7 @@ right_sign_shift32 (void)
 
 int main ()
 {
-  right_sign_shfit32 ();
+  right_sign_shift32 ();
   exit (0);
 }
 

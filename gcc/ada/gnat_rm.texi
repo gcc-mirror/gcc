@@ -227,6 +227,7 @@ Implementation Defined Pragmas
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Prefix_Exception_Messages::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -1096,6 +1097,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Prefix_Exception_Messages::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -4748,11 +4750,9 @@ pragma No_Run_Time;
 
 @noindent
 This is an obsolete configuration pragma that historically was used to
-setup what is now called the "zero footprint" library. It causes any
-library units outside this basic library to be ignored. The use of
-this pragma has been superseded by the general configurable run-time
-capability of @code{GNAT} where the compiler takes into account whatever
-units happen to be accessible in the library.
+set up a runtime library with no object code. It is now used only for
+internal testing. The pragma has been superseded by the reconfigurable
+runtime capability of @code{GNAT}.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing
@@ -5694,6 +5694,34 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
+@node Pragma Prefix_Exception_Messages
+@unnumberedsec Pragma Prefix_Exception_Messages
+@cindex Prefix_Exception_Messages
+@cindex exception
+@cindex Exception_Message
+@findex Exceptions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Prefix_Exception_Messages;
+@end smallexample
+
+@noindent
+This is an implementation-defined configuration pragma that affects the
+behavior of raise statements with a message given as a static string
+constant (typically a string literal). In such cases, the string will
+be automatically prefixed by the name of the enclosing entity (giving
+the package and subprogram containing the raise statement). This helps
+to identify where messages are coming from, and this mode is automatic
+for the run-time library.
+
+The pragma has no effect if the message is computed with an expression other
+than a static string constant, since the assumption in this case is that
+the program computes exactly the string it wants. If you still want the
+prefixing in this case, you can always call
+@code{GNAT.Source_Info.Enclosing_Entity} and prepend the string manually.
+
 @node Pragma Pre_Class
 @unnumberedsec Pragma Pre_Class
 @cindex Pre_Class
@@ -6201,7 +6229,7 @@ any other use of implementation pragmas:
 
 @smallexample @c ada
 pragma Restriction_Warnings (No_Implementation_Pragmas);
-pragma Warnings (Off, "violation of*No_Implementation_Pragmas*");
+7 (Off, "violation of*No_Implementation_Pragmas*");
 pragma Ada_95;
 pragma Style_Checks ("2bfhkM160");
 pragma Warnings (On, "violation of*No_Implementation_Pragmas*");
@@ -7827,7 +7855,9 @@ it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}). This form cannot be used as a configuration
 pragma.
 
-The form with a single static_string_EXPRESSION argument (and possible
+In the case where the first argument is other than @code{ON} or
+@code{OFF},
+the third form with a single static_string_EXPRESSION argument (and possible
 reason) provides more precise
 control over which warnings are active. The string is a list of letters
 specifying which warnings are to be activated and which deactivated. The

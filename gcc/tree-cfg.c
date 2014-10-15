@@ -6980,11 +6980,12 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       if (loops_for_fn (saved_cfun)->exits)
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  {
-	    void **slot = htab_find_slot_with_hash
-		(loops_for_fn (saved_cfun)->exits, e,
-		 htab_hash_pointer (e), NO_INSERT);
+	    struct loops *l = loops_for_fn (saved_cfun);
+	    loop_exit **slot
+	      = l->exits->find_slot_with_hash (e, htab_hash_pointer (e),
+					       NO_INSERT);
 	    if (slot)
-	      htab_clear_slot (loops_for_fn (saved_cfun)->exits, slot);
+	      l->exits->clear_slot (slot);
 	  }
     }
 

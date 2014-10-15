@@ -193,6 +193,17 @@ namespace std
 #endif
 }
 
+// Use abi_tag("cxx11")
+#ifndef _GLIBCXX_USE_CXX11_ABI
+#define _GLIBCXX_USE_CXX11_ABI
+#endif
+
+#if _GLIBCXX_USE_CXX11_ABI
+# define _GLIBCXX_DEFAULT_ABI_TAG _GLIBCXX_ABI_TAG_CXX11
+#else
+# define _GLIBCXX_DEFAULT_ABI_TAG
+#endif
+
 
 // Defined if inline namespaces are used for versioning.
 #define _GLIBCXX_INLINE_VERSION 

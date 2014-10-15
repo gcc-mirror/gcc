@@ -65,42 +65,26 @@ package Interfaces.Fortran is
    type Integer_Star_8  is new Integer_64;
    type Integer_Kind_8  is new Integer_64;
 
-   type Logical_Star_1  is new Boolean;
-   type Logical_Star_2  is new Boolean;
-   type Logical_Star_4  is new Boolean;
-   type Logical_Star_8  is new Boolean;
-   type Logical_Kind_1  is new Boolean;
-   type Logical_Kind_2  is new Boolean;
-   type Logical_Kind_4  is new Boolean;
-   type Logical_Kind_8  is new Boolean;
-   for Logical_Star_1'Size use Integer_8'Size;
-   for Logical_Star_2'Size use Integer_16'Size;
-   for Logical_Star_4'Size use Integer_32'Size;
-   for Logical_Star_8'Size use Integer_64'Size;
-   for Logical_Kind_1'Size use Integer_8'Size;
-   for Logical_Kind_2'Size use Integer_16'Size;
-   for Logical_Kind_4'Size use Integer_32'Size;
-   for Logical_Kind_8'Size use Integer_64'Size;
-   pragma Convention (Fortran, Logical_Star_1);
-   pragma Convention (Fortran, Logical_Star_2);
-   pragma Convention (Fortran, Logical_Star_4);
-   pragma Convention (Fortran, Logical_Star_8);
-   pragma Convention (Fortran, Logical_Kind_1);
-   pragma Convention (Fortran, Logical_Kind_2);
-   pragma Convention (Fortran, Logical_Kind_4);
-   pragma Convention (Fortran, Logical_Kind_8);
+   type Logical_Star_1  is new Boolean with Convention => Fortran, Size =>  8;
+   type Logical_Star_2  is new Boolean with Convention => Fortran, Size => 16;
+   type Logical_Star_4  is new Boolean with Convention => Fortran, Size => 32;
+   type Logical_Star_8  is new Boolean with Convention => Fortran, Size => 64;
+   type Logical_Kind_1  is new Boolean with Convention => Fortran, Size =>  8;
+   type Logical_Kind_2  is new Boolean with Convention => Fortran, Size => 16;
+   type Logical_Kind_4  is new Boolean with Convention => Fortran, Size => 32;
+   type Logical_Kind_8  is new Boolean with Convention => Fortran, Size => 64;
 
    type Real_Star_4  is new Float;
    type Real_Kind_4  is new Float;
    type Real_Star_8  is new Long_Float;
    type Real_Kind_8  is new Long_Float;
+   --  In the kind syntax, n is the same as the associated real kind
 
-   --  In the kind syntax, n is the same as the associated real kind.
-   --  In the star syntax, n is twice as large (real+imaginary size)
    type Complex_Star_8  is new Complex;
    type Complex_Kind_4  is new Complex;
    type Complex_Star_16 is new Double_Complex;
    type Complex_Kind_8  is new Double_Complex;
+   --  In the star syntax, n is twice as large (real+imaginary size)
 
    type Character_Kind_n is new Fortran_Character;
 

@@ -437,6 +437,10 @@ tree size_of_string_in_bytes (int, tree);
 /* Intrinsic procedure handling.  */
 tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
+bool gfc_conv_ieee_arithmetic_function (gfc_se *, gfc_expr *);
+tree gfc_save_fp_state (stmtblock_t *);
+void gfc_restore_fp_state (stmtblock_t *, tree);
+
 
 /* Does an intrinsic map directly to an external library call
    This is true for array-returning intrinsics, unless
@@ -571,10 +575,18 @@ void gfc_generate_module_vars (gfc_namespace *);
 /* Get the appropriate return statement for a procedure.  */
 tree gfc_generate_return (void);
 
-struct GTY(()) module_htab_entry {
+struct module_decl_hasher : ggc_hasher<tree_node *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (tree);
+  static bool equal (tree, const char *);
+};
+
+struct GTY((for_user)) module_htab_entry {
   const char *name;
   tree namespace_decl;
-  htab_t GTY ((param_is (union tree_node))) decls;
+  hash_table<module_decl_hasher> *GTY (()) decls;
 };
 
 struct module_htab_entry *gfc_find_module (const char *);
@@ -791,6 +803,10 @@ extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_sc_kind;
 extern GTY(()) tree gfor_fndecl_si_kind;
 extern GTY(()) tree gfor_fndecl_sr_kind;
+
+/* IEEE-related.  */
+extern GTY(()) tree gfor_fndecl_ieee_procedure_entry;
+extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
 
 /* True if node is an integer constant.  */

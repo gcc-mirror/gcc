@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
+long long bar (void *);
+
 int
 foo (void *x, long long *y)
 {

@@ -13,6 +13,7 @@ extern __inline__ int test_and_set_bit(int nr, volatile void * addr)
 struct buffer_head {
 	unsigned long b_state;		 
 };
+void __wait_on_buffer (struct buffer_head *);
 extern void lock_buffer(struct buffer_head * bh)
 {
 	while (test_and_set_bit(2 , &bh->b_state))

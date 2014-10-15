@@ -489,6 +489,7 @@ Objective-C and Objective-C++ Dialects}.
 -mstrict-align @gol
 -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
+-mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
@@ -5577,6 +5578,12 @@ This option enables checking of alignment of pointers when they are
 dereferenced, or when a reference is bound to insufficiently aligned target,
 or when a method or constructor is invoked on insufficiently aligned object.
 
+@item -fsanitize=object-size
+@opindex fsanitize=object-size
+This option enables instrumentation of memory references using the
+@code{__builtin_object_size} function.  Various out of bounds pointer
+accesses are detected.
+
 @item -fsanitize=float-divide-by-zero
 @opindex fsanitize=float-divide-by-zero
 Detect floating-point division by zero.  Unlike other similar options,
@@ -5603,6 +5610,19 @@ are not passed to arguments marked as requiring a non-null value by the
 This option enables instrumentation of return statements in functions
 marked with @code{returns_nonnull} function attribute, to detect returning
 of null values from such functions.
+
+@item -fsanitize=bool
+@opindex fsanitize=bool
+
+This option enables instrumentation of loads from bool.  If a value other
+than 0/1 is loaded, a run-time error is issued.
+
+@item -fsanitize=enum
+@opindex fsanitize=enum
+
+This option enables instrumentation of loads from an enum type.  If
+a value outside the range of values for the enum type is loaded,
+a run-time error is issued.
 
 @end table
 
@@ -11743,6 +11763,14 @@ of TLS variables.  This is the default.
 @opindex mtls-dialect=traditional
 Use traditional TLS as the thread-local storage mechanism for dynamic accesses
 of TLS variables.
+
+@item -mfix-cortex-a53-835769
+@itemx -mno-fix-cortex-a53-835769
+@opindex -mfix-cortex-a53-835769
+@opindex -mno-fix-cortex-a53-835769
+Enable or disable the workaround for the ARM Cortex-A53 erratum number 835769.
+This will involve inserting a NOP instruction between memory instructions and
+64-bit integer multiply-accumulate instructions.
 
 @item -march=@var{name}
 @opindex march

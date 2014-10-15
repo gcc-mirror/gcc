@@ -528,7 +528,7 @@ package body Exp_Ch13 is
            and then
              (Is_Entry (E_Scope)
                 or else (Is_Subprogram (E_Scope)
-                           and then Is_Protected_Type (Scope (E_Scope)))
+                          and then Is_Protected_Type (Scope (E_Scope)))
                 or else Is_Task_Type (E_Scope))
          then
             null;

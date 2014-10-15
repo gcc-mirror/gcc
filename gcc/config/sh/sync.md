@@ -224,7 +224,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_compare_and_swap<mode>_hard (old_val, addr,
 							  exp_val, new_val);
   else if (TARGET_ATOMIC_SOFT_GUSA)
@@ -264,7 +264,7 @@
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	cmp/eq	%2,r0"		"\n"
@@ -437,7 +437,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_exchange<mode>_hard (operands[0], addr, val);
   else if (TARGET_ATOMIC_SOFT_GUSA)
     atomic_insn = gen_atomic_exchange<mode>_soft_gusa (operands[0], addr, val);
@@ -466,9 +466,10 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(match_operand:SI 2 "arith_operand" "rI08")] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -484,6 +485,7 @@
    (set (mem:QIHI (match_dup 1))
 	(unspec:QIHI
 	  [(match_operand:QIHI 2 "register_operand" "r")] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -583,7 +585,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_hard (operands[0], addr,
 							      operands[2]);
   else if (TARGET_ATOMIC_SOFT_GUSA)
@@ -617,9 +619,10 @@
 	  [(FETCHOP:SI (mem:SI (match_dup 1))
 	     (match_operand:SI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -637,6 +640,7 @@
 	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1))
 	     (match_operand:QIHI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -750,7 +754,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_fetch_nand<mode>_hard (operands[0], addr,
 						    operands[2]);
   else if (TARGET_ATOMIC_SOFT_GUSA)
@@ -784,9 +788,10 @@
 	  [(not:SI (and:SI (mem:SI (match_dup 1))
 		   (match_operand:SI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -805,6 +810,7 @@
 	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1))
 		     (match_operand:QIHI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -926,7 +932,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_hard (operands[0], addr,
 							      operands[2]);
   else if (TARGET_ATOMIC_SOFT_GUSA)
@@ -960,9 +966,10 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(FETCHOP:SI (mem:SI (match_dup 1)) (match_dup 2))]
-	  UNSPEC_ATOMIC))]
+	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,%0"		"\n"
 	 "	<fetchop_name>	%2,%0"	"\n"
@@ -980,6 +987,7 @@
 	(unspec:QIHI
 	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -1091,7 +1099,7 @@
   rtx atomic_insn;
 
   if (TARGET_ATOMIC_HARD_LLCS
-      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
+      || (TARGET_SH4A && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_nand_fetch<mode>_hard (operands[0], addr,
 						    operands[2]);
   else if (TARGET_ATOMIC_SOFT_GUSA)
@@ -1124,9 +1132,10 @@
    (set (mem:SI (match_dup 1))
 	(unspec:SI
 	  [(not:SI (and:SI (mem:SI (match_dup 1)) (match_dup 2)))]
-	  UNSPEC_ATOMIC))]
+	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))]
   "TARGET_ATOMIC_HARD_LLCS
-   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,%0"		"\n"
 	 "	and	%2,%0"		"\n"
@@ -1145,6 +1154,7 @@
 	(unspec:QIHI
 	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1)) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]

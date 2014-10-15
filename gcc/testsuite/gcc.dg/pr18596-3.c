@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu89" } */
 
 int foo ()
 {

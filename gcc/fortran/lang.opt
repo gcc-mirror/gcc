@@ -257,6 +257,10 @@ Wintrinsics-std
 Fortran Warning
 Warn on intrinsics not part of the selected standard
 
+Wmissing-include-dirs
+Fortran
+; Documented in C/C++
+
 Wuse-without-only
 Fortran Warning
 Warn about USE statements that have no ONLY qualifier

@@ -196,7 +196,7 @@ require_complete_type (tree value)
 {
   tree type = TREE_TYPE (value);
 
-  if (value == error_mark_node || type == error_mark_node)
+  if (error_operand_p (value))
     return error_mark_node;
 
   /* First, detect a valid value with a complete type.  */
@@ -1994,7 +1994,7 @@ default_function_array_read_conversion (location_t loc, struct c_expr exp)
 static bool
 really_atomic_lvalue (tree expr)
 {
-  if (expr == error_mark_node || TREE_TYPE (expr) == error_mark_node)
+  if (error_operand_p (expr))
     return false;
   if (!TYPE_ATOMIC (TREE_TYPE (expr)))
     return false;
@@ -6746,8 +6746,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   if (type == error_mark_node
       || !init
-      || init == error_mark_node
-      || TREE_TYPE (init) == error_mark_node)
+      || error_operand_p (init))
     return error_mark_node;
 
   STRIP_TYPE_NOPS (inside_init);
@@ -7694,7 +7693,11 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
-  if (vec_safe_length (constructor_elements) != 1)
+  /* Initialization with { } counts as zeroinit.  */
+  if (vec_safe_length (constructor_elements) == 0)
+    constructor_zeroinit = 1;
+  /* If the constructor has more than one element, it can't be { 0 }.  */
+  else if (vec_safe_length (constructor_elements) != 1)
     constructor_zeroinit = 0;
 
   /* Warn when some structs are initialized with direct aggregation.  */
@@ -7721,7 +7724,7 @@ pop_init_level (location_t loc, int implicit,
 	    /* Do not warn if this level of the initializer uses member
 	       designators; it is likely to be deliberate.  */
 	    && !constructor_designated
-	    /* Do not warn about initializing with ` = {0}'.  */
+	    /* Do not warn about initializing with { 0 } or with { }.  */
 	    && !constructor_zeroinit)
 	  {
 	    if (warning_at (input_location, OPT_Wmissing_field_initializers,
@@ -11700,7 +11703,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
   tree ret, low_bound, length, type;
   if (TREE_CODE (t) != TREE_LIST)
     {
-      if (t == error_mark_node || TREE_TYPE (t) == error_mark_node)
+      if (error_operand_p (t))
 	return error_mark_node;
       if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
 	{

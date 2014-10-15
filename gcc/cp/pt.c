@@ -80,18 +80,22 @@ static tree cur_stmt_expr;
 /* True if we've recursed into fn_type_unification too many times.  */
 static bool excessive_deduction_depth;
 
-typedef struct GTY(()) spec_entry
+struct GTY((for_user)) spec_entry
 {
   tree tmpl;
   tree args;
   tree spec;
-} spec_entry;
+};
 
-static GTY ((param_is (spec_entry)))
-  htab_t decl_specializations;
+struct spec_hasher : ggc_hasher<spec_entry *>
+{
+  static hashval_t hash (spec_entry *);
+  static bool equal (spec_entry *, spec_entry *);
+};
 
-static GTY ((param_is (spec_entry)))
-  htab_t type_specializations;
+static GTY (()) hash_table<spec_hasher> *decl_specializations;
+
+static GTY (()) hash_table<spec_hasher> *type_specializations;
 
 /* Contains canonical template parameter types. The vector is indexed by
    the TEMPLATE_TYPE_IDX of the template parameter. Each element is a
@@ -153,7 +157,6 @@ static bool inline_needs_template_parms (tree, bool);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
 static void register_local_specialization (tree, tree);
-static hashval_t hash_specialization (const void *p);
 static tree reduce_template_parm_level (tree, tree, int, tree, tsubst_flags_t);
 static int mark_template_parm (tree, void *);
 static int template_parm_this_level_p (tree, void *);
@@ -931,18 +934,18 @@ maybe_process_partial_specialization (tree type)
 		     new member specialization template.  */
 		  spec_entry elt;
 		  spec_entry *entry;
-		  void **slot;
 
 		  elt.tmpl = most_general_template (tmpl);
 		  elt.args = CLASSTYPE_TI_ARGS (inst);
 		  elt.spec = inst;
 
-		  htab_remove_elt (type_specializations, &elt);
+		  type_specializations->remove_elt (&elt);
 
 		  elt.tmpl = tmpl;
 		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
 
-		  slot = htab_find_slot (type_specializations, &elt, INSERT);
+		  spec_entry **slot
+		    = type_specializations->find_slot (&elt, INSERT);
 		  entry = ggc_alloc<spec_entry> ();
 		  *entry = elt;
 		  *slot = entry;
@@ -1085,7 +1088,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
     {
       spec_entry *found;
       spec_entry elt;
-      htab_t specializations;
+      hash_table<spec_hasher> *specializations;
 
       elt.tmpl = tmpl;
       elt.args = args;
@@ -1097,8 +1100,8 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 	specializations = decl_specializations;
 
       if (hash == 0)
-	hash = hash_specialization (&elt);
-      found = (spec_entry *) htab_find_with_hash (specializations, &elt, hash);
+	hash = spec_hasher::hash (&elt);
+      found = specializations->find_with_hash (&elt, hash);
       if (found)
 	return found->spec;
     }
@@ -1343,7 +1346,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 			 hashval_t hash)
 {
   tree fn;
-  void **slot = NULL;
+  spec_entry **slot = NULL;
   spec_entry elt;
 
   gcc_assert ((TREE_CODE (tmpl) == TEMPLATE_DECL && DECL_P (spec))
@@ -1376,10 +1379,10 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       elt.spec = spec;
 
       if (hash == 0)
-	hash = hash_specialization (&elt);
+	hash = spec_hasher::hash (&elt);
 
       slot =
-	htab_find_slot_with_hash (decl_specializations, &elt, hash, INSERT);
+	decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
       if (*slot)
 	fn = ((spec_entry *) *slot)->spec;
       else
@@ -1500,11 +1503,9 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 
 int comparing_specializations;
 
-static int
-eq_specializations (const void *p1, const void *p2)
+bool
+spec_hasher::equal (spec_entry *e1, spec_entry *e2)
 {
-  const spec_entry *e1 = (const spec_entry *)p1;
-  const spec_entry *e2 = (const spec_entry *)p2;
   int equal;
 
   ++comparing_specializations;
@@ -1527,10 +1528,9 @@ hash_tmpl_and_args (tree tmpl, tree args)
 /* Returns a hash for a spec_entry node based on the TMPL and ARGS members,
    ignoring SPEC.  */
 
-static hashval_t
-hash_specialization (const void *p)
+hashval_t
+spec_hasher::hash (spec_entry *e)
 {
-  const spec_entry *e = (const spec_entry *)p;
   return hash_tmpl_and_args (e->tmpl, e->args);
 }
 
@@ -1598,6 +1598,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case CONSTRUCTOR:
       {
 	tree field, value;
+	iterative_hash_template_arg (TREE_TYPE (arg), val);
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
 	  {
 	    val = iterative_hash_template_arg (field, val);
@@ -1709,7 +1710,7 @@ reregister_specialization (tree spec, tree tinfo, tree new_spec)
   elt.args = TI_ARGS (tinfo);
   elt.spec = NULL_TREE;
 
-  entry = (spec_entry *) htab_find (decl_specializations, &elt);
+  entry = decl_specializations->find (&elt);
   if (entry != NULL)
     {
       gcc_assert (entry->spec == spec || entry->spec == new_spec);
@@ -7417,7 +7418,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 {
   tree templ = NULL_TREE, parmlist;
   tree t;
-  void **slot;
+  spec_entry **slot;
   spec_entry *entry;
   spec_entry elt;
   hashval_t hash;
@@ -7683,9 +7684,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* If we already have this specialization, return it.  */
       elt.tmpl = gen_tmpl;
       elt.args = arglist;
-      hash = hash_specialization (&elt);
-      entry = (spec_entry *) htab_find_with_hash (type_specializations,
-						  &elt, hash);
+      hash = spec_hasher::hash (&elt);
+      entry = type_specializations->find_with_hash (&elt, hash);
 
       if (entry)
 	return entry->spec;
@@ -7929,8 +7929,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
-      slot = htab_find_slot_with_hash (type_specializations,
-				       &elt, hash, INSERT);
+      slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
       entry = ggc_alloc<spec_entry> ();
       *entry = elt;
       *slot = entry;
@@ -8651,7 +8650,7 @@ tsubst_friend_function (tree decl, tree args)
 		      elt.args = DECL_TI_ARGS (spec);
 		      elt.spec = NULL_TREE;
 
-		      htab_remove_elt (decl_specializations, &elt);
+		      decl_specializations->remove_elt (&elt);
 
 		      DECL_TI_ARGS (spec)
 			= add_outermost_template_args (new_args,
@@ -9929,7 +9928,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   /* If the expansion is just T..., return the matching argument pack.  */
   if (!unsubstituted_packs
       && TREE_PURPOSE (packs) == pattern)
-    return ARGUMENT_PACK_ARGS (TREE_VALUE (packs));
+    {
+      tree args = ARGUMENT_PACK_ARGS (TREE_VALUE (packs));
+      if (TREE_CODE (t) == TYPE_PACK_EXPANSION
+	  || pack_expansion_args_count (args))
+	return args;
+      /* Otherwise use the normal path so we get convert_from_reference.  */
+    }
 
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
@@ -15453,6 +15458,7 @@ tsubst_copy_and_build (tree t,
     case PARM_DECL:
       {
 	tree r = tsubst_copy (t, args, complain, in_decl);
+	/* ??? We're doing a subset of finish_id_expression here.  */
 	if (VAR_P (r)
 	    && !processing_template_decl
 	    && !cp_unevaluated_operand
@@ -15464,6 +15470,8 @@ tsubst_copy_and_build (tree t,
 		 a call to its wrapper.  */
 	      r = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	  }
+	else if (outer_automatic_var_p (r))
+	  r = process_outer_var_ref (r, complain);
 
 	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
 	  /* If the original type was a reference, we'll be wrapped in
@@ -21056,6 +21064,8 @@ value_dependent_expression_p (tree expression)
       {
 	unsigned ix;
 	tree val;
+	if (dependent_type_p (TREE_TYPE (expression)))
+	  return true;
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), ix, val)
 	  if (value_dependent_expression_p (val))
 	    return true;
@@ -22304,14 +22314,8 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
 void
 init_template_processing (void)
 {
-  decl_specializations = htab_create_ggc (37,
-					  hash_specialization,
-					  eq_specializations,
-					  ggc_free);
-  type_specializations = htab_create_ggc (37,
-					  hash_specialization,
-					  eq_specializations,
-					  ggc_free);
+  decl_specializations = hash_table<spec_hasher>::create_ggc (37);
+  type_specializations = hash_table<spec_hasher>::create_ggc (37);
 }
 
 /* Print stats about the template hash tables for -fstats.  */
@@ -22320,13 +22324,13 @@ void
 print_template_statistics (void)
 {
   fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) htab_size (decl_specializations),
-	   (long) htab_elements (decl_specializations),
-	   htab_collisions (decl_specializations));
+	   "%f collisions\n", decl_specializations->size (),
+	   decl_specializations->elements (),
+	   decl_specializations->collisions ());
   fprintf (stderr, "type_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) htab_size (type_specializations),
-	   (long) htab_elements (type_specializations),
-	   htab_collisions (type_specializations));
+	   "%f collisions\n", type_specializations->size (),
+	   type_specializations->elements (),
+	   type_specializations->collisions ());
 }
 
 #include "gt-cp-pt.h"

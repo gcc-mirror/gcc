@@ -1,6 +1,6 @@
 /* PR c/60139 */
 /* { dg-do compile } */
-/* { dg-options "-Wpedantic" } */
+/* { dg-options "-Wpedantic -std=gnu89" } */
 /* { dg-prune-output ".*near initialization for.*" } */
 
 double sin (double);

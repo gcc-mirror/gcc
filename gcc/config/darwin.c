@@ -450,7 +450,7 @@ machopic_should_output_picbase_label (void)
 /* The suffix attached to stub symbols.  */
 #define STUB_SUFFIX "$stub"
 
-typedef struct GTY (()) machopic_indirection
+typedef struct GTY ((for_user)) machopic_indirection
 {
   /* The SYMBOL_REF for the entity referenced.  */
   rtx symbol;
@@ -463,29 +463,33 @@ typedef struct GTY (()) machopic_indirection
   bool used;
 } machopic_indirection;
 
+struct indirection_hasher : ggc_hasher<machopic_indirection *>
+{
+  typedef const char *compare_type;
+  static hashval_t hash (machopic_indirection *);
+  static bool equal (machopic_indirection *, const char *);
+};
+
 /* A table mapping stub names and non-lazy pointer names to
    SYMBOL_REFs for the stubbed-to and pointed-to entities.  */
 
-static GTY ((param_is (struct machopic_indirection))) htab_t
-  machopic_indirections;
+static GTY (()) hash_table<indirection_hasher> *machopic_indirections;
 
 /* Return a hash value for a SLOT in the indirections hash table.  */
 
-static hashval_t
-machopic_indirection_hash (const void *slot)
+hashval_t
+indirection_hasher::hash (machopic_indirection *p)
 {
-  const machopic_indirection *p = (const machopic_indirection *) slot;
   return htab_hash_string (p->ptr_name);
 }
 
 /* Returns true if the KEY is the same as that associated with
    SLOT.  */
 
-static int
-machopic_indirection_eq (const void *slot, const void *key)
+bool
+indirection_hasher::equal (machopic_indirection *s, const char *k)
 {
-  return strcmp (((const machopic_indirection *) slot)->ptr_name,
-		 (const char *) key) == 0;
+  return strcmp (s->ptr_name, k) == 0;
 }
 
 /* Return the name of the non-lazy pointer (if STUB_P is false) or
@@ -498,7 +502,6 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   const char *name = XSTR (sym_ref, 0);
   size_t namelen = strlen (name);
   machopic_indirection *p;
-  void ** slot;
   bool needs_quotes;
   const char *suffix;
   const char *prefix = user_label_prefix;
@@ -548,16 +551,15 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   sprintf (buffer, "&%sL%s%s%s%s", quote, prefix, name, suffix, quote);
 
   if (!machopic_indirections)
-    machopic_indirections = htab_create_ggc (37,
-					     machopic_indirection_hash,
-					     machopic_indirection_eq,
-					     /*htab_del=*/NULL);
+    machopic_indirections = hash_table<indirection_hasher>::create_ggc (37);
 
-  slot = htab_find_slot_with_hash (machopic_indirections, buffer,
-				   htab_hash_string (buffer), INSERT);
+  machopic_indirection **slot
+    = machopic_indirections->find_slot_with_hash (buffer,
+						  htab_hash_string (buffer),
+						  INSERT);
   if (*slot)
     {
-      p = (machopic_indirection *) *slot;
+      p = *slot;
     }
   else
     {
@@ -589,11 +591,8 @@ machopic_mcount_stub_name (void)
 void
 machopic_validate_stub_or_non_lazy_ptr (const char *name)
 {
-  machopic_indirection *p;
-
-  p = ((machopic_indirection *)
-       (htab_find_with_hash (machopic_indirections, name,
-			     htab_hash_string (name))));
+  machopic_indirection *p
+    = machopic_indirections->find_with_hash (name, htab_hash_string (name));
   if (p && ! p->used)
     {
       const char *real_name;
@@ -1062,11 +1061,10 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
    DATA is the FILE* for assembly output.  Called from
    htab_traverse.  */
 
-static int
-machopic_output_indirection (void **slot, void *data)
+int
+machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
 {
-  machopic_indirection *p = *((machopic_indirection **) slot);
-  FILE *asm_out_file = (FILE *) data;
+  machopic_indirection *p = *slot;
   rtx symbol;
   const char *sym_name;
   const char *ptr_name;
@@ -1180,9 +1178,8 @@ void
 machopic_finish (FILE *asm_out_file)
 {
   if (machopic_indirections)
-    htab_traverse_noresize (machopic_indirections,
-			    machopic_output_indirection,
-			    asm_out_file);
+    machopic_indirections
+      ->traverse_noresize<FILE *, machopic_output_indirection> (asm_out_file);
 }
 
 int
@@ -3255,17 +3252,20 @@ static enum built_in_function darwin_builtin_cfstring;
 /* Store all constructed constant CFStrings in a hash table so that
    they get uniqued properly.  */
 
-typedef struct GTY (()) cfstring_descriptor {
+typedef struct GTY ((for_user)) cfstring_descriptor {
   /* The string literal.  */
   tree literal;
   /* The resulting constant CFString.  */
   tree constructor;
 } cfstring_descriptor;
 
-static GTY ((param_is (struct cfstring_descriptor))) htab_t cfstring_htab;
+struct cfstring_hasher : ggc_hasher<cfstring_descriptor *>
+{
+  static hashval_t hash (cfstring_descriptor *);
+  static bool equal (cfstring_descriptor *, cfstring_descriptor *);
+};
 
-static hashval_t cfstring_hash (const void *);
-static int cfstring_eq (const void *, const void *);
+static GTY (()) hash_table<cfstring_hasher> *cfstring_htab;
 
 static tree
 add_builtin_field_decl (tree type, const char *name, tree **chain)
@@ -3348,7 +3348,7 @@ darwin_init_cfstring_builtins (unsigned builtin_cfstring)
   rest_of_decl_compilation (cfstring_class_reference, 0, 0);
   
   /* Initialize the hash table used to hold the constant CFString objects.  */
-  cfstring_htab = htab_create_ggc (31, cfstring_hash, cfstring_eq, NULL);
+  cfstring_htab = hash_table<cfstring_hasher>::create_ggc (31);
 
   return cfstring_type_node;
 }
@@ -3422,10 +3422,10 @@ darwin_libc_has_function (enum function_class fn_class)
   return true;
 }
 
-static hashval_t
-cfstring_hash (const void *ptr)
+hashval_t
+cfstring_hasher::hash (cfstring_descriptor *ptr)
 {
-  tree str = ((const struct cfstring_descriptor *)ptr)->literal;
+  tree str = ptr->literal;
   const unsigned char *p = (const unsigned char *) TREE_STRING_POINTER (str);
   int i, len = TREE_STRING_LENGTH (str);
   hashval_t h = len;
@@ -3436,11 +3436,11 @@ cfstring_hash (const void *ptr)
   return h;
 }
 
-static int
-cfstring_eq (const void *ptr1, const void *ptr2)
+bool
+cfstring_hasher::equal (cfstring_descriptor *ptr1, cfstring_descriptor *ptr2)
 {
-  tree str1 = ((const struct cfstring_descriptor *)ptr1)->literal;
-  tree str2 = ((const struct cfstring_descriptor *)ptr2)->literal;
+  tree str1 = ptr1->literal;
+  tree str2 = ptr2->literal;
   int len1 = TREE_STRING_LENGTH (str1);
 
   return (len1 == TREE_STRING_LENGTH (str2)
@@ -3452,7 +3452,6 @@ tree
 darwin_build_constant_cfstring (tree str)
 {
   struct cfstring_descriptor *desc, key;
-  void **loc;
   tree addr;
 
   if (!str)
@@ -3474,8 +3473,8 @@ darwin_build_constant_cfstring (tree str)
 
   /* Perhaps we already constructed a constant CFString just like this one? */
   key.literal = str;
-  loc = htab_find_slot (cfstring_htab, &key, INSERT);
-  desc = (struct cfstring_descriptor *) *loc;
+  cfstring_descriptor **loc = cfstring_htab->find_slot (&key, INSERT);
+  desc = *loc;
 
   if (!desc)
     {
@@ -3551,7 +3550,6 @@ bool
 darwin_cfstring_p (tree str)
 {
   struct cfstring_descriptor key;
-  void **loc;
 
   if (!str)
     return false;
@@ -3565,7 +3563,7 @@ darwin_cfstring_p (tree str)
     return false;
 
   key.literal = str;
-  loc = htab_find_slot (cfstring_htab, &key, NO_INSERT);
+  cfstring_descriptor **loc = cfstring_htab->find_slot (&key, NO_INSERT);
   
   if (loc)
     return true;
@@ -3577,10 +3575,9 @@ void
 darwin_enter_string_into_cfstring_table (tree str)
 {
   struct cfstring_descriptor key;
-  void **loc;
 
   key.literal = str;
-  loc = htab_find_slot (cfstring_htab, &key, INSERT);
+  cfstring_descriptor **loc = cfstring_htab->find_slot (&key, INSERT);
 
   if (!*loc)
     {

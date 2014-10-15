@@ -110,8 +110,6 @@ static int contains_pointers_p (tree);
 static bool incorporeal_function_p (tree);
 #endif
 static void decode_addr_const (tree, struct addr_const *);
-static hashval_t const_desc_hash (const void *);
-static int const_desc_eq (const void *, const void *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
@@ -175,11 +173,27 @@ static GTY(()) section *unnamed_sections;
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
+struct section_hasher : ggc_hasher<section *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (section *);
+  static bool equal (section *, const char *);
+};
+
 /* Hash table of named sections.  */
-static GTY((param_is (section))) htab_t section_htab;
+static GTY(()) hash_table<section_hasher> *section_htab;
+
+struct object_block_hasher : ggc_hasher<object_block *>
+{
+  typedef const section *compare_type;
+
+  static hashval_t hash (object_block *);
+  static bool equal (object_block *, const section *);
+};
 
 /* A table of object_blocks, indexed by section.  */
-static GTY((param_is (struct object_block))) htab_t object_block_htab;
+static GTY(()) hash_table<object_block_hasher> *object_block_htab;
 
 /* The next number to use for internal anchor labels.  */
 static GTY(()) int anchor_labelno;
@@ -189,19 +203,15 @@ static GTY(()) struct rtx_constant_pool *shared_constant_pool;
 
 /* Helper routines for maintaining section_htab.  */
 
-static int
-section_entry_eq (const void *p1, const void *p2)
+bool
+section_hasher::equal (section *old, const char *new_name)
 {
-  const section *old = (const section *) p1;
-  const char *new_name = (const char *) p2;
-
   return strcmp (old->named.name, new_name) == 0;
 }
 
-static hashval_t
-section_entry_hash (const void *p)
+hashval_t
+section_hasher::hash (section *old)
 {
-  const section *old = (const section *) p;
   return htab_hash_string (old->named.name);
 }
 
@@ -217,19 +227,15 @@ hash_section (section *sect)
 
 /* Helper routines for maintaining object_block_htab.  */
 
-static int
-object_block_entry_eq (const void *p1, const void *p2)
+inline bool
+object_block_hasher::equal (object_block *old, const section *new_section)
 {
-  const struct object_block *old = (const struct object_block *) p1;
-  const section *new_section = (const section *) p2;
-
   return old->sect == new_section;
 }
 
-static hashval_t
-object_block_entry_hash (const void *p)
+hashval_t
+object_block_hasher::hash (object_block *old)
 {
-  const struct object_block *old = (const struct object_block *) p;
   return hash_section (old->sect);
 }
 
@@ -273,9 +279,8 @@ get_section (const char *name, unsigned int flags, tree decl)
 {
   section *sect, **slot;
 
-  slot = (section **)
-    htab_find_slot_with_hash (section_htab, name,
-			      htab_hash_string (name), INSERT);
+  slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
+					    INSERT);
   flags |= SECTION_NAMED;
   if (*slot == NULL)
     {
@@ -350,14 +355,14 @@ static struct object_block *
 get_block_for_section (section *sect)
 {
   struct object_block *block;
-  void **slot;
 
   if (sect == NULL)
     return NULL;
 
-  slot = htab_find_slot_with_hash (object_block_htab, sect,
-				   hash_section (sect), INSERT);
-  block = (struct object_block *) *slot;
+  object_block **slot
+    = object_block_htab->find_slot_with_hash (sect, hash_section (sect),
+					      INSERT);
+  block = *slot;
   if (block == NULL)
     {
       block = ggc_cleared_alloc<object_block> ();
@@ -2824,15 +2829,13 @@ decode_addr_const (tree exp, struct addr_const *value)
   value->offset = offset;
 }
 
-
-static GTY((param_is (struct constant_descriptor_tree)))
-     htab_t const_desc_htab;
+static GTY(()) hash_table<tree_descriptor_hasher> *const_desc_htab;
 
 static void maybe_output_constant_def_contents (struct constant_descriptor_tree *, int);
 
 /* Constant pool accessor function.  */
 
-htab_t
+hash_table<tree_descriptor_hasher> *
 constant_pool_htab (void)
 {
   return const_desc_htab;
@@ -2840,10 +2843,10 @@ constant_pool_htab (void)
 
 /* Compute a hash code for a constant expression.  */
 
-static hashval_t
-const_desc_hash (const void *ptr)
+hashval_t
+tree_descriptor_hasher::hash (constant_descriptor_tree *ptr)
 {
-  return ((const struct constant_descriptor_tree *)ptr)->hash;
+  return ptr->hash;
 }
 
 static hashval_t
@@ -2956,13 +2959,10 @@ const_hash_1 (const tree exp)
 }
 
 /* Wrapper of compare_constant, for the htab interface.  */
-static int
-const_desc_eq (const void *p1, const void *p2)
+bool
+tree_descriptor_hasher::equal (constant_descriptor_tree *c1,
+			       constant_descriptor_tree *c2)
 {
-  const struct constant_descriptor_tree *const c1
-    = (const struct constant_descriptor_tree *) p1;
-  const struct constant_descriptor_tree *const c2
-    = (const struct constant_descriptor_tree *) p2;
   if (c1->hash != c2->hash)
     return 0;
   return compare_constant (c1->value, c2->value);
@@ -3264,15 +3264,15 @@ output_constant_def (tree exp, int defer)
 {
   struct constant_descriptor_tree *desc;
   struct constant_descriptor_tree key;
-  void **loc;
 
   /* Look up EXP in the table of constant descriptors.  If we didn't find
      it, create a new one.  */
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
 
-  desc = (struct constant_descriptor_tree *) *loc;
+  desc = *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
@@ -3387,13 +3387,12 @@ output_constant_def_contents (rtx symbol)
 rtx
 lookup_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc;
   struct constant_descriptor_tree key;
 
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  desc = (struct constant_descriptor_tree *)
-    htab_find_with_hash (const_desc_htab, &key, key.hash);
+  constant_descriptor_tree *desc
+    = const_desc_htab->find_with_hash (&key, key.hash);
 
   return (desc ? desc->rtl : NULL_RTX);
 }
@@ -3407,16 +3406,16 @@ tree
 tree_output_constant_def (tree exp)
 {
   struct constant_descriptor_tree *desc, key;
-  void **loc;
   tree decl;
 
   /* Look up EXP in the table of constant descriptors.  If we didn't find
      it, create a new one.  */
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
 
-  desc = (struct constant_descriptor_tree *) *loc;
+  desc = *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
@@ -3429,6 +3428,25 @@ tree_output_constant_def (tree exp)
   return decl;
 }
 
+struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
+  struct constant_descriptor_rtx *next;
+  rtx mem;
+  rtx sym;
+  rtx constant;
+  HOST_WIDE_INT offset;
+  hashval_t hash;
+  enum machine_mode mode;
+  unsigned int align;
+  int labelno;
+  int mark;
+};
+
+struct const_rtx_desc_hasher : ggc_hasher<constant_descriptor_rtx *>
+{
+  static hashval_t hash (constant_descriptor_rtx *);
+  static bool equal (constant_descriptor_rtx *, constant_descriptor_rtx *);
+};
+
 /* Used in the hash tables to avoid outputting the same constant
    twice.  Unlike 'struct constant_descriptor_tree', RTX constants
    are output once per function, not once per file.  */
@@ -3445,44 +3463,25 @@ struct GTY(()) rtx_constant_pool {
      It is used on RISC machines where immediate integer arguments and
      constant addresses are restricted so that such constants must be stored
      in memory.  */
-  htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_htab;
+  hash_table<const_rtx_desc_hasher> *const_rtx_htab;
 
   /* Current offset in constant pool (does not include any
      machine-specific header).  */
   HOST_WIDE_INT offset;
 };
 
-struct GTY((chain_next ("%h.next"))) constant_descriptor_rtx {
-  struct constant_descriptor_rtx *next;
-  rtx mem;
-  rtx sym;
-  rtx constant;
-  HOST_WIDE_INT offset;
-  hashval_t hash;
-  enum machine_mode mode;
-  unsigned int align;
-  int labelno;
-  int mark;
-};
-
 /* Hash and compare functions for const_rtx_htab.  */
 
-static hashval_t
-const_desc_rtx_hash (const void *ptr)
+hashval_t
+const_rtx_desc_hasher::hash (constant_descriptor_rtx *desc)
 {
-  const struct constant_descriptor_rtx *const desc
-    = (const struct constant_descriptor_rtx *) ptr;
   return desc->hash;
 }
 
-static int
-const_desc_rtx_eq (const void *a, const void *b)
+bool
+const_rtx_desc_hasher::equal (constant_descriptor_rtx *x,
+			      constant_descriptor_rtx *y)
 {
-  const struct constant_descriptor_rtx *const x
-    = (const struct constant_descriptor_rtx *) a;
-  const struct constant_descriptor_rtx *const y
-    = (const struct constant_descriptor_rtx *) b;
-
   if (x->mode != y->mode)
     return 0;
   return rtx_equal_p (x->constant, y->constant);
@@ -3585,8 +3584,7 @@ create_constant_pool (void)
   struct rtx_constant_pool *pool;
 
   pool = ggc_alloc<rtx_constant_pool> ();
-  pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
-					  const_desc_rtx_eq, NULL);
+  pool->const_rtx_htab = hash_table<const_rtx_desc_hasher>::create_ggc (31);
   pool->first = NULL;
   pool->last = NULL;
   pool->offset = 0;
@@ -3624,7 +3622,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   rtx def, symbol;
   hashval_t hash;
   unsigned int align;
-  void **slot;
+  constant_descriptor_rtx **slot;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
   if (targetm.cannot_force_const_mem (mode, x))
@@ -3642,8 +3640,8 @@ force_const_mem (enum machine_mode mode, rtx x)
   tmp.constant = x;
   tmp.mode = mode;
   hash = const_rtx_hash (x);
-  slot = htab_find_slot_with_hash (pool->const_rtx_htab, &tmp, hash, INSERT);
-  desc = (struct constant_descriptor_rtx *) *slot;
+  slot = pool->const_rtx_htab->find_slot_with_hash (&tmp, hash, INSERT);
+  desc = *slot;
 
   /* If the constant was already present, return its memory.  */
   if (desc)
@@ -5923,12 +5921,9 @@ make_decl_one_only (tree decl, tree comdat_group)
 void
 init_varasm_once (void)
 {
-  section_htab = htab_create_ggc (31, section_entry_hash,
-				  section_entry_eq, NULL);
-  object_block_htab = htab_create_ggc (31, object_block_entry_hash,
-				       object_block_entry_eq, NULL);
-  const_desc_htab = htab_create_ggc (1009, const_desc_hash,
-				     const_desc_eq, NULL);
+  section_htab = hash_table<section_hasher>::create_ggc (31);
+  object_block_htab = hash_table<object_block_hasher>::create_ggc (31);
+  const_desc_htab = hash_table<tree_descriptor_hasher>::create_ggc (1009);
 
   const_alias_set = new_alias_set ();
   shared_constant_pool = create_constant_pool ();
@@ -7268,10 +7263,10 @@ output_object_block (struct object_block *block)
 /* A htab_traverse callback used to call output_object_block for
    each member of object_block_htab.  */
 
-static int
-output_object_block_htab (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+output_object_block_htab (object_block **slot, void *)
 {
-  output_object_block ((struct object_block *) (*slot));
+  output_object_block (*slot);
   return 1;
 }
 
@@ -7280,7 +7275,7 @@ output_object_block_htab (void **slot, void *data ATTRIBUTE_UNUSED)
 void
 output_object_blocks (void)
 {
-  htab_traverse (object_block_htab, output_object_block_htab, NULL);
+  object_block_htab->traverse<void *, output_object_block_htab> (NULL);
 }
 
 /* This function provides a possible implementation of the

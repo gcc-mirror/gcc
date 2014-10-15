@@ -6938,7 +6938,7 @@ label:
       emit_insn (gen_ic_invalidate_line_compact (operands[0], operands[1]));
       DONE;
     }
-  else if (TARGET_SH4A_ARCH || TARGET_SH4_300)
+  else if (TARGET_SH4A || TARGET_SH4_300)
     {
       emit_insn (gen_ic_invalidate_line_sh4a (operands[0]));
       DONE;
@@ -6971,7 +6971,7 @@ label:
 (define_insn "ic_invalidate_line_sh4a"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
 		    UNSPEC_ICACHE)]
-  "TARGET_SH4A_ARCH || TARGET_SH4_300"
+  "TARGET_SH4A || TARGET_SH4_300"
 {
   return       "ocbwb	@%0"	"\n"
 	 "	synco"		"\n"
@@ -13487,7 +13487,7 @@ label:
   [(set (match_operand:SI 0 "register_operand" "=z")
 	(unspec:SI [(match_operand:BLK 1 "unaligned_load_operand" "Sua>")]
 		   UNSPEC_MOVUA))]
-  "TARGET_SH4A_ARCH"
+  "TARGET_SH4A"
   "movua.l	%1,%0"
   [(set_attr "type" "movua")])
 
@@ -13500,7 +13500,7 @@ label:
 	(sign_extract:SI (mem:SI (match_operand:SI 1 "register_operand" ""))
 			 (const_int 32) (const_int 0)))
    (set (match_dup 1) (plus:SI (match_dup 1) (const_int 4)))]
-  "TARGET_SH4A_ARCH && REGNO (operands[0]) != REGNO (operands[1])"
+  "TARGET_SH4A && REGNO (operands[0]) != REGNO (operands[1])"
   [(set (match_operand:SI 0 "register_operand" "")
 	(sign_extract:SI (mem:SI (post_inc:SI
 				  (match_operand:SI 1 "register_operand" "")))
@@ -13512,7 +13512,7 @@ label:
 	(sign_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  "TARGET_SH4A_ARCH || TARGET_SH2A"
+  "TARGET_SH4A || TARGET_SH2A"
 {
   if (TARGET_SH2A && TARGET_BITOPS
       && (satisfies_constraint_Sbw (operands[1])
@@ -13525,7 +13525,7 @@ label:
 	emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
       DONE;
    }
-  if (TARGET_SH4A_ARCH
+  if (TARGET_SH4A
       && INTVAL (operands[2]) == 32
       && INTVAL (operands[3]) == 0
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)
@@ -13544,7 +13544,7 @@ label:
 	(zero_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  "TARGET_SH4A_ARCH || TARGET_SH2A"
+  "TARGET_SH4A || TARGET_SH2A"
 {
   if (TARGET_SH2A && TARGET_BITOPS
       && (satisfies_constraint_Sbw (operands[1])
@@ -13557,7 +13557,7 @@ label:
 	emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
       DONE;
     }
-  if (TARGET_SH4A_ARCH
+  if (TARGET_SH4A
       && INTVAL (operands[2]) == 32
       && INTVAL (operands[3]) == 0
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)

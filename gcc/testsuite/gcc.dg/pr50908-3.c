@@ -3,6 +3,7 @@
 
 extern int v1;
 extern int v2;
+void g (void);
 
 void
 f ()

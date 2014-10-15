@@ -78,7 +78,8 @@ package Ada.Containers.Formal_Ordered_Maps is
      Iterable => (First       => First,
                   Next        => Next,
                   Has_Element => Has_Element,
-                  Element     => Element);
+                  Element     => Element),
+     Default_Initial_Condition;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;

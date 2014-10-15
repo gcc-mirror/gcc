@@ -142,6 +142,7 @@ test8bit (void)
 
 }
 
+void
 test1bit (void) {
   m256d = _mm512_extractf64x4_pd (m512d, 256); /* { dg-error "the last argument must be a 1-bit immediate" } */
   m256d = _mm512_mask_extractf64x4_pd (m256d, mmask8, m512d, 256); /* { dg-error "the last argument must be a 1-bit immediate" } */
@@ -160,6 +161,7 @@ test1bit (void) {
   m512i = _mm512_maskz_inserti64x4 (mmask8, m512i, m256i, 256); /* { dg-error "the last argument must be a 1-bit immediate" } */
 }
 
+void
 test2bit (void) {
   m128  = _mm512_extractf32x4_ps(m512, 256); /* { dg-error "the last argument must be a 2-bit immediate" } */
   m128  = _mm512_mask_extractf32x4_ps(m128, mmask8, m512, 256); /* { dg-error "the last argument must be a 2-bit immediate" } */
@@ -178,6 +180,7 @@ test2bit (void) {
   m512i = _mm512_maskz_inserti32x4 (mmask16, m512i, m128i, 256); /* { dg-error "the last argument must be a 2-bit immediate" } */
 }
 
+void
 test4bit (void) {
   m512d = _mm512_getmant_pd (m512d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
   m512d = _mm512_mask_getmant_pd (m512d, mmask8, m512d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */

@@ -110,6 +110,7 @@ void simulate_thread_main()
     test_abort ();
 }
 
+int
 main ()
 {
   simulate_thread_main ();

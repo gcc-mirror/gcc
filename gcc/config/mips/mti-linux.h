@@ -43,4 +43,4 @@ along with GCC; see the file COPYING3.  If not see
   BASE_DRIVER_SELF_SPECS						\
 									\
   /* Use the standard linux specs for everything else.  */		\
-  LINUX64_DRIVER_SELF_SPECS
+  LINUX_DRIVER_SELF_SPECS

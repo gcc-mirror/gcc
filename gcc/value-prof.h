@@ -35,6 +35,8 @@ enum hist_type
   HIST_TYPE_AVERAGE,	/* Compute average value (sum of all values).  */
   HIST_TYPE_IOR,	/* Used to compute expected alignment.  */
   HIST_TYPE_TIME_PROFILE, /* Used for time profile */
+  HIST_TYPE_INDIR_CALL_TOPN, /* Tries to identify the top N most frequently
+                                called functions in indirect call.  */
   HIST_TYPE_MAX
 };
 

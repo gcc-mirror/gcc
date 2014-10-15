@@ -4852,23 +4852,28 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
     }
 }
 
+struct c_type_hasher : ggc_hasher<tree>
+{
+  static hashval_t hash (tree);
+  static bool equal (tree, tree);
+};
+
 /* Hash function for the problem of multiple type definitions in
    different files.  This must hash all types that will compare
    equal via comptypes to the same value.  In practice it hashes
    on some of the simple stuff and leaves the details to comptypes.  */
 
-static hashval_t
-c_type_hash (const void *p)
+hashval_t
+c_type_hasher::hash (tree t)
 {
   int n_elements;
   int shift, size;
-  const_tree const t = (const_tree) p;
   tree t2;
   switch (TREE_CODE (t))
     {
     /* For pointers, hash on pointee type plus some swizzling.  */
     case POINTER_TYPE:
-      return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
+      return hash (TREE_TYPE (t)) ^ 0x3003003;
     /* Hash on number of elements and total size.  */
     case ENUMERAL_TYPE:
       shift = 3;
@@ -4900,7 +4905,13 @@ c_type_hash (const void *p)
   return ((size << 24) | (n_elements << shift));
 }
 
-static GTY((param_is (union tree_node))) htab_t type_hash_table;
+bool
+c_type_hasher::equal (tree t1, tree t2)
+{
+  return lang_hooks.types_compatible_p (t1, t2);
+}
+
+static GTY(()) hash_table<c_type_hasher> *type_hash_table;
 
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
@@ -4909,7 +4920,6 @@ alias_set_type
 c_common_get_alias_set (tree t)
 {
   tree u;
-  PTR *slot;
 
   /* For VLAs, use the alias set of the element type rather than the
      default of alias set 0 for types compared structurally.  */
@@ -5014,10 +5024,8 @@ c_common_get_alias_set (tree t)
   /* Look up t in hash table.  Only one of the compatible types within each
      alias set is recorded in the table.  */
   if (!type_hash_table)
-    type_hash_table = htab_create_ggc (1021, c_type_hash,
-	    (htab_eq) lang_hooks.types_compatible_p,
-	    NULL);
-  slot = htab_find_slot (type_hash_table, t, INSERT);
+    type_hash_table = hash_table<c_type_hasher>::create_ggc (1021);
+  tree *slot = type_hash_table->find_slot (t, INSERT);
   if (*slot != NULL)
     {
       TYPE_ALIAS_SET (t) = TYPE_ALIAS_SET ((tree)*slot);

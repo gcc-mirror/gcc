@@ -959,6 +959,43 @@ update_joiner_offpath_counts (edge epath, basic_block dup_bb,
 }
 
 
+/* Check if the paths through RD all have estimated frequencies but zero
+   profile counts.  This is more accurate than checking the entry block
+   for a zero profile count, since profile insanities sometimes creep in.  */
+
+static bool
+estimated_freqs_path (struct redirection_data *rd)
+{
+  edge e = rd->incoming_edges->e;
+  vec<jump_thread_edge *> *path = THREAD_PATH (e);
+  edge ein;
+  edge_iterator ei;
+  bool non_zero_freq = false;
+  FOR_EACH_EDGE (ein, ei, e->dest->preds)
+    {
+      if (ein->count)
+        return false;
+      non_zero_freq |= ein->src->frequency != 0;
+    }
+
+  for (unsigned int i = 1; i < path->length (); i++)
+    {
+      edge epath = (*path)[i]->e;
+      if (epath->src->count)
+        return false;
+      non_zero_freq |= epath->src->frequency != 0;
+      edge esucc;
+      FOR_EACH_EDGE (esucc, ei, epath->src->succs)
+        {
+          if (esucc->count)
+            return false;
+          non_zero_freq |= esucc->src->frequency != 0;
+        }
+    }
+  return non_zero_freq;
+}
+
+
 /* Invoked for routines that have guessed frequencies and no profile
    counts to record the block and edge frequencies for paths through RD
    in the profile count fields of those blocks and edges.  This is because
@@ -1058,9 +1095,11 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
      data we first take a snapshot of the existing block and edge frequencies
      by copying them into the empty profile count fields.  These counts are
      then used to do the incremental updates, and cleared at the end of this
-     routine.  */
+     routine.  If the function is marked as having a profile, we still check
+     to see if the paths through RD are using estimated frequencies because
+     the routine had zero profile counts.  */
   bool do_freqs_to_counts = (profile_status_for_fn (cfun) != PROFILE_READ
-                             || !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+                             || estimated_freqs_path (rd));
   if (do_freqs_to_counts)
     freqs_to_counts_path (rd);
 
@@ -2077,34 +2116,51 @@ mark_threaded_blocks (bitmap threaded_blocks)
 
   /* Now iterate again, converting cases where we want to thread
      through a joiner block, but only if no other edge on the path
-     already has a jump thread attached to it.  */
+     already has a jump thread attached to it.  We do this in two passes,
+     to avoid situations where the order in the paths vec can hide overlapping
+     threads (the path is recorded on the incoming edge, so we would miss
+     cases where the second path starts at a downstream edge on the same
+     path).  First record all joiner paths, deleting any in the unexpected
+     case where there is already a path for that incoming edge.  */
   for (i = 0; i < paths.length (); i++)
     {
       vec<jump_thread_edge *> *path = paths[i];
 
       if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+        {
+	  /* Attach the path to the starting edge if none is yet recorded.  */
+          if ((*path)[0]->e->aux == NULL)
+            (*path)[0]->e->aux = path;
+	  else if (dump_file && (dump_flags & TDF_DETAILS))
+	    dump_jump_thread_path (dump_file, *path, false);
+        }
+    }
+  /* Second, look for paths that have any other jump thread attached to
+     them, and either finish converting them or cancel them.  */
+  for (i = 0; i < paths.length (); i++)
+    {
+      vec<jump_thread_edge *> *path = paths[i];
+      edge e = (*path)[0]->e;
+
+      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && e->aux == path)
 	{
 	  unsigned int j;
-
-	  for (j = 0; j < path->length (); j++)
+	  for (j = 1; j < path->length (); j++)
 	    if ((*path)[j]->e->aux != NULL)
 	      break;
 
 	  /* If we iterated through the entire path without exiting the loop,
-	     then we are good to go, attach the path to the starting edge.  */
+	     then we are good to go, record it.  */
 	  if (j == path->length ())
+	    bitmap_set_bit (tmp, e->dest->index);
+	  else
 	    {
-	      edge e = (*path)[0]->e;
-	      e->aux = path;
-	      bitmap_set_bit (tmp, e->dest->index);
-	    }
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      dump_jump_thread_path (dump_file, *path, false);
+	      e->aux = NULL;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        dump_jump_thread_path (dump_file, *path, false);
 	    }
 	}
     }
-
 
   /* If optimizing for size, only thread through block if we don't have
      to duplicate it or it's an otherwise empty redirection block.  */

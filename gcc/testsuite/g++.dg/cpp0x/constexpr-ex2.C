@@ -7,8 +7,8 @@
 // p 4
 struct A {
   constexpr A(int i) : val(i) { }
-  constexpr operator int() { return val; }
-  constexpr operator long() { return -1; }
+  constexpr operator int() const { return val; }
+  constexpr operator long() const { return -1; }
 private:
   int val;
 };

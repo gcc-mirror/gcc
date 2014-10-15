@@ -183,6 +183,7 @@ instrument_values (histogram_values values)
 	  break;
 
  	case HIST_TYPE_INDIR_CALL:
+ 	case HIST_TYPE_INDIR_CALL_TOPN:
  	  gimple_gen_ic_profiler (hist, t, 0);
   	  break;
 

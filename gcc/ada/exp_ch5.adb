@@ -2889,7 +2889,17 @@ package body Exp_Ch5 is
               Statements =>  New_List (New_Loop)));
 
       Rewrite (N, New_Loop);
-      Analyze (New_Loop);
+
+      --  The loop parameter is declared by an object declaration, but within
+      --  the loop we must prevent user assignments to it, so we analyze the
+      --  declaration and reset the entity kind, before analyzing the rest of
+      --  the loop;
+
+      Analyze (Elmt_Decl);
+      Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
+      Set_Assignment_OK (Name (Elmt_Ref));
+
+      Analyze (N);
    end Expand_Formal_Container_Element_Loop;
 
    -----------------------------

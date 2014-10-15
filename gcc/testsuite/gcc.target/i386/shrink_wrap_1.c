@@ -20,6 +20,7 @@ extern rtx c_readstr (const char *, enum machine_mode);
 extern rtx convert_to_mode (enum machine_mode, rtx, int);
 extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
 extern rtx force_reg (enum machine_mode, rtx);
+extern unsigned char mode_size_inline (enum machine_mode);
 extern void *memset (void *__s, int __c, size_t __n);
 
 rtx

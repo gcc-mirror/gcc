@@ -8,6 +8,7 @@
 
 char **ep;
 char **fp;
+extern int strcmp (const char *, const char *);
 
 __attribute__ ((noinline))
 void

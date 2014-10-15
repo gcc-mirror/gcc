@@ -2,6 +2,7 @@
 /* { dg-options "-O2" } */
 
 extern void abort (void);
+extern void link_error (void);
 
 struct S
 {

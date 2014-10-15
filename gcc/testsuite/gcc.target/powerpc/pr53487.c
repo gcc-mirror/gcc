@@ -6,6 +6,7 @@
 struct phylo_s {
   int left;
 };
+void Free2DArray (void **, int);
 
 int Cluster(float **dmx, int N, struct phylo_s *tree)
 {

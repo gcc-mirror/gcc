@@ -67,6 +67,10 @@ mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY)
 Generate code which uses only the general registers
 
+mfix-cortex-a53-835769
+Target Report Var(aarch64_fix_a53_err835769) Init(2)
+Workaround for ARM Cortex-A53 Erratum number 835769
+
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_END)
 Assume target CPU is configured as little endian

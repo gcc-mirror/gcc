@@ -9891,7 +9891,7 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
     return error_mark_node;
   if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-      && !function_body)
+      && !function_body && cxx_dialect < cxx14)
     pedwarn (input_location, OPT_Wpedantic,
 	     "compound-statement in constexpr function");
   /* Begin the compound-statement.  */
@@ -19015,7 +19015,7 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
   /* Parse the function-body.  */
   cp_parser_function_body (parser, in_function_try_block);
   if (check_body_p)
-    check_constexpr_ctor_body (last, list);
+    check_constexpr_ctor_body (last, list, /*complain=*/true);
   /* Finish the function body.  */
   finish_function_body (body);
 
@@ -20222,9 +20222,7 @@ cp_parser_class_head (cp_parser* parser,
 	 template either from the template headers or the type we're
 	 defining, so that we diagnose both extra and missing headers.  */
       if ((PROCESSING_REAL_TEMPLATE_DECL_P ()
-	   || (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (type))
-	       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE
-				      (TREE_TYPE (type)))))
+	   || CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (type)))
 	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (type)))
 	{
 	  type = push_template_decl (type);
@@ -22204,8 +22202,14 @@ cp_parser_std_attribute (cp_parser *parser)
       if (is_attribute_p ("noreturn", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++14 deprecated attribute is equivalent to GNU's.  */
-      else if (cxx_dialect >= cxx14 && is_attribute_p ("deprecated", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+      else if (cxx_dialect >= cxx11 && is_attribute_p ("deprecated", attr_id))
+	{
+	  if (cxx_dialect == cxx11)
+	    pedwarn (token->location, OPT_Wpedantic,
+		     "%<deprecated%> is a C++14 feature;"
+		     " use %<gnu::deprecated%>");
+	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	}
     }
 
   /* Now parse the optional argument clause of the attribute.  */

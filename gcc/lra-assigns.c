@@ -1286,9 +1286,9 @@ assign_by_spills (void)
 	break;
       if (iter > 0)
 	{
-	  /* We did not assign hard regs to reload pseudos after two
-	     iteration.  It means something is wrong with asm insn
-	     constraints.  Report it.  */
+	  /* We did not assign hard regs to reload pseudos after two iterations.
+	     Either it's an asm and something is wrong with the constraints, or
+	     we have run out of spill registers; error out in either case.  */
 	  bool asm_p = false;
 	  bitmap_head failed_reload_insns;
 
@@ -1299,7 +1299,7 @@ assign_by_spills (void)
 	      bitmap_ior_into (&failed_reload_insns,
 			       &lra_reg_info[regno].insn_bitmap);
 	      /* Assign an arbitrary hard register of regno class to
-		 avoid further trouble with the asm insns.  */
+		 avoid further trouble with this insn.  */
 	      bitmap_clear_bit (&all_spilled_pseudos, regno);
 	      assign_hard_regno
 		(ira_class_hard_regs[regno_allocno_class_array[regno]][0],
@@ -1331,8 +1331,12 @@ assign_by_spills (void)
 		      lra_set_insn_deleted (insn);
 		    }
 		}
+	      else if (!asm_p)
+		{
+		  error ("unable to find a register to spill");
+		  fatal_insn ("this is the insn:", insn);
+		}
 	    }
-	  lra_assert (asm_p);
 	  break;
 	}
       /* This is a very rare event.  We can not assign a hard register

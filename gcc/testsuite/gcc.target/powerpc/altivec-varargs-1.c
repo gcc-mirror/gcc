@@ -7,6 +7,7 @@
 
 extern void exit (int);
 extern void abort (void);
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 #define vector __attribute__((vector_size (16)))
 

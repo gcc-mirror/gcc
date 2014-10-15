@@ -23,7 +23,7 @@ static HARD_REG_SET reload_reg_used_in_op_addr_reload;
 static HARD_REG_SET reload_reg_used_in_insn;
 static HARD_REG_SET reload_reg_used_in_other_addr;
 static HARD_REG_SET reload_reg_used_at_all;
-void __attribute__((cold)) mark_reload_reg_in_use (regno, opnum, type, mode)
+void __attribute__((cold)) mark_reload_reg_in_use (int regno, int opnum, int type, int mode)
 {
   int nregs = regno ? 1 : mode_size[mode];
   int i;

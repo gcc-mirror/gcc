@@ -849,6 +849,19 @@ proc check_effective_target_fpic { } {
     return 0
 }
 
+# Return 1 if -shared is supported, as in no warnings or errors
+# emitted, 0 otherwise.
+
+proc check_effective_target_shared { } {
+    # Note that M68K has a multilib that supports -fpic but not
+    # -fPIC, so we need to check both.  We test with a program that
+    # requires GOT references.
+    return [check_no_compiler_messages shared executable {
+	extern int foo (void); extern int bar;
+	int baz (void) { return foo () + bar; }
+    } "-shared -fpic"]
+}
+
 # Return 1 if -pie, -fpie and -fPIE are supported, 0 otherwise.
 
 proc check_effective_target_pie { } {
@@ -5293,6 +5306,7 @@ proc check_effective_target_fd_truncate { } {
 	#include <unistd.h>
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include <string.h>
 	int main ()
 	{
 	  FILE *f = fopen ("tst.tmp", "wb");

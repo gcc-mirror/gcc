@@ -3024,6 +3024,11 @@ package body Sem_Ch13 is
                       Nkind_In (N, N_Package_Declaration,
                                    N_Generic_Package_Declaration)
                     and then Nkind (Parent (N)) /= N_Compilation_Unit
+
+                    --  Aspect is legal on a local instantiation of a library-
+                    --  level generic unit.
+
+                    and then not Is_Generic_Instance (Defining_Entity (N))
                   then
                      Error_Msg_N
                        ("incorrect context for library unit aspect&", Id);
@@ -10705,6 +10710,16 @@ package body Sem_Ch13 is
          if Class_Present (Get_Rep_Item (Typ, Name_Invariant)) then
             Set_Has_Inheritable_Invariants (Typ);
          end if;
+
+      --  If we have a subtype with invariants, whose base type does not have
+      --  invariants, copy these invariants to the base type. This happens for
+      --  the case of implicit base types created for scalar and array types.
+
+      elsif Has_Invariants (Typ)
+        and then not Has_Invariants (Base_Type (Typ))
+      then
+         Set_Has_Invariants (Base_Type (Typ));
+         Set_Invariant_Procedure (Base_Type (Typ), Invariant_Procedure (Typ));
       end if;
 
       --  Volatile

@@ -1,3 +1,71 @@
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* trans-decl.c, trans.c, trans.h: Use hash_table instead of hashtab.
+
+2014-10-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* simplify.c (gfc_simplify_atan): Use mpfr_zero_p to check for zeros.
+	(gfc_simplify_log): Likewise.
+	(gfc_simplify_scale): Likewise.
+	(gfc_simplify_exponent): Handle infinities and NaNs.
+	(gfc_simplify_fraction): Handle infinities.
+	(gfc_simplify_rrspacing): Handle signed zeros and NaNs.
+	(gfc_simplify_set_exponent): Handle infinities and NaNs.
+	(gfc_simplify_spacing): Handle zeros, infinities and NaNs.
+
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/59488
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for parameters or vtables.
+
+2014-10-10  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_set_implicit_none): Update prototype.
+	* symbol.c (gfc_set_implicit_none): Take and
+	use error location. Move diagnostic from here to ...
+	* decl.c (gfc_match_implicit_none): ... here. And
+	update call. Handle empty implicit-none-spec.
+	(gfc_match_implicit): Handle statement-separator ";".
+
+2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* f95-lang.c (gfc_init_builtin_functions): Add more floating-point
+	built-ins.
+	* mathbuiltins.def (OTHER_BUILTIN): Define built-ins for logb,
+	remainder, rint and signbit.
+	* trans-decl.c (save_fp_state, restore_fp_state): Move to
+	trans-intrinsic.c
+	(gfc_generate_function_code): Use new names for these two functions.
+	* trans-expr.c (gfc_conv_function_expr): Catch IEEE functions to
+	emit code from the front-end.
+	* trans-intrinsic.c (gfc_save_fp_state, gfc_restore_fp_state,
+	conv_ieee_function_args, conv_intrinsic_ieee_builtin,
+	conv_intrinsic_ieee_is_normal, conv_intrinsic_ieee_is_negative,
+	conv_intrinsic_ieee_logb_rint, conv_intrinsic_ieee_rem,
+	conv_intrinsic_ieee_next_after, conv_intrinsic_ieee_scalb,
+	conv_intrinsic_ieee_copy_sign, gfc_conv_ieee_arithmetic_function):
+	New functions.
+	* trans.h (gfc_conv_ieee_arithmetic_function,
+	gfc_save_fp_state, gfc_restore_fp_state): New prototypes.
+
+2014-10-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	PR fortran/54687
+	* gfortran.h (gfc_warning_cmdline): Add overload that takes an
+	option.
+	(gfc_error_cmdline): Declare.
+	* error.c (gfc_warning_cmdline): New overload that takes an option.
+	(gfc_error_cmdline): New.
+	* lang.opt (Wmissing-include-dirs): New.
+	* scanner.c (add_path_to_list): Use the new functions.
+	(load_file): Likewise.
+	* options.c (gfc_init_options): Wmissing-include-dirs is enabled
+	by default in Fortran.
+	(gfc_handle_option): Accept automatically handled options.
+
 2014-10-06  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h (GFC_STD_F2015): Add.

@@ -415,6 +415,7 @@ package Snames is
    Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
+   Name_Prefix_Exception_Messages      : constant Name_Id := N + $; -- GNAT
    Name_Priority_Specific_Dispatching  : constant Name_Id := N + $; -- Ada 05
    Name_Profile                        : constant Name_Id := N + $; -- Ada 05
    Name_Profile_Warnings               : constant Name_Id := N + $; -- GNAT
@@ -1755,6 +1756,7 @@ package Snames is
       Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,
+      Pragma_Prefix_Exception_Messages,
       Pragma_Priority_Specific_Dispatching,
       Pragma_Profile,
       Pragma_Profile_Warnings,

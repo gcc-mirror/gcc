@@ -49,8 +49,10 @@ runtime_freedefer(Defer *d)
 }
 
 // Run all deferred functions for the current goroutine.
+// This is noinline for go_can_recover.
+static void __go_rundefer (void) __attribute__ ((noinline));
 static void
-rundefer(void)
+__go_rundefer(void)
 {
 	G *g;
 	Defer *d;
@@ -219,7 +221,7 @@ void runtime_Goexit (void) __asm__ (GOSYM_PREFIX "runtime.Goexit");
 void
 runtime_Goexit(void)
 {
-	rundefer();
+	__go_rundefer();
 	runtime_goexit();
 }
 

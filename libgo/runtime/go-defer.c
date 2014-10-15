@@ -80,6 +80,6 @@ __go_set_defer_retaddr (void *retaddr)
 
   g = runtime_g ();
   if (g->defer != NULL)
-    g->defer->__retaddr = retaddr;
+    g->defer->__retaddr = __builtin_extract_return_addr (retaddr);
   return 0;
 }

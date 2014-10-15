@@ -958,31 +958,26 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 
 /* Hash function for struct loop_exit.  */
 
-static hashval_t
-loop_exit_hash (const void *ex)
+hashval_t
+loop_exit_hasher::hash (loop_exit *exit)
 {
-  const struct loop_exit *const exit = (const struct loop_exit *) ex;
-
   return htab_hash_pointer (exit->e);
 }
 
 /* Equality function for struct loop_exit.  Compares with edge.  */
 
-static int
-loop_exit_eq (const void *ex, const void *e)
+bool
+loop_exit_hasher::equal (loop_exit *exit, edge e)
 {
-  const struct loop_exit *const exit = (const struct loop_exit *) ex;
-
   return exit->e == e;
 }
 
 /* Frees the list of loop exit descriptions EX.  */
 
-static void
-loop_exit_free (void *ex)
+void
+loop_exit_hasher::remove (loop_exit *exit)
 {
-  struct loop_exit *exit = (struct loop_exit *) ex, *next;
-
+  loop_exit *next;
   for (; exit; exit = next)
     {
       next = exit->next_e;
@@ -999,8 +994,7 @@ loop_exit_free (void *ex)
 static struct loop_exit *
 get_exit_descriptions (edge e)
 {
-  return (struct loop_exit *) htab_find_with_hash (current_loops->exits, e,
-			                           htab_hash_pointer (e));
+  return current_loops->exits->find_with_hash (e, htab_hash_pointer (e));
 }
 
 /* Updates the lists of loop exits in that E appears.
@@ -1012,7 +1006,6 @@ get_exit_descriptions (edge e)
 void
 rescan_loop_exit (edge e, bool new_edge, bool removed)
 {
-  void **slot;
   struct loop_exit *exits = NULL, *exit;
   struct loop *aloop, *cloop;
 
@@ -1045,20 +1038,20 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
   if (!exits && new_edge)
     return;
 
-  slot = htab_find_slot_with_hash (current_loops->exits, e,
-				   htab_hash_pointer (e),
-				   exits ? INSERT : NO_INSERT);
+  loop_exit **slot
+    = current_loops->exits->find_slot_with_hash (e, htab_hash_pointer (e),
+						 exits ? INSERT : NO_INSERT);
   if (!slot)
     return;
 
   if (exits)
     {
       if (*slot)
-	loop_exit_free (*slot);
+	loop_exit_hasher::remove (*slot);
       *slot = exits;
     }
   else
-    htab_clear_slot (current_loops->exits, slot);
+    current_loops->exits->clear_slot (slot);
 }
 
 /* For each loop, record list of exit edges, and start maintaining these
@@ -1079,9 +1072,8 @@ record_loop_exits (void)
   loops_state_set (LOOPS_HAVE_RECORDED_EXITS);
 
   gcc_assert (current_loops->exits == NULL);
-  current_loops->exits = htab_create_ggc (2 * number_of_loops (cfun),
-					  loop_exit_hash, loop_exit_eq,
-					  loop_exit_free);
+  current_loops->exits
+    = hash_table<loop_exit_hasher>::create_ggc (2 * number_of_loops (cfun));
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1095,17 +1087,17 @@ record_loop_exits (void)
 /* Dumps information about the exit in *SLOT to FILE.
    Callback for htab_traverse.  */
 
-static int
-dump_recorded_exit (void **slot, void *file)
+int
+dump_recorded_exit (loop_exit **slot, FILE *file)
 {
-  struct loop_exit *exit = (struct loop_exit *) *slot;
+  struct loop_exit *exit = *slot;
   unsigned n = 0;
   edge e = exit->e;
 
   for (; exit != NULL; exit = exit->next_e)
     n++;
 
-  fprintf ((FILE*) file, "Edge %d->%d exits %u loops\n",
+  fprintf (file, "Edge %d->%d exits %u loops\n",
 	   e->src->index, e->dest->index, n);
 
   return 1;
@@ -1119,7 +1111,7 @@ dump_recorded_exits (FILE *file)
 {
   if (!current_loops->exits)
     return;
-  htab_traverse (current_loops->exits, dump_recorded_exit, file);
+  current_loops->exits->traverse<FILE *, dump_recorded_exit> (file);
 }
 
 /* Releases lists of loop exits.  */
@@ -1128,7 +1120,7 @@ void
 release_recorded_exits (void)
 {
   gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS));
-  htab_delete (current_loops->exits);
+  current_loops->exits->empty ();
   current_loops->exits = NULL;
   loops_state_clear (LOOPS_HAVE_RECORDED_EXITS);
 }
@@ -1623,7 +1615,7 @@ verify_loop_structure (void)
 	    }
 	}
 
-      if (n_exits != htab_elements (current_loops->exits))
+      if (n_exits != current_loops->exits->elements ())
 	{
 	  error ("too many loop exits recorded");
 	  err = 1;

@@ -11,6 +11,7 @@
    { dg-additional-sources "globalalias-2.c" } */
 extern int test2count;
 extern void abort (void);
+extern void tt ();
 int testcount;
 static
 void test(void)

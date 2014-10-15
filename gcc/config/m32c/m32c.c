@@ -3035,66 +3035,41 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 }
 
 
-struct GTY(()) pragma_entry {
-  const char *varname;
-  unsigned address;
+struct pragma_traits : default_hashmap_traits
+{
+  static hashval_t hash (const char *str) { return htab_hash_string (str); }
+  static bool
+  equal_keys (const char *a, const char *b)
+  {
+    return !strcmp (a, b);
+  }
 };
-typedef struct pragma_entry pragma_entry;
 
 /* Hash table of pragma info.  */
-static GTY((param_is (pragma_entry))) htab_t pragma_htab;
-
-static int
-pragma_entry_eq (const void *p1, const void *p2)
-{
-  const pragma_entry *old = (const pragma_entry *) p1;
-  const char *new_name = (const char *) p2;
-
-  return strcmp (old->varname, new_name) == 0;
-}
-
-static hashval_t
-pragma_entry_hash (const void *p)
-{
-  const pragma_entry *old = (const pragma_entry *) p;
-  return htab_hash_string (old->varname);
-}
+static GTY(()) hash_map<const char *, unsigned, pragma_traits> *pragma_htab;
 
 void
 m32c_note_pragma_address (const char *varname, unsigned address)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
-    pragma_htab = htab_create_ggc (31, pragma_entry_hash,
-				    pragma_entry_eq, NULL);
+    pragma_htab
+      = hash_map<const char *, unsigned, pragma_traits>::create_ggc (31);
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, varname,
-			      htab_hash_string (varname), INSERT);
-
-  if (!*slot)
-    {
-      *slot = ggc_alloc<pragma_entry> ();
-      (*slot)->varname = ggc_strdup (varname);
-    }
-  (*slot)->address = address;
+  const char *name = ggc_strdup (varname);
+  unsigned int *slot = &pragma_htab->get_or_insert (name);
+  *slot = address;
 }
 
 static bool
 m32c_get_pragma_address (const char *varname, unsigned *address)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
     return false;
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, varname,
-			      htab_hash_string (varname), NO_INSERT);
-  if (slot && *slot)
+  unsigned int *slot = pragma_htab->get (varname);
+  if (slot)
     {
-      *address = (*slot)->address;
+      *address = *slot;
       return true;
     }
   return false;
