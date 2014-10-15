@@ -1422,7 +1422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min_b (TYPE, BITSIZE); } \
  										\
       static _GLIBCXX_CONSTEXPR TYPE 						\
-      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max_b (TYPE, BITSIZE);; } 	\	
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max_b (TYPE, BITSIZE);; } 	\
  										\
       static _GLIBCXX_USE_CONSTEXPR int digits 					\
        = BITSIZE - 1; 								\

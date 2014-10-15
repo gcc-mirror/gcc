@@ -1,3 +1,13 @@
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/limits: Remove stray spaces after backslash.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* src/c++11/limits.cc: Add support for __intN types.
