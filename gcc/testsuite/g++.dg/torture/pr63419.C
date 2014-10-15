@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-psabi" }
 
 typedef float __m128 __attribute__ ((__vector_size__ (16)));
 const int a = 0;
