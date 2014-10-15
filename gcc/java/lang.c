@@ -489,6 +489,7 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
     return;
 
   if (current_function_decl != NULL
+      && DECL_CONTEXT (current_function_decl) != NULL
       && DECL_CONTEXT (current_function_decl) != last_error_function_context)
     {
       if (file)
