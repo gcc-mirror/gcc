@@ -585,11 +585,7 @@ enum arm_pcs
 };
 
 
-extern enum arm_pcs arm_pcs_variant;
 
-#ifndef ARM_DEFAULT_PCS
-#define ARM_DEFAULT_PCS ARM_PCS_AAPCS64
-#endif
 
 /* We can't use enum machine_mode inside a generator file because it
    hasn't been created yet; we shouldn't be using any code that
