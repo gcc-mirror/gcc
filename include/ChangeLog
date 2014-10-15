@@ -1,3 +1,7 @@
+2014-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libiberty.h (choose_tmpdir): New prototype.
+
 2013-10-02  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/63239
