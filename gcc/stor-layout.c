@@ -234,12 +234,7 @@ self_referential_size (tree size)
       param_type = TREE_TYPE (ref);
       param_decl
 	= build_decl (input_location, PARM_DECL, param_name, param_type);
-      if (targetm.calls.promote_prototypes (NULL_TREE)
-	  && INTEGRAL_TYPE_P (param_type)
-	  && TYPE_PRECISION (param_type) < TYPE_PRECISION (integer_type_node))
-	DECL_ARG_TYPE (param_decl) = integer_type_node;
-      else
-	DECL_ARG_TYPE (param_decl) = param_type;
+      DECL_ARG_TYPE (param_decl) = param_type;
       DECL_ARTIFICIAL (param_decl) = 1;
       TREE_READONLY (param_decl) = 1;
 
