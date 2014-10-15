@@ -1,3 +1,7 @@
+2014-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (self_referential_size): Do not promote arguments.
+
 2014-10-15  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
