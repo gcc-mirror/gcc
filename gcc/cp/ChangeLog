@@ -1,5 +1,9 @@
 2014-10-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63415
+	* pt.c (value_dependent_expression_p) [CONSTRUCTOR]: Check the type.
+	(iterative_hash_template_arg): Likewise.
+
 	PR c++/56710
 	* semantics.c (finish_member_declaration): Don't push closure
 	members.
