@@ -110,6 +110,30 @@ timevar_pop (timevar_id_t tv)
     timevar_pop_1 (tv);
 }
 
+// This is a simple timevar wrapper class that pushes a timevar in its
+// constructor and pops the timevar in its destructor.
+class auto_timevar
+{
+ public:
+  auto_timevar (timevar_id_t tv)
+    : m_tv (tv)
+  {
+    timevar_push (m_tv);
+  }
+
+  ~auto_timevar ()
+  {
+    timevar_pop (m_tv);
+  }
+
+ private:
+
+  // Private to disallow copies.
+  auto_timevar (const auto_timevar &);
+
+  timevar_id_t m_tv;
+};
+
 extern void print_time (const char *, long);
 
 #endif /* ! GCC_TIMEVAR_H */
