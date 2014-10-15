@@ -1,3 +1,14 @@
+2014-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	* parser.c (struct saved_token_sentinel): New.
+	(cp_parser_statement): Use it.
+	(cp_parser_start_tentative_firewall): New.
+	(cp_parser_end_tentative_firewall): New.
+	(cp_parser_lambda_expression): Use them.
+	(cp_parser_statement_expr): New.
+	(cp_parser_primary_expression): Use it.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* typeck.c (cp_common_type): Check for all __intN types, not just
