@@ -1,3 +1,9 @@
+2014-10-15  Teresa Johnson  <tejohnson@google.com>
+
+	PR bootstrap/63432
+	* tree-ssa-threadupdate.c (recompute_probabilities): Better
+	overflow checking.
+
 2014-10-15  Renlin Li <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define
