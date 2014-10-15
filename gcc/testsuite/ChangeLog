@@ -1,3 +1,8 @@
+2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63448
+	* gcc.target/i386/pr63448.c: New test.
+
 2014-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt41.adb: New test.
