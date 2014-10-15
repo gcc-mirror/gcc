@@ -1,3 +1,7 @@
+2014-10-15  Tom Tromey  <tromey@redhat.com>
+
+	* timevar.h (class auto_timevar): New class.
+
 2014-10-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR go/59432
