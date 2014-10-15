@@ -1,3 +1,12 @@
+2014-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* choose-temp.c (choose_tmpdir): Remove now-redundant local
+	copy of prototype.
+	* functions.texi: Regenerate.
+	* make-temp-file.c (choose_tmpdir): Convert return type from
+	char * to const char * - given that this returns a pointer to
+	a memoized allocation, the caller must not touch it.
+
 2014-10-14  Joel Brobecker  <brobecker@adacore.com>
 
 	* d-demangle.c: Replace strtold with strtod in global comment.

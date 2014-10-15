@@ -93,7 +93,7 @@ static char *memoized_tmpdir;
 
 /*
 
-@deftypefn Replacement char* choose_tmpdir ()
+@deftypefn Replacement const char* choose_tmpdir ()
 
 Returns a pointer to a directory path suitable for creating temporary
 files in.
@@ -102,7 +102,7 @@ files in.
 
 */
 
-char *
+const char *
 choose_tmpdir (void)
 {
   if (!memoized_tmpdir)

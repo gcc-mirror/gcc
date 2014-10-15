@@ -34,7 +34,6 @@ Boston, MA 02110-1301, USA.  */
 #endif
 
 #include "libiberty.h"
-extern char *choose_tmpdir (void);
 
 /* Name of temporary file.
    mktemp requires 6 trailing X's.  */
