@@ -3343,6 +3343,7 @@ finish_id_expression (tree id_expression,
       tree wrap;
       if (TREE_CODE (decl) == VAR_DECL
 	  && !cp_unevaluated_operand
+	  && !processing_template_decl
 	  && DECL_THREAD_LOCAL_P (decl)
 	  && (wrap = get_tls_wrapper_fn (decl)))
 	{
