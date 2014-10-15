@@ -2295,8 +2295,8 @@ lra (FILE *f)
 
   lra_in_progress = 1;
 
-  lra_live_range_iter = lra_coalesce_iter = 0;
-  lra_constraint_iter = lra_constraint_iter_after_spill = 0;
+  lra_live_range_iter = lra_coalesce_iter = lra_constraint_iter = 0;
+  lra_assignment_iter = lra_assignment_iter_after_spill = 0;
   lra_inheritance_iter = lra_undo_inheritance_iter = 0;
 
   setup_reg_spill_flag ();
@@ -2419,7 +2419,7 @@ lra (FILE *f)
       lra_eliminate (false, false);
       lra_constraint_new_regno_start = max_reg_num ();
       lra_constraint_new_insn_uid_start = get_max_uid ();
-      lra_constraint_iter_after_spill = 0;
+      lra_assignment_iter_after_spill = 0;
     }
   restore_scratches ();
   lra_eliminate (true, false);

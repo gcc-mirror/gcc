@@ -97,6 +97,15 @@ along with GCC; see the file COPYING3.	If not see
 #include "params.h"
 #include "lra-int.h"
 
+/* Current iteration number of the pass and current iteration number
+   of the pass after the latest spill pass when any former reload
+   pseudo was spilled.  */
+int lra_assignment_iter;
+int lra_assignment_iter_after_spill;
+
+/* Flag of spilling former reload pseudos on this pass.  */
+static bool former_reload_pseudo_spill_p;
+
 /* Array containing corresponding values of function
    lra_get_allocno_class.  It is used to speed up the code.  */
 static enum reg_class *regno_allocno_class_array;
@@ -992,6 +1001,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
   /* Spill: */
   EXECUTE_IF_SET_IN_BITMAP (&best_spill_pseudos_bitmap, 0, spill_regno, bi)
     {
+      if ((int) spill_regno >= lra_constraint_new_regno_start)
+	former_reload_pseudo_spill_p = true;
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "      Spill %sr%d(hr=%d, freq=%d) for r%d\n",
 		 pseudo_prefix_title (spill_regno),
@@ -1101,6 +1112,8 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	   j++)
 	lra_hard_reg_usage[hard_regno + j] -= lra_reg_info[regno].freq;
       reg_renumber[regno] = -1;
+      if (regno >= lra_constraint_new_regno_start)
+	former_reload_pseudo_spill_p = true;
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "    Spill r%d after risky transformations\n",
 		 regno);
@@ -1361,7 +1374,10 @@ assign_by_spills (void)
       EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
 	{
 	  if ((int) conflict_regno >= lra_constraint_new_regno_start)
-	    sorted_pseudos[nfails++] = conflict_regno;
+	    {
+	      sorted_pseudos[nfails++] = conflict_regno;
+	      former_reload_pseudo_spill_p = true;
+	    }
 	  if (lra_dump_file != NULL)
 	    fprintf (lra_dump_file, "	  Spill %s r%d(hr=%d, freq=%d)\n",
 		     pseudo_prefix_title (conflict_regno), conflict_regno,
@@ -1449,12 +1465,17 @@ lra_assign (void)
   int max_regno = max_reg_num ();
 
   timevar_push (TV_LRA_ASSIGN);
+  lra_assignment_iter++;
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file, "\n********** Assignment #%d: **********\n\n",
+	     lra_assignment_iter);
   init_lives ();
   sorted_pseudos = XNEWVEC (int, max_regno);
   sorted_reload_pseudos = XNEWVEC (int, max_regno);
   regno_allocno_class_array = XNEWVEC (enum reg_class, max_regno);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     regno_allocno_class_array[i] = lra_get_allocno_class (i);
+  former_reload_pseudo_spill_p = false;
   init_regno_assign_info ();
   bitmap_initialize (&all_spilled_pseudos, &reg_obstack);
   create_live_range_start_chains ();
@@ -1501,5 +1522,11 @@ lra_assign (void)
   free (sorted_reload_pseudos);
   finish_lives ();
   timevar_pop (TV_LRA_ASSIGN);
+  if (former_reload_pseudo_spill_p)
+    lra_assignment_iter_after_spill++;
+  if (lra_assignment_iter_after_spill > LRA_MAX_ASSIGNMENT_ITERATION_NUMBER)
+    internal_error
+      ("Maximum number of LRA assignment passes is achieved (%d)\n",
+       LRA_MAX_ASSIGNMENT_ITERATION_NUMBER);
   return no_spills_p;
 }

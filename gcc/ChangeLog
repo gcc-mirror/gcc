@@ -1,3 +1,27 @@
+2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63448
+	* lra-int.h (LRA_MAX_CONSTRAINT_ITERATION_NUMBER): Remove.
+	(LRA_MAX_ASSIGNMENT_ITERATION_NUMBER): New.
+	(LRA_MAX_INHERITANCE_PASSES): Use it.
+	(lra_constraint_iter_after_spill): Remove.
+	(lra_assignment_iter): New.
+	(lra_assignment_iter_after_spill): New.
+	* lra-assigns.c (lra_assignment_iter): New.
+	(lra_assignment_iter_after_spill): New.
+	(former_reload_pseudo_spill_p): New.
+	(spill_for): Set up former_reload_pseudo_spill_p.
+	(setup_live_pseudos_and_spill_after_risky): Ditto.
+	(assign_by_spills): Ditto.
+	(lra_assign): Increment lra_assignment_iter.  Print the iteration
+	number.  Reset former_reload_pseudo_spill_p.  Check
+	lra_assignment_iter_after_spill.
+	* lra.c (lra): Remove lra_constraint_iter_after_spill.  Initialize
+	lra_assignment_iter and lra_assignment_iter_after_spill.
+	* lra-constraints.c (lra_constraint_iter_after_spill): Remove.
+	(lra_constraints): Remove code with
+	lra_assignment_iter_after_spill.
+
 2014-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_size): Do not promote arguments.

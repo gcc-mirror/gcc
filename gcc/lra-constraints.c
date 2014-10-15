@@ -3920,10 +3920,6 @@ loc_equivalence_callback (rtx loc, const_rtx, void *data)
 /* The current iteration number of this LRA pass.  */
 int lra_constraint_iter;
 
-/* The current iteration number of this LRA pass after the last spill
-   pass.  */
-int lra_constraint_iter_after_spill;
-
 /* True if we substituted equiv which needs checking register
    allocation correctness because the equivalent value contains
    allocatable hard registers or when we restore multi-register
@@ -4069,11 +4065,6 @@ lra_constraints (bool first_p)
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file, "\n********** Local #%d: **********\n\n",
 	     lra_constraint_iter);
-  lra_constraint_iter_after_spill++;
-  if (lra_constraint_iter_after_spill > LRA_MAX_CONSTRAINT_ITERATION_NUMBER)
-    internal_error
-      ("Maximum number of LRA constraint passes is achieved (%d)\n",
-       LRA_MAX_CONSTRAINT_ITERATION_NUMBER);
   changed_p = false;
   lra_risky_transformations_p = false;
   new_insn_uid_start = get_max_uid ();
