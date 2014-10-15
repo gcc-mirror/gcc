@@ -310,11 +310,13 @@ break_out_memory_refs (rtx x)
    an address in the address space's address mode, or vice versa (TO_MODE says
    which way).  We take advantage of the fact that pointers are not allowed to
    overflow by commuting arithmetic operations over conversions so that address
-   arithmetic insns can be used.  */
+   arithmetic insns can be used. IN_CONST is true if this conversion is inside
+   a CONST.  */
 
-rtx
-convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
-				   rtx x, addr_space_t as ATTRIBUTE_UNUSED)
+static rtx
+convert_memory_address_addr_space_1 (enum machine_mode to_mode ATTRIBUTE_UNUSED,
+				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
+				     bool in_const)
 {
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
@@ -370,8 +372,8 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 
     case CONST:
       return gen_rtx_CONST (to_mode,
-			    convert_memory_address_addr_space
-			      (to_mode, XEXP (x, 0), as));
+			    convert_memory_address_addr_space_1
+			      (to_mode, XEXP (x, 0), as, true));
       break;
 
     case PLUS:
@@ -381,16 +383,18 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 	 does not change it or if one operand is a constant and we are
 	 using a ptr_extend instruction  (POINTERS_EXTEND_UNSIGNED < 0).
 	 We can always safely permute them if we are making the address
-	 narrower.  */
+	 narrower. Inside a CONST RTL, this is safe for both pointers
+	 zero or sign extended as pointers cannot wrap. */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	  || (GET_CODE (x) == PLUS
 	      && CONST_INT_P (XEXP (x, 1))
-	      && (XEXP (x, 1) == convert_memory_address_addr_space
-				   (to_mode, XEXP (x, 1), as)
-                 || POINTERS_EXTEND_UNSIGNED < 0)))
+	      && ((in_const && POINTERS_EXTEND_UNSIGNED != 0)
+		  || XEXP (x, 1) == convert_memory_address_addr_space_1
+				     (to_mode, XEXP (x, 1), as, in_const)
+                  || POINTERS_EXTEND_UNSIGNED < 0)))
 	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
-			       convert_memory_address_addr_space
-				 (to_mode, XEXP (x, 0), as),
+			       convert_memory_address_addr_space_1
+				 (to_mode, XEXP (x, 0), as, in_const),
 			       XEXP (x, 1));
       break;
 
@@ -401,6 +405,18 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
   return convert_modes (to_mode, from_mode,
 			x, POINTERS_EXTEND_UNSIGNED);
 #endif /* defined(POINTERS_EXTEND_UNSIGNED) */
+}
+
+/* Given X, a memory address in address space AS' pointer mode, convert it to
+   an address in the address space's address mode, or vice versa (TO_MODE says
+   which way).  We take advantage of the fact that pointers are not allowed to
+   overflow by commuting arithmetic operations over conversions so that address
+   arithmetic insns can be used.  */
+
+rtx
+convert_memory_address_addr_space (enum machine_mode to_mode, rtx x, addr_space_t as)
+{
+  return convert_memory_address_addr_space_1 (to_mode, x, as, false);
 }
 
 /* Return something equivalent to X but valid as a memory address for something
