@@ -7,6 +7,35 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (define_mode_iterator VI_AVX2): Extend
+	to support AVX-512BW.
+	(define_mode_iterator VI124_AVX2_48_AVX512F): Remove.
+	(define_expand "<plusminus_insn><mode>3"): Remove masking support.
+	(define_insn "*<plusminus_insn><mode>3"): Ditto.
+	(define_expand "<plusminus_insn><VI48_AVX512VL:mode>3_mask"): New.
+	(define_expand "<plusminus_insn><VI12_AVX512VL:mode>3_mask"): Ditto.
+	(define_insn "*<plusminus_insn><VI48_AVX512VL:mode>3_mask"): Ditto.
+	(define_insn "*<plusminus_insn><VI12_AVX512VL:mode>3_mask"): Ditto.
+	(define_expand "<sse2_avx2>_andnot<mode>3"): Remove masking support.
+	(define_insn "*andnot<mode>3"): Ditto.
+	(define_expand "<sse2_avx2>_andnot<VI48_AVX512VL:mode>3_mask"): New.
+	(define_expand "<sse2_avx2>_andnot<VI12_AVX512VL:mode>3_mask"): Ditto.
+	(define_insn "*andnot<VI48_AVX512VL:mode>3<mask_name>"): Ditto.
+	(define_insn "*andnot<VI12_AVX512VL:mode>3<mask_name>"): Ditto.
+	(define_insn "*abs<mode>2"): Remove masking support.
+	(define_insn "abs<VI48_AVX512VL:mode>2_mask"): New.
+	(define_insn "abs<VI12_AVX512VL:mode>2_mask"): Ditto.
+	(define_expand "abs<mode>2"): Use VI_AVX2 mode iterator.
+
+2014-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/predicates.md (define_predicate "constm1_operand"): New.
 	* config/i386/sse.md
 	(define_c_enum "unspec"): Add UNSPEC_CVTINT2MASK.
