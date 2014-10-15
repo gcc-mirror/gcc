@@ -1,3 +1,9 @@
+2014-10-15  Richard Biener  <rguenther@suse.de>
+
+	* hash-table.c: Include bconfig.h if building for the host.
+	* hash-table.h: Do not include ggc.h on the host but just declare
+	a few ggc allocation templates.
+
 2014-10-15  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Jeff Law  <law@redhat.com>
 
