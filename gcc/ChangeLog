@@ -1,3 +1,9 @@
+2014-10-15  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* caller-save.c (replace_reg_with_saved_mem): If saved_mode covers
+	multiple hard registers, use smaller mode derived from MODE.
+
 2014-10-15  Andreas Schwab  <schwab@suse.de>
 
 	* explow.c (convert_memory_address_addr_space_1): Mark in_const
