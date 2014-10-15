@@ -34,6 +34,25 @@
 	Define to avoid leak.
 	* config/os/mingw32-w64/os_defines.h: Likewise.
 
+2014-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/add_lvalue_reference/requirements/typedefs.cc:
+	Rename to alias_decl.cc.
+	* testsuite/20_util/add_rvalue_reference/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/common_type/requirements/typedefs-3.cc: Likewise.
+	* testsuite/20_util/conditional/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/decay/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/enable_if/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc:
+	Likewise.
+	* testsuite/20_util/remove_reference/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/result_of/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/underlying_type/requirements/typedefs-3.cc:
+	Likewise.
+
 2014-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/57350
