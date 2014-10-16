@@ -4014,6 +4014,14 @@
   if (<MODE>mode == V16SFmode)
     emit_insn (gen_ufloatv16siv16sf2 (operands[0], operands[1]));
   else
+    if (TARGET_AVX512VL)
+      {
+	if (<MODE>mode == V4SFmode)
+	  emit_insn (gen_ufloatv4siv4sf2 (operands[0], operands[1]));
+	else
+	  emit_insn (gen_ufloatv8siv8sf2 (operands[0], operands[1]));
+      }
+  else
     ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
 
   DONE;
