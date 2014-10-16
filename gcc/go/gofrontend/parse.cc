@@ -974,7 +974,8 @@ Parse::parameter_list(bool* is_varargs)
     }
 
   bool mix_error = false;
-  this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error);
+  this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error,
+		       &saw_error);
   while (this->peek_token()->is_op(OPERATOR_COMMA))
     {
       if (this->advance_token()->is_op(OPERATOR_RPAREN))
@@ -984,7 +985,8 @@ Parse::parameter_list(bool* is_varargs)
 	  error_at(this->location(), "%<...%> must be last parameter");
 	  saw_error = true;
 	}
-      this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error);
+      this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error,
+			   &saw_error);
     }
   if (mix_error)
     {
@@ -1005,7 +1007,8 @@ void
 Parse::parameter_decl(bool parameters_have_names,
 		      Typed_identifier_list* til,
 		      bool* is_varargs,
-		      bool* mix_error)
+		      bool* mix_error,
+		      bool* saw_error)
 {
   if (!parameters_have_names)
     {
@@ -1047,6 +1050,8 @@ Parse::parameter_decl(bool parameters_have_names,
 	}
       if (!type->is_error_type())
 	til->push_back(Typed_identifier("", type, location));
+      else
+	*saw_error = true;
     }
   else
     {
@@ -1063,9 +1068,15 @@ Parse::parameter_decl(bool parameters_have_names,
       else
 	{
 	  if (is_varargs == NULL)
-	    error_at(this->location(), "invalid use of %<...%>");
+	    {
+	      error_at(this->location(), "invalid use of %<...%>");
+	      *saw_error = true;
+	    }
 	  else if (new_count > orig_count + 1)
-	    error_at(this->location(), "%<...%> only permits one name");
+	    {
+	      error_at(this->location(), "%<...%> only permits one name");
+	      *saw_error = true;
+	    }
 	  else
 	    *is_varargs = true;
 	  this->advance_token();
@@ -2310,103 +2321,27 @@ Parse::function_decl(bool saw_nointerface)
     }
 }
 
-// Receiver     = "(" [ identifier ] [ "*" ] BaseTypeName ")" .
-// BaseTypeName = identifier .
+// Receiver = Parameters .
 
 Typed_identifier*
 Parse::receiver()
 {
-  go_assert(this->peek_token()->is_op(OPERATOR_LPAREN));
-
-  std::string name;
-  const Token* token = this->advance_token();
-  Location location = token->location();
-  if (!token->is_op(OPERATOR_MULT))
+  Location location = this->location();
+  Typed_identifier_list* til;
+  if (!this->parameters(&til, NULL))
+    return NULL;
+  else if (til == NULL || til->empty())
     {
-      if (!token->is_identifier())
-	{
-	  error_at(this->location(), "method has no receiver");
-	  this->gogo_->mark_locals_used();
-	  while (!token->is_eof() && !token->is_op(OPERATOR_RPAREN))
-	    token = this->advance_token();
-	  if (!token->is_eof())
-	    this->advance_token();
-	  return NULL;
-	}
-      name = token->identifier();
-      bool is_exported = token->is_identifier_exported();
-      token = this->advance_token();
-      if (!token->is_op(OPERATOR_DOT) && !token->is_op(OPERATOR_RPAREN))
-	{
-	  // An identifier followed by something other than a dot or a
-	  // right parenthesis must be a receiver name followed by a
-	  // type.
-	  name = this->gogo_->pack_hidden_name(name, is_exported);
-	}
-      else
-	{
-	  // This must be a type name.
-	  this->unget_token(Token::make_identifier_token(name, is_exported,
-							 location));
-	  token = this->peek_token();
-	  name.clear();
-	}
-    }
-
-  // Here the receiver name is in NAME (it is empty if the receiver is
-  // unnamed) and TOKEN is the first token in the type.
-
-  bool is_pointer = false;
-  if (token->is_op(OPERATOR_MULT))
-    {
-      is_pointer = true;
-      token = this->advance_token();
-    }
-
-  if (!token->is_identifier())
-    {
-      error_at(this->location(), "expected receiver name or type");
-      this->gogo_->mark_locals_used();
-      int c = token->is_op(OPERATOR_LPAREN) ? 1 : 0;
-      while (!token->is_eof())
-	{
-	  token = this->advance_token();
-	  if (token->is_op(OPERATOR_LPAREN))
-	    ++c;
-	  else if (token->is_op(OPERATOR_RPAREN))
-	    {
-	      if (c == 0)
-		break;
-	      --c;
-	    }
-	}
-      if (!token->is_eof())
-	this->advance_token();
+      error_at(location, "method has no receiver");
       return NULL;
     }
-
-  Type* type = this->type_name(true);
-
-  if (is_pointer && !type->is_error_type())
-    type = Type::make_pointer_type(type);
-
-  if (this->peek_token()->is_op(OPERATOR_RPAREN))
-    this->advance_token();
+  else if (til->size() > 1)
+    {
+      error_at(location, "method has multiple receivers");
+      return NULL;
+    }
   else
-    {
-      if (this->peek_token()->is_op(OPERATOR_COMMA))
-	error_at(this->location(), "method has multiple receivers");
-      else
-	error_at(this->location(), "expected %<)%>");
-      this->gogo_->mark_locals_used();
-      while (!token->is_eof() && !token->is_op(OPERATOR_RPAREN))
-	token = this->advance_token();
-      if (!token->is_eof())
-	this->advance_token();
-      return NULL;
-    }
-
-  return new Typed_identifier(name, type, location);
+    return &til->front();
 }
 
 // Operand    = Literal | QualifiedIdent | MethodExpr | "(" Expression ")" .
