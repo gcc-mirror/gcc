@@ -2384,8 +2384,11 @@ asan_finish_file (void)
      nor after .LASAN* array.  */
   flag_sanitize &= ~SANITIZE_ADDRESS;
 
-  tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
-  append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
+  if (flag_sanitize & SANITIZE_USER_ADDRESS)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
+      append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
+    }
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (TREE_ASM_WRITTEN (vnode->decl)
 	&& asan_protect_global (vnode->decl))
@@ -2422,7 +2425,7 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_assemble_decl (varpool_node_for_decl (var));
 
-      fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
+      tree fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
       tree gcount_tree = build_int_cst (pointer_sized_int_node, gcount);
       append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
@@ -2437,8 +2440,9 @@ asan_finish_file (void)
       cgraph_build_static_cdtor ('D', dtor_statements,
 				 MAX_RESERVED_INIT_PRIORITY - 1);
     }
-  cgraph_build_static_cdtor ('I', asan_ctor_statements,
-			     MAX_RESERVED_INIT_PRIORITY - 1);
+  if (asan_ctor_statements)
+    cgraph_build_static_cdtor ('I', asan_ctor_statements,
+			       MAX_RESERVED_INIT_PRIORITY - 1);
   flag_sanitize |= SANITIZE_ADDRESS;
 }
 

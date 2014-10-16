@@ -1,6 +1,14 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-10-03  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (asan_finish_file): Disable __asan_init calls for KASan;
+	don't emit empty ctors.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-09-01  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61897
