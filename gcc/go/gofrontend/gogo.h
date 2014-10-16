@@ -1065,6 +1065,12 @@ class Function
   set_has_recover_thunk()
   { this->has_recover_thunk_ = true; }
 
+  // Record that this function is a thunk created for a defer
+  // statement that calls the __go_set_defer_retaddr runtime function.
+  void
+  set_calls_defer_retaddr()
+  { this->calls_defer_retaddr_ = true; }
+
   // Mark the function as going into a unique section.
   void
   set_in_unique_section()
@@ -1190,6 +1196,9 @@ class Function
   bool is_recover_thunk_ : 1;
   // True if this function already has a recover thunk.
   bool has_recover_thunk_ : 1;
+  // True if this is a thunk built for a defer statement that calls
+  // the __go_set_defer_retaddr runtime function.
+  bool calls_defer_retaddr_ : 1;
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;

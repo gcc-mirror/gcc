@@ -2376,6 +2376,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 						  location);
       s->determine_types();
       gogo->add_statement(s);
+
+      function->func_value()->set_calls_defer_retaddr();
     }
 
   // Get a reference to the parameter.
