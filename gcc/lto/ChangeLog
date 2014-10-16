@@ -1,3 +1,9 @@
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* lto-object.c (lto_obj_begin_section): In the event that pointer
+	sizes aren't powers of two, choose a more suitable alignment
+	than (unsigned)(-1).
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* lto-lang.c (lto_build_c_type_nodes): Check intN types for
