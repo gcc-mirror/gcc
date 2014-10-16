@@ -1,5 +1,8 @@
 2014-10-16  DJ Delorie  <dj@redhat.com>
 
+	* flag-types.h (sanitize_code): Don't assume targets have 32-bit
+	integers.
+
 	* config/rs6000/rs6000-c.c (rid_int128): New.
 	(rs6000_macro_to_expand): Use instead of RID_INT128.
 
