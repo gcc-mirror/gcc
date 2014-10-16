@@ -1,3 +1,8 @@
+2014-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63168
+	* gcc.dg/tree-ssa/loop-40.c: New testcase.
+
 2014-10-16  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.target/m68k/crash1.c: Fix implicit declaration.

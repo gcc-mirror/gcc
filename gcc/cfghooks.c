@@ -766,6 +766,11 @@ merge_blocks (basic_block a, basic_block b)
 	  add_bb_to_loop  (a, b->loop_father);
 	  a->loop_father->header = a;
 	}
+      /* If we merge a loop latch into its predecessor, update the loop
+         structure.  */
+      if (b->loop_father->latch
+	  && b->loop_father->latch == b)
+	b->loop_father->latch = a;
       remove_bb_from_loops (b);
     }
 
