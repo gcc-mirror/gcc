@@ -734,8 +734,7 @@ proper position among the other output files.  */
 #ifndef SANITIZER_SPEC
 #define SANITIZER_SPEC "\
 %{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
-    %{static:%ecannot specify -static with -fsanitize=address}\
-    %{%:sanitize(thread):%e-fsanitize=address is incompatible with -fsanitize=thread}}\
+    %{static:%ecannot specify -static with -fsanitize=address}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}\
     %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
@@ -8173,7 +8172,9 @@ sanitize_spec_function (int argc, const char **argv)
     return NULL;
 
   if (strcmp (argv[0], "address") == 0)
-    return (flag_sanitize & SANITIZE_ADDRESS) ? "" : NULL;
+    return (flag_sanitize & SANITIZE_USER_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "kernel-address") == 0)
+    return (flag_sanitize & SANITIZE_KERNEL_ADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)

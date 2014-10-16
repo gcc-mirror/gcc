@@ -1,6 +1,21 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-07-31  Yury Gribov  <y.gribov@samsung.com>
+
+	* doc/cpp.texi (__SANITIZE_ADDRESS__): Updated description.
+	* doc/invoke.texi (-fsanitize=kernel-address): Describe new option.
+	* flag-types.h (SANITIZE_USER_ADDRESS, SANITIZE_KERNEL_ADDRESS):
+	New enums.
+	* gcc.c (sanitize_spec_function): Support new option.
+	(SANITIZER_SPEC): Remove now redundant check.
+	* opts.c (common_handle_option): Support new option.
+	(finish_options): Check for incompatibilities.
+	* toplev.c (process_options): Split userspace-specific checks.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* asan.c (instrument_strlen_call): Do not instrument first byte in strlen

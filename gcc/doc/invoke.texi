@@ -5286,6 +5286,11 @@ more details.  The run-time behavior can be influenced using the
 @url{https://code.google.com/p/address-sanitizer/wiki/Flags#Run-time_flags} for
 a list of supported options.
 
+@item -fsanitize=kernel-address
+@opindex fsanitize=kernel-address
+Enable AddressSanitizer for Linux kernel.
+See @uref{http://code.google.com/p/address-sanitizer/wiki/AddressSanitizerForKernel} for more details.
+
 @item -fsanitize=thread
 @opindex fsanitize=thread
 Enable ThreadSanitizer, a fast data race detector.
