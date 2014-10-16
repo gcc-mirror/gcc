@@ -1422,6 +1422,12 @@ write_insn_preds_c (void)
 #include \"stor-layout.h\"\n\
 #include \"calls.h\"\n\
 #include \"tm_p.h\"\n\
+#include \"hashtab.h\"\n\
+#include \"hash-set.h\"\n\
+#include \"vec.h\"\n\
+#include \"machmode.h\"\n\
+#include \"hard-reg-set.h\"\n\
+#include \"input.h\"\n\
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\

@@ -1,3 +1,8 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Adjust include files.
+	* resource.c: Likewise.
+
 2014-10-15  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/63536	

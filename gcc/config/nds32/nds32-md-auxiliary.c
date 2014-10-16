@@ -39,6 +39,11 @@
 #include "insn-codes.h"		/* For CODE_FOR_xxx.  */
 #include "reload.h"		/* For push_reload().  */
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
 #include "recog.h"

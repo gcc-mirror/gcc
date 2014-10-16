@@ -2305,6 +2305,12 @@ write_header (void)
 #include \"tm.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
+#include \"hashtab.h\"\n\
+#include \"hash-set.h\"\n\
+#include \"vec.h\"\n\
+#include \"machmode.h\"\n\
+#include \"hard-reg-set.h\"\n\
+#include \"input.h\"\n\
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
@@ -2316,6 +2322,7 @@ write_header (void)
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"tm-constrs.h\"\n\
+#include \"predict.h\"\n\
 \n");
 
   puts ("\n\

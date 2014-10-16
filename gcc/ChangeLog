@@ -1,3 +1,224 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* function.h: Flatten file.  Remove includes, adjust prototypes to 
+	reflect only what is in function.h.
+	(enum direction, struct args_size, struct locate_and_pad_arg_data,
+	ADD_PARM_SIZE, SUB_PARM_SIZE, ARGS_SIZE_TREE, ARGS_SIZE_RTX): Relocate
+	from expr.h.
+	(ASLK_REDUCE_ALIGN, ASLK_RECORD_PAD): Relocate from rtl.h.
+	(optimize_function_for_size_p, optimize_function_for_speed_p): Move
+	prototypes to predict.h.
+	(init_varasm_status): Move prototype to varasm.h.
+	* expr.h: Adjust include files.
+	(enum direction, struct args_size, struct locate_and_pad_arg_data,
+	ADD_PARM_SIZE, SUB_PARM_SIZE, ARGS_SIZE_TREE, ARGS_SIZE_RTX): Move
+	to function.h.
+	(locate_and_pad_parm): Move prototype to function.h.
+	* rtl.h: (assign_stack_local, ASLK_REDUCE_ALIGN, ASLK_RECORD_PAD,
+	assign_stack_local_1, assign_stack_temp, assign_stack_temp_for_type,
+	assign_temp, reposition_prologue_and_epilogue_notes,
+	prologue_epilogue_contains, sibcall_epilogue_contains,
+	update_temp_slot_address, maybe_copy_prologue_epilogue_insn,
+	set_return_jump_label): Move prototypes to function.h.
+	* predict.h (optimize_function_for_size_p,
+	optimize_function_for_speed_p): Relocate prototypes from function.h.
+	* shrink-wrap.h (emit_return_into_block, active_insn_between,
+	convert_jumps_to_returns, emit_return_for_exit): Move prototypes to
+	function.h.
+	* varasm.h (init_varasm_status): Relocate prototype from function.h.
+	* genattrtab.c (write_header): Add predict.h to include list.
+	* genconditions.c (write_header): Add predict.h to include list.
+	* genemit.c (main): Adjust header file includes.
+	* gengtype.c (ifiles): Add flattened function.h header files.
+	* genoutput.c (output_prologue): Add predict.h to include list.
+	* genpreds.c (write_insn_preds_c): Adjust header file includes.
+	* genrecog.c (write_header): Add flattened function.h header files.
+	* alias.c: Adjust include files.
+	* auto-inc-dec.c: Likewise.
+	* basic-block.h: Likewise.
+	* bb-reorder.c: Likewise.
+	* bt-load.c: Likewise.
+	* builtins.c: Likewise.
+	* caller-save.c: Likewise.
+	* calls.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloop.h: Likewise.
+	* cfgrtl.c: Likewise.
+	* cgraph.h: Likewise.
+	* cgraphclones.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* combine-stack-adj.c: Likewise.
+	* combine.c: Likewise.
+	* coverage.c: Likewise.
+	* cprop.c: Likewise.
+	* cse.c: Likewise.
+	* cselib.c: Likewise.
+	* dbxout.c: Likewise.
+	* ddg.c: Likewise.
+	* df-core.c: Likewise.
+	* df-problems.c: Likewise.
+	* df-scan.c: Likewise.
+	* dojump.c: Likewise.
+	* dwarf2cfi.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* function.c: Likewise.
+	* gcse.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-low.c: Likewise.
+	* gimple-streamer.h: Likewise.
+	* haifa-sched.c: Likewise.
+	* ifcvt.c: Likewise.
+	* ira.c: Likewise.
+	* jump.c: Likewise.
+	* lcm.c: Likewise.
+	* loop-invariant.c: Likewise.
+	* lra-assigns.c: Likewise.
+	* lra-coalesce.c: Likewise.
+	* lra-constraints.c: Likewise.
+	* lra-eliminations.c: Likewise.
+	* lra-lives.c: Likewise.
+	* lra-spills.c: Likewise.
+	* lra.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-section-in.c: Likewise.
+	* lto-section-out.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* mode-switching.c: Likewise.
+	* modulo-sched.c: Likewise.
+	* omp-low.c: Likewise.
+	* optabs.c: Likewise.
+	* passes.c: Likewise.
+	* postreload-gcse.c: Likewise.
+	* postreload.c: Likewise.
+	* predict.c: Likewise.
+	* profile.c: Likewise.
+	* recog.c: Likewise.
+	* ree.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regcprop.c: Likewise.
+	* reginfo.c: Likewise.
+	* regrename.c: Likewise.
+	* reload.c: Likewise.
+	* reload1.c: Likewise.
+	* reorg.c: Likewise.
+	* resource.c: Likewise.
+	* rtlanal.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-ebb.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* sel-sched-dump.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched.c: Likewise.
+	* shrink-wrap.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* statistics.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* store-motion.c: Likewise.
+	* symtab.c: Likewise.
+	* targhooks.c: Likewise.
+	* toplev.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-nrv.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-copyrename.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-operands.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree.c: Likewise.
+	* tsan.c: Likewise.
+	* valtrack.c: Likewise.
+	* varasm.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* web.c: Likewise.
+	* config/aarch64/aarch64.c: Add flattened includes from function.h.
+	* config/alpha/alpha.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr-log.c: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/cr16/cr16.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/epiphany/epiphany.c: Likewise.
+	* config/epiphany/mode-switch-use.c: Likewise.
+	* config/epiphany/resolve-sw-modes.c: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/lm32/lm32.c: Likewise.
+	* config/m32c/m32c.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mep/mep-pragma.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/moxie/moxie.c: Likewise.
+	* config/msp430/msp430.c: Likewise.
+	* config/nds32/nds32-cost.c: Likewise.
+	* config/nds32/nds32-fp-as-gp.c: Likewise.
+	* config/nds32/nds32-intrinsic.c: Likewise.
+	* config/nds32/nds32-isr.c: Likewise.
+	* config/nds32/nds32-md-auxiliary.c: Likewise.
+	* config/nds32/nds32-memory-manipulation.c: Likewise.
+	* config/nds32/nds32-pipelines-auxiliary.c: Likewise.
+	* config/nds32/nds32-predicates.c: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/nios2/nios2.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2014-10-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_legitimize_address): New function.

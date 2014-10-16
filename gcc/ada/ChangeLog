@@ -1,3 +1,7 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/misc.c: Adjust include files.
+
 2014-10-13  Eric Botcazou  <ebotcazou@adacore.com>
             Alan Modra  <amodra@gmail.com>
 

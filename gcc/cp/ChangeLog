@@ -1,3 +1,7 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cp-tree.h: Adjust include files.
+
 2014-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63528

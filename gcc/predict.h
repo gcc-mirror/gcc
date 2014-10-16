@@ -55,4 +55,7 @@ extern void tree_estimate_probability (void);
 extern void compute_function_frequency (void);
 extern void rebuild_frequencies (void);
 
+extern bool optimize_function_for_size_p (struct function *);
+extern bool optimize_function_for_speed_p (struct function *);
+
 #endif  /* GCC_PREDICT_H */

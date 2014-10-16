@@ -27,6 +27,11 @@
 #include "print-tree.h"
 #include "output.h"
 #include "input.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
 #include "function.h"
 #include "tm_p.h"
 #include "tree-pass.h"	/* for current_pass */

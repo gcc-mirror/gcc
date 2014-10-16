@@ -36,11 +36,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For announce_function.  */
 #include "target.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "flags.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "hash-set.h"
 #include "constructor.h"
 #include "trans.h"
 #include "trans-types.h"

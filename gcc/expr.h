@@ -21,6 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_EXPR_H
 
 /* For inhibit_defer_pop */
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 /* For XEXP, GEN_INT, rtx_code */
 #include "rtl.h"
@@ -30,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
    ssize_int, TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
 #include "tree-core.h"
 /* For GET_MODE_BITSIZE, word_mode */
-#include "machmode.h"
 
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
@@ -54,81 +60,6 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 /* Allow the compiler to defer stack pops.  See inhibit_defer_pop for
    more information.  */
 #define OK_DEFER_POP (inhibit_defer_pop -= 1)
-
-enum direction {none, upward, downward};
-
-/* Structure to record the size of a sequence of arguments
-   as the sum of a tree-expression and a constant.  This structure is
-   also used to store offsets from the stack, which might be negative,
-   so the variable part must be ssizetype, not sizetype.  */
-
-struct args_size
-{
-  HOST_WIDE_INT constant;
-  tree var;
-};
-
-/* Package up various arg related fields of struct args for
-   locate_and_pad_parm.  */
-struct locate_and_pad_arg_data
-{
-  /* Size of this argument on the stack, rounded up for any padding it
-     gets.  If REG_PARM_STACK_SPACE is defined, then register parms are
-     counted here, otherwise they aren't.  */
-  struct args_size size;
-  /* Offset of this argument from beginning of stack-args.  */
-  struct args_size offset;
-  /* Offset to the start of the stack slot.  Different from OFFSET
-     if this arg pads downward.  */
-  struct args_size slot_offset;
-  /* The amount that the stack pointer needs to be adjusted to
-     force alignment for the next argument.  */
-  struct args_size alignment_pad;
-  /* Which way we should pad this arg.  */
-  enum direction where_pad;
-  /* slot_offset is at least this aligned.  */
-  unsigned int boundary;
-};
-
-/* Add the value of the tree INC to the `struct args_size' TO.  */
-
-#define ADD_PARM_SIZE(TO, INC)					\
-do {								\
-  tree inc = (INC);						\
-  if (tree_fits_shwi_p (inc))					\
-    (TO).constant += tree_to_shwi (inc);			\
-  else if ((TO).var == 0)					\
-    (TO).var = fold_convert (ssizetype, inc);			\
-  else								\
-    (TO).var = size_binop (PLUS_EXPR, (TO).var,			\
-			   fold_convert (ssizetype, inc));	\
-} while (0)
-
-#define SUB_PARM_SIZE(TO, DEC)					\
-do {								\
-  tree dec = (DEC);						\
-  if (tree_fits_shwi_p (dec))					\
-    (TO).constant -= tree_to_shwi (dec);			\
-  else if ((TO).var == 0)					\
-    (TO).var = size_binop (MINUS_EXPR, ssize_int (0),		\
-			   fold_convert (ssizetype, dec));	\
-  else								\
-    (TO).var = size_binop (MINUS_EXPR, (TO).var,		\
-			   fold_convert (ssizetype, dec));	\
-} while (0)
-
-/* Convert the implicit sum in a `struct args_size' into a tree
-   of type ssizetype.  */
-#define ARGS_SIZE_TREE(SIZE)					\
-((SIZE).var == 0 ? ssize_int ((SIZE).constant)			\
- : size_binop (PLUS_EXPR, fold_convert (ssizetype, (SIZE).var),	\
-	       ssize_int ((SIZE).constant)))
-
-/* Convert the implicit sum in a `struct args_size' into an rtx.  */
-#define ARGS_SIZE_RTX(SIZE)					\
-((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
- : expand_normal (ARGS_SIZE_TREE (SIZE)))
-
 
 /* This structure is used to pass around information about exploded
    unary, binary and trinary expressions between expand_expr_real_1 and
@@ -549,10 +480,6 @@ extern rtx expand_shift (enum tree_code, enum machine_mode, rtx, int, rtx,
 extern rtx expand_divmod (int, enum tree_code, enum machine_mode, rtx, rtx,
 			  rtx, int);
 #endif
-
-extern void locate_and_pad_parm (enum machine_mode, tree, int, int, int,
-				 tree, struct args_size *,
-				 struct locate_and_pad_arg_data *);
 
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx (tree);

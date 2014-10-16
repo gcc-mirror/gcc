@@ -1,3 +1,7 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
 	* c-parser.c (c_parse_init): Add RID entries for each __intN.
