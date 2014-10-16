@@ -574,7 +574,7 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 	fr4..fr11	fp args in
 	fr12..fr15	call saved floating point registers  */
 
-#define MAX_REGISTER_NAME_LENGTH 5
+#define MAX_REGISTER_NAME_LENGTH 6
 extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
 
 #define SH_REGISTER_NAMES_INITIALIZER					\
@@ -598,7 +598,7 @@ extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
   "tr0",  "tr1",  "tr2",  "tr3",  "tr4",  "tr5",  "tr6",  "tr7", 	\
   "xd0",  "xd2",  "xd4",  "xd6",  "xd8",  "xd10", "xd12", "xd14",	\
   "gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr",	\
-  "rap",  "sfp"								\
+  "rap",  "sfp", "fpscr0", "fpscr1"					\
 }
 
 #define REGNAMES_ARR_INDEX_1(index) \
@@ -623,7 +623,7 @@ extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
   REGNAMES_ARR_INDEX_8 (128), \
   REGNAMES_ARR_INDEX_8 (136), \
   REGNAMES_ARR_INDEX_8 (144), \
-  REGNAMES_ARR_INDEX_2 (152) \
+  REGNAMES_ARR_INDEX_4 (152) \
 }
 
 #define ADDREGNAMES_SIZE 32
@@ -711,7 +711,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 
 #define SPECIAL_REGISTER_P(REGNO) \
   ((REGNO) == GBR_REG || (REGNO) == T_REG \
-   || (REGNO) == MACH_REG || (REGNO) == MACL_REG)
+   || (REGNO) == MACH_REG || (REGNO) == MACL_REG \
+   || (REGNO) == FPSCR_MODES_REG || (REGNO) == FPSCR_STAT_REG)
 
 #define TARGET_REGISTER_P(REGNO) \
   ((int) (REGNO) >= FIRST_TARGET_REG && (int) (REGNO) <= LAST_TARGET_REG)
@@ -738,10 +739,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    ? DImode \
    : SImode)
 
-#define FIRST_PSEUDO_REGISTER 154
+#define FIRST_PSEUDO_REGISTER 156
 
 /* Don't count soft frame pointer.  */
-#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 1)
+#define DWARF_FRAME_REGISTERS (153)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -777,8 +778,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   0,      0,      0,      0,      0,      0,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
   1,      1,      1,      1,      1,      1,      0,      1,		\
-/*"rap",  "sfp" */							\
-  1,	  1,								\
+/*"rap",  "sfp","fpscr0","fpscr1"  */					\
+  1,      1,      1,      1,						\
 }
 
 /* 1 for registers not available across function calls.
@@ -816,8 +817,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      1,      1,      1,      1,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
   1,      1,      1,      1,      1,      1,      1,      1,		\
-/*"rap",  "sfp" */							\
-  1,	  1,								\
+/*"rap",  "sfp","fpscr0","fpscr1"  */					\
+  1,      1,      1,      1,						\
 }
 
 /* TARGET_CONDITIONAL_REGISTER_USAGE might want to make a register
@@ -1072,7 +1073,7 @@ enum reg_class
 /* TARGET_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000ff },	\
 /* ALL_REGS:  */							\
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x03ffffff },	\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0fffffff },	\
 }
 
 /* The same information, inverted:
@@ -1122,7 +1123,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    128,129,130,131,132,133,134,135, \
    /* Fixed registers */ \
     15, 16, 24, 25, 26, 27, 63,144, \
-   145,146,147,148,149,152,153 }
+   145,146,147,148,149,152,153,154,155  }
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS \

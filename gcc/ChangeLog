@@ -1,3 +1,74 @@
+2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* config/sh/sh-protos.h (emit_sf_insn, emit_df_insn, expand_sf_unop,
+	expand_sf_binop, expand_df_unop, expand_df_binop): Remove.
+
+	* config/sh/sh.c (sh_emit_set_t_insn): Adjust generated insn pattern
+	to match fp insn patterns.
+	(calc_live_regs): Add FPSCR_MODES_REG and FPSCR_STAT_REG to the ignore
+	list.
+	(emit_sf_insn, emit_df_insn, expand_sf_unop, expand_sf_binop,
+	expand_df_unop, expand_df_binop): Remove.
+	(sh_conditional_register_usage): Mark FPSCR_MODES_REG and
+	FPSCR_STAT_REG as not call clobbered.
+	(sh_emit_mode_set): Emit fpscr store-modify-load sequence instead of
+	invoking fpscr_set_from_mem.
+
+	* config/sh/sh.h (MAX_REGISTER_NAME_LENGTH): Increase to 6.
+	(SH_REGISTER_NAMES_INITIALIZER): Add names for FPSCR_MODES_REG and
+	FPSCR_STAT_REG.
+	(REGISTER_NAMES): Adjust.
+	(SPECIAL_REGISTER_P): Add FPSCR_MODES_REG and FPSCR_STAT_REG.
+	(FIRST_PSEUDO_REGISTER): Increase to 156.
+	(DWARF_FRAME_REGISTERS): Define as 153 to keep the original value.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add FPSCR_MODES_REG and
+	FPSCR_STAT_REG.
+	(REG_CLASS_CONTENTS): Adjust ALL_REGS bit mask to include
+	FPSCR_MODES_REG and FPSCR_STAT_REG.
+	(REG_ALLOC_ORDER): Add FPSCR_MODES_REG and FPSCR_STAT_REG.
+
+	* config/sh/sh.md (FPSCR_MODES_REG, FPSCR_STAT_REG, FPSCR_PR,
+	FPSCR_SZ): Add new constants.
+	(UNSPECV_FPSCR_MODES, UNSPECV_FPSCR_STAT): Add new unspecv constants.
+
+	(movpsi): Use TARGET_FPU_ANY condition, invoke gen_fpu_switch.
+	(fpu_switch): Add use and set of FPSCR_STAT_REG and FPSCR_MODES_REG.
+	Use TARGET_FPU_ANY condition.
+	(fpu_switch peephole2): Remove.
+	(fpu_switch split): Use simple_mem_operand to capture the mem and
+	adjust split implementation.
+	(extend_psi_si, truncate_si_psi): New insns.
+	(toggle_sz, toggle_pr): Use FPSCR_SZ, FPSCR_PR constants.  Add
+	set of FPSCR_MODES_REG.
+
+	(push_e, push_4, pop_e, pop_4, movdf_i4, reload_indf__frn, movsf_ie,
+	reload_insf__frn, force_mode_for_call, calli, calli_tbr_rel,
+	calli_pcrel, call_pcrel, call_compact, call_compact_rettramp,
+	call_valuei, call_valuei_tbr_rel, call_valuei_pcrel, call_value_pcrel,
+	call_value_compact, call_value_compact_rettramp, call,
+	call_pop_compact, call_pop_compact_rettramp, call_value, sibcalli,
+	sibcalli_pcrel, sibcalli_thunk, sibcall_pcrel, sibcall_compact,
+	sibcall, sibcall_valuei, sibcall_valuei_pcrel, sibcall_value_pcrel,
+	sibcall_value_compact, sibcall_value, call_value_pop_compact,
+	call_value_pop_compact_rettramp, various unnamed splits):
+	Replace use of FPSCR_REG with use of FPSCR_MODES_REG.  Adjust gen_*
+	function uses.
+
+	(floatsisf2_i4, *floatsisf2_ie): Merge into floatsisf2_i4.
+	(fix_truncsfsi2_i4, *fixsfsi): Merge into fix_truncsfsi2_i4.
+	(cmpgtsf_t, cmpgtsf_t_i4): Merge into cmpgtsf_t.
+	(cmpeqsf_t, cmpeqsf_t_i4): Merge into cmpeqsf_t.
+	(ieee_ccmpeqsf_t, *ieee_ccmpeqsf_t_4): Merge into ieee_ccmpeqsf_t.
+
+	(udivsi3_i4, divsi3_i4, addsf3_i, subsf3_i, mulsf3_i, fmasf4_i,
+	*fmasf4, divsf3_i, floatsisf2_i4, fix_truncsfsi2_i4, cmpgtsf_t,
+	cmpeqsf_t, ieee_ccmpeqsf_t, sqrtsf2_i, rsqrtsf2, fsca, adddf3_i,
+	subdf3_i, muldf3_i, divdf3_i, floatsidf2_i, fix_truncdfsi2_i,
+	cmpgtdf_t, cmpeqdf_t, *ieee_ccmpeqdf_t, sqrtdf2_i, extendsfdf2_i4,
+	truncdfsf2_i4): Replace use of FPSCR_REG with clobber of FPSCR_STAT_REG
+	and use of FPSCR_MODES_REG.  Adjust gen_* function uses.
+
 2014-10-16  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka  <hubicka@ucw.cz>
 
