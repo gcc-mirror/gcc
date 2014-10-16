@@ -4,6 +4,7 @@
 
 #include "avx512f-check.h"
 
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 void
 avx512f_test (void)

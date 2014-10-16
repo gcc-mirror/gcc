@@ -1,6 +1,6 @@
 /* PR target/47564 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -std=gnu89" } */
 
 static inline unsigned long long
 foo (const unsigned char *p)

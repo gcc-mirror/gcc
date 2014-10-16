@@ -13,6 +13,7 @@ __extension__ typedef __SIZE_TYPE__ size_t;
 
 extern void abort (void);
 extern void *memcpy (void *, const void *, size_t);
+extern int memcmp (const void *, const void *, size_t);
 
 static int AI[12];
 static int init_noret_si[12] = { 0, 0, 0, 1, 0, 0, 0 , 0  , -1, 0, 0, -1 };

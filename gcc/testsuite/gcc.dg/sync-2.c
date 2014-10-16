@@ -11,6 +11,7 @@
 
 extern void abort (void);
 extern void *memcpy (void *, const void *, __SIZE_TYPE__);
+extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 static char AI[18];
 static char init_qi[18] = { 3,5,7,9,0,0,0 ,0  ,-1,0,0,-1,0,0  ,-1,0,0,-1 };

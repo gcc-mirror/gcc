@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcrc32" } */
+/* { dg-options "-O2 -mcrc32 -std=gnu89" } */
 /* { dg-final { scan-assembler "crc32q\[^\\n\]*rax" { target { ! { ia32 } } } } } */
 
 unsigned long long
