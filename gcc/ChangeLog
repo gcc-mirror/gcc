@@ -1,3 +1,9 @@
+2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/59401
+	* config/sh/sh.h (CALL_REALLY_USED_REGISTERS): Expand macro and set
+	GBR to 0.
+
 2014-10-16  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

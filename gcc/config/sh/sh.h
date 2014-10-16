@@ -821,9 +821,42 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      1,      1,						\
 }
 
-/* TARGET_CONDITIONAL_REGISTER_USAGE might want to make a register
-   call-used, yet fixed, like PIC_OFFSET_TABLE_REGNUM.  */
-#define CALL_REALLY_USED_REGISTERS CALL_USED_REGISTERS
+/* CALL_REALLY_USED_REGISTERS is used as a default setting, which is then
+   overridden by -fcall-saved-* and -fcall-used-* options and then by
+   TARGET_CONDITIONAL_REGISTER_USAGE.  There we might want to make a
+   register call-used, yet fixed, like PIC_OFFSET_TABLE_REGNUM.  */
+#define CALL_REALLY_USED_REGISTERS 					\
+{									\
+/* Regular registers.  */						\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
+  /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.	\
+     Only the lower 32bits of R10-R14 are guaranteed to be preserved	\
+     across SH5 function calls.  */					\
+  0,      0,      0,      0,      0,      0,      0,      1,		\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      1,      1,      1,      1,		\
+/* FP registers.  */							\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      0,      0,      0,      0,		\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      0,      0,      0,      0,		\
+  0,      0,      0,      0,      0,      0,      0,      0,		\
+/* Branch target registers.  */						\
+  1,      1,      1,      1,      1,      0,      0,      0,		\
+/* XD registers.  */							\
+  1,      1,      1,      1,      1,      1,      0,      0,		\
+/*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
+  0,      1,      1,      1,      1,      1,      1,      1,		\
+/*"rap",  "sfp","fpscr0","fpscr1"  */					\
+  1,      1,      0,      0,						\
+}
 
 /* Only the lower 32-bits of R10-R14 are guaranteed to be preserved
    across SHcompact function calls.  We can't tell whether a called
