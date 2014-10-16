@@ -1,3 +1,42 @@
+2014-10-16  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/ipa-icf-1.C: New test.
+	* g++.dg/ipa/ipa-icf-2.C: New test.
+	* g++.dg/ipa/ipa-icf-3.C: New test.
+	* g++.dg/ipa/ipa-icf-4.C: New test.
+	* g++.dg/ipa/ipa-icf-5.C: New test.
+	* gcc.dg/ipa/ipa-icf-1.c: New test.
+	* gcc.dg/ipa/ipa-icf-10.c: New test.
+	* gcc.dg/ipa/ipa-icf-11.c: New test.
+	* gcc.dg/ipa/ipa-icf-12.c: New test.
+	* gcc.dg/ipa/ipa-icf-13.c: New test.
+	* gcc.dg/ipa/ipa-icf-14.c: New test.
+	* gcc.dg/ipa/ipa-icf-15.c: New test.
+	* gcc.dg/ipa/ipa-icf-16.c: New test.
+	* gcc.dg/ipa/ipa-icf-17.c: New test.
+	* gcc.dg/ipa/ipa-icf-18.c: New test.
+	* gcc.dg/ipa/ipa-icf-19.c: New test.
+	* gcc.dg/ipa/ipa-icf-2.c: New test.
+	* gcc.dg/ipa/ipa-icf-20.c: New test.
+	* gcc.dg/ipa/ipa-icf-21.c: New test.
+	* gcc.dg/ipa/ipa-icf-22.c: New test.
+	* gcc.dg/ipa/ipa-icf-23.c: New test.
+	* gcc.dg/ipa/ipa-icf-24.c: New test.
+	* gcc.dg/ipa/ipa-icf-25.c: New test.
+	* gcc.dg/ipa/ipa-icf-26.c: New test.
+	* gcc.dg/ipa/ipa-icf-27.c: New test.
+	* gcc.dg/ipa/ipa-icf-28.c: New test.
+	* gcc.dg/ipa/ipa-icf-29.c: New test.
+	* gcc.dg/ipa/ipa-icf-3.c: New test.
+	* gcc.dg/ipa/ipa-icf-30.c: New test.
+	* gcc.dg/ipa/ipa-icf-4.c: New test.
+	* gcc.dg/ipa/ipa-icf-5.c: New test.
+	* gcc.dg/ipa/ipa-icf-6.c: New test.
+	* gcc.dg/ipa/ipa-icf-7.c: New test.
+	* gcc.dg/ipa/ipa-icf-8.c: New test.
+	* gcc.dg/ipa/ipa-icf-9.c: New test.
+
 2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513
