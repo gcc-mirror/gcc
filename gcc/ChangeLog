@@ -1,3 +1,11 @@
+2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (fldi_ok): Remove.
+	* config/sh/sh.c (fldi_ok): Likewise.
+	(sh_secondary_reload): Don't use fldi_ok.
+	* config/sh/constraints.md (G constraint, H constraint): Don't use
+	fldi_ok.
+
 2014-10-16  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item_optimizer::process_cong_reduction):

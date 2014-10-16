@@ -191,7 +191,6 @@ extern void sh_expand_prologue (void);
 extern void sh_expand_epilogue (bool);
 extern void sh_set_return_address (rtx, rtx);
 extern int initial_elimination_offset (int, int);
-extern bool fldi_ok (void);
 extern bool sh_hard_regno_rename_ok (unsigned int, unsigned int);
 extern bool sh_cfun_interrupt_handler_p (void);
 extern bool sh_cfun_resbank_handler_p (void);
