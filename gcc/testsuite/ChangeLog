@@ -1,3 +1,8 @@
+2014-10-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/guality/pr43077-1.c: IPA ICF disabled
+	to match defined expectations.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* g++.dg/plugin/pragma_plugin.c: Adjust include files.
