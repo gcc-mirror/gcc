@@ -1,6 +1,14 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.c (instrument_strlen_call): Do not instrument first byte in strlen
+	if already instrumented.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (check_func): New function.

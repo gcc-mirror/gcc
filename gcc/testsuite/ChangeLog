@@ -1,6 +1,13 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-9.c: New test.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/instrument-with-calls-1.c: New test.
