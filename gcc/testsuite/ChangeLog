@@ -1,3 +1,8 @@
+2014-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63554
+	* gcc.dg/torture/pr63554.c: New testcase.
+
 2014-10-16  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.target/powerpc/pr58673-1.c: Fix defaulting to int.

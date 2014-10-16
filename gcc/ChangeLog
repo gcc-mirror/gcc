@@ -1,3 +1,11 @@
+2014-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63554
+	* builtins.c (fold_builtin_4): Do not call fold_builtin_strncat_chk.
+	(fold_builtin_strncat_chk): Move ...
+	* gimple-fold.c (gimple_fold_builtin_strncat_chk): ... here.
+	(gimple_fold_builtin): Call gimple_fold_builtin_strncat_chk.
+
 2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/59401
