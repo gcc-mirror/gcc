@@ -1,6 +1,42 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/instrument-with-calls-1.c: New test.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Update
+	test patterns.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c:
+	Likewise.
+
+	Backport from mainline
+	2014-06-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61530
+
+	* c-c++-common/asan/pr61530.c: New test.
+
+	Backport from mainline
+	2014-06-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61547
+
+	* c-c++-common/asan/strlen-overflow-1.c: New test.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-05-14  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61100

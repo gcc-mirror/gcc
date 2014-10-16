@@ -20,6 +20,7 @@ main ()
   __builtin_memset (tab, 1, 3);
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store1" 3 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report" 3 "asan0" }  } */
+/* { dg-final { scan-tree-dump-times "& 7" 3 "asan0" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "asan0" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report" 2 "asan0" }  } */
 /* { dg-final { cleanup-tree-dump "asan0" } } */

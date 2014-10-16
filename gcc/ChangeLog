@@ -1,6 +1,50 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (check_func): New function.
+	(maybe_create_ssa_name): Likewise.
+	(build_check_stmt_with_calls): Likewise.
+	(use_calls_p): Likewise.
+	(report_error_func): Change interface.
+	(build_check_stmt): Allow non-integer lengths; add support
+	for new parameter.
+	(asan_instrument): Likewise.
+	(instrument_mem_region_access): Moved code to
+	build_check_stmt.
+	(instrument_derefs): Likewise.
+	(instrument_strlen_call): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Add support for new
+	functions.
+	* doc/invoke.texi: Describe new parameter.
+	* params.def: Define new parameter.
+	* params.h: Likewise.
+	* sanitizer.def: Describe new builtins.
+
+	Backport from mainline
+	2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (build_check_stmt): Fix maybe-uninitialized warning.
+
+	Backport from mainline
+	2014-06-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61530
+
+	* asan.c (build_check_stmt): Add condition.
+
+	Backport from mainline
+	2014-06-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61547
+
+	* asan.c (instrument_strlen_call): Fixed instrumentation of
+	trailing byte.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (report_error_func): Add SLOW_P argument, use

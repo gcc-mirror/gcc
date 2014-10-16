@@ -10134,6 +10134,12 @@ is enabled by default when using @option{-fsanitize=address} option.
 To disable use-after-return detection use 
 @option{--param asan-use-after-return=0}.
 
+@item asan-instrumentation-with-call-threshold
+Once number of memory accesses  in function becomes greater
+or equal than this number, use callbacks instead of
+generating inline code.  E.g. to disable inline code use
+@option{--param asan-instrumentation-with-call-threshold=0}.
+
 @end table
 @end table
 
