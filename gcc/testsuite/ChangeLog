@@ -1,6 +1,17 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-09-01  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61897
+	PR sanitizer/62140
+
+	* c-c++-common/asan/pr62140-1.c: New test.
+	* c-c++-common/asan/pr62140-2.c: New test.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-08-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/62089

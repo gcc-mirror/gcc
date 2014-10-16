@@ -1,6 +1,20 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-09-01  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61897
+	PR sanitizer/62140
+
+	* asan.c (asan_mem_ref_get_end): Handle non-ptroff_t lengths.
+	(build_check_stmt): Likewise.
+	(instrument_strlen_call): Likewise.
+	(asan_expand_check_ifn): Likewise and fix types.
+	(maybe_cast_to_ptrmode): New function.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-08-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/62089

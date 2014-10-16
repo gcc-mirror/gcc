@@ -316,6 +316,9 @@ asan_mem_ref_get_end (tree start, tree len)
   if (len == NULL_TREE || integer_zerop (len))
     return start;
 
+  if (!ptrofftype_p (len))
+    len = convert_to_ptrofftype (len);
+
   return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (start), start, len);
 }
 
@@ -1550,6 +1553,27 @@ maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
   return gimple_assign_lhs (g);
 }
 
+/* LEN can already have necessary size and precision;
+   in that case, do not create a new variable.  */
+
+tree
+maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
+		       bool before_p)
+{
+  if (ptrofftype_p (len))
+    return len;
+  gimple g
+    = gimple_build_assign_with_ops (NOP_EXPR,
+				    make_ssa_name (pointer_sized_int_node, NULL),
+				    len, NULL);
+  gimple_set_location (g, loc);
+  if (before_p)
+    gsi_insert_before (iter, g, GSI_SAME_STMT);
+  else
+    gsi_insert_after (iter, g, GSI_NEW_STMT);
+  return gimple_assign_lhs (g);
+}
+
 /* Instrument the memory access instruction BASE.  Insert new
    statements before or after ITER.
 
@@ -1595,7 +1619,10 @@ build_check_stmt (location_t loc, tree base, tree len,
   base = maybe_create_ssa_name (loc, base, &gsi, before_p);
 
   if (len)
-    len = unshare_expr (len);
+    {
+      len = unshare_expr (len);
+      len = maybe_cast_to_ptrmode (loc, len, iter, before_p);
+    }
   else
     {
       gcc_assert (size_in_bytes != -1);
@@ -1802,6 +1829,7 @@ instrument_mem_region_access (tree base, tree len,
 static bool
 instrument_strlen_call (gimple_stmt_iterator *iter)
 {
+  gimple g;
   gimple call = gsi_stmt (*iter);
   gcc_assert (is_gimple_call (call));
 
@@ -1809,6 +1837,8 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
   gcc_assert (is_builtin_fn (callee)
 	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_STRLEN);
+
+  location_t loc = gimple_location (call);
 
   tree len = gimple_call_lhs (call);
   if (len == NULL)
@@ -1818,28 +1848,28 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
     return false;
   gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (len)));
 
-  location_t loc = gimple_location (call);
+  len = maybe_cast_to_ptrmode (loc, len, iter, /*before_p*/false);
+
   tree str_arg = gimple_call_arg (call, 0);
   bool start_instrumented = has_mem_ref_been_instrumented (str_arg, 1);
 
   tree cptr_type = build_pointer_type (char_type_node);
-  gimple str_arg_ssa =
-    gimple_build_assign_with_ops (NOP_EXPR,
-				  make_ssa_name (cptr_type, NULL),
-				  str_arg, NULL);
-  gimple_set_location (str_arg_ssa, loc);
-  gsi_insert_before (iter, str_arg_ssa, GSI_SAME_STMT);
+  g = gimple_build_assign_with_ops (NOP_EXPR,
+				    make_ssa_name (cptr_type, NULL),
+				    str_arg, NULL);
+  gimple_set_location (g, loc);
+  gsi_insert_before (iter, g, GSI_SAME_STMT);
+  str_arg = gimple_assign_lhs (g);
 
-  build_check_stmt (loc, gimple_assign_lhs (str_arg_ssa), NULL_TREE, 1, iter,
+  build_check_stmt (loc, str_arg, NULL_TREE, 1, iter,
 		    /*is_non_zero_len*/true, /*before_p=*/true,
 		    /*is_store=*/false, /*is_scalar_access*/true, /*align*/0,
 		    start_instrumented, start_instrumented);
 
-  gimple g =
-    gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
-				  make_ssa_name (cptr_type, NULL),
-				  gimple_assign_lhs (str_arg_ssa),
-				  len);
+  g = gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
+				    make_ssa_name (cptr_type, NULL),
+				    str_arg,
+				    len);
   gimple_set_location (g, loc);
   gsi_insert_after (iter, g, GSI_NEW_STMT);
 
@@ -2469,9 +2499,6 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 
   HOST_WIDE_INT real_size_in_bytes = size_in_bytes == -1 ? 1 : size_in_bytes;
 
-  tree uintptr_type
-    = build_nonstandard_integer_type (TYPE_PRECISION (TREE_TYPE (base)), 1);
-
   tree shadow_ptr_type = shadow_ptr_types[real_size_in_bytes == 16 ? 1 : 0];
   tree shadow_type = TREE_TYPE (shadow_ptr_type);
 
@@ -2565,14 +2592,14 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       if (size_in_bytes == -1 && !end_instrumented)
 	{
 	  g = gimple_build_assign_with_ops (MINUS_EXPR,
-					    make_ssa_name (uintptr_type, NULL),
+					    make_ssa_name (pointer_sized_int_node, NULL),
 					    len,
-					    build_int_cst (uintptr_type, 1));
+					    build_int_cst (pointer_sized_int_node, 1));
 	  gimple_set_location (g, loc);
 	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 	  tree last = gimple_assign_lhs (g);
 	  g = gimple_build_assign_with_ops (PLUS_EXPR,
-					    make_ssa_name (uintptr_type, NULL),
+					    make_ssa_name (pointer_sized_int_node, NULL),
 					    base_addr,
 					    last);
 	  gimple_set_location (g, loc);
