@@ -671,7 +671,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
 
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
-  psize = POINTER_SIZE / BITS_PER_UNIT;
+  psize = POINTER_SIZE_UNITS;
   if (psize >= SWAP_LIMIT)
     psize = 0;
   builtin_define_with_int_value ("__GCC_ATOMIC_POINTER_LOCK_FREE", 

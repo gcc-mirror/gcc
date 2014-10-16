@@ -1,3 +1,8 @@
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* c-cppbuiltin.c (cpp_atomic_builtins): Don't assume pointers are
+	multiples of bytes.
+
 2014-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63455

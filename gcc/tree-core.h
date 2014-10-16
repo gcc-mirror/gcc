@@ -1173,7 +1173,7 @@ enum omp_clause_map_kind
   OMP_CLAUSE_MAP_TOFROM,
   /* The following kind is an internal only map kind, used for pointer based
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
-     which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
+     which is implicitly POINTER_SIZE_UNITS, but the bias.  */
   OMP_CLAUSE_MAP_POINTER,
   /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
      OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses
