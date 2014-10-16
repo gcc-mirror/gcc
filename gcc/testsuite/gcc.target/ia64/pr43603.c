@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
+int bar (int);
+void car (long *, int *, int);
 int 
 foo( long * np, int * dp, int qn)
 {
