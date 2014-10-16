@@ -182,7 +182,7 @@ class Parse
   void parameter_decl(bool, Typed_identifier_list*, bool*, bool*, bool*);
   bool result(Typed_identifier_list**);
   Location block();
-  Type* interface_type();
+  Type* interface_type(bool record);
   void method_spec(Typed_identifier_list*);
   void declaration();
   bool declaration_may_start_here();
