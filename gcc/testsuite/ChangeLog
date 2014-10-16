@@ -1,6 +1,24 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+
+	* c-c++-common/asan/pr62089.c: New test.
+	* c-c++-common/asan/bitfield-1.c: New test.
+	* c-c++-common/asan/bitfield-2.c: New test.
+	* c-c++-common/asan/bitfield-3.c: New test.
+	* c-c++-common/asan/bitfield-4.c: New test.
+
+	Backport from mainline
+	2014-08-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/pr62089.c: Fix test on 32-bit platforms.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-08-11  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/inc.c: Update test.

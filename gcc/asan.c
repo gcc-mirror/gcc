@@ -1688,21 +1688,19 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   int volatilep = 0, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
 				    &mode, &unsignedp, &volatilep, false);
-  if (((size_in_bytes & (size_in_bytes - 1)) == 0
-       && (bitpos % (size_in_bytes * BITS_PER_UNIT)))
-      || bitsize != size_in_bytes * BITS_PER_UNIT)
+
+  if (TREE_CODE (t) == COMPONENT_REF
+      && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)) != NULL_TREE)
     {
-      if (TREE_CODE (t) == COMPONENT_REF
-	  && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)) != NULL_TREE)
-	{
-	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1));
-	  instrument_derefs (iter, build3 (COMPONENT_REF, TREE_TYPE (repr),
-					   TREE_OPERAND (t, 0), repr,
-					   NULL_TREE), location, is_store);
-	}
+      tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1));
+      instrument_derefs (iter, build3 (COMPONENT_REF, TREE_TYPE (repr),
+				       TREE_OPERAND (t, 0), repr,
+				       NULL_TREE), location, is_store);
       return;
     }
-  if (bitpos % BITS_PER_UNIT)
+
+  if (bitpos % BITS_PER_UNIT
+      || bitsize != size_in_bytes * BITS_PER_UNIT)
     return;
 
   if (TREE_CODE (inner) == VAR_DECL

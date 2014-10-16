@@ -1,6 +1,15 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+
+	* asan.c (instrument_derefs): Fix bitfield check.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-08-11  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (asan_check_flags): New enum.
