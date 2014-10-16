@@ -4167,6 +4167,47 @@ aarch64_regno_regclass (unsigned regno)
   return NO_REGS;
 }
 
+static rtx
+aarch64_legitimize_address (rtx x, rtx /* orig_x  */, enum machine_mode mode)
+{
+  /* Try to split X+CONST into Y=X+(CONST & ~mask), Y+(CONST&mask),
+     where mask is selected by alignment and size of the offset.
+     We try to pick as large a range for the offset as possible to
+     maximize the chance of a CSE.  However, for aligned addresses
+     we limit the range to 4k so that structures with different sized
+     elements are likely to use the same base.  */
+
+  if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
+    {
+      HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
+      HOST_WIDE_INT base_offset;
+
+      /* Does it look like we'll need a load/store-pair operation?  */
+      if (GET_MODE_SIZE (mode) > 16
+	  || mode == TImode)
+	base_offset = ((offset + 64 * GET_MODE_SIZE (mode))
+		       & ~((128 * GET_MODE_SIZE (mode)) - 1));
+      /* For offsets aren't a multiple of the access size, the limit is
+	 -256...255.  */
+      else if (offset & (GET_MODE_SIZE (mode) - 1))
+	base_offset = (offset + 0x100) & ~0x1ff;
+      else
+	base_offset = offset & ~0xfff;
+
+      if (base_offset == 0)
+	return x;
+
+      offset -= base_offset;
+      rtx base_reg = gen_reg_rtx (Pmode);
+      rtx val = force_operand (plus_constant (Pmode, XEXP (x, 0), base_offset),
+			   NULL_RTX);
+      emit_move_insn (base_reg, val);
+      x = plus_constant (Pmode, base_reg, offset);
+    }
+
+  return x;
+}
+
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and return the new rtx.  */
 
@@ -10164,6 +10205,9 @@ aarch64_asan_shadow_offset (void)
 
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET aarch64_asan_shadow_offset
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS aarch64_legitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
