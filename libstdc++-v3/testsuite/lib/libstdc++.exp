@@ -1236,7 +1236,7 @@ proc check_v3_target_atomic_builtins { } {
     } else {
 	set et_atomic_builtins 0
 
-	# Set up and preprocess a C++0x test program that depends
+	# Set up and preprocess a C++11 test program that depends
 	# on the atomic builtin facilities to be available.
 	set src atomic_builtins[pid].cc
 
@@ -1250,7 +1250,7 @@ proc check_v3_target_atomic_builtins { } {
 	close $f
 
 	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++0x"
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
 
 	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved

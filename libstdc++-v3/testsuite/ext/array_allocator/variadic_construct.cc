@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 // 2007-10-27  Paolo Carlini  <pcarlini@suse.de>
 
