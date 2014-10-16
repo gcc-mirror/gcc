@@ -1253,6 +1253,8 @@ Parse::method_spec(Typed_identifier_list* methods)
   if (this->advance_token()->is_op(OPERATOR_LPAREN))
     {
       // This is a MethodName.
+      if (name == "_")
+	error_at(this->location(), "methods must have a unique non-blank name");
       name = this->gogo_->pack_hidden_name(name, is_exported);
       Type* type = this->signature(NULL, location);
       if (type == NULL)
