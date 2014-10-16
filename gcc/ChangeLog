@@ -1,3 +1,8 @@
+2014-10-16  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-into-ssa.c (update_ssa): Assert that there's no ssa use operand
+	with SSA_NAME_IN_FREELIST.
+
 2014-10-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63554
