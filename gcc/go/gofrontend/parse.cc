@@ -245,7 +245,7 @@ Parse::type()
 	   || token->is_op(OPERATOR_CHANOP))
     return this->channel_type();
   else if (token->is_keyword(KEYWORD_INTERFACE))
-    return this->interface_type();
+    return this->interface_type(true);
   else if (token->is_keyword(KEYWORD_FUNC))
     {
       Location location = token->location();
@@ -1179,7 +1179,7 @@ Parse::block()
 // MethodSpecList     = MethodSpec { ";" MethodSpec } [ ";" ] .
 
 Type*
-Parse::interface_type()
+Parse::interface_type(bool record)
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_INTERFACE));
   Location location = this->location();
@@ -1227,7 +1227,8 @@ Parse::interface_type()
     }
 
   Interface_type* ret = Type::make_interface_type(methods, location);
-  this->gogo_->record_interface_type(ret);
+  if (record)
+    this->gogo_->record_interface_type(ret);
   return ret;
 }
 
@@ -1526,7 +1527,13 @@ Parse::type_spec(void*)
     }
 
   Type* type;
-  if (!this->peek_token()->is_op(OPERATOR_SEMICOLON))
+  if (name == "_" && this->peek_token()->is_keyword(KEYWORD_INTERFACE))
+    {
+      // We call Parse::interface_type explicity here because we do not want
+      // to record an interface with a blank type name.
+      type = this->interface_type(false);
+    }
+  else if (!this->peek_token()->is_op(OPERATOR_SEMICOLON))
     type = this->type();
   else
     {
