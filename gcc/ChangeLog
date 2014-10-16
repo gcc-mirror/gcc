@@ -1,6 +1,27 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	Backport from mainline
+	2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* gimple.c (gimple_call_fnspec): Support internal functions.
+	(gimple_call_return_flags): Use const.
+	* Makefile.in (GTFILES): Add internal-fn.h to list of GC files.
+	* internal-fn.def: Add fnspec information.
+	* internal-fn.h (internal_fn_fnspec): New function.
+	(init_internal_fns): Declare new function.
+	* internal-fn.c (internal_fn_fnspec_array): New global variable.
+	(init_internal_fns): New function.
+	* tree-core.h: Update macro call.
+	* tree.c (build_common_builtin_nodes): Initialize internal fns.
+
+	Backport from mainline
+	2014-08-12  Yury Gribov  <y.gribov@samsung.com>
+
+	* internal-fn.c (init_internal_fns): Fix off-by-one.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
 	2014-07-31  Yury Gribov  <y.gribov@samsung.com>
 
 	* doc/cpp.texi (__SANITIZE_ADDRESS__): Updated description.

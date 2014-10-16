@@ -1329,10 +1329,13 @@ gimple_call_flags (const_gimple stmt)
 
 /* Return the "fn spec" string for call STMT.  */
 
-static tree
+static const_tree
 gimple_call_fnspec (const_gimple stmt)
 {
   tree type, attr;
+
+  if (gimple_call_internal_p (stmt))
+    return internal_fn_fnspec (gimple_call_internal_fn (stmt));
 
   type = gimple_call_fntype (stmt);
   if (!type)
@@ -1350,7 +1353,7 @@ gimple_call_fnspec (const_gimple stmt)
 int
 gimple_call_arg_flags (const_gimple stmt, unsigned arg)
 {
-  tree attr = gimple_call_fnspec (stmt);
+  const_tree attr = gimple_call_fnspec (stmt);
 
   if (!attr || 1 + arg >= (unsigned) TREE_STRING_LENGTH (attr))
     return 0;
@@ -1384,7 +1387,7 @@ gimple_call_arg_flags (const_gimple stmt, unsigned arg)
 int
 gimple_call_return_flags (const_gimple stmt)
 {
-  tree attr;
+  const_tree attr;
 
   if (gimple_call_flags (stmt) & ECF_MALLOC)
     return ERF_NOALIAS;
