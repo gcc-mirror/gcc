@@ -6,7 +6,7 @@
    specific vector add/sub instructions.  So we just check for fpmpy.  */
 
 #define N 16
-extern bar(float *, float *, float *, float *);
+extern void bar(float *, float *, float *, float *);
 void foo()
 {
 	int i;
