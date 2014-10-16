@@ -1,5 +1,9 @@
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
+	* asan.c (instrument_derefs): Enable unaligned path for KASan.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
 	Backport from mainline
 	2014-10-03  Yury Gribov  <y.gribov@samsung.com>
 

@@ -1705,8 +1705,11 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     }
 
   size_in_bytes = int_size_in_bytes (type);
-  if ((size_in_bytes & (size_in_bytes - 1)) != 0
-      || (unsigned HOST_WIDE_INT) size_in_bytes - 1 >= 16)
+  if (size_in_bytes <= 0)
+    return;
+  if ((flag_sanitize & SANITIZE_USER_ADDRESS) != 0
+      && ((size_in_bytes & (size_in_bytes - 1)) != 0
+	  || (unsigned HOST_WIDE_INT) size_in_bytes - 1 >= 16))
     return;
 
   HOST_WIDE_INT bitsize, bitpos;
