@@ -1443,6 +1443,18 @@ fipa-pure-const
 Common Report Var(flag_ipa_pure_const) Init(0) Optimization
 Discover pure and const functions
 
+fipa-icf
+Common Report Var(flag_ipa_icf) Optimization
+Perform Identical Code Folding for functions and read-only variables
+
+fipa-icf-functions
+Common Report Var(flag_ipa_icf_functions) Optimization
+Perform Identical Code Folding for functions
+
+fipa-icf-variables
+Common Report Var(flag_ipa_icf_variables) Optimization
+Perform Identical Code Folding for variables
+
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
 Discover readonly and non addressable static variables

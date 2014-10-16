@@ -382,7 +382,7 @@ Objective-C and Objective-C++ Dialects}.
 -fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone @gol
--fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
+-fipa-pta -fipa-profile -fipa-pure-const -fipa-reference -fipa-icf @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
@@ -7142,6 +7142,7 @@ also turns on the following optimization flags:
 -findirect-inlining @gol
 -fipa-cp @gol
 -fipa-sra @gol
+-fipa-icf @gol
 -fisolate-erroneous-paths-dereference @gol
 -foptimize-sibling-calls @gol
 -foptimize-strlen @gol
@@ -8086,6 +8087,19 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
+
+@item -fipa-icf
+@opindex fipa-icf
+Perform Identical Code Folding for functions and read-only variables.
+The optimization reduces code size and may disturb unwind stacks by replacing
+a function by equivalent one with a different name. The optimization works
+more effectively with link time optimization enabled.
+
+Nevertheless the behavior is similar to Gold Linker ICF optimization, GCC ICF
+works on different levels and thus the optimizations are not same - there are
+equivalences that are found only by GCC and equivalences found only by Gold.
+
+This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -fisolate-erroneous-paths-dereference
 Detect paths which trigger erroneous or undefined behaviour due to

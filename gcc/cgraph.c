@@ -1910,6 +1910,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " only_called_at_exit");
   if (tm_clone)
     fprintf (f, " tm_clone");
+  if (icf_merged)
+    fprintf (f, " icf_merged");
   if (DECL_STATIC_CONSTRUCTOR (decl))
     fprintf (f," static_constructor (priority:%i)", get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (decl))
@@ -2560,6 +2562,7 @@ verify_edge_corresponds_to_fndecl (cgraph_edge *e, tree decl)
   if (!node
       || node->body_removed
       || node->in_other_partition
+      || node->icf_merged
       || e->callee->in_other_partition)
     return false;
 

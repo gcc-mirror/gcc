@@ -1269,6 +1269,8 @@ OBJS = \
 	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
+	ipa-icf.o \
+	ipa-icf-gimple.o \
 	ipa-reference.o \
 	ipa-ref.o \
 	ipa-utils.o \
