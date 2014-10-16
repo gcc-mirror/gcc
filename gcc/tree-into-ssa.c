@@ -3161,6 +3161,45 @@ update_ssa (unsigned update_flags)
   if (!need_ssa_update_p (cfun))
     return;
 
+#ifdef ENABLE_CHECKING
+  timevar_push (TV_TREE_STMT_VERIFY);
+
+  bool err = false;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  ssa_op_iter i;
+	  use_operand_p use_p;
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_ALL_USES)
+	    {
+	      tree use = USE_FROM_PTR (use_p);
+	      if (TREE_CODE (use) != SSA_NAME)
+		continue;
+
+	      if (SSA_NAME_IN_FREE_LIST (use))
+		{
+		  error ("statement uses released SSA name:");
+		  debug_gimple_stmt (stmt);
+		  fprintf (stderr, "The use of ");
+		  print_generic_expr (stderr, use, 0);
+		  fprintf (stderr," should have been replaced\n");
+		  err = true;
+		}
+	    }
+	}
+    }
+
+  if (err)
+    internal_error ("cannot update SSA form");
+
+  timevar_pop (TV_TREE_STMT_VERIFY);
+#endif
+
   timevar_push (TV_TREE_SSA_INCREMENTAL);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
