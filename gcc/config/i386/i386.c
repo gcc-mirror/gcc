@@ -45562,6 +45562,9 @@ ix86_expand_mul_widen_hilo (rtx dest, rtx op1, rtx op2,
 
     case V16QImode:
     case V32QImode:
+    case V32HImode:
+    case V16SImode:
+    case V64QImode:
       t1 = gen_reg_rtx (wmode);
       t2 = gen_reg_rtx (wmode);
       ix86_expand_sse_unpack (t1, op1, uns_p, high_p);
