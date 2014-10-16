@@ -953,13 +953,14 @@ Find_var::expression(Expression** pexpr)
 	}
     }
 
-  // We traverse the code of any function we see.  Note that this
-  // means that we will traverse the code of a function whose address
-  // is taken even if it is not called.
+  // We traverse the code of any function or bound method we see.  Note that
+  // this means that we will traverse the code of a function or bound method
+  // whose address is taken even if it is not called.
   Func_expression* fe = e->func_expression();
-  if (fe != NULL)
+  Bound_method_expression* bme = e->bound_method_expression();
+  if (fe != NULL || bme != NULL)
     {
-      const Named_object* f = fe->named_object();
+      const Named_object* f = fe != NULL ? fe->named_object() : bme->function();
       if (f->is_function() && f->package() == NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
