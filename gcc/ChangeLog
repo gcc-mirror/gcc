@@ -1,3 +1,29 @@
+2014-10-16  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in: New object files included.
+	* cgraph.c (cgraph_node::dump): New cgraph_node flag icf_merged
+	is printed.
+	(verify_edge_corresponds_to_fndecl): More sensitive verification
+	of nodes that are merged by IPA ICF.
+	* cgraph.h (cgraph_node::num_references): New function.
+	* cgraphunit.c (cgraph_node::expand_thunk): White space fixed.
+	* common.opt: New options ipa-icf, ipa-icf-functions and
+	ipa-icf-variables introduced.
+	* doc/invoke.texi: Documentation of new options introduced.
+	* ipa-icf-gimple.c: New file.
+	* ipa-icf-gimple.h: New file.
+	* ipa-icf.c: New file.
+	* ipa-icf.h: New file.
+	* lto-cgraph.c (lto_output_node): Streaming of icf_merged flag added.
+	(input_overwrite_node): Likewise.
+	* lto-section-in.c: New icf section added.
+	* lto-streamer.h (enum lto_section_type): Likewise.
+	* opts.c (common_handle_option): New option added.
+	* passes.def: New pass included.
+	* timevar.def: Time variable for IPA ICF added.
+	* tree-pass.h: New IPA ICF pass entry point added.
+
 2014-10-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63168

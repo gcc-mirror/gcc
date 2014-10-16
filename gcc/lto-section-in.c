@@ -60,7 +60,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "opts",
   "cgraphopt",
   "inline",
-  "ipcp_trans"
+  "ipcp_trans",
+  "icf"
 };
 
 
