@@ -1,3 +1,8 @@
+2014-10-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address): New function.
+	(TARGET_LEGITIMIZE_ADDRESS): Redefine.
+
 2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (fldi_ok): Remove.
