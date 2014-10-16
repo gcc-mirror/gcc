@@ -1,3 +1,8 @@
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* tree-core.h: Fix comment to not assume pointers are multiples of
+	bytes.
+
 2014-10-15  Tom Tromey  <tromey@redhat.com>
 
 	* timevar.h (class auto_timevar): New class.
