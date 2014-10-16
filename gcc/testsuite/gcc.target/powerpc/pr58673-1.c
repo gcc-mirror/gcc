@@ -65,6 +65,7 @@ deduce_conversion (from, to)
 
 void
 bc_expand_binary_operation (optab, resulttype, arg0, arg1)
+     int resulttype, arg0, arg1;
      struct binary_operator optab[];
 {
   int i, besti, cost, bestcost;

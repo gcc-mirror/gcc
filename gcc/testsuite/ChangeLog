@@ -1,5 +1,10 @@
 2014-10-16  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.target/powerpc/pr58673-1.c: Fix defaulting to int.
+	* gcc.target/powerpc/pr58673-2.c: Add declarations.
+
+2014-10-16  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/graphite/id-1.c: Fix defaulting to int.
 	* gcc.dg/graphite/id-2.c: Likewise.
 	* gcc.dg/graphite/id-4.c: Likewise.
