@@ -1,3 +1,14 @@
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
+	2014-05-14  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61100
+
+	* Makefile.am (nodist_saninclude_HEADERS): Install
+	public headers.
+	* Makefile.in: Regenerate.
+
 2014-10-14  David S. Miller  <davem@davemloft.net>
 
 	* sanitizer_common/sanitizer_platform_limits_linux.cc (time_t):

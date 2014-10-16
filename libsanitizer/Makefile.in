@@ -35,9 +35,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@SANITIZER_SUPPORTED_TRUE@@USING_MAC_INTERPOSE_FALSE@am__append_1 = interception
-@LIBBACKTRACE_SUPPORTED_TRUE@@SANITIZER_SUPPORTED_TRUE@am__append_2 = libbacktrace
-@SANITIZER_SUPPORTED_TRUE@@TSAN_SUPPORTED_TRUE@am__append_3 = tsan
+@SANITIZER_SUPPORTED_TRUE@am__append_1 = include/sanitizer/common_interface_defs.h \
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/lsan_interface.h \
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/asan_interface.h
+@SANITIZER_SUPPORTED_TRUE@@USING_MAC_INTERPOSE_FALSE@am__append_2 = interception
+@LIBBACKTRACE_SUPPORTED_TRUE@@SANITIZER_SUPPORTED_TRUE@am__append_3 = libbacktrace
+@SANITIZER_SUPPORTED_TRUE@@TSAN_SUPPORTED_TRUE@am__append_4 = tsan
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -98,8 +101,9 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
-HEADERS = $(nodist_toolexeclib_HEADERS)
+am__installdirs = "$(DESTDIR)$(sanincludedir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
+HEADERS = $(nodist_saninclude_HEADERS) $(nodist_toolexeclib_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -250,9 +254,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
-@SANITIZER_SUPPORTED_TRUE@SUBDIRS = sanitizer_common $(am__append_1) \
-@SANITIZER_SUPPORTED_TRUE@	$(am__append_2) lsan asan ubsan \
-@SANITIZER_SUPPORTED_TRUE@	$(am__append_3)
+sanincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/sanitizer
+nodist_saninclude_HEADERS = $(am__append_1)
+@SANITIZER_SUPPORTED_TRUE@SUBDIRS = sanitizer_common $(am__append_2) \
+@SANITIZER_SUPPORTED_TRUE@	$(am__append_3) lsan asan ubsan \
+@SANITIZER_SUPPORTED_TRUE@	$(am__append_4)
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -378,6 +384,26 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
+install-nodist_sanincludeHEADERS: $(nodist_saninclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(sanincludedir)" || $(MKDIR_P) "$(DESTDIR)$(sanincludedir)"
+	@list='$(nodist_saninclude_HEADERS)'; test -n "$(sanincludedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(sanincludedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(sanincludedir)" || exit $$?; \
+	done
+
+uninstall-nodist_sanincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_saninclude_HEADERS)'; test -n "$(sanincludedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(sanincludedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(sanincludedir)" && rm -f $$files
 install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
@@ -538,7 +564,7 @@ check: check-recursive
 all-am: Makefile all-multi $(HEADERS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(sanincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -588,7 +614,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-nodist_sanincludeHEADERS
 
 install-dvi: install-dvi-recursive
 
@@ -634,7 +660,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-nodist_toolexeclibHEADERS
+uninstall-am: uninstall-nodist_sanincludeHEADERS \
+	uninstall-nodist_toolexeclibHEADERS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all all-multi \
 	clean-multi ctags-recursive distclean-multi install-am \
@@ -649,13 +676,14 @@ uninstall-am: uninstall-nodist_toolexeclibHEADERS
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-html install-html-am install-info install-info-am \
-	install-man install-multi install-nodist_toolexeclibHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	maintainer-clean-multi mostlyclean mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-multi pdf pdf-am ps ps-am tags \
-	tags-recursive uninstall uninstall-am \
+	install-man install-multi install-nodist_sanincludeHEADERS \
+	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic maintainer-clean-multi mostlyclean \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
+	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-nodist_sanincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS
 
 

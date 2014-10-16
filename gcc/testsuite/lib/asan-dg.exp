@@ -23,6 +23,21 @@ proc check_effective_target_faddress_sanitizer {} {
     } "-fsanitize=address"]
 }
 
+proc asan_include_flags {} {
+    global srcdir
+    global TESTING_IN_BUILD_TREE
+
+    set flags ""
+
+    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+      return "${flags}"
+    }
+
+    set flags "-I$srcdir/../../libsanitizer/include"
+
+    return "$flags"
+}
+
 #
 # asan_link_flags -- compute library path and flags to find libasan.
 # (originally from g++.exp)
@@ -80,17 +95,19 @@ proc asan_init { args } {
 	}
     }
 
+    set include_flags "[asan_include_flags]"
+
     if [info exists TEST_ALWAYS_FLAGS] {
 	set asan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
     }
     if [info exists ALWAYS_CXXFLAGS] {
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
-	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=address -g}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=address -g $include_flags}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g $TEST_ALWAYS_FLAGS"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g $include_flags $TEST_ALWAYS_FLAGS"
 	} else {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g $include_flags"
 	}
     }
     if { $link_flags != "" } {

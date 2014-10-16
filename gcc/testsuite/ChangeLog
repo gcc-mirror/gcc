@@ -1,3 +1,15 @@
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
+	2014-05-14  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61100
+
+	* c-c++-common/asan/asan-interface-1.c: New test.
+	* lib/asan-dg.exp (asan_include_flags): New function.
+	(asan_init): Call asan_include_flags to obtain path
+	to sanitizer headers.
+
 2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63448

@@ -1,7 +1,13 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
+sanincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/sanitizer
+
+nodist_saninclude_HEADERS =
+
 if SANITIZER_SUPPORTED
 SUBDIRS = sanitizer_common
+nodist_saninclude_HEADERS += \
+  include/sanitizer/common_interface_defs.h
 if !USING_MAC_INTERPOSE
 SUBDIRS += interception
 endif
@@ -9,6 +15,9 @@ if LIBBACKTRACE_SUPPORTED
 SUBDIRS += libbacktrace
 endif
 SUBDIRS += lsan asan ubsan
+nodist_saninclude_HEADERS += \
+  include/sanitizer/lsan_interface.h \
+  include/sanitizer/asan_interface.h
 if TSAN_SUPPORTED
 SUBDIRS += tsan
 endif
