@@ -179,7 +179,7 @@ class Parse
   Function_type* signature(Typed_identifier*, Location);
   bool parameters(Typed_identifier_list**, bool* is_varargs);
   Typed_identifier_list* parameter_list(bool* is_varargs);
-  void parameter_decl(bool, Typed_identifier_list*, bool*, bool*);
+  void parameter_decl(bool, Typed_identifier_list*, bool*, bool*, bool*);
   bool result(Typed_identifier_list**);
   Location block();
   Type* interface_type();
