@@ -160,6 +160,23 @@ init_vector_keywords (void)
     }
 }
 
+/* Helper function to find out which RID_INT_N_* code is the one for
+   __int128, if any.  Returns RID_MAX+1 if none apply, which is safe
+   (for our purposes, since we always expect to have __int128) to
+   compare against.  */
+static int
+rid_int128(void)
+{
+  int i;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& int_n_data[i].bitsize == 128)
+      return RID_INT_N_0 + i;
+
+  return RID_MAX + 1;
+}
+
 /* Called to decide whether a conditional macro should be expanded.
    Since we have exactly one such macro (i.e, 'vector'), we do not
    need to examine the 'tok' parameter.  */
@@ -234,7 +251,7 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 	      || rid_code == RID_INT || rid_code == RID_CHAR
 	      || rid_code == RID_FLOAT
 	      || (rid_code == RID_DOUBLE && TARGET_VSX)
-	      || (rid_code == RID_INT128 && TARGET_VADDUQM))
+	      || (rid_code == rid_int128 () && TARGET_VADDUQM))
 	    {
 	      expand_this = C_CPP_HASHNODE (__vector_keyword);
 	      /* If the next keyword is bool or pixel, it

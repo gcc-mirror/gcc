@@ -1,3 +1,8 @@
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rs6000/rs6000-c.c (rid_int128): New.
+	(rs6000_macro_to_expand): Use instead of RID_INT128.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* function.h: Flatten file.  Remove includes, adjust prototypes to 
