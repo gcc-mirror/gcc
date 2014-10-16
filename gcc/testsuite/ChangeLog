@@ -1,5 +1,7 @@
 2014-10-16  Andreas Schwab  <schwab@suse.de>
 
+	* gcc.target/m68k/crash1.c: Fix implicit declaration.
+
 	* gcc.target/ia64/20090324-1.c: Fix implicit declarations and
 	implicit int.
 	* gcc.target/ia64/mfused-madd-vect.c: Likewise.
