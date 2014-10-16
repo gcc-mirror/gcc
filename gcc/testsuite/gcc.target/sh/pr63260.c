@@ -26,5 +26,5 @@ test_2 (float x)
 double
 test_3 (double x)
 {
-  return __builtin_abs (x);
+  return __builtin_fabs (x);
 }
