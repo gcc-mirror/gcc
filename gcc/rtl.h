@@ -2641,15 +2641,6 @@ extern enum machine_mode get_pool_mode (const_rtx);
 extern rtx simplify_subtraction (rtx);
 extern void decide_function_section (tree);
 
-/* In function.c  */
-extern rtx assign_stack_local (enum machine_mode, HOST_WIDE_INT, int);
-#define ASLK_REDUCE_ALIGN 1
-#define ASLK_RECORD_PAD 2
-extern rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int, int);
-extern rtx assign_stack_temp (enum machine_mode, HOST_WIDE_INT);
-extern rtx assign_stack_temp_for_type (enum machine_mode, HOST_WIDE_INT, tree);
-extern rtx assign_temp (tree, int, int);
-
 /* In emit-rtl.c */
 extern rtx_insn *emit_insn_before (rtx, rtx);
 extern rtx_insn *emit_insn_before_noloc (rtx, rtx_insn *, basic_block);
@@ -3440,14 +3431,6 @@ extern void print_pattern (pretty_printer *, const_rtx, int);
 extern void print_insn (pretty_printer *, const_rtx, int);
 extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
 extern const char *str_pattern_slim (const_rtx);
-
-/* In function.c */
-extern void reposition_prologue_and_epilogue_notes (void);
-extern int prologue_epilogue_contains (const_rtx);
-extern int sibcall_epilogue_contains (const_rtx);
-extern void update_temp_slot_address (rtx, rtx);
-extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
-extern void set_return_jump_label (rtx);
 
 /* In stmt.c */
 extern void expand_null_return (void);

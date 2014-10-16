@@ -1,3 +1,7 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/plugin/pragma_plugin.c: Adjust include files.
+
 2014-10-16  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/ipa-icf-4.C: Correct number of equivalences set.

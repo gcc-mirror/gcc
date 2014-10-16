@@ -20,13 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FUNCTION_H
 #define GCC_FUNCTION_H
 
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "tm.h"			/* For CUMULATIVE_ARGS.  */
-#include "hard-reg-set.h"	/* For HARD_REG_SET in struct rtl_data. */
-#include "input.h"		/* For location_t.  */
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -727,11 +720,6 @@ void types_used_by_var_decl_insert (tree type, tree var_decl);
    referenced by the global variable.  */
 extern GTY(()) vec<tree, va_gc> *types_used_by_cur_var_decl;
 
-/* cfun shouldn't be set directly; use one of these functions instead.  */
-extern void set_cfun (struct function *new_cfun);
-extern void push_cfun (struct function *new_cfun);
-extern void pop_cfun (void);
-extern void instantiate_decl_rtl (rtx x);
 
 /* Return the loop tree of FN.  */
 
@@ -758,16 +746,95 @@ set_loops_for_fn (struct function *fn, struct loops *loops)
 #define n_bbs_in_dom_tree (cfun->cfg->x_n_bbs_in_dom_tree)
 #define VALUE_HISTOGRAMS(fun) (fun)->value_histograms
 
-/* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
-   and create duplicate blocks.  */
-extern void reorder_blocks (void);
+/* A pointer to a function to create target specific, per-function
+   data structures.  */
+extern struct machine_function * (*init_machine_status) (void);
 
-/* Set BLOCK_NUMBER for all the blocks in FN.  */
-extern void number_blocks (tree);
+enum direction {none, upward, downward};
 
-extern void clear_block_marks (tree);
-extern tree blocks_nreverse (tree);
-extern tree block_chainon (tree, tree);
+/* Structure to record the size of a sequence of arguments
+   as the sum of a tree-expression and a constant.  This structure is
+   also used to store offsets from the stack, which might be negative,
+   so the variable part must be ssizetype, not sizetype.  */
+
+struct args_size
+{
+  HOST_WIDE_INT constant;
+  tree var;
+};
+
+/* Package up various arg related fields of struct args for
+   locate_and_pad_parm.  */
+struct locate_and_pad_arg_data
+{
+  /* Size of this argument on the stack, rounded up for any padding it
+     gets.  If REG_PARM_STACK_SPACE is defined, then register parms are
+     counted here, otherwise they aren't.  */
+  struct args_size size;
+  /* Offset of this argument from beginning of stack-args.  */
+  struct args_size offset;
+  /* Offset to the start of the stack slot.  Different from OFFSET
+     if this arg pads downward.  */
+  struct args_size slot_offset;
+  /* The amount that the stack pointer needs to be adjusted to
+     force alignment for the next argument.  */
+  struct args_size alignment_pad;
+  /* Which way we should pad this arg.  */
+  enum direction where_pad;
+  /* slot_offset is at least this aligned.  */
+  unsigned int boundary;
+};
+
+/* Add the value of the tree INC to the `struct args_size' TO.  */
+
+#define ADD_PARM_SIZE(TO, INC)					\
+do {								\
+  tree inc = (INC);						\
+  if (tree_fits_shwi_p (inc))					\
+    (TO).constant += tree_to_shwi (inc);			\
+  else if ((TO).var == 0)					\
+    (TO).var = fold_convert (ssizetype, inc);			\
+  else								\
+    (TO).var = size_binop (PLUS_EXPR, (TO).var,			\
+			   fold_convert (ssizetype, inc));	\
+} while (0)
+
+#define SUB_PARM_SIZE(TO, DEC)					\
+do {								\
+  tree dec = (DEC);						\
+  if (tree_fits_shwi_p (dec))					\
+    (TO).constant -= tree_to_shwi (dec);			\
+  else if ((TO).var == 0)					\
+    (TO).var = size_binop (MINUS_EXPR, ssize_int (0),		\
+			   fold_convert (ssizetype, dec));	\
+  else								\
+    (TO).var = size_binop (MINUS_EXPR, (TO).var,		\
+			   fold_convert (ssizetype, dec));	\
+} while (0)
+
+/* Convert the implicit sum in a `struct args_size' into a tree
+   of type ssizetype.  */
+#define ARGS_SIZE_TREE(SIZE)					\
+((SIZE).var == 0 ? ssize_int ((SIZE).constant)			\
+ : size_binop (PLUS_EXPR, fold_convert (ssizetype, (SIZE).var),	\
+	       ssize_int ((SIZE).constant)))
+
+/* Convert the implicit sum in a `struct args_size' into an rtx.  */
+#define ARGS_SIZE_RTX(SIZE)					\
+((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
+ : expand_normal (ARGS_SIZE_TREE (SIZE)))
+
+#define ASLK_REDUCE_ALIGN 1
+#define ASLK_RECORD_PAD 2
+
+
+
+extern void push_function_context (void);
+extern void pop_function_context (void);
+
+/* Save and restore status information for a nested function.  */
+extern void free_after_parsing (struct function *);
+extern void free_after_compilation (struct function *);
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
@@ -779,71 +846,87 @@ extern HOST_WIDE_INT get_frame_size (void);
    return FALSE.  */
 extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
 
-/* A pointer to a function to create target specific, per-function
-   data structures.  */
-extern struct machine_function * (*init_machine_status) (void);
+extern rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int, int);
+extern rtx assign_stack_local (enum machine_mode, HOST_WIDE_INT, int);
+extern rtx assign_stack_temp_for_type (enum machine_mode, HOST_WIDE_INT, tree);
+extern rtx assign_stack_temp (enum machine_mode, HOST_WIDE_INT);
+extern rtx assign_temp (tree, int, int);
+extern void update_temp_slot_address (rtx, rtx);
+extern void preserve_temp_slots (rtx);
+extern void free_temp_slots (void);
+extern void push_temp_slots (void);
+extern void pop_temp_slots (void);
+extern void init_temp_slots (void);
+extern rtx get_hard_reg_initial_reg (rtx);
+extern rtx get_hard_reg_initial_val (enum machine_mode, unsigned int);
+extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
 
-/* Save and restore status information for a nested function.  */
-extern void free_after_parsing (struct function *);
-extern void free_after_compilation (struct function *);
+/* Called from gimple_expand_cfg.  */
+extern unsigned int emit_initial_value_sets (void);
 
-extern void init_varasm_status (void);
+extern bool initial_value_entry (int i, rtx *, rtx *);
+extern void instantiate_decl_rtl (rtx x);
+extern int aggregate_value_p (const_tree, const_tree);
+extern bool use_register_for_decl (const_tree);
+extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+			       tree, bool);
+extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
+				     tree, bool);
+extern gimple_seq gimplify_parameters (void);
+extern void locate_and_pad_parm (enum machine_mode, tree, int, int, int,
+				 tree, struct args_size *,
+				 struct locate_and_pad_arg_data *);
+extern void generate_setjmp_warnings (void);
+
+/* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
+   and create duplicate blocks.  */
+extern void reorder_blocks (void);
+extern void clear_block_marks (tree);
+extern tree blocks_nreverse (tree);
+extern tree block_chainon (tree, tree);
+
+/* Set BLOCK_NUMBER for all the blocks in FN.  */
+extern void number_blocks (tree);
+
+/* cfun shouldn't be set directly; use one of these functions instead.  */
+extern void set_cfun (struct function *new_cfun);
+extern void push_cfun (struct function *new_cfun);
+extern void pop_cfun (void);
+
+extern int get_next_funcdef_no (void);
+extern int get_last_funcdef_no (void);
+extern void allocate_struct_function (tree, bool);
+extern void push_struct_function (tree fndecl);
+extern void init_dummy_function_start (void);
+extern void init_function_start (tree);
+extern void stack_protect_epilogue (void);
+extern void expand_function_start (tree);
+extern void expand_dummy_function_end (void);
 
 #ifdef RTX_CODE
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
 #endif
 
+extern void do_warn_unused_parameter (tree);
+extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
+extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
+extern int prologue_epilogue_contains (const_rtx);
+extern void emit_return_into_block (bool simple_p, basic_block bb);
+extern void set_return_jump_label (rtx);
+extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);
+extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
+					   vec<edge> unconverted);
+extern basic_block emit_return_for_exit (edge exit_fallthru_edge,
+					 bool simple_p);
+extern void reposition_prologue_and_epilogue_notes (void);
 
 /* Returns the name of the current function.  */
 extern const char *fndecl_name (tree);
 extern const char *function_name (struct function *);
 extern const char *current_function_name (void);
 
-extern void do_warn_unused_parameter (tree);
-
-extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-			       tree, bool);
-extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
-				     tree, bool);
-
 extern void used_types_insert (tree);
-
-extern int get_next_funcdef_no (void);
-extern int get_last_funcdef_no (void);
-
-extern rtx get_hard_reg_initial_val (enum machine_mode, unsigned int);
-extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
-extern rtx get_hard_reg_initial_reg (rtx);
-extern bool initial_value_entry (int i, rtx *, rtx *);
-
-/* Called from gimple_expand_cfg.  */
-extern unsigned int emit_initial_value_sets (void);
-
-/* In predict.c */
-extern bool optimize_function_for_size_p (struct function *);
-extern bool optimize_function_for_speed_p (struct function *);
-
-/* In function.c */
-extern void expand_function_end (void);
-extern void expand_function_start (tree);
-extern void stack_protect_epilogue (void);
-extern void init_dummy_function_start (void);
-extern void expand_dummy_function_end (void);
-extern void allocate_struct_function (tree, bool);
-extern void push_struct_function (tree fndecl);
-extern void init_function_start (tree);
-extern bool use_register_for_decl (const_tree);
-extern void generate_setjmp_warnings (void);
-extern void init_temp_slots (void);
-extern void free_temp_slots (void);
-extern void pop_temp_slots (void);
-extern void push_temp_slots (void);
-extern void preserve_temp_slots (rtx);
-extern int aggregate_value_p (const_tree, const_tree);
-extern void push_function_context (void);
-extern void pop_function_context (void);
-extern gimple_seq gimplify_parameters (void);
 
 #endif  /* GCC_FUNCTION_H */

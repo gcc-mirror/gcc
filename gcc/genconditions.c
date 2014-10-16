@@ -73,6 +73,9 @@ write_header (void)
 #include \"ggc.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
+#include \"hashtab.h\"\n\
+#include \"hash-set.h\"\n\
+#include \"hard-reg-set.h\"\n\
 #include \"function.h\"\n\
 \n\
 /* Fake - insn-config.h doesn't exist yet.  */\n\

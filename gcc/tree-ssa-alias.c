@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"	/* for TV_ALIAS_STMT_WALK */
 #include "langhooks.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "dumpfile.h"

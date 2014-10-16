@@ -1828,7 +1828,9 @@ open_base_files (void)
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "tree.h", "rtl.h", "wide-int.h", "function.h", "insn-config.h", "expr.h",
+      "tree.h", "rtl.h", "wide-int.h", "hashtab.h", "hash-set.h", "vec.h",
+      "machmode.h", "tm.h", "hard-reg-set.h", "input.h",
+      "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       "hash-table.h", "vec.h", "ggc.h", "basic-block.h",

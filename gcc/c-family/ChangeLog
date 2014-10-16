@@ -1,3 +1,8 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-pragma.c: Adjust include files.
+	* c-semantics.c: Likewise.
+
 2014-10-16  DJ Delorie  <dj@redhat.com>
 
 	* c-cppbuiltin.c (cpp_atomic_builtins): Don't assume pointers are

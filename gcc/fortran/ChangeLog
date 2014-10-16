@@ -1,3 +1,8 @@
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Adjust include files.
+	* trans-decl.c: Likewise.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* trans-decl.c, trans.c, trans.h: Use hash_table instead of hashtab.
