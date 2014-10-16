@@ -1,3 +1,34 @@
+2014-10-16  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/graphite/id-1.c: Fix defaulting to int.
+	* gcc.dg/graphite/id-2.c: Likewise.
+	* gcc.dg/graphite/id-4.c: Likewise.
+	* gcc.dg/graphite/id-8.c: Likewise.
+	* gcc.dg/graphite/id-pr45230-1.c: Likewise.
+	* gcc.dg/graphite/id-pr45230.c: Likewise.
+	* gcc.dg/graphite/id-pr45231.c: Likewise.
+	* gcc.dg/graphite/pr38073.c: Likewise.
+	* gcc.dg/graphite/pr38125.c: Likewise.
+	* gcc.dg/graphite/pr38409.c: Likewise.
+	* gcc.dg/graphite/pr38413.c: Likewise.
+	* gcc.dg/graphite/pr38510.c: Likewise.
+	* gcc.dg/graphite/pr38786.c: Likewise.
+	* gcc.dg/graphite/pr39260.c: Likewise.
+	* gcc.dg/graphite/scop-19.c: Likewise.
+	* gcc.dg/graphite/id-13.c: Fix implicit declarations.
+	* gcc.dg/graphite/id-17.c: Likewise.
+	* gcc.dg/graphite/id-23.c: Likewise.
+	* gcc.dg/graphite/id-26.c: Likewise.
+	* gcc.dg/graphite/id-pr43464-1.c: Likewise.
+	* gcc.dg/graphite/pr37485.c: Likewise.
+	* gcc.dg/graphite/pr38500.c: Likewise.
+	* gcc.dg/graphite/pr42284.c: Likewise.
+	* gcc.dg/graphite/pr42914.c: Likewise.
+	* gcc.dg/graphite/pr46404-1.c: Likewise.
+	* gcc.dg/graphite/pr60979.c: Likewise.
+	* gcc.dg/graphite/id-pr43464.c: Fix implicit declarations and
+	defaulting to int.
+
 2014-10-16  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka  <hubicka@ucw.cz>
 

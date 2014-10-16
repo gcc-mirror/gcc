@@ -3,6 +3,7 @@
 static int qsz;
 
 void specqsort(base, n, size, compar)
+     int n, size, compar;
      char *base;
 {
   register char c, *i, *j, *lo, *hi;
