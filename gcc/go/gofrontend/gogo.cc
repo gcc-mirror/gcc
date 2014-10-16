@@ -4945,6 +4945,14 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       // our return address comparison.
       bool is_inlinable = !(this->calls_recover_ || this->is_recover_thunk_);
 
+      // If a function calls __go_set_defer_retaddr, then mark it as
+      // uninlinable.  This prevents the GCC backend from splitting
+      // the function; splitting the function is a bad idea because we
+      // want the return address label to be in the same function as
+      // the call.
+      if (this->calls_defer_retaddr_)
+	is_inlinable = false;
+
       // If this is a thunk created to call a function which calls
       // the predeclared recover function, we need to disable
       // stack splitting for the thunk.
