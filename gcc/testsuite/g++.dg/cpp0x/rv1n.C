@@ -1,8 +1,10 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
+/* { dg-additional-options "-fno-ipa-icf" } */
 
 // Test overload resolution among reference types
 
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fno-ipa-icf" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

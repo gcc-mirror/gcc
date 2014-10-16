@@ -1,6 +1,6 @@
 /* Check rotate pattern detection.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-optimized" } */
 /* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 96 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 

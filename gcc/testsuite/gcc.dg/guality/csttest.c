@@ -1,6 +1,6 @@
 /* PR debug/49676 */
 /* { dg-do run { target lp64 } } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 volatile int v;
 
