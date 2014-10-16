@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fipa-cp -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized"  } */
+/* { dg-options "-Os -fipa-cp -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized -fno-ipa-icf"  } */
 
 int array[100];
 

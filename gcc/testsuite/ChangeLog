@@ -1,4 +1,51 @@
-2014-10-16  Richard Biener  <rguenther@suse.de>
+2014-10-16  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-c++-common/rotate-1.c: Options changed to not collide
+	with a new IPA ICF pass.
+	* c-c++-common/rotate-2.c: Likewise.
+	* c-c++-common/rotate-3.c: Likewise.
+	* c-c++-common/rotate-4.c: Likewise.
+	* g++.dg/cpp0x/rv-return.C: Likewise.
+	* g++.dg/cpp0x/rv1n.C: Likewise.
+	* g++.dg/cpp0x/rv1p.C: Likewise.
+	* g++.dg/cpp0x/rv2n.C: Likewise.
+	* g++.dg/cpp0x/rv3n.C: Likewise.
+	* g++.dg/cpp0x/rv4n.C: Likewise.
+	* g++.dg/cpp0x/rv5n.C: Likewise.
+	* g++.dg/cpp0x/rv6n.C: Likewise.
+	* g++.dg/cpp0x/rv7n.C: Likewise.
+	* g++.dg/ipa/devirt-g-1.C: Likewise.
+	* g++.dg/ipa/inline-1.C: Likewise.
+	* g++.dg/ipa/inline-2.C: Likewise.
+	* g++.dg/ipa/inline-3.C: Likewise.
+	* g++.dg/opt/pr30965.C: Likewise.
+	* g++.dg/tree-ssa/pr19637.C: Likewise.
+	* gcc.dg/guality/csttest.c: Likewise.
+	* gcc.dg/ipa/iinline-4.c (struct S): Likewise.
+	* gcc.dg/ipa/iinline-7.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-13.c: Likewise.
+	* gcc.dg/ipa/ipacost-1.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-6.c: Likewise.
+	* gcc.dg/ipa/remref-2a.c: Likewise.
+	* gcc.dg/ipa/remref-2b.c: Likewise.
+	* gcc.dg/pr46309-2.c: Likewise.
+	* gcc.dg/torture/ipa-pta-1.c: Likewise.
+	* gcc.dg/tree-ssa/andor-3.c (int f): Likewise.
+	* gcc.dg/tree-ssa/andor-4.c: Likewise.
+	* gcc.dg/tree-ssa/andor-5.c: Likewise.
+	* gcc.dg/vect/no-vfa-pr29145.c: Likewise.
+	* gcc.dg/vect/vect-cond-10.c: Likewise.
+	* gcc.dg/vect/vect-cond-9.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Likewise.
+	* gcc.target/i386/bmi-1.c: Likewise.
+	* gcc.target/i386/bmi-2.c: Likewise.
+	* gcc.target/i386/pr56564-2.c: Likewise.
+
+2014-10-16  Richard Biener  <rguenther@suse.de>i
 
 	PR tree-optimization/63168
 	* gcc.dg/tree-ssa/loop-40.c: New testcase.

@@ -1,6 +1,6 @@
 /* PR tree-optimization/46309 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-reassoc-details" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-reassoc-details" } */
 
 int foo (void);
 

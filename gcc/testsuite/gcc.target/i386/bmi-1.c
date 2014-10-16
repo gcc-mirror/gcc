@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mbmi " } */
+/* { dg-options "-O2 -fno-ipa-icf -mbmi " } */
 /* { dg-final { scan-assembler "andn\[^\\n]*eax" } } */
 /* { dg-final { scan-assembler-times "bextr\[ \\t]+\[^\\n]*eax" 2 } } */
 /* { dg-final { scan-assembler-times "blsi\[^\\n]*eax" 2 } } */
