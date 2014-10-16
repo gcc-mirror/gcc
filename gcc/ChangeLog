@@ -1,3 +1,16 @@
+2014-10-16  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_expand "floatuns<sseintvecmodelower><mode>2"): Extend to
+	support AVX-512VL instructions.
+
 2014-10-16  DJ Delorie  <dj@redhat.com>
 
 	* tree-core.h: Fix comment to not assume pointers are multiples of
