@@ -40854,6 +40854,79 @@ half:
       emit_insn (gen_insert[j][i] (target, target, tmp));
       return;
 
+    case V8DFmode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv8df (target, tmp, target,
+					     force_reg (QImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V8DImode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv8di (target, tmp, target,
+					     force_reg (QImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V16SFmode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv16sf (target, tmp, target,
+					      force_reg (HImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V16SImode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv16si (target, tmp, target,
+					      force_reg (HImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V32HImode:
+      if (TARGET_AVX512F && TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512bw_blendmv32hi (target, tmp, target,
+					       force_reg (SImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V64QImode:
+      if (TARGET_AVX512F && TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512bw_blendmv64qi (target, tmp, target,
+					       force_reg (DImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+
     default:
       break;
     }
