@@ -1,3 +1,8 @@
+2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63260
+	* gcc.target/sh/pr63260.c: Fix typo __builtin_fabs vs. __builtin_abs.
+
 2014-10-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63554
