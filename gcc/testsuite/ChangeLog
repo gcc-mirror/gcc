@@ -1,3 +1,12 @@
+2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/cmpstr.c: Fix excess failures caused by switch to GNU11.
+	* gcc.target/sh/strlen.c: Likewise.
+	* gcc.target/sh/pr51244-13.c: Likewise.
+	* gcc.target/sh/cmpstrn.c: Likewise.
+	* gcc.target/sh/hiconst.c: Likewise.
+	* gcc.target/sh/pr43417.c: Likewise.
+
 2014-10-16  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/guality/pr43077-1.c: IPA ICF disabled

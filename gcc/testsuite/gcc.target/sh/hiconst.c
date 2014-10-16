@@ -4,7 +4,8 @@
 char a;
 int b;
 
-foo(char *pt, int *pti)
+int
+foo (char *pt, int *pti)
 {
   a = 0;
   b = 0;
@@ -12,7 +13,7 @@ foo(char *pt, int *pti)
   *pti = 0;
 }
 
-rab(char *pt, int *pti)
+int rab (char *pt, int *pti)
 {
   pt[2] = 0;
   pti[3] = 0;
