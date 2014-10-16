@@ -1,3 +1,8 @@
+2014-10-16  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/ipa-icf-4.C: Correct number of equivalences set.
+	* g++.dg/ipa/ipa-icf-5.C: Likewise
+
 2014-10-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/63260
