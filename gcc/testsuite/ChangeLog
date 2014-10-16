@@ -1,3 +1,7 @@
+2014-10-16  Marek Polacek  <polacek@redhat.com>
+
+	* ada/acats/tests/cd/cd300051.c: Fix defaulting to int.
+
 2014-10-16  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
