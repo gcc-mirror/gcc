@@ -2281,20 +2281,20 @@ sh_eval_treg_value (rtx op)
   return t ^ (cmpval == cmpop);
 }
 
-/* Emit INSN, possibly in a PARALLEL with an USE of fpscr for SH4.  */
-
+/* Emit INSN, possibly in a PARALLEL with an USE/CLOBBER of FPSCR bits in case
+   of floating-point comparisons.  */
 static void
 sh_emit_set_t_insn (rtx insn, enum machine_mode mode)
 {
-  if ((TARGET_SH4 || TARGET_SH2A) && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if (TARGET_FPU_ANY && GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_CODE (insn) != PARALLEL)
     {
       insn = gen_rtx_PARALLEL (VOIDmode,
-		       gen_rtvec (2, insn,
-			          gen_rtx_USE (VOIDmode, get_fpscr_rtx ())));
-      (mode == SFmode ? emit_sf_insn : emit_df_insn) (insn);
+	  gen_rtvec (3, insn,
+	      gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, FPSCR_STAT_REG)),
+	      gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, FPSCR_MODES_REG))));
     }
-  else
-    emit_insn (insn);
+  emit_insn (insn);
 }
 
 /* Prepare the operands for an scc instruction; make sure that the
@@ -7250,6 +7250,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
 	     && reg != T_REG && reg != GBR_REG
+	     && reg != FPSCR_MODES_REG && reg != FPSCR_STAT_REG
 	     /* Push fpscr only on targets which have FPU */
 	     && (reg != FPSCR_REG || TARGET_FPU_ANY))
 	  : (/* Only push those regs which are used and need to be saved.  */
@@ -10069,44 +10070,6 @@ emit_fpu_switch (rtx scratch, int index)
 
   dst = get_fpscr_rtx ();
   emit_move_insn (dst, src);
-}
-
-void
-emit_sf_insn (rtx pat)
-{
-  emit_insn (pat);
-}
-
-void
-emit_df_insn (rtx pat)
-{
-  emit_insn (pat);
-}
-
-void
-expand_sf_unop (rtx (*fun) (rtx, rtx, rtx), rtx *operands)
-{
-  emit_sf_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
-}
-
-void
-expand_sf_binop (rtx (*fun) (rtx, rtx, rtx, rtx), rtx *operands)
-{
-  emit_sf_insn ((*fun) (operands[0], operands[1], operands[2],
-			 get_fpscr_rtx ()));
-}
-
-void
-expand_df_unop (rtx (*fun) (rtx, rtx, rtx), rtx *operands)
-{
-  emit_df_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
-}
-
-void
-expand_df_binop (rtx (*fun) (rtx, rtx, rtx, rtx), rtx *operands)
-{
-  emit_df_insn ((*fun) (operands[0], operands[1], operands[2],
-			get_fpscr_rtx ()));
 }
 
 static rtx get_free_reg (HARD_REG_SET);
@@ -13308,6 +13271,9 @@ sh_conditional_register_usage (void)
     for (regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
       if (! fixed_regs[regno] && call_really_used_regs[regno])
 	SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
+
+  call_really_used_regs[FPSCR_MODES_REG] = 0;
+  call_really_used_regs[FPSCR_STAT_REG] = 0;
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P
@@ -13659,7 +13625,7 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
 
 static void
 sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
-		  int prev_mode, HARD_REG_SET regs_live)
+		  int prev_mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
 {
   if ((TARGET_SH4A_FP || TARGET_SH4_300)
       && prev_mode != FP_MODE_NONE && prev_mode != mode)
@@ -13668,8 +13634,36 @@ sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
       if (TARGET_FMOVD)
 	emit_insn (gen_toggle_sz ());
     }
-  else
-    fpscr_set_from_mem (mode, regs_live);
+  else if (mode != FP_MODE_NONE)
+    {
+      rtx tmp0 = gen_reg_rtx (PSImode);
+      rtx tmp1 = gen_reg_rtx (SImode);
+
+      emit_move_insn (tmp0, get_fpscr_rtx ());
+      emit_insn (gen_extend_psi_si (tmp1, tmp0));
+
+      rtx i = NULL;
+
+      const unsigned HOST_WIDE_INT fpbits =
+	  TARGET_FMOVD ? (FPSCR_PR | FPSCR_SZ) : FPSCR_PR;
+
+      if (prev_mode != FP_MODE_NONE && prev_mode != mode)
+	i = gen_xorsi3 (tmp1, tmp1,
+			force_reg (SImode, GEN_INT (fpbits)));
+      else if (mode == FP_MODE_SINGLE)
+	i = gen_andsi3 (tmp1, tmp1,
+			force_reg (SImode, GEN_INT (~fpbits)));
+      else if (mode == FP_MODE_DOUBLE)
+	i = gen_iorsi3 (tmp1, tmp1,
+			force_reg (SImode, GEN_INT (fpbits)));
+      else
+	gcc_unreachable ();
+
+      emit_insn (i);
+
+      emit_insn (gen_truncate_si_psi (tmp0, tmp1));
+      emit_move_insn (get_fpscr_rtx (), tmp0);
+    }
 }
 
 static int
