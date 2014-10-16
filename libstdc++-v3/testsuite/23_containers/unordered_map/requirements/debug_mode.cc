@@ -1,6 +1,6 @@
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.

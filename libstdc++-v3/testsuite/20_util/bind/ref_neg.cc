@@ -18,7 +18,7 @@
 // 20.8.9 Function template bind
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <functional>
 
