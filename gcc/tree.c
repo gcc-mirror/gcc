@@ -9876,7 +9876,7 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
 
 /* Call this function after instantiating all builtins that the language
    front end cares about.  This will build the rest of the builtins
-   and internal function that are relied upon by the tree optimizers and
+   and internal functions that are relied upon by the tree optimizers and
    the middle-end.  */
 
 void

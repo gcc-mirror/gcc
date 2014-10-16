@@ -1081,13 +1081,13 @@ DEFPARAM (PARAM_ASAN_MEMINTRIN,
 
 DEFPARAM (PARAM_ASAN_USE_AFTER_RETURN,
          "asan-use-after-return",
-         "Enable asan builtin functions protection",
+         "Enable asan detection of use-after-return bugs",
          1, 0, 1)
 
 DEFPARAM (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
          "asan-instrumentation-with-call-threshold",
-         "Use callbacks instead of inline code once number of accesses "
-         " in function becomes greater or equal than this threshold",
+         "Use callbacks instead of inline code if number of accesses "
+         "in function becomes greater or equal to this number",
          INT_MAX, 0, INT_MAX)
 
 DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,

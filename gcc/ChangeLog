@@ -3,6 +3,34 @@
 	Backport from mainline
 	2014-08-11  Yury Gribov  <y.gribov@samsung.com>
 
+	* asan.c (asan_check_flags): New enum.
+	(build_check_stmt_with_calls): Removed function.
+	(build_check_stmt): Split inlining logic to
+	asan_expand_check_ifn.
+	(instrument_derefs): Rename parameter.
+	(instrument_mem_region_access): Rename parameter.
+	(instrument_strlen_call): Likewise.
+	(asan_expand_check_ifn): New function.
+	(asan_instrument): Remove old code.
+	(pass_sanopt::execute): Change handling of
+	asan-instrumentation-with-call-threshold.
+	(asan_clear_shadow): Fix formatting.
+	(asan_function_start): Likewise.
+	(asan_emit_stack_protection): Likewise.
+	* doc/invoke.texi (asan-instrumentation-with-call-threshold):
+	Update description.
+	* internal-fn.c (expand_ASAN_CHECK): New function.
+	* internal-fn.def (ASAN_CHECK): New internal function.
+	* params.def (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD):
+	Update description.
+	(PARAM_ASAN_USE_AFTER_RETURN): Likewise.
+	* tree.c: Small comment fix.
+
+2014-10-16  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
+	2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
 	* gimple.c (gimple_call_fnspec): Support internal functions.
 	(gimple_call_return_flags): Use const.
 	* Makefile.in (GTFILES): Add internal-fn.h to list of GC files.
