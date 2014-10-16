@@ -1,5 +1,6 @@
 /* { dg-options "-O3 -fgraphite-identity" } */
 
+int
 test_seg(int a, int b)
 {
   int i,r=1;

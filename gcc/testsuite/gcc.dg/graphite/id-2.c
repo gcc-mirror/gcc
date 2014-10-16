@@ -1,4 +1,5 @@
 typedef _Complex float GFC_COMPLEX_4;
+void
 matmul_c4 ()
 {
   int x, n, count;
