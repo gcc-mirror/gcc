@@ -1,3 +1,40 @@
+2014-10-16  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/20020122-2.c: Use dg-additional-options.  Fix implicit
+	declarations.
+	* gcc.dg/pr32176.c: Likewise.
+	* gcc.dg/builtin-apply4.c: Use dg-additional-options.
+	* gcc.dg/ia64-sync-1.c: Fix implicit declarations.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/ia64-sync-3.c: Likewise.
+	* gcc.dg/sync-2.c: Likewise.
+	* gcc.dg/sync-3.c: Likewise.
+	* gcc.target/i386/990524-1.c: Likewise.
+	* gcc.target/i386/avx512f-pr57233.c: Likewise.
+	* gcc.target/i386/avx512f-typecast-1.c: Likewise.
+	* gcc.target/i386/pr26826.c: Likewise.
+	* gcc.target/i386/pr37184.c: Likewise.
+	* gcc.target/i386/20060125-1.c: Fix defaulting to int.
+	* gcc.target/i386/20060125-2.c: Likewise.
+	* gcc.target/i386/memcpy-1.c: Likewise.
+	* gcc.target/i386/pr40934.c: Likewise.
+	* gcc.target/i386/sse-5.c: Likewise.
+	* gcc.target/i386/stackalign/asm-1.c: Likewise.
+	* gcc.target/i386/vectorize4.c: Likewise.
+	* gcc.target/i386/980312-1.c: Fix defaulting to int.  Use
+	-fgnu89-inline.
+	* gcc.target/i386/980313-1.c: Likewise.
+	* gcc.target/i386/builtin-apply-mmx.c: Use -fgnu89-inline.
+	* gcc.target/i386/crc32-2.c: Use -std=gnu89.
+	* gcc.target/i386/crc32-3.c: Likewise.
+	* gcc.target/i386/intrinsics_3.c: Likewise.
+	* gcc.target/i386/loop-1.c: Likewise.
+	* gcc.target/i386/pr44948-2a.c: Likewise.
+	* gcc.target/i386/pr47564.c: Likewise.
+	* gcc.target/i386/pr50712.c: Likewise.
+	* gcc.target/i386/stackalign/return-2.c: Likewise.
+
 2014-10-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/62026

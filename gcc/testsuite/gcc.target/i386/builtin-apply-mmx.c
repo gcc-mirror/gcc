@@ -10,7 +10,7 @@
 /* This test case is adapted from gcc.dg/builtin-apply4.c.  */
  
 /* { dg-do run { xfail { ! *-*-darwin* } } } */
-/* { dg-options "-O2 -mmmx" } */
+/* { dg-options "-O2 -mmmx -fgnu89-inline" } */
 /* { dg-require-effective-target ia32 } */
 
 #include "mmx-check.h"

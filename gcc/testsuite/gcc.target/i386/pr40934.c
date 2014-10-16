@@ -4,7 +4,7 @@
 
 extern double host_frametime;
 extern float pitchvel;
-V_DriftPitch (float delta, float move)
+void V_DriftPitch (float delta, float move)
 {
   if (!delta)
     move = host_frametime;
