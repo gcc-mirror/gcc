@@ -44,5 +44,5 @@ int main()
 }
 
 /* { dg-final { scan-ipa-dump "Varpool alias has been created" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Equal symbols: 2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Equal symbols: 6" "icf"  } } */
 /* { dg-final { cleanup-ipa-dump "icf" } } */
