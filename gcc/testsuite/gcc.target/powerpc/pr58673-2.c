@@ -90,6 +90,9 @@ typedef struct
   t_coupl_LJ *tcLJ;
 }
 t_coupl_rec;
+void xvgr_legend ();
+real calc_deviation ();
+void pr_dev ();
 static void
 pr_ff (t_coupl_rec * tcr, real time, t_idef * idef, t_commrec * cr, int nfile,
        t_filenm fnm[])
