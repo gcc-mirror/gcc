@@ -4057,8 +4057,7 @@ package body Make is
    begin
       First := Name'Last;
       while First > Name'First
-        and then Name (First - 1) /= Directory_Separator
-        and then Name (First - 1) /= '/'
+        and then not Is_Directory_Separator (Name (First - 1))
       loop
          First := First - 1;
       end loop;
@@ -6805,8 +6804,7 @@ package body Make is
          begin
             First := Name'Last;
             while First > Name'First
-              and then Name (First - 1) /= Directory_Separator
-              and then Name (First - 1) /= '/'
+              and then not Is_Directory_Separator (Name (First - 1))
             loop
                First := First - 1;
             end loop;

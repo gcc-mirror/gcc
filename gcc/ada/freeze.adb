@@ -5024,7 +5024,8 @@ package body Freeze is
          --  that later when the full type is frozen).
 
          elsif Ekind_In (E, E_Record_Type, E_Record_Subtype)
-           and then not Is_Generic_Unit (Scope (E))
+           and then not (Present (Scope (E))
+                          and then Is_Generic_Unit (Scope (E)))
          then
             Freeze_Record_Type (E);
 

@@ -1,3 +1,39 @@
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Body): Add defense against
+	previous errors.
+	* freeze.adb (Freeze_Entity): Add defense against checking null
+	scope for generic.
+	* restrict.adb (Tasking_Allowed): Add test for No_Run_Time mode.
+	* sem_ch13.adb (Freeze_Entity_Checks): Add defense against
+	previous errors.
+	* sem_ch9.adb (Analyze_Task_Type_Declaration): Give error if
+	in No_Run_Time mode.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj-makr.adb: Minor reformatting.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, make.adb, prj-part.adb, gnatlink.adb, prj-nmsc.adb,
+	prj-conf.adb, prj-env.adb: Use Is_Directory_Separator where possible.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Undo_Initialization): If Initialize_Scalars
+	is enabled, code will be generated for some composite types
+	to initialize an object after its declaration. If there is
+	a subsequent Import pragma for the object, that code must be
+	removed as specified byw the semantics of the pragma, and to
+	prevent out-of-order elaboration issues in the back-end.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Concat): Keep concatenation operator
+	wrapping mechanism under debug flag -gnatd.h.
+	* debug.adb: Claim debug switch -gnatd.h.
+
 2014-10-17  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/Makefile.in: Enable the socket runtime bits

@@ -2894,7 +2894,20 @@ package body Sem_Ch9 is
       T      : Entity_Id;
 
    begin
-      Check_Restriction (No_Tasking, N);
+      --  Attempt to use tasking in no run time mode is not allowe. Issue hard
+      --  error message to disable expansion which leads to crashes.
+
+      if Opt.No_Run_Time_Mode then
+         Error_Msg_N ("tasking not allowed in No_Run_Time mode", N);
+
+      --  Otherwise soft check for no tasking restriction
+
+      else
+         Check_Restriction (No_Tasking, N);
+      end if;
+
+      --  Proceed ahead with analysis of task type declaration
+
       Tasking_Used := True;
 
       --  The sequential partition elaboration policy is supported only in the
