@@ -1,3 +1,8 @@
+2014-10-17  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/Makefile.in: Enable the socket runtime bits
+	for Android.
+
 2014-10-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Add_Invariants, Replace_Type_References): Do
