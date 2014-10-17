@@ -1838,6 +1838,17 @@ package body Sem_Ch5 is
 
             else
                Typ := Etype (Iter_Name);
+
+               --  Verify that the expression produces an iterator.
+
+               if not Of_Present (N) and then not Is_Iterator (Typ)
+                 and then not Is_Array_Type (Typ)
+                 and then No (Find_Aspect (Typ, Aspect_Iterable))
+               then
+                  Error_Msg_N
+                    ("expect object that implements iterator interface",
+                        Iter_Name);
+               end if;
             end if;
 
             --  Protect against malformed iterator

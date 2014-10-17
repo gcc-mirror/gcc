@@ -1384,7 +1384,11 @@ package body Sem_Ch7 is
             end if;
 
             if Has_Invariants (E) then
-               Build_Invariant_Procedure (E, N);
+               if Ekind (E) = E_Private_Subtype then
+                  null;
+               else
+                  Build_Invariant_Procedure (E, N);
+               end if;
             end if;
          end if;
 

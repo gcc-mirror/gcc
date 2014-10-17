@@ -3903,6 +3903,7 @@ package body Sem_Ch13 is
 
          if Ctrl = Ent
            or else Ctrl = Class_Wide_Type (Ent)
+
            or else
              (Ekind (Ctrl) = E_Anonymous_Access_Type
                and then
@@ -7393,6 +7394,7 @@ package body Sem_Ch13 is
           Chars => New_External_Name (Chars (Typ), "Invariant"));
       Set_Has_Invariants (Typ);
       Set_Ekind (SId, E_Procedure);
+      Set_Etype (SId, Standard_Void_Type);
       Set_Is_Invariant_Procedure (SId);
       Set_Invariant_Procedure (Typ, SId);
 
