@@ -45623,7 +45623,22 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
   enum machine_mode mode = GET_MODE (op0);
   rtx t1, t2, t3, t4, t5, t6;
 
-  if (TARGET_XOP && mode == V2DImode)
+  if (TARGET_AVX512DQ)
+    {
+      rtx (*gen) (rtx, rtx, rtx);
+
+      if (mode == V8DImode)
+	gen = gen_avx512dq_mulv8di3;
+      else if (TARGET_AVX512VL)
+	{
+	  if (mode == V4DImode)
+	    gen = gen_avx512dq_mulv4di3;
+	  else if (mode == V2DImode)
+	    gen = gen_avx512dq_mulv2di3;
+	}
+      emit_insn (gen (op0, op1, op2));
+    }
+  else if (TARGET_XOP && mode == V2DImode)
     {
       /* op1: A,B,C,D, op2: E,F,G,H */
       op1 = gen_lowpart (V4SImode, op1);
