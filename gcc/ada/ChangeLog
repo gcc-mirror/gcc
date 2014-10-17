@@ -1,3 +1,21 @@
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* lib-writ.ads, s-valdec.ads: Minor reformatting.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Additional work on function wrappers.
+
+2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Possible_Bit_Aligned_Component): Also recurse
+	on the renamed object of renamings.
+
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Parse_Project_And_Apply_Config): In CodePeer
+	mode, always use the native target.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/misc.c: Adjust include files.
