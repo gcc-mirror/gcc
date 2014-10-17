@@ -6364,6 +6364,11 @@ package body Sem_Ch3 is
 
          Analyze (N);
 
+         --  Propagate the aspects from the original type declaration to the
+         --  declaration of the implicit base.
+
+         Move_Aspects (From => Original_Node (N), To => Type_Decl);
+
          --  Apply a range check. Since this range expression doesn't have an
          --  Etype, we have to specifically pass the Source_Typ parameter. Is
          --  this right???

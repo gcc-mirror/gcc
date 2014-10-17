@@ -1,3 +1,10 @@
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): Propagate aspect
+	specfications from original type declaration to declaration of
+	implicit base, because original node is rewritten as a subtype
+	declaration on which type aspects do not belong.
+
 2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Propagate_Default_Init_Cond_Attributes): A derived type
