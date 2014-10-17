@@ -7152,7 +7152,10 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      Typl := Base_Type (Typl);
+      --  Now get the implementation base type (note that plain Base_Type here
+      --  might lead us back to the private type, which is not what we want!)
+
+      Typl := Implementation_Base_Type (Typl);
 
       --  Equality between variant records results in a call to a routine
       --  that has conditional tests of the discriminant value(s), and hence

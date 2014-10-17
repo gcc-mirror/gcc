@@ -1056,7 +1056,12 @@ package body Sem_Ch12 is
          Actuals := New_List;
          Profile := New_List;
 
-         F := First_Formal (Entity (Actual));
+         if Present (Actual) then
+            F := First_Formal (Entity (Actual));
+         else
+            F := First_Formal (Formal);
+         end if;
+
          N_Parms := 0;
          while Present (F) loop
 
@@ -1066,16 +1071,26 @@ package body Sem_Ch12 is
             New_F := Make_Temporary
                        (Loc, Character'Val (Character'Pos ('A') + N_Parms));
 
-            --  If a formal has a class-wide type, rewrite as the corresponding
-            --  attribute, because the class-wide type is not retrievable by
-            --  visbility.
+            if No (Actual) then
 
-            if Is_Class_Wide_Type (Etype (F)) then
-               Parm_Type :=
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Class,
-                   Prefix         =>
-                     Make_Identifier (Loc, Chars (Etype (Etype (F)))));
+               --  If formal has a class-wide type rewrite as the corresponding
+               --  attribute, because the class-wide type is not retrievable by
+               --  visbility.
+
+               if Is_Class_Wide_Type (Etype (F)) then
+                  Parm_Type :=
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Class,
+                      Prefix         =>
+                        Make_Identifier (Loc, Chars (Etype (Etype (F)))));
+
+               else
+                  Parm_Type :=
+                    Make_Identifier (Loc, Chars (Etype (Etype (F))));
+               end if;
+
+            --  If actual is present, use the type of its own formal
+
             else
                Parm_Type := New_Occurrence_Of (Etype (F), Loc);
             end if;
@@ -1766,8 +1781,7 @@ package body Sem_Ch12 is
 
                   else
                      if GNATprove_Mode
-                       and then
-                         Present
+                        and then Present
                            (Containing_Package_With_Ext_Axioms
                               (Defining_Entity (Analyzed_Formal)))
                        and then Ekind (Defining_Entity (Analyzed_Formal)) =
