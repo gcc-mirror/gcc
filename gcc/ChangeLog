@@ -1,3 +1,9 @@
+2014-10-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/61605
+	* regcprop.c (copyprop_hardreg_forward_1): Add copy_p and noop_p.  Don't
+	notice stores for noops.  Don't regard noops as copies.
+
 2014-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cpuid.h (__cpuid): Remove definitions that handle %ebx

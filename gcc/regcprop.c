@@ -1047,12 +1047,21 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	    }
 	}
 
-      /* Notice stores.  */
-      note_stores (PATTERN (insn), kill_set_value, &ksvd);
+      bool copy_p = (set
+		     && REG_P (SET_DEST (set))
+		     && REG_P (SET_SRC (set)));
+      bool noop_p = (copy_p
+		     && rtx_equal_p (SET_DEST (set), SET_SRC (set)));
 
-      /* Notice copies.  */
-      if (set && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set)))
-	copy_value (SET_DEST (set), SET_SRC (set), vd);
+      if (!noop_p)
+	{
+	  /* Notice stores.  */
+	  note_stores (PATTERN (insn), kill_set_value, &ksvd);
+
+	  /* Notice copies.  */
+	  if (copy_p)
+	    copy_value (SET_DEST (set), SET_SRC (set), vd);
+	}
 
       if (insn == BB_END (bb))
 	break;
