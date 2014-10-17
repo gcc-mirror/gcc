@@ -1,5 +1,28 @@
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63464
+	* gimple.h (gimple_seq_discard): New prototype.
+	* gimple.c: Include stringpool.h and tree-ssanames.h.
+	(gimple_seq_discard): New function.
+	* optabs.h (lshift_cheap_p): New prototype.
+	* optabs.c (lshift_cheap_p): New function, moved from...
+	* tree-switch-conversion.c (lshift_cheap_p): ... here.
+	* tree-ssa-reassoc.c: Include gimplify.h and optabs.h.
+	(reassoc_branch_fixups): New variable.
+	(update_range_test): Add otherrangep and seq arguments.
+	Unshare exp.  If otherrange is NULL, use for other ranges
+	array of pointers pointed by otherrangep instead.
+	Emit seq before gimplified statements for tem.
+	(optimize_range_tests_diff): Adjust update_range_test
+	caller.
+	(optimize_range_tests_xor): Likewise.  Fix up comment.
+	(extract_bit_test_mask, optimize_range_tests_to_bit_test): New
+	functions.
+	(optimize_range_tests): Adjust update_range_test caller.
+	Call optimize_range_tests_to_bit_test.
+	(branch_fixup): New function.
+	(execute_reassoc): Call branch_fixup.
+
 	PR tree-optimization/63302
 	* tree-ssa-reassoc.c (optimize_range_tests_xor,
 	optimize_range_tests_diff): Use !integer_pow2p () instead of

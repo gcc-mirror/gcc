@@ -125,35 +125,6 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 }
 
 
-/* Determine whether "1 << x" is relatively cheap in word_mode.  */
-/* FIXME: This is the function that we need rtl.h and optabs.h for.
-   This function (and similar RTL-related cost code in e.g. IVOPTS) should
-   be moved to some kind of interface file for GIMPLE/RTL interactions.  */
-static bool
-lshift_cheap_p (bool speed_p)
-{
-  /* FIXME: This should be made target dependent via this "this_target"
-     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
-  static bool init[2] = {false, false};
-  static bool cheap[2] = {true, true};
-
-  /* If the targer has no lshift in word_mode, the operation will most
-     probably not be cheap.  ??? Does GCC even work for such targets?  */
-  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
-    return false;
-
-  if (!init[speed_p])
-    {
-      rtx reg = gen_raw_REG (word_mode, 10000);
-      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
-			       speed_p);
-      cheap[speed_p] = cost < COSTS_N_INSNS (MAX_CASE_BIT_TESTS);
-      init[speed_p] = true;
-    }
-
-  return cheap[speed_p];
-}
-
 /* Return true if a switch should be expanded as a bit test.
    RANGE is the difference between highest and lowest case.
    UNIQ is number of unique case node targets, not counting the default case.
