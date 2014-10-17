@@ -5032,7 +5032,8 @@ package body Prj.Nmsc is
                if OK then
                   for J in 1 .. Name_Len loop
                      if Name_Buffer (J) = '/'
-                       or else Name_Buffer (J) = Directory_Separator
+                          or else
+                        Name_Buffer (J) = Directory_Separator
                      then
                         OK := False;
                         exit;
@@ -5498,15 +5499,16 @@ package body Prj.Nmsc is
       Dir_Exists : Boolean;
 
       No_Sources : constant Boolean :=
-                     Project.Qualifier = Abstract_Project
-                       or else
-                     (((not Source_Files.Default
-                        and then Source_Files.Values = Nil_String)
-                       or else (not Source_Dirs.Default
-                                 and then Source_Dirs.Values = Nil_String)
-                       or else (not Languages.Default
-                                 and then Languages.Values = Nil_String))
-                     and then Project.Extends = No_Project);
+        Project.Qualifier = Abstract_Project
+          or else (((not Source_Files.Default
+                      and then Source_Files.Values = Nil_String)
+                    or else
+                    (not Source_Dirs.Default
+                      and then Source_Dirs.Values  = Nil_String)
+                    or else
+                     (not Languages.Default
+                      and then Languages.Values    = Nil_String))
+                   and then Project.Extends = No_Project);
 
    --  Start of processing for Get_Directories
 
@@ -6305,7 +6307,7 @@ package body Prj.Nmsc is
 
          Dir_Exists := Is_Directory (Full_Path_Name.all);
 
-         if not Must_Exist or else Dir_Exists then
+         if not Must_Exist or Dir_Exists then
             declare
                Normed : constant String :=
                           Normalize_Pathname
@@ -6484,7 +6486,8 @@ package body Prj.Nmsc is
 
                         for J in 1 .. Last loop
                            if Line (J) = '/'
-                             or else Line (J) = Directory_Separator
+                                or else
+                              Line (J) = Directory_Separator
                            then
                               Error_Msg_File_1 := Name;
                               Error_Msg
@@ -6598,7 +6601,8 @@ package body Prj.Nmsc is
 
                for J in 1 .. Name_Len loop
                   if Name_Buffer (J) = '/'
-                    or else Name_Buffer (J) = Directory_Separator
+                       or else
+                     Name_Buffer (J) = Directory_Separator
                   then
                      Error_Msg_File_1 := Name;
                      Error_Msg

@@ -3720,7 +3720,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         --  The aspect is type-specific, so retrieve it from the base type.
+         --  The aspect is type-specific, so retrieve it from the base type
 
          Call :=
            Make_Procedure_Call_Statement (Loc,
