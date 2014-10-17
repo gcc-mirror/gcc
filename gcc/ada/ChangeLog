@@ -1,3 +1,34 @@
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants): For a class-wide type invariant,
+	preserve semantic information on the invariant expression
+	(typically a function call) because it may be inherited by a
+	type extension in a different unit, and it cannot be resolved
+	by visibility elsewhere because it may refer to local entities.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that string literal can be used for
+	pragma Warnings when operating in Ada 83 mode.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Find_Aggregate_Component_Desig_Type): New
+	subsidiary function to Freeze_ Expression, used to determine
+	whether an aggregate for an array of access types also freezes the
+	designated type, when some aggregate components are allocators.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Find_Token): AI05-031 indicates that the
+	procedure must raise Index_Error when Source is not empty and
+	the From parameter is not within the range of the Source string.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Is_Static_String_Expression): Allow string
+	literal in Ada 83 mode.
+
 2014-10-17  Vincent Celier  <celier@adacore.com>
 
 	* prj-conf.adb (Get_Config_Switches): In CodePeer mode, do

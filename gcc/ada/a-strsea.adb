@@ -203,6 +203,12 @@ package body Ada.Strings.Search is
       Last   : out Natural)
    is
    begin
+      --  AI05-031: Raise Index error if Source non-empty and From not in range
+
+      if Source'Length /= 0 and then From not in Source'Range then
+         raise Index_Error;
+      end if;
+
       for J in From .. Source'Last loop
          if Belongs (Source (J), Set, Test) then
             First := J;

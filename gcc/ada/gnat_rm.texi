@@ -7829,6 +7829,9 @@ pragma Warnings (static_string_EXPRESSION [,REASON]);
 pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
 REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
+
+Note: in Ada 83 mode, a string literal may be used in place of
+a static string expression (which does not exist in Ada 83).
 @end smallexample
 
 @noindent
