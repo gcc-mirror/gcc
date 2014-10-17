@@ -1,5 +1,12 @@
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63567
+	* c-typeck.c (digest_init): Allow initializing objects with static
+	storage duration with compound literals even in C99 and add pedwarn
+	for it.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
 	PR c/63543
 	* c-tree.h (C_TYPE_ERROR_REPORTED): Define.
 	* c-typeck.c (build_indirect_ref): Don't print the "dereferencing..."

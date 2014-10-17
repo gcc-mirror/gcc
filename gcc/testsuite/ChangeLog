@@ -1,5 +1,12 @@
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63567
+	* gcc.dg/pr61096-1.c: Change dg-error into dg-warning.
+	* gcc.dg/pr63567-1.c: New test.
+	* gcc.dg/pr63567-2.c: New test.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
 	PR c/63543
 	* gcc.dg/pr63543.c: New test.
 	* gcc.dg/array-8.c: Remove dg-error.
