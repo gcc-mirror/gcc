@@ -1,3 +1,24 @@
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Propagate_Default_Init_Cond_Attributes): A derived type
+	inherits the attributes related to pragma Default_Initial_Condition
+	from its parent type.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Index - versions with a From parameter):
+	According to AI05-056, the Index functions with a From parameter
+	return 0 if the source is an empty string.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Disable
+	the consistency checks in ASIS mode.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-expmod.ads: Minor typo fix.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting.
