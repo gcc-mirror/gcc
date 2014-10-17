@@ -3903,15 +3903,13 @@ package body Sem_Ch13 is
 
          if Ctrl = Ent
            or else Ctrl = Class_Wide_Type (Ent)
-
            or else
              (Ekind (Ctrl) = E_Anonymous_Access_Type
-               and then
-                 (Designated_Type (Ctrl) = Ent
-                   or else Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+               and then (Designated_Type (Ctrl) = Ent
+                           or else
+                         Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
          then
             null;
-
          else
             return False;
          end if;
