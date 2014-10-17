@@ -1383,8 +1383,8 @@
 	* doc/install.texi (aarch64*-*-*): Document 
 	new --enable-fix-cortex-a53-835769 option.
 
-2014-10-10  Kyrylo Tkachov<kyrylo.tkachov@arm.com>
-            Ramana Radhakrishnan<ramana.radhakrishnan@arm.com>
+2014-10-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.h (FINAL_PRESCAN_INSN): Define.
 	(ADJUST_INSN_LENGTH): Define.
