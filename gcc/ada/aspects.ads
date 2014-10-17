@@ -178,6 +178,7 @@ package Aspects is
       Aspect_Inline,
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
+      Aspect_Lock_Free,                     -- GNAT
       Aspect_No_Return,
       Aspect_Pack,
       Aspect_Persistent_BSS,                -- GNAT
@@ -194,12 +195,7 @@ package Aspects is
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components,
-
-      --  Aspects that have a static boolean value but don't correspond to
-      --  pragmas with a single argument that it is the entity in question.
-
-      Aspect_Lock_Free);                    -- GNAT
+      Aspect_Volatile_Components);
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
