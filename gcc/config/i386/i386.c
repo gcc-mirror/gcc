@@ -39764,6 +39764,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
     case V8SFmode:
     case V8SImode:
     case V2DFmode:
+    case V64QImode:
+    case V32HImode:
     case V2DImode:
     case V4SFmode:
     case V4SImode:
@@ -39794,6 +39796,9 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V8HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+
       if (TARGET_SSE2)
 	{
 	  struct expand_vec_perm_d dperm;
@@ -39824,6 +39829,9 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V16QImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+
       if (TARGET_SSE2)
 	goto permute;
       goto widen;
@@ -39853,16 +39861,19 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 
     case V16HImode:
     case V32QImode:
-      {
-	enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
-	rtx x = gen_reg_rtx (hvmode);
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+      else
+	{
+	  enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
+	  rtx x = gen_reg_rtx (hvmode);
 
-	ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
-	gcc_assert (ok);
+	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
+	  gcc_assert (ok);
 
-	x = gen_rtx_VEC_CONCAT (mode, x, x);
-	emit_insn (gen_rtx_SET (VOIDmode, target, x));
-      }
+	  x = gen_rtx_VEC_CONCAT (mode, x, x);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	}
       return true;
 
     default:
@@ -40424,8 +40435,9 @@ static void
 ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 				 rtx target, rtx vals)
 {
-  rtx ops[64], op0, op1;
+  rtx ops[64], op0, op1, op2, op3, op4, op5;
   enum machine_mode half_mode = VOIDmode;
+  enum machine_mode quarter_mode = VOIDmode;
   int n, i;
 
   switch (mode)
@@ -40474,6 +40486,42 @@ half:
 					  &ops [n >> 1], n >> 2);
       emit_insn (gen_rtx_SET (VOIDmode, target,
 			      gen_rtx_VEC_CONCAT (mode, op0, op1)));
+      return;
+
+    case V64QImode:
+      quarter_mode = V16QImode;
+      half_mode = V32QImode;
+      goto quarter;
+
+    case V32HImode:
+      quarter_mode = V8HImode;
+      half_mode = V16HImode;
+      goto quarter;
+
+quarter:
+      n = GET_MODE_NUNITS (mode);
+      for (i = 0; i < n; i++)
+	ops[i] = XVECEXP (vals, 0, i);
+      op0 = gen_reg_rtx (quarter_mode);
+      op1 = gen_reg_rtx (quarter_mode);
+      op2 = gen_reg_rtx (quarter_mode);
+      op3 = gen_reg_rtx (quarter_mode);
+      op4 = gen_reg_rtx (half_mode);
+      op5 = gen_reg_rtx (half_mode);
+      ix86_expand_vector_init_interleave (quarter_mode, op0, ops,
+					  n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op1,
+					  &ops [n >> 2], n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op2,
+					  &ops [n >> 1], n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op3,
+					  &ops [(n >> 1) | (n >> 2)], n >> 3);
+      emit_insn (gen_rtx_SET (VOIDmode, op4,
+			      gen_rtx_VEC_CONCAT (half_mode, op0, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, op5,
+			      gen_rtx_VEC_CONCAT (half_mode, op2, op3)));
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_VEC_CONCAT (mode, op4, op5)));
       return;
 
     case V16QImode:
