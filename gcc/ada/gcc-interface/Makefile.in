@@ -1119,14 +1119,12 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-armel.ads \
   a-exexpr.adb<a-exexpr-gcc.adb \
-  s-excmac.ads<s-excmac-arm.ads \
-  $(DUMMY_SOCKETS_TARGET_PAIRS)
+  s-excmac.ads<s-excmac-arm.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
-  GNATRTL_SOCKETS_OBJS =
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o sigtramp-armdroid.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
