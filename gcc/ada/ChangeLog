@@ -1,3 +1,8 @@
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, a-strsea.adb: Minor reformatting.
+	* par-ch6.adb (P_Subprogram): Fix bad handling of null procedures.
+
 2014-10-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Enumeration_Type): Propagate aspect

@@ -3285,19 +3285,20 @@ package body Sem_Ch3 is
                --  Enter_Name will handle the visibility.
 
                or else
-                (Is_Discriminal (Id)
+                 (Is_Discriminal (Id)
                    and then Ekind (Discriminal_Link (Id)) =
-                              E_Entry_Index_Parameter)
+                                              E_Entry_Index_Parameter)
 
                --  The current object is the renaming for a generic declared
                --  within the instance.
 
                or else
-                (Ekind (Prev_Entity) = E_Package
-                  and then Nkind (Parent (Prev_Entity)) =
-                                         N_Package_Renaming_Declaration
-                  and then not Comes_From_Source (Prev_Entity)
-                  and then Is_Generic_Instance (Renamed_Entity (Prev_Entity))))
+                 (Ekind (Prev_Entity) = E_Package
+                   and then Nkind (Parent (Prev_Entity)) =
+                                               N_Package_Renaming_Declaration
+                   and then not Comes_From_Source (Prev_Entity)
+                   and then
+                     Is_Generic_Instance (Renamed_Entity (Prev_Entity))))
          then
             Prev_Entity := Empty;
          end if;
@@ -4236,9 +4237,7 @@ package body Sem_Ch3 is
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
       Parent_Base := Base_Type (Parent_Type);
 
-      if Parent_Type = Any_Type
-        or else Etype (Parent_Type) = Any_Type
-      then
+      if Parent_Type = Any_Type or else Etype (Parent_Type) = Any_Type then
          Set_Ekind (T, Ekind (Parent_Type));
          Set_Etype (T, Any_Type);
          goto Leave;
@@ -6374,9 +6373,9 @@ package body Sem_Ch3 is
          --  this right???
 
          if Nkind (Indic) = N_Subtype_Indication then
-            Apply_Range_Check (Range_Expression (Constraint (Indic)),
-                               Parent_Type,
-                               Source_Typ => Entity (Subtype_Mark (Indic)));
+            Apply_Range_Check
+              (Range_Expression (Constraint (Indic)), Parent_Type,
+               Source_Typ => Entity (Subtype_Mark (Indic)));
          end if;
       end if;
    end Build_Derived_Enumeration_Type;
@@ -8024,7 +8023,7 @@ package body Sem_Ch3 is
 
       elsif Is_Limited_Record (Parent_Type)
         or else (Present (Full_View (Parent_Type))
-                   and then Is_Limited_Record (Full_View (Parent_Type)))
+                  and then Is_Limited_Record (Full_View (Parent_Type)))
       then
          if not Is_Interface (Parent_Type)
            or else Is_Synchronized_Interface (Parent_Type)
@@ -8210,7 +8209,7 @@ package body Sem_Ch3 is
          Set_Is_Constrained
            (Derived_Type,
             not (Inherit_Discrims
-                   or else Has_Unknown_Discriminants (Derived_Type)));
+                  or else Has_Unknown_Discriminants (Derived_Type)));
       end if;
 
       --  STEP 3: initialize fields of derived type
@@ -8607,7 +8606,7 @@ package body Sem_Ch3 is
       --  Set SSO default for record or array type
 
       if (Is_Array_Type (Derived_Type)
-          or else Is_Record_Type (Derived_Type))
+           or else Is_Record_Type (Derived_Type))
         and then Is_Base_Type (Derived_Type)
       then
          Set_Default_SSO (Derived_Type);
@@ -8909,8 +8908,7 @@ package body Sem_Ch3 is
 
          elsif Nkind (Constr) = N_Range
            or else (Nkind (Constr) = N_Attribute_Reference
-                     and then
-                    Attribute_Name (Constr) = Name_Range)
+                     and then Attribute_Name (Constr) = Name_Range)
          then
             Error_Msg_N
               ("a range is not a valid discriminant constraint", Constr);
@@ -12181,7 +12179,8 @@ package body Sem_Ch3 is
             Get_Index_Bounds (Old_Index, Lo_Expr, Hi_Expr);
 
             if Is_Discriminant (Lo_Expr)
-              or else Is_Discriminant (Hi_Expr)
+                 or else
+               Is_Discriminant (Hi_Expr)
             then
                Need_To_Create_Itype := True;
             end if;
@@ -12401,7 +12400,7 @@ package body Sem_Ch3 is
                --  were declared in Typ's private view.
 
                or else (Is_Private_Type (Discrim_Scope)
-                        and then Chars (Discrim_Scope) = Chars (Typ))
+                         and then Chars (Discrim_Scope) = Chars (Typ))
 
                --  or else we are deriving from the full view and the
                --  discriminant is declared in the private entity.
@@ -13371,9 +13370,7 @@ package body Sem_Ch3 is
          --  The tag and the possible parent component are unconditionally in
          --  the subtype.
 
-         if Is_Tagged_Type (Typ)
-           or else Has_Controlled_Component (Typ)
-         then
+         if Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
             Old_C := First_Component (Typ);
             while Present (Old_C) loop
                if Nam_In (Chars (Old_C), Name_uTag, Name_uParent) then
@@ -15015,8 +15012,8 @@ package body Sem_Ch3 is
                      loop
                         exit when No (Partial_View)
                           or else (Has_Private_Declaration (Partial_View)
-                                     and then
-                                   Full_View (Partial_View) = Derived_Type);
+                                    and then
+                                      Full_View (Partial_View) = Derived_Type);
 
                         Next_Entity (Partial_View);
                      end loop;
@@ -15373,9 +15370,7 @@ package body Sem_Ch3 is
          --  subtype of Any_Type, and set a few attributes to prevent cascaded
          --  errors. If this is a self-definition, emit error now.
 
-         if T = Parent_Type
-           or else T = Etype (Parent_Type)
-         then
+         if T = Parent_Type or else T = Etype (Parent_Type) then
             Error_Msg_N ("type cannot be used in its own definition", Indic);
          end if;
 
@@ -15858,9 +15853,7 @@ package body Sem_Ch3 is
    --  Start of processing for Expand_To_Stored_Constraint
 
    begin
-      if No (Constraint)
-        or else Is_Empty_Elmt_List (Constraint)
-      then
+      if No (Constraint) or else Is_Empty_Elmt_List (Constraint) then
          return No_Elist;
       end if;
 
@@ -16242,7 +16235,7 @@ package body Sem_Ch3 is
 
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
-                       or else Present (Class_Wide_Type (Prev)))
+                      or else Present (Class_Wide_Type (Prev)))
          then
             --  Ada 2012 (AI05-0162): A private type may be the completion of
             --  an incomplete type.
@@ -16937,8 +16930,7 @@ package body Sem_Ch3 is
       elsif Nkind (C) = N_Digits_Constraint then
          return
             Is_Decimal_Fixed_Point_Type (Entity (Subtype_Mark (N)))
-              or else
-            Present (Range_Constraint (C));
+              or else Present (Range_Constraint (C));
 
       elsif Nkind (C) = N_Delta_Constraint then
          return Present (Range_Constraint (C));
@@ -17028,7 +17020,7 @@ package body Sem_Ch3 is
       --  Start of processing for Inherit_Component
 
       begin
-         pragma Assert (not Is_Tagged or else not Stored_Discrim);
+         pragma Assert (not Is_Tagged or not Stored_Discrim);
 
          Set_Parent (New_C, Parent (Old_C));
 
@@ -17073,7 +17065,7 @@ package body Sem_Ch3 is
             elsif (Is_Private_Type (Derived_Base)
                     and then not Is_Generic_Type (Derived_Base))
               or else (Is_Empty_Elmt_List (Discs)
-                         and then not Expander_Active)
+                        and then not Expander_Active)
             then
                Set_Etype (New_C, Etype (Old_C));
 
@@ -17215,9 +17207,9 @@ package body Sem_Ch3 is
         and then Present (First_Discriminant (Derived_Base))
         and then
           (not Is_Private_Type (Derived_Base)
-             or else Is_Completely_Hidden
-               (First_Stored_Discriminant (Derived_Base))
-             or else Is_Generic_Type (Derived_Base))
+            or else Is_Completely_Hidden
+                      (First_Stored_Discriminant (Derived_Base))
+            or else Is_Generic_Type (Derived_Base))
       then
          D := First_Discriminant (Derived_Base);
          while Present (D) loop
@@ -18779,9 +18771,7 @@ package body Sem_Ch3 is
       begin
          --  Abstract interfaces are only associated with tagged record types
 
-         if not Is_Tagged_Type (Typ)
-           or else not Is_Record_Type (Typ)
-         then
+         if not Is_Tagged_Type (Typ) or else not Is_Record_Type (Typ) then
             return;
          end if;
 
@@ -20488,9 +20478,7 @@ package body Sem_Ch3 is
 
       --  Normal case
 
-      if Ada_Version < Ada_2005
-        or else not Interface_Present (Def)
-      then
+      if Ada_Version < Ada_2005 or else not Interface_Present (Def) then
          if Limited_Present (Def) then
             Check_SPARK_05_Restriction ("limited is not allowed", N);
          end if;
