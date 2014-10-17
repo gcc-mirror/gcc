@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2825,4 +2827,20 @@ gimple_seq_set_location (gimple_seq seq, location_t loc)
 {
   for (gimple_stmt_iterator i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     gimple_set_location (gsi_stmt (i), loc);
+}
+
+/* Release SSA_NAMEs in SEQ as well as the GIMPLE statements.  */
+
+void
+gimple_seq_discard (gimple_seq seq)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start (seq); !gsi_end_p (gsi); )
+    {
+      gimple stmt = gsi_stmt (gsi);
+      gsi_remove (&gsi, true);
+      release_defs (stmt);
+      ggc_free (stmt);
+    }
 }

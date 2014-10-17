@@ -1,5 +1,10 @@
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63464
+	* gcc.dg/torture/pr63464.c: New test.
+	* gcc.dg/tree-ssa/reassoc-37.c: New test.
+	* gcc.dg/tree-ssa/reassoc-38.c: New test.
+
 	PR tree-optimization/63302
 	* gcc.c-torture/execute/pr63302.c: New test.
 
