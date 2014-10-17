@@ -6683,13 +6683,15 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	inside_init = convert (type, inside_init);
 
       if (require_constant
-	  && (code == VECTOR_TYPE || !flag_isoc99)
 	  && TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
 	{
 	  /* As an extension, allow initializing objects with static storage
 	     duration with compound literals (which are then treated just as
 	     the brace enclosed list they contain).  Also allow this for
 	     vectors, as we can only assign them with compound literals.  */
+	  if (flag_isoc99 && code != VECTOR_TYPE)
+	    pedwarn_init (init_loc, OPT_Wpedantic, "initializer element "
+			  "is not constant");
 	  tree decl = COMPOUND_LITERAL_EXPR_DECL (inside_init);
 	  inside_init = DECL_INITIAL (decl);
 	}
