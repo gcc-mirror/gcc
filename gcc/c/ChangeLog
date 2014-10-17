@@ -1,3 +1,11 @@
+2014-10-17  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/61848
+	* c-decl.c (merge_decls): Don't merge section name or tls model
+	to newdecl symtab node, instead merge to olddecl.  Override
+	existing olddecl section name.  Set tls_model for all thread-local
+	vars, not just OMP thread-private ones.  Remove incorrect comment.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-decl.c: Adjust include files.
