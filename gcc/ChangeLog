@@ -1,3 +1,13 @@
+2014-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (__cpuid): Remove definitions that handle %ebx
+	register in a special way.
+	(__cpuid_count): Ditto.
+	* config/i386/driver-i386.h: Protect with
+	"#if defined(__GNUC__) && (__GNUC__ >= 5 || !defined(__PIC__))".
+	(host_detect_local_cpu): Mention that GCC with non-fixed %ebx
+	is required to compile the function.
+
 2014-10-17  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/61848
