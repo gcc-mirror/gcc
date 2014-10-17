@@ -1,3 +1,9 @@
+2014-10-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/61605
+	* gcc.target/i386/fuse-caller-save.c: Update addition check.  Add movl
+	absence check.
+
 2014-10-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR middle-end/61848

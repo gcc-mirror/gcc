@@ -1005,6 +1005,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  unsigned int set_nregs = 0;
 	  unsigned int regno;
 	  rtx exp;
+	  HARD_REG_SET regs_invalidated_by_this_call;
 
 	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
 	    {
@@ -1023,8 +1024,11 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		}
 	    }
 
+	  get_call_reg_set_usage (insn,
+				  &regs_invalidated_by_this_call,
+				  regs_invalidated_by_call);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
+	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
 		 || HARD_REGNO_CALL_PART_CLOBBERED (regno, vd->e[regno].mode))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
