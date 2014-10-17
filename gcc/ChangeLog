@@ -1,3 +1,8 @@
+2014-10-17  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Refactor
+	conditions to fix bootstrap.
+
 2014-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	gcc-plugin.h:  Add tm.h and flattened includes from function.h.
