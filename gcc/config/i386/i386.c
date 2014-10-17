@@ -21407,35 +21407,132 @@ ix86_expand_int_vcond (rtx operands[])
   return true;
 }
 
-static bool
-ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1)
+/* AVX512F does support 64-byte integer vector operations,
+   thus the longest vector we are faced with is V64QImode.  */
+#define MAX_VECT_LEN	64
+
+struct expand_vec_perm_d
 {
-  enum machine_mode mode = GET_MODE (op0);
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_operand_p;
+  bool testing_p;
+};
+
+static bool
+ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
+			      struct expand_vec_perm_d *d)
+{
+  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+     expander, so args are either in d, or in op0, op1 etc.  */
+  enum machine_mode mode = GET_MODE (d ? d->op0 : op0);
+  enum machine_mode maskmode = mode;
+  rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
+
   switch (mode)
     {
+    case V8HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+	gen = gen_avx512vl_vpermi2varv8hi3;
+      break;
+    case V16HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+	gen = gen_avx512vl_vpermi2varv16hi3;
+      break;
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	gen = gen_avx512bw_vpermi2varv32hi3;
+      break;
+    case V4SImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv4si3;
+      break;
+    case V8SImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv8si3;
+      break;
     case V16SImode:
-      emit_insn (gen_avx512f_vpermi2varv16si3 (target, op0,
-					       force_reg (V16SImode, mask),
-					       op1));
-      return true;
+      if (TARGET_AVX512F)
+	gen = gen_avx512f_vpermi2varv16si3;
+      break;
+    case V4SFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv4sf3;
+	  maskmode = V4SImode;
+	}
+      break;
+    case V8SFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv8sf3;
+	  maskmode = V8SImode;
+	}
+      break;
     case V16SFmode:
-      emit_insn (gen_avx512f_vpermi2varv16sf3 (target, op0,
-					       force_reg (V16SImode, mask),
-					       op1));
-      return true;
+      if (TARGET_AVX512F)
+	{
+	  gen = gen_avx512f_vpermi2varv16sf3;
+	  maskmode = V16SImode;
+	}
+      break;
+    case V2DImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv2di3;
+      break;
+    case V4DImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv4di3;
+      break;
     case V8DImode:
-      emit_insn (gen_avx512f_vpermi2varv8di3 (target, op0,
-					      force_reg (V8DImode, mask),
-					      op1));
-      return true;
+      if (TARGET_AVX512F)
+	gen = gen_avx512f_vpermi2varv8di3;
+      break;
+    case V2DFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv2df3;
+	  maskmode = V2DImode;
+	}
+      break;
+    case V4DFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv4df3;
+	  maskmode = V4DImode;
+	}
+      break;
     case V8DFmode:
-      emit_insn (gen_avx512f_vpermi2varv8df3 (target, op0,
-					      force_reg (V8DImode, mask),
-					      op1));
-      return true;
+      if (TARGET_AVX512F)
+	{
+	  gen = gen_avx512f_vpermi2varv8df3;
+	  maskmode = V8DImode;
+	}
+      break;
     default:
-      return false;
+      break;
     }
+
+  if (gen == NULL)
+    return false;
+
+  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+     expander, so args are either in d, or in op0, op1 etc.  */
+  if (d)
+    {
+      rtx vec[64];
+      target = d->target;
+      op0 = d->op0;
+      op1 = d->op1;
+      for (int i = 0; i < d->nelt; ++i)
+	vec[i] = GEN_INT (d->perm[i]);
+      mask = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (d->nelt, vec));
+    }
+
+  emit_insn (gen (target, op0, force_reg (maskmode, mask), op1));
+  return true;
 }
 
 /* Expand a variable vector permutation.  */
@@ -21458,8 +21555,7 @@ ix86_expand_vec_perm (rtx operands[])
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
 
-  if (TARGET_AVX512F
-      && ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1))
+  if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1, NULL))
     return;
 
   if (TARGET_AVX2)
@@ -21831,6 +21927,15 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 
       switch (imode)
 	{
+	case V64QImode:
+	  if (unsigned_p)
+	    unpack = gen_avx512bw_zero_extendv32qiv32hi2;
+	  else
+	    unpack = gen_avx512bw_sign_extendv32qiv32hi2;
+	  halfmode = V32QImode;
+	  extract
+	    = high_p ? gen_vec_extract_hi_v64qi : gen_vec_extract_lo_v64qi;
+	  break;
 	case V32QImode:
 	  if (unsigned_p)
 	    unpack = gen_avx2_zero_extendv16qiv16hi2;
@@ -39679,20 +39784,6 @@ x86_emit_floatuns (rtx operands[2])
   emit_label (donelab);
 }
 
-/* AVX512F does support 64-byte integer vector operations,
-   thus the longest vector we are faced with is V64QImode.  */
-#define MAX_VECT_LEN	64
-
-struct expand_vec_perm_d
-{
-  rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
-  enum machine_mode vmode;
-  unsigned char nelt;
-  bool one_operand_p;
-  bool testing_p;
-};
-
 static bool canonicalize_perm (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d);
@@ -42862,7 +42953,10 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 
   if (d->one_operand_p)
     return false;
-  if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
+  if (TARGET_AVX512F && GET_MODE_SIZE (vmode) == 64
+      && GET_MODE_SIZE (GET_MODE_INNER (vmode)) >= 4)
+    ;
+  else if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
@@ -42893,12 +42987,18 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 
   switch (vmode)
     {
+    case V8DFmode:
+    case V16SFmode:
     case V4DFmode:
     case V8SFmode:
     case V2DFmode:
     case V4SFmode:
     case V8HImode:
     case V8SImode:
+    case V32HImode:
+    case V64QImode:
+    case V16SImode:
+    case V8DImode:
       for (i = 0; i < nelt; ++i)
 	mask |= (d->perm[i] >= nelt) << i;
       break;
@@ -43121,9 +43221,9 @@ static bool
 expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt, eltsz, mask;
-  unsigned char perm[32];
+  unsigned char perm[64];
   enum machine_mode vmode = V16QImode;
-  rtx rperm[32], vperm, target, op0, op1;
+  rtx rperm[64], vperm, target, op0, op1;
 
   nelt = d->nelt;
 
@@ -43212,6 +43312,19 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 		  return false;
 	    }
 	}
+      else if (GET_MODE_SIZE (d->vmode) == 64)
+	{
+	  if (!TARGET_AVX512BW)
+	    return false;
+	  if (vmode == V64QImode)
+	    {
+	      /* vpshufb only works intra lanes, it is not
+		 possible to shuffle bytes in between the lanes.  */
+	      for (i = 0; i < nelt; ++i)
+		if ((d->perm[i] ^ i) & (nelt / 4))
+		  return false;
+	    }
+	}
       else
 	return false;
     }
@@ -43229,6 +43342,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	mask = 2 * nelt - 1;
       else if (vmode == V16QImode)
 	mask = nelt - 1;
+      else if (vmode == V64QImode)
+	mask = nelt / 4 - 1;
       else
 	mask = nelt / 2 - 1;
 
@@ -43254,6 +43369,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
       else if (vmode == V32QImode)
 	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+      else if (vmode == V64QImode)
+	emit_insn (gen_avx512bw_pshufbv64qi3 (target, op0, vperm));
       else if (vmode == V8SFmode)
 	emit_insn (gen_avx2_permvarv8sf (target, op0, vperm));
       else
@@ -43309,11 +43426,23 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	  rtx (*gen) (rtx, rtx) = NULL;
 	  switch (d->vmode)
 	    {
+	    case V64QImode:
+	      if (TARGET_AVX512BW)
+		gen = gen_avx512bw_vec_dupv64qi;
+	      break;
 	    case V32QImode:
 	      gen = gen_avx2_pbroadcastv32qi_1;
 	      break;
+	    case V32HImode:
+	      if (TARGET_AVX512BW)
+		gen = gen_avx512bw_vec_dupv32hi;
+	      break;
 	    case V16HImode:
 	      gen = gen_avx2_pbroadcastv16hi_1;
+	      break;
+	    case V16SImode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv16si;
 	      break;
 	    case V8SImode:
 	      gen = gen_avx2_pbroadcastv8si_1;
@@ -43324,8 +43453,20 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    case V8HImode:
 	      gen = gen_avx2_pbroadcastv8hi;
 	      break;
+	    case V16SFmode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv16sf;
+	      break;
 	    case V8SFmode:
 	      gen = gen_avx2_vec_dupv8sf_1;
+	      break;
+	    case V8DFmode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv8df;
+	      break;
+	    case V8DImode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv8di;
 	      break;
 	    /* For other modes prefer other shuffles this function creates.  */
 	    default: break;
@@ -43411,23 +43552,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try the AVX2 vpalignr instruction.  */
   if (expand_vec_perm_palignr (d, true))
-    return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
-  if (TARGET_AVX512F)
-    {
-      rtx vec[64];
-      enum machine_mode mode = d->vmode;
-      if (mode == V8DFmode)
-	mode = V8DImode;
-      else if (mode == V16SFmode)
-	mode = V16SImode;
-      for (i = 0; i < nelt; ++i)
-	vec[i] = GEN_INT (d->perm[i]);
-      rtx mask = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt, vec));
-      if (ix86_expand_vec_perm_vpermi2 (d->target, d->op0, mask, d->op1))
-	return true;
-    }
+  if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
+    return true;
 
   return false;
 }
@@ -45214,21 +45342,56 @@ ix86_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
   /* Given sufficient ISA support we can just return true here
      for selected vector modes.  */
-  if (d.vmode == V16SImode || d.vmode == V16SFmode
-      || d.vmode == V8DFmode || d.vmode == V8DImode)
-    /* All implementable with a single vpermi2 insn.  */
-    return true;
-  if (GET_MODE_SIZE (d.vmode) == 16)
+  switch (d.vmode)
     {
+    case V16SFmode:
+    case V16SImode:
+    case V8DImode:
+    case V8DFmode:
+      if (TARGET_AVX512F)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V8SImode:
+    case V8SFmode:
+    case V4DFmode:
+    case V4DImode:
+      if (TARGET_AVX512VL)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V16HImode:
+      if (TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case V32QImode:
+      if (TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case V4SImode:
+    case V4SFmode:
+    case V8HImode:
+    case V16QImode:
       /* All implementable with a single vpperm insn.  */
       if (TARGET_XOP)
 	return true;
       /* All implementable with 2 pshufb + 1 ior.  */
       if (TARGET_SSSE3)
 	return true;
+      break;
+    case V2DImode:
+    case V2DFmode:
       /* All implementable with shufpd or unpck[lh]pd.  */
-      if (d.nelt == 2)
-	return true;
+      return true;
+    default:
+      return false;
     }
 
   /* Extract the values from the vector CST into the permutation
@@ -45348,6 +45511,11 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       gen_il = gen_avx2_interleave_lowv32qi;
       gen_ih = gen_avx2_interleave_highv32qi;
       break;
+    case V64QImode:
+      himode = V32HImode;
+      gen_il = gen_avx512bw_interleave_lowv64qi;
+      gen_ih = gen_avx512bw_interleave_highv64qi;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -45408,7 +45576,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
       /* For SSE2, we used an full interleave, so the desired
 	 results are in the even elements.  */
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 64; ++i)
 	d.perm[i] = i * 2;
     }
   else
@@ -45416,7 +45584,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       /* For AVX, the interleave used above was not cross-lane.  So the
 	 extraction is evens but with the second and third quarter swapped.
 	 Happily, that is even one insn shorter than even extraction.  */
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 64; ++i)
 	d.perm[i] = i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0);
     }
 
