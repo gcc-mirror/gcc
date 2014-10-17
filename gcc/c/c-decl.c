@@ -5330,11 +5330,11 @@ grokdeclarator (const struct c_declarator *declarator,
       else
 	{
 	  if (name)
-	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+	    warn_defaults_to (loc, OPT_Wimplicit_int,
 			      "type defaults to %<int%> in declaration "
 			      "of %qE", name);
 	  else
-	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+	    warn_defaults_to (loc, OPT_Wimplicit_int,
 			      "type defaults to %<int%> in type name");
 	}
     }
@@ -8120,7 +8120,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     }
 
   if (warn_about_return_type)
-    warn_defaults_to (loc, flag_isoc99 ? 0
+    warn_defaults_to (loc, flag_isoc99 ? OPT_Wimplicit_int
 			   : (warn_return_type ? OPT_Wreturn_type
 			      : OPT_Wimplicit_int),
 		      "return type defaults to %<int%>");
@@ -8429,7 +8429,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 
 	  if (flag_isoc99)
 	    pedwarn (DECL_SOURCE_LOCATION (decl),
-		     0, "type of %qD defaults to %<int%>", decl);
+		     OPT_Wimplicit_int, "type of %qD defaults to %<int%>",
+		     decl);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (decl),
 			OPT_Wmissing_parameter_type,

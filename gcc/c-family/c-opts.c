@@ -864,6 +864,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_function_declaration == -1)
     warn_implicit_function_declaration = flag_isoc99;
 
+  /* -Wimplicit-int is enabled by default for C99.  */
+  if (warn_implicit_int == -1)
+    warn_implicit_int = flag_isoc99;
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
