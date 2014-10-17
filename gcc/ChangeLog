@@ -1,3 +1,9 @@
+2014-10-17  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_function::merge): Local flags are set to false
+	to enforce equal calling convention to be used.
+	* opts.c (common_handle_option): Indentation fix.
+
 2014-10-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-into-ssa.c (is_old_name): Replace "new" with "old".

@@ -630,6 +630,11 @@ sem_function::merge (sem_item *alias_item)
       cgraph_node::create_alias (alias_func->decl, decl);
       alias->resolve_alias (original);
 
+      /* Workaround for PR63566 that forces equal calling convention
+	 to be used.  */
+      alias->local.local = false;
+      original->local.local = false;
+
       if (dump_file)
 	fprintf (dump_file, "Callgraph alias has been created.\n\n");
     }
