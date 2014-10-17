@@ -1,3 +1,19 @@
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Remove the propagation
+	of all attributes related to pragma Default_Initial_Condition.
+	(Build_Derived_Type): Propagation of all attributes related
+	to pragma Default_Initial_Condition.
+	(Process_Full_View): Account for the case where the full view derives
+	from another private type and propagate the attributes related
+	to pragma Default_Initial_Condition to the private view.
+	(Propagate_Default_Init_Cond_Attributes): New routine.
+	* sem_util.adb: Alphabetize various routines.
+	(Build_Default_Init_Cond_Call): Use an unchecked type conversion
+	when calling the default initial condition procedure of a private type.
+	(Build_Default_Init_Cond_Procedure_Declaration): Prevent
+	the generation of multiple default initial condition procedures.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* prj-conf.adb: Revert previous change.

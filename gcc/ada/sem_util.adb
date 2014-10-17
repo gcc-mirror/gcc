@@ -1247,7 +1247,7 @@ package body Sem_Util is
         Make_Procedure_Call_Statement (Loc,
           Name                   => New_Occurrence_Of (Proc_Id, Loc),
           Parameter_Associations => New_List (
-            Make_Type_Conversion (Loc,
+            Make_Unchecked_Type_Conversion (Loc,
               Subtype_Mark => New_Occurrence_Of (Formal_Typ, Loc),
               Expression   => New_Occurrence_Of (Obj_Id, Loc))));
    end Build_Default_Init_Cond_Call;
@@ -1441,6 +1441,13 @@ package body Sem_Util is
 
       pragma Assert (Has_Default_Init_Cond (Typ));
       pragma Assert (Present (Prag));
+
+      --  Nothing to do if the default initial condition procedure was already
+      --  built.
+
+      if Present (Default_Init_Cond_Procedure (Typ)) then
+         return;
+      end if;
 
       Proc_Id  :=
         Make_Defining_Identifier (Loc,
