@@ -8077,8 +8077,8 @@ pragma Shared (R);
 
 @noindent
 In the documentation below, such cases are simply marked
-as being equivalent to the corresponding pragma or attribute definition
-clause.
+as being boolean aspects equivalent to the corresponding pragma
+or attribute definition clause.
 
 @menu
 * Aspect Abstract_State::
@@ -8158,13 +8158,13 @@ Equivalent to @code{pragma Annotate (ID, ID @{, ARG@}, Entity => Name);}
 @unnumberedsec Aspect Async_Readers
 @findex Async_Readers
 @noindent
-This aspect is equivalent to pragma @code{Async_Readers}.
+This boolean aspect is equivalent to pragma @code{Async_Readers}.
 
 @node Aspect Async_Writers
 @unnumberedsec Aspect Async_Writers
 @findex Async_Writers
 @noindent
-This aspect is equivalent to pragma @code{Async_Writers}.
+This boolean aspect is equivalent to pragma @code{Async_Writers}.
 
 @node Aspect Contract_Cases
 @unnumberedsec Aspect Contract_Cases
@@ -8289,7 +8289,7 @@ This aspect is equivalent to pragma @code{Effective_Writes}.
 @unnumberedsec Aspect Favor_Top_Level
 @findex Favor_Top_Level
 @noindent
-This aspect is equivalent to pragma @code{Favor_Top_Level}.
+This boolean aspect is equivalent to pragma @code{Favor_Top_Level}.
 
 @node Aspect Global
 @unnumberedsec Aspect Global
@@ -8313,7 +8313,7 @@ This aspect is equivalent to pragma @code{Initializes}.
 @unnumberedsec Aspect Inline_Always
 @findex Inline_Always
 @noindent
-This aspect is equivalent to pragma @code{Inline_Always}.
+This boolean aspect is equivalent to pragma @code{Inline_Always}.
 
 @node Aspect Invariant
 @unnumberedsec Aspect Invariant
@@ -8370,7 +8370,7 @@ This aspect is equivalent to an @code{Linker_Section} pragma.
 @unnumberedsec Aspect Lock_Free
 @findex Lock_Free
 @noindent
-This aspect is equivalent to pragma @code{Lock_Free}.
+This boolean aspect is equivalent to pragma @code{Lock_Free}.
 
 @node Aspect No_Elaboration_Code_All
 @unnumberedsec Aspect No_Elaboration_Code_All
@@ -8404,7 +8404,7 @@ This aspect is equivalent to pragma @code{Part_Of}.
 @unnumberedsec Aspect Persistent_BSS
 @findex Persistent_BSS
 @noindent
-This aspect is equivalent to pragma @code{Persistent_BSS}.
+This boolean aspect is equivalent to pragma @code{Persistent_BSS}.
 
 @node Aspect Predicate
 @unnumberedsec Aspect Predicate
@@ -8421,7 +8421,7 @@ expression. It is also separately controllable using pragma
 @unnumberedsec Aspect Pure_Function
 @findex Pure_Function
 @noindent
-This aspect is equivalent to pragma @code{Pure_Function}.
+This boolean aspect is equivalent to pragma @code{Pure_Function}.
 
 @node Aspect Refined_Depends
 @unnumberedsec Aspect Refined_Depends
@@ -8464,8 +8464,8 @@ attribute definition clause.
 @unnumberedsec Aspect Shared
 @findex Shared
 @noindent
-This aspect is equivalent to pragma @code{Shared}, and is thus a synonym
-for aspect @code{Atomic}.
+This booleanaspect is equivalent to pragma @code{Shared},
+and is thus a synonym for aspect @code{Atomic}.
 
 @node Aspect Simple_Storage_Pool
 @unnumberedsec Aspect Simple_Storage_Pool
@@ -8478,7 +8478,7 @@ attribute definition clause.
 @unnumberedsec Aspect Simple_Storage_Pool_Type
 @findex Simple_Storage_Pool_Type
 @noindent
-This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
+This boolean aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
 
 @node Aspect SPARK_Mode
 @unnumberedsec Aspect SPARK_Mode
@@ -8492,7 +8492,7 @@ of a subprogram or package.
 @unnumberedsec Aspect Suppress_Debug_Info
 @findex Suppress_Debug_Info
 @noindent
-This aspect is equivalent to pragma @code{Suppress_Debug_Info}.
+This boolean aspect is equivalent to pragma @code{Suppress_Debug_Info}.
 
 @node Aspect Test_Case
 @unnumberedsec Aspect Test_Case
@@ -8504,13 +8504,13 @@ This aspect is equivalent to pragma @code{Test_Case}.
 @unnumberedsec Aspect Thread_Local_Storage
 @findex Thread_Local_Storage
 @noindent
-This aspect is equivalent to pragma @code{Thread_Local_Storage}.
+This boolean aspect is equivalent to pragma @code{Thread_Local_Storage}.
 
 @node Aspect Universal_Aliasing
 @unnumberedsec Aspect Universal_Aliasing
 @findex Universal_Aliasing
 @noindent
-This aspect is equivalent to pragma @code{Universal_Aliasing}.
+This boolean aspect is equivalent to pragma @code{Universal_Aliasing}.
 
 @node Aspect Universal_Data
 @unnumberedsec Aspect Universal_Data
@@ -8522,19 +8522,21 @@ This aspect is equivalent to pragma @code{Universal_Data}.
 @unnumberedsec Aspect Unmodified
 @findex Unmodified
 @noindent
-This aspect is equivalent to pragma @code{Unmodified}.
+This boolean aspect is equivalent to pragma @code{Unmodified}.
 
 @node Aspect Unreferenced
 @unnumberedsec Aspect Unreferenced
 @findex Unreferenced
 @noindent
-This aspect is equivalent to pragma @code{Unreferenced}.
+This boolean aspect is equivalent to pragma @code{Unreferenced}. Note that
+in the case of formal parameters, it is not permitted to have aspects for
+a formal parameter, so in this case the pragma form must be used.
 
 @node Aspect Unreferenced_Objects
 @unnumberedsec Aspect Unreferenced_Objects
 @findex Unreferenced_Objects
 @noindent
-This aspect is equivalent to pragma @code{Unreferenced_Objects}.
+This boolean aspect is equivalent to pragma @code{Unreferenced_Objects}.
 
 @node Aspect Value_Size
 @unnumberedsec Aspect Value_Size
