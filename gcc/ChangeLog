@@ -1,3 +1,10 @@
+2014-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63302
+	* tree-ssa-reassoc.c (optimize_range_tests_xor,
+	optimize_range_tests_diff): Use !integer_pow2p () instead of
+	tree_log2 () < 0.
+
 2014-10-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (instrument_derefs): Enable unaligned path for KASan.

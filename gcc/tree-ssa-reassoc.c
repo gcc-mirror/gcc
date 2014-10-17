@@ -2198,7 +2198,7 @@ optimize_range_tests_xor (enum tree_code opcode, tree type,
   lowxor = fold_binary (BIT_XOR_EXPR, type, lowi, lowj);
   if (lowxor == NULL_TREE || TREE_CODE (lowxor) != INTEGER_CST)
     return false;
-  if (tree_log2 (lowxor) < 0)
+  if (!integer_pow2p (lowxor))
     return false;
   highxor = fold_binary (BIT_XOR_EXPR, type, highi, highj);
   if (!tree_int_cst_equal (lowxor, highxor))
@@ -2245,7 +2245,7 @@ optimize_range_tests_diff (enum tree_code opcode, tree type,
   tem1 = fold_binary (MINUS_EXPR, type, lowj, lowi);
   if (tem1 == NULL_TREE || TREE_CODE (tem1) != INTEGER_CST)
     return false;
-  if (tree_log2 (tem1) < 0)
+  if (!integer_pow2p (tem1))
     return false;
 
   mask = fold_build1 (BIT_NOT_EXPR, type, tem1);
