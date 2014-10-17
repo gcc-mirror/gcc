@@ -8721,14 +8721,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
   STRIP_SIGN_NOPS (arg0);
   STRIP_SIGN_NOPS (arg1);
 
-  tem = fold_relational_const (code, type, arg0, arg1);
-  if (tem != NULL_TREE)
-    return tem;
-
-  /* If one arg is a real or integer constant, put it last.  */
-  if (tree_swap_operands_p (arg0, arg1, true))
-    return fold_build2_loc (loc, swap_tree_comparison (code), type, op1, op0);
-
   /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 -+ C1.  */
   if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
       && (equality_code || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
@@ -9914,6 +9906,12 @@ fold_binary_loc (location_t loc,
   if (commutative_tree_code (code)
       && tree_swap_operands_p (arg0, arg1, true))
     return fold_build2_loc (loc, code, type, op1, op0);
+
+  /* Likewise if this is a comparison, and ARG0 is a constant, move it
+     to ARG1 to reduce the number of tests below.  */
+  if (kind == tcc_comparison
+      && tree_swap_operands_p (arg0, arg1, true))
+    return fold_build2_loc (loc, swap_tree_comparison (code), type, op1, op0);
 
   /* ARG0 is the first operand of EXPR, and ARG1 is the second operand.
 
@@ -13798,6 +13796,12 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 3);
+
+  /* If this is a commutative operation, and OP0 is a constant, move it
+     to OP1 to reduce the number of tests below.  */
+  if (commutative_ternary_tree_code (code)
+      && tree_swap_operands_p (op0, op1, true))
+    return fold_build3_loc (loc, code, type, op1, op0, op2);
 
   /* Strip any conversions that don't change the mode.  This is safe
      for every expression, except for a comparison expression because
