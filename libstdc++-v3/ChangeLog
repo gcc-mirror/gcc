@@ -1,3 +1,9 @@
+2014-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	Add dg-require-string-conversions.
+	* testsuite/27_io/headers/cstdio/types_std.cc: Test for fpos_t.
+
 2014-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement the Library Fundamentals v1 variable templates.

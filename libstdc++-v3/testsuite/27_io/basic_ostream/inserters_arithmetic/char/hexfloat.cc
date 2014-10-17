@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++11" }
+// { dg-require-string-conversions "" }
 
 // 2014-03-27 Rüdiger Sonderfeld
 // test the hexadecimal floating point inserters (facet num_put)
