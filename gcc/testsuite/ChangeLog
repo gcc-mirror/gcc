@@ -1,5 +1,9 @@
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/asan/instrument-with-calls-1.c: Add
+	-fno-sanitize=address -fsanitize=kernel-address to dg-options.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+
 	PR tree-optimization/63302
 	* gcc.c-torture/execute/pr63302.c: New test.
 

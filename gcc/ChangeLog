@@ -1,5 +1,9 @@
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* asan.c (instrument_derefs): Allow instrumentation of odd-sized
+	accesses even for -fsanitize=address.
+	(execute_sanopt): Only allow use_calls for -fsanitize=kernel-address.
+
 	PR tree-optimization/63302
 	* tree-ssa-reassoc.c (optimize_range_tests_xor,
 	optimize_range_tests_diff): Use !integer_pow2p () instead of
