@@ -579,9 +579,9 @@ static inline bool
 is_old_name (tree name)
 {
   unsigned ver = SSA_NAME_VERSION (name);
-  if (!new_ssa_names)
+  if (!old_ssa_names)
     return false;
-  return (ver < SBITMAP_SIZE (new_ssa_names)
+  return (ver < SBITMAP_SIZE (old_ssa_names)
 	  && bitmap_bit_p (old_ssa_names, ver));
 }
 
