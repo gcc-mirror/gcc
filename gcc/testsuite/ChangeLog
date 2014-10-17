@@ -1,5 +1,13 @@
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63543
+	* gcc.dg/pr63543.c: New test.
+	* gcc.dg/array-8.c: Remove dg-error.
+	* gcc.dg/pr48552-1.c: Remove and adjust dg-error.
+	* gcc.dg/pr48552-2.c: Likewise.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
 	PR c/63549
 	* gcc.dg/pr63549.c: New test.
 
