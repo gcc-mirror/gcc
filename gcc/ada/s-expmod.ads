@@ -33,7 +33,7 @@
 --  modulus values. Arithmetic is done in Long_Long_Unsigned, with explicit
 --  accounting for the modulus value which is passed as the second argument.
 --  Note that 1 is a binary modulus (2**0), so the compiler should not (and
---  will not) call this function with Modulus equal to 1).
+--  will not) call this function with Modulus equal to 1.
 
 with System.Unsigned_Types;
 

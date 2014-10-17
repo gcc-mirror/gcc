@@ -20388,10 +20388,19 @@ package body Sem_Ch3 is
    --  Start of processing for Propagate_Default_Init_Cond_Attributes
 
    begin
-      --  A full view inherits the attributes from its private view
-
       if Has_Default_Init_Cond (From_Typ) then
-         Set_Has_Default_Init_Cond (To_Typ);
+
+         --  A derived type inherits the attributes from its parent type
+
+         if Parent_To_Derivation then
+            Set_Has_Inherited_Default_Init_Cond (To_Typ);
+
+         --  A full view shares the attributes with its private view
+
+         else
+            Set_Has_Default_Init_Cond (To_Typ);
+         end if;
+
          Inherit_Procedure := True;
 
          --  Due to the order of expansion, a derived private type is processed

@@ -21917,9 +21917,11 @@ package body Sem_Prag is
       Analyze_Depends_In_Decl_Part (N);
 
       --  Do not match dependencies against refinements if Refined_Depends is
-      --  illegal to avoid emitting misleading error.
+      --  illegal to avoid emitting misleading error. Matching is disabled in
+      --  ASIS because clauses are not normalized as this is a tree altering
+      --  activity similar to expansion.
 
-      if Serious_Errors_Detected = Errors then
+      if Serious_Errors_Detected = Errors and then not ASIS_Mode then
 
          --  Multiple dependency clauses appear as component associations of an
          --  aggregate. Note that the clauses are copied because the algorithm
