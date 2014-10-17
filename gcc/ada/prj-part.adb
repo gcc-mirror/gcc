@@ -349,8 +349,7 @@ package body Prj.Part is
       Get_Name_String (Path_Name_Of (Main_Project, In_Tree));
 
       while Name_Len > 0
-        and then Name_Buffer (Name_Len) /= Directory_Separator
-        and then Name_Buffer (Name_Len) /= '/'
+        and then not Is_Directory_Separator (Name_Buffer (Name_Len))
       loop
          Name_Len := Name_Len - 1;
       end loop;

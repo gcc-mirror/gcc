@@ -98,7 +98,7 @@ package body Debug is
    --  d.e  Enable atomic synchronization
    --  d.f  Inhibit folding of static expressions
    --  d.g  Enable conversion of raise into goto
-   --  d.h
+   --  d.h  Minimize the creation of public internal symbols for concatenation
    --  d.i  Ignore Warnings pragmas
    --  d.j  Generate listing of frontend inlined calls
    --  d.k
@@ -524,6 +524,11 @@ package body Debug is
    --       relevant handler is statically determinable. For now we only try
    --       this if this debug flag is set. Later we will enable this more
    --       generally by default.
+
+   --  d.h  Minimize the creation of public internal symbols for concatenation
+   --       by enforcing a secondary stack-like handling of the final result.
+   --       The target of the concatenation is thus constrained in place and
+   --       initialized with the result instead of acting as its alias.
 
    --  d.i  Ignore all occurrences of pragma Warnings in the sources. This can
    --       be used in particular to disable Warnings (Off) to check if any of

@@ -10304,7 +10304,8 @@ package body Sem_Ch13 is
 
       --  Check Ada derivation of CPP type
 
-      if Expander_Active    -- why? losing errors in -gnatc mode???
+      if Expander_Active              -- why? losing errors in -gnatc mode???
+        and then Present (Etype (E))  -- defend against errors
         and then Tagged_Type_Expansion
         and then Ekind (E) = E_Record_Type
         and then Etype (E) /= E

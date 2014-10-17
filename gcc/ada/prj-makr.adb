@@ -1187,7 +1187,7 @@ package body Prj.Makr is
                Canonical_Case_File_Name (Canon (1 .. Last));
 
                if Is_Regular_File
-                 (Dir_Name & Directory_Separator & Str (1 .. Last))
+                    (Dir_Name & Directory_Separator & Str (1 .. Last))
                then
                   Matched := True;
 
@@ -1277,10 +1277,9 @@ package body Prj.Makr is
                              new String'(Get_Name_String (Tmp_File));
                         end if;
 
-                        Args (Args'Last) := new String'
-                          (Dir_Name &
-                           Directory_Separator &
-                           Str (1 .. Last));
+                        Args (Args'Last) :=
+                          new String'
+                            (Dir_Name & Directory_Separator & Str (1 .. Last));
 
                         --  Save the standard output and error
 
@@ -1477,7 +1476,7 @@ package body Prj.Makr is
                --  Do not call itself for "." or ".."
 
                if Is_Directory
-                 (Dir_Name & Directory_Separator & Str (1 .. Last))
+                    (Dir_Name & Directory_Separator & Str (1 .. Last))
                  and then Str (1 .. Last) /= "."
                  and then Str (1 .. Last) /= ".."
                then

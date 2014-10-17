@@ -26,6 +26,7 @@
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
+with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
@@ -1526,11 +1527,12 @@ package body Prj.Conf is
 
       function Is_Base_Name (Path : String) return Boolean is
       begin
-         for I in Path'Range loop
-            if Path (I) = Directory_Separator or else Path (I) = '/' then
+         for J in Path'Range loop
+            if Is_Directory_Separator (Path (J)) then
                return False;
             end if;
          end loop;
+
          return True;
       end Is_Base_Name;
 
