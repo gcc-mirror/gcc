@@ -5958,11 +5958,51 @@ package body Freeze is
       --  may reference entities that have to be frozen before the body and
       --  obviously cannot be frozen inside the body.
 
+      function Find_Aggregate_Component_Desig_Type return Entity_Id;
+      --  If the expression is an array aggregate, the type of the component
+      --  expressions is also frozen. If the component type is an access type
+      --  and the expressions include allocators, the designed type is frozen
+      --  as well.
+
       function In_Exp_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
       --  it is the handled statement sequence of an expander-generated
       --  subprogram (init proc, stream subprogram, or renaming as body).
       --  If so, this is not a freezing context.
+
+      -----------------------------------------
+      -- Find_Aggregate_Component_Desig_Type --
+      -----------------------------------------
+
+      function Find_Aggregate_Component_Desig_Type return Entity_Id is
+         Assoc : Node_Id;
+         Exp   : Node_Id;
+
+      begin
+         if Present (Expressions (N)) then
+            Exp := First (Expressions (N));
+            while Present (Exp) loop
+               if Nkind (Exp) = N_Allocator then
+                  return Designated_Type (Component_Type (Etype (N)));
+               end if;
+
+               Next (Exp);
+            end loop;
+         end if;
+
+         if Present (Component_Associations (N)) then
+            Assoc := First  (Component_Associations (N));
+            while Present (Assoc) loop
+               if Nkind (Expression (Assoc)) = N_Allocator then
+                  return Designated_Type (Component_Type (Etype (N)));
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end if;
+
+         return Empty;
+      end Find_Aggregate_Component_Desig_Type;
 
       -----------------
       -- In_Exp_Body --
@@ -6104,7 +6144,10 @@ package body Freeze is
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
             then
-               Desig_Typ := Designated_Type (Component_Type (Etype (N)));
+
+               --  Check whether aggregate includes allocators.
+
+               Desig_Typ := Find_Aggregate_Component_Desig_Type;
             end if;
 
          when N_Selected_Component |
