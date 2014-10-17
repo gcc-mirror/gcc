@@ -1982,8 +1982,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fipa_icf:
-	opts->x_flag_ipa_icf_functions = value;
-	opts->x_flag_ipa_icf_variables = value;
+      opts->x_flag_ipa_icf_functions = value;
+      opts->x_flag_ipa_icf_variables = value;
       break;
 
     default:
