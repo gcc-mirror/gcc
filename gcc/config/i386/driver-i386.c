@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 const char *host_detect_local_cpu (int argc, const char **argv);
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && (__GNUC__ >= 5 || !defined(__PIC__))
 #include "cpuid.h"
 
 struct cache_desc
@@ -942,9 +942,9 @@ done:
 }
 #else
 
-/* If we aren't compiling with GCC then the driver will just ignore
-   -march and -mtune "native" target and will leave to the newly
-   built compiler to generate code for its default target.  */
+/* If we are compiling with GCC where %EBX register is fixed, then the
+   driver will just ignore -march and -mtune "native" target and will leave
+   to the newly built compiler to generate code for its default target.  */
 
 const char *host_detect_local_cpu (int, const char **)
 {
