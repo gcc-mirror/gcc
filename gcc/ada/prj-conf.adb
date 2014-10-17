@@ -172,7 +172,7 @@ package body Prj.Conf is
    begin
       if Config_File = Empty_Node then
 
-         --  Create a dummy config file if none was found
+         --  Create a dummy config file is none was found
 
          Name_Len := Auto_Cgpr'Length;
          Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
@@ -587,7 +587,7 @@ package body Prj.Conf is
           or else
             (Tgt_Name /= No_Name
               and then (Length_Of_Name (Tgt_Name) = 0
-                         or else Target = Get_Name_String (Tgt_Name)));
+                          or else Target = Get_Name_String (Tgt_Name)));
 
       if not OK then
          if Autoconf_Specified then
@@ -931,8 +931,7 @@ package body Prj.Conf is
 
          declare
             Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
-            Config_Switches : Argument_List_Access :=
-                                new Argument_List'(1 .. 0 => null);
+            Config_Switches : Argument_List_Access;
             Db_Switches     : Argument_List_Access;
             Args            : Argument_List (1 .. 5);
             Arg_Last        : Positive;
@@ -980,13 +979,10 @@ package body Prj.Conf is
                end case;
             end if;
 
-            --  If not in Codepeer mode, get the config switches. This should
-            --  be done only now, as some runtimes may have been found if the
-            --  Builder switches.
+            --  Get the config switches. This should be done only now, as some
+            --  runtimes may have been found if the Builder switches.
 
-            if not CodePeer_Mode then
-               Config_Switches := Get_Config_Switches;
-            end if;
+            Config_Switches := Get_Config_Switches;
 
             --  Get eventual --db switches
 
@@ -1086,11 +1082,12 @@ package body Prj.Conf is
                Write_Eol;
 
             elsif not Quiet_Output then
-
                --  Display no message if we are creating auto.cgpr, unless in
-               --  verbose mode.
+               --  verbose mode
 
-               if Config_File_Name'Length > 0 or else Verbose_Mode then
+               if Config_File_Name'Length > 0
+                 or else Verbose_Mode
+               then
                   Write_Str ("creating ");
                   Write_Str (Simple_Name (Args (3).all));
                   Write_Eol;
@@ -1303,7 +1300,8 @@ package body Prj.Conf is
                Config_Command : constant String :=
                                   "--config=" & Get_Name_String (Name);
 
-               Runtime_Name : constant String := Runtime_Name_For (Name);
+               Runtime_Name   : constant String :=
+                                  Runtime_Name_For (Name);
 
             begin
                if Variable = Nil_Variable_Value
@@ -1323,14 +1321,14 @@ package body Prj.Conf is
                      if Is_Absolute_Path (Compiler_Command) then
                         Result (Count) :=
                           new String'
-                            (Config_Command & ",," & Runtime_Name & ","
-                             & Containing_Directory (Compiler_Command) & ","
-                             & Simple_Name (Compiler_Command));
+                            (Config_Command & ",," & Runtime_Name & "," &
+                             Containing_Directory (Compiler_Command) & "," &
+                             Simple_Name (Compiler_Command));
                      else
                         Result (Count) :=
                           new String'
-                            (Config_Command & ",," & Runtime_Name & ",,"
-                             & Compiler_Command);
+                            (Config_Command & ",," & Runtime_Name & ",," &
+                             Compiler_Command);
                      end if;
                   end;
                end if;
@@ -1352,14 +1350,20 @@ package body Prj.Conf is
 
       begin
          Variable :=
-           Value_Of (Name_Source_Dirs, Project.Decl.Attributes, Shared);
+           Value_Of
+             (Name_Source_Dirs,
+              Project.Decl.Attributes,
+              Shared);
 
          if Variable = Nil_Variable_Value
            or else Variable.Default
            or else Variable.Values /= Nil_String
          then
             Variable :=
-              Value_Of (Name_Source_Files, Project.Decl.Attributes, Shared);
+              Value_Of
+                (Name_Source_Files,
+                 Project.Decl.Attributes,
+                 Shared);
             return Variable = Nil_Variable_Value
               or else Variable.Default
               or else Variable.Values /= Nil_String;
@@ -1369,12 +1373,8 @@ package body Prj.Conf is
          end if;
       end Might_Have_Sources;
 
-      --  Local Variables
-
       Success             : Boolean;
       Config_Project_Node : Project_Node_Id := Empty_Node;
-
-   --  Start of processing for Get_Or_Create_Configuration_File
 
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
@@ -1472,7 +1472,9 @@ package body Prj.Conf is
             On_New_Tree_Loaded     => null);
       end if;
 
-      if Config_Project_Node = Empty_Node or else Config = No_Project then
+      if Config_Project_Node = Empty_Node
+        or else Config = No_Project
+      then
          Raise_Invalid_Config
            ("processing of configuration project """
             & Config_File_Path.all & """ failed");
@@ -1592,16 +1594,6 @@ package body Prj.Conf is
       Main_Project := No_Project;
       Automatically_Generated := False;
 
-      --  Need a comment here saying why CodePeer mode is different ???
-
-      if CodePeer_Mode or else Target_Name = "" then
-         Opt.Target_Value  := new String'(Normalized_Hostname);
-         Opt.Target_Origin := Default;
-      else
-         Opt.Target_Value  := new String'(Target_Name);
-         Opt.Target_Origin := Specified;
-      end if;
-
       Prj.Part.Parse
         (In_Tree           => Project_Node_Tree,
          Project           => User_Project_Node,
@@ -1614,6 +1606,7 @@ package body Prj.Conf is
          Implicit_Project  => Implicit_Project);
 
       if User_Project_Node = Empty_Node then
+         User_Project_Node := Empty_Node;
          return;
       end if;
 

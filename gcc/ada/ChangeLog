@@ -1,5 +1,9 @@
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
+	* prj-conf.adb: Revert previous change.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
 	* lib-writ.ads, s-valdec.ads: Minor reformatting.
 
 2014-10-17  Ed Schonberg  <schonberg@adacore.com>
