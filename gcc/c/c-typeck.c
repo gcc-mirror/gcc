@@ -2478,6 +2478,8 @@ build_array_ref (location_t loc, tree array, tree index)
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);
+  if (index == error_mark_node)
+    return error_mark_node;
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
 

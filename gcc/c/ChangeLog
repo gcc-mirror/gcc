@@ -1,5 +1,11 @@
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63549
+	* c-typeck.c (build_array_ref): Bail if the index in an incomplete
+	type.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
 	* c-decl.c (grokdeclarator): Use OPT_Wimplicit_int unconditionally.
 	(start_function): Use OPT_Wimplicit_int instead of 0.
 	(store_parm_decls_oldstyle): Likewise.

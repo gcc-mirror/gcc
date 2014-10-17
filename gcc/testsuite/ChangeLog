@@ -1,5 +1,10 @@
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63549
+	* gcc.dg/pr63549.c: New test.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/Wimplicit-int-1.c: New test.
 	* gcc.dg/Wimplicit-int-2.c: New test.
 	* gcc.dg/Wimplicit-int-3.c: New test.
