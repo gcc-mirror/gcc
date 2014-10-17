@@ -28,7 +28,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "highlev-plugin-common.h"
+#include "tm.h"
 #include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 
 /* Event names.  */
 enum plugin_event
