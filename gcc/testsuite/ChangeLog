@@ -1,3 +1,10 @@
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wimplicit-int-1.c: New test.
+	* gcc.dg/Wimplicit-int-2.c: New test.
+	* gcc.dg/Wimplicit-int-3.c: New test.
+	* gcc.dg/Wimplicit-int-4.c: New test.
+
 2014-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* g++.dg/plugin/pragma_plugin.c: Revert flattening to test plugin header
