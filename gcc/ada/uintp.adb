@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1660,6 +1660,15 @@ package body Uintp is
    procedure UI_Image (Input : Uint; Format : UI_Format := Auto) is
    begin
       Image_Out (Input, True, Format);
+   end UI_Image;
+
+   function UI_Image
+     (Input  : Uint;
+      Format : UI_Format := Auto) return String
+   is
+   begin
+      Image_Out (Input, True, Format);
+      return UI_Image_Buffer (1 .. UI_Image_Length);
    end UI_Image;
 
    -------------------------

@@ -585,6 +585,7 @@ package body Aspects is
     Aspect_Stream_Size                  => Aspect_Stream_Size,
     Aspect_Suppress                     => Aspect_Suppress,
     Aspect_Suppress_Debug_Info          => Aspect_Suppress_Debug_Info,
+    Aspect_Suppress_Initialization      => Aspect_Suppress_Initialization,
     Aspect_Synchronization              => Aspect_Synchronization,
     Aspect_Test_Case                    => Aspect_Test_Case,
     Aspect_Thread_Local_Storage         => Aspect_Thread_Local_Storage,

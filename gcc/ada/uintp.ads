@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -299,10 +299,15 @@ package Uintp is
    --  followed by the value in UI_Image_Buffer. The form of the value is an
    --  integer literal in either decimal (no base) or hexadecimal (base 16)
    --  format. If Hex is True on entry, then hex mode is forced, otherwise
-   --  UI_Image makes a guess at which output format is more convenient.
-   --  The value must fit in UI_Image_Buffer. If necessary, the result is an
-   --  approximation of the proper value, using an exponential format. The
-   --  image of No_Uint is output as a single question mark.
+   --  UI_Image makes a guess at which output format is more convenient. The
+   --  value must fit in UI_Image_Buffer. The actual length of the result is
+   --  returned in UI_Image_Length. If necessary to meet this requirement, the
+   --  result is an approximation of the proper value, using an exponential
+   --  format. The image of No_Uint is output as a single question mark.
+
+   function UI_Image (Input : Uint; Format : UI_Format := Auto) return String;
+   --  Functional form, in which the result is returned as a string. This call
+   --  also leaves the result in UI_Image_Buffer/Length as described above.
 
    procedure UI_Write (Input : Uint; Format : UI_Format := Auto);
    --  Writes a representation of Uint, consisting of a possible minus sign,

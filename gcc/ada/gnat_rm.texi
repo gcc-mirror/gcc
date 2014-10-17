@@ -330,6 +330,7 @@ Implementation Defined Aspects
 * Aspect Simple_Storage_Pool_Type::
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
+* Aspect Suppress_Initialization::
 * Aspect Test_Case::
 * Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
@@ -7029,13 +7030,16 @@ with this pragma and others compiled in normal mode without it.
 Syntax:
 
 @smallexample @c ada
-pragma Suppress_Initialization ([Entity =>] subtype_Name);
+pragma Suppress_Initialization ([Entity =>] variable_or_subtype_Name);
 @end smallexample
 
 @noindent
-Here subtype_Name is the name introduced by a type declaration
-or subtype declaration.
-This pragma suppresses any implicit or explicit initialization
+Here variable_or_subtype_Name is the name introduced by a type declaration
+or subtype declaration or the name of a variable introduced by an
+object declaration.
+
+In the case of a type or subtype
+this pragma suppresses any implicit or explicit initialization
 for all variables of the given type or subtype,
 including initialization resulting from the use of pragmas
 Normalize_Scalars or Initialize_Scalars.
@@ -7054,6 +7058,10 @@ for discriminated types, and tags for tagged types. In these cases,
 you will have to use some non-portable mechanism (e.g. address
 overlays or unchecked conversion) to achieve required initialization
 of these fields before accessing any object of the corresponding type.
+
+For the variable case, implicit initialization for the named variable
+is suppressed, just as though its subtype had been given in a pragma
+Suppress_Initialization, as described above.
 
 @node Pragma Task_Name
 @unnumberedsec Pragma Task_Name
@@ -8119,6 +8127,7 @@ or attribute definition clause.
 * Aspect Simple_Storage_Pool_Type::
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
+* Aspect Suppress_Initialization::
 * Aspect Test_Case::
 * Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
@@ -8493,6 +8502,12 @@ of a subprogram or package.
 @findex Suppress_Debug_Info
 @noindent
 This boolean aspect is equivalent to pragma @code{Suppress_Debug_Info}.
+
+@node Aspect Suppress_Initialization
+@unnumberedsec Aspect Suppress_Initialization
+@findex Suppress_Initialization
+@noindent
+This boolean aspect is equivalent to pragma @code{Suppress_Initialization}.
 
 @node Aspect Test_Case
 @unnumberedsec Aspect Test_Case

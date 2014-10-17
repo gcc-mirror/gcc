@@ -1,5 +1,49 @@
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
+	* sem_attr.adb (Eval_Attribute): Ensure that attribute
+	reference is not marked as being a static expression if the
+	prefix evaluation raises CE.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_pakd.adb: Move bit packed entity tables to spec.
+	* exp_pakd.ads: Move bit packed entity tables here from body.
+	* freeze.adb (Freeze_Array_Type): Check that packed array type
+	is supported.
+	* rtsfind.adb (PRE_Id_Table): New table (Entity_Not_Defined):
+	Specialize messages using PRE_Id_Table.
+	* uintp.ads, uintp.adb (UI_Image): New functional form.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add Suppress_Initialization aspect.
+	* einfo.ads, einfo.adb (Suppress_Initialization): Now applies to
+	E_Variable.
+	* exp_ch3.adb (Default_Initialize_Object): Handle
+	Suppress_Initialization.
+	* exp_prag.adb (Expand_Pragma_Suppress_Initialization): New
+	procedure (Expand_N_Pragma): Handle Suppress_Initialization
+	(Expand_Pragma_Import_Or_Interface): Use Undo_Initialization
+	(Undo_Initialization): New procedure.
+	* sem_prag.adb (Analyze_Pragma, case Suppress_Initialization):
+	This is now allowed for E_Variable case.
+	* gnat_rm.texi: Document new aspect Suppress_Initialization
+	Suppress_Initialization aspect/pragma can apply to variable.
+	* einfo.ads: Minor reformatting.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* spark_xrefs.ads: Add documentation pointer to Flow_Computed_Globals.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Create_Standard): Mark Short_Integer as
+	implementation defined.
+	* sem_util.adb (Set_Entity_With_Checks): Avoid blow up for
+	compiler built with assertions for No_Implementation_Identifiers test.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads: Documentation fix, aspect Lock_Free does have a
 	corresponding pragma.
 	* gnat_rm.texi: Document implementation defined boolean aspects
