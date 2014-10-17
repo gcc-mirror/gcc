@@ -2378,7 +2378,12 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 
 	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {
-	      error_at (loc, "dereferencing pointer to incomplete type");
+	      if (!C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)))
+		{
+		  error_at (loc, "dereferencing pointer to incomplete type "
+			    "%qT", t);
+		  C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)) = 1;
+		}
 	      return error_mark_node;
 	    }
 	  if (VOID_TYPE_P (t) && c_inhibit_evaluation_warnings == 0)

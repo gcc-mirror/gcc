@@ -45,5 +45,4 @@ g (void)
   sip[0]; /* { dg-error "invalid use of undefined type 'struct si'" } */
   /* { dg-error "dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 45 } */
   0[sip]; /* { dg-error "invalid use of undefined type 'struct si'" } */
-  /* { dg-error "dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 47 } */
 }
