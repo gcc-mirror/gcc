@@ -1,3 +1,30 @@
+2014-10-17  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/i386.c (MAX_VECT_LEN): Move earlier.
+	(expand_vec_perm_d): Ditto.
+	(ix86_expand_vec_perm_vpermi2): Handle V8HImode, V16HImode, V32HImode,
+	V32HImode, V4SImode, V8SImode, V4SFmode, V8SFmode, V2DImode, V4DImode,
+	V4DFmode.
+	(ix86_expand_vec_perm): Update call to ix86_expand_vec_perm_vpermi2.
+	(ix86_expand_sse_unpack): Handle V64QImode.
+	(expand_vec_perm_blend): Update conditions for TARGET, handle
+	V8DFmode, V16SFmode, V32HImode, V64QImode, V16SImode, V8DImode.
+	(expand_vec_perm_pshufb): Handle V64QImode.
+	(expand_vec_perm_1): Handle V64QImode, V32HImode, V16SImode, V16SFmode,
+	V8DFmode, V8DImode, V4DFmode, V2DFmode, V8SFmode, V4SFmode.
+	(ix86_expand_vec_perm_const_1): Call  ix86_expand_vec_perm_vpermi2.
+	(ix86_vectorize_vec_perm_const_ok): Handle V32HImode, V64QImode.
+	(ix86_expand_vecop_qihi): Handle V64QImode.
+	* config/i386/sse.md (define_mode_iterator VI1_AVX512): New.
+	(define_mode_iterator VEC_PERM_AVX2): Add V32HI.
+	(define_mode_iterator VEC_PERM_CONST): Add V32HI.
+	(define_insn "<ssse3_avx2>_pshufb<mode>3<mask_name>"): Add masking.
+	(mul<mode>3): Use VI1_AVX512.
+	(<sse2_avx2>_packsswb): Ditto.
+	(<sse2_avx2>_packuswb): Ditto.
+	(<ssse3_avx2>_pshufb<mode>3): Ditto.
+	(<shift_insn><mode>3): Ditto.
+
 2014-10-17  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Refactor

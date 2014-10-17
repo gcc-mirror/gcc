@@ -301,6 +301,9 @@
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
 
+(define_mode_iterator VI1_AVX512
+  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX2") V16QI])
+
 (define_mode_iterator VI2_AVX2
   [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI])
 
@@ -9246,9 +9249,9 @@
    (set_attr "mode" "TI")])
 
 (define_expand "mul<mode>3<mask_name>"
-  [(set (match_operand:VI1_AVX2 0 "register_operand")
-	(mult:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand")
-		       (match_operand:VI1_AVX2 2 "register_operand")))]
+  [(set (match_operand:VI1_AVX512 0 "register_operand")
+	(mult:VI1_AVX512 (match_operand:VI1_AVX512 1 "register_operand")
+		       (match_operand:VI1_AVX512 2 "register_operand")))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
 {
   ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
@@ -10652,7 +10655,8 @@
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")
    (V8SF "TARGET_AVX2") (V4DF "TARGET_AVX2")
    (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
-   (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")])
+   (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
+   (V32HI "TARGET_AVX512BW")])
 
 (define_expand "vec_perm<mode>"
   [(match_operand:VEC_PERM_AVX2 0 "register_operand")
@@ -10673,7 +10677,8 @@
    (V8SI "TARGET_AVX") (V4DI "TARGET_AVX")
    (V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
    (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
-   (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")])
+   (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
+   (V32HI "TARGET_AVX512BW")])
 
 (define_expand "vec_perm_const<mode>"
   [(match_operand:VEC_PERM_CONST 0 "register_operand")
@@ -11037,8 +11042,8 @@
 })
 
 (define_insn "<sse2_avx2>_packsswb<mask_name>"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,v")
-	(vec_concat:VI1_AVX2
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x")
+	(vec_concat:VI1_AVX512
 	  (ss_truncate:<ssehalfvecmode>
 	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
 	  (ss_truncate:<ssehalfvecmode>
@@ -11071,8 +11076,8 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse2_avx2>_packuswb<mask_name>"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,v")
-	(vec_concat:VI1_AVX2
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x")
+	(vec_concat:VI1_AVX512
 	  (us_truncate:<ssehalfvecmode>
 	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
 	  (us_truncate:<ssehalfvecmode>
@@ -13650,21 +13655,21 @@
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI")])
 
-(define_insn "<ssse3_avx2>_pshufb<mode>3"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,x")
-	(unspec:VI1_AVX2
-	  [(match_operand:VI1_AVX2 1 "register_operand" "0,x")
-	   (match_operand:VI1_AVX2 2 "nonimmediate_operand" "xm,xm")]
+(define_insn "<ssse3_avx2>_pshufb<mode>3<mask_name>"
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,v")
+	(unspec:VI1_AVX512
+	  [(match_operand:VI1_AVX512 1 "register_operand" "0,v")
+	   (match_operand:VI1_AVX512 2 "nonimmediate_operand" "xm,vm")]
 	  UNSPEC_PSHUFB))]
-  "TARGET_SSSE3"
+  "TARGET_SSSE3 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    pshufb\t{%2, %0|%0, %2}
-   vpshufb\t{%2, %1, %0|%0, %1, %2}"
+   vpshufb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
@@ -16047,9 +16052,9 @@
    (set_attr "mode" "TI")])
 
 (define_expand "<shift_insn><mode>3"
-  [(set (match_operand:VI1_AVX2 0 "register_operand")
-	(any_shift:VI1_AVX2
-	  (match_operand:VI1_AVX2 1 "register_operand")
+  [(set (match_operand:VI1_AVX512 0 "register_operand")
+	(any_shift:VI1_AVX512
+	  (match_operand:VI1_AVX512 1 "register_operand")
 	  (match_operand:SI 2 "nonmemory_operand")))]
   "TARGET_SSE2"
 {
