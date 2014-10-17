@@ -7553,15 +7553,17 @@ package body Sem_Attr is
                Static :=
                  Static and then not Is_Constr_Subt_For_U_Nominal (P_Type);
                Set_Is_Static_Expression (N, Static);
-
             end if;
 
             while Present (Nod) loop
                if not Is_Static_Subtype (Etype (Nod)) then
                   Static := False;
                   Set_Is_Static_Expression (N, False);
+
                elsif not Is_OK_Static_Subtype (Etype (Nod)) then
                   Set_Raises_Constraint_Error (N);
+                  Static := False;
+                  Set_Is_Static_Expression (N, False);
                end if;
 
                --  If however the index type is generic, or derived from
@@ -7591,6 +7593,7 @@ package body Sem_Attr is
 
       begin
          E := E1;
+
          while Present (E) loop
 
             --  If expression is not static, then the attribute reference
@@ -7638,6 +7641,7 @@ package body Sem_Attr is
          end loop;
 
          if Raises_Constraint_Error (Prefix (N)) then
+            Set_Is_Static_Expression (N, False);
             return;
          end if;
       end;

@@ -2990,7 +2990,7 @@ package Einfo is
 --       vtable (i.e. the one to be extended by derivation).
 
 --    Is_Tagged_Type (Flag55)
---       Defined in all entities. Set for an entity for a tagged type.
+--       Defined in all entities. Set for an entity that is a tagged type.
 
 --    Is_Task_Interface (synthesized)
 --       Defined in types that are interfaces. True if interface is declared as
@@ -4081,14 +4081,16 @@ package Einfo is
 --       avoid multiple elaboration warnings for the same variable.
 
 --    Suppress_Initialization (Flag105)
---       Defined in all type and subtype entities. If set for the base type,
---       then the generation of initialization procedures is suppressed for the
---       type. Any other implicit initialiation (e.g. from the use of pragma
---       Initialize_Scalars) is also suppressed if this flag is set either for
---       the subtype in question, or for the base type. Set by use of pragma
---       Suppress_Initialization and also for internal entities where we know
---       that no initialization is required. For example, enumeration image
---       table entities set it.
+--       Defined in all variable, type and subtype entities. If set for a base
+--       type, then the generation of initialization procedures is suppressed
+--       for the type. Any other implicit initialiation (e.g. from the use of
+--       pragma Initialize_Scalars) is also suppressed if this flag is set for
+--       either the subtype in question, or for the base type. For variables,
+--       this flag suppresses all implicit initialization for the object, even
+--       if the type would normally require initialization. Set by use of
+--       pragma Suppress_Initialization and also for internal entities where
+--       we know that no initialization is required. For example, enumeration
+--       image table entities set it.
 
 --    Suppress_Style_Checks (Flag165)
 --       Defined in all entities. Suppresses any style checks specifically
@@ -4481,8 +4483,8 @@ package Einfo is
       --  is created for the base type, and this is the first named subtype).
 
       E_Ordinary_Fixed_Point_Type,
-      --  Ordinary fixed type, used for the anonymous base type of the
-      --  fixed subtype created by an ordinary fixed point type declaration.
+      --  Ordinary fixed type, used for the anonymous base type of the fixed
+      --  subtype created by an ordinary fixed point type declaration.
 
       E_Ordinary_Fixed_Point_Subtype,
       --  Ordinary fixed point subtype, created by either an ordinary fixed
@@ -4603,19 +4605,18 @@ package Einfo is
       --  A record subtype, created by a record subtype declaration
 
       E_Record_Type_With_Private,
-      --  Used for types defined by a private extension declaration, and
-      --  for tagged private types. Includes the fields for both private
-      --  types and for record types (with the sole exception of
-      --  Corresponding_Concurrent_Type which is obviously not needed).
-      --  This entity is considered to be both a record type and
-      --  a private type.
+      --  Used for types defined by a private extension declaration,
+      --  and for tagged private types. Includes the fields for both
+      --  private types and for record types (with the sole exception of
+      --  Corresponding_Concurrent_Type which is obviously not needed). This
+      --  entity is considered to be both a record type and a private type.
 
       E_Record_Subtype_With_Private,
       --  A subtype of a type defined by a private extension declaration
 
       E_Private_Type,
-      --  A private type, created by a private type declaration
-      --  that has neither the keyword limited nor the keyword tagged.
+      --  A private type, created by a private type declaration that has
+      --  neither the keyword limited nor the keyword tagged.
 
       E_Private_Subtype,
       --  A subtype of a private type, created by a subtype declaration used
@@ -4662,10 +4663,10 @@ package Einfo is
       --  The type of an exception created by an exception declaration
 
       E_Subprogram_Type,
-      --  This is the designated type of an Access_To_Subprogram. Has type
-      --  and signature like a subprogram entity, so can appear in calls,
-      --  which are resolved like regular calls, except that such an entity
-      --  is not overloadable.
+      --  This is the designated type of an Access_To_Subprogram. Has type and
+      --  signature like a subprogram entity, so can appear in calls, which
+      --  are resolved like regular calls, except that such an entity is not
+      --  overloadable.
 
       ---------------------------
       -- Overloadable Entities --
@@ -4681,9 +4682,9 @@ package Einfo is
 
       E_Operator,
       --  A predefined operator, appearing in Standard, or an implicitly
-      --  defined concatenation operator created whenever an array is
-      --  declared. We do not make normal derived operators explicit in
-      --  the tree, but the concatenation operators are made explicit.
+      --  defined concatenation operator created whenever an array is declared.
+      --  We do not make normal derived operators explicit in the tree, but the
+      --  concatenation operators are made explicit.
 
       E_Procedure,
       --  A procedure, created by a procedure declaration or a procedure
@@ -6238,6 +6239,7 @@ package Einfo is
    --    OK_To_Rename                        (Flag247)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
+   --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
@@ -8794,12 +8796,12 @@ package Einfo is
 
    --  END XEINFO INLINES
 
-   --  The following Inline pragmas are *not* read by xeinfo when building
-   --  the C version of this interface automatically (so the C version will
-   --  end up making out of line calls). The pragma scan in xeinfo will be
-   --  terminated on encountering the END XEINFO INLINES line. We inline
-   --  things here which are small, but not of the canonical attribute
-   --  access/set format that can be handled by xeinfo.
+   --  The following Inline pragmas are *not* read by xeinfo when building the
+   --  C version of this interface automatically (so the C version will end up
+   --  making out of line calls). The pragma scan in xeinfo will be terminated
+   --  on encountering the END XEINFO INLINES line. We inline things here which
+   --  are small, but not of the canonical attribute access/set format that can
+   --  be handled by xeinfo.
 
    pragma Inline (Base_Type);
    pragma Inline (Is_Base_Type);
