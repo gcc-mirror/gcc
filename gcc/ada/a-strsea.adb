@@ -482,7 +482,7 @@ package body Ada.Strings.Search is
    is
    begin
 
-      --  AI05-056 : if source is empty result is always 0.
+      --  AI05-056: If source is empty result is always zero
 
       if Source'Length = 0 then
          return 0;
@@ -514,7 +514,7 @@ package body Ada.Strings.Search is
    is
    begin
 
-      --  AI05-056 : if source is empty result is always 0.
+      --  AI05-056: If source is empty result is always zero
 
       if Source'Length = 0 then
          return 0;
