@@ -1,3 +1,25 @@
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Component_Invariant_Call): Retrieve Invariant
+	subprogram from base type.
+	* sem_ch7.adb (Analyze_Package_Specification): Build invariant
+	subprogram for private type, not any of its subtypes.
+	* sem_ch13.adb (Build_Invariant_Procedure_Declaration): Set type
+	of procedure entity, because a call to it may be generated in
+	a client unit before the corresponding subprogram declaration
+	is analyzed.
+
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): Do not create directories
+	when a project is abstract.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If the domain
+	of iteration is given by an expression that is not an array type,
+	verify that its type implements an iterator iterface.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb (Eval_Attribute): Ensure that attribute

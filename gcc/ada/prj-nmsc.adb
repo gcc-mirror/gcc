@@ -5498,13 +5498,15 @@ package body Prj.Nmsc is
       Dir_Exists : Boolean;
 
       No_Sources : constant Boolean :=
-                     ((not Source_Files.Default
+                     Project.Qualifier = Abstract_Project
+                       or else
+                     (((not Source_Files.Default
                         and then Source_Files.Values = Nil_String)
                        or else (not Source_Dirs.Default
                                  and then Source_Dirs.Values = Nil_String)
                        or else (not Languages.Default
                                  and then Languages.Values = Nil_String))
-                     and then Project.Extends = No_Project;
+                     and then Project.Extends = No_Project);
 
    --  Start of processing for Get_Directories
 
