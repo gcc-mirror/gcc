@@ -661,6 +661,7 @@ The GNAT Library
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
+* System.Atomic_Counters (s-atocou.ads)::
 * System.Memory (s-memory.ads)::
 * System.Multiprocessors (s-multip.ads)::
 * System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
@@ -19074,6 +19075,7 @@ of GNAT, and will generate a warning message.
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
+* System.Atomic_Counters (s-atocou.ads)::
 * System.Memory (s-memory.ads)::
 * System.Multiprocessors (s-multip.ads)::
 * System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
@@ -20584,6 +20586,18 @@ string which identifies an address.
 This package provides the declaration of the exception raised
 by an run-time assertion failure, as well as the routine that
 is used internally to raise this assertion.
+
+@node System.Atomic_Counters (s-atocou.ads)
+@section @code{System.Atomic_Counters} (@file{s-atocou.ads})
+@cindex @code{System.Atomic_Counters} (@file{s-atocou.ads})
+
+@noindent
+This package provides the declaration of an atomic counter type,
+together with efficient routines (using hardware
+synchronization primitives) for incrementing, decrementing,
+and testing of these counters. This package is implemented
+on most targets, including all Alpha, ia64, PowerPC, SPARC V9,
+x86, and x86_64 platforms.
 
 @node System.Memory (s-memory.ads)
 @section @code{System.Memory} (@file{s-memory.ads})

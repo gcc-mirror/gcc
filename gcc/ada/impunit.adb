@@ -367,6 +367,7 @@ package body Impunit is
    --------------------------------------
 
     ("s-addima", F),  -- System.Address_Image
+    ("s-atocou", F),  -- System.Atomic_Counters
     ("s-assert", F),  -- System.Assertions
     ("s-diflio", F),  -- System.Dim.Float_IO
     ("s-diinio", F),  -- System.Dim.Integer_IO

@@ -1,3 +1,36 @@
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Function_Wrapper): Build wrappers for
+	actuals that are defaulted subprograms of the formal subprogram
+	declaration.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Make sure we deal with the
+	implementation base type.
+	* sinfo.ads: Add a note for N_Op_Eq and N_Op_Ne that record
+	operands are always expanded out into component comparisons.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* s-vallli.adb: Minor comment correction.
+	* s-valuti.ads: Minor comment reformatting.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document System.Atomic_Counters.
+	* impunit.adb: Add System.Atomic_Counters (s-atocou.ads) to the
+	list of user- accessible units added as children of System.
+	* s-atocou.ads: Update comment.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-expmod.ads: Add comments.
+
 2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): Remove the propagation
