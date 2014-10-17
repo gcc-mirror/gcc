@@ -1,6 +1,12 @@
 2014-10-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/61605
+	* regcprop.c (copyprop_hardreg_forward_1): Use
+	regs_invalidated_by_this_call instead of regs_invalidated_by_call.
+
+2014-10-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/61605
 	* regcprop.c (copyprop_hardreg_forward_1): Add copy_p and noop_p.  Don't
 	notice stores for noops.  Don't regard noops as copies.
 
