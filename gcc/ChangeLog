@@ -7,6 +7,22 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate): Handle V64QI
+	and V32HI modes, update V8HI, V16QI, V32QI modes handling.
+	(ix86_expand_vector_init_general): Handle V64QI and V32HI modes.
+	* config/i386/sse.md (define_mode_iterator VI48F_512): Rename to ...
+	(define_mode_iterator VF48_I1248): ... this. Extend to AVX-512 modes.
+	(define_expand "vec_init<mode>"): Use VF48_I1248.
+
+2014-10-17  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Extend
 	expand_sse2_mulvxdi3.
 

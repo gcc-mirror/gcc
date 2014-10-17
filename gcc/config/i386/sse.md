@@ -524,7 +524,8 @@
   (V16SI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
   (V8DI  "TARGET_AVX512F") (V8DF  "TARGET_AVX512F")
   (V4DI  "TARGET_AVX512VL") (V4DF  "TARGET_AVX512VL")])
-(define_mode_iterator VI48F_512 [V16SI V16SF V8DI V8DF])
+(define_mode_iterator VF48_I1248
+  [V16SI V16SF V8DI V8DF V32HI V64QI])
 (define_mode_iterator VI48F
   [V16SI V16SF V8DI V8DF
    (V8SI "TARGET_AVX512VL") (V8SF "TARGET_AVX512VL")
@@ -17475,7 +17476,7 @@
 })
 
 (define_expand "vec_init<mode>"
-  [(match_operand:VI48F_512 0 "register_operand")
+  [(match_operand:VF48_I1248 0 "register_operand")
    (match_operand 1)]
   "TARGET_AVX512F"
 {
