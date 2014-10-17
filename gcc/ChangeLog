@@ -1,3 +1,7 @@
+2014-10-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-into-ssa.c (is_old_name): Replace "new" with "old".
+
 2014-10-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/61605
