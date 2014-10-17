@@ -1,3 +1,13 @@
+2014-10-17  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_comparison): Remove redundant constant
+	folding and operand swapping.
+	(fold_binary_loc): Do comparison operand swapping here.
+	(fold_ternary_loc): Canonicalize operand order for
+	commutative ternary operations.
+	* tree.c (commutative_ternary_tree_code): Add DOT_PROD_EXPR
+	and FMA_EXPR.
+
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63464
