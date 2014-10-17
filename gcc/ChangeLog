@@ -1,3 +1,9 @@
+2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline-transform.c (master_clone_with_noninline_clones_p): New.
+	(clone_inlined_nodes): Do not overwrite the clone if above predicate
+	returns true.
+
 2014-10-17  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/i386.c (MAX_VECT_LEN): Move earlier.
