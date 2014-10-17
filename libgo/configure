@@ -13886,17 +13886,17 @@ GO_LIBCALL_OS_FILE=
 GO_LIBCALL_OS_ARCH_FILE=
 GO_SYSCALL_OS_FILE=
 GO_SYSCALL_OS_ARCH_FILE=
-if test -f ${srcdir}/go/syscall/libcall_${GOOS}.go; then
-  GO_LIBCALL_OS_FILE=go/syscall/libcall_${GOOS}.go
+if test -f "${srcdir}/go/syscall/libcall_${GOOS}.go"; then
+  GO_LIBCALL_OS_FILE="go/syscall/libcall_${GOOS}.go"
 fi
-if test -f ${srcdir}/go/syscall/libcall_${GOOS}_${GOARCH}.go; then
-  GO_LIBCALL_OS_ARCH_FILE=go/syscall/libcall_${GOOS}_${GOARCH}.go
+if test -f "${srcdir}/go/syscall/libcall_${GOOS}_${GOARCH}.go"; then
+  GO_LIBCALL_OS_ARCH_FILE="go/syscall/libcall_${GOOS}_${GOARCH}.go"
 fi
-if test -f ${srcdir}/go/syscall/syscall_${GOOS}.go; then
-  GO_SYSCALL_OS_FILE=go/syscall/syscall_${GOOS}.go
+if test -f "${srcdir}/go/syscall/syscall_${GOOS}.go"; then
+  GO_SYSCALL_OS_FILE="go/syscall/syscall_${GOOS}.go"
 fi
-if test -f ${srcdir}/go/syscall/syscall_${GOOS}_${GOARCH}.go; then
-  GO_SYSCALL_OS_ARCH_FILE=go/syscall/syscall_${GOOS}_${GOARCH}.go
+if test -f "${srcdir}/go/syscall/syscall_${GOOS}_${GOARCH}.go"; then
+  GO_SYSCALL_OS_ARCH_FILE="go/syscall/syscall_${GOOS}_${GOARCH}.go"
 fi
 
 
