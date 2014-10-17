@@ -1,3 +1,15 @@
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Config_Switches): In CodePeer mode, do
+	not take into account any compiler command from package IDE.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Function_Wrapper): The formals of the
+	wrapper must have the same identifiers as those of the formal
+	subprogram, because calls within the generic may use named
+	associations.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, a-strsea.adb: Minor reformatting.

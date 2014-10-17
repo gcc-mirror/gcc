@@ -172,7 +172,7 @@ package body Prj.Conf is
    begin
       if Config_File = Empty_Node then
 
-         --  Create a dummy config file is none was found
+         --  Create a dummy config file if none was found
 
          Name_Len := Auto_Cgpr'Length;
          Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
@@ -587,7 +587,7 @@ package body Prj.Conf is
           or else
             (Tgt_Name /= No_Name
               and then (Length_Of_Name (Tgt_Name) = 0
-                          or else Target = Get_Name_String (Tgt_Name)));
+                         or else Target = Get_Name_String (Tgt_Name)));
 
       if not OK then
          if Autoconf_Specified then
@@ -980,7 +980,7 @@ package body Prj.Conf is
             end if;
 
             --  Get the config switches. This should be done only now, as some
-            --  runtimes may have been found if the Builder switches.
+            --  runtimes may have been found in the Builder switches.
 
             Config_Switches := Get_Config_Switches;
 
@@ -1082,12 +1082,11 @@ package body Prj.Conf is
                Write_Eol;
 
             elsif not Quiet_Output then
-               --  Display no message if we are creating auto.cgpr, unless in
-               --  verbose mode
 
-               if Config_File_Name'Length > 0
-                 or else Verbose_Mode
-               then
+               --  Display no message if we are creating auto.cgpr, unless in
+               --  verbose mode.
+
+               if Config_File_Name'Length > 0 or else Verbose_Mode then
                   Write_Str ("creating ");
                   Write_Str (Simple_Name (Args (3).all));
                   Write_Eol;
@@ -1300,11 +1299,14 @@ package body Prj.Conf is
                Config_Command : constant String :=
                                   "--config=" & Get_Name_String (Name);
 
-               Runtime_Name   : constant String :=
-                                  Runtime_Name_For (Name);
+               Runtime_Name : constant String := Runtime_Name_For (Name);
 
             begin
-               if Variable = Nil_Variable_Value
+               --  In CodePeer mode, we do not take into account any compiler
+               --  command from the package IDE.
+
+               if CodePeer_Mode
+                 or else Variable = Nil_Variable_Value
                  or else Length_Of_Name (Variable.Value) = 0
                then
                   Result (Count) :=
@@ -1321,14 +1323,14 @@ package body Prj.Conf is
                      if Is_Absolute_Path (Compiler_Command) then
                         Result (Count) :=
                           new String'
-                            (Config_Command & ",," & Runtime_Name & "," &
-                             Containing_Directory (Compiler_Command) & "," &
-                             Simple_Name (Compiler_Command));
+                            (Config_Command & ",," & Runtime_Name & ","
+                             & Containing_Directory (Compiler_Command) & ","
+                             & Simple_Name (Compiler_Command));
                      else
                         Result (Count) :=
                           new String'
-                            (Config_Command & ",," & Runtime_Name & ",," &
-                             Compiler_Command);
+                            (Config_Command & ",," & Runtime_Name & ",,"
+                             & Compiler_Command);
                      end if;
                   end;
                end if;
@@ -1350,20 +1352,14 @@ package body Prj.Conf is
 
       begin
          Variable :=
-           Value_Of
-             (Name_Source_Dirs,
-              Project.Decl.Attributes,
-              Shared);
+           Value_Of (Name_Source_Dirs, Project.Decl.Attributes, Shared);
 
          if Variable = Nil_Variable_Value
            or else Variable.Default
            or else Variable.Values /= Nil_String
          then
             Variable :=
-              Value_Of
-                (Name_Source_Files,
-                 Project.Decl.Attributes,
-                 Shared);
+              Value_Of (Name_Source_Files, Project.Decl.Attributes, Shared);
             return Variable = Nil_Variable_Value
               or else Variable.Default
               or else Variable.Values /= Nil_String;
@@ -1373,8 +1369,12 @@ package body Prj.Conf is
          end if;
       end Might_Have_Sources;
 
+      --  Local Variables
+
       Success             : Boolean;
       Config_Project_Node : Project_Node_Id := Empty_Node;
+
+   --  Start of processing for Get_Or_Create_Configuration_File
 
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
@@ -1472,9 +1472,7 @@ package body Prj.Conf is
             On_New_Tree_Loaded     => null);
       end if;
 
-      if Config_Project_Node = Empty_Node
-        or else Config = No_Project
-      then
+      if Config_Project_Node = Empty_Node or else Config = No_Project then
          Raise_Invalid_Config
            ("processing of configuration project """
             & Config_File_Path.all & """ failed");
@@ -1606,7 +1604,6 @@ package body Prj.Conf is
          Implicit_Project  => Implicit_Project);
 
       if User_Project_Node = Empty_Node then
-         User_Project_Node := Empty_Node;
          return;
       end if;
 
