@@ -643,7 +643,8 @@ experimental_headers = \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/string_view \
 	${experimental_srcdir}/string_view.tcc \
-	${experimental_srcdir}/tuple
+	${experimental_srcdir}/tuple \
+	${experimental_srcdir}/type_traits
 
 # This is the common subset of C++ files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)

@@ -1,3 +1,11 @@
+2014-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement the Library Fundamentals v1 variable templates.
+	* include/Makefile.am: Add the new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/type_traits: New.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
 2014-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/lib/libstdc++.exp: Prefer -std=gnu++11.
