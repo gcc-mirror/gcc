@@ -1077,7 +1077,7 @@ package body Sem_Ch12 is
                    Prefix         =>
                      Make_Identifier (Loc, Chars (Etype (Etype (F)))));
             else
-               Parm_Type := Make_Identifier (Loc, Chars (Etype (F)));
+               Parm_Type := New_Occurrence_Of (Etype (F), Loc);
             end if;
 
             Append_To (Profile,
