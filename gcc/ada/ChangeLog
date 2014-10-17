@@ -1,3 +1,12 @@
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants, Replace_Type_References): Do
+	not perform the replacement on the expression for an inherited
+	class-wide invariant if in ASIS_Mode and the type reference is
+	already the prefix of a 'Class attribute reference: the expression
+	has already been preanalyzed and the replacement performed when
+	first encountered on the declaration of the parent type.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb, sem_ch7.adb, prj-nmsc.adb, sem_ch13.adb, exp_ch3.adb:

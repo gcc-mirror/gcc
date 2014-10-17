@@ -7505,18 +7505,30 @@ package body Sem_Ch13 is
             end if;
 
             --  Invariant'Class, replace with T'Class (obj)
+            --  In ASIS mode, an inherited item is analyzed already, and the
+            --  replacement has been done, so do not repeat transformation
+            --  to prevent ill-formed tree.
 
             if Class_Present (Ritem) then
-               Rewrite (N,
-                 Make_Type_Conversion (Sloc (N),
-                   Subtype_Mark =>
-                     Make_Attribute_Reference (Sloc (N),
-                       Prefix         => New_Occurrence_Of (T, Sloc (N)),
-                       Attribute_Name => Name_Class),
-                   Expression   => Make_Identifier (Sloc (N), Object_Name)));
+               if ASIS_Mode
+                 and then Nkind (Parent (N)) = N_Attribute_Reference
+                 and then Attribute_Name (Parent (N)) = Name_Class
+               then
+                  null;
 
-               Set_Entity (Expression (N), Object_Entity);
-               Set_Etype  (Expression (N), Typ);
+               else
+                  Rewrite (N,
+                    Make_Type_Conversion (Sloc (N),
+                      Subtype_Mark =>
+                        Make_Attribute_Reference (Sloc (N),
+                          Prefix         => New_Occurrence_Of (T, Sloc (N)),
+                          Attribute_Name => Name_Class),
+                      Expression   =>
+                         Make_Identifier (Sloc (N), Object_Name)));
+
+                  Set_Entity (Expression (N), Object_Entity);
+                  Set_Etype  (Expression (N), Typ);
+               end if;
 
             --  Invariant, replace with obj
 
