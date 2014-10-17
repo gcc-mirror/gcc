@@ -1592,6 +1592,16 @@ package body Prj.Conf is
       Main_Project := No_Project;
       Automatically_Generated := False;
 
+      --  Need a comment here saying why CodePeer mode is different ???
+
+      if CodePeer_Mode or else Target_Name = "" then
+         Opt.Target_Value  := new String'(Normalized_Hostname);
+         Opt.Target_Origin := Default;
+      else
+         Opt.Target_Value  := new String'(Target_Name);
+         Opt.Target_Origin := Specified;
+      end if;
+
       Prj.Part.Parse
         (In_Tree           => Project_Node_Tree,
          Project           => User_Project_Node,

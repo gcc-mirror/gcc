@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2009, Free Software Foundation, Inc.       --
+--            Copyright (C) 1992-2014, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,11 +69,12 @@ package System.Val_Dec is
    --  is greater than Max as required in this case.
 
    function Value_Decimal (Str : String; Scale : Integer) return Integer;
-   --  Used in computing X'Value (Str) where X is a decimal types whose size
-   --  does not exceed Standard.Integer'Size. Str is the string argument of
-   --  the attribute. Constraint_Error is raised if the string is malformed
-   --  or if the value is out of range, otherwise the value returned is the
-   --  value Integer'Integer_Value (decimal-literal-value), using the given
-   --  Scale to determine this value.
+   --  Used in computing X'Value (Str) where X is a decimal fixed-point type
+   --  whose size does not exceed Standard.Integer'Size. Str is the string
+   --  argument of the attribute. Constraint_Error is raised if the string
+   --  is malformed or if the value is out of range of Integer (not the
+   --  range of the fixed-point type, that check must be done by the caller.
+   --  Otherwise the value returned is the value Integer'Integer_Value
+   --  (decimal-literal-value), using Scale to determine this value.
 
 end System.Val_Dec;

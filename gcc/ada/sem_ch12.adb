@@ -1033,7 +1033,8 @@ package body Sem_Ch12 is
          Func_Name : Node_Id;
          Func      : Entity_Id;
          N_Parms   : Natural;
-         Profile   : List_Id;
+         Parm_Type : Node_Id;
+         Profile   : List_Id := New_List;
          Spec      : Node_Id;
          F         : Entity_Id;
          New_F     : Entity_Id;
@@ -1055,7 +1056,7 @@ package body Sem_Ch12 is
          Actuals := New_List;
          Profile := New_List;
 
-         F := First_Formal (Formal);
+         F := First_Formal (Entity (Actual));
          N_Parms := 0;
          while Present (F) loop
 
@@ -1064,11 +1065,25 @@ package body Sem_Ch12 is
 
             New_F := Make_Temporary
                        (Loc, Character'Val (Character'Pos ('A') + N_Parms));
+
+            --  If a formal has a class-wide type, rewrite as the corresponding
+            --  attribute, because the class-wide type is not retrievable by
+            --  visbility.
+
+            if Is_Class_Wide_Type (Etype (F)) then
+               Parm_Type :=
+                 Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Class,
+                   Prefix         =>
+                     Make_Identifier (Loc, Chars (Etype (Etype (F)))));
+            else
+               Parm_Type := Make_Identifier (Loc, Chars (Etype (F)));
+            end if;
+
             Append_To (Profile,
               Make_Parameter_Specification (Loc,
               Defining_Identifier => New_F,
-              Parameter_Type      =>
-                Make_Identifier (Loc, Chars => Chars (Etype (F)))));
+              Parameter_Type      => Parm_Type));
 
             Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
             Next_Formal (F);
