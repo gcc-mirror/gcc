@@ -1,3 +1,7 @@
+2014-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	gcc-plugin.h:  Add tm.h and flattened includes from function.h.
+
 2014-10-17  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

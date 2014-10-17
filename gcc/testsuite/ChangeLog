@@ -1,3 +1,8 @@
+2014-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/plugin/pragma_plugin.c: Revert flattening to test plugin header
+	changes.
+
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63464
