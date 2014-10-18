@@ -1,3 +1,9 @@
+2014-10-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Options to Request or Suppress Warnings):
+	Explain options precedence.
+	(Wtrampolines): Do not indent paragraph.
+
 2014-10-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* doc/invoke.texi: Update documentation of hppa -mjump-in-delay option.
