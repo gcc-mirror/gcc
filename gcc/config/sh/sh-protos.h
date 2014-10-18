@@ -107,7 +107,6 @@ extern int barrier_align (rtx_insn *);
 extern int sh_loop_align (rtx_insn *);
 extern bool fp_zero_operand (rtx);
 extern bool fp_one_operand (rtx);
-extern rtx get_fpscr_rtx (void);
 extern bool sh_legitimate_index_p (enum machine_mode, rtx, bool, bool);
 extern bool sh_legitimize_reload_address (rtx *, enum machine_mode, int, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
@@ -185,7 +184,6 @@ extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
 
 extern const char *output_jump_label_table (void);
 extern rtx get_t_reg_rtx (void);
-extern rtx get_fpscr_rtx (void);
 extern int sh_media_register_for_return (void);
 extern void sh_expand_prologue (void);
 extern void sh_expand_epilogue (bool);
