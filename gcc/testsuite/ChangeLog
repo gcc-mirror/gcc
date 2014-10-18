@@ -1,3 +1,8 @@
+2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.dg/attr-isr.c: Move SH specific test to ...
+	* gcc.target/sh/attr-isr.c: ... here.
+
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
