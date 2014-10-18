@@ -21,9 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototype function used in various macros.  */
 extern rtx pa_eh_return_handler_rtx (void);
 
-/* Used in insn-*.c.  */
-extern int pa_following_call (rtx_insn *);
-
 /* Define functions in pa.c and used in insn-output.c.  */
 
 extern const char *pa_output_and (rtx *);
@@ -63,7 +60,6 @@ extern void pa_emit_bcond_fp (rtx[]);
 extern int pa_emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern int pa_emit_hpdiv_const (rtx *, int);
 extern int pa_is_function_label_plus_const (rtx);
-extern int pa_jump_in_call_delay (rtx_insn *);
 extern int pa_fpstore_bypass_p (rtx_insn *, rtx_insn *);
 extern int pa_attr_length_millicode_call (rtx_insn *);
 extern int pa_attr_length_call (rtx_insn *, int);
