@@ -3263,6 +3263,15 @@ two forms, whichever is not the default.  For further
 language-specific options also refer to @ref{C++ Dialect Options} and
 @ref{Objective-C and Objective-C++ Dialect Options}.
 
+Some options, such as @option{-Wall} and @option{-Wextra}, turn on other
+options, such as @option{-Wunused}, which may turn on further options,
+such as @option{-Wunused-value}. The combined effect of positive and
+negative forms is that more specific options have priority over less
+specific ones, independently of their position in the command-line. For
+options of the same specificity, the last one takes effect. Options
+enabled or disabled via pragmas (@pxref{Diagnostic Pragmas}) take effect
+as if they appeared at the end of the command-line.
+
 When an unrecognized warning option is requested (e.g.,
 @option{-Wunknown-warning}), GCC emits a diagnostic stating
 that the option is not recognized.  However, if the @option{-Wno-} form
@@ -4294,14 +4303,13 @@ headers---for that, @option{-Wunknown-pragmas} must also be used.
 @item -Wtrampolines
 @opindex Wtrampolines
 @opindex Wno-trampolines
- Warn about trampolines generated for pointers to nested functions.
-
- A trampoline is a small piece of data or code that is created at run
- time on the stack when the address of a nested function is taken, and
- is used to call the nested function indirectly.  For some targets, it
- is made up of data only and thus requires no special treatment.  But,
- for most targets, it is made up of code and thus requires the stack
- to be made executable in order for the program to work properly.
+Warn about trampolines generated for pointers to nested functions.
+A trampoline is a small piece of data or code that is created at run
+time on the stack when the address of a nested function is taken, and is
+used to call the nested function indirectly.  For some targets, it is
+made up of data only and thus requires no special treatment.  But, for
+most targets, it is made up of code and thus requires the stack to be
+made executable in order for the program to work properly.
 
 @item -Wfloat-equal
 @opindex Wfloat-equal
