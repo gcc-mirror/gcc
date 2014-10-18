@@ -6443,14 +6443,6 @@ sh_reorg (void)
 	  emit_insn_before (gen_use_sfunc_addr (reg), insn);
 	}
     }
-#if 0
-  /* fpscr is not actually a user variable, but we pretend it is for the
-     sake of the previous optimization passes, since we want it handled like
-     one.  However, we don't have any debugging information for it, so turn
-     it into a non-user variable now.  */
-  if (TARGET_SH4)
-    REG_USERVAR_P (get_fpscr_rtx ()) = 0;
-#endif
   mdep_reorg_phase = SH_AFTER_MDEP_REORG;
 }
 
@@ -10009,21 +10001,6 @@ get_t_reg_rtx (void)
   return t_reg_rtx;
 }
 
-static GTY(()) rtx fpscr_rtx;
-rtx
-get_fpscr_rtx (void)
-{
-  if (! fpscr_rtx)
-    {
-      fpscr_rtx = gen_rtx_REG (PSImode, FPSCR_REG);
-      REG_USERVAR_P (fpscr_rtx) = 1;
-      mark_user_reg (fpscr_rtx);
-    }
-  if (! reload_completed || mdep_reorg_phase != SH_AFTER_MDEP_REORG)
-    mark_user_reg (fpscr_rtx);
-  return fpscr_rtx;
-}
-
 static GTY(()) tree fpscr_values;
 
 static void
@@ -10055,13 +10032,12 @@ emit_fpu_switch (rtx scratch, int index)
       emit_move_insn (scratch, XEXP (src, 0));
       if (index != 0)
 	emit_insn (gen_addsi3 (scratch, scratch, GEN_INT (index * 4)));
-      src = adjust_automodify_address (src, PSImode, scratch, index * 4);
+      src = adjust_automodify_address (src, SImode, scratch, index * 4);
     }
   else
-    src = adjust_address (src, PSImode, index * 4);
+    src = adjust_address (src, SImode, index * 4);
 
-  dst = get_fpscr_rtx ();
-  emit_move_insn (dst, src);
+  emit_insn (gen_lds_fpscr (src));
 }
 
 static rtx get_free_reg (HARD_REG_SET);
@@ -10269,8 +10245,7 @@ sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	   && ! TARGET_SHMEDIA
 	   && MAYBE_BASE_REGISTER_RTX_P (XEXP (x, 0), strict))
     return true;
-  else if (GET_CODE (x) == PLUS
-	   && (mode != PSImode || reload_completed))
+  else if (GET_CODE (x) == PLUS)
     {
       rtx xop0 = XEXP (x, 0);
       rtx xop1 = XEXP (x, 1);
@@ -10474,7 +10449,6 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 	  return gen_rtx_PLUS (Pmode, sum, adj.mov_disp);
 	}
     }
-
   return x;
 }
 
@@ -10516,7 +10490,6 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
 
   if (GET_CODE (*p) == PLUS && CONST_INT_P (XEXP (*p, 1))
       && MAYBE_BASE_REGISTER_RTX_P (XEXP (*p, 0), true)
-      && ! (mode == PSImode && type == RELOAD_FOR_INPUT_ADDRESS)
       && (ALLOW_INDEXED_ADDRESS
 	  || XEXP (*p, 0) == stack_pointer_rtx
 	  || XEXP (*p, 0) == hard_frame_pointer_rtx))
@@ -11607,13 +11580,12 @@ shmedia_builtin_p (void)
 }
 
 /* This function can be used if there are any built-ins that are not for
-   SHmedia.  It's commented out to avoid the defined-but-unused warning.
+   SHmedia.  It's commented out to avoid the defined-but-unused warning.  */
 static bool
 sh1_builtin_p (void)
 {
   return TARGET_SH1;
 }
-*/
 
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
@@ -11674,6 +11646,10 @@ static const char signature_args[][4] =
   { 0, 8 },
 #define SH_BLTIN_VP 24
   { 8, 0 },
+#define SH_BLTIN_UV 25
+  { 1, 0 },
+#define SH_BLTIN_VU 26
+  { 0, 1 },
 };
 /* mcmv: operands considered unsigned.  */
 /* mmulsum_wq, msad_ubq: result considered unsigned long long.  */
@@ -11849,6 +11825,11 @@ static struct builtin_description bdesc[] =
     CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2, 0 },
   { shmedia_builtin_p,
     CODE_FOR_prefetch,	"__builtin_sh_media_PREFO", SH_BLTIN_PSSV, 0 },
+
+  { sh1_builtin_p,
+    CODE_FOR_sts_fpscr, "__builtin_sh_get_fpscr", SH_BLTIN_UV, 0 },
+  { sh1_builtin_p,
+    CODE_FOR_set_fpscr, "__builtin_sh_set_fpscr", SH_BLTIN_VU, 0 },
 };
 
 static void
@@ -12162,7 +12143,7 @@ sh_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     return mode == SImode;
 
   if (regno == FPSCR_REG)
-    return mode == PSImode;
+    return mode == SImode;
 
   /* FIXME.  This works around PR target/37633 for -O0.  */
   if (!optimize && TARGET_SHMEDIA32 && GET_MODE_SIZE (mode) > 4)
@@ -13627,33 +13608,24 @@ sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
     }
   else if (mode != FP_MODE_NONE)
     {
-      rtx tmp0 = gen_reg_rtx (PSImode);
-      rtx tmp1 = gen_reg_rtx (SImode);
-
-      emit_move_insn (tmp0, get_fpscr_rtx ());
-      emit_insn (gen_extend_psi_si (tmp1, tmp0));
-
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_sts_fpscr (tmp));
       rtx i = NULL;
 
       const unsigned HOST_WIDE_INT fpbits =
 	  TARGET_FMOVD ? (FPSCR_PR | FPSCR_SZ) : FPSCR_PR;
 
       if (prev_mode != FP_MODE_NONE && prev_mode != mode)
-	i = gen_xorsi3 (tmp1, tmp1,
-			force_reg (SImode, GEN_INT (fpbits)));
+	i = gen_xorsi3 (tmp, tmp, force_reg (SImode, GEN_INT (fpbits)));
       else if (mode == FP_MODE_SINGLE)
-	i = gen_andsi3 (tmp1, tmp1,
-			force_reg (SImode, GEN_INT (~fpbits)));
+	i = gen_andsi3 (tmp, tmp, force_reg (SImode, GEN_INT (~fpbits)));
       else if (mode == FP_MODE_DOUBLE)
-	i = gen_iorsi3 (tmp1, tmp1,
-			force_reg (SImode, GEN_INT (fpbits)));
+	i = gen_iorsi3 (tmp, tmp, force_reg (SImode, GEN_INT (fpbits)));
       else
 	gcc_unreachable ();
 
       emit_insn (i);
-
-      emit_insn (gen_truncate_si_psi (tmp0, tmp1));
-      emit_move_insn (get_fpscr_rtx (), tmp0);
+      emit_insn (gen_lds_fpscr (tmp));
     }
 }
 

@@ -1,3 +1,32 @@
+2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* config/sh/sh-modes.def (PSI): Remove.
+	* config/sh/sh-protos.h (get_fpscr_rtx): Remove.
+	* config/sh/sh.c (fpscr_rtx, get_fpscr_rtx): Remove.
+	(sh_reorg): Remove commented out FPSCR code.
+	(fpscr_set_from_mem): Use SImode instead of PSImode.  Emit lds_fpscr
+	insn instead of move insn.
+	(sh_hard_regno_mode_ok): Return SImode for FPSCR.
+	(sh_legitimate_address_p, sh_legitimize_reload_address): Remove PSImode
+	handling.
+	(sh_emit_mode_set): Emit lds_fpscr and sts_fpscr insns.
+	(sh1_builtin_p): Uncomment.
+	(SH_BLTIN_UV 25, SH_BLTIN_VU 26): New macros.
+	(bdesc): Add __builtin_sh_get_fpscr and __builtin_sh_set_fpscr.
+	* config/sh/sh/predicates.md (fpscr_operand): Simplify.
+	(fpscr_movsrc_operand, fpscr_movdst_operand): New predicates.
+	(general_movsrc_operand, general_movdst_operand): Disallow
+	fpscr_operand.
+	* config/sh/sh.md (FPSCR_FR): New constant.
+	(push_fpscr): Emit sts_fpscr insn.
+	(pop_fpscr): Emit lds_fpscr_insn.
+	(movsi_ie): Disallow FPSCR operands.
+	(fpu_switch, unnamed related split, extend_psi_si,
+	truncate_si_psi): Remove insns.
+	(lds_fpscr, sts_fpscr): New insns.
+	(toggle_sz, toggle_pr): Use SImode for FPSCR_REG instead of PSImode.
+
 2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline-transform.c (master_clone_with_noninline_clones_p): New.
