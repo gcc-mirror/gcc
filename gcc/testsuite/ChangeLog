@@ -1,5 +1,10 @@
 2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* gcc.target/sh/torture/pr58314.c: Fix excess failures caused by switch
+	to GNU11.
+
+2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* gcc.dg/attr-isr.c: Move SH specific test to ...
 	* gcc.target/sh/attr-isr.c: ... here.
 
