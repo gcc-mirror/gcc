@@ -14862,9 +14862,7 @@ Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} r
 
 @item -mjump-in-delay
 @opindex mjump-in-delay
-Fill delay slots of function calls with unconditional jump instructions
-by modifying the return pointer for the function call to be the target
-of the conditional jump.
+This option is ignored and provided for compatibility purposes only.
 
 @item -mdisable-fpregs
 @opindex mdisable-fpregs

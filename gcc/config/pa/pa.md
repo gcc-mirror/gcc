@@ -181,19 +181,13 @@
 		(const_string "true")
 		(const_string "false")))
 
-;; For calls and millicode calls.  Allow unconditional branches in the
-;; delay slot.
+;; For calls and millicode calls.
 (define_attr "in_call_delay" "false,true"
-  (cond [(and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch")
-	      (eq_attr "length" "4")
-	      (not (match_test "RTX_FRAME_RELATED_P (insn)")))
-	   (const_string "true")
-	 (eq_attr "type" "uncond_branch")
-	   (if_then_else (match_test "TARGET_JUMP_IN_DELAY")
-			 (const_string "true")
-			 (const_string "false"))]
-	(const_string "false")))
-
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch")
+		     (eq_attr "length" "4")
+		     (not (match_test "RTX_FRAME_RELATED_P (insn)")))
+		(const_string "true")
+		(const_string "false")))
 
 ;; Call delay slot description.
 (define_delay (eq_attr "type" "call")
@@ -229,8 +223,7 @@
    (and (eq_attr "in_nullified_branch_delay" "true")
 	(attr_flag "backward"))])
 
-(define_delay (and (eq_attr "type" "uncond_branch")
-		   (not (match_test "pa_following_call (insn)")))
+(define_delay (eq_attr "type" "uncond_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Memory. Disregarding Cache misses, the Mustang memory times are:
@@ -6884,13 +6877,7 @@
   [(set_attr "type" "uncond_branch")
    (set_attr "pa_combine_type" "uncond_branch")
    (set (attr "length")
-    (cond [(match_test "pa_jump_in_call_delay (insn)")
-	   (if_then_else (lt (abs (minus (match_dup 0)
-					 (plus (pc) (const_int 8))))
-			     (const_int MAX_12BIT_OFFSET))
-	   (const_int 4)
-	   (const_int 8))
-	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 4)
 	   (match_test "TARGET_PORTABLE_RUNTIME")

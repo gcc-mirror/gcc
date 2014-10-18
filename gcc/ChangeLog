@@ -1,3 +1,17 @@
+2014-10-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* doc/invoke.texi: Update documentation of hppa -mjump-in-delay option.
+	* config/pa/pa-protos.h (pa_following_call): Delete declaration.
+	(pa_jump_in_call_delay): Likewise.
+	* config/pa/pa.c (pa_option_override): Remove jump in call delay
+	override.
+	(pa_output_millicode_call): Remove support for jump in call delay.
+	(pa_output_call): Likewise.
+	(pa_jump_in_call_delay): Delete.
+	(pa_following_call): Likewise.
+	* config/pa/pa.md (in_call_delay): Remove jump in delay check.
+	(uncond_branch): Remove following call check from attribute length.
+
 2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513
