@@ -1,3 +1,9 @@
+2014-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63553
+	* resolve.c (resolve_ordinary_assign): Add data component to
+	rvalue expression for class to type assignment.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* f95-lang.c: Adjust include files.

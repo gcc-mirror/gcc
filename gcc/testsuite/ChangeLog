@@ -1,3 +1,8 @@
+2014-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63553
+	* gfortran.dg/class_to_type_3.f03 : New test
+
 2014-10-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/torture/pr58314.c: Fix excess failures caused by switch
@@ -757,7 +762,7 @@
 	* gcc.dg/winline-6.c: Likewise.
 	* gcc.dg/winline-7.c: Likewise.
 	* gcc.dg/funcorder.c: Fix implicit declarations.  Fix defaulting to
-	int. 
+	int.
 	* gcc.dg/inline-33.c: Likewise.
 	* gcc.dg/pr27861-1.c: Likewise.
 	* gcc.dg/pr28888.c: Likewise.
@@ -3476,7 +3481,7 @@
 
 2014-08-19  Janis Johnson  <janisjo@codesourcery.com>
 
-	* lib/target-supports.exp 
+	* lib/target-supports.exp
 	(check_effective_target_arm_v8_neon_ok_nocache): Add
 	"-march-armv8-a" to compile flags.
 
