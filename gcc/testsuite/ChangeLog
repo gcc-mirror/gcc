@@ -1,3 +1,8 @@
+2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* gfortran.dg/ieee/intrinsics_2.F90: New test.
+
 2014-10-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
