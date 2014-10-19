@@ -1,3 +1,10 @@
+2014-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* c-typeck.c (output_init_element): Allow initializing objects with
+	static storage duration with compound literals even in C99 and add
+	pedwarn for it.
+
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
