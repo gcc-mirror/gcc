@@ -1,3 +1,9 @@
+2014-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* gcc.dg/pr63567-3.c: New test.
+	* gcc.dg/pr63567-4.c: New test.
+
 2014-10-19  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* gcc.dg/atomic/c11-atomic-exec-5.c
