@@ -1,3 +1,9 @@
+2014-10-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite/lib/libstdc++.exp (v3-copy-file): New proc split from ...
+	(v3-copy-files): ... this.  Update.
+	(check_v3_target_fileio): Fix race on cin_unget-1.txt file.
+
 2014-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
