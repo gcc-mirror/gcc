@@ -1,3 +1,8 @@
+2014-10-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/md.texi (RTL Template) [match_scratch]: Correct equivalent
+	match_operand expression.
+
 2014-10-19  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
@@ -206,7 +211,7 @@
 
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
-	* function.h: Flatten file.  Remove includes, adjust prototypes to 
+	* function.h: Flatten file.  Remove includes, adjust prototypes to
 	reflect only what is in function.h.
 	(enum direction, struct args_size, struct locate_and_pad_arg_data,
 	ADD_PARM_SIZE, SUB_PARM_SIZE, ARGS_SIZE_TREE, ARGS_SIZE_RTX): Relocate
@@ -820,9 +825,9 @@
 	Revert:
 	2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
-        PR middle-end/49721
-        * explow.c (convert_memory_address_addr_space): Also permute the
-        conversion and addition of constant for zero-extend.
+	PR middle-end/49721
+	* explow.c (convert_memory_address_addr_space): Also permute the
+	conversion and addition of constant for zero-extend.
 
 2014-10-14  DJ Delorie  <dj@redhat.com>
 
@@ -965,8 +970,8 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * config/i386/sse.md
-        (define_mode_iterator REDUC_SMINMAX_MODE): Add V64QI and V32HI modes.
+	* config/i386/sse.md
+	(define_mode_iterator REDUC_SMINMAX_MODE): Add V64QI and V32HI modes.
 
 2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
@@ -1015,9 +1020,9 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * config/i386/sse.md
-        (define_insn "avx512bw_umulhrswv32hi3<mask_name>"): New.
-        (define_expand "<ssse3_avx2>_pmulhrsw<mode>3_mask"): Ditto.
+	* config/i386/sse.md
+	(define_insn "avx512bw_umulhrswv32hi3<mask_name>"): New.
+	(define_expand "<ssse3_avx2>_pmulhrsw<mode>3_mask"): Ditto.
 
 2014-10-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
@@ -1362,8 +1367,8 @@
 2014-10-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libfortran/63471
-        * config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define _REENTRANT
-        when _HPUX_SOURCE is defined.
+	* config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define _REENTRANT
+	when _HPUX_SOURCE is defined.
 
 2014-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -1474,7 +1479,7 @@
 	* internal-fn.def (UBSAN_OBJECT_SIZE): Define.
 	* opts.c (common_handle_option): Handle -fsanitize=object-size.
 	* ubsan.c: Include tree-object-size.h.
-	(ubsan_type_descriptor): Call tree_to_uhwi instead of tree_to_shwi. 
+	(ubsan_type_descriptor): Call tree_to_uhwi instead of tree_to_shwi.
 	(ubsan_expand_bounds_ifn): Use false instead of 0.
 	(ubsan_expand_objsize_ifn): New function.
 	(instrument_object_size): New function.
@@ -1506,11 +1511,11 @@
 	TARGET_FIX_ERR_A53_835769_DEFAULT.
 	* config/aarch64/aarch64.opt (mfix-cortex-a53-835769): Set Init
 	value to 2.
-	* doc/install.texi (aarch64*-*-*): Document 
+	* doc/install.texi (aarch64*-*-*): Document
 	new --enable-fix-cortex-a53-835769 option.
 
 2014-10-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.h (FINAL_PRESCAN_INSN): Define.
 	(ADJUST_INSN_LENGTH): Define.
@@ -1680,7 +1685,7 @@
 2014-10-08  Rong Xu  <xur@google.com>
 
 	* gcov-tool.c (profile_overlap): New driver function
-	to compute profile overlap. 
+	to compute profile overlap.
 	(print_overlap_usage_message): New.
 	(overlap_usage): New.
 	(do_overlap): New.
@@ -2358,9 +2363,9 @@
 2014-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/aarch64-linux.h (ASAN_CC1_SPEC): Define.
-        (CC1_SPEC): Define.
-        * config/aarch64/aarch64.c (aarch64_asan_shadow_offset): New function.
-        (TARGET_ASAN_SHADOW_OFFSET): Define.
+	(CC1_SPEC): Define.
+	* config/aarch64/aarch64.c (aarch64_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
 
 2014-09-26  Martin Liska  <mliska@suse.cz>
 
@@ -3700,15 +3705,15 @@
 
 2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
 
-    	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
-    	config/rs6000/rs6000.c, config/sh/sh.c, cprop.c, dwarf2out.c,
-    	emit-rtl.c, final.c, function.c, gcse.c, jump.c, reg-stack.c,
-    	reload1.c, reorg.c, resource.c, sel-sched-ir.c: Replace INSN_DELETED_P
-    	macro with statically checked member functions.
-    	* rtl.h (rtx_insn::deleted): New method.
-    	(rtx_insn::set_deleted): Likewise.
-    	(rtx_insn::set_undeleted): Likewise.
-    	(INSN_DELETED_P): Remove.
+	* cfgrtl.c, combine.c, config/arc/arc.c, config/mcore/mcore.c,
+	config/rs6000/rs6000.c, config/sh/sh.c, cprop.c, dwarf2out.c,
+	emit-rtl.c, final.c, function.c, gcse.c, jump.c, reg-stack.c,
+	reload1.c, reorg.c, resource.c, sel-sched-ir.c: Replace INSN_DELETED_P
+	macro with statically checked member functions.
+	* rtl.h (rtx_insn::deleted): New method.
+	(rtx_insn::set_deleted): Likewise.
+	(rtx_insn::set_undeleted): Likewise.
+	(INSN_DELETED_P): Remove.
 
 2014-09-15  Trevor Saunders  <tsaunders@mozilla.com>
 
@@ -5164,9 +5169,9 @@
 	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	 * config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Add crtfastmath.o.
-         * config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
+	 * config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
 	Define.
-        (ENDFILE_SPEC): Define and use GNU_USER_TARGET_MATH_ENDFILE_SPEC.
+	(ENDFILE_SPEC): Define and use GNU_USER_TARGET_MATH_ENDFILE_SPEC.
 
 2014-09-09  David Malcolm  <dmalcolm@redhat.com>
 
@@ -8225,8 +8230,8 @@
 
 2014-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-        PR target/62261
-        * config/sh/sh.md (ashlsi3): Handle negative shift count for
+	PR target/62261
+	* config/sh/sh.md (ashlsi3): Handle negative shift count for
 	TARGET_SHMEDIA.
 	(ashldi3, ashrsi3, ashrdi3, lshrsi3, lshrdi3): Likewise.
 
@@ -8852,7 +8857,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * config/i386/sse.md
+	* config/i386/sse.md
 	(define_mode_iterator VI48_AVX2_48_AVX512F): Delete.
 	(define_mode_iterator VI48_AVX512BW): New.
 	(define_insn "<avx2_avx512f>_<shift_insn>v<mode><mask_name>"): Delete.
@@ -9394,7 +9399,7 @@
 
 	* sel-sched-ir.h (struct vinsn_def): Strengthen field "insn_rtx"
 	from rtx to rtx_insn *.
-        (VINSN_INSN_RTX): Eliminate rvalue function and...
+	(VINSN_INSN_RTX): Eliminate rvalue function and...
 	(SET_VINSN_INSN): ...lvalue function in favor of...
 	(VINSN_INSN_RTX): reinstate this old macro.
 
@@ -14782,7 +14787,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * config/i386/sse.md (define_mode_attr avx512): New.
+	* config/i386/sse.md (define_mode_attr avx512): New.
 	(define_mode_attr sse2_avx_avx512f): Allow V8HI, V16HI, V32HI, V2DI,
 	V4DI modes.
 	(define_mode_attr sse2_avx2): Allow V64QI, V32HI, V4TI modes.
@@ -14852,7 +14857,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * config/i386/i386.md
+	* config/i386/i386.md
 	(define_attr "isa"): Add avx512bw,noavx512bw.
 	(define_attr "enabled"): Ditto.
 	(define_split): Add 32/64-bit mask logic.
@@ -15143,8 +15148,8 @@
 	(compute_bounds_for_param): use isl_val instead of isl_int
 	(compute_bounds_for_loop): likewise
 	* graphite-interchange.c: include isl/val.h, isl/val_gmp.h
-        (build_linearized_memory_access): use isl_val instead of isl_int
-        (pdr_stride_in_loop): likewise
+	(build_linearized_memory_access): use isl_val instead of isl_int
+	(pdr_stride_in_loop): likewise
 	* graphite-optimize-isl.c:
 	(getPrevectorMap): use isl_val instead of isl_int
 	* graphite-poly.c:
@@ -15172,7 +15177,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * common/config/i386/i386-common.c
+	* common/config/i386/i386-common.c
 	(OPTION_MASK_ISA_AVX512VL_SET): Define.
 	(OPTION_MASK_ISA_AVX512F_UNSET): Update.
 	(ix86_handle_option): Handle OPT_mavx512vl.
@@ -15204,7 +15209,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * common/config/i386/i386-common.c
+	* common/config/i386/i386-common.c
 	(OPTION_MASK_ISA_AVX512BW_SET) : Define.
 	(OPTION_MASK_ISA_AVX512BW_UNSET): Ditto.
 	(OPTION_MASK_ISA_AVX512VL_UNSET) : Ditto.
@@ -15342,7 +15347,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * common/config/i386/i386-common.c
+	* common/config/i386/i386-common.c
 	(OPTION_MASK_ISA_AVX512DQ_SET): Define.
 	(OPTION_MASK_ISA_AVX512DQ_UNSET): Ditto.
 	(ix86_handle_option): Handle OPT_mavx512dq.
@@ -15531,7 +15536,7 @@
 	TARGET_FLOAT and TARGET_SIMD.
 
 2014-08-07  Ian Bolton  <ian.bolton@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate):
 	Use MOVN when one of the half-words is 0xffff.
@@ -15649,9 +15654,9 @@
 
 2014-08-05  David Malcolm  <dmalcolm@redhat.com>
 
-        * gdbhooks.py (find_gcc_source_dir): New helper function.
-        (class PassNames): New class, locating and parsing passes.def.
-        (class BreakOnPass): New command "break-on-pass".
+	* gdbhooks.py (find_gcc_source_dir): New helper function.
+	(class PassNames): New class, locating and parsing passes.def.
+	(class BreakOnPass): New command "break-on-pass".
 
 2014-08-05  Trevor Saunders  <tsaunders@mozilla.com>
 
@@ -15859,7 +15864,7 @@
 	PTA_RDRND and PTA_MOVBE for bdver4.
 
 2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/md.texi (clrsb): Document.
 	(clz): Change reference to x into operand 1.
@@ -15873,7 +15878,7 @@
 	move to subtarget in serial version if result is ignored.
 
 2014-08-04  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* sched-deps.c (try_group_insn): Generalise macro fusion hook usage
 	to any two insns.  Update comment.  Rename to sched_macro_fuse_insns.
@@ -18278,7 +18283,7 @@
 	Idem.
 	* config/i386/i386.c (x96_emit_mode_set): Idem.
 	* config/sh/sh.c (sh_emit_mode_set): Likewise. Handle PR toggle.
-	* config/sh/sh.md (toggle_pr): 	Defined if TARGET_FPU_SINGLE.
+	* config/sh/sh.md (toggle_pr):	Defined if TARGET_FPU_SINGLE.
 	(fpscr_toggle) Disallow from delay slot.
 	* target.def (emit_mode_set): Add prev_mode parameter.
 	* doc/tm.texi: Regenerate.
