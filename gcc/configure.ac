@@ -3799,17 +3799,18 @@ foo:	nop
 	      ;;
 	  esac
 	fi
-	# Test if the assembler supports the section flag 'e' for specifying
-	# an excluded section.
-	gcc_GAS_CHECK_FEATURE([.section with e], gcc_cv_as_section_has_e,
-	  [2,22,51],,
-[.section foo1,"e"
-.byte 0,0,0,0])
-	AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
-	  [`if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`],
-          [Define if your assembler supports specifying the section flag e.])
 	;;
     esac
+
+    # Test if the assembler supports the section flag 'e' for specifying
+    # an excluded section.
+    gcc_GAS_CHECK_FEATURE([.section with e], gcc_cv_as_section_has_e,
+      [2,22,51], [--fatal-warnings],
+[.section foo1,"e"
+.byte 0,0,0,0])
+    AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
+      [`if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`],
+      [Define if your assembler supports specifying the section flag e.])
 
     gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
        gcc_cv_as_ix86_filds,,,
