@@ -65,19 +65,24 @@ proc v3track { var n } {
     verbose "++ $var is $val" $n
 }
 
+# Copy file to the target.
+proc v3-copy-file {src dst} {
+    if { [catch { set symlink [file readlink $src] } x] } then {
+	remote_download target $src $dst
+    } else {
+	if { [regexp "^/" "$symlink"] } then {
+	    remote_download target $symlink $dst
+	} else {
+	    set dirname [file dirname $f]
+	    remote_download target $dirname/$symlink $dst
+	}
+    }
+}
+
 # Called by v3-init below.  "Static" to this file.
 proc v3-copy-files {srcfiles} {
     foreach f $srcfiles {
-        if { [catch { set symlink [file readlink $f] } x] } then {
-	    remote_download target $f
-        } else {
-            if { [regexp "^/" "$symlink"] } then {
-		remote_download target $symlink
-            } else {
-                set dirname [file dirname $f]
-		remote_download target $dirname/$symlink
-            }
-        }
+	v3-copy-file $f [file tail $f]
     }
 }
 
@@ -690,8 +695,8 @@ proc check_v3_target_fileio { } {
 	# the file functions
 	set src fileio[pid].cc
 	set exe fileio[pid].x
-	set testfile "cin_unget-1.txt"
-	v3-copy-files "$srcdir/data/$testfile"
+	set testfile "cin_unget-1.[pid].txt"
+	v3-copy-file "$srcdir/data/cin_unget-1.txt" "$testfile"
 
 	set f [open $src "w"]
 	puts $f "#include <sys/types.h>"
