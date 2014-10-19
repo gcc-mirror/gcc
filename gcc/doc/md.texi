@@ -297,7 +297,7 @@ expression.
 When matching patterns, this is equivalent to
 
 @smallexample
-(match_operand:@var{m} @var{n} "scratch_operand" @var{pred})
+(match_operand:@var{m} @var{n} "scratch_operand" @var{constraint})
 @end smallexample
 
 but, when generating RTL, it produces a (@code{scratch}:@var{m})
