@@ -1,3 +1,12 @@
+2014-10-19  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* configure: Regenerate.
+	* configure.ac: Move the test for section attribute specifier "e" in GAS
+	out to all i[34567]86-*-* | x86_64-*-* targets and add --fatal-warnings.
+	* langhooks.c (lhd_begin_section): Set SECTION_EXCLUDE flag.
+	* varasm.c (default_elf_asm_named_section): Guard SECTION_EXCLUDE with
+	ifdef HAVE_GAS_SECTION_EXCLUDE.
+
 2014-10-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* doc/md.texi (RTL Template) [match_scratch]: Correct equivalent
