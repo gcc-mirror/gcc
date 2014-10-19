@@ -1,3 +1,12 @@
+2014-10-19  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.dg/atomic/c11-atomic-exec-5.c
+	(test_main_long_double_add_overflow): Define and run only for
+	LDBL_MANT_DIG != 106.
+	(test_main_complex_long_double_add_overflow): Likewise.
+	(test_main_long_double_sub_overflow): Likewise.
+	(test_main_complex_long_double_sub_overflow): Likewise.
+
 2014-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/63553
