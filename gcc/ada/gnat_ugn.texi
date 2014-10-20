@@ -8127,7 +8127,7 @@ Generate binder file suitable for CodePeer.
 
 @item -R
 @cindex @option{-R} (@command{gnatbind})
-Output closure source list, which includes all non-runtime-units that are
+Output closure source list, which includes all non-run-time units that are
 included in the bind.
 
 @item -Ra
