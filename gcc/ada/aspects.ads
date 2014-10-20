@@ -180,6 +180,7 @@ package Aspects is
       Aspect_Interrupt_Handler,
       Aspect_Lock_Free,                     -- GNAT
       Aspect_No_Return,
+      Aspect_No_Tagged_Streams,             -- GNAT
       Aspect_Pack,
       Aspect_Persistent_BSS,                -- GNAT
       Aspect_Preelaborable_Initialization,
@@ -432,6 +433,7 @@ package Aspects is
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Return                    => Name_No_Return,
+      Aspect_No_Tagged_Streams            => Name_No_Tagged_Streams,
       Aspect_Object_Size                  => Name_Object_Size,
       Aspect_Obsolescent                  => Name_Obsolescent,
       Aspect_Output                       => Name_Output,
@@ -691,6 +693,7 @@ package Aspects is
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
+      Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,
       Aspect_Part_Of                      => Never_Delay,
       Aspect_Refined_Depends              => Never_Delay,

@@ -408,6 +408,7 @@ package Snames is
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
+   Name_No_Tagged_Streams              : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
    Name_Overflow_Mode                  : constant Name_Id := N + $; -- GNAT
@@ -1749,6 +1750,7 @@ package Snames is
       Pragma_Loop_Optimize,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
+      Pragma_No_Tagged_Streams,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
       Pragma_Overflow_Mode,

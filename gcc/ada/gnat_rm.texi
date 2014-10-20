@@ -209,6 +209,7 @@ Implementation Defined Pragmas
 * Pragma No_Return::
 * Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing ::
+* Pragma No_Tagged_Streams::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
@@ -313,6 +314,7 @@ Implementation Defined Aspects
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect No_Elaboration_Code_All::
+* Aspect No_Tagged_Streams::
 * Aspect Object_Size::
 * Aspect Obsolescent::
 * Aspect Part_Of::
@@ -1081,6 +1083,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma No_Return::
 * Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing::
+* Pragma No_Tagged_Streams::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
@@ -4778,6 +4781,41 @@ Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
 This pragma currently has no effects on access to unconstrained array types.
 
+@node Pragma No_Tagged_Streams
+@unnumberedsec Pragma No_Tagged_Streams
+@findex No_Tagged_Streams
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Tagged_Streams;
+pragma No_Tagged_Streams [([Entity =>] tagged_type_LOCAL_NAME)];
+@end smallexample
+
+@noindent
+Normally when a tagged type is introduced using a full type declaration,
+part of the processing includes generating stream access routines to be
+used by stream attributes referencing the type (or one of its subtypes
+or derived types). This can involve the generation of significant amounts
+of code which is wasted space if stream routines are not needed for the
+type in question.
+
+The @code{No_Tagged_Streams} pragma causes the generation of these stream
+routines to be skipped, and any attempt to use stream operations on
+types subject to this pragma will be statically rejected as illegal.
+
+There are two forms of the pragma. The form with no arguments must appear
+in a declarative sequence or in the declarations of a package spec. This
+pragma affects all subsequent root tagged types declared in the declaration
+sequence, and specifies that no stream routines be generated. The form with
+an argument (for which there is also a corresponding aspect) specifies a
+single root tagged type for which stream routines are not to be generated.
+
+Once the pragma has been given for a particular root tagged type, all subtypes
+and derived types of this type inherit the pragma automatically, so the effect
+applies to a complete hierarchy (this is necessary to deal with the class-wide
+dispatching versions of the stream routines).
+
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
 @findex Normalize_Scalars
@@ -8110,6 +8148,7 @@ or attribute definition clause.
 * Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect No_Elaboration_Code_All::
+* Aspect No_Tagged_Streams::
 * Aspect Object_Size::
 * Aspect Obsolescent::
 * Aspect Part_Of::
@@ -8387,6 +8426,14 @@ This boolean aspect is equivalent to pragma @code{Lock_Free}.
 @noindent
 This aspect is equivalent to a @code{pragma No_Elaboration_Code_All}
 statement for a program unit.
+
+@node Aspect No_Tagged_Streams
+@unnumberedsec Aspect No_Tagged_Streams
+@findex No_Tagged_Streams
+@noindent
+This aspect is equivalent to a @code{pragma No_Tagged_Streams} with an
+argument specifying a root tagged type (thus this aspect can only be
+applied to such a type).
 
 @node Aspect Object_Size
 @unnumberedsec Aspect Object_Size

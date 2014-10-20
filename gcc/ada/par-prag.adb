@@ -1262,6 +1262,7 @@ begin
            Pragma_No_Return                      |
            Pragma_No_Run_Time                    |
            Pragma_No_Strict_Aliasing             |
+           Pragma_No_Tagged_Streams              |
            Pragma_Normalize_Scalars              |
            Pragma_Obsolescent                    |
            Pragma_Ordered                        |

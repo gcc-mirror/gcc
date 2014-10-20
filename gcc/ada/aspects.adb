@@ -546,6 +546,7 @@ package body Aspects is
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
     Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
     Aspect_No_Return                    => Aspect_No_Return,
+    Aspect_No_Tagged_Streams            => Aspect_No_Tagged_Streams,
     Aspect_Obsolescent                  => Aspect_Obsolescent,
     Aspect_Object_Size                  => Aspect_Object_Size,
     Aspect_Output                       => Aspect_Output,

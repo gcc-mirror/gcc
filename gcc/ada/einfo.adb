@@ -251,6 +251,7 @@ package body Einfo is
    --    Thunk_Entity                    Node31
 
    --    SPARK_Pragma                    Node32
+   --    No_Tagged_Streams_Pragma        Node32
 
    --    Linker_Section_Pragma           Node33
    --    SPARK_Aux_Pragma                Node33
@@ -2593,6 +2594,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Flag136 (Base_Type (Id));
    end No_Strict_Aliasing;
+
+   function No_Tagged_Streams_Pragma (Id : E) return N is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Node32 (Id);
+   end No_Tagged_Streams_Pragma;
 
    function Non_Binary_Modulus (Id : E) return B is
    begin
@@ -5418,6 +5425,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Flag136 (Id, V);
    end Set_No_Strict_Aliasing;
+
+   procedure Set_No_Tagged_Streams_Pragma (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Node32 (Id, V);
+   end Set_No_Tagged_Streams_Pragma;
 
    procedure Set_Non_Binary_Modulus (Id : E; V : B := True) is
    begin
@@ -9741,6 +9754,9 @@ package body Einfo is
               E_Procedure                                  |
               E_Subprogram_Body                            =>
             Write_Str ("SPARK_Pragma");
+
+         when Type_Kind                                    =>
+            Write_Str ("No_Tagged_Streams_Pragma");
 
          when others                                       =>
             Write_Str ("Field32??");
