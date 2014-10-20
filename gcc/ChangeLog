@@ -1,3 +1,9 @@
+2014-10-20  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63583
+	* ipa-icf-gimple.c (func_checker::compare_gimple_asm):
+	Gimple tempate string is compared.
+
 2014-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* varasm.c (const_alias_set): Remove.
