@@ -153,6 +153,16 @@ full_exe_path (void)
 }
 
 
+#ifndef HAVE_STRTOK_R
+static char*
+gfstrtok_r (char *str, const char *delim, 
+	    char **saveptr __attribute__ ((unused)))
+{
+  return strtok (str, delim);
+}
+#define strtok_r gfstrtok_r
+#endif
+
 char *addr2line_path;
 
 /* Find addr2line and store the path.  */
@@ -161,30 +171,32 @@ void
 find_addr2line (void)
 {
 #ifdef HAVE_ACCESS
-#define A2L_LEN 10
+#define A2L_LEN 11
   char *path = secure_getenv ("PATH");
   if (!path)
     return;
+  char *tp = strdup (path);
+  if (!tp)
+    return;
   size_t n = strlen (path);
-  char ap[n + 1 + A2L_LEN];
-  size_t ai = 0;
-  for (size_t i = 0; i < n; i++)
+  char *ap = xmalloc (n + A2L_LEN);
+  char *saveptr;
+  for (char *str = tp;; str = NULL)
     {
-      if (path[i] != ':')
-	ap[ai++] = path[i];
-      else
+      char *token = strtok_r (str, ":", &saveptr);
+      if (!token)
+	break;
+      size_t toklen = strlen (token);
+      memcpy (ap, token, toklen);
+      memcpy (ap + toklen, "/addr2line", A2L_LEN);
+      if (access (ap, R_OK|X_OK) == 0)
 	{
-	  ap[ai++] = '/';
-	  memcpy (ap + ai, "addr2line", A2L_LEN);
-	  if (access (ap, R_OK|X_OK) == 0)
-	    {
-	      addr2line_path = strdup (ap);
-	      return;
-	    }
-	  else
-	    ai = 0;
+	  addr2line_path = strdup (ap);
+	  break;
 	}
     }
+  free (tp);
+  free (ap);
 #endif
 }
 
