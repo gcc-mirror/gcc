@@ -1,3 +1,13 @@
+2014-10-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/63589
+	* configure.ac: Check for strtok_r.
+	* runtime/main.c (gfstrtok_r): Fallback implementation of
+	strtok_r.
+	(find_addr2line): Use strtok_r to split PATH.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2014-08-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR libgfortran/62188

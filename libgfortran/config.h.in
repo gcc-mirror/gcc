@@ -711,6 +711,9 @@
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
 
+/* Define to 1 if you have the `strtok_r' function. */
+#undef HAVE_STRTOK_R
+
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 

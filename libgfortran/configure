@@ -2595,6 +2595,7 @@ as_fn_append ac_func_list " umask"
 as_fn_append ac_func_list " getegid"
 as_fn_append ac_func_list " secure_getenv"
 as_fn_append ac_func_list " __secure_getenv"
+as_fn_append ac_func_list " strtok_r"
 as_fn_append ac_header_list " math.h"
 # Check that the precious variables saved in the cache have kept the same
 # value.
@@ -12339,7 +12340,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12342 "configure"
+#line 12343 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12445,7 +12446,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12448 "configure"
+#line 12449 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16456,6 +16457,8 @@ _ACEOF
 
 fi
 done
+
+
 
 
 
