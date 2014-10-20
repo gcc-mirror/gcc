@@ -1,3 +1,52 @@
+2014-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (List_Inlining_Info): Minor tweaks.
+	(Add_Inlined_Body): Inline the enclosing package
+	if it is not internally generated, even if it doesn't come
+	from source.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Process_Function_Call): If the first actual
+	denotes a discrete type, the mode must be interpreted as a slice
+	of an array returned by a parameterless call.
+
+2014-10-20  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* prj-env.ads, prj-env.adb (Get_Runtime_Path): No longer inhibit
+	searching for runtime referenced by a simple name on a project path.
+
+2014-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* vxworks-x86-link.spec: New file.
+	* system-vxworks-x86.ads: Add pragma Linker_Options to link with
+	vxworks-x86-link.spec.
+
+2014-10-20  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (Origin_Of_Target): New type.
+	(Target_Origin): New variable.
+	* prj-conf.adb (Parse_Project_And_Apply_Config): Record
+	Target_Value and Target_Origin.  If target was not specified
+	on the command line with --target=, check if attribute Target
+	is declared in the main project. If it is and it is not the
+	native target, parse again the projects so that 'Target get
+	the new value. Fail if the target has changed again.  Invoke
+	Process_Project_And_Apply_Config with Do_Phase_1 set to False
+	is Process_Project_Tree_Phase_1 has already been invoked.
+	* prj-conf.ads (Process_Project_And_Apply_Config): New Boolean
+	parameter Do_Phase_1, defaulted to True.
+	* prj-proc.adb (Expression): Check the special values and
+	defaults for attribute Target.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Handle_Late_Controlled_Primitive): Do not analyze
+	the subprogram spec of the body in full, because it will be
+	reanalyzed when the declaration itself is analyzed;  otherwise. a
+	formal may end up duplicated in the list of formals leading to
+	spurious conformance errors with an existing declaration.
+
 2014-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb: Improve error recovery on illegal aspect.

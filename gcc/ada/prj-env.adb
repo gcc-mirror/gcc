@@ -1425,35 +1425,12 @@ package body Prj.Env is
      (Self : Project_Search_Path;
       Name : String) return String_Access
    is
-      function Is_Base_Name (Path : String) return Boolean;
-      --  Returns True if Path has no directory separator
-
-      ------------------
-      -- Is_Base_Name --
-      ------------------
-
-      function Is_Base_Name (Path : String) return Boolean is
-      begin
-         for J in Path'Range loop
-            if Is_Directory_Separator (Path (J)) then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Is_Base_Name;
 
       function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
         (Check_Filename => Is_Directory);
 
-      --  Start of processing for Get_Runtime_Path
-
    begin
-      if not Is_Base_Name (Name) then
-         return Find_Rts_In_Path (Self, Name);
-      else
-         return null;
-      end if;
+      return Find_Rts_In_Path (Self, Name);
    end Get_Runtime_Path;
 
    ----------------
