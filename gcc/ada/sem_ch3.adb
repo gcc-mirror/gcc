@@ -2777,9 +2777,18 @@ package body Sem_Ch3 is
       --  them to the entity for the type which is currently the partial
       --  view, but which is the one that will be frozen.
 
+      --  In most cases the partial view is a private type, and both views
+      --  appear in different declarative parts. In the unusual case where the
+      --  partial view is incomplete, perform the analysis on the full view,
+      --  to prevent freezing anomalies with the corresponding class-wide type,
+      --  which otherwise might be frozen before the dispatch table is built.
+
       if Has_Aspects (N) then
-         if Prev /= Def_Id then
+         if Prev /= Def_Id
+           and then Ekind (Prev) /= E_Incomplete_Type
+         then
             Analyze_Aspect_Specifications (N, Prev);
+
          else
             Analyze_Aspect_Specifications (N, Def_Id);
          end if;

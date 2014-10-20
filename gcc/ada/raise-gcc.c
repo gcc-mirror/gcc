@@ -1384,7 +1384,14 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 			    void *argument)
 {
 #ifdef __USING_SJLJ_EXCEPTIONS__
+
+# if defined (__APPLE__) && defined (__arm__)
+  /* There is not ForcedUnwind routine in ios system library.  */
+  return _URC_FATAL_PHASE1_ERROR;
+# else
   return _Unwind_SjLj_ForcedUnwind (e, handler, argument);
+# endif
+
 #else
   return _Unwind_ForcedUnwind (e, handler, argument);
 #endif
