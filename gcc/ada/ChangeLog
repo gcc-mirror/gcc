@@ -1,3 +1,39 @@
+2014-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* set_targ.adb (Write_Target_Dependent_Values, Write_Line):
+	Fix calling C APIs with no trailing NUL char by calling better
+	wrappers instead.
+
+2014-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_ugn.texi: Document that gdb users must be in group
+	_developer on mac os.
+
+2014-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-tgdico.ads: Fix typo.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Do not create a
+	transient scope for a component whose type requires it, if the
+	context is an initialization procedure, because the target of
+	the assignment must be visible outside of the block.
+
+2014-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Define PC_ADJUST for arm-darwin.
+	* env.c: Remove darwin specific code.
+	* raise-gcc.c (__gnat_Unwind_ForcedUnwind): Error on arm-darwin.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): If previous view
+	is incomplete rather than private, and full type declaration
+	has aspects, analyze aspects on the full view rather than
+	the incomplete view, to prevent freezing anomalies with the
+	class-wide type.
+
 2014-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Task_Body): Add defense against
