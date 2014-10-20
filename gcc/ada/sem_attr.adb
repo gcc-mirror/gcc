@@ -1909,6 +1909,17 @@ package body Sem_Attr is
             end if;
          end if;
 
+         --  Check for no stream operations allowed from No_Tagged_Streams
+
+         if Is_Tagged_Type (P_Type)
+           and then Present (No_Tagged_Streams_Pragma (P_Type))
+         then
+            Error_Msg_Sloc := Sloc (No_Tagged_Streams_Pragma (P_Type));
+            Error_Msg_NE
+              ("no stream operations for & (No_Tagged_Streams #)", N, P_Type);
+            return;
+         end if;
+
          --  Check restriction violations
 
          --  First check the No_Streams restriction, which prohibits the use

@@ -1077,6 +1077,11 @@ package Opt is
    --  GNAT
    --  Set True if pragma No_Strict_Aliasing with no parameters encountered.
 
+   No_Tagged_Streams : Node_Id := Empty;
+   --  GNAT
+   --  If a pragma No_Tagged_Streams is active for the current scope, this
+   --  points to the corresponding pragma.
+
    Normalize_Scalars : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if a pragma Normalize_Scalars applies to the current unit.

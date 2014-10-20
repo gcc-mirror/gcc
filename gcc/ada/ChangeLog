@@ -1,5 +1,29 @@
 2014-10-20  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document No_Tagged_Streams pragma and aspect.
+	* snames.ads-tmpl: Add entry for pragma No_Tagged_Streams.
+	* aspects.ads, aspects.adb: Add aspect No_Tagged_Streams.
+	* einfo.adb (No_Tagged_Streams_Pragma): New field.
+	* einfo.ads: Minor reformatting (reorder entries).
+	(No_Tagged_Streams_Pragma): New field.
+	* exp_ch3.adb: Minor comment update.
+	* opt.ads (No_Tagged_Streams): New variable.
+	* par-prag.adb: Add dummy entry for pragma No_Tagged_Streams.
+	* sem.ads (Save_No_Tagged_Streams): New field in scope record.
+	* sem_attr.adb (Check_Stream_Attribute): Check stream ops
+	prohibited by No_Tagged_Streams.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Set
+	No_Tagged_Streams_Pragma.
+	(Analyze_Subtype_Declaration): ditto.
+	(Build_Derived_Record_Type): ditto.
+	(Record_Type_Declaration): ditto.
+	* sem_ch8.adb (Pop_Scope): Restore No_Tagged_Streams.
+	(Push_Scope): Save No_Tagged_Streams.
+	* sem_prag.adb (Analyze_Pragma, case No_Tagged_Streams): Implement new
+	pragma.
+
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, prj-proc.adb, sem_ch4.adb, prj-env.adb, lib.ads,
 	sem_ch13.adb: Minor reformatting.
 

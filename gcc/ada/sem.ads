@@ -492,6 +492,9 @@ package Sem is
       Save_SPARK_Mode_Pragma : Node_Id;
       --  Setting of SPARK_Mode_Pragma on entry to restore on exit
 
+      Save_No_Tagged_Streams : Node_Id;
+      --  Setting of No_Tagged_Streams to restore on exit
+
       Save_Default_SSO : Character;
       --  Setting of Default_SSO on entry to restore on exit
 

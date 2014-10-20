@@ -7851,6 +7851,7 @@ package body Sem_Ch8 is
       Local_Suppress_Stack_Top := SST.Save_Local_Suppress_Stack_Top;
       Check_Policy_List        := SST.Save_Check_Policy_List;
       Default_Pool             := SST.Save_Default_Storage_Pool;
+      No_Tagged_Streams        := SST.Save_No_Tagged_Streams;
       SPARK_Mode               := SST.Save_SPARK_Mode;
       SPARK_Mode_Pragma        := SST.Save_SPARK_Mode_Pragma;
       Default_SSO              := SST.Save_Default_SSO;
@@ -7925,6 +7926,7 @@ package body Sem_Ch8 is
          SST.Save_Local_Suppress_Stack_Top := Local_Suppress_Stack_Top;
          SST.Save_Check_Policy_List        := Check_Policy_List;
          SST.Save_Default_Storage_Pool     := Default_Pool;
+         SST.Save_No_Tagged_Streams        := No_Tagged_Streams;
          SST.Save_SPARK_Mode               := SPARK_Mode;
          SST.Save_SPARK_Mode_Pragma        := SPARK_Mode_Pragma;
          SST.Save_Default_SSO              := Default_SSO;

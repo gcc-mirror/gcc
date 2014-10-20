@@ -2554,7 +2554,8 @@ package body Sem_Ch3 is
       --  imported through a LIMITED WITH clause, it appears as incomplete
       --  but has no full view.
 
-      if Ekind (Prev) = E_Incomplete_Type and then Present (Full_View (Prev))
+      if Ekind (Prev) = E_Incomplete_Type
+        and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
          Set_Incomplete_View (N, Parent (Prev));
@@ -2847,7 +2848,8 @@ package body Sem_Ch3 is
       --  incomplete types.
 
       if Tagged_Present (N) then
-         Set_Is_Tagged_Type (T);
+         Set_Is_Tagged_Type (T, True);
+         Set_No_Tagged_Streams_Pragma (T, No_Tagged_Streams);
          Make_Class_Wide_Type (T);
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
@@ -2879,6 +2881,7 @@ package body Sem_Ch3 is
 
    begin
       Set_Is_Tagged_Type (T);
+      Set_No_Tagged_Streams_Pragma (T, No_Tagged_Streams);
 
       Set_Is_Limited_Record (T, Limited_Present (Def)
                                   or else Task_Present (Def)
@@ -4663,6 +4666,8 @@ package body Sem_Ch3 is
                Set_Is_Tagged_Type       (Id, True);
                Set_Has_Unknown_Discriminants
                                         (Id, True);
+               Set_No_Tagged_Streams_Pragma
+                                        (Id, No_Tagged_Streams_Pragma (T));
 
                if Ekind (T) = E_Class_Wide_Subtype then
                   Set_Equivalent_Type   (Id, Equivalent_Type    (T));
@@ -4699,7 +4704,9 @@ package body Sem_Ch3 is
                end if;
 
                if Is_Tagged_Type (T) then
-                  Set_Is_Tagged_Type    (Id);
+                  Set_Is_Tagged_Type    (Id, True);
+                  Set_No_Tagged_Streams_Pragma
+                                        (Id, No_Tagged_Streams_Pragma (T));
                   Set_Is_Abstract_Type  (Id, Is_Abstract_Type (T));
                   Set_Direct_Primitive_Operations
                                         (Id, Direct_Primitive_Operations (T));
@@ -4728,6 +4735,8 @@ package body Sem_Ch3 is
 
                if Is_Tagged_Type (T) then
                   Set_Is_Tagged_Type              (Id);
+                  Set_No_Tagged_Streams_Pragma    (Id,
+                    No_Tagged_Streams_Pragma (T));
                   Set_Is_Abstract_Type            (Id, Is_Abstract_Type (T));
                   Set_Class_Wide_Type             (Id, Class_Wide_Type  (T));
                   Set_Direct_Primitive_Operations (Id,
@@ -4808,6 +4817,11 @@ package body Sem_Ch3 is
                Set_Is_Tagged_Type       (Id, Is_Tagged_Type        (T));
                Set_Last_Entity          (Id, Last_Entity           (T));
 
+               if Is_Tagged_Type (T) then
+                  Set_No_Tagged_Streams_Pragma
+                    (Id, No_Tagged_Streams_Pragma (T));
+               end if;
+
                if Has_Discriminants (T) then
                   Set_Discriminant_Constraint (Id,
                                            Discriminant_Constraint (T));
@@ -4823,6 +4837,11 @@ package body Sem_Ch3 is
                   Set_Ekind              (Id, E_Incomplete_Subtype);
                   Set_Is_Tagged_Type     (Id, Is_Tagged_Type (T));
                   Set_Private_Dependents (Id, New_Elmt_List);
+
+                  if Is_Tagged_Type (Id) then
+                     Set_No_Tagged_Streams_Pragma
+                       (Id, No_Tagged_Streams_Pragma (T));
+                  end if;
 
                   --  Ada 2005 (AI-412): Decorate an incomplete subtype of an
                   --  incomplete type visible through a limited with clause.
@@ -8262,11 +8281,16 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Type
 
       Set_Has_Specified_Layout
-        (Derived_Type, Has_Specified_Layout (Parent_Type));
+        (Derived_Type, Has_Specified_Layout     (Parent_Type));
       Set_Is_Limited_Composite
-        (Derived_Type, Is_Limited_Composite (Parent_Type));
+        (Derived_Type, Is_Limited_Composite     (Parent_Type));
       Set_Is_Private_Composite
-        (Derived_Type, Is_Private_Composite (Parent_Type));
+        (Derived_Type, Is_Private_Composite     (Parent_Type));
+
+      if Is_Tagged_Type (Parent_Type) then
+         Set_No_Tagged_Streams_Pragma
+           (Derived_Type, No_Tagged_Streams_Pragma (Parent_Type));
+      end if;
 
       --  Fields inherited from the Parent_Base
 
@@ -8287,7 +8311,6 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Base for record types
 
       if Is_Record_Type (Derived_Type) then
-
          declare
             Parent_Full : Entity_Id;
 
@@ -8619,6 +8642,11 @@ package body Sem_Ch3 is
       Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
 
+      if Is_Tagged_Type (Derived_Type) then
+         Set_No_Tagged_Streams_Pragma
+           (Derived_Type, No_Tagged_Streams_Pragma (Parent_Type));
+      end if;
+
       --  If the parent has primitive routines, set the derived type link
 
       if Has_Primitive_Operations (Parent_Type) then
@@ -8629,7 +8657,7 @@ package body Sem_Ch3 is
       --  type may be set in the private part, and not propagated to the
       --  subtype until later, so we obtain the convention from the base type.
 
-      Set_Convention     (Derived_Type, Convention     (Parent_Base));
+      Set_Convention (Derived_Type, Convention     (Parent_Base));
 
       --  Set SSO default for record or array type
 
@@ -9272,6 +9300,7 @@ package body Sem_Ch3 is
 
       if Is_Tagged_Type (T) then
          Set_Is_Tagged_Type (Def_Id);
+         Set_No_Tagged_Streams_Pragma (Def_Id, No_Tagged_Streams_Pragma (T));
          Make_Class_Wide_Type (Def_Id);
       end if;
 
@@ -11437,8 +11466,10 @@ package body Sem_Ch3 is
 
       if Is_Tagged_Type (Full_Base) then
          Set_Is_Tagged_Type (Full);
-         Set_Direct_Primitive_Operations (Full,
-           Direct_Primitive_Operations (Full_Base));
+         Set_Direct_Primitive_Operations
+           (Full, Direct_Primitive_Operations (Full_Base));
+         Set_No_Tagged_Streams_Pragma
+           (Full, No_Tagged_Streams_Pragma (Full_Base));
 
          --  Inherit class_wide type of full_base in case the partial view was
          --  not tagged. Otherwise it has already been created when the private
@@ -13265,8 +13296,10 @@ package body Sem_Ch3 is
       Conditional_Delay              (Full,                          Priv);
 
       if Is_Tagged_Type (Full) then
-         Set_Direct_Primitive_Operations (Full,
-           Direct_Primitive_Operations (Priv));
+         Set_Direct_Primitive_Operations
+           (Full, Direct_Primitive_Operations (Priv));
+         Set_No_Tagged_Streams_Pragma
+           (Full, No_Tagged_Streams_Pragma (Priv));
 
          if Is_Base_Type (Priv) then
             Set_Class_Wide_Type      (Full, Class_Wide_Type         (Priv));
@@ -17637,10 +17670,12 @@ package body Sem_Ch3 is
       Set_Default_SSO                 (CW_Type);
 
       if Ekind (T) = E_Class_Wide_Subtype then
-         Set_Etype             (CW_Type, Etype (Base_Type (T)));
+         Set_Etype (CW_Type, Etype (Base_Type (T)));
       else
-         Set_Etype             (CW_Type, T);
+         Set_Etype (CW_Type, T);
       end if;
+
+      Set_No_Tagged_Streams_Pragma (CW_Type, No_Tagged_Streams);
 
       --  If this is the class_wide type of a constrained subtype, it does
       --  not have discriminants.
@@ -20527,8 +20562,12 @@ package body Sem_Ch3 is
            Tagged_Present (Def)
              or else (Serious_Errors_Detected > 0 and then Is_Tagged_Type (T));
 
-         Set_Is_Tagged_Type      (T, Is_Tagged);
-         Set_Is_Limited_Record   (T, Limited_Present (Def));
+         Set_Is_Limited_Record (T, Limited_Present (Def));
+
+         if Is_Tagged then
+            Set_Is_Tagged_Type (T, True);
+            Set_No_Tagged_Streams_Pragma (T, No_Tagged_Streams);
+         end if;
 
          --  Type is abstract if full declaration carries keyword, or if
          --  previous partial view did.
