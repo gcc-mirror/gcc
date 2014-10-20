@@ -2438,7 +2438,7 @@ finish_increment_expr (tree expr, enum tree_code code)
 tree
 finish_this_expr (void)
 {
-  tree result;
+  tree result = NULL_TREE;
 
   if (current_class_ptr)
     {
@@ -2450,25 +2450,19 @@ finish_this_expr (void)
       else
         result = current_class_ptr;
     }
-  else if (current_function_decl
-	   && DECL_STATIC_FUNCTION_P (current_function_decl))
-    {
-      error ("%<this%> is unavailable for static member functions");
-      result = error_mark_node;
-    }
+
+  if (result)
+    /* The keyword 'this' is a prvalue expression.  */
+    return rvalue (result);
+
+  tree fn = current_nonlambda_function ();
+  if (fn && DECL_STATIC_FUNCTION_P (fn))
+    error ("%<this%> is unavailable for static member functions");
+  else if (fn)
+    error ("invalid use of %<this%> in non-member function");
   else
-    {
-      if (current_function_decl)
-	error ("invalid use of %<this%> in non-member function");
-      else
-	error ("invalid use of %<this%> at top level");
-      result = error_mark_node;
-    }
-
-  /* The keyword 'this' is a prvalue expression.  */
-  result = rvalue (result);
-
-  return result;
+    error ("invalid use of %<this%> at top level");
+  return error_mark_node;
 }
 
 /* Finish a pseudo-destructor expression.  If SCOPE is NULL, the

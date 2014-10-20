@@ -1,3 +1,10 @@
+2014-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63601
+	* lambda.c (current_nonlambda_function): New.
+	* semantics.c (finish_this_expr): Use it.
+	* cp-tree.h: Declare it.
+
 2014-10-17  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/61848
