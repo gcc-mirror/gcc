@@ -6668,14 +6668,11 @@ package body Sem_Ch3 is
       Is_Completion : Boolean;
       Derive_Subps  : Boolean := True)
    is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Par_Base   : constant Entity_Id  := Base_Type (Parent_Type);
-      Par_Scope  : constant Entity_Id  := Scope (Par_Base);
-      Der_Base   : Entity_Id;
-      Discr      : Entity_Id;
-      Full_Der   : Entity_Id;
-      Full_P     : Entity_Id;
-      Last_Discr : Entity_Id;
+      Loc       : constant Source_Ptr := Sloc (N);
+      Par_Base  : constant Entity_Id  := Base_Type (Parent_Type);
+      Par_Scope : constant Entity_Id  := Scope (Par_Base);
+      Full_Der  : Entity_Id           := Empty;
+      Full_P    : Entity_Id;
 
       procedure Build_Full_Derivation;
       --  Build full derivation, i.e. derive from the full view
@@ -6796,7 +6793,8 @@ package body Sem_Ch3 is
 
             else
                Build_Derived_Type
-                 (Full_N, Full_Parent, Full_Der, True, Derive_Subps => False);
+                 (Full_N, Full_Parent, Full_Der,
+                  Is_Completion => False, Derive_Subps => False);
             end if;
 
             --  The full declaration has been introduced into the tree and
@@ -6815,7 +6813,8 @@ package body Sem_Ch3 is
             Set_Associated_Node_For_Itype (Full_Der, N);
             Set_Parent (Full_Der, N);
             Build_Derived_Type
-              (N, Full_Parent, Full_Der, True, Derive_Subps => False);
+              (N, Full_Parent, Full_Der,
+               Is_Completion => False, Derive_Subps => False);
          end if;
 
          Set_Has_Private_Declaration (Full_Der);
@@ -6945,40 +6944,17 @@ package body Sem_Ch3 is
          return;
 
       elsif Has_Discriminants (Parent_Type) then
-         if Present (Full_View (Parent_Type)) then
-            if not Is_Completion then
-               --  If this is not a completion, construct the implicit full
-               --  view by deriving from the full view of the parent type.
+         --  Build the full derivation if this is not the anonymous derived
+         --  base type created by Build_Derived_Record_Type in the constrained
+         --  case (see point 5. of its head comment) since we build it for the
+         --  derived subtype. And skip it for protected types altogether, as
+         --  gigi does not use these types directly.
 
-               Build_Full_Derivation;
-
-            else
-               --  If this is a completion, the full view being built is itself
-               --  private. We build a subtype of the parent with the same
-               --  constraints as this full view, to convey to the back end the
-               --  constrained components and the size of this subtype. If the
-               --  parent is constrained, its full view can serve as the
-               --  underlying full view of the derived type.
-
-               if No (Discriminant_Specifications (N)) then
-                  if Nkind (Subtype_Indication (Type_Definition (N))) =
-                                                        N_Subtype_Indication
-                  then
-                     Build_Underlying_Full_View (N, Derived_Type, Parent_Type);
-
-                  elsif Is_Constrained (Full_View (Parent_Type)) then
-                     Set_Underlying_Full_View
-                       (Derived_Type, Full_View (Parent_Type));
-                  end if;
-
-               else
-                  --  If there are new discriminants, the parent subtype is
-                  --  constrained by them, but it is not clear how to build
-                  --  the Underlying_Full_View in this case???
-
-                  null;
-               end if;
-            end if;
+         if Present (Full_View (Parent_Type))
+           and then not Is_Itype (Derived_Type)
+           and then not (Ekind (Full_View (Parent_Type)) in Protected_Kind)
+         then
+            Build_Full_Derivation;
          end if;
 
          --  Build partial view of derived type from partial view of parent
@@ -6986,35 +6962,54 @@ package body Sem_Ch3 is
          Build_Derived_Record_Type
            (N, Parent_Type, Derived_Type, Derive_Subps);
 
-         if Present (Full_View (Parent_Type)) and then not Is_Completion then
-            --  Install full view in derived type (base type and subtype)
+         if Present (Full_Der) then
+            declare
+               Der_Base   : constant Entity_Id := Base_Type (Derived_Type);
+               Discr      : Entity_Id;
+               Last_Discr : Entity_Id;
 
-            Der_Base := Base_Type (Derived_Type);
-            Set_Full_View (Derived_Type, Full_Der);
-            Set_Full_View (Der_Base, Base_Type (Full_Der));
+            begin
+               --  If this is not a completion, construct the implicit full
+               --  view by deriving from the full view of the parent type.
+               --  But if this is a completion, the derived private type
+               --  being built is a full view and the full derivation can
+               --  only be its underlying full view.
 
-            --  Copy the discriminant list from full view to the partial views
-            --  (base type and its subtype). Gigi requires that the partial and
-            --  full views have the same discriminants.
+               if not Is_Completion then
+                  Set_Full_View (Derived_Type, Full_Der);
+               else
+                  Set_Underlying_Full_View (Derived_Type, Full_Der);
+               end if;
 
-            --  Note that since the partial view is pointing to discriminants
-            --  in the full view, their scope will be that of the full view.
-            --  This might cause some front end problems and need adjustment???
+               if not Is_Base_Type (Derived_Type) then
+                  Set_Full_View (Der_Base, Base_Type (Full_Der));
+               end if;
 
-            Discr := First_Discriminant (Base_Type (Full_Der));
-            Set_First_Entity (Der_Base, Discr);
+               --  Copy the discriminant list from full view to the partial
+               --  view (base type and its subtype). Gigi requires that the
+               --  partial and full views have the same discriminants.
 
-            loop
-               Last_Discr := Discr;
-               Next_Discriminant (Discr);
-               exit when No (Discr);
-            end loop;
+               --  Note that since the partial view points to discriminants
+               --  in the full view, their scope will be that of the full
+               --  view. This might cause some front end problems and need
+               --  adjustment???
 
-            Set_Last_Entity (Der_Base, Last_Discr);
+               Discr := First_Discriminant (Base_Type (Full_Der));
+               Set_First_Entity (Der_Base, Discr);
 
-            Set_First_Entity (Derived_Type, First_Entity (Der_Base));
-            Set_Last_Entity  (Derived_Type, Last_Entity  (Der_Base));
-            Set_Stored_Constraint (Full_Der, Stored_Constraint (Derived_Type));
+               loop
+                  Last_Discr := Discr;
+                  Next_Discriminant (Discr);
+                  exit when No (Discr);
+               end loop;
+
+               Set_Last_Entity (Der_Base, Last_Discr);
+               Set_First_Entity (Derived_Type, First_Entity (Der_Base));
+               Set_Last_Entity  (Derived_Type, Last_Entity  (Der_Base));
+
+               Set_Stored_Constraint
+                 (Full_Der, Stored_Constraint (Derived_Type));
+            end;
          end if;
 
       elsif Present (Full_View (Parent_Type))
@@ -7859,7 +7854,7 @@ package body Sem_Ch3 is
 
          Build_Derived_Type
            (New_Decl, Parent_Base, New_Base,
-            Is_Completion => True, Derive_Subps => False);
+            Is_Completion => False, Derive_Subps => False);
 
          --  ??? This needs re-examination to determine whether the
          --  above call can simply be replaced by a call to Analyze.

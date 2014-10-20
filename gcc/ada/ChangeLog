@@ -1,3 +1,17 @@
+2014-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): When the parent
+	is untagged and has discriminants, build the implicit full
+	view even if the derived type is a completion, and make it
+	the Underlying_Full_View of the type.
+	(Copy_And_Build): Fix Is_Completion actual parameter in the calls to
+	Build_Derived_Type.
+	(Build_Derived_Record_Type): Likewise.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Add guard to convention setting.
+
 2014-10-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, prj-proc.adb, prj-proc.ads, prj-conf.adb: Minor

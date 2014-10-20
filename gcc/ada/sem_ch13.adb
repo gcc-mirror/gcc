@@ -10705,7 +10705,9 @@ package body Sem_Ch13 is
 
       --  Convention
 
-      if Typ /= Base_Type (Typ) and then Is_Frozen (Base_Type (Typ)) then
+      if Is_Record_Type (Typ)
+        and then Typ /= Base_Type (Typ) and then Is_Frozen (Base_Type (Typ))
+      then
          Set_Convention (Typ, Convention (Base_Type (Typ)));
       end if;
 
