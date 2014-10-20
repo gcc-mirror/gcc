@@ -52,6 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const mask cntrl 	= _CTYPE_C;
     static const mask punct 	= _CTYPE_P;
     static const mask alnum 	= _CTYPE_A | _CTYPE_D;
+    static const mask blank	= _CTYPE_B;
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION

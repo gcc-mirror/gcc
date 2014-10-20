@@ -68,8 +68,8 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__98convenience_la_LIBADD =
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
-	ctype_configure_char.lo ctype_members.lo messages_members.lo \
-	monetary_members.lo numeric_members.lo time_members.lo
+	messages_members.lo monetary_members.lo numeric_members.lo \
+	time_members.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
@@ -78,7 +78,7 @@ am__objects_3 = parallel_settings.lo
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
 am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
-	codecvt.lo complex_io.lo ctype.lo globals_io.lo hash_tr1.lo \
+	codecvt.lo complex_io.lo globals_io.lo hash_tr1.lo \
 	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
 	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
 	list_associated-2.lo locale.lo locale_init.lo locale_facets.lo \
@@ -328,8 +328,6 @@ host_sources = \
 	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
-	ctype_configure_char.cc \
-	ctype_members.cc \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
@@ -364,7 +362,6 @@ sources = \
 	mt_allocator.cc \
 	codecvt.cc \
 	complex_io.cc \
-	ctype.cc \
 	globals_io.cc \
 	hash_tr1.cc \
 	hashtable_tr1.cc \
@@ -698,12 +695,6 @@ codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 
 collate_members.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) . || true
-
-ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
-	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
-
-ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
 messages_members.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) . || true

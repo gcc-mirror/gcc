@@ -67,18 +67,19 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__11convenience_la_LIBADD =
-am__objects_1 = chrono.lo condition_variable.lo debug.lo \
+am__objects_1 = ctype_configure_char.lo ctype_members.lo
+am__objects_2 = chrono.lo condition_variable.lo ctype.lo debug.lo \
 	functexcept.lo functional.lo future.lo hash_c++0x.lo \
 	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
 	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
-	system_error.lo thread.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = ext11-inst.lo \
+	system_error.lo thread.lo $(am__objects_1)
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_3 = ext11-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo
-am_libc__11convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+am_libc__11convenience_la_OBJECTS = $(am__objects_2) $(am__objects_3)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -314,9 +315,17 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 # Convenience library for C++11 runtime.
 noinst_LTLIBRARIES = libc++11convenience.la
 headers = 
+
+# Source files linked in via configuration/make substitution for a
+# particular host.
+host_sources = \
+	ctype_configure_char.cc \
+	ctype_members.cc
+
 sources = \
 	chrono.cc \
 	condition_variable.cc \
+	ctype.cc \
 	debug.cc \
 	functexcept.cc \
 	functional.cc \
@@ -332,7 +341,8 @@ sources = \
 	shared_ptr.cc \
 	snprintf_lite.cc \
 	system_error.cc \
-	thread.cc
+	thread.cc \
+	${host_sources}
 
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
@@ -645,6 +655,12 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags uninstall uninstall-am
 
+
+ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
+	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
+
+ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
 vpath % $(top_srcdir)/src/c++11
 
