@@ -1,3 +1,11 @@
+2014-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Try swapping
+	operands to get a def operand kind match.  Signal mismatches
+	to the parent so we can try swapping its operands.
+	(vect_build_slp_tree): Try swapping operands if they have
+	a mismatched operand kind.
+
 2014-10-20  Alan Modra  <amodra@gmail.com>
 
 	PR debug/60655
