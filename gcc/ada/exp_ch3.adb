@@ -5875,6 +5875,29 @@ package body Exp_Ch3 is
                Set_Expression (N, Empty);
                return;
 
+            --  Handle initialization of limited tagged types
+
+            elsif Is_Tagged_Type (Typ)
+              and then Is_Class_Wide_Type (Typ)
+              and then Is_Limited_Record (Typ)
+            then
+               --  Given that the type is limited we cannot perform a copy. If
+               --  Expr_Q is the reference to a variable we mark the variable
+               --  as OK_To_Rename to expand this declaration into a renaming
+               --  declaration (see bellow).
+
+               if Is_Entity_Name (Expr_Q) then
+                  Set_OK_To_Rename (Entity (Expr_Q));
+
+               --  If we cannot convert the expression into a renaming we must
+               --  consider it an internal error because the backend does not
+               --  have support to handle it.
+
+               else
+                  pragma Assert (False);
+                  raise Program_Error;
+               end if;
+
             --  For discrete types, set the Is_Known_Valid flag if the
             --  initializing value is known to be valid. Only do this for
             --  source assignments, since otherwise we can end up turning

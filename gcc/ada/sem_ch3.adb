@@ -2237,8 +2237,7 @@ package body Sem_Ch3 is
          Set_Null_Present (Spec, False);
 
          Insert_Before_And_Analyze (Body_Decl,
-           Make_Subprogram_Declaration (Loc,
-             Specification => Spec));
+           Make_Subprogram_Declaration (Loc, Specification => Spec));
       end Handle_Late_Controlled_Primitive;
 
       --------------------------------
@@ -3003,7 +3002,8 @@ package body Sem_Ch3 is
                   T := It.Typ;
 
                elsif It.Typ = Universal_Real
-                 or else It.Typ = Universal_Integer
+                       or else
+                     It.Typ = Universal_Integer
                then
                   --  Choose universal interpretation over any other
 
@@ -4883,8 +4883,8 @@ package body Sem_Ch3 is
         and then
           (Nkind (Parent (Generic_Parent_Type (N))) /=
                                               N_Formal_Type_Declaration
-            or else Nkind
-              (Formal_Type_Definition (Parent (Generic_Parent_Type (N)))) /=
+            or else Nkind (Formal_Type_Definition
+                            (Parent (Generic_Parent_Type (N)))) /=
                                               N_Formal_Private_Type_Definition)
       then
          if Is_Tagged_Type (Id) then
@@ -5329,10 +5329,9 @@ package body Sem_Ch3 is
          Set_Component_Size    (Implicit_Base, Uint_0);
          Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
          Set_Has_Controlled_Component
-                               (Implicit_Base, Has_Controlled_Component
-                                                        (Element_Type)
-                                                 or else Is_Controlled
-                                                        (Element_Type));
+                               (Implicit_Base,
+                                  Has_Controlled_Component (Element_Type)
+                                    or else Is_Controlled  (Element_Type));
          Set_Finalize_Storage_Only
                                (Implicit_Base, Finalize_Storage_Only
                                                         (Element_Type));
@@ -6490,9 +6489,7 @@ package body Sem_Ch3 is
       --  If we did not have a range constraint, then set the range from the
       --  parent type. Otherwise, the Process_Subtype call has set the bounds.
 
-      if No_Constraint
-        or else not Has_Range_Constraint (Indic)
-      then
+      if No_Constraint or else not Has_Range_Constraint (Indic) then
          Set_Scalar_Range (Derived_Type,
            Make_Range (Loc,
              Low_Bound  => New_Copy_Tree (Type_Low_Bound  (Parent_Type)),
@@ -7695,7 +7692,7 @@ package body Sem_Ch3 is
          if not Has_Discriminants (Parent_Base)
            or else
              (Has_Unknown_Discriminants (Parent_Base)
-                and then Is_Private_Type (Parent_Base))
+               and then Is_Private_Type (Parent_Base))
          then
             Error_Msg_N
               ("invalid constraint: type has no discriminant",
@@ -8636,8 +8633,7 @@ package body Sem_Ch3 is
 
       --  Set SSO default for record or array type
 
-      if (Is_Array_Type (Derived_Type)
-           or else Is_Record_Type (Derived_Type))
+      if (Is_Array_Type (Derived_Type) or else Is_Record_Type (Derived_Type))
         and then Is_Base_Type (Derived_Type)
       then
          Set_Default_SSO (Derived_Type);
@@ -8818,7 +8814,8 @@ package body Sem_Ch3 is
       --  and in family bounds.
 
       if Is_Concurrent_Type (Current_Scope)
-        or else Is_Limited_Type (Current_Scope)
+           or else
+         Is_Limited_Type    (Current_Scope)
       then
          CR_Disc := Make_Defining_Identifier (Sloc (Discrim), Chars (Discrim));
 
@@ -11878,14 +11875,17 @@ package body Sem_Ch3 is
          Constrain_Discriminated_Type (Desig_Subtype, S, Related_Nod,
            For_Access => True);
 
-      elsif (Is_Task_Type (Desig_Type) or else Is_Protected_Type (Desig_Type))
+      elsif Is_Concurrent_Type (Desig_Type)
         and then not Is_Constrained (Desig_Type)
       then
          Constrain_Concurrent (Desig_Subtype, S, Related_Nod, Desig_Type, ' ');
 
       else
          Error_Msg_N ("invalid constraint on access type", S);
-         Desig_Subtype := Desig_Type; -- Ignore invalid constraint
+
+         --  We simply ignore an invalid constraint
+
+         Desig_Subtype := Desig_Type;
          Constraint_OK := False;
       end if;
 
@@ -15517,7 +15517,8 @@ package body Sem_Ch3 is
 
       if Present (Discriminant_Specifications (N)) then
          if (Is_Elementary_Type (Parent_Type)
-              or else Is_Array_Type (Parent_Type))
+               or else
+             Is_Array_Type      (Parent_Type))
            and then not Error_Posted (N)
          then
             Error_Msg_N
@@ -20048,12 +20049,11 @@ package body Sem_Ch3 is
          if Ekind (Root_Type (Entity (T))) = E_Incomplete_Type
            and then
              not (Ada_Version >= Ada_2005
-                    and then
-                       (Nkind (Parent (T)) = N_Subtype_Declaration
-                          or else
-                            (Nkind (Parent (T)) = N_Subtype_Indication
-                               and then Nkind (Parent (Parent (T))) =
-                                          N_Subtype_Declaration)))
+                   and then
+                     (Nkind (Parent (T)) = N_Subtype_Declaration
+                       or else (Nkind (Parent (T)) = N_Subtype_Indication
+                                 and then Nkind (Parent (Parent (T))) =
+                                                   N_Subtype_Declaration)))
          then
             Error_Msg_N ("invalid use of type before its full declaration", T);
          end if;

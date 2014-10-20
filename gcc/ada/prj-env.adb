@@ -1425,10 +1425,8 @@ package body Prj.Env is
      (Self : Project_Search_Path;
       Name : String) return String_Access
    is
-
-      function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
-        (Check_Filename => Is_Directory);
-
+      function Find_Rts_In_Path is
+        new Prj.Env.Find_Name_In_Path (Check_Filename => Is_Directory);
    begin
       return Find_Rts_In_Path (Self, Name);
    end Get_Runtime_Path;

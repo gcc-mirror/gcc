@@ -1677,7 +1677,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("indexing aspect can only apply to a tagged type",
-                         Aspect);
+                        Aspect);
                      goto Continue;
                   end if;
 
@@ -2711,7 +2711,7 @@ package body Sem_Ch13 is
 
                when Aspect_Default_Component_Value =>
                   if not (Is_Array_Type (E)
-                            and then Is_Scalar_Type (Component_Type (E)))
+                           and then Is_Scalar_Type (Component_Type (E)))
                   then
                      Error_Msg_N ("aspect Default_Component_Value can only "
                        & "apply to an array of scalar components", N);
