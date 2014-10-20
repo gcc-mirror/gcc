@@ -1,3 +1,11 @@
+2014-10-20  Alan Modra  <amodra@gmail.com>
+
+	PR debug/60655
+	* simplify-rtx.c (simplify_plus_minus): Delete unused "input_ops".
+	Increase "ops" array size.  Correct array size tests.  Init
+	n_constants in loop.  Break out of innermost loop when finding
+	a trivial CONST expression.
+
 2014-10-20  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63583

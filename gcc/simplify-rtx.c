@@ -3965,10 +3965,10 @@ static rtx
 simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		     rtx op1)
 {
-  struct simplify_plus_minus_op_data ops[8];
+  struct simplify_plus_minus_op_data ops[16];
   rtx result, tem;
-  int n_ops = 2, input_ops = 2;
-  int changed, n_constants = 0, canonicalized = 0;
+  int n_ops = 2;
+  int changed, n_constants, canonicalized = 0;
   int i, j;
 
   memset (ops, 0, sizeof ops);
@@ -3985,6 +3985,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   do
     {
       changed = 0;
+      n_constants = 0;
 
       for (i = 0; i < n_ops; i++)
 	{
@@ -3996,7 +3997,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	    {
 	    case PLUS:
 	    case MINUS:
-	      if (n_ops == 7)
+	      if (n_ops == ARRAY_SIZE (ops))
 		return NULL_RTX;
 
 	      ops[n_ops].op = XEXP (this_op, 1);
@@ -4004,7 +4005,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	      n_ops++;
 
 	      ops[i].op = XEXP (this_op, 0);
-	      input_ops++;
 	      changed = 1;
 	      canonicalized |= this_neg;
 	      break;
@@ -4017,7 +4017,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	      break;
 
 	    case CONST:
-	      if (n_ops < 7
+	      if (n_ops != ARRAY_SIZE (ops)
 		  && GET_CODE (XEXP (this_op, 0)) == PLUS
 		  && CONSTANT_P (XEXP (XEXP (this_op, 0), 0))
 		  && CONSTANT_P (XEXP (XEXP (this_op, 0), 1)))
@@ -4033,7 +4033,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 
 	    case NOT:
 	      /* ~a -> (-a - 1) */
-	      if (n_ops != 7)
+	      if (n_ops != ARRAY_SIZE (ops))
 		{
 		  ops[n_ops].op = CONSTM1_RTX (mode);
 		  ops[n_ops++].neg = this_neg;
@@ -4097,7 +4097,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   /* Now simplify each pair of operands until nothing changes.  */
   do
     {
-      /* Insertion sort is good enough for an eight-element array.  */
+      /* Insertion sort is good enough for a small array.  */
       for (i = 1; i < n_ops; i++)
         {
           struct simplify_plus_minus_op_data save;
@@ -4148,16 +4148,21 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		else
 		  tem = simplify_binary_operation (ncode, mode, lhs, rhs);
 
-		/* Reject "simplifications" that just wrap the two
-		   arguments in a CONST.  Failure to do so can result
-		   in infinite recursion with simplify_binary_operation
-		   when it calls us to simplify CONST operations.  */
-		if (tem
-		    && ! (GET_CODE (tem) == CONST
-			  && GET_CODE (XEXP (tem, 0)) == ncode
-			  && XEXP (XEXP (tem, 0), 0) == lhs
-			  && XEXP (XEXP (tem, 0), 1) == rhs))
+		if (tem)
 		  {
+		    /* Reject "simplifications" that just wrap the two
+		       arguments in a CONST.  Failure to do so can result
+		       in infinite recursion with simplify_binary_operation
+		       when it calls us to simplify CONST operations.
+		       Also, if we find such a simplification, don't try
+		       any more combinations with this rhs:  We must have
+		       something like symbol+offset, ie. one of the
+		       trivial CONST expressions we handle later.  */
+		    if (GET_CODE (tem) == CONST
+			&& GET_CODE (XEXP (tem, 0)) == ncode
+			&& XEXP (XEXP (tem, 0), 0) == lhs
+			&& XEXP (XEXP (tem, 0), 1) == rhs)
+		      break;
 		    lneg &= rneg;
 		    if (GET_CODE (tem) == NEG)
 		      tem = XEXP (tem, 0), lneg = !lneg;
