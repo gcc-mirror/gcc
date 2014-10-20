@@ -3843,7 +3843,7 @@ package body Sem_Ch3 is
             --  the expression. Rewrite declaration as a renaming, which the
             --  back-end can handle properly. This is a rather unusual case,
             --  because most unchecked_union declarations have default values
-            --  for discriminants and are thus unconstrained.
+            --  for discriminants and are thus not indefinite.
 
             elsif Is_Unchecked_Union (T) then
                if Constant_Present (N)
