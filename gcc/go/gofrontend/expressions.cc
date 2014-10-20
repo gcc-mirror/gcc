@@ -12170,7 +12170,7 @@ class Array_construction_expression : public Expression
   { return this->vals_ == NULL ? 0 : this->vals_->size(); }
 
 protected:
-  int
+  virtual int
   do_traverse(Traverse* traverse);
 
   bool
@@ -12495,10 +12495,32 @@ class Slice_construction_expression : public Array_construction_expression
     : Array_construction_expression(EXPRESSION_SLICE_CONSTRUCTION,
 				    type, indexes, vals, location),
       valtype_(NULL)
-  { go_assert(type->is_slice_type()); }
+  {
+    go_assert(type->is_slice_type());
+
+    mpz_t lenval;
+    Expression* length;
+    if (vals == NULL || vals->empty())
+      mpz_init_set_ui(lenval, 0);
+    else
+      {
+	if (this->indexes() == NULL)
+	  mpz_init_set_ui(lenval, vals->size());
+	else
+	  mpz_init_set_ui(lenval, indexes->back() + 1);
+      }
+    Type* int_type = Type::lookup_integer_type("int");
+    length = Expression::make_integer(&lenval, int_type, location);
+    mpz_clear(lenval);
+    Type* element_type = type->array_type()->element_type();
+    this->valtype_ = Type::make_array_type(element_type, length);
+  }
 
  protected:
   // Note that taking the address of a slice literal is invalid.
+
+  int
+  do_traverse(Traverse* traverse);
 
   Expression*
   do_copy()
@@ -12518,6 +12540,19 @@ class Slice_construction_expression : public Array_construction_expression
   Type* valtype_;
 };
 
+// Traversal.
+
+int
+Slice_construction_expression::do_traverse(Traverse* traverse)
+{
+  if (this->Array_construction_expression::do_traverse(traverse)
+      == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  if (Type::traverse(this->valtype_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return TRAVERSE_CONTINUE;
+}
+
 // Return the backend representation for constructing a slice.
 
 Bexpression*
@@ -12532,24 +12567,7 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
 
   Location loc = this->location();
   Type* element_type = array_type->element_type();
-  if (this->valtype_ == NULL)
-    {
-      mpz_t lenval;
-      Expression* length;
-      if (this->vals() == NULL || this->vals()->empty())
-        mpz_init_set_ui(lenval, 0);
-      else
-        {
-          if (this->indexes() == NULL)
-            mpz_init_set_ui(lenval, this->vals()->size());
-          else
-            mpz_init_set_ui(lenval, this->indexes()->back() + 1);
-        }
-      Type* int_type = Type::lookup_integer_type("int");
-      length = Expression::make_integer(&lenval, int_type, loc);
-      mpz_clear(lenval);
-      this->valtype_ = Type::make_array_type(element_type, length);
-    }
+  go_assert(this->valtype_ != NULL);
 
   Expression_list* vals = this->vals();
   if (this->vals() == NULL || this->vals()->empty())
@@ -14028,7 +14046,7 @@ class GC_symbol_expression : public Expression
  protected:
   Type*
   do_type()
-  { return Type::make_pointer_type(Type::make_void_type()); }
+  { return Type::lookup_integer_type("uintptr"); }
 
   bool
   do_is_immutable() const

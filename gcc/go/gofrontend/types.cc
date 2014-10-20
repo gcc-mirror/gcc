@@ -1244,6 +1244,25 @@ Type::make_type_descriptor_var(Gogo* gogo)
       phash = &ins.first->second;
     }
 
+  // The type descriptor symbol for the unsafe.Pointer type is defined in
+  // libgo/go-unsafe-pointer.c, so we just return a reference to that
+  // symbol if necessary.
+  if (this->is_unsafe_pointer_type())
+    {
+      Location bloc = Linemap::predeclared_location();
+
+      Type* td_type = Type::make_type_descriptor_type();
+      Btype* td_btype = td_type->get_backend(gogo);
+      this->type_descriptor_var_ =
+	gogo->backend()->immutable_struct_reference("__go_tdn_unsafe.Pointer",
+						    td_btype,
+						    bloc);
+
+      if (phash != NULL)
+	*phash = this->type_descriptor_var_;
+      return;
+    }
+
   std::string var_name = this->type_descriptor_var_name(gogo, nt);
 
   // Build the contents of the type descriptor.
@@ -1540,7 +1559,7 @@ Type::make_type_descriptor_type()
 				       "hash", uint32_type,
 				       "hashfn", uintptr_type,
 				       "equalfn", uintptr_type,
-				       "gc", unsafe_pointer_type,
+				       "gc", uintptr_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
@@ -6027,7 +6046,6 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   tref->set_is_lvalue();
   s = Statement::make_assignment_operation(OPERATOR_PLUSEQ, tref, ele_size,
 					   bloc);
-
   Block* statements = gogo->finish_block(bloc);
 
   for_range->add_statements(statements);

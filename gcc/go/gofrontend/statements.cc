@@ -1878,7 +1878,7 @@ Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 
   mpz_t oval;
   mpz_init_set_ui(oval, 1UL);
-  Expression* oexpr = Expression::make_integer(&oval, NULL, loc);
+  Expression* oexpr = Expression::make_integer(&oval, this->expr_->type(), loc);
   mpz_clear(oval);
 
   Operator op = this->is_inc_ ? OPERATOR_PLUSEQ : OPERATOR_MINUSEQ;
