@@ -1,3 +1,22 @@
+2014-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cfgrtl.h: New.  Add prototypes for cfgrtl.c.
+	* basic-block.h: Remove prototypes for cfgrtl.c.
+	* cfghooks.h (cfg_layout_initialize, cfg_layout_finalize): Move
+	prototypes to cfgrtl.h.
+	* profile.h (profile_info): Add extern export declaration.
+	* rtl.h: Remove prototypes for cfgrtl.h.
+	* tree-cfg.h (gt_ggc_mx, gt_pch_nx): Move prototypes to here.
+	* ipa-inline.c: Include profile.h.
+	* loop-unroll.c: Ditto.
+	* modulo-sched.c: Ditto.
+	* postreload-gcse.c: Ditto.
+	* predict.c: Ditto.
+	* sched-ebb.c: Ditto.
+	* sched-rgn.c: Ditto.
+	* tracer.c: Ditto.
+	* tree-ssa-loop-ivcanon.c: Ditto.
+
 2014-10-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Try swapping

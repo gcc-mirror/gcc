@@ -24,6 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Location to track pending stmt for edge insertion.  */
 #define PENDING_STMT(e)	((e)->insns.g)
 
+/* Garbage collection and PCH support for edge_def.  */
+extern void gt_ggc_mx (edge_def *e);
+extern void gt_pch_nx (edge_def *e);
+extern void gt_pch_nx (edge_def *e, gt_pointer_operator, void *);
+
 extern void init_empty_tree_cfg_for_function (struct function *);
 extern void init_empty_tree_cfg (void);
 extern void fold_cond_expr_cond (void);

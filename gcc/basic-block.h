@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "cfgrtl.h"
 
 /* Use gcov_type to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
@@ -64,12 +65,6 @@ struct GTY((user)) edge_def {
 				   in profile.c  */
 };
 
-
-/* Garbage collection and PCH support for edge_def.  */
-extern void gt_ggc_mx (edge_def *e);
-extern void gt_pch_nx (edge_def *e);
-extern void gt_pch_nx (edge_def *e, gt_pointer_operator, void *);
-
 /* Masks for edge.flags.  */
 #define DEF_EDGE_FLAG(NAME,IDX) EDGE_##NAME = 1 << IDX ,
 enum cfg_edge_flags {
@@ -86,10 +81,6 @@ enum cfg_edge_flags {
    control flow transfers.  */
 #define EDGE_COMPLEX \
   (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_PRESERVE)
-
-/* Counter summary from the last set of coverage counts read by
-   profile.c.  */
-extern const struct gcov_ctr_summary *profile_info;
 
 /* Structure to gather statistic about profile consistency, per pass.
    An array of this structure, indexed by pass static number, is allocated
@@ -122,8 +113,6 @@ struct profile_record
   bool run;
 };
 
-/* Declared in cfgloop.h.  */
-struct loop;
 
 struct GTY(()) rtl_bb_info {
   /* The first insn of the block is embedded into bb->il.x.  */
@@ -391,15 +380,8 @@ struct GTY(()) control_flow_graph {
 /* The two blocks that are always in the cfg.  */
 #define NUM_FIXED_BLOCKS (2)
 
-extern void compute_bb_for_insn (void);
-extern unsigned int free_bb_for_insn (void);
-extern void update_bb_for_insn (basic_block);
 
-extern void insert_insn_on_edge (rtx, edge);
 basic_block split_edge_and_insert (edge, rtx_insn *);
-
-extern void commit_one_edge_insertion (edge e);
-extern void commit_edge_insertions (void);
 
 extern edge unchecked_make_edge (basic_block, basic_block, int);
 extern edge cached_make_edge (sbitmap, basic_block, basic_block, int);
@@ -409,8 +391,6 @@ extern void remove_edge_raw (edge);
 extern void redirect_edge_succ (edge, basic_block);
 extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);
-extern basic_block create_basic_block_structure (rtx_insn *, rtx_insn *,
-						 rtx_note *, basic_block);
 extern void clear_bb_flags (void);
 extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
 extern void dump_edge_info (FILE *, edge, int, int);
@@ -797,19 +777,6 @@ extern void compute_dominance_frontiers (struct bitmap_head *);
 extern bitmap compute_idf (bitmap, struct bitmap_head *);
 extern basic_block * single_pred_before_succ_order (void);
 
-/* In cfgrtl.c  */
-extern rtx block_label (basic_block);
-extern rtx_note *bb_note (basic_block);
-extern bool purge_all_dead_edges (void);
-extern bool purge_dead_edges (basic_block);
-extern bool fixup_abnormal_edges (void);
-extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
-extern bool contains_no_active_insn_p (const_basic_block);
-extern bool forwarder_block_p (const_basic_block);
-extern bool can_fallthru (basic_block, basic_block);
-extern void emit_barrier_after_bb (basic_block bb);
-extern void fixup_partitions (void);
-
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
@@ -825,7 +792,6 @@ extern int flow_find_head_matching_sequence (basic_block, basic_block,
 
 extern bool delete_unreachable_blocks (void);
 
-extern void update_br_prob_note (basic_block);
 extern bool inside_basic_block_p (const rtx_insn *);
 extern bool control_flow_insn_p (const rtx_insn *);
 extern rtx_insn *get_last_bb_insn (basic_block);
@@ -875,11 +841,7 @@ extern basic_block next_dom_son (enum cdi_direction, basic_block);
 unsigned bb_dom_dfs_in (enum cdi_direction, basic_block);
 unsigned bb_dom_dfs_out (enum cdi_direction, basic_block);
 
-extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
-extern void break_superblocks (void);
-extern void relink_block_chain (bool);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
-extern void init_rtl_bb_info (basic_block);
 
 extern void initialize_original_copy_tables (void);
 extern void free_original_copy_tables (void);

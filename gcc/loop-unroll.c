@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
+#include "profile.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "params.h"
