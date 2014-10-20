@@ -1,3 +1,11 @@
+2014-10-20  Yury Gribov  <y.gribov@samsung.com>
+
+	Backported from mainline
+	2014-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/misalign-1.c: New test.
+	* c-c++-common/asan/misalign-2.c: New test.
+
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/asan/instrument-with-calls-1.c: Add
