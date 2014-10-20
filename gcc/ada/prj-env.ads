@@ -243,10 +243,8 @@ package Prj.Env is
    function Get_Runtime_Path
      (Self : Project_Search_Path;
       Name : String) return String_Access;
-   --  Compute the full path for the project-based runtime name. It first
-   --  checks that Name is not a simple file name (must have a path separator
-   --  in it), and returns null in case of failure. This check might be removed
-   --  in the future. Name is simply searched on the project path.
+   --  Compute the full path for the project-based runtime name.
+   --  Name is simply searched on the project path.
 
 private
    package Projects_Paths is new GNAT.Dynamic_HTables.Simple_HTable

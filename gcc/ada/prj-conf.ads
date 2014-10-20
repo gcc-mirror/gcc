@@ -112,20 +112,21 @@ package Prj.Conf is
    procedure Process_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
       User_Project_Node          : Prj.Tree.Project_Node_Id;
-      Config_File_Name           : String                       := "";
+      Config_File_Name           : String                        := "";
       Autoconf_Specified         : Boolean;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
       Packages_To_Check          : String_List_Access;
-      Allow_Automatic_Generation : Boolean                      := True;
+      Allow_Automatic_Generation : Boolean                       := True;
       Automatically_Generated    : out Boolean;
       Config_File_Path           : out String_Access;
-      Target_Name                : String                       := "";
+      Target_Name                : String                        := "";
       Normalized_Hostname        : String;
-      On_Load_Config             : Config_File_Hook             := null;
-      Reset_Tree                 : Boolean                      := True;
-      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null);
+      On_Load_Config             : Config_File_Hook              := null;
+      Reset_Tree                 : Boolean                       := True;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null;
+      Do_Phase_1                 : Boolean                       := True);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
    --  configuration is done at this level.
@@ -138,6 +139,9 @@ package Prj.Conf is
    --  least one source file, or an error is reported via When_No_Sources. If
    --  it is false, this is only required for Ada (and only if it is a language
    --  of the project).
+   --
+   --  If Do_Phase_1 is False, then Prj.Proc.Process_Project_Tree_Phase_1
+   --  should not be called, as it has already been invoked successfully.
 
    Invalid_Config : exception;
 

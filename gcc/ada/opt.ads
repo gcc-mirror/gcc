@@ -1418,6 +1418,16 @@ package Opt is
    --  Get_Targ and Set_Targ for full details) using the name given by
    --  this switch. Set to non-null file name by use of the -gnatet switch.
 
+   type Origin_Of_Target is (Unknown, Default, Specified);
+
+   Target_Origin : Origin_Of_Target := Unknown;
+   --  GPRBUILD
+   --  Indicates the origin of attribute Target in project files
+
+   Target_Value : String_Access := null;
+   --  GPRBUILD
+   --  Indicates the value of attribute Target in project files
+
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND
    --  Set to ' ' for the default case (no task dispatching policy specified).

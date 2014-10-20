@@ -889,16 +889,26 @@ package body Prj.Proc is
 
                   --  Check the defaults
 
-                  if Current_Term_Kind = N_Attribute_Reference
-                    and then The_Variable.Default
-                  then
+                  if Current_Term_Kind = N_Attribute_Reference then
                      declare
                         The_Default : constant Attribute_Default_Value :=
                           Default_Of
                             (The_Current_Term, From_Project_Node_Tree);
 
                      begin
-                        case The_Variable.Kind is
+                        --  Check the special value for 'Target when specified
+
+                        if The_Default = Target_Value
+                          and then Opt.Target_Origin = Specified
+                        then
+                           Name_Len := 0;
+                           Add_Str_To_Name_Buffer (Opt.Target_Value.all);
+                           The_Variable.Value := Name_Find;
+
+                        --  Check the defaults
+
+                        elsif The_Variable.Default then
+                           case The_Variable.Kind is
                            when Undefined =>
                               null;
 
@@ -923,7 +933,15 @@ package body Prj.Proc is
                                     goto Object_Dir_Restart;
 
                                  when Target_Value =>
-                                    null;
+                                    if Opt.Target_Value = null then
+                                       The_Variable.Value := Empty_String;
+
+                                    else
+                                       Name_Len := 0;
+                                       Add_Str_To_Name_Buffer
+                                         (Opt.Target_Value.all);
+                                       The_Variable.Value := Name_Find;
+                                    end if;
                               end case;
 
                            when List =>
@@ -941,7 +959,8 @@ package body Prj.Proc is
                                  when Object_Dir_Value | Target_Value =>
                                     null;
                               end case;
-                        end case;
+                           end case;
+                        end if;
                      end;
                   end if;
 

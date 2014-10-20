@@ -414,7 +414,7 @@ package body Inline is
 
                elsif Level = Inline_Package
                  and then not Is_Inlined (Pack)
-                 and then Comes_From_Source (E)
+                 and then not Is_Internal (E)
                  and then not In_Main_Unit_Or_Subunit (Pack)
                then
                   Set_Is_Inlined (Pack);
@@ -3888,7 +3888,7 @@ package body Inline is
                Count := Count + 1;
 
                if Count = 1 then
-                  Write_Str ("Listing of frontend inlined calls");
+                  Write_Str ("List of calls inlined by the frontend");
                   Write_Eol;
                end if;
 
@@ -3917,7 +3917,7 @@ package body Inline is
                Count := Count + 1;
 
                if Count = 1 then
-                  Write_Str ("Listing of inlined calls passed to the backend");
+                  Write_Str ("List of inlined calls passed to the backend");
                   Write_Eol;
                end if;
 
@@ -3947,7 +3947,7 @@ package body Inline is
 
             if Count = 1 then
                Write_Str
-                 ("Listing of inlined subprograms passed to the backend");
+                 ("List of inlined subprograms passed to the backend");
                Write_Eol;
             end if;
 
@@ -3964,7 +3964,7 @@ package body Inline is
          end loop;
       end if;
 
-      --  Generate listing of subprogram that cannot be inlined by the backend
+      --  Generate listing of subprograms that cannot be inlined by the backend
 
       if Present (Backend_Not_Inlined_Subps)
         and then Back_End_Inlining
@@ -3979,7 +3979,7 @@ package body Inline is
 
             if Count = 1 then
                Write_Str
-                 ("Listing of subprograms that cannot inline the backend");
+                 ("List of subprograms that cannot be inlined by the backend");
                Write_Eol;
             end if;
 

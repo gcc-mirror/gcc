@@ -2167,10 +2167,7 @@ package body Sem_Ch3 is
                        Parameter_Specifications (Body_Spec);
          Spec      : Node_Id;
          Spec_Id   : Entity_Id;
-
-         Dummy : Entity_Id;
-         --  A dummy variable used to capture the unused result of subprogram
-         --  spec analysis.
+         Typ       : Node_Id;
 
       begin
          --  Consider only procedure bodies whose name matches one of the three
@@ -2183,28 +2180,49 @@ package body Sem_Ch3 is
          then
             return;
 
-         --  A controlled primitive must have exactly one formal
+         --  A controlled primitive must have exactly one formal which is not
+         --  an anonymous access type.
 
          elsif List_Length (Params) /= 1 then
             return;
          end if;
 
-         Dummy := Analyze_Subprogram_Specification (Body_Spec);
+         Typ := Parameter_Type (First (Params));
+
+         if Nkind (Typ) = N_Access_Definition then
+            return;
+         end if;
+
+         Find_Type (Typ);
 
          --  The type of the formal must be derived from [Limited_]Controlled
 
-         if not Is_Controlled (Etype (Defining_Entity (First (Params)))) then
+         if not Is_Controlled (Entity (Typ)) then
             return;
          end if;
 
-         Spec_Id := Find_Corresponding_Spec (Body_Decl, Post_Error => False);
+         --  Check whether a specification exists for this body. We do not
+         --  analyze the spec of the body in full, because it will be analyzed
+         --  again when the body is properly analyzed, and we cannot create
+         --  duplicate entries in the formals chain. We look for an explicit
+         --  specification because the body may be an overriding operation and
+         --  an inherited spec may be present.
 
-         --  The body has a matching spec, therefore it cannot be a late
-         --  primitive.
+         Spec_Id := Current_Entity (Body_Id);
 
-         if Present (Spec_Id) then
-            return;
-         end if;
+         while Present (Spec_Id) loop
+            if Ekind_In (Spec_Id, E_Procedure, E_Generic_Procedure)
+              and then Scope (Spec_Id) = Current_Scope
+              and then Present (First_Formal (Spec_Id))
+              and then No (Next_Formal (First_Formal (Spec_Id)))
+              and then Etype (First_Formal (Spec_Id)) = Entity (Typ)
+              and then Comes_From_Source (Spec_Id)
+            then
+               return;
+            end if;
+
+            Spec_Id := Homonym (Spec_Id);
+         end loop;
 
          --  At this point the body is known to be a late controlled primitive.
          --  Generate a matching spec and insert it before the body. Note the
@@ -2777,17 +2795,21 @@ package body Sem_Ch3 is
       --  them to the entity for the type which is currently the partial
       --  view, but which is the one that will be frozen.
 
-      --  In most cases the partial view is a private type, and both views
-      --  appear in different declarative parts. In the unusual case where the
-      --  partial view is incomplete, perform the analysis on the full view,
-      --  to prevent freezing anomalies with the corresponding class-wide type,
-      --  which otherwise might be frozen before the dispatch table is built.
-
       if Has_Aspects (N) then
+
+         --  In most cases the partial view is a private type, and both views
+         --  appear in different declarative parts. In the unusual case where
+         --  the partial view is incomplete, perform the analysis on the
+         --  full view, to prevent freezing anomalies with the corresponding
+         --  class-wide type, which otherwise might be frozen before the
+         --  dispatch table is built.
+
          if Prev /= Def_Id
            and then Ekind (Prev) /= E_Incomplete_Type
          then
             Analyze_Aspect_Specifications (N, Prev);
+
+         --  Normal case
 
          else
             Analyze_Aspect_Specifications (N, Def_Id);
