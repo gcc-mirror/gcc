@@ -611,7 +611,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Pragma (Skipping : Boolean := False) return Node_Id;
       --  Scan out a pragma. If Skipping is True, then the caller is skipping
       --  the pragma in the context of illegal placement (this is used to avoid
-      --  some junk cascaded messages).
+      --  some junk cascaded messages). Some pragmas must be dealt with during
+      --  the parsing phase (e.g. pragma Page, since we can generate a listing
+      --  in syntax only mode). It is possible that the parser uses the rescan
+      --  logic (using Save/Restore_Scan_State) with the effect of calling this
+      --  procedure more than once for the same pragma. All parse-time pragma
+      --  handling must be prepared to handle such multiple calls correctly.
 
       function P_Identifier (C : Id_Check := None) return Node_Id;
       --  Scans out an identifier. The parameter C determines the treatment

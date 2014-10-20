@@ -849,10 +849,8 @@ package body Prj.Conf is
 
       begin
          Proj := Project;
-
          while Proj /= No_Project loop
             Id := Value_Of (Name_Runtime, Proj.Decl.Arrays, Shared);
-
             while Id /= No_Array_Element loop
                Element := Shared.Array_Elements.Table (Id);
                Lang := Element.Index;

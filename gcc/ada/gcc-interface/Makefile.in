@@ -523,6 +523,12 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_
      ARCH_STR=ppc
   endif
 
+  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+     SVX=system-vxworks7
+  else
+     SVX=system-vxworks
+  endif
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -586,7 +592,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-      system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
+      system.ads<$(SVX)-$(ARCH_STR)-rtp-smp.ads
 
       EH_MECHANISM=-gcc
       EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
@@ -871,6 +877,13 @@ endif
 
 # x86 VxWorks
 ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+     SVX=system-vxworks7
+  else
+     SVX=system-vxworks
+  endif
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   i-vxwork.ads<i-vxwork-x86.ads \
@@ -921,7 +934,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-      system.ads<system-vxworks-x86-rtp.ads
+      system.ads<$(SVX)-x86-rtp-smp.ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o
     else
@@ -956,6 +969,9 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
   EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
+
+  GCC_SPEC_FILES+=vxworks-x86-link.spec
+  GCC_SPEC_FILES+=vxworks-smp-x86-link.spec
 endif
 
 # ARM VxWorks
@@ -1149,15 +1165,15 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-soliop.ads<g-soliop-solaris.ads
+  g-soliop.ads<g-soliop-solaris.ads \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
   LIBGNAT_TARGET_PAIRS_32 = \
   system.ads<system-solaris-sparc.ads
 
   LIBGNAT_TARGET_PAIRS_64 = \
-  system.ads<system-solaris-sparcv9.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
+  system.ads<system-solaris-sparcv9.ads
 
   ifeq ($(strip $(filter-out sparc sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
     ifeq ($(strip $(MULTISUBDIR)),/sparcv9)
@@ -2324,6 +2340,16 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-ppc.ads
     endif
+  endif
+
+  ifeq ($(strip $(filter-out arm,$(arch))),)
+    LIBGNAT_TARGET_PAIRS += \
+      s-intman.adb<s-intman-susv3.adb \
+      s-osprim.adb<s-osprim-darwin.adb \
+      $(ATOMICS_TARGET_PAIRS)
+
+    LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-darwin-arm.ads
   endif
 
   TOOLS_TARGET_PAIRS =  \

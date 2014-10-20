@@ -10664,6 +10664,9 @@ package body Sem_Ch13 is
       --  Component_Size, Machine_Radix, Object_Size, Pack, Predicates,
       --  Preelaborable_Initialization, RM_Size and Small.
 
+      --  In addition, Convention must be propagated from base type to subtype,
+      --  because the subtype may have been declared on an incomplete view.
+
       if Nkind (Parent (Typ)) = N_Private_Extension_Declaration then
          return;
       end if;
@@ -10698,6 +10701,12 @@ package body Sem_Ch13 is
          Set_Is_Atomic (Typ);
          Set_Treat_As_Volatile (Typ);
          Set_Is_Volatile (Typ);
+      end if;
+
+      --  Convention
+
+      if Typ /= Base_Type (Typ) and then Is_Frozen (Base_Type (Typ)) then
+         Set_Convention (Typ, Convention (Base_Type (Typ)));
       end if;
 
       --  Default_Component_Value
