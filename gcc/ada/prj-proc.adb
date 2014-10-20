@@ -966,19 +966,19 @@ package body Prj.Proc is
 
                            when List =>
                               case The_Default is
-                                 when Read_Only_Value =>
+                                 when Read_Only_Value  =>
                                     null;
 
-                                 when Empty_Value =>
+                                 when Empty_Value      =>
                                     The_Variable.Values := Nil_String;
 
-                                 when Dot_Value =>
+                                 when Dot_Value        =>
                                     The_Variable.Values :=
                                       Shared.Dot_String_List;
 
                                  when Object_Dir_Value |
-                                      Target_Value |
-                                      Runtime_Value =>
+                                      Target_Value     |
+                                      Runtime_Value    =>
                                     null;
                               end case;
                            end case;

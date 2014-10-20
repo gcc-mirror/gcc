@@ -93,4 +93,5 @@ package Prj.Proc is
    procedure Set_Default_Runtime_For (Language : Name_Id; Value : String);
    --  Set the default value for the runtime of Language. To be used for the
    --  value of 'Runtime(<Language>) when Runtime (<language>) is not declared.
+
 end Prj.Proc;

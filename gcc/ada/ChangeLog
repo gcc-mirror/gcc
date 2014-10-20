@@ -1,3 +1,37 @@
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, prj-proc.adb, prj-proc.ads, prj-conf.adb: Minor
+	reformatting.
+
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* par-prag.adb (Add_List_Pragma_Entry): New procedure.
+	* par.adb (P_Pragma): Document requirement to handle multiple calls.
+
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case No_Elaboration_Code_All):
+	Fix error of bad inheritance of this pragma from with'ed unit.
+
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Inherit_Aspects_At_Freeze_Point): For a subtype,
+	inherit convention from parent type, because the subtype may
+	have been declared on a partial view, prior to the pragma on
+	the parent.
+
+2014-10-20  Olivier Hainque  <hainque@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Makefile.in: Handle arm-darwin and VxWorks 7.
+	Misc clean ups.
+
+2014-10-20  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Make-lang.in: ensure that automatically generated
+	dependency are referencing generated gnatvsn rather than original
+	one.
+
 2014-10-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat_ugn.texi: Minor reformatting.
