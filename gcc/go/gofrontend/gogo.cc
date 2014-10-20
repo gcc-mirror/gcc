@@ -4196,21 +4196,18 @@ Build_method_tables::type(Type* type)
 Expression*
 Gogo::allocate_memory(Type* type, Location location)
 {
-  Btype* btype = type->get_backend(this);
-  size_t size = this->backend()->type_size(btype);
-  mpz_t size_val;
-  mpz_init_set_ui(size_val, size);
-  Type* uintptr = Type::lookup_integer_type("uintptr");
-  Expression* size_expr =
-    Expression::make_integer(&size_val, uintptr, location);
+  Expression* td = Expression::make_type_descriptor(type, location);
+  Expression* size =
+    Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
 
-  // If the package imports unsafe, then it may play games with
-  // pointers that look like integers.
+  // If this package imports unsafe, then it may play games with
+  // pointers that look like integers.  We should be able to determine
+  // whether or not to use new pointers in libgo/go-new.c.  FIXME.
   bool use_new_pointers = this->imported_unsafe_ || type->has_pointer();
   return Runtime::make_call((use_new_pointers
 			     ? Runtime::NEW
 			     : Runtime::NEW_NOPOINTERS),
-                            location, 1, size_expr);
+			    location, 2, td, size);
 }
 
 // Traversal class used to check for return statements.
