@@ -48,6 +48,10 @@ extern void del_node_map (void);
 
 extern void get_working_sets (void);
 
+/* Counter summary from the last set of coverage counts read by
+   profile.c.  */
+extern const struct gcov_ctr_summary *profile_info;
+
 /* In predict.c.  */
 extern gcov_type get_hot_bb_threshold (void);
 extern void set_hot_bb_threshold (gcov_type);

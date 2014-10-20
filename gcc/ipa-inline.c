@@ -108,6 +108,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "rtl.h"
 #include "bitmap.h"
+#include "profile.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

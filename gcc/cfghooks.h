@@ -208,9 +208,6 @@ extern void copy_bbs (basic_block *, unsigned, basic_block *,
 
 void account_profile_record (struct profile_record *, int);
 
-extern void cfg_layout_initialize (unsigned int);
-extern void cfg_layout_finalize (void);
-
 /* Hooks containers.  */
 extern struct cfg_hooks gimple_cfg_hooks;
 extern struct cfg_hooks rtl_cfg_hooks;
