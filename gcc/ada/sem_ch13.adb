@@ -1119,33 +1119,39 @@ package body Sem_Ch13 is
                case A_Id is
 
                   --  For aspects whose expression is an optional Boolean, make
-                  --  the corresponding pragma at the freezing point.
+                  --  the corresponding pragma at the freeze point.
 
-               when Boolean_Aspects      |
-                    Library_Unit_Aspects =>
-                  Make_Pragma_From_Boolean_Aspect (ASN);
+                  when Boolean_Aspects      |
+                       Library_Unit_Aspects =>
+                     Make_Pragma_From_Boolean_Aspect (ASN);
 
                   --  Special handling for aspects that don't correspond to
                   --  pragmas/attributes.
 
-               when Aspect_Default_Value           |
-                    Aspect_Default_Component_Value =>
-                  Analyze_Aspect_Default_Value (ASN);
+                  when Aspect_Default_Value           |
+                       Aspect_Default_Component_Value =>
+                     Analyze_Aspect_Default_Value (ASN);
 
                   --  Ditto for iterator aspects, because the corresponding
                   --  attributes may not have been analyzed yet.
 
-               when Aspect_Constant_Indexing |
-                    Aspect_Variable_Indexing |
-                    Aspect_Default_Iterator  |
-                    Aspect_Iterator_Element  =>
-                  Analyze (Expression (ASN));
+                  when Aspect_Constant_Indexing |
+                       Aspect_Variable_Indexing |
+                       Aspect_Default_Iterator  |
+                       Aspect_Iterator_Element  =>
+                     Analyze (Expression (ASN));
 
-               when Aspect_Iterable =>
-                  Validate_Iterable_Aspect (E, ASN);
+                     if Etype (Expression (ASN)) = Any_Type then
+                        Error_Msg_NE
+                          ("\aspect must be fully defined before & is frozen",
+                           ASN, E);
+                     end if;
 
-               when others =>
-                  null;
+                  when Aspect_Iterable =>
+                     Validate_Iterable_Aspect (E, ASN);
+
+                  when others =>
+                     null;
                end case;
 
                Ritem := Aspect_Rep_Item (ASN);
@@ -3901,6 +3907,9 @@ package body Sem_Ch13 is
             Ctrl := Etype (First_Formal (Subp));
          end if;
 
+         --  Type of formal may be the class-wide type, an access to such,
+         --  or an incomplete view.
+
          if Ctrl = Ent
            or else Ctrl = Class_Wide_Type (Ent)
            or else
@@ -3908,6 +3917,9 @@ package body Sem_Ch13 is
                and then (Designated_Type (Ctrl) = Ent
                            or else
                          Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+           or else
+             (Ekind (Ctrl) = E_Incomplete_Type
+               and then Full_View (Ctrl) = Ent)
          then
             null;
          else
