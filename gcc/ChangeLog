@@ -1,3 +1,9 @@
+2014-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* varasm.c (const_alias_set): Remove.
+	(init_varasm_once): Remove initialization of const_alias_set.
+	(build_constant_desc): Do not set alias set to const_alias_set.
+
 2014-10-19  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* configure: Regenerate.
