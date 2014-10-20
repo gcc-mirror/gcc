@@ -1,3 +1,32 @@
+2014-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c (__gnat_is_stack_guard): Don't use mach_vm_region_recurse on
+	arm-darwin.
+	* raise-gcc.c: Add ATTRIBUTE_UNUSED to remove warnings for
+	unused arguments.
+
+2014-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Replace
+	variables CS and PS with Proc_Id and Subp_Id to better illustrate
+	their purpose. Account for the case where _Postconditions
+	has not been generated yet and the context is aspect/pragma
+	Refined_Post. In that scenario the expected prefix of attribute
+	'Result is the current scope.
+
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_Expression): Handle extraneous comma/semicolon
+	in middle of expression with logical operators.
+
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch13.adb (Possible_Misspelled_Aspect): New function.
+
+2014-10-20  Steve Baird  <baird@adacore.com>
+
+	* pprint.adb: Improve Expression_Image function.
+
 2014-10-20  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document No_Tagged_Streams pragma and aspect.

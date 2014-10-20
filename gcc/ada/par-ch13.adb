@@ -45,6 +45,26 @@ package body Ch13 is
       Scan_State : Saved_Scan_State;
       Result     : Boolean;
 
+      function Possible_Misspelled_Aspect return Boolean;
+      --  Returns True, if Token_Name is a misspelling of some aspect name
+
+      --------------------------------
+      -- Possible_Misspelled_Aspect --
+      --------------------------------
+
+      function Possible_Misspelled_Aspect return Boolean is
+      begin
+         for J in Aspect_Id_Exclude_No_Aspect loop
+            if Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J)) then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end Possible_Misspelled_Aspect;
+
+   --  Start of processing for Aspect_Specifications_Present
+
    begin
       --  Definitely must have WITH to consider aspect specs to be present
 
@@ -74,17 +94,20 @@ package body Ch13 is
       if Token /= Tok_Identifier then
          Result := False;
 
-      --  This is where we pay attention to the Strict mode. Normally when we
-      --  are in Ada 2012 mode, Strict is False, and we consider that we have
-      --  an aspect specification if the identifier is an aspect name (even if
-      --  not followed by =>) or the identifier is not an aspect name but is
-      --  followed by =>, by a comma, or by a semicolon. The last two cases
-      --  correspond to (misspelled) Boolean aspects with a defaulted value of
-      --  True. P_Aspect_Specifications will generate messages if the aspect
+      --  This is where we pay attention to the Strict mode. Normally when
+      --  we are in Ada 2012 mode, Strict is False, and we consider that we
+      --  have an aspect specification if the identifier is an aspect name
+      --  or a likely misspelling of one (even if not followed by =>) or
+      --  the identifier is not an aspect name but is followed by =>, by
+      --  a comma, or by a semicolon. The last two cases correspond to
+      --  (misspelled) Boolean aspects with a defaulted value of True.
+      --  P_Aspect_Specifications will generate messages if the aspect
       --  specification is ill-formed.
 
       elsif not Strict then
-         if Get_Aspect_Id (Token_Name) /= No_Aspect then
+         if Get_Aspect_Id (Token_Name) /= No_Aspect
+           or else Possible_Misspelled_Aspect
+         then
             Result := True;
          else
             Scan; -- past identifier
