@@ -777,6 +777,17 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
   return object;
 }
 
+/* Returns the innermost non-lambda function.  */
+
+tree
+current_nonlambda_function (void)
+{
+  tree fn = current_function_decl;
+  while (fn && LAMBDA_FUNCTION_P (fn))
+    fn = decl_function_context (fn);
+  return fn;
+}
+
 /* Returns the method basetype of the innermost non-lambda function, or
    NULL_TREE if none.  */
 
