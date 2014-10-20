@@ -97,6 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  case graph:
 		    __testis = isgraph(__c);
 		    break;
+#ifdef _GLIBCXX_USE_C99_CTYPE_TR1
+		  case blank:
+		    __testis = isblank(__c);
+		    break;
+#endif
 		  default:
 		    __testis = false;
 		    break;
@@ -117,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	*__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
     else
       {
-	// Highest bitmask in ctype_base == 10.
+	// Highest bitmask in ctype_base == 11.
 	const size_t __bitmasksize = 15; 
 	for (;__low < __high; ++__vec, ++__low)
 	  {

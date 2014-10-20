@@ -40,6 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const ctype_base::mask ctype_base::xdigit;
   const ctype_base::mask ctype_base::alnum;
   const ctype_base::mask ctype_base::graph;
+  const ctype_base::mask ctype_base::blank;
 
   // Definitions for locale::id of standard facets that are specialized.
   locale::id ctype<char>::id;

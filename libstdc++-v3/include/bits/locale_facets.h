@@ -2590,6 +2590,14 @@ _GLIBCXX_END_NAMESPACE_LDBL
     isgraph(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::graph, __c); }
 
+#if __cplusplus >= 201103L
+  /// Convenience interface to ctype.is(ctype_base::blank, __c).
+  template<typename _CharT>
+    inline bool
+    isblank(_CharT __c, const locale& __loc)
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::blank, __c); }
+#endif
+
   /// Convenience interface to ctype.toupper(__c).
   template<typename _CharT>
     inline _CharT
