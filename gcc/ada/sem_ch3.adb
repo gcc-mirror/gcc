@@ -3839,6 +3839,32 @@ package body Sem_Ch3 is
             elsif GNATprove_Mode then
                null;
 
+            --  If the type is an unchecked union, no subtype can be built from
+            --  the expression. Rewrite declaration as a renaming, which the
+            --  back-end can handle properly. This is a rather unusual case,
+            --  because most unchecked_union declarations have default values
+            --  for discriminants and are thus unconstrained.
+
+            elsif Is_Unchecked_Union (T) then
+               if Constant_Present (N)
+                 or else Nkind (E) = N_Function_Call
+               then
+                  Set_Ekind (Id, E_Constant);
+               else
+                  Set_Ekind (Id, E_Variable);
+               end if;
+
+               Rewrite (N,
+                 Make_Object_Renaming_Declaration (Loc,
+                    Defining_Identifier => Id,
+                    Subtype_Mark => New_Occurrence_Of (T, Loc),
+                    Name => E));
+
+               Set_Renamed_Object (Id, E);
+               Freeze_Before (N, T);
+               Set_Is_Frozen (Id);
+               return;
+
             else
                Expand_Subtype_From_Expr (N, T, Object_Definition (N), E);
                Act_T := Find_Type_Of_Object (Object_Definition (N), N);

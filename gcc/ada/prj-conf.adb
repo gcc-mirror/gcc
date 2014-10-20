@@ -660,6 +660,10 @@ package body Prj.Conf is
       --  If Target_Name is empty, get the specified target in the project
       --  file, if any.
 
+      procedure Get_Project_Runtimes;
+      --  Get the various Runtime (<lang>) in the project file or any project
+      --  it extends, if any are specified.
+
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
 
@@ -832,6 +836,38 @@ package body Prj.Conf is
             end;
          end if;
       end Get_Project_Target;
+
+      --------------------------
+      -- Get_Project_Runtimes --
+      --------------------------
+
+      procedure Get_Project_Runtimes is
+         Element : Array_Element;
+         Id      : Array_Element_Id;
+         Lang    : Name_Id;
+         Proj    : Project_Id;
+
+      begin
+         Proj := Project;
+
+         while Proj /= No_Project loop
+            Id := Value_Of (Name_Runtime, Proj.Decl.Arrays, Shared);
+
+            while Id /= No_Array_Element loop
+               Element := Shared.Array_Elements.Table (Id);
+               Lang := Element.Index;
+
+               if not Runtime_Name_Set_For (Lang) then
+                  Set_Runtime_For
+                    (Lang, RTS_Name => Get_Name_String (Element.Value.Value));
+               end if;
+
+               Id := Element.Next;
+            end loop;
+
+            Proj := Proj.Extends;
+         end loop;
+      end Get_Project_Runtimes;
 
       -----------------------
       -- Default_File_Name --
@@ -1384,6 +1420,7 @@ package body Prj.Conf is
       Config := No_Project;
 
       Get_Project_Target;
+      Get_Project_Runtimes;
       Check_Builder_Switches;
 
       --  Do not attempt to find a configuration project file when

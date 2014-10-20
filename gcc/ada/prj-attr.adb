@@ -136,6 +136,7 @@ package body Prj.Attr is
    "Saobject_generated#" &
    "Saobjects_linked#" &
    "SVtargetDtarget_value#" &
+   "SaruntimeDruntime_value#" &
 
    --  Configuration - Libraries
 

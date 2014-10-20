@@ -63,6 +63,15 @@ package body Prj.Proc is
       Equal      => "=");
    --  This hash table contains all processed projects
 
+   package Runtime_Defaults is new GNAT.HTable.Simple_HTable
+     (Header_Num => Prj.Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Name_Id,
+      Hash       => Prj.Hash,
+      Equal      => "=");
+   --  Stores the default values of 'Runtime names for the various languages
+
    procedure Add (To_Exp : in out Name_Id; Str : Name_Id);
    --  Concatenate two strings and returns another string if both
    --  arguments are not null string.
@@ -943,6 +952,16 @@ package body Prj.Proc is
                                          (Opt.Target_Value.all);
                                        The_Variable.Value := Name_Find;
                                     end if;
+
+                                 when Runtime_Value =>
+                                    Get_Name_String (Index);
+                                    To_Lower (Name_Buffer (1 .. Name_Len));
+                                    The_Variable.Value :=
+                                      Runtime_Defaults.Get (Name_Find);
+                                    if The_Variable.Value = No_Name then
+                                       The_Variable.Value := Empty_String;
+                                    end if;
+
                               end case;
 
                            when List =>
@@ -957,7 +976,9 @@ package body Prj.Proc is
                                     The_Variable.Values :=
                                       Shared.Dot_String_List;
 
-                                 when Object_Dir_Value | Target_Value =>
+                                 when Object_Dir_Value |
+                                      Target_Value |
+                                      Runtime_Value =>
                                     null;
                               end case;
                            end case;
@@ -3126,4 +3147,14 @@ package body Prj.Proc is
       end if;
    end Recursive_Process;
 
+   -----------------------------
+   -- Set_Default_Runtime_For --
+   -----------------------------
+
+   procedure Set_Default_Runtime_For (Language : Name_Id; Value : String) is
+   begin
+      Name_Len := Value'Length;
+      Name_Buffer (1 .. Name_Len) := Value;
+      Runtime_Defaults.Set (Language, Name_Find);
+   end Set_Default_Runtime_For;
 end Prj.Proc;
