@@ -1,3 +1,7 @@
+2014-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Improve error recovery on illegal aspect.
+
 2014-10-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* set_targ.adb (Write_Target_Dependent_Values, Write_Line):
