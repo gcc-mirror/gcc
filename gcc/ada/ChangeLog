@@ -1,3 +1,16 @@
+2014-10-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, prj-proc.adb, sem_ch4.adb, prj-env.adb, lib.ads,
+	sem_ch13.adb: Minor reformatting.
+
+2014-10-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Expand the
+	declaration of a class-wide limited object containing an
+	initializing expression into a renaming declaration.  Required to
+	avoid passing such declaration to the backend and also to avoid
+	generating an extra copy.
+
 2014-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (List_Inlining_Info): Minor tweaks.

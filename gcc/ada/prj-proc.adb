@@ -909,6 +909,7 @@ package body Prj.Proc is
 
                         elsif The_Variable.Default then
                            case The_Variable.Kind is
+
                            when Undefined =>
                               null;
 

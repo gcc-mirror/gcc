@@ -2198,10 +2198,10 @@ package body Sem_Ch4 is
               and then Is_Discrete_Type (Entity (Actual))
             then
                Replace (N,
-                  Make_Slice (Loc,
-                    Prefix => P,
-                    Discrete_Range =>
-                       New_Occurrence_Of (Entity (Actual), Loc)));
+                 Make_Slice (Loc,
+                   Prefix         => P,
+                   Discrete_Range =>
+                     New_Occurrence_Of (Entity (Actual), Loc)));
                Analyze (N);
                return;
 
