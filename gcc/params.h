@@ -113,6 +113,10 @@ extern void global_init_params (void);
    set.  */
 extern void finish_params (void);
 
+/* Reset all state in params.c  */
+
+extern void params_c_finalize (void);
+
 /* Return the default value of parameter NUM.  */
 
 extern int default_param_value (compiler_param num);
