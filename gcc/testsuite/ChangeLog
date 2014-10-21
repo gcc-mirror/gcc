@@ -1,3 +1,8 @@
+2014-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63563
+	* gcc.target/i386/pr63563.c: New test.
+
 2014-10-20  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/slsr-19.c: Make robust against operand order changes.
