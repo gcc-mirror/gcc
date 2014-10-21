@@ -13716,14 +13716,14 @@
    (set_attr "mode" "DI")])
 
 (define_insn "<ssse3_avx2>_palignr<mode>_mask"
-  [(set (match_operand:VI1_AVX2 0 "register_operand" "=v")
-        (vec_merge:VI1_AVX2
-	  (unspec:VI1_AVX2
-	    [(match_operand:VI1_AVX2 1 "register_operand" "v")
-	     (match_operand:VI1_AVX2 2 "nonimmediate_operand" "vm")
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=v")
+        (vec_merge:VI1_AVX512
+	  (unspec:VI1_AVX512
+	    [(match_operand:VI1_AVX512 1 "register_operand" "v")
+	     (match_operand:VI1_AVX512 2 "nonimmediate_operand" "vm")
 	     (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n")]
 	    UNSPEC_PALIGNR)
-	(match_operand:VI1_AVX2 4 "vector_move_operand" "0C")
+	(match_operand:VI1_AVX512 4 "vector_move_operand" "0C")
 	(match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
   "TARGET_AVX512BW && (<MODE_SIZE> == 64 || TARGET_AVX512VL)"
 {

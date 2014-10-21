@@ -43552,6 +43552,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try the AVX2 vpalignr instruction.  */
   if (expand_vec_perm_palignr (d, true))
+    return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
   if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
