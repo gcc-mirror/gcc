@@ -66,5 +66,8 @@ EnumValue
 Enum(avr_arch) String(avrxmega7) Value(ARCH_AVRXMEGA7)
 
 EnumValue
+Enum(avr_arch) String(avrtiny) Value(ARCH_AVRTINY)
+
+EnumValue
 Enum(avr_arch) String(avr1) Value(ARCH_AVR1)
 

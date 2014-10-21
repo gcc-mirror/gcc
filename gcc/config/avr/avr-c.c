@@ -321,6 +321,23 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
     }
   if (AVR_XMEGA)
     cpp_define (pfile, "__AVR_XMEGA__");
+
+  if (AVR_TINY)
+    {
+      cpp_define (pfile, "__AVR_TINY__");
+
+      /* Define macro "__AVR_TINY_PM_BASE_ADDRESS__" with mapped program memory
+         start address. This macro shall be referred where mapped program memory
+         is accessed. (Eg. copying data section (do_copy_data) contents to data
+         memory region.
+         NOTE:
+         Program memory of AVR_TINY devices can not be accessed directly, it has
+         been mapped to the data memory. For AVR_TINY devices (ATtiny4/ 5/ 9/ 10/
+         20 and 40) mapped program memory starts at 0x4000.
+      */
+      cpp_define (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x4000");
+    }
+
   if (avr_current_arch->have_eijmp_eicall)
     {
       cpp_define (pfile, "__AVR_HAVE_EIJMP_EICALL__");
@@ -376,7 +393,10 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
             /* Only supply __FLASH<n> macro if the address space is reasonable
                for this target.  The address space qualifier itself is still
                supported, but using it will throw an error.  */
-            && avr_addrspace[i].segment < avr_n_flash)
+            && avr_addrspace[i].segment < avr_n_flash
+	    /* Only support __MEMX macro if we have LPM.  */
+	    && (AVR_HAVE_LPM || avr_addrspace[i].pointer_size <= 2))
+
           {
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));

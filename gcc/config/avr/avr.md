@@ -24,6 +24,10 @@
 ;;  B  Add 1 to REG number, MEM address or CONST_INT.
 ;;  C  Add 2.
 ;;  D  Add 3.
+;;  E  reg number in XEXP(x, 0).
+;;  F  Add 1 to reg number.
+;;  I  reg number in XEXP(XEXP(x, 0), 0).
+;;  J  Add 1 to reg number.
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
 ;;..m..Constant Direct Data memory address.
@@ -58,6 +62,11 @@
    (TMP_REGNO   0)      ; temporary register r0
    (ZERO_REGNO  1)      ; zero register r1
    ])
+
+(define_constants
+  [ (TMP_REGNO_TINY 16)  ; r16 is temp register for AVR_TINY
+    (ZERO_REGNO_TINY 17) ; r17 is zero register for AVR_TINY
+  ])
 
 (define_c_enum "unspec"
   [UNSPEC_STRLEN
@@ -159,9 +168,10 @@
 ;; lpm  : ISA has no LPMX                lpmx  : ISA has LPMX
 ;; elpm : ISA has ELPM but no ELPMX      elpmx : ISA has ELPMX
 ;; no_xmega: non-XMEGA core              xmega : XMEGA core
+;; no_tiny:  non-TINY core               tiny  : TINY core
 
 (define_attr "isa"
-  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega,
+  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega, no_tiny,tiny,
    standard"
   (const_string "standard"))
 
@@ -213,9 +223,18 @@
               (match_test "AVR_XMEGA"))
          (const_int 1)
 
+         (and (eq_attr "isa" "tiny")
+              (match_test "AVR_TINY"))
+         (const_int 1)
+
          (and (eq_attr "isa" "no_xmega")
               (match_test "!AVR_XMEGA"))
          (const_int 1)
+
+         (and (eq_attr "isa" "no_tiny")
+              (match_test "!AVR_TINY"))
+         (const_int 1)
+
          ] (const_int 0)))
 
 
@@ -620,6 +639,33 @@
         emit_insn (gen_load<mode>_libgcc (dest, src));
         DONE;
       }
+
+    /* AVRTC-579
+    if the source operand expression is out of range for 'lds' instruction
+      copy source operand expression to register
+    For tiny core, LDS instruction's memory access range limited to 0x40..0xbf
+    */
+    if (!tiny_valid_direct_memory_access_range(src,<MODE>mode))
+      {
+        rtx srcx = XEXP(src,0);
+        operands[1] = src = replace_equiv_address (src,copy_to_mode_reg (GET_MODE(srcx),srcx));
+        emit_move_insn(dest,src);
+        DONE;
+      }
+
+    /* AVRTC-579
+    if the destination operand expression is out of range for 'sts' instruction
+      copy destination operand expression to register
+    For tiny core, STS instruction's memory access range limited to 0x40..0xbf
+    */
+    if (!tiny_valid_direct_memory_access_range(dest,<MODE>mode))
+    {
+      rtx destx = XEXP(dest,0);
+      operands[0] = dest = replace_equiv_address (dest,copy_to_mode_reg (GET_MODE(destx),destx));
+      emit_move_insn(dest,src);
+      DONE;
+    }
+
   })
 
 ;;========================================================================
@@ -636,8 +682,13 @@
 (define_insn "mov<mode>_insn"
   [(set (match_operand:ALL1 0 "nonimmediate_operand" "=r    ,d    ,Qm   ,r ,q,r,*r")
         (match_operand:ALL1 1 "nox_general_operand"   "r Y00,n Ynn,r Y00,Qm,r,q,i"))]
-  "register_operand (operands[0], <MODE>mode)
-   || reg_or_0_operand (operands[1], <MODE>mode)"
+  "(register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)) &&
+   /* skip if operands are out of lds/sts memory access range(0x40..0xbf)
+   though access range is checked during define_expand, it is required
+   here to avoid merging rtls during combine pass */
+   tiny_valid_direct_memory_access_range(operands[0],QImode) &&
+   tiny_valid_direct_memory_access_range(operands[1],QImode)"
   {
     return output_movqi (insn, operands, NULL);
   }
@@ -730,8 +781,13 @@
 (define_insn "*mov<mode>"
   [(set (match_operand:ALL2 0 "nonimmediate_operand" "=r,r  ,r,m    ,d,*r,q,r")
         (match_operand:ALL2 1 "nox_general_operand"   "r,Y00,m,r Y00,i,i ,r,q"))]
-  "register_operand (operands[0], <MODE>mode)
-   || reg_or_0_operand (operands[1], <MODE>mode)"
+  "(register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)) &&
+   /* skip if operands are out of lds/sts memory access range(0x40..0xbf)
+   though access range is checked during define_expand, it is required
+   here to avoid merging rtls during combine pass */
+   tiny_valid_direct_memory_access_range(operands[0],HImode) &&
+   tiny_valid_direct_memory_access_range(operands[1],HImode)"
   {
     return output_movhi (insn, operands, NULL);
   }
@@ -879,8 +935,13 @@
 (define_insn "*mov<mode>"
   [(set (match_operand:ALL4 0 "nonimmediate_operand" "=r,r  ,r ,Qm   ,!d,r")
         (match_operand:ALL4 1 "nox_general_operand"   "r,Y00,Qm,r Y00,i ,i"))]
-  "register_operand (operands[0], <MODE>mode)
-   || reg_or_0_operand (operands[1], <MODE>mode)"
+  "(register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)) &&
+   /* skip if operands are out of lds/sts memory access range(0x40..0xbf)
+   though access range is checked during define_expand, it is required
+   here to avoid merging rtls during combine pass */
+   tiny_valid_direct_memory_access_range(operands[0],SImode) &&
+   tiny_valid_direct_memory_access_range(operands[1],SImode)"
   {
     return output_movsisf (insn, operands, NULL);
   }
@@ -894,8 +955,13 @@
 (define_insn "*movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
         (match_operand:SF 1 "nox_general_operand"   "r,G,Qm,rG,F ,F"))]
-  "register_operand (operands[0], SFmode)
-   || reg_or_0_operand (operands[1], SFmode)"
+  "(register_operand (operands[0], SFmode)
+   || reg_or_0_operand (operands[1], SFmode)) &&
+   /* skip if operands are out of lds/sts memory access range(0x40..0xbf)
+   though access range is checked during define_expand, it is required
+   here to avoid merging rtls during combine pass */
+   tiny_valid_direct_memory_access_range(operands[0],SFmode) &&
+   tiny_valid_direct_memory_access_range(operands[1],SFmode)"
   {
     return output_movsisf (insn, operands, NULL);
   }
@@ -5551,18 +5617,18 @@
    (set_attr "cc" "clobber")])
 
 (define_insn "delay_cycles_2"
-  [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n")
+  [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n,n")
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
 	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
-   (clobber (match_scratch:HI 2 "=&w"))]
+   (clobber (match_scratch:HI 2 "=&w,&d"))]
   ""
-  "ldi %A2,lo8(%0)
-	ldi %B2,hi8(%0)
-	1: sbiw %A2,1
-	brne 1b"
-  [(set_attr "length" "4")
+  "@
+    ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\;1: sbiw %A2,1\;brne 1b
+    ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\;1: subi %A2,1\;sbci %B2,0\;brne 1b"
+  [(set_attr "length" "4,5")
+   (set_attr "isa" "no_tiny,tiny")
    (set_attr "cc" "clobber")])
 
 (define_insn "delay_cycles_3"
