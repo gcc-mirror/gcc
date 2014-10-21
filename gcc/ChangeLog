@@ -1,3 +1,8 @@
+2014-10-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-phiopt.c (value_replacement): Properly verify we
+	are the non-singleton PHI.
+
 2014-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63563

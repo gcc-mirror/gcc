@@ -814,7 +814,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	 for the edges e0 and e1 then we can remove the middle basic block. */
       if (emtpy_or_with_defined_p
 	  && single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)),
-							    e0, e1))
+						 e0, e1) == phi)
 	{
           replace_phi_edge_with_variable (cond_bb, e1, phi, arg);
 	  /* Note that we optimized this PHI.  */
