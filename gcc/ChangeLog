@@ -1,3 +1,10 @@
+2014-10-21  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/i386.c (expand_vec_perm_1): Fix
+	expand_vec_perm_palignr case.
+	* config/i386/sse.md (<ssse3_avx2>_palignr<mode>_mask): Use
+	VI1_AVX512.
+
 2014-10-21  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* cfgloopanal.c (seq_cost): Delete.
