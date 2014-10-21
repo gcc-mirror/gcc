@@ -1,4 +1,4 @@
-2014-10-16  Jonathan Wakely  <jwakely@redhat.com>
+2014-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++98/Makefile.am: Move ctype.cc, ctype_configure_char.cc and
 	ctype_members.cc to ...
