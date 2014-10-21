@@ -1,3 +1,9 @@
+2014-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_unary_expression): Add default arguments.
+	(cp_parser_cast_expression, cp_parser_sizeof_operand,
+	cp_parser_omp_atomic): Adjust.
+
 2014-10-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63601
