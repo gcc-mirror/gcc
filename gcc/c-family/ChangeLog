@@ -1,3 +1,7 @@
+2014-10-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* cilk.c: Revert previous change.
+
 2014-10-20  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/63307

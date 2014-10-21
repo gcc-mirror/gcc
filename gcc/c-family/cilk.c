@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h" 
 #include "cgraph.h"
 #include "diagnostic.h"
-#include "vec.h"
 #include "cilk.h"
 
 enum add_variable_type {
@@ -333,36 +332,17 @@ create_cilk_helper_decl (struct wrapper_data *wd)
   return fndecl;
 }
 
-struct cilk_decls
-{
-  tree key;
-  tree *val;
-};
-
-/* A function used by traversal to fill vector of decls for further work.  */
+/* A function used by walk tree to find wrapper parms.  */
 
 bool
-fill_decls_vec (tree const &key0, tree *val0, auto_vec<struct cilk_decls> *v)
+wrapper_parm_cb (tree const &key0, tree *val0, wrapper_data *wd)
 {
-  tree t1 = key0;
-  struct cilk_decls dp;
-
-  dp.key = t1;
-  dp.val = val0;
-  v->safe_push (dp);
-  return true;
-}
-
-/* Function that actually creates necessary parm lists.  */
-
-static void
-create_parm_list (struct wrapper_data *wd, tree *val0, tree arg)
-{
+  tree arg = key0;
   tree val = *val0;
   tree parm;
 
   if (val == error_mark_node || val == arg)
-    return;
+    return true;
 
   if (TREE_CODE (val) == PAREN_EXPR)
     {
@@ -380,7 +360,7 @@ create_parm_list (struct wrapper_data *wd, tree *val0, tree arg)
 	}
       else
 	arg = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg)), arg);
-
+	
       val = TREE_OPERAND (val, 0);
       *val0 = val;
       gcc_assert (TREE_CODE (val) == INDIRECT_REF);
@@ -391,24 +371,9 @@ create_parm_list (struct wrapper_data *wd, tree *val0, tree arg)
     parm = val;
   TREE_CHAIN (parm) = wd->parms;
   wd->parms = parm;
-  wd->argtypes = tree_cons (NULL_TREE, TREE_TYPE (parm), wd->argtypes);
-  wd->arglist = tree_cons (NULL_TREE, arg, wd->arglist);
-}
-
-/* Sorting decls in a vector.  */
-
-static int
-compare_decls (const void *a, const void *b)
-{
-  const struct cilk_decls* t1 = (const struct cilk_decls*) a;
-  const struct cilk_decls* t2 = (const struct cilk_decls*) b;
-
-  if (DECL_UID (t1->key) > DECL_UID (t2->key))
-    return 1;
-  else if (DECL_UID (t1->key) < DECL_UID (t2->key))
-    return -1;
-  else
-    return 0;
+  wd->argtypes = tree_cons (NULL_TREE, TREE_TYPE (parm), wd->argtypes); 
+  wd->arglist = tree_cons (NULL_TREE, arg, wd->arglist); 
+  return true;
 }
 
 /* This function is used to build a wrapper of a certain type.  */
@@ -416,20 +381,12 @@ compare_decls (const void *a, const void *b)
 static void
 build_wrapper_type (struct wrapper_data *wd)
 {
-  unsigned int j;
-  struct cilk_decls * c;
-  auto_vec<struct cilk_decls> vd;
   wd->arglist = NULL_TREE;
   wd->parms = NULL_TREE;
   wd->argtypes = void_list_node;
 
-  wd->decl_map->traverse<auto_vec<struct cilk_decls> *, fill_decls_vec> (&vd);
+  wd->decl_map->traverse<wrapper_data *, wrapper_parm_cb> (wd);
   gcc_assert (wd->type != CILK_BLOCK_FOR);
-
-  vd.qsort (compare_decls);
-
-  FOR_EACH_VEC_ELT (vd, j, c)
-   create_parm_list (wd, c->val, c->key);
 
   /* Now build a function.
      Its return type is void (all side effects are via explicit parameters).
@@ -491,19 +448,41 @@ copy_decl_for_cilk (tree decl, copy_body_data *id)
     }
 }
 
+/* Copy all local variables.  */
+
+bool
+for_local_cb (tree const &k, tree *vp, copy_body_data *id)
+{
+  tree v = *vp;
+
+  if (v == error_mark_node)
+    *vp = copy_decl_no_change (k, id);
+  return true;
+}
+
+/* Copy all local declarations from a _Cilk_spawned function's body.  */
+
+bool
+wrapper_local_cb (tree const &key, tree *vp, copy_body_data *id)
+{
+  tree val = *vp;
+
+  if (val == error_mark_node)
+    *vp = copy_decl_for_cilk (key, id);
+
+  return true;
+}
+
 /* Alter a tree STMT from OUTER_FN to form the body of INNER_FN.  */
 
 void
 cilk_outline (tree inner_fn, tree *stmt_p, void *w)
 {
   struct wrapper_data *wd = (struct wrapper_data *) w;
-  const tree outer_fn = wd->context;
+  const tree outer_fn = wd->context;	      
   const bool nested = (wd->type == CILK_BLOCK_FOR);
   copy_body_data id;
   bool throws;
-  auto_vec<struct cilk_decls> vd;
-  unsigned int j;
-  struct cilk_decls * c;
 
   DECL_STATIC_CHAIN (outer_fn) = 1;
 
@@ -529,13 +508,11 @@ cilk_outline (tree inner_fn, tree *stmt_p, void *w)
 
   insert_decl_map (&id, wd->block, DECL_INITIAL (inner_fn));
 
-  wd->decl_map->traverse<auto_vec<struct cilk_decls> *, fill_decls_vec> (&vd);
-  vd.qsort (compare_decls);
   /* We don't want the private variables any more.  */
-  FOR_EACH_VEC_ELT (vd, j, c)
-   if (*(c->val) == error_mark_node)
-     *(c->val) = nested ? copy_decl_no_change (c->key, &id)
-			: copy_decl_for_cilk (c->key, &id);
+  if (nested)
+    wd->decl_map->traverse<copy_body_data *, for_local_cb> (&id);
+  else
+    wd->decl_map->traverse<copy_body_data *, wrapper_local_cb> (&id);
 
   walk_tree (stmt_p, copy_tree_body_r, (void *) &id, NULL);
 
@@ -640,7 +617,7 @@ free_wd (struct wrapper_data *wd)
 */
 
 bool
-declare_one_free_variable (tree var0, tree *map0)
+declare_one_free_variable (tree const &var0, tree *map0, wrapper_data &)
 {
   const_tree var = var0;
   tree map = *map0;
@@ -713,9 +690,6 @@ create_cilk_wrapper (tree exp, tree *args_out)
 {
   struct wrapper_data wd;
   tree fndecl;
-  unsigned int j;
-  struct cilk_decls * c;
-  auto_vec<struct cilk_decls> vd;
 
   init_wd (&wd, CILK_BLOCK_SPAWN);
 
@@ -736,11 +710,7 @@ create_cilk_wrapper (tree exp, tree *args_out)
     }
   else
     extract_free_variables (exp, &wd, ADD_READ);
-  wd.decl_map->traverse<auto_vec<struct cilk_decls> *, fill_decls_vec> (&vd);
-  vd.qsort (compare_decls);
-  FOR_EACH_VEC_ELT (vd, j, c)
-   declare_one_free_variable (c->key, c->val);
-
+  wd.decl_map->traverse<wrapper_data &, declare_one_free_variable> (wd);
   wd.block = TREE_BLOCK (exp);
   if (!wd.block)
     wd.block = DECL_INITIAL (current_function_decl);
