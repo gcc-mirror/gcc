@@ -1,3 +1,8 @@
+2014-10-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Fix creation of
+	MARKER_BYTE_UNKNOWN markers when handling casts.
+
 2014-10-21  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-phiopt.c (value_replacement): Properly verify we

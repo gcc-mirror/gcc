@@ -1,3 +1,7 @@
+2014-10-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/optimize-bswaphi-1.c: New bswap pass test.
+
 2014-10-21  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/ipa/devirt-42.C: Fix dump scanning routines.
