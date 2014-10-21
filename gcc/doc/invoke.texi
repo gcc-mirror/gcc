@@ -3328,8 +3328,12 @@ nothing to warn about.)
 
 @item -pedantic-errors
 @opindex pedantic-errors
-Like @option{-Wpedantic}, except that errors are produced rather than
-warnings.
+Give an error whenever the @dfn{base standard} (see @option{-Wpedantic})
+requires a diagnostic, in some cases where there is undefined behavior
+at compile-time and in some other cases that do not prevent compilation
+of programs that are valid according to the standard. This is not
+equivalent to @option{-Werror=pedantic}, since there are errors enabled
+by this option and not enabled by the latter and vice versa.
 
 @item -Wall
 @opindex Wall
