@@ -1,4 +1,4 @@
-// <experimental/tuple> -*- C++ -*-
+// Variable Templates For system_error -*- C++ -*-
 
 // Copyright (C) 2014 Free Software Foundation, Inc.
 //
@@ -22,12 +22,16 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/tuple
+/** @file experimental/system_error
  *  This is a TS C++ Library header.
  */
 
-#ifndef _GLIBCXX_EXPERIMENTAL_TUPLE
-#define _GLIBCXX_EXPERIMENTAL_TUPLE 1
+//
+// N3932 Variable Templates For Type Traits (Revision 1)
+//
+
+#ifndef _GLIBCXX_EXPERIMENTAL_SYSTEM_ERROR
+#define _GLIBCXX_EXPERIMENTAL_CHRONO 1
 
 #pragma GCC system_header
 
@@ -35,7 +39,8 @@
 # include <bits/c++14_warning.h>
 #else
 
-#include <tuple>
+#include <system_error>
+
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -44,30 +49,17 @@ namespace experimental
 inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-  // See C++14 §20.4.2.5, tuple helper classes
-  template <typename _Tp>
-    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
-
-  template <typename _Fn, typename _Tuple, std::size_t... _Idx>
-    constexpr decltype(auto)
-    __apply_impl(_Fn&& f, _Tuple&& t, std::index_sequence<_Idx...>)
-    { return std::forward<_Fn>(f)(get<_Idx>(forward<_Tuple>(t))...); }
-
-  template <typename _Fn, typename _Tuple>
-    constexpr decltype(auto)
-    apply(_Fn&& f, _Tuple&& t)
-    {
-      using _Indices =
-	std::make_index_sequence<std::tuple_size<std::decay_t<_Tuple>>::value>;
-      return __apply_impl(std::forward<_Fn>(f), std::forward<_Tuple>(t),
-			  _Indices{});
-    }
-
+// See C++14 §19.5, System error support
+template <typename _Tp>
+  constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
+template <typename _Tp>
+  constexpr bool is_error_condition_enum_v =
+    is_error_condition_enum<_Tp>::value;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
 } // namespace std
 
-#endif // C++14
+#endif // __cplusplus <= 201103L
 
-#endif // _GLIBCXX_EXPERIMENTAL_TUPLE
+#endif // _GLIBCXX_EXPERIMENTAL_SYSTEM_ERROR
