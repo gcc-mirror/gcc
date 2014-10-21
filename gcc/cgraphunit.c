@@ -191,6 +191,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "fibheap.h"
 #include "intl.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
@@ -1501,7 +1507,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       if (in_lto_p)
 	get_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
-      
+
       current_function_decl = thunk_fndecl;
 
       /* Ensure thunks are emitted in their correct sections.  */

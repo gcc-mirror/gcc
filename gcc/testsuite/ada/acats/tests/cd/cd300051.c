@@ -48,7 +48,7 @@
 --                          CD30005.A (as comments).
 --!
 */
-            int _cd30005_1( Value )
+            int _cd30005_1(int Value )
             {
                 /* int Value */
 

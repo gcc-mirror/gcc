@@ -42,6 +42,12 @@
 #include "langhooks-def.h"
 #include "plugin.h"
 #include "real.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"	/* For pass_by_reference.  */
 
 #include "ada.h"

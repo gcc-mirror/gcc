@@ -7993,6 +7993,10 @@ lookup_template_variable (tree templ, tree arglist)
     type = unknown_type_node;
   else
     type = TREE_TYPE (templ);
+  tsubst_flags_t complain = tf_warning_or_error;
+  tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (templ));
+  arglist = coerce_template_parms (parms, arglist, templ, complain,
+				   /*req_all*/true, /*use_default*/true);
   return build2 (TEMPLATE_ID_EXPR, type, templ, arglist);
 }
 
@@ -22324,12 +22328,12 @@ void
 print_template_statistics (void)
 {
   fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", decl_specializations->size (),
-	   decl_specializations->elements (),
+	   "%f collisions\n", (long) decl_specializations->size (),
+	   (long) decl_specializations->elements (),
 	   decl_specializations->collisions ());
   fprintf (stderr, "type_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", type_specializations->size (),
-	   type_specializations->elements (),
+	   "%f collisions\n", (long) type_specializations->size (),
+	   (long) type_specializations->elements (),
 	   type_specializations->collisions ());
 }
 

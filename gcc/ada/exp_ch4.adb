@@ -6589,7 +6589,40 @@ package body Exp_Ch4 is
             Append (Right_Opnd (Cnode), Opnds);
          end loop Inner;
 
-         Expand_Concatenate (Cnode, Opnds);
+         --  Note: The following code is a temporary workaround for N731-034
+         --  and N829-028 and will be kept until the general issue of internal
+         --  symbol serialization is addressed. The workaround is kept under a
+         --  debug switch to avoid permiating into the general case.
+
+         --  Wrap the node to concatenate into an expression actions node to
+         --  keep it nicely packaged. This is useful in the case of an assert
+         --  pragma with a concatenation where we want to be able to delete
+         --  the concatenation and all its expansion stuff.
+
+         if Debug_Flag_Dot_H then
+            declare
+               Cnod : constant Node_Id   := Relocate_Node (Cnode);
+               Typ  : constant Entity_Id := Base_Type (Etype (Cnode));
+
+            begin
+               --  Note: use Rewrite rather than Replace here, so that for
+               --  example Why_Not_Static can find the original concatenation
+               --  node OK!
+
+               Rewrite (Cnode,
+                 Make_Expression_With_Actions (Sloc (Cnode),
+                   Actions    => New_List (Make_Null_Statement (Sloc (Cnode))),
+                   Expression => Cnod));
+
+               Expand_Concatenate (Cnod, Opnds);
+               Analyze_And_Resolve (Cnode, Typ);
+            end;
+
+         --  Default case
+
+         else
+            Expand_Concatenate (Cnode, Opnds);
+         end if;
 
          exit Outer when Cnode = N;
          Cnode := Parent (Cnode);
@@ -7152,7 +7185,10 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      Typl := Base_Type (Typl);
+      --  Now get the implementation base type (note that plain Base_Type here
+      --  might lead us back to the private type, which is not what we want!)
+
+      Typl := Implementation_Base_Type (Typl);
 
       --  Equality between variant records results in a call to a routine
       --  that has conditional tests of the discriminant value(s), and hence

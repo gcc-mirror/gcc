@@ -2,6 +2,8 @@
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O1" } */
 
+extern int mod_rhs (int);
+
 static inline unsigned int
 rshift_u_s (unsigned int left, int right)
 {

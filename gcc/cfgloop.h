@@ -24,14 +24,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
 {
   LPT_NONE,
-  LPT_PEEL_COMPLETELY,
-  LPT_PEEL_SIMPLE,
   LPT_UNROLL_CONSTANT,
   LPT_UNROLL_RUNTIME,
   LPT_UNROLL_STUPID
@@ -731,12 +736,11 @@ extern void loop_optimizer_finalize (void);
 /* Optimization passes.  */
 enum
 {
-  UAP_PEEL = 1,		/* Enables loop peeling.  */
-  UAP_UNROLL = 2,	/* Enables unrolling of loops if it seems profitable.  */
-  UAP_UNROLL_ALL = 4	/* Enables unrolling of all loops.  */
+  UAP_UNROLL = 1,	/* Enables unrolling of loops if it seems profitable.  */
+  UAP_UNROLL_ALL = 2	/* Enables unrolling of all loops.  */
 };
 
-extern void unroll_and_peel_loops (int);
+extern void unroll_loops (int);
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
 extern void scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound);

@@ -192,6 +192,13 @@ INT_MODE (TI, 16);
 
 /* No partial integer modes are defined by default.  */
 
+/* The target normally defines any target-specific __intN types and
+   their modes, but __int128 for TImode is fairly common so define it
+   here.  The type will not be created unless the target supports
+   TImode.  */
+
+INT_N (TI, 128);
+
 /* Basic floating point modes.  SF and DF are the only modes provided
    by default.  The names QF, HF, XF, and TF are reserved for targets
    that need 1-word, 2-word, 80-bit, or 128-bit float types respectively.

@@ -57,6 +57,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "except.h"
@@ -496,6 +500,8 @@ remap_type_1 (tree type, copy_body_data *id)
       if (TYPE_MAIN_VARIANT (new_tree) != new_tree
 	  && TREE_TYPE (type) == TREE_TYPE (TYPE_MAIN_VARIANT (type)))
 	TREE_TYPE (new_tree) = TREE_TYPE (TYPE_MAIN_VARIANT (new_tree));
+      else
+	TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
 
       if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
 	{

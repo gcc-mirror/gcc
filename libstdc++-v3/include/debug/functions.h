@@ -34,7 +34,7 @@
 					  // _Iter_base
 #include <bits/cpp_type_traits.h>	  // for __is_integer
 #include <bits/move.h>                    // for __addressof and addressof
-# include <bits/stl_function.h>		  // for less
+#include <bits/stl_function.h>		  // for less
 #if __cplusplus >= 201103L
 # include <type_traits>			  // for is_lvalue_reference and __and_
 #endif
@@ -252,8 +252,16 @@ namespace __gnu_debug
 			    const _InputIterator& __other,
 			    const _InputIterator& __other_end)
     {
-      return __foreign_iterator_aux3(__it, __other, __other_end,
-				     _Is_contiguous_sequence<_Sequence>());
+#if __cplusplus < 201103L
+      typedef _Is_contiguous_sequence<_Sequence> __tag;
+#else
+      using __lvalref = std::is_lvalue_reference<
+	typename std::iterator_traits<_InputIterator>::reference>;
+      using __contiguous = _Is_contiguous_sequence<_Sequence>;
+      using __tag = typename std::conditional<__lvalref::value, __contiguous,
+					      std::__false_type>::type;
+#endif
+      return __foreign_iterator_aux3(__it, __other, __other_end, __tag());
     }
 
   /* Handle the case where we aren't really inserting a range after all */

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 // 2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //

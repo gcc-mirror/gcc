@@ -1,5 +1,6 @@
 /* { dg-options "-O2 -fgraphite-identity -ffast-math" } */
 
+void
 VBR_encode_frame (int mode_gr, int channels_out, int max_bits[2][2])
 {
  int max_nbits_ch[2][2];

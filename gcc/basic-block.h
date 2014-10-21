@@ -22,6 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "predict.h"
 #include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 
 /* Use gcov_type to hold basic block counters.  Should be at least

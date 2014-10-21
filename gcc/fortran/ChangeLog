@@ -1,3 +1,27 @@
+2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* trans-const.c (gfc_build_nan): New function.
+	* trans-const.h (gfc_build_nan): New prototype.
+	* trans-intrinsic.c (gfc_conv_intrinsic_exponent): Handle special
+	values.
+	(gfc_conv_intrinsic_minmaxval): Use gfc_build_nan.
+	(gfc_conv_intrinsic_fraction): Handle special values.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_set_exponent): Likewise.
+
+2014-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63553
+	* resolve.c (resolve_ordinary_assign): Add data component to
+	rvalue expression for class to type assignment.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Adjust include files.
+	* trans-decl.c: Likewise.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* trans-decl.c, trans.c, trans.h: Use hash_table instead of hashtab.

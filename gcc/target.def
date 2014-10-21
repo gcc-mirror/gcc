@@ -4274,6 +4274,20 @@ DEFHOOK
 
 HOOK_VECTOR_END (calls)
 
+DEFHOOK
+(use_pseudo_pic_reg,
+ "This hook should return 1 in case pseudo register should be created\n\
+for pic_offset_table_rtx during function expand.",
+ bool, (void),
+ hook_bool_void_false)
+
+DEFHOOK
+(init_pic_reg,
+ "Perform a target dependent initialization of pic_offset_table_rtx.\n\
+This hook is called at the start of register allocation.",
+ void, (void),
+ hook_void_void)
+
 /* Return the diagnostic message string if conversion from FROMTYPE
    to TOTYPE is not allowed, NULL otherwise.  */
 DEFHOOK

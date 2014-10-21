@@ -375,10 +375,10 @@ package Lib.Writ is
 
    --  RN
 
-   --  In named notation, the restrictions are given as a series of lines, one
-   --  per retrictions that is specified or violated (no information is present
-   --  for restrictions that are not specified or violated). In the following
-   --  name is the name of the restriction in all upper case.
+   --  In named notation, the restrictions are given as a series of lines,
+   --  one per restrictions that is specified or violated (no information is
+   --  present for restrictions that are not specified or violated). In the
+   --  following name is the name of the restriction in all upper case.
 
    --  For boolean restrictions, we have only two possibilities. A restrictions
    --  pragma is present, or a violation is detected:

@@ -1032,10 +1032,11 @@ package body Sem_Ch12 is
          Decl      : Node_Id;
          Func_Name : Node_Id;
          Func      : Entity_Id;
-         N_Parms   : Natural;
-         Profile   : List_Id;
+         Parm_Type : Node_Id;
+         Profile   : List_Id := New_List;
          Spec      : Node_Id;
-         F         : Entity_Id;
+         Act_F     : Entity_Id;
+         Form_F    : Entity_Id;
          New_F     : Entity_Id;
 
       begin
@@ -1055,24 +1056,57 @@ package body Sem_Ch12 is
          Actuals := New_List;
          Profile := New_List;
 
-         F := First_Formal (Formal);
-         N_Parms := 0;
-         while Present (F) loop
+         if Present (Actual) then
+            Act_F := First_Formal (Entity (Actual));
+         else
+            Act_F := Empty;
+         end if;
+
+         Form_F := First_Formal (Formal);
+         while Present (Form_F) loop
 
             --  Create new formal for profile of wrapper, and add a reference
-            --  to it in the list of actuals for the enclosing call.
+            --  to it in the list of actuals for the enclosing call. The name
+            --  must be that of the formal in the formal subprogram, because
+            --  calls to it in the generic body may use named associations.
 
-            New_F := Make_Temporary
-                       (Loc, Character'Val (Character'Pos ('A') + N_Parms));
+            New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
+
+            if No (Actual) then
+
+               --  If formal has a class-wide type rewrite as the corresponding
+               --  attribute, because the class-wide type is not retrievable by
+               --  visbility.
+
+               if Is_Class_Wide_Type (Etype (Form_F)) then
+                  Parm_Type :=
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Class,
+                      Prefix         =>
+                        Make_Identifier (Loc, Chars (Etype (Etype (Form_F)))));
+
+               else
+                  Parm_Type :=
+                    Make_Identifier (Loc, Chars (Etype (Etype (Form_F))));
+               end if;
+
+            --  If actual is present, use the type of its own formal
+
+            else
+               Parm_Type := New_Occurrence_Of (Etype (Act_F), Loc);
+            end if;
+
             Append_To (Profile,
               Make_Parameter_Specification (Loc,
-              Defining_Identifier => New_F,
-              Parameter_Type      =>
-                Make_Identifier (Loc, Chars => Chars (Etype (F)))));
+                Defining_Identifier => New_F,
+                Parameter_Type      => Parm_Type));
 
             Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
-            Next_Formal (F);
-            N_Parms := N_Parms + 1;
+            Next_Formal (Form_F);
+
+            if Present (Act_F) then
+               Next_Formal (Act_F);
+            end if;
          end loop;
 
          Spec :=
@@ -1081,6 +1115,7 @@ package body Sem_Ch12 is
              Parameter_Specifications => Profile,
              Result_Definition        =>
                Make_Identifier (Loc, Chars (Etype (Formal))));
+
          Decl :=
            Make_Expression_Function (Loc,
              Specification => Spec,
@@ -1751,8 +1786,7 @@ package body Sem_Ch12 is
 
                   else
                      if GNATprove_Mode
-                       and then
-                         Present
+                        and then Present
                            (Containing_Package_With_Ext_Axioms
                               (Defining_Entity (Analyzed_Formal)))
                        and then Ekind (Defining_Entity (Analyzed_Formal)) =
@@ -2436,11 +2470,8 @@ package body Sem_Ch12 is
          Set_Ekind (Id, K);
          Set_Etype (Id, T);
 
-         if (Is_Array_Type (T)
-              and then not Is_Constrained (T))
-           or else
-            (Ekind (T) = E_Record_Type
-              and then Has_Discriminants (T))
+         if (Is_Array_Type (T) and then not Is_Constrained (T))
+           or else (Ekind (T) = E_Record_Type and then Has_Discriminants (T))
          then
             declare
                Non_Freezing_Ref : constant Node_Id :=
@@ -4007,17 +4038,17 @@ package body Sem_Ch12 is
 
             Needs_Body :=
               (Unit_Requires_Body (Gen_Unit)
-                  or else Enclosing_Body_Present
-                  or else Present (Corresponding_Body (Gen_Decl)))
-                and then (Is_In_Main_Unit (N) or else Might_Inline_Subp)
-                and then not Is_Actual_Pack
-                and then not Inline_Now
-                and then (Operating_Mode = Generate_Code
+                or else Enclosing_Body_Present
+                or else Present (Corresponding_Body (Gen_Decl)))
+               and then (Is_In_Main_Unit (N) or else Might_Inline_Subp)
+               and then not Is_Actual_Pack
+               and then not Inline_Now
+               and then (Operating_Mode = Generate_Code
 
-                           --  Need comment for this check ???
+                          --  Need comment for this check ???
 
-                           or else (Operating_Mode = Check_Semantics
-                                     and then (ASIS_Mode or GNATprove_Mode)));
+                          or else (Operating_Mode = Check_Semantics
+                                    and then (ASIS_Mode or GNATprove_Mode)));
 
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
@@ -4423,14 +4454,13 @@ package body Sem_Ch12 is
 
                exit when Scope_Stack.Last - Num_Scopes + 1 = Scope_Stack.First
                  or else Scope_Stack.Table
-                           (Scope_Stack.Last - Num_Scopes).Entity
-                             = Scope (S);
+                           (Scope_Stack.Last - Num_Scopes).Entity = Scope (S);
             end loop;
 
             exit when Is_Generic_Instance (S)
               and then (In_Package_Body (S)
-                          or else Ekind (S) = E_Procedure
-                          or else Ekind (S) = E_Function);
+                         or else Ekind (S) = E_Procedure
+                         or else Ekind (S) = E_Function);
             S := Scope (S);
          end loop;
 
@@ -4469,8 +4499,7 @@ package body Sem_Ch12 is
          loop
             if Is_Generic_Instance (S)
               and then (In_Package_Body (S)
-                          or else Ekind (S) = E_Procedure
-                            or else Ekind (S) = E_Function)
+                         or else Ekind_In (S, E_Procedure, E_Function))
             then
                --  We still have to remove the entities of the enclosing
                --  instance from direct visibility.
@@ -4530,6 +4559,7 @@ package body Sem_Ch12 is
 
             S := Scope (S);
          end loop;
+
          pragma Assert (Num_Inner < Num_Scopes);
 
          Push_Scope (Standard_Standard);
@@ -4639,8 +4669,7 @@ package body Sem_Ch12 is
                Set_Is_Generic_Instance (Inst, True);
 
                if In_Package_Body (Inst)
-                 or else Ekind (S) = E_Procedure
-                 or else Ekind (S) = E_Function
+                 or else Ekind_In (S, E_Procedure, E_Function)
                then
                   E := First_Entity (Instances (J));
                   while Present (E) loop
@@ -5013,9 +5042,8 @@ package body Sem_Ch12 is
          --  If renaming, get original unit
 
          if Present (Renamed_Object (Gen_Unit))
-           and then (Ekind (Renamed_Object (Gen_Unit)) = E_Generic_Procedure
-                       or else
-                     Ekind (Renamed_Object (Gen_Unit)) = E_Generic_Function)
+           and then Ekind_In (Renamed_Object (Gen_Unit), E_Generic_Procedure,
+                                                         E_Generic_Function)
          then
             Gen_Unit := Renamed_Object (Gen_Unit);
             Set_Is_Instantiated (Gen_Unit);
@@ -5969,9 +5997,7 @@ package body Sem_Ch12 is
          --  If the formal package is declared with a box, or if the formal
          --  parameter is defaulted, it is visible in the body.
 
-         elsif Is_Formal_Box
-           or else Is_Visible_Formal (E)
-         then
+         elsif Is_Formal_Box or else Is_Visible_Formal (E) then
             Set_Is_Hidden (E, False);
          end if;
 
@@ -6255,7 +6281,7 @@ package body Sem_Ch12 is
                if Is_Child_Unit (E)
                  and then not Comes_From_Source (Entity (Prefix (Gen_Id)))
                  and then (not In_Instance
-                             or else Nkind (Parent (Parent (Gen_Id))) =
+                            or else Nkind (Parent (Parent (Gen_Id))) =
                                                          N_Compilation_Unit)
                then
                   Error_Msg_N
@@ -10002,15 +10028,13 @@ package body Sem_Ch12 is
             --  access type.
 
             if Ada_Version < Ada_2005
-              or else
-                Ekind (Base_Type (Ftyp)) /=
-                  E_Anonymous_Access_Type
-              or else
-                Ekind (Base_Type (Etype (Actual))) /=
-                  E_Anonymous_Access_Type
+              or else Ekind (Base_Type (Ftyp))           /=
+                                                  E_Anonymous_Access_Type
+              or else Ekind (Base_Type (Etype (Actual))) /=
+                                                  E_Anonymous_Access_Type
             then
-               Error_Msg_NE ("type of actual does not match type of&",
-                             Actual, Gen_Obj);
+               Error_Msg_NE
+                 ("type of actual does not match type of&", Actual, Gen_Obj);
             end if;
          end if;
 
@@ -10019,19 +10043,16 @@ package body Sem_Ch12 is
          --  Check for instantiation of atomic/volatile actual for
          --  non-atomic/volatile formal (RM C.6 (12)).
 
-         if Is_Atomic_Object (Actual)
-           and then not Is_Atomic (Orig_Ftyp)
-         then
+         if Is_Atomic_Object (Actual) and then not Is_Atomic (Orig_Ftyp) then
             Error_Msg_N
-              ("cannot instantiate non-atomic formal object " &
-               "with atomic actual", Actual);
+              ("cannot instantiate non-atomic formal object "
+               & "with atomic actual", Actual);
 
-         elsif Is_Volatile_Object (Actual)
-           and then not Is_Volatile (Orig_Ftyp)
+         elsif Is_Volatile_Object (Actual) and then not Is_Volatile (Orig_Ftyp)
          then
             Error_Msg_N
-              ("cannot instantiate non-volatile formal object " &
-               "with volatile actual", Actual);
+              ("cannot instantiate non-volatile formal object "
+               & "with volatile actual", Actual);
          end if;
 
       --  Formal in-parameter
@@ -11228,9 +11249,10 @@ package body Sem_Ch12 is
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
-             or else Subtypes_Match
-               (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
-               Component_Type (Act_T))
+             or else
+               Subtypes_Match
+                 (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
+                  Component_Type (Act_T))
          then
             null;
          else
@@ -11485,12 +11507,10 @@ package body Sem_Ch12 is
 
             elsif Is_Constrained (Act_T) then
                if Ekind (Ancestor) = E_Access_Type
-                 or else
-                   (not Is_Constrained (A_Gen_T)
-                     and then Is_Composite_Type (A_Gen_T))
+                 or else (not Is_Constrained (A_Gen_T)
+                           and then Is_Composite_Type (A_Gen_T))
                then
-                  Error_Msg_N
-                    ("actual subtype must be unconstrained", Actual);
+                  Error_Msg_N ("actual subtype must be unconstrained", Actual);
                   Abandon_Instantiation (Actual);
                end if;
 
@@ -11929,14 +11949,11 @@ package body Sem_Ch12 is
                 Actual, Gen_T);
 
          elsif Is_Limited_Type (Act_T) /= Is_Limited_Type (A_Gen_T)
-           or else
-             Is_Task_Interface (A_Gen_T) /= Is_Task_Interface (Act_T)
-           or else
-             Is_Protected_Interface (A_Gen_T) /=
-               Is_Protected_Interface (Act_T)
-           or else
-             Is_Synchronized_Interface (A_Gen_T) /=
-               Is_Synchronized_Interface (Act_T)
+           or else Is_Task_Interface (A_Gen_T) /= Is_Task_Interface (Act_T)
+           or else Is_Protected_Interface (A_Gen_T) /=
+                   Is_Protected_Interface (Act_T)
+           or else Is_Synchronized_Interface (A_Gen_T) /=
+                   Is_Synchronized_Interface (Act_T)
          then
             Error_Msg_NE
               ("actual for interface& does not match (RM 12.5.5(4))",
@@ -12012,15 +12029,13 @@ package body Sem_Ch12 is
 
          if Is_Unchecked_Union (Base_Type (Act_T)) then
             if not Has_Discriminants (A_Gen_T)
-                     or else
-                   (Is_Derived_Type (A_Gen_T)
-                     and then
-                    Is_Unchecked_Union (A_Gen_T))
+              or else (Is_Derived_Type (A_Gen_T)
+                        and then Is_Unchecked_Union (A_Gen_T))
             then
                null;
             else
-               Error_Msg_N ("unchecked union cannot be the actual for a" &
-                 " discriminated formal type", Act_T);
+               Error_Msg_N ("unchecked union cannot be the actual for a "
+                            & "discriminated formal type", Act_T);
 
             end if;
          end if;
@@ -12039,8 +12054,7 @@ package body Sem_Ch12 is
 
          if Ekind (Act_T) = E_Incomplete_Type
            or else (Is_Class_Wide_Type (Act_T)
-                      and then
-                         Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+                     and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
          then
             --  If the formal is an incomplete type, the actual can be
             --  incomplete as well.
@@ -12423,7 +12437,7 @@ package body Sem_Ch12 is
       if not In_Same_Source_Unit (N, Spec)
         or else Nkind (Unit (Comp_Unit)) = N_Package_Declaration
         or else (Nkind (Unit (Comp_Unit)) = N_Package_Body
-                   and then not Is_In_Main_Unit (Spec))
+                  and then not Is_In_Main_Unit (Spec))
       then
          --  Find body of parent of spec, and analyze it. A special case arises
          --  when the parent is an instantiation, that is to say when we are
@@ -13593,7 +13607,7 @@ package body Sem_Ch12 is
             elsif Nkind (N) = N_Op_Concat
               and then Is_Generic_Type (Etype (N2))
               and then (Base_Type (Etype (Right_Opnd (N2))) = Etype (N2)
-                         or else
+                          or else
                         Base_Type (Etype (Left_Opnd (N2)))  = Etype (N2))
               and then Is_Intrinsic_Subprogram (E)
             then
@@ -13886,9 +13900,7 @@ package body Sem_Ch12 is
             end if;
 
          elsif D in List_Range then
-            if D = Union_Id (No_List)
-              or else Is_Empty_List (List_Id (D))
-            then
+            if D = Union_Id (No_List) or else Is_Empty_List (List_Id (D)) then
                null;
 
             else
@@ -14140,10 +14152,7 @@ package body Sem_Ch12 is
                      end if;
                   end if;
 
-                  if No (N2)
-                    or else No (Typ)
-                    or else not Is_Global (Typ)
-                  then
+                  if No (N2) or else No (Typ) or else not Is_Global (Typ) then
                      Set_Associated_Node (N, Empty);
 
                      --  If the aggregate is an actual in a call, it has been
@@ -14409,9 +14418,7 @@ package body Sem_Ch12 is
       OK      : Boolean;
 
    begin
-      if No (T)
-        or else T = Any_Id
-      then
+      if No (T) or else T = Any_Id then
          return;
       end if;
 

@@ -227,6 +227,11 @@ extern char *make_relative_prefix (const char *, const char *,
 extern char *make_relative_prefix_ignore_links (const char *, const char *,
 						const char *) ATTRIBUTE_MALLOC;
 
+/* Returns a pointer to a directory path suitable for creating temporary
+   files in.  */
+
+extern const char *choose_tmpdir (void) ATTRIBUTE_RETURNS_NONNULL;
+
 /* Choose a temporary directory to use for scratch files.  */
 
 extern char *choose_temp_base (void) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;

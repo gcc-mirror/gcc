@@ -1,3 +1,282 @@
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Body): Add defense against
+	previous errors.
+	* freeze.adb (Freeze_Entity): Add defense against checking null
+	scope for generic.
+	* restrict.adb (Tasking_Allowed): Add test for No_Run_Time mode.
+	* sem_ch13.adb (Freeze_Entity_Checks): Add defense against
+	previous errors.
+	* sem_ch9.adb (Analyze_Task_Type_Declaration): Give error if
+	in No_Run_Time mode.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj-makr.adb: Minor reformatting.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, make.adb, prj-part.adb, gnatlink.adb, prj-nmsc.adb,
+	prj-conf.adb, prj-env.adb: Use Is_Directory_Separator where possible.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Undo_Initialization): If Initialize_Scalars
+	is enabled, code will be generated for some composite types
+	to initialize an object after its declaration. If there is
+	a subsequent Import pragma for the object, that code must be
+	removed as specified byw the semantics of the pragma, and to
+	prevent out-of-order elaboration issues in the back-end.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Concat): Keep concatenation operator
+	wrapping mechanism under debug flag -gnatd.h.
+	* debug.adb: Claim debug switch -gnatd.h.
+
+2014-10-17  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/Makefile.in: Enable the socket runtime bits
+	for Android.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants, Replace_Type_References): Do
+	not perform the replacement on the expression for an inherited
+	class-wide invariant if in ASIS_Mode and the type reference is
+	already the prefix of a 'Class attribute reference: the expression
+	has already been preanalyzed and the replacement performed when
+	first encountered on the declaration of the parent type.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, sem_ch7.adb, prj-nmsc.adb, sem_ch13.adb, exp_ch3.adb:
+	Minor reformatting.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Component_Invariant_Call): Retrieve Invariant
+	subprogram from base type.
+	* sem_ch7.adb (Analyze_Package_Specification): Build invariant
+	subprogram for private type, not any of its subtypes.
+	* sem_ch13.adb (Build_Invariant_Procedure_Declaration): Set type
+	of procedure entity, because a call to it may be generated in
+	a client unit before the corresponding subprogram declaration
+	is analyzed.
+
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): Do not create directories
+	when a project is abstract.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If the domain
+	of iteration is given by an expression that is not an array type,
+	verify that its type implements an iterator iterface.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Ensure that attribute
+	reference is not marked as being a static expression if the
+	prefix evaluation raises CE.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_pakd.adb: Move bit packed entity tables to spec.
+	* exp_pakd.ads: Move bit packed entity tables here from body.
+	* freeze.adb (Freeze_Array_Type): Check that packed array type
+	is supported.
+	* rtsfind.adb (PRE_Id_Table): New table (Entity_Not_Defined):
+	Specialize messages using PRE_Id_Table.
+	* uintp.ads, uintp.adb (UI_Image): New functional form.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add Suppress_Initialization aspect.
+	* einfo.ads, einfo.adb (Suppress_Initialization): Now applies to
+	E_Variable.
+	* exp_ch3.adb (Default_Initialize_Object): Handle
+	Suppress_Initialization.
+	* exp_prag.adb (Expand_Pragma_Suppress_Initialization): New
+	procedure (Expand_N_Pragma): Handle Suppress_Initialization
+	(Expand_Pragma_Import_Or_Interface): Use Undo_Initialization
+	(Undo_Initialization): New procedure.
+	* sem_prag.adb (Analyze_Pragma, case Suppress_Initialization):
+	This is now allowed for E_Variable case.
+	* gnat_rm.texi: Document new aspect Suppress_Initialization
+	Suppress_Initialization aspect/pragma can apply to variable.
+	* einfo.ads: Minor reformatting.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* spark_xrefs.ads: Add documentation pointer to Flow_Computed_Globals.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Create_Standard): Mark Short_Integer as
+	implementation defined.
+	* sem_util.adb (Set_Entity_With_Checks): Avoid blow up for
+	compiler built with assertions for No_Implementation_Identifiers test.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads: Documentation fix, aspect Lock_Free does have a
+	corresponding pragma.
+	* gnat_rm.texi: Document implementation defined boolean aspects
+	as boolean.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants): For a class-wide type invariant,
+	preserve semantic information on the invariant expression
+	(typically a function call) because it may be inherited by a
+	type extension in a different unit, and it cannot be resolved
+	by visibility elsewhere because it may refer to local entities.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that string literal can be used for
+	pragma Warnings when operating in Ada 83 mode.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Find_Aggregate_Component_Desig_Type): New
+	subsidiary function to Freeze_ Expression, used to determine
+	whether an aggregate for an array of access types also freezes the
+	designated type, when some aggregate components are allocators.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Find_Token): AI05-031 indicates that the
+	procedure must raise Index_Error when Source is not empty and
+	the From parameter is not within the range of the Source string.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Is_Static_String_Expression): Allow string
+	literal in Ada 83 mode.
+
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Config_Switches): In CodePeer mode, do
+	not take into account any compiler command from package IDE.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Function_Wrapper): The formals of the
+	wrapper must have the same identifiers as those of the formal
+	subprogram, because calls within the generic may use named
+	associations.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, a-strsea.adb: Minor reformatting.
+	* par-ch6.adb (P_Subprogram): Fix bad handling of null procedures.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): Propagate aspect
+	specfications from original type declaration to declaration of
+	implicit base, because original node is rewritten as a subtype
+	declaration on which type aspects do not belong.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Propagate_Default_Init_Cond_Attributes): A derived type
+	inherits the attributes related to pragma Default_Initial_Condition
+	from its parent type.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Index - versions with a From parameter):
+	According to AI05-056, the Index functions with a From parameter
+	return 0 if the source is an empty string.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Disable
+	the consistency checks in ASIS mode.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-expmod.ads: Minor typo fix.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Function_Wrapper): Build wrappers for
+	actuals that are defaulted subprograms of the formal subprogram
+	declaration.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Make sure we deal with the
+	implementation base type.
+	* sinfo.ads: Add a note for N_Op_Eq and N_Op_Ne that record
+	operands are always expanded out into component comparisons.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* s-vallli.adb: Minor comment correction.
+	* s-valuti.ads: Minor comment reformatting.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document System.Atomic_Counters.
+	* impunit.adb: Add System.Atomic_Counters (s-atocou.ads) to the
+	list of user- accessible units added as children of System.
+	* s-atocou.ads: Update comment.
+
+2014-10-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-expmod.ads: Add comments.
+
+2014-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Remove the propagation
+	of all attributes related to pragma Default_Initial_Condition.
+	(Build_Derived_Type): Propagation of all attributes related
+	to pragma Default_Initial_Condition.
+	(Process_Full_View): Account for the case where the full view derives
+	from another private type and propagate the attributes related
+	to pragma Default_Initial_Condition to the private view.
+	(Propagate_Default_Init_Cond_Attributes): New routine.
+	* sem_util.adb: Alphabetize various routines.
+	(Build_Default_Init_Cond_Call): Use an unchecked type conversion
+	when calling the default initial condition procedure of a private type.
+	(Build_Default_Init_Cond_Procedure_Declaration): Prevent
+	the generation of multiple default initial condition procedures.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj-conf.adb: Revert previous change.
+
+2014-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* lib-writ.ads, s-valdec.ads: Minor reformatting.
+
+2014-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Additional work on function wrappers.
+
+2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Possible_Bit_Aligned_Component): Also recurse
+	on the renamed object of renamings.
+
+2014-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Parse_Project_And_Apply_Config): In CodePeer
+	mode, always use the native target.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/misc.c: Adjust include files.
+
 2014-10-13  Eric Botcazou  <ebotcazou@adacore.com>
             Alan Modra  <amodra@gmail.com>
 

@@ -1,3 +1,15 @@
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* lto-object.c (lto_obj_begin_section): In the event that pointer
+	sizes aren't powers of two, choose a more suitable alignment
+	than (unsigned)(-1).
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* lto-lang.c (lto_build_c_type_nodes): Check intN types for
+	size-type as well.
+	(lto_init): Initialize all intN types, not just int128.
+
 2014-10-06  Martin Liska  <mliska@suse.cz>
 
 	* lto.c (stream_out): ARG_UNUSED added for last argument.

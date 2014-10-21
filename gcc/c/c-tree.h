@@ -56,6 +56,9 @@ along with GCC; see the file COPYING3.  If not see
    This is used for -Wc++-compat. */
 #define C_TYPE_DEFINED_IN_STRUCT(TYPE) TYPE_LANG_FLAG_2 (TYPE)
 
+/* Record whether an "incomplete type" error was given for the type.  */
+#define C_TYPE_ERROR_REPORTED(TYPE) TYPE_LANG_FLAG_3 (TYPE)
+
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
@@ -202,7 +205,7 @@ enum c_typespec_keyword {
   cts_char,
   cts_int,
   cts_float,
-  cts_int128,
+  cts_int_n,
   cts_double,
   cts_dfloat32,
   cts_dfloat64,
@@ -272,6 +275,8 @@ struct c_declspecs {
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
   int align_log;
+  /* For the __intN declspec, this stores the index into the int_n_* arrays.  */
+  int int_n_idx;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting

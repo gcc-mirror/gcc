@@ -76,6 +76,12 @@
 
   (FPSCR_REG	151)
 
+  ;; Virtual FPSCR - bits that are used by FP ops.
+  (FPSCR_MODES_REG 154)
+
+  ;; Virtual FPSCR - bits that are updated by FP ops.
+  (FPSCR_STAT_REG 155)
+
   (PIC_REG	12)
   (FP_REG	14)
   (SP_REG	15)
@@ -109,6 +115,10 @@
   (TR2_REG	130)
 
   (XD0_REG	136)
+
+  (FPSCR_PR	524288)  ;; 1 << 19
+  (FPSCR_SZ	1048576) ;; 1 << 20
+  (FPSCR_FR	2097152) ;; 1 << 21
 ])
 
 (define_c_enum "unspec" [
@@ -176,6 +186,9 @@
   UNSPECV_GBR
   UNSPECV_SP_SWITCH_B
   UNSPECV_SP_SWITCH_E
+
+  UNSPECV_FPSCR_MODES
+  UNSPECV_FPSCR_STAT
 ])
 
 ;; -------------------------------------------------------------------------
@@ -2395,7 +2408,8 @@
    (clobber (reg:SI R1_REG))
    (clobber (reg:SI R4_REG))
    (clobber (reg:SI R5_REG))
-   (use (reg:PSI FPSCR_REG))
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
@@ -2666,7 +2680,8 @@
    (clobber (reg:SI PR_REG))
    (clobber (reg:DF DR0_REG))
    (clobber (reg:DF DR2_REG))
-   (use (reg:PSI FPSCR_REG))
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
@@ -6444,7 +6459,7 @@ label:
 (define_expand "push_e"
   [(parallel [(set (mem:SF (pre_dec:SI (reg:SI SP_REG)))
 		   (match_operand:SF 0 "" ""))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "TARGET_SH1 && ! TARGET_SH5"
   "")
@@ -6462,7 +6477,7 @@ label:
 (define_expand "push_4"
   [(parallel [(set (mem:DF (pre_dec:SI (reg:SI SP_REG)))
 		   (match_operand:DF 0 "" ""))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "TARGET_SH1 && ! TARGET_SH5"
   "")
@@ -6470,7 +6485,7 @@ label:
 (define_expand "pop_e"
   [(parallel [(set (match_operand:SF 0 "" "")
 	      (mem:SF (post_inc:SI (reg:SI SP_REG))))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "TARGET_SH1 && ! TARGET_SH5"
   "")
@@ -6485,7 +6500,7 @@ label:
 (define_expand "pop_4"
   [(parallel [(set (match_operand:DF 0 "" "")
 		   (mem:DF (post_inc:SI (reg:SI SP_REG))))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "TARGET_SH1 && ! TARGET_SH5"
   "")
@@ -6494,11 +6509,11 @@ label:
   [(const_int 0)]
   "TARGET_SH2E"
 {
-  rtx insn = emit_insn (gen_fpu_switch (gen_frame_mem (PSImode,
-						 gen_rtx_PRE_DEC (Pmode,
-							  stack_pointer_rtx)),
-					get_fpscr_rtx ()));
-  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+  add_reg_note (
+    emit_insn (
+      gen_sts_fpscr (
+	gen_frame_mem (SImode, gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx)))),
+    REG_INC, stack_pointer_rtx);
   DONE;
 })
 
@@ -6506,11 +6521,11 @@ label:
   [(const_int 0)]
   "TARGET_SH2E"
 {
-  rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_frame_mem (PSImode,
-						 gen_rtx_POST_INC (Pmode,
-							  stack_pointer_rtx))));
-  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+  add_reg_note (
+    emit_insn (
+      gen_lds_fpscr (
+	gen_frame_mem (SImode, gen_rtx_POST_INC (Pmode, stack_pointer_rtx)))),
+    REG_INC, stack_pointer_rtx);
   DONE;
 })
 
@@ -6699,8 +6714,10 @@ label:
 	(match_operand:SI 1 "general_movsrc_operand"
 	 "Q,r,I08,I20,I28,mr,x,l,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
   "(TARGET_SH2E || TARGET_SH2A)
-   && (register_operand (operands[0], SImode)
-       || register_operand (operands[1], SImode))"
+   && ((register_operand (operands[0], SImode)
+	&& !fpscr_operand (operands[0], SImode))
+       || (register_operand (operands[1], SImode)
+	   && !fpscr_operand (operands[1], SImode)))"
   "@
 	mov.l	%1,%0
 	mov	%1,%0
@@ -7655,8 +7672,8 @@ label:
 (define_insn "movdf_i4"
   [(set (match_operand:DF 0 "general_movdst_operand" "=d,r,d,d,m,r,r,m,!??r,!???d")
 	(match_operand:DF 1 "general_movsrc_operand"  "d,r,F,m,d,FQ,m,r,d,r"))
-   (use (match_operand:PSI 2 "fpscr_operand"          "c,c,c,c,c,c,c,c,c,c"))
-   (clobber (match_scratch:SI 3                      "=X,X,&z,X,X,X,X,X,X,X"))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2                      "=X,X,&z,X,X,X,X,X,X,X"))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
@@ -7711,8 +7728,8 @@ label:
 (define_split
   [(set (match_operand:DF 0 "register_operand")
 	(match_operand:DF 1 "register_operand"))
-   (use (match_operand:PSI 2 "fpscr_operand"))
-   (clobber (match_scratch:SI 3))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
   [(const_int 0)]
@@ -7728,7 +7745,7 @@ label:
   else
     tos = gen_tmp_stack_mem (DFmode,
 			     gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
-  insn = emit_insn (gen_movdf_i4 (tos, operands[1], operands[2]));
+  insn = emit_insn (gen_movdf_i4 (tos, operands[1]));
   if (! (TARGET_SH5 && true_regnum (operands[1]) < 16))
     add_reg_note (insn, REG_INC, stack_pointer_rtx);
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
@@ -7736,7 +7753,7 @@ label:
   else
     tos = gen_tmp_stack_mem (DFmode,
 			     gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
-  insn = emit_insn (gen_movdf_i4 (operands[0], tos, operands[2]));
+  insn = emit_insn (gen_movdf_i4 (operands[0], tos));
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
     emit_move_insn (stack_pointer_rtx,
 		    plus_constant (Pmode, stack_pointer_rtx, 8));
@@ -7752,8 +7769,8 @@ label:
 (define_split
   [(set (match_operand:DF 0 "general_movdst_operand" "")
 	(match_operand:DF 1 "general_movsrc_operand"  ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
    && reload_completed
    && true_regnum (operands[0]) < 16
@@ -7824,18 +7841,18 @@ label:
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand"  ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R0_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
-	      (use (match_dup 2))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "")
 
 (define_expand "reload_indf__frn"
   [(parallel [(set (match_operand:DF 0 "register_operand" "=a")
 		   (match_operand:DF 1 "immediate_operand" "FQ"))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]
   "TARGET_SH1"
   "")
@@ -7851,8 +7868,8 @@ label:
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
 	(match_operand:SF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "TARGET_SH2E && reload_completed
    && true_regnum (operands[0]) == true_regnum (operands[1])"
   [(set (match_dup 0) (match_dup 0))]
@@ -7862,8 +7879,8 @@ label:
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
@@ -7871,17 +7888,17 @@ label:
 {
   int dst = true_regnum (operands[0]), src = true_regnum (operands[1]);
   emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode, dst),
-			   gen_rtx_REG (SFmode, src), operands[2]));
+			   gen_rtx_REG (SFmode, src)));
   emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode, dst + 1),
-			   gen_rtx_REG (SFmode, src + 1), operands[2]));
+			   gen_rtx_REG (SFmode, src + 1)));
   DONE;
 })
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(mem:DF (match_operand:SI 1 "register_operand" "")))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
@@ -7894,20 +7911,19 @@ label:
     = change_address (mem, SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					       regno + SH_REG_MSW_OFFSET),
-				  mem2, operands[2]));
+				  mem2));
   add_reg_note (insn, REG_INC, operands[1]);
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					       regno + SH_REG_LSW_OFFSET),
-				  change_address (mem, SFmode, NULL_RTX),
-				  operands[2]));
+				  change_address (mem, SFmode, NULL_RTX)));
   DONE;
 })
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
@@ -7930,10 +7946,10 @@ label:
       if (! arith_reg_operand (operands[1], SFmode))
 	{
 	  XEXP (mem2, 0) = addr = gen_rtx_POST_INC (SImode, addr);
-	  insn = emit_insn (gen_movsf_ie (reg0, mem2, operands[2]));
+	  insn = emit_insn (gen_movsf_ie (reg0, mem2));
 	  add_reg_note (insn, REG_INC, XEXP (addr, 0));
 	  
-	  emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+	  emit_insn (gen_movsf_ie (reg1, operands[1]));
 
 	  /* If we have modified the stack pointer, the value that we have
 	     read with post-increment might be modified by an interrupt,
@@ -7948,17 +7964,17 @@ label:
       /* Fall through.  */
 
     case PLUS:
-      emit_insn (gen_movsf_ie (reg0, operands[1], operands[2]));
+      emit_insn (gen_movsf_ie (reg0, operands[1]));
       operands[1] = copy_rtx (operands[1]);
       XEXP (operands[1], 0) = plus_constant (Pmode, addr, 4);
-      emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+      emit_insn (gen_movsf_ie (reg1, operands[1]));
       break;
 
     case POST_INC:
-      insn = emit_insn (gen_movsf_ie (reg0, operands[1], operands[2]));
+      insn = emit_insn (gen_movsf_ie (reg0, operands[1]));
       add_reg_note (insn, REG_INC, XEXP (addr, 0));
 
-      insn = emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+      insn = emit_insn (gen_movsf_ie (reg1, operands[1]));
       add_reg_note (insn, REG_INC, XEXP (addr, 0));
       break;
 
@@ -7973,8 +7989,8 @@ label:
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 ""))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
@@ -7997,12 +8013,12 @@ label:
       if (! arith_reg_operand (operands[0], SFmode))
 	{
 	  emit_insn (gen_addsi3 (addr, addr, GEN_INT (4)));
-	  emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));
+	  emit_insn (gen_movsf_ie (operands[0], reg1));
 
 	  operands[0] = copy_rtx (operands[0]);
 	  XEXP (operands[0], 0) = addr = gen_rtx_PRE_DEC (SImode, addr);
 	  
-	  insn = emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+	  insn = emit_insn (gen_movsf_ie (operands[0], reg0));
 	  add_reg_note (insn, REG_INC, XEXP (addr, 0));
 	  break;
 	}
@@ -8014,12 +8030,12 @@ label:
 	 register component of the address.  Just emit the lower numbered
 	 register first, to the lower address, then the higher numbered
 	 register to the higher address.  */
-      emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+      emit_insn (gen_movsf_ie (operands[0], reg0));
 
       operands[0] = copy_rtx (operands[0]);
       XEXP (operands[0], 0) = plus_constant (Pmode, addr, 4);
 
-      emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));
+      emit_insn (gen_movsf_ie (operands[0], reg1));
       break;
 
     case PRE_DEC:
@@ -8027,10 +8043,10 @@ label:
          first (ie the word in the higher numbered register) then the
 	 word to go to the lower address.  */
 
-      insn = emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));
+      insn = emit_insn (gen_movsf_ie (operands[0], reg1));
       add_reg_note (insn, REG_INC, XEXP (addr, 0));
 
-      insn = emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+      insn = emit_insn (gen_movsf_ie (operands[0], reg0));
       add_reg_note (insn, REG_INC, XEXP (addr, 0));
       break;
 
@@ -8112,7 +8128,7 @@ label:
     }
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      emit_df_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
+      emit_insn (gen_movdf_i4 (operands[0], operands[1]));
       DONE;
     }
 })
@@ -8357,12 +8373,12 @@ label:
 	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,<,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
 	  "f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r,y,>,y"))
-   (use (match_operand:PSI 2 "fpscr_operand" "c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c"))
-   (clobber (match_scratch:SI 3 "=X,X,Bsc,Bsc,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SI 2 "=X,X,Bsc,Bsc,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
   "TARGET_SH2E
    && (arith_reg_operand (operands[0], SFmode) || fpul_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode) || fpul_operand (operands[1], SFmode)
-       || arith_reg_operand (operands[3], SImode))"
+       || arith_reg_operand (operands[2], SImode))"
   "@
 	fmov	%1,%0
 	mov	%1,%0
@@ -8441,14 +8457,14 @@ label:
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
 	(match_operand:SF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI FPUL_REG))]
   "TARGET_SH1"
   [(parallel [(set (reg:SF FPUL_REG) (match_dup 1))
-	      (use (match_dup 2))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])
    (parallel [(set (match_dup 0) (reg:SF FPUL_REG))
-	      (use (match_dup 2))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
   "")
 
@@ -8468,7 +8484,7 @@ label:
     }
   if (TARGET_SH2E)
     {
-      emit_sf_insn (gen_movsf_ie (operands[0], operands[1], get_fpscr_rtx ()));
+      emit_insn (gen_movsf_ie (operands[0], operands[1]));
       DONE;
     }
 })
@@ -8483,7 +8499,7 @@ label:
 (define_expand "reload_insf__frn"
   [(parallel [(set (match_operand:SF 0 "register_operand" "=a")
 		   (match_operand:SF 1 "immediate_operand" "FQ"))
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]
   "TARGET_SH1"
   "")
@@ -8929,7 +8945,7 @@ label:
 })
 
 (define_insn "force_mode_for_call"
-  [(use (reg:PSI FPSCR_REG))]
+  [(use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SHCOMPACT"
   ""
   [(set_attr "length" "0")
@@ -8940,7 +8956,7 @@ label:
 (define_insn "calli"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH1"
 {
@@ -8962,7 +8978,7 @@ label:
 (define_insn "calli_tbr_rel"
   [(call (mem (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2A && sh2a_is_function_vector_call (operands[0])"
 {
@@ -8983,7 +8999,7 @@ label:
 (define_insn "calli_pcrel"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI PR_REG))]
@@ -9002,7 +9018,7 @@ label:
 (define_insn_and_split "call_pcrel"
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (match_scratch:SI 2 "=r"))]
@@ -9033,7 +9049,7 @@ label:
    (match_operand 2 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && ! (INTVAL (operands[2]) & CALL_COOKIE_RET_TRAMP (1))"
   "jsr	@%0%#"
@@ -9049,7 +9065,7 @@ label:
    (match_operand 2 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R10_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && (INTVAL (operands[2]) & CALL_COOKIE_RET_TRAMP (1))"
@@ -9072,7 +9088,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH1"
 {
@@ -9095,7 +9111,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2A && sh2a_is_function_vector_call (operands[1])"
 {
@@ -9116,7 +9132,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI PR_REG))]
@@ -9136,7 +9152,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (match_scratch:SI 3 "=r"))]
@@ -9169,7 +9185,7 @@ label:
    (match_operand 3 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && ! (INTVAL (operands[3]) & CALL_COOKIE_RET_TRAMP (1))"
   "jsr	@%1%#"
@@ -9186,7 +9202,7 @@ label:
    (match_operand 3 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R10_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && (INTVAL (operands[3]) & CALL_COOKIE_RET_TRAMP (1))"
@@ -9210,7 +9226,7 @@ label:
   [(parallel [(call (mem:SI (match_operand 0 "arith_reg_operand" ""))
 			    (match_operand 1 "" ""))
 	      (match_operand 2 "" "")
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (reg:SI PR_REG))])]
   ""
 {
@@ -9309,7 +9325,7 @@ label:
 				 (match_operand 3 "immediate_operand" "n")))
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && ! (INTVAL (operands[2]) & CALL_COOKIE_RET_TRAMP (1))"
   "jsr	@%0%#"
@@ -9327,7 +9343,7 @@ label:
 				 (match_operand 3 "immediate_operand" "n")))
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R10_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && (INTVAL (operands[2]) & CALL_COOKIE_RET_TRAMP (1))"
@@ -9398,7 +9414,7 @@ label:
 		   (call (mem:SI (match_operand 1 "arith_reg_operand" ""))
 				 (match_operand 2 "" "")))
 	      (match_operand 3 "" "")
-	      (use (reg:PSI FPSCR_REG))
+	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (reg:SI PR_REG))])]
   ""
 {
@@ -9493,7 +9509,7 @@ label:
 (define_insn "sibcalli"
   [(call (mem:SI (match_operand:SI 0 "register_operand" "k"))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (return)]
   "TARGET_SH1"
   "jmp	@%0%#"
@@ -9507,7 +9523,7 @@ label:
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "k"))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (return)]
   "TARGET_SH2"
 {
@@ -9525,7 +9541,7 @@ label:
   [(call (mem:SI (unspec:SI [(match_operand:SI 0 "symbol_ref_operand" "")]
 			     UNSPEC_THUNK))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (return)]
   "TARGET_SH1"
   "bra	%O0"
@@ -9539,7 +9555,7 @@ label:
 (define_insn_and_split "sibcall_pcrel"
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2 "=k"))
    (return)]
   "TARGET_SH2"
@@ -9568,7 +9584,7 @@ label:
    (return)
    (use (match_operand:SI 2 "register_operand" "z,x"))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    ;; We want to make sure the `x' above will only match MACH_REG
    ;; because sibcall_epilogue may clobber MACL_REG.
    (clobber (reg:SI MACL_REG))]
@@ -9602,7 +9618,7 @@ label:
     [(call (mem:SI (match_operand 0 "arith_reg_operand" ""))
 	   (match_operand 1 "" ""))
      (match_operand 2 "" "")
-     (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
      (return)])]
   ""
 {
@@ -9699,7 +9715,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "k"))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (return)]
   "TARGET_SH1"
   "jmp	@%1%#"
@@ -9714,7 +9730,7 @@ label:
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "k"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (return)]
   "TARGET_SH2"
 {
@@ -9731,7 +9747,7 @@ label:
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 3 "=k"))
    (return)]
   "TARGET_SH2"
@@ -9763,7 +9779,7 @@ label:
    (return)
    (use (match_operand:SI 3 "register_operand" "z,x"))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    ;; We want to make sure the `x' above will only match MACH_REG
    ;; because sibcall_epilogue may clobber MACL_REG.
    (clobber (reg:SI MACL_REG))]
@@ -9799,7 +9815,7 @@ label:
 	  (call (mem:SI (match_operand 1 "arith_reg_operand" ""))
 	  	(match_operand 2 "" "")))
      (match_operand 3 "" "")
-     (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
      (return)])]
   ""
 {
@@ -9905,7 +9921,7 @@ label:
    (match_operand 3 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && ! (INTVAL (operands[3]) & CALL_COOKIE_RET_TRAMP (1))"
   "jsr	@%1%#"
@@ -9924,7 +9940,7 @@ label:
    (match_operand 3 "immediate_operand" "n")
    (use (reg:SI R0_REG))
    (use (reg:SI R1_REG))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R10_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT && (INTVAL (operands[3]) & CALL_COOKIE_RET_TRAMP (1))"
@@ -10430,7 +10446,7 @@ label:
 	(call:SI (mem:SI (unspec:SI [(match_operand:SI 1 "" "")]
 				  UNSPEC_TLSGD))
 	      (const_int 0)))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (scratch:SI))]
@@ -10457,7 +10473,7 @@ label:
 	(call:SI (mem:SI (unspec:SI [(match_operand:SI 1 "" "")]
 				  UNSPEC_TLSLDM))
 	      (const_int 0)))
-   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (scratch:SI))]
@@ -12194,78 +12210,67 @@ label:
 ;; Floating point instructions.
 ;; -------------------------------------------------------------------------
 
-;; ??? All patterns should have a type attribute.
-
-(define_expand "movpsi"
-  [(set (match_operand:PSI 0 "register_operand" "")
-	(match_operand:PSI 1 "general_movsrc_operand" ""))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
-  "")
-
-;; The c / m alternative is a fake to guide reload to load directly into
-;; fpscr, since reload doesn't know how to use post-increment.
-;; TARGET_LEGITIMATE_ADDRESS_P guards about bogus addresses before reload,
-;; SECONDARY_INPUT_RELOAD_CLASS does this during reload, and the insn's
-;; predicate after reload.
-;; The mac_gp type for r/!c might look a bit odd, but it actually schedules
-;; like a mac -> gpr move.
-(define_insn "fpu_switch"
-  [(set (match_operand:PSI 0 "general_movdst_operand" "=c,c,r,c,c,r,m,r,<")
-	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c,c"))]
-  "TARGET_SH2E
-   && (! reload_completed
-       || true_regnum (operands[0]) != FPSCR_REG
-       || !MEM_P (operands[1])
-       || GET_CODE (XEXP (operands[1], 0)) != PLUS)"
+;; FIXME: For now we disallow any memory operands for fpscr loads/stores,
+;; except for post-inc loads and pre-dec stores for push/pop purposes.
+;; This avoids problems with reload.  As a consequence, user initiated fpscr
+;; stores to memory will always be ferried through a general register.
+;; User initiated fpscr loads always have to undergo bit masking to preserve
+;; the current fpu mode settings for the compiler generated code.  Thus such
+;; fpscr loads will always have to go through general registers anyways.
+(define_insn "lds_fpscr"
+  [(set (reg:SI FPSCR_REG)
+	(match_operand:SI 0 "fpscr_movsrc_operand" "r,>"))
+   (set (reg:SI FPSCR_STAT_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_STAT))
+   (set (reg:SI FPSCR_MODES_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))]
+  "TARGET_FPU_ANY"
   "@
-	! precision stays the same
-	lds.l	%1,fpscr
-	mov.l	%1,%0
-	#
-	lds	%1,fpscr
-	mov	%1,%0
-	mov.l	%1,%0
+	lds	%0,fpscr
+	lds.l	%0,fpscr"
+  [(set_attr "type" "gp_fpscr,mem_fpscr")])
+
+;; A move fpscr -> reg schedules like a move mac -> reg.  Thus we use mac_gp
+;; type for it.
+(define_insn "sts_fpscr"
+  [(set (match_operand:SI 0 "fpscr_movdst_operand" "=r,<")
+	(reg:SI FPSCR_REG))
+   (use (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_FPU_ANY"
+  "@
 	sts	fpscr,%0
 	sts.l	fpscr,%0"
-  [(set_attr "length" "0,2,2,4,2,2,2,2,2")
-   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,
-		     mac_gp,fstore")])
+  [(set_attr "type" "mac_gp,fstore")])
 
-(define_peephole2
-  [(set (reg:PSI FPSCR_REG)
-	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && peep2_reg_dead_p (1, operands[0])"
-  [(const_int 0)]
+(define_expand "set_fpscr"
+  [(parallel [(set (reg:SI FPSCR_REG)
+		   (match_operand:SI 0 "general_operand"))
+	      (set (reg:SI FPSCR_STAT_REG)
+		   (unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))])]
+  "TARGET_FPU_ANY"
 {
-  rtx fpscr, mem, new_insn;
+  /* We have to mask out the FR, SZ and PR bits.  To do that, we need to
+     get the current FPSCR value first.
+     (a & ~mask) | (b & mask) = a ^ ((a ^ b) & mask)  */
 
-  fpscr = SET_DEST (PATTERN (curr_insn));
-  mem = SET_SRC (PATTERN (curr_insn));
-  mem = replace_equiv_address (mem, gen_rtx_POST_INC (Pmode, operands[0]));
+  rtx mask = force_reg (SImode, GEN_INT (FPSCR_FR | FPSCR_SZ | FPSCR_PR));
 
-  new_insn = emit_insn (gen_fpu_switch (fpscr, mem));
-  add_reg_note (new_insn, REG_INC, operands[0]);
-  DONE;
-})
+  rtx a = force_reg (SImode, operands[0]);
 
-(define_split
-  [(set (reg:PSI FPSCR_REG)
-	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
-   && (flag_peephole2 ? epilogue_completed : reload_completed)"
-  [(const_int 0)]
-{
-  rtx fpscr, mem, new_insn;
+  rtx b = gen_reg_rtx (SImode);
+  emit_insn (gen_sts_fpscr (b));
 
-  fpscr = SET_DEST (PATTERN (curr_insn));
-  mem = SET_SRC (PATTERN (curr_insn));
-  mem = replace_equiv_address (mem, gen_rtx_POST_INC (Pmode, operands[0]));
+  rtx a_xor_b = gen_reg_rtx (SImode);
+  emit_insn (gen_xorsi3 (a_xor_b, a, b));
 
-  new_insn = emit_insn (gen_fpu_switch (fpscr, mem));
-  add_reg_note (new_insn, REG_INC, operands[0]);
+  rtx a_xor_b_and_mask = gen_reg_rtx (SImode);
+  emit_insn (gen_andsi3 (a_xor_b_and_mask, a_xor_b, mask));
 
-  if (!find_regno_note (curr_insn, REG_DEAD, true_regnum (operands[0])))
-    emit_insn (gen_addsi3 (operands[0], operands[0], GEN_INT (-4)));
+  rtx r = gen_reg_rtx (SImode);
+  emit_insn (gen_xorsi3 (r, a_xor_b_and_mask, a));
+  emit_insn (gen_lds_fpscr (r));
+
   DONE;
 })
 
@@ -12276,8 +12281,10 @@ label:
 ;; it is probably best to claim no function unit, which matches the
 ;; current setting.
 (define_insn "toggle_sz"
-  [(set (reg:PSI FPSCR_REG)
-	(xor:PSI (reg:PSI FPSCR_REG) (const_int 1048576)))]
+  [(set (reg:SI FPSCR_REG)
+	(xor:SI (reg:SI FPSCR_REG) (const_int FPSCR_SZ)))
+   (set (reg:SI FPSCR_MODES_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fschg"
   [(set_attr "type" "fpscr_toggle") (set_attr "fp_set" "unknown")])
@@ -12285,8 +12292,10 @@ label:
 ;; Toggle FPU precision PR mode.
 
 (define_insn "toggle_pr"
-  [(set (reg:PSI FPSCR_REG)
-	(xor:PSI (reg:PSI FPSCR_REG) (const_int 524288)))]
+  [(set (reg:SI FPSCR_REG)
+	(xor:SI (reg:SI FPSCR_REG) (const_int FPSCR_PR)))
+   (set (reg:SI FPSCR_MODES_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))]
   "TARGET_SH4A_FP"
   "fpchg"
   [(set_attr "type" "fpscr_toggle")])
@@ -12299,7 +12308,7 @@ label:
 {
   if (TARGET_SH2E)
     {
-      expand_sf_binop (&gen_addsf3_i, operands);
+      emit_insn (gen_addsf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12398,7 +12407,8 @@ label:
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(plus:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E"
   "fadd	%2,%0"
   [(set_attr "type" "fp")
@@ -12412,7 +12422,7 @@ label:
 {
   if (TARGET_SH2E)
     {
-      expand_sf_binop (&gen_subsf3_i, operands);
+      emit_insn (gen_subsf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12429,7 +12439,8 @@ label:
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(minus:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E"
   "fsub	%2,%0"
   [(set_attr "type" "fp")
@@ -12443,8 +12454,7 @@ label:
 {
   if (TARGET_SH2E)
     {
-      emit_insn (gen_mulsf3_i (operands[0], operands[1], operands[2],
-		 get_fpscr_rtx ()));
+      emit_insn (gen_mulsf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12461,7 +12471,8 @@ label:
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E"
   "fmul	%2,%0"
   [(set_attr "type" "fp")
@@ -12477,8 +12488,8 @@ label:
 {
   if (TARGET_SH2E)
     {
-      emit_sf_insn (gen_fmasf4_i (operands[0], operands[1], operands[2],
-				  operands[3], get_fpscr_rtx ()));
+      emit_insn (gen_fmasf4_i (operands[0], operands[1], operands[2],
+			       operands[3]));
       DONE;
     }
 })
@@ -12488,7 +12499,8 @@ label:
 	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "w")
 		(match_operand:SF 2 "fp_arith_reg_operand" "f")
 		(match_operand:SF 3 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 4 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E"
   "fmac	%1,%2,%0"
   [(set_attr "type" "fp")
@@ -12511,13 +12523,15 @@ label:
 	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%w")
 			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
 		 (match_operand:SF 3 "arith_reg_operand" "0")))
-   (use (match_operand:PSI 4 "fpscr_operand"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E && flag_fp_contract_mode != FP_CONTRACT_OFF"
   "fmac	%1,%2,%0"
   "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
 		   (fma:SF (match_dup 1) (match_dup 2) (match_dup 3)))
-	      (use (match_dup 4))])]
+	      (clobber (reg:SI FPSCR_STAT_REG))
+	      (use (reg:SI FPSCR_MODES_REG))])]
 {
   /* Change 'b * a + a' into 'a * b + a'.
      This is better for register allocation.  */
@@ -12548,7 +12562,7 @@ label:
 {
   if (TARGET_SH2E)
     {
-      expand_sf_binop (&gen_divsf3_i, operands);
+      emit_insn (gen_divsf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12565,7 +12579,8 @@ label:
   [(set (match_operand:SF 0 "fp_arith_reg_dest" "=f")
 	(div:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH2E"
   "fdiv	%2,%0"
   [(set_attr "type" "fdiv")
@@ -12583,10 +12598,9 @@ label:
 	(float:SF (match_operand:SI 1 "fpul_operand" "")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
 {
-  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
+  if (!TARGET_SHMEDIA_FPU)
     {
-      emit_sf_insn (gen_floatsisf2_i4 (operands[0], operands[1],
-				       get_fpscr_rtx ()));
+      emit_insn (gen_floatsisf2_i4 (operands[0], operands[1]));
       DONE;
     }
 })
@@ -12601,18 +12615,12 @@ label:
 (define_insn "floatsisf2_i4"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(float:SF (match_operand:SI 1 "fpul_operand" "y")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_SH2E"
   "float	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
-
-(define_insn "*floatsisf2_ie"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(float:SF (match_operand:SI 1 "fpul_operand" "y")))]
-  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
-  "float	%1,%0"
-  [(set_attr "type" "fp")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "fp_arith_reg_dest" "=f")
@@ -12626,10 +12634,9 @@ label:
 	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
 {
-  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
+  if (!TARGET_SHMEDIA_FPU)
     {
-      emit_sf_insn (gen_fix_truncsfsi2_i4 (operands[0], operands[1],
-					   get_fpscr_rtx ()));
+      emit_insn (gen_fix_truncsfsi2_i4 (operands[0], operands[1]));
       DONE;
     }
 })
@@ -12644,46 +12651,20 @@ label:
 (define_insn "fix_truncsfsi2_i4"
   [(set (match_operand:SI 0 "fpul_operand" "=y")
 	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_SH2E"
   "ftrc	%1,%0"
   [(set_attr "type" "ftrc_s")
    (set_attr "fp_mode" "single")])
 
-;; ??? This pattern is used nowhere.  fix_truncsfsi2 always expands to
-;; fix_truncsfsi2_i4.
-;; (define_insn "fix_truncsfsi2_i4_2"
-;;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-;;   (use (reg:PSI FPSCR_REG))
-;;   (clobber (reg:SI FPUL_REG))]
-;;  "TARGET_SH4"
-;;  "#"
-;;  [(set_attr "length" "4")
-;;   (set_attr "fp_mode" "single")])
-
-;;(define_split
-;;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-;;   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-;;   (clobber (reg:SI FPUL_REG))]
-;;  "TARGET_SH4"
-;;  [(parallel [(set (reg:SI FPUL_REG) (fix:SI (match_dup 1)))
-;;	      (use (match_dup 2))])
-;;   (set (match_dup 0) (reg:SI FPUL_REG))])
-
-(define_insn "*fixsfsi"
-  [(set (match_operand:SI 0 "fpul_operand" "=y")
-	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
-  "ftrc	%1,%0"
-  [(set_attr "type" "fp")])
-
 (define_insn "cmpgtsf_t"
   [(set (reg:SI T_REG)
 	(gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
-	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
+	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_SH2E || TARGET_SH4 || TARGET_SH2A_SINGLE"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
@@ -12691,8 +12672,10 @@ label:
 (define_insn "cmpeqsf_t"
   [(set (reg:SI T_REG)
 	(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
-	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
+	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_SH2E || TARGET_SH4 || TARGET_SH2A_SINGLE"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
@@ -12701,41 +12684,10 @@ label:
   [(set (reg:SI T_REG)
 	(ior:SI (reg:SI T_REG)
 		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
-		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))]
-  "TARGET_SH2E && TARGET_IEEE && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
-{
-  return output_ieee_ccmpeq (insn, operands);
-}
-  [(set_attr "length" "4")])
-
-
-(define_insn "cmpgtsf_t_i4"
-  [(set (reg:SI T_REG)
-	(gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
-	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
-  "fcmp/gt	%1,%0"
-  [(set_attr "type" "fp_cmp")
-   (set_attr "fp_mode" "single")])
-
-(define_insn "cmpeqsf_t_i4"
-  [(set (reg:SI T_REG)
-	(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
-	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
-  "fcmp/eq	%1,%0"
-  [(set_attr "type" "fp_cmp")
-   (set_attr "fp_mode" "single")])
-
-(define_insn "*ieee_ccmpeqsf_t_4"
-  [(set (reg:SI T_REG)
-	(ior:SI (reg:SI T_REG)
-		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_SINGLE)"
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_IEEE && TARGET_SH2E"
 {
   return output_ieee_ccmpeq (insn, operands);
 }
@@ -12792,16 +12744,9 @@ label:
 })
 
 (define_expand "negsf2"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
-	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH2E)
-    {
-      expand_sf_unop (&gen_negsf2_i, operands);
-      DONE;
-    }
-})
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU")
 
 (define_insn "*negsf2_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -12810,14 +12755,12 @@ label:
   "fneg.s	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "negsf2_i"
+(define_insn "*negsf2_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
   "TARGET_SH2E"
   "fneg	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "single")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
@@ -12826,7 +12769,7 @@ label:
 {
   if (TARGET_SH3E)
     {
-      expand_sf_unop (&gen_sqrtsf2_i, operands);
+      emit_insn (gen_sqrtsf2_i (operands[0], operands[1]));
       DONE;
     }
 })
@@ -12841,7 +12784,8 @@ label:
 (define_insn "sqrtsf2_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_SH3E"
   "fsqrt	%0"
   [(set_attr "type" "fdiv")
@@ -12851,7 +12795,8 @@ label:
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "immediate_operand" "i")
 		(sqrt:SF (match_operand:SF 2 "fp_arith_reg_operand" "0"))))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_ANY && TARGET_FSRRA
    && operands[1] == CONST1_RTX (SFmode)"
   "fsrra	%0"
@@ -12873,10 +12818,9 @@ label:
   rtx fsca = gen_reg_rtx (V2SFmode);
   rtx scale_reg = force_reg (SFmode, sh_fsca_sf2int ());
 
-  emit_sf_insn (gen_mulsf3 (scaled, operands[2], scale_reg));
-  emit_sf_insn (gen_fix_truncsfsi2 (truncated, scaled));
-  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
-			  get_fpscr_rtx ()));
+  emit_insn (gen_mulsf3 (scaled, operands[2], scale_reg));
+  emit_insn (gen_fix_truncsfsi2 (truncated, scaled));
+  emit_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf ()));
 
   emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 4));
   emit_move_insn (operands[1], gen_rtx_SUBREG (SFmode, fsca, 0));
@@ -12892,7 +12836,8 @@ label:
 		    ] UNSPEC_FSINA)
 	 (unspec:SF [(mult:SF (float:SF (match_dup 1)) (match_dup 2))
 		    ] UNSPEC_FCOSA)))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_ANY && TARGET_FSCA"
   "fsca	fpul,%d0"
   "&& !fpul_operand (operands[1], SImode)"
@@ -12907,25 +12852,17 @@ label:
       gcc_assert (GET_CODE (x) == FIX || GET_CODE (x) == FLOAT);
       x = XEXP (x, 0);
     }
-
   gcc_assert (x != NULL_RTX && fpul_operand (x, SImode));
-  emit_insn (gen_fsca (operands[0], x, operands[2], operands[3]));
+  emit_insn (gen_fsca (operands[0], x, operands[2]));
   DONE;
 }
   [(set_attr "type" "fsca")
    (set_attr "fp_mode" "single")])
 
 (define_expand "abssf2"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
-	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH2E)
-    {
-      expand_sf_unop (&gen_abssf2_i, operands);
-      DONE;
-    }
-})
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU")
 
 (define_insn "*abssf2_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -12934,14 +12871,12 @@ label:
   "fabs.s	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "abssf2_i"
+(define_insn "*abssf2_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
   "TARGET_SH2E"
   "fabs	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "single")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "adddf3"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
@@ -12951,7 +12886,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      expand_df_binop (&gen_adddf3_i, operands);
+      emit_insn (gen_adddf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12968,7 +12903,8 @@ label:
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(plus:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fadd	%2,%0"
   [(set_attr "type" "dfp_arith")
@@ -12982,7 +12918,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      expand_df_binop (&gen_subdf3_i, operands);
+      emit_insn (gen_subdf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -12999,7 +12935,8 @@ label:
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(minus:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
 		  (match_operand:DF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fsub	%2,%0"
   [(set_attr "type" "dfp_arith")
@@ -13013,7 +12950,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      expand_df_binop (&gen_muldf3_i, operands);
+      emit_insn (gen_muldf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -13030,7 +12967,8 @@ label:
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(mult:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fmul	%2,%0"
   [(set_attr "type" "dfp_mul")
@@ -13044,7 +12982,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      expand_df_binop (&gen_divdf3_i, operands);
+      emit_insn (gen_divdf3_i (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -13061,7 +12999,8 @@ label:
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(div:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
 		(match_operand:DF 2 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fdiv	%2,%0"
   [(set_attr "type" "dfdiv")
@@ -13081,8 +13020,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      emit_df_insn (gen_floatsidf2_i (operands[0], operands[1],
-				      get_fpscr_rtx ()));
+      emit_insn (gen_floatsidf2_i (operands[0], operands[1]));
       DONE;
     }
 })
@@ -13097,7 +13035,8 @@ label:
 (define_insn "floatsidf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(float:DF (match_operand:SI 1 "fpul_operand" "y")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "float	%1,%0"
   [(set_attr "type" "dfp_conv")
@@ -13117,8 +13056,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      emit_df_insn (gen_fix_truncdfsi2_i (operands[0], operands[1],
-					  get_fpscr_rtx ()));
+      emit_insn (gen_fix_truncdfsi2_i (operands[0], operands[1]));
       DONE;
     }
 })
@@ -13133,40 +13071,20 @@ label:
 (define_insn "fix_truncdfsi2_i"
   [(set (match_operand:SI 0 "fpul_operand" "=y")
 	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "ftrc	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "dfp_comp" "no")
    (set_attr "fp_mode" "double")])
 
-;; ??? This pattern is used nowhere.  fix_truncdfsi2 always expands to
-;; fix_truncdfsi2_i.
-;; (define_insn "fix_truncdfsi2_i4"
-;;   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-;; 	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
-;;    (use (match_operand:PSI 2 "fpscr_operand" "c"))
-;;    (clobber (reg:SI FPUL_REG))]
-;;   "TARGET_SH4"
-;;   "#"
-;;   [(set_attr "length" "4")
-;;    (set_attr "fp_mode" "double")])
-;;
-;; (define_split
-;;   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-;; 	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
-;;    (use (match_operand:PSI 2 "fpscr_operand" "c"))
-;;    (clobber (reg:SI FPUL_REG))]
-;;   "TARGET_SH4"
-;;   [(parallel [(set (reg:SI FPUL_REG) (fix:SI (match_dup 1)))
-;; 	      (use (match_dup 2))])
-;;    (set (match_dup 0) (reg:SI FPUL_REG))])
-
 (define_insn "cmpgtdf_t"
   [(set (reg:SI T_REG)
 	(gt:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "dfp_cmp")
@@ -13176,7 +13094,8 @@ label:
   [(set (reg:SI T_REG)
 	(eq:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "dfp_cmp")
@@ -13187,7 +13106,8 @@ label:
 	(ior:SI (reg:SI T_REG)
 		(eq:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
 		       (match_operand:DF 1 "fp_arith_reg_operand" "f"))))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_DOUBLE)"
 {
   return output_ieee_ccmpeq (insn, operands);
@@ -13247,14 +13167,7 @@ label:
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
-    {
-      expand_df_unop (&gen_negdf2_i, operands);
-      DONE;
-    }
-})
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU")
 
 (define_insn "*negdf2_media"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
@@ -13263,14 +13176,12 @@ label:
   "fneg.d	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "negdf2_i"
+(define_insn "*negdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
-	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fneg	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "double")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
@@ -13279,7 +13190,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      expand_df_unop (&gen_sqrtdf2_i, operands);
+      emit_insn (gen_sqrtdf2_i (operands[0], operands[1]));
       DONE;
     }
 })
@@ -13294,7 +13205,8 @@ label:
 (define_insn "sqrtdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fsqrt	%0"
   [(set_attr "type" "dfdiv")
@@ -13303,14 +13215,7 @@ label:
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
-{
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
-    {
-      expand_df_unop (&gen_absdf2_i, operands);
-      DONE;
-    }
-})
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU")
 
 (define_insn "*absdf2_media"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
@@ -13319,14 +13224,12 @@ label:
   "fabs.d	%1, %0"
   [(set_attr "type" "fmove_media")])
 
-(define_insn "absdf2_i"
+(define_insn "*absdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
-	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fabs	%0"
-  [(set_attr "type" "fmove")
-   (set_attr "fp_mode" "double")])
+  [(set_attr "type" "fmove")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
@@ -13335,8 +13238,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      emit_df_insn (gen_extendsfdf2_i4 (operands[0], operands[1],
-					get_fpscr_rtx ()));
+      emit_insn (gen_extendsfdf2_i4 (operands[0], operands[1]));
       DONE;
     }
 })
@@ -13351,7 +13253,8 @@ label:
 (define_insn "extendsfdf2_i4"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(float_extend:DF (match_operand:SF 1 "fpul_operand" "y")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcnvsd  %1,%0"
   [(set_attr "type" "fp")
@@ -13364,8 +13267,7 @@ label:
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
-      emit_df_insn (gen_truncdfsf2_i4 (operands[0], operands[1],
-				       get_fpscr_rtx ()));
+      emit_insn (gen_truncdfsf2_i4 (operands[0], operands[1]));
       DONE;
     }
 })
@@ -13380,7 +13282,8 @@ label:
 (define_insn "truncdfsf2_i4"
   [(set (match_operand:SF 0 "fpul_operand" "=y")
 	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
+   (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI FPSCR_MODES_REG))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcnvds  %1,%0"
   [(set_attr "type" "fp")

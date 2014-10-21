@@ -6884,10 +6884,18 @@ package body Exp_Util is
 
          --  If we have none of the above, it means that we have fallen off the
          --  top testing prefixes recursively, and we now have a stand alone
-         --  object, where we don't have a problem.
+         --  object, where we don't have a problem, unless this is a renaming,
+         --  in which case we need to look into the renamed object.
 
          when others =>
-            return False;
+            if Is_Entity_Name (N)
+              and then Present (Renamed_Object (Entity (N)))
+            then
+               return
+                 Possible_Bit_Aligned_Component (Renamed_Object (Entity (N)));
+            else
+               return False;
+            end if;
 
       end case;
    end Possible_Bit_Aligned_Component;

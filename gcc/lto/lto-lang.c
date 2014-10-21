@@ -1150,7 +1150,26 @@ lto_build_c_type_nodes (void)
       signed_size_type_node = long_long_integer_type_node;
     }
   else
-    gcc_unreachable ();
+    {
+      int i;
+
+      signed_size_type_node = NULL_TREE;
+      for (i = 0; i < NUM_INT_N_ENTS; i++)
+	if (int_n_enabled_p[i])
+	  {
+	    char name[50];
+	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+
+	    if (strcmp (name, SIZE_TYPE) == 0)
+	      {
+		intmax_type_node = int_n_trees[i].signed_type;
+		uintmax_type_node = int_n_trees[i].unsigned_type;
+		signed_size_type_node = int_n_trees[i].signed_type;
+	      }
+	  }
+      if (signed_size_type_node == NULL_TREE)
+	gcc_unreachable ();
+    }
 
   wint_type_node = unsigned_type_node;
   pid_type_node = integer_type_node;
@@ -1161,6 +1180,8 @@ lto_build_c_type_nodes (void)
 static bool
 lto_init (void)
 {
+  int i;
+
   /* We need to generate LTO if running in WPA mode.  */
   flag_generate_lto = (flag_wpa != NULL);
 
@@ -1232,8 +1253,13 @@ lto_init (void)
   NAME_TYPE (complex_float_type_node, "complex float");
   NAME_TYPE (complex_double_type_node, "complex double");
   NAME_TYPE (complex_long_double_type_node, "complex long double");
-  if (int128_integer_type_node)
-    NAME_TYPE (int128_integer_type_node, "__int128");
+  for (i = 0; i < NUM_INT_N_ENTS; i++)
+    if (int_n_enabled_p[i])
+      {
+	char name[50];
+	sprintf (name, "__int%d", int_n_data[i].bitsize);
+	NAME_TYPE (int_n_trees[i].signed_type, name);
+      }
 #undef NAME_TYPE
 
   /* Initialize LTO-specific data structures.  */

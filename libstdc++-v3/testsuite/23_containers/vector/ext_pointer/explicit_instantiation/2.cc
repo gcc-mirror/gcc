@@ -22,6 +22,6 @@
 #include <ext/extptr_allocator.h>
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template class std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> >;

@@ -1435,7 +1435,7 @@ package body Prj.Env is
       function Is_Base_Name (Path : String) return Boolean is
       begin
          for J in Path'Range loop
-            if Path (J) = Directory_Separator or else Path (J) = '/' then
+            if Is_Directory_Separator (Path (J)) then
                return False;
             end if;
          end loop;
@@ -2131,14 +2131,14 @@ package body Prj.Env is
                --  $prefix/share/gpr
 
                Add_Str_To_Name_Buffer
-                 (Path_Separator & Prefix.all &
-                  "share" & Directory_Separator & "gpr");
+                 (Path_Separator & Prefix.all & "share"
+                  & Directory_Separator & "gpr");
 
                --  $prefix/lib/gnat
 
                Add_Str_To_Name_Buffer
-                 (Path_Separator & Prefix.all &
-                  "lib" & Directory_Separator & "gnat");
+                 (Path_Separator & Prefix.all & "lib"
+                  & Directory_Separator & "gnat");
             end if;
 
             Free (Prefix);
@@ -2293,8 +2293,7 @@ package body Prj.Env is
             exit Check_Dot;
          end if;
 
-         exit Check_Dot when File (K) = Directory_Separator
-           or else File (K) = '/';
+         exit Check_Dot when Is_Directory_Separator (File (K));
       end loop Check_Dot;
 
       if not Is_Absolute_Path (File) then

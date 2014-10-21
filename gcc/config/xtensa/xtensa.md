@@ -82,7 +82,7 @@
 ;; Attributes.
 
 (define_attr "type"
-  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
+  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
   (const_string "unknown"))
 
 (define_attr "mode"
@@ -360,26 +360,6 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "divsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "register_operand" "f")
-		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_DIV"
-  "div.s\t%0, %1, %2"
-  [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*recipsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
-		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_RECIP && flag_unsafe_math_optimizations"
-  "recip.s\t%0, %2"
-  [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
 
 ;; Remainders.
 
@@ -401,28 +381,6 @@
   "remu\t%0, %1, %2"
   [(set_attr "type"	"div32")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-
-;; Square roots.
-
-(define_insn "sqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_SQRT"
-  "sqrt.s\t%0, %1"
-  [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*rsqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
-		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT_RSQRT && flag_unsafe_math_optimizations"
-  "rsqrt.s\t%0, %2"
-  [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
 
@@ -964,7 +922,7 @@
 			 (match_operand:SI 2 "fpmem_offset_operand" "i"))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
@@ -980,11 +938,43 @@
 	(match_operand:SF 2 "register_operand" "f"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
   return "ssiu\t%2, %0, %1";
+}
+  [(set_attr "type"	"fstore")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*lsip"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (match_operand:SI 1 "register_operand" "+a")))
+   (set (match_dup 1)
+	(plus:SI (match_dup 1)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "lsip\t%0, %1, %2";
+}
+  [(set_attr "type"	"fload")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*ssip"
+  [(set (mem:SF (match_operand:SI 0 "register_operand" "+a"))
+	(match_operand:SF 1 "register_operand" "f"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "ssip\t%1, %0, %2";
 }
   [(set_attr "type"	"fstore")
    (set_attr "mode"	"SF")

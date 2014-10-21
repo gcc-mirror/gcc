@@ -4246,6 +4246,11 @@ package Sinfo is
       --  point operands if the Treat_Fixed_As_Integer flag is set and will
       --  thus treat these nodes in identical manner, ignoring small values.
 
+      --  Note on equality/inequality tests for records. In the expanded tree,
+      --  record comparisons are always expanded to be a series of component
+      --  comparisons, so the back end will never see an equality or inequality
+      --  operation with operands of a record type.
+
       --  Note on overflow handling: When the overflow checking mode is set to
       --  MINIMIZED or ELIMINATED, nodes for signed arithmetic operations may
       --  be modified to use a larger type for the operands and result. In

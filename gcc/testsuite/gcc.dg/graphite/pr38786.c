@@ -10,6 +10,7 @@ typedef struct
 } RD_DATA;
 extern RD_DATA *rdopt;
 extern ImageParameters *img;
+void
 dummy_slice_too_big (int bits_slice)
 {
   int i, j, k, l;

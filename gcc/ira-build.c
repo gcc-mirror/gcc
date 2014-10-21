@@ -1224,7 +1224,7 @@ ira_create_pref (ira_allocno_t a, int hard_regno, int freq)
   return pref;
 }
 
-/* Attach a pref PREF to the cooresponding allocno.  */
+/* Attach a pref PREF to the corresponding allocno.  */
 static void
 add_allocno_pref_to_list (ira_pref_t pref)
 {

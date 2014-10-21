@@ -497,6 +497,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_icf, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fuse_caller_save, NULL, 1 },
 
@@ -1978,6 +1979,11 @@ common_handle_option (struct gcc_options *opts,
     case OPT_ftrapv:
       if (value)
 	opts->x_flag_wrapv = 0;
+      break;
+
+    case OPT_fipa_icf:
+      opts->x_flag_ipa_icf_functions = value;
+      opts->x_flag_ipa_icf_variables = value;
       break;
 
     default:

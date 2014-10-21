@@ -883,10 +883,9 @@ procedure GNATCmd is
       if not Is_Absolute_Path (Exec_File_Name) then
          for Index in Exec_File_Name'Range loop
             if Exec_File_Name (Index) = Directory_Separator then
-               Fail ("relative executable (""" &
-                       Exec_File_Name &
-                       """) with directory part not allowed " &
-                       "when using project files");
+               Fail ("relative executable (""" & Exec_File_Name
+                     & """) with directory part not allowed "
+                     & "when using project files");
             end if;
          end loop;
 
@@ -1398,9 +1397,7 @@ procedure GNATCmd is
 
                   else
                      for K in Switch'Range loop
-                        if Switch (K) = '/'
-                          or else Switch (K) = Directory_Separator
-                        then
+                        if Is_Directory_Separator (Switch (K)) then
                            Test_Existence := True;
                            exit;
                         end if;

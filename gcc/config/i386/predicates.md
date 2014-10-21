@@ -618,6 +618,15 @@
   return op == CONST0_RTX (mode);
 })
 
+;; Match -1.
+(define_predicate "constm1_operand"
+  (match_code "const_int,const_double,const_vector")
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  return op == CONSTM1_RTX (mode);
+})
+
 ;; Match one or vector filled with ones.
 (define_predicate "const1_operand"
   (match_code "const_int,const_double,const_vector")
@@ -1091,43 +1100,6 @@
 
   return parts.disp != NULL_RTX;
 })
-
-;; Return true if OP is memory operand which will need zero or
-;; one register at most, not counting stack pointer or frame pointer.
-(define_predicate "cmpxchg8b_pic_memory_operand"
-  (match_operand 0 "memory_operand")
-{
-  struct ix86_address parts;
-  int ok;
-
-  if (TARGET_64BIT || !flag_pic)
-    return true;
-
-  ok = ix86_decompose_address (XEXP (op, 0), &parts);
-  gcc_assert (ok);
-
-  if (parts.base && GET_CODE (parts.base) == SUBREG)
-    parts.base = SUBREG_REG (parts.base);
-  if (parts.index && GET_CODE (parts.index) == SUBREG)
-    parts.index = SUBREG_REG (parts.index);
-
-  if (parts.base == NULL_RTX
-      || parts.base == arg_pointer_rtx
-      || parts.base == frame_pointer_rtx
-      || parts.base == hard_frame_pointer_rtx
-      || parts.base == stack_pointer_rtx)
-    return true;
-
-  if (parts.index == NULL_RTX
-      || parts.index == arg_pointer_rtx
-      || parts.index == frame_pointer_rtx
-      || parts.index == hard_frame_pointer_rtx
-      || parts.index == stack_pointer_rtx)
-    return true;
-
-  return false;
-})
-
 
 ;; Return true if OP is memory operand that cannot be represented
 ;; by the modRM array.

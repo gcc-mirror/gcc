@@ -1815,7 +1815,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "Internal procedure '%s' is"
-				   " used as actual argument at %L", 
+				   " used as actual argument at %L",
 				   sym->name, &e->where))
 		goto cleanup;
 	    }
@@ -2435,7 +2435,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
 				   reason, sizeof(reason), NULL, NULL))
-	{	
+	{
 	  gfc_error ("Interface mismatch in global procedure '%s' at %L: %s ",
 		    sym->name, &sym->declared_at, reason);
 	  goto done;
@@ -2449,7 +2449,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (sym->attr.if_source != IFSRC_IFBODY)
 	gfc_procedure_use (def_sym, actual, where);
     }
-    
+
 done:
   gfc_errors_to_warnings (0);
 
@@ -2551,7 +2551,7 @@ generic:
 
   if (intr)
     {
-      if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL, 
+      if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
       return resolve_structure_cons (expr, 0);
@@ -2853,7 +2853,7 @@ resolve_function (gfc_expr *expr)
   no_formal_args = sym && is_external_proc (sym)
   		       && gfc_sym_get_dummy_args (sym) == NULL;
 
-  if (!resolve_actual_arglist (expr->value.function.actual, 
+  if (!resolve_actual_arglist (expr->value.function.actual,
 			       p, no_formal_args))
     {
       inquiry_argument = false;
@@ -4124,7 +4124,7 @@ gfc_resolve_index_1 (gfc_expr *index, int check_scalar,
     }
 
   if (index->ts.type == BT_REAL)
-    if (!gfc_notify_std (GFC_STD_LEGACY, "REAL array index at %L", 
+    if (!gfc_notify_std (GFC_STD_LEGACY, "REAL array index at %L",
 			 &index->where))
       return false;
 
@@ -5830,7 +5830,7 @@ resolve_typebound_function (gfc_expr* e)
 
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, e, true);
-  
+
   if (!resolve_fl_derived (declared))
     return false;
 
@@ -6030,8 +6030,8 @@ resolve_ppc_call (gfc_code* c)
 
   c->ext.actual = c->expr1->value.compcall.actual;
 
-  if (!resolve_actual_arglist (c->ext.actual, comp->attr.proc, 
-			       !(comp->ts.interface 
+  if (!resolve_actual_arglist (c->ext.actual, comp->attr.proc,
+			       !(comp->ts.interface
 				 && comp->ts.interface->formal)))
     return false;
 
@@ -6065,8 +6065,8 @@ resolve_expr_ppc (gfc_expr* e)
   if (!resolve_ref (e))
     return false;
 
-  if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc, 
-			       !(comp->ts.interface 
+  if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
+			       !(comp->ts.interface
 				 && comp->ts.interface->formal)))
     return false;
 
@@ -6274,19 +6274,19 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
   if (!gfc_resolve_iterator_expr (iter->var, real_ok, "Loop variable"))
     return false;
 
-  if (!gfc_check_vardef_context (iter->var, false, false, own_scope, 
+  if (!gfc_check_vardef_context (iter->var, false, false, own_scope,
 				 _("iterator variable")))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->start, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->start, real_ok,
 				  "Start expression in DO loop"))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->end, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->end, real_ok,
 				  "End expression in DO loop"))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->step, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->step, real_ok,
 				  "Step expression in DO loop"))
     return false;
 
@@ -6544,10 +6544,10 @@ resolve_deallocate_expr (gfc_expr *e)
     }
 
   if (pointer
-      && !gfc_check_vardef_context (e, true, true, false, 
+      && !gfc_check_vardef_context (e, true, true, false,
 				    _("DEALLOCATE object")))
     return false;
-  if (!gfc_check_vardef_context (e, false, true, false, 
+  if (!gfc_check_vardef_context (e, false, true, false,
 				 _("DEALLOCATE object")))
     return false;
 
@@ -6897,10 +6897,10 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   e2 = remove_last_array_ref (e);
   t = true;
   if (t && pointer)
-    t = gfc_check_vardef_context (e2, true, true, false, 
+    t = gfc_check_vardef_context (e2, true, true, false,
 				  _("ALLOCATE object"));
   if (t)
-    t = gfc_check_vardef_context (e2, false, true, false, 
+    t = gfc_check_vardef_context (e2, false, true, false,
 				  _("ALLOCATE object"));
   gfc_free_expr (e2);
   if (!t)
@@ -7099,7 +7099,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   /* Check the stat variable.  */
   if (stat)
     {
-      gfc_check_vardef_context (stat, false, false, false, 
+      gfc_check_vardef_context (stat, false, false, false,
 				_("STAT variable"));
 
       if ((stat->ts.type != BT_INTEGER
@@ -8309,7 +8309,7 @@ resolve_transfer (gfc_code *code)
      code->ext.dt may be NULL if the TRANSFER is related to
      an INQUIRE statement -- but in this case, we are not reading, either.  */
   if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
-      && !gfc_check_vardef_context (exp, false, false, false, 
+      && !gfc_check_vardef_context (exp, false, false, false,
 				    _("item in READ")))
     return;
 
@@ -8444,7 +8444,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr2->where);
 
   if (code->expr2
-      && !gfc_check_vardef_context (code->expr2, false, false, false, 
+      && !gfc_check_vardef_context (code->expr2, false, false, false,
 				    _("STAT variable")))
     return;
 
@@ -8456,7 +8456,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr3->where);
 
   if (code->expr3
-      && !gfc_check_vardef_context (code->expr3, false, false, false, 
+      && !gfc_check_vardef_context (code->expr3, false, false, false,
 				    _("ERRMSG variable")))
     return;
 
@@ -8468,7 +8468,7 @@ resolve_lock_unlock (gfc_code *code)
 	       "variable", &code->expr4->where);
 
   if (code->expr4
-      && !gfc_check_vardef_context (code->expr4, false, false, false, 
+      && !gfc_check_vardef_context (code->expr4, false, false, false,
 				    _("ACQUIRED_LOCK variable")))
     return;
 }
@@ -9174,7 +9174,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if (rhs->is_boz
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
-			  "a DATA statement and outside INT/REAL/DBLE/CMPLX", 
+			  "a DATA statement and outside INT/REAL/DBLE/CMPLX",
 			  &code->loc))
     return false;
 
@@ -9340,6 +9340,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     }
 
   gfc_check_assign (lhs, rhs, 1);
+
+  /* Assign the 'data' of a class object to a derived type.  */
+  if (lhs->ts.type == BT_DERIVED
+      && rhs->ts.type == BT_CLASS)
+    gfc_add_data_component (rhs);
 
   /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a coindexed variable.
      Additionally, insert this code when the RHS is a CAF as we then use the
@@ -10023,7 +10028,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
 	    remove_caf_get_intrinsic (code->expr1);
 
-	  if (!gfc_check_vardef_context (code->expr1, false, false, false, 
+	  if (!gfc_check_vardef_context (code->expr1, false, false, false,
 					 _("assignment")))
 	    break;
 
@@ -10832,7 +10837,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	      return false;
 	    }
 	  else if (!gfc_notify_std (GFC_STD_F2003, "Scalar object "
-				    "'%s' at %L may not be ALLOCATABLE", 
+				    "'%s' at %L may not be ALLOCATABLE",
 				    sym->name, &sym->declared_at))
 	    return false;
 	}
@@ -11163,8 +11168,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
 	      && !gfc_notify_std (GFC_STD_F2003, "'%s' is of a PRIVATE type "
 				  "and cannot be a dummy argument"
-				  " of '%s', which is PUBLIC at %L", 
-				  arg->sym->name, sym->name, 
+				  " of '%s', which is PUBLIC at %L",
+				  arg->sym->name, sym->name,
 				  &sym->declared_at))
 	    {
 	      /* Stop this message from recurring.  */
@@ -11186,8 +11191,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && !gfc_notify_std (GFC_STD_F2003, "Procedure '%s' in "
 				      "PUBLIC interface '%s' at %L "
 				      "takes dummy arguments of '%s' which "
-				      "is PRIVATE", iface->sym->name, 
-				      sym->name, &iface->sym->declared_at, 
+				      "is PRIVATE", iface->sym->name,
+				      sym->name, &iface->sym->declared_at,
 				      gfc_typename(&arg->sym->ts)))
 		{
 		  /* Stop this message from recurring.  */
@@ -11298,7 +11303,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       gfc_formal_arglist *curr_arg;
       int has_non_interop_arg = 0;
 
-      if (!verify_bind_c_sym (sym, &(sym->ts), sym->attr.in_common, 
+      if (!verify_bind_c_sym (sym, &(sym->ts), sym->attr.in_common,
 			      sym->common_block))
         {
           /* Clear these to prevent looking at them again if there was an
@@ -12145,7 +12150,7 @@ resolve_typebound_procedures (gfc_symbol* derived)
   for (op = 0; op != GFC_INTRINSIC_OPS; ++op)
     {
       gfc_typebound_proc* p = derived->f2k_derived->tb_op[op];
-      if (p && !resolve_typebound_intrinsic_op (derived, 
+      if (p && !resolve_typebound_intrinsic_op (derived,
 						(gfc_intrinsic_op)op, p))
 	resolve_bindings_result = false;
     }
@@ -12597,7 +12602,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  && !gfc_check_symbol_access (c->ts.u.derived)
 	  && !gfc_notify_std (GFC_STD_F2003, "the component '%s' is a "
 			      "PRIVATE type and cannot be a component of "
-			      "'%s', which is PUBLIC at %L", c->name, 
+			      "'%s', which is PUBLIC at %L", c->name,
 			      sym->name, &sym->declared_at))
 	return false;
 
@@ -12671,8 +12676,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	    && sym != c->ts.u.derived)
 	add_dt_to_dt_list (c->ts.u.derived);
 
-      if (!gfc_resolve_array_spec (c->as, 
-				   !(c->attr.pointer || c->attr.proc_pointer 
+      if (!gfc_resolve_array_spec (c->as,
+				   !(c->attr.pointer || c->attr.proc_pointer
 				     || c->attr.allocatable)))
 	return false;
 
@@ -12721,13 +12726,13 @@ resolve_fl_derived (gfc_symbol *sym)
 	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
       && !gfc_notify_std (GFC_STD_F2003, "Generic name '%s' of function "
 			  "'%s' at %L being the same name as derived "
-			  "type at %L", sym->name, 
-			  gen_dt->generic->sym == sym 
-			  ? gen_dt->generic->next->sym->name 
-			  : gen_dt->generic->sym->name, 
-			  gen_dt->generic->sym == sym 
-			  ? &gen_dt->generic->next->sym->declared_at 
-			  : &gen_dt->generic->sym->declared_at, 
+			  "type at %L", sym->name,
+			  gen_dt->generic->sym == sym
+			  ? gen_dt->generic->next->sym->name
+			  : gen_dt->generic->sym->name,
+			  gen_dt->generic->sym == sym
+			  ? &gen_dt->generic->next->sym->declared_at
+			  : &gen_dt->generic->sym->declared_at,
 			  &sym->declared_at))
     return false;
 
@@ -12782,13 +12787,13 @@ resolve_fl_namelist (gfc_symbol *sym)
 
       if (nl->sym->as && nl->sym->as->type == AS_ASSUMED_SHAPE
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST array object '%s' "
-			      "with assumed shape in namelist '%s' at %L", 
+			      "with assumed shape in namelist '%s' at %L",
 			      nl->sym->name, sym->name, &sym->declared_at))
 	return false;
 
       if (is_non_constant_shape_array (nl->sym)
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST array object '%s' "
-			      "with nonconstant shape in namelist '%s' at %L", 
+			      "with nonconstant shape in namelist '%s' at %L",
 			      nl->sym->name, sym->name, &sym->declared_at))
 	return false;
 
@@ -12797,7 +12802,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	      || !gfc_is_constant_expr (nl->sym->ts.u.cl->length))
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST object '%s' with "
 			      "nonconstant character length in "
-			      "namelist '%s' at %L", nl->sym->name, 
+			      "namelist '%s' at %L", nl->sym->name,
 			      sym->name, &sym->declared_at))
 	return false;
 
@@ -12817,7 +12822,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object '%s' in "
 			       "namelist '%s' at %L with ALLOCATABLE "
-			       "or POINTER components", nl->sym->name, 
+			       "or POINTER components", nl->sym->name,
 			       sym->name, &sym->declared_at))
 	    return false;
 
@@ -13387,10 +13392,10 @@ resolve_symbol (gfc_symbol *sym)
       && gfc_check_symbol_access (sym)
       && !gfc_check_symbol_access (sym->ts.u.derived)
       && !gfc_notify_std (GFC_STD_F2003, "PUBLIC %s '%s' at %L of PRIVATE "
-			  "derived type '%s'", 
-			  (sym->attr.flavor == FL_PARAMETER) 
-			  ? "parameter" : "variable", 
-			  sym->name, &sym->declared_at, 
+			  "derived type '%s'",
+			  (sym->attr.flavor == FL_PARAMETER)
+			  ? "parameter" : "variable",
+			  sym->name, &sym->declared_at,
 			  sym->ts.u.derived->name))
     return;
 
@@ -13533,15 +13538,15 @@ resolve_symbol (gfc_symbol *sym)
       if (!gfc_logical_kinds[i].c_bool && sym->attr.dummy
 	  && !gfc_notify_std (GFC_STD_GNU, "LOGICAL dummy argument '%s' at "
 			      "%L with non-C_Bool kind in BIND(C) procedure "
-			      "'%s'", sym->name, &sym->declared_at, 
+			      "'%s'", sym->name, &sym->declared_at,
 			      sym->ns->proc_name->name))
 	return;
       else if (!gfc_logical_kinds[i].c_bool
 	       && !gfc_notify_std (GFC_STD_GNU, "LOGICAL result variable "
 				   "'%s' at %L with non-C_Bool kind in "
-				   "BIND(C) procedure '%s'", sym->name, 
-				   &sym->declared_at, 
-				   sym->attr.function ? sym->name 
+				   "BIND(C) procedure '%s'", sym->name,
+				   &sym->declared_at,
+				   sym->attr.function ? sym->name
 				   : sym->ns->proc_name->name))
 	return;
     }
@@ -14744,7 +14749,7 @@ resolve_types (gfc_namespace *ns)
       unsigned letter;
       for (letter = 0; letter != GFC_LETTERS; ++letter)
 	if (ns->set_flag[letter]
-	    && !resolve_typespec_used (&ns->default_type[letter], 
+	    && !resolve_typespec_used (&ns->default_type[letter],
 				       &ns->implicit_loc[letter], NULL))
 	  return;
     }

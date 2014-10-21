@@ -382,7 +382,7 @@ Objective-C and Objective-C++ Dialects}.
 -fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone @gol
--fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
+-fipa-pta -fipa-profile -fipa-pure-const -fipa-reference -fipa-icf @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
@@ -1693,8 +1693,7 @@ interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
 @item gnu90
 @itemx gnu89
-GNU dialect of ISO C90 (including some C99 features). This
-is the default for C code.
+GNU dialect of ISO C90 (including some C99 features).
 
 @item gnu99
 @itemx gnu9x
@@ -1702,8 +1701,8 @@ GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  This is intended to become the default in a
-future release of GCC.  The name @samp{gnu1x} is deprecated.
+GNU dialect of ISO C11.  This is the default for C code.
+The name @samp{gnu1x} is deprecated.
 
 @item c++98
 @itemx c++03
@@ -3264,6 +3263,15 @@ two forms, whichever is not the default.  For further
 language-specific options also refer to @ref{C++ Dialect Options} and
 @ref{Objective-C and Objective-C++ Dialect Options}.
 
+Some options, such as @option{-Wall} and @option{-Wextra}, turn on other
+options, such as @option{-Wunused}, which may turn on further options,
+such as @option{-Wunused-value}. The combined effect of positive and
+negative forms is that more specific options have priority over less
+specific ones, independently of their position in the command-line. For
+options of the same specificity, the last one takes effect. Options
+enabled or disabled via pragmas (@pxref{Diagnostic Pragmas}) take effect
+as if they appeared at the end of the command-line.
+
 When an unrecognized warning option is requested (e.g.,
 @option{-Wunknown-warning}), GCC emits a diagnostic stating
 that the option is not recognized.  However, if the @option{-Wno-} form
@@ -4295,14 +4303,13 @@ headers---for that, @option{-Wunknown-pragmas} must also be used.
 @item -Wtrampolines
 @opindex Wtrampolines
 @opindex Wno-trampolines
- Warn about trampolines generated for pointers to nested functions.
-
- A trampoline is a small piece of data or code that is created at run
- time on the stack when the address of a nested function is taken, and
- is used to call the nested function indirectly.  For some targets, it
- is made up of data only and thus requires no special treatment.  But,
- for most targets, it is made up of code and thus requires the stack
- to be made executable in order for the program to work properly.
+Warn about trampolines generated for pointers to nested functions.
+A trampoline is a small piece of data or code that is created at run
+time on the stack when the address of a nested function is taken, and is
+used to call the nested function indirectly.  For some targets, it is
+made up of data only and thus requires no special treatment.  But, for
+most targets, it is made up of code and thus requires the stack to be
+made executable in order for the program to work properly.
 
 @item -Wfloat-equal
 @opindex Wfloat-equal
@@ -7143,6 +7150,7 @@ also turns on the following optimization flags:
 -findirect-inlining @gol
 -fipa-cp @gol
 -fipa-sra @gol
+-fipa-icf @gol
 -fisolate-erroneous-paths-dereference @gol
 -foptimize-sibling-calls @gol
 -foptimize-strlen @gol
@@ -8087,6 +8095,19 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
+
+@item -fipa-icf
+@opindex fipa-icf
+Perform Identical Code Folding for functions and read-only variables.
+The optimization reduces code size and may disturb unwind stacks by replacing
+a function by equivalent one with a different name. The optimization works
+more effectively with link time optimization enabled.
+
+Nevertheless the behavior is similar to Gold Linker ICF optimization, GCC ICF
+works on different levels and thus the optimizations are not same - there are
+equivalences that are found only by GCC and equivalences found only by Gold.
+
+This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -fisolate-erroneous-paths-dereference
 Detect paths which trigger erroneous or undefined behaviour due to
@@ -14849,9 +14870,7 @@ Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} r
 
 @item -mjump-in-delay
 @opindex mjump-in-delay
-Fill delay slots of function calls with unconditional jump instructions
-by modifying the return pointer for the function call to be the target
-of the conditional jump.
+This option is ignored and provided for compatibility purposes only.
 
 @item -mdisable-fpregs
 @opindex mdisable-fpregs

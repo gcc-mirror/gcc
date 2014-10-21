@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -fno-inline" }
+// { dg-options "-std=gnu++11 -fno-inline" }
 // { dg-require-string-conversions "" }
 
 // Copyright (C) 2011-2014 Free Software Foundation, Inc.

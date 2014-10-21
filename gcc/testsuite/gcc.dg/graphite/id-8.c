@@ -1,4 +1,5 @@
 int blah;
+int
 foo()
 {
   int i;

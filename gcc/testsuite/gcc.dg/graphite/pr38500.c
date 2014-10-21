@@ -4,6 +4,7 @@ typedef unsigned char U8;
 extern char test1;
 
 char *Perl_screaminstr (int, int, int);
+int Perl_utf8_distance (U8 *, U8 *);
 
 void
 Perl_re_intuit_start( int minlen,  char *strend, unsigned int flags, int i)

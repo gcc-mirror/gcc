@@ -35,13 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "varasm.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
-#include "hard-reg-set.h"
 #include "regs.h"
 #include "output.h"
 #include "diagnostic-core.h"
-#include "hashtab.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tm_p.h"
@@ -50,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "targhooks.h"
 #include "cgraph.h"
-#include "hash-set.h"
 #include "asan.h"
 #include "basic-block.h"
 #include "rtl-iter.h"
@@ -6154,8 +6157,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   if (!(flags & SECTION_DEBUG))
     *f++ = 'a';
+#if defined (HAVE_GAS_SECTION_EXCLUDE) && HAVE_GAS_SECTION_EXCLUDE == 1
   if (flags & SECTION_EXCLUDE)
     *f++ = 'e';
+#endif
   if (flags & SECTION_WRITE)
     *f++ = 'w';
   if (flags & SECTION_CODE)

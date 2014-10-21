@@ -38,6 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "recog.h"
 #include "expr.h"
@@ -53,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "cgraph.h"
 #include "hash-table.h"
-#include "vec.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -6141,6 +6145,68 @@ ix86_maybe_switch_abi (void)
     reinit_regs ();
 }
 
+/* Return 1 if pseudo register should be created and used to hold
+   GOT address for PIC code.  */
+static bool
+ix86_use_pseudo_pic_reg (void)
+{
+  if ((TARGET_64BIT
+       && (ix86_cmodel == CM_SMALL_PIC
+	   || TARGET_PECOFF))
+      || !flag_pic)
+    return false;
+  return true;
+}
+
+/* Create and initialize PIC register if required.  */
+static void
+ix86_init_pic_reg (void)
+{
+  edge entry_edge;
+  rtx_insn *seq;
+
+  if (!ix86_use_pseudo_pic_reg ())
+    return;
+
+  start_sequence ();
+
+  if (TARGET_64BIT)
+    {
+      if (ix86_cmodel == CM_LARGE_PIC)
+	{
+	  rtx_code_label *label;
+	  rtx tmp_reg;
+
+	  gcc_assert (Pmode == DImode);
+	  label = gen_label_rtx ();
+	  emit_label (label);
+	  LABEL_PRESERVE_P (label) = 1;
+	  tmp_reg = gen_rtx_REG (Pmode, R11_REG);
+	  gcc_assert (REGNO (pic_offset_table_rtx) != REGNO (tmp_reg));
+	  emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx,
+					label));
+	  emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
+	  emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
+				    pic_offset_table_rtx, tmp_reg));
+	}
+      else
+	emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
+    }
+  else
+    {
+      rtx insn = emit_insn (gen_set_got (pic_offset_table_rtx));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL_RTX);
+    }
+
+  seq = get_insns ();
+  end_sequence ();
+
+  entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  insert_insn_on_edge (seq, entry_edge);
+  commit_one_edge_insertion (entry_edge);
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -9398,6 +9464,9 @@ gen_pop (rtx arg)
 static unsigned int
 ix86_select_alt_pic_regnum (void)
 {
+  if (ix86_use_pseudo_pic_reg ())
+    return INVALID_REGNUM;
+
   if (crtl->is_leaf
       && !crtl->profile
       && !ix86_current_function_calls_tls_descriptor)
@@ -9422,6 +9491,7 @@ static bool
 ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 {
   if (pic_offset_table_rtx
+      && !ix86_use_pseudo_pic_reg ()
       && regno == REAL_PIC_OFFSET_TABLE_REGNUM
       && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
 	  || crtl->profile
@@ -10774,7 +10844,6 @@ ix86_expand_prologue (void)
 {
   struct machine_function *m = cfun->machine;
   rtx insn, t;
-  bool pic_reg_used;
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   bool int_registers_saved;
@@ -11220,60 +11289,6 @@ ix86_expand_prologue (void)
     ix86_emit_save_regs_using_mov (frame.reg_save_offset);
   if (!sse_registers_saved)
     ix86_emit_save_sse_regs_using_mov (frame.sse_reg_save_offset);
-
-  pic_reg_used = false;
-  /* We don't use pic-register for pe-coff target.  */
-  if (pic_offset_table_rtx
-      && !TARGET_PECOFF
-      && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
-	  || crtl->profile))
-    {
-      unsigned int alt_pic_reg_used = ix86_select_alt_pic_regnum ();
-
-      if (alt_pic_reg_used != INVALID_REGNUM)
-	SET_REGNO (pic_offset_table_rtx, alt_pic_reg_used);
-
-      pic_reg_used = true;
-    }
-
-  if (pic_reg_used)
-    {
-      if (TARGET_64BIT)
-	{
-	  if (ix86_cmodel == CM_LARGE_PIC)
-	    {
-	      rtx_code_label *label;
-	      rtx tmp_reg;
-
-	      gcc_assert (Pmode == DImode);
-	      label = gen_label_rtx ();
-	      emit_label (label);
-	      LABEL_PRESERVE_P (label) = 1;
-	      tmp_reg = gen_rtx_REG (Pmode, R11_REG);
-	      gcc_assert (REGNO (pic_offset_table_rtx) != REGNO (tmp_reg));
-	      insn = emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx,
-						   label));
-	      insn = emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
-	      insn = emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
-					       pic_offset_table_rtx, tmp_reg));
-	    }
-	  else
-            insn = emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
-	}
-      else
-	{
-          insn = emit_insn (gen_set_got (pic_offset_table_rtx));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL_RTX);
-	}
-    }
-
-  /* In the pic_reg_used case, make sure that the got load isn't deleted
-     when mcount needs it.  Blockage to avoid call movement across mcount
-     call is emitted in generic code after the NOTE_INSN_PROLOGUE_END
-     note.  */
-  if (crtl->profile && !flag_fentry && pic_reg_used)
-    emit_insn (gen_prologue_use (pic_offset_table_rtx));
 
   if (crtl->drap_reg && !crtl->stack_realign_needed)
     {
@@ -11815,7 +11830,8 @@ ix86_expand_epilogue (int style)
 static void
 ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED, HOST_WIDE_INT)
 {
-  if (pic_offset_table_rtx)
+  if (pic_offset_table_rtx
+      && !ix86_use_pseudo_pic_reg ())
     SET_REGNO (pic_offset_table_rtx, REAL_PIC_OFFSET_TABLE_REGNUM);
 #if TARGET_MACHO
   /* Mach-O doesn't support labels at the end of objects, so if
@@ -12002,7 +12018,10 @@ ix86_expand_split_stack_prologue (void)
 		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
 
   if (split_stack_fn == NULL_RTX)
-    split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+    {
+      split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+      SYMBOL_REF_FLAGS (split_stack_fn) |= SYMBOL_FLAG_LOCAL;
+    }
   fn = split_stack_fn;
 
   /* Get more stack space.  We pass in the desired stack space and the
@@ -12047,9 +12066,11 @@ ix86_expand_split_stack_prologue (void)
 	  gcc_assert ((args_size & 0xffffffff) == args_size);
 
 	  if (split_stack_fn_large == NULL_RTX)
-	    split_stack_fn_large =
-	      gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
-
+	    {
+	      split_stack_fn_large =
+	        gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
+	      SYMBOL_REF_FLAGS (split_stack_fn_large) |= SYMBOL_FLAG_LOCAL;
+	    }
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
 	      rtx_code_label *label;
@@ -12458,9 +12479,18 @@ ix86_address_cost (rtx x, enum machine_mode, addr_space_t, bool)
 	      || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)))
     cost++;
 
+  /* When address base or index is "pic_offset_table_rtx" we don't increase
+     address cost.  When a memopt with "pic_offset_table_rtx" is not invariant
+     itself it most likely means that base or index is not invariant.
+     Therefore only "pic_offset_table_rtx" could be hoisted out, which is not
+     profitable for x86.  */
   if (parts.base
+      && (!pic_offset_table_rtx
+	  || REGNO (pic_offset_table_rtx) != REGNO(parts.base))
       && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER)
       && parts.index
+      && (!pic_offset_table_rtx
+	  || REGNO (pic_offset_table_rtx) != REGNO(parts.index))
       && (!REG_P (parts.index) || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)
       && parts.base != parts.index)
     cost++;
@@ -13135,6 +13165,15 @@ ix86_GOT_alias_set (void)
   return set;
 }
 
+/* Set regs_ever_live for PIC base address register
+   to true if required.  */
+static void
+set_pic_reg_ever_live ()
+{
+  if (reload_in_progress)
+    df_set_regs_ever_live (REGNO (pic_offset_table_rtx), true);
+}
+
 /* Return a legitimate reference for ORIG (an address) using the
    register REG.  If REG is 0, a new pseudo is generated.
 
@@ -13185,8 +13224,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       /* This symbol may be referenced via a displacement from the PIC
 	 base address (@GOTOFF).  */
 
-      if (reload_in_progress)
-	df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+      set_pic_reg_ever_live ();
       if (GET_CODE (addr) == CONST)
 	addr = XEXP (addr, 0);
       if (GET_CODE (addr) == PLUS)
@@ -13218,8 +13256,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       /* This symbol may be referenced via a displacement from the PIC
 	 base address (@GOTOFF).  */
 
-      if (reload_in_progress)
-	df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+      set_pic_reg_ever_live ();
       if (GET_CODE (addr) == CONST)
 	addr = XEXP (addr, 0);
       if (GET_CODE (addr) == PLUS)
@@ -13280,8 +13317,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  /* This symbol must be referenced via a load from the
 	     Global Offset Table (@GOT).  */
 
-	  if (reload_in_progress)
-	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+	  set_pic_reg_ever_live ();
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 	  if (TARGET_64BIT)
@@ -13333,8 +13369,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    {
 	      if (!TARGET_64BIT)
 		{
-		  if (reload_in_progress)
-		    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+		  set_pic_reg_ever_live ();
 		  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
 					    UNSPEC_GOTOFF);
 		  new_rtx = gen_rtx_PLUS (Pmode, new_rtx, op1);
@@ -13630,8 +13665,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	}
       else if (flag_pic)
 	{
-	  if (reload_in_progress)
-	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+	  set_pic_reg_ever_live ();
 	  pic = pic_offset_table_rtx;
 	  type = TARGET_ANY_GNU_TLS ? UNSPEC_GOTNTPOFF : UNSPEC_GOTTPOFF;
 	}
@@ -14262,6 +14296,8 @@ ix86_pic_register_p (rtx x)
   if (GET_CODE (x) == VALUE && CSELIB_VAL_PTR (x))
     return (pic_offset_table_rtx
 	    && rtx_equal_for_cselib_p (x, pic_offset_table_rtx));
+  else if (pic_offset_table_rtx)
+    return REG_P (x) && REGNO (x) == REGNO (pic_offset_table_rtx);
   else
     return REG_P (x) && REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
 }
@@ -14436,8 +14472,12 @@ ix86_delegitimize_address (rtx x)
 	 leal (%ebx, %ecx, 4), %ecx
 	 ...
 	 movl foo@GOTOFF(%ecx), %edx
-	 in which case we return (%ecx - %ebx) + foo.  */
-      if (pic_offset_table_rtx)
+	 in which case we return (%ecx - %ebx) + foo.
+
+	 Note that when pseudo_pic_reg is used we can generate it only
+	 before reload_completed.  */
+      if (pic_offset_table_rtx
+	  && (!reload_completed || !ix86_use_pseudo_pic_reg ()))
         result = gen_rtx_PLUS (Pmode, gen_rtx_MINUS (Pmode, copy_rtx (addend),
 						     pic_offset_table_rtx),
 			       result);
@@ -17524,8 +17564,10 @@ ix86_expand_vector_logical_operator (enum rtx_code code, enum machine_mode mode,
 	{
 	case V4SFmode:
 	case V8SFmode:
+	case V16SFmode:
 	case V2DFmode:
 	case V4DFmode:
+	case V8DFmode:
 	  dst = gen_reg_rtx (GET_MODE (SUBREG_REG (op1)));
 	  if (GET_CODE (op2) == CONST_VECTOR)
 	    {
@@ -17753,14 +17795,6 @@ ix86_split_idivmod (enum machine_mode mode, rtx operands[],
   set_unique_reg_note (insn, REG_EQUAL, div);
 
   emit_label (end_label);
-}
-
-/* Whether it is OK to emit CFI directives when emitting asm code.  */
-
-bool
-ix86_emit_cfi ()
-{
-  return dwarf2out_do_cfi_asm ();
 }
 
 #define LEA_MAX_STALL (3)
@@ -21022,6 +21056,12 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	    }
 	  break;
 
+	case V64QImode:
+	  gen = gen_avx512bw_blendmv64qi;
+	  break;
+	case V32HImode:
+	  gen = gen_avx512bw_blendmv32hi;
+	  break;
 	case V16SImode:
 	  gen = gen_avx512f_blendmv16si;
 	  break;
@@ -21338,6 +21378,8 @@ ix86_expand_int_vcond (rtx operands[])
 		}
 	      break;
 
+	    case V64QImode:
+	    case V32HImode:
 	    case V32QImode:
 	    case V16HImode:
 	    case V16QImode:
@@ -21380,35 +21422,132 @@ ix86_expand_int_vcond (rtx operands[])
   return true;
 }
 
-static bool
-ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1)
+/* AVX512F does support 64-byte integer vector operations,
+   thus the longest vector we are faced with is V64QImode.  */
+#define MAX_VECT_LEN	64
+
+struct expand_vec_perm_d
 {
-  enum machine_mode mode = GET_MODE (op0);
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_operand_p;
+  bool testing_p;
+};
+
+static bool
+ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
+			      struct expand_vec_perm_d *d)
+{
+  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+     expander, so args are either in d, or in op0, op1 etc.  */
+  enum machine_mode mode = GET_MODE (d ? d->op0 : op0);
+  enum machine_mode maskmode = mode;
+  rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
+
   switch (mode)
     {
+    case V8HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+	gen = gen_avx512vl_vpermi2varv8hi3;
+      break;
+    case V16HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+	gen = gen_avx512vl_vpermi2varv16hi3;
+      break;
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	gen = gen_avx512bw_vpermi2varv32hi3;
+      break;
+    case V4SImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv4si3;
+      break;
+    case V8SImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv8si3;
+      break;
     case V16SImode:
-      emit_insn (gen_avx512f_vpermi2varv16si3 (target, op0,
-					       force_reg (V16SImode, mask),
-					       op1));
-      return true;
+      if (TARGET_AVX512F)
+	gen = gen_avx512f_vpermi2varv16si3;
+      break;
+    case V4SFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv4sf3;
+	  maskmode = V4SImode;
+	}
+      break;
+    case V8SFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv8sf3;
+	  maskmode = V8SImode;
+	}
+      break;
     case V16SFmode:
-      emit_insn (gen_avx512f_vpermi2varv16sf3 (target, op0,
-					       force_reg (V16SImode, mask),
-					       op1));
-      return true;
+      if (TARGET_AVX512F)
+	{
+	  gen = gen_avx512f_vpermi2varv16sf3;
+	  maskmode = V16SImode;
+	}
+      break;
+    case V2DImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv2di3;
+      break;
+    case V4DImode:
+      if (TARGET_AVX512VL)
+	gen = gen_avx512vl_vpermi2varv4di3;
+      break;
     case V8DImode:
-      emit_insn (gen_avx512f_vpermi2varv8di3 (target, op0,
-					      force_reg (V8DImode, mask),
-					      op1));
-      return true;
+      if (TARGET_AVX512F)
+	gen = gen_avx512f_vpermi2varv8di3;
+      break;
+    case V2DFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv2df3;
+	  maskmode = V2DImode;
+	}
+      break;
+    case V4DFmode:
+      if (TARGET_AVX512VL)
+	{
+	  gen = gen_avx512vl_vpermi2varv4df3;
+	  maskmode = V4DImode;
+	}
+      break;
     case V8DFmode:
-      emit_insn (gen_avx512f_vpermi2varv8df3 (target, op0,
-					      force_reg (V8DImode, mask),
-					      op1));
-      return true;
+      if (TARGET_AVX512F)
+	{
+	  gen = gen_avx512f_vpermi2varv8df3;
+	  maskmode = V8DImode;
+	}
+      break;
     default:
-      return false;
+      break;
     }
+
+  if (gen == NULL)
+    return false;
+
+  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+     expander, so args are either in d, or in op0, op1 etc.  */
+  if (d)
+    {
+      rtx vec[64];
+      target = d->target;
+      op0 = d->op0;
+      op1 = d->op1;
+      for (int i = 0; i < d->nelt; ++i)
+	vec[i] = GEN_INT (d->perm[i]);
+      mask = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (d->nelt, vec));
+    }
+
+  emit_insn (gen (target, op0, force_reg (maskmode, mask), op1));
+  return true;
 }
 
 /* Expand a variable vector permutation.  */
@@ -21431,8 +21570,7 @@ ix86_expand_vec_perm (rtx operands[])
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
 
-  if (TARGET_AVX512F
-      && ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1))
+  if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1, NULL))
     return;
 
   if (TARGET_AVX2)
@@ -21804,6 +21942,15 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 
       switch (imode)
 	{
+	case V64QImode:
+	  if (unsigned_p)
+	    unpack = gen_avx512bw_zero_extendv32qiv32hi2;
+	  else
+	    unpack = gen_avx512bw_sign_extendv32qiv32hi2;
+	  halfmode = V32QImode;
+	  extract
+	    = high_p ? gen_vec_extract_hi_v64qi : gen_vec_extract_lo_v64qi;
+	  break;
 	case V32QImode:
 	  if (unsigned_p)
 	    unpack = gen_avx2_zero_extendv16qiv16hi2;
@@ -24914,7 +25061,12 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  && DEFAULT_ABI != MS_ABI))
 	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
 	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
-	use_reg (&use, pic_offset_table_rtx);
+	{
+	  use_reg (&use, gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM));
+	  if (ix86_use_pseudo_pic_reg ())
+	    emit_move_insn (gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM),
+			    pic_offset_table_rtx);
+	}
     }
 
   if (TARGET_64BIT && INTVAL (callarg2) >= 0)
@@ -34087,6 +34239,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx512f_cmpv16si3_mask:
 	      case CODE_FOR_avx512f_ucmpv8di3_mask:
 	      case CODE_FOR_avx512f_ucmpv16si3_mask:
+	      case CODE_FOR_avx512vl_cmpv4di3_mask:
+	      case CODE_FOR_avx512vl_cmpv8si3_mask:
+	      case CODE_FOR_avx512vl_ucmpv4di3_mask:
+	      case CODE_FOR_avx512vl_ucmpv8si3_mask:
+	      case CODE_FOR_avx512vl_cmpv2di3_mask:
+	      case CODE_FOR_avx512vl_cmpv4si3_mask:
+	      case CODE_FOR_avx512vl_ucmpv2di3_mask:
+	      case CODE_FOR_avx512vl_ucmpv4si3_mask:
 		error ("the last argument must be a 3-bit immediate");
 		return const0_rtx;
 
@@ -39639,20 +39799,6 @@ x86_emit_floatuns (rtx operands[2])
   emit_label (donelab);
 }
 
-/* AVX512F does support 64-byte integer vector operations,
-   thus the longest vector we are faced with is V64QImode.  */
-#define MAX_VECT_LEN	64
-
-struct expand_vec_perm_d
-{
-  rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
-  enum machine_mode vmode;
-  unsigned char nelt;
-  bool one_operand_p;
-  bool testing_p;
-};
-
 static bool canonicalize_perm (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d);
@@ -39724,6 +39870,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
     case V8SFmode:
     case V8SImode:
     case V2DFmode:
+    case V64QImode:
+    case V32HImode:
     case V2DImode:
     case V4SFmode:
     case V4SImode:
@@ -39754,6 +39902,9 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V8HImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+
       if (TARGET_SSE2)
 	{
 	  struct expand_vec_perm_d dperm;
@@ -39784,6 +39935,9 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V16QImode:
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+
       if (TARGET_SSE2)
 	goto permute;
       goto widen;
@@ -39813,16 +39967,19 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 
     case V16HImode:
     case V32QImode:
-      {
-	enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
-	rtx x = gen_reg_rtx (hvmode);
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
+        return ix86_vector_duplicate_value (mode, target, val);
+      else
+	{
+	  enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
+	  rtx x = gen_reg_rtx (hvmode);
 
-	ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
-	gcc_assert (ok);
+	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
+	  gcc_assert (ok);
 
-	x = gen_rtx_VEC_CONCAT (mode, x, x);
-	emit_insn (gen_rtx_SET (VOIDmode, target, x));
-      }
+	  x = gen_rtx_VEC_CONCAT (mode, x, x);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	}
       return true;
 
     default:
@@ -40384,8 +40541,9 @@ static void
 ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 				 rtx target, rtx vals)
 {
-  rtx ops[64], op0, op1;
+  rtx ops[64], op0, op1, op2, op3, op4, op5;
   enum machine_mode half_mode = VOIDmode;
+  enum machine_mode quarter_mode = VOIDmode;
   int n, i;
 
   switch (mode)
@@ -40434,6 +40592,42 @@ half:
 					  &ops [n >> 1], n >> 2);
       emit_insn (gen_rtx_SET (VOIDmode, target,
 			      gen_rtx_VEC_CONCAT (mode, op0, op1)));
+      return;
+
+    case V64QImode:
+      quarter_mode = V16QImode;
+      half_mode = V32QImode;
+      goto quarter;
+
+    case V32HImode:
+      quarter_mode = V8HImode;
+      half_mode = V16HImode;
+      goto quarter;
+
+quarter:
+      n = GET_MODE_NUNITS (mode);
+      for (i = 0; i < n; i++)
+	ops[i] = XVECEXP (vals, 0, i);
+      op0 = gen_reg_rtx (quarter_mode);
+      op1 = gen_reg_rtx (quarter_mode);
+      op2 = gen_reg_rtx (quarter_mode);
+      op3 = gen_reg_rtx (quarter_mode);
+      op4 = gen_reg_rtx (half_mode);
+      op5 = gen_reg_rtx (half_mode);
+      ix86_expand_vector_init_interleave (quarter_mode, op0, ops,
+					  n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op1,
+					  &ops [n >> 2], n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op2,
+					  &ops [n >> 1], n >> 3);
+      ix86_expand_vector_init_interleave (quarter_mode, op3,
+					  &ops [(n >> 1) | (n >> 2)], n >> 3);
+      emit_insn (gen_rtx_SET (VOIDmode, op4,
+			      gen_rtx_VEC_CONCAT (half_mode, op0, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, op5,
+			      gen_rtx_VEC_CONCAT (half_mode, op2, op3)));
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_VEC_CONCAT (mode, op4, op5)));
       return;
 
     case V16QImode:
@@ -40818,6 +41012,79 @@ half:
       emit_insn (gen_insert[j][i] (target, target, tmp));
       return;
 
+    case V8DFmode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv8df (target, tmp, target,
+					     force_reg (QImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V8DImode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv8di (target, tmp, target,
+					     force_reg (QImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V16SFmode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv16sf (target, tmp, target,
+					      force_reg (HImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V16SImode:
+      if (TARGET_AVX512F)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512f_blendmv16si (target, tmp, target,
+					      force_reg (HImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V32HImode:
+      if (TARGET_AVX512F && TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512bw_blendmv32hi (target, tmp, target,
+					       force_reg (SImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+    case V64QImode:
+      if (TARGET_AVX512F && TARGET_AVX512BW)
+	{
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+				  gen_rtx_VEC_DUPLICATE (mode, val)));
+	  emit_insn (gen_avx512bw_blendmv64qi (target, tmp, target,
+					       force_reg (DImode, GEN_INT (1 << elt))));
+	  return;
+	}
+      else
+	break;
+
     default:
       break;
     }
@@ -41179,6 +41446,8 @@ emit_reduc_half (rtx dest, rtx src, int i)
 				    GEN_INT (i / 2));
 	}
       break;
+    case V64QImode:
+    case V32HImode:
     case V16SImode:
     case V16SFmode:
     case V8DImode:
@@ -42699,7 +42968,10 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 
   if (d->one_operand_p)
     return false;
-  if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
+  if (TARGET_AVX512F && GET_MODE_SIZE (vmode) == 64
+      && GET_MODE_SIZE (GET_MODE_INNER (vmode)) >= 4)
+    ;
+  else if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
@@ -42730,12 +43002,18 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 
   switch (vmode)
     {
+    case V8DFmode:
+    case V16SFmode:
     case V4DFmode:
     case V8SFmode:
     case V2DFmode:
     case V4SFmode:
     case V8HImode:
     case V8SImode:
+    case V32HImode:
+    case V64QImode:
+    case V16SImode:
+    case V8DImode:
       for (i = 0; i < nelt; ++i)
 	mask |= (d->perm[i] >= nelt) << i;
       break;
@@ -42958,9 +43236,9 @@ static bool
 expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt, eltsz, mask;
-  unsigned char perm[32];
+  unsigned char perm[64];
   enum machine_mode vmode = V16QImode;
-  rtx rperm[32], vperm, target, op0, op1;
+  rtx rperm[64], vperm, target, op0, op1;
 
   nelt = d->nelt;
 
@@ -43049,6 +43327,19 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 		  return false;
 	    }
 	}
+      else if (GET_MODE_SIZE (d->vmode) == 64)
+	{
+	  if (!TARGET_AVX512BW)
+	    return false;
+	  if (vmode == V64QImode)
+	    {
+	      /* vpshufb only works intra lanes, it is not
+		 possible to shuffle bytes in between the lanes.  */
+	      for (i = 0; i < nelt; ++i)
+		if ((d->perm[i] ^ i) & (nelt / 4))
+		  return false;
+	    }
+	}
       else
 	return false;
     }
@@ -43066,6 +43357,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	mask = 2 * nelt - 1;
       else if (vmode == V16QImode)
 	mask = nelt - 1;
+      else if (vmode == V64QImode)
+	mask = nelt / 4 - 1;
       else
 	mask = nelt / 2 - 1;
 
@@ -43091,6 +43384,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
       else if (vmode == V32QImode)
 	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+      else if (vmode == V64QImode)
+	emit_insn (gen_avx512bw_pshufbv64qi3 (target, op0, vperm));
       else if (vmode == V8SFmode)
 	emit_insn (gen_avx2_permvarv8sf (target, op0, vperm));
       else
@@ -43146,11 +43441,23 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	  rtx (*gen) (rtx, rtx) = NULL;
 	  switch (d->vmode)
 	    {
+	    case V64QImode:
+	      if (TARGET_AVX512BW)
+		gen = gen_avx512bw_vec_dupv64qi;
+	      break;
 	    case V32QImode:
 	      gen = gen_avx2_pbroadcastv32qi_1;
 	      break;
+	    case V32HImode:
+	      if (TARGET_AVX512BW)
+		gen = gen_avx512bw_vec_dupv32hi;
+	      break;
 	    case V16HImode:
 	      gen = gen_avx2_pbroadcastv16hi_1;
+	      break;
+	    case V16SImode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv16si;
 	      break;
 	    case V8SImode:
 	      gen = gen_avx2_pbroadcastv8si_1;
@@ -43161,8 +43468,20 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    case V8HImode:
 	      gen = gen_avx2_pbroadcastv8hi;
 	      break;
+	    case V16SFmode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv16sf;
+	      break;
 	    case V8SFmode:
 	      gen = gen_avx2_vec_dupv8sf_1;
+	      break;
+	    case V8DFmode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv8df;
+	      break;
+	    case V8DImode:
+	      if (TARGET_AVX512F)
+		gen = gen_avx512f_vec_dupv8di;
 	      break;
 	    /* For other modes prefer other shuffles this function creates.  */
 	    default: break;
@@ -43248,23 +43567,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try the AVX2 vpalignr instruction.  */
   if (expand_vec_perm_palignr (d, true))
-    return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
-  if (TARGET_AVX512F)
-    {
-      rtx vec[64];
-      enum machine_mode mode = d->vmode;
-      if (mode == V8DFmode)
-	mode = V8DImode;
-      else if (mode == V16SFmode)
-	mode = V16SImode;
-      for (i = 0; i < nelt; ++i)
-	vec[i] = GEN_INT (d->perm[i]);
-      rtx mask = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt, vec));
-      if (ix86_expand_vec_perm_vpermi2 (d->target, d->op0, mask, d->op1))
-	return true;
-    }
+  if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
+    return true;
 
   return false;
 }
@@ -45051,21 +45357,56 @@ ix86_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
   /* Given sufficient ISA support we can just return true here
      for selected vector modes.  */
-  if (d.vmode == V16SImode || d.vmode == V16SFmode
-      || d.vmode == V8DFmode || d.vmode == V8DImode)
-    /* All implementable with a single vpermi2 insn.  */
-    return true;
-  if (GET_MODE_SIZE (d.vmode) == 16)
+  switch (d.vmode)
     {
+    case V16SFmode:
+    case V16SImode:
+    case V8DImode:
+    case V8DFmode:
+      if (TARGET_AVX512F)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V8SImode:
+    case V8SFmode:
+    case V4DFmode:
+    case V4DImode:
+      if (TARGET_AVX512VL)
+	/* All implementable with a single vpermi2 insn.  */
+	return true;
+      break;
+    case V16HImode:
+      if (TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case V32QImode:
+      if (TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case V4SImode:
+    case V4SFmode:
+    case V8HImode:
+    case V16QImode:
       /* All implementable with a single vpperm insn.  */
       if (TARGET_XOP)
 	return true;
       /* All implementable with 2 pshufb + 1 ior.  */
       if (TARGET_SSSE3)
 	return true;
+      break;
+    case V2DImode:
+    case V2DFmode:
       /* All implementable with shufpd or unpck[lh]pd.  */
-      if (d.nelt == 2)
-	return true;
+      return true;
+    default:
+      return false;
     }
 
   /* Extract the values from the vector CST into the permutation
@@ -45185,6 +45526,11 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       gen_il = gen_avx2_interleave_lowv32qi;
       gen_ih = gen_avx2_interleave_highv32qi;
       break;
+    case V64QImode:
+      himode = V32HImode;
+      gen_il = gen_avx512bw_interleave_lowv64qi;
+      gen_ih = gen_avx512bw_interleave_highv64qi;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -45245,7 +45591,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
       /* For SSE2, we used an full interleave, so the desired
 	 results are in the even elements.  */
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 64; ++i)
 	d.perm[i] = i * 2;
     }
   else
@@ -45253,7 +45599,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       /* For AVX, the interleave used above was not cross-lane.  So the
 	 extraction is evens but with the second and third quarter swapped.
 	 Happily, that is even one insn shorter than even extraction.  */
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 64; ++i)
 	d.perm[i] = i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0);
     }
 
@@ -45451,6 +45797,9 @@ ix86_expand_mul_widen_hilo (rtx dest, rtx op1, rtx op2,
 
     case V16QImode:
     case V32QImode:
+    case V32HImode:
+    case V16SImode:
+    case V64QImode:
       t1 = gen_reg_rtx (wmode);
       t2 = gen_reg_rtx (wmode);
       ix86_expand_sse_unpack (t1, op1, uns_p, high_p);
@@ -45505,7 +45854,13 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
   enum machine_mode mode = GET_MODE (op0);
   rtx t1, t2, t3, t4, t5, t6;
 
-  if (TARGET_XOP && mode == V2DImode)
+  if (TARGET_AVX512DQ && mode == V8DImode)
+    emit_insn (gen_avx512dq_mulv8di3 (op0, op1, op2));
+  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V4DImode)
+    emit_insn (gen_avx512dq_mulv4di3 (op0, op1, op2));
+  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V2DImode)
+    emit_insn (gen_avx512dq_mulv2di3 (op0, op1, op2));
+  else if (TARGET_XOP && mode == V2DImode)
     {
       /* op1: A,B,C,D, op2: E,F,G,H */
       op1 = gen_lowpart (V4SImode, op1);
@@ -47428,6 +47783,10 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_FUNCTION_ARG_ADVANCE ix86_function_arg_advance
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG ix86_function_arg
+#undef TARGET_INIT_PIC_REG
+#define TARGET_INIT_PIC_REG ix86_init_pic_reg
+#undef TARGET_USE_PSEUDO_PIC_REG
+#define TARGET_USE_PSEUDO_PIC_REG ix86_use_pseudo_pic_reg
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY ix86_function_arg_boundary
 #undef TARGET_PASS_BY_REFERENCE

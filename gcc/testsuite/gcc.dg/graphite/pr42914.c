@@ -1,5 +1,7 @@
 /* { dg-options "-O2 -g -ffast-math -fgraphite-identity" } */
 
+int abs (int);
+
 int find_sad_16x16(int *mode)
 {
   int current, best;

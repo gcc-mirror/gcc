@@ -40,6 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 #include "reload.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
@@ -492,15 +497,6 @@ pa_option_override (void)
 	    gcc_unreachable ();
 	  }
       }
-
-  /* Unconditional branches in the delay slot are not compatible with dwarf2
-     call frame information.  There is no benefit in using this optimization
-     on PA8000 and later processors.  */
-  if (pa_cpu >= PROCESSOR_8000
-      || (targetm_common.except_unwind_info (&global_options) == UI_DWARF2
-	  && flag_exceptions)
-      || flag_unwind_tables)
-    target_flags &= ~MASK_JUMP_IN_DELAY;
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
     {
@@ -7537,8 +7533,7 @@ pa_attr_length_millicode_call (rtx_insn *insn)
     }
 }
 
-/* INSN is a function call.  It may have an unconditional jump
-   in its delay slot.
+/* INSN is a function call.
 
    CALL_DEST is the routine we are calling.  */
 
@@ -7547,8 +7542,6 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 {
   int attr_length = get_attr_length (insn);
   int seq_length = dbr_sequence_length ();
-  int distance;
-  rtx seq_insn;
   rtx xoperands[3];
 
   xoperands[0] = call_dest;
@@ -7649,39 +7642,6 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 
   if (seq_length == 0)
     output_asm_insn ("nop", xoperands);
-
-  /* We are done if there isn't a jump in the delay slot.  */
-  if (seq_length == 0 || ! JUMP_P (NEXT_INSN (insn)))
-    return "";
-
-  /* This call has an unconditional jump in its delay slot.  */
-  xoperands[0] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
-
-  /* See if the return address can be adjusted.  Use the containing
-     sequence insn's address.  */
-  if (INSN_ADDRESSES_SET_P ())
-    {
-      seq_insn = NEXT_INSN (PREV_INSN (final_sequence->insn (0)));
-      distance = (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
-		  - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8);
-
-      if (VAL_14_BITS_P (distance))
-	{
-	  xoperands[1] = gen_label_rtx ();
-	  output_asm_insn ("ldo %0-%1(%2),%2", xoperands);
-	  targetm.asm_out.internal_label (asm_out_file, "L",
-					  CODE_LABEL_NUMBER (xoperands[1]));
-	}
-      else
-	/* ??? This branch may not reach its target.  */
-	output_asm_insn ("nop\n\tb,n %0", xoperands);
-    }
-  else
-    /* ??? This branch may not reach its target.  */
-    output_asm_insn ("nop\n\tb,n %0", xoperands);
-
-  /* Delete the jump.  */
-  SET_INSN_DELETED (NEXT_INSN (insn));
 
   return "";
 }
@@ -7784,16 +7744,13 @@ pa_attr_length_call (rtx_insn *insn, int sibcall)
   return length;
 }
 
-/* INSN is a function call.  It may have an unconditional jump
-   in its delay slot.
+/* INSN is a function call.
 
    CALL_DEST is the routine we are calling.  */
 
 const char *
 pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 {
-  int delay_insn_deleted = 0;
-  int delay_slot_filled = 0;
   int seq_length = dbr_sequence_length ();
   tree call_decl = SYMBOL_REF_DECL (call_dest);
   int local_call = call_decl && targetm.binds_local_p (call_decl);
@@ -7821,17 +7778,17 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 
 	  /* If this isn't a sibcall, we put the load of %r27 into the
 	     delay slot.  We can't do this in a sibcall as we don't
-	     have a second call-clobbered scratch register available.  */
-	  if (seq_length != 0
-	      && ! JUMP_P (NEXT_INSN (insn))
-	      && !sibcall)
+	     have a second call-clobbered scratch register available.
+	     We don't need to do anything when generating fast indirect
+	     calls.  */
+	  if (seq_length != 0 && !sibcall)
 	    {
 	      final_scan_insn (NEXT_INSN (insn), asm_out_file,
 			       optimize, 0, NULL);
 
 	      /* Now delete the delay insn.  */
 	      SET_INSN_DELETED (NEXT_INSN (insn));
-	      delay_insn_deleted = 1;
+	      seq_length = 0;
 	    }
 
 	  output_asm_insn ("addil LT'%0,%%r27", xoperands);
@@ -7849,7 +7806,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 	      output_asm_insn ("ldd 16(%%r1),%%r2", xoperands);
 	      output_asm_insn ("bve,l (%%r2),%%r2", xoperands);
 	      output_asm_insn ("ldd 24(%%r1),%%r27", xoperands);
-	      delay_slot_filled = 1;
+	      seq_length = 1;
 	    }
 	}
       else
@@ -7867,7 +7824,6 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 	    indirect_call = 1;
 
 	  if (seq_length != 0
-	      && ! JUMP_P (NEXT_INSN (insn))
 	      && !sibcall
 	      && (!TARGET_PA_20
 		  || indirect_call
@@ -7881,7 +7837,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 
 	      /* Now delete the delay insn.  */
 	      SET_INSN_DELETED (NEXT_INSN (insn));
-	      delay_insn_deleted = 1;
+	      seq_length = 0;
 	    }
 
 	  if ((TARGET_LONG_ABS_CALL || local_call) && !flag_pic)
@@ -7903,7 +7859,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 		    output_asm_insn ("ble R'%0(%%sr4,%%r1)", xoperands);
 
 		  output_asm_insn ("copy %%r31,%%r2", xoperands);
-		  delay_slot_filled = 1;
+		  seq_length = 1;
 		}
 	    }
 	  else
@@ -7990,7 +7946,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 			{
 			  output_asm_insn ("bve,l (%%r1),%%r2", xoperands);
 			  output_asm_insn ("stw %%r2,-24(%%sp)", xoperands);
-			  delay_slot_filled = 1;
+			  seq_length = 1;
 			}
 		      else
 			output_asm_insn ("bve,l (%%r1),%%r2", xoperands);
@@ -8020,54 +7976,15 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 			output_asm_insn ("stw %%r31,-24(%%sp)", xoperands);
 		      else
 			output_asm_insn ("copy %%r31,%%r2", xoperands);
-		      delay_slot_filled = 1;
+		      seq_length = 1;
 		    }
 		}
 	    }
 	}
     }
 
-  if (!delay_slot_filled && (seq_length == 0 || delay_insn_deleted))
+  if (seq_length == 0)
     output_asm_insn ("nop", xoperands);
-
-  /* We are done if there isn't a jump in the delay slot.  */
-  if (seq_length == 0
-      || delay_insn_deleted
-      || ! JUMP_P (NEXT_INSN (insn)))
-    return "";
-
-  /* A sibcall should never have a branch in the delay slot.  */
-  gcc_assert (!sibcall);
-
-  /* This call has an unconditional jump in its delay slot.  */
-  xoperands[0] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
-
-  if (!delay_slot_filled && INSN_ADDRESSES_SET_P ())
-    {
-      /* See if the return address can be adjusted.  Use the containing
-         sequence insn's address.  This would break the regular call/return@
-         relationship assumed by the table based eh unwinder, so only do that
-         if the call is not possibly throwing.  */
-      rtx seq_insn = NEXT_INSN (PREV_INSN (final_sequence->insn (0)));
-      int distance = (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
-		      - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8);
-
-      if (VAL_14_BITS_P (distance)
-	  && !(can_throw_internal (insn) || can_throw_external (insn)))
-	{
-	  xoperands[1] = gen_label_rtx ();
-	  output_asm_insn ("ldo %0-%1(%%r2),%%r2", xoperands);
-	  targetm.asm_out.internal_label (asm_out_file, "L",
-					  CODE_LABEL_NUMBER (xoperands[1]));
-	}
-      else
-	output_asm_insn ("nop\n\tb,n %0", xoperands);
-    }
-  else
-    output_asm_insn ("b,n %0", xoperands);
-
-  /* Delete the jump.  */
-  SET_INSN_DELETED (NEXT_INSN (insn));
 
   return "";
 }
@@ -8817,28 +8734,6 @@ forward_branch_p (rtx_insn *insn)
   return false;
 }
 
-/* Return 1 if INSN is in the delay slot of a call instruction.  */
-int
-pa_jump_in_call_delay (rtx_insn *insn)
-{
-
-  if (! JUMP_P (insn))
-    return 0;
-
-  if (PREV_INSN (insn)
-      && PREV_INSN (PREV_INSN (insn))
-      && NONJUMP_INSN_P (next_real_insn (PREV_INSN (PREV_INSN (insn)))))
-    {
-      rtx test_insn = next_real_insn (PREV_INSN (PREV_INSN (insn)));
-
-      return (GET_CODE (PATTERN (test_insn)) == SEQUENCE
-	      && XVECEXP (PATTERN (test_insn), 0, 1) == insn);
-
-    }
-  else
-    return 0;
-}
-
 /* Output an unconditional move and branch insn.  */
 
 const char *
@@ -8909,36 +8804,6 @@ pa_output_parallel_addb (rtx *operands, rtx_insn *insn)
 
   output_asm_insn ("add%I1 %1,%0,%0", operands);
   return pa_output_lbranch (operands[3], insn, 1);
-}
-
-/* Return nonzero if INSN (a jump insn) immediately follows a call
-   to a named function.  This is used to avoid filling the delay slot
-   of the jump since it can usually be eliminated by modifying RP in
-   the delay slot of the call.  */
-
-int
-pa_following_call (rtx_insn *insn)
-{
-  if (! TARGET_JUMP_IN_DELAY)
-    return 0;
-
-  /* Find the previous real insn, skipping NOTEs.  */
-  insn = PREV_INSN (insn);
-  while (insn && NOTE_P (insn))
-    insn = PREV_INSN (insn);
-
-  /* Check for CALL_INSNs and millicode calls.  */
-  if (insn
-      && ((CALL_P (insn)
-	   && get_attr_type (insn) != TYPE_DYNCALL)
-	  || (NONJUMP_INSN_P (insn)
-	      && GET_CODE (PATTERN (insn)) != SEQUENCE
-	      && GET_CODE (PATTERN (insn)) != USE
-	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && get_attr_type (insn) == TYPE_MILLI)))
-    return 1;
-
-  return 0;
 }
 
 /* We use this hook to perform a PA specific optimization which is difficult

@@ -2947,8 +2947,7 @@ package body Sem_Ch13 is
                         --  evaluation of this aspect should be delayed to the
                         --  freeze point (why???)
 
-                        if No (Expr)
-                          or else Is_True (Static_Boolean (Expr))
+                        if No (Expr) or else Is_True (Static_Boolean (Expr))
                         then
                            Set_Uses_Lock_Free (E);
                         end if;
@@ -3621,10 +3620,10 @@ package body Sem_Ch13 is
                if (Attr = Name_Constant_Indexing
                     and then Present
                       (Find_Aspect (Etype (Ent), Aspect_Constant_Indexing)))
-
-                 or else (Attr = Name_Variable_Indexing
-                    and then Present
-                      (Find_Aspect (Etype (Ent), Aspect_Variable_Indexing)))
+                 or else
+                   (Attr = Name_Variable_Indexing
+                     and then Present
+                       (Find_Aspect (Etype (Ent), Aspect_Variable_Indexing)))
                then
                   if Debug_Flag_Dot_XX then
                      null;
@@ -3906,12 +3905,11 @@ package body Sem_Ch13 is
            or else Ctrl = Class_Wide_Type (Ent)
            or else
              (Ekind (Ctrl) = E_Anonymous_Access_Type
-               and then
-                 (Designated_Type (Ctrl) = Ent
-                   or else Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+               and then (Designated_Type (Ctrl) = Ent
+                           or else
+                         Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
          then
             null;
-
          else
             return False;
          end if;
@@ -4269,11 +4267,7 @@ package body Sem_Ch13 is
 
             --  Case of address clause for a (non-controlled) object
 
-            elsif
-              Ekind (U_Ent) = E_Variable
-                or else
-              Ekind (U_Ent) = E_Constant
-            then
+            elsif Ekind_In (U_Ent, E_Variable, E_Constant) then
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
@@ -4295,7 +4289,7 @@ package body Sem_Ch13 is
 
                   if Present (O_Ent)
                     and then (Has_Controlled_Component (Etype (O_Ent))
-                                or else Is_Controlled (Etype (O_Ent)))
+                               or else Is_Controlled (Etype (O_Ent)))
                   then
                      Error_Msg_N
                        ("??cannot overlay with controlled object", Expr);
@@ -4826,13 +4820,10 @@ package body Sem_Ch13 is
             --  except from aspect specification.
 
             if From_Aspect_Specification (N) then
-               if not (Is_Protected_Type (U_Ent)
-                        or else Is_Task_Type (U_Ent))
-               then
+               if not Is_Concurrent_Type (U_Ent) then
                   Error_Msg_N
-                    ("Interrupt_Priority can only be defined for task" &
-                     "and protected object",
-                     Nam);
+                    ("Interrupt_Priority can only be defined for task "
+                     & "and protected object", Nam);
 
                elsif Duplicate_Clause then
                   null;
@@ -4985,14 +4976,12 @@ package body Sem_Ch13 is
             --  aspect specification.
 
             if From_Aspect_Specification (N) then
-               if not (Is_Protected_Type (U_Ent)
-                        or else Is_Task_Type (U_Ent)
+               if not (Is_Concurrent_Type (U_Ent)
                         or else Ekind (U_Ent) = E_Procedure)
                then
                   Error_Msg_N
-                    ("Priority can only be defined for task and protected " &
-                     "object",
-                     Nam);
+                    ("Priority can only be defined for task and protected "
+                     & "object", Nam);
 
                elsif Duplicate_Clause then
                   null;
@@ -5828,6 +5817,7 @@ package body Sem_Ch13 is
 
             if Val = No_Uint then
                Err := True;
+
             elsif Val < Lo or else Hi < Val then
                Error_Msg_N ("value outside permitted range", Expr);
                Err := True;
@@ -7402,6 +7392,7 @@ package body Sem_Ch13 is
           Chars => New_External_Name (Chars (Typ), "Invariant"));
       Set_Has_Invariants (Typ);
       Set_Ekind (SId, E_Procedure);
+      Set_Etype (SId, Standard_Void_Type);
       Set_Is_Invariant_Procedure (SId);
       Set_Invariant_Procedure (Typ, SId);
 
@@ -7514,18 +7505,30 @@ package body Sem_Ch13 is
             end if;
 
             --  Invariant'Class, replace with T'Class (obj)
+            --  In ASIS mode, an inherited item is analyzed already, and the
+            --  replacement has been done, so do not repeat transformation
+            --  to prevent ill-formed tree.
 
             if Class_Present (Ritem) then
-               Rewrite (N,
-                 Make_Type_Conversion (Sloc (N),
-                   Subtype_Mark =>
-                     Make_Attribute_Reference (Sloc (N),
-                       Prefix         => New_Occurrence_Of (T, Sloc (N)),
-                       Attribute_Name => Name_Class),
-                   Expression   => Make_Identifier (Sloc (N), Object_Name)));
+               if ASIS_Mode
+                 and then Nkind (Parent (N)) = N_Attribute_Reference
+                 and then Attribute_Name (Parent (N)) = Name_Class
+               then
+                  null;
 
-               Set_Entity (Expression (N), Object_Entity);
-               Set_Etype  (Expression (N), Typ);
+               else
+                  Rewrite (N,
+                    Make_Type_Conversion (Sloc (N),
+                      Subtype_Mark =>
+                        Make_Attribute_Reference (Sloc (N),
+                          Prefix         => New_Occurrence_Of (T, Sloc (N)),
+                          Attribute_Name => Name_Class),
+                      Expression   =>
+                         Make_Identifier (Sloc (N), Object_Name)));
+
+                  Set_Entity (Expression (N), Object_Entity);
+                  Set_Etype  (Expression (N), Typ);
+               end if;
 
             --  Invariant, replace with obj
 
@@ -7624,6 +7627,29 @@ package body Sem_Ch13 is
 
                Set_Parent (Exp, N);
                Preanalyze_Assert_Expression (Exp, Standard_Boolean);
+
+               --  A class-wide invariant may be inherited in a separate unit,
+               --  where the corresponding expression cannot be resolved by
+               --  visibility, because it refers to a local function. Propagate
+               --  semantic information to the original representation item, to
+               --  be used when an invariant procedure for a derived type is
+               --  constructed.
+
+               --  Unclear how to handle class-wide invariants that are not
+               --  function calls ???
+
+               if not Inherit
+                 and then Class_Present (Ritem)
+                 and then Nkind (Exp) = N_Function_Call
+                 and then Nkind (Arg2) = N_Indexed_Component
+               then
+                  Rewrite (Arg2,
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Entity (Name (Exp)), Loc),
+                      Parameter_Associations =>
+                        New_Copy_List (Expressions (Arg2))));
+               end if;
 
                --  In ASIS mode, even if assertions are not enabled, we must
                --  analyze the original expression in the aspect specification
@@ -8501,9 +8527,9 @@ package body Sem_Ch13 is
       --  at the freeze point.
 
       elsif A_Id = Aspect_Input  or else
-         A_Id = Aspect_Output    or else
-         A_Id = Aspect_Read      or else
-         A_Id = Aspect_Write
+            A_Id = Aspect_Output or else
+            A_Id = Aspect_Read   or else
+            A_Id = Aspect_Write
       then
          Analyze (End_Decl_Expr);
          Check_Overloaded_Name;
@@ -8862,8 +8888,8 @@ package body Sem_Ch13 is
                     and then Has_Discriminants (T))
                  or else
                   (Is_Access_Type (T)
-                     and then Is_Record_Type (Designated_Type (T))
-                     and then Has_Discriminants (Designated_Type (T)))
+                    and then Is_Record_Type (Designated_Type (T))
+                    and then Has_Discriminants (Designated_Type (T)))
                then
                   Error_Msg_NE
                     ("invalid address clause for initialized object &!",
@@ -8954,11 +8980,8 @@ package body Sem_Ch13 is
                then
                   return;
 
-               elsif
-                  Ekind (Ent) = E_Constant
-                    or else
-                  Ekind (Ent) = E_In_Parameter
-               then
+               elsif Ekind_In (Ent, E_Constant, E_In_Parameter) then
+
                   --  This is the case where we must have Ent defined before
                   --  U_Ent. Clearly if they are in different units this
                   --  requirement is met since the unit containing Ent is
@@ -10281,7 +10304,8 @@ package body Sem_Ch13 is
 
       --  Check Ada derivation of CPP type
 
-      if Expander_Active    -- why? losing errors in -gnatc mode???
+      if Expander_Active              -- why? losing errors in -gnatc mode???
+        and then Present (Etype (E))  -- defend against errors
         and then Tagged_Type_Expansion
         and then Ekind (E) = E_Record_Type
         and then Etype (E) /= E
@@ -11132,9 +11156,7 @@ package body Sem_Ch13 is
       --  need to know such a size, but this routine may be called with a
       --  generic type as part of normal processing.
 
-      elsif Is_Generic_Type (R_Typ)
-        or else R_Typ = Any_Type
-      then
+      elsif Is_Generic_Type (R_Typ) or else R_Typ = Any_Type then
          return 0;
 
          --  Access types (cannot have size smaller than System.Address)
@@ -11849,8 +11871,7 @@ package body Sem_Ch13 is
          (Is_Record_Type (T2) or else Is_Array_Type (T2))
         and then
          (Component_Alignment (T1) /= Component_Alignment (T2)
-            or else
-              Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
@@ -12739,9 +12760,7 @@ package body Sem_Ch13 is
 
          Prim := First (Choices (Assoc));
 
-         if Nkind (Prim) /= N_Identifier
-           or else Present (Next (Prim))
-         then
+         if Nkind (Prim) /= N_Identifier or else Present (Next (Prim)) then
             Error_Msg_N ("illegal name in association", Prim);
 
          elsif Chars (Prim) = Name_First then
@@ -12858,24 +12877,22 @@ package body Sem_Ch13 is
       if Warn_On_Unchecked_Conversion
         and then not In_Predefined_Unit (N)
         and then RTU_Loaded (Ada_Calendar)
-        and then
-          (Chars (Source) = Name_Time
-             or else
-           Chars (Target) = Name_Time)
+        and then (Chars (Source) = Name_Time
+                    or else
+                  Chars (Target) = Name_Time)
       then
          --  If Ada.Calendar is loaded and the name of one of the operands is
          --  Time, there is a good chance that this is Ada.Calendar.Time.
 
          declare
-            Calendar_Time : constant Entity_Id :=
-                              Full_View (RTE (RO_CA_Time));
+            Calendar_Time : constant Entity_Id := Full_View (RTE (RO_CA_Time));
          begin
             pragma Assert (Present (Calendar_Time));
 
             if Source = Calendar_Time or else Target = Calendar_Time then
                Error_Msg_N
-                 ("?z?representation of 'Time values may change between " &
-                  "'G'N'A'T versions", N);
+                 ("?z?representation of 'Time values may change between "
+                  & "'G'N'A'T versions", N);
             end if;
          end;
       end if;

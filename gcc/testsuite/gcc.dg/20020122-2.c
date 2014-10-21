@@ -3,9 +3,10 @@
   
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-additional-options "-march=athlon" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 extern int access( char* );
+extern int strcmp(const char *s1, const char *s2);
 extern int a();
 char* foocp();
 

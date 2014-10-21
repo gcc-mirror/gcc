@@ -1,3 +1,4 @@
 /* 20-bit address */
 PARTIAL_INT_MODE (SI, 20, PSI);
 
+INT_N (PSI, 20);

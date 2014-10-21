@@ -1,3 +1,69 @@
+2014-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* c-typeck.c (output_init_element): Allow initializing objects with
+	static storage duration with compound literals even in C99 and add
+	pedwarn for it.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* c-typeck.c (digest_init): Allow initializing objects with static
+	storage duration with compound literals even in C99 and add pedwarn
+	for it.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63543
+	* c-tree.h (C_TYPE_ERROR_REPORTED): Define.
+	* c-typeck.c (build_indirect_ref): Don't print the "dereferencing..."
+	error multiple times.  Print the type.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63549
+	* c-typeck.c (build_array_ref): Bail if the index in an incomplete
+	type.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Use OPT_Wimplicit_int unconditionally.
+	(start_function): Use OPT_Wimplicit_int instead of 0.
+	(store_parm_decls_oldstyle): Likewise.
+
+2014-10-17  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/61848
+	* c-decl.c (merge_decls): Don't merge section name or tls model
+	to newdecl symtab node, instead merge to olddecl.  Override
+	existing olddecl section name.  Set tls_model for all thread-local
+	vars, not just OMP thread-private ones.  Remove incorrect comment.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* c-parser.c (c_parse_init): Add RID entries for each __intN.
+	(c_token_starts_typename): Check all __intN, not just __int128.
+	(c_token_starts_declspecs): Likewise.
+	(c_parser_declspecs): Likewise.
+	(c_parser_attribute_any_word): Likewise.
+	(c_parser_objc_selector): Likewise.
+	* c-tree.h (c_typespec_keyword): cts_int128 -> cts_int_n.
+	(struct c_declspecs): Add int_n_idx field to record *which* __intN
+	is specified.
+	* c-decl.c (declspecs_add_type): Check for all __intN, not just
+	__int128.
+	(finish_declspecs): Likewise.
+
+2014-10-13  Anthony Brandon  <anthony.brandon@gmail.com>
+
+        * c-parser.c (c_parser_all_labels): New function to replace
+	the duplicate code.
+        (c_parser_statement): Call the new function.
+
 2014-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63480

@@ -2,11 +2,18 @@
 /* { dg-options "-O2 -m4" } */
 
 int pid_count = 0;
-main (int argc, char *argv[])
+
+unsigned int getopt (int, const char**, const char*);
+unsigned long long atoll (const char*);
+int fork (void);
+void kill (int, int);
+
+int
+main (int argc, const char *argv[])
 {
   unsigned int c;
   unsigned long long maxbytes = 0;
-  extern char *optarg;
+  extern const char *optarg;
   int i;
   int pid_cntr;
   int pid;

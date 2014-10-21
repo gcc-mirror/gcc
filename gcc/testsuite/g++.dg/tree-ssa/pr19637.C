@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom1" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-dom1" } */
 
 #include <new>
 

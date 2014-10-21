@@ -17,7 +17,7 @@
 
 // 20.7.11 Function template bind
 
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <functional>
 #include <testsuite_hooks.h>

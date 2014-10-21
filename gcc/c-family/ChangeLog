@@ -1,3 +1,47 @@
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_post_options): Set warn_implicit_int.
+	* c.opt (Wimplicit-int): Initialize to -1.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-pragma.c: Adjust include files.
+	* c-semantics.c: Likewise.
+
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* c-cppbuiltin.c (cpp_atomic_builtins): Don't assume pointers are
+	multiples of bytes.
+
+2014-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	* c-common.h (CPP_PREPARSED_EXPR): New.
+	(N_CP_TTYPES): Adjust.
+
+2014-10-15  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_init_options): Make -std=gnu11 the default for C.
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* c-pretty-print.c (pp_c_integer_constant): Check for all __intN
+	types, not just __int128.
+	* c-cppbuiltin.c (c_cpp_builtins): Add builtins for all __intN
+	types, not just __int128.
+	(cpp_atomic_builtins): Round pointer sizes up.
+	(type_suffix): Use type precision, not specific types.
+	* c-common.c (c_common_reswords): Remove __int128 special case.
+	(c_common_type_for_size): Check for all __intN types, not just
+	__int128.
+	(c_common_type_for_mode): Likewise.
+	(c_common_signed_or_unsigned_type): Likewise.
+	(c_build_bitfield_integer_type): Likewise.
+	(c_common_nodes_and_builtins): Likewise.
+	(keyword_begins_type_specifier): Likewise.
+	* c-common.h (rid): Remove RID_INT128 and add RID_INT_N_* for all
+	__intN variants.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-common.c: Use hash_table instead of hashtab.

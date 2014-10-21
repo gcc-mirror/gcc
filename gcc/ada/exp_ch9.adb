@@ -11449,6 +11449,13 @@ package body Exp_Ch9 is
       --  Used to determine the proper location of wrapper body insertions
 
    begin
+      --  if no task body procedure, means we had an error in configurable
+      --  run-time mode, and there is no point in proceeding further.
+
+      if No (Task_Body_Procedure (Ttyp)) then
+         return;
+      end if;
+
       --  Add renaming declarations for discriminals and a declaration for the
       --  entry family index (if applicable).
 

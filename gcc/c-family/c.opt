@@ -488,7 +488,7 @@ C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning LangEnabledBy(C 
 Warn about implicit function declarations
 
 Wimplicit-int
-C ObjC Var(warn_implicit_int) Warning LangEnabledBy(C ObjC,Wimplicit)
+C ObjC Var(warn_implicit_int) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
 Warn when a declaration does not specify a type
 
 Wimport

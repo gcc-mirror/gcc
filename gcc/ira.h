@@ -64,7 +64,7 @@ struct target_ira
      class.  */
   enum reg_class x_ira_pressure_class_translate[N_REG_CLASSES];
 
-  /* Bigest pressure register class containing stack registers.
+  /* Biggest pressure register class containing stack registers.
      NO_REGS if there are no stack registers.  */
   enum reg_class x_ira_stack_reg_pressure_class;
 

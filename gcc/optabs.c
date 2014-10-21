@@ -35,6 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "tm_p.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "except.h"
 #include "expr.h"
@@ -8622,6 +8628,33 @@ get_best_mem_extraction_insn (extraction_insn *insn,
   struct_bits -= struct_bits % BITS_PER_UNIT;
   return get_best_extraction_insn (insn, pattern, ET_unaligned_mem,
 				   struct_bits, field_mode);
+}
+
+/* Determine whether "1 << x" is relatively cheap in word_mode.  */
+
+bool
+lshift_cheap_p (bool speed_p)
+{
+  /* FIXME: This should be made target dependent via this "this_target"
+     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
+  static bool init[2] = { false, false };
+  static bool cheap[2] = { true, true };
+
+  /* If the targer has no lshift in word_mode, the operation will most
+     probably not be cheap.  ??? Does GCC even work for such targets?  */
+  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
+    return false;
+
+  if (!init[speed_p])
+    {
+      rtx reg = gen_raw_REG (word_mode, 10000);
+      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
+			       speed_p);
+      cheap[speed_p] = cost < COSTS_N_INSNS (3);
+      init[speed_p] = true;
+    }
+
+  return cheap[speed_p];
 }
 
 #include "gt-optabs.h"

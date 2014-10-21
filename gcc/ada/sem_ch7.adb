@@ -1383,8 +1383,15 @@ package body Sem_Ch7 is
                Inherit_Default_Init_Cond_Procedure (E);
             end if;
 
+            --  If invariants are present, build the invariant procedure for a
+            --  private type, but not any of its subtypes.
+
             if Has_Invariants (E) then
-               Build_Invariant_Procedure (E, N);
+               if Ekind (E) = E_Private_Subtype then
+                  null;
+               else
+                  Build_Invariant_Procedure (E, N);
+               end if;
             end if;
          end if;
 

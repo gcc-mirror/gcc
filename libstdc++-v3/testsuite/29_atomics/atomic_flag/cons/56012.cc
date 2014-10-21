@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -Wsystem-headers -Wnarrowing" }
+// { dg-options "-std=gnu++11 -Wsystem-headers -Wnarrowing" }
 // { dg-do compile }
 
 // Copyright (C) 2013-2014 Free Software Foundation, Inc.

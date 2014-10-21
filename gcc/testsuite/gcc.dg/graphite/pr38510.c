@@ -3,6 +3,7 @@ typedef long int integer;
 typedef double doublereal;
 
 static int balanc_(nm, n, a, low, igh, scale)
+int nm, n, low, igh, scale;
 doublereal *a;
 {
  integer a_dim1, a_offset, i__1, i__2;

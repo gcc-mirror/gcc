@@ -42,16 +42,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "flags.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "hashtab.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "target.h"
@@ -3463,6 +3467,11 @@ assign_parms (tree fndecl)
     assign_parms_unsplit_complex (&all, fnargs);
 
   fnargs.release ();
+
+  /* Initialize pic_offset_table_rtx with a pseudo register
+     if required.  */
+  if (targetm.use_pseudo_pic_reg ())
+    pic_offset_table_rtx = gen_reg_rtx (Pmode);
 
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */

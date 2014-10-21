@@ -588,8 +588,16 @@ enum integer_type_kind {
   itk_unsigned_long,
   itk_long_long,
   itk_unsigned_long_long,
-  itk_int128,
-  itk_unsigned_int128,
+
+  itk_intN_0,
+  itk_unsigned_intN_0,
+  itk_intN_1,
+  itk_unsigned_intN_1,
+  itk_intN_2,
+  itk_unsigned_intN_2,
+  itk_intN_3,
+  itk_unsigned_intN_3,
+
   itk_none
 };
 
@@ -1188,7 +1196,7 @@ enum omp_clause_map_kind
   OMP_CLAUSE_MAP_TOFROM,
   /* The following kind is an internal only map kind, used for pointer based
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
-     which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
+     which is implicitly POINTER_SIZE_UNITS, but the bias.  */
   OMP_CLAUSE_MAP_POINTER,
   /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
      OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses

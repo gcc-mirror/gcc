@@ -1,3 +1,93 @@
+2014-10-17  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/61848
+	* decl.c (merge_decls): Don't merge section name, comdat group or
+	tls model to newdecl symtab node, instead merge to olddecl.
+	Override existing olddecl section name.  Set tls_model for all
+	thread-local vars, not just OMP thread-private ones.  Remove
+	incorrect comment.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cp-tree.h: Adjust include files.
+
+2014-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63528
+	* pt.c (lookup_template_variable): Call coerce_template_parms.
+
+2014-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (is_instantiation_of_constexpr, literal_type_p,
+	ensure_literal_type_for_constexpr_object,
+	constexpr_fundef_hasher::equal, constexpr_fundef_hasher::hash,
+	retrieve_constexpr_fundef, is_valid_constexpr_fn,
+	build_anon_member_initialization, build_data_member_initialization,
+	check_constexpr_bind_expr_vars, check_constexpr_ctor_body_1,
+	check_constexpr_ctor_body, sort_constexpr_mem_initializers,
+	build_constexpr_constructor_member_initializers, constexpr_fn_retval,
+	massage_constexpr_body, cx_check_missing_mem_inits,
+	register_constexpr_fundef, explain_invalid_constexpr_fn,
+	constexpr_call_hasher::hash, constexpr_call_hasher::equal,
+	maybe_initialize_constexpr_call_table, get_function_named_in_call,
+	get_nth_callarg, lookup_parameter_binding,
+	cxx_eval_builtin_function_call, adjust_temp_type,
+	cxx_bind_parameters_in_call, push_cx_call_context,
+	pop_cx_call_context, cx_error_context, cxx_eval_call_expression,
+	reduced_constant_expression_p, verify_constant,
+	cxx_eval_unary_expression, cxx_eval_binary_expression,
+	cxx_eval_conditional_expression, cxx_eval_array_reference,
+	cxx_eval_component_reference, cxx_eval_bit_field_ref,
+	cxx_eval_logical_expression, base_field_constructor_elt,
+	cxx_eval_bare_aggregate, cxx_eval_vec_init_1, cxx_eval_vec_init,
+	cxx_fold_indirect_ref, cxx_eval_indirect_ref, non_const_var_error,
+	cxx_eval_trinary_expression, var_in_constexpr_fn,
+	cxx_eval_constant_expression, cxx_eval_outermost_constant_expr,
+	is_sub_constant_expr, cxx_constant_value, maybe_constant_value,
+	maybe_constant_init, potential_constant_expression_1,
+	potential_constant_expression, potential_rvalue_constant_expression,
+	require_potential_constant_expression,
+	require_potential_rvalue_constant_expression): Moved definitions...
+	* constexpr.c: ... here, new file.
+	* Make-lang.in: Update.
+	* config-lang.in: Likewise.
+
+2014-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	* parser.c (struct saved_token_sentinel): New.
+	(cp_parser_statement): Use it.
+	(cp_parser_start_tentative_firewall): New.
+	(cp_parser_end_tentative_firewall): New.
+	(cp_parser_lambda_expression): Use them.
+	(cp_parser_statement_expr): New.
+	(cp_parser_primary_expression): Use it.
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* typeck.c (cp_common_type): Check for all __intN types, not just
+	__int128.
+	* decl.c (grokdeclarator): Likewise.
+	* rtti.c (emit_support_tinfos): Check for all __intN types, not just
+	__int128.
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Check
+	for all __intN types, not just __int128.
+	(cp_parser_simple_type_specifier): Likewise.
+	* mangle.c (integer_type_codes): Remove int128-specific codes.
+	* cp-tree.h (cp_decl_specifier_seq): Add int_n_idx to store which
+	__intN was specified.
+	* lex.c (init_reswords): Reserve all __intN keywords.
+
+2014-10-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* typeck.c (cp_build_unary_op) [TRUTH_NOT_EXPR]: Accept float vectors.
+
+2014-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* mangle.c (mangle_conv_op_name_for_type): Cast elements to
+	unsigned long.
+	(print_template_statistics): Cast size and elements to long.
+
 2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cp-gimplify.c, cp-tree.h, decl.c, mangle.c, name-lookup.c,

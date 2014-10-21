@@ -125,7 +125,7 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 
 @end deftypefn
 
-@c choose-temp.c:46
+@c choose-temp.c:45
 @deftypefn Extension char* choose_temp_base (void)
 
 Return a prefix for temporary file names or @code{NULL} if unable to
@@ -139,7 +139,7 @@ not recommended.
 @end deftypefn
 
 @c make-temp-file.c:96
-@deftypefn Replacement char* choose_tmpdir ()
+@deftypefn Replacement const char* choose_tmpdir ()
 
 Returns a pointer to a directory path suitable for creating temporary
 files in.
@@ -160,9 +160,8 @@ number of seconds used.
   @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
-@code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
-available.  The argument list is terminated by the first @code{NULL}
-pointer encountered.  Pointers to empty strings are ignored.
+@code{xmalloc}ed memory.  The argument list is terminated by the first
+@code{NULL} pointer encountered.  Pointers to empty strings are ignored.
 
 @end deftypefn
 
@@ -528,7 +527,7 @@ nineteen EBCDIC varying characters is tested; exercise caution.)
 @end ftable
 @end defvr
 
-@c hashtab.c:336
+@c hashtab.c:328
 @deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size}, @
 htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f}, @
 htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f}, @
@@ -1163,7 +1162,7 @@ control over the state of the random number generator.
 
 @end deftypefn
 
-@c concat.c:174
+@c concat.c:160
 @deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @
   @dots{}, @code{NULL})
 

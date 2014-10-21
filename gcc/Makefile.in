@@ -1272,6 +1272,8 @@ OBJS = \
 	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
+	ipa-icf.o \
+	ipa-icf-gimple.o \
 	ipa-reference.o \
 	ipa-ref.o \
 	ipa-utils.o \
@@ -3639,10 +3641,9 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 		$(check_p_numbers)))
 
 # For parallelized check-% targets, this decides whether parallelization
-# is desirable (if -jN is used and RUNTESTFLAGS doesn't contain anything
-# but optional --target_board or --extra_opts arguments).  If desirable,
-# recursive make is run with check-parallel-$lang{,1,2,3,4,5} etc. goals,
-# which can be executed in parallel, as they are run in separate directories.
+# is desirable (if -jN is used).  If desirable, recursive make is run with
+# check-parallel-$lang{,1,2,3,4,5} etc. goals, which can be executed in
+# parallel, as they are run in separate directories.
 # check-parallel-$lang{,1,2,3,4,5} etc. goals invoke runtest with
 # GCC_RUNTEST_PARALLELIZE_DIR var in the environment and runtest_file_p
 # dejaGNU procedure is overridden to additionally synchronize through
@@ -3784,6 +3785,7 @@ TAGS: lang.tags
 	  fi;						\
 	done;						\
 	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
+	      ../include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
 	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \

@@ -1,3 +1,26 @@
+2014-10-16  Martin Liska  <mliska@suse.cz>
+
+	* asan/Makefile.am: IPA ICF pass is disabled.
+	* asan/Makefile.in: Likewise.
+
+2014-10-14  David S. Miller  <davem@davemloft.net>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc (time_t):
+	Define at __kernel_time_t, as needed for sparc.
+	(struct __old_kernel_stat): Don't check if __sparc__ is defined.
+	* libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer): Define struct___old_kernel_stat_sz,
+	struct_kernel_stat_sz, and struct_kernel_stat64_sz for sparc.
+	(__sanitizer_ipc_perm): Adjust for sparc targets.
+	(__sanitizer_shmid_ds): Likewsie.
+	(__sanitizer_sigaction): Likewsie.
+	(IOC_SIZE): Likewsie.
+
+2014-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan/Makefile.am (DEFS): Add -DPIC.
+	* ubsan/Makefile.in: Regenerated.
+
 2014-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* configure.tgt: Enable build on aarch64*-linux.

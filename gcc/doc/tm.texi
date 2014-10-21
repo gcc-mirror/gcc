@@ -3903,6 +3903,16 @@ If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,
 @code{TARGET_FUNCTION_ARG} serves both purposes.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_USE_PSEUDO_PIC_REG (void)
+This hook should return 1 in case pseudo register should be created
+for pic_offset_table_rtx during function expand.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_INIT_PIC_REG (void)
+Perform a target dependent initialization of pic_offset_table_rtx.
+This hook is called at the start of register allocation.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
 This target hook returns the number of bytes at the beginning of an
 argument that must be put in registers.  The value must be zero for

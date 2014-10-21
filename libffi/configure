@@ -12519,6 +12519,28 @@ $as_echo "#define HAVE_AS_CFI_PSEUDO_OP 1" >>confdefs.h
  fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if compiler supports -Qunused-arguments" >&5
+$as_echo_n "checking if compiler supports -Qunused-arguments... " >&6; }
+if test "${libffi_cv_c_unused_arguments+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -Qunused-arguments"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libffi_cv_c_unused_arguments=yes
+else
+  libffi_cv_c_unused_arguments=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_c_unused_arguments" >&5
+$as_echo "$libffi_cv_c_unused_arguments" >&6; }
+
 if test x$TARGET = xSPARC; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler and linker support unaligned pc related relocs" >&5
 $as_echo_n "checking assembler and linker support unaligned pc related relocs... " >&6; }
@@ -12604,9 +12626,14 @@ else
 
 	libffi_cv_as_x86_pcrel=yes
 	echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+	CFLAGS_hold=$CFLAGS
+	if test "$libffi_cv_c_unused_arguments" = yes; then
+	    CFLAGS="$CFLAGS -Qunused-arguments"
+	fi
 	if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
 	    libffi_cv_as_x86_pcrel=no
 	fi
+	CFLAGS=$CFLAGS_hold
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_x86_pcrel" >&5
@@ -12732,9 +12759,14 @@ else
 
 	libffi_cv_as_x86_64_unwind_section_type=yes
 	echo '.section .eh_frame,"a",@unwind' > conftest.s
+	CFLAGS_hold=$CFLAGS
+	if test "$libffi_cv_c_unused_arguments" = yes; then
+	    CFLAGS="$CFLAGS -Qunused-arguments"
+	fi
 	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
 	    libffi_cv_as_x86_64_unwind_section_type=no
 	fi
+	CFLAGS=$CFLAGS_hold
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_x86_64_unwind_section_type" >&5

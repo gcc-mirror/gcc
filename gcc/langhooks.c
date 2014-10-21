@@ -675,7 +675,7 @@ lhd_begin_section (const char *name)
     saved_section = text_section;
 
   /* Create a new section and switch to it.  */
-  section = get_section (name, SECTION_DEBUG, NULL);
+  section = get_section (name, SECTION_DEBUG | SECTION_EXCLUDE, NULL);
   switch_to_section (section);
 }
 

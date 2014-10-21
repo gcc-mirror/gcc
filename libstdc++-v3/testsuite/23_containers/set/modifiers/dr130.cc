@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // 2008-07-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 //
 // Copyright (C) 2009-2014 Free Software Foundation, Inc.

@@ -71,6 +71,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "emit-rtl.h"
 #include "basic-block.h"
@@ -91,7 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "params.h"
 #include "intl.h"
-#include "function.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-dump.h"
@@ -294,6 +299,9 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 
   if (thunk_of->thunk.thunk_p)
     node = duplicate_thunk_for_node (thunk_of, node);
+
+  if (!DECL_ARGUMENTS (thunk->decl))
+    thunk->get_body ();
 
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)

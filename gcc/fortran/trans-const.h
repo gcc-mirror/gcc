@@ -30,6 +30,10 @@ void gfc_conv_tree_to_mpfr (mpfr_ptr, tree);
    not supported for the given type.  */
 tree gfc_build_inf_or_huge (tree, int);
 
+/* Build a tree containing a NaN for the given type, with significand
+   specified by second argument.  */
+tree gfc_build_nan (tree, const char *);
+
 /* Build a tree for a constant.  Must be an EXPR_CONSTANT gfc_expr.
    For CHARACTER literal constants, the caller still has to set the
    string length as a separate operation.  */

@@ -26,6 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "vec.h"
 #include "basic-block.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "ipa-ref.h"
 #include "dumpfile.h"
@@ -179,6 +185,12 @@ public:
 
   /* Dump referring in list to FILE.  */
   void dump_referring (FILE *);
+
+  /* Get number of references for this node.  */
+  inline unsigned num_references (void)
+  {
+    return ref_list.references ? ref_list.references->length () : 0;
+  }
 
   /* Iterates I-th reference in the list, REF is also set.  */
   ipa_ref *iterate_reference (unsigned i, ipa_ref *&ref);
@@ -1249,6 +1261,8 @@ public:
   /* True if this decl calls a COMDAT-local function.  This is set up in
      compute_inline_parameters and inline_call.  */
   unsigned calls_comdat_local : 1;
+  /* True if node has been created by merge operation in IPA-ICF.  */
+  unsigned icf_merged: 1;
 };
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node

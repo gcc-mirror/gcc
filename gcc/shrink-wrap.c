@@ -30,16 +30,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "flags.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "hashtab.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "target.h"
@@ -579,7 +583,8 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
       if (frame_pointer_needed)
 	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     HARD_FRAME_POINTER_REGNUM);
-      if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
+      if (pic_offset_table_rtx 
+	  && (unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
 	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     PIC_OFFSET_TABLE_REGNUM);
       if (crtl->drap_reg)

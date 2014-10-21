@@ -953,13 +953,14 @@ Find_var::expression(Expression** pexpr)
 	}
     }
 
-  // We traverse the code of any function we see.  Note that this
-  // means that we will traverse the code of a function whose address
-  // is taken even if it is not called.
+  // We traverse the code of any function or bound method we see.  Note that
+  // this means that we will traverse the code of a function or bound method
+  // whose address is taken even if it is not called.
   Func_expression* fe = e->func_expression();
-  if (fe != NULL)
+  Bound_method_expression* bme = e->bound_method_expression();
+  if (fe != NULL || bme != NULL)
     {
-      const Named_object* f = fe->named_object();
+      const Named_object* f = fe != NULL ? fe->named_object() : bme->function();
       if (f->is_function() && f->package() == NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
@@ -4944,6 +4945,14 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       // recovered, we can't inline it, because that will mess up
       // our return address comparison.
       bool is_inlinable = !(this->calls_recover_ || this->is_recover_thunk_);
+
+      // If a function calls __go_set_defer_retaddr, then mark it as
+      // uninlinable.  This prevents the GCC backend from splitting
+      // the function; splitting the function is a bad idea because we
+      // want the return address label to be in the same function as
+      // the call.
+      if (this->calls_defer_retaddr_)
+	is_inlinable = false;
 
       // If this is a thunk created to call a function which calls
       // the predeclared recover function, we need to disable

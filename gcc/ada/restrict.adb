@@ -1533,7 +1533,8 @@ package body Restrict is
    begin
       return not Restrictions.Set (No_Tasking)
         and then (not Restrictions.Set (Max_Tasks)
-                    or else Restrictions.Value (Max_Tasks) > 0);
+                   or else Restrictions.Value (Max_Tasks) > 0)
+        and then not No_Run_Time_Mode;
    end Tasking_Allowed;
 
 end Restrict;

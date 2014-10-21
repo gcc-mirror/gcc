@@ -167,15 +167,11 @@ runtime_setmg(M* mp, G* gp)
 	g = gp;
 }
 
-// The static TLS size.  See runtime_newm.
-static int tlssize;
-
 // Start a new thread.
 static void
 runtime_newosproc(M *mp)
 {
 	pthread_attr_t attr;
-	size_t stacksize;
 	sigset_t clear, old;
 	pthread_t tid;
 	int ret;
@@ -184,19 +180,6 @@ runtime_newosproc(M *mp)
 		runtime_throw("pthread_attr_init");
 	if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
 		runtime_throw("pthread_attr_setdetachstate");
-
-	stacksize = PTHREAD_STACK_MIN;
-
-	// With glibc before version 2.16 the static TLS size is taken
-	// out of the stack size, and we get an error or a crash if
-	// there is not enough stack space left.  Add it back in if we
-	// can, in case the program uses a lot of TLS space.  FIXME:
-	// This can be disabled in glibc 2.16 and later, if the bug is
-	// indeed fixed then.
-	stacksize += tlssize;
-
-	if(pthread_attr_setstacksize(&attr, stacksize) != 0)
-		runtime_throw("pthread_attr_setstacksize");
 
 	// Block signals during pthread_create so that the new thread
 	// starts with signals disabled.  It will enable them in minit.
@@ -305,43 +288,6 @@ runtime_mcall(void (*pfn)(G*))
 		runtime_throw("runtime: mcall function returned");
 	}
 }
-
-#ifdef HAVE_DL_ITERATE_PHDR
-
-// Called via dl_iterate_phdr.
-
-static int
-addtls(struct dl_phdr_info* info, size_t size __attribute__ ((unused)), void *data)
-{
-	size_t *total = (size_t *)data;
-	unsigned int i;
-
-	for(i = 0; i < info->dlpi_phnum; ++i) {
-		if(info->dlpi_phdr[i].p_type == PT_TLS)
-			*total += info->dlpi_phdr[i].p_memsz;
-	}
-	return 0;
-}
-
-// Set the total TLS size.
-
-static void
-inittlssize()
-{
-	size_t total = 0;
-
-	dl_iterate_phdr(addtls, (void *)&total);
-	tlssize = total;
-}
-
-#else
-
-static void
-inittlssize()
-{
-}
-
-#endif
 
 // Goroutine scheduler
 // The scheduler's job is to distribute ready-to-run goroutines over worker threads.
@@ -481,7 +427,6 @@ runtime_schedinit(void)
 	g->m = m;
 
 	initcontext();
-	inittlssize();
 
 	runtime_sched.maxmcount = 10000;
 	runtime_precisestack = 0;

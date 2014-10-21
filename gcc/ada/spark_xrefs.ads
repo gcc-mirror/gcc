@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,6 +186,21 @@ package SPARK_Xrefs is
    --  this special variable are always 0.
 
    --    Examples: ??? add examples here
+
+   --  -------------------------------
+   --  -- Generated Globals Section --
+   --  -------------------------------
+
+   --  The Generated Globals section is located at the end of the ALI file.
+
+   --  All lines introducing information related to the Generated Globals
+   --  have the string "GG" appearing in the beginning. This string ("GG")
+   --  should therefore not be used in the beginning of any line that does
+   --  not relate to Generated Globals.
+
+   --  The processing (reading and writing) of this section happens in
+   --  package Flow_Computed_Globals (from the SPARK 2014 sources), for
+   --  further information please refer there.
 
    ----------------
    -- Xref Table --

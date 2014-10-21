@@ -1,6 +1,6 @@
 /* PR debug/43077 */
 /* { dg-do run } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 int varb;
 

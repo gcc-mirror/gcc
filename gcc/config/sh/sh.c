@@ -38,9 +38,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 #include "reload.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "diagnostic-core.h"
@@ -2281,20 +2286,20 @@ sh_eval_treg_value (rtx op)
   return t ^ (cmpval == cmpop);
 }
 
-/* Emit INSN, possibly in a PARALLEL with an USE of fpscr for SH4.  */
-
+/* Emit INSN, possibly in a PARALLEL with an USE/CLOBBER of FPSCR bits in case
+   of floating-point comparisons.  */
 static void
 sh_emit_set_t_insn (rtx insn, enum machine_mode mode)
 {
-  if ((TARGET_SH4 || TARGET_SH2A) && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if (TARGET_FPU_ANY && GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_CODE (insn) != PARALLEL)
     {
       insn = gen_rtx_PARALLEL (VOIDmode,
-		       gen_rtvec (2, insn,
-			          gen_rtx_USE (VOIDmode, get_fpscr_rtx ())));
-      (mode == SFmode ? emit_sf_insn : emit_df_insn) (insn);
+	  gen_rtvec (3, insn,
+	      gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, FPSCR_STAT_REG)),
+	      gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, FPSCR_MODES_REG))));
     }
-  else
-    emit_insn (insn);
+  emit_insn (insn);
 }
 
 /* Prepare the operands for an scc instruction; make sure that the
@@ -6438,14 +6443,6 @@ sh_reorg (void)
 	  emit_insn_before (gen_use_sfunc_addr (reg), insn);
 	}
     }
-#if 0
-  /* fpscr is not actually a user variable, but we pretend it is for the
-     sake of the previous optimization passes, since we want it handled like
-     one.  However, we don't have any debugging information for it, so turn
-     it into a non-user variable now.  */
-  if (TARGET_SH4)
-    REG_USERVAR_P (get_fpscr_rtx ()) = 0;
-#endif
   mdep_reorg_phase = SH_AFTER_MDEP_REORG;
 }
 
@@ -7250,6 +7247,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
 	     && reg != T_REG && reg != GBR_REG
+	     && reg != FPSCR_MODES_REG && reg != FPSCR_STAT_REG
 	     /* Push fpscr only on targets which have FPU */
 	     && (reg != FPSCR_REG || TARGET_FPU_ANY))
 	  : (/* Only push those regs which are used and need to be saved.  */
@@ -9874,19 +9872,6 @@ fp_one_operand (rtx op)
   return REAL_VALUES_EQUAL (r, dconst1);
 }
 
-/* In general mode switching is used.  If we are
-   compiling without -mfmovd, movsf_ie isn't taken into account for
-   mode switching.  We could check in machine_dependent_reorg for
-   cases where we know we are in single precision mode, but there is
-   interface to find that out during reload, so we must avoid
-   choosing an fldi alternative during reload and thus failing to
-   allocate a scratch register for the constant loading.  */
-bool
-fldi_ok (void)
-{
-  return true;
-}
-
 /* Return the TLS type for TLS symbols.  */
 enum tls_model
 tls_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
@@ -10016,21 +10001,6 @@ get_t_reg_rtx (void)
   return t_reg_rtx;
 }
 
-static GTY(()) rtx fpscr_rtx;
-rtx
-get_fpscr_rtx (void)
-{
-  if (! fpscr_rtx)
-    {
-      fpscr_rtx = gen_rtx_REG (PSImode, FPSCR_REG);
-      REG_USERVAR_P (fpscr_rtx) = 1;
-      mark_user_reg (fpscr_rtx);
-    }
-  if (! reload_completed || mdep_reorg_phase != SH_AFTER_MDEP_REORG)
-    mark_user_reg (fpscr_rtx);
-  return fpscr_rtx;
-}
-
 static GTY(()) tree fpscr_values;
 
 static void
@@ -10062,51 +10032,12 @@ emit_fpu_switch (rtx scratch, int index)
       emit_move_insn (scratch, XEXP (src, 0));
       if (index != 0)
 	emit_insn (gen_addsi3 (scratch, scratch, GEN_INT (index * 4)));
-      src = adjust_automodify_address (src, PSImode, scratch, index * 4);
+      src = adjust_automodify_address (src, SImode, scratch, index * 4);
     }
   else
-    src = adjust_address (src, PSImode, index * 4);
+    src = adjust_address (src, SImode, index * 4);
 
-  dst = get_fpscr_rtx ();
-  emit_move_insn (dst, src);
-}
-
-void
-emit_sf_insn (rtx pat)
-{
-  emit_insn (pat);
-}
-
-void
-emit_df_insn (rtx pat)
-{
-  emit_insn (pat);
-}
-
-void
-expand_sf_unop (rtx (*fun) (rtx, rtx, rtx), rtx *operands)
-{
-  emit_sf_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
-}
-
-void
-expand_sf_binop (rtx (*fun) (rtx, rtx, rtx, rtx), rtx *operands)
-{
-  emit_sf_insn ((*fun) (operands[0], operands[1], operands[2],
-			 get_fpscr_rtx ()));
-}
-
-void
-expand_df_unop (rtx (*fun) (rtx, rtx, rtx), rtx *operands)
-{
-  emit_df_insn ((*fun) (operands[0], operands[1], get_fpscr_rtx ()));
-}
-
-void
-expand_df_binop (rtx (*fun) (rtx, rtx, rtx, rtx), rtx *operands)
-{
-  emit_df_insn ((*fun) (operands[0], operands[1], operands[2],
-			get_fpscr_rtx ()));
+  emit_insn (gen_lds_fpscr (src));
 }
 
 static rtx get_free_reg (HARD_REG_SET);
@@ -10314,8 +10245,7 @@ sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	   && ! TARGET_SHMEDIA
 	   && MAYBE_BASE_REGISTER_RTX_P (XEXP (x, 0), strict))
     return true;
-  else if (GET_CODE (x) == PLUS
-	   && (mode != PSImode || reload_completed))
+  else if (GET_CODE (x) == PLUS)
     {
       rtx xop0 = XEXP (x, 0);
       rtx xop1 = XEXP (x, 1);
@@ -10519,7 +10449,6 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 	  return gen_rtx_PLUS (Pmode, sum, adj.mov_disp);
 	}
     }
-
   return x;
 }
 
@@ -10561,7 +10490,6 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
 
   if (GET_CODE (*p) == PLUS && CONST_INT_P (XEXP (*p, 1))
       && MAYBE_BASE_REGISTER_RTX_P (XEXP (*p, 0), true)
-      && ! (mode == PSImode && type == RELOAD_FOR_INPUT_ADDRESS)
       && (ALLOW_INDEXED_ADDRESS
 	  || XEXP (*p, 0) == stack_pointer_rtx
 	  || XEXP (*p, 0) == hard_frame_pointer_rtx))
@@ -11652,13 +11580,12 @@ shmedia_builtin_p (void)
 }
 
 /* This function can be used if there are any built-ins that are not for
-   SHmedia.  It's commented out to avoid the defined-but-unused warning.
+   SHmedia.  It's commented out to avoid the defined-but-unused warning.  */
 static bool
 sh1_builtin_p (void)
 {
   return TARGET_SH1;
 }
-*/
 
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
@@ -11719,6 +11646,10 @@ static const char signature_args[][4] =
   { 0, 8 },
 #define SH_BLTIN_VP 24
   { 8, 0 },
+#define SH_BLTIN_UV 25
+  { 1, 0 },
+#define SH_BLTIN_VU 26
+  { 0, 1 },
 };
 /* mcmv: operands considered unsigned.  */
 /* mmulsum_wq, msad_ubq: result considered unsigned long long.  */
@@ -11894,6 +11825,11 @@ static struct builtin_description bdesc[] =
     CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2, 0 },
   { shmedia_builtin_p,
     CODE_FOR_prefetch,	"__builtin_sh_media_PREFO", SH_BLTIN_PSSV, 0 },
+
+  { sh1_builtin_p,
+    CODE_FOR_sts_fpscr, "__builtin_sh_get_fpscr", SH_BLTIN_UV, 0 },
+  { sh1_builtin_p,
+    CODE_FOR_set_fpscr, "__builtin_sh_set_fpscr", SH_BLTIN_VU, 0 },
 };
 
 static void
@@ -12207,7 +12143,7 @@ sh_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     return mode == SImode;
 
   if (regno == FPSCR_REG)
-    return mode == PSImode;
+    return mode == SImode;
 
   /* FIXME.  This works around PR target/37633 for -O0.  */
   if (!optimize && TARGET_SHMEDIA32 && GET_MODE_SIZE (mode) > 4)
@@ -13143,8 +13079,7 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       if (REGCLASS_HAS_FP_REG (rclass)
 	  && ! TARGET_SHMEDIA
 	  && immediate_operand ((x), mode)
-	  && ! ((fp_zero_operand (x) || fp_one_operand (x))
-		&& mode == SFmode && fldi_ok ()))
+	  && ! ((fp_zero_operand (x) || fp_one_operand (x)) && mode == SFmode))
 	switch (mode)
 	  {
 	  case SFmode:
@@ -13308,6 +13243,9 @@ sh_conditional_register_usage (void)
     for (regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
       if (! fixed_regs[regno] && call_really_used_regs[regno])
 	SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
+
+  call_really_used_regs[FPSCR_MODES_REG] = 0;
+  call_really_used_regs[FPSCR_STAT_REG] = 0;
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P
@@ -13659,7 +13597,7 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
 
 static void
 sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
-		  int prev_mode, HARD_REG_SET regs_live)
+		  int prev_mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
 {
   if ((TARGET_SH4A_FP || TARGET_SH4_300)
       && prev_mode != FP_MODE_NONE && prev_mode != mode)
@@ -13668,8 +13606,27 @@ sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
       if (TARGET_FMOVD)
 	emit_insn (gen_toggle_sz ());
     }
-  else
-    fpscr_set_from_mem (mode, regs_live);
+  else if (mode != FP_MODE_NONE)
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_sts_fpscr (tmp));
+      rtx i = NULL;
+
+      const unsigned HOST_WIDE_INT fpbits =
+	  TARGET_FMOVD ? (FPSCR_PR | FPSCR_SZ) : FPSCR_PR;
+
+      if (prev_mode != FP_MODE_NONE && prev_mode != mode)
+	i = gen_xorsi3 (tmp, tmp, force_reg (SImode, GEN_INT (fpbits)));
+      else if (mode == FP_MODE_SINGLE)
+	i = gen_andsi3 (tmp, tmp, force_reg (SImode, GEN_INT (~fpbits)));
+      else if (mode == FP_MODE_DOUBLE)
+	i = gen_iorsi3 (tmp, tmp, force_reg (SImode, GEN_INT (fpbits)));
+      else
+	gcc_unreachable ();
+
+      emit_insn (i);
+      emit_insn (gen_lds_fpscr (tmp));
+    }
 }
 
 static int

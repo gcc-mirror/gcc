@@ -3201,6 +3201,8 @@ package body Sem_Prag is
       function Is_Static_String_Expression (Arg : Node_Id) return Boolean;
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
+      --  A special case is that a string literal returns True in Ada 83 mode
+      --  (which has no such thing as static string expressions).
 
       procedure Pragma_Misplaced;
       pragma No_Return (Pragma_Misplaced);
@@ -6220,11 +6222,25 @@ package body Sem_Prag is
 
       function Is_Static_String_Expression (Arg : Node_Id) return Boolean is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+         Lit  : constant Boolean := Nkind (Argx) = N_String_Literal;
 
       begin
          Analyze_And_Resolve (Argx);
-         return Is_OK_Static_Expression (Argx)
-           and then Nkind (Argx) = N_String_Literal;
+
+         --  Special case Ada 83, where the expression will never be static,
+         --  but we will return true if we had a string literal to start with.
+
+         if Ada_Version = Ada_83 then
+            return Lit;
+
+         --  Normal case, true only if we end up with a string literal that
+         --  is marked as being the result of evaluating a static expression.
+
+         else
+            return Is_OK_Static_Expression (Argx)
+              and then Nkind (Argx) = N_String_Literal;
+         end if;
+
       end Is_Static_String_Expression;
 
       ----------------------
@@ -19911,8 +19927,9 @@ package body Sem_Prag is
 
             E := Entity (E_Id);
 
-            if not Is_Type (E) then
-               Error_Pragma_Arg ("pragma% requires type or subtype", Arg1);
+            if not Is_Type (E) and then Ekind (E) /= E_Variable then
+               Error_Pragma_Arg
+                 ("pragma% requires variable, type or subtype", Arg1);
             end if;
 
             if Rep_Item_Too_Early (E, N)
@@ -19937,7 +19954,7 @@ package body Sem_Prag is
             elsif Is_First_Subtype (E) then
                Set_Suppress_Initialization (Base_Type (E));
 
-            --  For other than first subtype, set flag on subtype itself
+            --  For other than first subtype, set flag on subtype or variable
 
             else
                Set_Suppress_Initialization (E);
@@ -21917,9 +21934,11 @@ package body Sem_Prag is
       Analyze_Depends_In_Decl_Part (N);
 
       --  Do not match dependencies against refinements if Refined_Depends is
-      --  illegal to avoid emitting misleading error.
+      --  illegal to avoid emitting misleading error. Matching is disabled in
+      --  ASIS because clauses are not normalized as this is a tree altering
+      --  activity similar to expansion.
 
-      if Serious_Errors_Detected = Errors then
+      if Serious_Errors_Detected = Errors and then not ASIS_Mode then
 
          --  Multiple dependency clauses appear as component associations of an
          --  aggregate. Note that the clauses are copied because the algorithm

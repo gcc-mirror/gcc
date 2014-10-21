@@ -35,6 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
 #include "function.h"
 #include "diagnostic-core.h"
 #include "except.h"
@@ -60,7 +64,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "opts",
   "cgraphopt",
   "inline",
-  "ipcp_trans"
+  "ipcp_trans",
+  "icf"
 };
 
 

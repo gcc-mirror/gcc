@@ -31,6 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -1674,8 +1680,12 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 	return false;
     }
 
-  /* Protect the loop latches.  */
-  if (current_loops && b->loop_father->latch == b)
+  /* Protect simple loop latches.  We only want to avoid merging
+     the latch with the loop header in this case.  */
+  if (current_loops
+      && b->loop_father->latch == b
+      && loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES)
+      && b->loop_father->header == a)
     return false;
 
   /* It must be possible to eliminate all phi nodes in B.  If ssa form

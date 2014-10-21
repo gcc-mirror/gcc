@@ -74,6 +74,7 @@ struct mode_data
   unsigned int fbit;		/* the number of fractional bits */
   bool need_bytesize_adj;	/* true if this mode need dynamic size
 				   adjustment */
+  unsigned int int_n;		/* If nonzero, then __int<INT_N> will be defined */
 };
 
 static struct mode_data *modes[MAX_MODE_CLASS];
@@ -84,7 +85,7 @@ static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0,
-  "<unknown>", 0, 0, 0, 0, false
+  "<unknown>", 0, 0, 0, 0, false, 0
 };
 
 static htab_t modes_by_name;
@@ -632,6 +633,34 @@ reset_float_format (const char *name, const char *format,
   m->format = format;
 }
 
+/* __intN support.  */
+#define INT_N(M,PREC)				\
+  make_int_n (#M, PREC, __FILE__, __LINE__)
+static void ATTRIBUTE_UNUSED
+make_int_n (const char *m, int bitsize,
+            const char *file, unsigned int line)
+{
+  struct mode_data *component = find_mode (m);
+  if (!component)
+    {
+      error ("%s:%d: no mode \"%s\"", file, line, m);
+      return;
+    }
+  if (component->cl != MODE_INT
+      && component->cl != MODE_PARTIAL_INT)
+    {
+      error ("%s:%d: mode \"%s\" is not class INT or PARTIAL_INT", file, line, m);
+      return;
+    }
+  if (component->int_n != 0)
+    {
+      error ("%s:%d: mode \"%s\" already has an intN", file, line, m);
+      return;
+    }
+
+  component->int_n = bitsize;
+}
+
 /* Partial integer modes are specified by relation to a full integer
    mode.  */
 #define PARTIAL_INT_MODE(M,PREC,NAME)				\
@@ -1010,6 +1039,7 @@ emit_insn_modes_h (void)
 {
   int c;
   struct mode_data *m, *first, *last;
+  int n_int_n_ents = 0;
 
   printf ("/* Generated automatically from machmode.def%s%s\n",
 	   HAVE_EXTRA_MODES ? " and " : "",
@@ -1071,6 +1101,13 @@ enum machine_mode\n{");
   printf ("#define CONST_MODE_IBIT%s\n", adj_ibit ? "" : " const");
   printf ("#define CONST_MODE_FBIT%s\n", adj_fbit ? "" : " const");
   emit_max_int ();
+
+  for_all_modes (c, m)
+    if (m->int_n)
+      n_int_n_ents ++;
+
+  printf ("#define NUM_INT_N_ENTS %d\n", n_int_n_ents);
+
   puts ("\n#if GCC_VERSION >= 4001\n");
   emit_mode_size_inline ();
   emit_mode_nunits_inline ();
@@ -1520,6 +1557,53 @@ emit_mode_fbit (void)
   print_closer ();
 }
 
+/* Emit __intN for all modes.  */
+
+static void
+emit_mode_int_n (void)
+{
+  int c;
+  struct mode_data *m;
+  struct mode_data **mode_sort;
+  int n_modes = 0;
+  int i, j;
+
+  print_decl ("int_n_data_t", "int_n_data", "");
+
+  n_modes = 0;
+  for_all_modes (c, m)
+    if (m->int_n)
+      n_modes ++;
+  mode_sort = XALLOCAVEC (struct mode_data *, n_modes);
+
+  n_modes = 0;
+  for_all_modes (c, m)
+    if (m->int_n)
+      mode_sort[n_modes++] = m;
+
+  /* Yes, this is a bubblesort, but there are at most four (and
+     usually only 1-2) entries to sort.  */
+  for (i = 0; i<n_modes - 1; i++)
+    for (j = i + 1; j < n_modes; j++)
+      if (mode_sort[i]->int_n > mode_sort[j]->int_n)
+	{
+	  m = mode_sort[i];
+	  mode_sort[i] = mode_sort[j];
+	  mode_sort[j] = m;
+	}
+
+  for (i = 0; i < n_modes; i ++)
+    {
+      m = mode_sort[i];
+      printf(" {\n");
+      tagged_printf ("%u", m->int_n, m->name);
+      printf ("%smode,", m->name);
+      printf(" },\n");
+    }
+
+  print_closer ();
+}
+
 
 static void
 emit_insn_modes_c (void)
@@ -1539,6 +1623,7 @@ emit_insn_modes_c (void)
   emit_mode_adjustments ();
   emit_mode_ibit ();
   emit_mode_fbit ();
+  emit_mode_int_n ();
 }
 
 static void

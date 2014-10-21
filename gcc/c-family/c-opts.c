@@ -301,9 +301,11 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
+      /* The default for C is gnu11.  */
+      set_std_c11 (false /* ISO */);
       for (i = 1; i < decoded_options_count; i++)
         {
-	  /* If preprocessing assembly language, accept any of the C-family
+          /* If preprocessing assembly language, accept any of the C-family
 	     front end options since the driver may pass them through.  */
 	  if (decoded_options[i].opt_index == OPT_lang_asm)
 	    {
@@ -997,6 +999,10 @@ c_common_post_options (const char **pfilename)
   /* -Wimplicit-function-declaration is enabled by default for C99.  */
   if (warn_implicit_function_declaration == -1)
     warn_implicit_function_declaration = flag_isoc99;
+
+  /* -Wimplicit-int is enabled by default for C99.  */
+  if (warn_implicit_int == -1)
+    warn_implicit_int = flag_isoc99;
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)

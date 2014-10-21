@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++0x -O0" }
-// { dg-options "-std=gnu++0x -O0 -D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
+// { dg-options "-std=gnu++11 -O0" }
+// { dg-options "-std=gnu++11 -O0 -D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
 // { dg-do compile }
 // { dg-require-profile-mode "" }
 

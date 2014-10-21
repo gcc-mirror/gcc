@@ -523,7 +523,7 @@ int linemap_location_in_system_header_p (struct line_maps *,
 /* Return TRUE if LOCATION is a source code location of a token coming
    from a macro replacement-list at a macro expansion point, FALSE
    otherwise.  */
-bool linemap_location_from_macro_expansion_p (struct line_maps *,
+bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 					      source_location);
 
 /* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
@@ -599,9 +599,10 @@ linemap_position_for_column (struct line_maps *, unsigned int);
 
 /* Encode and return a source location from a given line and
    column.  */
-source_location linemap_position_for_line_and_column (struct line_map *,
-						      linenum_type,
-						      unsigned int);
+source_location
+linemap_position_for_line_and_column (const struct line_map *,
+				      linenum_type, unsigned int);
+
 /* Return the file this map is for.  */
 #define LINEMAP_FILE(MAP)					\
   (linemap_check_ordinary (MAP)->d.ordinary.to_file)

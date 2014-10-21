@@ -23,5 +23,5 @@ namespace gnu
 {
   std::size_t s;
   std::FILE f;
-  std::FILE fpos_t;
+  std::fpos_t p;
 }

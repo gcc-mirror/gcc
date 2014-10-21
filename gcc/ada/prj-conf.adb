@@ -26,6 +26,7 @@
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
+with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
@@ -931,8 +932,7 @@ package body Prj.Conf is
 
          declare
             Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
-            Config_Switches : Argument_List_Access :=
-                                new Argument_List'(1 .. 0 => null);
+            Config_Switches : Argument_List_Access;
             Db_Switches     : Argument_List_Access;
             Args            : Argument_List (1 .. 5);
             Arg_Last        : Positive;
@@ -980,13 +980,10 @@ package body Prj.Conf is
                end case;
             end if;
 
-            --  If not in Codepeer mode, get the config switches. This should
-            --  be done only now, as some runtimes may have been found if the
-            --  Builder switches.
+            --  Get the config switches. This should be done only now, as some
+            --  runtimes may have been found in the Builder switches.
 
-            if not CodePeer_Mode then
-               Config_Switches := Get_Config_Switches;
-            end if;
+            Config_Switches := Get_Config_Switches;
 
             --  Get eventual --db switches
 
@@ -1306,7 +1303,11 @@ package body Prj.Conf is
                Runtime_Name : constant String := Runtime_Name_For (Name);
 
             begin
-               if Variable = Nil_Variable_Value
+               --  In CodePeer mode, we do not take into account any compiler
+               --  command from the package IDE.
+
+               if CodePeer_Mode
+                 or else Variable = Nil_Variable_Value
                  or else Length_Of_Name (Variable.Value) = 0
                then
                   Result (Count) :=
@@ -1526,11 +1527,12 @@ package body Prj.Conf is
 
       function Is_Base_Name (Path : String) return Boolean is
       begin
-         for I in Path'Range loop
-            if Path (I) = Directory_Separator or else Path (I) = '/' then
+         for J in Path'Range loop
+            if Is_Directory_Separator (Path (J)) then
                return False;
             end if;
          end loop;
+
          return True;
       end Is_Base_Name;
 

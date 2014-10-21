@@ -26,9 +26,23 @@
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
-      builtin_define ("__aarch64__");			\
+      builtin_define ("__aarch64__");                   \
+      builtin_define ("__ARM_64BIT_STATE");             \
+      builtin_define ("__ARM_ARCH_ISA_A64");            \
+      builtin_define ("__ARM_FEATURE_CLZ");             \
+      builtin_define ("__ARM_FEATURE_IDIV");            \
+      builtin_define ("__ARM_FEATURE_UNALIGNED");       \
+      builtin_define ("__ARM_PCS_AAPCS64");             \
+      builtin_define_with_int_value                     \
+        ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);  \
+      builtin_define_with_int_value                     \
+        ("__ARM_SIZEOF_MINIMAL_ENUM",                   \
+         flag_short_enums? 1 : 4);                      \
       if (TARGET_BIG_END)				\
-	builtin_define ("__AARCH64EB__");		\
+        {                                               \
+          builtin_define ("__AARCH64EB__");             \
+          builtin_define ("__ARM_BIG_ENDIAN");          \
+        }                                               \
       else						\
 	builtin_define ("__AARCH64EL__");		\
 							\
@@ -585,11 +599,7 @@ enum arm_pcs
 };
 
 
-extern enum arm_pcs arm_pcs_variant;
 
-#ifndef ARM_DEFAULT_PCS
-#define ARM_DEFAULT_PCS ARM_PCS_AAPCS64
-#endif
 
 /* We can't use enum machine_mode inside a generator file because it
    hasn't been created yet; we shouldn't be using any code that

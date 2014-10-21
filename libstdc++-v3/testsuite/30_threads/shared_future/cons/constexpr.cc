@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-inline -save-temps -g0" }
+// { dg-options "-std=gnu++11 -fno-inline -save-temps -g0" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }

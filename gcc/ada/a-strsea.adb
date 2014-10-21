@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,6 +203,12 @@ package body Ada.Strings.Search is
       Last   : out Natural)
    is
    begin
+      --  AI05-031: Raise Index error if Source non-empty and From not in range
+
+      if Source'Length /= 0 and then From not in Source'Range then
+         raise Index_Error;
+      end if;
+
       for J in From .. Source'Last loop
          if Belongs (Source (J), Set, Test) then
             First := J;
@@ -481,7 +487,13 @@ package body Ada.Strings.Search is
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
    begin
-      if Going = Forward then
+
+      --  AI05-056: If source is empty result is always zero
+
+      if Source'Length = 0 then
+         return 0;
+
+      elsif Going = Forward then
          if From < Source'First then
             raise Index_Error;
          end if;
@@ -507,7 +519,13 @@ package body Ada.Strings.Search is
       Mapping : Maps.Character_Mapping_Function) return Natural
    is
    begin
-      if Going = Forward then
+
+      --  AI05-056: If source is empty result is always zero
+
+      if Source'Length = 0 then
+         return 0;
+
+      elsif Going = Forward then
          if From < Source'First then
             raise Index_Error;
          end if;
@@ -533,7 +551,13 @@ package body Ada.Strings.Search is
       Going   : Direction := Forward) return Natural
    is
    begin
-      if Going = Forward then
+
+      --  AI05-056 : if source is empty result is always 0.
+
+      if Source'Length = 0 then
+         return 0;
+
+      elsif Going = Forward then
          if From < Source'First then
             raise Index_Error;
          end if;

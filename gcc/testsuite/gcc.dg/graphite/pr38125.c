@@ -22,6 +22,7 @@ struct magic {
     TEST_SV* mg_obj;
 };
 extern TEST_SV PL_sv_undef;
+void
 Perl_av_fill( register TEST_AV *av, int fill)
 {
     TEST_MAGIC *mg;
