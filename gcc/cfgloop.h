@@ -740,7 +740,6 @@ enum
   UAP_UNROLL_ALL = 2	/* Enables unrolling of all loops.  */
 };
 
-extern void unroll_loops (int);
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
 extern void scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound);

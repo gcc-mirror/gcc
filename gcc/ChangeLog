@@ -1,3 +1,16 @@
+2014-10-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cfg.h: New.  Header file for cfg.c.
+	* cfganal.h: New.  Header file for cfganal.c.
+	* lcm.h: New.  Header file for lcm.c.
+	* loop-unroll.h: New.  Header file for loop-unroll.h.
+	* cfgloop.h: (unroll_loops): Remove prototype.
+	* basic-block.h: Move prototypes and structs to new header files.
+	Include cfg.h, cfganal.h, and lcm.h.
+	* loop-init.c: Include loop-unroll.h.
+	* loop-unroll.c: (referenced_in_one_insn_in_loop_p): Make static.
+	* modulo-sched.c: Include loop-unroll.h.
+
 2014-10-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Fix creation of
