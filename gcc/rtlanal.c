@@ -5051,6 +5051,26 @@ insn_rtx_cost (rtx pat, bool speed)
   return cost > 0 ? cost : COSTS_N_INSNS (1);
 }
 
+/* Returns estimate on cost of computing SEQ.  */
+
+unsigned
+seq_cost (const rtx_insn *seq, bool speed)
+{
+  unsigned cost = 0;
+  rtx set;
+
+  for (; seq; seq = NEXT_INSN (seq))
+    {
+      set = single_set (seq);
+      if (set)
+        cost += set_rtx_cost (set, speed);
+      else
+        cost++;
+    }
+
+  return cost;
+}
+
 /* Given an insn INSN and condition COND, return the condition in a
    canonical form to simplify testing by callers.  Specifically:
 

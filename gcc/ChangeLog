@@ -1,3 +1,10 @@
+2014-10-21  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* cfgloopanal.c (seq_cost): Delete.
+	* rtl.h (seq_cost): New prototype.
+	* rtlanal.c (seq_cost): New function.
+	* tree-ssa-loop-ivopts.c (seq_cost): Delete.
+
 2014-10-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cfgrtl.h: New.  Add prototypes for cfgrtl.c.

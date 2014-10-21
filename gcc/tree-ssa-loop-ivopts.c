@@ -2842,26 +2842,6 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
   return NULL;
 }
 
-/* Returns estimate on cost of computing SEQ.  */
-
-static unsigned
-seq_cost (rtx_insn *seq, bool speed)
-{
-  unsigned cost = 0;
-  rtx set;
-
-  for (; seq; seq = NEXT_INSN (seq))
-    {
-      set = single_set (seq);
-      if (set)
-	cost += set_src_cost (SET_SRC (set), speed);
-      else
-	cost++;
-    }
-
-  return cost;
-}
-
 /* Produce DECL_RTL for object obj so it looks like it is stored in memory.  */
 static rtx
 produce_memory_decl_rtl (tree obj, int *regno)
