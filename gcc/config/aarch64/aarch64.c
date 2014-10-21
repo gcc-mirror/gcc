@@ -65,7 +65,7 @@
 #include "dwarf2.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
-#include "config/arm/aarch-cost-tables.h"
+#include "aarch64-cost-tables.h"
 #include "dumpfile.h"
 #include "builtins.h"
 
@@ -242,6 +242,14 @@ static const struct cpu_regmove_cost cortexa53_regmove_cost =
   NAMED_PARAM (FP2FP, 2)
 };
 
+static const struct cpu_regmove_cost thunderx_regmove_cost =
+{
+  NAMED_PARAM (GP2GP, 2),
+  NAMED_PARAM (GP2FP, 2),
+  NAMED_PARAM (FP2GP, 6),
+  NAMED_PARAM (FP2FP, 4)
+};
+
 /* Generic costs for vector insn classes.  */
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -313,6 +321,16 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3)
+};
+
+static const struct tune_params thunderx_tunings =
+{
+  &thunderx_extra_costs,
+  &generic_addrcost_table,
+  &thunderx_regmove_cost,
+  &generic_vector_cost,
+  NAMED_PARAM (memmov_cost, 6),
+  NAMED_PARAM (issue_rate, 2)
 };
 
 /* A processor implementing AArch64.  */
