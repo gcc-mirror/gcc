@@ -4066,7 +4066,7 @@ case ${target} in
 	hppa*-*-*)
 		if test x$gas = xyes
 		then
-			target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
+			target_cpu_default2="MASK_GAS"
 		fi
 		;;
 

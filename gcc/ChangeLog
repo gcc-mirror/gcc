@@ -1,3 +1,9 @@
+2014-10-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.gcc: Remove MASK_JUMP_IN_DELAY from target_cpu_default2.
+	* config/pa/pa.h (TARGET_DEFAULT): Remove MASK_JUMP_IN_DELAY.
+	* config/pa/pa.opt (mjump-in-delay): Ignore option.  Update comment.
+
 2014-10-21 Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (pedantic-errors): Explain better.
