@@ -420,8 +420,7 @@ TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
 @BUILD_LIBQUADMATH_FALSE@info_TEXINFOS = 
 @BUILD_LIBQUADMATH_TRUE@info_TEXINFOS = libquadmath.texi
-@BUILD_LIBQUADMATH_FALSE@libquadmath_TEXINFOS = 
-@BUILD_LIBQUADMATH_TRUE@libquadmath_TEXINFOS = libquadmath-vers.texi
+libquadmath_TEXINFOS = libquadmath-vers.texi
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
