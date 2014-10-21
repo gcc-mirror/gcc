@@ -1,3 +1,119 @@
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Vidya Praveen <vidya.praveen@atmel.com>
+	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
+	    Senthil Kumar Selvaraj <Senthil_Kumar.Selvaraj@atmel.com>
+	    Pitchumani Sivanupandi <Pitchumani.S@atmel.com>
+
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Don't define
+	__MEMX for avrtiny.
+	* config/avr/avr.c (avr_insert_attributes): Reject __memx for avrtiny.
+	(avr_nonconst_pointer_addrspace): Likewise.
+	* config/avr/avr.h (AVR_HAVE_LPM): Define.
+
+	Added AVRTINY architecture to avr target.
+	* config/avr/avr-arch.h (avr_arch): Added AVRTINY architecture.
+	(base_arch_s): member added for AVRTINY architecture.
+	* config/avr/avr.c: Added TINY_ADIW, TINY_SBIW macros as AVRTINY
+	alternate for adiw/sbiw instructions. Added AVR_TMP_REGNO and
+	AVR_ZERO_REGNO macros for tmp and zero registers. Replaced TMP_REGNO
+	and ZERO_REGNO occurrences by AVR_TMP_REGNO and AVR_ZERO_REGNO
+	respectively. LAST_CALLEE_SAVED_REG macro added for the last register
+	in callee saved register list.
+	(avr_option_override): CCP address updated for AVRTINY.
+	(avr_init_expanders): tmp and zero rtx initialized as per arch.
+	Reset avr_have_dimode if AVRTINY.
+	(sequent_regs_live): Use LAST_CALLEE_SAVED_REG instead magic number.
+	(emit_push_sfr): Use AVR_TMP_REGNO for tmp register number.
+	(avr_prologue_setup_frame): Don't minimize prologue if AVRTINY.
+	Use LAST_CALLEE_SAVED_REG to refer last callee saved register.
+	(expand_epilogue): Likewise.
+	(avr_print_operand): Print CCP address in case of AVRTINY also.
+	<TBD>bad address
+	(function_arg_regno_p): Check different register list for arguments
+	if AVRTINY.
+	(init_cumulative_args): Check for AVRTINY to update number of argument
+	registers.
+	(tiny_valid_direct_memory_access_range): New function. Return false if
+	direct memory access range is not in accepted range for AVRTINY.
+	(avr_out_movqi_r_mr_reg_disp_tiny): New function to handle register
+	indirect load (with displacement) for AVRTINY.
+	(out_movqi_r_mr): Updated instruction length for AVRTINY. Call
+	avr_out_movqi_r_mr_reg_disp_tiny for load from reg+displacement.
+	(avr_out_movhi_r_mr_reg_no_disp_tiny): New function to handle register
+	indirect load (no displacement) for AVRTINY.
+	(avr_out_movhi_r_mr_reg_disp_tiny): New function to handle register
+	indirect load (with displacement) for AVRTINY.
+	(avr_out_movhi_r_mr_pre_dec_tiny): New function to handle register
+	indirect load for pre-decrement address.
+	(out_movhi_r_mr): In case of AVRTINY, call tiny register indirect load
+	functions. Update instruction length for AVRTINY.
+	(avr_out_movsi_r_mr_reg_no_disp_tiny): New function. Likewise, for
+	SImode.
+	(avr_out_movsi_r_mr_reg_disp_tiny): New function. Likewise, for SImode.
+	(out_movsi_r_mr): Likewise, for SImode.
+	(avr_out_movsi_mr_r_reg_no_disp_tiny): New function to handle register
+	indirect store (no displacement) for AVRTINY.
+	(avr_out_movsi_mr_r_reg_disp_tiny): New function to handle register
+	indirect store (with displacement) for AVRTINY.
+	(out_movsi_mr_r): Emit out insn for IO address store. Update store
+	instruction's size for AVRTINY. For AVRTINY, call tiny SImode indirect
+	store functions.
+	(avr_out_load_psi_reg_no_disp_tiny): New function to handle register
+	indirect load (no displacement) for PSImode in AVRTINY.
+	(avr_out_load_psi_reg_disp_tiny): New function to handle register
+	indirect load (with displacement) for PSImode in AVRTINY.
+	(avr_out_load_psi): Call PSImode register indirect load functions for
+	AVRTINY. Update instruction length for AVRTINY.
+	(avr_out_store_psi_reg_no_disp_tiny): New function to handle register
+	indirect store (no displacement) for PSImode in AVRTINY.
+	(avr_out_store_psi_reg_disp_tiny): New function to handle register
+	indirect store (with displacement) for PSImode in AVRTINY.
+	(avr_out_store_psi): Update instruction length for AVRTINY. Call tiny
+	register indirect store functions for AVRTINY.
+	(avr_out_movqi_mr_r_reg_disp_tiny): New function to handle QImode
+	register indirect store (with displacement) for AVRTINY.
+	(out_movqi_mr_r): Update instruction length for AVRTINY. Call tiny
+	register indirect store function for QImode in AVRTINY.
+	(avr_out_movhi_mr_r_xmega): Update instruction length for AVRTINY.
+	(avr_out_movhi_mr_r_reg_no_disp_tiny): New function to handle register
+	indirect store (no displacement) for HImode in AVRTINY.
+	(avr_out_movhi_mr_r_reg_disp_tiny): New function to handle register
+	indirect store (with displacement) for HImode in AVRTINY.
+	(avr_out_movhi_mr_r_post_inc_tiny): New function to handle register
+	indirect store for post-increment address in HImode.
+	(out_movhi_mr_r): Update instruction length for AVRTINY. Call tiny
+	register indirect store function for HImode in AVRTINY.
+	(avr_out_compare): Use TINY_SBIW/ TINY_ADIW in place of sbiw/adiw
+	in case of AVRTINY.
+	(order_regs_for_local_alloc): Updated register allocation order for
+	AVRTINY.
+	(avr_conditional_register_usage): New function. It is a target hook
+	(TARGET_CONDITIONAL_REGISTER_USAGE) function which updates fixed, call
+	used registers list and register allocation order for AVRTINY.
+	(avr_return_in_memory): Update return value size for AVRTINY.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Added builtin macros
+	for AVRTINY arch and tiny program memory base address.
+	* config/avr/avr-devices.c (avr_arch_types): Added AVRTINY arch.
+	(avr_texinfo): Added description for AVRTINY arch.
+	* config/avr/avr.h: Added macro to identify AVRTINY arch. Updated
+	STATIC_CHAIN_REGNUM for AVRTINY.
+	* config/avr/avr-mcus.def: Added AVRTINY arch devices.
+	* config/avr/avr.md: Added constants for tmp/ zero registers in
+	AVRTINY. Attributes for AVRTINY added.
+	(mov<mode>): Move src/ dest address to register if it is not in AVRTINY
+	memory access range.
+	(mov<mode>_insn): Avoid QImode direct load for AVRTINY if address not
+	in AVRTINY memory access range.
+	(*mov<mode>): Likewise for HImode and SImode.
+	(*movsf): Likewise for SFmode.
+	(delay_cycles_2): Updated instructions to be emitted as AVRTINY does
+	not have sbiw.
+	* config/avr/avr-protos.h: Added function prototype for
+	tiny_valid_direct_memory_access_range.
+	* config/avr/avr-tables.opt: Regenerate.
+	* gcc/config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2014-10-21  Andrew Pinski  <apinski@cavium.com>
 
 	* doc/invoke.texi (AARCH64/mtune): Document thunderx as an

@@ -1,3 +1,9 @@
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/avr/tiny-memx.c: New test.
+
+	* gcc.target/avr/tiny-caller-save.c: New test.
+
 2014-10-21  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/arm/20031108-1.c (Proc_7): Add explicit declaration.
