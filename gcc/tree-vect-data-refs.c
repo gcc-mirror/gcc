@@ -2530,11 +2530,14 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	     over them.  The we can just skip ahead to the next DR here.  */
 
 	  /* Check that the data-refs have same first location (except init)
-	     and they are both either store or load (not load and store).  */
+	     and they are both either store or load (not load and store,
+	     not masked loads or stores).  */
 	  if (DR_IS_READ (dra) != DR_IS_READ (drb)
 	      || !operand_equal_p (DR_BASE_ADDRESS (dra),
 				   DR_BASE_ADDRESS (drb), 0)
-	      || !dr_equal_offsets_p (dra, drb))
+	      || !dr_equal_offsets_p (dra, drb)
+	      || !gimple_assign_single_p (DR_STMT (dra))
+	      || !gimple_assign_single_p (DR_STMT (drb)))
 	    break;
 
 	  /* Check that the data-refs have the same constant size and step.  */

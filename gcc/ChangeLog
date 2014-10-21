@@ -1,3 +1,9 @@
+2014-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63563
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Bail out
+	if either dra or drb stmts are not normal loads/stores.
+
 2014-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (instrument_derefs): Allow instrumentation of odd-sized
