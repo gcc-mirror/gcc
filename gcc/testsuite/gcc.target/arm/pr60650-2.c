@@ -4,17 +4,19 @@
 int a, h, j;
 long long d, e, i;
 int f;
+int
 fn1 (void *p1, int p2)
 {
     switch (p2)
     case 8:
 {
-    register b = *(long long *) p1, c asm ("r2");
+    register int b = *(long long *) p1, c asm ("r2");
     asm ("%0": "=r" (a), "=r" (c):"r" (b), "r" (0));
     *(long long *) p1 = c;
     }
 }
 
+int
 fn2 ()
 {
     int k;
@@ -27,8 +29,8 @@ fn2 ()
         case 0:
         (
         {
-            register l asm ("r4");
-            register m asm ("r0");
+            register int l asm ("r4");
+            register int m asm ("r0");
             asm ("  .err  .endif\n\t": "=r" (h), "=r" (j):"r" (m),
             "r"
             (l));;

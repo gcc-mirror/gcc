@@ -1,3 +1,27 @@
+2014-10-21  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/20031108-1.c (Proc_7): Add explicit declaration.
+	(Proc_1): Add return type.
+	* gcc.target/arm/cold-lc.c (show_stack): Add explict declaration.
+	* gcc.target/arm/neon-modes-2.c (foo): Likewise.
+	* gcc.target/arm/pr43920-2.c (lseek): Likewise.
+	* gcc.target/arm/pr44788.c (foo): Likewise.
+	* gcc.target/arm/pr55642.c (abs): Likewise.
+	* gcc.target/arm/pr58784.c (f): Likewise.
+	* gcc.target/arm/pr60650.c (foo1, foo2): Likewise.
+	* gcc.target/arm/vfp-ldmdbs.c (bar): Likewise.
+	* gcc.target/arm/vfp-ldmias.c (bar): Likewise.
+	* gcc.target/arm/pr60650-2.c (fn1, fn2): Add return type and add type
+	for local variables.
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_ok_nocache): Add declaration for
+	vaeseq_u8.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Add declaration for
+	vcvt_f16_f32.
+	(check_effective_target_arm_neonv2_ok_nocache): Add declaration for
+	vfma_f32.
+	* gcc.target/arm/pr51968.c: Add -Wno-implicit-function-declaration.
+
 2014-10-21  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/bf-spl1.c (main): Fix implicit int.

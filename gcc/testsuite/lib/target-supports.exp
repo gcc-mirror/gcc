@@ -2404,6 +2404,7 @@ proc check_effective_target_arm_crypto_ok_nocache { } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=crypto-neon-fp-armv8" "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_crypto_ok object {
 		#include "arm_neon.h"
+		extern uint8x16_t vaeseq_u8 (uint8x16_t, uint8x16_t);
 		uint8x16_t
 		foo (uint8x16_t a, uint8x16_t b)
 		{
@@ -2548,6 +2549,7 @@ proc check_effective_target_arm_neon_fp16_ok_nocache { } {
 	               "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_fp_16_ok object {
 		#include "arm_neon.h"
+		extern float16x4_t vcvt_f16_f32 (float32x4_t);
 		float16x4_t
 		foo (float32x4_t arg)
 		{
@@ -2623,6 +2625,7 @@ proc check_effective_target_arm_neonv2_ok_nocache { } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-vfpv4" "-mfpu=neon-vfpv4 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neonv2_ok object {
 		#include "arm_neon.h"
+		extern float32x2_t vfma_f32 (float32x2_t, float32x2_t, float32x2_t);
 		float32x2_t 
 		foo (float32x2_t a, float32x2_t b, float32x2_t c)
                 {
