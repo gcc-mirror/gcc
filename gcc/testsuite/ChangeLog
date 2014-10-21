@@ -1,3 +1,7 @@
+2014-10-21  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/bf-spl1.c (main): Fix implicit int.
+
 2014-10-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/optimize-bswaphi-1.c: New bswap pass test.
