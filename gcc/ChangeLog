@@ -1,5 +1,9 @@
 2014-10-21  Andrew MacLeod  <amacleod@redhat.com>
 
+	* loop-doloop.c: Include loop-unroll.h.
+
+2014-10-21  Andrew MacLeod  <amacleod@redhat.com>
+
 	* cfg.h: New.  Header file for cfg.c.
 	* cfganal.h: New.  Header file for cfganal.c.
 	* lcm.h: New.  Header file for lcm.c.
