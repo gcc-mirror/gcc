@@ -20,6 +20,10 @@ struct btrfs_root
 int a, c, d;
 long long e;
 
+extern int foo1 (struct btrfs_root *, int, int, int);
+extern int foo2 (struct btrfs_root *, int, int);
+
+int
 truncate_one_csum (struct btrfs_root *p1, long long p2, long long p3)
 {
   int f, g, i = p1->fs_info->sb->s_blocksize_bits;
