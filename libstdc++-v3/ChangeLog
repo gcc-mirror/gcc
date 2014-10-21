@@ -1,3 +1,17 @@
+2014-10-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement more Library Fundamentals v1 variable templates.
+	* include/Makefile.am: Add ratio, chrono and system_error.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/chrono: New.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple (tuple_size_v): Likewise.
+	* testsuite/experimental/chrono/value.cc: Likewise.
+	* testsuite/experimental/ratio/value.cc: Likewise.
+	* testsuite/experimental/system_error/value.cc: Likewise.
+	* testsuite/experimental/tuple/tuple_size.cc: Likewise.
+
 2014-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++98/Makefile.am: Move ctype.cc, ctype_configure_char.cc and
