@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "auto-profile.h"
 #include "dwarf2out.h"
 #include "ipa-reference.h"
 #include "ipa-prop.h"
@@ -670,6 +671,10 @@ compile_file (void)
       ident_str = ACONCAT (("GCC: ", pkg_version, version_string, NULL));
       targetm.asm_out.output_ident (ident_str);
     }
+
+  /* Auto profile finalization. */
+  if (flag_auto_profile)
+    end_auto_profile ();
 
   /* Invoke registered plugin callbacks.  */
   invoke_plugin_callbacks (PLUGIN_FINISH_UNIT, NULL);

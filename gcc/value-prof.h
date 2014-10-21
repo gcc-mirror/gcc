@@ -77,6 +77,8 @@ typedef vec<histogram_value> histogram_values;
 extern void gimple_find_values_to_profile (histogram_values *);
 extern bool gimple_value_profile_transformations (void);
 
+histogram_value gimple_alloc_histogram_value (struct function *, enum hist_type,
+					      gimple stmt, tree);
 histogram_value gimple_histogram_value (struct function *, gimple);
 histogram_value gimple_histogram_value_of_type (struct function *, gimple,
 						enum hist_type);
@@ -91,6 +93,7 @@ void verify_histograms (void);
 void free_histograms (void);
 void stringop_block_profile (gimple, unsigned int *, HOST_WIDE_INT *);
 gimple gimple_ic (gimple, struct cgraph_node *, int, gcov_type, gcov_type);
+bool check_ic_target (gimple, struct cgraph_node *);
 
 
 /* In tree-profile.c.  */

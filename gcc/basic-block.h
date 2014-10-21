@@ -652,6 +652,7 @@ ei_cond (edge_iterator ei, edge *p)
 extern void dump_flow_info (FILE *, int);
 
 /* In predict.c */
+extern bool maybe_hot_count_p (struct function *, gcov_type);
 extern bool maybe_hot_bb_p (struct function *, const_basic_block);
 extern bool maybe_hot_edge_p (edge);
 extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
@@ -805,6 +806,7 @@ extern void default_rtl_profile (void);
 /* In profile.c.  */
 typedef struct gcov_working_set_info gcov_working_set_t;
 extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
+extern void add_working_set (gcov_working_set_t *);
 
 /* Check tha probability is sane.  */
 

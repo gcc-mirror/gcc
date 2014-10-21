@@ -365,7 +365,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-faggressive-loop-optimizations -falign-functions[=@var{n}] @gol
 -falign-jumps[=@var{n}] @gol
 -falign-labels[=@var{n}] -falign-loops[=@var{n}] @gol
--fassociative-math -fauto-inc-dec -fbranch-probabilities @gol
+-fassociative-math -fauto-profile -fauto-profile[=@var{path}] @gol
+-fauto-inc-dec -fbranch-probabilities @gol
 -fbranch-target-load-optimize -fbranch-target-load-optimize2 @gol
 -fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
@@ -9205,6 +9206,41 @@ code.
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
+
+@item -fauto-profile
+@itemx -fauto-profile=@var{path}
+@opindex fauto-profile
+Enable sampling based feedback directed optimizations, and optimizations
+generally profitable only with profile feedback available.
+
+The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
+@code{-finline-functions}, @code{-fipa-cp}, @code{-fipa-cp-clone},
+@code{-fpredictive-commoning}, @code{-funswitch-loops},
+@code{-fgcse-after-reload}, @code{-ftree-loop-distribute-patterns},
+
+If @var{path} is specified, GCC looks at the @var{path} to find
+the profile feedback data files.
+
+In order to collect AutoFDO profile, you need to have:
+
+1. A linux system with linux perf support
+2. (optional) An Intel processor with last branch record (LBR) support. This is
+   to guarantee accurate instruction level profile, which is important for
+   AutoFDO performance.
+
+To collect the profile, first use linux perf to collect raw profile
+(see @uref{https://perf.wiki.kernel.org/}).
+
+E.g.
+@code{perf record -e br_inst_retired:near_taken -b -o perf.data -- your_program}
+
+Then use create_gcov tool, which takes raw profile and unstripped binary to
+generate AutoFDO profile that can be used by GCC.
+(see @uref{https://github.com/google/autofdo}).
+
+E.g.
+@code{create_gcov --binary=your_program.unstripped --profile=perf.data --gcov=profile.afdo}
 @end table
 
 The following options control compiler behavior regarding floating-point 
