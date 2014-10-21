@@ -1,3 +1,15 @@
+2014-10-21  Andrew Pinski  <apinski@cavium.com>
+
+	* doc/invoke.texi (AARCH64/mtune): Document thunderx as an
+	available option also.
+	* config/aarch64/aarch64-cost-tables.h: New file.
+	* config/aarch64/aarch64-cores.def (thunderx): New core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c: Include aarch64-cost-tables.h instead
+	of config/arm/aarch-cost-tables.h.
+	(thunderx_regmove_cost): New variable.
+	(thunderx_tunings): New variable.
+
 2014-10-21  Dehao Chen  <dehao@google.com>
 
 	* auto-profile.c: New file.
