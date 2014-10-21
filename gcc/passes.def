@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
   POP_INSERT_PASSES ()
+  NEXT_PASS (pass_ipa_auto_profile);
   NEXT_PASS (pass_ipa_free_inline_summary);
   NEXT_PASS (pass_ipa_tree_profile);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)

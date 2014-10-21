@@ -1,3 +1,38 @@
+2014-10-21  Dehao Chen  <dehao@google.com>
+
+	* auto-profile.c: New file.
+	* auto-profile.h: New file.
+	* basic-block.h (maybe_hot_count_p): New export func.
+	(add_working_set): New export func.
+	* gcov-io.h (GCOV_TAG_AFDO_FILE_NAMES): New tag.
+	(GCOV_TAG_AFDO_FUNCTION): Likewise.
+	(GCOV_TAG_AFDO_WORKING_SET): Likewise.
+	* opts.c (enable_fdo_optimizations): New func.
+	(common_handle_option): Handle -fauto-profile flag.
+	* ipa-inline.c (want_early_inline_function_p): Iterative-einline.
+	(class pass_early_inline): Export early_inliner.
+	(early_inliner): Likewise.
+	(pass_early_inline::execute): Likewise.
+	* ipa-inline.h (early_inliner): Likewise.
+	* predict.c (maybe_hot_count_p): New export func.
+	(counts_to_freqs): AutoFDO logic.
+	(rebuild_frequencies): Likewise.
+	* tree-profile.c (pass_ipa_tree_profile::gate): Likewise.
+	* profile.c (add_working_set): New func.
+	* Makefile.in (auto-profile.o): New object file.
+	* passes.def (pass_ipa_auto_profile): New pass.
+	* tree-ssa-live.c (remove_unused_scope_block_p): AutoFDO logic.
+	* tree-pass.h (make_pass_ipa_auto_profile): New pass.
+	* toplev.c (compile_file): AutoFDO logic.
+	* doc/invoke.texi (-fauto-profile): New doc.
+	* coverage.c (coverage_init): AutoFDO logic.
+	* common.opt (-fauto-profile): New flag.
+	* timevar.def (TV_IPA_AUTOFDO): New tag.
+	* value-prof.c (gimple_alloc_histogram_value): New export func.
+	(check_ic_target): Likewise.
+	* value-prof.h (gimple_alloc_histogram_value): Likewise.
+	(check_ic_target): Likewise.
+
 2014-10-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* cgraph.c (cgraph_c_finalize): New function.
