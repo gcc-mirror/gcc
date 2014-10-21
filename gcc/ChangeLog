@@ -1,3 +1,7 @@
+2014-10-21 Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (pedantic-errors): Explain better.
+
 2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Vidya Praveen <vidya.praveen@atmel.com>
 	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
