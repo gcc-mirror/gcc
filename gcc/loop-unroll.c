@@ -1236,7 +1236,7 @@ unroll_loop_stupid (struct loop *loop)
    Set *DEBUG_USES to the number of debug insns that reference the
    variable.  */
 
-bool
+static bool
 referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg,
 				  int *debug_uses)
 {
