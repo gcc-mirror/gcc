@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In ipa-reference.c  */
 bitmap ipa_reference_get_not_read_global (struct cgraph_node *fn);
 bitmap ipa_reference_get_not_written_global (struct cgraph_node *fn);
+void ipa_reference_c_finalize (void);
 
 #endif  /* GCC_IPA_REFERENCE_H  */
 

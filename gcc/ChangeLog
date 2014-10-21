@@ -1,3 +1,77 @@
+2014-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c (cgraph_c_finalize): New function.
+	* cgraph.h (cgraph_c_finalize): New prototype.
+	(cgraphunit_c_finalize): New prototype.
+	* cgraphunit.c (first_analyzed): Move from analyze_functions
+	to file-scope.
+	(first_analyzed_var): Likewise.
+	(analyze_functions): Move static variables into file-scope.
+	(cgraphunit_c_finalize): New function.
+	* diagnostic.c (diagnostic_finish): Free the memory for
+	context->classify_diagnostic and context->printer, running the
+	destructor for the latter.
+	(bt_stop): Use toplev::main.
+	* dwarf2out.c (dwarf2out_finalize): New function.
+	* dwarf2out.h (dwarf2out_c_finalize): New prototype.
+	* gcse.c (gcse_c_finalize): New function.
+	* gcse.h (gcse_c_finalize): New prototype.
+	* ggc-page.c (init_ggc): Make idempotent.
+	* input.c (input_location): Initialize to UNKNOWN_LOCATION.
+	* ipa-cp.c (ipa_cp_c_finalize): New function.
+	* ipa-prop.h (ipa_cp_c_finalize): New prototype.
+	* ipa-pure-const.c (function_insertion_hook_holder): Move to be
+	a field of class pass_ipa_pure_const.
+	(node_duplication_hook_holder): Likewise.
+	(node_removal_hook_holder): Likewise.
+	(register_hooks): Convert to method...
+	(pass_ipa_pure_const::register_hooks): ...here, converting
+	static variable init_p into...
+	(pass_ipa_pure_const::init_p): ...new field.
+	(pure_const_generate_summary): Update invocation of
+	register_hooks to invoke as a method of current_pass.
+	(pure_const_read_summary): Likewise.
+	(propagate): Convert to...
+	(pass_ipa_pure_const::execute): ...method.
+	* ipa-reference.c (ipa_init): Move static bool init_p from here
+	to...
+	(ipa_init_p): New file-scope variable, so that it can be reset
+	when repeatedly invoking the compiler within one process by...
+	(ipa_reference_c_finalize): New function.
+	* ipa-reference.h (ipa_reference_c_finalize): New.
+	* main.c (main): Replace invocation of toplev_main with
+	construction of a toplev instance, and call its "main" method.
+	* params.c (global_init_params): Add an assert that
+	params_finished is false.
+	(params_c_finalize): New.
+	* params.h (params_c_finalize): New.
+	* passes.c (execute_ipa_summary_passes): Set "current_pass" before
+	invoking generate_summary, for the benefit of pass_ipa_pure_const.
+	(ipa_write_summaries_2): Assign "pass" to "current_pass" global
+	before calling write_summary hook.
+	(ipa_write_optimization_summaries_1): Likewise when calling
+	write_optimization_summary hook.
+	(ipa_read_summaries_1): Likewise for read_summary hook.
+	(ipa_read_optimization_summaries_1): Likewise for
+	read_optimization_summary hook.
+	(execute_ipa_stmt_fixups): Likewise.
+	* stringpool.c (init_stringpool): Clean up if we're called more
+	than once.
+	* timevar.c (timevar_init): Ignore repeated calls.
+	* toplev.c: Include "dwarf2out.h", "ipa-reference.h", "gcse.h",
+	"ipa-prop.h".
+	(general_init): Reset "input_location" to UNKNOWN_LOCATION.
+	(initialize_rtl): Move static local "initialized_once"
+	into file scope, and rename to...
+	(rtl_initialized): New variable.
+	(do_compile): Move timevar initialization from here to
+	toplev::start_timevars.
+	(toplev::toplev, toplev::~toplev, toplev::start_timevars,
+	toplev::finalize): New functions.
+	(toplev_main): Rename to...
+	(toplev::main): ...this.
+	* toplev.h (class toplev): New class.
+
 2014-10-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* loop-doloop.c: Include loop-unroll.h.

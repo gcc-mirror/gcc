@@ -4293,4 +4293,13 @@ make_pass_rtl_hoist (gcc::context *ctxt)
   return new pass_rtl_hoist (ctxt);
 }
 
+/* Reset all state within gcse.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+gcse_c_finalize (void)
+{
+  test_insn = NULL;
+}
+
 #include "gt-gcse.h"

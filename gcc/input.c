@@ -105,7 +105,7 @@ struct fcache
 
 /* Current position in real source file.  */
 
-location_t input_location;
+location_t input_location = UNKNOWN_LOCATION;
 
 struct line_maps *line_table;
 

@@ -3097,4 +3097,18 @@ gimple_check_call_matching_types (gimple call_stmt, tree callee,
   return true;
 }
 
+/* Reset all state within cgraph.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+cgraph_c_finalize (void)
+{
+  symtab = NULL;
+
+  x_cgraph_nodes_queue = NULL;
+
+  cgraph_fnver_htab = NULL;
+  version_info_node = NULL;
+}
+
 #include "gt-cgraph.h"

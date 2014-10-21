@@ -115,10 +115,45 @@ typedef struct funct_state_d * funct_state;
 
 static vec<funct_state> funct_state_vec;
 
-/* Holders of ipa cgraph hooks: */
-static struct cgraph_node_hook_list *function_insertion_hook_holder;
-static struct cgraph_2node_hook_list *node_duplication_hook_holder;
-static struct cgraph_node_hook_list *node_removal_hook_holder;
+static bool gate_pure_const (void);
+
+namespace {
+
+const pass_data pass_data_ipa_pure_const =
+{
+  IPA_PASS, /* type */
+  "pure-const", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_PURE_CONST, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_pure_const : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_pure_const(gcc::context *ctxt);
+
+  /* opt_pass methods: */
+  bool gate (function *) { return gate_pure_const (); }
+  unsigned int execute (function *fun);
+
+  void register_hooks (void);
+
+private:
+  bool init_p;
+
+  /* Holders of ipa cgraph hooks: */
+  struct cgraph_node_hook_list *function_insertion_hook_holder;
+  struct cgraph_2node_hook_list *node_duplication_hook_holder;
+  struct cgraph_node_hook_list *node_removal_hook_holder;
+
+}; // class pass_ipa_pure_const
+
+} // anon namespace
 
 /* Try to guess if function body will always be visible to compiler
    when compiling the call and whether compiler will be able
@@ -881,11 +916,10 @@ remove_node_data (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 }
 
 
-static void
+void
+pass_ipa_pure_const::
 register_hooks (void)
 {
-  static bool init_p = false;
-
   if (init_p)
     return;
 
@@ -908,7 +942,8 @@ pure_const_generate_summary (void)
 {
   struct cgraph_node *node;
 
-  register_hooks ();
+  pass_ipa_pure_const *pass = static_cast <pass_ipa_pure_const *> (current_pass);
+  pass->register_hooks ();
 
   /* Process all of the functions.
 
@@ -989,7 +1024,9 @@ pure_const_read_summary (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
 
-  register_hooks ();
+  pass_ipa_pure_const *pass = static_cast <pass_ipa_pure_const *> (current_pass);
+  pass->register_hooks ();
+
   while ((file_data = file_data_vec[j++]))
     {
       const char *data;
@@ -1470,8 +1507,9 @@ propagate_nothrow (void)
 /* Produce the global information by preforming a transitive closure
    on the local information that was produced by generate_summary.  */
 
-static unsigned int
-propagate (void)
+unsigned int
+pass_ipa_pure_const::
+execute (function *)
 {
   struct cgraph_node *node;
 
@@ -1500,44 +1538,23 @@ gate_pure_const (void)
 	  && !seen_error ());
 }
 
-namespace {
-
-const pass_data pass_data_ipa_pure_const =
+pass_ipa_pure_const::pass_ipa_pure_const(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_pure_const, ctxt,
+		     pure_const_generate_summary, /* generate_summary */
+		     pure_const_write_summary, /* write_summary */
+		     pure_const_read_summary, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL), /* variable_transform */
+  init_p(false),
+  function_insertion_hook_holder(NULL),
+  node_duplication_hook_holder(NULL),
+  node_removal_hook_holder(NULL)
 {
-  IPA_PASS, /* type */
-  "pure-const", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_IPA_PURE_CONST, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_ipa_pure_const : public ipa_opt_pass_d
-{
-public:
-  pass_ipa_pure_const (gcc::context *ctxt)
-    : ipa_opt_pass_d (pass_data_ipa_pure_const, ctxt,
-		      pure_const_generate_summary, /* generate_summary */
-		      pure_const_write_summary, /* write_summary */
-		      pure_const_read_summary, /* read_summary */
-		      NULL, /* write_optimization_summary */
-		      NULL, /* read_optimization_summary */
-		      NULL, /* stmt_fixup */
-		      0, /* function_transform_todo_flags_start */
-		      NULL, /* function_transform */
-		      NULL) /* variable_transform */
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_pure_const (); }
-  virtual unsigned int execute (function *) { return propagate (); }
-
-}; // class pass_ipa_pure_const
-
-} // anon namespace
+}
 
 ipa_opt_pass_d *
 make_pass_ipa_pure_const (gcc::context *ctxt)
