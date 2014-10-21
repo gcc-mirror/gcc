@@ -1,3 +1,9 @@
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* testsuite/util/io/prog_bar.cc: Qualify size_t.
+	* testsuite/util/io/prog_bar.hpp: Likewise.
+	* testsuite/util/io/verified_cmd_line_input.hpp: Likewise.
+
 2014-10-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement more Library Fundamentals v1 variable templates.

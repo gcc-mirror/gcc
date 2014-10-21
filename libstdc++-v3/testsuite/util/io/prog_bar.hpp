@@ -57,7 +57,7 @@ namespace __gnu_pbds
       enum{num_disp = 40};
 
     public:
-      prog_bar(size_t max, std::ostream& r_os, bool display = true);
+      prog_bar(std::size_t max, std::ostream& r_os, bool display = true);
 
       void
       inc();
@@ -69,10 +69,10 @@ namespace __gnu_pbds
       operator=(const prog_bar& );
 
     private:
-      size_t m_cur;
-      const size_t m_max;
+      std::size_t m_cur;
+      const std::size_t m_max;
 
-      size_t m_cur_disp;
+      std::size_t m_cur_disp;
 
       std::ostream& m_r_os;
 
