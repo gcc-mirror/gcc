@@ -9305,13 +9305,7 @@ Call_expression::check_argument_type(int i, const Type* parameter_type,
 				     bool issued_error)
 {
   std::string reason;
-  bool ok;
-  if (this->are_hidden_fields_ok_)
-    ok = Type::are_assignable_hidden_ok(parameter_type, argument_type,
-					&reason);
-  else
-    ok = Type::are_assignable(parameter_type, argument_type, &reason);
-  if (!ok)
+  if (!Type::are_assignable(parameter_type, argument_type, &reason))
     {
       if (!issued_error)
 	{
@@ -9359,13 +9353,11 @@ Call_expression::do_check_types(Gogo*)
       go_assert(this->args_ != NULL && !this->args_->empty());
       Type* rtype = fntype->receiver()->type();
       Expression* first_arg = this->args_->front();
-      // The language permits copying hidden fields for a method
-      // receiver.  We dereference the values since receivers are
-      // always passed as pointers.
+      // We dereference the values since receivers are always passed
+      // as pointers.
       std::string reason;
-      if (!Type::are_assignable_hidden_ok(rtype->deref(),
-					  first_arg->type()->deref(),
-					  &reason))
+      if (!Type::are_assignable(rtype->deref(), first_arg->type()->deref(),
+				&reason))
 	{
 	  if (reason.empty())
 	    this->report_error(_("incompatible type for receiver"));

@@ -594,14 +594,11 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 }
 
 // Return true if a value with type RHS may be assigned to a variable
-// with type LHS.  If CHECK_HIDDEN_FIELDS is true, check whether any
-// hidden fields are modified.  If REASON is not NULL, set *REASON to
-// the reason the types are not assignable.
+// with type LHS.  If REASON is not NULL, set *REASON to the reason
+// the types are not assignable.
 
 bool
-Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
-				  bool check_hidden_fields,
-				  std::string* reason)
+Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 {
   // Do some checks first.  Make sure the types are defined.
   if (rhs != NULL && !rhs->is_undefined())
@@ -621,21 +618,11 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
 	}
     }
 
-  if (lhs != NULL && !lhs->is_undefined())
-    {
-      // Any value may be assigned to the blank identifier.
-      if (lhs->is_sink_type())
-	return true;
-
-      // All fields of a struct must be exported, or the assignment
-      // must be in the same package.
-      if (check_hidden_fields && rhs != NULL && !rhs->is_undefined())
-	{
-	  if (lhs->has_hidden_fields(NULL, reason)
-	      || rhs->has_hidden_fields(NULL, reason))
-	    return false;
-	}
-    }
+  // Any value may be assigned to the blank identifier.
+  if (lhs != NULL
+      && !lhs->is_undefined()
+      && lhs->is_sink_type())
+    return true;
 
   // Identical types are assignable.
   if (Type::are_identical(lhs, rhs, true, reason))
@@ -718,25 +705,6 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
     }
 
   return false;
-}
-
-// Return true if a value with type RHS may be assigned to a variable
-// with type LHS.  If REASON is not NULL, set *REASON to the reason
-// the types are not assignable.
-
-bool
-Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
-{
-  return Type::are_assignable_check_hidden(lhs, rhs, false, reason);
-}
-
-// Like are_assignable but don't check for hidden fields.
-
-bool
-Type::are_assignable_hidden_ok(const Type* lhs, const Type* rhs,
-			       std::string* reason)
-{
-  return Type::are_assignable_check_hidden(lhs, rhs, false, reason);
 }
 
 // Return true if a value with type RHS may be converted to type LHS.
@@ -831,25 +799,6 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   return false;
-}
-
-// Return whether this type has any hidden fields.  This is only a
-// possibility for a few types.
-
-bool
-Type::has_hidden_fields(const Named_type* within, std::string* reason) const
-{
-  switch (this->forwarded()->classification_)
-    {
-    case TYPE_NAMED:
-      return this->named_type()->named_type_has_hidden_fields(reason);
-    case TYPE_STRUCT:
-      return this->struct_type()->struct_has_hidden_fields(within, reason);
-    case TYPE_ARRAY:
-      return this->array_type()->array_has_hidden_fields(within, reason);
-    default:
-      return false;
-    }
 }
 
 // Return a hash code for the type to be used for method lookup.
@@ -4828,49 +4777,6 @@ Struct_type::is_identical(const Struct_type* t,
   return true;
 }
 
-// Whether this struct type has any hidden fields.
-
-bool
-Struct_type::struct_has_hidden_fields(const Named_type* within,
-				      std::string* reason) const
-{
-  const Struct_field_list* fields = this->fields();
-  if (fields == NULL)
-    return false;
-  const Package* within_package = (within == NULL
-				   ? NULL
-				   : within->named_object()->package());
-  for (Struct_field_list::const_iterator pf = fields->begin();
-       pf != fields->end();
-       ++pf)
-    {
-      if (within_package != NULL
-	  && !pf->is_anonymous()
-	  && Gogo::is_hidden_name(pf->field_name()))
-	{
-	  if (reason != NULL)
-	    {
-	      std::string within_name = within->named_object()->message_name();
-	      std::string name = Gogo::message_name(pf->field_name());
-	      size_t bufsize = 200 + within_name.length() + name.length();
-	      char* buf = new char[bufsize];
-	      snprintf(buf, bufsize,
-		       _("implicit assignment of %s%s%s hidden field %s%s%s"),
-		       open_quote, within_name.c_str(), close_quote,
-		       open_quote, name.c_str(), close_quote);
-	      reason->assign(buf);
-	      delete[] buf;
-	    }
-	  return true;
-	}
-
-      if (pf->type()->has_hidden_fields(within, reason))
-	return true;
-    }
-
-  return false;
-}
-
 // Whether comparisons of this struct type are simple identity
 // comparisons.
 
@@ -8633,19 +8539,6 @@ Named_type::interface_method_table(Interface_type* interface, bool is_pointer)
                                       &this->pointer_interface_method_tables_);
 }
 
-// Return whether a named type has any hidden fields.
-
-bool
-Named_type::named_type_has_hidden_fields(std::string* reason) const
-{
-  if (this->seen_)
-    return false;
-  this->seen_ = true;
-  bool ret = this->type_->has_hidden_fields(this, reason);
-  this->seen_ = false;
-  return ret;
-}
-
 // Look for a use of a complete type within another type.  This is
 // used to check that we don't try to use a type within itself.
 
@@ -9772,17 +9665,8 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
-  call->set_hidden_fields_are_ok();
 
-  Statement* s = Statement::make_return_from_call(call, location);
-  Return_statement* retstat = s->return_statement();
-  if (retstat != NULL)
-    {
-      // We can return values with hidden fields from a stub.  This is
-      // necessary if the method is itself hidden.
-      retstat->set_hidden_fields_are_ok();
-    }
-  gogo->add_statement(s);
+  gogo->add_statement(Statement::make_return_from_call(call, location));
 }
 
 // Apply FIELD_INDEXES to EXPR.  The field indexes have to be applied

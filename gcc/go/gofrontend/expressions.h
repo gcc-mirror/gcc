@@ -1617,8 +1617,8 @@ class Call_expression : public Expression
     : Expression(EXPRESSION_CALL, location),
       fn_(fn), args_(args), type_(NULL), results_(NULL), call_(NULL),
       call_temp_(NULL), expected_result_count_(0), is_varargs_(is_varargs),
-      are_hidden_fields_ok_(false), varargs_are_lowered_(false),
-      types_are_determined_(false), is_deferred_(false), issued_error_(false)
+      varargs_are_lowered_(false), types_are_determined_(false),
+      is_deferred_(false), issued_error_(false)
   { }
 
   // The function to call.
@@ -1673,12 +1673,6 @@ class Call_expression : public Expression
   void
   set_varargs_are_lowered()
   { this->varargs_are_lowered_ = true; }
-
-  // Note that it is OK for this call to set hidden fields when
-  // passing arguments.
-  void
-  set_hidden_fields_are_ok()
-  { this->are_hidden_fields_ok_ = true; }
 
   // Whether this call is being deferred.
   bool
@@ -1788,9 +1782,6 @@ class Call_expression : public Expression
   size_t expected_result_count_;
   // True if the last argument is a varargs argument (f(a...)).
   bool is_varargs_;
-  // True if this statement may pass hidden fields in the arguments.
-  // This is used for generated method stubs.
-  bool are_hidden_fields_ok_;
   // True if varargs have already been lowered.
   bool varargs_are_lowered_;
   // True if types have been determined.
