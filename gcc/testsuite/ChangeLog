@@ -1,3 +1,10 @@
+2014-10-21  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/ipa/devirt-42.C: Fix dump scanning routines.
+	* g++.dg/ipa/devirt-46.C: Likewise.
+	* g++.dg/ipa/devirt-47.C: Likewise.
+	* g++.dg/tree-prof/pr35545.C: Likewise.
+
 2014-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63563
