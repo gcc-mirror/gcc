@@ -2912,6 +2912,7 @@ extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
 extern bool keep_with_call_p (const rtx_insn *);
 extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
 extern int insn_rtx_cost (rtx, bool);
+extern unsigned seq_cost (const rtx_insn *, bool);
 
 /* Given an insn and condition, return a canonical description of
    the test being made.  */
