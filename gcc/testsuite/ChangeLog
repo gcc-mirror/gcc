@@ -1,3 +1,9 @@
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63542
+	* gcc.target/i386/pr63542-1.c: New test.
+	* gcc.target/i386/pr63542-2.c: New test.
+
 2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.target/avr/tiny-memx.c: New test.
