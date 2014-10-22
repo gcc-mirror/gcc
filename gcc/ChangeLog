@@ -1,3 +1,9 @@
+2014-10-22  Guozhi Wei  <carrot@google.com>
+
+	PR tree-optimization/63530
+	tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Set
+	pointer alignment according to DR_MISALIGNMENT.
+
 2014-10-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* ipa-icf.c (ipa_icf_driver): Set optimizer to NULL when done.
