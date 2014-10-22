@@ -2320,6 +2320,7 @@ ipa_icf_driver (void)
   optimizer->unregister_hooks ();
 
   delete optimizer;
+  optimizer = NULL;
 
   return 0;
 }

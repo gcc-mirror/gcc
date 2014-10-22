@@ -1,3 +1,7 @@
+2014-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-icf.c (ipa_icf_driver): Set optimizer to NULL when done.
+
 2014-10-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cfgbuild.h: New.  Add prototypes for cfgbuild.c.
