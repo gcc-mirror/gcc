@@ -75,6 +75,7 @@ extern tree fold_fma (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
+extern tree fold_builtin_n (location_t, tree, tree *, int, bool);
 extern bool validate_gimple_arglist (const_gimple, ...);
 extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern bool fold_builtin_next_arg (tree, bool);

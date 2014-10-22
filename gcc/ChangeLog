@@ -1,3 +1,33 @@
+2014-10-22  Richard Biener  <rguenther@suse.de>
+	Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* Makefile.in (OBJS): Add gimple-match.o and generic-match.o.
+	(MOSTLYCLEANFILES): Add gimple-match.c and generic-match.c.
+	(gimple-match.c): Generate by triggering s-match.
+	(generic-match.c): Likewise.
+	(s-match): Rule to build gimple-match.c and generic-match.c
+	by running the genmatch generator program.
+	(build/hash-table.o): Dependencies to build hash-table.c for the host.
+	(build/genmatch.o): Dependencies to build genmatch.
+	(genprog): Add match.
+	(build/genmatch): Likewise.
+	(TEXI_GCCINT_FILES): Add match-and-simplify.texi.
+	* generic-match-head.c: New file.
+	* gimple-match-head.c: Likewise.
+	* gimple-match.h: Likewise.
+	* genmatch.c: Likewise.
+	* match.pd: Likewise.
+	* builtins.h (fold_builtin_n): Export.
+	* builtins.c (fold_builtin_n): Likewise.
+	* gimple-fold.h (gimple_build): Declare various overloads.
+	(gimple_simplify): Likewise.
+	(gimple_convert): Re-implement in terms of gimple_build.
+	* gimple-fold.c (gimple_convert): Remove.
+	(gimple_build): New functions.
+	* doc/match-and-simplify.texi: New file.
+	* doc/gccint.texi: Add menu item Match and Simplify and include
+	match-and-simplify.texi.
+
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63594

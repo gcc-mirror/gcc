@@ -1,0 +1,314 @@
+@c Copyright (C) 2014 Free Software Foundation, Inc.
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Match and Simplify
+@chapter Match and Simplify
+@cindex Match and Simplify
+
+The GIMPLE and GENERIC pattern matching project match-and-simplify
+tries to address several issues.
+
+@enumerate
+@item unify expression simplifications currently spread and duplicated
+    over separate files like fold-const.c, gimple-fold.c and builtins.c
+@item allow for a cheap way to implement building and simplifying
+    non-trivial GIMPLE expressions, avoiding the need to go through
+    building and simplifying GENERIC via fold_buildN and then
+    gimplifying via force_gimple_operand
+@end enumerate
+
+To address these the project introduces a simple domain specific language
+to write expression simplifications from which code targeting GIMPLE
+and GENERIC is auto-generated.  The GENERIC variant follows the
+fold_buildN API while for the GIMPLE variant and to address 2) new
+APIs are introduced.
+
+@menu
+* GIMPLE API::
+* The Language::
+@end menu
+
+@node GIMPLE API
+@section GIMPLE API
+@cindex GIMPLE API
+
+@deftypefn {GIMPLE function} tree gimple_simplify (enum tree_code, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum tree_code, tree, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum tree_code, tree, tree, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, gimple_seq *, tree (*)(tree))
+The main GIMPLE API entry to the expression simplifications mimicing
+that of the GENERIC fold_@{unary,binary,ternary@} functions.
+@end deftypefn
+
+thus providing n-ary overloads for operation or function.  The
+additional arguments are a gimple_seq where built statements are
+inserted on (if @code{NULL} then simplifications requiring new statements
+are not performed) and a valueization hook that can be used to
+tie simplifications to a SSA lattice.
+
+In addition to those APIs @code{fold_stmt} is overloaded with
+a valueization hook:
+
+@deftypefn bool fold_stmt (gimple_stmt_iterator *, tree (*)(tree));
+@end deftypefn
+
+
+Ontop of these a @code{fold_buildN}-like API for GIMPLE is introduced:
+
+@deftypefn {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum built_in_function, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum built_in_function, tree, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_convert (gimple_seq *, location_t, tree, tree);
+@end deftypefn
+
+which is supposed to replace @code{force_gimple_operand (fold_buildN (...), ...)}
+and calls to @code{fold_convert}.  Overloads without the @code{location_t}
+argument exist.  Built statements are inserted on the provided sequence
+and simplification is performed using the optional valueization hook.
+
+
+@node The Language
+@section The Language
+@cindex The Language
+
+The language to write expression simplifications in resembles other
+domain-specific languages GCC uses.  Thus it is lispy.  Lets start
+with an example from the match.pd file:
+
+@smallexample
+(simplify
+  (bit_and @@0 integer_all_onesp)
+  @@0)
+@end smallexample
+
+This example contains all required parts of an expression simplification.
+A simplification is wrapped inside a @code{(simplify ...)} expression.
+That contains at least two operands - an expression that is matched
+with the GIMPLE or GENERIC IL and a replacement expression that is
+returned if the match was successful.
+
+Expressions have an operator ID, @code{bit_and} in this case.  Expressions can
+be lower-case tree codes with @code{_expr} stripped off or builtin
+function code names in all-caps, like @code{BUILT_IN_SQRT}.
+
+@code{@@n} denotes a so-called capture.  It captures the operand and lets
+you refer to it in other places of the match-and-simplify.  In the
+above example it is refered to in the replacement expression.  Captures
+are @code{@@} followed by a number or an identifier.
+
+@smallexample
+(simplify
+  (bit_xor @@0 @@0)
+  @{ build_zero_cst (type); @})
+@end smallexample
+
+In this example @code{@@0} is mentioned twice which constrains the matched
+expression to have two equal operands.  This example also introduces
+operands written in C code.  These can be used in the expression
+replacements and are supposed to evaluate to a tree node which has to
+be a valid GIMPLE operand (so you cannot generate expressions in C code).
+
+@smallexample
+(simplify
+  (trunc_mod integer_zerop@@0 @@1)
+  (if (!integer_zerop (@@1)))
+  @@0)
+@end smallexample
+
+Here @code{@@0} captures the first operand of the trunc_mod expression
+which is also predicated with @code{integer_zerop}.  Expression operands
+may be either expressions, predicates or captures.  Captures
+can be unconstrained or capture expresions or predicates.
+
+This example introduces an optional operand of simplify,
+the if-expression.  This condition is evaluated after the
+expression matched in the IL and is required to evaluate to true
+to enable the replacement expression.  The expression operand
+of the @code{if} is a standard C expression which may contain references
+to captures.
+
+A @code{if} expression can be used to specify a common condition
+for multiple simplify patterns, avoiding the need
+to repeat that multiple times:
+
+@smallexample
+(if (!TYPE_SATURATING (type)
+     && !FLOAT_TYPE_P (type) && !FIXED_POINT_TYPE_P (type))
+  (simplify
+    (minus (plus @@0 @@1) @@0)
+    @@1)
+  (simplify
+    (minus (minus @@0 @@1) @@0)
+    (negate @@1)))
+@end smallexample
+
+Ifs can be nested.
+
+Captures can also be used for capturing results of sub-expressions.
+
+@smallexample
+#if GIMPLE
+(simplify
+  (pointer_plus (addr@@2 @@0) INTEGER_CST_P@@1)
+  (if (is_gimple_min_invariant (@@2)))
+  @{
+    HOST_WIDE_INT off;
+    tree base = get_addr_base_and_unit_offset (@@0, &off);
+    off += tree_to_uhwi (@@1);
+    /* Now with that we should be able to simply write
+       (addr (mem_ref (addr @@base) (plus @@off @@1)))  */
+    build1 (ADDR_EXPR, type,
+            build2 (MEM_REF, TREE_TYPE (TREE_TYPE (@@2)),
+                    build_fold_addr_expr (base),
+                    build_int_cst (ptr_type_node, off)));
+  @})
+#endif
+@end smallexample
+
+In the above example, @code{@@2} captures the result of the expression
+@code{(addr @@0)}.  For outermost expression only its type can be captured,
+and the keyword @code{type} is reserved for this purpose.  The above
+example also gives a way to conditionalize patterns to only apply
+to @code{GIMPLE} or @code{GENERIC} by means of using the pre-defined
+preprocessor macros @code{GIMPLE} and @code{GENERIC} and using
+preprocessor directives.
+
+@smallexample
+(simplify
+  (bit_and:c integral_op_p@@0 (bit_ior:c (bit_not @@0) @@1))
+  (bit_and @@1 @@0))
+@end smallexample
+
+Here we introduce flags on match expressions.  There is currently
+a single flag, @code{c}, which denotes that the expression should
+be also matched commutated.  Thus the above match expression
+is really the following four match expressions:
+
+  (bit_and integral_op_p@@0 (bit_ior (bit_not @@0) @@1))
+  (bit_and (bit_ior (bit_not @@0) @@1) integral_op_p@@0)
+  (bit_and integral_op_p@@0 (bit_ior @@1 (bit_not @@0)))
+  (bit_and (bit_ior @@1 (bit_not @@0)) integral_op_p@@0)
+
+Usual canonicalizations you know from GENERIC expressions are
+applied before matching, so for example constant operands always
+come second in commutative expressions.
+
+More features exist to avoid too much repetition.
+
+@smallexample
+(for op (plus pointer_plus minus bit_ior bit_xor)
+  (simplify
+    (op @@0 integer_zerop)
+    @@0))
+@end smallexample
+
+A @code{for} expression can be used to repeat a pattern for each
+operator specified, substituting @code{op}.  @code{for} can be
+nested and a @code{for} can have multiple operators to iterate.
+
+@smallexample
+(for opa (plus minus)
+     opb (minus plus)
+  (for opc (plus minus)
+    (simplify...
+@end smallexample
+
+In this example the pattern will be repeated four times with
+@code{opa, opb, opc} being @code{plus, minus, plus},
+@code{plus, minus, minus}, @code{minus, plus, plus},
+@code{minus, plus, minus}.
+
+Another building block are @code{with} expressions in the
+result expression which nest the generated code in a new C block
+followed by its argument:
+
+@smallexample
+(simplify
+ (convert (mult @@0 @@1))
+ (with @{ tree utype = unsigned_type_for (type); @}
+  (convert (mult (convert:utype @@0) (convert:utype @@1)))))
+@end smallexample
+
+This allows code nested in the @code{with} to refer to the declared
+variables.  In the above case we use the feature to specify the
+type of a generated expression with the @code{:type} syntax where
+@code{type} needs to be an identifier that refers to the desired type.
+Usually the types of the generated result expressions are
+determined from the context, but sometimes like in the above case
+it is required that you specify them explicitely.
+
+As intermediate conversions are often optional there is a way to
+avoid the need to repeat patterns both with and without such
+conversions.  Namely you can mark a conversion as being optional
+with a @code{?}:
+
+@smallexample
+(simplify
+ (eq (convert@@0 @@1) (convert? @@2))
+ (eq @@1 (convert @@2)))
+@end smallexample
+
+which will match both @code{(eq (convert @@1) (convert @@2))} and
+@code{(eq (convert @@1) @@2)}.  The optional converts are supposed
+to be all either present or not, thus
+@code{(eq (convert? @@1) (convert? @@2))} will result in two
+patterns only.  If you want to match all four combinations you
+have access to two additional conditional converts as in
+@code{(eq (convert1? @@1) (convert2? @@2))}.
+
+Predicates available from the GCC middle-end need to be made
+available explicitely via @code{define_predicates}:
+
+@smallexample
+(define_predicates
+ integer_onep integer_zerop integer_all_onesp)
+@end smallexample
+
+You can also define predicates using the pattern matching language
+and the @code{match} form:
+
+@smallexample
+(match negate_expr_p
+ INTEGER_CST
+ (if (TYPE_OVERFLOW_WRAPS (type)
+      || may_negate_without_overflow_p (t))))
+(match negate_expr_p
+ (negate @@0))
+@end smallexample
+
+This shows that for @code{match} expressions there is @code{t}
+available which captures the outermost expression (something
+not possible in the @code{simplify} context).  As you can see
+@code{match} has an identifier as first operand which is how
+you refer to the predicate in patterns.  Multiple @code{match}
+for the same identifier add additional cases where the predicate
+matches.
+
+Predicates can also match an expression in which case you need
+to provide a template specifying the identifier and where to
+get its operands from:
+
+@smallexample
+(match (logical_inverted_value @@0)
+ (eq @@0 integer_zerop))
+(match (logical_inverted_value @@0)
+ (bit_not truth_valued_p@@0))
+@end smallexample
+
+You can use the above predicate like
+
+@smallexample
+(simplify
+ (bit_and @@0 (logical_inverted_value @@0))
+ @{ build_zero_cst (type); @})
+@end smallexample
+
+Which will match a bitwise and of an operand with its logical
+inverted value.
+

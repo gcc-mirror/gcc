@@ -5364,19 +5364,202 @@ rewrite_to_defined_overflow (gimple stmt)
   return stmts;
 }
 
-/* Return OP converted to TYPE by emitting a conversion statement on SEQ
-   if required using location LOC.  Note that OP will be returned
-   unmodified if GIMPLE does not require an explicit conversion between
-   its type and TYPE.  */
+
+/* Build the expression CODE OP0 of type TYPE with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   OP0 is expected to be valueized already.  Returns the built
+   expression value and appends statements possibly defining it
+   to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum tree_code code, tree type, tree op0,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (code, type, op0, seq, valueize);
+  if (!res)
+    {
+      if (gimple_in_ssa_p (cfun))
+	res = make_ssa_name (type, NULL);
+      else
+	res = create_tmp_reg (type, NULL);
+      gimple stmt;
+      if (code == REALPART_EXPR
+	  || code == IMAGPART_EXPR
+	  || code == VIEW_CONVERT_EXPR)
+	stmt = gimple_build_assign_with_ops (code, res,
+					     build1 (code, type,
+						     op0), NULL_TREE);
+      else
+	stmt = gimple_build_assign_with_ops (code, res, op0, NULL_TREE);
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the expression OP0 CODE OP1 of type TYPE with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   OP0 and OP1 are expected to be valueized already.  Returns the built
+   expression value and appends statements possibly defining it
+   to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum tree_code code, tree type, tree op0, tree op1,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (code, type, op0, op1, seq, valueize);
+  if (!res)
+    {
+      if (gimple_in_ssa_p (cfun))
+	res = make_ssa_name (type, NULL);
+      else
+	res = create_tmp_reg (type, NULL);
+      gimple stmt = gimple_build_assign_with_ops (code, res, op0, op1);
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the expression (CODE OP0 OP1 OP2) of type TYPE with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   OP0, OP1 and OP2 are expected to be valueized already.  Returns the built
+   expression value and appends statements possibly defining it
+   to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum tree_code code, tree type, tree op0, tree op1, tree op2,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (code, type, op0, op1, op2,
+			      seq, valueize);
+  if (!res)
+    {
+      if (gimple_in_ssa_p (cfun))
+	res = make_ssa_name (type, NULL);
+      else
+	res = create_tmp_reg (type, NULL);
+      gimple stmt;
+      if (code == BIT_FIELD_REF)
+	stmt = gimple_build_assign_with_ops (code, res,
+					     build3 (BIT_FIELD_REF, type,
+						     op0, op1, op2),
+					     NULL_TREE);
+      else
+	stmt = gimple_build_assign_with_ops (code, res, op0, op1, op2);
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the call FN (ARG0) with a result of type TYPE
+   (or no result if TYPE is void) with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   ARG0 is expected to be valueized already.  Returns the built
+   expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum built_in_function fn, tree type, tree arg0,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (fn, type, arg0, seq, valueize);
+  if (!res)
+    {
+      tree decl = builtin_decl_implicit (fn);
+      gimple stmt = gimple_build_call (decl, 1, arg0);
+      if (!VOID_TYPE_P (type))
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    res = make_ssa_name (type, NULL);
+	  else
+	    res = create_tmp_reg (type, NULL);
+	  gimple_call_set_lhs (stmt, res);
+	}
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the call FN (ARG0, ARG1) with a result of type TYPE
+   (or no result if TYPE is void) with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   ARG0 is expected to be valueized already.  Returns the built
+   expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum built_in_function fn, tree type, tree arg0, tree arg1,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (fn, type, arg0, arg1, seq, valueize);
+  if (!res)
+    {
+      tree decl = builtin_decl_implicit (fn);
+      gimple stmt = gimple_build_call (decl, 2, arg0, arg1);
+      if (!VOID_TYPE_P (type))
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    res = make_ssa_name (type, NULL);
+	  else
+	    res = create_tmp_reg (type, NULL);
+	  gimple_call_set_lhs (stmt, res);
+	}
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the call FN (ARG0, ARG1, ARG2) with a result of type TYPE
+   (or no result if TYPE is void) with location LOC,
+   simplifying it first if possible using VALUEIZE if not NULL.
+   ARG0 is expected to be valueized already.  Returns the built
+   expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      enum built_in_function fn, tree type,
+	      tree arg0, tree arg1, tree arg2,
+	      tree (*valueize)(tree))
+{
+  tree res = gimple_simplify (fn, type, arg0, arg1, arg2, seq, valueize);
+  if (!res)
+    {
+      tree decl = builtin_decl_implicit (fn);
+      gimple stmt = gimple_build_call (decl, 3, arg0, arg1, arg2);
+      if (!VOID_TYPE_P (type))
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    res = make_ssa_name (type, NULL);
+	  else
+	    res = create_tmp_reg (type, NULL);
+	  gimple_call_set_lhs (stmt, res);
+	}
+      gimple_set_location (stmt, loc);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  return res;
+}
+
+/* Build the conversion (TYPE) OP with a result of type TYPE
+   with location LOC if such conversion is neccesary in GIMPLE,
+   simplifying it first.
+   Returns the built expression value and appends
+   statements possibly defining it to SEQ.  */
 
 tree
 gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
 {
   if (useless_type_conversion_p (type, TREE_TYPE (op)))
     return op;
-  op = fold_convert_loc (loc, type, op);
-  gimple_seq stmts = NULL;
-  op = force_gimple_operand (op, &stmts, true, NULL_TREE);
-  gimple_seq_add_seq_without_update (seq, stmts);
-  return op;
+  return gimple_build (seq, loc, NOP_EXPR, type, op);
 }
