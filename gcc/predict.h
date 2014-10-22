@@ -45,17 +45,48 @@ enum prediction
    TAKEN
 };
 
-extern void predict_insn_def (rtx_insn *, enum br_predictor, enum prediction);
-extern int counts_to_freqs (void);
-extern void handle_missing_profiles (void);
-extern void estimate_bb_frequencies (bool);
-extern const char *predictor_name (enum br_predictor);
-extern tree build_predict_expr (enum br_predictor, enum prediction);
-extern void tree_estimate_probability (void);
-extern void compute_function_frequency (void);
-extern void rebuild_frequencies (void);
-
+extern gcov_type get_hot_bb_threshold (void);
+extern void set_hot_bb_threshold (gcov_type);
+extern bool maybe_hot_count_p (struct function *, gcov_type);
+extern bool maybe_hot_bb_p (struct function *, const_basic_block);
+extern bool maybe_hot_edge_p (edge);
+extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
+extern bool probably_never_executed_edge_p (struct function *, edge);
 extern bool optimize_function_for_size_p (struct function *);
 extern bool optimize_function_for_speed_p (struct function *);
+extern bool optimize_bb_for_size_p (const_basic_block);
+extern bool optimize_bb_for_speed_p (const_basic_block);
+extern bool optimize_edge_for_size_p (edge);
+extern bool optimize_edge_for_speed_p (edge);
+extern bool optimize_insn_for_size_p (void);
+extern bool optimize_insn_for_speed_p (void);
+extern bool optimize_loop_for_size_p (struct loop *);
+extern bool optimize_loop_for_speed_p (struct loop *);
+extern bool optimize_loop_nest_for_speed_p (struct loop *);
+extern bool optimize_loop_nest_for_size_p (struct loop *);
+extern bool predictable_edge_p (edge);
+extern void rtl_profile_for_bb (basic_block);
+extern void rtl_profile_for_edge (edge);
+extern void default_rtl_profile (void);
+extern bool rtl_predicted_by_p (const_basic_block, enum br_predictor);
+extern bool gimple_predicted_by_p (const_basic_block, enum br_predictor);
+extern bool edge_probability_reliable_p (const_edge);
+extern bool br_prob_note_reliable_p (const_rtx);
+extern void predict_insn_def (rtx_insn *, enum br_predictor, enum prediction);
+extern void rtl_predict_edge (edge, enum br_predictor, int);
+extern void gimple_predict_edge (edge, enum br_predictor, int);
+extern void remove_predictions_associated_with_edge (edge);
+extern void predict_edge_def (edge, enum br_predictor, enum prediction);
+extern void invert_br_probabilities (rtx);
+extern void guess_outgoing_edge_probabilities (basic_block);
+extern void tree_estimate_probability (void);
+extern void handle_missing_profiles (void);
+extern int counts_to_freqs (void);
+extern bool expensive_function_p (int);
+extern void estimate_bb_frequencies (bool);
+extern void compute_function_frequency (void);
+extern tree build_predict_expr (enum br_predictor, enum prediction);
+extern const char *predictor_name (enum br_predictor);
+extern void rebuild_frequencies (void);
 
 #endif  /* GCC_PREDICT_H */

@@ -3388,9 +3388,6 @@ extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
 extern rtx make_compound_operation (rtx, enum rtx_code);
 
-/* In cfgcleanup.c  */
-extern void delete_dead_jumptables (void);
-
 /* In sched-rgn.c.  */
 extern void schedule_insns (void);
 
@@ -3531,10 +3528,6 @@ extern int stack_regs_mentioned (const_rtx insn);
 /* In toplev.c */
 extern GTY(()) rtx stack_limit_rtx;
 
-/* In predict.c */
-extern void invert_br_probabilities (rtx);
-extern bool expensive_function_p (int);
-
 /* In var-tracking.c */
 extern unsigned int variable_tracking_main (void);
 
@@ -3577,8 +3570,6 @@ extern void insn_locations_init (void);
 extern void insn_locations_finalize (void);
 extern void set_curr_insn_location (location_t);
 extern location_t curr_insn_location (void);
-extern bool optimize_insn_for_size_p (void);
-extern bool optimize_insn_for_speed_p (void);
 
 /* rtl-error.c */
 extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)

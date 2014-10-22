@@ -872,7 +872,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 /* Removes the memory attributes of MEM expression
    if they are not equal.  */
 
-void
+static void
 merge_memattrs (rtx x, rtx y)
 {
   int i;
