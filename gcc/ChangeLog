@@ -1,3 +1,8 @@
+2014-10-22  Renlin Li <renlin.li@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ARM_FEATURE_IDIV__.
+
 2014-10-22  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (s-match): Adjust dependencies to only catch
