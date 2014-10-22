@@ -3002,13 +3002,14 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
      First loop over alternatives.  */
 
+  alternative_mask enabled = get_enabled_alternatives (insn);
   for (this_alternative_number = 0;
        this_alternative_number < n_alternatives;
        this_alternative_number++)
     {
       int swapped;
 
-      if (!TEST_BIT (recog_data.enabled_alternatives, this_alternative_number))
+      if (!TEST_BIT (enabled, this_alternative_number))
 	{
 	  int i;
 
