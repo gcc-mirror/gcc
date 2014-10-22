@@ -2060,25 +2060,46 @@ mode_dependent_address_p (rtx addr, addr_space_t addrspace)
   return targetm.mode_dependent_address_p (addr, addrspace);
 }
 
-/* Return the mask of operand alternatives that are allowed for INSN.
-   This mask depends only on INSN and on the current target; it does not
-   depend on things like the values of operands.  */
+/* Return true if boolean attribute ATTR is supported.  */
 
-alternative_mask
-get_enabled_alternatives (rtx_insn *insn)
+static bool
+have_bool_attr (bool_attr attr)
 {
-  /* Quick exit for asms and for targets that don't use the "enabled"
-     attribute.  */
-  int code = INSN_CODE (insn);
-  if (code < 0 || !HAVE_ATTR_enabled)
-    return ALL_ALTERNATIVES;
+  switch (attr)
+    {
+    case BA_ENABLED:
+      return HAVE_ATTR_enabled;
+    case BA_PREFERRED_FOR_SIZE:
+      return HAVE_ATTR_enabled || HAVE_ATTR_preferred_for_size;
+    case BA_PREFERRED_FOR_SPEED:
+      return HAVE_ATTR_enabled || HAVE_ATTR_preferred_for_speed;
+    }
+  gcc_unreachable ();
+}
 
-  /* Calling get_attr_enabled can be expensive, so cache the mask
-     for speed.  */
-  if (this_target_recog->x_enabled_alternatives[code])
-    return this_target_recog->x_enabled_alternatives[code];
+/* Return the value of ATTR for instruction INSN.  */
 
-  /* Temporarily install enough information for get_attr_enabled to assume
+static bool
+get_bool_attr (rtx_insn *insn, bool_attr attr)
+{
+  switch (attr)
+    {
+    case BA_ENABLED:
+      return get_attr_enabled (insn);
+    case BA_PREFERRED_FOR_SIZE:
+      return get_attr_enabled (insn) && get_attr_preferred_for_size (insn);
+    case BA_PREFERRED_FOR_SPEED:
+      return get_attr_enabled (insn) && get_attr_preferred_for_speed (insn);
+    }
+  gcc_unreachable ();
+}
+
+/* Like get_bool_attr_mask, but don't use the cache.  */
+
+static alternative_mask
+get_bool_attr_mask_uncached (rtx_insn *insn, bool_attr attr)
+{
+  /* Temporarily install enough information for get_attr_<foo> to assume
      that the insn operands are already cached.  As above, the attribute
      mustn't depend on the values of operands, so we don't provide their
      real values here.  */
@@ -2086,20 +2107,81 @@ get_enabled_alternatives (rtx_insn *insn)
   int old_alternative = which_alternative;
 
   recog_data.insn = insn;
-  alternative_mask enabled = ALL_ALTERNATIVES;
-  int n_alternatives = insn_data[code].n_alternatives;
+  alternative_mask mask = ALL_ALTERNATIVES;
+  int n_alternatives = insn_data[INSN_CODE (insn)].n_alternatives;
   for (int i = 0; i < n_alternatives; i++)
     {
       which_alternative = i;
-      if (!get_attr_enabled (insn))
-	enabled &= ~ALTERNATIVE_BIT (i);
+      if (!get_bool_attr (insn, attr))
+	mask &= ~ALTERNATIVE_BIT (i);
     }
 
   recog_data.insn = old_insn;
   which_alternative = old_alternative;
+  return mask;
+}
 
-  this_target_recog->x_enabled_alternatives[code] = enabled;
-  return enabled;
+/* Return the mask of operand alternatives that are allowed for INSN
+   by boolean attribute ATTR.  This mask depends only on INSN and on
+   the current target; it does not depend on things like the values of
+   operands.  */
+
+static alternative_mask
+get_bool_attr_mask (rtx_insn *insn, bool_attr attr)
+{
+  /* Quick exit for asms and for targets that don't use these attributes.  */
+  int code = INSN_CODE (insn);
+  if (code < 0 || !have_bool_attr (attr))
+    return ALL_ALTERNATIVES;
+
+  /* Calling get_attr_<foo> can be expensive, so cache the mask
+     for speed.  */
+  if (!this_target_recog->x_bool_attr_masks[code][attr])
+    this_target_recog->x_bool_attr_masks[code][attr]
+      = get_bool_attr_mask_uncached (insn, attr);
+  return this_target_recog->x_bool_attr_masks[code][attr];
+}
+
+/* Return the set of alternatives of INSN that are allowed by the current
+   target.  */
+
+alternative_mask
+get_enabled_alternatives (rtx_insn *insn)
+{
+  return get_bool_attr_mask (insn, BA_ENABLED);
+}
+
+/* Return the set of alternatives of INSN that are allowed by the current
+   target and are preferred for the current size/speed optimization
+   choice.  */
+
+alternative_mask
+get_preferred_alternatives (rtx_insn *insn)
+{
+  if (optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn)))
+    return get_bool_attr_mask (insn, BA_PREFERRED_FOR_SPEED);
+  else
+    return get_bool_attr_mask (insn, BA_PREFERRED_FOR_SIZE);
+}
+
+/* Assert that the cached boolean attributes for INSN are still accurate.
+   The backend is required to define these attributes in a way that only
+   depends on the current target (rather than operands, compiler phase,
+   etc.).  */
+
+bool
+check_bool_attrs (rtx_insn *insn)
+{
+  int code = INSN_CODE (insn);
+  if (code >= 0)
+    for (int i = 0; i <= BA_LAST; ++i)
+      {
+	enum bool_attr attr = (enum bool_attr) i;
+	if (this_target_recog->x_bool_attr_masks[code][attr])
+	  gcc_assert (this_target_recog->x_bool_attr_masks[code][attr]
+		      == get_bool_attr_mask_uncached (insn, attr));
+      }
+  return true;
 }
 
 /* Like extract_insn, but save insn extracted and don't extract again, when
@@ -4048,8 +4130,8 @@ recog_init ()
       this_target_recog->x_initialized = true;
       return;
     }
-  memset (this_target_recog->x_enabled_alternatives, 0,
-	  sizeof (this_target_recog->x_enabled_alternatives));
+  memset (this_target_recog->x_bool_attr_masks, 0,
+	  sizeof (this_target_recog->x_bool_attr_masks));
   for (int i = 0; i < LAST_INSN_CODE; ++i)
     if (this_target_recog->x_op_alt[i])
       {

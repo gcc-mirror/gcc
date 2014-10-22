@@ -5905,10 +5905,10 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 	  /* Operand has no constraints, anything is OK.  */
  	  win = !n_alternatives;
 
-	  alternative_mask enabled = recog_data.enabled_alternatives;
+	  alternative_mask preferred = get_preferred_alternatives (insn);
 	  for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	    {
-	      if (!TEST_BIT (enabled, j))
+	      if (!TEST_BIT (preferred, j))
 		continue;
 	      if (op_alt[i].anything_ok
 		  || (op_alt[i].matches != -1

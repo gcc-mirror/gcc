@@ -1788,6 +1788,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
   int commutative = -1;
 
   extract_insn (insn);
+  alternative_mask preferred = get_preferred_alternatives (insn);
   CLEAR_HARD_REG_SET (alts);
   insn_constraints.release ();
   insn_constraints.safe_grow_cleared (recog_data.n_operands
@@ -1817,7 +1818,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	}
       for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
 	{
-	  if (!TEST_BIT (recog_data.enabled_alternatives, nalt)
+	  if (!TEST_BIT (preferred, nalt)
 	      || TEST_HARD_REG_BIT (alts, nalt))
 	    continue;
 

@@ -497,6 +497,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 	  SET_HARD_REG_BIT (equiv_regs[i], REGNO (l->loc));
     }
 
+  alternative_mask preferred = get_preferred_alternatives (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     {
       enum machine_mode mode;
@@ -570,7 +571,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		     alternative yet and the operand being replaced is not
 		     a cheap CONST_INT.  */
 		  if (op_alt_regno[i][j] == -1
-		      && TEST_BIT (recog_data.enabled_alternatives, j)
+		      && TEST_BIT (preferred, j)
 		      && reg_fits_class_p (testreg, rclass, 0, mode)
 		      && (!CONST_INT_P (recog_data.operand[i])
 			  || (set_src_cost (recog_data.operand[i],

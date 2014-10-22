@@ -416,6 +416,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
   /* Process each alternative, each time minimizing an operand's cost
      with the cost for each operand in that alternative.  */
+  alternative_mask preferred = get_preferred_alternatives (insn);
   for (alt = 0; alt < n_alts; alt++)
     {
       enum reg_class classes[MAX_RECOG_OPERANDS];
@@ -424,7 +425,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
       int alt_fail = 0;
       int alt_cost = 0, op_cost_add;
 
-      if (!TEST_BIT (recog_data.enabled_alternatives, alt))
+      if (!TEST_BIT (preferred, alt))
 	{
 	  for (i = 0; i < recog_data.n_operands; i++)
 	    constraints[i] = skip_alternative (constraints[i]);

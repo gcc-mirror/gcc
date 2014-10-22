@@ -1,5 +1,34 @@
 2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/md.texi: Document "preferred_for_size" and "preferred_for_speed"
+	attributes.
+	* genattr.c (main): Handle "preferred_for_size" and
+	"preferred_for_speed" in the same way as "enabled".
+	* recog.h (bool_attr): New enum.
+	(target_recog): Replace x_enabled_alternatives with x_bool_attr_masks.
+	(get_preferred_alternatives, check_bool_attrs): Declare.
+	* recog.c (have_bool_attr, get_bool_attr, get_bool_attr_mask_uncached)
+	(get_bool_attr_mask, get_preferred_alternatives, check_bool_attrs):
+	New functions.
+	(get_enabled_alternatives): Use get_bool_attr_mask.
+	* ira-costs.c (record_reg_classes): Use get_preferred_alternatives
+	instead of recog_data.enabled_alternatives.
+	* ira.c (ira_setup_alts): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Likewise.
+	* ira-lives.c (preferred_alternatives): New variable.
+	(process_bb_node_lives): Set it.
+	(check_and_make_def_conflict, make_early_clobber_and_input_conflicts)
+	(single_reg_class, ira_implicitly_set_insn_hard_regs): Use it instead
+	of recog_data.enabled_alternatives.
+	* lra-int.h (lra_insn_recog_data): Replace enabled_alternatives
+	to preferred_alternatives.
+	* lra-constraints.c (process_alt_operands): Update accordingly.
+	* lra.c (lra_set_insn_recog_data): Likewise.
+	(lra_update_insn_recog_data): Assert check_bool_attrs.
+
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* recog.h (extract_constrain_insn): Declare.
 	* recog.c (extract_constrain_insn): New function.
 	* lra.c (check_rtl): Use it.
