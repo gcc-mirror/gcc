@@ -1,5 +1,19 @@
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63594
+	* gcc.dg/pr63594-1.c: New test.
+	* gcc.dg/pr63594-2.c: New test.
+	* gcc.target/i386/sse2-pr63594-1.c: New test.
+	* gcc.target/i386/sse2-pr63594-2.c: New test.
+	* gcc.target/i386/avx-pr63594-1.c: New test.
+	* gcc.target/i386/avx-pr63594-2.c: New test.
+	* gcc.target/i386/avx2-pr63594-1.c: New test.
+	* gcc.target/i386/avx2-pr63594-2.c: New test.
+	* gcc.target/i386/avx512f-pr63594-1.c: New test.
+	* gcc.target/i386/avx512f-pr63594-2.c: New test.
+	* gcc.target/i386/avx512f-vec-init.c: Adjust expected
+	insn counts.
+
 	PR target/63542
 	* gcc.target/i386/pr63542-1.c: New test.
 	* gcc.target/i386/pr63542-2.c: New test.

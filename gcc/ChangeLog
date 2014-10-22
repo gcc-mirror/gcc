@@ -1,5 +1,22 @@
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63594
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate): For
+	V{8HI,16QI,16HI,32QI}mode call ix86_vector_duplicate_value
+	even for just TARGET_AVX2, not only for
+	TARGET_AVX512VL && TARGET_AVX512BW.  For V{32HI,64QI}mode,
+	call ix86_vector_duplicate_value only if TARGET_AVX512BW,
+	otherwise build it using concatenation of 256-bit
+	broadcast.
+	* config/i386/sse.md (AVX_VEC_DUP_MODE): Moved after
+	avx512 broadcast patterns.
+	(vec_dup<mode>): Likewise.  For avx2 use
+	v<sseintprefix>broadcast<bcstscalarsuff> instead of
+	vbroadcast<ssescalarmodesuffix>.
+	(AVX2_VEC_DUP_MODE): New mode iterator.
+	(*vec_dup<mode>): New TARGET_AVX2 define_insn with
+	AVX2_VEC_DUP_MODE iterator, add a splitter for that.
+
 	PR target/63542
 	* config/i386/i386.c (ix86_pic_register_p): Also return
 	true if x is a hard register with ORIGINAL_REGNO equal to
