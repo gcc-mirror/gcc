@@ -25467,7 +25467,7 @@ ix86_attr_length_address_default (rtx_insn *insn)
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (MEM_P (recog_data.operand[i]))
       {
-        constrain_operands_cached (reload_completed);
+        constrain_operands_cached (insn, reload_completed);
         if (which_alternative != -1)
 	  {
 	    const char *constraints = recog_data.constraints[i];

@@ -1,5 +1,30 @@
 2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* recog.h (constrain_operands): Add an alternative_mask parameter.
+	(constrain_operands_cached): Likewise.
+	(get_preferred_alternatives): Declare new form.
+	* recog.c (get_preferred_alternatives): New bb-taking instance.
+	(constrain_operands): Take the set of available alternatives as
+	a parameter.
+	(check_asm_operands, insn_invalid_p, extract_constrain_insn)
+	(extract_constrain_insn_cached): Update calls to constrain_operands.
+	* caller-save.c (reg_save_code): Likewise.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	* reload.c (can_reload_into): Likewise.
+	* reload1.c (reload, reload_as_needed, inc_for_reload): Likewise.
+	(gen_reload_chain_without_interm_reg_p, emit_input_reload_insns)
+	(emit_insn_if_valid_for_reload): Likewise.
+	* reorg.c (fill_slots_from_thread): Likewise.
+	* config/i386/i386.c (ix86_attr_length_address_default): Likewise.
+	* config/pa/pa.c (pa_can_combine_p): Likewise.
+	* config/rl78/rl78.c (insn_ok_now): Likewise.
+	* config/sh/sh.md (define_peephole2): Likewise.
+	* final.c (final_scan_insn): Update call to constrain_operands_cached.
+
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/md.texi: Document "preferred_for_size" and "preferred_for_speed"
 	attributes.
 	* genattr.c (main): Handle "preferred_for_size" and

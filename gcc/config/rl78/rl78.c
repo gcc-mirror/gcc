@@ -2170,7 +2170,7 @@ insn_ok_now (rtx_insn *insn)
   if (recog (pattern, insn, 0) > -1)
     {
       extract_insn (insn);
-      if (constrain_operands (1))
+      if (constrain_operands (1, get_preferred_alternatives (insn)))
 	{
 #if DEBUG_ALLOC
 	  fprintf (stderr, "\033[32m");
@@ -2199,7 +2199,7 @@ insn_ok_now (rtx_insn *insn)
       if (recog (pattern, insn, 0) > -1)
 	{
 	  extract_insn (insn);
-	  if (constrain_operands (0))
+	  if (constrain_operands (0, get_preferred_alternatives (insn)))
 	    {
 	      cfun->machine->virt_insns_ok = 0;
 	      return false;

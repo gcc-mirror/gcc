@@ -95,8 +95,8 @@ extern void confirm_change_group (void);
 extern int apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
-extern int constrain_operands (int);
-extern int constrain_operands_cached (int);
+extern int constrain_operands (int, alternative_mask);
+extern int constrain_operands_cached (rtx_insn *, int);
 extern int memory_address_addr_space_p (enum machine_mode, rtx, addr_space_t);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
@@ -414,6 +414,7 @@ extern struct target_recog *this_target_recog;
 
 alternative_mask get_enabled_alternatives (rtx_insn *);
 alternative_mask get_preferred_alternatives (rtx_insn *);
+alternative_mask get_preferred_alternatives (rtx_insn *, basic_block);
 bool check_bool_attrs (rtx_insn *);
 
 void recog_init ();

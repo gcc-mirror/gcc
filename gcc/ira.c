@@ -1765,7 +1765,9 @@ setup_prohibited_mode_move_regs (void)
 	  if (INSN_CODE (move_insn) < 0)
 	    continue;
 	  extract_insn (move_insn);
-	  if (! constrain_operands (1))
+	  /* We don't know whether the move will be in code that is optimized
+	     for size or speed, so consider all enabled alternatives.  */
+	  if (! constrain_operands (1, get_enabled_alternatives (move_insn)))
 	    continue;
 	  CLEAR_HARD_REG_BIT (ira_prohibited_mode_move_regs[i], j);
 	}
