@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
-/* { dg-options "-fsanitize=object-size -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=object-size -fno-sanitize-recover=object-size" } */
 
 /* Test valid uses.  */
 

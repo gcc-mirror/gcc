@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=undefined -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=undefined -fno-sanitize-recover=undefined" } */
 
 int c;
 

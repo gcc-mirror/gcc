@@ -1,3 +1,24 @@
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* common.opt (flag_sanitize_recover): New variable.
+	(fsanitize-recover): Remove Var/Init, deprecate.
+	(fsanitize-recover=): New option.
+	* doc/invoke.texi (fsanitize-recover): Update docs.
+	* opts.c (finish_options): Use opts->x_flag_sanitize
+	instead of flag_sanitize.  Prohibit -fsanitize-recover
+	for anything besides UBSan.  Formatting.
+	(common_handle_option): Handle OPT_fsanitize_recover_
+	and OPT_fsanitize_recover.  Use opts->x_flag_sanitize
+	instead of flag_sanitize.
+	* asan.c (pass_sanopt::execute): Fix up formatting.
+	* ubsan.c (ubsan_expand_bounds_ifn, ubsan_expand_null_ifn,
+	ubsan_expand_objsize_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load, ubsan_instrument_float_cast,
+	instrument_nonnull_arg, instrument_nonnull_return): Check
+	bits in flag_sanitize_recover bitmask instead of
+	flag_sanitize_recover as bool flag.
+
 2014-10-22  Jiong Wang <jiong.wang@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add missing '\'.

@@ -1,3 +1,10 @@
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla): Check bits in flag_sanitize_recover bitmask
+	instead of flag_sanitize_recover as bool flag.
+
 2014-10-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* cilk.c: Revert previous change.

@@ -296,7 +296,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fsanitize=@var{style} -fsanitize-recover @gol
+-fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
 -fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
@@ -5642,17 +5642,28 @@ While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
 
-@item -fsanitize-recover
+@item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover
-By default @option{-fsanitize=undefined} sanitization (and its suboptions
-except for @option{-fsanitize=unreachable} and @option{-fsanitize=return})
-after reporting undefined behavior attempts to continue running the
-program as if no undefined behavior happened.  This means multiple undefined
-behavior runtime errors can be reported in a single program run, and the exit
-code of the program may indicate success even when undefined behavior
-has been reported.  The @option{-fno-sanitize-recover} can be used to alter
-this behavior, only the first detected undefined behavior will be reported
+@opindex fno-sanitize-recover
+@option{-fsanitize-recover=} controls error recovery mode for sanitizers
+mentioned in comma-separated list of @var{opts}.  Enabling this option
+for a sanitizer component would cause it to attempt to continue
+running the program as if no error happened.  This means multiple
+runtime errors can be reported in a single program run, and the exit
+code of the program may indicate success even when errors
+have been reported.  The @option{-fno-sanitize-recover=} can be used to alter
+this behavior, only the first detected error will be reported
 and program will exit after that with non-zero exit code.
+
+Currently this feature only works for @option{-fsanitize=undefined} (and its suboptions
+except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
+@option{-fsanitize=float-cast-overflow} and @option{-fsanitize=float-divide-by-zero}.
+For these sanitizers error recovery is turned on by default.
+
+Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
+@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+Similarly @option{-fno-sanitize-recover} is equivalent to
+@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
