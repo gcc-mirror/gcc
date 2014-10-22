@@ -2884,10 +2884,8 @@ pass_sanopt::execute (function *fun)
 		  no_next = ubsan_expand_objsize_ifn (&gsi);
 		  break;
 		case IFN_ASAN_CHECK:
-		  {
-		    no_next = asan_expand_check_ifn (&gsi, use_calls);
-		    break;
-		  }
+		  no_next = asan_expand_check_ifn (&gsi, use_calls);
+		  break;
 		default:
 		  break;
 		}

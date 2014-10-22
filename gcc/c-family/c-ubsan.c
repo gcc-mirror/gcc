@@ -104,7 +104,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
-	= flag_sanitize_recover
+	= (flag_sanitize_recover & SANITIZE_DIVIDE)
 	  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
 	  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
       tt = builtin_decl_explicit (bcode);
@@ -199,7 +199,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       data = build_fold_addr_expr_loc (loc, data);
 
       enum built_in_function bcode
-	= flag_sanitize_recover
+	= (flag_sanitize_recover & SANITIZE_SHIFT)
 	  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
 	  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
       tt = builtin_decl_explicit (bcode);
@@ -229,7 +229,7 @@ ubsan_instrument_vla (location_t loc, tree size)
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
-	= flag_sanitize_recover
+	= (flag_sanitize_recover & SANITIZE_VLA)
 	  ? BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE
 	  : BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE_ABORT;
       tt = builtin_decl_explicit (bcode);

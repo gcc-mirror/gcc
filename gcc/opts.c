@@ -879,17 +879,28 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Userspace and kernel ASan conflict with each other and with TSan.  */
 
-  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
-      && (flag_sanitize & SANITIZE_KERNEL_ADDRESS))
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
+      && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
     error_at (loc,
-              "-fsanitize=address is incompatible with "
-              "-fsanitize=kernel-address");
+	      "-fsanitize=address is incompatible with "
+	      "-fsanitize=kernel-address");
 
-  if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (flag_sanitize & SANITIZE_THREAD))
+  if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
+      && (opts->x_flag_sanitize & SANITIZE_THREAD))
     error_at (loc,
-              "-fsanitize=address and -fsanitize=kernel-address "
-              "are incompatible with -fsanitize=thread");
+	      "-fsanitize=address and -fsanitize=kernel-address "
+	      "are incompatible with -fsanitize=thread");
+
+  /* Error recovery is not allowed for ASan and TSan.  */
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_USER_ADDRESS)
+    error_at (loc, "-fsanitize-recover=address is not supported");
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_THREAD)
+    error_at (loc, "-fsanitize-recover=thread is not supported");
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_LEAK)
+    error_at (loc, "-fsanitize-recover=leak is not supported");
 }
 
 #define LEFT_COLUMN	27
@@ -1517,8 +1528,12 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fsanitize_:
+    case OPT_fsanitize_recover_:
       {
 	const char *p = arg;
+	unsigned int *flag
+	  = code == OPT_fsanitize_ ? &opts->x_flag_sanitize
+	  : &opts->x_flag_sanitize_recover;
 	while (*p != 0)
 	  {
 	    static const struct
@@ -1584,32 +1599,35 @@ common_handle_option (struct gcc_options *opts,
 		{
 		  /* Handle both -fsanitize and -fno-sanitize cases.  */
 		  if (value)
-		    flag_sanitize |= spec[i].flag;
+		    *flag |= spec[i].flag;
 		  else
-		    flag_sanitize &= ~spec[i].flag;
+		    *flag &= ~spec[i].flag;
 		  found = true;
 		  break;
 		}
 
 	    if (! found)
 	      error_at (loc,
-			"unrecognized argument to -fsanitize= option: %q.*s",
-			(int) len, p);
+			"unrecognized argument to -fsanitize%s= option: %q.*s",
+			code == OPT_fsanitize_ ? "" : "-recover", (int) len, p);
 
 	    if (comma == NULL)
 	      break;
 	    p = comma + 1;
 	  }
 
+	if (code != OPT_fsanitize_)
+	  break;
+
 	/* When instrumenting the pointers, we don't want to remove
 	   the null pointer checks.  */
-	if (flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
-			     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
+	if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
+				     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
 	  opts->x_flag_delete_null_pointer_checks = 0;
 
 	/* Kernel ASan implies normal ASan but does not yet support
 	   all features.  */
-	if (flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+	if (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS)
 	  {
 	    maybe_set_param_value (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD, 0,
 				   opts->x_param_values,
@@ -1627,6 +1645,15 @@ common_handle_option (struct gcc_options *opts,
 
 	break;
       }
+
+    case OPT_fsanitize_recover:
+      if (value)
+	opts->x_flag_sanitize_recover
+	  |= SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT;
+      else
+	opts->x_flag_sanitize_recover
+	  &= ~(SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT);
+      break;
 
     case OPT_O:
     case OPT_Os:

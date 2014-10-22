@@ -1,3 +1,40 @@
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/ubsan/align-1.c: Update cmdline options.
+	* c-c++-common/ubsan/align-3.c: Likewise.
+	* c-c++-common/ubsan/bounds-1.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: Likewise.
+	* c-c++-common/ubsan/nonnull-2.c: Likewise.
+	* c-c++-common/ubsan/nonnull-3.c: Likewise.
+	* c-c++-common/ubsan/object-size-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/pr60613-1.c: Likewise.
+	* c-c++-common/ubsan/save-expr-1.c: Likewise.
+	* c-c++-common/ubsan/shift-3.c: Likewise.
+	* c-c++-common/ubsan/shift-6.c: Likewise.
+	* c-c++-common/ubsan/undefined-1.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Likewise.
+	* c-c++-common/ubsan/vla-4.c: Likewise.
+	* g++.dg/ubsan/cxx11-shift-1.C: Likewise.
+	* g++.dg/ubsan/return-2.C: Likewise.
+	* c-c++-common/ubsan/recovery-1.c: New test.
+	* c-c++-common/ubsan/recovery-2.c: New test.
+	* c-c++-common/ubsan/recovery-3.c: New test.
+	* c-c++-common/ubsan/recovery-common.inc: New file.
+
 2014-10-22  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/pic-constantpool1.c: Add explicit declaration.
