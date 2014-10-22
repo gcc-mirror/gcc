@@ -18,12 +18,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
+
 #include <string.h>
 #include <map>
 #include <set>
 
-#include "config.h"
-#include "system.h"
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-pass.h"
