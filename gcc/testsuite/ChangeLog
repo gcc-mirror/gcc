@@ -1,3 +1,9 @@
+2014-10-22  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/compat.exp (compat-run): Remove "unresolved".
+	* lib/gcc-defs.exp (${tools}_check_compile): Update code logic for
+	unsupported testcase.
+
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63594
