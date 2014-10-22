@@ -1,5 +1,12 @@
 2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* lra.c (lra): Remove call to recog_init.
+	* config/i386/i386.md (preferred_for_speed): New attribute
+	(*float<SWI48:mode><MODEF:mode>2_sse): Override it instead of
+	"enabled".  Remove check for sched1.
+
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* recog.h (recog_data_d): Remove enabled_alternatives.
 	* recog.c (extract_insn): Don't set it.
 	* reload.c (find_reloads): Call get_enabled_alternatives.

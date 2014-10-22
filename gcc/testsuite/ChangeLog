@@ -1,3 +1,7 @@
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/i386/conversion-2.c: New test.
+
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 
