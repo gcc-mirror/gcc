@@ -1,3 +1,11 @@
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* symtab.c (ht_create): Use obstack_specify_allocation in place of
+	_obstack_begin.
+	* files.c (_cpp_init_files): Likewise.
+	* init.c (cpp_create_reader): Likewise.
+	* identifiers.c (_cpp_init_hashtable): Likewise.
+
 2014-10-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* include/line-map.h (linemap_location_from_macro_expansion_p):
@@ -779,7 +787,7 @@
 
 	* lex.c (lex_raw_string): Change C++ style comments into C style
 	comments.
-    	(lex_string): Likewise.
+	(lex_string): Likewise.
 
 2012-04-27   Ollie Wild  <aaw@google.com>
 
@@ -955,15 +963,15 @@
 
 	PR bootstrap/50760
 	* include/line-map.h (struct linemap_stats): Change the type of
-    	the members from size_t to long.
+	the members from size_t to long.
 	* macro.c (macro_arg_token_iter_init): Unconditionally initialize
-    	iter->location_ptr.
+	iter->location_ptr.
 
 2011-10-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* line-map.c (linemap_macro_map_loc_to_exp_point): Avoid setting a
-    	variable without using it if ENABLE_CHECKING is not defined.  Mark
-    	the LOCATION parameter as being unused.
+	variable without using it if ENABLE_CHECKING is not defined.  Mark
+	the LOCATION parameter as being unused.
 
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
@@ -1078,7 +1086,7 @@
 	member.
 	(MAX_SOURCE_LOCATION): New constant.
 	(struct line_map_ordinary, struct line_map_macro): New structs.
-    	(struct line_map): Turn this into a union of the two above.  Add
+	(struct line_map): Turn this into a union of the two above.  Add
 	comments.
 	(struct maps_info): New struct.
 	(struct line_maps)<info_ordinary, info_macro>: Two new fields.
@@ -1333,7 +1341,7 @@
 	* lex.c [ALTIVEC] (search_line_fast): Require gcc version 4.5.
 
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/39213
 	* directives.c (end_directive): Call _cpp_remove_overlay for deferred
@@ -2086,7 +2094,7 @@
 	* directives-only.c (_cpp_preprocess_dir_only): Likewise.
 	* internal.h (CPP_INCREMENT_LINE): Likewise.
 	* lex.c (_cpp_skip_block_comment): Use source_location.
-	
+
 2008-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* include/cpplib.h (NODE_CONDITIONAL): New.
@@ -2352,7 +2360,7 @@
 
 	PR preprocessor/30363
 	* traditional.c (replace_args_and_push): Add local variable
-	cxtquote, calculate the replacement text size assuming a 
+	cxtquote, calculate the replacement text size assuming a
 	worst case of every input character quoted with backslash,
 	and properly handle output quoting of quote characters in
 	actual arguments used in function-like macros.
@@ -2506,8 +2514,8 @@
 2007-06-09  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* files.c (open_file): Account for the
-        fact that on windows, opening a directory gives
-        EACCES.
+	fact that on windows, opening a directory gives
+	EACCES.
 
 2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
 
@@ -2559,7 +2567,7 @@
 
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
-        * expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
+	* expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
 
 	PR c/31924
 	* expr.c (interpret_float_suffix): Check for invalid suffix.

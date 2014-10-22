@@ -20,8 +20,8 @@
 #ifndef GCC_GENGTYPE_H
 #define GCC_GENGTYPE_H
 
-#define obstack_chunk_alloc    ((void *(*) (long)) xmalloc)
-#define obstack_chunk_free     ((void (*) (void *)) free)
+#define obstack_chunk_alloc    xmalloc
+#define obstack_chunk_free     free
 #define OBSTACK_CHUNK_SIZE     0
 
 /* Sets of accepted source languages like C, C++, Ada... are

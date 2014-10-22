@@ -54,9 +54,7 @@ _cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
       table = ht_create (13);	/* 8K (=2^13) entries.  */
       table->alloc_node = alloc_node;
 
-      _obstack_begin (&pfile->hash_ob, 0, 0,
-		      (void *(*) (long)) xmalloc,
-		      (void (*) (void *)) free);
+      obstack_specify_allocation (&pfile->hash_ob, 0, 0, xmalloc, free);
     }
 
   table->pfile = pfile;

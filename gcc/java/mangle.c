@@ -711,7 +711,7 @@ finish_mangling (void)
   compression_table = NULL_TREE;
   compression_next = 0;
   obstack_1grow (mangle_obstack, '\0');
-  result = get_identifier (obstack_base (mangle_obstack));
+  result = get_identifier ((char *) obstack_base (mangle_obstack));
   obstack_free (mangle_obstack, obstack_base (mangle_obstack));
 
   return result;
