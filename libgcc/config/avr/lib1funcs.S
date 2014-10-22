@@ -2390,27 +2390,29 @@ ENDF __do_global_ctors
 #ifdef L_dtors
 	.section .fini6,"ax",@progbits
 DEFUN __do_global_dtors
-    ldi     r17, pm_hi8(__dtors_start)
-    ldi     r28, pm_lo8(__dtors_end)
-    ldi     r29, pm_hi8(__dtors_end)
+    ldi     r17, pm_hi8(__dtors_end)
+    ldi     r28, pm_lo8(__dtors_start)
+    ldi     r29, pm_hi8(__dtors_start)
 #ifdef __AVR_HAVE_EIJMP_EICALL__
-    ldi     r16, pm_hh8(__dtors_end)
+    ldi     r16, pm_hh8(__dtors_start)
 #endif /* HAVE_EIJMP */
     rjmp    .L__do_global_dtors_start
 .L__do_global_dtors_loop:
-    sbiw    r28, 1
 #ifdef __AVR_HAVE_EIJMP_EICALL__
-    sbc     r16, __zero_reg__
     mov     r24, r16
 #endif /* HAVE_EIJMP */
     mov_h   r31, r29
     mov_l   r30, r28
     XCALL   __tablejump2__
+    adiw    r28, 1
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    adc     r16, __zero_reg__
+#endif /* HAVE_EIJMP */
 .L__do_global_dtors_start:
-    cpi     r28, pm_lo8(__dtors_start)
+    cpi     r28, pm_lo8(__dtors_end)
     cpc     r29, r17
 #ifdef __AVR_HAVE_EIJMP_EICALL__
-    ldi     r24, pm_hh8(__dtors_start)
+    ldi     r24, pm_hh8(__dtors_end)
     cpc     r16, r24
 #endif /* HAVE_EIJMP */
     brne    .L__do_global_dtors_loop

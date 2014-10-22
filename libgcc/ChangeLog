@@ -1,3 +1,9 @@
+2014-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/63223
+	* config/avr/lib1funcs.S (__do_global_dtors): Reverse execution
+	order to first...last.
+
 2014-09-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/sfp-machine.h (FP_TRAPPING_EXCEPTIONS): Treat clear
