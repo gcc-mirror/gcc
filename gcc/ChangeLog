@@ -1,3 +1,29 @@
+2014-10-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cfgbuild.h: New.  Add prototypes for cfgbuild.c.
+	* cfgcleanup.h: New.  Add prototypes for cfgcleanup.c.
+	* cfgloopmanip.h: New.  Add prototypes for cfgloopmanip.c.
+	* dominance.h: New.  Add prototypes for dominance.c.
+	* cfgloop.h: Move some prototypes/enum to cfgloopmanip.h and include it.
+	* cfghooks.h: (struct profile_record) Relocate here.
+	Relocate 2 prototypes from basic-block.h.
+	* basic-block.h: Move prototypes and struct to new header files.
+	Include cfgbuild.h, cfgcleanup.h, and dominance.h.
+	* rtl.h: Move a few prototypes to new header files.
+	* cfgcleanup.c (merge_memattrs): Make static.
+	* genopinit.c (main): Add predict.h to list of includes.
+	* predict.h: Update prototype list to match predict.c.
+	* predict.c (maybe_hot_count_p): Export.
+	(cgraph_edge::maybe_hot_p): Move to cgraph.c.
+	(cgraph_node::optimize_for_size_p): Move to cgraph.h.
+	* cgraph.h (cgraph_node::optimize_for_size_p): Relocate here.
+	* cgraph.c (cgraph_edge::maybe_hot_p): Relocate here.
+	* profile.h: Adjust prototypes.
+	* ifcvt.h: New.  Relocate struct ce_if_block here.
+	* ifcvt.c: Include ifcvt.h.
+	* config/frv/frv.c: Include ifcvt.h.
+	* config/frv/frv-protos.h: Add 'struct' to ce_if_block * parameters.
+
 2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lra.c (lra): Remove call to recog_init.

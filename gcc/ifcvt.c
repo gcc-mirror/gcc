@@ -47,6 +47,7 @@
 #include "df.h"
 #include "dbgcnt.h"
 #include "shrink-wrap.h"
+#include "ifcvt.h"
 
 #ifndef HAVE_conditional_move
 #define HAVE_conditional_move 0

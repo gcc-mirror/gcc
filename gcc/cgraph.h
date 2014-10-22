@@ -2708,6 +2708,19 @@ cgraph_node::mark_force_output (void)
   gcc_checking_assert (!global.inlined_to);
 }
 
+/* Return true if function should be optimized for size.  */
+
+inline bool
+cgraph_node::optimize_for_size_p (void)
+{
+  if (optimize_size)
+    return true;
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return true;
+  else
+    return false;
+}
+
 inline symtab_node * symtab_node::get_create (tree node)
 {
   if (TREE_CODE (node) == VAR_DECL)
