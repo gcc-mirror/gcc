@@ -1,3 +1,9 @@
+2014-10-22  Richard Biener  <rguenther@suse.de>
+	    Tobias Burnus <burnus@net-b.de>
+
+	PR lto/63603
+	* gcc.c (LINK_COMMAND_SPEC): Add %{fno-lto}.
+
 2014-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63563
