@@ -405,14 +405,10 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
   /* Array of alternatives, sorted in order of decreasing desirability.  */
   int *alternative_order;
 
-  extract_insn (insn);
+  extract_constrain_insn (insn);
 
   if (recog_data.n_alternatives == 0 || recog_data.n_operands == 0)
     return 0;
-
-  /* Figure out which alternative currently matches.  */
-  if (! constrain_operands (1))
-    fatal_insn_not_found (insn);
 
   alternative_reject = XALLOCAVEC (int, recog_data.n_alternatives);
   alternative_nregs = XALLOCAVEC (int, recog_data.n_alternatives);

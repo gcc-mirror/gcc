@@ -1923,8 +1923,9 @@ check_rtl (bool final_p)
       {
 	if (final_p)
 	  {
-	    extract_insn (insn);
-	    lra_assert (constrain_operands (1));
+#ifdef ENABLED_CHECKING
+	    extract_constrain_insn (insn);
+#endif
 	    continue;
 	  }
 	/* LRA code is based on assumption that all addresses can be
