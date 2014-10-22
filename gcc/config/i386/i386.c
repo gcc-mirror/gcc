@@ -39870,8 +39870,6 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
     case V8SFmode:
     case V8SImode:
     case V2DFmode:
-    case V64QImode:
-    case V32HImode:
     case V2DImode:
     case V4SFmode:
     case V4SImode:
@@ -39902,8 +39900,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V8HImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
 
       if (TARGET_SSE2)
 	{
@@ -39935,8 +39933,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V16QImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
 
       if (TARGET_SSE2)
 	goto permute;
@@ -39967,11 +39965,28 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 
     case V16HImode:
     case V32QImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
       else
 	{
 	  enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
+	  rtx x = gen_reg_rtx (hvmode);
+
+	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
+	  gcc_assert (ok);
+
+	  x = gen_rtx_VEC_CONCAT (mode, x, x);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	}
+      return true;
+
+    case V64QImode:
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	return ix86_vector_duplicate_value (mode, target, val);
+      else
+	{
+	  enum machine_mode hvmode = (mode == V32HImode ? V16HImode : V32QImode);
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);

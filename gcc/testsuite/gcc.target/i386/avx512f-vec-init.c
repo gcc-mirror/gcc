@@ -1,12 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mavx512f" } */
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+%zmm" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastw" 2 } } */
-/* { dg-final { scan-assembler-times "vbroadcastss" 1 } } */
-/* { dg-final { scan-assembler-times "vbroadcastsd" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+%zmm" 0 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb" 3 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastw" 3 } } */
+/* { dg-final { scan-assembler-times "vbroadcastss" 0 } } */
+/* { dg-final { scan-assembler-times "vbroadcastsd" 0 } } */
 
 #include <x86intrin.h>
 
