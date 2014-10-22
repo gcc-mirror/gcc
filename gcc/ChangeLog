@@ -1,3 +1,7 @@
+2014-10-22  Jiong Wang <jiong.wang@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add missing '\'.
+
 2014-10-22  Renlin Li <renlin.li@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define
