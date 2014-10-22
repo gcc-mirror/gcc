@@ -2,6 +2,7 @@ typedef int *__restrict__ pRINT;
 typedef unsigned int *__restrict__ pRUINT;
 typedef long long *__restrict__ pRINT64;
 typedef unsigned long long *__restrict__ pRUINT64;
+extern int abs (int j);
 
 void test_orn (pRUINT a, pRUINT b, pRUINT c)
 {
