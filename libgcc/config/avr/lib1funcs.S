@@ -2502,14 +2502,16 @@ DEFUN __do_global_dtors
 #endif /* HAVE_EIJMP */
     rjmp    .L__do_global_dtors_start
 .L__do_global_dtors_loop:
-    waddi   28, 1
 #ifdef __AVR_HAVE_EIJMP_EICALL__
-    adc     r16, __zero_reg__
     mov     r24, r16
 #endif /* HAVE_EIJMP */
     mov_h   r31, r29
     mov_l   r30, r28
     XCALL   __tablejump2__
+    waddi   28, 1
+#ifdef __AVR_HAVE_EIJMP_EICALL__
+    adc     r16, __zero_reg__
+#endif /* HAVE_EIJMP */
 .L__do_global_dtors_start:
     cpi     r28, pm_lo8(__dtors_end)
     cpc     r29, cdtors_tst_reg
@@ -2520,6 +2522,8 @@ DEFUN __do_global_dtors
     brne    .L__do_global_dtors_loop
 ENDF __do_global_dtors
 #endif /* L_dtors */
+
+#undef cdtors_tst_reg
 
 .section .text.libgcc, "ax", @progbits
 

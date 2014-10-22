@@ -1,3 +1,8 @@
+2014-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__do_global_dtors): Fix wrong code
+	introduced with 2014-10-21 trunk r216525.
+
 2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Vidya Praveen <vidya.praveen@atmel.com>
 	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
@@ -18,7 +23,7 @@
 	(__mulpsi3): Likewise.
 	(__muldi3, __udivmodsi4, __divmodsi4, __negsi2, __umoddi3, __udivmod64,
 	__moddi3, __adddi3, __adddi3_s8, __subdi3, __cmpdi2, __cmpdi2_s8,
-	__negdi2, __prologue_saves__, __epilogue_restores__): Excluded for 
+	__negdi2, __prologue_saves__, __epilogue_restores__): Excluded for
 	AVRTINY.
 	(__tablejump2__): Added lpm equivalent instructions for AVRTINY.
 	(__do_copy_data): Added new definition for AVRTINY.
@@ -28,10 +33,10 @@
 	* config/avr/lib1funcs-fixed.S: Replaced occurrences of r0/r1 with
 	tmp/zero reg macros. Replaced occurrences of sbiw/adiw with wsubi/wadi
 	macors.
-	   * config/avr/t-avr (LIB1ASMFUNCS): Remove unsupported functions for
+	* config/avr/t-avr (LIB1ASMFUNCS): Remove unsupported functions for
 	AVRTINY.
 
-	Fix broken long multiplication on tiny arch.         
+	Fix broken long multiplication on tiny arch.
 
 2014-10-09  Joseph Myers  <joseph@codesourcery.com>
 
