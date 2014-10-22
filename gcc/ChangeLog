@@ -1,3 +1,13 @@
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* gengtype.h (obstack_chunk_alloc, obstack_chunk_free): Remove cast.
+	* coretypes.h (obstack_chunk_alloc, obstack_chunk_free): Likewise.
+	(gcc_obstack_init): Use obstack_specify_allocation in place of
+	_obstack_begin.
+	* genautomata.c (next_sep_el): Cast result of obstack_base to (char *).
+	(regexp_representation): Likewise.
+	* godump.c (go_output_type): Likewise.
+
 2014-10-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.gcc: Remove MASK_JUMP_IN_DELAY from target_cpu_default2.
@@ -5516,10 +5526,10 @@
 	* sel-sched.c (get_reg_class): Likewise.
 
 2014-09-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
-	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-	 * config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Add crtfastmath.o.
-	 * config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
+	* config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Add crtfastmath.o.
+	* config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATH_ENDFILE_SPEC):
 	Define.
 	(ENDFILE_SPEC): Define and use GNU_USER_TARGET_MATH_ENDFILE_SPEC.
 
@@ -7253,7 +7263,7 @@
 	(s390_mainpool_finish): In three places, split out a local rtx
 	"insn" into a local rtx - "set" or "pat" - and a rtx_insn *
 	"insn".  Strengthen local "pool_end" from rtx to rtx_code_label *
-	 and split another local rtx "insn" out into rtx "pat" and
+	and split another local rtx "insn" out into rtx "pat" and
 	rtx_insn * "insn".
 	* config/sh/sh.c (output_branchy_insn): Rather than working
 	directly on operands[9], introduce local rtx_code_label *
@@ -13601,7 +13611,7 @@
 
 	PR fortran/44054
 	* diagnostic.c (default_diagnostic_finalizer): Move caret printing
-	 to here ...
+	to here ...
 	(diagnostic_report_diagnostic): ... from here.
 	* toplev.c (general_init): Move code to c-family.
 
@@ -14589,8 +14599,8 @@
 
 	PR other/62168
 	* configure.ac: Set install_gold_as_default to no for
-	 --enable-gold=no.
-	 * configure: Regenerated.
+	--enable-gold=no.
+	* configure: Regenerated.
 
 2014-08-18 Roman Gareev  <gareevroman@gmail.com>
 
@@ -15771,7 +15781,7 @@
 2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* calls.c (precompute_arguments): Check
-	 promoted_for_signed_and_unsigned_p and set the promoted mode.
+	promoted_for_signed_and_unsigned_p and set the promoted mode.
 	(promoted_for_signed_and_unsigned_p): New function.
 	(expand_expr_real_1): Check promoted_for_signed_and_unsigned_p
 	and set the promoted mode.
@@ -23538,7 +23548,7 @@
 	(set_fpsr) : Likewise.
 	(get_fpsr) : Likewise.
 	(unspecv): Add UNSPECV_GET_FPCR and UNSPECV_SET_FPCR, UNSPECV_GET_FPSR
-	 and UNSPECV_SET_FPSR.
+	and UNSPECV_SET_FPSR.
 	* doc/extend.texi (AARCH64 Built-in Functions) : Document
 	__builtins_aarch64_set_fpcr, __builtins_aarch64_get_fpcr.
 	__builtins_aarch64_set_fpsr and __builtins_aarch64_get_fpsr.
@@ -27963,7 +27973,7 @@
 2014-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.md (mov<mode>): Replace movQIHI.
-	 Force immediates to SImode.
+	Force immediates to SImode.
 
 2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
 
@@ -31096,7 +31106,7 @@
 	PR bootstrap/52466
 	PR target/46898
 	* config/lm32/lm32.c (lm32_legitimate_constant_p): Remove, as incorrect.
-	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.
+	(TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.
 	* config/lm32/lm32.md (movsi_insn): Add 32-bit immediate support.
 	(simple_return, *simple_return): New patterns
 	* config/lm32/predicates.md (movsi_rhs_operand): Remove as obsolete.
@@ -31712,7 +31722,7 @@
 
 2014-02-19  Michael Hudson-Doyle  <michael.hudson@linaro.org>
 
-	 PR target/59799
+	PR target/59799
 	* config/aarch64/aarch64.c (aarch64_pass_by_reference): The rules for
 	passing arrays in registers are the same as for structs, so remove the
 	special case for them.

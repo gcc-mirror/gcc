@@ -1,3 +1,8 @@
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* objc-encoding.c (encode_array): Cast result of obstack_base.
+	(encode_type): Likewise.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-act.c: Adjust include files.
@@ -18,7 +23,7 @@
 	checking.
 	(INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK): New macro.
 	(METHOD_SEL_NAME, METHOD_SEL_ARGS, METHOD_ADD_ARGS,
- 	METHOD_ADD_ARGS_ELLIPSIS_P, METHOD_DEFINITION, METHOD_ENCODING,
+	METHOD_ADD_ARGS_ELLIPSIS_P, METHOD_DEFINITION, METHOD_ENCODING,
 	METHOD_TYPE_ATTRIBUTES, METHOD_PROPERTY_CONTEXT): Add type checking.
 	(METHOD_SEL_ARGS): Use decl_common.size instead of
 	decl_non_common.result.
@@ -258,7 +263,7 @@
 2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-map.h: New file.
-	* objc-map.c: New file.	
+	* objc-map.c: New file.
 	* config-lang.in (gtfiles): Added objc-map.h.
 	* Make-lang.in (OBJC_OBJS): Added objc-map.o.
 	(objc/objc-map.o): New rule.
@@ -349,7 +354,7 @@
 	(objc/objc-next-runtime-abi-01.o): Likewise.
 	(objc/objc-next-runtime-abi-02.o): Likewise.
 	(objc/objc-act.o): Likewise.
-	
+
 2011-07-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Refactored encoding code into objc-encoding.h and objc-encoding.c.
@@ -370,13 +375,13 @@
 	OBJC_ENCODE_DONT_INLINE_DEFS): Moved to objc-encoding.h.
 	* objc-runtime-shared-support.h (objc_v2_encode_property_attr,
 	encode_method_prototype, encode_field_decl,
-	generating_instance_variables): Moved to objc-encoding.h.	
+	generating_instance_variables): Moved to objc-encoding.h.
 	(objc_build_property_setter_name): Declare.
 	* objc-encoding.c: New.
 	* objc-encoding.h: New.
 	* objc-gnu-runtime-abi-01.c: Include objc-encoding.h.
 	* objc-next-runtime-abi-01.c: Likewise.
-	* objc-next-runtime-abi-02.c: Likewise.	
+	* objc-next-runtime-abi-02.c: Likewise.
 	* objc-runtime-shared-support.c: Likewise.
 	* Make-lang.in (OBJC_OBJS): Added objc-encoding.o.
 	(objc/objc-lang.o): Reordered dependencies.
@@ -393,7 +398,7 @@
 	* objc-encoding.c (encode_type): Use "%<%T%>" format when printing
 	warning "unknown type %<%T%> found during Objective-C encoding"
 	instead of using gen_type_name.
-	
+
 2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (receiver_is_class_object): Expanded comment.
@@ -1535,11 +1540,11 @@
 
 	2006-03-10  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4407151
+	Radar 4407151
 	* objc/objc-act.c (objc_is_class_name): template parameter is not
-        an objective class name.
-        (objc_generate_cxx_cdtors): Check for the null
-        objc_implementation_context.
+	an objective class name.
+	(objc_generate_cxx_cdtors): Check for the null
+	objc_implementation_context.
 
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1552,7 +1557,7 @@
 
 	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4204796
+	Radar 4204796
 	* objc-act.c (objc_build_volatilized_type): Build 'volatilzed'
 	types with proper attribute set and correctly.
 	(objc_volatilize_decl): Remove unneeded code.
@@ -1650,7 +1655,7 @@
 
 	* Make-lang.in (cc1obj-dummy): Remove.
 	(cc1obj-checksum): Change to run checksum over object files
-        and options only.
+	and options only.
 
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1695,7 +1700,7 @@
 
 	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4507230
+	Radar 4507230
 	* objc-act.c (objc_type_valid_for_messaging): New routine to check
 	for valid objc object types.
 	(objc_finish_foreach_loop): Check for invalid objc objects in
@@ -1707,7 +1712,7 @@
 
 	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4290840
+	Radar 4290840
 	* objc-act.c (objc_start_method_definition): Check for
 	error_mark_node for the selector name and make a quick exit.
 
@@ -1720,17 +1725,17 @@
 	merge from FSF 'apple/trunk' branch.
 	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
 
-       Radar 4386773
-       * objc/objc-act.c (objc_set_method_opt): New function.
-       (objc_start_protocol, objc_finish_interface): Reset
-       objc_method_optional_flag flag.
-       (objc_add_method_declaration): Pass on the new
-       flag to objc_add_method.
-       (objc_add_method): Add optional methods to new chain in
-       the protocol class.
-       * objc/objc-act.h (CLASS_OPTIONAL_CLS_METHODS,
-       CLASS_OPTIONAL_NST_METHODS): New macros accessing a protocol
-       class's optional method chains.
+	Radar 4386773
+	* objc/objc-act.c (objc_set_method_opt): New function.
+	(objc_start_protocol, objc_finish_interface): Reset
+	objc_method_optional_flag flag.
+	(objc_add_method_declaration): Pass on the new
+	flag to objc_add_method.
+	(objc_add_method): Add optional methods to new chain in
+	the protocol class.
+	* objc/objc-act.h (CLASS_OPTIONAL_CLS_METHODS)
+	(CLASS_OPTIONAL_NST_METHODS): New macros accessing a protocol
+	class's optional method chains.
 
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1846,7 +1851,7 @@
 
 	2005-10-10  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4301047
+	Radar 4301047
 
 	* objc-act.c (encode_type): Remove the hack.
 
@@ -1901,7 +1906,7 @@
 
 	2006-03-09 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4457381
+	Radar 4457381
 	* objc/objc-act.c (objc_finish_message_expr): Look for message in
 	@class's protocol list.
 
@@ -2463,8 +2468,8 @@
 
 2008-05-12  Tomas Bily  <tbily@suse.cz>
 
-        * objc-act.c (objc_generate_write_barrier, objc_finish_message_expr):
-        Use CONVERT_EXPR_P.
+	* objc-act.c (objc_generate_write_barrier, objc_finish_message_expr):
+	Use CONVERT_EXPR_P.
 
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 

@@ -176,13 +176,13 @@ struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;
 
-#define obstack_chunk_alloc	((void *(*) (long)) xmalloc)
-#define obstack_chunk_free	((void (*) (void *)) free)
+#define obstack_chunk_alloc	xmalloc
+#define obstack_chunk_free	free
 #define OBSTACK_CHUNK_SIZE	0
-#define gcc_obstack_init(OBSTACK)			\
-  _obstack_begin ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
-		  obstack_chunk_alloc,			\
-		  obstack_chunk_free)
+#define gcc_obstack_init(OBSTACK)				\
+  obstack_specify_allocation ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
+			      obstack_chunk_alloc,		\
+			      obstack_chunk_free)
 
 /* enum reg_class is target specific, so it should not appear in
    target-independent code or interfaces, like the target hook declarations
