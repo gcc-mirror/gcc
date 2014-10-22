@@ -1,3 +1,10 @@
+2014-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (powerpc*-*-linux*): Only use soft-fp for 32-bit
+	configurations.
+	* config/rs6000/t-ppc64-fp (softfp_wrap_start, softfp_wrap_end):
+	Remove variables.
+
 2014-10-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S (__do_global_dtors): Fix wrong code
