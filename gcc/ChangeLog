@@ -1,4 +1,9 @@
 2014-10-22  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (s-match): Adjust dependencies to only catch
+	match.pd.
+
+2014-10-22  Richard Biener  <rguenther@suse.de>
 	Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
 	* Makefile.in (OBJS): Add gimple-match.o and generic-match.o.

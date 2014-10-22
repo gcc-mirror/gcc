@@ -2237,7 +2237,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 gimple-match.c: s-match gimple-match-head.c ; @true
 generic-match.c: s-match generic-match-head.c ; @true
 
-s-match: build/genmatch$(build_exeext) $(srcdir)/match*.pd
+s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd
 	$(RUN_GEN) build/genmatch$(build_exeext) --gimple $(srcdir)/match.pd \
 	    > tmp-gimple-match.c
 	$(RUN_GEN) build/genmatch$(build_exeext) --generic $(srcdir)/match.pd \
