@@ -1685,14 +1685,14 @@ process_alt_operands (int only_alternative)
      together, the second alternatives go together, etc.
 
      First loop over alternatives.  */
-  alternative_mask enabled = curr_id->enabled_alternatives;
+  alternative_mask preferred = curr_id->preferred_alternatives;
   if (only_alternative >= 0)
-    enabled &= ALTERNATIVE_BIT (only_alternative);
+    preferred &= ALTERNATIVE_BIT (only_alternative);
 
   for (nalt = 0; nalt < n_alternatives; nalt++)
     {
       /* Loop over operands for one constraint alternative.  */
-      if (!TEST_BIT (enabled, nalt))
+      if (!TEST_BIT (preferred, nalt))
 	continue;
 
       overall = losers = reject = reload_nregs = reload_sum = 0;

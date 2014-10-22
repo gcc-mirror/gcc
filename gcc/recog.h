@@ -389,10 +389,19 @@ extern int peep2_current_count;
 #ifndef GENERATOR_FILE
 #include "insn-codes.h"
 
+/* An enum of boolean attributes that may only depend on the current
+   subtarget, not on things like operands or compiler phase.  */
+enum bool_attr {
+  BA_ENABLED,
+  BA_PREFERRED_FOR_SPEED,
+  BA_PREFERRED_FOR_SIZE,
+  BA_LAST = BA_PREFERRED_FOR_SIZE
+};
+
 /* Target-dependent globals.  */
 struct target_recog {
   bool x_initialized;
-  alternative_mask x_enabled_alternatives[LAST_INSN_CODE];
+  alternative_mask x_bool_attr_masks[LAST_INSN_CODE][BA_LAST + 1];
   operand_alternative *x_op_alt[LAST_INSN_CODE];
 };
 
@@ -404,6 +413,8 @@ extern struct target_recog *this_target_recog;
 #endif
 
 alternative_mask get_enabled_alternatives (rtx_insn *);
+alternative_mask get_preferred_alternatives (rtx_insn *);
+bool check_bool_attrs (rtx_insn *);
 
 void recog_init ();
 #endif

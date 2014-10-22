@@ -1080,7 +1080,7 @@ the addressing register.
 * Class Preferences::   Constraints guide which hard register to put things in.
 * Modifiers::           More precise control over effects of constraints.
 * Machine Constraints:: Existing constraints for some particular machines.
-* Disable Insn Alternatives:: Disable insn alternatives using the @code{enabled} attribute.
+* Disable Insn Alternatives:: Disable insn alternatives using attributes.
 * Define Constraints::  How to define machine-specific constraints.
 * C Constraint Interface:: How to test constraints from C code.
 @end menu
@@ -4006,42 +4006,49 @@ Unsigned constant valid for BccUI instructions
 @subsection Disable insn alternatives using the @code{enabled} attribute
 @cindex enabled
 
-The @code{enabled} insn attribute may be used to disable insn
-alternatives that are not available for the current subtarget.
-This is useful when adding new instructions to an existing pattern
-which are only available for certain cpu architecture levels as
-specified with the @code{-march=} option.
+There are three insn attributes that may be used to selectively disable
+instruction alternatives:
 
-If an insn alternative is disabled, then it will never be used.  The
-compiler treats the constraints for the disabled alternative as
-unsatisfiable.
+@table @code
+@item enabled
+Says whether an alternative is available on the current subtarget.
 
-In order to make use of the @code{enabled} attribute a back end has to add
-in the machine description files:
+@item preferred_for_size
+Says whether an enabled alternative should be used in code that is
+optimized for size.
 
-@enumerate
-@item
-A definition of the @code{enabled} insn attribute.  The attribute is
-defined as usual using the @code{define_attr} command.  This
-definition should be based on other insn attributes and/or target flags.
-The attribute must be a static property of the subtarget; that is, it
-must not depend on the current operands or any other dynamic context
-(for example, the location of the insn within the body of a loop).
+@item preferred_for_speed
+Says whether an enabled alternative should be used in code that is
+optimized for speed.
+@end table
 
-The @code{enabled} attribute is a numeric attribute and should evaluate to
-@code{(const_int 1)} for an enabled alternative and to
-@code{(const_int 0)} otherwise.
-@item
-A definition of another insn attribute used to describe for what
-reason an insn alternative might be available or
-not.  E.g. @code{cpu_facility} as in the example below.
-@item
-An assignment for the second attribute to each insn definition
-combining instructions which are not all available under the same
-circumstances.  (Note: It obviously only makes sense for definitions
-with more than one alternative.  Otherwise the insn pattern should be
-disabled or enabled using the insn condition.)
-@end enumerate
+All these attributes should use @code{(const_int 1)} to allow an alternative
+or @code{(const_int 0)} to disallow it.  The attributes must be a static
+property of the subtarget; they cannot for example depend on the
+current operands, on the current optimization level, on the location
+of the insn within the body of a loop, on whether register allocation
+has finished, or on the current compiler pass.
+
+The @code{enabled} attribute is a correctness property.  It tells GCC to act
+as though the disabled alternatives were never defined in the first place.
+This is useful when adding new instructions to an existing pattern in
+cases where the new instructions are only available for certain cpu
+architecture levels (typically mapped to the @code{-march=} command-line
+option).
+
+In contrast, the @code{preferred_for_size} and @code{preferred_for_speed}
+attributes are strong optimization hints rather than correctness properties.
+@code{preferred_for_size} tells GCC which alternatives to consider when
+adding or modifying an instruction that GCC wants to optimize for size.
+@code{preferred_for_speed} does the same thing for speed.  Note that things
+like code motion can lead to cases where code optimized for size uses
+alternatives that are not preferred for size, and similarly for speed.
+
+Although @code{define_insn}s can in principle specify the @code{enabled}
+attribute directly, it is often clearer to have subsiduary attributes
+for each architectural feature of interest.  The @code{define_insn}s
+can then use these subsiduary attributes to say which alternatives
+require which features.  The example below does this for @code{cpu_facility}.
 
 E.g. the following two patterns could easily be merged using the @code{enabled}
 attribute:
