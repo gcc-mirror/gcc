@@ -2344,8 +2344,6 @@ extract_insn (rtx_insn *insn)
 
   gcc_assert (recog_data.n_alternatives <= MAX_RECOG_ALTERNATIVES);
 
-  recog_data.enabled_alternatives = get_enabled_alternatives (insn);
-
   recog_data.insn = NULL;
   which_alternative = -1;
 }

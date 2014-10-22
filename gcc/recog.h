@@ -250,12 +250,6 @@ struct recog_data_d
   /* True if insn is ASM_OPERANDS.  */
   bool is_asm;
 
-  /* Specifies whether an insn alternative is enabled using the `enabled'
-     attribute in the insn pattern definition.  For back ends not using
-     the `enabled' attribute the bits are always set to 1 in expand_insn.
-     Bits beyond the last alternative are also set to 1.  */
-  alternative_mask enabled_alternatives;
-
   /* In case we are caching, hold insn data was generated for.  */
   rtx insn;
 };
