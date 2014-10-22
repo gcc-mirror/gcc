@@ -2,10 +2,13 @@
 /* { dg-do compile } */
 
 extern int __finite (double __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
+extern int __finitef (float __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
+extern int __signbit (double __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
+extern int __signbitf (float __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
 int
 __ecvt_r (value, ndigit, decpt, sign, buf, len)
      double value;
-     int ndigit, *decpt, *sign;
+     int ndigit, *decpt, *sign, len;
      char *buf;
 {
   if ((sizeof (value) == sizeof (float) ? __finitef (value) : __finite (value)) && value != 0.0)
