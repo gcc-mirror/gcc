@@ -1,3 +1,12 @@
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63542
+	* config/i386/i386.c (ix86_pic_register_p): Also return
+	true if x is a hard register with ORIGINAL_REGNO equal to
+	pic_offset_table_rtx pseudo REGNO.
+	(ix86_delegitimize_address): For ix86_use_pseudo_pic_reg ()
+	after reload, subtract GOT_SYMBOL_NAME symbol if possible.
+
 2014-10-22  Alan Modra  <amodra@gmail.com>
 
 	* gengtype.h (obstack_chunk_alloc, obstack_chunk_free): Remove cast.

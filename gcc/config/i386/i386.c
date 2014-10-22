@@ -14281,10 +14281,20 @@ ix86_pic_register_p (rtx x)
   if (GET_CODE (x) == VALUE && CSELIB_VAL_PTR (x))
     return (pic_offset_table_rtx
 	    && rtx_equal_for_cselib_p (x, pic_offset_table_rtx));
+  else if (!REG_P (x))
+    return false;
   else if (pic_offset_table_rtx)
-    return REG_P (x) && REGNO (x) == REGNO (pic_offset_table_rtx);
+    {
+      if (REGNO (x) == REGNO (pic_offset_table_rtx))
+	return true;
+      if (HARD_REGISTER_P (x)
+	  && !HARD_REGISTER_P (pic_offset_table_rtx)
+	  && ORIGINAL_REGNO (x) == REGNO (pic_offset_table_rtx))
+	return true;
+      return false;
+    }
   else
-    return REG_P (x) && REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
+    return REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
 }
 
 /* Helper function for ix86_delegitimize_address.
@@ -14457,15 +14467,20 @@ ix86_delegitimize_address (rtx x)
 	 leal (%ebx, %ecx, 4), %ecx
 	 ...
 	 movl foo@GOTOFF(%ecx), %edx
-	 in which case we return (%ecx - %ebx) + foo.
-
-	 Note that when pseudo_pic_reg is used we can generate it only
-	 before reload_completed.  */
+	 in which case we return (%ecx - %ebx) + foo
+	 or (%ecx - _GLOBAL_OFFSET_TABLE_) + foo if pseudo_pic_reg
+	 and reload has completed.  */
       if (pic_offset_table_rtx
 	  && (!reload_completed || !ix86_use_pseudo_pic_reg ()))
         result = gen_rtx_PLUS (Pmode, gen_rtx_MINUS (Pmode, copy_rtx (addend),
 						     pic_offset_table_rtx),
 			       result);
+      else if (pic_offset_table_rtx && !TARGET_MACHO && !TARGET_VXWORKS_RTP)
+	{
+	  rtx tmp = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
+	  tmp = gen_rtx_MINUS (Pmode, copy_rtx (addend), tmp);
+	  result = gen_rtx_PLUS (Pmode, tmp, result);
+	}
       else
 	return orig_x;
     }
