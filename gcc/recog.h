@@ -134,6 +134,7 @@ extern void add_clobbers (rtx, int);
 extern int added_clobbers_hard_reg_p (int);
 extern void insn_extract (rtx_insn *);
 extern void extract_insn (rtx_insn *);
+extern void extract_constrain_insn (rtx_insn *insn);
 extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,

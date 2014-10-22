@@ -474,8 +474,7 @@ check_asm_stack_operands (rtx_insn *insn)
 
   /* Find out what the constraints require.  If no constraint
      alternative matches, this asm is malformed.  */
-  extract_insn (insn);
-  constrain_operands (1);
+  extract_constrain_insn (insn);
 
   preprocess_constraints (insn);
 
@@ -2021,8 +2020,7 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
   /* Find out what the constraints required.  If no constraint
      alternative matches, that is a compiler bug: we should have caught
      such an insn in check_asm_stack_operands.  */
-  extract_insn (insn);
-  constrain_operands (1);
+  extract_constrain_insn (insn);
 
   preprocess_constraints (insn);
   const operand_alternative *op_alt = which_op_alt ();

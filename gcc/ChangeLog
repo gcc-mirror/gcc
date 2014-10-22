@@ -1,3 +1,17 @@
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (extract_constrain_insn): Declare.
+	* recog.c (extract_constrain_insn): New function.
+	* lra.c (check_rtl): Use it.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* reg-stack.c (check_asm_stack_operands): Likewise.
+	(subst_asm_stack_regs): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (build_def_use): Likewise.
+	* sel-sched.c (get_reg_class): Likewise.
+	* config/arm/arm.c (note_invalid_constants): Likewise.
+	* config/s390/predicates.md (execute_operation): Likewise.
+
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 

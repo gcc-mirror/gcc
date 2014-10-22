@@ -2115,6 +2115,17 @@ extract_insn_cached (rtx_insn *insn)
   recog_data.insn = insn;
 }
 
+/* Do uncached extract_insn, constrain_operands and complain about failures.
+   This should be used when extracting a pre-existing constrained instruction
+   if the caller wants to know which alternative was chosen.  */
+void
+extract_constrain_insn (rtx_insn *insn)
+{
+  extract_insn (insn);
+  if (!constrain_operands (reload_completed))
+    fatal_insn_not_found (insn);
+}
+
 /* Do cached extract_insn, constrain_operands and complain about failures.
    Used by insn_attrtab.  */
 void

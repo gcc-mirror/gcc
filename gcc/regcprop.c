@@ -767,9 +767,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	}
 
       set = single_set (insn);
-      extract_insn (insn);
-      if (! constrain_operands (1))
-	fatal_insn_not_found (insn);
+      extract_constrain_insn (insn);
       preprocess_constraints (insn);
       const operand_alternative *op_alt = which_op_alt ();
       n_ops = recog_data.n_operands;
@@ -870,9 +868,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		}
 	      /* We need to re-extract as validate_change clobbers
 		 recog_data.  */
-	      extract_insn (insn);
-	      if (! constrain_operands (1))
-		fatal_insn_not_found (insn);
+	      extract_constrain_insn (insn);
 	      preprocess_constraints (insn);
 	    }
 
@@ -898,9 +894,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		    }
 		  /* We need to re-extract as validate_change clobbers
 		     recog_data.  */
-		  extract_insn (insn);
-		  if (! constrain_operands (1))
-		    fatal_insn_not_found (insn);
+		  extract_constrain_insn (insn);
 		  preprocess_constraints (insn);
 		}
 	    }
