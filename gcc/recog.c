@@ -160,8 +160,9 @@ check_asm_operands (rtx x)
   if (reload_completed)
     {
       /* ??? Doh!  We've not got the wrapping insn.  Cook one up.  */
-      extract_insn (make_insn_raw (x));
-      constrain_operands (1);
+      rtx_insn *insn = make_insn_raw (x);
+      extract_insn (insn);
+      constrain_operands (1, get_enabled_alternatives (insn));
       return which_alternative >= 0;
     }
 
@@ -365,7 +366,7 @@ insn_invalid_p (rtx_insn *insn, bool in_group)
     {
       extract_insn (insn);
 
-      if (! constrain_operands (1))
+      if (! constrain_operands (1, get_preferred_alternatives (insn)))
 	return 1;
     }
 
@@ -2164,6 +2165,21 @@ get_preferred_alternatives (rtx_insn *insn)
     return get_bool_attr_mask (insn, BA_PREFERRED_FOR_SIZE);
 }
 
+/* Return the set of alternatives of INSN that are allowed by the current
+   target and are preferred for the size/speed optimization choice
+   associated with BB.  Passing a separate BB is useful if INSN has not
+   been emitted yet or if we are considering moving it to a different
+   block.  */
+
+alternative_mask
+get_preferred_alternatives (rtx_insn *insn, basic_block bb)
+{
+  if (optimize_bb_for_speed_p (bb))
+    return get_bool_attr_mask (insn, BA_PREFERRED_FOR_SPEED);
+  else
+    return get_bool_attr_mask (insn, BA_PREFERRED_FOR_SIZE);
+}
+
 /* Assert that the cached boolean attributes for INSN are still accurate.
    The backend is required to define these attributes in a way that only
    depends on the current target (rather than operands, compiler phase,
@@ -2204,7 +2220,7 @@ void
 extract_constrain_insn (rtx_insn *insn)
 {
   extract_insn (insn);
-  if (!constrain_operands (reload_completed))
+  if (!constrain_operands (reload_completed, get_enabled_alternatives (insn)))
     fatal_insn_not_found (insn);
 }
 
@@ -2215,16 +2231,17 @@ extract_constrain_insn_cached (rtx_insn *insn)
 {
   extract_insn_cached (insn);
   if (which_alternative == -1
-      && !constrain_operands (reload_completed))
+      && !constrain_operands (reload_completed,
+			      get_enabled_alternatives (insn)))
     fatal_insn_not_found (insn);
 }
 
-/* Do cached constrain_operands and complain about failures.  */
+/* Do cached constrain_operands on INSN and complain about failures.  */
 int
-constrain_operands_cached (int strict)
+constrain_operands_cached (rtx_insn *insn, int strict)
 {
   if (which_alternative == -1)
-    return constrain_operands (strict);
+    return constrain_operands (strict, get_enabled_alternatives (insn));
   else
     return 1;
 }
@@ -2500,7 +2517,8 @@ preprocess_constraints (rtx insn)
 }
 
 /* Check the operands of an insn against the insn's operand constraints
-   and return 1 if they are valid.
+   and return 1 if they match any of the alternatives in ALTERNATIVES.
+
    The information about the insn's operands, constraints, operand modes
    etc. is obtained from the global variables set up by extract_insn.
 
@@ -2532,7 +2550,7 @@ struct funny_match
 };
 
 int
-constrain_operands (int strict)
+constrain_operands (int strict, alternative_mask alternatives)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   int matching_operands[MAX_RECOG_OPERANDS];
@@ -2559,7 +2577,7 @@ constrain_operands (int strict)
       int lose = 0;
       funny_match_index = 0;
 
-      if (!TEST_BIT (recog_data.enabled_alternatives, which_alternative))
+      if (!TEST_BIT (alternatives, which_alternative))
 	{
 	  int i;
 
@@ -2841,7 +2859,7 @@ constrain_operands (int strict)
   /* If we are about to reject this, but we are not to test strictly,
      try a very loose test.  Only return failure if it fails also.  */
   if (strict == 0)
-    return constrain_operands (-1);
+    return constrain_operands (-1, alternatives);
   else
     return 0;
 }

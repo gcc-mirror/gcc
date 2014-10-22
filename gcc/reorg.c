@@ -2769,7 +2769,8 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
 				   insn);
 
 	  if (recog_memoized (ninsn) < 0
-	      || (extract_insn (ninsn), ! constrain_operands (1)))
+	      || (extract_insn (ninsn),
+		  !constrain_operands (1, get_preferred_alternatives (ninsn))))
 	    {
 	      delete_related_insns (ninsn);
 	      return 0;
