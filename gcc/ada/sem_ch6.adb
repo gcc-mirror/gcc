@@ -454,24 +454,20 @@ package body Sem_Ch6 is
 
          Analyze (N);
 
-         --  Within a generic we only need to analyze the expression. The body
-         --  only needs to be constructed when generating code.
+         --  Within a generic pre-analyze the original expression for name
+         --  capture. The body is also generated but plays no role in
+         --  this because it is not part of the original source.
 
          if Inside_A_Generic then
             declare
                Id : constant Entity_Id := Defining_Entity (N);
-               Save_In_Spec_Expression : constant Boolean
-                  := In_Spec_Expression;
 
             begin
                Set_Has_Completion (Id);
-               In_Spec_Expression := True;
                Push_Scope (Id);
                Install_Formals (Id);
-               Preanalyze_And_Resolve (Expr, Etype (Id));
+               Preanalyze_Spec_Expression (Expr, Etype (Id));
                End_Scope;
-               In_Spec_Expression := Save_In_Spec_Expression;
-               return;
             end;
          end if;
 

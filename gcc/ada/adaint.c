@@ -547,11 +547,15 @@ __gnat_get_file_names_case_sensitive (void)
           && sensitive[1] == '\0')
         file_names_case_sensitive_cache = sensitive[0] - '0';
       else
-#if defined (WINNT) || defined (__APPLE__)
-        file_names_case_sensitive_cache = 0;
+	{
+	  /* By default, we suppose filesystems aren't case sensitive on
+	     Windows and Darwin (but they are on arm-darwin).  */
+#if defined (WINNT) || (defined (__APPLE__) && !defined (__arm__))
+	  file_names_case_sensitive_cache = 0;
 #else
-        file_names_case_sensitive_cache = 1;
+	  file_names_case_sensitive_cache = 1;
 #endif
+	}
     }
   return file_names_case_sensitive_cache;
 }

@@ -2238,7 +2238,7 @@ __gnat_is_stack_guard (mach_vm_address_t addr)
   return 0;
 #else
   /* Pagezero for arm.  */
-  return addr < 4096;
+  return addr >= 4096;
 #endif
 }
 

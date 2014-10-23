@@ -623,6 +623,9 @@ package body Pprint is
                   exit;
                end if;
 
+            when N_Quantified_Expression =>
+               Right := Original_Node (Condition (Right));
+
             --  For all other items, quit the loop
 
             when others =>

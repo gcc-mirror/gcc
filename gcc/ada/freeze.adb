@@ -4498,6 +4498,11 @@ package body Freeze is
                      Error_Msg_NE
                        ("\} may need a cpp_constructor",
                        Object_Definition (Parent (E)), Etype (E));
+
+                  elsif Present (Expression (Parent (E))) then
+                     Error_Msg_N --  CODEFIX
+                       ("\maybe a class-wide type was meant",
+                         Object_Definition (Parent (E)));
                   end if;
                end if;
 

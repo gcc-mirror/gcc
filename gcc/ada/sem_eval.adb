@@ -5737,7 +5737,17 @@ package body Sem_Eval is
          --  same base type.
 
          if Has_Discriminants (T1) /= Has_Discriminants (T2) then
-            if In_Instance then
+            --  A generic actual type is declared through a subtype declaration
+            --  and may have an inconsistent indication of the presence of
+            --  discriminants, so check the type it renames.
+
+            if Is_Generic_Actual_Type (T1)
+              and then not Has_Discriminants (Etype (T1))
+              and then not Has_Discriminants (T2)
+            then
+               return True;
+
+            elsif In_Instance then
                if Is_Private_Type (T2)
                  and then Present (Full_View (T2))
                  and then Has_Discriminants (Full_View (T2))
