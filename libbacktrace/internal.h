@@ -99,7 +99,7 @@ extern void backtrace_atomic_store_int (int *, int);
 /* We have neither the sync nor the atomic functions.  These will
    never be called.  */
 
-#define backtrace_atomic_load_pointer(p) (abort(), 0)
+#define backtrace_atomic_load_pointer(p) (abort(), (void *) NULL)
 #define backtrace_atomic_load_int(p) (abort(), 0)
 #define backtrace_atomic_store_pointer(p, v) abort()
 #define backtrace_atomic_store_size_t(p, v) abort()
