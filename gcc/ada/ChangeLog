@@ -1,3 +1,8 @@
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff): Properly delimit the
+	substring which represents the time zone on VxWorks.
+
 2014-10-23  Vincent Celier  <celier@adacore.com>
 
 	* gnatls.adb: If --RTS= was not used, check if there is a default
