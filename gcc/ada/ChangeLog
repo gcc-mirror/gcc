@@ -1,3 +1,30 @@
+2014-10-23  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb: If --RTS= was not used, check if there is a default
+	runtime. If there is none, in verbose mode, indicate that the
+	default runtime is not available and show only the current
+	directory in the source and the object search paths.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): A thunk procedure with a
+	parameter of a limited view does not need a freeze node.
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Body_Helper):
+	The logic which hides local entities from external
+	visibility is now contained in routine Hide_Public_Entities.
+	(Hide_Public_Entities): New routine. Object and subprogram
+	renamings are now hidden from external visibility the same way
+	objects are.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): The prefix of attribute Elaborated
+	does not require freezing, in particular if it denotes a generic
+	function.
+
 2014-10-23  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma/Pragma_Inline & Pragma_Inline_Always):

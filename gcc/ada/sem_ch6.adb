@@ -9946,7 +9946,9 @@ package body Sem_Ch6 is
                         --  (Note that the same is done for controlling access
                         --  parameter cases in function Access_Definition.)
 
-                        Set_Has_Delayed_Freeze (Current_Scope);
+                        if not Is_Thunk (Current_Scope) then
+                           Set_Has_Delayed_Freeze (Current_Scope);
+                        end if;
                      end if;
                   end if;
 
