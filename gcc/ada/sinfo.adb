@@ -1041,15 +1041,6 @@ package body Sinfo is
       return Flag4 (N);
    end Elaborate_Present;
 
-   function Elaboration_Boolean
-      (N : Node_Id) return Node_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Specification
-        or else NT (N).Nkind = N_Procedure_Specification);
-      return Node2 (N);
-   end Elaboration_Boolean;
-
    function Else_Actions
       (N : Node_Id) return List_Id is
    begin
@@ -4247,15 +4238,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_With_Clause);
       Set_Flag4 (N, Val);
    end Set_Elaborate_Present;
-
-   procedure Set_Elaboration_Boolean
-      (N : Node_Id; Val : Node_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Specification
-        or else NT (N).Nkind = N_Procedure_Specification);
-      Set_Node2 (N, Val);
-   end Set_Elaboration_Boolean;
 
    procedure Set_Else_Actions
       (N : Node_Id; Val : List_Id) is

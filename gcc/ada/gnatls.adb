@@ -42,7 +42,6 @@ with Sdefault;
 with Snames;
 with Stringt;
 with Switch;      use Switch;
-with Targparm;    use Targparm;
 with Types;       use Types;
 
 with Ada.Command_Line; use Ada.Command_Line;
@@ -1631,13 +1630,6 @@ begin
    --  Finally, add the default directories
 
    Osint.Add_Default_Search_Dirs;
-
-   --  Get the target parameters, but only if switch -nostdinc was not
-   --  specified. May not be needed any more, but is harmless.
-
-   if not Opt.No_Stdinc then
-      Get_Target_Parameters;
-   end if;
 
    if Verbose_Mode then
       Write_Eol;
