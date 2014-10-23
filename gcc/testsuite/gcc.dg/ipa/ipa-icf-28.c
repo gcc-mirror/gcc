@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target init_priority } } */
 /* { dg-options "-O2 -fdump-ipa-icf-details -fno-inline"  } */
 
 __attribute__ ((noinline, constructor(200)))
