@@ -1,3 +1,10 @@
+2014-10-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c: Fix GNU coding rules and typos.
+	* config/avr/avr.h: Dito.
+	* config/avr/avr-c.c: Dito.
+	* config/avr/avr.md: Dito.
+
 2014-10-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/sse.md (define_mode_iterator VI1248_AVX512VL_AVX512BW):

@@ -327,14 +327,14 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_TINY__");
 
       /* Define macro "__AVR_TINY_PM_BASE_ADDRESS__" with mapped program memory
-         start address. This macro shall be referred where mapped program memory
-         is accessed. (Eg. copying data section (do_copy_data) contents to data
-         memory region.
+         start address.  This macro shall be used where mapped program
+         memory is accessed, eg. copying data section (__do_copy_data)
+         contents to data memory region.
          NOTE:
-         Program memory of AVR_TINY devices can not be accessed directly, it has
-         been mapped to the data memory. For AVR_TINY devices (ATtiny4/ 5/ 9/ 10/
-         20 and 40) mapped program memory starts at 0x4000.
-      */
+         Program memory of AVR_TINY devices cannot be accessed directly,
+         it has been mapped to the data memory.  For AVR_TINY devices
+         (ATtiny4/5/9/10/20 and 40) mapped program memory starts at 0x4000. */
+
       cpp_define (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x4000");
     }
 
