@@ -1,5 +1,10 @@
 2014-10-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/63626
+	* gcc.dg/pr63626.c: New test.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/ubsan/undefined-2.c: New test.
 
 2014-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>

@@ -1,3 +1,8 @@
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63626
+	* c-decl.c (pop_scope): Don't print warning in external_scope.
+
 2014-10-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
