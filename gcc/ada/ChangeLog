@@ -1,3 +1,17 @@
+2014-10-23  Thomas Quinot  <quinot@adacore.com>
+
+	* bcheck.adb (Check_Consistent_SSO_Default): Exclude internal
+	units from consistency check.
+	* gnat_rm.texi (Default_Scalar_Storage_Order): Document that
+	consistency check excludes run-time units.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Find_Token): Enable constraint checking in this
+	procedure, so that even when compiling with checks suppressed, as is
+	the case for the run-time, an exception is raised in this routine when
+	the input meets the conditions described in RM 2005 A.4.3 (68/1).
+
 2014-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): When the parent

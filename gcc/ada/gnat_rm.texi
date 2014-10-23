@@ -2559,8 +2559,8 @@ types declared within that package spec or declarative part.
 If this pragma is used as a configuration pragma which appears within a
 configuration pragma file (as opposed to appearing explicitly at the start
 of a single unit), then the binder will require that all units in a partition
-be compiled in a similar manner, including all units in the run-time that
-are included in the partition.
+be compiled in a similar manner, other than run-time units, which are not
+affected by this pragma.
 
 The following example shows the use of this pragma:
 

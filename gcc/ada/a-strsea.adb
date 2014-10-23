@@ -241,6 +241,14 @@ package body Ada.Strings.Search is
       First  : out Positive;
       Last   : out Natural)
    is
+
+      --  RM 2005 A.4.3 (68/1)) specifies that an exception must be raised if
+      --  Source'First is not positive and is assigned to First. Formulation
+      --  is slightly different in RM 2012, but the intent seems similar, so
+      --  we enable range checks for this routine.
+
+      pragma Unsuppress (Range_Check);
+
    begin
       for J in Source'Range loop
          if Belongs (Source (J), Set, Test) then
