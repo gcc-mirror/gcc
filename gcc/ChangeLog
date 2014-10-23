@@ -1,3 +1,10 @@
+2014-10-23  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Preserve side-effects of
+	X - X when simplifying to 0.
+	* stor-layout.c (finish_bitfield_representative): Strip
+	side-effects of evaluating the difference of two DECL_FIELD_OFFSET.
+
 2014-10-22  Richard Biener  <rguenther@suse.de>
 	    Tobias Burnus <burnus@net-b.de>
 
