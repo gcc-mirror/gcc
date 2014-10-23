@@ -4,6 +4,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mcpu=ultrasparc" } */
 
+void __assert (const char *, const char *, int);
+double HSRate(long, long, long, double, double, int);
+
 typedef struct
 {
   float EnergyErg;

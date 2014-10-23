@@ -1,3 +1,12 @@
+2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/sparc/20001013-1.c (main): Declare int return.
+	* gcc.target/sparc/mnofpu.c (e1e_rphy): Declare.
+	* gcc.target/sparc/sparc-ret.c (toto): Declare.
+	* gcc.target/sparc/ultrasp6.c (__assert, HSRate): Declare.
+	* gcc.target/sparc/ultrasp8.c (__malloc_lock, __malloc_unlock):
+	Declare.
+
 2014-10-22  Guozhi Wei  <carrot@google.com>
 
 	PR tree-optimization/63530
