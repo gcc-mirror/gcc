@@ -1,3 +1,7 @@
+2014-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_can_combine_p): Fix typo in last change.
+
 2014-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (extract_range_from_assert): Fix typo in comment.
