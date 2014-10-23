@@ -1,3 +1,12 @@
+2014-10-23  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63497
+	include/bits/regex_executor.h (_Executor::_M_word_boundary): Remove
+	unused parameter.
+	include/bits/regex_executor.tcc (_Executor::_M_dfs,
+	_Executor::_M_word_boundary): Avoid dereferecing _M_current at _M_end
+	or other invalid position.
+
 2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* testsuite/util/io/prog_bar.cc: Qualify size_t.
