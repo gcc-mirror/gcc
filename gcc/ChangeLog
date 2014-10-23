@@ -1,3 +1,7 @@
+2014-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* config/mep/mep.h (TARGET_HAS_F_SETLKW): Don't define.
+
 2014-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/63623
