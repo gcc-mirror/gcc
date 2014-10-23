@@ -128,19 +128,19 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   tree op1_utype = unsigned_type_for (type1);
   HOST_WIDE_INT op0_prec = TYPE_PRECISION (type0);
   tree uprecm1 = build_int_cst (op1_utype, op0_prec - 1);
-  tree precm1 = build_int_cst (type1, op0_prec - 1);
 
   t = fold_convert_loc (loc, op1_utype, op1);
   t = fold_build2 (GT_EXPR, boolean_type_node, t, uprecm1);
 
   /* For signed x << y, in C99/C11, the following:
-     (unsigned) x >> (precm1 - y)
+     (unsigned) x >> (uprecm1 - y)
      if non-zero, is undefined.  */
   if (code == LSHIFT_EXPR
       && !TYPE_UNSIGNED (type0)
       && flag_isoc99)
     {
-      tree x = fold_build2 (MINUS_EXPR, integer_type_node, precm1, op1);
+      tree x = fold_build2 (MINUS_EXPR, unsigned_type_node, uprecm1,
+			    fold_convert (op1_utype, op1));
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
       tt = fold_build2 (RSHIFT_EXPR, TREE_TYPE (tt), tt, x);
       tt = fold_build2 (NE_EXPR, boolean_type_node, tt,
@@ -148,13 +148,14 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     }
 
   /* For signed x << y, in C++11 and later, the following:
-     x < 0 || ((unsigned) x >> (precm1 - y))
+     x < 0 || ((unsigned) x >> (uprecm1 - y))
      if > 1, is undefined.  */
   if (code == LSHIFT_EXPR
       && !TYPE_UNSIGNED (TREE_TYPE (op0))
       && (cxx_dialect >= cxx11))
     {
-      tree x = fold_build2 (MINUS_EXPR, integer_type_node, precm1, op1);
+      tree x = fold_build2 (MINUS_EXPR, unsigned_type_node, uprecm1,
+			    fold_convert (op1_utype, op1));
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
       tt = fold_build2 (RSHIFT_EXPR, TREE_TYPE (tt), tt, x);
       tt = fold_build2 (GT_EXPR, boolean_type_node, tt,
