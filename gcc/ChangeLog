@@ -1,3 +1,11 @@
+2014-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63623
+	* var-tracking.c (stack_adjust_offset_pre_post_cb): New function.
+	(stack_adjust_offset_pre_post): Use it through for_each_inc_dec,
+	instead of only handling autoinc in dest if it is a MEM.
+	(vt_stack_adjustments): Fix up formatting.
+
 2014-10-23  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.c (msp430_print_operand): 'x' modifier is
