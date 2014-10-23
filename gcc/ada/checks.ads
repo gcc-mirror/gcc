@@ -849,7 +849,12 @@ package Checks is
    --  13.9.1(9-11)) such assignments are not permitted to result in erroneous
    --  behavior in the case of invalid subscript values.
 
-   procedure Ensure_Valid (Expr : Node_Id; Holes_OK : Boolean := False);
+   procedure Ensure_Valid
+     (Expr          : Node_Id;
+      Holes_OK      : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False);
    --  Ensure that Expr represents a valid value of its type. If this type
    --  is not a scalar type, then the call has no effect, since validity
    --  is only an issue for scalar types. The effect of this call is to
@@ -865,6 +870,12 @@ package Checks is
    --  will make a separate check for this case anyway). If Holes_OK is False,
    --  then this case is checked, and code is inserted to ensure that Expr is
    --  valid, raising Constraint_Error if the value is not valid.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST.
 
    function Expr_Known_Valid (Expr : Node_Id) return Boolean;
    --  This function tests it the value of Expr is known to be valid in the
@@ -876,10 +887,20 @@ package Checks is
    --  it can be determined that the value is Valid. Otherwise False is
    --  returned.
 
-   procedure Insert_Valid_Check (Expr : Node_Id);
-   --  Inserts code that will check for the value of Expr being valid, in
-   --  the sense of the 'Valid attribute returning True. Constraint_Error
-   --  will be raised if the value is not valid.
+   procedure Insert_Valid_Check
+     (Expr          : Node_Id;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False);
+   --  Inserts code that will check for the value of Expr being valid, in the
+   --  sense of the 'Valid attribute returning True. Constraint_Error will be
+   --  raised if the value is not valid.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST.
 
    procedure Null_Exclusion_Static_Checks (N : Node_Id);
    --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
@@ -889,9 +910,12 @@ package Checks is
    --  conditionally (on the right side of And Then/Or Else. This call
    --  removes only embedded checks (Do_Range_Check, Do_Overflow_Check).
 
-   procedure Validity_Check_Range (N : Node_Id);
-   --  If N is an N_Range node, then Ensure_Valid is called on its bounds,
-   --  if validity checking of operands is enabled.
+   procedure Validity_Check_Range
+     (N          : Node_Id;
+      Related_Id : Entity_Id := Empty);
+   --  If N is an N_Range node, then Ensure_Valid is called on its bounds, if
+   --  validity checking of operands is enabled. Related_Id denotes the entity
+   --  of the context where N appears.
 
    -----------------------------
    -- Handling of Check Names --

@@ -5627,7 +5627,13 @@ package body Checks is
    -- Ensure_Valid --
    ------------------
 
-   procedure Ensure_Valid (Expr : Node_Id; Holes_OK : Boolean := False) is
+   procedure Ensure_Valid
+     (Expr          : Node_Id;
+      Holes_OK      : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False)
+   is
       Typ : constant Entity_Id  := Etype (Expr);
 
    begin
@@ -5793,7 +5799,7 @@ package body Checks is
 
       --  If we fall through, a validity check is required
 
-      Insert_Valid_Check (Expr);
+      Insert_Valid_Check (Expr, Related_Id, Is_Low_Bound, Is_High_Bound);
 
       if Is_Entity_Name (Expr)
         and then Safe_To_Capture_Value (Expr, Entity (Expr))
@@ -6996,14 +7002,19 @@ package body Checks is
    -- Insert_Valid_Check --
    ------------------------
 
-   procedure Insert_Valid_Check (Expr : Node_Id) is
+   procedure Insert_Valid_Check
+     (Expr          : Node_Id;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False)
+   is
       Loc : constant Source_Ptr := Sloc (Expr);
       Typ : constant Entity_Id  := Etype (Expr);
       Exp : Node_Id;
 
    begin
-      --  Do not insert if checks off, or if not checking validity or
-      --  if expression is known to be valid
+      --  Do not insert if checks off, or if not checking validity or if
+      --  expression is known to be valid.
 
       if not Validity_Checks_On
         or else Range_Or_Validity_Checks_Suppressed (Expr)
@@ -7073,7 +7084,13 @@ package body Checks is
 
          --  Build the prefix for the 'Valid call
 
-         PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => False);
+         PV :=
+           Duplicate_Subexpr_No_Checks
+             (Exp           => Exp,
+              Name_Req      => False,
+              Related_Id    => Related_Id,
+              Is_Low_Bound  => Is_Low_Bound,
+              Is_High_Bound => Is_High_Bound);
 
          --  A rather specialized test. If PV is an analyzed expression which
          --  is an indexed component of a packed array that has not been
@@ -7098,14 +7115,14 @@ package body Checks is
          --  a name, and we don't care in this context!
 
          CE :=
-            Make_Raise_Constraint_Error (Loc,
-              Condition =>
-                Make_Op_Not (Loc,
-                  Right_Opnd =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => PV,
-                      Attribute_Name => Name_Valid)),
-              Reason => CE_Invalid_Data);
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Right_Opnd =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => PV,
+                     Attribute_Name => Name_Valid)),
+             Reason    => CE_Invalid_Data);
 
          --  Insert the validity check. Note that we do this with validity
          --  checks turned off, to avoid recursion, we do not want validity
@@ -10113,12 +10130,22 @@ package body Checks is
    -- Validity_Check_Range --
    --------------------------
 
-   procedure Validity_Check_Range (N : Node_Id) is
+   procedure Validity_Check_Range
+     (N          : Node_Id;
+      Related_Id : Entity_Id := Empty)
+   is
    begin
       if Validity_Checks_On and Validity_Check_Operands then
          if Nkind (N) = N_Range then
-            Ensure_Valid (Low_Bound (N));
-            Ensure_Valid (High_Bound (N));
+            Ensure_Valid
+              (Expr          => Low_Bound (N),
+               Related_Id    => Related_Id,
+               Is_Low_Bound  => True);
+
+            Ensure_Valid
+              (Expr          => High_Bound (N),
+               Related_Id    => Related_Id,
+               Is_High_Bound => True);
          end if;
       end if;
    end Validity_Check_Range;
