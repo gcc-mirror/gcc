@@ -91,8 +91,8 @@ FIXME: DRIVER_SELF_SPECS has changed.
    there is always __AVR_SP8__ == __AVR_HAVE_8BIT_SP__.  */
 
 #define AVR_HAVE_8BIT_SP                                 \
-  ((avr_current_device->dev_attribute & AVR_SHORT_SP) || \
-   TARGET_TINY_STACK || avr_sp8)
+  ((avr_current_device->dev_attribute & AVR_SHORT_SP)    \
+   || TARGET_TINY_STACK || avr_sp8)
 
 #define AVR_HAVE_SPH (!avr_sp8)
 
@@ -310,10 +310,10 @@ enum reg_class {
 #define STATIC_CHAIN_REGNUM ((AVR_TINY) ? 18 :2)
 
 #define ELIMINABLE_REGS {					\
-      {ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
-      {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
-	{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}		\
-       ,{FRAME_POINTER_REGNUM+1,STACK_POINTER_REGNUM+1}}
+    { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },               \
+    { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },               \
+    { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },             \
+    { FRAME_POINTER_REGNUM + 1, STACK_POINTER_REGNUM + 1 } }
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   OFFSET = avr_initial_elimination_offset (FROM, TO)
