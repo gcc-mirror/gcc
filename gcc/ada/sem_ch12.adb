@@ -1664,6 +1664,18 @@ package body Sem_Ch12 is
                         Assoc);
                   end if;
 
+                  --  If the object is a call to an expression function, this
+                  --  is a freezing point for it.
+
+                  if Is_Entity_Name (Match)
+                    and then Present (Entity (Match))
+                    and then Nkind
+                      (Original_Node (Unit_Declaration_Node (Entity (Match))))
+                        = N_Expression_Function
+                  then
+                     Append_Elmt (Entity (Match), Actuals_To_Freeze);
+                  end if;
+
                when N_Formal_Type_Declaration =>
                   Match :=
                     Matching_Actual (

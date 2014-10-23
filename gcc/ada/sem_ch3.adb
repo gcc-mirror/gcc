@@ -6942,6 +6942,7 @@ package body Sem_Ch3 is
          return;
 
       elsif Has_Discriminants (Parent_Type) then
+
          --  Build partial view of derived type from partial view of parent.
          --  This must be done before building the full derivation because the
          --  second derivation will modify the discriminants of the first and
