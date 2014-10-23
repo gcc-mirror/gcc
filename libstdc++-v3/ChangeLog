@@ -1,3 +1,8 @@
+2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+
 2014-10-23  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63497

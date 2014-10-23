@@ -1176,11 +1176,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.3.3.1</entry>
       <entry>Character classification</entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>isblank</code>.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>22.3.3.2</entry>
