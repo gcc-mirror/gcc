@@ -875,7 +875,8 @@ package Checks is
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
    --  is the low or the high bound of a range. These three optional arguments
    --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST.
+   --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
+   --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Expr_Known_Valid (Expr : Node_Id) return Boolean;
    --  This function tests it the value of Expr is known to be valid in the
@@ -900,7 +901,8 @@ package Checks is
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
    --  is the low or the high bound of a range. These three optional arguments
    --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST.
+   --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
+   --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    procedure Null_Exclusion_Static_Checks (N : Node_Id);
    --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue

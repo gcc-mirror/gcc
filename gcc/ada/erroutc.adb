@@ -1537,10 +1537,11 @@ package body Erroutc is
                elsif not SWE.Used
 
                  --  Do not issue this warning for -Wxxx messages since the
-                 --  back-end doesn't report the information.
+                 --  back-end doesn't report the information. Note that there
+                 --  is always an asterisk at the start of every message.
 
                  and then not
-                   (SWE.Msg'Length > 2 and then SWE.Msg (1 .. 2) = "-W")
+                   (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
                then
                   Eproc.all
                     ("?W?no warning suppressed by this pragma", SWE.Start);

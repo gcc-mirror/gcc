@@ -1,5 +1,34 @@
 2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_util.ads, checks.ads: Minor comment reformatting.
+
+2014-10-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_eval (Test_In_Range): Disable removal of range_check for
+	VM targets.
+
+2014-10-23  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Fix test for -W
+	messages, which got disabled when we unconditionally added an
+	asterisk at the start of the string.
+
+2014-10-23  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb: Ensure that "gnatls -l" works even when there is
+	no default runtime.
+
+2014-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): When the parent is
+	untagged and has discriminants, build the implicit full view after
+	building the derived type. Capture original declaration and type
+	here instead of...
+	(Copy_And_Build): ...here.
+	* sem_type.adb (Full_View_Covers): Handle the Underlying_Full_View.
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* checks.adb (Ensure_Valid): Update the subprogram
 	profile. Propagate the contex attributes to Insert_Valid_Check.
 	(Insert_Valid_Check): Update the subprogram profile. Propagate

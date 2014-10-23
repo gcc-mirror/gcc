@@ -766,6 +766,8 @@ package body Sem_Type is
              and then
               ((Present (Full_View (Typ1))
                   and then Covers (Full_View (Typ1), Typ2))
+                or else (Present (Underlying_Full_View (Typ1))
+                           and then Covers (Underlying_Full_View (Typ1), Typ2))
                 or else Base_Type (Typ1) = Typ2
                 or else Base_Type (Typ2) = Typ1);
       end Full_View_Covers;

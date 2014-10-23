@@ -1595,12 +1595,18 @@ begin
 
    --  If -l (output license information) is given, it must be the only switch
 
-   if License and then Arg_Count /= 2 then
-      Set_Standard_Error;
-      Write_Str ("Can't use -l with another switch");
-      Write_Eol;
-      Try_Help;
-      Exit_Program (E_Fatal);
+   if License then
+      if Arg_Count = 2 then
+         Output_License_Information;
+         Exit_Program (E_Success);
+
+      else
+         Set_Standard_Error;
+         Write_Str ("Can't use -l with another switch");
+         Write_Eol;
+         Try_Help;
+         Exit_Program (E_Fatal);
+      end if;
    end if;
 
    --  Handle --RTS switch
@@ -1737,13 +1743,6 @@ begin
 
    if Print_Usage then
       Usage;
-   end if;
-
-   --  Output license information when requested
-
-   if License then
-      Output_License_Information;
-      Exit_Program (E_Success);
    end if;
 
    if not More_Lib_Files then

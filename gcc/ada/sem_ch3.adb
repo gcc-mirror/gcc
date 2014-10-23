@@ -6671,7 +6671,8 @@ package body Sem_Ch3 is
       Loc       : constant Source_Ptr := Sloc (N);
       Par_Base  : constant Entity_Id  := Base_Type (Parent_Type);
       Par_Scope : constant Entity_Id  := Scope (Par_Base);
-      Full_Der  : Entity_Id           := Empty;
+      Full_N    : constant Node_Id    := New_Copy_Tree (N);
+      Full_Der  : Entity_Id           := New_Copy (Derived_Type);
       Full_P    : Entity_Id;
 
       procedure Build_Full_Derivation;
@@ -6718,7 +6719,6 @@ package body Sem_Ch3 is
       --------------------
 
       procedure Copy_And_Build is
-         Full_N      : Node_Id;
          Full_Parent : Entity_Id := Parent_Type;
 
       begin
@@ -6755,8 +6755,6 @@ package body Sem_Ch3 is
             --  is originally a private declaration. Indicate that full view
             --  is internally generated.
 
-            Full_N := New_Copy_Tree (N);
-            Full_Der := New_Copy (Derived_Type);
             Set_Comes_From_Source (Full_N, False);
             Set_Comes_From_Source (Full_Der, False);
             Set_Parent (Full_Der, Full_N);
@@ -6944,6 +6942,15 @@ package body Sem_Ch3 is
          return;
 
       elsif Has_Discriminants (Parent_Type) then
+         --  Build partial view of derived type from partial view of parent.
+         --  This must be done before building the full derivation because the
+         --  second derivation will modify the discriminants of the first and
+         --  the discriminants are chained with the rest of the components in
+         --  the full derivation.
+
+         Build_Derived_Record_Type
+           (N, Parent_Type, Derived_Type, Derive_Subps);
+
          --  Build the full derivation if this is not the anonymous derived
          --  base type created by Build_Derived_Record_Type in the constrained
          --  case (see point 5. of its head comment) since we build it for the
@@ -6954,15 +6961,6 @@ package body Sem_Ch3 is
            and then not Is_Itype (Derived_Type)
            and then not (Ekind (Full_View (Parent_Type)) in Protected_Kind)
          then
-            Build_Full_Derivation;
-         end if;
-
-         --  Build partial view of derived type from partial view of parent
-
-         Build_Derived_Record_Type
-           (N, Parent_Type, Derived_Type, Derive_Subps);
-
-         if Present (Full_Der) then
             declare
                Der_Base   : constant Entity_Id := Base_Type (Derived_Type);
                Discr      : Entity_Id;
@@ -6974,6 +6972,8 @@ package body Sem_Ch3 is
                --  But if this is a completion, the derived private type
                --  being built is a full view and the full derivation can
                --  only be its underlying full view.
+
+               Build_Full_Derivation;
 
                if not Is_Completion then
                   Set_Full_View (Derived_Type, Full_Der);
