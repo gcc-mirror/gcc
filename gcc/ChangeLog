@@ -1,3 +1,9 @@
+2014-10-23  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): 'x' modifier is
+	independend of -mlarge.
+	* config/msp430/constraints.md (Ys): Update comment.
+
 2014-10-23  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/63534
