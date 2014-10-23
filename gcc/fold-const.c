@@ -10749,7 +10749,7 @@ fold_binary_loc (location_t loc,
 
       if ((!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
 	  && operand_equal_p (arg0, arg1, 0))
-	return build_zero_cst (type);
+	return omit_one_operand_loc (loc, type, build_zero_cst (type), arg0);
 
       /* A - B -> A + (-B) if B is easily negatable.  */
       if (negate_expr_p (arg1)

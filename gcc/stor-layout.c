@@ -1860,6 +1860,8 @@ finish_bitfield_representative (tree repr, tree field)
 
   size = size_diffop (DECL_FIELD_OFFSET (field),
 		      DECL_FIELD_OFFSET (repr));
+  while (TREE_CODE (size) == COMPOUND_EXPR)
+    size = TREE_OPERAND (size, 1);
   gcc_assert (tree_fits_uhwi_p (size));
   bitsize = (tree_to_uhwi (size) * BITS_PER_UNIT
 	     + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
