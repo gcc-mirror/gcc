@@ -288,10 +288,12 @@ procedure Gnat1drv is
          Validity_Check_In_Out_Params := True;
          Validity_Check_In_Params     := True;
 
-         --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting CodePeer output.
+         --  Turn off style check options and ignore any style check pragmas
+         --  since we are not interested in any front-end warnings when we are
+         --  getting CodePeer output.
 
          Reset_Style_Check_Options;
+         Ignore_Style_Checks_Pragmas := True;
 
          --  Always perform semantics and generate ali files in CodePeer mode,
          --  so that a gnatmake -c -k will proceed further when possible.

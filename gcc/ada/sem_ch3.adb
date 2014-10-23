@@ -11751,6 +11751,20 @@ package body Sem_Ch3 is
          Set_Full_View (Prev, Id);
          Set_Etype (Id, Any_Type);
 
+         --  A deferred constant whose type is an anonymous array is always
+         --  illegal (unless imported). A detailed error message might be
+         --  helpful for Ada beginners.
+
+         if Nkind (Object_Definition (Parent (Prev)))
+            = N_Constrained_Array_Definition
+           and then Nkind (Object_Definition (N))
+              = N_Constrained_Array_Definition
+         then
+            Error_Msg_N ("\each anonymous array is a distinct type", N);
+            Error_Msg_N ("a deferred constant must have a named type",
+              Object_Definition (Parent (Prev)));
+         end if;
+
       elsif
         Null_Exclusion_Present (Parent (Prev))
           and then not Null_Exclusion_Present (N)

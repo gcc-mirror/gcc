@@ -1378,7 +1378,7 @@ in the two situations.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}] [entity => local_NAME]);
+pragma Annotate (IDENTIFIER [, IDENTIFIER @{, ARG@}] [, entity => local_NAME]);
 
 ARG ::= NAME | EXPRESSION
 @end smallexample

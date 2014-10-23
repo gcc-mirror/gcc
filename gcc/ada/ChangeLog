@@ -1,3 +1,53 @@
+2014-10-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma/Pragma_Inline & Pragma_Inline_Always):
+	Disable analysis in GNATprove mode.
+
+2014-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* mlib-prj.adb: Remove obsolete references to libdecgnat (VMS only).
+
+2014-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Ignore style check
+	pragmas in codepeer mode.
+
+2014-10-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Minor syntax fix for pragma Annotate (missing ',').
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Inline_Instance_Body): Alphabetize
+	local variables and constants. Add constants Save_SM and Save_SMP
+	to capture SPARK_Mode-related attributes.  Compile the inlined
+	body with the SPARK_Mode of the enclosing context.
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sinfo.adb (Elaboration_Boolean): Removed.
+	(Set_Elaboration_Boolean): Removed.
+	* sinfo.ads Remove attribute Elaboration_Boolean along with its
+	occurrence in nodes.
+	(Elaboration_Boolean): Removed along with pragma Inline.
+	(Set_Elaboration_Boolean): Removed along with pragma Inline.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constant_Redeclaration): Make error message more
+	explicit on a deferred constant whose object_definition is an
+	anonymous array.
+
+2014-10-23  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb: Never call Targparm.Get_Target_Parameters.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): In a generic
+	context do not create a body, and only pre-analyze the expression,
+	which may include incomplete views.
+
 2014-10-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_type.adb: Minor code reorganization (use Nkind_In, Ekind_In).
