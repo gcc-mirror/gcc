@@ -1,3 +1,10 @@
+2014-10-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* tree-core.h (tree_var_decl): Extend `function_code' field
+	by one bit, move `regdecl_flag' field to ...
+	(tree_decl_with_vis): Here.
+	* tree.h (DECL_STATIC_CHAIN): Update struct name.
+
 2014-10-23  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (BUILD_CPPLIB): Add.
