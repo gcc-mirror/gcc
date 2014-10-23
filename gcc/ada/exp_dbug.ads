@@ -854,9 +854,8 @@ package Exp_Dbug is
       --  names of these types).
 
       --  To conserve space, we do not produce this type unless one of the
-      --  index types is either an enumeration type, has a variable upper
-      --  bound, has a lower bound different from the constant 1, is a biased
-      --  type, or is wider than "sizetype".
+      --  index types is either an enumeration type, has a variable lower or
+      --  upper bound or is a biased type.
 
       --  Given the full encoding of these types (see above description for
       --  the encoding of discrete types), this means that all necessary
