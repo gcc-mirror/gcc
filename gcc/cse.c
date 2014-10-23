@@ -6957,6 +6957,12 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
       /* If no debug insns can be present, COUNTS is just an array
 	 which counts how many times each pseudo is used.  */
     }
+  /* Pseudo PIC register should be considered as used due to possible
+     new usages generated.  */
+  if (!reload_completed
+      && pic_offset_table_rtx
+      && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+    counts[REGNO (pic_offset_table_rtx)]++;
   /* Go from the last insn to the first and delete insns that only set unused
      registers or copy a register to itself.  As we delete an insn, remove
      usage counts for registers it uses.
