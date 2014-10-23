@@ -772,6 +772,13 @@ case "${target}" in
     ;; 
 esac
 
+# Disable the go frontend on systems where it is known to not work.
+case "${target}" in
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)
+    unsupported_languages="$unsupported_languages go"
+    ;;
+esac
+
 # Disable libgo for some systems where it is known to not work.
 # For testing, you can easily override this with --enable-libgo.
 if test x$enable_libgo = x; then
