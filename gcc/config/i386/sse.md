@@ -13785,10 +13785,18 @@
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI")])
 
+;; Mode iterator to handle singularity w/ absence of V2DI and V4DI
+;; modes for abs instruction on pre AVX-512 targets.
+(define_mode_iterator VI1248_AVX512VL_AVX512BW
+  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX2") V16QI
+   (V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_insn "*abs<mode>2"
-  [(set (match_operand:VI_AVX2 0 "register_operand" "=v")
-	(abs:VI_AVX2
-	  (match_operand:VI_AVX2 1 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VI1248_AVX512VL_AVX512BW 0 "register_operand" "=v")
+	(abs:VI1248_AVX512VL_AVX512BW
+	  (match_operand:VI1248_AVX512VL_AVX512BW 1 "nonimmediate_operand" "vm")))]
   "TARGET_SSSE3"
   "%vpabs<ssemodesuffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog1")
@@ -13824,9 +13832,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "abs<mode>2"
-  [(set (match_operand:VI_AVX2 0 "register_operand")
-	(abs:VI_AVX2
-	  (match_operand:VI_AVX2 1 "nonimmediate_operand")))]
+  [(set (match_operand:VI1248_AVX512VL_AVX512BW 0 "register_operand")
+	(abs:VI1248_AVX512VL_AVX512BW
+	  (match_operand:VI1248_AVX512VL_AVX512BW 1 "nonimmediate_operand")))]
   "TARGET_SSE2"
 {
   if (!TARGET_SSSE3)

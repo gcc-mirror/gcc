@@ -1,5 +1,13 @@
 2014-10-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	* config/i386/sse.md (define_mode_iterator VI1248_AVX512VL_AVX512BW):
+	New.
+	(define_insn "*abs<mode>2"): Use VI1248_AVX512VL_AVX512BW mode
+	iterator.
+	(define_expand "abs<mode>2"): Ditto.
+
+2014-10-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	* tree-core.h (tree_var_decl): Extend `function_code' field
 	by one bit, move `regdecl_flag' field to ...
 	(tree_decl_with_vis): Here.
