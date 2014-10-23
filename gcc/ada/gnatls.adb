@@ -65,6 +65,9 @@ procedure Gnatls is
 
    No_Obj : aliased String := "<no_obj>";
 
+   No_Runtime : Boolean := False;
+   --  Set to True if there is no default runtime and --RTS= is not specified
+
    type File_Status is (
      OK,                  --  matching timestamp
      Checksum_OK,         --  only matching checksum
@@ -1631,10 +1634,37 @@ begin
 
    Osint.Add_Default_Search_Dirs;
 
+   --  If --RTS= is not specified, check if there is a default runtime
+
+   if RTS_Specified = null then
+      declare
+         Text : Source_Buffer_Ptr;
+         Hi   : Source_Ptr;
+
+      begin
+         Name_Buffer (1 .. 10) := "system.ads";
+         Name_Len := 10;
+
+         Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+
+         if Text = null then
+            No_Runtime := True;
+         end if;
+      end;
+   end if;
+
    if Verbose_Mode then
       Write_Eol;
       Display_Version ("GNATLS", "1997");
       Write_Eol;
+
+      if No_Runtime then
+         Write_Str
+           ("Default runtime not available. Use --RTS= with a valid runtime");
+         Write_Eol;
+         Write_Eol;
+      end if;
+
       Write_Str ("Source Search Path:");
       Write_Eol;
 
@@ -1643,14 +1673,15 @@ begin
 
          if Dir_In_Src_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
-         else
+            Write_Eol;
+
+         elsif not No_Runtime then
             Write_Str
               (Normalize
                  (To_Host_Dir_Spec
-                    (Dir_In_Src_Search_Path (J).all, True).all));
+                      (Dir_In_Src_Search_Path (J).all, True).all));
+            Write_Eol;
          end if;
-
-         Write_Eol;
       end loop;
 
       Write_Eol;
@@ -1663,14 +1694,15 @@ begin
 
          if Dir_In_Obj_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
-         else
+            Write_Eol;
+
+         elsif not No_Runtime then
             Write_Str
               (Normalize
                  (To_Host_Dir_Spec
-                    (Dir_In_Obj_Search_Path (J).all, True).all));
+                      (Dir_In_Obj_Search_Path (J).all, True).all));
+            Write_Eol;
          end if;
-
-         Write_Eol;
       end loop;
 
       Write_Eol;

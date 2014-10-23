@@ -11164,7 +11164,16 @@ package body Sem_Attr is
       --  Normally the Freezing is done by Resolve but sometimes the Prefix
       --  is not resolved, in which case the freezing must be done now.
 
-      Freeze_Expression (P);
+      --  For an elaboration check on a subprogram, we do not freeze its type.
+      --  It may be declared in an unrelated scope, in particular in the case
+      --  of a generic function whose type may remain unelaborated.
+
+      if Attr_Id = Attribute_Elaborated then
+         null;
+
+      else
+         Freeze_Expression (P);
+      end if;
 
       --  Finally perform static evaluation on the attribute reference
 
