@@ -1077,16 +1077,28 @@ package body Bcheck is
    -- Check_Consistent_SSO_Default --
    ----------------------------------
 
+   --  This routine checks for a consistent SSO default setting. Note that
+   --  internal units are excluded from this check, since we don't in any
+   --  case allow the pragma to affect types in internal units, and there
+   --  is thus no requirement to recompile the run-time with the default set.
+
    procedure Check_Consistent_SSO_Default is
       Default : Character;
 
    begin
       Default := ALIs.Table (ALIs.First).SSO_Default;
 
+      --  The default must be set from a non-internal unit
+
+      pragma Assert
+        (not Is_Internal_File_Name (ALIs.Table (ALIs.First).Sfile));
+
       --  Check all entries match the default above from the first entry
 
       for A1 in ALIs.First + 1 .. ALIs.Last loop
-         if ALIs.Table (A1).SSO_Default /= Default then
+         if not Is_Internal_File_Name (ALIs.Table (A1).Sfile)
+           and then ALIs.Table (A1).SSO_Default /= Default
+         then
             Default := '?';
             exit;
          end if;
@@ -1132,7 +1144,9 @@ package body Bcheck is
       Write_Eol;
 
       for A1 in ALIs.First .. ALIs.Last loop
-         if ALIs.Table (A1).SSO_Default = ' ' then
+         if not Is_Internal_File_Name (ALIs.Table (A1).Sfile)
+           and then ALIs.Table (A1).SSO_Default = ' '
+         then
             Write_Str ("  ");
             Write_Name (ALIs.Table (A1).Sfile);
             Write_Eol;
