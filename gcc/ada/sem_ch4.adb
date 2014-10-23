@@ -7617,6 +7617,17 @@ package body Sem_Ch4 is
             Rewrite (First_Actual, Obj);
          end if;
 
+         --  The operation is obtained from the dispatch table and not by
+         --  visibility, and may be declared in a unit that is not explicitly
+         --  referenced in the source, but is nevertheless required in the
+         --  context of the current unit. Indicate that operation and its scope
+         --  are referenced, to prevent spurious and misleading warnings. If
+         --  the operation is overloaded, all primitives are in the same scope
+         --  and we can use any of them.
+
+         Set_Referenced (Entity (Subprog), True);
+         Set_Referenced (Scope (Entity (Subprog)), True);
+
          Rewrite (Node_To_Replace, Call_Node);
 
          --  Propagate the interpretations collected in subprog to the new

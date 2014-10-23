@@ -13914,17 +13914,19 @@ package body Sem_Ch3 is
          Set_Fixed_Range (T, Loc, -Bound_Val, Bound_Val);
       end if;
 
-      --  Complete entity for first subtype
+      --  Complete entity for first subtype. The inheritance of the rep item
+      --  chain ensures that SPARK-related pragmas are not clobbered when the
+      --  decimal fixed point type acts as a full view of a private type.
 
-      Set_Ekind          (T, E_Decimal_Fixed_Point_Subtype);
-      Set_Etype          (T, Implicit_Base);
-      Set_Size_Info      (T, Implicit_Base);
-      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
-      Set_Digits_Value   (T, Digs_Val);
-      Set_Delta_Value    (T, Delta_Val);
-      Set_Small_Value    (T, Delta_Val);
-      Set_Scale_Value    (T, Scale_Val);
-      Set_Is_Constrained (T);
+      Set_Ekind              (T, E_Decimal_Fixed_Point_Subtype);
+      Set_Etype              (T, Implicit_Base);
+      Set_Size_Info          (T, Implicit_Base);
+      Inherit_Rep_Item_Chain (T, Implicit_Base);
+      Set_Digits_Value       (T, Digs_Val);
+      Set_Delta_Value        (T, Delta_Val);
+      Set_Small_Value        (T, Delta_Val);
+      Set_Scale_Value        (T, Scale_Val);
+      Set_Is_Constrained     (T);
    end Decimal_Fixed_Point_Type_Declaration;
 
    -----------------------------------
@@ -16725,24 +16727,25 @@ package body Sem_Ch3 is
          Set_Scalar_Range (T, Scalar_Range (Base_Typ));
       end if;
 
-      --  Complete definition of implicit base and declared first subtype
+      --  Complete definition of implicit base and declared first subtype. The
+      --  inheritance of the rep item chain ensures that SPARK-related pragmas
+      --  are not clobbered when the floating point type acts as a full view of
+      --  a private type.
 
-      Set_Etype          (Implicit_Base, Base_Typ);
+      Set_Etype              (Implicit_Base,                 Base_Typ);
+      Set_Scalar_Range       (Implicit_Base, Scalar_Range   (Base_Typ));
+      Set_Size_Info          (Implicit_Base,                 Base_Typ);
+      Set_RM_Size            (Implicit_Base, RM_Size        (Base_Typ));
+      Set_First_Rep_Item     (Implicit_Base, First_Rep_Item (Base_Typ));
+      Set_Digits_Value       (Implicit_Base, Digits_Value   (Base_Typ));
+      Set_Float_Rep          (Implicit_Base, Float_Rep      (Base_Typ));
 
-      Set_Scalar_Range   (Implicit_Base, Scalar_Range   (Base_Typ));
-      Set_Size_Info      (Implicit_Base,                (Base_Typ));
-      Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
-      Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));
-      Set_Digits_Value   (Implicit_Base, Digits_Value   (Base_Typ));
-      Set_Float_Rep      (Implicit_Base, Float_Rep      (Base_Typ));
-
-      Set_Ekind          (T, E_Floating_Point_Subtype);
-      Set_Etype          (T, Implicit_Base);
-
-      Set_Size_Info      (T,                (Implicit_Base));
-      Set_RM_Size        (T, RM_Size        (Implicit_Base));
-      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
-      Set_Digits_Value   (T, Digs_Val);
+      Set_Ekind              (T, E_Floating_Point_Subtype);
+      Set_Etype              (T,          Implicit_Base);
+      Set_Size_Info          (T,          Implicit_Base);
+      Set_RM_Size            (T, RM_Size (Implicit_Base));
+      Inherit_Rep_Item_Chain (T,          Implicit_Base);
+      Set_Digits_Value       (T, Digs_Val);
    end Floating_Point_Type_Declaration;
 
    ----------------------------
@@ -18436,15 +18439,17 @@ package body Sem_Ch3 is
       Set_Fixed_Range (Implicit_Base, Loc, Low_Val, High_Val);
       Set_Fixed_Range (T, Loc, Low_Val, High_Val);
 
-      --  Complete definition of first subtype
+      --  Complete definition of first subtype. The inheritance of the rep item
+      --  chain ensures that SPARK-related pragmas are not clobbered when the
+      --  ordinary fixed point type acts as a full view of a private type.
 
-      Set_Ekind          (T, E_Ordinary_Fixed_Point_Subtype);
-      Set_Etype          (T, Implicit_Base);
-      Init_Size_Align    (T);
-      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
-      Set_Small_Value    (T, Small_Val);
-      Set_Delta_Value    (T, Delta_Val);
-      Set_Is_Constrained (T);
+      Set_Ekind              (T, E_Ordinary_Fixed_Point_Subtype);
+      Set_Etype              (T, Implicit_Base);
+      Init_Size_Align        (T);
+      Inherit_Rep_Item_Chain (T, Implicit_Base);
+      Set_Small_Value        (T, Small_Val);
+      Set_Delta_Value        (T, Delta_Val);
+      Set_Is_Constrained     (T);
    end Ordinary_Fixed_Point_Type_Declaration;
 
    ----------------------------------
@@ -19090,7 +19095,6 @@ package body Sem_Ch3 is
          --  ELSE.
 
          else
-
             --  In formal mode, when completing a private extension the type
             --  named in the private part must be exactly the same as that
             --  named in the visible part.
@@ -21215,23 +21219,24 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Complete both implicit base and declared first subtype entities
+      --  Complete both implicit base and declared first subtype entities. The
+      --  inheritance of the rep item chain ensures that SPARK-related pragmas
+      --  are not clobbered when the signed integer type acts as a full view of
+      --  a private type.
 
       Set_Etype          (Implicit_Base,                 Base_Typ);
-      Set_Size_Info      (Implicit_Base,                (Base_Typ));
+      Set_Size_Info      (Implicit_Base,                 Base_Typ);
       Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));
+      Set_Scalar_Range   (Implicit_Base, Scalar_Range   (Base_Typ));
 
-      Set_Ekind          (T, E_Signed_Integer_Subtype);
-      Set_Etype          (T, Implicit_Base);
-
-      Set_Scalar_Range (Implicit_Base, Scalar_Range (Base_Typ));
-
-      Set_Size_Info      (T,                (Implicit_Base));
-      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
-      Set_Scalar_Range   (T, Def);
-      Set_RM_Size        (T, UI_From_Int (Minimum_Size (T)));
-      Set_Is_Constrained (T);
+      Set_Ekind              (T, E_Signed_Integer_Subtype);
+      Set_Etype              (T, Implicit_Base);
+      Set_Size_Info          (T, Implicit_Base);
+      Inherit_Rep_Item_Chain (T, Implicit_Base);
+      Set_Scalar_Range       (T, Def);
+      Set_RM_Size            (T, UI_From_Int (Minimum_Size (T)));
+      Set_Is_Constrained     (T);
    end Signed_Integer_Type_Declaration;
 
 end Sem_Ch3;

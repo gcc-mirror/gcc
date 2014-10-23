@@ -213,6 +213,7 @@ package body Errutil is
             Col      => Get_Column_Number (Sptr),
             Warn     => Is_Warning_Msg,
             Info     => Is_Info_Msg,
+            Check    => Is_Check_Msg,
             Warn_Err => Warning_Mode = Treat_As_Error,
             Warn_Chr => Warning_Msg_Char,
             Style    => Is_Style_Msg,
@@ -312,6 +313,9 @@ package body Errutil is
          if Errors.Table (Cur_Msg).Info then
             Info_Messages := Info_Messages + 1;
          end if;
+
+      elsif Errors.Table (Cur_Msg).Check then
+         Check_Messages := Check_Messages + 1;
 
       else
          Total_Errors_Detected := Total_Errors_Detected + 1;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,8 +54,12 @@ package GNAT.Registry is
    HKEY_USERS            : constant HKEY;
    HKEY_PERFORMANCE_DATA : constant HKEY;
 
-   type Key_Mode is (Read_Only, Read_Write);
-   --  Access mode for the registry key
+   type Key_Mode is
+      (Read_Only, Read_Write,        -- operates on 32bit view of the registry
+       Read_Only_64, Read_Write_64); -- operates on 64bit view of the registry
+   --  Access mode for the registry key. The *_64 are only meaningful on
+   --  Windows 64bit and ignored on Windows 32bit where _64 are equivalent to
+   --  the non 64bit versions.
 
    Registry_Error : exception;
    --  Registry_Error is raises by all routines below if a problem occurs

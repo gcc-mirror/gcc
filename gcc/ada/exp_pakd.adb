@@ -30,6 +30,7 @@ with Errout;   use Errout;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Layout;   use Layout;
+with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1680,6 +1681,16 @@ package body Exp_Pakd is
         and then Is_Bit_Packed_Array (Etype (Prefix (Prefix (N))))
       then
          Expand_Packed_Element_Reference (Prefix (N));
+      end if;
+
+      --  The prefix may be rewritten below as a conversion. If it is a source
+      --  entity generate reference to it now, to prevent spurious warnings
+      --  about unused entities.
+
+      if Is_Entity_Name (Prefix (N))
+        and then Comes_From_Source (Prefix (N))
+      then
+         Generate_Reference (Entity (Prefix (N)), Prefix (N), 'r');
       end if;
 
       --  If not bit packed, we have the enumeration case, which is easily

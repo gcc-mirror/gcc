@@ -1,3 +1,73 @@
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Simplify analysis
+	in generic context, and generate body in this case as well,
+	to simplify ASIS traversals on the construct.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Operation): Indicate that the
+	scope of the operation (s) is referenced, to prevent spurious
+	warnings about unused units.
+
+2014-10-23  Johannes Kanig  <kanig@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Copy check flag, increment
+	check msg count.
+	* erroutc.adb (Delete_Msg) adjust check msg count.
+	(Output_Msg_Text) handle check msg case (do nothing).
+	(Prescan_Message) recognize check messages with severity prefixes.
+	* errutil.adb (Error_Msg) handle check flag, adjust counter.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Match): For a generic actual
+	type, check for the presence of discriminants in its parent type,
+	against the presence of discriminants in the context type.
+
+2014-10-23  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c: __gnat_get_file_names_case_sensitive: Default is
+	true on arm-darwin.
+
+2014-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Image): Add handling of quantifiers.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Element_Reference): If the
+	prefix is a source entity, generate a reference to it before
+	transformation, because rewritten node might not generate a
+	proper reference, leading to spurious warnings.
+
+2014-10-23  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Fix thinko in previous patch.
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Decimal_Fixed_Point_Type_Declaration):
+	Inherit the rep chain of the implicit base type.
+	(Floating_Point_Type_Declaration): Inherit the rep chain of the
+	implicit base type.
+	(Ordinary_Fixed_Point_Type_Declaration): Inherit the rep chain of the
+	implicit base type.
+	(Signed_Integer_Type_Declaration): Inherit the rep chain of the
+	implicit base type.
+	* sem_util.ads, sem_util.adb (Inherit_Rep_Item_Chain): New routine.
+
+2014-10-23  Pascal Obry  <obry@adacore.com>
+
+	* g-regist.adb, g-regist.ads: Add support for reading 32bit or 64bit
+	view of the registry.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): If type is abstract,
+	return without expanding expression, to prevent subsequent crash.
+	* freeze.adb: better error message for illegal declaration.
+
 2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sysdep.c (__gnat_localtime_tzoff): Properly delimit the

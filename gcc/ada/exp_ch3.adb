@@ -5346,6 +5346,14 @@ package body Exp_Ch3 is
          return;
       end if;
 
+      --  The type of the object cannot be abstract. This is diagnosed at the
+      --  point the object is frozen, which happens after the declaration is
+      --  fully expanded, so simply return now.
+
+      if Is_Abstract_Type (Typ) then
+         return;
+      end if;
+
       --  First we do special processing for objects of a tagged type where
       --  this is the point at which the type is frozen. The creation of the
       --  dispatch table and the initialization procedure have to be deferred

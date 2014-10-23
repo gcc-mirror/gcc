@@ -413,6 +413,13 @@ package Errout is
    --      are continuations that are not printed using the -gnatj switch they
    --      will also have this prefix.
 
+   --    Insertion sequence "low: " or "medium: " or "high: " (check message)
+   --      This appears only at the start of the message (and not any of its
+   --      continuations, if any), and indicates that the message is a check
+   --      message. The message will be output with this prefix. Check
+   --      messages are not fatal (so are like info messages in that respect)
+   --      and are not controlled by pragma Warnings.
+
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --
    -----------------------------------------------------

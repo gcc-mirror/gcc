@@ -1083,6 +1083,10 @@ package Sem_Util is
    --  Inherit the default initial condition procedure from the parent type of
    --  derived type Typ.
 
+   procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id);
+   --  Inherit the rep item chain of type From_Typ without clobbering any
+   --  existing rep items on Typ's chain. Typ is the destination type.
+
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the
