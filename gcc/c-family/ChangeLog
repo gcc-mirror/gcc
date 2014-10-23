@@ -1,3 +1,8 @@
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Perform the MINUS_EXPR
+	in unsigned type.
+
 2014-10-22  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 
