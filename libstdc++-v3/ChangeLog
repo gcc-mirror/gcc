@@ -1,3 +1,13 @@
+2014-10-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/25_algorithms/make_heap/complexity.cc: Add missing test
+	variable.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: Likewise and use
+	log2. Now require cmath support.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: Likewise and require
+	normal mode.
+	* testsuite/25_algorithms/push_heap/complexity.cc: Likewise.
+
 2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update status.
