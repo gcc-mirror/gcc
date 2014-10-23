@@ -1,3 +1,9 @@
+2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/63619
+	* g++.dg/warn/Wdelete-incomplete-3.C: New.
+	* g++.dg/warn/Wdelete-incomplete-4.C: New.
+
 2014-10-23  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/63618
