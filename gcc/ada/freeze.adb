@@ -112,6 +112,11 @@ package body Freeze is
    --  to deferred constants without completion. We report this at the freeze
    --  point of the function, to provide a better error message.
 
+   --  In most cases the expression itself is frozen by the time the function
+   --  itself is frozen, because the formals will be frozen by then. However,
+   --  Attribute references to outer types are freeze points for those types;
+   --  this routine generates the required freeze nodes for them.
+
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
    --  or tagged or contains something this is aliased or tagged, set
@@ -1272,6 +1277,14 @@ package body Freeze is
          then
             Error_Msg_NE
               ("premature use of& in call or instance", N, Entity (Nod));
+
+         elsif Nkind (Nod) = N_Attribute_Reference then
+            Analyze (Prefix (Nod));
+            if Is_Entity_Name (Prefix (Nod))
+              and then Is_Type (Entity (Prefix (Nod)))
+            then
+               Freeze_Before (N, Entity (Prefix (Nod)));
+            end if;
          end if;
 
          return OK;
@@ -5983,7 +5996,7 @@ package body Freeze is
       --  and the expressions include allocators, the designed type is frozen
       --  as well.
 
-      function In_Exp_Body (N : Node_Id) return Boolean;
+      function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
       --  it is the handled statement sequence of an expander-generated
       --  subprogram (init proc, stream subprogram, or renaming as body).
@@ -6023,11 +6036,11 @@ package body Freeze is
          return Empty;
       end Find_Aggregate_Component_Desig_Type;
 
-      -----------------
-      -- In_Exp_Body --
-      -----------------
+      ----------------------
+      -- In_Expanded_Body --
+      ----------------------
 
-      function In_Exp_Body (N : Node_Id) return Boolean is
+      function In_Expanded_Body (N : Node_Id) return Boolean is
          P  : Node_Id;
          Id : Entity_Id;
 
@@ -6044,7 +6057,8 @@ package body Freeze is
          else
             Id := Defining_Unit_Name (Specification (P));
 
-            --  Following complex conditional could use comments ???
+            --  The following are expander-created bodies, or bodies that
+            --  are not freeze points.
 
             if Nkind (Id) = N_Defining_Identifier
               and then (Is_Init_Proc (Id)
@@ -6061,7 +6075,7 @@ package body Freeze is
                return False;
             end if;
          end if;
-      end In_Exp_Body;
+      end In_Expanded_Body;
 
    --  Start of processing for Freeze_Expression
 
@@ -6314,7 +6328,7 @@ package body Freeze is
                --  outside this body, not inside it, and we skip past the
                --  subprogram body that we are inside.
 
-               if In_Exp_Body (Parent_P) then
+               if In_Expanded_Body (Parent_P) then
                   declare
                      Subp : constant Node_Id := Parent (Parent_P);
                      Spec : Entity_Id;
@@ -6358,7 +6372,7 @@ package body Freeze is
                      --  of F (2) would place Hidden's freeze node (1) in the
                      --  wrong place. Avoid explicit freezing and let the usual
                      --  scenarios do the job - for example, reaching the end
-                     --  of the private declarations.
+                     --  of the private declarations, or a call to F.
 
                      if Nkind (Original_Node (Subp)) =
                                                 N_Expression_Function

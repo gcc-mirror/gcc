@@ -765,9 +765,9 @@ package body Sem_Type is
            Is_Private_Type (Typ1)
              and then
               ((Present (Full_View (Typ1))
-                  and then Covers (Full_View (Typ1), Typ2))
+                 and then Covers (Full_View (Typ1), Typ2))
                 or else (Present (Underlying_Full_View (Typ1))
-                           and then Covers (Underlying_Full_View (Typ1), Typ2))
+                          and then Covers (Underlying_Full_View (Typ1), Typ2))
                 or else Base_Type (Typ1) = Typ2
                 or else Base_Type (Typ2) = Typ1);
       end Full_View_Covers;
@@ -989,11 +989,11 @@ package body Sem_Type is
       --  attributes require some real type, etc. The built-in types Any_XXX
       --  represent these classes.
 
-      elsif (T1 = Any_Integer and then Is_Integer_Type (T2))
-        or else (T1 = Any_Boolean and then Is_Boolean_Type (T2))
-        or else (T1 = Any_Real and then Is_Real_Type (T2))
-        or else (T1 = Any_Fixed and then Is_Fixed_Point_Type (T2))
-        or else (T1 = Any_Discrete and then Is_Discrete_Type (T2))
+      elsif     (T1 = Any_Integer  and then Is_Integer_Type     (T2))
+        or else (T1 = Any_Boolean  and then Is_Boolean_Type     (T2))
+        or else (T1 = Any_Real     and then Is_Real_Type        (T2))
+        or else (T1 = Any_Fixed    and then Is_Fixed_Point_Type (T2))
+        or else (T1 = Any_Discrete and then Is_Discrete_Type    (T2))
       then
          return True;
 
@@ -1022,16 +1022,16 @@ package body Sem_Type is
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
         and then (Covers (Designated_Type (T1), Designated_Type (T2))
-                   or else Covers (Designated_Type (T2), Designated_Type (T1)))
+                    or else
+                  Covers (Designated_Type (T2), Designated_Type (T1)))
       then
          return True;
 
       --  An Access_To_Subprogram is compatible with itself, or with an
       --  anonymous type created for an attribute reference Access.
 
-      elsif (Ekind (BT1) = E_Access_Subprogram_Type
-               or else
-             Ekind (BT1) = E_Access_Protected_Subprogram_Type)
+      elsif Ekind_In (BT1, E_Access_Subprogram_Type,
+                           E_Access_Protected_Subprogram_Type)
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1046,10 +1046,8 @@ package body Sem_Type is
       --  with itself, or with an anonymous type created for an attribute
       --  reference Access.
 
-      elsif (Ekind (BT1) = E_Anonymous_Access_Subprogram_Type
-               or else
-             Ekind (BT1)
-                      = E_Anonymous_Access_Protected_Subprogram_Type)
+      elsif Ekind_In (BT1, E_Anonymous_Access_Subprogram_Type,
+                           E_Anonymous_Access_Protected_Subprogram_Type)
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1258,7 +1256,7 @@ package body Sem_Type is
         and then Ekind (T2) = E_Anonymous_Access_Type
         and then Is_Generic_Type (Directly_Designated_Type (T1))
         and then Get_Instance_Of (Directly_Designated_Type (T1)) =
-                   Directly_Designated_Type (T2)
+                                               Directly_Designated_Type (T2)
       then
          return True;
 
@@ -1387,9 +1385,8 @@ package body Sem_Type is
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean is
       begin
          return In_Open_Scopes (Scope (S))
-           and then
-             Nkind (Unit_Declaration_Node (S)) =
-               N_Subprogram_Renaming_Declaration
+           and then Nkind (Unit_Declaration_Node (S)) =
+                                         N_Subprogram_Renaming_Declaration
 
            --  Why the Comes_From_Source test here???
 
@@ -1542,8 +1539,8 @@ package body Sem_Type is
 
                if Nkind (Act1) in N_Op
                  and then Is_Overloaded (Act1)
-                 and then (Nkind (Right_Opnd (Act1)) = N_Integer_Literal
-                            or else Nkind (Right_Opnd (Act1)) = N_Real_Literal)
+                 and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
+                                                       N_Real_Literal)
                  and then Has_Compatible_Type (Act1, Standard_Boolean)
                  and then Etype (F1) = Standard_Boolean
                then
@@ -1725,8 +1722,7 @@ package body Sem_Type is
       if Convention (Nam1) = Convention_CIL
         and then Convention (Nam2) = Convention_CIL
         and then Ekind (Nam1) = Ekind (Nam2)
-        and then (Ekind (Nam1) = E_Procedure
-                   or else Ekind (Nam1) = E_Function)
+        and then Ekind_In (Nam1, E_Procedure, E_Function)
       then
          return It2;
       end if;
@@ -1737,9 +1733,7 @@ package body Sem_Type is
       --  then we must check whether the user-defined entity hides the prede-
       --  fined one.
 
-      if Chars (Nam1) in Any_Operator_Name
-        and then Standard_Operator
-      then
+      if Chars (Nam1) in Any_Operator_Name and then Standard_Operator then
          if        Typ = Universal_Integer
            or else Typ = Universal_Real
            or else Typ = Any_Integer
@@ -2072,7 +2066,7 @@ package body Sem_Type is
               and then
                 In_Same_Declaration_List
                   (Designated_Type (Operand_Type),
-                     Unit_Declaration_Node (User_Subp))
+                   Unit_Declaration_Node (User_Subp))
             then
                if It2.Nam = Predef_Subp then
                   return It1;
@@ -2383,9 +2377,9 @@ package body Sem_Type is
          Get_First_Interp (N, I, It);
          while Present (It.Typ) loop
             if (Covers (Typ, It.Typ)
-                  and then
-                    (Scope (It.Nam) /= Standard_Standard
-                       or else not Is_Invisible_Operator (N, Base_Type (Typ))))
+                 and then
+                   (Scope (It.Nam) /= Standard_Standard
+                     or else not Is_Invisible_Operator (N, Base_Type (Typ))))
 
                --  Ada 2005 (AI-345)
 

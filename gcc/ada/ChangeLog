@@ -1,3 +1,16 @@
+2014-10-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb: Minor code reorganization (use Nkind_In, Ekind_In).
+	* sem_ch3.adb: Minor reformatting.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): If an actual for a formal
+	object is a call to a parameterless expression function, add
+	the function to the list of actuals to freeze.
+	* freeze.adb (Check_Expression_Function): Create freeze nodes of
+	outer types that may be references in the body of the expression.
+
 2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.ads, checks.ads: Minor comment reformatting.
