@@ -635,6 +635,12 @@
 	* configure.ac: Set libgloss_dir for the aarch64*-*-* targets.
 	* configure: Regenerated.
 
+2013-02-05  Ian Lance Taylor  <iant@google.com>
+
+	PR go/55969
+	* configure.ac: Disable libgo on some systems where it does not
+	work.
+
 2013-02-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* MAINTAINERS: Explicitly add myself as AIX maintainer.
