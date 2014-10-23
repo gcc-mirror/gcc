@@ -1,3 +1,8 @@
+2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/63619
+	* decl2.c (delete_sanity): Use OPT_Wdelete_incomplete in warning.
+
 2014-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_unary_expression): Add default arguments.
