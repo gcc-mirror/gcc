@@ -2713,7 +2713,7 @@ extra_host_args=
 # these library is used by various programs built for the build
 # environment
 #
-build_libs="build-libiberty"
+build_libs="build-libiberty build-libcpp"
 
 # these tools are built for the build environment
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"

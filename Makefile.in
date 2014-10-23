@@ -991,6 +991,7 @@ all-build: maybe-all-build-flex
 all-build: maybe-all-build-m4
 all-build: maybe-all-build-texinfo
 all-build: maybe-all-build-fixincludes
+all-build: maybe-all-build-libcpp
 
 .PHONY: all-host
 
@@ -3000,6 +3001,63 @@ all-build-fixincludes: configure-build-fixincludes
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-fixincludes))
 @endif build-fixincludes
+
+
+
+
+
+.PHONY: configure-build-libcpp maybe-configure-build-libcpp
+maybe-configure-build-libcpp:
+@if gcc-bootstrap
+configure-build-libcpp: stage_current
+@endif gcc-bootstrap
+@if build-libcpp
+maybe-configure-build-libcpp: configure-build-libcpp
+configure-build-libcpp: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(BUILD_SUBDIR)/libcpp/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/libcpp ; \
+	$(BUILD_EXPORTS)  \
+	echo Configuring in $(BUILD_SUBDIR)/libcpp; \
+	cd "$(BUILD_SUBDIR)/libcpp" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(BUILD_SUBDIR)/libcpp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libcpp; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} --disable-nls am_cv_func_iconv=no \
+	  || exit 1
+@endif build-libcpp
+
+
+
+
+
+.PHONY: all-build-libcpp maybe-all-build-libcpp
+maybe-all-build-libcpp:
+@if gcc-bootstrap
+all-build-libcpp: stage_current
+@endif gcc-bootstrap
+@if build-libcpp
+TARGET-build-libcpp=all
+maybe-all-build-libcpp: all-build-libcpp
+all-build-libcpp: configure-build-libcpp
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS)  \
+	(cd $(BUILD_SUBDIR)/libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
+		$(TARGET-build-libcpp))
+@endif build-libcpp
 
 
 
@@ -48047,6 +48105,7 @@ all-build-flex: maybe-all-build-m4
 all-build-libiberty: maybe-all-build-texinfo
 all-build-m4: maybe-all-build-texinfo
 all-build-fixincludes: maybe-all-build-libiberty
+all-build-libcpp: maybe-all-build-libiberty
 configure-gcc: maybe-configure-intl
 
 configure-stage1-gcc: maybe-configure-stage1-intl
@@ -48191,6 +48250,14 @@ all-stage3-gcc: maybe-all-build-fixincludes
 all-stage4-gcc: maybe-all-build-fixincludes
 all-stageprofile-gcc: maybe-all-build-fixincludes
 all-stagefeedback-gcc: maybe-all-build-fixincludes
+all-gcc: maybe-all-build-libcpp
+
+all-stage1-gcc: maybe-all-build-libcpp
+all-stage2-gcc: maybe-all-build-libcpp
+all-stage3-gcc: maybe-all-build-libcpp
+all-stage4-gcc: maybe-all-build-libcpp
+all-stageprofile-gcc: maybe-all-build-libcpp
+all-stagefeedback-gcc: maybe-all-build-libcpp
 all-gcc: maybe-all-zlib
 
 all-stage1-gcc: maybe-all-stage1-zlib
