@@ -1,5 +1,9 @@
 2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/ipa/ipa-icf-21.c: Add -msse2 to dg-options.
+
+2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.dg/ipa/ipa-icf-21.c: Restrict to i?86-*-* x86_64-*-*.
 	* gcc.dg/ipa/ipa-icf-28.c: Require init_priority.
 
