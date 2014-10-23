@@ -498,13 +498,15 @@ package body Sem_Eval is
             --  differences in rounding between static and non-static
             --  expressions. AI-100 specifies that the effect of such rounding
             --  is implementation dependent, and in GNAT we round to nearest
-            --  even to match the run-time behavior.
+            --  even to match the run-time behavior. Note that this applies
+            --  to floating point literals, not fixed points ones, even though
+            --  their compiler representation is also as a universal real.
 
             Set_Realval
               (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+            Set_Is_Machine_Number (N);
          end if;
 
-         Set_Is_Machine_Number (N);
       end if;
 
       --  Check for out of range universal integer. This is a non-static

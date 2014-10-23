@@ -2395,7 +2395,7 @@ package body MLib.Prj is
             --  because they are also needed for non Stand-Alone shared
             --  libraries.
 
-            --  Also ignore the shared libraries which are :
+            --  Also ignore the shared libraries which are:
 
             --  -lgnat-<version>  (7 + version'length chars)
             --  -lgnarl-<version> (8 + version'length chars)
@@ -2403,13 +2403,15 @@ package body MLib.Prj is
             if Next_Line (1 .. Nlast) /= "-static" and then
                Next_Line (1 .. Nlast) /= "-shared" and then
                Next_Line (1 .. Nlast) /= "-lgnarl" and then
-               Next_Line (1 .. Nlast) /= "-lgnat" and then
-               Next_Line
-                 (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
-                   Shared_Lib ("gnarl") and then
-               Next_Line
-                 (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) /=
-                   Shared_Lib ("gnat")
+               Next_Line (1 .. Nlast) /= "-lgnat"
+              and then
+                Next_Line
+                  (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
+                    Shared_Lib ("gnarl")
+              and then
+                Next_Line
+                  (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) /=
+                    Shared_Lib ("gnat")
             then
                if Next_Line (1) /= '-' then
 

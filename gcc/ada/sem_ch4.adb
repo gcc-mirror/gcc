@@ -7591,7 +7591,7 @@ package body Sem_Ch4 is
                  or else not Is_Variable (Obj)
                then
                   Error_Msg_NE
-                    ("actual for& must be a variable", Obj, Control);
+                    ("actual for & must be a variable", Obj, Control);
                end if;
             end if;
 
@@ -7602,9 +7602,8 @@ package body Sem_Ch4 is
 
             if not Is_Aliased_View (Obj) then
                Error_Msg_NE
-                 ("object in prefixed call to& must be aliased"
-                      & " (RM-2005 4.3.1 (13))",
-                 Prefix (First_Actual), Subprog);
+                 ("object in prefixed call to & must be aliased "
+                  & " (RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
             end if;
 
             Analyze (First_Actual);

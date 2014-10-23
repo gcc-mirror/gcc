@@ -9296,25 +9296,34 @@ package body Sem_Util is
 
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id) is
       From_Item : constant Node_Id := First_Rep_Item (From_Typ);
-      Item      : Node_Id;
+      Item      : Node_Id := Empty;
+      Last_Item : Node_Id := Empty;
 
    begin
-      --  Reach the end of the destination type's chain (if any). The traversal
-      --  ensures that we do not go past the last item.
+      --  Reach the end of the destination type's chain (if any) and capture
+      --  the last item.
 
       Item := First_Rep_Item (Typ);
-      while Present (Item) and then Present (Next_Rep_Item (Item)) loop
+      while Present (Item) loop
+
+         --  Do not inherit a chain that has been inherited already
+
+         if Item = From_Item then
+            return;
+         end if;
+
+         Last_Item := Item;
          Item := Next_Rep_Item (Item);
       end loop;
 
       --  When the destination type has a rep item chain, the chain of the
       --  source type is appended to it.
 
-      if Present (Item) then
-         Set_Next_Rep_Item (Item, From_Item);
+      if Present (Last_Item) then
+         Set_Next_Rep_Item (Last_Item, From_Item);
 
       --  Otherwise the destination type directly inherits the rep item chain
-      --  of the source type.
+      --  of the source type (if any).
 
       else
          Set_First_Rep_Item (Typ, From_Item);

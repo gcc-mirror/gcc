@@ -1,5 +1,27 @@
 2014-10-23  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_eval.adb (Check_Non_Static_Context): Do not set
+	Is_Machine_Number on a literal of a fixed-point type.
+
+2014-10-23  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-prj.adb, sem_ch4.adb, exp_ch3.adb: Minor reformatting.
+
+2014-10-23  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* exp_dbug.ads: Update ___XA parallel type specification.
+
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Copy_Array_Subtype_Attributes): Inherit the rep
+	chain of the source type.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Minor
+	reformatting of an error message.
+	* sem_util.adb (Inherit_Rep_Item_Chain): Do not inherit a rep
+	chain that has been inherited already.
+
+2014-10-23  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb (Analyze_Expression_Function): Simplify analysis
 	in generic context, and generate body in this case as well,
 	to simplify ASIS traversals on the construct.

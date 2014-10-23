@@ -8697,61 +8697,9 @@ package body Sem_Ch3 is
          Set_Has_Predicates (Derived_Type);
       end if;
 
-      --  The derived type inherits the representation clauses of the parent.
-      --  However, for a private type that is completed by a derivation, there
-      --  may be operation attributes that have been specified already (stream
-      --  attributes and External_Tag) and those must be provided. Finally, if
-      --  the partial view is a private extension, the representation items of
-      --  the parent have been inherited already, and should not be chained
-      --  twice to the derived type.
+      --  The derived type inherits the representation clauses of the parent
 
-      --  Historic note: The guard below used to check whether the parent type
-      --  is tagged. This is no longer needed because an untagged derived type
-      --  may carry rep items of its own as a result of certain SPARK pragmas.
-      --  With the old guard in place, the rep items of the derived type were
-      --  clobbered.
-
-      if Present (First_Rep_Item (Derived_Type)) then
-         declare
-            Par_Item  : constant Node_Id := First_Rep_Item (Parent_Type);
-            Inherited : Boolean := False;
-            Item      : Node_Id;
-            Last_Item : Node_Id;
-
-         begin
-            --  Inspect the rep item chain of the derived type and perform the
-            --  following two functions:
-            --    1) Determine whether the derived type already inherited the
-            --       rep items of the parent type.
-            --    2) Find the last rep item of the derived type
-
-            Item := First_Rep_Item (Derived_Type);
-            Last_Item := Item;
-            while Present (Item) loop
-               if Item = Par_Item then
-                  Inherited := True;
-                  exit;
-               end if;
-
-               Last_Item := Item;
-               Item := Next_Rep_Item (Item);
-            end loop;
-
-            --  Nothing to do if the derived type already inherited the rep
-            --  items from the parent type, otherwise append the parent rep
-            --  item chain to that of the derived type.
-
-            if not Inherited then
-               Set_Next_Rep_Item (Last_Item, Par_Item);
-            end if;
-         end;
-
-      --  Otherwise the derived type lacks rep items and directly inherits the
-      --  rep items of the parent type.
-
-      else
-         Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));
-      end if;
+      Inherit_Rep_Item_Chain (Derived_Type, Parent_Type);
 
       --  Propagate the attributes related to pragma Default_Initial_Condition
       --  from the parent type to the private extension. A derived type always
@@ -13396,17 +13344,17 @@ package body Sem_Ch3 is
    begin
       Set_Size_Info (T1, T2);
 
-      Set_First_Index          (T1, First_Index           (T2));
-      Set_Is_Aliased           (T1, Is_Aliased            (T2));
-      Set_Is_Volatile          (T1, Is_Volatile           (T2));
-      Set_Treat_As_Volatile    (T1, Treat_As_Volatile     (T2));
-      Set_Is_Constrained       (T1, Is_Constrained        (T2));
-      Set_Depends_On_Private   (T1, Has_Private_Component (T2));
-      Set_First_Rep_Item       (T1, First_Rep_Item        (T2));
-      Set_Convention           (T1, Convention            (T2));
-      Set_Is_Limited_Composite (T1, Is_Limited_Composite  (T2));
-      Set_Is_Private_Composite (T1, Is_Private_Composite  (T2));
-      Set_Packed_Array_Impl_Type    (T1, Packed_Array_Impl_Type     (T2));
+      Set_First_Index            (T1, First_Index            (T2));
+      Set_Is_Aliased             (T1, Is_Aliased             (T2));
+      Set_Is_Volatile            (T1, Is_Volatile            (T2));
+      Set_Treat_As_Volatile      (T1, Treat_As_Volatile      (T2));
+      Set_Is_Constrained         (T1, Is_Constrained         (T2));
+      Set_Depends_On_Private     (T1, Has_Private_Component  (T2));
+      Inherit_Rep_Item_Chain     (T1,                         T2);
+      Set_Convention             (T1, Convention             (T2));
+      Set_Is_Limited_Composite   (T1, Is_Limited_Composite   (T2));
+      Set_Is_Private_Composite   (T1, Is_Private_Composite   (T2));
+      Set_Packed_Array_Impl_Type (T1, Packed_Array_Impl_Type (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------

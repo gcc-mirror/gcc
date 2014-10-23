@@ -2701,7 +2701,7 @@ package body Sem_Ch13 is
                when Aspect_Default_Value =>
                   if not Is_Scalar_Type (E) then
                      Error_Msg_N
-                       ("aspect Default_Value must apply to a scalar_Type", N);
+                       ("aspect Default_Value must apply to a scalar type", N);
                   end if;
 
                   Aitem := Empty;
