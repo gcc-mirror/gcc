@@ -30,6 +30,8 @@ build_modules= { module= flex; };
 build_modules= { module= m4; };
 build_modules= { module= texinfo; };
 build_modules= { module= fixincludes; };
+build_modules= { module= libcpp;
+                 extra_configure_flags='--disable-nls am_cv_func_iconv=no';};
 
 host_modules= { module= bfd; bootstrap=true; };
 host_modules= { module= opcodes; bootstrap=true; };
@@ -301,6 +303,7 @@ dependencies = { module=all-build-flex; on=all-build-m4; };
 dependencies = { module=all-build-libiberty; on=all-build-texinfo; };
 dependencies = { module=all-build-m4; on=all-build-texinfo; };
 dependencies = { module=all-build-fixincludes; on=all-build-libiberty; };
+dependencies = { module=all-build-libcpp; on=all-build-libiberty; };
 
 // Host modules specific to gcc.
 dependencies = { module=configure-gcc; on=configure-intl; };
@@ -321,6 +324,7 @@ dependencies = { module=all-gcc; on=all-build-bison; };
 dependencies = { module=all-gcc; on=all-build-flex; };
 dependencies = { module=all-gcc; on=all-build-libiberty; };
 dependencies = { module=all-gcc; on=all-build-fixincludes; };
+dependencies = { module=all-gcc; on=all-build-libcpp; };
 dependencies = { module=all-gcc; on=all-zlib; };
 dependencies = { module=all-gcc; on=all-libbacktrace; hard=true; };
 dependencies = { module=all-gcc; on=all-libcpp; hard=true; };

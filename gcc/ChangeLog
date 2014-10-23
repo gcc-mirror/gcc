@@ -1,5 +1,11 @@
 2014-10-23  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (BUILD_CPPLIB): Add.
+	(build/genmatch$(build_exeext)): Use BUILD_CPPLIB, not CPPLIB.
+	Drop LIBIBERTY.
+
+2014-10-23  Richard Biener  <rguenther@suse.de>
+
 	* fold-const.c (fold_binary_loc): Preserve side-effects of
 	X - X when simplifying to 0.
 	* stor-layout.c (finish_bitfield_representative): Strip
