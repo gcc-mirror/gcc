@@ -1,3 +1,34 @@
+2014-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Ensure_Valid): Update the subprogram
+	profile. Propagate the contex attributes to Insert_Valid_Check.
+	(Insert_Valid_Check): Update the subprogram profile. Propagate
+	the attributes of the context to Duplicate_Subexpr_No_Checks.
+	(Validity_Check_Range): Update the subprogram profile. Propagate
+	the context attribute to Ensure_Valid.
+	* checks.ads (Ensure_Valid): Update the subprogram profile
+	along with the comment on usage.
+	(Insert_Valid_Check): Update the subprogram profile along with the
+	comment on usage.
+	(Validity_Check_Range): Update the subprogram profile along with
+	the comment on usage.
+	* exp_util.adb (Build_Temporary): New routine.
+	(Duplicate_Subexpr_No_Checks): Update the subprogram
+	profile. Propagate the attributes of the context to Remove_Side_Effects.
+	(Remove_Side_Effects): Update the subprogram profile. Update all calls
+	to Make_Temporary to invoke Build_Temporary.
+	* exp_util.ads (Duplicate_Subexpr_No_Checks): Update
+	the subprogram profile along with the comment on usage.
+	(Remove_Side_Effects): Update the subprogram profile along with
+	the comment on usage.
+	* sem_ch3.adb (Process_Range_Expr_In_Decl): Pass the subtype
+	to the validity check machinery.  Explain the reason for this
+	propagation.
+
+2014-10-23  Robert Dewar  <dewar@adacore.com>
+
+	* a-strsea.adb: Minor reformatting.
+
 2014-10-23  Thomas Quinot  <quinot@adacore.com>
 
 	* bcheck.adb (Check_Consistent_SSO_Default): Exclude internal
