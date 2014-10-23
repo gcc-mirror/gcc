@@ -2607,7 +2607,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 
     case 'x':
       /* Similarly, but only for PSImodes.  BIC, for example, needs this.  */
-      if (TARGET_LARGE && GET_MODE (op) == PSImode)
+      if (GET_MODE (op) == PSImode)
 	fprintf (file, "X");
       return;
 
