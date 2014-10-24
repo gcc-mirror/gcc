@@ -1,3 +1,39 @@
+2014-10-24  Felix Yang  <felix.yang@huawei.com>
+	Jiji Jiang  <jiangjiji@huawei.com>
+
+	PR target/63173
+	* config/aarch64/arm_neon.h (__LD2R_FUNC): Remove macro.
+	(__LD3R_FUNC): Ditto.
+	(__LD4R_FUNC): Ditto.
+	(vld2_dup_s8, vld2_dup_s16, vld2_dup_s32, vld2_dup_f32, vld2_dup_f64,
+	 vld2_dup_u8, vld2_dup_u16, vld2_dup_u32, vld2_dup_p8, vld2_dup_p16
+	 vld2_dup_s64, vld2_dup_u64, vld2q_dup_s8, vld2q_dup_p8, 
+	 vld2q_dup_s16, vld2q_dup_p16, vld2q_dup_s32, vld2q_dup_s64, 
+	 vld2q_dup_u8, vld2q_dup_u16, vld2q_dup_u32, vld2q_dup_u64 
+	 vld2q_dup_f32, vld2q_dup_f64): Rewrite using builtin functions.
+	(vld3_dup_s64, vld3_dup_u64, vld3_dup_f64, vld3_dup_s8 
+	 vld3_dup_p8, vld3_dup_s16, vld3_dup_p16, vld3_dup_s32 
+	 vld3_dup_u8, vld3_dup_u16, vld3_dup_u32, vld3_dup_f32
+	 vld3q_dup_s8, vld3q_dup_p8, vld3q_dup_s16, vld3q_dup_p16 
+	 vld3q_dup_s32, vld3q_dup_s64, vld3q_dup_u8, vld3q_dup_u16 
+	 vld3q_dup_u32, vld3q_dup_u64, vld3q_dup_f32, vld3q_dup_f64): Likewise.
+	(vld4_dup_s64, vld4_dup_u64, vld4_dup_f64, vld4_dup_s8 
+	 vld4_dup_p8, vld4_dup_s16, vld4_dup_p16, vld4_dup_s32 
+	 vld4_dup_u8, vld4_dup_u16, vld4_dup_u32, vld4_dup_f32 
+	 vld4q_dup_s8, vld4q_dup_p8, vld4q_dup_s16, vld4q_dup_p16 
+	 vld4q_dup_s32, vld4q_dup_s64, vld4q_dup_u8, vld4q_dup_u16 
+	 vld4q_dup_u32, vld4q_dup_u64, vld4q_dup_f32, vld4q_dup_f64): Likewise.
+	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add
+	UNSPEC_LD2_DUP, UNSPEC_LD3_DUP, UNSPEC_LD4_DUP.
+	* config/aarch64/aarch64-simd-builtins.def (ld2r, ld3r, ld4r): New
+	builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld2r<mode>): New pattern.
+	(aarch64_simd_ld3r<mode>): Likewise.
+	(aarch64_simd_ld4r<mode>): Likewise.
+	(aarch64_ld2r<mode>): New expand.
+	(aarch64_ld3r<mode>): Likewise.
+	(aarch64_ld4r<mode>): Likewise.
+
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
         * rtlanal.c (get_base_term): Handle SCRATCH.

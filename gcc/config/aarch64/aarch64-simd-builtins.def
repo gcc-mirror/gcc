@@ -83,6 +83,10 @@
   BUILTIN_VQ (LOADSTRUCT, ld2, 0)
   BUILTIN_VQ (LOADSTRUCT, ld3, 0)
   BUILTIN_VQ (LOADSTRUCT, ld4, 0)
+  /* Implemented by aarch64_ld<VSTRUCT:nregs>r<VALLDIF:mode>.  */
+  BUILTIN_VALLDIF (LOADSTRUCT, ld2r, 0)
+  BUILTIN_VALLDIF (LOADSTRUCT, ld3r, 0)
+  BUILTIN_VALLDIF (LOADSTRUCT, ld4r, 0)
   /* Implemented by aarch64_st<VSTRUCT:nregs><VDC:mode>.  */
   BUILTIN_VDC (STORESTRUCT, st2, 0)
   BUILTIN_VDC (STORESTRUCT, st3, 0)
