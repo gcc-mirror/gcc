@@ -49,6 +49,7 @@
 
 
 extern void abort (void);
+extern int memcmp (const void *s1, const void *s2, __SIZE_TYPE__ n);
 
 __attribute__((naked))  void dumpregs () __asm("myfunc");
 __attribute__((naked))  void dumpregs ()
