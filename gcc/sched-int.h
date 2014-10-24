@@ -888,6 +888,9 @@ struct _haifa_insn_data
      pressure excess (between source and target).  */
   int reg_pressure_excess_cost_change;
   int model_index;
+
+  /* The deciding reason for INSN's place in the ready list.  */
+  int last_rfs_win;
 };
 
 typedef struct _haifa_insn_data haifa_insn_data_def;

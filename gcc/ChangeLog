@@ -1,5 +1,18 @@
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
+	* sched-int.h (struct _haifa_insn_data:last_rfs_win): New field.
+	* haifa-sched.c (INSN_LAST_RFS_WIN): New access macro.
+	(rfs_result): Set INSN_LAST_RFS_WIN.  Update signature.
+	(rank_for_schedule): Update calls to rfs_result to pass new parameters.
+	(print_rank_for_schedule_stats): Print out elements of ready list that
+	ended up on their respective places due to each of the sorting
+	heuristics.
+	(ready_sort): Update.
+	(debug_ready_list_1): Improve printout for SCHED_PRESSURE_MODEL.
+	(schedule_block): Update.
+
+2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
+
 	* haifa-sched.c (sched_class_regs_num, call_used_regs_num): New static
 	arrays.  Use sched_class_regs_num instead of ira_class_hard_regs_num.
 	(print_curr_reg_pressure, setup_insn_reg_pressure_info,)

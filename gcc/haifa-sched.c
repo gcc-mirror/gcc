@@ -244,6 +244,9 @@ struct common_sched_info_def *common_sched_info;
 /* The minimal value of the INSN_TICK of an instruction.  */
 #define MIN_TICK (-max_insn_queue_index)
 
+/* The deciding reason for INSN's place in the ready list.  */
+#define INSN_LAST_RFS_WIN(INSN) (HID (INSN)->last_rfs_win)
+
 /* List of important notes we must keep around.  This is a pointer to the
    last element in the list.  */
 rtx_insn *note_list;
@@ -2553,10 +2556,18 @@ static const char *rfs_str[RFS_N] = {
 typedef struct { unsigned stats[RFS_N]; } rank_for_schedule_stats_t;
 static rank_for_schedule_stats_t rank_for_schedule_stats;
 
+/* Return the result of comparing insns TMP and TMP2 and update
+   Rank_For_Schedule statistics.  */
 static int
-rfs_result (enum rfs_decision decision, int result)
+rfs_result (enum rfs_decision decision, int result, rtx tmp, rtx tmp2)
 {
   ++rank_for_schedule_stats.stats[decision];
+  if (result < 0)
+    INSN_LAST_RFS_WIN (tmp) = decision;
+  else if (result > 0)
+    INSN_LAST_RFS_WIN (tmp2) = decision;
+  else
+    gcc_unreachable ();
   return result;
 }
 
@@ -2576,11 +2587,12 @@ rank_for_schedule (const void *x, const void *y)
     {
       /* Schedule debug insns as early as possible.  */
       if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, -1);
+	return rfs_result (RFS_DEBUG, -1, tmp, tmp2);
       else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, 1);
+	return rfs_result (RFS_DEBUG, 1, tmp, tmp2);
       else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2));
+	return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2),
+			   tmp, tmp2);
     }
 
   if (live_range_shrinkage_p)
@@ -2592,18 +2604,19 @@ rank_for_schedule (const void *x, const void *y)
 	   || INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp2) < 0)
 	  && (diff = (INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp)
 		      - INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp2))) != 0)
-	return rfs_result (RFS_LIVE_RANGE_SHRINK1, diff);
+	return rfs_result (RFS_LIVE_RANGE_SHRINK1, diff, tmp, tmp2);
       /* Sort by INSN_LUID (original insn order), so that we make the
 	 sort stable.  This minimizes instruction movement, thus
 	 minimizing sched's effect on debugging and cross-jumping.  */
       return rfs_result (RFS_LIVE_RANGE_SHRINK2,
-			 INSN_LUID (tmp) - INSN_LUID (tmp2));
+			 INSN_LUID (tmp) - INSN_LUID (tmp2), tmp, tmp2);
     }
 
   /* The insn in a schedule group should be issued the first.  */
   if (flag_sched_group_heuristic &&
       SCHED_GROUP_P (tmp) != SCHED_GROUP_P (tmp2))
-    return rfs_result (RFS_SCHED_GROUP, SCHED_GROUP_P (tmp2) ? 1 : -1);
+    return rfs_result (RFS_SCHED_GROUP, SCHED_GROUP_P (tmp2) ? 1 : -1,
+		       tmp, tmp2);
 
   /* Make sure that priority of TMP and TMP2 are initialized.  */
   gcc_assert (INSN_PRIORITY_KNOWN (tmp) && INSN_PRIORITY_KNOWN (tmp2));
@@ -2616,7 +2629,7 @@ rank_for_schedule (const void *x, const void *y)
 		   + insn_delay (tmp)
 		   - INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp2)
 		   - insn_delay (tmp2))))
-	return rfs_result (RFS_PRESSURE_DELAY, diff);
+	return rfs_result (RFS_PRESSURE_DELAY, diff, tmp, tmp2);
     }
 
   if (sched_pressure != SCHED_PRESSURE_NONE
@@ -2624,7 +2637,7 @@ rank_for_schedule (const void *x, const void *y)
       && INSN_TICK (tmp2) != INSN_TICK (tmp))
     {
       diff = INSN_TICK (tmp) - INSN_TICK (tmp2);
-      return rfs_result (RFS_PRESSURE_TICK, diff);
+      return rfs_result (RFS_PRESSURE_TICK, diff, tmp, tmp2);
     }
 
   /* If we are doing backtracking in this schedule, prefer insns that
@@ -2634,14 +2647,14 @@ rank_for_schedule (const void *x, const void *y)
     {
       priority_val = FEEDS_BACKTRACK_INSN (tmp2) - FEEDS_BACKTRACK_INSN (tmp);
       if (priority_val)
-	return rfs_result (RFS_FEEDS_BACKTRACK_INSN, priority_val);
+	return rfs_result (RFS_FEEDS_BACKTRACK_INSN, priority_val, tmp, tmp2);
     }
 
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
 
   if (flag_sched_critical_path_heuristic && priority_val)
-    return rfs_result (RFS_PRIORITY, priority_val);
+    return rfs_result (RFS_PRIORITY, priority_val, tmp, tmp2);
 
   /* Prefer speculative insn with greater dependencies weakness.  */
   if (flag_sched_spec_insn_heuristic && spec_info)
@@ -2664,12 +2677,12 @@ rank_for_schedule (const void *x, const void *y)
 
       dw = dw2 - dw1;
       if (dw > (NO_DEP_WEAK / 8) || dw < -(NO_DEP_WEAK / 8))
-	return rfs_result (RFS_SPECULATION, dw);
+	return rfs_result (RFS_SPECULATION, dw, tmp, tmp2);
     }
 
   info_val = (*current_sched_info->rank) (tmp, tmp2);
   if (flag_sched_rank_heuristic && info_val)
-    return rfs_result (RFS_SCHED_RANK, info_val);
+    return rfs_result (RFS_SCHED_RANK, info_val, tmp, tmp2);
 
   /* Compare insns based on their relation to the last scheduled
      non-debug insn.  */
@@ -2705,7 +2718,7 @@ rank_for_schedule (const void *x, const void *y)
 	tmp2_class = 2;
 
       if ((val = tmp2_class - tmp_class))
-	return rfs_result (RFS_LAST_INSN, val);
+	return rfs_result (RFS_LAST_INSN, val, tmp, tmp2);
     }
 
   /* Prefer instructions that occur earlier in the model schedule.  */
@@ -2714,7 +2727,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       diff = model_index (tmp) - model_index (tmp2);
       gcc_assert (diff != 0);
-      return rfs_result (RFS_PRESSURE_INDEX, diff);
+      return rfs_result (RFS_PRESSURE_INDEX, diff, tmp, tmp2);
     }
 
   /* Prefer the insn which has more later insns that depend on it.
@@ -2725,12 +2738,12 @@ rank_for_schedule (const void *x, const void *y)
 	 - dep_list_size (tmp, SD_LIST_FORW));
 
   if (flag_sched_dep_count_heuristic && val != 0)
-    return rfs_result (RFS_DEP_COUNT, val);
+    return rfs_result (RFS_DEP_COUNT, val, tmp, tmp2);
 
   /* If insns are equally good, sort by INSN_LUID (original insn order),
      so that we make the sort stable.  This minimizes instruction movement,
      thus minimizing sched's effect on debugging and cross-jumping.  */
-  return rfs_result (RFS_TIE, INSN_LUID (tmp) - INSN_LUID (tmp2));
+  return rfs_result (RFS_TIE, INSN_LUID (tmp) - INSN_LUID (tmp2), tmp, tmp2);
 }
 
 /* Resort the array A in which only element at index N may be out of order.  */
@@ -2948,11 +2961,28 @@ rank_for_schedule_stats_diff (rank_for_schedule_stats_t *was,
 /* Print rank_for_schedule statistics.  */
 static void
 print_rank_for_schedule_stats (const char *prefix,
-			       const rank_for_schedule_stats_t *stats)
+			       const rank_for_schedule_stats_t *stats,
+			       struct ready_list *ready)
 {
   for (int i = 0; i < RFS_N; ++i)
     if (stats->stats[i])
-      fprintf (sched_dump, "%s%20s: %u\n", prefix, rfs_str[i], stats->stats[i]);
+      {
+	fprintf (sched_dump, "%s%20s: %u", prefix, rfs_str[i], stats->stats[i]);
+
+	if (ready != NULL)
+	  /* Print out insns that won due to RFS_<I>.  */
+	  {
+	    rtx_insn **p = ready_lastpos (ready);
+
+	    fprintf (sched_dump, ":");
+	    /* Start with 1 since least-priority insn didn't have any wins.  */
+	    for (int j = 1; j < ready->n_ready; ++j)
+	      if (INSN_LAST_RFS_WIN (p[j]) == i)
+		fprintf (sched_dump, " %s",
+			 (*current_sched_info->print_insn) (p[j], 0));
+	  }
+	fprintf (sched_dump, "\n");
+      }
 }
 
 /* Sort the ready list READY by ascending priority, using the SCHED_SORT
@@ -2986,7 +3016,7 @@ ready_sort (struct ready_list *ready)
   if (sched_verbose >= 4)
     {
       rank_for_schedule_stats_diff (&stats1, &rank_for_schedule_stats);
-      print_rank_for_schedule_stats (";;\t\t", &stats1);
+      print_rank_for_schedule_stats (";;\t\t", &stats1, ready);
     }
 }
 
@@ -5263,6 +5293,9 @@ debug_ready_list_1 (struct ready_list *ready, signed char *ready_try)
       fprintf (sched_dump, ":prio=%d", INSN_PRIORITY (p[i]));
       if (INSN_TICK (p[i]) > clock_var)
 	fprintf (sched_dump, ":delay=%d", INSN_TICK (p[i]) - clock_var);
+      if (sched_pressure == SCHED_PRESSURE_MODEL)
+	fprintf (sched_dump, ":idx=%d",
+		 model_index (p[i]));
       if (sched_pressure != SCHED_PRESSURE_NONE)
 	fprintf (sched_dump, ")");
     }
@@ -6662,7 +6695,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
       if (sched_verbose >= 2)
 	{
 	  dump_insn_stream (head, tail);
-	  print_rank_for_schedule_stats (";; TOTAL ", &rank_for_schedule_stats);
+	  print_rank_for_schedule_stats (";; TOTAL ", &rank_for_schedule_stats,
+					 NULL);
 	}
 
       fprintf (sched_dump, "\n");
