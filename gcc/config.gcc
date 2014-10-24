@@ -3180,6 +3180,9 @@ if test x$with_cpu = x ; then
 	*-leon[3-9]*)
 	  with_cpu=leon3
 	  ;;
+	*-leon[3-9]v7*)
+	  with_cpu=leon3v7
+	  ;;
 	*)
 	  with_cpu="`echo ${target} | sed 's/-.*$//'`"
 	  ;;
@@ -3974,7 +3977,7 @@ case "${target}" in
 			case ${val} in
 			"" | sparc | sparcv9 | sparc64 \
 			| v7 | cypress \
-			| v8 | supersparc | hypersparc | leon | leon3 \
+			| v8 | supersparc | hypersparc | leon | leon3 | leon3v7 \
 			| sparclite | f930 | f934 | sparclite86x \
 			| sparclet | tsc701 \
 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
