@@ -436,16 +436,14 @@ Expression::backend_numeric_constant_expression(Translate_context* context,
     }
   else if (type->complex_type() != NULL)
     {
-      mpfr_t real;
-      mpfr_t imag;
-      if (!val->to_complex(&real, &imag))
+      mpc_t cval;
+      if (!val->to_complex(&cval))
         {
           go_assert(saw_errors());
           return gogo->backend()->error_expression();
         }
-      ret = gogo->backend()->complex_constant_expression(btype, real, imag);
-      mpfr_clear(real);
-      mpfr_clear(imag);
+      ret = gogo->backend()->complex_constant_expression(btype, cval);
+      mpc_clear(cval);
     }
   else
     go_unreachable();
@@ -2016,10 +2014,13 @@ Integer_expression::do_import(Import* imp)
 		   imag_str.c_str());
 	  return Expression::make_error(imp->location());
 	}
-      Expression* ret = Expression::make_complex(&real, &imag, NULL,
-						 imp->location());
+      mpc_t cval;
+      mpc_init2(cval, mpc_precision);
+      mpc_set_fr_fr(cval, real, imag, MPC_RNDNN);
       mpfr_clear(real);
       mpfr_clear(imag);
+      Expression* ret = Expression::make_complex(&cval, NULL, imp->location());
+      mpc_clear(cval);
       return ret;
     }
   else if (num.find('.') == std::string::npos
@@ -2297,23 +2298,21 @@ Expression::make_float(const mpfr_t* val, Type* type, Location location)
 class Complex_expression : public Expression
 {
  public:
-  Complex_expression(const mpfr_t* real, const mpfr_t* imag, Type* type,
-		     Location location)
+  Complex_expression(const mpc_t* val, Type* type, Location location)
     : Expression(EXPRESSION_COMPLEX, location),
       type_(type)
   {
-    mpfr_init_set(this->real_, *real, GMP_RNDN);
-    mpfr_init_set(this->imag_, *imag, GMP_RNDN);
+    mpc_init2(this->val_, mpc_precision);
+    mpc_set(this->val_, *val, MPC_RNDNN);
   }
 
-  // Write REAL/IMAG to string dump.
+  // Write VAL to string dump.
   static void
-  export_complex(String_dump* exp, const mpfr_t real, const mpfr_t val);
+  export_complex(String_dump* exp, const mpc_t val);
 
   // Write REAL/IMAG to dump context.
   static void
-  dump_complex(Ast_dump_context* ast_dump_context, 
-	       const mpfr_t real, const mpfr_t val);
+  dump_complex(Ast_dump_context* ast_dump_context, const mpc_t val);
   
  protected:
   bool
@@ -2327,7 +2326,7 @@ class Complex_expression : public Expression
   bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
-    nc->set_complex(this->type_, this->real_, this->imag_);
+    nc->set_complex(this->type_, this->val_);
     return true;
   }
 
@@ -2343,7 +2342,7 @@ class Complex_expression : public Expression
   Expression*
   do_copy()
   {
-    return Expression::make_complex(&this->real_, &this->imag_, this->type_,
+    return Expression::make_complex(&this->val_, this->type_,
 				    this->location());
   }
 
@@ -2357,10 +2356,8 @@ class Complex_expression : public Expression
   do_dump_expression(Ast_dump_context*) const;
   
  private:
-  // The real part.
-  mpfr_t real_;
-  // The imaginary part;
-  mpfr_t imag_;
+  // The complex value.
+  mpc_t val_;
   // The type if known.
   Type* type_;
 };
@@ -2400,7 +2397,7 @@ Complex_expression::do_check_types(Gogo*)
   if (type == NULL)
     return;
   Numeric_constant nc;
-  nc.set_complex(NULL, this->real_, this->imag_);
+  nc.set_complex(NULL, this->val_);
   if (!nc.set_type(this->type_, true, this->location()))
     this->set_is_error();
 }
@@ -2432,23 +2429,22 @@ Complex_expression::do_get_backend(Translate_context* context)
     }
 
   Numeric_constant nc;
-  nc.set_complex(resolved_type, this->real_, this->imag_);
+  nc.set_complex(resolved_type, this->val_);
   return Expression::backend_numeric_constant_expression(context, &nc);
 }
 
 // Write REAL/IMAG to export data.
 
 void
-Complex_expression::export_complex(String_dump* exp, const mpfr_t real,
-				   const mpfr_t imag)
+Complex_expression::export_complex(String_dump* exp, const mpc_t val)
 {
-  if (!mpfr_zero_p(real))
+  if (!mpfr_zero_p(mpc_realref(val)))
     {
-      Float_expression::export_float(exp, real);
-      if (mpfr_sgn(imag) > 0)
+      Float_expression::export_float(exp, mpc_realref(val));
+      if (mpfr_sgn(mpc_imagref(val)) > 0)
 	exp->write_c_string("+");
     }
-  Float_expression::export_float(exp, imag);
+  Float_expression::export_float(exp, mpc_imagref(val));
   exp->write_c_string("i");
 }
 
@@ -2457,7 +2453,7 @@ Complex_expression::export_complex(String_dump* exp, const mpfr_t real,
 void
 Complex_expression::do_export(Export* exp) const
 {
-  Complex_expression::export_complex(exp, this->real_, this->imag_);
+  Complex_expression::export_complex(exp, this->val_);
   // A trailing space lets us reliably identify the end of the number.
   exp->write_c_string(" ");
 }
@@ -2467,18 +2463,15 @@ Complex_expression::do_export(Export* exp) const
 void
 Complex_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Complex_expression::export_complex(ast_dump_context,
-                                      this->real_,
-                                      this->imag_);
+  Complex_expression::export_complex(ast_dump_context, this->val_);
 }
 
 // Make a complex expression.
 
 Expression*
-Expression::make_complex(const mpfr_t* real, const mpfr_t* imag, Type* type,
-			 Location location)
+Expression::make_complex(const mpc_t* val, Type* type, Location location)
 {
-  return new Complex_expression(real, imag, type, location);
+  return new Complex_expression(val, type, location);
 }
 
 // Find a named object in an expression.
@@ -3774,18 +3767,14 @@ Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
 	}
       else if (unc->is_complex())
 	{
-	  mpfr_t ureal, uimag;
-	  unc->get_complex(&ureal, &uimag);
-	  mpfr_t real, imag;
-	  mpfr_init(real);
-	  mpfr_init(imag);
-	  mpfr_neg(real, ureal, GMP_RNDN);
-	  mpfr_neg(imag, uimag, GMP_RNDN);
-	  nc->set_complex(unc->type(), real, imag);
-	  mpfr_clear(ureal);
-	  mpfr_clear(uimag);
-	  mpfr_clear(real);
-	  mpfr_clear(imag);
+	  mpc_t uval;
+	  unc->get_complex(&uval);
+	  mpc_t val;
+	  mpc_init2(val, mpc_precision);
+	  mpc_neg(val, uval, MPC_RNDNN);
+	  nc->set_complex(unc->type(), val);
+	  mpc_clear(uval);
+	  mpc_clear(val);
 	  return true;
 	}
       else
@@ -4505,14 +4494,13 @@ Binary_expression::compare_complex(const Numeric_constant* left_nc,
 				   const Numeric_constant* right_nc,
 				   int* cmp)
 {
-  mpfr_t left_real, left_imag;
-  if (!left_nc->to_complex(&left_real, &left_imag))
+  mpc_t left_val;
+  if (!left_nc->to_complex(&left_val))
     return false;
-  mpfr_t right_real, right_imag;
-  if (!right_nc->to_complex(&right_real, &right_imag))
+  mpc_t right_val;
+  if (!right_nc->to_complex(&right_val))
     {
-      mpfr_clear(left_real);
-      mpfr_clear(left_imag);
+      mpc_clear(left_val);
       return false;
     }
 
@@ -4522,19 +4510,16 @@ Binary_expression::compare_complex(const Numeric_constant* left_nc,
   if (!type->is_abstract() && type->complex_type() != NULL)
     {
       int bits = type->complex_type()->bits();
-      mpfr_prec_round(left_real, bits / 2, GMP_RNDN);
-      mpfr_prec_round(left_imag, bits / 2, GMP_RNDN);
-      mpfr_prec_round(right_real, bits / 2, GMP_RNDN);
-      mpfr_prec_round(right_imag, bits / 2, GMP_RNDN);
+      mpfr_prec_round(mpc_realref(left_val), bits / 2, GMP_RNDN);
+      mpfr_prec_round(mpc_imagref(left_val), bits / 2, GMP_RNDN);
+      mpfr_prec_round(mpc_realref(right_val), bits / 2, GMP_RNDN);
+      mpfr_prec_round(mpc_imagref(right_val), bits / 2, GMP_RNDN);
     }
 
-  *cmp = (mpfr_cmp(left_real, right_real) != 0
-	  || mpfr_cmp(left_imag, right_imag) != 0);
+  *cmp = mpc_cmp(left_val, right_val) != 0;
 
-  mpfr_clear(left_real);
-  mpfr_clear(left_imag);
-  mpfr_clear(right_real);
-  mpfr_clear(right_imag);
+  mpc_clear(left_val);
+  mpc_clear(right_val);
 
   return true;
 }
@@ -4805,31 +4790,27 @@ Binary_expression::eval_complex(Operator op, const Numeric_constant* left_nc,
 				const Numeric_constant* right_nc,
 				Location location, Numeric_constant* nc)
 {
-  mpfr_t left_real, left_imag;
-  if (!left_nc->to_complex(&left_real, &left_imag))
+  mpc_t left_val;
+  if (!left_nc->to_complex(&left_val))
     return false;
-  mpfr_t right_real, right_imag;
-  if (!right_nc->to_complex(&right_real, &right_imag))
+  mpc_t right_val;
+  if (!right_nc->to_complex(&right_val))
     {
-      mpfr_clear(left_real);
-      mpfr_clear(left_imag);
+      mpc_clear(left_val);
       return false;
     }
 
-  mpfr_t real, imag;
-  mpfr_init(real);
-  mpfr_init(imag);
+  mpc_t val;
+  mpc_init2(val, mpc_precision);
 
   bool ret = true;
   switch (op)
     {
     case OPERATOR_PLUS:
-      mpfr_add(real, left_real, right_real, GMP_RNDN);
-      mpfr_add(imag, left_imag, right_imag, GMP_RNDN);
+      mpc_add(val, left_val, right_val, MPC_RNDNN);
       break;
     case OPERATOR_MINUS:
-      mpfr_sub(real, left_real, right_real, GMP_RNDN);
-      mpfr_sub(imag, left_imag, right_imag, GMP_RNDN);
+      mpc_sub(val, left_val, right_val, MPC_RNDNN);
       break;
     case OPERATOR_OR:
     case OPERATOR_XOR:
@@ -4838,310 +4819,30 @@ Binary_expression::eval_complex(Operator op, const Numeric_constant* left_nc,
     case OPERATOR_MOD:
     case OPERATOR_LSHIFT:
     case OPERATOR_RSHIFT:
-      mpfr_set_ui(real, 0, GMP_RNDN);
-      mpfr_set_ui(imag, 0, GMP_RNDN);
+      mpc_set_ui(val, 0, MPC_RNDNN);
       ret = false;
       break;
     case OPERATOR_MULT:
-      {
-	// You might think that multiplying two complex numbers would
-	// be simple, and you would be right, until you start to think
-	// about getting the right answer for infinity.  If one
-	// operand here is infinity and the other is anything other
-	// than zero or NaN, then we are going to wind up subtracting
-	// two infinity values.  That will give us a NaN, but the
-	// correct answer is infinity.
-
-	mpfr_t lrrr;
-	mpfr_init(lrrr);
-	mpfr_mul(lrrr, left_real, right_real, GMP_RNDN);
-
-	mpfr_t lrri;
-	mpfr_init(lrri);
-	mpfr_mul(lrri, left_real, right_imag, GMP_RNDN);
-
-	mpfr_t lirr;
-	mpfr_init(lirr);
-	mpfr_mul(lirr, left_imag, right_real, GMP_RNDN);
-
-	mpfr_t liri;
-	mpfr_init(liri);
-	mpfr_mul(liri, left_imag, right_imag, GMP_RNDN);
-
-	mpfr_sub(real, lrrr, liri, GMP_RNDN);
-	mpfr_add(imag, lrri, lirr, GMP_RNDN);
-
-	// If we get NaN on both sides, check whether it should really
-	// be infinity.  The rule is that if either side of the
-	// complex number is infinity, then the whole value is
-	// infinity, even if the other side is NaN.  So the only case
-	// we have to fix is the one in which both sides are NaN.
-	if (mpfr_nan_p(real) && mpfr_nan_p(imag)
-	    && (!mpfr_nan_p(left_real) || !mpfr_nan_p(left_imag))
-	    && (!mpfr_nan_p(right_real) || !mpfr_nan_p(right_imag)))
-	  {
-	    bool is_infinity = false;
-
-	    mpfr_t lr;
-	    mpfr_t li;
-	    mpfr_init_set(lr, left_real, GMP_RNDN);
-	    mpfr_init_set(li, left_imag, GMP_RNDN);
-
-	    mpfr_t rr;
-	    mpfr_t ri;
-	    mpfr_init_set(rr, right_real, GMP_RNDN);
-	    mpfr_init_set(ri, right_imag, GMP_RNDN);
-
-	    // If the left side is infinity, then the result is
-	    // infinity.
-	    if (mpfr_inf_p(lr) || mpfr_inf_p(li))
-	      {
-		mpfr_set_ui(lr, mpfr_inf_p(lr) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(lr, lr, left_real, GMP_RNDN);
-		mpfr_set_ui(li, mpfr_inf_p(li) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(li, li, left_imag, GMP_RNDN);
-		if (mpfr_nan_p(rr))
-		  {
-		    mpfr_set_ui(rr, 0, GMP_RNDN);
-		    mpfr_copysign(rr, rr, right_real, GMP_RNDN);
-		  }
-		if (mpfr_nan_p(ri))
-		  {
-		    mpfr_set_ui(ri, 0, GMP_RNDN);
-		    mpfr_copysign(ri, ri, right_imag, GMP_RNDN);
-		  }
-		is_infinity = true;
-	      }
-
-	    // If the right side is infinity, then the result is
-	    // infinity.
-	    if (mpfr_inf_p(rr) || mpfr_inf_p(ri))
-	      {
-		mpfr_set_ui(rr, mpfr_inf_p(rr) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(rr, rr, right_real, GMP_RNDN);
-		mpfr_set_ui(ri, mpfr_inf_p(ri) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(ri, ri, right_imag, GMP_RNDN);
-		if (mpfr_nan_p(lr))
-		  {
-		    mpfr_set_ui(lr, 0, GMP_RNDN);
-		    mpfr_copysign(lr, lr, left_real, GMP_RNDN);
-		  }
-		if (mpfr_nan_p(li))
-		  {
-		    mpfr_set_ui(li, 0, GMP_RNDN);
-		    mpfr_copysign(li, li, left_imag, GMP_RNDN);
-		  }
-		is_infinity = true;
-	      }
-
-	    // If we got an overflow in the intermediate computations,
-	    // then the result is infinity.
-	    if (!is_infinity
-		&& (mpfr_inf_p(lrrr) || mpfr_inf_p(lrri)
-		    || mpfr_inf_p(lirr) || mpfr_inf_p(liri)))
-	      {
-		if (mpfr_nan_p(lr))
-		  {
-		    mpfr_set_ui(lr, 0, GMP_RNDN);
-		    mpfr_copysign(lr, lr, left_real, GMP_RNDN);
-		  }
-		if (mpfr_nan_p(li))
-		  {
-		    mpfr_set_ui(li, 0, GMP_RNDN);
-		    mpfr_copysign(li, li, left_imag, GMP_RNDN);
-		  }
-		if (mpfr_nan_p(rr))
-		  {
-		    mpfr_set_ui(rr, 0, GMP_RNDN);
-		    mpfr_copysign(rr, rr, right_real, GMP_RNDN);
-		  }
-		if (mpfr_nan_p(ri))
-		  {
-		    mpfr_set_ui(ri, 0, GMP_RNDN);
-		    mpfr_copysign(ri, ri, right_imag, GMP_RNDN);
-		  }
-		is_infinity = true;
-	      }
-
-	    if (is_infinity)
-	      {
-		mpfr_mul(lrrr, lr, rr, GMP_RNDN);
-		mpfr_mul(lrri, lr, ri, GMP_RNDN);
-		mpfr_mul(lirr, li, rr, GMP_RNDN);
-		mpfr_mul(liri, li, ri, GMP_RNDN);
-		mpfr_sub(real, lrrr, liri, GMP_RNDN);
-		mpfr_add(imag, lrri, lirr, GMP_RNDN);
-		mpfr_set_inf(real, mpfr_sgn(real));
-		mpfr_set_inf(imag, mpfr_sgn(imag));
-	      }
-
-	    mpfr_clear(lr);
-	    mpfr_clear(li);
-	    mpfr_clear(rr);
-	    mpfr_clear(ri);
-	  }
-
-	mpfr_clear(lrrr);
-	mpfr_clear(lrri);
-	mpfr_clear(lirr);
-	mpfr_clear(liri);				  
-      }
+      mpc_mul(val, left_val, right_val, MPC_RNDNN);
       break;
     case OPERATOR_DIV:
-      {
-	// For complex division we want to avoid having an
-	// intermediate overflow turn the whole result in a NaN.  We
-	// scale the values to try to avoid this.
-
-	if (mpfr_zero_p(right_real) && mpfr_zero_p(right_imag))
-	  {
-	    error_at(location, "division by zero");
-	    mpfr_set_ui(real, 0, GMP_RNDN);
-	    mpfr_set_ui(imag, 0, GMP_RNDN);
-	    break;
-	  }
-
-	mpfr_t rra;
-	mpfr_t ria;
-	mpfr_init(rra);
-	mpfr_init(ria);
-	mpfr_abs(rra, right_real, GMP_RNDN);
-	mpfr_abs(ria, right_imag, GMP_RNDN);
-	mpfr_t t;
-	mpfr_init(t);
-	mpfr_max(t, rra, ria, GMP_RNDN);
-
-	mpfr_t rr;
-	mpfr_t ri;
-	mpfr_init_set(rr, right_real, GMP_RNDN);
-	mpfr_init_set(ri, right_imag, GMP_RNDN);
-	long ilogbw = 0;
-	if (!mpfr_inf_p(t) && !mpfr_nan_p(t) && !mpfr_zero_p(t))
-	  {
-	    ilogbw = mpfr_get_exp(t);
-	    mpfr_mul_2si(rr, rr, - ilogbw, GMP_RNDN);
-	    mpfr_mul_2si(ri, ri, - ilogbw, GMP_RNDN);
-	  }
-
-	mpfr_t denom;
-	mpfr_init(denom);
-	mpfr_mul(denom, rr, rr, GMP_RNDN);
-	mpfr_mul(t, ri, ri, GMP_RNDN);
-	mpfr_add(denom, denom, t, GMP_RNDN);
-
-	mpfr_mul(real, left_real, rr, GMP_RNDN);
-	mpfr_mul(t, left_imag, ri, GMP_RNDN);
-	mpfr_add(real, real, t, GMP_RNDN);
-	mpfr_div(real, real, denom, GMP_RNDN);
-	mpfr_mul_2si(real, real, - ilogbw, GMP_RNDN);
-
-	mpfr_mul(imag, left_imag, rr, GMP_RNDN);
-	mpfr_mul(t, left_real, ri, GMP_RNDN);
-	mpfr_sub(imag, imag, t, GMP_RNDN);
-	mpfr_div(imag, imag, denom, GMP_RNDN);
-	mpfr_mul_2si(imag, imag, - ilogbw, GMP_RNDN);
-
-	// If we wind up with NaN on both sides, check whether we
-	// should really have infinity.  The rule is that if either
-	// side of the complex number is infinity, then the whole
-	// value is infinity, even if the other side is NaN.  So the
-	// only case we have to fix is the one in which both sides are
-	// NaN.
-	if (mpfr_nan_p(real) && mpfr_nan_p(imag)
-	    && (!mpfr_nan_p(left_real) || !mpfr_nan_p(left_imag))
-	    && (!mpfr_nan_p(right_real) || !mpfr_nan_p(right_imag)))
-	  {
-	    if (mpfr_zero_p(denom))
-	      {
-		mpfr_set_inf(real, mpfr_sgn(rr));
-		mpfr_mul(real, real, left_real, GMP_RNDN);
-		mpfr_set_inf(imag, mpfr_sgn(rr));
-		mpfr_mul(imag, imag, left_imag, GMP_RNDN);
-	      }
-	    else if ((mpfr_inf_p(left_real) || mpfr_inf_p(left_imag))
-		     && mpfr_number_p(rr) && mpfr_number_p(ri))
-	      {
-		mpfr_set_ui(t, mpfr_inf_p(left_real) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(t, t, left_real, GMP_RNDN);
-
-		mpfr_t t2;
-		mpfr_init_set_ui(t2, mpfr_inf_p(left_imag) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(t2, t2, left_imag, GMP_RNDN);
-
-		mpfr_t t3;
-		mpfr_init(t3);
-		mpfr_mul(t3, t, rr, GMP_RNDN);
-
-		mpfr_t t4;
-		mpfr_init(t4);
-		mpfr_mul(t4, t2, ri, GMP_RNDN);
-
-		mpfr_add(t3, t3, t4, GMP_RNDN);
-		mpfr_set_inf(real, mpfr_sgn(t3));
-
-		mpfr_mul(t3, t2, rr, GMP_RNDN);
-		mpfr_mul(t4, t, ri, GMP_RNDN);
-		mpfr_sub(t3, t3, t4, GMP_RNDN);
-		mpfr_set_inf(imag, mpfr_sgn(t3));
-
-		mpfr_clear(t2);
-		mpfr_clear(t3);
-		mpfr_clear(t4);
-	      }
-	    else if ((mpfr_inf_p(right_real) || mpfr_inf_p(right_imag))
-		     && mpfr_number_p(left_real) && mpfr_number_p(left_imag))
-	      {
-		mpfr_set_ui(t, mpfr_inf_p(rr) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(t, t, rr, GMP_RNDN);
-
-		mpfr_t t2;
-		mpfr_init_set_ui(t2, mpfr_inf_p(ri) ? 1 : 0, GMP_RNDN);
-		mpfr_copysign(t2, t2, ri, GMP_RNDN);
-
-		mpfr_t t3;
-		mpfr_init(t3);
-		mpfr_mul(t3, left_real, t, GMP_RNDN);
-
-		mpfr_t t4;
-		mpfr_init(t4);
-		mpfr_mul(t4, left_imag, t2, GMP_RNDN);
-
-		mpfr_add(t3, t3, t4, GMP_RNDN);
-		mpfr_set_ui(real, 0, GMP_RNDN);
-		mpfr_mul(real, real, t3, GMP_RNDN);
-
-		mpfr_mul(t3, left_imag, t, GMP_RNDN);
-		mpfr_mul(t4, left_real, t2, GMP_RNDN);
-		mpfr_sub(t3, t3, t4, GMP_RNDN);
-		mpfr_set_ui(imag, 0, GMP_RNDN);
-		mpfr_mul(imag, imag, t3, GMP_RNDN);
-
-		mpfr_clear(t2);
-		mpfr_clear(t3);
-		mpfr_clear(t4);
-	      }
-	  }
-
-	mpfr_clear(denom);
-	mpfr_clear(rr);
-	mpfr_clear(ri);
-	mpfr_clear(t);
-	mpfr_clear(rra);
-	mpfr_clear(ria);
-      }
+      if (mpc_cmp_si(right_val, 0) == 0)
+	{
+	  error_at(location, "division by zero");
+	  mpc_set_ui(val, 0, MPC_RNDNN);
+	  break;
+	}
+      mpc_div(val, left_val, right_val, MPC_RNDNN);
       break;
     default:
       go_unreachable();
     }
 
-  mpfr_clear(left_real);
-  mpfr_clear(left_imag);
-  mpfr_clear(right_real);
-  mpfr_clear(right_imag);
+  mpc_clear(left_val);
+  mpc_clear(right_val);
 
-  nc->set_complex(NULL, real, imag);
-  mpfr_clear(real);
-  mpfr_clear(imag);
+  nc->set_complex(NULL, val);
+  mpc_clear(val);
 
   return ret;
 }
@@ -7397,9 +7098,9 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 }
 
 // Return the type of the real or imag functions, given the type of
-// the argument.  We need to map complex to float, complex64 to
-// float32, and complex128 to float64, so it has to be done by name.
-// This returns NULL if it can't figure out the type.
+// the argument.  We need to map complex64 to float32 and complex128
+// to float64, so it has to be done by name.  This returns NULL if it
+// can't figure out the type.
 
 Type*
 Builtin_call_expression::real_imag_type(Type* arg_type)
@@ -7713,16 +7414,16 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (!arg->numeric_constant_value(&argnc))
 	return false;
 
-      mpfr_t real;
-      mpfr_t imag;
-      if (!argnc.to_complex(&real, &imag))
+      mpc_t val;
+      if (!argnc.to_complex(&val))
 	return false;
 
       Type* type = Builtin_call_expression::real_imag_type(argnc.type());
       if (this->code_ == BUILTIN_REAL)
-	nc->set_float(type, real);
+	nc->set_float(type, mpc_realref(val));
       else
-	nc->set_float(type, imag);
+	nc->set_float(type, mpc_imagref(val));
+      mpc_clear(val);
       return true;
     }
   else if (this->code_ == BUILTIN_COMPLEX)
@@ -7759,11 +7460,16 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (arg_type == NULL || arg_type->is_abstract())
 	arg_type = inc.type();
 
-      Type* type = Builtin_call_expression::complex_type(arg_type);
-      nc->set_complex(type, r, i);
-
+      mpc_t val;
+      mpc_init2(val, mpc_precision);
+      mpc_set_fr_fr(val, r, i, MPC_RNDNN);
       mpfr_clear(r);
       mpfr_clear(i);
+
+      Type* type = Builtin_call_expression::complex_type(arg_type);
+      nc->set_complex(type, val);
+
+      mpc_clear(val);
 
       return true;
     }
@@ -8690,11 +8396,10 @@ Builtin_call_expression::do_export(Export* exp) const
     }
   else if (nc.is_complex())
     {
-      mpfr_t real;
-      mpfr_t imag;
-      Complex_expression::export_complex(exp, real, imag);
-      mpfr_clear(real);
-      mpfr_clear(imag);
+      mpc_t cval;
+      nc.get_complex(&cval);
+      Complex_expression::export_complex(exp, cval);
+      mpc_clear(cval);
     }
   else
     go_unreachable();
@@ -15333,10 +15038,8 @@ Numeric_constant::Numeric_constant(const Numeric_constant& a)
       mpfr_init_set(this->u_.float_val, a.u_.float_val, GMP_RNDN);
       break;
     case NC_COMPLEX:
-      mpfr_init_set(this->u_.complex_val.real, a.u_.complex_val.real,
-		    GMP_RNDN);
-      mpfr_init_set(this->u_.complex_val.imag, a.u_.complex_val.imag,
-		    GMP_RNDN);
+      mpc_init2(this->u_.complex_val, mpc_precision);
+      mpc_set(this->u_.complex_val, a.u_.complex_val, MPC_RNDNN);
       break;
     default:
       go_unreachable();
@@ -15363,10 +15066,8 @@ Numeric_constant::operator=(const Numeric_constant& a)
       mpfr_init_set(this->u_.float_val, a.u_.float_val, GMP_RNDN);
       break;
     case NC_COMPLEX:
-      mpfr_init_set(this->u_.complex_val.real, a.u_.complex_val.real,
-		    GMP_RNDN);
-      mpfr_init_set(this->u_.complex_val.imag, a.u_.complex_val.imag,
-		    GMP_RNDN);
+      mpc_init2(this->u_.complex_val, mpc_precision);
+      mpc_set(this->u_.complex_val, a.u_.complex_val, MPC_RNDNN);
       break;
     default:
       go_unreachable();
@@ -15391,8 +15092,7 @@ Numeric_constant::clear()
       mpfr_clear(this->u_.float_val);
       break;
     case NC_COMPLEX:
-      mpfr_clear(this->u_.complex_val.real);
-      mpfr_clear(this->u_.complex_val.imag);
+      mpc_clear(this->u_.complex_val);
       break;
     default:
       go_unreachable();
@@ -15453,13 +15153,13 @@ Numeric_constant::set_float(Type* type, const mpfr_t val)
 // Set to a complex value.
 
 void
-Numeric_constant::set_complex(Type* type, const mpfr_t real, const mpfr_t imag)
+Numeric_constant::set_complex(Type* type, const mpc_t val)
 {
   this->clear();
   this->classification_ = NC_COMPLEX;
   this->type_ = type;
-  mpfr_init_set(this->u_.complex_val.real, real, GMP_RNDN);
-  mpfr_init_set(this->u_.complex_val.imag, imag, GMP_RNDN);
+  mpc_init2(this->u_.complex_val, mpc_precision);
+  mpc_set(this->u_.complex_val, val, MPC_RNDNN);
 }
 
 // Get an int value.
@@ -15492,11 +15192,11 @@ Numeric_constant::get_float(mpfr_t* val) const
 // Get a complex value.
 
 void
-Numeric_constant::get_complex(mpfr_t* real, mpfr_t* imag) const
+Numeric_constant::get_complex(mpc_t* val) const
 {
   go_assert(this->is_complex());
-  mpfr_init_set(*real, this->u_.complex_val.real, GMP_RNDN);
-  mpfr_init_set(*imag, this->u_.complex_val.imag, GMP_RNDN);
+  mpc_init2(*val, mpc_precision);
+  mpc_set(*val, this->u_.complex_val, MPC_RNDNN);
 }
 
 // Express value as unsigned long if possible.
@@ -15512,9 +15212,10 @@ Numeric_constant::to_unsigned_long(unsigned long* val) const
     case NC_FLOAT:
       return this->mpfr_to_unsigned_long(this->u_.float_val, val);
     case NC_COMPLEX:
-      if (!mpfr_zero_p(this->u_.complex_val.imag))
+      if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val)))
 	return NC_UL_NOTINT;
-      return this->mpfr_to_unsigned_long(this->u_.complex_val.real, val);
+      return this->mpfr_to_unsigned_long(mpc_realref(this->u_.complex_val),
+					 val);
     default:
       go_unreachable();
     }
@@ -15569,11 +15270,11 @@ Numeric_constant::to_int(mpz_t* val) const
       mpfr_get_z(*val, this->u_.float_val, GMP_RNDN);
       return true;
     case NC_COMPLEX:
-      if (!mpfr_zero_p(this->u_.complex_val.imag)
-	  || !mpfr_integer_p(this->u_.complex_val.real))
+      if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val))
+	  || !mpfr_integer_p(mpc_realref(this->u_.complex_val)))
 	return false;
       mpz_init(*val);
-      mpfr_get_z(*val, this->u_.complex_val.real, GMP_RNDN);
+      mpfr_get_z(*val, mpc_realref(this->u_.complex_val), GMP_RNDN);
       return true;
     default:
       go_unreachable();
@@ -15595,9 +15296,9 @@ Numeric_constant::to_float(mpfr_t* val) const
       mpfr_init_set(*val, this->u_.float_val, GMP_RNDN);
       return true;
     case NC_COMPLEX:
-      if (!mpfr_zero_p(this->u_.complex_val.imag))
+      if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val)))
 	return false;
-      mpfr_init_set(*val, this->u_.complex_val.real, GMP_RNDN);
+      mpfr_init_set(*val, mpc_realref(this->u_.complex_val), GMP_RNDN);
       return true;
     default:
       go_unreachable();
@@ -15607,22 +15308,20 @@ Numeric_constant::to_float(mpfr_t* val) const
 // Convert value to complex.
 
 bool
-Numeric_constant::to_complex(mpfr_t* vr, mpfr_t* vi) const
+Numeric_constant::to_complex(mpc_t* val) const
 {
+  mpc_init2(*val, mpc_precision);
   switch (this->classification_)
     {
     case NC_INT:
     case NC_RUNE:
-      mpfr_init_set_z(*vr, this->u_.int_val, GMP_RNDN);
-      mpfr_init_set_ui(*vi, 0, GMP_RNDN);
+      mpc_set_z(*val, this->u_.int_val, MPC_RNDNN);
       return true;
     case NC_FLOAT:
-      mpfr_init_set(*vr, this->u_.float_val, GMP_RNDN);
-      mpfr_init_set_ui(*vi, 0, GMP_RNDN);
+      mpc_set_fr(*val, this->u_.float_val, MPC_RNDNN);
       return true;
     case NC_COMPLEX:
-      mpfr_init_set(*vr, this->u_.complex_val.real, GMP_RNDN);
-      mpfr_init_set(*vi, this->u_.complex_val.imag, GMP_RNDN);
+      mpc_set(*val, this->u_.complex_val, MPC_RNDNN);
       return true;
     default:
       go_unreachable();
@@ -15700,15 +15399,15 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
       break;
 
     case NC_COMPLEX:
-      if (!mpfr_integer_p(this->u_.complex_val.real)
-	  || !mpfr_zero_p(this->u_.complex_val.imag))
+      if (!mpfr_integer_p(mpc_realref(this->u_.complex_val))
+	  || !mpfr_zero_p(mpc_imagref(this->u_.complex_val)))
 	{
 	  if (issue_error)
 	    error_at(location, "complex constant truncated to integer");
 	  return false;
 	}
       mpz_init(val);
-      mpfr_get_z(val, this->u_.complex_val.real, GMP_RNDN);
+      mpfr_get_z(val, mpc_realref(this->u_.complex_val), GMP_RNDN);
       break;
 
     default:
@@ -15767,13 +15466,13 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
       break;
 
     case NC_COMPLEX:
-      if (!mpfr_zero_p(this->u_.complex_val.imag))
+      if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val)))
 	{
 	  if (issue_error)
 	    error_at(location, "complex constant truncated to float");
 	  return false;
 	}
-      mpfr_init_set(val, this->u_.complex_val.real, GMP_RNDN);
+      mpfr_init_set(val, mpc_realref(this->u_.complex_val), GMP_RNDN);
       break;
 
     default:
@@ -15860,24 +15559,21 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
       go_unreachable();
     }
 
-  mpfr_t real;
-  mpfr_t imag;
+  mpc_t val;
+  mpc_init2(val, mpc_precision);
   switch (this->classification_)
     {
     case NC_INT:
     case NC_RUNE:
-      mpfr_init_set_z(real, this->u_.int_val, GMP_RNDN);
-      mpfr_init_set_ui(imag, 0, GMP_RNDN);
+      mpc_set_z(val, this->u_.int_val, MPC_RNDNN);
       break;
 
     case NC_FLOAT:
-      mpfr_init_set(real, this->u_.float_val, GMP_RNDN);
-      mpfr_init_set_ui(imag, 0, GMP_RNDN);
+      mpc_set_fr(val, this->u_.float_val, MPC_RNDNN);
       break;
 
     case NC_COMPLEX:
-      mpfr_init_set(real, this->u_.complex_val.real, GMP_RNDN);
-      mpfr_init_set(imag, this->u_.complex_val.imag, GMP_RNDN);
+      mpc_set(val, this->u_.complex_val, MPC_RNDNN);
       break;
 
     default:
@@ -15885,20 +15581,20 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
     }
 
   bool ret = true;
-  if (!mpfr_nan_p(real)
-      && !mpfr_inf_p(real)
-      && !mpfr_zero_p(real)
-      && mpfr_get_exp(real) > max_exp)
+  if (!mpfr_nan_p(mpc_realref(val))
+      && !mpfr_inf_p(mpc_realref(val))
+      && !mpfr_zero_p(mpc_realref(val))
+      && mpfr_get_exp(mpc_realref(val)) > max_exp)
     {
       if (issue_error)
 	error_at(location, "complex real part overflow");
       ret = false;
     }
 
-  if (!mpfr_nan_p(imag)
-      && !mpfr_inf_p(imag)
-      && !mpfr_zero_p(imag)
-      && mpfr_get_exp(imag) > max_exp)
+  if (!mpfr_nan_p(mpc_imagref(val))
+      && !mpfr_inf_p(mpc_imagref(val))
+      && !mpfr_zero_p(mpc_imagref(val))
+      && mpfr_get_exp(mpc_imagref(val)) > max_exp)
     {
       if (issue_error)
 	error_at(location, "complex imaginary part overflow");
@@ -15908,30 +15604,26 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
   if (ret)
     {
       // Round the constant to the desired type.
-      mpfr_t t;
-      mpfr_init(t);
+      mpc_t t;
       switch (type->bits())
 	{
 	case 64:
-	  mpfr_set_prec(t, 24);
+	  mpc_init2(t, 24);
 	  break;
 	case 128:
-	  mpfr_set_prec(t, 53);
+	  mpc_init2(t, 53);
 	  break;
 	default:
 	  go_unreachable();
 	}
-      mpfr_set(t, real, GMP_RNDN);
-      mpfr_set(real, t, GMP_RNDN);
-      mpfr_set(t, imag, GMP_RNDN);
-      mpfr_set(imag, t, GMP_RNDN);
-      mpfr_clear(t);
+      mpc_set(t, val, MPC_RNDNN);
+      mpc_set(val, t, MPC_RNDNN);
+      mpc_clear(t);
 
-      this->set_complex(type, real, imag);
+      this->set_complex(type, val);
     }
 
-  mpfr_clear(real);
-  mpfr_clear(imag);
+  mpc_clear(val);
 
   return ret;
 }
@@ -15950,9 +15642,7 @@ Numeric_constant::expression(Location loc) const
     case NC_FLOAT:
       return Expression::make_float(&this->u_.float_val, this->type_, loc);
     case NC_COMPLEX:
-      return Expression::make_complex(&this->u_.complex_val.real,
-				      &this->u_.complex_val.imag,
-				      this->type_, loc);
+      return Expression::make_complex(&this->u_.complex_val, this->type_, loc);
     default:
       go_unreachable();
     }
