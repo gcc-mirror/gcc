@@ -1,5 +1,9 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vclz.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vbsl.c: New file.
 
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
