@@ -26,7 +26,7 @@ int isinff(float x)
   return ~(t >> 31) & (1 - ((ix & 0x80000000) >> 30));
 }
 
-main ()
+int main ()
 {
   float x = 1.0 / 0.0;
   int i = isinff (x);

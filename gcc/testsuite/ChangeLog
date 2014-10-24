@@ -1,3 +1,8 @@
+2014-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/980217-1.c (main): Fix implicit int.
+	* gcc.target/alpha/pr19518.c (_mm_setzero_si64): New function.
+
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR bootstrap/63632
