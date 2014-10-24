@@ -1736,7 +1736,7 @@ sem_item_optimizer::parse_nonsingleton_classes (void)
 
   if (dump_file)
     fprintf (dump_file, "Init called for %u items (%.2f%%).\n", init_called_count,
-	     100.0f * init_called_count / m_items.length ());
+	     m_items.length () ? 100.0f * init_called_count / m_items.length (): 0.0f);
 }
 
 /* Equality function for semantic items is used to subdivide existing
@@ -2196,14 +2196,15 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
       fprintf (dump_file, "Congruent classes before: %u, after: %u\n",
 	       prev_class_count, class_count);
       fprintf (dump_file, "Average class size before: %.2f, after: %.2f\n",
-	       1.0f * item_count / prev_class_count,
-	       1.0f * item_count / class_count);
+	       prev_class_count ? 1.0f * item_count / prev_class_count : 0.0f,
+	       class_count ? 1.0f * item_count / class_count : 0.0f);
       fprintf (dump_file, "Average non-singular class size: %.2f, count: %u\n",
-	       1.0f * non_singular_classes_sum / non_singular_classes_count,
+	       non_singular_classes_count ? 1.0f * non_singular_classes_sum /
+	       non_singular_classes_count : 0.0f,
 	       non_singular_classes_count);
       fprintf (dump_file, "Equal symbols: %u\n", equal_items);
       fprintf (dump_file, "Fraction of visited symbols: %.2f%%\n\n",
-	       100.0f * equal_items / item_count);
+	       item_count ? 100.0f * equal_items / item_count : 0.0f);
     }
 
   for (hash_table<congruence_class_group_hash>::iterator it = m_classes.begin ();
