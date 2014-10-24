@@ -1,3 +1,16 @@
+2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (ADJUST_INSN_LENGTH): Wrap definition in
+	do while (0).
+	* config/aarch64/aarch64.c (is_mem_p): Delete.
+	(is_memory_op): Rename to...
+	(has_memory_op): ... This.  Use FOR_EACH_SUBRTX.
+	(dep_between_memop_and_curr): Assert that the input is a SET.
+	(aarch64_madd_needs_nop): Add comment.  Do not call
+	dep_between_memop_and_curr on NULL body.
+	(aarch64_final_prescan_insn): Add comment.
+	Include rtl-iter.h.
+
 2014-10-24  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (BUILD_CPPLIB): Move $(LIBINTL) $(LIBICONV)
