@@ -1,5 +1,18 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/arm/README.advsimd-intrinsics: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/README: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vaba.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* lib/wrapper.exp ({tool}_maybe_build_wrapper): Clear
 	wrap_compile_flags before setting it.
 
