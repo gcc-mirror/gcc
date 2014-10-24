@@ -1,3 +1,7 @@
+2014-10-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr63595.c: New test.
+
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: New file.
