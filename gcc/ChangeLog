@@ -1,5 +1,9 @@
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
+        * rtlanal.c (get_base_term): Handle SCRATCH.
+
+2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
+
         * haifa-sched.c (sched_init): Disable max_issue when scheduling for
         register pressure.
 
