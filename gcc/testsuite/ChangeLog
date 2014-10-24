@@ -1,3 +1,11 @@
+2014-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_collectives_9.f90: Remove dg-error.
+	* gfortran.dg/coarray_collectives_13.f90: New.
+	* gfortran.dg/coarray_collectives_14.f90: New.
+	* gfortran.dg/coarray_collectives_15.f90: New.
+	* gfortran.dg/coarray_collectives_16.f90: New.
+
 2014-10-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/arm/aapcs/abitest.h: Declare memcpy.
