@@ -1,5 +1,11 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/unary_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vabs.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vneg.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/arm/README.advsimd-intrinsics: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/README: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Likewise.
