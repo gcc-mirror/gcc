@@ -2922,8 +2922,10 @@ AC_ARG_VAR([target_configargs],
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
-# desired.
-build_configargs="$build_configargs --cache-file=../config.cache ${baseargs}"
+# desired.  We can't even use the same cache file for all build-side
+# libraries, as they're compiled differently; some with C, some with
+# C++ or with different feature-enabling options.
+build_configargs="$build_configargs --cache-file=./config.cache ${baseargs}"
 
 # For host modules, accept cache file option, or specification as blank.
 case "${cache_file}" in
