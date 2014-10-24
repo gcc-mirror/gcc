@@ -587,11 +587,7 @@ Gogo::zero_value(Type *type)
       // We will change the type later, when we know the size.
       Type* byte_type = this->lookup_global("byte")->type_value();
 
-      mpz_t val;
-      mpz_init_set_ui(val, 0);
-      Expression* zero = Expression::make_integer(&val, NULL, bloc);
-      mpz_clear(val);
-
+      Expression* zero = Expression::make_integer_ul(0, NULL, bloc);
       Type* array_type = Type::make_array_type(byte_type, zero);
 
       Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
@@ -738,11 +734,8 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
                                                           "__size", uint_type);
 
   Location builtin_loc = Linemap::predeclared_location();
-  size_t count = var_gc.size();
-  mpz_t lenval;
-  mpz_init_set_ui(lenval, count);
-  Expression* length = Expression::make_integer(&lenval, NULL, builtin_loc);
-  mpz_clear(lenval);
+  Expression* length = Expression::make_integer_ul(var_gc.size(), NULL,
+						   builtin_loc);
 
   Array_type* root_array_type = Type::make_array_type(root_type, length);
   Type* ptdt = Type::make_type_descriptor_ptr_type();
@@ -783,10 +776,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
   Expression* nil = Expression::make_nil(builtin_loc);
   null_init->push_back(nil);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zero = Expression::make_integer(&zval, NULL, builtin_loc);
-  mpz_clear(zval);
+  Expression *zero = Expression::make_integer_ul(0, NULL, builtin_loc);
   null_init->push_back(zero);
 
   Expression* null_root_ctor =
@@ -4029,10 +4019,7 @@ Build_recover_thunks::can_recover_arg(Location location)
   Expression* fn = Expression::make_func_reference(builtin_return_address,
 						   NULL, location);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, location);
-  mpz_clear(zval);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, location);
   Expression_list *args = new Expression_list();
   args->push_back(zexpr);
 
@@ -4067,10 +4054,8 @@ Expression*
 Gogo::runtime_error(int code, Location location)
 {
   Type* int32_type = Type::lookup_integer_type("int32");
-  mpz_t val;
-  mpz_init_set_ui(val, code);
-  Expression* code_expr = Expression::make_integer(&val, int32_type, location);
-  mpz_clear(val);
+  Expression* code_expr = Expression::make_integer_ul(code, int32_type,
+						      location);
   return Runtime::make_call(Runtime::RUNTIME_ERROR, location, 1, code_expr);
 }
 
