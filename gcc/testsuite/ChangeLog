@@ -1,3 +1,8 @@
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/wrapper.exp ({tool}_maybe_build_wrapper): Clear
+	wrap_compile_flags before setting it.
+
 2014-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/pr63594-1.c: Apply -mno-mmx to all i?86-*-* and x86_64-*-*
