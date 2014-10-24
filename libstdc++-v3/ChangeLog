@@ -1,3 +1,7 @@
+2014-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cstdbool/macros.cc: New.
+
 2014-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/atomic_base.h: Avoid including <stdbool.h>.
