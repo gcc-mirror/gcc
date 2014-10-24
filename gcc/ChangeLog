@@ -1,3 +1,12 @@
+2014-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* avr-protos.h (avr_out_sign_extend): New.
+	* avr.c (avr_adjust_insn_length) [ADJUST_LEN_SEXT]: Handle.
+	(avr_out_sign_extend): New function.
+	* avr.md (extendqihi2, extendqipsi2, extendqisi2, extendhipsi2)
+	(extendhisi2, extendpsisi2): Use it.
+	(adjust_len) [sext]: New.
+
 2014-10-24  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_function::compare_phi_node): PHI result comparison

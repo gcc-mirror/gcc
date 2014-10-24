@@ -147,7 +147,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, plus, addto_sp,
+  "out_bitop, plus, addto_sp, sext,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
@@ -4174,62 +4174,66 @@
   [(set (match_operand:HI 0 "register_operand" "=r,r")
         (sign_extend:HI (match_operand:QI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
-  "@
-	clr %B0\;sbrc %0,7\;com %B0
-	mov %A0,%A1\;clr %B0\;sbrc %A0,7\;com %B0"
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
   [(set_attr "length" "3,4")
-   (set_attr "cc" "set_n,set_n")])
+   (set_attr "adjust_len" "sext")
+   (set_attr "cc" "set_n")])
 
 (define_insn "extendqipsi2"
   [(set (match_operand:PSI 0 "register_operand" "=r,r")
         (sign_extend:PSI (match_operand:QI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
-  "@
-	clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0
-	mov %A0,%A1\;clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0"
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
   [(set_attr "length" "4,5")
-   (set_attr "cc" "set_n,set_n")])
+   (set_attr "adjust_len" "sext")
+   (set_attr "cc" "set_n")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
         (sign_extend:SI (match_operand:QI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
-  "@
-	clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0\;mov %D0,%B0
-	mov %A0,%A1\;clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0\;mov %D0,%B0"
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
   [(set_attr "length" "5,6")
-   (set_attr "cc" "set_n,set_n")])
+   (set_attr "adjust_len" "sext")
+   (set_attr "cc" "set_n")])
 
 (define_insn "extendhipsi2"
-  [(set (match_operand:PSI 0 "register_operand"                               "=r,r ,r")
-        (sign_extend:PSI (match_operand:HI 1 "combine_pseudo_register_operand" "0,*r,*r")))]
+  [(set (match_operand:PSI 0 "register_operand"                               "=r,r")
+        (sign_extend:PSI (match_operand:HI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
-  "@
-	clr %C0\;sbrc %B0,7\;com %C0
-	mov %A0,%A1\;mov %B0,%B1\;clr %C0\;sbrc %B0,7\;com %C0
-	movw %A0,%A1\;clr %C0\;sbrc %B0,7\;com %C0"
-  [(set_attr "length" "3,5,4")
-   (set_attr "isa" "*,mov,movw")
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
+  [(set_attr "length" "3,5")
+   (set_attr "adjust_len" "sext")
    (set_attr "cc" "set_n")])
 
 (define_insn "extendhisi2"
-  [(set (match_operand:SI 0 "register_operand"                               "=r,r ,r")
-        (sign_extend:SI (match_operand:HI 1 "combine_pseudo_register_operand" "0,*r,*r")))]
+  [(set (match_operand:SI 0 "register_operand"                               "=r,r")
+        (sign_extend:SI (match_operand:HI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
-  "@
-	clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0
-	mov %A0,%A1\;mov %B0,%B1\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0
-	movw %A0,%A1\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
-  [(set_attr "length" "4,6,5")
-   (set_attr "isa" "*,mov,movw")
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
+  [(set_attr "length" "4,6")
+   (set_attr "adjust_len" "sext")
    (set_attr "cc" "set_n")])
 
 (define_insn "extendpsisi2"
   [(set (match_operand:SI 0 "register_operand"                                "=r")
         (sign_extend:SI (match_operand:PSI 1 "combine_pseudo_register_operand" "0")))]
   ""
-  "clr %D0\;sbrc %C0,7\;com %D0"
+  {
+    return avr_out_sign_extend (insn, operands, NULL);
+  }
   [(set_attr "length" "3")
+   (set_attr "adjust_len" "sext")
    (set_attr "cc" "set_n")])
 
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x

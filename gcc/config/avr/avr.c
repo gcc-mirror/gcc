@@ -7734,6 +7734,56 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 }
 
 
+/* Output sign extension from XOP[1] to XOP[0] and return "".
+   If PLEN == NULL, print assembler instructions to perform the operation;
+   otherwise, set *PLEN to the length of the instruction sequence (in words)
+   as printed with PLEN == NULL.  */
+
+const char*
+avr_out_sign_extend (rtx_insn *insn, rtx *xop, int *plen)
+{
+  // Size in bytes of source resp. destination operand.
+  unsigned n_src = GET_MODE_SIZE (GET_MODE (xop[1]));
+  unsigned n_dest = GET_MODE_SIZE (GET_MODE (xop[0]));
+  rtx r_msb = all_regs_rtx[REGNO (xop[1]) + n_src - 1];
+
+  if (plen)
+    *plen = 0;
+
+  // Copy destination to source
+
+  if (REGNO (xop[0]) != REGNO (xop[1]))
+    {
+      gcc_assert (n_src <= 2);
+
+      if (n_src == 2)
+        avr_asm_len (AVR_HAVE_MOVW
+                     ? "movw %0,%1"
+                     : "mov %B0,%B1", xop, plen, 1);
+      if (n_src == 1 || !AVR_HAVE_MOVW)
+        avr_asm_len ("mov %A0,%A1", xop, plen, 1);
+    }
+
+  // Set Carry to the sign bit MSB.7...
+
+  if (REGNO (xop[0]) == REGNO (xop[1])
+      || !reg_unused_after (insn, r_msb))
+    {
+      avr_asm_len ("mov __tmp_reg__,%0", &r_msb, plen, 1);
+      r_msb = tmp_reg_rtx;
+    }
+  
+  avr_asm_len ("lsl %0", &r_msb, plen, 1);
+                   
+  // ...and propagate it to all the new sign bits
+
+  for (unsigned n = n_src; n < n_dest; n++)
+    avr_asm_len ("sbc %0,%0", &all_regs_rtx[REGNO (xop[0]) + n], plen, 1);
+
+  return "";
+}
+
+
 /* PLEN == NULL: Output code to add CONST_INT OP[0] to SP.
    PLEN != NULL: Set *PLEN to the length of that sequence.
    Return "".  */
@@ -8578,6 +8628,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
     case ADJUST_LEN_LPM: avr_out_lpm (insn, op, &len); break;
+    case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
     case ADJUST_LEN_UFRACT: avr_out_fract (insn, op, false, &len); break;
