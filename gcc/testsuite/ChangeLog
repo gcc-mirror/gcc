@@ -1,5 +1,13 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_fp_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vcage.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcagt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcale.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcalt.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/cmp_op.inc: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vceq.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vcge.c: Likewise.
