@@ -1,5 +1,10 @@
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
+        * haifa-sched.c (sched_init): Disable max_issue when scheduling for
+        register pressure.
+
+2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
+
         * haifa-sched.c (cached_first_cycle_multipass_dfa_lookahead,)
         (cached_issue_rate): Remove.  Use dfa_lookahead and issue_rate instead.
         (max_issue, choose_ready, sched_init): Update.
