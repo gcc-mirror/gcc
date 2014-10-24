@@ -6,6 +6,7 @@
 	(__LD4_LANE_FUNC): Likewise.
 
 2014-10-24  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_types_loadstruct_lane_qualifiers): Define.
 	* config/aarch64/aarch64-simd-builtins.def (ld2_lane, ld3_lane,
@@ -19,8 +20,6 @@
 	(aarch64_ld4_lane<mode>): Likewise.
 	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add
 	UNSPEC_LD2_LANE, UNSPEC_LD3_LANE, UNSPEC_LD4_LANE.
-
-Change-Id: I4c36d18072215133573e07483cfe12165201c339
 
 2014-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
