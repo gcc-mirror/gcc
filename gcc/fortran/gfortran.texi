@@ -3238,6 +3238,11 @@ caf_register_t;
 * _gfortran_caf_sendget:: Sending data between remote images
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
+* _gfortran_caf_co_broadcast:: Sending data to all images
+* _gfortran_caf_co_max:: Collective maximum reduction
+* _gfortran_caf_co_min:: Collective minimum reduction
+* _gfortran_caf_co_sum:: Collective summing reduction
+* _gfortran_caf_co_reduce:: Generic collective reduction
 @end menu
 
 
@@ -3678,6 +3683,191 @@ is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
 @end table
 
+
+
+@node _gfortran_caf_co_broadcast
+@subsection @code{_gfortran_caf_co_broadcast} --- Sending data to all images
+@cindex Coarray, _gfortran_caf_co_broadcast
+
+@table @asis
+@item @emph{Description}:
+Distribute a value from a given image to all other images in the team. Has to
+be called collectively.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
+int source_image, int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{a} @tab intent(inout) And array descriptor with the data to be
+breoadcasted (on @var{source_image}) or to be received (other images).
+@item @var{source_image} @tab The ID of the image from which the data should
+be taken.
+@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_co_max
+@subsection @code{_gfortran_caf_co_max} --- Collective maximum reduction
+@cindex Coarray, _gfortran_caf_co_max
+
+@table @asis
+@item @emph{Description}:
+Calculates the for the each array element of the variable @var{a} the maximum
+value for that element in the current team; if @var{result_image} has the
+value 0, the result shall be stored on all images, otherwise, only on the
+specified image. This function operates on numeric values and character
+strings.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, int a_len, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{a} @tab intent(inout) And array descriptor with the data to be
+breoadcasted (on @var{source_image}) or to be received (other images).
+@item @var{result_image} @tab The ID of the image to which the reduced
+value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{a_len} @tab The string length of argument @var{a}.
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+If @var{result_image} is nonzero, the value on all images except of the
+specified one become undefined; hence, the library may make use of this.
+@end table
+
+
+
+@node _gfortran_caf_co_min
+@subsection @code{_gfortran_caf_co_min} --- Collective minimum reduction
+@cindex Coarray, _gfortran_caf_co_min
+
+@table @asis
+@item @emph{Description}:
+Calculates the for the each array element of the variable @var{a} the minimum
+value for that element in the current team; if @var{result_image} has the
+value 0, the result shall be stored on all images, otherwise, only on the
+specified image. This function operates on numeric values and character
+strings.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, int a_len, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{a} @tab intent(inout) And array descriptor with the data to be
+breoadcasted (on @var{source_image}) or to be received (other images).
+@item @var{result_image} @tab The ID of the image to which the reduced
+value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{a_len} @tab The string length of argument @var{a}.
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+If @var{result_image} is nonzero, the value on all images except of the
+specified one become undefined; hence, the library may make use of this.
+@end table
+
+
+
+@node _gfortran_caf_co_sum
+@subsection @code{_gfortran_caf_co_sum} --- Collective summing reduction
+@cindex Coarray, _gfortran_caf_co_sum
+
+@table @asis
+@item @emph{Description}:
+Calculates the for the each array element of the variable @var{a} the sum
+value for that element in the current team; if @var{result_image} has the
+value 0, the result shall be stored on all images, otherwise, only on the
+specified image. This function operates on numeric values.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{a} @tab intent(inout) And array descriptor with the data to be
+breoadcasted (on @var{source_image}) or to be received (other images).
+@item @var{result_image} @tab The ID of the image to which the reduced
+value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+If @var{result_image} is nonzero, the value on all images except of the
+specified one become undefined; hence, the library may make use of this.
+@end table
+
+
+
+@node _gfortran_caf_co_reduce
+@subsection @code{_gfortran_caf_co_reduce} --- Generic collective reduction
+@cindex Coarray, _gfortran_caf_co_reduce
+
+@table @asis
+@item @emph{Description}:
+Calculates the for the each array element of the variable @var{a} the reduction
+value for that element in the current team; if @var{result_image} has the
+value 0, the result shall be stored on all images, otherwise, only on the
+specified image. The @var{opr} is a pure function doing a mathematically
+commutative and associative operation.
+
+The @var{opr_flags} denote the following; the values are bitwise ored.
+@code{GFC_CAF_BYREF} (1) if the result should be returned
+by value; @code{GFC_CAF_HIDDENLEN} (2) whether the result and argument
+string lengths shall be specified as hidden argument;
+@code{GFC_CAF_ARG_VALUE} (4) whether the arguments shall be passed by value,
+@code{GFC_CAF_ARG_DESC} (8) whether the arguments shall be passed by descriptor.
+
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
+void * (*opr) (void *, void *), int opr_flags, int result_image,
+int *stat, char *errmsg, int a_len, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{opr} @tab Function pointer to the reduction function.
+@item @var{opr_flags} @tab Flags regarding the reduction function
+@item @var{a} @tab intent(inout) And array descriptor with the data to be
+breoadcasted (on @var{source_image}) or to be received (other images).
+@item @var{result_image} @tab The ID of the image to which the reduced
+value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{a_len} @tab The string length of argument @var{a}.
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+If @var{result_image} is nonzero, the value on all images except of the
+specified one become undefined; hence, the library may make use of this.
+For character arguments, the result is passed as first argument, followed
+by the result string length, next come the two string arguments, followed
+by the two hidden arguments. With C binding, there are no hidden arguments
+and by-reference passing and either only a single character is passed or
+an array descriptor.
+@end table
 
 
 @c Intrinsic Procedures

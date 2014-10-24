@@ -1,3 +1,18 @@
+2014-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (check_co_collective): Reject coindexed A args.
+	(gfc_check_co_reduce): Add OPERATOR checks.
+	* gfortran.texi (_gfortran_caf_co_broadcast, _gfortran_caf_co_max,
+	_gfortran_caf_co_min, _gfortran_caf_co_sum,
+	_gfortran_caf_co_reduce): Add ABI documentation.
+	* intrinsic.texi (CO_REDUCE): Document intrinsic.
+	(DPROD): Returns double not single precision.
+	* trans-decl.c (gfor_fndecl_co_reduce): New global var.
+	(gfc_build_builtin_function_decls): Init it.
+	* trans.h (gfor_fndecl_co_reduce): Declare it.
+	* trans-intrinsic.c (conv_co_collective,
+	gfc_conv_intrinsic_subroutine): Handle CO_REDUCE.
+
 2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/48979
