@@ -1,5 +1,9 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_dup.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vdup-vmov.c: New file.
 
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
