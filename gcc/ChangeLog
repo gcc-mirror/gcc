@@ -1,4 +1,11 @@
 2014-10-24  Charles Baylis  <charles.baylis@linaro.org>
+
+	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC): Rewrite using builtins,
+	update uses to use new macro arguments.
+	(__LD3_LANE_FUNC): Likewise.
+	(__LD4_LANE_FUNC): Likewise.
+
+2014-10-24  Charles Baylis  <charles.baylis@linaro.org>
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_types_loadstruct_lane_qualifiers): Define.
 	* config/aarch64/aarch64-simd-builtins.def (ld2_lane, ld3_lane,
