@@ -1,5 +1,11 @@
 2014-10-24  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (BUILD_CPPLIB): When in stage2+ use the
+	host library and make sure to pull in the required libintl
+	and libiconv dependencies.
+
+2014-10-24  Richard Biener  <rguenther@suse.de>
+
 	* fold-const.c (fold_binary_loc): Fix copy-and-pasto.
 
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
