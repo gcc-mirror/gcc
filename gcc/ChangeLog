@@ -1,3 +1,20 @@
+2014-10-24  Charles Baylis  <charles.baylis@linaro.org>
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_loadstruct_lane_qualifiers): Define.
+	* config/aarch64/aarch64-simd-builtins.def (ld2_lane, ld3_lane,
+	ld4_lane): New builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_vec_load_lanesoi_lane<mode>):
+	New pattern.
+	(aarch64_vec_load_lanesci_lane<mode>): Likewise.
+	(aarch64_vec_load_lanesxi_lane<mode>): Likewise.
+	(aarch64_ld2_lane<mode>): New expand.
+	(aarch64_ld3_lane<mode>): Likewise.
+	(aarch64_ld4_lane<mode>): Likewise.
+	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add
+	UNSPEC_LD2_LANE, UNSPEC_LD3_LANE, UNSPEC_LD4_LANE.
+
+Change-Id: I4c36d18072215133573e07483cfe12165201c339
+
 2014-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	* avr-protos.h (avr_out_sign_extend): New.
