@@ -1,5 +1,10 @@
 2014-10-24  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (BUILD_CPPLIB): Move $(LIBINTL) $(LIBICONV)
+	to genmatch BUILD_LIBS instead.
+
+2014-10-24  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (expr::gen_transform): Use fold_buildN_loc
 	and build_call_expr_loc.
 	(dt_simplify::gen): Drop non_lvalue for GIMPLE, use
