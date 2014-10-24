@@ -1,5 +1,10 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: New file.
 
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
