@@ -1,3 +1,9 @@
+2014-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr63594-1.c: Apply -mno-mmx to all i?86-*-* and x86_64-*-*
+	targets.
+	* gcc.dg/pr63594-2.c: Likewise.
+
 2014-10-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/980217-1.c (main): Fix implicit int.
