@@ -1,3 +1,8 @@
+2014-10-24  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_function::compare_phi_node): PHI result comparison
+	added.
+
 2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Define.

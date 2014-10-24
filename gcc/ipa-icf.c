@@ -869,6 +869,12 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
       phi1 = gsi_stmt (si1);
       phi2 = gsi_stmt (si2);
 
+      tree phi_result1 = gimple_phi_result (phi1);
+      tree phi_result2 = gimple_phi_result (phi2);
+
+      if (!m_checker->compare_operand (phi_result1, phi_result2))
+	return return_false_with_msg ("PHI results are different");
+
       size1 = gimple_phi_num_args (phi1);
       size2 = gimple_phi_num_args (phi2);
 
