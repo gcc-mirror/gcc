@@ -910,6 +910,7 @@ with_plugin_ld
 enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
+enable_fix_cortex_a53_835769
 enable_gnu_unique_object
 enable_linker_build_id
 with_long_double_128
@@ -1619,6 +1620,14 @@ Optional Features:
                           glibc systems
   --enable-initfini-array	use .init_array/.fini_array sections
   --enable-comdat         enable COMDAT group support
+
+  --enable-fix-cortex-a53-835769
+                          enable workaround for AArch64 Cortex-A53 erratum
+                          835769 by default
+  --disable-fix-cortex-a53-835769
+                          disable workaround for AArch64 Cortex-A53 erratum
+                          835769 by default
+
   --enable-gnu-unique-object
                           enable the use of the @gnu_unique_object ELF
                           extension on glibc systems
@@ -17838,7 +17847,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17841 "configure"
+#line 17850 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17944,7 +17953,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17947 "configure"
+#line 17956 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23796,6 +23805,28 @@ _ACEOF
 $as_echo "$gcc_cv_lto_plugin" >&6; }
 
 case "$target" in
+
+  aarch64*-*-*)
+    # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
+    # Check whether --enable-fix-cortex-a53-835769 was given.
+if test "${enable_fix_cortex_a53_835769+set}" = set; then :
+  enableval=$enable_fix_cortex_a53_835769;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_835769_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error "'$enableval' is an invalid value for --enable-fix-cortex-a53-835769.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+
+        esac
+
+fi
+
+  ;;
   # All TARGET_ABI_OSF targets.
   alpha*-*-linux* | alpha*-*-*bsd*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support" >&5

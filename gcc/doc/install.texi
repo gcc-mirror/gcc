@@ -2982,6 +2982,8 @@ information have to.
 @ifhtml
 @itemize
 @item
+@uref{#aarch64x-x-x,,aarch64*-*-*}
+@item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
 @uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
@@ -3124,6 +3126,18 @@ information have to.
 <!-- -------- host/target specific issues start here ---------------- -->
 <hr />
 @end html
+
+@heading @anchor{aarch64x-x-x}aarch64*-*-*
+To enable a workaround for the Cortex-A53 erratum number 835769 by default
+(for all CPUs regardless of -mcpu option given) at configure time use the
+@option{--enable-fix-cortex-a53-835769} option.  This will enable the fix by
+default and can be explicitly disabled during during compilation by passing the
+@option{-mno-fix-cortex-a53-835769} option.  Conversely,
+@option{--disable-fix-cortex-a53-835769} will disable the workaround by
+default.  The workaround is disabled by default if neither of
+@option{--enable-fix-cortex-a53-835769} or
+@option{--disable-fix-cortex-a53-835769} is given at configure time.
+
 @heading @anchor{alpha-x-x}alpha*-*-*
 
 This section contains general configuration information for all

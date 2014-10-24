@@ -1,5 +1,17 @@
 2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config.gcc (aarch64*-*-*): Define TARGET_FIX_ERR_A53_835769_DEFAULT
+	if asked.
+	* configure.ac: Add --enable-fix-cortex-a53-835769 option.
+	* configure: Regenerate.
+	* config/aarch64/aarch64.c (aarch64_override_options): Handle
+	TARGET_FIX_ERR_A53_835769_DEFAULT.
+	* config/aarch64/aarch64.opt (mfix-cortex-a53-835769): Set Init value
+	to 2.
+	* doc/install.texi: Document --enable-fix-cortex-a53-835769 option.
+
+2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.opt (mfix-cortex-a53-835769): New option.
 	* config/aarch64/aarch64.h (ADJUST_INSN_LENGTH): Define.
 	(FINAL_PRESCAN_INSN): Likewise.
