@@ -247,7 +247,7 @@ class Gcc_backend : public Backend
   float_constant_expression(Btype* btype, mpfr_t val);
 
   Bexpression*
-  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag);
+  complex_constant_expression(Btype* btype, mpc_t val);
 
   Bexpression*
   string_constant_expression(const std::string& val);
@@ -1241,7 +1241,7 @@ Gcc_backend::float_constant_expression(Btype* btype, mpfr_t val)
 // Return a typed real and imaginary value as a constant complex number.
 
 Bexpression*
-Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
+Gcc_backend::complex_constant_expression(Btype* btype, mpc_t val)
 {
   tree t = btype->get_tree();
   tree ret;
@@ -1249,12 +1249,12 @@ Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
     return this->error_expression();
 
   REAL_VALUE_TYPE r1;
-  real_from_mpfr(&r1, real, TREE_TYPE(t), GMP_RNDN);
+  real_from_mpfr(&r1, mpc_realref(val), TREE_TYPE(t), GMP_RNDN);
   REAL_VALUE_TYPE r2;
   real_convert(&r2, TYPE_MODE(TREE_TYPE(t)), &r1);
 
   REAL_VALUE_TYPE r3;
-  real_from_mpfr(&r3, imag, TREE_TYPE(t), GMP_RNDN);
+  real_from_mpfr(&r3, mpc_imagref(val), TREE_TYPE(t), GMP_RNDN);
   REAL_VALUE_TYPE r4;
   real_convert(&r4, TYPE_MODE(TREE_TYPE(t)), &r3);
 

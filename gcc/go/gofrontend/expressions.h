@@ -8,6 +8,7 @@
 #define GO_EXPRESSIONS_H
 
 #include <mpfr.h>
+#include <mpc.h>
 
 #include "operator.h"
 
@@ -51,6 +52,9 @@ class Temporary_statement;
 class Label;
 class Ast_dump_context;
 class String_dump;
+
+// The precision to use for complex values represented as an mpc_t.
+const int mpc_precision = 256;
 
 // The base class for all expressions.
 
@@ -237,7 +241,7 @@ class Expression
   // Make a constant complex expression.  TYPE should be NULL for an
   // abstract type.
   static Expression*
-  make_complex(const mpfr_t* real, const mpfr_t* imag, Type*, Location);
+  make_complex(const mpc_t*, Type*, Location);
 
   // Make a nil expression.
   static Expression*
@@ -2585,7 +2589,7 @@ class Numeric_constant
 
   // Set to a complex value.
   void
-  set_complex(Type*, const mpfr_t, const mpfr_t);
+  set_complex(Type*, const mpc_t);
 
   // Classifiers.
   bool
@@ -2617,7 +2621,7 @@ class Numeric_constant
   get_float(mpfr_t*) const;
 
   void
-  get_complex(mpfr_t*, mpfr_t*) const;
+  get_complex(mpc_t*) const;
 
   // Codes returned by to_unsigned_long.
   enum To_unsigned_long
@@ -2653,7 +2657,7 @@ class Numeric_constant
   // If the value can be expressed as a complex, return true and
   // initialize and set VR and VI.
   bool
-  to_complex(mpfr_t* vr, mpfr_t* vi) const;
+  to_complex(mpc_t* val) const;
 
   // Get the type.
   Type*
@@ -2709,11 +2713,7 @@ class Numeric_constant
     // If NC_FLOAT.
     mpfr_t float_val;
     // If NC_COMPLEX.
-    struct
-    {
-      mpfr_t real;
-      mpfr_t imag;
-    } complex_val;
+    mpc_t complex_val;
   } u_;
   // The type if there is one.  This will be NULL for an untyped
   // constant.

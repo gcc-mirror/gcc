@@ -2525,9 +2525,12 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
       {
 	mpfr_t zero;
 	mpfr_init_set_ui(zero, 0, GMP_RNDN);
-	ret = Expression::make_complex(&zero, token->imaginary_value(),
-				       NULL, token->location());
+	mpc_t val;
+	mpc_init2(val, mpc_precision);
+	mpc_set_fr_fr(val, zero, *token->imaginary_value(), MPC_RNDNN);
 	mpfr_clear(zero);
+	ret = Expression::make_complex(&val, NULL, token->location());
+	mpc_clear(val);
 	this->advance_token();
 	return ret;
       }
