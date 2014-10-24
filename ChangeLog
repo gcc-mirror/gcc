@@ -1,3 +1,7 @@
+2014-10-24  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
 2014-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Disable the Go frontend on systems where it is known
