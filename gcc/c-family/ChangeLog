@@ -1,3 +1,9 @@
+2014-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56980
+	* c-pretty-print.c (c_pretty_printer::simple_type_specifier): Don't
+	print "struct"/"union"/"enum" for typedefed names.
+
 2014-10-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_shift): Perform the MINUS_EXPR

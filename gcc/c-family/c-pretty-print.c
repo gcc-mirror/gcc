@@ -416,7 +416,9 @@ c_pretty_printer::simple_type_specifier (tree t)
     case UNION_TYPE:
     case RECORD_TYPE:
     case ENUMERAL_TYPE:
-      if (code == UNION_TYPE)
+      if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
+	/* Don't decorate the type if this is a typedef name.  */;
+      else if (code == UNION_TYPE)
 	pp_c_ws_string (this, "union");
       else if (code == RECORD_TYPE)
 	pp_c_ws_string (this, "struct");
