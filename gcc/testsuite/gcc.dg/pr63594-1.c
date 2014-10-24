@@ -1,7 +1,7 @@
 /* PR target/63594 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wno-psabi" } */
-/* { dg-additional-options "-mno-mmx" { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-additional-options "-mno-mmx" { target i?86-*-* x86_64-*-* } } */
 
 #define C1 c
 #define C2 C1, C1
