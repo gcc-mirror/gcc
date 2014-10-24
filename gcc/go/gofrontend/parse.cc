@@ -2510,8 +2510,8 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
       return ret;
 
     case Token::TOKEN_INTEGER:
-      ret = Expression::make_integer(token->integer_value(), NULL,
-				     token->location());
+      ret = Expression::make_integer_z(token->integer_value(), NULL,
+				       token->location());
       this->advance_token();
       return ret;
 
@@ -3129,12 +3129,7 @@ Parse::index(Expression* expr)
   if (!this->peek_token()->is_op(OPERATOR_COLON))
     start = this->expression(PRECEDENCE_NORMAL, false, true, NULL, NULL);
   else
-    {
-      mpz_t zero;
-      mpz_init_set_ui(zero, 0);
-      start = Expression::make_integer(&zero, NULL, location);
-      mpz_clear(zero);
-    }
+    start = Expression::make_integer_ul(0, NULL, location);
 
   Expression* end = NULL;
   if (this->peek_token()->is_op(OPERATOR_COLON))

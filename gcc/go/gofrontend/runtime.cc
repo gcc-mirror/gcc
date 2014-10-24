@@ -397,12 +397,8 @@ Type*
 Runtime::map_iteration_type()
 {
   const unsigned long map_iteration_size = 4;
-
-  mpz_t ival;
-  mpz_init_set_ui(ival, map_iteration_size);
-  Expression* iexpr = Expression::make_integer(&ival, NULL,
-                                               Linemap::predeclared_location());
-  mpz_clear(ival);
-
+  Expression* iexpr =
+    Expression::make_integer_ul(map_iteration_size, NULL,
+				Linemap::predeclared_location());
   return Type::make_array_type(runtime_function_type(RFT_POINTER), iexpr);
 }

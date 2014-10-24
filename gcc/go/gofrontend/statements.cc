@@ -1838,12 +1838,7 @@ Statement*
 Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 {
   Location loc = this->location();
-
-  mpz_t oval;
-  mpz_init_set_ui(oval, 1UL);
-  Expression* oexpr = Expression::make_integer(&oval, this->expr_->type(), loc);
-  mpz_clear(oval);
-
+  Expression* oexpr = Expression::make_integer_ul(1, this->expr_->type(), loc);
   Operator op = this->is_inc_ ? OPERATOR_PLUSEQ : OPERATOR_MINUSEQ;
   return Statement::make_assignment_operation(op, this->expr_, oexpr, loc);
 }
@@ -3441,7 +3436,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 		  continue;
 		}
 	      go_assert(nc.type() != NULL);
-	      e = Expression::make_integer(&ival, nc.type(), e->location());
+	      e = Expression::make_integer_z(&ival, nc.type(), e->location());
 	      mpz_clear(ival);
 	    }
 
@@ -4559,10 +4554,8 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 
   Expression* selref = Expression::make_temporary_reference(sel, loc);
 
-  mpz_t ival;
-  mpz_init_set_ui(ival, this->index_);
-  Expression* index_expr = Expression::make_integer(&ival, NULL, loc);
-  mpz_clear(ival);
+  Expression* index_expr = Expression::make_integer_ul(this->index_, NULL,
+						       loc);
 
   if (this->is_default_)
     {
@@ -4907,11 +4900,8 @@ Select_clauses::get_backend(Translate_context* context,
        ++p, ++i)
     {
       int index = p->index();
-      mpz_t ival;
-      mpz_init_set_ui(ival, index);
-      Expression* index_expr = Expression::make_integer(&ival, int32_type,
-							location);
-      mpz_clear(ival);
+      Expression* index_expr = Expression::make_integer_ul(index, int32_type,
+							   location);
       cases[i].push_back(index_expr->get_backend(context));
 
       Bstatement* s = p->get_statements_backend(context);
@@ -4993,11 +4983,8 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 
   go_assert(this->sel_ == NULL);
 
-  mpz_t ival;
-  mpz_init_set_ui(ival, this->clauses_->size());
-  Expression* size_expr = Expression::make_integer(&ival, NULL, loc);
-  mpz_clear(ival);
-
+  Expression* size_expr = Expression::make_integer_ul(this->clauses_->size(),
+						      NULL, loc);
   Expression* call = Runtime::make_call(Runtime::NEWSELECT, loc, 1, size_expr);
 
   this->sel_ = Statement::make_temporary(NULL, call, loc);
@@ -5488,10 +5475,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
 							    len_call, loc);
   init->add_statement(len_temp);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
-  mpz_clear(zval);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
 
   Temporary_reference_expression* tref =
     Expression::make_temporary_reference(index_temp, loc);
@@ -5589,10 +5573,7 @@ For_range_statement::lower_range_slice(Gogo* gogo,
 							    len_call, loc);
   init->add_statement(len_temp);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
-  mpz_clear(zval);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
 
   Temporary_reference_expression* tref =
     Expression::make_temporary_reference(index_temp, loc);
@@ -5681,9 +5662,7 @@ For_range_statement::lower_range_string(Gogo*,
     Statement::make_temporary(index_temp->type(), NULL, loc);
   init->add_statement(next_index_temp);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
 
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(index_temp, loc);
@@ -5742,8 +5721,7 @@ For_range_statement::lower_range_string(Gogo*,
   iter_init->add_statement(s);
 
   ref = Expression::make_temporary_reference(next_index_temp, loc);
-  zexpr = Expression::make_integer(&zval, NULL, loc);
-  mpz_clear(zval);
+  zexpr = Expression::make_integer_ul(0, NULL, loc);
   Expression* equals = Expression::make_binary(OPERATOR_EQEQ, ref, zexpr, loc);
 
   Block* then_block = new Block(iter_init, loc);
@@ -5823,18 +5801,11 @@ For_range_statement::lower_range_map(Gogo*,
   //   hiter[0] != nil
 
   ref = Expression::make_temporary_reference(hiter, loc);
-
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
-  mpz_clear(zval);
-
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
   Expression* index = Expression::make_index(ref, zexpr, NULL, NULL, loc);
-
   Expression* ne = Expression::make_binary(OPERATOR_NOTEQ, index,
 					   Expression::make_nil(loc),
 					   loc);
-
   *pcond = ne;
 
   // Set *PITER_INIT to

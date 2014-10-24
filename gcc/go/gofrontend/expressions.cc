@@ -157,11 +157,8 @@ Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
       // Assigning nil to a slice.
-      mpz_t zval;
-      mpz_init_set_ui(zval, 0UL);
-      Expression* zero = Expression::make_integer(&zval, NULL, location);
-      mpz_clear(zval);
       Expression* nil = Expression::make_nil(location);
+      Expression* zero = Expression::make_integer_ul(0, NULL, location);
       return Expression::make_slice_value(lhs_type, nil, zero, zero, location);
     }
   else if (rhs_type->is_nil_type())
@@ -491,11 +488,7 @@ Expression::check_bounds(Expression* val, Location loc)
   Expression* index_overflows = Expression::make_boolean(false, loc);
   if (!val_is_unsigned)
     {
-      mpz_t zval;
-      mpz_init_set_ui(zval, 0UL);
-      Expression* zero = Expression::make_integer(&zval, val_type, loc);
-      mpz_clear(zval);
-
+      Expression* zero = Expression::make_integer_ul(0, val_type, loc);
       negative_index = Expression::make_binary(OPERATOR_LT, val, zero, loc);
     }
 
@@ -512,7 +505,7 @@ Expression::check_bounds(Expression* val, Location loc)
       mpz_init(maxval);
       mpz_mul_2exp(maxval, one, bound_type_size - 1);
       mpz_sub_ui(maxval, maxval, 1);
-      Expression* max = Expression::make_integer(&maxval, val_type, loc);
+      Expression* max = Expression::make_integer_z(&maxval, val_type, loc);
       mpz_clear(one);
       mpz_clear(maxval);
 
@@ -1824,8 +1817,8 @@ class Integer_expression : public Expression
       return Expression::make_character(&this->val_, this->type_,
 					this->location());
     else
-      return Expression::make_integer(&this->val_, this->type_,
-				      this->location());
+      return Expression::make_integer_z(&this->val_, this->type_,
+					this->location());
   }
 
   void
@@ -2047,7 +2040,7 @@ Integer_expression::do_import(Import* imp)
       if (is_character_constant)
 	ret = Expression::make_character(&val, NULL, imp->location());
       else
-	ret = Expression::make_integer(&val, NULL, imp->location());
+	ret = Expression::make_integer_z(&val, NULL, imp->location());
       mpz_clear(val);
       return ret;
     }
@@ -2077,12 +2070,36 @@ Integer_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
     ast_dump_context->ostream() << '\'';
 }
 
-// Build a new integer value.
+// Build a new integer value from a multi-precision integer.
 
 Expression*
-Expression::make_integer(const mpz_t* val, Type* type, Location location)
+Expression::make_integer_z(const mpz_t* val, Type* type, Location location)
 {
   return new Integer_expression(val, type, false, location);
+}
+
+// Build a new integer value from an unsigned long.
+
+Expression*
+Expression::make_integer_ul(unsigned long val, Type *type, Location location)
+{
+  mpz_t zval;
+  mpz_init_set_ui(zval, val);
+  Expression* ret = Expression::make_integer_z(&zval, type, location);
+  mpz_clear(zval);
+  return ret;
+}
+
+// Build a new integer value from a signed long.
+
+Expression*
+Expression::make_integer_sl(long val, Type *type, Location location)
+{
+  mpz_t zval;
+  mpz_init_set_si(zval, val);
+  Expression* ret = Expression::make_integer_z(&zval, type, location);
+  mpz_clear(zval);
+  return ret;
 }
 
 // Build a new character constant value.
@@ -2593,12 +2610,7 @@ Const_expression::do_lower(Gogo* gogo, Named_object*,
 		   "iota is only defined in const declarations");
 	  iota_value = 0;
 	}
-      mpz_t val;
-      mpz_init_set_ui(val, static_cast<unsigned long>(iota_value));
-      Expression* ret = Expression::make_integer(&val, NULL,
-						 this->location());
-      mpz_clear(val);
-      return ret;
+      return Expression::make_integer_ul(iota_value, NULL, this->location());
     }
 
   // Make sure that the constant itself has been lowered.
@@ -3105,13 +3117,10 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 		       p != s.end();
 		       p++)
 		    {
-		      mpz_t val;
-		      mpz_init_set_ui(val, static_cast<unsigned char>(*p));
-		      Expression* v = Expression::make_integer(&val,
-							       element_type,
-							       location);
-		      vals->push_back(v);
-		      mpz_clear(val);
+		      unsigned char c = static_cast<unsigned char>(*p);
+		      vals->push_back(Expression::make_integer_ul(c,
+								  element_type,
+								  location));
 		    }
 		}
 	      else
@@ -3129,13 +3138,9 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 			  adv = 1;
 			}
 		      p += adv;
-		      mpz_t val;
-		      mpz_init_set_ui(val, c);
-		      Expression* v = Expression::make_integer(&val,
-							       element_type,
-							       location);
-		      vals->push_back(v);
-		      mpz_clear(val);
+		      vals->push_back(Expression::make_integer_ul(c,
+								  element_type,
+								  location));
 		    }
 		}
 
@@ -5419,12 +5424,7 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
 					       TYPE_INFO_SIZE);
 
   Expression* call = Runtime::make_call(Runtime::MEMCMP, loc, 3, a1, a2, len);
-
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0);
-  Expression* zero = Expression::make_integer(&zval, NULL, loc);
-  mpz_clear(zval);
-
+  Expression* zero = Expression::make_integer_ul(0, NULL, loc);
   return Expression::make_binary(this->op_, call, zero, loc);
 }
 
@@ -5883,10 +5883,9 @@ Binary_expression::do_check_types(Gogo*)
 		  if (mpz_sgn(val) < 0)
 		    {
 		      this->report_error(_("negative shift count"));
-		      mpz_set_ui(val, 0);
 		      Location rloc = this->right_->location();
-		      this->right_ = Expression::make_integer(&val, right_type,
-							      rloc);
+		      this->right_ = Expression::make_integer_ul(0, right_type,
+								 rloc);
 		    }
 		  mpz_clear(val);
 		}
@@ -6343,10 +6342,7 @@ Expression::comparison(Translate_context* context, Type* result_type,
   Type* left_type = left->type();
   Type* right_type = right->type();
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, location);
-  mpz_clear(zval);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, location);
 
   if (left_type->is_string_type() && right_type->is_string_type())
     {
@@ -7260,11 +7256,7 @@ Builtin_call_expression::lower_make()
 	  this->report_error(_("length required when allocating a slice"));
 	  return Expression::make_error(this->location());
 	}
-
-      mpz_t zval;
-      mpz_init_set_ui(zval, 0);
-      len_arg = Expression::make_integer(&zval, NULL, loc);
-      mpz_clear(zval);
+      len_arg = Expression::make_integer_ul(0, NULL, loc);
     }
   else
     {
@@ -8543,7 +8535,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
         mpz_t ival;
         nc.get_int(&ival);
         Expression* int_cst =
-            Expression::make_integer(&ival, uintptr_type, location);
+            Expression::make_integer_z(&ival, uintptr_type, location);
         mpz_clear(ival);
         return int_cst->get_backend(context);
       }
@@ -8586,13 +8578,10 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 
 	Type* element_type = at->element_type();
 	Btype* element_btype = element_type->get_backend(gogo);
-
-        mpz_t size;
-        size_t element_size = gogo->backend()->type_size(element_btype);
-        mpz_init_set_ui(size, element_size);
-        Expression* size_expr = Expression::make_integer(&size, length->type(), location);
-        mpz_clear(size);
-
+	size_t element_size = gogo->backend()->type_size(element_btype);
+	Expression* size_expr = Expression::make_integer_ul(element_size,
+							    length->type(),
+							    location);
         Expression* bytecount =
             Expression::make_binary(OPERATOR_MULT, size_expr, length, location);
         Expression* copy = Runtime::make_call(Runtime::COPY, location, 3,
@@ -8615,7 +8604,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
         go_assert(arg2->is_variable());
 	Expression* arg2_val;
 	Expression* arg2_len;
-        mpz_t size;
+	unsigned long size;
 	if (arg2->type()->is_string_type()
 	    && element_type->integer_type() != NULL
 	    && element_type->integer_type()->is_byte())
@@ -8624,19 +8613,17 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 						    location);
 	    arg2_len = Expression::make_string_info(arg2, STRING_INFO_LENGTH,
 						    location);
-            mpz_init_set_ui(size, 1UL);
+	    size = 1;
 	  }
 	else
 	  {
 	    arg2_val = at->get_value_pointer(gogo, arg2);
 	    arg2_len = at->get_length(gogo, arg2);
 	    Btype* element_btype = element_type->get_backend(gogo);
-            size_t element_size = gogo->backend()->type_size(element_btype);
-            mpz_init_set_ui(size, element_size);
+	    size = gogo->backend()->type_size(element_btype);
 	  }
         Expression* element_size =
-            Expression::make_integer(&size, NULL, location);
-        mpz_clear(size);
+	  Expression::make_integer_ul(size, NULL, location);
 
         Expression* append = Runtime::make_call(Runtime::APPEND, location, 4,
                                                 arg1, arg2_val, arg2_len,
@@ -10762,12 +10749,7 @@ String_index_expression::do_get_backend(Translate_context* context)
 
   Expression* end = NULL;
   if (this->end_->is_nil_expression())
-    {
-      mpz_t neg_one;
-      mpz_init_set_si(neg_one, -1);
-      end = Expression::make_integer(&neg_one, int_type, loc);
-      mpz_clear(neg_one);
-    }
+    end = Expression::make_integer_sl(-1, int_type, loc);
   else
     {
       Expression* bounds_check = Expression::check_bounds(this->end_, loc);
@@ -11076,10 +11058,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   // string, it won't garbage collect the bytes.  So we use a
   // [...]byte.
 
-  mpz_t val;
-  mpz_init_set_ui(val, s.length());
-  Expression* length_expr = Expression::make_integer(&val, NULL, loc);
-  mpz_clear(val);
+  Expression* length_expr = Expression::make_integer_ul(s.length(), NULL, loc);
 
   Type* byte_type = gogo->lookup_global("byte")->type_value();
   Type* array_type = Type::make_array_type(byte_type, length_expr);
@@ -11087,10 +11066,8 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   Expression_list* bytes = new Expression_list();
   for (std::string::const_iterator p = s.begin(); p != s.end(); p++)
     {
-      mpz_init_set_ui(val, *p);
-      Expression* byte = Expression::make_integer(&val, NULL, loc);
-      mpz_clear(val);
-      bytes->push_back(byte);
+      unsigned char c = static_cast<unsigned char>(*p);
+      bytes->push_back(Expression::make_integer_ul(c, NULL, loc));
     }
 
   Expression* e = Expression::make_composite_literal(array_type, 0, false,
@@ -12490,20 +12467,19 @@ class Slice_construction_expression : public Array_construction_expression
   {
     go_assert(type->is_slice_type());
 
-    mpz_t lenval;
+    unsigned long lenval;
     Expression* length;
     if (vals == NULL || vals->empty())
-      mpz_init_set_ui(lenval, 0);
+      lenval = 0;
     else
       {
 	if (this->indexes() == NULL)
-	  mpz_init_set_ui(lenval, vals->size());
+	  lenval = vals->size();
 	else
-	  mpz_init_set_ui(lenval, indexes->back() + 1);
+	  lenval = indexes->back() + 1;
       }
     Type* int_type = Type::lookup_integer_type("int");
-    length = Expression::make_integer(&lenval, int_type, location);
-    mpz_clear(lenval);
+    length = Expression::make_integer_ul(lenval, int_type, location);
     Type* element_type = type->array_type()->element_type();
     this->valtype_ = Type::make_array_type(element_type, length);
   }
@@ -12722,11 +12698,7 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
                                                         key_value_pair, loc));
         }
 
-      mpz_t lenval;
-      mpz_init_set_ui(lenval, i);
-      Expression* element_count = Expression::make_integer(&lenval, NULL, loc);
-      mpz_clear(lenval);
-
+      Expression* element_count = Expression::make_integer_ul(i, NULL, loc);
       Type* ctor_type =
           Type::make_array_type(this->element_type_, element_count);
       Expression* constructor =
@@ -12831,10 +12803,7 @@ Map_construction_expression::do_get_backend(Translate_context* context)
   Expression* descriptor = Expression::make_map_descriptor(mt, loc);
 
   Type* uintptr_t = Type::lookup_integer_type("uintptr");
-  mpz_t countval;
-  mpz_init_set_ui(countval, i);
-  Expression* count = Expression::make_integer(&countval, uintptr_t, loc);
-  mpz_clear(countval);
+  Expression* count = Expression::make_integer_ul(i, uintptr_t, loc);
 
   Expression* entry_size =
       Expression::make_type_info(this->element_type_, TYPE_INFO_SIZE);
@@ -13463,10 +13432,7 @@ Composite_literal_expression::make_array(
 	    }
 	}
 
-      mpz_t vlen;
-      mpz_init_set_ui(vlen, size);
-      Expression* elen = Expression::make_integer(&vlen, NULL, location);
-      mpz_clear(vlen);
+      Expression* elen = Expression::make_integer_ul(size, NULL, location);
       at = Type::make_array_type(at->element_type(), elen);
       type = at;
     }
@@ -14903,12 +14869,10 @@ Struct_field_offset_expression::do_get_backend(Translate_context* context)
   Btype* btype = this->type_->get_backend(gogo);
 
   size_t offset = gogo->backend()->type_field_offset(btype, i);
-  mpz_t offsetval;
-  mpz_init_set_ui(offsetval, offset);
   Type* uptr_type = Type::lookup_integer_type("uintptr");
-  Expression* ret = Expression::make_integer(&offsetval, uptr_type,
-					     Linemap::predeclared_location());
-  mpz_clear(offsetval);
+  Expression* ret =
+    Expression::make_integer_ul(offset, uptr_type,
+				Linemap::predeclared_location());
   return ret->get_backend(context);
 }
 
@@ -15980,7 +15944,7 @@ Numeric_constant::expression(Location loc) const
   switch (this->classification_)
     {
     case NC_INT:
-      return Expression::make_integer(&this->u_.int_val, this->type_, loc);
+      return Expression::make_integer_z(&this->u_.int_val, this->type_, loc);
     case NC_RUNE:
       return Expression::make_character(&this->u_.int_val, this->type_, loc);
     case NC_FLOAT:

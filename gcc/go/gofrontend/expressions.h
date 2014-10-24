@@ -214,10 +214,20 @@ class Expression
   static Expression*
   make_character(const mpz_t*, Type*, Location);
 
-  // Make a constant integer expression.  TYPE should be NULL for an
-  // abstract type.
+  // Make a constant integer expression from a multi-precision
+  // integer.  TYPE should be NULL for an abstract type.
   static Expression*
-  make_integer(const mpz_t*, Type*, Location);
+  make_integer_z(const mpz_t*, Type*, Location);
+
+  // Make a constant integer expression from an unsigned long.  TYPE
+  // should be NULL for an abstract type.
+  static Expression*
+  make_integer_ul(unsigned long, Type*, Location);
+
+  // Make a constant integer expression from a signed long.  TYPE
+  // should be NULL for an abstract type.
+  static Expression*
+  make_integer_sl(long, Type*, Location);
 
   // Make a constant float expression.  TYPE should be NULL for an
   // abstract type.

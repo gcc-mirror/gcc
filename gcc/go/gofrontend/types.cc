@@ -1956,9 +1956,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   Struct_field_list::const_iterator p = fields->begin();
   go_assert(p->is_field_name("kind"));
-  mpz_t iv;
-  mpz_init_set_ui(iv, runtime_type_kind);
-  vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
+  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
+					      bloc));
 
   ++p;
   go_assert(p->is_field_name("align"));
@@ -1982,8 +1981,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     h = name->hash_for_method(gogo);
   else
     h = this->hash_for_method(gogo);
-  mpz_set_ui(iv, h);
-  vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
+  vals->push_back(Expression::make_integer_ul(h, p->type(), bloc));
 
   ++p;
   go_assert(p->is_field_name("hashfn"));
@@ -2047,8 +2045,6 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p == fields->end());
-
-  mpz_clear(iv);
 
   return Expression::make_struct_composite_literal(td_type, vals, bloc);
 }
@@ -2172,23 +2168,14 @@ Type::gc_symbol_constructor(Gogo* gogo)
   vals->push_back(Expression::make_type_info(this,
 					     Expression::TYPE_INFO_SIZE));
 
-  mpz_t off;
-  mpz_init_set_ui(off, 0UL);
-  Expression* offset = Expression::make_integer(&off, uintptr_t, bloc);
-  mpz_clear(off);
+  Expression* offset = Expression::make_integer_ul(0, uintptr_t, bloc);
 
   this->do_gc_symbol(gogo, &vals, &offset, 0);
 
-  mpz_t end;
-  mpz_init_set_ui(end, GC_END);
-  vals->push_back(Expression::make_integer(&end, uintptr_t, bloc));
-  mpz_clear(end);
+  vals->push_back(Expression::make_integer_ul(GC_END, uintptr_t, bloc));
 
-  mpz_t lenval;
-  mpz_init_set_ui(lenval, vals->size() + 1);
-  Expression* len = Expression::make_integer(&lenval, NULL, bloc);
-  mpz_clear(lenval);
-
+  Expression* len = Expression::make_integer_ul(vals->size() + 1, NULL,
+						bloc);
   Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
   return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
 }
@@ -3267,10 +3254,8 @@ String_type::do_gc_symbol(Gogo*, Expression_list** vals,
 {
   Location bloc = Linemap::predeclared_location();
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  mpz_t opval;
-  mpz_init_set_ui(opval, GC_STRING);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
-  mpz_clear(opval);
+  (*vals)->push_back(Expression::make_integer_ul(GC_STRING, uintptr_type,
+						 bloc));
   (*vals)->push_back(*offset);
   this->advance_gc_offset(offset);
 }
@@ -3942,10 +3927,7 @@ Function_type::do_gc_symbol(Gogo*, Expression_list** vals,
 
   // We use GC_APTR here because we do not currently have a way to describe the
   // the type of the possible function closure.  FIXME.
-  mpz_t opval;
-  mpz_init_set_ui(opval, GC_APTR);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
-  mpz_clear(opval);
+  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
   (*vals)->push_back(*offset);
   this->advance_gc_offset(offset);
 }
@@ -4361,10 +4343,8 @@ Pointer_type::do_gc_symbol(Gogo*, Expression_list** vals,
   Location loc = Linemap::predeclared_location();
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  mpz_t opval;
-  mpz_init_set_ui(opval, this->to_type_->has_pointer() ? GC_PTR : GC_APTR);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, loc));
-  mpz_clear(opval);
+  unsigned long opval = this->to_type_->has_pointer() ? GC_PTR : GC_APTR;
+  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, loc));
   (*vals)->push_back(*offset);
 
   if (this->to_type_->has_pointer())
@@ -5297,10 +5277,7 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
   // Get a 0.
-  mpz_t ival;
-  mpz_init_set_ui(ival, 0);
-  Expression* zero = Expression::make_integer(&ival, uintptr_type, bloc);
-  mpz_clear(ival);
+  Expression* zero = Expression::make_integer_ul(0, uintptr_type, bloc);
 
   // Make a temporary to hold the return value, initialized to 0.
   Temporary_statement* retval = Statement::make_temporary(uintptr_type, zero,
@@ -5329,11 +5306,8 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       else
 	{
 	  // Multiply retval by 33.
-	  mpz_init_set_ui(ival, 33);
-	  Expression* i33 = Expression::make_integer(&ival, uintptr_type,
-						     bloc);
-	  mpz_clear(ival);
-
+	  Expression* i33 = Expression::make_integer_ul(33, uintptr_type,
+							bloc);
 	  ref = Expression::make_temporary_reference(retval, bloc);
 	  Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ,
 							      ref, i33, bloc);
@@ -5872,10 +5846,7 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
   // Get a 0.
-  mpz_t ival;
-  mpz_init_set_ui(ival, 0);
-  Expression* zero = Expression::make_integer(&ival, uintptr_type, bloc);
-  mpz_clear(ival);
+  Expression* zero = Expression::make_integer_ul(0, uintptr_type, bloc);
 
   // Make a temporary to hold the return value, initialized to 0.
   Temporary_statement* retval = Statement::make_temporary(uintptr_type, zero,
@@ -5909,9 +5880,7 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   gogo->start_block(bloc);
 
   // Multiply retval by 33.
-  mpz_init_set_ui(ival, 33);
-  Expression* i33 = Expression::make_integer(&ival, uintptr_type, bloc);
-  mpz_clear(ival);
+  Expression* i33 = Expression::make_integer_ul(33, uintptr_type, bloc);
 
   ref = Expression::make_temporary_reference(retval, bloc);
   Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ, ref,
@@ -6431,10 +6400,8 @@ Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
   size_t element_size = gogo->backend()->type_size(ebtype);
 
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  mpz_t opval;
-  mpz_init_set_ui(opval, element_size == 0 ? GC_APTR : GC_SLICE);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
-  mpz_clear(opval);
+  unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
+  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
   (*vals)->push_back(*offset);
 
   if (element_size != 0)
@@ -6472,12 +6439,10 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
     {
       Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-      mpz_t op;
       if (stack_size < GC_STACK_CAPACITY)
   	{
-  	  mpz_init_set_ui(op, GC_ARRAY_START);
-  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
-  	  mpz_clear(op);
+	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_START,
+							 uintptr_type, bloc));
   	  (*vals)->push_back(*offset);
 	  Expression* uintptr_len =
 	    Expression::make_cast(uintptr_type, this->length_, bloc);
@@ -6488,20 +6453,17 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
 				       Expression::TYPE_INFO_SIZE);
   	  (*vals)->push_back(width);
 
-  	  mpz_t zero;
-  	  mpz_init_set_ui(zero, 0UL);
-  	  Expression* offset2 =
-  	    Expression::make_integer(&zero, uintptr_type, bloc);
-  	  mpz_clear(zero);
+	  Expression* offset2 = Expression::make_integer_ul(0, uintptr_type,
+							    bloc);
 
 	  Type::gc_symbol(gogo, element_type, vals, &offset2, stack_size + 1);
-  	  mpz_init_set_ui(op, GC_ARRAY_NEXT);
-  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
+	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_NEXT,
+							 uintptr_type, bloc));
   	}
       else
   	{
-  	  mpz_init_set_ui(op, GC_REGION);
-  	  (*vals)->push_back(Expression::make_integer(&op, uintptr_type, bloc));
+	  (*vals)->push_back(Expression::make_integer_ul(GC_REGION,
+							 uintptr_type, bloc));
 	  (*vals)->push_back(*offset);
 
 	  Expression* width =
@@ -6509,7 +6471,6 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
   	  (*vals)->push_back(width);
 	  (*vals)->push_back(Expression::make_gc_symbol(this));
   	}
-      mpz_clear(op);
       this->advance_gc_offset(offset);
     }
 }
@@ -6833,10 +6794,7 @@ Map_type::do_gc_symbol(Gogo*, Expression_list** vals,
   Location bloc = Linemap::predeclared_location();
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  mpz_t opval;
-  mpz_init_set_ui(opval, GC_APTR);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
-  mpz_clear(opval);
+  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
   (*vals)->push_back(*offset);
   this->advance_gc_offset(offset);
 }
@@ -6989,10 +6947,7 @@ Channel_type::do_type_descriptor(Gogo* gogo, Named_type* name)
     val |= 1;
   if (this->may_send_)
     val |= 2;
-  mpz_t iv;
-  mpz_init_set_ui(iv, val);
-  vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
-  mpz_clear(iv);
+  vals->push_back(Expression::make_integer_ul(val, p->type(), bloc));
 
   ++p;
   go_assert(p == fields->end());
@@ -7023,10 +6978,8 @@ Channel_type::do_gc_symbol(Gogo*, Expression_list** vals,
   Location bloc = Linemap::predeclared_location();
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  mpz_t opval;
-  mpz_init_set_ui(opval, GC_CHAN_PTR);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type, bloc));
-  mpz_clear(opval);
+  (*vals)->push_back(Expression::make_integer_ul(GC_CHAN_PTR, uintptr_type,
+						 bloc));
   (*vals)->push_back(*offset);
  
   Type* unsafeptr_type = Type::make_pointer_type(Type::make_void_type());
@@ -7935,11 +7888,8 @@ Interface_type::do_gc_symbol(Gogo*, Expression_list** vals,
   Location bloc = Linemap::predeclared_location();
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  mpz_t opval;
-  mpz_init_set_ui(opval, this->is_empty() ? GC_EFACE : GC_IFACE);
-  (*vals)->push_back(Expression::make_integer(&opval, uintptr_type,
-					      bloc));
-  mpz_clear(opval);
+  unsigned long opval = this->is_empty() ? GC_EFACE : GC_IFACE;
+  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
   (*vals)->push_back(*offset);
   this->advance_gc_offset(offset);
 }
