@@ -1,3 +1,36 @@
+2014-10-24  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (expr::gen_transform): Use fold_buildN_loc
+	and build_call_expr_loc.
+	(dt_simplify::gen): Drop non_lvalue for GIMPLE, use
+	non_lvalue_loc to build it for GENERIC.
+	(decision_tree::gen_generic): Add location argument to
+	generic_simplify prototype.
+	(capture_info): New class.
+	(capture_info::capture_info): New constructor.
+	(capture_info::walk_match): New method.
+	(capture_info::walk_result): New method.
+	(capture_info::walk_c_expr): New method.
+	(dt_simplify::gen): Handle preserving side-effects for
+	GENERIC code generation.
+	(decision_tree::gen_generic): Do not reject operands
+	with TREE_SIDE_EFFECTS.
+	* generic-match.h: New file.
+	* generic-match-head.c: Include generic-match.h, not gimple-match.h.
+	* match.pd: Add some constant folding patterns from fold-const.c.
+	* fold-const.c: Include generic-match.h.
+	(fold_unary_loc): Dispatch to generic_simplify.
+	(fold_ternary_loc): Likewise.
+	(fold_binary_loc): Likewise.  Remove patterns now implemented
+	by generic_simplify.
+	* gimple-fold.c (replace_stmt_with_simplification): New function.
+	(fold_stmt_1): Add valueize parameter, dispatch to gimple_simplify.
+	(no_follow_ssa_edges): New function.
+	(fold_stmt): New overload with valueization hook.  Use
+	no_follow_ssa_edges for the overload without hook.
+	(fold_stmt_inplace): Likewise.
+	* gimple-fold.h (no_follow_ssa_edges): Declare.
+
 2014-10-24  Felix Yang  <felix.yang@huawei.com>
 	Jiji Jiang  <jiangjiji@huawei.com>
 

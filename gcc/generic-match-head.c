@@ -43,6 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "dumpfile.h"
-#include "gimple-match.h"
+#include "generic-match.h"
 
 

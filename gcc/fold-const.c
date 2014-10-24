@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 #include "builtins.h"
 #include "cgraph.h"
+#include "generic-match.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -7564,6 +7565,10 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 1);
 
+  tem = generic_simplify (loc, code, type, op0);
+  if (tem)
+    return tem;
+
   arg0 = op0;
   if (arg0)
     {
@@ -9913,6 +9918,10 @@ fold_binary_loc (location_t loc,
       && tree_swap_operands_p (arg0, arg1, true))
     return fold_build2_loc (loc, swap_tree_comparison (code), type, op1, op0);
 
+  tem = generic_simplify (loc, code, type, op0, op1);
+  if (tem)
+    return tem;
+
   /* ARG0 is the first operand of EXPR, and ARG1 is the second operand.
 
      First check for cases where an arithmetic operation is applied to a
@@ -10035,10 +10044,6 @@ fold_binary_loc (location_t loc,
       if (integer_zerop (arg0))
 	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg1));
 
-      /* PTR +p 0 -> PTR */
-      if (integer_zerop (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
       /* INT +p INT -> (PTR)(INT + INT).  Stripping types allows for this. */
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
 	   && INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
@@ -10159,9 +10164,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  if (integer_zerop (arg1))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
 	  /* If we are adding two BIT_AND_EXPR's, both of which are and'ing
 	     with a constant, and the two constants have no bits in common,
 	     we should treat this as a BIT_IOR_EXPR since this may produce more
@@ -10648,8 +10650,6 @@ fold_binary_loc (location_t loc,
 	{
 	  if (integer_zerop (arg0))
 	    return negate_expr (fold_convert_loc (loc, type, arg1));
-	  if (integer_zerop (arg1))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
 	  /* Fold A - (A & B) into ~B & A.  */
 	  if (!TREE_SIDE_EFFECTS (arg0)
@@ -10742,16 +10742,6 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      /* Fold &x - &x.  This can happen from &x.foo - &x.
-	 This is unsafe for certain floats even in non-IEEE formats.
-	 In IEEE, it is unsafe because it does wrong for NaNs.
-	 Also note that operand_equal_p is always false if an operand
-	 is volatile.  */
-
-      if ((!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
-	  && operand_equal_p (arg0, arg1, 0))
-	return omit_one_operand_loc (loc, type, build_zero_cst (type), arg0);
-
       /* A - B -> A + (-B) if B is easily negatable.  */
       if (negate_expr_p (arg1)
 	  && ((FLOAT_TYPE_P (type)
@@ -10829,10 +10819,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  if (integer_zerop (arg1))
-	    return omit_one_operand_loc (loc, type, arg1, arg0);
-	  if (integer_onep (arg1))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 	  /* Transform x * -1 into -x.  Make sure to do the negation
 	     on the original operand with conversions not stripped
 	     because we can only strip non-sign-changing conversions.  */
@@ -11129,10 +11115,6 @@ fold_binary_loc (location_t loc,
 
     case BIT_IOR_EXPR:
     bit_ior:
-      if (integer_all_onesp (arg1))
-	return omit_one_operand_loc (loc, type, arg1, arg0);
-      if (integer_zerop (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
       if (operand_equal_p (arg0, arg1, 0))
 	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
@@ -11271,12 +11253,8 @@ fold_binary_loc (location_t loc,
       goto bit_rotate;
 
     case BIT_XOR_EXPR:
-      if (integer_zerop (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
       if (integer_all_onesp (arg1))
 	return fold_build1_loc (loc, BIT_NOT_EXPR, type, op0);
-      if (operand_equal_p (arg0, arg1, 0))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
 
       /* ~X ^ X is -1.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
@@ -11434,8 +11412,6 @@ fold_binary_loc (location_t loc,
     case BIT_AND_EXPR:
       if (integer_all_onesp (arg1))
 	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-      if (integer_zerop (arg1))
-	return omit_one_operand_loc (loc, type, arg1, arg0);
       if (operand_equal_p (arg0, arg1, 0))
 	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
@@ -12186,8 +12162,6 @@ fold_binary_loc (location_t loc,
     case ROUND_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if (integer_onep (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
       if (integer_zerop (arg1))
 	return NULL_TREE;
       /* X / -1 is -X.  */
@@ -12257,21 +12231,6 @@ fold_binary_loc (location_t loc,
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      /* X % 1 is always zero, but be sure to preserve any side
-	 effects in X.  */
-      if (integer_onep (arg1))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
-
-      /* X % 0, return X % 0 unchanged so that we can get the
-	 proper warnings and errors.  */
-      if (integer_zerop (arg1))
-	return NULL_TREE;
-
-      /* 0 % X is always zero, but be sure to preserve any side
-	 effects in X.  Place this after checking for X == 0.  */
-      if (integer_zerop (arg0))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg1);
-
       /* X % -1 is zero.  */
       if (!TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == INTEGER_CST
@@ -13803,6 +13762,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
   if (commutative_ternary_tree_code (code)
       && tree_swap_operands_p (op0, op1, true))
     return fold_build3_loc (loc, code, type, op1, op0, op2);
+
+  tem = generic_simplify (loc, code, type, op0, op1, op2);
+  if (tem)
+    return tem;
 
   /* Strip any conversions that don't change the mode.  This is safe
      for every expression, except for a comparison expression because
