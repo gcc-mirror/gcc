@@ -1,5 +1,12 @@
 2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Define.
+	(LINK_SPEC): Include CA53_ERR_835769_SPEC.
+	* config/aarch64/aarch64-linux.h (CA53_ERR_835769_SPEC): Define.
+	(LINK_SPEC): Include CA53_ERR_835769_SPEC.
+
+2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.h (ADJUST_INSN_LENGTH): Wrap definition in
 	do while (0).
 	* config/aarch64/aarch64.c (is_mem_p): Delete.
