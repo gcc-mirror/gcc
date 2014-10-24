@@ -1,3 +1,13 @@
+2014-10-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_ok_nocache): Remove declaration for
+	vaeseq_u8.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Remove declaration
+	for vcvt_f16_f32.
+	(check_effective_target_arm_neonv2_ok_nocache): Remove declaration for
+	vfma_f32.
+
 2014-10-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr63595.c: New test.
