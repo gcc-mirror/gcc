@@ -1,3 +1,8 @@
+2014-10-25  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/63638
+	* asan.c (enum asan_check_flags): Fixed ASAN_CHECK_LAST.
+
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR bootstrap/63632

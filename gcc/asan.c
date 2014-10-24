@@ -250,7 +250,7 @@ enum asan_check_flags
   ASAN_CHECK_NON_ZERO_LEN = 1 << 2,
   ASAN_CHECK_START_INSTRUMENTED = 1 << 3,
   ASAN_CHECK_END_INSTRUMENTED = 1 << 4,
-  ASAN_CHECK_LAST
+  ASAN_CHECK_LAST = 1 << 5
 };
 
 /* Hashtable support for memory references used by gimple

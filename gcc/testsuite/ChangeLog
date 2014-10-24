@@ -1,3 +1,8 @@
+2014-10-25  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/63638
+    	* c-c++-common/asan/pr63638.c: New test.
+
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR bootstrap/63632
