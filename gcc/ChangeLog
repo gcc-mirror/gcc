@@ -1,5 +1,11 @@
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
+        * haifa-sched.c (cached_first_cycle_multipass_dfa_lookahead,)
+        (cached_issue_rate): Remove.  Use dfa_lookahead and issue_rate instead.
+        (max_issue, choose_ready, sched_init): Update.
+
+2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
+
 	* sched-int.h (struct _haifa_insn_data:last_rfs_win): New field.
 	* haifa-sched.c (INSN_LAST_RFS_WIN): New access macro.
 	(rfs_result): Set INSN_LAST_RFS_WIN.  Update signature.
