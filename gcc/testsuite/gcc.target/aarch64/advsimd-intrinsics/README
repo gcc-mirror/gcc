@@ -1,0 +1,132 @@
+This directory contains executable tests for ARM/AArch64 Advanced SIMD
+(Neon) intrinsics.
+
+It is meant to cover execution cases of all the Advanced SIMD
+intrinsics, but does not scan the generated assembler code.
+
+The general framework is composed as follows:
+- advsimd-intrinsics.exp: main dejagnu driver
+- *.c: actual tests, generally one per intrinsinc family
+- arm-neon-ref.h: contains macro definitions to save typing in actual
+  test files
+- compute-ref-data.h: contains input vectors definitions
+- *.inc: generic tests, shared by several families of intrinsics. For
+   instance, unary or binary operators
+
+A typical .c test file starts with the following contents (look at
+vld1.c and vaba.c for sample cases):
+#include <arm_neon.h>
+#include "arm-neon-ref.h"
+#include "compute-ref-data.h"
+
+Then, definitions of expected results, based on common input values,
+as defined in compute-ref-data.h.
+For example:
+VECT_VAR_DECL(expected,int,16,4) [] = { 0x16, 0x17, 0x18, 0x19 };
+defines the expected results of an operator generating int16x4 values.
+
+The common input values defined in compute-ref-data.h have been chosen
+to avoid corner-case values for most operators, yet exposing negative
+values for signed operators. For this reason, their range is also
+limited. For instance, the initialization of buffer_int16x4 will be
+{ -16, -15, -14, -13 }.
+
+The initialization of floating-point values is done via hex notation,
+to avoid potential rounding problems.
+
+To test special values and corner cases, specific initialization
+values should be used in dedicated tests, to ensure proper coverage.
+An example of this is vshl.
+
+When a variant of an intrinsic is not available, its expected result
+should be defined to the value of CLEAN_PATTERN_8 as defined in
+arm-neon-ref.h. For example:
+VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
+if the given intrinsic has no variant producing an int64x1 result,
+like the vcmp family (eg. vclt).
+
+This is because the helper function (check_results(), defined in
+arm-neon-ref.h), iterates over all the possible variants, to save
+typing in each individual test file. Alternatively, one can directly
+call the CHECK/CHECK_FP macros to check only a few expected results
+(see vabs.c for an example).
+
+Then, define the TEST_MSG string, which will be used when reporting errors.
+
+Next, define the function performing the actual tests, in general
+relying on the helpers provided by arm-neon-ref.h, which means:
+
+* declare necessary vectors of suitable types: using
+  DECL_VARIABLE_ALL_VARIANTS when all variants are supported, or the
+  relevant of subset calls to DECL_VARIABLE.
+
+* call clean_results() to initialize the 'results' buffers.
+
+* initialize the input vectors, using VLOAD, VDUP or VSET_LANE (vld*
+  tests do not need this step, since their actual purpose is to
+  initialize vectors).
+
+* execute the intrinsic on relevant variants, for instance using
+  TEST_MACRO_ALL_VARIANTS_2_5.
+
+* call check_results() to check that the results match the expected
+  values.
+
+A template test file could be:
+=================================================================
+#include <arm_neon.h>
+#include "arm-neon-ref.h"
+#include "compute-ref-data.h"
+
+/* Expected results.  */
+VECT_VAR_DECL(expected,int,8,8) [] = { 0xf6, 0xf7, 0xf8, 0xf9,
+				       0xfa, 0xfb, 0xfc, 0xfd };
+/* and as many others as necessary.  */
+
+#define TEST_MSG "VMYINTRINSIC"
+void exec_myintrinsic (void)
+{
+  /* my test: v4=vmyintrinsic(v1,v2,v3), then store the result.  */
+#define TEST_VMYINTR(Q, T1, T2, W, N)					\
+  VECT_VAR(vector_res, T1, W, N) =					\
+    vmyintr##Q##_##T2##W(VECT_VAR(vector1, T1, W, N),			\
+			 VECT_VAR(vector2, T1, W, N),			\
+			 VECT_VAR(vector3, T1, W, N));			\
+  vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N), VECT_VAR(vector_res, T1, W, N))
+
+#define DECL_VMYINTR_VAR(VAR)			\
+  DECL_VARIABLE(VAR, int, 8, 8);
+/* And as many others as necessary.  */
+
+  DECL_VMYINTR_VAR(vector1);
+  DECL_VMYINTR_VAR(vector2);
+  DECL_VMYINTR_VAR(vector3);
+  DECL_VMYINTR_VAR(vector_res);
+
+  clean_results ();
+
+  /* Initialize input "vector1" from "buffer".  */
+  VLOAD(vector1, buffer, , int, s, 8, 8);
+/* And as many others as necessary.  */
+
+  /* Choose init value arbitrarily.  */
+  VDUP(vector2, , int, s, 8, 8, 1);
+/* And as many others as necessary.  */
+
+  /* Choose init value arbitrarily.  */
+  VDUP(vector3, , int, s, 8, 8, -5);
+/* And as many others as necessary.  */
+
+  /* Execute the tests.  */
+  TEST_VMYINTR(, int, s, 8, 8);
+/* And as many others as necessary.  */
+
+  check_results (TEST_MSG, "");
+}
+
+int main (void)
+{
+  exec_vmyintrinsic ();
+  return 0;
+}
+=================================================================
