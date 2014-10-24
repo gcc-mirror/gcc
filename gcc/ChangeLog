@@ -1,3 +1,15 @@
+2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
+
+	* haifa-sched.c (sched_class_regs_num, call_used_regs_num): New static
+	arrays.  Use sched_class_regs_num instead of ira_class_hard_regs_num.
+	(print_curr_reg_pressure, setup_insn_reg_pressure_info,)
+	(model_update_pressure, model_spill_cost): Use sched_class_regs_num.
+	(model_start_schedule): Update.
+	(sched_pressure_start_bb): New static function.  Calculate
+	sched_class_regs_num.
+	(schedule_block): Use it.
+	(alloc_global_sched_pressure_data): Calculate call_used_regs_num.
+
 2014-10-24  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (BUILD_CPPLIB): When in stage2+ use the
