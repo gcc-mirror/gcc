@@ -10596,8 +10596,9 @@ fold_binary_loc (location_t loc,
 					     TREE_OPERAND (arg1, 0));
 	      tree arg11 = fold_convert_loc (loc, type,
 					     TREE_OPERAND (arg1, 1));
-	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type, arg0,
-					  fold_convert_loc (loc, type, arg10));
+	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type,
+					  fold_convert_loc (loc, type, arg0),
+					  arg10);
 	      if (tmp)
 		return fold_build2_loc (loc, MINUS_EXPR, type, tmp, arg11);
 	    }
