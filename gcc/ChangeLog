@@ -1,3 +1,7 @@
+2014-10-24  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Fix copy-and-pasto.
+
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR bootstrap/63632
