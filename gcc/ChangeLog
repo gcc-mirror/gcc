@@ -1,3 +1,8 @@
+2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR bootstrap/63632
+	* collect2.c (main): Filter out -fno-lto.
+
 2014-10-22  Richard Biener  <rguenther@suse.de>
 	    Tobias Burnus <burnus@net-b.de>
 

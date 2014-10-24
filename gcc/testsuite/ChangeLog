@@ -1,3 +1,8 @@
+2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR bootstrap/63632
+	* g++.dg/torture/pr63632.C: New test.
+
 2014-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63563

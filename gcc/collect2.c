@@ -1341,6 +1341,12 @@ main (int argc, char **argv)
 		  ld1--;
 		  ld2--;
 		}
+	      else if (strncmp (arg, "-fno-lto", 8) == 0)
+		{
+		  /* Do not pass -fno-lto to the linker. */
+		  ld1--;
+		  ld2--;
+		}
 #ifdef TARGET_AIX_VERSION
 	      else
 		{
