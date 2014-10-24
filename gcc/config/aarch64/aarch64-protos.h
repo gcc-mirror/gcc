@@ -247,6 +247,8 @@ aarch64_builtin_vectorized_function (tree fndecl,
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
+extern bool aarch64_madd_needs_nop (rtx);
+extern void aarch64_final_prescan_insn (rtx);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 

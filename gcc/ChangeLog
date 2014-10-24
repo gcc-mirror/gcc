@@ -1,3 +1,17 @@
+2014-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.opt (mfix-cortex-a53-835769): New option.
+	* config/aarch64/aarch64.h (ADJUST_INSN_LENGTH): Define.
+	(FINAL_PRESCAN_INSN): Likewise.
+	* config/aarch64/aarch64.h (is_mem_p): New function.
+	(has_memory_op): Likewise.
+	(aarch64_prev_real_insn): Likewise.
+	(is_madd_op): Likewise.
+	(dep_between_memop_and_curr): Likewise.
+	(aarch64_madd_needs_nop): Likewise.
+	(aarch64_final_prescan_insn): Likewise.
+	* doc/invoke.texi (Document new option).
+
 2014-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_size): Do not promote arguments.

@@ -465,6 +465,18 @@ enum target_cpus
   (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
 #endif
 
+/* If inserting NOP before a mult-accumulate insn remember to adjust the
+   length so that conditional branching code is updated appropriately.  */
+#define ADJUST_INSN_LENGTH(insn, length)	\
+  do						\
+    {						\
+      if (aarch64_madd_needs_nop (insn))	\
+        length += 4;				\
+    } while (0)
+
+#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)	\
+    aarch64_final_prescan_insn (INSN);			\
+
 /* The processor for which instructions should be scheduled.  */
 extern enum aarch64_processor aarch64_tune;
 
