@@ -1,3 +1,7 @@
+2014-10-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/aapcs/abitest.h: Declare memcpy.
+
 2014-10-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56980
