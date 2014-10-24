@@ -1,5 +1,12 @@
 2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/binary_sat_op.inc: New
+	file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqsub.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/unary_sat_op.inc: New
 	file.
 	* gcc.target/aarch64/advsimd-intrinsics/vqabs.c: Likewise.
