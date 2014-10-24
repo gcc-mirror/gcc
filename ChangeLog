@@ -1,3 +1,8 @@
+2014-10-24  Hans-Peter Nilsson  <hp@dummer.localdomain>
+
+	* configure.ac (build_configargs): Don't share config.cache between
+	build subdirs.
+
 2014-10-24  Daniel Hellstrom  <daniel@gaisler.com>
 
 	* config.gcc (sparc*-*-*): Accept mcpu=leon3v7 processor.
