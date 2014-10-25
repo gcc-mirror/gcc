@@ -1,3 +1,8 @@
+2014-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63641
+	* gcc.c-torture/execute/pr63641.c: New test.
+
 2014-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_collectives_9.f90: Remove dg-error.
