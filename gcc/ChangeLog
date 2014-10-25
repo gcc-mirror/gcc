@@ -1,3 +1,10 @@
+2014-10-25  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/63615
+	* simplify-rtx.c (simplify_plus_minus): Set "canonicalized" on
+	decomposing PLUS or MINUS if operands are not placed adjacent
+	in the "ops" array.
+
 2014-10-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs_internal): Do
@@ -117,21 +124,21 @@
 	(__LD4R_FUNC): Ditto.
 	(vld2_dup_s8, vld2_dup_s16, vld2_dup_s32, vld2_dup_f32, vld2_dup_f64,
 	 vld2_dup_u8, vld2_dup_u16, vld2_dup_u32, vld2_dup_p8, vld2_dup_p16
-	 vld2_dup_s64, vld2_dup_u64, vld2q_dup_s8, vld2q_dup_p8, 
-	 vld2q_dup_s16, vld2q_dup_p16, vld2q_dup_s32, vld2q_dup_s64, 
-	 vld2q_dup_u8, vld2q_dup_u16, vld2q_dup_u32, vld2q_dup_u64 
+	 vld2_dup_s64, vld2_dup_u64, vld2q_dup_s8, vld2q_dup_p8,
+	 vld2q_dup_s16, vld2q_dup_p16, vld2q_dup_s32, vld2q_dup_s64,
+	 vld2q_dup_u8, vld2q_dup_u16, vld2q_dup_u32, vld2q_dup_u64
 	 vld2q_dup_f32, vld2q_dup_f64): Rewrite using builtin functions.
-	(vld3_dup_s64, vld3_dup_u64, vld3_dup_f64, vld3_dup_s8 
-	 vld3_dup_p8, vld3_dup_s16, vld3_dup_p16, vld3_dup_s32 
+	(vld3_dup_s64, vld3_dup_u64, vld3_dup_f64, vld3_dup_s8
+	 vld3_dup_p8, vld3_dup_s16, vld3_dup_p16, vld3_dup_s32
 	 vld3_dup_u8, vld3_dup_u16, vld3_dup_u32, vld3_dup_f32
-	 vld3q_dup_s8, vld3q_dup_p8, vld3q_dup_s16, vld3q_dup_p16 
-	 vld3q_dup_s32, vld3q_dup_s64, vld3q_dup_u8, vld3q_dup_u16 
+	 vld3q_dup_s8, vld3q_dup_p8, vld3q_dup_s16, vld3q_dup_p16
+	 vld3q_dup_s32, vld3q_dup_s64, vld3q_dup_u8, vld3q_dup_u16
 	 vld3q_dup_u32, vld3q_dup_u64, vld3q_dup_f32, vld3q_dup_f64): Likewise.
-	(vld4_dup_s64, vld4_dup_u64, vld4_dup_f64, vld4_dup_s8 
-	 vld4_dup_p8, vld4_dup_s16, vld4_dup_p16, vld4_dup_s32 
-	 vld4_dup_u8, vld4_dup_u16, vld4_dup_u32, vld4_dup_f32 
-	 vld4q_dup_s8, vld4q_dup_p8, vld4q_dup_s16, vld4q_dup_p16 
-	 vld4q_dup_s32, vld4q_dup_s64, vld4q_dup_u8, vld4q_dup_u16 
+	(vld4_dup_s64, vld4_dup_u64, vld4_dup_f64, vld4_dup_s8
+	 vld4_dup_p8, vld4_dup_s16, vld4_dup_p16, vld4_dup_s32
+	 vld4_dup_u8, vld4_dup_u16, vld4_dup_u32, vld4_dup_f32
+	 vld4q_dup_s8, vld4q_dup_p8, vld4q_dup_s16, vld4q_dup_p16
+	 vld4q_dup_s32, vld4q_dup_s64, vld4q_dup_u8, vld4q_dup_u16
 	 vld4q_dup_u32, vld4q_dup_u64, vld4q_dup_f32, vld4q_dup_f64): Likewise.
 	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add
 	UNSPEC_LD2_DUP, UNSPEC_LD3_DUP, UNSPEC_LD4_DUP.
@@ -146,18 +153,18 @@
 
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
-        * rtlanal.c (get_base_term): Handle SCRATCH.
+	* rtlanal.c (get_base_term): Handle SCRATCH.
 
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
-        * haifa-sched.c (sched_init): Disable max_issue when scheduling for
-        register pressure.
+	* haifa-sched.c (sched_init): Disable max_issue when scheduling for
+	register pressure.
 
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
-        * haifa-sched.c (cached_first_cycle_multipass_dfa_lookahead,)
-        (cached_issue_rate): Remove.  Use dfa_lookahead and issue_rate instead.
-        (max_issue, choose_ready, sched_init): Update.
+	* haifa-sched.c (cached_first_cycle_multipass_dfa_lookahead,)
+	(cached_issue_rate): Remove.  Use dfa_lookahead and issue_rate instead.
+	(max_issue, choose_ready, sched_init): Update.
 
 2014-10-24  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
