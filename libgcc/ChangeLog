@@ -1,3 +1,12 @@
+2014-10-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (ppc_fp_type): Set variable on powerpc*-*-linux*.
+	* configure: Regenerate.
+	* config.host (powerpc*-*-linux*): Use $ppc_fp_type to determine
+	additions to tmake_file.  Use t-hardfp-sfdf and t-hardfp instead
+	of soft-fp for 32-bit classic hard float.  Do not use
+	t-softfp-excl for soft float.
+
 2014-10-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (powerpc*-*-linux*): Only use soft-fp for 32-bit

@@ -991,9 +991,23 @@ powerpc-*-rtems*)
 	;;
 powerpc*-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules rs6000/t-ppc64-fp t-slibgcc-libgcc"
-	if test "${host_address}" = 32; then
+	case $ppc_fp_type in
+	64)
+		;;
+	hard)
+		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
+		;;
+	soft)
+		tmake_file="${tmake_file} t-softfp-sfdf t-softfp"
+		;;
+	e500v1|e500v2)
 		tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp"
-	fi
+		;;
+	*)
+		echo "Unknown ppc_fp_type $ppc_fp_type" 1>&2
+		exit 1
+		;;
+	esac
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
