@@ -1,3 +1,8 @@
+2014-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (declare_in_namespace): Only emit external
+	declarations in the local scope once.
+
 2014-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* ginclude/stdbool.h: Do not define bool, true or false in C++11.

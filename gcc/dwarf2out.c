@@ -20476,6 +20476,26 @@ declare_in_namespace (tree thing, dw_die_ref context_die)
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     return context_die;
 
+  /* External declarations in the local scope only need to be emitted
+     once, not once in the namespace and once in the scope.
+
+     This avoids declaring the `extern' below in the
+     namespace DIE as well as in the innermost scope:
+
+          namespace S
+	  {
+            int i=5;
+            int foo()
+	    {
+              int i=8;
+              extern int i;
+     	      return i;
+	    }
+          }
+  */
+  if (DECL_P (thing) && DECL_EXTERNAL (thing) && local_scope_p (context_die))
+    return context_die;
+
   /* If this decl is from an inlined function, then don't try to emit it in its
      namespace, as we will get confused.  It would have already been emitted
      when the abstract instance of the inline function was emitted anyways.  */
