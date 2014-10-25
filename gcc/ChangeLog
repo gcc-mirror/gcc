@@ -1,3 +1,9 @@
+2014-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63641
+	* tree-ssa-reassoc.c (optimize_range_tests_to_bit_test): Set high
+	to low + prec - 1 - clz (mask) instead of low + prec - clz (mask).
+
 2014-10-25  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/63615
