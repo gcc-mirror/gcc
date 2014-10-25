@@ -1,3 +1,9 @@
+2014-10-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs_internal): Do
+	not allow e500 double in registers not satisyfing
+	SPE_SIMD_REGNO_P.
+
 2014-10-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c (declare_in_namespace): Only emit external
