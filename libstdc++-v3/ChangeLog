@@ -1,3 +1,8 @@
+2014-10-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* doc/xml/manual/status_cxx2011.xml: Update unordered container
+	specific behavior.
+
 2014-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/headers/cstdbool/macros.cc: New.
