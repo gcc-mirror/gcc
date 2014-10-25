@@ -4006,7 +4006,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 
 	      ops[i].op = XEXP (this_op, 0);
 	      changed = 1;
-	      canonicalized |= this_neg;
+	      canonicalized |= this_neg || i != n_ops - 2;
 	      break;
 
 	    case NEG:
