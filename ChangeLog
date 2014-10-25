@@ -2,6 +2,7 @@
 
 	* configure.ac (build_configargs): Don't share config.cache between
 	build subdirs.
+	* configure: Regenerate.
 
 2014-10-24  Daniel Hellstrom  <daniel@gaisler.com>
 
