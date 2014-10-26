@@ -16040,16 +16040,15 @@ mips_lo_sum_offset_lookup (mips_offset_table *htab, rtx x,
   return INTVAL (offset) <= entry->offset;
 }
 
-/* A for_each_rtx callback for which DATA is a mips_lo_sum_offset hash table.
-   Record every LO_SUM in *LOC.  */
+/* Search X for LO_SUMs and record them in HTAB.  */
 
-static int
-mips_record_lo_sum (rtx *loc, void *data)
+static void
+mips_record_lo_sums (const_rtx x, mips_offset_table *htab)
 {
-  if (GET_CODE (*loc) == LO_SUM)
-    mips_lo_sum_offset_lookup ((mips_offset_table*) data,
-			       XEXP (*loc, 1), INSERT);
-  return 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (GET_CODE (*iter) == LO_SUM)
+      mips_lo_sum_offset_lookup (htab, XEXP (*iter, 1), INSERT);
 }
 
 /* Return true if INSN is a SET of an orphaned high-part relocation.
@@ -16224,10 +16223,10 @@ mips_reorg_process_insns (void)
 	      get_referenced_operands (string, used, noperands);
 	      for (int i = 0; i < noperands; ++i)
 		if (used[i])
-		  for_each_rtx (&ops[i], mips_record_lo_sum, &htab);
+		  mips_record_lo_sums (ops[i], &htab);
 	    }
 	  else
-	    for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, &htab);
+	    mips_record_lo_sums (PATTERN (subinsn), &htab);
 	}
 
   last_insn = 0;
