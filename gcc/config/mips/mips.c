@@ -15468,7 +15468,7 @@ mips_annotate_pic_calls (void)
     }
 }
 
-/* A temporary variable used by for_each_rtx callbacks, etc.  */
+/* A temporary variable used by note_uses callbacks, etc.  */
 static rtx_insn *mips_sim_insn;
 
 /* A structure representing the state of the processor pipeline.
@@ -15562,23 +15562,16 @@ mips_sim_wait_reg (struct mips_sim *state, rtx_insn *insn, rtx reg)
     }
 }
 
-/* A for_each_rtx callback.  If *X is a register, advance simulation state
-   DATA until mips_sim_insn can read the register's value.  */
-
-static int
-mips_sim_wait_regs_2 (rtx *x, void *data)
-{
-  if (REG_P (*x))
-    mips_sim_wait_reg ((struct mips_sim *) data, mips_sim_insn, *x);
-  return 0;
-}
-
-/* Call mips_sim_wait_regs_2 (R, DATA) for each register R mentioned in *X.  */
+/* A note_uses callback.  For each register in *X, advance simulation
+   state DATA until mips_sim_insn can read the register's value.  */
 
 static void
 mips_sim_wait_regs_1 (rtx *x, void *data)
 {
-  for_each_rtx (x, mips_sim_wait_regs_2, data);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *x, NONCONST)
+    if (REG_P (*iter))
+      mips_sim_wait_reg ((struct mips_sim *) data, mips_sim_insn, *iter);
 }
 
 /* Advance simulation state STATE until all of INSN's register
