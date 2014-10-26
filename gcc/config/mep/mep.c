@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Structure of this file:
 
@@ -6367,14 +6368,10 @@ mep_vector_mode_supported_p (enum machine_mode mode ATTRIBUTE_UNUSED)
 /* A subroutine of global_reg_mentioned_p, returns 1 if *LOC mentions
    a global register.  */
 
-static int
-global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
+static bool
+global_reg_mentioned_p_1 (const_rtx x)
 {
   int regno;
-  rtx x = *loc;
-
-  if (! x)
-    return 0;
 
   switch (GET_CODE (x))
     {
@@ -6383,40 +6380,31 @@ global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 	{
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	      && global_regs[subreg_regno (x)])
-	    return 1;
-	  return 0;
+	    return true;
+	  return false;
 	}
       break;
 
     case REG:
       regno = REGNO (x);
       if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-	return 1;
-      return 0;
-
-    case SCRATCH:
-    case PC:
-    case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case LABEL_REF:
-      return 0;
+	return true;
+      return false;
 
     case CALL:
       /* A non-constant call might use a global register.  */
-      return 1;
+      return true;
 
     default:
       break;
     }
 
-  return 0;
+  return false;
 }
 
 /* Returns nonzero if X mentions a global register.  */
 
-static int
+static bool
 global_reg_mentioned_p (rtx x)
 {
   if (INSN_P (x))
@@ -6424,16 +6412,20 @@ global_reg_mentioned_p (rtx x)
       if (CALL_P (x))
 	{
 	  if (! RTL_CONST_OR_PURE_CALL_P (x))
-	    return 1;
+	    return true;
 	  x = CALL_INSN_FUNCTION_USAGE (x);
 	  if (x == 0)
-	    return 0;
+	    return false;
 	}
       else
 	x = PATTERN (x);
     }
 
-  return for_each_rtx (&x, global_reg_mentioned_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (global_reg_mentioned_p_1 (*iter))
+      return true;
+  return false;
 }
 /* Scheduling hooks for VLIW mode.
 

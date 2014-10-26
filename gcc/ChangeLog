@@ -1,5 +1,11 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mep/mep.c: Include rtl-iter.h.
+	(global_reg_mentioned_p_1): Take a const_rtx and return a bool.
+	(xtensa_tls_referenced_p): Return a bool.  Use FOR_EACH_SUBRTX.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/xtensa/xtensa.c: Include rtl-iter.h.
 	(xtensa_tls_referenced_p_1): Delete.
 	(xtensa_tls_referenced_p): Use FOR_EACH_SUBRTX.
