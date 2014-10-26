@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "cgraph.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -3449,29 +3450,32 @@ mips_rewrite_small_data_p (rtx x, enum mips_symbol_context context)
 	  && symbol_type == SYMBOL_GP_RELATIVE);
 }
 
-/* A for_each_rtx callback for mips_small_data_pattern_p.  DATA is the
-   containing MEM, or null if none.  */
+/* Return true if OP refers to small data symbols directly, not through
+   a LO_SUM.  CONTEXT is the context in which X appears.  */
 
 static int
-mips_small_data_pattern_1 (rtx *loc, void *data)
+mips_small_data_pattern_1 (rtx x, enum mips_symbol_context context)
 {
-  enum mips_symbol_context context;
-
-  /* Ignore things like "g" constraints in asms.  We make no particular
-     guarantee about which symbolic constants are acceptable as asm operands
-     versus which must be forced into a GPR.  */
-  if (GET_CODE (*loc) == LO_SUM || GET_CODE (*loc) == ASM_OPERANDS)
-    return -1;
-
-  if (MEM_P (*loc))
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
     {
-      if (for_each_rtx (&XEXP (*loc, 0), mips_small_data_pattern_1, *loc))
-	return 1;
-      return -1;
-    }
+      rtx x = *iter;
 
-  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
-  return mips_rewrite_small_data_p (*loc, context);
+      /* Ignore things like "g" constraints in asms.  We make no particular
+	 guarantee about which symbolic constants are acceptable as asm operands
+	 versus which must be forced into a GPR.  */
+      if (GET_CODE (x) == LO_SUM || GET_CODE (x) == ASM_OPERANDS)
+	iter.skip_subrtxes ();
+      else if (MEM_P (x))
+	{
+	  if (mips_small_data_pattern_1 (XEXP (x, 0), SYMBOL_CONTEXT_MEM))
+	    return true;
+	  iter.skip_subrtxes ();
+	}
+      else if (mips_rewrite_small_data_p (x, context))
+	return true;
+    }
+  return false;
 }
 
 /* Return true if OP refers to small data symbols directly, not through
@@ -3480,7 +3484,7 @@ mips_small_data_pattern_1 (rtx *loc, void *data)
 bool
 mips_small_data_pattern_p (rtx op)
 {
-  return for_each_rtx (&op, mips_small_data_pattern_1, NULL);
+  return mips_small_data_pattern_1 (op, SYMBOL_CONTEXT_LEA);
 }
 
 /* A for_each_rtx callback, used by mips_rewrite_small_data.
