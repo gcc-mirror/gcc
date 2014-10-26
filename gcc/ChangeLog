@@ -1,5 +1,12 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (mips16_rewrite_pool_refs_info): Delete.
+	(mips16_rewrite_pool_refs): Take the insn and constant pool as
+	parameters.  Iterate over the instruction's pattern and return void.
+	(mips16_lay_out_constants): Update accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips_kernel_reg_p): Replace with...
 	(mips_refers_to_kernel_reg_p): ...this new function.
 	(mips_expand_prologue): Update accordingly.
