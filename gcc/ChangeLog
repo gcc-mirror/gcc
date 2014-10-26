@@ -1,5 +1,11 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (mips_kernel_reg_p): Replace with...
+	(mips_refers_to_kernel_reg_p): ...this new function.
+	(mips_expand_prologue): Update accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips_rewrite_small_data_1): Take the context
 	as a parameter instead of the containing MEM.  Iterate over all
 	subrtxes.  Don't return a value.
