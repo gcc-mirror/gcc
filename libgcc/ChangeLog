@@ -1,3 +1,9 @@
+2014-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_read_access_ok): New function.
+	(pa32_fallback_frame_state): Use pa32_read_access_ok to check if
+	memory read accesses are ok.
+
 2014-10-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (ppc_fp_type): Set variable on powerpc*-*-linux*.
