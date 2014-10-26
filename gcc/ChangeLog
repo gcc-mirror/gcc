@@ -1,5 +1,12 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (mips_rewrite_small_data_1): Take the context
+	as a parameter instead of the containing MEM.  Iterate over all
+	subrtxes.  Don't return a value.
+	(mips_rewrite_small_data): Update call accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c: Include rtl-iter.h.
 	(mips_small_data_pattern_1): Take an rtx rather than an rtx pointer.
 	Take the context as a parameter instead of the containing MEM.
