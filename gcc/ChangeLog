@@ -1,5 +1,10 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/m68k/m68k.c (m68k_tls_reference_p_1): Delete.
+	(m68k_tls_reference_p): Use FOR_EACH_SUBRTX_VAR.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/m68k/m68k.c: Include rtl-iter.h.
 	(m68k_final_prescan_insn_1): Delete.
 	(m68k_final_prescan_insn): Use FOR_EACH_SUBRTX_VAR.
