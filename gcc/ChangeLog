@@ -1,5 +1,11 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/microblaze/microblaze.c: Include rtl-iter.h.
+	(microblaze_tls_referenced_p_1): Delete.
+	(microblaze_tls_referenced_p): Use FOR_EACH_SUBRTX.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips_at_reg_p): Delete.
 	(mips_need_noat_wrapper_p): Use FOR_EACH_SUBRTX.
 

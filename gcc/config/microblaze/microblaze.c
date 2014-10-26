@@ -56,6 +56,7 @@
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 
@@ -444,20 +445,6 @@ microblaze_tls_symbol_p (rtx x)
   return SYMBOL_REF_TLS_MODEL (x) != 0;
 }
 
-static int
-microblaze_tls_operand_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (*x) == SYMBOL_REF)
-    return SYMBOL_REF_TLS_MODEL (*x) != 0;
-
-  /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
-     TLS offsets, not real symbol references.  */
-  if (GET_CODE (*x) == UNSPEC && XINT (*x, 1) == UNSPEC_TLS)
-    return -1;
-
-  return 0;
-}
-
 /* Return TRUE if X contains any TLS symbol references.  */
 
 bool
@@ -465,8 +452,18 @@ microblaze_tls_referenced_p (rtx x)
 {
   if (!TARGET_HAVE_TLS)
     return false;
-
-  return for_each_rtx (&x, microblaze_tls_operand_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0)
+	return true;
+      /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
+	 TLS offsets, not real symbol references.  */
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
+	iter.skip_subrtxes ();
+    }
+  return false;
 }
 
 bool
