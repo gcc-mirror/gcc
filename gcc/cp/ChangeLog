@@ -1,3 +1,15 @@
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* cp-objcp-common.c: Do not include new.
+	(cxx_initialize_diagnostics): Move from here to ...
+	* error.c (cxx_initialize_diagnostics): : ... here. Move
+	diagnostics initialization here from init_error.
+	(cxx_pp): Use a real pointer not a macro.
+	(init_error): Just initialize cxx_pp.
+	* cxx-pretty-print.c (cxx_pretty_printer::cxx_pretty_printer): Do
+	not set maximum line length.
+
 2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/63619

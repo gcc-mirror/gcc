@@ -32,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cxx-pretty-print.h"
 #include "cp-objcp-common.h"
 
-#include <new>                       // For placement new.
-
 /* Special routine to get the alias set for C++.  */
 
 alias_set_type
@@ -130,22 +128,6 @@ cp_var_mod_type_p (tree type, tree fn)
 
   /* All other types are not variably modified.  */
   return false;
-}
-
-/* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed
-   that CONTEXT->printer is an already constructed basic pretty_printer.  */
-void
-cxx_initialize_diagnostics (diagnostic_context *context)
-{
-  c_common_initialize_diagnostics (context);
-
-  pretty_printer *base = context->printer;
-  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
-  context->printer = new (pp) cxx_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
 }
 
 /* This compares two types for equivalence ("compatible" in C-based languages).
