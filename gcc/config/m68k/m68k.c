@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "optabs.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 enum reg_class regno_reg_class[] =
 {
@@ -2279,49 +2280,6 @@ m68k_unwrap_symbol (rtx orig, bool unwrap_reloc32_p)
   return m68k_unwrap_symbol_1 (orig, unwrap_reloc32_p, NULL);
 }
 
-/* Helper for m68k_final_prescan_insn.  */
-
-static int
-m68k_final_prescan_insn_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *x_ptr;
-
-  if (m68k_unwrap_symbol (x, true) != x)
-    /* For rationale of the below, see comment in m68k_final_prescan_insn.  */
-    {
-      rtx plus;
-
-      gcc_assert (GET_CODE (x) == CONST);
-      plus = XEXP (x, 0);
-
-      if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
-	{
-	  rtx unspec;
-	  rtx addend;
-
-	  unspec = XEXP (plus, 0);
-	  gcc_assert (GET_CODE (unspec) == UNSPEC);
-	  addend = XEXP (plus, 1);
-	  gcc_assert (CONST_INT_P (addend));
-
-	  /* We now have all the pieces, rearrange them.  */
-
-	  /* Move symbol to plus.  */
-	  XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
-
-	  /* Move plus inside unspec.  */
-	  XVECEXP (unspec, 0, 0) = plus;
-
-	  /* Move unspec to top level of const.  */
-	  XEXP (x, 0) = unspec;
-	}
-
-      return -1;
-    }
-
-  return 0;
-}
-
 /* Prescan insn before outputing assembler for it.  */
 
 void
@@ -2347,13 +2305,47 @@ m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
      Note, that the top level of operand remains intact, so we don't have
      to patch up anything outside of the operand.  */
 
+  subrtx_var_iterator::array_type array;
   for (i = 0; i < n_operands; ++i)
     {
       rtx op;
 
       op = operands[i];
 
-      for_each_rtx (&op, m68k_final_prescan_insn_1, NULL);
+      FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
+	{
+	  rtx x = *iter;
+	  if (m68k_unwrap_symbol (x, true) != x)
+	    {
+	      rtx plus;
+
+	      gcc_assert (GET_CODE (x) == CONST);
+	      plus = XEXP (x, 0);
+
+	      if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
+		{
+		  rtx unspec;
+		  rtx addend;
+
+		  unspec = XEXP (plus, 0);
+		  gcc_assert (GET_CODE (unspec) == UNSPEC);
+		  addend = XEXP (plus, 1);
+		  gcc_assert (CONST_INT_P (addend));
+
+		  /* We now have all the pieces, rearrange them.  */
+
+		  /* Move symbol to plus.  */
+		  XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
+
+		  /* Move plus inside unspec.  */
+		  XVECEXP (unspec, 0, 0) = plus;
+
+		  /* Move unspec to top level of const.  */
+		  XEXP (x, 0) = unspec;
+		}
+	      iter.skip_subrtxes ();
+	    }
+	}
     }
 }
 
