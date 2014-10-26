@@ -15063,28 +15063,28 @@ r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
   return offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
 }
 
-/* A for_each_rtx callback for which DATA points to the instruction
-   containing *X.  Stop the search if we find a MEM that is not safe
-   from R10K speculation.  */
+/* Return true if X contains a MEM that is not safe from R10K speculation.
+   INSN is the instruction that contains X.  */
 
-static int
-r10k_needs_protection_p_1 (rtx *loc, void *data)
+static bool
+r10k_needs_protection_p_1 (rtx x, rtx_insn *insn)
 {
-  rtx mem;
-
-  mem = *loc;
-  if (!MEM_P (mem))
-    return 0;
-
-  if (MEM_EXPR (mem)
-      && MEM_OFFSET_KNOWN_P (mem)
-      && r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
-    return -1;
-
-  if (r10k_safe_address_p (XEXP (mem, 0), (rtx_insn *) data))
-    return -1;
-
-  return 1;
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx mem = *iter;
+      if (MEM_P (mem))
+	{
+	  if ((MEM_EXPR (mem)
+	       && MEM_OFFSET_KNOWN_P (mem)
+	       && r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
+	      || r10k_safe_address_p (XEXP (mem, 0), insn))
+	    iter.skip_subrtxes ();
+	  else
+	    return true;
+	}
+    }
+  return false;
 }
 
 /* A note_stores callback for which DATA points to an instruction pointer.
@@ -15098,7 +15098,7 @@ r10k_needs_protection_p_store (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
   rtx_insn **insn_ptr;
 
   insn_ptr = (rtx_insn **) data;
-  if (*insn_ptr && for_each_rtx (&x, r10k_needs_protection_p_1, *insn_ptr))
+  if (*insn_ptr && r10k_needs_protection_p_1 (x, *insn_ptr))
     *insn_ptr = NULL;
 }
 
@@ -15136,7 +15136,7 @@ r10k_needs_protection_p (rtx_insn *insn)
       return insn == NULL_RTX;
     }
 
-  return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_1, insn);
+  return r10k_needs_protection_p_1 (PATTERN (insn), insn);
 }
 
 /* Return true if BB is only reached by blocks in PROTECTED_BBS and if every
