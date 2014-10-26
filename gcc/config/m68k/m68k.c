@@ -2671,22 +2671,6 @@ m68k_tls_symbol_p (rtx x)
   return SYMBOL_REF_TLS_MODEL (x) != 0;
 }
 
-/* Helper for m68k_tls_referenced_p.  */
-
-static int
-m68k_tls_reference_p_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
-{
-  /* Note: this is not the same as m68k_tls_symbol_p.  */
-  if (GET_CODE (*x_ptr) == SYMBOL_REF)
-    return SYMBOL_REF_TLS_MODEL (*x_ptr) != 0 ? 1 : 0;
-
-  /* Don't recurse into legitimate TLS references.  */
-  if (m68k_tls_reference_p (*x_ptr, true))
-    return -1;
-
-  return 0;
-}
-
 /* If !LEGITIMATE_P, return true if X is a TLS symbol reference,
    though illegitimate one.
    If LEGITIMATE_P, return true if X is a legitimate TLS symbol reference.  */
@@ -2698,7 +2682,22 @@ m68k_tls_reference_p (rtx x, bool legitimate_p)
     return false;
 
   if (!legitimate_p)
-    return for_each_rtx (&x, m68k_tls_reference_p_1, NULL) == 1 ? true : false;
+    {
+      subrtx_var_iterator::array_type array;
+      FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
+	{
+	  rtx x = *iter;
+
+	  /* Note: this is not the same as m68k_tls_symbol_p.  */
+	  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0)
+	    return true;
+
+	  /* Don't recurse into legitimate TLS references.  */
+	  if (m68k_tls_reference_p (x, true))
+	    iter.skip_subrtxes ();
+	}
+      return false;
+    }
   else
     {
       enum m68k_reloc reloc = RELOC_GOT;
