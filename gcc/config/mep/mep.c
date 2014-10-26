@@ -6710,18 +6710,6 @@ mep_store_data_bypass_p (rtx_insn *prev, rtx_insn *insn)
   return INSN_P (insn) ? mep_store_data_bypass_1 (prev, PATTERN (insn)) : false;
 }
 
-/* A for_each_rtx subroutine of mep_mul_hilo_bypass_p.  Return 1 if *X
-   is a register other than LO or HI and if PREV sets *X.  */
-
-static int
-mep_mul_hilo_bypass_1 (rtx *x, void *prev)
-{
-  return (REG_P (*x)
-	  && REGNO (*x) != LO_REGNO
-	  && REGNO (*x) != HI_REGNO
-	  && reg_set_p (*x, (const_rtx) prev));
-}
-
 /* Return true if, apart from HI/LO, there are no true dependencies
    between multiplication instructions PREV and INSN.  */
 
@@ -6733,8 +6721,19 @@ mep_mul_hilo_bypass_p (rtx_insn *prev, rtx_insn *insn)
   pat = PATTERN (insn);
   if (GET_CODE (pat) == PARALLEL)
     pat = XVECEXP (pat, 0, 0);
-  return (GET_CODE (pat) == SET
-	  && !for_each_rtx (&SET_SRC (pat), mep_mul_hilo_bypass_1, prev));
+  if (GET_CODE (pat) != SET)
+    return false;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, SET_SRC (pat), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x)
+	  && REGNO (x) != LO_REGNO
+	  && REGNO (x) != HI_REGNO
+	  && reg_set_p (x, prev))
+	return false;
+    }
+  return true;
 }
 
 /* Return true if INSN is an ldc instruction that issues to the
