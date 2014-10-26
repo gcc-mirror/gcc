@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "context.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -12940,25 +12941,30 @@ sh_gen_truncate (enum machine_mode mode, rtx x, int need_sign_ext)
   return gen_rtx_fmt_e (code, mode, x);
 }
 
-/* Called via for_each_rtx after reload, to clean up truncates of
-   registers that span multiple actual hard registers.  */
+/* Look through X cleaning up truncates of registers that span multiple
+   actual hard registers.  Return the number of changes made.  */
 int
-shmedia_cleanup_truncate (rtx *p, void *n_changes)
+shmedia_cleanup_truncate (rtx x)
 {
-  rtx x = *p, reg;
-
-  if (GET_CODE (x) != TRUNCATE)
-    return 0;
-  reg = XEXP (x, 0);
-  if (GET_MODE_SIZE (GET_MODE (reg)) > 8 && REG_P (reg))
+  int n_changes = 0;
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {
-      enum machine_mode reg_mode = GET_MODE (reg);
-      XEXP (x, 0) = simplify_subreg (DImode, reg, reg_mode,
-				     subreg_lowpart_offset (DImode, reg_mode));
-      *(int*) n_changes += 1;
-      return -1;
+      rtx x = *iter;
+      if (GET_CODE (x) == TRUNCATE)
+	{
+	  rtx reg = XEXP (x, 0);
+	  enum machine_mode reg_mode = GET_MODE (reg);
+	  if (REG_P (reg) && GET_MODE_SIZE (reg_mode) > 8)
+	    {
+	      int offset = subreg_lowpart_offset (DImode, reg_mode);
+	      XEXP (x, 0) = simplify_subreg (DImode, reg, reg_mode, offset);
+	      n_changes += 1;
+	      iter.skip_subrtxes ();
+	    }
+	}
     }
-  return 0;
+  return n_changes;
 }
 
 /* Load and store depend on the highpart of the address.  However,
