@@ -6644,13 +6644,16 @@ mep_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
   return 2;
 }
 
-/* A for_each_rtx callback.  Return true if *X is a register that is
-   set by insn PREV.  */
+/* Return true if X contains a register that is set by insn PREV.  */
 
-static int
-mep_store_find_set (rtx *x, void *prev)
+static bool
+mep_store_find_set (const_rtx x, const rtx_insn *prev)
 {
-  return REG_P (*x) && reg_set_p (*x, (const_rtx) prev);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (REG_P (x) && reg_set_p (x, prev))
+      return true;
+  return false;
 }
 
 /* Like mep_store_bypass_p, but takes a pattern as the second argument,
@@ -6687,7 +6690,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
       src = SET_SRC (pat);
       for (i = 1; i < XVECLEN (src, 0); i++)
-	if (for_each_rtx (&XVECEXP (src, 0, i), mep_store_find_set, prev))
+	if (mep_store_find_set (XVECEXP (src, 0, i), prev))
 	  return false;
 
       return true;
@@ -6695,7 +6698,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
   /* Otherwise just check that PREV doesn't modify any register mentioned
      in the memory destination.  */
-  return !for_each_rtx (&SET_DEST (pat), mep_store_find_set, prev);
+  return !mep_store_find_set (SET_DEST (pat), prev);
 }
 
 /* Return true if INSN is a store instruction and if the store address
