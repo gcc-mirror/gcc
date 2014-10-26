@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "df.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 
 /* Enumeration for all of the relational tests, so that we can build
@@ -1986,34 +1987,6 @@ xtensa_mode_dependent_address_p (const_rtx addr,
   return constantpool_address_p (addr);
 }
 
-/* Helper for xtensa_tls_referenced_p.  */
-
-static int
-xtensa_tls_referenced_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (*x) == SYMBOL_REF)
-    return SYMBOL_REF_TLS_MODEL (*x) != 0;
-
-  /* Ignore TLS references that have already been legitimized.  */
-  if (GET_CODE (*x) == UNSPEC)
-    {
-      switch (XINT (*x, 1))
-	{
-	case UNSPEC_TPOFF:
-	case UNSPEC_DTPOFF:
-	case UNSPEC_TLS_FUNC:
-	case UNSPEC_TLS_ARG:
-	case UNSPEC_TLS_CALL:
-	  return -1;
-	default:
-	  break;
-	}
-    }
-
-  return 0;
-}
-
-
 /* Return TRUE if X contains any TLS symbol references.  */
 
 bool
@@ -2022,7 +1995,29 @@ xtensa_tls_referenced_p (rtx x)
   if (! TARGET_HAVE_TLS)
     return false;
 
-  return for_each_rtx (&x, xtensa_tls_referenced_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0)
+	return true;
+
+      /* Ignore TLS references that have already been legitimized.  */
+      if (GET_CODE (x) == UNSPEC)
+	switch (XINT (x, 1))
+	  {
+	  case UNSPEC_TPOFF:
+	  case UNSPEC_DTPOFF:
+	  case UNSPEC_TLS_FUNC:
+	  case UNSPEC_TLS_ARG:
+	  case UNSPEC_TLS_CALL:
+	    iter.skip_subrtxes ();
+	    break;
+	  default:
+	    break;
+	  }
+    }
+  return false;
 }
 
 

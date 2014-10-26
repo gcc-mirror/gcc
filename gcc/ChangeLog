@@ -1,5 +1,11 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/xtensa/xtensa.c: Include rtl-iter.h.
+	(xtensa_tls_referenced_p_1): Delete.
+	(xtensa_tls_referenced_p): Use FOR_EACH_SUBRTX.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/sh/sh.c (sh_contains_memref_p_1): Delete.
 	(sh_contains_memref_p): Use FOR_EACH_SUBRTX.
 
