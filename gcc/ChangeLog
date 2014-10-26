@@ -1,5 +1,14 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/sh/sh-protos.h (shmedia_cleanup_truncate): Take an
+	rtx as argument and return the number of changes.
+	* config/sh/sh.c: Include rtl-iter.h.
+	(shmedia_cleanup_truncate): Take an rtx as argument and iterate
+	over all subrtxes.  Return the number of changes made.
+	* config/sh/sh.md: Update caller accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/m68k/m68k.c (m68k_tls_reference_p_1): Delete.
 	(m68k_tls_reference_p): Use FOR_EACH_SUBRTX_VAR.
 

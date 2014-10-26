@@ -15803,10 +15803,7 @@ label:
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
 {
-  int n_changes = 0;
-
-  for_each_rtx (&operands[1], shmedia_cleanup_truncate, &n_changes);
-  if (!n_changes)
+  if (!shmedia_cleanup_truncate (operands[1]))
     FAIL;
 })
 
