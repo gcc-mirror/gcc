@@ -1,3 +1,8 @@
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* doc/invoke.texi (fmessage-length): Update text to match reality.
+
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/microblaze/microblaze.c: Include rtl-iter.h.

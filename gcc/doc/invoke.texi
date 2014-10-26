@@ -3078,11 +3078,10 @@ honor these options.
 @table @gcctabopt
 @item -fmessage-length=@var{n}
 @opindex fmessage-length
-Try to format error messages so that they fit on lines of about @var{n}
-characters.  The default is 72 characters for @command{g++} and 0 for the rest of
-the front ends supported by GCC@.  If @var{n} is zero, then no
-line-wrapping is done; each error message appears on a single
-line.
+Try to format error messages so that they fit on lines of about
+@var{n} characters.  If @var{n} is zero, then no line-wrapping will be
+done; each error message will appear on a single line.  This is the
+default for all front ends.
 
 @item -fdiagnostics-show-location=once
 @opindex fdiagnostics-show-location

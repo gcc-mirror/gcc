@@ -1,3 +1,10 @@
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* c-opts.c (c_common_diagnostics_set_defaults): Renamed from
+	c_common_initialize_diagnostics.
+	* c-common.h: Likewise.
+
 2014-10-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56980

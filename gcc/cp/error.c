@@ -39,11 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
 
-/* The global buffer where we dump everything.  It is there only for
-   transitional purpose.  It is expected, in the near future, to be
-   completely removed.  */
+/* cxx_pp is a C++ front-end-specific pretty printer: this is where we
+   dump C++ ASTs as strings. It is mostly used only by the various
+   tree -> string functions that are occasionally called from the
+   debugger or by the front-end for things like
+   __PRETTY_FUNCTION__.  */
 static cxx_pretty_printer scratch_pretty_printer;
-#define cxx_pp (&scratch_pretty_printer)
+static cxx_pretty_printer * cxx_pp = &scratch_pretty_printer;
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */
@@ -104,13 +106,37 @@ static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool);
 
+/* CONTEXT->printer is a basic pretty printer that was constructed
+   presumably by diagnostic_initialize(), called early in the
+   compiler's initialization process (in general_init) Before the FE
+   is initialized.  This (C++) FE-specific diagnostic initializer is
+   thus replacing the basic pretty printer with one that has C++-aware
+   capacities.  */
+
+void
+cxx_initialize_diagnostics (diagnostic_context *context)
+{
+  pretty_printer *base = context->printer;
+  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
+  context->printer = new (pp) cxx_pretty_printer ();
+
+  /* It is safe to free this object because it was previously XNEW()'d.  */
+  base->~pretty_printer ();
+  XDELETE (base);
+
+  c_common_diagnostics_set_defaults (context);
+  diagnostic_starter (context) = cp_diagnostic_starter;
+  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
+  diagnostic_format_decoder (context) = cp_printer;
+}
+
+/* Initialize the global cxx_pp that is used as the memory store for
+   the string representation of C++ AST.  See the description of
+   cxx_pp above.  */
+
 void
 init_error (void)
 {
-  diagnostic_starter (global_dc) = cp_diagnostic_starter;
-  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
-  diagnostic_format_decoder (global_dc) = cp_printer;
-
   new (cxx_pp) cxx_pretty_printer ();
 }
 
