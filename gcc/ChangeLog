@@ -1,5 +1,13 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c: Include rtl-iter.h.
+	(mips_small_data_pattern_1): Take an rtx rather than an rtx pointer.
+	Take the context as a parameter instead of the containing MEM.
+	Iterate over all subrtxes.
+	(mips_small_data_pattern_p): Update call accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mep/mep.c (mep_mul_hilo_bypass_1): Delete.
 	(mep_mul_hilo_bypass_p): Use FOR_EACH_SUBRTX.
 
