@@ -12972,18 +12972,15 @@ shmedia_cleanup_truncate (rtx x)
    so we must look at the rtl ourselves to see if any of the feeding
    registers is used in a memref.
 
-   Called by sh_contains_memref_p via for_each_rtx.  */
-static int
-sh_contains_memref_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  return (MEM_P (*loc));
-}
-
-/* Return true iff INSN contains a MEM.  */
+   Return true iff INSN contains a MEM.  */
 bool
 sh_contains_memref_p (rtx insn)
 {
-  return for_each_rtx (&PATTERN (insn), &sh_contains_memref_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    if (MEM_P (*iter))
+      return true;
+  return false;
 }
 
 /* Return true iff INSN loads a banked register.  */

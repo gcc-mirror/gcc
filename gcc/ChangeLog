@@ -1,5 +1,10 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/sh/sh.c (sh_contains_memref_p_1): Delete.
+	(sh_contains_memref_p): Use FOR_EACH_SUBRTX.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/sh/sh-protos.h (shmedia_cleanup_truncate): Take an
 	rtx as argument and return the number of changes.
 	* config/sh/sh.c: Include rtl-iter.h.
