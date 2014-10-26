@@ -1,5 +1,11 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (r10k_needs_protection_p_call): Take a const_rtx
+	and return a bool.  Iterate over all subrtxes here.
+	(r10k_needs_protection_p): Update accordingly.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (r10k_needs_protection_p_1): Take an rtx
 	rather than an rtx pointer.  Change type of insn from "void *"
 	to its real type.  Return bool rather than int.  Iterate over

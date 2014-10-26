@@ -15102,23 +15102,26 @@ r10k_needs_protection_p_store (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
     *insn_ptr = NULL;
 }
 
-/* A for_each_rtx callback that iterates over the pattern of a CALL_INSN.
-   Return nonzero if the call is not to a declared function.  */
+/* X is the pattern of a call instruction.  Return true if the call is
+   not to a declared function.  */
 
-static int
-r10k_needs_protection_p_call (rtx *loc, void *data ATTRIBUTE_UNUSED)
+static bool
+r10k_needs_protection_p_call (const_rtx x)
 {
-  rtx x;
-
-  x = *loc;
-  if (!MEM_P (x))
-    return 0;
-
-  x = XEXP (x, 0);
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DECL (x))
-    return -1;
-
-  return 1;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx mem = *iter;
+      if (MEM_P (mem))
+	{
+	  const_rtx addr = XEXP (mem, 0);
+	  if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DECL (addr))
+	    iter.skip_subrtxes ();
+	  else
+	    return true;
+	}
+    }
+  return false;
 }
 
 /* Return true if instruction INSN needs to be protected by an R10K
@@ -15128,7 +15131,7 @@ static bool
 r10k_needs_protection_p (rtx_insn *insn)
 {
   if (CALL_P (insn))
-    return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_call, NULL);
+    return r10k_needs_protection_p_call (PATTERN (insn));
 
   if (mips_r10k_cache_barrier == R10K_CACHE_BARRIER_STORE)
     {
