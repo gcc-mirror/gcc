@@ -14778,44 +14778,39 @@ mips16_rewrite_pool_constant (struct mips16_constant_pool *pool, rtx *x)
     }
 }
 
-/* This structure is used to communicate with mips16_rewrite_pool_refs.
-   INSN is the instruction we're rewriting and POOL points to the current
-   constant pool.  */
-struct mips16_rewrite_pool_refs_info {
-  rtx_insn *insn;
-  struct mips16_constant_pool *pool;
-};
+/* Rewrite INSN so that constant pool references refer to the constant's
+   label instead.  */
 
-/* Rewrite *X so that constant pool references refer to the constant's
-   label instead.  DATA points to a mips16_rewrite_pool_refs_info
-   structure.  */
-
-static int
-mips16_rewrite_pool_refs (rtx *x, void *data)
+static void
+mips16_rewrite_pool_refs (rtx_insn *insn, struct mips16_constant_pool *pool)
 {
-  struct mips16_rewrite_pool_refs_info *info =
-    (struct mips16_rewrite_pool_refs_info *) data;
-
-  if (force_to_mem_operand (*x, Pmode))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), ALL)
     {
-      rtx mem = force_const_mem (GET_MODE (*x), *x);
-      validate_change (info->insn, x, mem, false);
+      rtx *loc = *iter;
+
+      if (force_to_mem_operand (*loc, Pmode))
+	{
+	  rtx mem = force_const_mem (GET_MODE (*loc), *loc);
+	  validate_change (insn, loc, mem, false);
+	}
+
+      if (MEM_P (*loc))
+	{
+	  mips16_rewrite_pool_constant (pool, &XEXP (*loc, 0));
+	  iter.skip_subrtxes ();
+	}
+      else
+	{
+	  if (TARGET_MIPS16_TEXT_LOADS)
+	    mips16_rewrite_pool_constant (pool, loc);
+	  if (GET_CODE (*loc) == CONST
+	      /* Don't rewrite the __mips16_rdwr symbol.  */
+	      || (GET_CODE (*loc) == UNSPEC
+		  && XINT (*loc, 1) == UNSPEC_TLS_GET_TP))
+	    iter.skip_subrtxes ();
+	}
     }
-
-  if (MEM_P (*x))
-    {
-      mips16_rewrite_pool_constant (info->pool, &XEXP (*x, 0));
-      return -1;
-    }
-
-  /* Don't rewrite the __mips16_rdwr symbol.  */
-  if (GET_CODE (*x) == UNSPEC && XINT (*x, 1) == UNSPEC_TLS_GET_TP)
-    return -1;
-
-  if (TARGET_MIPS16_TEXT_LOADS)
-    mips16_rewrite_pool_constant (info->pool, x);
-
-  return GET_CODE (*x) == CONST ? -1 : 0;
 }
 
 /* Return whether CFG is used in mips_reorg.  */
@@ -14834,7 +14829,6 @@ static void
 mips16_lay_out_constants (bool split_p)
 {
   struct mips16_constant_pool pool;
-  struct mips16_rewrite_pool_refs_info info;
   rtx_insn *insn, *barrier;
 
   if (!TARGET_MIPS16_PCREL_LOADS)
@@ -14853,11 +14847,7 @@ mips16_lay_out_constants (bool split_p)
     {
       /* Rewrite constant pool references in INSN.  */
       if (USEFUL_INSN_P (insn))
-	{
-	  info.insn = insn;
-	  info.pool = &pool;
-	  for_each_rtx (&PATTERN (insn), mips16_rewrite_pool_refs, &info);
-	}
+	mips16_rewrite_pool_refs (insn, &pool);
 
       pool.insn_address += mips16_insn_length (insn);
 
