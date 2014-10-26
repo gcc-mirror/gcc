@@ -1,5 +1,10 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (mips_at_reg_p): Delete.
+	(mips_need_noat_wrapper_p): Use FOR_EACH_SUBRTX.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips_record_lo_sum): Replace with...
 	(mips_record_lo_sums): ...this new function.
 	(mips_reorg_process_insns): Update accordingly.
