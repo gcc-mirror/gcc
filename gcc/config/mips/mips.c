@@ -11045,12 +11045,16 @@ mips_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
-/* A for_each_rtx callback.  Stop the search if *X is a kernel register.  */
+/* Return true if X contains a kernel register.  */
 
-static int
-mips_kernel_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+mips_refers_to_kernel_reg_p (const_rtx x)
 {
-  return REG_P (*x) && KERNEL_REG_P (REGNO (*x));
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (REG_P (*iter) && KERNEL_REG_P (REGNO (*iter)))
+      return true;
+  return false;
 }
 
 /* Expand the "prologue" pattern.  */
@@ -11322,7 +11326,7 @@ mips_expand_prologue (void)
       rtx_insn *insn;
       for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
 	if (INSN_P (insn)
-	    && for_each_rtx (&PATTERN (insn), mips_kernel_reg_p, NULL))
+	    && mips_refers_to_kernel_reg_p (PATTERN (insn)))
 	  break;
       /* Emit a move from K1 to COP0 Status after insn.  */
       gcc_assert (insn != NULL_RTX);
@@ -11669,7 +11673,7 @@ mips_expand_epilogue (bool sibcall_p)
     {
       for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn)
-	    && for_each_rtx (&PATTERN(insn), mips_kernel_reg_p, NULL))
+	    && mips_refers_to_kernel_reg_p (PATTERN (insn)))
 	  break;
       gcc_assert (insn != NULL_RTX);
       /* Insert disable interrupts before the first use of K0 or K1.  */
