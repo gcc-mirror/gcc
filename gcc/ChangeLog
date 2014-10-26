@@ -1,5 +1,14 @@
 2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (r10k_needs_protection_p_1): Take an rtx
+	rather than an rtx pointer.  Change type of insn from "void *"
+	to its real type.  Return bool rather than int.  Iterate over
+	all subrtxes here.
+	(r10k_needs_protection_p_store): Update accordingly.
+	(r10k_needs_protection_p): Likewise.
+
+2014-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips16_rewrite_pool_refs_info): Delete.
 	(mips16_rewrite_pool_refs): Take the insn and constant pool as
 	parameters.  Iterate over the instruction's pattern and return void.
