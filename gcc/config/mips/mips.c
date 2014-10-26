@@ -17528,26 +17528,20 @@ mips_epilogue_uses (unsigned int regno)
   return false;
 }
 
-/* A for_each_rtx callback.  Stop the search if *X is an AT register.  */
-
-static int
-mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  return REG_P (*x) && REGNO (*x) == AT_REGNUM;
-}
-
 /* Return true if INSN needs to be wrapped in ".set noat".
    INSN has NOPERANDS operands, stored in OPVEC.  */
 
 static bool
 mips_need_noat_wrapper_p (rtx_insn *insn, rtx *opvec, int noperands)
 {
-  int i;
-
   if (recog_memoized (insn) >= 0)
-    for (i = 0; i < noperands; i++)
-      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
-	return true;
+    {
+      subrtx_iterator::array_type array;
+      for (int i = 0; i < noperands; i++)
+	FOR_EACH_SUBRTX (iter, array, opvec[i], NONCONST)
+	  if (REG_P (*iter) && REGNO (*iter) == AT_REGNUM)
+	    return true;
+    }
   return false;
 }
 
