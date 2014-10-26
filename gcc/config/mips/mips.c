@@ -3487,28 +3487,29 @@ mips_small_data_pattern_p (rtx op)
   return mips_small_data_pattern_1 (op, SYMBOL_CONTEXT_LEA);
 }
 
-/* A for_each_rtx callback, used by mips_rewrite_small_data.
-   DATA is the containing MEM, or null if none.  */
+/* Rewrite *LOC so that it refers to small data using explicit
+   relocations.  CONTEXT is the context in which *LOC appears.  */
 
-static int
-mips_rewrite_small_data_1 (rtx *loc, void *data)
+static void
+mips_rewrite_small_data_1 (rtx *loc, enum mips_symbol_context context)
 {
-  enum mips_symbol_context context;
-
-  if (MEM_P (*loc))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
     {
-      for_each_rtx (&XEXP (*loc, 0), mips_rewrite_small_data_1, *loc);
-      return -1;
+      rtx *loc = *iter;
+      if (MEM_P (*loc))
+	{
+	  mips_rewrite_small_data_1 (&XEXP (*loc, 0), SYMBOL_CONTEXT_MEM);
+	  iter.skip_subrtxes ();
+	}
+      else if (mips_rewrite_small_data_p (*loc, context))
+	{
+	  *loc = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, *loc);
+	  iter.skip_subrtxes ();
+	}
+      else if (GET_CODE (*loc) == LO_SUM)
+	iter.skip_subrtxes ();
     }
-
-  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
-  if (mips_rewrite_small_data_p (*loc, context))
-    *loc = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, *loc);
-
-  if (GET_CODE (*loc) == LO_SUM)
-    return -1;
-
-  return 0;
 }
 
 /* Rewrite instruction pattern PATTERN so that it refers to small data
@@ -3518,7 +3519,7 @@ rtx
 mips_rewrite_small_data (rtx pattern)
 {
   pattern = copy_insn (pattern);
-  for_each_rtx (&pattern, mips_rewrite_small_data_1, NULL);
+  mips_rewrite_small_data_1 (&pattern, SYMBOL_CONTEXT_LEA);
   return pattern;
 }
 
