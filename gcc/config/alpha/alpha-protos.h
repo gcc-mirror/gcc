@@ -112,6 +112,6 @@ extern HOST_WIDE_INT alpha_vms_initial_elimination_offset (unsigned int,
 
 extern rtx unicosmk_add_call_info_word (rtx);
 
-extern int some_small_symbolic_operand_int (rtx *, void *);
+extern bool some_small_symbolic_operand_int (rtx);
 extern int tls_symbolic_operand_1 (rtx, int, int);
 extern rtx resolve_reload_operand (rtx);
