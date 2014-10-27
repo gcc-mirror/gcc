@@ -1,5 +1,10 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (create_var_decl_1): For a variable declared
+	in the unit, set TREE_PUBLIC only if it has static storage duration.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Apply special treatment
 	of derived packed array types to constrained subtypes only.
 
