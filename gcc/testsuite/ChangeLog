@@ -1,3 +1,7 @@
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/entry_queues2.adb: New test.
+
 2014-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63641
