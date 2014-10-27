@@ -1,5 +1,12 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/s390/s390.c: Include rtl-iter.h.
+	(check_dpu): Delete.
+	(s390_loop_unroll_adjust): Only iterate over patterns.
+	Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/spu/spu.c: Include rtl-iter.h
 	(ea_symbol_ref): Replace with...
 	(ea_symbol_ref_p): ...this new function.
