@@ -46533,53 +46533,44 @@ allocate_next_window (int window_num)
   return dispatch_window_list1;
 }
 
-/* Increment the number of immediate operands of an instruction.  */
-
-static int
-find_constant_1 (rtx *in_rtx, imm_info *imm_values)
-{
-  if (*in_rtx == 0)
-    return 0;
-
-    switch ( GET_CODE (*in_rtx))
-    {
-    case CONST:
-    case SYMBOL_REF:
-    case CONST_INT:
-      (imm_values->imm)++;
-      if (x86_64_immediate_operand (*in_rtx, SImode))
-	(imm_values->imm32)++;
-      else
-	(imm_values->imm64)++;
-      break;
-
-    case CONST_DOUBLE:
-      (imm_values->imm)++;
-      (imm_values->imm64)++;
-      break;
-
-    case CODE_LABEL:
-      if (LABEL_KIND (*in_rtx) == LABEL_NORMAL)
-	{
-	  (imm_values->imm)++;
-	  (imm_values->imm32)++;
-	}
-      break;
-
-    default:
-      break;
-    }
-
-  return 0;
-}
-
 /* Compute number of immediate operands of an instruction.  */
 
 static void
 find_constant (rtx in_rtx, imm_info *imm_values)
 {
-  for_each_rtx (INSN_P (in_rtx) ? &PATTERN (in_rtx) : &in_rtx,
-		(rtx_function) find_constant_1, (void *) imm_values);
+  if (INSN_P (in_rtx))
+    in_rtx = PATTERN (in_rtx);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, in_rtx, ALL)
+    if (const_rtx x = *iter)
+      switch (GET_CODE (x))
+	{
+	case CONST:
+	case SYMBOL_REF:
+	case CONST_INT:
+	  (imm_values->imm)++;
+	  if (x86_64_immediate_operand (CONST_CAST_RTX (x), SImode))
+	    (imm_values->imm32)++;
+	  else
+	    (imm_values->imm64)++;
+	  break;
+
+	case CONST_DOUBLE:
+	  (imm_values->imm)++;
+	  (imm_values->imm64)++;
+	  break;
+
+	case CODE_LABEL:
+	  if (LABEL_KIND (x) == LABEL_NORMAL)
+	    {
+	      (imm_values->imm)++;
+	      (imm_values->imm32)++;
+	    }
+	  break;
+
+	default:
+	  break;
+	}
 }
 
 /* Return total size of immediate operands of an instruction along with number
