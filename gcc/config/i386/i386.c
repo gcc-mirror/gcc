@@ -39695,25 +39695,20 @@ x86_extended_QIreg_mentioned_p (rtx_insn *insn)
   return false;
 }
 
-/* Return nonzero when P points to register encoded via REX prefix.
-   Called via for_each_rtx.  */
-static int
-extended_reg_mentioned_1 (rtx *p, void *)
-{
-   unsigned int regno;
-   if (!REG_P (*p))
-     return 0;
-   regno = REGNO (*p);
-   return REX_INT_REGNO_P (regno) || REX_SSE_REGNO_P (regno);
-}
-
 /* Return true when INSN mentions register that must be encoded using REX
    prefix.  */
 bool
 x86_extended_reg_mentioned_p (rtx insn)
 {
-  return for_each_rtx (INSN_P (insn) ? &PATTERN (insn) : &insn,
-		       extended_reg_mentioned_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, INSN_P (insn) ? PATTERN (insn) : insn, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x)
+	  && (REX_INT_REGNO_P (REGNO (x)) || REX_SSE_REGNO_P (REGNO (x))))
+	return true;
+    }
+  return false;
 }
 
 /* If profitable, negate (without causing overflow) integer constant

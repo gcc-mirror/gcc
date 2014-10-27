@@ -1,5 +1,10 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c (extended_reg_mentioned_1): Delete.
+	(x86_extended_reg_mentioned_p): Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/i386/i386.c: Include rtl-iter.h
 	(ix86_check_avx256_register): Take a const_rtx and return a bool.
 	(ix86_check_avx256_stores): Update call accordingly.
