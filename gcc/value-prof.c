@@ -27,6 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "expr.h"
 #include "hard-reg-set.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "value-prof.h"
 #include "flags.h"
@@ -59,7 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "builtins.h"
 #include "tree-nested.h"
-#include "hash-set.h"
 #include "params.h"
 
 /* In this file value profile based optimizations are placed.  Currently the

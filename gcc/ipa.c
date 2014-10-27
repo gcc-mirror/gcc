@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "calls.h"
 #include "stringpool.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "hash-map.h"

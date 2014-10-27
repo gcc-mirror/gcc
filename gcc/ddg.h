@@ -22,10 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DDG_H
 
 /* For sbitmap.  */
-#include "sbitmap.h"
-/* For basic_block.  */
-#include "basic-block.h"
-#include "df.h"
 
 typedef struct ddg_node *ddg_node_ptr;
 typedef struct ddg_edge *ddg_edge_ptr;

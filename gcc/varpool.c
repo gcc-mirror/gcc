@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "varasm.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"

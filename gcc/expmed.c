@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "recog.h"
 #include "langhooks.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "target.h"
 #include "expmed.h"

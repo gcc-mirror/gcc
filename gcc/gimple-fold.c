@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "dumpfile.h"
 #include "bitmap.h"
+#include "predict.h"
+#include "dominance.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

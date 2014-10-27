@@ -67,6 +67,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h" /* for init_set_costs */
 #include "hosthooks.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "opts.h"
 #include "opts-diagnostic.h"

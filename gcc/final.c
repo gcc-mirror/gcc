@@ -70,6 +70,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h" /* exact_log2, floor_log2 */
 #include "reload.h"
 #include "intl.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
 #include "basic-block.h"
 #include "target.h"
 #include "targhooks.h"

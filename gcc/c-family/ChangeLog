@@ -1,3 +1,7 @@
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-gimplify.c: Adjust include files.
+
 2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53061

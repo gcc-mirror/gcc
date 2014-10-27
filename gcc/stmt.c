@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "optabs.h"
 #include "target.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

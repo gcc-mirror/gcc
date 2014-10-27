@@ -815,6 +815,8 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"recog.h\"\n");
+  printf ("#include \"predict.h\"\n");
+  printf ("#include \"basic-block.h\"\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n");
   printf ("#include \"diagnostic-core.h\"\n");

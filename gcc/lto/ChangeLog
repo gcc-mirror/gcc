@@ -1,3 +1,11 @@
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust include files.
+	* lto-object.c: Ditto.
+	* lto-partition.c: Ditto.
+	* lto-symtab.c: Ditto.
+	* lto.c: Ditto.
+
 2014-10-16  DJ Delorie  <dj@redhat.com>
 
 	* lto-object.c (lto_obj_begin_section): In the event that pointer
