@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dom.h"
 #include "builtins.h"
+#include "tree-cfgcleanup.h"
+#include "tree-into-ssa.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -3586,6 +3588,93 @@ simplify_mult (gimple_stmt_iterator *gsi)
 
   return false;
 }
+
+
+/* Const-and-copy lattice for fold_all_stmts.  */
+static vec<tree> lattice;
+
+/* Primitive "lattice" function for gimple_simplify.  */
+
+static tree
+fwprop_ssa_val (tree name)
+{
+  /* First valueize NAME.  */
+  if (TREE_CODE (name) == SSA_NAME
+      && SSA_NAME_VERSION (name) < lattice.length ())
+    {
+      tree val = lattice[SSA_NAME_VERSION (name)];
+      if (val)
+	name = val;
+    }
+  /* If NAME is not the only use signal we don't want to continue
+     matching into its definition.  */
+  if (TREE_CODE (name) == SSA_NAME
+      && !has_single_use (name))
+    return NULL_TREE;
+  return name;
+}
+
+/* Fold all stmts using fold_stmt following only single-use chains
+   and using a simple const-and-copy lattice.  */
+
+static bool
+fold_all_stmts (struct function *fun)
+{
+  bool cfg_changed = false;
+
+  /* Combine stmts with the stmts defining their operands.  Do that
+     in an order that guarantees visiting SSA defs before SSA uses.  */
+  lattice.create (num_ssa_names);
+  lattice.quick_grow_cleared (num_ssa_names);
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
+  int postorder_num = inverted_post_order_compute (postorder);
+  for (int i = 0; i < postorder_num; ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple orig_stmt = stmt;
+
+	  if (fold_stmt (&gsi, fwprop_ssa_val))
+	    {
+	      stmt = gsi_stmt (gsi);
+	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt)
+		  && gimple_purge_dead_eh_edges (bb))
+		cfg_changed = true;
+	      /* Cleanup the CFG if we simplified a condition to
+	         true or false.  */
+	      if (gimple_code (stmt) == GIMPLE_COND
+		  && (gimple_cond_true_p (stmt)
+		      || gimple_cond_false_p (stmt)))
+		cfg_changed = true;
+	      update_stmt (stmt);
+	    }
+
+	  /* Fill up the lattice.  */
+	  if (gimple_assign_single_p (stmt))
+	    {
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  if (TREE_CODE (rhs) == SSA_NAME)
+		    lattice[SSA_NAME_VERSION (lhs)] = fwprop_ssa_val (rhs);
+		  else if (is_gimple_min_invariant (rhs))
+		    lattice[SSA_NAME_VERSION (lhs)] = rhs;
+		  else
+		    lattice[SSA_NAME_VERSION (lhs)] = lhs;
+		}
+	    }
+	}
+    }
+  free (postorder);
+  lattice.release ();
+
+  return cfg_changed;
+}
+
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -3875,6 +3964,9 @@ pass_forwprop::execute (function *fun)
 	    }
 	}
     }
+
+  /* At the end fold all statements.  */
+  cfg_changed |= fold_all_stmts (fun);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;
