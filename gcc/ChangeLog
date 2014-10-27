@@ -1,5 +1,31 @@
 2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def (reduc_smax_, reduc_smin_,
+	reduc_umax_, reduc_umin_, reduc_smax_nan_, reduc_smin_nan_): Remove.
+	(reduc_smax_scal_, reduc_smin_scal_, reduc_umax_scal_,
+	reduc_umin_scal_, reduc_smax_nan_scal_, reduc_smin_nan_scal_): New.
+
+	* config/aarch64/aarch64-simd.md
+	(reduc_<maxmin_uns>_<mode>): Rename VDQV_S variant to...
+	(reduc_<maxmin_uns>_internal<mode>): ...this.
+	(reduc_<maxmin_uns>_<mode>): New (VDQ_BHSI).
+	(reduc_<maxmin_uns>_scal_<mode>): New (*2).
+
+	(reduc_<maxmin_uns>_v2si): Combine with below, renaming...
+	(reduc_<maxmin_uns>_<mode>): Combine V2F with above, renaming...
+	(reduc_<maxmin_uns>_internal_<mode>): ...to this (VDQF).
+
+	* config/aarch64/arm_neon.h (vmaxv_f32, vmaxv_s8, vmaxv_s16,
+	vmaxv_s32, vmaxv_u8, vmaxv_u16, vmaxv_u32, vmaxvq_f32, vmaxvq_f64,
+	vmaxvq_s8, vmaxvq_s16, vmaxvq_s32, vmaxvq_u8, vmaxvq_u16, vmaxvq_u32,
+	vmaxnmv_f32, vmaxnmvq_f32, vmaxnmvq_f64, vminv_f32, vminv_s8,
+	vminv_s16, vminv_s32, vminv_u8, vminv_u16, vminv_u32, vminvq_f32,
+	vminvq_f64, vminvq_s8, vminvq_s16, vminvq_s32, vminvq_u8, vminvq_u16,
+	vminvq_u32, vminnmv_f32, vminnmvq_f32, vminnmvq_f64): Update to use
+	__builtin_aarch64_reduc_..._scal; remove vget_lane wrapper.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def
 	(reduc_splus_<mode>/VDQF, reduc_uplus_<mode>/VDQF, reduc_splus_v4sf):
 	Remove.
