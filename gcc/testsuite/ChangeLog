@@ -1,5 +1,10 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/pack10.ads: New test.
+	* gnat.dg/specs/pack10_pkg.ad[sb]: New helper.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/entry_queues2.adb: New test.
 
 2014-10-25  Jakub Jelinek  <jakub@redhat.com>

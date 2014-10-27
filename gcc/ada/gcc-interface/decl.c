@@ -5083,8 +5083,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
 	{
 	  Entity_Id gnat_parent_type = Underlying_Type (Etype (gnat_entity));
-	  /* For packed array subtypes, the implementation type is used.  */
+	  /* For constrained packed array subtypes, the implementation type is
+	     used instead of the nominal type.  */
 	  if (kind == E_Array_Subtype
+	      && Is_Constrained (gnat_entity)
 	      && Present (Packed_Array_Impl_Type (gnat_parent_type)))
 	    gnat_parent_type = Packed_Array_Impl_Type (gnat_parent_type);
 	  relate_alias_sets (gnu_type, gnat_to_gnu_type (gnat_parent_type),
