@@ -1,5 +1,35 @@
 2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_splus_<mode>/VDQF, reduc_uplus_<mode>/VDQF, reduc_splus_v4sf):
+	Remove.
+	(reduc_plus_scal_<mode>, reduc_plus_scal_v4sf): New.
+
+	* config/aarch64/aarch64-simd.md (reduc_<sur>plus_mode): Remove.
+	(reduc_splus_<mode>, reduc_uplus_<mode>, reduc_plus_scal_<mode>): New.
+
+	(reduc_<sur>plus_mode): Change SUADDV -> UNSPEC_ADDV, rename to...
+	(aarch64_reduc_plus_internal<mode>): ...this.
+
+	(reduc_<sur>plus_v2si): Change SUADDV -> UNSPEC_ADDV, rename to...
+	(aarch64_reduc_plus_internalv2si): ...this.
+
+	(reduc_splus_<mode>/V2F): Rename to...
+	(aarch64_reduc_plus_internal<mode>): ...this.
+
+	* config/aarch64/iterators.md
+	(UNSPEC_SADDV, UNSPEC_UADDV, SUADDV): Remove.
+	(UNSPEC_ADDV): New.
+	(sur): Remove elements for UNSPEC_SADDV and UNSPEC_UADDV.
+
+	* config/aarch64/arm_neon.h (vaddv_s8, vaddv_s16, vaddv_s32, vaddv_u8,
+	vaddv_u16, vaddv_u32, vaddvq_s8, vaddvq_s16, vaddvq_s32, vaddvq_s64,
+	vaddvq_u8, vaddvq_u16, vaddvq_u32, vaddvq_u64, vaddv_f32, vaddvq_f32,
+	vaddvq_f64): Change __builtin_aarch64_reduc_[us]plus_... to
+	__builtin_aarch64_reduc_plus_scal, remove vget_lane wrapper.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
 	PR tree-optimization/61114
 	* doc/md.texi (Standard Names): Add reduc_(plus,[us](min|max))|scal
 	optabs, and note in reduc_[us](plus|min|max) to prefer the former.
