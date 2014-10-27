@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Define the specific costs for a given cpu.  */
 
@@ -11756,19 +11757,6 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
   s390_sched_state = 0;
 }
 
-/* This function checks the whole of insn X for memory references. The
-   function always returns zero because the framework it is called
-   from would stop recursively analyzing the insn upon a return value
-   other than zero. The real result of this function is updating
-   counter variable MEM_COUNT.  */
-static int
-check_dpu (rtx *x, unsigned *mem_count)
-{
-  if (*x != NULL_RTX && MEM_P (*x))
-    (*mem_count)++;
-  return 0;
-}
-
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
    a new number struct loop *loop should be unrolled if tuned for cpus with
    a built-in stride prefetcher.
@@ -11791,12 +11779,13 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
   /* Count the number of memory references within the loop body.  */
   bbs = get_loop_body (loop);
+  subrtx_iterator::array_type array;
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      for (insn = BB_HEAD (bbs[i]); insn != BB_END (bbs[i]); insn = NEXT_INSN (insn))
-	if (INSN_P (insn) && INSN_CODE (insn) != -1)
-            for_each_rtx_in_insn (&insn, (rtx_function) check_dpu, &mem_count);
-    }
+    FOR_BB_INSNS (bbs[i], insn)
+      if (INSN_P (insn) && INSN_CODE (insn) != -1)
+	FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	  if (MEM_P (*iter))
+	    mem_count += 1;
   free (bbs);
 
   /* Prevent division by zero, and we do not need to adjust nunroll in this case.  */
