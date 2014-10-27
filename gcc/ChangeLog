@@ -1,5 +1,11 @@
 2014-10-27  Richard Biener  <rguenther@suse.de>
 
+	* match.pd (0 % X): Properly use the iterator iterating over
+	all modulo operators.
+	(X % 1): Likewise.
+
+2014-10-27  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c: Include tree-cfgcleanup.h and tree-into-ssa.h.
 	(lattice): New global.
 	(fwprop_ssa_val): New function.
