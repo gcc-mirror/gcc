@@ -5330,8 +5330,8 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Real_Literal:
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-      /* If this is of a fixed-point type, the value we want is the
-	 value of the corresponding integer.  */
+      /* If this is of a fixed-point type, the value we want is the value of
+	 the corresponding integer.  */
       if (IN (Ekind (Underlying_Type (Etype (gnat_node))), Fixed_Point_Kind))
 	{
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
@@ -5343,10 +5343,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  Ureal ur_realval = Realval (gnat_node);
 
-	  /* First convert the real value to a machine number if it isn't
-	     already. That forces BASE to 2 for non-zero values and simplifies
-             the rest of our logic.  */
-
+	  /* First convert the value to a machine number if it isn't already.
+	     That will force the base to 2 for non-zero values and simplify
+	     the rest of the logic.  */
 	  if (!Is_Machine_Number (gnat_node))
 	    ur_realval
 	      = Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
@@ -5358,13 +5357,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	    {
 	      REAL_VALUE_TYPE tmp;
 
-	      gnu_result
-		= UI_To_gnu (Numerator (ur_realval), gnu_result_type);
+	      gnu_result = UI_To_gnu (Numerator (ur_realval), gnu_result_type);
 
 	      /* The base must be 2 as Machine guarantees this, so we scale
-                 the value, which we know can fit in the mantissa of the type
-                 (hence the use of that type above).  */
-
+		 the value, which we know can fit in the mantissa of the type
+		 (hence the use of that type above).  */
 	      gcc_assert (Rbase (ur_realval) == 2);
 	      real_ldexp (&tmp, &TREE_REAL_CST (gnu_result),
 			  - UI_To_Int (Denominator (ur_realval)));

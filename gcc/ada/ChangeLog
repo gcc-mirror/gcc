@@ -1,5 +1,9 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Real_Literal>: Minor tweaks.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (create_var_decl_1): For a variable declared
 	in the unit, set TREE_PUBLIC only if it has static storage duration.
 
