@@ -10088,8 +10088,8 @@ aarch64_asan_shadow_offset (void)
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED aarch64_frame_pointer_required
 
-#undef TARGET_GIMPLE_FOLD_BUILTIN
-#define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin
+//#undef TARGET_GIMPLE_FOLD_BUILTIN
+//#define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR aarch64_gimplify_va_arg_expr

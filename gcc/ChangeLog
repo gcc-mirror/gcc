@@ -1,3 +1,9 @@
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Comment out.
+	* config/aarch64/aarch64-builtins.c (aarch64_gimple_fold_builtin):
+	Remove using preprocessor directives.
+
 2014-10-27  Richard Biener  <rguenther@suse.de>
 
 	* match.pd (0 % X): Properly use the iterator iterating over
