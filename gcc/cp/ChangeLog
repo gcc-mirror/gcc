@@ -1,3 +1,34 @@
+2014-10-24  Jason Merrill  <jason@redhat.com>
+
+	Implement N3653 (Member initializers and aggregates) and fix
+	references to 'this' in constexpr constructors.
+	* class.c (check_field_decls): In C++14 an NSDMI does not make the
+	class non-aggregate.
+	* constexpr.c (struct constexpr_ctx): New.
+	(cxx_bind_parameters_in_call): Handle 'this'.
+	(cxx_eval_call_expression): Create new constexpr_ctx.
+	(cxx_eval_component_reference): Check CONSTRUCTOR_NO_IMPLICIT_ZERO.
+	(initialized_type, init_subob_ctx, verify_ctor_sanity): New.
+	(cxx_eval_bare_aggregate): Use them.  Build CONSTRUCTOR early.
+	(cxx_eval_vec_init_1): Likewise.
+	(cxx_eval_constant_expression) [PARM_DECL]: Allow 'this'.
+	[TARGET_EXPR]: Build new constexpr_ctx.
+	[PLACEHOLDER_EXPR]: New.
+	(cxx_eval_outermost_constant_expr): Build new constexpr_ctx.  Add
+	object parameter.
+	(is_sub_constant_expr): Build new constexpr_ctx.
+	(potential_constant_expression_1): Handle PLACEHOLDER_EXPR.
+	Allow 'this'.
+	* cp-gimplify.c (cp_gimplify_init_expr): Call replace_placeholders.
+	* cp-tree.h (CONSTRUCTOR_NO_IMPLICIT_ZERO): New.
+	* error.c (dump_expr): Handle PLACEHOLDER_EXPR.
+	* init.c (get_nsdmi): Generate PLACEHOLDER_EXPR.
+	* tree.c (lvalue_kind): Handle PLACEHOLDER_EXPR.
+	(build_ctor_subob_ref, replace_placeholders): New.
+	* typeck2.c (store_init_value): Use replace_placeholders.
+	(process_init_constructor_record): Make zero-init before NSDMI
+	explicit.
+
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cp-gimplify.c: Adjust include files.

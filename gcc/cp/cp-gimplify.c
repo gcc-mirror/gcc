@@ -495,6 +495,10 @@ cp_gimplify_init_expr (tree *expr_p)
 	    TREE_TYPE (from) = void_type_node;
 	}
 
+      if (cxx_dialect >= cxx14 && TREE_CODE (sub) == CONSTRUCTOR)
+	/* Handle aggregate NSDMI.  */
+	replace_placeholders (sub, to);
+
       if (t == sub)
 	break;
       else

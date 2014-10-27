@@ -28,6 +28,7 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   in constexpr expansion \[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
     regsub -all "(^|\n)collect2: error: ld returned \[^\n\]*" $text "" text
     regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
