@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "valtrack.h"
 #include "hashtab.h"
 #include "hash-set.h"

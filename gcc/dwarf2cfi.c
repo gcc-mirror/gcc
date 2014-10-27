@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
-#include "basic-block.h"
+#include "cfgbuild.h"
 #include "dwarf2.h"
 #include "dwarf2out.h"
 #include "dwarf2asm.h"

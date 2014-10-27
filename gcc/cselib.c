@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "dumpfile.h"
 #include "cselib.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "valtrack.h"
 #include "params.h"
 #include "alloc-pool.h"

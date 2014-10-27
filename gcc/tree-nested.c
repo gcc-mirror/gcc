@@ -34,6 +34,7 @@
 #include "function.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

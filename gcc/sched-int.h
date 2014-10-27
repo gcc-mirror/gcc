@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef INSN_SCHEDULING
 
 #include "df.h"
-#include "basic-block.h"
 
 /* Identificator of a scheduler pass.  */
 enum sched_pass_id_t { SCHED_PASS_UNKNOWN, SCHED_RGN_PASS, SCHED_EBB_PASS,

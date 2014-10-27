@@ -112,6 +112,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "print-tree.h"
 #include "calls.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "expr.h"
 #include "tree-pass.h"

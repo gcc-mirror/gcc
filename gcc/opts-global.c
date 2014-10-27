@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 #include "tree.h" /* Required by langhooks.h.  */
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -32,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "langhooks.h"
-#include "tm.h" /* Required by rtl.h.  */
 #include "rtl.h"
 #include "dbgcnt.h"
 #include "debug.h"

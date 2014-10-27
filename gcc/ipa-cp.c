@@ -107,6 +107,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-expr.h"
 #include "target.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "ipa-prop.h"
 #include "bitmap.h"
 #include "tree-pass.h"

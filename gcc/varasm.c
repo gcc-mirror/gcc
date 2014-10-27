@@ -53,9 +53,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "targhooks.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "asan.h"
-#include "basic-block.h"
 #include "rtl-iter.h"
 
 #ifdef XCOFF_DEBUGGING_INFO

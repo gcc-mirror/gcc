@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "diagnostic-core.h"
 #include "tm.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "cgraph.h"
 #include "tree-ssa-operands.h"
 #include "tree-pass.h"

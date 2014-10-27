@@ -41,6 +41,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "recog.h"
 #include "params.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "sched-int.h"
 #include "target.h"
 

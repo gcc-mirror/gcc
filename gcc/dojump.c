@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "langhooks.h"
 #include "ggc.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tm_p.h"
 

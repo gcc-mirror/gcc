@@ -1,3 +1,8 @@
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/plugin/ggcplug.c: Shuffle includes to include
+	gcc-plugin.h earlier.
+
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/concat1.ads: New test.

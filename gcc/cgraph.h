@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
-#include "basic-block.h"
 #include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
@@ -2276,21 +2275,6 @@ symbol_table::unregister (symtab_node *node)
 
   node->next = NULL;
   node->previous = NULL;
-}
-
-/* Allocate new callgraph node and insert it into basic data structures.  */
-
-inline cgraph_node *
-symbol_table::create_empty (void)
-{
-  cgraph_node *node = allocate_cgraph_symbol ();
-
-  node->type = SYMTAB_FUNCTION;
-  node->frequency = NODE_FREQUENCY_NORMAL;
-  node->count_materialization_scale = REG_BR_PROB_BASE;
-  cgraph_count++;
-
-  return node;
 }
 
 /* Release a callgraph NODE with UID and put in to the list of free nodes.  */

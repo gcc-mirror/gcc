@@ -49,6 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "reload.h"
 #include "ggc.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "target.h"
 

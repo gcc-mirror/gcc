@@ -1,3 +1,8 @@
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Adjust include files.
+	* go-lang.c: Ditto.
+
 2014-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::complex_constant_expression): Take one
