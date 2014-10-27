@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
@@ -16121,19 +16122,14 @@ output_387_binary_op (rtx insn, rtx *operands)
 
 /* Check if a 256bit AVX register is referenced inside of EXP.   */
 
-static int
-ix86_check_avx256_register (rtx *pexp, void *)
+static bool
+ix86_check_avx256_register (const_rtx exp)
 {
-  rtx exp = *pexp;
-
   if (GET_CODE (exp) == SUBREG)
     exp = SUBREG_REG (exp);
 
-  if (REG_P (exp)
-      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (exp)))
-    return 1;
-
-  return 0;
+  return (REG_P (exp)
+	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (exp)));
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
@@ -16155,7 +16151,7 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	    {
 	      rtx arg = XEXP (XEXP (link, 0), 0);
 
-	      if (ix86_check_avx256_register (&arg, NULL))
+	      if (ix86_check_avx256_register (arg))
 		return AVX_U128_DIRTY;
 	    }
 	}
@@ -16167,8 +16163,10 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
      changes state only when a 256bit register is written to, but we need
      to prevent the compiler from moving optimal insertion point above
      eventual read from 256bit register.  */
-  if (for_each_rtx (&PATTERN (insn), ix86_check_avx256_register, NULL))
-    return AVX_U128_DIRTY;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    if (ix86_check_avx256_register (*iter))
+      return AVX_U128_DIRTY;
 
   return AVX_U128_ANY;
 }
@@ -16252,7 +16250,7 @@ ix86_mode_needed (int entity, rtx_insn *insn)
 static void
 ix86_check_avx256_stores (rtx dest, const_rtx, void *data)
  {
-   if (ix86_check_avx256_register (&dest, NULL))
+   if (ix86_check_avx256_register (dest))
     {
       bool *used = (bool *) data;
       *used = true;
@@ -16317,7 +16315,7 @@ ix86_avx_u128_mode_entry (void)
     {
       rtx incoming = DECL_INCOMING_RTL (arg);
 
-      if (incoming && ix86_check_avx256_register (&incoming, NULL))
+      if (incoming && ix86_check_avx256_register (incoming))
 	return AVX_U128_DIRTY;
     }
 
@@ -16351,7 +16349,7 @@ ix86_avx_u128_mode_exit (void)
 
   /* Exit mode is set to AVX_U128_DIRTY if there are
      256bit modes used in the function return register.  */
-  if (reg && ix86_check_avx256_register (&reg, NULL))
+  if (reg && ix86_check_avx256_register (reg))
     return AVX_U128_DIRTY;
 
   return AVX_U128_CLEAN;
