@@ -135,7 +135,7 @@ netbsd			Krister Walfridsson	<krister.walfridsson@gmail.com>
 sh-linux-gnu		Kaz Kojima		<kkojima@gcc.gnu.org>
 RTEMS Ports		Joel Sherrill		<joel@oarcorp.com>
 RTEMS Ports		Ralf Corsepius		<ralf.corsepius@rtems.org>
-VMS			Douglas Rupp		<rupp@gnat.com>
+VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<gingold@adacore.com>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
 windows, cygwin, mingw	Kai Tietz		<ktietz@redhat.com>
