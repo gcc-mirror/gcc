@@ -18590,106 +18590,91 @@ vmaxnmq_f64 (float64x2_t __a, float64x2_t __b)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smax_nan_v2sf (__a),
-			0);
+  return __builtin_aarch64_reduc_smax_nan_scal_v2sf (__a);
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vmaxv_s8 (int8x8_t __a)
 {
-  return vget_lane_s8 (__builtin_aarch64_reduc_smax_v8qi (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v8qi (__a);
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vmaxv_s16 (int16x4_t __a)
 {
-  return vget_lane_s16 (__builtin_aarch64_reduc_smax_v4hi (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v4hi (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vmaxv_s32 (int32x2_t __a)
 {
-  return vget_lane_s32 (__builtin_aarch64_reduc_smax_v2si (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v2si (__a);
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vmaxv_u8 (uint8x8_t __a)
 {
-  return vget_lane_u8 ((uint8x8_t)
-		__builtin_aarch64_reduc_umax_v8qi ((int8x8_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v8qi_uu (__a);
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vmaxv_u16 (uint16x4_t __a)
 {
-  return vget_lane_u16 ((uint16x4_t)
-		__builtin_aarch64_reduc_umax_v4hi ((int16x4_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v4hi_uu (__a);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vmaxv_u32 (uint32x2_t __a)
 {
-  return vget_lane_u32 ((uint32x2_t)
-		__builtin_aarch64_reduc_umax_v2si ((int32x2_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v2si_uu (__a);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_nan_v4sf (__a),
-			 0);
+  return __builtin_aarch64_reduc_smax_nan_scal_v4sf (__a);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmaxvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_nan_v2df (__a),
-			 0);
+  return __builtin_aarch64_reduc_smax_nan_scal_v2df (__a);
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vmaxvq_s8 (int8x16_t __a)
 {
-  return vgetq_lane_s8 (__builtin_aarch64_reduc_smax_v16qi (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v16qi (__a);
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vmaxvq_s16 (int16x8_t __a)
 {
-  return vgetq_lane_s16 (__builtin_aarch64_reduc_smax_v8hi (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v8hi (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vmaxvq_s32 (int32x4_t __a)
 {
-  return vgetq_lane_s32 (__builtin_aarch64_reduc_smax_v4si (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v4si (__a);
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vmaxvq_u8 (uint8x16_t __a)
 {
-  return vgetq_lane_u8 ((uint8x16_t)
-		__builtin_aarch64_reduc_umax_v16qi ((int8x16_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v16qi_uu (__a);
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vmaxvq_u16 (uint16x8_t __a)
 {
-  return vgetq_lane_u16 ((uint16x8_t)
-		__builtin_aarch64_reduc_umax_v8hi ((int16x8_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v8hi_uu (__a);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vmaxvq_u32 (uint32x4_t __a)
 {
-  return vgetq_lane_u32 ((uint32x4_t)
-		__builtin_aarch64_reduc_umax_v4si ((int32x4_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umax_scal_v4si_uu (__a);
 }
 
 /* vmaxnmv  */
@@ -18697,20 +18682,19 @@ vmaxvq_u32 (uint32x4_t __a)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxnmv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smax_v2sf (__a),
-			0);
+  return __builtin_aarch64_reduc_smax_scal_v2sf (__a);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxnmvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_v4sf (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v4sf (__a);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmaxnmvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_v2df (__a), 0);
+  return __builtin_aarch64_reduc_smax_scal_v2df (__a);
 }
 
 /* vmin  */
@@ -18836,107 +18820,91 @@ vminnmq_f64 (float64x2_t __a, float64x2_t __b)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smin_nan_v2sf (__a),
-			0);
+  return __builtin_aarch64_reduc_smin_nan_scal_v2sf (__a);
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vminv_s8 (int8x8_t __a)
 {
-  return vget_lane_s8 (__builtin_aarch64_reduc_smin_v8qi (__a),
-		       0);
+  return __builtin_aarch64_reduc_smin_scal_v8qi (__a);
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vminv_s16 (int16x4_t __a)
 {
-  return vget_lane_s16 (__builtin_aarch64_reduc_smin_v4hi (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v4hi (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vminv_s32 (int32x2_t __a)
 {
-  return vget_lane_s32 (__builtin_aarch64_reduc_smin_v2si (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v2si (__a);
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vminv_u8 (uint8x8_t __a)
 {
-  return vget_lane_u8 ((uint8x8_t)
-		__builtin_aarch64_reduc_umin_v8qi ((int8x8_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v8qi_uu (__a);
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vminv_u16 (uint16x4_t __a)
 {
-  return vget_lane_u16 ((uint16x4_t)
-		__builtin_aarch64_reduc_umin_v4hi ((int16x4_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v4hi_uu (__a);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vminv_u32 (uint32x2_t __a)
 {
-  return vget_lane_u32 ((uint32x2_t)
-		__builtin_aarch64_reduc_umin_v2si ((int32x2_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v2si_uu (__a);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_nan_v4sf (__a),
-			 0);
+  return __builtin_aarch64_reduc_smin_nan_scal_v4sf (__a);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vminvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_nan_v2df (__a),
-			 0);
+  return __builtin_aarch64_reduc_smin_nan_scal_v2df (__a);
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vminvq_s8 (int8x16_t __a)
 {
-  return vgetq_lane_s8 (__builtin_aarch64_reduc_smin_v16qi (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v16qi (__a);
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vminvq_s16 (int16x8_t __a)
 {
-  return vgetq_lane_s16 (__builtin_aarch64_reduc_smin_v8hi (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v8hi (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vminvq_s32 (int32x4_t __a)
 {
-  return vgetq_lane_s32 (__builtin_aarch64_reduc_smin_v4si (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v4si (__a);
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vminvq_u8 (uint8x16_t __a)
 {
-  return vgetq_lane_u8 ((uint8x16_t)
-		__builtin_aarch64_reduc_umin_v16qi ((int8x16_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v16qi_uu (__a);
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vminvq_u16 (uint16x8_t __a)
 {
-  return vgetq_lane_u16 ((uint16x8_t)
-		__builtin_aarch64_reduc_umin_v8hi ((int16x8_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v8hi_uu (__a);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vminvq_u32 (uint32x4_t __a)
 {
-  return vgetq_lane_u32 ((uint32x4_t)
-		__builtin_aarch64_reduc_umin_v4si ((int32x4_t) __a),
-		0);
+  return __builtin_aarch64_reduc_umin_scal_v4si_uu (__a);
 }
 
 /* vminnmv  */
@@ -18944,19 +18912,19 @@ vminvq_u32 (uint32x4_t __a)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminnmv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smin_v2sf (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v2sf (__a);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminnmvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_v4sf (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v4sf (__a);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vminnmvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_v2df (__a), 0);
+  return __builtin_aarch64_reduc_smin_scal_v2df (__a);
 }
 
 /* vmla */
