@@ -1193,6 +1193,9 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
   return NULL_TREE;
 }
 
+/* Handling of reduction operations temporarily removed so as to decouple
+   changes to tree codes from AArch64 NEON Intrinsics.  */
+#if 0
 bool
 aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
@@ -1264,6 +1267,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
   return changed;
 }
+#endif
 
 void
 aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
