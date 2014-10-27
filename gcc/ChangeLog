@@ -1,3 +1,8 @@
+2014-10-27  DJ Delorie  <dj@redhat.com>
+
+	* tree.c (build_common_tree_nodes): Don't even store the
+	__int128 types if they're not supported.
+
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/i386/i386.c (ix86_loop_memcount): Delete.
