@@ -47412,29 +47412,6 @@ ix86_simd_clone_usable (struct cgraph_node *node)
     }
 }
 
-/* This function gives out the number of memory references.
-   This value determines the unrolling factor for
-   bdver3 and bdver4 architectures. */
-
-static int
-ix86_loop_memcount (rtx *x, unsigned *mem_count)
-{
-  if (*x != NULL_RTX && MEM_P (*x))
-   {
-     enum machine_mode mode;
-     unsigned int n_words;
-
-     mode = GET_MODE (*x);
-     n_words = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
-
-    if (n_words > 4)
-       (*mem_count)+=2;
-    else
-       (*mem_count)+=1;
-   }
-  return 0;
-}
-
 /* This function adjusts the unroll factor based on
    the hardware capabilities. For ex, bdver3 has
    a loop buffer which makes unrolling of smaller
@@ -47453,15 +47430,25 @@ ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   if (!TARGET_ADJUST_UNROLL)
      return nunroll;
 
-  /* Count the number of memory references within the loop body.  */
+  /* Count the number of memory references within the loop body.
+     This value determines the unrolling factor for bdver3 and bdver4
+     architectures. */
+  subrtx_iterator::array_type array;
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      for (insn = BB_HEAD (bbs[i]); insn != BB_END (bbs[i]); insn = NEXT_INSN (insn))
-        if (NONDEBUG_INSN_P (insn))
-            for_each_rtx_in_insn (&insn, (rtx_function) ix86_loop_memcount,
-				  &mem_count);
-    }
+    FOR_BB_INSNS (bbs[i], insn)
+      if (NONDEBUG_INSN_P (insn))
+	FOR_EACH_SUBRTX (iter, array, insn, NONCONST)
+	  if (const_rtx x = *iter)
+	    if (MEM_P (x))
+	      {
+		enum machine_mode mode = GET_MODE (x);
+		unsigned int n_words = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+		if (n_words > 4)
+		  mem_count += 2;
+		else
+		  mem_count += 1;
+	      }
   free (bbs);
 
   if (mem_count && mem_count <=32)

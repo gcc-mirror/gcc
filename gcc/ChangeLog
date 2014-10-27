@@ -1,5 +1,10 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c (ix86_loop_memcount): Delete.
+	(ix86_loop_unroll_adjust): Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/i386/i386.c (find_constant_1): Delete.
 	(find_constant): Use FOR_EACH_SUBRTX.
 
