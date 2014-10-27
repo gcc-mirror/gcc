@@ -4294,7 +4294,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	    y = const0_rtx;
 	}
 
-      *pmode = word_mode;
+      *pmode = ret_mode;
       prepare_cmp_insn (x, y, comparison, NULL_RTX, unsignedp, methods,
 			ptest, pmode);
     }

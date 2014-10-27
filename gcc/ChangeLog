@@ -1,3 +1,8 @@
+2014-10-27  Jiong Wang <jiong.wang@arm.com>
+
+	PR target/63442
+	* optabs.c (prepare_cmp_insn): Use "ret_mode" instead of "word_mode".
+
 2014-10-27  DJ Delorie  <dj@redhat.com>
 
 	* tree.c (build_common_tree_nodes): Don't even store the
