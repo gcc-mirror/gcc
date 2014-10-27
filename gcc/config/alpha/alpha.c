@@ -1676,30 +1676,6 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
-/* Subfunction of the following function.  Update the flags of any MEM
-   found in part of X.  */
-
-static int
-alpha_set_memflags_1 (rtx *xp, void *data)
-{
-  rtx x = *xp, orig = (rtx) data;
-
-  if (!MEM_P (x))
-    return 0;
-
-  MEM_VOLATILE_P (x) = MEM_VOLATILE_P (orig);
-  MEM_NOTRAP_P (x) = MEM_NOTRAP_P (orig);
-  MEM_READONLY_P (x) = MEM_READONLY_P (orig);
-
-  /* Sadly, we cannot use alias sets because the extra aliasing
-     produced by the AND interferes.  Given that two-byte quantities
-     are the only thing we would be able to differentiate anyway,
-     there does not seem to be any point in convoluting the early
-     out of the alias check.  */
-
-  return -1;
-}
-
 /* Given SEQ, which is an INSN list, look for any MEMs in either
    a SET_DEST or a SET_SRC and copy the in-struct, unchanging, and
    volatile flags from REF into each of the MEMs found.  If REF is not
@@ -1721,9 +1697,26 @@ alpha_set_memflags (rtx seq, rtx ref)
       && !MEM_READONLY_P (ref))
     return;
 
+  subrtx_var_iterator::array_type array;
   for (insn = as_a <rtx_insn *> (seq); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
-      for_each_rtx (&PATTERN (insn), alpha_set_memflags_1, (void *) ref);
+      FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (insn), NONCONST)
+	{
+	  rtx x = *iter;
+	  if (MEM_P (x))
+	    {
+	      MEM_VOLATILE_P (x) = MEM_VOLATILE_P (ref);
+	      MEM_NOTRAP_P (x) = MEM_NOTRAP_P (ref);
+	      MEM_READONLY_P (x) = MEM_READONLY_P (ref);
+	      /* Sadly, we cannot use alias sets because the extra
+		 aliasing produced by the AND interferes.  Given that
+		 two-byte quantities are the only thing we would be
+		 able to differentiate anyway, there does not seem to
+		 be any point in convoluting the early out of the
+		 alias check.  */
+	      iter.skip_subrtxes ();
+	    }
+	}
     else
       gcc_unreachable ();
 }
