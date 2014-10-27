@@ -9629,7 +9629,8 @@ build_common_tree_nodes (bool signed_char, bool short_double)
       TYPE_SIZE (int_n_trees[i].signed_type) = bitsize_int (int_n_data[i].bitsize);
       TYPE_SIZE (int_n_trees[i].unsigned_type) = bitsize_int (int_n_data[i].bitsize);
 
-      if (int_n_data[i].bitsize > LONG_LONG_TYPE_SIZE)
+      if (int_n_data[i].bitsize > LONG_LONG_TYPE_SIZE
+	  && int_n_enabled_p[i])
 	{
 	  integer_types[itk_intN_0 + i * 2] = int_n_trees[i].signed_type;
 	  integer_types[itk_unsigned_intN_0 + i * 2] = int_n_trees[i].unsigned_type;
