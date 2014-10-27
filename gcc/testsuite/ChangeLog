@@ -1,3 +1,8 @@
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/concat1.ads: New test.
+	* gnat.dg/specs/concat1_pkg.ads: New helper.
+
 2014-10-27  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/forwprop-6.c: Scan ccp1 dump instead.
