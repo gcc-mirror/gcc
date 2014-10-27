@@ -806,14 +806,18 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	      && !require_potential_constant_expression (value))
 	    value = error_mark_node;
 	  else
-	    value = cxx_constant_value (value);
+	    value = cxx_constant_value (value, decl);
 	}
-      value = maybe_constant_init (value);
+      value = maybe_constant_init (value, decl);
       const_init = (reduced_constant_expression_p (value)
 		    || error_operand_p (value));
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = const_init;
       TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
     }
+
+  if (cxx_dialect >= cxx14)
+    /* Handle aggregate NSDMI in non-constant initializers, too.  */
+    value = replace_placeholders (value, decl);
 
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
@@ -1292,9 +1296,8 @@ process_init_constructor_record (tree type, tree init,
 				 tsubst_flags_t complain)
 {
   vec<constructor_elt, va_gc> *v = NULL;
-  int flags = 0;
   tree field;
-  unsigned HOST_WIDE_INT idx = 0;
+  int skipped = 0;
 
   gcc_assert (TREE_CODE (type) == RECORD_TYPE);
   gcc_assert (!CLASSTYPE_VBASECLASSES (type));
@@ -1302,6 +1305,9 @@ process_init_constructor_record (tree type, tree init,
 	      || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
   gcc_assert (!TYPE_POLYMORPHIC_P (type));
 
+ restart:
+  int flags = 0;
+  unsigned HOST_WIDE_INT idx = 0;
   /* Generally, we will always have an index for each initializer (which is
      a FIELD_DECL, put by reshape_init), but compound literals don't go trough
      reshape_init. So we need to handle both cases.  */
@@ -1345,6 +1351,19 @@ process_init_constructor_record (tree type, tree init,
 	  next = massage_init_elt (type, ce->value, complain);
 	  ++idx;
 	}
+      else if (DECL_INITIAL (field))
+	{
+	  if (skipped > 0)
+	    {
+	      /* We're using an NSDMI past a field with implicit
+	         zero-init.  Go back and make it explicit.  */
+	      skipped = -1;
+	      vec_safe_truncate (v, 0);
+	      goto restart;
+	    }
+	  /* C++14 aggregate NSDMI.  */
+	  next = get_nsdmi (field, /*ctor*/false);
+	}
       else if (type_build_ctor_call (TREE_TYPE (field)))
 	{
 	  /* If this type needs constructors run for
@@ -1387,13 +1406,17 @@ process_init_constructor_record (tree type, tree init,
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 
-	  if (!zero_init_p (TREE_TYPE (field)))
+	  if (!zero_init_p (TREE_TYPE (field))
+	      || skipped < 0)
 	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
 				    /*static_storage_p=*/false);
 	  else
-	    /* The default zero-initialization is fine for us; don't
-	    add anything to the CONSTRUCTOR.  */
-	    continue;
+	    {
+	      /* The default zero-initialization is fine for us; don't
+		 add anything to the CONSTRUCTOR.  */
+	      skipped = 1;
+	      continue;
+	    }
 	}
 
       /* If this is a bitfield, now convert to the lowered type.  */

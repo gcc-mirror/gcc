@@ -10,18 +10,18 @@
 // R() is well-formed because i is initialized before j.
 
 struct s {
-  constexpr s() : v(v) { }	// { dg-message "" }
+  constexpr s() : v(v) { }
   int v;
 };
 
-constexpr s bang;		// { dg-message "" }
+constexpr s bang;		// { dg-error "" }
 
 struct R {
   int i,j;
-  constexpr R() : i(42),j(i) { } // { dg-bogus "" "" { xfail *-*-* } }
+  constexpr R() : i(42),j(i) { } // { dg-bogus "" }
 };
 
-constexpr R r;			// { dg-bogus "" "" { xfail *-*-* } }
+constexpr R r;			// { dg-bogus "" }
 
 // Ill-formed (no diagnostic required)
 struct T {
@@ -41,10 +41,10 @@ struct U {
   constexpr int f(int _i) { return _i; }
   constexpr int g() { return i; }
   constexpr U(): i(0), j(0) { }
-  constexpr U(const U& t) : i(f(t.i)),j(0) { } // { dg-bogus "" "" { xfail *-*-* } }
-  constexpr U(int _i) : i(_i),j(g()) { } // { dg-bogus "" "" { xfail *-*-* } }
+  constexpr U(const U& t) : i(f(t.i)),j(0) { } // { dg-bogus "" }
+  constexpr U(int _i) : i(_i),j(g()) { } // { dg-bogus "" }
 };
 
 constexpr U u1;
-constexpr U u2(u1);		// { dg-bogus "" "" { xfail *-*-* } }
-constexpr U u3(1);		// { dg-bogus "" "" { xfail *-*-* } }
+constexpr U u2(u1);		// { dg-bogus "" }
+constexpr U u3(1);		// { dg-bogus "" }
