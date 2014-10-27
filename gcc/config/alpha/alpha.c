@@ -1233,16 +1233,20 @@ alpha_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   return decl_has_samegp (decl);
 }
 
-int
-some_small_symbolic_operand_int (rtx *px, void *data ATTRIBUTE_UNUSED)
+bool
+some_small_symbolic_operand_int (rtx x)
 {
-  rtx x = *px;
-
-  /* Don't re-split.  */
-  if (GET_CODE (x) == LO_SUM)
-    return -1;
-
-  return small_symbolic_operand (x, Pmode) != 0;
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
+    {
+      rtx x = *iter;
+      /* Don't re-split.  */
+      if (GET_CODE (x) == LO_SUM)
+	iter.skip_subrtxes ();
+      else if (small_symbolic_operand (x, Pmode))
+	return true;
+    }
+  return false;
 }
 
 rtx

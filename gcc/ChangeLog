@@ -1,5 +1,14 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/alpha/alpha-protos.h (some_small_symbolic_operand_int):
+	Take an rtx and return a bool.
+	* config/alpha/alpha.c (some_small_symbolic_operand_int): Likewise.
+	Use FOR_EACH_SUBRTX_VAR.
+	* config/alpha/predicates.md (some_small_symbolic_operand): Update
+	accordingly.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/alpha/alpha-protos.h (alpha_find_lo_sum_using_gp): Return
 	a bool.
 	* config/alpha/alpha.c (find_lo_sum_using_gp): Delete.
