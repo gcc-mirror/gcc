@@ -1,5 +1,13 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c: Include rtl-iter.h
+	(ix86_check_avx256_register): Take a const_rtx and return a bool.
+	(ix86_check_avx256_stores): Update call accordingly.
+	(ix86_avx_u128_mode_entry, ix86_avx_u128_mode_exit): Likewise.
+	(ix86_avx_u128_mode_needed): Likewise.  Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/alpha/alpha-protos.h (some_small_symbolic_operand_int):
 	Take an rtx and return a bool.
 	* config/alpha/alpha.c (some_small_symbolic_operand_int): Likewise.
