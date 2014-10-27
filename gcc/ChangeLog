@@ -1,3 +1,14 @@
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure: Rebuild.
+	* Makefile.in (aclocal_deps): Add gcc-plugin.m4.
+	* configure.ac: Use GCC_ENABLE_PLUGINS.
+	* stor-layout.c (finish_bitfield_layout): Now public.  Change
+	argument type to 'tree'.
+	(finish_record_layout): Update.
+	* stor-layout.h (finish_bitfield_layout): Declare.
+
 2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Define again.
