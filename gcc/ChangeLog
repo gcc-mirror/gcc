@@ -1,3 +1,11 @@
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/spu/spu.c: Include rtl-iter.h
+	(ea_symbol_ref): Replace with...
+	(ea_symbol_ref_p): ...this new function.
+	(spu_legitimate_address_p): Update call accordingly.
+	(spu_legitimate_constant_p): Likewise.  Use FOR_EACH_SUBRTX.
+
 2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>
 
