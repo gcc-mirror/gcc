@@ -1,5 +1,10 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Apply special treatment
+	of derived packed array types to constrained subtypes only.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Remove
 	superfluous computation for the max size.
 	<E_Array_Subtype>: Likewise.  Make sure that the max size calculation
