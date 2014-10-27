@@ -1,6 +1,28 @@
 2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/61114
+	* doc/md.texi (Standard Names): Add reduc_(plus,[us](min|max))|scal
+	optabs, and note in reduc_[us](plus|min|max) to prefer the former.
+
+	* expr.c (expand_expr_real_2): Use reduc_..._scal if available, fall
+	back to old reduc_... + BIT_FIELD_REF only if not.
+
+	* optabs.c (optab_for_tree_code): for REDUC_(MAX,MIN,PLUS)_EXPR,
+	return the reduce-to-scalar (reduc_..._scal) optab.
+	(scalar_reduc_to_vector): New.
+
+	* optabs.def (reduc_smax_scal_optab, reduc_smin_scal_optab,
+	reduc_plus_scal_optab, reduc_umax_scal_optab, reduc_umin_scal_optab):
+	New.
+
+	* optabs.h (scalar_reduc_to_vector): Declare.
+
+	* tree-vect-loop.c (vectorizable_reduction): Look for optabs reducing
+	to either scalar or vector.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/61114
 	* expr.c (expand_expr_real_2): For REDUC_{MIN,MAX,PLUS}_EXPR, add
 	extract_bit_field around optab result.
 

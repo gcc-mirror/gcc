@@ -243,12 +243,20 @@ OPTAB_D (sin_optab, "sin$a2")
 OPTAB_D (sincos_optab, "sincos$a3")
 OPTAB_D (tan_optab, "tan$a2")
 
+/* Vector reduction to a scalar.  */
+OPTAB_D (reduc_smax_scal_optab, "reduc_smax_scal_$a")
+OPTAB_D (reduc_smin_scal_optab, "reduc_smin_scal_$a")
+OPTAB_D (reduc_plus_scal_optab, "reduc_plus_scal_$a")
+OPTAB_D (reduc_umax_scal_optab, "reduc_umax_scal_$a")
+OPTAB_D (reduc_umin_scal_optab, "reduc_umin_scal_$a")
+/* (Old) Vector reduction, returning a vector with the result in one lane.  */
 OPTAB_D (reduc_smax_optab, "reduc_smax_$a")
 OPTAB_D (reduc_smin_optab, "reduc_smin_$a")
 OPTAB_D (reduc_splus_optab, "reduc_splus_$a")
 OPTAB_D (reduc_umax_optab, "reduc_umax_$a")
 OPTAB_D (reduc_umin_optab, "reduc_umin_$a")
 OPTAB_D (reduc_uplus_optab, "reduc_uplus_$a")
+
 OPTAB_D (sdot_prod_optab, "sdot_prod$I$a")
 OPTAB_D (ssum_widen_optab, "widen_ssum$I$a3")
 OPTAB_D (udot_prod_optab, "udot_prod$I$a")

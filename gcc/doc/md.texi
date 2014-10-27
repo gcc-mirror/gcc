@@ -4724,29 +4724,48 @@ it is unspecified which of the two operands is returned as the result.
 @cindex @code{reduc_smax_@var{m}} instruction pattern
 @item @samp{reduc_smin_@var{m}}, @samp{reduc_smax_@var{m}}
 Find the signed minimum/maximum of the elements of a vector. The vector is
-operand 1, and the scalar result is stored in the least significant bits of
+operand 1, and the result is stored in the least significant bits of
 operand 0 (also a vector). The output and input vector should have the same
-modes.
+modes. These are legacy optabs, and platforms should prefer to implement
+@samp{reduc_smin_scal_@var{m}} and @samp{reduc_smax_scal_@var{m}}.
 
 @cindex @code{reduc_umin_@var{m}} instruction pattern
 @cindex @code{reduc_umax_@var{m}} instruction pattern
 @item @samp{reduc_umin_@var{m}}, @samp{reduc_umax_@var{m}}
 Find the unsigned minimum/maximum of the elements of a vector. The vector is
-operand 1, and the scalar result is stored in the least significant bits of
+operand 1, and the result is stored in the least significant bits of
 operand 0 (also a vector). The output and input vector should have the same
-modes.
+modes. These are legacy optabs, and platforms should prefer to implement
+@samp{reduc_umin_scal_@var{m}} and @samp{reduc_umax_scal_@var{m}}.
 
 @cindex @code{reduc_splus_@var{m}} instruction pattern
-@item @samp{reduc_splus_@var{m}}
-Compute the sum of the signed elements of a vector. The vector is operand 1,
-and the scalar result is stored in the least significant bits of operand 0
-(also a vector). The output and input vector should have the same modes.
-
 @cindex @code{reduc_uplus_@var{m}} instruction pattern
-@item @samp{reduc_uplus_@var{m}}
-Compute the sum of the unsigned elements of a vector. The vector is operand 1,
-and the scalar result is stored in the least significant bits of operand 0
+@item @samp{reduc_splus_@var{m}}, @samp{reduc_uplus_@var{m}}
+Compute the sum of the signed/unsigned elements of a vector. The vector is
+operand 1, and the result is stored in the least significant bits of operand 0
 (also a vector). The output and input vector should have the same modes.
+These are legacy optabs, and platforms should prefer to implement
+@samp{reduc_plus_scal_@var{m}}.
+
+@cindex @code{reduc_smin_scal_@var{m}} instruction pattern
+@cindex @code{reduc_smax_scal_@var{m}} instruction pattern
+@item @samp{reduc_smin_scal_@var{m}}, @samp{reduc_smax_scal_@var{m}}
+Find the signed minimum/maximum of the elements of a vector. The vector is
+operand 1, and operand 0 is the scalar result, with mode equal to the mode of
+the elements of the input vector.
+
+@cindex @code{reduc_umin_scal_@var{m}} instruction pattern
+@cindex @code{reduc_umax_scal_@var{m}} instruction pattern
+@item @samp{reduc_umin_scal_@var{m}}, @samp{reduc_umax_scal_@var{m}}
+Find the unsigned minimum/maximum of the elements of a vector. The vector is
+operand 1, and operand 0 is the scalar result, with mode equal to the mode of
+the elements of the input vector.
+
+@cindex @code{reduc_plus_scal_@var{m}} instruction pattern
+@item @samp{reduc_plus_scal_@var{m}}
+Compute the sum of the elements of a vector. The vector is operand 1, and
+operand 0 is the scalar result, with mode equal to the mode of the elements of
+the input vector.
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}

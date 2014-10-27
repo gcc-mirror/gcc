@@ -509,13 +509,15 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return fma_optab;
 
     case REDUC_MAX_EXPR:
-      return TYPE_UNSIGNED (type) ? reduc_umax_optab : reduc_smax_optab;
+      return TYPE_UNSIGNED (type)
+	     ? reduc_umax_scal_optab : reduc_smax_scal_optab;
 
     case REDUC_MIN_EXPR:
-      return TYPE_UNSIGNED (type) ? reduc_umin_optab : reduc_smin_optab;
+      return TYPE_UNSIGNED (type)
+	     ? reduc_umin_scal_optab : reduc_smin_scal_optab;
 
     case REDUC_PLUS_EXPR:
-      return TYPE_UNSIGNED (type) ? reduc_uplus_optab : reduc_splus_optab;
+      return reduc_plus_scal_optab;
 
     case VEC_LSHIFT_EXPR:
       return vec_shl_optab;
@@ -611,7 +613,26 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return unknown_optab;
     }
 }
-
+
+/* Given optab UNOPTAB that reduces a vector to a scalar, find instead the old
+   optab that produces a vector with the reduction result in one element,
+   for a tree with type TYPE.  */
+
+optab
+scalar_reduc_to_vector (optab unoptab, const_tree type)
+{
+  switch (unoptab)
+    {
+    case reduc_plus_scal_optab:
+      return TYPE_UNSIGNED (type) ? reduc_uplus_optab : reduc_splus_optab;
+
+    case reduc_smin_scal_optab: return reduc_smin_optab;
+    case reduc_umin_scal_optab: return reduc_umin_optab;
+    case reduc_smax_scal_optab: return reduc_smax_optab;
+    case reduc_umax_scal_optab: return reduc_umax_optab;
+    default: return unknown_optab;
+    }
+}
 
 /* Expand vector widening operations.
 
