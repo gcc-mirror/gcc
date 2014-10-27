@@ -1,3 +1,65 @@
+2014-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_read_access_ok): New function.
+	(pa32_fallback_frame_state): Use pa32_read_access_ok to check if
+	memory read accesses are ok.
+
+2014-10-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (ppc_fp_type): Set variable on powerpc*-*-linux*.
+	* configure: Regenerate.
+	* config.host (powerpc*-*-linux*): Use $ppc_fp_type to determine
+	additions to tmake_file.  Use t-hardfp-sfdf and t-hardfp instead
+	of soft-fp for 32-bit classic hard float.  Do not use
+	t-softfp-excl for soft float.
+
+2014-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (powerpc*-*-linux*): Only use soft-fp for 32-bit
+	configurations.
+	* config/rs6000/t-ppc64-fp (softfp_wrap_start, softfp_wrap_end):
+	Remove variables.
+
+2014-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__do_global_dtors): Fix wrong code
+	introduced with 2014-10-21 trunk r216525.
+
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Vidya Praveen <vidya.praveen@atmel.com>
+	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
+	    Senthil Kumar Selvaraj <Senthil_Kumar.Selvaraj@atmel.com>
+	    Pitchumani Sivanupandi <Pitchumani.S@atmel.com>
+
+	* config/avr/lib1funcs.S (__do_global_dtors): Go back to descending
+	order.
+
+	Updated library functions for AVRTINY arch.
+	* config/avr/lib1funcs.S: Updated zero/tmp regs for AVRTINY.
+	Replaced occurrences of r0/r1 with tmp/zero reg macros.
+	Added wsubi/ wadi macros that expands conditionally as sbiw/ adiw
+	or AVRTINY equivalent. Replaced occurrences of sbiw/adiw with
+	wsubi/wadi macors.
+	(__mulsi3_helper): Update stack, preserve callee saved regs and
+	argument from stack. Restore callee save registers.
+	(__mulpsi3): Likewise.
+	(__muldi3, __udivmodsi4, __divmodsi4, __negsi2, __umoddi3, __udivmod64,
+	__moddi3, __adddi3, __adddi3_s8, __subdi3, __cmpdi2, __cmpdi2_s8,
+	__negdi2, __prologue_saves__, __epilogue_restores__): Excluded for
+	AVRTINY.
+	(__tablejump2__): Added lpm equivalent instructions for AVRTINY.
+	(__do_copy_data): Added new definition for AVRTINY.
+	(__do_clear_bss): Replace r17 by r18 to preserve zero reg for AVRTINY.
+	(__load_3, __load_4, __xload_1, __xload_2, __xload_3,
+	__xload_4, __movmemx_qi, __movmemx_hi): Excluded for AVRTINY.
+	* config/avr/lib1funcs-fixed.S: Replaced occurrences of r0/r1 with
+	tmp/zero reg macros. Replaced occurrences of sbiw/adiw with wsubi/wadi
+	macors.
+	* config/avr/t-avr (LIB1ASMFUNCS): Remove unsupported functions for
+	AVRTINY.
+
+	Fix broken long multiplication on tiny arch.
+
 2014-10-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* soft-fp/double.h: Update from glibc.

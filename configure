@@ -2728,7 +2728,7 @@ extra_host_args=
 # these library is used by various programs built for the build
 # environment
 #
-build_libs="build-libiberty"
+build_libs="build-libiberty build-libcpp"
 
 # these tools are built for the build environment
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
@@ -3435,6 +3435,13 @@ case "${target}" in
     ;;
   *-*-lynxos*)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
+esac
+
+# Disable the go frontend on systems where it is known to not work.
+case "${target}" in
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)
+    unsupported_languages="$unsupported_languages go"
     ;;
 esac
 
@@ -7417,8 +7424,10 @@ tbaseargs="$tbaseargs --disable-option-checking"
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
-# desired.
-build_configargs="$build_configargs --cache-file=../config.cache ${baseargs}"
+# desired.  We can't even use the same cache file for all build-side
+# libraries, as they're compiled differently; some with C, some with
+# C++ or with different feature-enabling options.
+build_configargs="$build_configargs --cache-file=./config.cache ${baseargs}"
 
 # For host modules, accept cache file option, or specification as blank.
 case "${cache_file}" in

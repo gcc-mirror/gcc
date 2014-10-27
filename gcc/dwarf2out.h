@@ -277,4 +277,6 @@ struct array_descr_info
     } dimen[10];
 };
 
+void dwarf2out_c_finalize (void);
+
 #endif /* GCC_DWARF2OUT_H */

@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-fsanitize=return -fno-sanitize-recover" }
+// { dg-options "-fsanitize=return -fno-sanitize-recover=return" }
 
 struct S { S (); ~S (); };
 

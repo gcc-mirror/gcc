@@ -1186,7 +1186,8 @@ pop_scope (void)
 		 with an inline function specifier ... shall also be defined
 		 in the same translation unit."  */
 	      if (!flag_gnu89_inline
-		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p)))
+		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p))
+		  && scope != external_scope)
 		pedwarn (input_location, 0,
 			 "inline function %q+D declared but never defined", p);
 	      DECL_EXTERNAL (p) = 1;

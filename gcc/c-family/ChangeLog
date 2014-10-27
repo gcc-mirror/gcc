@@ -1,3 +1,48 @@
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* c-opts.c (c_common_diagnostics_set_defaults): Renamed from
+	c_common_initialize_diagnostics.
+	* c-common.h: Likewise.
+
+2014-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56980
+	* c-pretty-print.c (c_pretty_printer::simple_type_specifier): Don't
+	print "struct"/"union"/"enum" for typedefed names.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Perform the MINUS_EXPR
+	in unsigned type.
+
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla): Check bits in flag_sanitize_recover bitmask
+	instead of flag_sanitize_recover as bool flag.
+
+2014-10-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* cilk.c: Revert previous change.
+
+2014-10-20  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/63307
+	* cilk.c: Include vec.h.
+	(struct cilk_decls): New structure.
+	(wrapper_parm_cb): Split this function to...
+	(fill_decls_vec): ...this...
+	(create_parm_list): ...and this.
+	(compare_decls): New function.
+	(for_local_cb): Remove.
+	(wrapper_local_cb): Ditto.
+	(build_wrapper_type): For now first traverse and fill vector of
+	declarations then sort it and then deal with sorted vector.
+	(cilk_outline): Ditto.
+	(declare_one_free_variable): Ditto.
+
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.c (c_common_post_options): Set warn_implicit_int.

@@ -2108,6 +2108,7 @@ asmname_hasher::pch_nx (symtab_node *&n, gt_pointer_operator op, void *cookie)
 }
 
 /* In cgraph.c  */
+void cgraph_c_finalize (void);
 void release_function_body (tree);
 cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 
@@ -2121,6 +2122,8 @@ bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
 extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
 /* In cgraphunit.c  */
+void cgraphunit_c_finalize (void);
+
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
@@ -2703,6 +2706,19 @@ cgraph_node::mark_force_output (void)
 {
   force_output = 1;
   gcc_checking_assert (!global.inlined_to);
+}
+
+/* Return true if function should be optimized for size.  */
+
+inline bool
+cgraph_node::optimize_for_size_p (void)
+{
+  if (optimize_size)
+    return true;
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return true;
+  else
+    return false;
 }
 
 inline symtab_node * symtab_node::get_create (tree node)

@@ -1580,7 +1580,7 @@
    (set (match_dup 4) (match_dup 5))]
 {
   rtx set1, set2;
-  rtx_insn *insn2;
+  rtx_insn *insn1, *insn2;
   rtx replacements[4];
 
   /* We want to replace occurrences of operands[0] with operands[1] and
@@ -1607,14 +1607,16 @@
   /* ??? The last insn might be a jump insn, but the generic peephole2 code
      always uses emit_insn.  */
   /* Check that we don't violate matching constraints or earlyclobbers.  */
-  extract_insn (emit_insn (set1));
-  if (! constrain_operands (1))
+  basic_block bb = BLOCK_FOR_INSN (peep2_next_insn (2));
+  insn1 = emit_insn (set1);
+  extract_insn (insn1);
+  if (! constrain_operands (1, get_preferred_alternatives (insn1, bb)))
     goto failure;
   insn2 = emit (set2);
   if (GET_CODE (insn2) == BARRIER)
     goto failure;
   extract_insn (insn2);
-  if (! constrain_operands (1))
+  if (! constrain_operands (1, get_preferred_alternatives (insn2, bb)))
     {
       rtx tmp;
     failure:
@@ -15801,10 +15803,7 @@ label:
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
 {
-  int n_changes = 0;
-
-  for_each_rtx (&operands[1], shmedia_cleanup_truncate, &n_changes);
-  if (!n_changes)
+  if (!shmedia_cleanup_truncate (operands[1]))
     FAIL;
 })
 

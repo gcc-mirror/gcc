@@ -59,7 +59,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (;__low < __high; ++__vec, ++__low)
 	{
 	  *__vec = __maskrune (*__low, upper | lower | alpha | digit | xdigit
-			       | space | print | graph | cntrl | punct | alnum);
+			       | space | print | graph | cntrl | punct | alnum
+			       | blank);
 	}
     return __high;
   }
@@ -106,7 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     for (; __lo < __hi; ++__vec, ++__lo)
       *__vec = __maskrune (*__lo, upper | lower | alpha | digit | xdigit
-			   | space | print | graph | cntrl | punct | alnum);
+			   | space | print | graph | cntrl | punct | alnum
+			   | blank);
     return __hi;
   }
 

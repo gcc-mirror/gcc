@@ -1,6 +1,6 @@
 /* PR sanitizer/60613 */
 /* { dg-do run } */
-/* { dg-options "-fsanitize=undefined -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=undefined -fno-sanitize-recover=undefined" } */
 
 long long y;
 

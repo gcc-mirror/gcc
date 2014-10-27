@@ -40,6 +40,7 @@
 #include "tree.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
+#include "profile.h"
 #include "basic-block.h"
 #include "fibheap.h"
 #include "flags.h"

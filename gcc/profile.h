@@ -37,6 +37,10 @@ struct edge_profile_info
 
 #define EDGE_INFO(e)  ((struct edge_profile_info *) (e)->aux)
 
+typedef struct gcov_working_set_info gcov_working_set_t;
+extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
+extern void add_working_set (gcov_working_set_t *);
+
 /* Smoothes the initial assigned basic block and edge counts using
    a minimum cost flow algorithm. */
 extern void mcf_smooth_cfg (void);
@@ -48,8 +52,8 @@ extern void del_node_map (void);
 
 extern void get_working_sets (void);
 
-/* In predict.c.  */
-extern gcov_type get_hot_bb_threshold (void);
-extern void set_hot_bb_threshold (gcov_type);
+/* Counter summary from the last set of coverage counts read by
+   profile.c.  */
+extern const struct gcov_ctr_summary *profile_info;
 
 #endif /* PROFILE_H */

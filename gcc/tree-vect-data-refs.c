@@ -2551,11 +2551,14 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	     over them.  The we can just skip ahead to the next DR here.  */
 
 	  /* Check that the data-refs have same first location (except init)
-	     and they are both either store or load (not load and store).  */
+	     and they are both either store or load (not load and store,
+	     not masked loads or stores).  */
 	  if (DR_IS_READ (dra) != DR_IS_READ (drb)
 	      || !operand_equal_p (DR_BASE_ADDRESS (dra),
 				   DR_BASE_ADDRESS (drb), 0)
-	      || !dr_equal_offsets_p (dra, drb))
+	      || !dr_equal_offsets_p (dra, drb)
+	      || !gimple_assign_single_p (DR_STMT (dra))
+	      || !gimple_assign_single_p (DR_STMT (drb)))
 	    break;
 
 	  /* Check that the data-refs have the same constant size and step.  */
@@ -3957,8 +3960,12 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       && TREE_CODE (addr_base) == SSA_NAME)
     {
       duplicate_ssa_name_ptr_info (addr_base, DR_PTR_INFO (dr));
-      if (offset)
+      unsigned int align = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmt_info));
+      int misalign = DR_MISALIGNMENT (dr);
+      if (offset || byte_offset || (misalign == -1))
 	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (addr_base));
+      else
+	set_ptr_info_alignment (SSA_NAME_PTR_INFO (addr_base), align, misalign);
     }
 
   if (dump_enabled_p ())

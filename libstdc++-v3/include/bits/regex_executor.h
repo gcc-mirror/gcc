@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      _M_word_boundary(_State<_TraitsT> __state) const;
+      _M_word_boundary() const;
 
       bool
       _M_lookahead(_State<_TraitsT> __state);

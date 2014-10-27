@@ -180,21 +180,10 @@ c_diagnostic_finalizer (diagnostic_context *context,
   pp_newline_and_flush (context->printer);
 }
 
-/* Common diagnostics initialization.  */
+/* Common default settings for diagnostics.  */
 void
-c_common_initialize_diagnostics (diagnostic_context *context)
+c_common_diagnostics_set_defaults (diagnostic_context *context)
 {
-  /* This is conditionalized only because that is the way the front
-     ends used to do it.  Maybe this should be unconditional?  */
-  if (c_dialect_cxx ())
-    {
-      /* By default wrap lines at 80 characters.  Is getenv
-	 ("COLUMNS") preferable?  */
-      diagnostic_line_cutoff (context) = 80;
-      /* By default, emit location information once for every
-	 diagnostic message.  */
-      diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-    }
   diagnostic_finalizer (context) = c_diagnostic_finalizer;
   context->opt_permissive = OPT_fpermissive;
 }

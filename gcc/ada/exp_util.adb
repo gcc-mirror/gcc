@@ -1922,14 +1922,24 @@ package body Exp_Util is
    ---------------------------------
 
    function Duplicate_Subexpr_No_Checks
-     (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Renaming_Req  : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False) return Node_Id
    is
       New_Exp : Node_Id;
 
    begin
-      Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
+      Remove_Side_Effects
+        (Exp           => Exp,
+         Name_Req      => Name_Req,
+         Renaming_Req  => Renaming_Req,
+         Related_Id    => Related_Id,
+         Is_Low_Bound  => Is_Low_Bound,
+         Is_High_Bound => Is_High_Bound);
+
       New_Exp := New_Copy_Tree (Exp);
       Remove_Checks (New_Exp);
       return New_Exp;
@@ -7188,11 +7198,53 @@ package body Exp_Util is
    -------------------------
 
    procedure Remove_Side_Effects
-     (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False;
-      Variable_Ref : Boolean := False)
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Renaming_Req  : Boolean   := False;
+      Variable_Ref  : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False)
    is
+      function Build_Temporary
+        (Loc         : Source_Ptr;
+         Id          : Character;
+         Related_Nod : Node_Id := Empty) return Entity_Id;
+      --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Id
+      --  is present, otherwise it generates an internal temporary.
+
+      ---------------------
+      -- Build_Temporary --
+      ---------------------
+
+      function Build_Temporary
+        (Loc         : Source_Ptr;
+         Id          : Character;
+         Related_Nod : Node_Id := Empty) return Entity_Id
+      is
+         Temp_Nam : Name_Id;
+
+      begin
+         --  The context requires an external symbol
+
+         if Present (Related_Id) then
+            if Is_Low_Bound then
+               Temp_Nam := New_External_Name (Chars (Related_Id), "_FIRST");
+            else pragma Assert (Is_High_Bound);
+               Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
+            end if;
+
+            return Make_Defining_Identifier (Loc, Temp_Nam);
+
+         --  Otherwise generate an internal temporary
+
+         else
+            return Make_Temporary (Loc, Id, Related_Nod);
+         end if;
+      end Build_Temporary;
+
+      --  Local variables
+
       Loc          : constant Source_Ptr      := Sloc (Exp);
       Exp_Type     : constant Entity_Id       := Etype (Exp);
       Svg_Suppress : constant Suppress_Record := Scope_Suppress;
@@ -7202,6 +7254,8 @@ package body Exp_Util is
       Ptr_Typ_Decl : Node_Id;
       Ref_Type     : Entity_Id;
       Res          : Node_Id;
+
+   --  Start of processing for Remove_Side_Effects
 
    begin
       --  Handle cases in which there is nothing to do. In GNATprove mode,
@@ -7260,7 +7314,7 @@ package body Exp_Util is
                    or else (not Name_Req
                              and then Is_Volatile_Reference (Exp)))
       then
-         Def_Id := Make_Temporary (Loc, 'R', Exp);
+         Def_Id := Build_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
          Res := New_Occurrence_Of (Def_Id, Loc);
 
@@ -7309,7 +7363,7 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Explicit_Dereference
         and then not Is_Volatile_Reference (Exp)
       then
-         Def_Id := Make_Temporary (Loc, 'R', Exp);
+         Def_Id := Build_Temporary (Loc, 'R', Exp);
          Res :=
            Make_Explicit_Dereference (Loc, New_Occurrence_Of (Def_Id, Loc));
 
@@ -7351,8 +7405,8 @@ package body Exp_Util is
             --  Use a renaming to capture the expression, rather than create
             --  a controlled temporary.
 
-            Def_Id := Make_Temporary (Loc, 'R', Exp);
-            Res := New_Occurrence_Of (Def_Id, Loc);
+            Def_Id := Build_Temporary (Loc, 'R', Exp);
+            Res    := New_Occurrence_Of (Def_Id, Loc);
 
             Insert_Action (Exp,
               Make_Object_Renaming_Declaration (Loc,
@@ -7361,9 +7415,9 @@ package body Exp_Util is
                 Name                => Relocate_Node (Exp)));
 
          else
-            Def_Id := Make_Temporary (Loc, 'R', Exp);
+            Def_Id := Build_Temporary (Loc, 'R', Exp);
             Set_Etype (Def_Id, Exp_Type);
-            Res := New_Occurrence_Of (Def_Id, Loc);
+            Res    := New_Occurrence_Of (Def_Id, Loc);
 
             E :=
               Make_Object_Declaration (Loc,
@@ -7397,7 +7451,7 @@ package body Exp_Util is
 
         and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
       then
-         Def_Id := Make_Temporary (Loc, 'R', Exp);
+         Def_Id := Build_Temporary (Loc, 'R', Exp);
 
          if Nkind (Exp) = N_Selected_Component
            and then Nkind (Prefix (Exp)) = N_Function_Call
@@ -7490,7 +7544,7 @@ package body Exp_Util is
             end;
          end if;
 
-         Def_Id := Make_Temporary (Loc, 'R', Exp);
+         Def_Id := Build_Temporary (Loc, 'R', Exp);
 
          --  The regular expansion of functions with side effects involves the
          --  generation of an access type to capture the return value found on

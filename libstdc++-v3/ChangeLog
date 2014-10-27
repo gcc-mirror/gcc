@@ -1,3 +1,113 @@
+2014-10-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* doc/xml/manual/status_cxx2011.xml: Update unordered container
+	specific behavior.
+
+2014-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cstdbool/macros.cc: New.
+
+2014-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/atomic_base.h: Avoid including <stdbool.h>.
+	* include/std/atomic: When __cplusplus < 201103L skip the rest of
+	the header.
+	* testsuite/29_atomics/headers/atomic/std_c++0x_neg.cc: Adjust.
+
+2014-10-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/25_algorithms/make_heap/complexity.cc: Add missing test
+	variable.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: Likewise and use
+	log2. Now require cmath support.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: Likewise and require
+	normal mode.
+	* testsuite/25_algorithms/push_heap/complexity.cc: Likewise.
+
+2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+
+2014-10-23  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63497
+	include/bits/regex_executor.h (_Executor::_M_word_boundary): Remove
+	unused parameter.
+	include/bits/regex_executor.tcc (_Executor::_M_dfs,
+	_Executor::_M_word_boundary): Avoid dereferecing _M_current at _M_end
+	or other invalid position.
+
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* testsuite/util/io/prog_bar.cc: Qualify size_t.
+	* testsuite/util/io/prog_bar.hpp: Likewise.
+	* testsuite/util/io/verified_cmd_line_input.hpp: Likewise.
+
+2014-10-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement more Library Fundamentals v1 variable templates.
+	* include/Makefile.am: Add ratio, chrono and system_error.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/chrono: New.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple (tuple_size_v): Likewise.
+	* testsuite/experimental/chrono/value.cc: Likewise.
+	* testsuite/experimental/ratio/value.cc: Likewise.
+	* testsuite/experimental/system_error/value.cc: Likewise.
+	* testsuite/experimental/tuple/tuple_size.cc: Likewise.
+
+2014-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/Makefile.am: Move ctype.cc, ctype_configure_char.cc and
+	ctype_members.cc to ...
+	* src/c++11/Makefile.am: Here.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++98/ctype.cc: Move file to ...
+	* src/c++11/ctype.cc: Here, define ctype_base::blank.
+	* config/abi/pre/gnu.ver: Export ctype_base::blank.
+	* config/locale/generic/ctype_members.cc
+	(ctype<wchar_t>::_M_convert_to_wmask): Handle blank. Update comments.
+	* config/locale/gnu/ctype_members.cc
+	(ctype<wchar_t>::_M_convert_to_wmask): Likewise.
+	* config/os/aix/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/bionic/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/bsd/darwin/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/bsd/darwin/ctype_inline.h (ctype<char>::is): Use blank.
+	(ctype<wchar_t::do_is): Likewise.
+	* config/os/bsd/dragonfly/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/bsd/dragonfly/ctype_inline.h (ctype<char>::is): Use blank.
+	(ctype<wchar_t::do_is): Likewise.
+	* config/os/bsd/freebsd/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/bsd/freebsd/ctype_inline.h (ctype<char>::is): Use blank.
+	(ctype<wchar_t::do_is): Likewise.
+	* config/os/bsd/netbsd/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/bsd/openbsd/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/djgpp/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/generic/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/generic/ctype_inline.h (ctype<char>::is): Use blank.
+	* config/os/gnu-linux/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/hpux/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/mingw32-w64/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/mingw32-w64/ctype_configure_char.cc
+	(ctype<char>::classic_table()): Set blank bit for space and tab.
+	* config/os/mingw32/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/mingw32/ctype_configure_char.cc
+	(ctype<char>::classic_table()): Set blank bit for space and tab.
+	* config/os/newlib/ctype_base.h (ctype_base::blank): Declare.
+	* config/os/qnx/qnx6.1/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/solaris/solaris2.10/ctype_base.h (ctype_base::blank):
+	Likewise.
+	* config/os/tpf/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/uclibc/ctype_base.h (ctype_base::blank): Likewise.
+	* config/os/vxworks/ctype_base.h (ctype_base::blank): Likewise.
+	* include/bits/locale_facets.h (isblank): Define.
+	* include/bits/localefwd.h (isblank): Declare.
+	* testsuite/22_locale/classification/isblank.cc: New.
+	* testsuite/22_locale/ctype_base/blank.cc: New.
+
 2014-10-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* testsuite/lib/libstdc++.exp (v3-copy-file): New proc split from ...

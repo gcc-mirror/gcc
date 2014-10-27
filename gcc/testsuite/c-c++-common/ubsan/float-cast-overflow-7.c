@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "*" } { "-O2" } } */
-/* { dg-options "-fsanitize=float-cast-overflow -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=float-cast-overflow -fno-sanitize-recover=float-cast-overflow" } */
 /* FIXME: When _DecimalXX <-> {signed, unsigned} __int128 conversions are
    supported, -DBROKEN_DECIMAL_INT128 can be removed.  */
 /* { dg-additional-options "-DUSE_DFP -DBROKEN_DECIMAL_INT128" { target dfp } } */

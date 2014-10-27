@@ -296,7 +296,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fsanitize=@var{style} -fsanitize-recover @gol
+-fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
 -fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
@@ -365,7 +365,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-faggressive-loop-optimizations -falign-functions[=@var{n}] @gol
 -falign-jumps[=@var{n}] @gol
 -falign-labels[=@var{n}] -falign-loops[=@var{n}] @gol
--fassociative-math -fauto-inc-dec -fbranch-probabilities @gol
+-fassociative-math -fauto-profile -fauto-profile[=@var{path}] @gol
+-fauto-inc-dec -fbranch-probabilities @gol
 -fbranch-target-load-optimize -fbranch-target-load-optimize2 @gol
 -fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
@@ -3077,11 +3078,10 @@ honor these options.
 @table @gcctabopt
 @item -fmessage-length=@var{n}
 @opindex fmessage-length
-Try to format error messages so that they fit on lines of about @var{n}
-characters.  The default is 72 characters for @command{g++} and 0 for the rest of
-the front ends supported by GCC@.  If @var{n} is zero, then no
-line-wrapping is done; each error message appears on a single
-line.
+Try to format error messages so that they fit on lines of about
+@var{n} characters.  If @var{n} is zero, then no line-wrapping will be
+done; each error message will appear on a single line.  This is the
+default for all front ends.
 
 @item -fdiagnostics-show-location=once
 @opindex fdiagnostics-show-location
@@ -3327,8 +3327,12 @@ nothing to warn about.)
 
 @item -pedantic-errors
 @opindex pedantic-errors
-Like @option{-Wpedantic}, except that errors are produced rather than
-warnings.
+Give an error whenever the @dfn{base standard} (see @option{-Wpedantic})
+requires a diagnostic, in some cases where there is undefined behavior
+at compile-time and in some other cases that do not prevent compilation
+of programs that are valid according to the standard. This is not
+equivalent to @option{-Werror=pedantic}, since there are errors enabled
+by this option and not enabled by the latter and vice versa.
 
 @item -Wall
 @opindex Wall
@@ -5637,17 +5641,28 @@ While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
 
-@item -fsanitize-recover
+@item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover
-By default @option{-fsanitize=undefined} sanitization (and its suboptions
-except for @option{-fsanitize=unreachable} and @option{-fsanitize=return})
-after reporting undefined behavior attempts to continue running the
-program as if no undefined behavior happened.  This means multiple undefined
-behavior runtime errors can be reported in a single program run, and the exit
-code of the program may indicate success even when undefined behavior
-has been reported.  The @option{-fno-sanitize-recover} can be used to alter
-this behavior, only the first detected undefined behavior will be reported
+@opindex fno-sanitize-recover
+@option{-fsanitize-recover=} controls error recovery mode for sanitizers
+mentioned in comma-separated list of @var{opts}.  Enabling this option
+for a sanitizer component would cause it to attempt to continue
+running the program as if no error happened.  This means multiple
+runtime errors can be reported in a single program run, and the exit
+code of the program may indicate success even when errors
+have been reported.  The @option{-fno-sanitize-recover=} can be used to alter
+this behavior, only the first detected error will be reported
 and program will exit after that with non-zero exit code.
+
+Currently this feature only works for @option{-fsanitize=undefined} (and its suboptions
+except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
+@option{-fsanitize=float-cast-overflow} and @option{-fsanitize=float-divide-by-zero}.
+For these sanitizers error recovery is turned on by default.
+
+Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
+@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+Similarly @option{-fno-sanitize-recover} is equivalent to
+@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
@@ -9205,6 +9220,41 @@ code.
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
+
+@item -fauto-profile
+@itemx -fauto-profile=@var{path}
+@opindex fauto-profile
+Enable sampling based feedback directed optimizations, and optimizations
+generally profitable only with profile feedback available.
+
+The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
+@code{-finline-functions}, @code{-fipa-cp}, @code{-fipa-cp-clone},
+@code{-fpredictive-commoning}, @code{-funswitch-loops},
+@code{-fgcse-after-reload}, @code{-ftree-loop-distribute-patterns},
+
+If @var{path} is specified, GCC looks at the @var{path} to find
+the profile feedback data files.
+
+In order to collect AutoFDO profile, you need to have:
+
+1. A linux system with linux perf support
+2. (optional) An Intel processor with last branch record (LBR) support. This is
+   to guarantee accurate instruction level profile, which is important for
+   AutoFDO performance.
+
+To collect the profile, first use linux perf to collect raw profile
+(see @uref{https://perf.wiki.kernel.org/}).
+
+E.g.
+@code{perf record -e br_inst_retired:near_taken -b -o perf.data -- your_program}
+
+Then use create_gcov tool, which takes raw profile and unstripped binary to
+generate AutoFDO profile that can be used by GCC.
+(see @uref{https://github.com/google/autofdo}).
+
+E.g.
+@code{create_gcov --binary=your_program.unstripped --profile=perf.data --gcov=profile.afdo}
 @end table
 
 The following options control compiler behavior regarding floating-point 
@@ -11816,7 +11866,7 @@ architecture.
 @opindex mtune
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
-@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}.
+@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{thunderx}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  The only permissible value is
@@ -21519,8 +21569,8 @@ the rules of the ABI@.
 Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{hypersparc},
-@samp{leon}, @samp{leon3}, @samp{sparclite}, @samp{f930}, @samp{f934},
-@samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
+@samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{sparclite}, @samp{f930},
+@samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
 @samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
 @samp{niagara3} and @samp{niagara4}.
 
@@ -21538,7 +21588,7 @@ implementations.
 
 @table @asis
 @item v7
-cypress
+cypress, leon3v7
 
 @item v8
 supersparc, hypersparc, leon, leon3
@@ -21603,11 +21653,11 @@ option @option{-mcpu=@var{cpu_type}} does.
 The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
 that select a particular CPU implementation.  Those are @samp{cypress},
-@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{leon3}, @samp{f930},
-@samp{f934}, @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
-@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3} and
-@samp{niagara4}.  With native Solaris and GNU/Linux toolchains, @samp{native}
-can also be used.
+@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{leon3},
+@samp{leon3v7}, @samp{f930}, @samp{f934}, @samp{sparclite86x}, @samp{tsc701},
+@samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
+@samp{niagara3} and @samp{niagara4}.  With native Solaris and GNU/Linux
+toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus

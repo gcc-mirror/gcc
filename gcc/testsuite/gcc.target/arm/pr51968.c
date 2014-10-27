@@ -1,6 +1,6 @@
 /* PR target/51968 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv7-a -mfloat-abi=softfp -mfpu=neon" } */
+/* { dg-options "-O2 -Wno-implicit-function-declaration -march=armv7-a -mfloat-abi=softfp -mfpu=neon" } */
 /* { dg-require-effective-target arm_neon_ok } */
 
 typedef __builtin_neon_qi int8x8_t __attribute__ ((__vector_size__ (8)));

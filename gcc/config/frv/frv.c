@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "ifcvt.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline

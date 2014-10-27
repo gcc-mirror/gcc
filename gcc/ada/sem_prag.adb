@@ -14894,12 +14894,21 @@ package body Sem_Prag is
 
          when Pragma_Inline =>
 
-            --  Inline status is Enabled if inlining option is active
+            --  Pragma always active unless in GNATprove mode. It is disabled
+            --  in GNATprove mode because frontend inlining is applied
+            --  independently of pragmas Inline and Inline_Always for
+            --  formal verification, see Can_Be_Inlined_In_GNATprove_Mode
+            --  in inline.ads.
 
-            if Inline_Active then
-               Process_Inline (Enabled);
-            else
-               Process_Inline (Disabled);
+            if not GNATprove_Mode then
+
+               --  Inline status is Enabled if inlining option is active
+
+               if Inline_Active then
+                  Process_Inline (Enabled);
+               else
+                  Process_Inline (Disabled);
+               end if;
             end if;
 
          -------------------
@@ -14911,15 +14920,15 @@ package body Sem_Prag is
          when Pragma_Inline_Always =>
             GNAT_Pragma;
 
-            --  Pragma always active unless in CodePeer mode. It is disabled
-            --  in CodePeer mode because inlining is not helpful, and enabling
-            --  if caused walk order issues.
+            --  Pragma always active unless in CodePeer mode or GNATprove
+            --  mode. It is disabled in CodePeer mode because inlining is
+            --  not helpful, and enabling it caused walk order issues. It
+            --  is disabled in GNATprove mode because frontend inlining is
+            --  applied independently of pragmas Inline and Inline_Always for
+            --  formal verification, see Can_Be_Inlined_In_GNATprove_Mode in
+            --  inline.ads.
 
-            --  Historical note: this pragma used to be disabled in GNATprove
-            --  mode as well, but that was odd since walk order should not be
-            --  an issue in that case.
-
-            if not CodePeer_Mode then
+            if not CodePeer_Mode and not GNATprove_Mode then
                Process_Inline (Enabled);
             end if;
 
@@ -16416,12 +16425,19 @@ package body Sem_Prag is
 
             Set_No_Elab_Code_All (Current_Sem_Unit);
 
-            --  Set restriction No_Elaboration_Code, including adding it to the
-            --  set of configuration restrictions so it will apply to all units
-            --  in the extended main source.
+            --  Set restriction No_Elaboration_Code
 
             Set_Restriction (No_Elaboration_Code, N);
-            Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
+
+            --  If we are in the main unit or in an extended main source unit,
+            --  then we also add it to the configuration restrictions so that
+            --  it will apply to all units in the extended main source.
+
+            if Current_Sem_Unit = Main_Unit
+              or else In_Extended_Main_Source_Unit (N)
+            then
+               Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
+            end if;
 
             --  If in main extended unit, activate transitive with test
 
@@ -16541,6 +16557,58 @@ package body Sem_Prag is
             Set_Restriction (No_Exception_Handlers, N);
             Set_Restriction (Max_Tasks, N, 0);
             Set_Restriction (No_Tasking, N);
+
+            -----------------------
+            -- No_Tagged_Streams --
+            -----------------------
+
+            --  pragma No_Tagged_Streams;
+            --  pragma No_Tagged_Streams ([Entity => ]tagged_type_local_NAME);
+
+         when Pragma_No_Tagged_Streams => No_Tagged_Strms : declare
+            E_Id : Node_Id;
+            E    : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Most_N_Arguments (1);
+
+            --  One argument case
+
+            if Arg_Count = 1 then
+               Check_Optional_Identifier (Arg1, Name_Entity);
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Get_Pragma_Arg (Arg1);
+
+               if Etype (E_Id) = Any_Type then
+                  return;
+               end if;
+
+               E := Entity (E_Id);
+
+               Check_Duplicate_Pragma (E);
+
+               if not Is_Tagged_Type (E) or else Is_Derived_Type (E) then
+                  Error_Pragma_Arg
+                    ("argument for pragma% must be root tagged type", Arg1);
+               end if;
+
+               if Rep_Item_Too_Early (E, N)
+                    or else
+                  Rep_Item_Too_Late (E, N)
+               then
+                  return;
+               else
+                  Set_No_Tagged_Streams_Pragma (E, N);
+               end if;
+
+            --  Zero argument case
+
+            else
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+               No_Tagged_Streams := N;
+            end if;
+         end No_Tagged_Strms;
 
          ------------------------
          -- No_Strict_Aliasing --
@@ -24906,6 +24974,7 @@ package body Sem_Prag is
       Pragma_No_Inline                      =>  0,
       Pragma_No_Run_Time                    => -1,
       Pragma_No_Strict_Aliasing             => -1,
+      Pragma_No_Tagged_Streams              =>  0,
       Pragma_Normalize_Scalars              =>  0,
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       =>  0,

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -fno-sanitize-recover=signed-integer-overflow" } */
 
 int
 main (void)

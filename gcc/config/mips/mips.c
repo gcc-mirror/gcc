@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "cgraph.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -3449,29 +3450,32 @@ mips_rewrite_small_data_p (rtx x, enum mips_symbol_context context)
 	  && symbol_type == SYMBOL_GP_RELATIVE);
 }
 
-/* A for_each_rtx callback for mips_small_data_pattern_p.  DATA is the
-   containing MEM, or null if none.  */
+/* Return true if OP refers to small data symbols directly, not through
+   a LO_SUM.  CONTEXT is the context in which X appears.  */
 
 static int
-mips_small_data_pattern_1 (rtx *loc, void *data)
+mips_small_data_pattern_1 (rtx x, enum mips_symbol_context context)
 {
-  enum mips_symbol_context context;
-
-  /* Ignore things like "g" constraints in asms.  We make no particular
-     guarantee about which symbolic constants are acceptable as asm operands
-     versus which must be forced into a GPR.  */
-  if (GET_CODE (*loc) == LO_SUM || GET_CODE (*loc) == ASM_OPERANDS)
-    return -1;
-
-  if (MEM_P (*loc))
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
     {
-      if (for_each_rtx (&XEXP (*loc, 0), mips_small_data_pattern_1, *loc))
-	return 1;
-      return -1;
-    }
+      rtx x = *iter;
 
-  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
-  return mips_rewrite_small_data_p (*loc, context);
+      /* Ignore things like "g" constraints in asms.  We make no particular
+	 guarantee about which symbolic constants are acceptable as asm operands
+	 versus which must be forced into a GPR.  */
+      if (GET_CODE (x) == LO_SUM || GET_CODE (x) == ASM_OPERANDS)
+	iter.skip_subrtxes ();
+      else if (MEM_P (x))
+	{
+	  if (mips_small_data_pattern_1 (XEXP (x, 0), SYMBOL_CONTEXT_MEM))
+	    return true;
+	  iter.skip_subrtxes ();
+	}
+      else if (mips_rewrite_small_data_p (x, context))
+	return true;
+    }
+  return false;
 }
 
 /* Return true if OP refers to small data symbols directly, not through
@@ -3480,31 +3484,32 @@ mips_small_data_pattern_1 (rtx *loc, void *data)
 bool
 mips_small_data_pattern_p (rtx op)
 {
-  return for_each_rtx (&op, mips_small_data_pattern_1, NULL);
+  return mips_small_data_pattern_1 (op, SYMBOL_CONTEXT_LEA);
 }
 
-/* A for_each_rtx callback, used by mips_rewrite_small_data.
-   DATA is the containing MEM, or null if none.  */
+/* Rewrite *LOC so that it refers to small data using explicit
+   relocations.  CONTEXT is the context in which *LOC appears.  */
 
-static int
-mips_rewrite_small_data_1 (rtx *loc, void *data)
+static void
+mips_rewrite_small_data_1 (rtx *loc, enum mips_symbol_context context)
 {
-  enum mips_symbol_context context;
-
-  if (MEM_P (*loc))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
     {
-      for_each_rtx (&XEXP (*loc, 0), mips_rewrite_small_data_1, *loc);
-      return -1;
+      rtx *loc = *iter;
+      if (MEM_P (*loc))
+	{
+	  mips_rewrite_small_data_1 (&XEXP (*loc, 0), SYMBOL_CONTEXT_MEM);
+	  iter.skip_subrtxes ();
+	}
+      else if (mips_rewrite_small_data_p (*loc, context))
+	{
+	  *loc = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, *loc);
+	  iter.skip_subrtxes ();
+	}
+      else if (GET_CODE (*loc) == LO_SUM)
+	iter.skip_subrtxes ();
     }
-
-  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
-  if (mips_rewrite_small_data_p (*loc, context))
-    *loc = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, *loc);
-
-  if (GET_CODE (*loc) == LO_SUM)
-    return -1;
-
-  return 0;
 }
 
 /* Rewrite instruction pattern PATTERN so that it refers to small data
@@ -3514,7 +3519,7 @@ rtx
 mips_rewrite_small_data (rtx pattern)
 {
   pattern = copy_insn (pattern);
-  for_each_rtx (&pattern, mips_rewrite_small_data_1, NULL);
+  mips_rewrite_small_data_1 (&pattern, SYMBOL_CONTEXT_LEA);
   return pattern;
 }
 
@@ -11040,12 +11045,16 @@ mips_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
-/* A for_each_rtx callback.  Stop the search if *X is a kernel register.  */
+/* Return true if X contains a kernel register.  */
 
-static int
-mips_kernel_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+mips_refers_to_kernel_reg_p (const_rtx x)
 {
-  return REG_P (*x) && KERNEL_REG_P (REGNO (*x));
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (REG_P (*iter) && KERNEL_REG_P (REGNO (*iter)))
+      return true;
+  return false;
 }
 
 /* Expand the "prologue" pattern.  */
@@ -11317,7 +11326,7 @@ mips_expand_prologue (void)
       rtx_insn *insn;
       for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
 	if (INSN_P (insn)
-	    && for_each_rtx (&PATTERN (insn), mips_kernel_reg_p, NULL))
+	    && mips_refers_to_kernel_reg_p (PATTERN (insn)))
 	  break;
       /* Emit a move from K1 to COP0 Status after insn.  */
       gcc_assert (insn != NULL_RTX);
@@ -11664,7 +11673,7 @@ mips_expand_epilogue (bool sibcall_p)
     {
       for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn)
-	    && for_each_rtx (&PATTERN(insn), mips_kernel_reg_p, NULL))
+	    && mips_refers_to_kernel_reg_p (PATTERN (insn)))
 	  break;
       gcc_assert (insn != NULL_RTX);
       /* Insert disable interrupts before the first use of K0 or K1.  */
@@ -14769,44 +14778,39 @@ mips16_rewrite_pool_constant (struct mips16_constant_pool *pool, rtx *x)
     }
 }
 
-/* This structure is used to communicate with mips16_rewrite_pool_refs.
-   INSN is the instruction we're rewriting and POOL points to the current
-   constant pool.  */
-struct mips16_rewrite_pool_refs_info {
-  rtx_insn *insn;
-  struct mips16_constant_pool *pool;
-};
+/* Rewrite INSN so that constant pool references refer to the constant's
+   label instead.  */
 
-/* Rewrite *X so that constant pool references refer to the constant's
-   label instead.  DATA points to a mips16_rewrite_pool_refs_info
-   structure.  */
-
-static int
-mips16_rewrite_pool_refs (rtx *x, void *data)
+static void
+mips16_rewrite_pool_refs (rtx_insn *insn, struct mips16_constant_pool *pool)
 {
-  struct mips16_rewrite_pool_refs_info *info =
-    (struct mips16_rewrite_pool_refs_info *) data;
-
-  if (force_to_mem_operand (*x, Pmode))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), ALL)
     {
-      rtx mem = force_const_mem (GET_MODE (*x), *x);
-      validate_change (info->insn, x, mem, false);
+      rtx *loc = *iter;
+
+      if (force_to_mem_operand (*loc, Pmode))
+	{
+	  rtx mem = force_const_mem (GET_MODE (*loc), *loc);
+	  validate_change (insn, loc, mem, false);
+	}
+
+      if (MEM_P (*loc))
+	{
+	  mips16_rewrite_pool_constant (pool, &XEXP (*loc, 0));
+	  iter.skip_subrtxes ();
+	}
+      else
+	{
+	  if (TARGET_MIPS16_TEXT_LOADS)
+	    mips16_rewrite_pool_constant (pool, loc);
+	  if (GET_CODE (*loc) == CONST
+	      /* Don't rewrite the __mips16_rdwr symbol.  */
+	      || (GET_CODE (*loc) == UNSPEC
+		  && XINT (*loc, 1) == UNSPEC_TLS_GET_TP))
+	    iter.skip_subrtxes ();
+	}
     }
-
-  if (MEM_P (*x))
-    {
-      mips16_rewrite_pool_constant (info->pool, &XEXP (*x, 0));
-      return -1;
-    }
-
-  /* Don't rewrite the __mips16_rdwr symbol.  */
-  if (GET_CODE (*x) == UNSPEC && XINT (*x, 1) == UNSPEC_TLS_GET_TP)
-    return -1;
-
-  if (TARGET_MIPS16_TEXT_LOADS)
-    mips16_rewrite_pool_constant (info->pool, x);
-
-  return GET_CODE (*x) == CONST ? -1 : 0;
 }
 
 /* Return whether CFG is used in mips_reorg.  */
@@ -14825,7 +14829,6 @@ static void
 mips16_lay_out_constants (bool split_p)
 {
   struct mips16_constant_pool pool;
-  struct mips16_rewrite_pool_refs_info info;
   rtx_insn *insn, *barrier;
 
   if (!TARGET_MIPS16_PCREL_LOADS)
@@ -14844,11 +14847,7 @@ mips16_lay_out_constants (bool split_p)
     {
       /* Rewrite constant pool references in INSN.  */
       if (USEFUL_INSN_P (insn))
-	{
-	  info.insn = insn;
-	  info.pool = &pool;
-	  for_each_rtx (&PATTERN (insn), mips16_rewrite_pool_refs, &info);
-	}
+	mips16_rewrite_pool_refs (insn, &pool);
 
       pool.insn_address += mips16_insn_length (insn);
 
@@ -15064,28 +15063,28 @@ r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
   return offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
 }
 
-/* A for_each_rtx callback for which DATA points to the instruction
-   containing *X.  Stop the search if we find a MEM that is not safe
-   from R10K speculation.  */
+/* Return true if X contains a MEM that is not safe from R10K speculation.
+   INSN is the instruction that contains X.  */
 
-static int
-r10k_needs_protection_p_1 (rtx *loc, void *data)
+static bool
+r10k_needs_protection_p_1 (rtx x, rtx_insn *insn)
 {
-  rtx mem;
-
-  mem = *loc;
-  if (!MEM_P (mem))
-    return 0;
-
-  if (MEM_EXPR (mem)
-      && MEM_OFFSET_KNOWN_P (mem)
-      && r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
-    return -1;
-
-  if (r10k_safe_address_p (XEXP (mem, 0), (rtx_insn *) data))
-    return -1;
-
-  return 1;
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx mem = *iter;
+      if (MEM_P (mem))
+	{
+	  if ((MEM_EXPR (mem)
+	       && MEM_OFFSET_KNOWN_P (mem)
+	       && r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
+	      || r10k_safe_address_p (XEXP (mem, 0), insn))
+	    iter.skip_subrtxes ();
+	  else
+	    return true;
+	}
+    }
+  return false;
 }
 
 /* A note_stores callback for which DATA points to an instruction pointer.
@@ -15099,27 +15098,30 @@ r10k_needs_protection_p_store (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
   rtx_insn **insn_ptr;
 
   insn_ptr = (rtx_insn **) data;
-  if (*insn_ptr && for_each_rtx (&x, r10k_needs_protection_p_1, *insn_ptr))
+  if (*insn_ptr && r10k_needs_protection_p_1 (x, *insn_ptr))
     *insn_ptr = NULL;
 }
 
-/* A for_each_rtx callback that iterates over the pattern of a CALL_INSN.
-   Return nonzero if the call is not to a declared function.  */
+/* X is the pattern of a call instruction.  Return true if the call is
+   not to a declared function.  */
 
-static int
-r10k_needs_protection_p_call (rtx *loc, void *data ATTRIBUTE_UNUSED)
+static bool
+r10k_needs_protection_p_call (const_rtx x)
 {
-  rtx x;
-
-  x = *loc;
-  if (!MEM_P (x))
-    return 0;
-
-  x = XEXP (x, 0);
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DECL (x))
-    return -1;
-
-  return 1;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx mem = *iter;
+      if (MEM_P (mem))
+	{
+	  const_rtx addr = XEXP (mem, 0);
+	  if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DECL (addr))
+	    iter.skip_subrtxes ();
+	  else
+	    return true;
+	}
+    }
+  return false;
 }
 
 /* Return true if instruction INSN needs to be protected by an R10K
@@ -15129,7 +15131,7 @@ static bool
 r10k_needs_protection_p (rtx_insn *insn)
 {
   if (CALL_P (insn))
-    return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_call, NULL);
+    return r10k_needs_protection_p_call (PATTERN (insn));
 
   if (mips_r10k_cache_barrier == R10K_CACHE_BARRIER_STORE)
     {
@@ -15137,7 +15139,7 @@ r10k_needs_protection_p (rtx_insn *insn)
       return insn == NULL_RTX;
     }
 
-  return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_1, insn);
+  return r10k_needs_protection_p_1 (PATTERN (insn), insn);
 }
 
 /* Return true if BB is only reached by blocks in PROTECTED_BBS and if every
@@ -15466,7 +15468,7 @@ mips_annotate_pic_calls (void)
     }
 }
 
-/* A temporary variable used by for_each_rtx callbacks, etc.  */
+/* A temporary variable used by note_uses callbacks, etc.  */
 static rtx_insn *mips_sim_insn;
 
 /* A structure representing the state of the processor pipeline.
@@ -15560,23 +15562,16 @@ mips_sim_wait_reg (struct mips_sim *state, rtx_insn *insn, rtx reg)
     }
 }
 
-/* A for_each_rtx callback.  If *X is a register, advance simulation state
-   DATA until mips_sim_insn can read the register's value.  */
-
-static int
-mips_sim_wait_regs_2 (rtx *x, void *data)
-{
-  if (REG_P (*x))
-    mips_sim_wait_reg ((struct mips_sim *) data, mips_sim_insn, *x);
-  return 0;
-}
-
-/* Call mips_sim_wait_regs_2 (R, DATA) for each register R mentioned in *X.  */
+/* A note_uses callback.  For each register in *X, advance simulation
+   state DATA until mips_sim_insn can read the register's value.  */
 
 static void
 mips_sim_wait_regs_1 (rtx *x, void *data)
 {
-  for_each_rtx (x, mips_sim_wait_regs_2, data);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *x, NONCONST)
+    if (REG_P (*iter))
+      mips_sim_wait_reg ((struct mips_sim *) data, mips_sim_insn, *iter);
 }
 
 /* Advance simulation state STATE until all of INSN's register
@@ -16045,16 +16040,15 @@ mips_lo_sum_offset_lookup (mips_offset_table *htab, rtx x,
   return INTVAL (offset) <= entry->offset;
 }
 
-/* A for_each_rtx callback for which DATA is a mips_lo_sum_offset hash table.
-   Record every LO_SUM in *LOC.  */
+/* Search X for LO_SUMs and record them in HTAB.  */
 
-static int
-mips_record_lo_sum (rtx *loc, void *data)
+static void
+mips_record_lo_sums (const_rtx x, mips_offset_table *htab)
 {
-  if (GET_CODE (*loc) == LO_SUM)
-    mips_lo_sum_offset_lookup ((mips_offset_table*) data,
-			       XEXP (*loc, 1), INSERT);
-  return 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (GET_CODE (*iter) == LO_SUM)
+      mips_lo_sum_offset_lookup (htab, XEXP (*iter, 1), INSERT);
 }
 
 /* Return true if INSN is a SET of an orphaned high-part relocation.
@@ -16229,10 +16223,10 @@ mips_reorg_process_insns (void)
 	      get_referenced_operands (string, used, noperands);
 	      for (int i = 0; i < noperands; ++i)
 		if (used[i])
-		  for_each_rtx (&ops[i], mips_record_lo_sum, &htab);
+		  mips_record_lo_sums (ops[i], &htab);
 	    }
 	  else
-	    for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, &htab);
+	    mips_record_lo_sums (PATTERN (subinsn), &htab);
 	}
 
   last_insn = 0;
@@ -17534,26 +17528,20 @@ mips_epilogue_uses (unsigned int regno)
   return false;
 }
 
-/* A for_each_rtx callback.  Stop the search if *X is an AT register.  */
-
-static int
-mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  return REG_P (*x) && REGNO (*x) == AT_REGNUM;
-}
-
 /* Return true if INSN needs to be wrapped in ".set noat".
    INSN has NOPERANDS operands, stored in OPVEC.  */
 
 static bool
 mips_need_noat_wrapper_p (rtx_insn *insn, rtx *opvec, int noperands)
 {
-  int i;
-
   if (recog_memoized (insn) >= 0)
-    for (i = 0; i < noperands; i++)
-      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
-	return true;
+    {
+      subrtx_iterator::array_type array;
+      for (int i = 0; i < noperands; i++)
+	FOR_EACH_SUBRTX (iter, array, opvec[i], NONCONST)
+	  if (REG_P (*iter) && REGNO (*iter) == AT_REGNUM)
+	    return true;
+    }
   return false;
 }
 

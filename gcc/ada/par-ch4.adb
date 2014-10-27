@@ -1708,6 +1708,48 @@ package body Ch4 is
             Node1 := New_Op_Node (Logical_Op, Op_Location);
             Set_Left_Opnd (Node1, Node2);
             Set_Right_Opnd (Node1, P_Relation);
+
+            --  Check for case of errant comma or semicolon
+
+            if Token = Tok_Comma or else Token = Tok_Semicolon then
+               declare
+                  Com        : constant Boolean := Token = Tok_Comma;
+                  Scan_State : Saved_Scan_State;
+                  Logop      : Node_Kind;
+
+               begin
+                  Save_Scan_State (Scan_State); -- at comma/semicolon
+                  Scan; -- past comma/semicolon
+
+                  --  Check for AND THEN or OR ELSE after comma/semicolon. We
+                  --  do not deal with AND/OR because those cases get mixed up
+                  --  with the select alternatives case.
+
+                  if Token = Tok_And or else Token = Tok_Or then
+                     Logop := P_Logical_Operator;
+                     Restore_Scan_State (Scan_State); -- to comma/semicolon
+
+                     if Nkind_In (Logop, N_And_Then, N_Or_Else) then
+                        Scan; -- past comma/semicolon
+
+                        if Com then
+                           Error_Msg_SP -- CODEFIX
+                             ("|extra "","" ignored");
+                        else
+                           Error_Msg_SP -- CODEFIX
+                             ("|extra "";"" ignored");
+                        end if;
+
+                     else
+                        Restore_Scan_State (Scan_State); -- to comma/semicolon
+                     end if;
+
+                  else
+                     Restore_Scan_State (Scan_State); -- to comma/semicolon
+                  end if;
+               end;
+            end if;
+
             exit when Token not in Token_Class_Logop;
          end loop;
 

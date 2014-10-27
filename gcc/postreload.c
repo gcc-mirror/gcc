@@ -405,14 +405,10 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
   /* Array of alternatives, sorted in order of decreasing desirability.  */
   int *alternative_order;
 
-  extract_insn (insn);
+  extract_constrain_insn (insn);
 
   if (recog_data.n_alternatives == 0 || recog_data.n_operands == 0)
     return 0;
-
-  /* Figure out which alternative currently matches.  */
-  if (! constrain_operands (1))
-    fatal_insn_not_found (insn);
 
   alternative_reject = XALLOCAVEC (int, recog_data.n_alternatives);
   alternative_nregs = XALLOCAVEC (int, recog_data.n_alternatives);
@@ -501,6 +497,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 	  SET_HARD_REG_BIT (equiv_regs[i], REGNO (l->loc));
     }
 
+  alternative_mask preferred = get_preferred_alternatives (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     {
       enum machine_mode mode;
@@ -574,7 +571,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		     alternative yet and the operand being replaced is not
 		     a cheap CONST_INT.  */
 		  if (op_alt_regno[i][j] == -1
-		      && TEST_BIT (recog_data.enabled_alternatives, j)
+		      && TEST_BIT (preferred, j)
 		      && reg_fits_class_p (testreg, rclass, 0, mode)
 		      && (!CONST_INT_P (recog_data.operand[i])
 			  || (set_src_cost (recog_data.operand[i],

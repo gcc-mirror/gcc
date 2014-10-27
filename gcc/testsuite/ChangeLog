@@ -1,3 +1,361 @@
+2014-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63641
+	* gcc.c-torture/execute/pr63641.c: New test.
+
+2014-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_collectives_9.f90: Remove dg-error.
+	* gfortran.dg/coarray_collectives_13.f90: New.
+	* gfortran.dg/coarray_collectives_14.f90: New.
+	* gfortran.dg/coarray_collectives_15.f90: New.
+	* gfortran.dg/coarray_collectives_16.f90: New.
+
+2014-10-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/aapcs/abitest.h: Declare memcpy.
+
+2014-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56980
+	* gcc.dg/pr56980.c: New test.
+
+2014-10-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_ok_nocache): Remove declaration for
+	vaeseq_u8.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Remove declaration
+	for vcvt_f16_f32.
+	(check_effective_target_arm_neonv2_ok_nocache): Remove declaration for
+	vfma_f32.
+
+2014-10-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr63595.c: New test.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_dup.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdup-vmov.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vclz.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vbsl.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vaddw.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vaddl.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vaddhn.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vabdl.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vabd.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vabal.c: New file.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/binary_sat_op.inc: New
+	file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqsub.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/unary_sat_op.inc: New
+	file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqabs.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqneg.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_fp_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vcage.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcagt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcale.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcalt.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vceq.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcge.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcle.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vclt.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/binary_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vand.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vbic.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/veor.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vorn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vorr.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsub.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/unary_op.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vabs.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vneg.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/README.advsimd-intrinsics: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/README: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vaba.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl.c: Likewise.
+
+2014-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/wrapper.exp ({tool}_maybe_build_wrapper): Clear
+	wrap_compile_flags before setting it.
+
+2014-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr63594-1.c: Apply -mno-mmx to all i?86-*-* and x86_64-*-*
+	targets.
+	* gcc.dg/pr63594-2.c: Likewise.
+
+2014-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/980217-1.c (main): Fix implicit int.
+	* gcc.target/alpha/pr19518.c (_mm_setzero_si64): New function.
+
+2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR bootstrap/63632
+	* g++.dg/torture/pr63632.C: New test.
+
+2014-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/63619
+	* g++.dg/warn/Wdelete-incomplete-3.C: New.
+	* g++.dg/warn/Wdelete-incomplete-4.C: New.
+
+2014-10-23  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/63618
+	* gcc.target/i386/pr63618.c: New test.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63626
+	* gcc.dg/pr63626.c: New test.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/undefined-2.c: New test.
+
+2014-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/pr63600.c: New.
+
+2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/ipa-icf-21.c: Add -msse2 to dg-options.
+
+2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/ipa-icf-21.c: Restrict to i?86-*-* x86_64-*-*.
+	* gcc.dg/ipa/ipa-icf-28.c: Require init_priority.
+
+2014-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/sparc/20001013-1.c (main): Declare int return.
+	* gcc.target/sparc/mnofpu.c (e1e_rphy): Declare.
+	* gcc.target/sparc/sparc-ret.c (toto): Declare.
+	* gcc.target/sparc/ultrasp6.c (__assert, HSRate): Declare.
+	* gcc.target/sparc/ultrasp8.c (__malloc_lock, __malloc_unlock):
+	Declare.
+
+2014-10-22  Guozhi Wei  <carrot@google.com>
+
+	PR tree-optimization/63530
+	gcc.dg/vect/pr63530.c: New testcase.
+
+2014-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/i386/conversion-2.c: New test.
+
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/ubsan/align-1.c: Update cmdline options.
+	* c-c++-common/ubsan/align-3.c: Likewise.
+	* c-c++-common/ubsan/bounds-1.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: Likewise.
+	* c-c++-common/ubsan/nonnull-2.c: Likewise.
+	* c-c++-common/ubsan/nonnull-3.c: Likewise.
+	* c-c++-common/ubsan/object-size-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/pr60613-1.c: Likewise.
+	* c-c++-common/ubsan/save-expr-1.c: Likewise.
+	* c-c++-common/ubsan/shift-3.c: Likewise.
+	* c-c++-common/ubsan/shift-6.c: Likewise.
+	* c-c++-common/ubsan/undefined-1.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Likewise.
+	* c-c++-common/ubsan/vla-4.c: Likewise.
+	* g++.dg/ubsan/cxx11-shift-1.C: Likewise.
+	* g++.dg/ubsan/return-2.C: Likewise.
+	* c-c++-common/ubsan/recovery-1.c: New test.
+	* c-c++-common/ubsan/recovery-2.c: New test.
+	* c-c++-common/ubsan/recovery-3.c: New test.
+	* c-c++-common/ubsan/recovery-common.inc: New file.
+
+2014-10-22  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/pic-constantpool1.c: Add explicit declaration.
+	* gcc.target/aarch64/pic-symrefplus.c: Likewise.
+	* gcc.target/aarch64/reload-valid-spoff.c: Likewise.
+	* gcc.target/aarch64/vect.x: Likewise.
+	* gcc.target/aarch64/vect-ld1r.x: Add return type.
+	* gcc.target/aarch64/vect-fmax-fmin.c: Likewise.
+	* gcc.target/aarch64/vect-fp.c: Likewise.
+
+2014-10-22  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/compat.exp (compat-run): Remove "unresolved".
+	* lib/gcc-defs.exp (${tools}_check_compile): Update code logic for
+	unsupported testcase.
+
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63594
+	* gcc.dg/pr63594-1.c: New test.
+	* gcc.dg/pr63594-2.c: New test.
+	* gcc.target/i386/sse2-pr63594-1.c: New test.
+	* gcc.target/i386/sse2-pr63594-2.c: New test.
+	* gcc.target/i386/avx-pr63594-1.c: New test.
+	* gcc.target/i386/avx-pr63594-2.c: New test.
+	* gcc.target/i386/avx2-pr63594-1.c: New test.
+	* gcc.target/i386/avx2-pr63594-2.c: New test.
+	* gcc.target/i386/avx512f-pr63594-1.c: New test.
+	* gcc.target/i386/avx512f-pr63594-2.c: New test.
+	* gcc.target/i386/avx512f-vec-init.c: Adjust expected
+	insn counts.
+
+	PR target/63542
+	* gcc.target/i386/pr63542-1.c: New test.
+	* gcc.target/i386/pr63542-2.c: New test.
+
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/avr/tiny-memx.c: New test.
+
+	* gcc.target/avr/tiny-caller-save.c: New test.
+
+2014-10-21  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/20031108-1.c (Proc_7): Add explicit declaration.
+	(Proc_1): Add return type.
+	* gcc.target/arm/cold-lc.c (show_stack): Add explict declaration.
+	* gcc.target/arm/neon-modes-2.c (foo): Likewise.
+	* gcc.target/arm/pr43920-2.c (lseek): Likewise.
+	* gcc.target/arm/pr44788.c (foo): Likewise.
+	* gcc.target/arm/pr55642.c (abs): Likewise.
+	* gcc.target/arm/pr58784.c (f): Likewise.
+	* gcc.target/arm/pr60650.c (foo1, foo2): Likewise.
+	* gcc.target/arm/vfp-ldmdbs.c (bar): Likewise.
+	* gcc.target/arm/vfp-ldmias.c (bar): Likewise.
+	* gcc.target/arm/pr60650-2.c (fn1, fn2): Add return type and add type
+	for local variables.
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_ok_nocache): Add declaration for
+	vaeseq_u8.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Add declaration for
+	vcvt_f16_f32.
+	(check_effective_target_arm_neonv2_ok_nocache): Add declaration for
+	vfma_f32.
+	* gcc.target/arm/pr51968.c: Add -Wno-implicit-function-declaration.
+
+2014-10-21  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/bf-spl1.c (main): Fix implicit int.
+
+2014-10-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/optimize-bswaphi-1.c: New bswap pass test.
+
+2014-10-21  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/ipa/devirt-42.C: Fix dump scanning routines.
+	* g++.dg/ipa/devirt-46.C: Likewise.
+	* g++.dg/ipa/devirt-47.C: Likewise.
+	* g++.dg/tree-prof/pr35545.C: Likewise.
+
+2014-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63563
+	* gcc.target/i386/pr63563.c: New test.
+
+2014-10-20  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/slsr-19.c: Make robust against operand order changes.
+	* gcc.dg/tree-ssa/reassoc-20.c: Likewise.
+
+2014-10-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr63595.c: New test.
+
 2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/48979

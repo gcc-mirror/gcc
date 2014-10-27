@@ -46,6 +46,7 @@ extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
 
 #ifdef RTX_CODE
 extern int avr_hard_regno_call_part_clobbered (unsigned, enum machine_mode);
+extern bool tiny_valid_direct_memory_access_range(rtx, enum machine_mode);
 extern const char *output_movqi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movsisf (rtx_insn *insn, rtx operands[], int *l);
@@ -56,6 +57,7 @@ extern const char *avr_out_compare (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
+extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);

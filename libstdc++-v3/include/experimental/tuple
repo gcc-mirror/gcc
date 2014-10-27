@@ -44,6 +44,9 @@ namespace experimental
 inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // See C++14 §20.4.2.5, tuple helper classes
+  template <typename _Tp>
+    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
 
   template <typename _Fn, typename _Tuple, std::size_t... _Idx>
     constexpr decltype(auto)

@@ -863,6 +863,9 @@ func_checker::compare_gimple_asm (gimple g1, gimple g2)
   if (gimple_asm_nclobbers (g1) != gimple_asm_nclobbers (g2))
     return false;
 
+  if (strcmp (gimple_asm_string (g1), gimple_asm_string (g2)) != 0)
+    return return_false_with_msg ("ASM strings are different");
+
   for (unsigned i = 0; i < gimple_asm_ninputs (g1); i++)
     {
       tree input1 = gimple_asm_input_op (g1, i);

@@ -742,6 +742,7 @@ extern GTY(()) tree gfor_fndecl_caf_unlock;
 extern GTY(()) tree gfor_fndecl_co_broadcast;
 extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;
+extern GTY(()) tree gfor_fndecl_co_reduce;
 extern GTY(()) tree gfor_fndecl_co_sum;
 
 

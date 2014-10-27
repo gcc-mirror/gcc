@@ -53,6 +53,11 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    -- Local Subprograms --
    -----------------------
 
+   procedure Add_List_Pragma_Entry (PT : List_Pragma_Type; Loc : Source_Ptr);
+   --  Make a new entry in the List_Pragmas table if this entry is not already
+   --  in the table (it will always be the last one if there is a duplication
+   --  resulting from the use of Save/Restore_Scan_State).
+
    function Arg1 return Node_Id;
    function Arg2 return Node_Id;
    function Arg3 return Node_Id;
@@ -106,6 +111,19 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --
    --  Note that we don't need to do full error checking for badly formed cases
    --  of restrictions, since these will be caught during semantic analysis.
+
+   ---------------------------
+   -- Add_List_Pragma_Entry --
+   ---------------------------
+
+   procedure Add_List_Pragma_Entry (PT : List_Pragma_Type; Loc : Source_Ptr) is
+   begin
+      if List_Pragmas.Last < List_Pragmas.First
+        or else (List_Pragmas.Table (List_Pragmas.Last)) /= ((PT, Loc))
+      then
+         List_Pragmas.Append ((PT, Loc));
+      end if;
+   end Add_List_Pragma_Entry;
 
    ----------
    -- Arg1 --
@@ -413,8 +431,8 @@ begin
 
       --  pragma List (Off | On)
 
-      --  The processing for pragma List must be done at parse time,
-      --  since a listing can be generated in parse only mode.
+      --  The processing for pragma List must be done at parse time, since a
+      --  listing can be generated in parse only mode.
 
       when Pragma_List =>
          Check_Arg_Count (1);
@@ -425,16 +443,12 @@ begin
          --  in the List (Off) case, the pragma will print even in a region
          --  of code with listing turned off (this is required).
 
-         List_Pragmas.Increment_Last;
-         List_Pragmas.Table (List_Pragmas.Last) :=
-           (Ptyp => List_On, Ploc => Sloc (Pragma_Node));
+         Add_List_Pragma_Entry (List_On, Sloc (Pragma_Node));
 
          --  Now generate the list off entry for pragma List (Off)
 
          if Chars (Expression (Arg1)) = Name_Off then
-            List_Pragmas.Increment_Last;
-            List_Pragmas.Table (List_Pragmas.Last) :=
-              (Ptyp => List_Off, Ploc => Semi);
+            Add_List_Pragma_Entry (List_Off, Semi);
          end if;
 
       ----------------
@@ -448,8 +462,7 @@ begin
 
       when Pragma_Page =>
          Check_Arg_Count (0);
-         List_Pragmas.Increment_Last;
-         List_Pragmas.Table (List_Pragmas.Last) := (Page, Semi);
+         Add_List_Pragma_Entry (Page, Semi);
 
       ------------------
       -- Restrictions --
@@ -1262,6 +1275,7 @@ begin
            Pragma_No_Return                      |
            Pragma_No_Run_Time                    |
            Pragma_No_Strict_Aliasing             |
+           Pragma_No_Tagged_Streams              |
            Pragma_Normalize_Scalars              |
            Pragma_Obsolescent                    |
            Pragma_Ordered                        |

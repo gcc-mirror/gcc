@@ -52,6 +52,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 
 package body Sem_Eval is
@@ -497,13 +498,15 @@ package body Sem_Eval is
             --  differences in rounding between static and non-static
             --  expressions. AI-100 specifies that the effect of such rounding
             --  is implementation dependent, and in GNAT we round to nearest
-            --  even to match the run-time behavior.
+            --  even to match the run-time behavior. Note that this applies
+            --  to floating point literals, not fixed points ones, even though
+            --  their compiler representation is also as a universal real.
 
             Set_Realval
               (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+            Set_Is_Machine_Number (N);
          end if;
 
-         Set_Is_Machine_Number (N);
       end if;
 
       --  Check for out of range universal integer. This is a non-static
@@ -5736,7 +5739,17 @@ package body Sem_Eval is
          --  same base type.
 
          if Has_Discriminants (T1) /= Has_Discriminants (T2) then
-            if In_Instance then
+            --  A generic actual type is declared through a subtype declaration
+            --  and may have an inconsistent indication of the presence of
+            --  discriminants, so check the type it renames.
+
+            if Is_Generic_Actual_Type (T1)
+              and then not Has_Discriminants (Etype (T1))
+              and then not Has_Discriminants (T2)
+            then
+               return True;
+
+            elsif In_Instance then
                if Is_Private_Type (T2)
                  and then Present (Full_View (T2))
                  and then Has_Discriminants (Full_View (T2))
@@ -6197,6 +6210,12 @@ package body Sem_Eval is
         and then Is_Known_Valid (Typ)
         and then Esize (Etype (N)) <= Esize (Typ)
         and then not Has_Biased_Representation (Etype (N))
+
+        --  This check cannot be disabled under VM targets because in some
+        --  unusual cases the backend of the native compiler raises a run-time
+        --  exception but the virtual machines do not raise any exception.
+
+        and then VM_Target = No_VM
       then
          return In_Range;
 

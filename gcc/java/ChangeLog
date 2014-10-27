@@ -1,3 +1,9 @@
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* mangle.c (finish_mangling): Cast result of obstack_base to (char *).
+	* typeck.c (build_java_argument_signature): Likewise.
+	(build_java_signature): Likewise.
+
 2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* class.c: Adjust include files.
@@ -5,7 +11,7 @@
 
 2014-10-15  Evgeny Stupachenko  <evstupac@gmail.com>
 
-	PR target/63536	
+	PR target/63536
 	* lang.c (java_print_error_function): Add check on NULL function
 	context.
 

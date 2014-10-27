@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "profile.h"
 #include "expr.h"
 #include "except.h"
 #include "intl.h"
@@ -1007,10 +1008,11 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
 
 	  /* Make sure we can generate a move from register avail_reg to
 	     dest.  */
-	  extract_insn (as_a <rtx_insn *> (
-			  gen_move_insn (copy_rtx (dest),
-					 copy_rtx (avail_reg))));
-	  if (! constrain_operands (1)
+	  rtx_insn *move = as_a <rtx_insn *>
+	    (gen_move_insn (copy_rtx (dest), copy_rtx (avail_reg)));
+	  extract_insn (move);
+	  if (! constrain_operands (1, get_preferred_alternatives (insn,
+								   pred_bb))
 	      || reg_killed_on_edge (avail_reg, pred)
 	      || reg_used_on_edge (dest, pred))
 	    {

@@ -312,8 +312,11 @@ package body Sem_Ch6 is
 
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
+      --  In a generic context a formal subprogram has no completion.
 
-      if Present (Prev) and then Is_Overloadable (Prev) then
+      if Present (Prev) and then Is_Overloadable (Prev)
+        and then not Is_Formal_Subprogram (Prev)
+      then
          Def_Id := Analyze_Subprogram_Specification (Spec);
          Prev   := Find_Corresponding_Spec (N);
       end if;
@@ -358,7 +361,9 @@ package body Sem_Ch6 is
       --  scope. The entity itself may be internally created if within a body
       --  to be inlined.
 
-      elsif Present (Prev) and then Comes_From_Source (Parent (Prev)) then
+      elsif Present (Prev) and then Comes_From_Source (Parent (Prev))
+        and then not Is_Formal_Subprogram (Prev)
+      then
          Set_Has_Completion (Prev, False);
 
          --  An expression function that is a completion freezes the
@@ -448,6 +453,24 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
+
+         --  Within a generic pre-analyze the original expression for name
+         --  capture. The body is also generated but plays no role in
+         --  this because it is not part of the original source.
+
+         if Inside_A_Generic then
+            declare
+               Id : constant Entity_Id := Defining_Entity (N);
+
+            begin
+               Set_Has_Completion (Id);
+               Push_Scope (Id);
+               Install_Formals (Id);
+               Preanalyze_Spec_Expression (Expr, Etype (Id));
+               End_Scope;
+            end;
+         end if;
+
          Set_Is_Inlined (Defining_Entity (N));
 
          --  Establish the linkages between the spec and the body. These are
@@ -9919,7 +9942,9 @@ package body Sem_Ch6 is
                         --  (Note that the same is done for controlling access
                         --  parameter cases in function Access_Definition.)
 
-                        Set_Has_Delayed_Freeze (Current_Scope);
+                        if not Is_Thunk (Current_Scope) then
+                           Set_Has_Delayed_Freeze (Current_Scope);
+                        end if;
                      end if;
                   end if;
 

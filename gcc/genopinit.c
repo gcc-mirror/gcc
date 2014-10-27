@@ -408,6 +408,7 @@ main (int argc, char **argv)
 	   "#include \"stor-layout.h\"\n"
 	   "#include \"calls.h\"\n"
 	   "#include \"rtl.h\"\n"
+	   "#include \"predict.h\"\n"
 	   "#include \"tm_p.h\"\n"
 	   "#include \"flags.h\"\n"
 	   "#include \"insn-config.h\"\n"

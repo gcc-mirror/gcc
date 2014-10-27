@@ -112,6 +112,14 @@ static int total_num_times_called;
 static int total_hist_br_prob[20];
 static int total_num_branches;
 
+/* Helper function to update gcov_working_sets.  */
+
+void add_working_set (gcov_working_set_t *set) {
+  int i = 0;
+  for (; i < NUM_GCOV_WORKING_SETS; i++)
+    gcov_working_sets[i] = set[i];
+}
+
 /* Forward declarations.  */
 static void find_spanning_tree (struct edge_list *);
 

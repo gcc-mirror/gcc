@@ -320,6 +320,29 @@ mips*-*-*)
     [libgcc_cv_mips_hard_float=no])])
 esac
 
+# Determine floating-point type for powerpc*-*-linux*.
+# Single-precision-only FPRs are not a supported configuration for
+# this target, so are not allowed for in this test.
+case ${host} in
+powerpc*-*-linux*)
+  cat > conftest.c <<EOF
+#ifdef __powerpc64__
+ppc_fp_type=64
+#elif defined _SOFT_FLOAT
+ppc_fp_type=soft
+#elif defined _SOFT_DOUBLE
+ppc_fp_type=e500v1
+#elif defined __NO_FPRS__
+ppc_fp_type=e500v2
+#else
+ppc_fp_type=hard
+#endif
+EOF
+eval `${CC-cc} -E conftest.c | grep ppc_fp_type=`
+rm -f conftest.c
+;;
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 

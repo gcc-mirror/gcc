@@ -220,18 +220,322 @@ package body Sem_Ch7 is
    ---------------------------------
 
    procedure Analyze_Package_Body_Helper (N : Node_Id) is
-      HSS              : Node_Id;
-      Body_Id          : Entity_Id;
-      Spec_Id          : Entity_Id;
-      Last_Spec_Entity : Entity_Id;
-      New_N            : Node_Id;
-      Pack_Decl        : Node_Id;
+      procedure Hide_Public_Entities (Decls : List_Id);
+      --  Attempt to hide all public entities found in declarative list Decls
+      --  by resetting their Is_Public flag to False depending on whether the
+      --  entities are not referenced by inlined or generic bodies. This kind
+      --  of processing is a conservative approximation and may still leave
+      --  certain entities externally visible.
 
       procedure Install_Composite_Operations (P : Entity_Id);
       --  Composite types declared in the current scope may depend on types
       --  that were private at the point of declaration, and whose full view
       --  is now in scope. Indicate that the corresponding operations on the
       --  composite type are available.
+
+      --------------------------
+      -- Hide_Public_Entities --
+      --------------------------
+
+      procedure Hide_Public_Entities (Decls : List_Id) is
+         function Contains_Subp_Or_Const_Refs (N : Node_Id) return Boolean;
+         --  Subsidiary to routine Has_Referencer. Determine whether a node
+         --  contains a reference to a subprogram or a non-static constant.
+         --  WARNING: this is a very expensive routine as it performs a full
+         --  tree traversal.
+
+         function Has_Referencer
+           (Decls     : List_Id;
+            Top_Level : Boolean := False) return Boolean;
+         --  A "referencer" is a construct which may reference a previous
+         --  declaration. Examine all declarations in list Decls in reverse
+         --  and determine whether once such referencer exists. All entities
+         --  in the range Last (Decls) .. Referencer are hidden from external
+         --  visibility.
+
+         ---------------------------------
+         -- Contains_Subp_Or_Const_Refs --
+         ---------------------------------
+
+         function Contains_Subp_Or_Const_Refs (N : Node_Id) return Boolean is
+            Reference_Seen : Boolean := False;
+
+            function Is_Subp_Or_Const_Ref
+              (N : Node_Id) return Traverse_Result;
+            --  Determine whether a node denotes a reference to a subprogram or
+            --  a non-static constant.
+
+            --------------------------
+            -- Is_Subp_Or_Const_Ref --
+            --------------------------
+
+            function Is_Subp_Or_Const_Ref
+              (N : Node_Id) return Traverse_Result
+            is
+               Val : Node_Id;
+
+            begin
+               --  Detect a reference of the form
+               --    Subp_Call
+
+               if Nkind (N) in N_Subprogram_Call
+                 and then Is_Entity_Name (Name (N))
+               then
+                  Reference_Seen := True;
+                  return Abandon;
+
+               --  Detect a reference of the form
+               --    Subp'Some_Attribute
+
+               elsif Nkind (N) = N_Attribute_Reference
+                 and then Is_Entity_Name (Prefix (N))
+                 and then Is_Subprogram (Entity (Prefix (N)))
+               then
+                  Reference_Seen := True;
+                  return Abandon;
+
+               --  Detect the use of a non-static constant
+
+               elsif Is_Entity_Name (N)
+                 and then Present (Entity (N))
+                 and then Ekind (Entity (N)) = E_Constant
+               then
+                  Val := Constant_Value (Entity (N));
+
+                  if Present (Val)
+                    and then not Compile_Time_Known_Value (Val)
+                  then
+                     Reference_Seen := True;
+                     return Abandon;
+                  end if;
+               end if;
+
+               return OK;
+            end Is_Subp_Or_Const_Ref;
+
+            procedure Find_Subp_Or_Const_Ref is
+              new Traverse_Proc (Is_Subp_Or_Const_Ref);
+
+         --  Start of processing for Contains_Subp_Or_Const_Refs
+
+         begin
+            Find_Subp_Or_Const_Ref (N);
+
+            return Reference_Seen;
+         end Contains_Subp_Or_Const_Refs;
+
+         --------------------
+         -- Has_Referencer --
+         --------------------
+
+         function Has_Referencer
+           (Decls     : List_Id;
+            Top_Level : Boolean := False) return Boolean
+         is
+            Decl    : Node_Id;
+            Decl_Id : Entity_Id;
+            Spec    : Node_Id;
+
+            Has_Non_Subp_Const_Referencer : Boolean := False;
+            --  Flag set for inlined subprogram bodies that do not contain
+            --  references to other subprograms or non-static constants.
+
+         begin
+            if No (Decls) then
+               return False;
+            end if;
+
+            --  Examine all declarations in reverse order, hiding all entities
+            --  from external visibility until a referencer has been found. The
+            --  algorithm recurses into nested packages.
+
+            Decl := Last (Decls);
+            while Present (Decl) loop
+
+               --  A stub is always considered a referencer
+
+               if Nkind (Decl) in N_Body_Stub then
+                  return True;
+
+               --  Package declaration
+
+               elsif Nkind (Decl) = N_Package_Declaration
+                 and then not Has_Non_Subp_Const_Referencer
+               then
+                  Spec := Specification (Decl);
+
+                  --  Inspect the declarations of a non-generic package to try
+                  --  and hide more entities from external visibility.
+
+                  if not Is_Generic_Unit (Defining_Entity (Spec)) then
+                     if Has_Referencer (Private_Declarations (Spec))
+                       or else Has_Referencer (Visible_Declarations (Spec))
+                     then
+                        return True;
+                     end if;
+                  end if;
+
+               --  Package body
+
+               elsif Nkind (Decl) = N_Package_Body
+                 and then Present (Corresponding_Spec (Decl))
+               then
+                  Decl_Id := Corresponding_Spec (Decl);
+
+                  --  A generic package body is a referencer. It would seem
+                  --  that we only have to consider generics that can be
+                  --  exported, i.e. where the corresponding spec is the
+                  --  spec of the current package, but because of nested
+                  --  instantiations, a fully private generic body may export
+                  --  other private body entities. Furthermore, regardless of
+                  --  whether there was a previous inlined subprogram, (an
+                  --  instantiation of) the generic package may reference any
+                  --  entity declared before it.
+
+                  if Is_Generic_Unit (Decl_Id) then
+                     return True;
+
+                  --  Inspect the declarations of a non-generic package body to
+                  --  try and hide more entities from external visibility.
+
+                  elsif not Has_Non_Subp_Const_Referencer
+                    and then Has_Referencer (Declarations (Decl))
+                  then
+                     return True;
+                  end if;
+
+               --  Subprogram body
+
+               elsif Nkind (Decl) = N_Subprogram_Body then
+                  if Present (Corresponding_Spec (Decl)) then
+                     Decl_Id := Corresponding_Spec (Decl);
+
+                     --  A generic subprogram body acts as a referencer
+
+                     if Is_Generic_Unit (Decl_Id) then
+                        return True;
+                     end if;
+
+                     --  An inlined subprogram body acts as a referencer
+
+                     if Is_Inlined (Decl_Id)
+                       or else Has_Pragma_Inline (Decl_Id)
+                     then
+                        --  Inspect the statements of the subprogram body
+                        --  to determine whether the body references other
+                        --  subprograms and/or non-static constants.
+
+                        if Top_Level
+                          and then not Contains_Subp_Or_Const_Refs (Decl)
+                        then
+                           Has_Non_Subp_Const_Referencer := True;
+                        else
+                           return True;
+                        end if;
+                     end if;
+
+                  --  Otherwise this is a stand alone subprogram body
+
+                  else
+                     Decl_Id := Defining_Entity (Decl);
+
+                     --  An inlined body acts as a referencer. Note that an
+                     --  inlined subprogram remains Is_Public as gigi requires
+                     --  the flag to be set.
+
+                     --  Note that we test Has_Pragma_Inline here rather than
+                     --  Is_Inlined. We are compiling this for a client, and
+                     --  it is the client who will decide if actual inlining
+                     --  should occur, so we need to assume that the procedure
+                     --  could be inlined for the purpose of accessing global
+                     --  entities.
+
+                     if Has_Pragma_Inline (Decl_Id) then
+                        if Top_Level
+                          and then not Contains_Subp_Or_Const_Refs (Decl)
+                        then
+                           Has_Non_Subp_Const_Referencer := True;
+                        else
+                           return True;
+                        end if;
+                     else
+                        Set_Is_Public (Decl_Id, False);
+                     end if;
+                  end if;
+
+               --  Exceptions, objects and renamings do not need to be public
+               --  if they are not followed by a construct which can reference
+               --  and export them. The Is_Public flag is reset on top level
+               --  entities only as anything nested is local to its context.
+
+               elsif Nkind_In (Decl, N_Exception_Declaration,
+                                     N_Object_Declaration,
+                                     N_Object_Renaming_Declaration,
+                                     N_Subprogram_Declaration,
+                                     N_Subprogram_Renaming_Declaration)
+               then
+                  Decl_Id := Defining_Entity (Decl);
+
+                  if Top_Level
+                    and then not Is_Imported (Decl_Id)
+                    and then not Is_Exported (Decl_Id)
+                    and then No (Interface_Name (Decl_Id))
+                    and then
+                      (not Has_Non_Subp_Const_Referencer
+                        or else Nkind (Decl) = N_Subprogram_Declaration)
+                  then
+                     Set_Is_Public (Decl_Id, False);
+                  end if;
+               end if;
+
+               Prev (Decl);
+            end loop;
+
+            return Has_Non_Subp_Const_Referencer;
+         end Has_Referencer;
+
+         --  Local variables
+
+         Discard : Boolean := True;
+         pragma Unreferenced (Discard);
+
+      --  Start of processing for Hide_Public_Entities
+
+      begin
+         --  The algorithm examines the top level declarations of a package
+         --  body in reverse looking for a construct that may export entities
+         --  declared prior to it. If such a scenario is encountered, then all
+         --  entities in the range Last (Decls) .. construct are hidden from
+         --  external visibility. Consider:
+
+         --    package Pack is
+         --       generic
+         --       package Gen is
+         --       end Gen;
+         --    end Pack;
+
+         --    package body Pack is
+         --       External_Obj : ...;      --  (1)
+
+         --       package body Gen is      --  (2)
+         --          ... External_Obj ...  --  (3)
+         --       end Gen;
+
+         --       Local_Obj : ...;         --  (4)
+         --    end Pack;
+
+         --  In this example Local_Obj (4) must not be externally visible as
+         --  it cannot be exported by anything in Pack. The body of generic
+         --  package Gen (2) on the other hand acts as a "referencer" and may
+         --  export anything declared before it. Since the compiler does not
+         --  perform flow analysis, it is not possible to determine precisely
+         --  which entities will be exported when Gen is instantiated. In the
+         --  example above External_Obj (1) is exported at (3), but this may
+         --  not always be the case. The algorithm takes a conservative stance
+         --  and leaves entity External_Obj public.
+
+         Discard := Has_Referencer (Decls, Top_Level => True);
+      end Hide_Public_Entities;
 
       ----------------------------------
       -- Install_Composite_Operations --
@@ -255,6 +559,15 @@ package body Sem_Ch7 is
             Next_Entity (Id);
          end loop;
       end Install_Composite_Operations;
+
+      --  Local variables
+
+      Body_Id          : Entity_Id;
+      HSS              : Node_Id;
+      Last_Spec_Entity : Entity_Id;
+      New_N            : Node_Id;
+      Pack_Decl        : Node_Id;
+      Spec_Id          : Entity_Id;
 
    --  Start of processing for Analyze_Package_Body_Helper
 
@@ -557,272 +870,23 @@ package body Sem_Ch7 is
          Check_References (Spec_Id);
       end if;
 
-      --  The processing so far has made all entities of the package body
-      --  public (i.e. externally visible to the linker). This is in general
-      --  necessary, since inlined or generic bodies, for which code is
-      --  generated in other units, may need to see these entities. The
-      --  following loop runs backwards from the end of the entities of the
-      --  package body making these entities invisible until we reach a
-      --  referencer, i.e. a declaration that could reference a previous
-      --  declaration, a generic body or an inlined body, or a stub (which may
-      --  contain either of these). This is of course an approximation, but it
-      --  is conservative and definitely correct.
+      --  At this point all entities of the package body are externally visible
+      --  to the linker as their Is_Public flag is set to True. This proactive
+      --  approach is necessary because an inlined or a generic body for which
+      --  code is generated in other units may need to see these entities. Cut
+      --  down the number of global symbols that do not neet public visibility
+      --  as this has two beneficial effects:
+      --    (1) It makes the compilation process more efficient.
+      --    (2) It gives the code generatormore freedom to optimize within each
+      --        unit, especially subprograms.
 
-      --  We only do this at the outer (library) level non-generic packages.
-      --  The reason is simply to cut down on the number of global symbols
-      --  generated, which has a double effect: (1) to make the compilation
-      --  process more efficient and (2) to give the code generator more
-      --  freedom to optimize within each unit, especially subprograms.
+      --  This is done only for top level library packages or child units as
+      --  the algorithm does a top down traversal of the package body.
 
       if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
-        and then Present (Declarations (N))
       then
-         Make_Non_Public_Where_Possible : declare
-
-            function Has_Referencer
-              (L     : List_Id;
-               Outer : Boolean) return  Boolean;
-            --  Traverse given list of declarations in reverse order. Return
-            --  True if a referencer is present. Return False if none is found.
-            --
-            --  The Outer parameter is True for the outer level call and False
-            --  for inner level calls for nested packages. If Outer is True,
-            --  then any entities up to the point of hitting a referencer get
-            --  their Is_Public flag cleared, so that the entities will be
-            --  treated as static entities in the C sense, and need not have
-            --  fully qualified names. Furthermore, if the referencer is an
-            --  inlined subprogram that doesn't reference other subprograms,
-            --  we keep clearing the Is_Public flag on subprograms. For inner
-            --  levels, we need all names to be fully qualified to deal with
-            --  the same name appearing in parallel packages (right now this
-            --  is tied to their being external).
-
-            --------------------
-            -- Has_Referencer --
-            --------------------
-
-            function Has_Referencer
-              (L     : List_Id;
-               Outer : Boolean) return  Boolean
-            is
-               Has_Referencer_Except_For_Subprograms : Boolean := False;
-
-               D : Node_Id;
-               E : Entity_Id;
-               K : Node_Kind;
-               S : Entity_Id;
-
-               function Check_Subprogram_Ref (N : Node_Id)
-                 return Traverse_Result;
-               --  Look for references to subprograms
-
-               --------------------------
-               -- Check_Subprogram_Ref --
-               --------------------------
-
-               function Check_Subprogram_Ref (N : Node_Id)
-                 return Traverse_Result
-               is
-                  V : Node_Id;
-
-               begin
-                  --  Check name of procedure or function calls
-
-                  if Nkind (N) in N_Subprogram_Call
-                    and then Is_Entity_Name (Name (N))
-                  then
-                     return Abandon;
-                  end if;
-
-                  --  Check prefix of attribute references
-
-                  if Nkind (N) = N_Attribute_Reference
-                    and then Is_Entity_Name (Prefix (N))
-                    and then Present (Entity (Prefix (N)))
-                    and then Ekind (Entity (Prefix (N))) in Subprogram_Kind
-                  then
-                     return Abandon;
-                  end if;
-
-                  --  Check value of constants
-
-                  if Nkind (N) = N_Identifier
-                    and then Present (Entity (N))
-                    and then Ekind (Entity (N)) = E_Constant
-                  then
-                     V := Constant_Value (Entity (N));
-
-                     if Present (V)
-                       and then not Compile_Time_Known_Value_Or_Aggr (V)
-                     then
-                        return Abandon;
-                     end if;
-                  end if;
-
-                  return OK;
-               end Check_Subprogram_Ref;
-
-               function Check_Subprogram_Refs is
-                 new Traverse_Func (Check_Subprogram_Ref);
-
-            --  Start of processing for Has_Referencer
-
-            begin
-               if No (L) then
-                  return False;
-               end if;
-
-               D := Last (L);
-               while Present (D) loop
-                  K := Nkind (D);
-
-                  if K in N_Body_Stub then
-                     return True;
-
-                  --  Processing for subprogram bodies
-
-                  elsif K = N_Subprogram_Body then
-                     if Acts_As_Spec (D) then
-                        E := Defining_Entity (D);
-
-                        --  An inlined body acts as a referencer. Note also
-                        --  that we never reset Is_Public for an inlined
-                        --  subprogram. Gigi requires Is_Public to be set.
-
-                        --  Note that we test Has_Pragma_Inline here rather
-                        --  than Is_Inlined. We are compiling this for a
-                        --  client, and it is the client who will decide if
-                        --  actual inlining should occur, so we need to assume
-                        --  that the procedure could be inlined for the purpose
-                        --  of accessing global entities.
-
-                        if Has_Pragma_Inline (E) then
-                           if Outer and then Check_Subprogram_Refs (D) = OK
-                           then
-                              Has_Referencer_Except_For_Subprograms := True;
-                           else
-                              return True;
-                           end if;
-                        else
-                           Set_Is_Public (E, False);
-                        end if;
-
-                     else
-                        E := Corresponding_Spec (D);
-
-                        if Present (E) then
-
-                           --  A generic subprogram body acts as a referencer
-
-                           if Is_Generic_Unit (E) then
-                              return True;
-                           end if;
-
-                           if Has_Pragma_Inline (E) or else Is_Inlined (E) then
-                              if Outer and then Check_Subprogram_Refs (D) = OK
-                              then
-                                 Has_Referencer_Except_For_Subprograms := True;
-                              else
-                                 return True;
-                              end if;
-                           end if;
-                        end if;
-                     end if;
-
-                  --  Processing for package bodies
-
-                  elsif K = N_Package_Body
-                    and then Present (Corresponding_Spec (D))
-                  then
-                     E := Corresponding_Spec (D);
-
-                     --  Generic package body is a referencer. It would seem
-                     --  that we only have to consider generics that can be
-                     --  exported, i.e. where the corresponding spec is the
-                     --  spec of the current package, but because of nested
-                     --  instantiations, a fully private generic body may
-                     --  export other private body entities. Furthermore,
-                     --  regardless of whether there was a previous inlined
-                     --  subprogram, (an instantiation of) the generic package
-                     --  may reference any entity declared before it.
-
-                     if Is_Generic_Unit (E) then
-                        return True;
-
-                     --  For non-generic package body, recurse into body unless
-                     --  this is an instance, we ignore instances since they
-                     --  cannot have references that affect outer entities.
-
-                     elsif not Is_Generic_Instance (E)
-                       and then not Has_Referencer_Except_For_Subprograms
-                     then
-                        if Has_Referencer
-                             (Declarations (D), Outer => False)
-                        then
-                           return True;
-                        end if;
-                     end if;
-
-                  --  Processing for package specs, recurse into declarations.
-                  --  Again we skip this for the case of generic instances.
-
-                  elsif K = N_Package_Declaration
-                    and then not Has_Referencer_Except_For_Subprograms
-                  then
-                     S := Specification (D);
-
-                     if not Is_Generic_Unit (Defining_Entity (S)) then
-                        if Has_Referencer
-                             (Private_Declarations (S), Outer => False)
-                        then
-                           return True;
-                        elsif Has_Referencer
-                               (Visible_Declarations (S), Outer => False)
-                        then
-                           return True;
-                        end if;
-                     end if;
-
-                  --  Objects and exceptions need not be public if we have not
-                  --  encountered a referencer so far. We only reset the flag
-                  --  for outer level entities that are not imported/exported,
-                  --  and which have no interface name.
-
-                  elsif Nkind_In (K, N_Object_Declaration,
-                                     N_Exception_Declaration,
-                                     N_Subprogram_Declaration)
-                  then
-                     E := Defining_Entity (D);
-
-                     if Outer
-                       and then (not Has_Referencer_Except_For_Subprograms
-                                  or else K = N_Subprogram_Declaration)
-                       and then not Is_Imported (E)
-                       and then not Is_Exported (E)
-                       and then No (Interface_Name (E))
-                     then
-                        Set_Is_Public (E, False);
-                     end if;
-                  end if;
-
-                  Prev (D);
-               end loop;
-
-               return Has_Referencer_Except_For_Subprograms;
-            end Has_Referencer;
-
-         --  Start of processing for Make_Non_Public_Where_Possible
-
-         begin
-            declare
-               Discard : Boolean;
-               pragma Warnings (Off, Discard);
-
-            begin
-               Discard := Has_Referencer (Declarations (N), Outer => True);
-            end;
-         end Make_Non_Public_Where_Possible;
+         Hide_Public_Entities (Declarations (N));
       end if;
 
       --  If expander is not active, then here is where we turn off the

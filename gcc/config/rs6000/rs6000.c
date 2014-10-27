@@ -1721,7 +1721,7 @@ rs6000_hard_regno_nregs_internal (int regno, enum machine_mode mode)
      SCmode so as to pass the value correctly in a pair of
      registers.  */
   else if (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode) && mode != SCmode
-	   && !DECIMAL_FLOAT_MODE_P (mode))
+	   && !DECIMAL_FLOAT_MODE_P (mode) && SPE_SIMD_REGNO_P (regno))
     reg_size = UNITS_PER_FP_WORD;
 
   else

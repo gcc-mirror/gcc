@@ -767,7 +767,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 This is merely to keep the test for safety and updating the insn
 	 stream simple.  Also ensure that within the block the candidate
 	 follows the defining insn.  */
-      if (BLOCK_FOR_INSN (cand->insn) != BLOCK_FOR_INSN (def_insn)
+      basic_block bb = BLOCK_FOR_INSN (cand->insn);
+      if (bb != BLOCK_FOR_INSN (def_insn)
 	  || DF_INSN_LUID (def_insn) > DF_INSN_LUID (cand->insn))
 	return false;
 
@@ -817,7 +818,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (recog_memoized (insn) == -1)
 	return false;
       extract_insn (insn);
-      if (!constrain_operands (1))
+      if (!constrain_operands (1, get_preferred_alternatives (insn, bb)))
 	return false;
     }
 

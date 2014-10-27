@@ -27,9 +27,18 @@
   " crtend%O%s crtn%O%s " \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
+#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+#define CA53_ERR_835769_SPEC \
+  " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
+#else
+#define CA53_ERR_835769_SPEC \
+  " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
+#endif
+
 #ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X \
-  -maarch64elf%{mabi=ilp32*:32}%{mbig-endian:b}"
+  -maarch64elf%{mabi=ilp32*:32}%{mbig-endian:b}" \
+  CA53_ERR_835769_SPEC
 #endif
 
 #endif /* GCC_AARCH64_ELF_RAW_H */

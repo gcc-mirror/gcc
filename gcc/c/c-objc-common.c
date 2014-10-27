@@ -71,12 +71,8 @@ c_objc_common_init (void)
   if (flag_upc)
     upc_lang_init ();
 
-  /* These were not defined in the Objective-C front end, but I'm
-     putting them here anyway.  The diagnostic format decoder might
-     want an enhanced ObjC implementation.  */
-  diagnostic_format_decoder (global_dc) = &c_tree_printer;
-
   return true;
+
 }
 
 /* Called during diagnostic message formatting process to print a
@@ -192,8 +188,6 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  c_common_initialize_diagnostics (context);
-
   pretty_printer *base = context->printer;
   c_pretty_printer *pp = XNEW (c_pretty_printer);
   context->printer = new (pp) c_pretty_printer ();
@@ -201,6 +195,9 @@ c_initialize_diagnostics (diagnostic_context *context)
   /* It is safe to free this object because it was previously XNEW()'d.  */
   base->~pretty_printer ();
   XDELETE (base);
+
+  c_common_diagnostics_set_defaults (context);
+  diagnostic_format_decoder (context) = &c_tree_printer;
 }
 
 /* Check for the possible need to convert UPC-specific types.  */

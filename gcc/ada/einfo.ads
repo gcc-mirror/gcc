@@ -3361,20 +3361,6 @@ package Einfo is
 --       Empty if applied to the last literal. This is actually a synonym
 --       for Next, but its use is preferred in this context.
 
---    Non_Binary_Modulus (Flag58) [base type only]
---       Defined in all subtype and type entities. Set for modular integer
---       types if the modulus value is other than a power of 2.
-
---    Non_Limited_View (Node17)
---       Defined in abstract states and incomplete types that act as shadow
---       entities created when analysing a limited with clause (Ada 2005:
---       AI-50217). Points to the defining entity of the original declaration.
-
---    Nonzero_Is_True (Flag162) [base type only]
---       Defined in enumeration types. Set if any non-zero value is to be
---       interpreted as true. Currently this is set for derived Boolean
---       types which have a convention of C, C++ or Fortran.
-
 --    No_Dynamic_Predicate_On_Actual (Flag276)
 --       Defined in discrete types. Set for generic formal types that are used
 --       in loops and quantified expressions. The corresponing actual cannot
@@ -3395,6 +3381,35 @@ package Einfo is
 --    No_Return (Flag113)
 --       Defined in all entities. Always false except in the case of procedures
 --       and generic procedures for which a pragma No_Return is given.
+
+--    No_Strict_Aliasing (Flag136) [base type only]
+--       Defined in access types. Set to direct the backend to avoid any
+--       optimizations based on an assumption about the aliasing status of
+--       objects designated by the access type. For the case of the gcc
+--       backend, the effect is as though all references to objects of
+--       the type were compiled with -fno-strict-aliasing. This flag is
+--       set if an unchecked conversion with the access type as a target
+--       type occurs in the same source unit as the declaration of the
+--       access type, or if an explicit pragma No_Strict_Aliasing applies.
+
+--    No_Tagged_Streams_Pragma (Node32)
+--       Present in  all subtype and type entities. Set for tagged types and
+--       subtypes (i.e. entities with Is_Tagged_Type set True) if a valid
+--       pragma/aspect applies to the type.
+
+--    Non_Binary_Modulus (Flag58) [base type only]
+--       Defined in all subtype and type entities. Set for modular integer
+--       types if the modulus value is other than a power of 2.
+
+--    Non_Limited_View (Node17)
+--       Defined in abstract states and incomplete types that act as shadow
+--       entities created when analysing a limited with clause (Ada 2005:
+--       AI-50217). Points to the defining entity of the original declaration.
+
+--    Nonzero_Is_True (Flag162) [base type only]
+--       Defined in enumeration types. Set if any non-zero value is to be
+--       interpreted as true. Currently this is set for derived Boolean
+--       types which have a convention of C, C++ or Fortran.
 
 --    Normalized_First_Bit (Uint8)
 --       Defined in components and discriminants. Indicates the normalized
@@ -3418,16 +3433,6 @@ package Einfo is
 --       This is used by Layout in front end layout mode to properly computed
 --       the maximum size such records (needed for allocation purposes when
 --       there are default discriminants, and also for the 'Size value).
-
---    No_Strict_Aliasing (Flag136) [base type only]
---       Defined in access types. Set to direct the backend to avoid any
---       optimizations based on an assumption about the aliasing status of
---       objects designated by the access type. For the case of the gcc
---       backend, the effect is as though all references to objects of
---       the type were compiled with -fno-strict-aliasing. This flag is
---       set if an unchecked conversion with the access type as a target
---       type occurs in the same source unit as the declaration of the
---       access type, or if an explicit pragma No_Strict_Aliasing applies.
 
 --    Number_Dimensions (synthesized)
 --       Applies to array types and subtypes. Returns the number of dimensions
@@ -5261,6 +5266,7 @@ package Einfo is
    --    Current_Use_Clause                  (Node27)
    --    Subprograms_For_Type                (Node29)
    --    Derived_Type_Link                   (Node31)
+   --    No_Tagged_Streams_Pragma            (Node32)
    --    Linker_Section_Pragma               (Node33)
 
    --    Depends_On_Private                  (Flag14)
@@ -6814,6 +6820,7 @@ package Einfo is
    function No_Predicate_On_Actual              (Id : E) return B;
    function No_Return                           (Id : E) return B;
    function No_Strict_Aliasing                  (Id : E) return B;
+   function No_Tagged_Streams_Pragma            (Id : E) return N;
    function Non_Binary_Modulus                  (Id : E) return B;
    function Non_Limited_View                    (Id : E) return E;
    function Nonzero_Is_True                     (Id : E) return B;
@@ -7458,6 +7465,7 @@ package Einfo is
    procedure Set_No_Predicate_On_Actual          (Id : E; V : B := True);
    procedure Set_No_Return                       (Id : E; V : B := True);
    procedure Set_No_Strict_Aliasing              (Id : E; V : B := True);
+   procedure Set_No_Tagged_Streams_Pragma        (Id : E; V : N);
    procedure Set_Non_Binary_Modulus              (Id : E; V : B := True);
    procedure Set_Non_Limited_View                (Id : E; V : E);
    procedure Set_Nonzero_Is_True                 (Id : E; V : B := True);
@@ -8251,6 +8259,7 @@ package Einfo is
    pragma Inline (No_Predicate_On_Actual);
    pragma Inline (No_Return);
    pragma Inline (No_Strict_Aliasing);
+   pragma Inline (No_Tagged_Streams_Pragma);
    pragma Inline (Non_Binary_Modulus);
    pragma Inline (Non_Limited_View);
    pragma Inline (Nonzero_Is_True);
@@ -8693,6 +8702,7 @@ package Einfo is
    pragma Inline (Set_No_Predicate_On_Actual);
    pragma Inline (Set_No_Return);
    pragma Inline (Set_No_Strict_Aliasing);
+   pragma Inline (Set_No_Tagged_Streams_Pragma);
    pragma Inline (Set_Non_Binary_Modulus);
    pragma Inline (Set_Non_Limited_View);
    pragma Inline (Set_Nonzero_Is_True);

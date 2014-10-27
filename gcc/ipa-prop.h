@@ -732,4 +732,7 @@ ipa_parm_adjustment *ipa_get_adjustment_candidate (tree **, bool *,
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, tree,
 			   gimple_stmt_iterator *, bool);
 
+/* In ipa-cp.c  */
+void ipa_cp_c_finalize (void);
+
 #endif /* IPA_PROP_H */

@@ -27,9 +27,22 @@ noinst_LTLIBRARIES = libc++11convenience.la
 
 headers =
 
+# Source files linked in via configuration/make substitution for a
+# particular host.
+host_sources = \
+	ctype_configure_char.cc \
+	ctype_members.cc
+
+ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
+	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
+
+ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
+
 sources = \
 	chrono.cc \
 	condition_variable.cc \
+	ctype.cc \
 	debug.cc \
 	functexcept.cc \
 	functional.cc \
@@ -45,7 +58,8 @@ sources = \
 	shared_ptr.cc \
 	snprintf_lite.cc \
 	system_error.cc \
-	thread.cc
+	thread.cc \
+	${host_sources}
 
 if ENABLE_EXTERN_TEMPLATE
 # XTEMPLATE_FLAGS = -fno-implicit-templates

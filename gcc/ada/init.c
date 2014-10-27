@@ -2198,9 +2198,6 @@ __gnat_install_handler(void)
 #include <stdlib.h>
 #include <sys/syscall.h>
 #include <sys/sysctl.h>
-#include <mach/mach_vm.h>
-#include <mach/mach_init.h>
-#include <mach/vm_statistics.h>
 
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
 char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
@@ -2209,10 +2206,17 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
    Tell the kernel to re-use alt stack when delivering a signal.  */
 #define	UC_RESET_ALT_STACK	0x80000000
 
+#ifndef __arm__
+#include <mach/mach_vm.h>
+#include <mach/mach_init.h>
+#include <mach/vm_statistics.h>
+#endif
+
 /* Return true if ADDR is within a stack guard area.  */
 static int
 __gnat_is_stack_guard (mach_vm_address_t addr)
 {
+#ifndef __arm__
   kern_return_t kret;
   vm_region_submap_info_data_64_t info;
   mach_vm_address_t start;
@@ -2232,6 +2236,10 @@ __gnat_is_stack_guard (mach_vm_address_t addr)
       && info.user_tag == VM_MEMORY_STACK)
     return 1;
   return 0;
+#else
+  /* Pagezero for arm.  */
+  return addr >= 4096;
+#endif
 }
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE

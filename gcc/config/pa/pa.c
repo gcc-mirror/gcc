@@ -9064,8 +9064,10 @@ pa_can_combine_p (rtx_insn *new_rtx, rtx_insn *anchor, rtx_insn *floater,
   XVECEXP (PATTERN (new_rtx), 0, 1) = PATTERN (floater);
   INSN_CODE (new_rtx) = -1;
   insn_code_number = recog_memoized (new_rtx);
+  basic_block bb = BLOCK_FOR_INSN (anchor);
   if (insn_code_number < 0
-      || (extract_insn (new_rtx), ! constrain_operands (1)))
+      || (extract_insn (new_rtx),
+	  !constrain_operands (1, get_preferred_alternatives (new_rtx, bb))))
     return 0;
 
   if (reversed)

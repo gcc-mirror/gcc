@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
+#include "profile.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "params.h"
@@ -1235,7 +1236,7 @@ unroll_loop_stupid (struct loop *loop)
    Set *DEBUG_USES to the number of debug insns that reference the
    variable.  */
 
-bool
+static bool
 referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg,
 				  int *debug_uses)
 {

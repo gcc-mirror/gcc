@@ -61,6 +61,11 @@ stringpool_ggc_alloc (size_t x)
 void
 init_stringpool (void)
 {
+  /* Clean up if we're called more than once.
+     (We can't make this idempotent since identifiers contain state) */
+  if (ident_hash)
+    ht_destroy (ident_hash);
+
   /* Create with 16K (2^14) entries.  */
   ident_hash = ht_create (14);
   ident_hash->alloc_node = alloc_node;

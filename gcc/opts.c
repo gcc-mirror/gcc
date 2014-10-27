@@ -879,17 +879,28 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Userspace and kernel ASan conflict with each other and with TSan.  */
 
-  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
-      && (flag_sanitize & SANITIZE_KERNEL_ADDRESS))
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
+      && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
     error_at (loc,
-              "-fsanitize=address is incompatible with "
-              "-fsanitize=kernel-address");
+	      "-fsanitize=address is incompatible with "
+	      "-fsanitize=kernel-address");
 
-  if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (flag_sanitize & SANITIZE_THREAD))
+  if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
+      && (opts->x_flag_sanitize & SANITIZE_THREAD))
     error_at (loc,
-              "-fsanitize=address and -fsanitize=kernel-address "
-              "are incompatible with -fsanitize=thread");
+	      "-fsanitize=address and -fsanitize=kernel-address "
+	      "are incompatible with -fsanitize=thread");
+
+  /* Error recovery is not allowed for ASan and TSan.  */
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_USER_ADDRESS)
+    error_at (loc, "-fsanitize-recover=address is not supported");
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_THREAD)
+    error_at (loc, "-fsanitize-recover=thread is not supported");
+
+  if (opts->x_flag_sanitize_recover & SANITIZE_LEAK)
+    error_at (loc, "-fsanitize-recover=leak is not supported");
 }
 
 #define LEFT_COLUMN	27
@@ -1280,6 +1291,50 @@ print_specific_help (unsigned int include_flags,
 		       opts->x_help_columns, opts, lang_mask);
 }
 
+/* Enable FDO-related flags.  */
+
+static void
+enable_fdo_optimizations (struct gcc_options *opts,
+			  struct gcc_options *opts_set,
+			  int value)
+{
+  if (!opts_set->x_flag_branch_probabilities)
+    opts->x_flag_branch_probabilities = value;
+  if (!opts_set->x_flag_profile_values)
+    opts->x_flag_profile_values = value;
+  if (!opts_set->x_flag_unroll_loops)
+    opts->x_flag_unroll_loops = value;
+  if (!opts_set->x_flag_peel_loops)
+    opts->x_flag_peel_loops = value;
+  if (!opts_set->x_flag_tracer)
+    opts->x_flag_tracer = value;
+  if (!opts_set->x_flag_value_profile_transformations)
+    opts->x_flag_value_profile_transformations = value;
+  if (!opts_set->x_flag_inline_functions)
+    opts->x_flag_inline_functions = value;
+  if (!opts_set->x_flag_ipa_cp)
+    opts->x_flag_ipa_cp = value;
+  if (!opts_set->x_flag_ipa_cp_clone
+      && value && opts->x_flag_ipa_cp)
+    opts->x_flag_ipa_cp_clone = value;
+  if (!opts_set->x_flag_predictive_commoning)
+    opts->x_flag_predictive_commoning = value;
+  if (!opts_set->x_flag_unswitch_loops)
+    opts->x_flag_unswitch_loops = value;
+  if (!opts_set->x_flag_gcse_after_reload)
+    opts->x_flag_gcse_after_reload = value;
+  if (!opts_set->x_flag_tree_loop_vectorize
+      && !opts_set->x_flag_tree_vectorize)
+    opts->x_flag_tree_loop_vectorize = value;
+  if (!opts_set->x_flag_tree_slp_vectorize
+      && !opts_set->x_flag_tree_vectorize)
+    opts->x_flag_tree_slp_vectorize = value;
+  if (!opts_set->x_flag_vect_cost_model)
+    opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
+  if (!opts_set->x_flag_tree_loop_distribute_patterns)
+    opts->x_flag_tree_loop_distribute_patterns = value;
+}
+
 /* Handle target- and language-independent options.  Return zero to
    generate an "unknown option" message.  Only options that need
    extra handling need to be listed here; if you simply want
@@ -1473,8 +1528,12 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fsanitize_:
+    case OPT_fsanitize_recover_:
       {
 	const char *p = arg;
+	unsigned int *flag
+	  = code == OPT_fsanitize_ ? &opts->x_flag_sanitize
+	  : &opts->x_flag_sanitize_recover;
 	while (*p != 0)
 	  {
 	    static const struct
@@ -1540,32 +1599,35 @@ common_handle_option (struct gcc_options *opts,
 		{
 		  /* Handle both -fsanitize and -fno-sanitize cases.  */
 		  if (value)
-		    flag_sanitize |= spec[i].flag;
+		    *flag |= spec[i].flag;
 		  else
-		    flag_sanitize &= ~spec[i].flag;
+		    *flag &= ~spec[i].flag;
 		  found = true;
 		  break;
 		}
 
 	    if (! found)
 	      error_at (loc,
-			"unrecognized argument to -fsanitize= option: %q.*s",
-			(int) len, p);
+			"unrecognized argument to -fsanitize%s= option: %q.*s",
+			code == OPT_fsanitize_ ? "" : "-recover", (int) len, p);
 
 	    if (comma == NULL)
 	      break;
 	    p = comma + 1;
 	  }
 
+	if (code != OPT_fsanitize_)
+	  break;
+
 	/* When instrumenting the pointers, we don't want to remove
 	   the null pointer checks.  */
-	if (flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
-			     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
+	if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
+				     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
 	  opts->x_flag_delete_null_pointer_checks = 0;
 
 	/* Kernel ASan implies normal ASan but does not yet support
 	   all features.  */
-	if (flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+	if (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS)
 	  {
 	    maybe_set_param_value (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD, 0,
 				   opts->x_param_values,
@@ -1583,6 +1645,15 @@ common_handle_option (struct gcc_options *opts,
 
 	break;
       }
+
+    case OPT_fsanitize_recover:
+      if (value)
+	opts->x_flag_sanitize_recover
+	  |= SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT;
+      else
+	opts->x_flag_sanitize_recover
+	  &= ~(SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT);
+      break;
 
     case OPT_O:
     case OPT_Os:
@@ -1749,48 +1820,28 @@ common_handle_option (struct gcc_options *opts,
       value = true;
       /* No break here - do -fprofile-use processing. */
     case OPT_fprofile_use:
-      if (!opts_set->x_flag_branch_probabilities)
-	opts->x_flag_branch_probabilities = value;
-      if (!opts_set->x_flag_profile_values)
-	opts->x_flag_profile_values = value;
-      if (!opts_set->x_flag_unroll_loops)
-	opts->x_flag_unroll_loops = value;
-      if (!opts_set->x_flag_peel_loops)
-	opts->x_flag_peel_loops = value;
-      if (!opts_set->x_flag_tracer)
-	opts->x_flag_tracer = value;
-      if (!opts_set->x_flag_value_profile_transformations)
-	opts->x_flag_value_profile_transformations = value;
-      if (!opts_set->x_flag_inline_functions)
-	opts->x_flag_inline_functions = value;
-      if (!opts_set->x_flag_ipa_cp)
-	opts->x_flag_ipa_cp = value;
-      if (!opts_set->x_flag_ipa_cp_clone
-	  && value && opts->x_flag_ipa_cp)
-	opts->x_flag_ipa_cp_clone = value;
-      if (!opts_set->x_flag_predictive_commoning)
-	opts->x_flag_predictive_commoning = value;
-      if (!opts_set->x_flag_unswitch_loops)
-	opts->x_flag_unswitch_loops = value;
-      if (!opts_set->x_flag_gcse_after_reload)
-	opts->x_flag_gcse_after_reload = value;
-      if (!opts_set->x_flag_tree_loop_vectorize
-          && !opts_set->x_flag_tree_vectorize)
-	opts->x_flag_tree_loop_vectorize = value;
-      if (!opts_set->x_flag_tree_slp_vectorize
-          && !opts_set->x_flag_tree_vectorize)
-	opts->x_flag_tree_slp_vectorize = value;
-      if (!opts_set->x_flag_vect_cost_model)
-	opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
-      if (!opts_set->x_flag_tree_loop_distribute_patterns)
-	opts->x_flag_tree_loop_distribute_patterns = value;
+      enable_fdo_optimizations (opts, opts_set, value);
       if (!opts_set->x_flag_profile_reorder_functions)
-	opts->x_flag_profile_reorder_functions = value;
-      /* Indirect call profiling should do all useful transformations
- 	 speculative devirtualization does.  */
+	  opts->x_flag_profile_reorder_functions = value;
+	/* Indirect call profiling should do all useful transformations
+	   speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively
 	  && opts->x_flag_value_profile_transformations)
 	opts->x_flag_devirtualize_speculatively = false;
+      break;
+
+    case OPT_fauto_profile_:
+      opts->x_auto_profile_file = xstrdup (arg);
+      opts->x_flag_auto_profile = true;
+      value = true;
+      /* No break here - do -fauto-profile processing. */
+    case OPT_fauto_profile:
+      enable_fdo_optimizations (opts, opts_set, value);
+      if (!opts_set->x_flag_profile_correction)
+	opts->x_flag_profile_correction = value;
+      maybe_set_param_value (
+	PARAM_EARLY_INLINER_MAX_ITERATIONS, 10,
+	opts->x_param_values, opts_set->x_param_values);
       break;
 
     case OPT_fprofile_generate_:

@@ -1664,6 +1664,18 @@ package body Sem_Ch12 is
                         Assoc);
                   end if;
 
+                  --  If the object is a call to an expression function, this
+                  --  is a freezing point for it.
+
+                  if Is_Entity_Name (Match)
+                    and then Present (Entity (Match))
+                    and then Nkind
+                      (Original_Node (Unit_Declaration_Node (Entity (Match))))
+                        = N_Expression_Function
+                  then
+                     Append_Elmt (Entity (Match), Actuals_To_Freeze);
+                  end if;
+
                when N_Formal_Type_Declaration =>
                   Match :=
                     Matching_Actual (
@@ -4413,14 +4425,16 @@ package body Sem_Ch12 is
       Gen_Unit : Entity_Id;
       Act_Decl : Node_Id)
    is
-      Vis          : Boolean;
-      Gen_Comp     : constant Entity_Id :=
-                      Cunit_Entity (Get_Source_Unit (Gen_Unit));
-      Curr_Comp    : constant Node_Id := Cunit (Current_Sem_Unit);
-      Curr_Scope   : Entity_Id := Empty;
-      Curr_Unit    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-      Removed      : Boolean := False;
-      Num_Scopes   : Int := 0;
+      Curr_Comp : constant Node_Id   := Cunit (Current_Sem_Unit);
+      Curr_Unit : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+      Gen_Comp  : constant Entity_Id :=
+                    Cunit_Entity (Get_Source_Unit (Gen_Unit));
+
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save all SPARK_Mode-related attributes as removing enclosing scopes
+      --  to provide a clean environment for analysis of the inlined body will
+      --  eliminate any previously set SPARK_Mode.
 
       Scope_Stack_Depth : constant Int :=
                             Scope_Stack.Last - Scope_Stack.First + 1;
@@ -4428,10 +4442,14 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
       Instances    : array (1 .. Scope_Stack_Depth) of Entity_Id;
       Inner_Scopes : array (1 .. Scope_Stack_Depth) of Entity_Id;
+      Curr_Scope   : Entity_Id := Empty;
       List         : Elist_Id;
       Num_Inner    : Int := 0;
+      Num_Scopes   : Int := 0;
       N_Instances  : Int := 0;
+      Removed      : Boolean := False;
       S            : Entity_Id;
+      Vis          : Boolean;
 
    begin
       --  Case of generic unit defined in another unit. We must remove the
@@ -4562,6 +4580,10 @@ package body Sem_Ch12 is
 
          pragma Assert (Num_Inner < Num_Scopes);
 
+         --  The inlined package body must be analyzed with the SPARK_Mode of
+         --  the enclosing context, otherwise the body may cause bogus errors
+         --  if a configuration SPARK_Mode pragma in in effect.
+
          Push_Scope (Standard_Standard);
          Scope_Stack.Table (Scope_Stack.Last).Is_Active_Stack_Base := True;
          Instantiate_Package_Body
@@ -4575,8 +4597,8 @@ package body Sem_Ch12 is
                Version                  => Ada_Version,
                Version_Pragma           => Ada_Version_Pragma,
                Warnings                 => Save_Warnings,
-               SPARK_Mode               => SPARK_Mode,
-               SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
+               SPARK_Mode               => Save_SM,
+               SPARK_Mode_Pragma        => Save_SMP)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4680,7 +4702,9 @@ package body Sem_Ch12 is
             end loop;
          end;
 
-      --  If generic unit is in current unit, current context is correct
+      --  If generic unit is in current unit, current context is correct. Note
+      --  that the context is guaranteed to carry the correct SPARK_Mode as no
+      --  enclosing scopes were removed.
 
       else
          Instantiate_Package_Body

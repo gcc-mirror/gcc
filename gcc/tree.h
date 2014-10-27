@@ -2613,7 +2613,7 @@ extern void decl_fini_priority_insert (tree, priority_type);
 
 /* In a FUNCTION_DECL indicates that a static chain is needed.  */
 #define DECL_STATIC_CHAIN(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.regdecl_flag)
+  (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.regdecl_flag)
 
 /* Nonzero for a decl that cgraph has decided should be inlined into
    at least one call site.  It is not meaningful to look at this

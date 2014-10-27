@@ -211,6 +211,10 @@ bool flag_opts_finished
 Variable
 unsigned int flag_sanitize
 
+; What sanitizers should recover from errors
+Variable
+unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT
+
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
@@ -879,9 +883,13 @@ fsanitize=
 Common Driver Report Joined
 Select what to sanitize
 
-fsanitize-recover
-Common Report Var(flag_sanitize_recover) Init(1)
+fsanitize-recover=
+Common Report Joined
 After diagnosing undefined behavior attempt to continue execution
+
+fsanitize-recover
+Common Report
+This switch is deprecated; use -fsanitize-recover= instead
 
 fsanitize-undefined-trap-on-error
 Common Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
@@ -894,6 +902,16 @@ Generate unwind tables that are exact at each instruction boundary
 fauto-inc-dec
 Common Report Var(flag_auto_inc_dec) Init(1)
 Generate auto-inc/dec instructions
+
+fauto-profile
+Common Report Var(flag_auto_profile) Optimization
+Use sample profile information for call graph node weights. The default
+profile file is fbdata.afdo in 'pwd'.
+
+fauto-profile=
+Common Joined RejectNegative Var(auto_profile_file)
+Use sample profile information for call graph node weights. The profile
+file is specified in the argument.
 
 ; -fcheck-bounds causes gcc to generate array bounds checks.
 ; For C, C++ and ObjC: defaults off.

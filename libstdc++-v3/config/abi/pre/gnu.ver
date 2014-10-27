@@ -513,7 +513,7 @@ GLIBCXX_3.4 {
     _ZNSt5ctypeI[cw]*;
 
     # std::ctype_base
-    _ZNSt10ctype_base*;
+    _ZNSt10ctype_base[56][ac-z]*;
 
     # std::ctype_byname
     _ZNSt12ctype_bynameI[cw]*;
@@ -1472,6 +1472,9 @@ GLIBCXX_3.4.21 {
 
     # std::basic_ios::operator bool() const
     _ZNKSt9basic_iosI[cw]St11char_traitsI[cw]EEcvbEv;
+
+    # std::ctype_base::blank
+    _ZNSt10ctype_base5blankE;
 
 } GLIBCXX_3.4.20;
 

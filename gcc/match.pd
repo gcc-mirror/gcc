@@ -1,0 +1,90 @@
+/* Match-and-simplify patterns for shared GENERIC and GIMPLE folding.
+   This file is consumed by genmatch which produces gimple-match.c
+   and generic-match.c from it.
+
+   Copyright (C) 2014 Free Software Foundation, Inc.
+   Contributed by Richard Biener <rguenther@suse.de>
+   and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+
+/* Generic tree predicates we inherit.  */
+(define_predicates
+   integer_onep integer_zerop integer_all_onesp
+   real_zerop real_onep
+   CONSTANT_CLASS_P)
+
+
+/* Simplifications of operations with one constant operand and
+   simplifications to constants.  */
+
+(for op (plus pointer_plus minus bit_ior bit_xor)
+  (simplify
+    (op @0 integer_zerop)
+    (non_lvalue @0)))
+
+/* Simplify x - x.
+   This is unsafe for certain floats even in non-IEEE formats.
+   In IEEE, it is unsafe because it does wrong for NaNs.
+   Also note that operand_equal_p is always false if an operand
+   is volatile.  */
+(simplify
+  (minus @0 @0)
+  (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
+   { build_zero_cst (type); }))
+
+(simplify
+  (mult @0 integer_zerop@1)
+  @1)
+
+/* Make sure to preserve divisions by zero.  This is the reason why
+   we don't simplify x / x to 1 or 0 / x to 0.  */
+(for op (mult trunc_div ceil_div floor_div round_div exact_div)
+  (simplify
+    (op @0 integer_onep)
+    (non_lvalue @0)))
+
+/* Same applies to modulo operations, but fold is inconsistent here
+   and simplifies 0 % x to 0, only preserving literal 0 % 0.  */
+(for op (ceil_mod floor_mod round_mod trunc_mod)
+ /* 0 % X is always zero.  */
+ (simplify
+  (trunc_mod integer_zerop@0 @1)
+  /* But not for 0 % 0 so that we can get the proper warnings and errors.  */
+  (if (!integer_zerop (@1))
+   @0))
+ /* X % 1 is always zero.  */
+ (simplify
+  (trunc_mod @0 integer_onep)
+  { build_zero_cst (type); }))
+
+/* x | ~0 -> ~0  */
+(simplify
+  (bit_ior @0 integer_all_onesp@1)
+  @1)
+
+/* x & 0 -> 0  */
+(simplify
+  (bit_and @0 integer_zerop@1)
+  @1)
+
+/* x ^ x -> 0 */
+(simplify
+  (bit_xor @0 @0)
+  { build_zero_cst (type); })
+

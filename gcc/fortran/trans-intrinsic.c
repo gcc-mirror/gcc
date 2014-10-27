@@ -8563,15 +8563,31 @@ conv_co_collective (gfc_code *code)
   gfc_se argse;
   stmtblock_t block, post_block;
   tree fndecl, array, strlen, image_index, stat, errmsg, errmsg_len;
+  gfc_expr *image_idx_expr, *stat_expr, *errmsg_expr, *opr_expr;
 
   gfc_start_block (&block);
   gfc_init_block (&post_block);
 
+  if (code->resolved_isym->id == GFC_ISYM_CO_REDUCE)
+    {
+      opr_expr = code->ext.actual->next->expr;
+      image_idx_expr = code->ext.actual->next->next->expr;
+      stat_expr = code->ext.actual->next->next->next->expr;
+      errmsg_expr = code->ext.actual->next->next->next->next->expr;
+    }
+  else
+    {
+      opr_expr = NULL;
+      image_idx_expr = code->ext.actual->next->expr;
+      stat_expr = code->ext.actual->next->next->expr;
+      errmsg_expr = code->ext.actual->next->next->next->expr;
+    }
+
   /* stat.  */
-  if (code->ext.actual->next->next->expr)
+  if (stat_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
+      gfc_conv_expr (&argse, stat_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
@@ -8620,10 +8636,10 @@ conv_co_collective (gfc_code *code)
     strlen = integer_zero_node;
 
   /* image_index.  */
-  if (code->ext.actual->next->expr)
+  if (image_idx_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->expr);
+      gfc_conv_expr (&argse, image_idx_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       image_index = fold_convert (integer_type_node, argse.expr);
@@ -8632,10 +8648,10 @@ conv_co_collective (gfc_code *code)
     image_index = integer_zero_node;
 
   /* errmsg.  */
-  if (code->ext.actual->next->next->next->expr)
+  if (errmsg_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->next->next->expr);
+      gfc_conv_expr (&argse, errmsg_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       errmsg = argse.expr;
@@ -8659,6 +8675,9 @@ conv_co_collective (gfc_code *code)
     case GFC_ISYM_CO_MIN:
       fndecl = gfor_fndecl_co_min;
       break;
+    case GFC_ISYM_CO_REDUCE:
+      fndecl = gfor_fndecl_co_reduce;
+      break;
     case GFC_ISYM_CO_SUM:
       fndecl = gfor_fndecl_co_sum;
       break;
@@ -8670,9 +8689,44 @@ conv_co_collective (gfc_code *code)
       || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
     fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
 				  image_index, stat, errmsg, errmsg_len);
-  else
+  else if (code->resolved_isym->id != GFC_ISYM_CO_REDUCE)
     fndecl = build_call_expr_loc (input_location, fndecl, 6, array, image_index,
 				  stat, errmsg, strlen, errmsg_len);
+  else
+    {
+      tree opr, opr_flags;
+
+      // FIXME: Handle TS29113's bind(C) strings with descriptor.
+      int opr_flag_int;
+      if (gfc_is_proc_ptr_comp (opr_expr))
+	{
+	  gfc_symbol *sym = gfc_get_proc_ptr_comp (opr_expr)->ts.interface;
+	  opr_flag_int = sym->attr.dimension
+			 || (sym->ts.type == BT_CHARACTER
+			     && !sym->attr.is_bind_c)
+			 ? GFC_CAF_BYREF : 0;
+	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+			  && !sym->attr.is_bind_c
+			  ? GFC_CAF_HIDDENLEN : 0;
+	  opr_flag_int |= sym->formal->sym->attr.value ? GFC_CAF_ARG_VALUE : 0;
+	}
+      else
+	{
+	  opr_flag_int = gfc_return_by_reference (opr_expr->symtree->n.sym)
+			 ? GFC_CAF_BYREF : 0;
+	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+			  && !opr_expr->symtree->n.sym->attr.is_bind_c
+			  ? GFC_CAF_HIDDENLEN : 0;
+	  opr_flag_int |= opr_expr->symtree->n.sym->formal->sym->attr.value
+			  ? GFC_CAF_ARG_VALUE : 0;
+	}
+      opr_flags = build_int_cst (integer_type_node, opr_flag_int);
+      gfc_conv_expr (&argse, opr_expr);
+      opr = gfc_build_addr_expr (NULL_TREE, argse.expr);
+      fndecl = build_call_expr_loc (input_location, fndecl, 8, array, opr, opr_flags,
+				    image_index, stat, errmsg, strlen, errmsg_len);
+    }
+
   gfc_add_expr_to_block (&block, fndecl);
   gfc_add_block_to_block (&block, &post_block);
 
@@ -9386,12 +9440,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_caf_send (code);
       break;
 
-    case GFC_ISYM_CO_REDUCE:
-      gcc_unreachable ();
-      break;
     case GFC_ISYM_CO_BROADCAST:
     case GFC_ISYM_CO_MIN:
     case GFC_ISYM_CO_MAX:
+    case GFC_ISYM_CO_REDUCE:
     case GFC_ISYM_CO_SUM:
       res = conv_co_collective (code);
       break;

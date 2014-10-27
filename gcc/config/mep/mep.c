@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Structure of this file:
 
@@ -6367,14 +6368,10 @@ mep_vector_mode_supported_p (enum machine_mode mode ATTRIBUTE_UNUSED)
 /* A subroutine of global_reg_mentioned_p, returns 1 if *LOC mentions
    a global register.  */
 
-static int
-global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
+static bool
+global_reg_mentioned_p_1 (const_rtx x)
 {
   int regno;
-  rtx x = *loc;
-
-  if (! x)
-    return 0;
 
   switch (GET_CODE (x))
     {
@@ -6383,40 +6380,31 @@ global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 	{
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	      && global_regs[subreg_regno (x)])
-	    return 1;
-	  return 0;
+	    return true;
+	  return false;
 	}
       break;
 
     case REG:
       regno = REGNO (x);
       if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-	return 1;
-      return 0;
-
-    case SCRATCH:
-    case PC:
-    case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case LABEL_REF:
-      return 0;
+	return true;
+      return false;
 
     case CALL:
       /* A non-constant call might use a global register.  */
-      return 1;
+      return true;
 
     default:
       break;
     }
 
-  return 0;
+  return false;
 }
 
 /* Returns nonzero if X mentions a global register.  */
 
-static int
+static bool
 global_reg_mentioned_p (rtx x)
 {
   if (INSN_P (x))
@@ -6424,16 +6412,20 @@ global_reg_mentioned_p (rtx x)
       if (CALL_P (x))
 	{
 	  if (! RTL_CONST_OR_PURE_CALL_P (x))
-	    return 1;
+	    return true;
 	  x = CALL_INSN_FUNCTION_USAGE (x);
 	  if (x == 0)
-	    return 0;
+	    return false;
 	}
       else
 	x = PATTERN (x);
     }
 
-  return for_each_rtx (&x, global_reg_mentioned_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (global_reg_mentioned_p_1 (*iter))
+      return true;
+  return false;
 }
 /* Scheduling hooks for VLIW mode.
 
@@ -6652,13 +6644,16 @@ mep_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
   return 2;
 }
 
-/* A for_each_rtx callback.  Return true if *X is a register that is
-   set by insn PREV.  */
+/* Return true if X contains a register that is set by insn PREV.  */
 
-static int
-mep_store_find_set (rtx *x, void *prev)
+static bool
+mep_store_find_set (const_rtx x, const rtx_insn *prev)
 {
-  return REG_P (*x) && reg_set_p (*x, (const_rtx) prev);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (REG_P (x) && reg_set_p (x, prev))
+      return true;
+  return false;
 }
 
 /* Like mep_store_bypass_p, but takes a pattern as the second argument,
@@ -6695,7 +6690,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
       src = SET_SRC (pat);
       for (i = 1; i < XVECLEN (src, 0); i++)
-	if (for_each_rtx (&XVECEXP (src, 0, i), mep_store_find_set, prev))
+	if (mep_store_find_set (XVECEXP (src, 0, i), prev))
 	  return false;
 
       return true;
@@ -6703,7 +6698,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
   /* Otherwise just check that PREV doesn't modify any register mentioned
      in the memory destination.  */
-  return !for_each_rtx (&SET_DEST (pat), mep_store_find_set, prev);
+  return !mep_store_find_set (SET_DEST (pat), prev);
 }
 
 /* Return true if INSN is a store instruction and if the store address
@@ -6713,18 +6708,6 @@ bool
 mep_store_data_bypass_p (rtx_insn *prev, rtx_insn *insn)
 {
   return INSN_P (insn) ? mep_store_data_bypass_1 (prev, PATTERN (insn)) : false;
-}
-
-/* A for_each_rtx subroutine of mep_mul_hilo_bypass_p.  Return 1 if *X
-   is a register other than LO or HI and if PREV sets *X.  */
-
-static int
-mep_mul_hilo_bypass_1 (rtx *x, void *prev)
-{
-  return (REG_P (*x)
-	  && REGNO (*x) != LO_REGNO
-	  && REGNO (*x) != HI_REGNO
-	  && reg_set_p (*x, (const_rtx) prev));
 }
 
 /* Return true if, apart from HI/LO, there are no true dependencies
@@ -6738,8 +6721,19 @@ mep_mul_hilo_bypass_p (rtx_insn *prev, rtx_insn *insn)
   pat = PATTERN (insn);
   if (GET_CODE (pat) == PARALLEL)
     pat = XVECEXP (pat, 0, 0);
-  return (GET_CODE (pat) == SET
-	  && !for_each_rtx (&SET_SRC (pat), mep_mul_hilo_bypass_1, prev));
+  if (GET_CODE (pat) != SET)
+    return false;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, SET_SRC (pat), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x)
+	  && REGNO (x) != LO_REGNO
+	  && REGNO (x) != HI_REGNO
+	  && reg_set_p (x, prev))
+	return false;
+    }
+  return true;
 }
 
 /* Return true if INSN is an ldc instruction that issues to the

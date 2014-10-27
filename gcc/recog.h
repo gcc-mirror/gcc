@@ -95,8 +95,8 @@ extern void confirm_change_group (void);
 extern int apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
-extern int constrain_operands (int);
-extern int constrain_operands_cached (int);
+extern int constrain_operands (int, alternative_mask);
+extern int constrain_operands_cached (rtx_insn *, int);
 extern int memory_address_addr_space_p (enum machine_mode, rtx, addr_space_t);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
@@ -134,6 +134,7 @@ extern void add_clobbers (rtx, int);
 extern int added_clobbers_hard_reg_p (int);
 extern void insn_extract (rtx_insn *);
 extern void extract_insn (rtx_insn *);
+extern void extract_constrain_insn (rtx_insn *insn);
 extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
@@ -248,12 +249,6 @@ struct recog_data_d
 
   /* True if insn is ASM_OPERANDS.  */
   bool is_asm;
-
-  /* Specifies whether an insn alternative is enabled using the `enabled'
-     attribute in the insn pattern definition.  For back ends not using
-     the `enabled' attribute the bits are always set to 1 in expand_insn.
-     Bits beyond the last alternative are also set to 1.  */
-  alternative_mask enabled_alternatives;
 
   /* In case we are caching, hold insn data was generated for.  */
   rtx insn;
@@ -388,10 +383,19 @@ extern int peep2_current_count;
 #ifndef GENERATOR_FILE
 #include "insn-codes.h"
 
+/* An enum of boolean attributes that may only depend on the current
+   subtarget, not on things like operands or compiler phase.  */
+enum bool_attr {
+  BA_ENABLED,
+  BA_PREFERRED_FOR_SPEED,
+  BA_PREFERRED_FOR_SIZE,
+  BA_LAST = BA_PREFERRED_FOR_SIZE
+};
+
 /* Target-dependent globals.  */
 struct target_recog {
   bool x_initialized;
-  alternative_mask x_enabled_alternatives[LAST_INSN_CODE];
+  alternative_mask x_bool_attr_masks[LAST_INSN_CODE][BA_LAST + 1];
   operand_alternative *x_op_alt[LAST_INSN_CODE];
 };
 
@@ -403,6 +407,9 @@ extern struct target_recog *this_target_recog;
 #endif
 
 alternative_mask get_enabled_alternatives (rtx_insn *);
+alternative_mask get_preferred_alternatives (rtx_insn *);
+alternative_mask get_preferred_alternatives (rtx_insn *, basic_block);
+bool check_bool_attrs (rtx_insn *);
 
 void recog_init ();
 #endif

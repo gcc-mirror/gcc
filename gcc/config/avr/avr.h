@@ -63,6 +63,7 @@ enum
 #define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call)
 #define AVR_HAVE_MUL (avr_current_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_current_arch->have_movw_lpmx)
+#define AVR_HAVE_LPM (!AVR_TINY)
 #define AVR_HAVE_LPMX (avr_current_arch->have_movw_lpmx)
 #define AVR_HAVE_ELPM (avr_current_arch->have_elpm)
 #define AVR_HAVE_ELPMX (avr_current_arch->have_elpmx)
@@ -90,8 +91,8 @@ FIXME: DRIVER_SELF_SPECS has changed.
    there is always __AVR_SP8__ == __AVR_HAVE_8BIT_SP__.  */
 
 #define AVR_HAVE_8BIT_SP                                 \
-  ((avr_current_device->dev_attribute & AVR_SHORT_SP) || \
-   TARGET_TINY_STACK || avr_sp8)
+  ((avr_current_device->dev_attribute & AVR_SHORT_SP)    \
+   || TARGET_TINY_STACK || avr_sp8)
 
 #define AVR_HAVE_SPH (!avr_sp8)
 
@@ -99,6 +100,7 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
 
 #define AVR_XMEGA (avr_current_arch->xmega_p)
+#define AVR_TINY  (avr_current_arch->tiny_p)
 
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
@@ -305,13 +307,13 @@ enum reg_class {
 
 #define ARG_POINTER_REGNUM 34
 
-#define STATIC_CHAIN_REGNUM 2
+#define STATIC_CHAIN_REGNUM ((AVR_TINY) ? 18 :2)
 
 #define ELIMINABLE_REGS {					\
-      {ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
-      {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
-	{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}		\
-       ,{FRAME_POINTER_REGNUM+1,STACK_POINTER_REGNUM+1}}
+    { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },               \
+    { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },               \
+    { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },             \
+    { FRAME_POINTER_REGNUM + 1, STACK_POINTER_REGNUM + 1 } }
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   OFFSET = avr_initial_elimination_offset (FROM, TO)

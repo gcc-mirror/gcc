@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "*" } { "-O2" } } */
-/* { dg-options "-fsanitize=float-cast-overflow -fsanitize-recover -DUSE_FLT_DBL_LDBL" } */
+/* { dg-options "-fsanitize=float-cast-overflow -DUSE_FLT_DBL_LDBL" } */
 /* { dg-additional-options "-DUSE_INT128" { target int128 } } */
 
 #include "float-cast-overflow-7.h"

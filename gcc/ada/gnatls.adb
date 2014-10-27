@@ -42,7 +42,6 @@ with Sdefault;
 with Snames;
 with Stringt;
 with Switch;      use Switch;
-with Targparm;    use Targparm;
 with Types;       use Types;
 
 with Ada.Command_Line; use Ada.Command_Line;
@@ -65,6 +64,9 @@ procedure Gnatls is
    Max_Column : constant := 80;
 
    No_Obj : aliased String := "<no_obj>";
+
+   No_Runtime : Boolean := False;
+   --  Set to True if there is no default runtime and --RTS= is not specified
 
    type File_Status is (
      OK,                  --  matching timestamp
@@ -1595,12 +1597,18 @@ begin
 
    --  If -l (output license information) is given, it must be the only switch
 
-   if License and then Arg_Count /= 2 then
-      Set_Standard_Error;
-      Write_Str ("Can't use -l with another switch");
-      Write_Eol;
-      Try_Help;
-      Exit_Program (E_Fatal);
+   if License then
+      if Arg_Count = 2 then
+         Output_License_Information;
+         Exit_Program (E_Success);
+
+      else
+         Set_Standard_Error;
+         Write_Str ("Can't use -l with another switch");
+         Write_Eol;
+         Try_Help;
+         Exit_Program (E_Fatal);
+      end if;
    end if;
 
    --  Handle --RTS switch
@@ -1626,17 +1634,37 @@ begin
 
    Osint.Add_Default_Search_Dirs;
 
-   --  Get the target parameters, but only if switch -nostdinc was not
-   --  specified. May not be needed any more, but is harmless.
+   --  If --RTS= is not specified, check if there is a default runtime
 
-   if not Opt.No_Stdinc then
-      Get_Target_Parameters;
+   if RTS_Specified = null then
+      declare
+         Text : Source_Buffer_Ptr;
+         Hi   : Source_Ptr;
+
+      begin
+         Name_Buffer (1 .. 10) := "system.ads";
+         Name_Len := 10;
+
+         Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+
+         if Text = null then
+            No_Runtime := True;
+         end if;
+      end;
    end if;
 
    if Verbose_Mode then
       Write_Eol;
       Display_Version ("GNATLS", "1997");
       Write_Eol;
+
+      if No_Runtime then
+         Write_Str
+           ("Default runtime not available. Use --RTS= with a valid runtime");
+         Write_Eol;
+         Write_Eol;
+      end if;
+
       Write_Str ("Source Search Path:");
       Write_Eol;
 
@@ -1645,14 +1673,15 @@ begin
 
          if Dir_In_Src_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
-         else
+            Write_Eol;
+
+         elsif not No_Runtime then
             Write_Str
               (Normalize
                  (To_Host_Dir_Spec
-                    (Dir_In_Src_Search_Path (J).all, True).all));
+                      (Dir_In_Src_Search_Path (J).all, True).all));
+            Write_Eol;
          end if;
-
-         Write_Eol;
       end loop;
 
       Write_Eol;
@@ -1665,14 +1694,15 @@ begin
 
          if Dir_In_Obj_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
-         else
+            Write_Eol;
+
+         elsif not No_Runtime then
             Write_Str
               (Normalize
                  (To_Host_Dir_Spec
-                    (Dir_In_Obj_Search_Path (J).all, True).all));
+                      (Dir_In_Obj_Search_Path (J).all, True).all));
+            Write_Eol;
          end if;
-
-         Write_Eol;
       end loop;
 
       Write_Eol;
@@ -1737,13 +1767,6 @@ begin
 
    if Print_Usage then
       Usage;
-   end if;
-
-   --  Output license information when requested
-
-   if License then
-      Output_License_Information;
-      Exit_Program (E_Success);
    end if;
 
    if not More_Lib_Files then

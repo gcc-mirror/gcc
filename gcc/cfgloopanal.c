@@ -302,26 +302,6 @@ get_loop_level (const struct loop *loop)
   return mx;
 }
 
-/* Returns estimate on cost of computing SEQ.  */
-
-static unsigned
-seq_cost (const rtx_insn *seq, bool speed)
-{
-  unsigned cost = 0;
-  rtx set;
-
-  for (; seq; seq = NEXT_INSN (seq))
-    {
-      set = single_set (seq);
-      if (set)
-	cost += set_rtx_cost (set, speed);
-      else
-	cost++;
-    }
-
-  return cost;
-}
-
 /* Initialize the constants for computing set costs.  */
 
 void

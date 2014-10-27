@@ -8,11 +8,11 @@ extern void abort (void);
 
 
 #define DEFN_SETV(type) \
-		set_vector_##type (pR##type a, type n)   \
-		{ 				         \
-		  int i;			         \
-		  for (i=0; i<16; i++)		         \
-		    a[i] = n;				 \
+		void set_vector_##type (pR##type a, type n)   \
+		{					      \
+		  int i;				      \
+		  for (i=0; i<16; i++)			      \
+		    a[i] = n;				      \
 		}
 
 #define DEFN_CHECKV(type) \

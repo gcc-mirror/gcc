@@ -221,10 +221,10 @@ DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "__go_register_gc_roots", P1(POINTER), R0())
 
 
 // Allocate memory.
-DEF_GO_RUNTIME(NEW, "__go_new", P1(UINTPTR), R1(POINTER))
+DEF_GO_RUNTIME(NEW, "__go_new", P2(TYPE, UINTPTR), R1(POINTER))
 
 // Allocate memory which can not contain pointers.
-DEF_GO_RUNTIME(NEW_NOPOINTERS, "__go_new_nopointers", P1(UINTPTR), R1(POINTER))
+DEF_GO_RUNTIME(NEW_NOPOINTERS, "__go_new_nopointers", P2(TYPE, UINTPTR), R1(POINTER))
 
 
 // Start a new goroutine.

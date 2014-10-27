@@ -15,6 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-cmath "" }
 // { dg-options "-std=gnu++11" }
 
 #include <cmath>
@@ -27,6 +28,8 @@
 
 void test01()
 {
+  bool test __attribute__((unused)) = true;
+
   using __gnu_test::counter_type;
   const std::size_t nb_values = 1000;
 
@@ -43,7 +46,7 @@ void test01()
 
   std::sort_heap(values.begin(), values.end());
 
-  VERIFY( counter_type::less_compare_count <= 2.0 * nb_values * std::log(nb_values) );
+  VERIFY( counter_type::less_compare_count <= 2.0 * nb_values * std::log2(nb_values) );
 }
 
 int main()

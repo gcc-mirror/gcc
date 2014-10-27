@@ -1176,11 +1176,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.3.3.1</entry>
       <entry>Character classification</entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>isblank</code>.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>22.3.3.2</entry>
@@ -2613,8 +2612,8 @@ particular release.
       <emphasis>23.5.5.2 [unord.multimap.cnstr]</emphasis>,
       <emphasis>23.5.6.2 [unord.set.cnstr]</emphasis>,
       <emphasis>23.5.7.2 [unord.multiset.cnstr]</emphasis>
-      The default bucket count is 10 for the default constructors
-      and 0 for the range constructors and initializer-list constructors.
+      The default minimal bucket count is 0 for the default constructors, range
+      constructors and initializer-list constructors.
    </para>
 
    <para>

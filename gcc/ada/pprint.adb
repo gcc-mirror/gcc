@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -226,7 +226,14 @@ package body Pprint is
                   return List_Name
                     (First (Sinfo.Expressions (Expr)), Add_Space => False);
 
-               elsif Null_Record_Present (Expr) then
+               --  Do not return empty string for (others => <>) aggregate
+               --  of a componentless record type. At least one caller (the
+               --  recursive call below in the N_Qualified_Expression case)
+               --  is not prepared to deal with a zero-length result.
+
+               elsif Null_Record_Present (Expr)
+                 or else not Present (First (Component_Associations (Expr)))
+               then
                   return ("(null record)");
 
                else
@@ -585,16 +592,39 @@ package body Pprint is
 
             when N_Function_Call =>
                if Present (Sinfo.Parameter_Associations (Right)) then
-                  Right :=
-                    Original_Node
-                      (Last (Sinfo.Parameter_Associations (Right)));
-                  Append_Paren := True;
+                  declare
+                     Rover : Node_Id;
+                     Found : Boolean;
 
-               --  Quit loop if no named associations
+                  begin
+                     --  Avoid source position confusion associated with
+                     --  parameters for which Comes_From_Source is False.
+
+                     Rover := First (Sinfo.Parameter_Associations (Right));
+                     Found := False;
+                     while Present (Rover) loop
+                        if Comes_From_Source (Original_Node (Rover)) then
+                           Right := Original_Node (Rover);
+                           Append_Paren := True;
+                           Found := True;
+                        end if;
+
+                        Next (Rover);
+                     end loop;
+
+                     --  Quit loop if no Comes_From_Source parameters
+
+                     exit when not Found;
+                  end;
+
+               --  Quit loop if no parameters
 
                else
                   exit;
                end if;
+
+            when N_Quantified_Expression =>
+               Right := Original_Node (Condition (Right));
 
             --  For all other items, quit the loop
 

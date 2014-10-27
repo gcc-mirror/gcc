@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "cfgloopmanip.h"
 
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
@@ -271,8 +272,6 @@ void rescan_loop_exit (edge, bool, bool);
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
-extern void place_new_loop (struct function *, struct loop *);
-extern void add_loop (struct loop *, struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
 extern struct loop * find_common_loop (struct loop *, struct loop *);
@@ -310,15 +309,6 @@ extern void remove_bb_from_loops (basic_block);
 extern void cancel_loop_tree (struct loop *);
 extern void delete_loop (struct loop *);
 
-enum
-{
-  CP_SIMPLE_PREHEADERS = 1,
-  CP_FALLTHRU_PREHEADERS = 2
-};
-
-basic_block create_preheader (struct loop *, int);
-extern void create_preheaders (int);
-extern void force_single_succ_latches (void);
 
 extern void verify_loop_structure (void);
 
@@ -328,36 +318,7 @@ gcov_type expected_loop_iterations_unbounded (const struct loop *);
 extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
-
-/* Loop manipulation.  */
-extern bool can_duplicate_loop_p (const struct loop *loop);
-
-#define DLTHE_FLAG_UPDATE_FREQ	1	/* Update frequencies in
-					   duplicate_loop_to_header_edge.  */
-#define DLTHE_RECORD_COPY_NUMBER 2	/* Record copy number in the aux
-					   field of newly create BB.  */
-#define DLTHE_FLAG_COMPLETTE_PEEL 4	/* Update frequencies expecting
-					   a complete peeling.  */
-
-extern edge create_empty_if_region_on_edge (edge, tree);
-extern struct loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
-					       tree *, tree *, struct loop *);
-extern struct loop * duplicate_loop (struct loop *, struct loop *);
-extern void copy_loop_info (struct loop *loop, struct loop *target);
-extern void duplicate_subloops (struct loop *, struct loop *);
-extern bool duplicate_loop_to_header_edge (struct loop *, edge,
-					   unsigned, sbitmap, edge,
- 					   vec<edge> *, int);
-extern struct loop *loopify (edge, edge,
-			     basic_block, edge, edge, bool,
-			     unsigned, unsigned);
-struct loop * loop_version (struct loop *, void *,
-			    basic_block *, unsigned, unsigned, unsigned, bool);
-extern bool remove_path (edge);
-extern void unloop (struct loop *, bool *, bitmap);
-extern void scale_loop_frequencies (struct loop *, int, int);
 void mark_loop_for_removal (loop_p);
-
 
 /* Induction variable analysis.  */
 
@@ -740,10 +701,8 @@ enum
   UAP_UNROLL_ALL = 2	/* Enables unrolling of all loops.  */
 };
 
-extern void unroll_loops (int);
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
-extern void scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound);
 extern vec<basic_block> get_loop_hot_path (const struct loop *loop);
 
 /* Returns the outermost loop of the loop nest that contains LOOP.*/

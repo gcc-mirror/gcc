@@ -31,8 +31,8 @@ main()
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "inline"  } } */
 
 /* Verify that speculation is optimized by late optimizers.  */
-/* { dg-final { scan-ipa-dump-times "return 2" 2 "optimized"  } } */
-/* { dg-final { scan-ipa-dump-not "OBJ_TYPE_REF" "optimized"  } } */
+/* { dg-final { scan-tree-dump-times "return 2" 2 "optimized"  } } */
+/* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 
 /* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-ipa-dump "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

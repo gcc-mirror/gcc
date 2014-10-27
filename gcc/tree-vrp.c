@@ -1718,7 +1718,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 
       /* Make sure to not set TREE_OVERFLOW on the final type
 	 conversion.  We are willingly interpreting large positive
-	 unsigned values as negative singed values here.  */
+	 unsigned values as negative signed values here.  */
       min = force_fit_type (TREE_TYPE (var), wi::to_widest (min), 0, false);
       max = force_fit_type (TREE_TYPE (var), wi::to_widest (max), 0, false);
 

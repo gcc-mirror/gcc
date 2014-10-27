@@ -5905,10 +5905,10 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 	  /* Operand has no constraints, anything is OK.  */
  	  win = !n_alternatives;
 
-	  alternative_mask enabled = recog_data.enabled_alternatives;
+	  alternative_mask preferred = get_preferred_alternatives (insn);
 	  for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	    {
-	      if (!TEST_BIT (enabled, j))
+	      if (!TEST_BIT (preferred, j))
 		continue;
 	      if (op_alt[i].anything_ok
 		  || (op_alt[i].matches != -1
@@ -14296,10 +14296,20 @@ ix86_pic_register_p (rtx x)
   if (GET_CODE (x) == VALUE && CSELIB_VAL_PTR (x))
     return (pic_offset_table_rtx
 	    && rtx_equal_for_cselib_p (x, pic_offset_table_rtx));
+  else if (!REG_P (x))
+    return false;
   else if (pic_offset_table_rtx)
-    return REG_P (x) && REGNO (x) == REGNO (pic_offset_table_rtx);
+    {
+      if (REGNO (x) == REGNO (pic_offset_table_rtx))
+	return true;
+      if (HARD_REGISTER_P (x)
+	  && !HARD_REGISTER_P (pic_offset_table_rtx)
+	  && ORIGINAL_REGNO (x) == REGNO (pic_offset_table_rtx))
+	return true;
+      return false;
+    }
   else
-    return REG_P (x) && REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
+    return REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
 }
 
 /* Helper function for ix86_delegitimize_address.
@@ -14472,15 +14482,20 @@ ix86_delegitimize_address (rtx x)
 	 leal (%ebx, %ecx, 4), %ecx
 	 ...
 	 movl foo@GOTOFF(%ecx), %edx
-	 in which case we return (%ecx - %ebx) + foo.
-
-	 Note that when pseudo_pic_reg is used we can generate it only
-	 before reload_completed.  */
+	 in which case we return (%ecx - %ebx) + foo
+	 or (%ecx - _GLOBAL_OFFSET_TABLE_) + foo if pseudo_pic_reg
+	 and reload has completed.  */
       if (pic_offset_table_rtx
 	  && (!reload_completed || !ix86_use_pseudo_pic_reg ()))
         result = gen_rtx_PLUS (Pmode, gen_rtx_MINUS (Pmode, copy_rtx (addend),
 						     pic_offset_table_rtx),
 			       result);
+      else if (pic_offset_table_rtx && !TARGET_MACHO && !TARGET_VXWORKS_RTP)
+	{
+	  rtx tmp = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
+	  tmp = gen_rtx_MINUS (Pmode, copy_rtx (addend), tmp);
+	  result = gen_rtx_PLUS (Pmode, tmp, result);
+	}
       else
 	return orig_x;
     }
@@ -25467,7 +25482,7 @@ ix86_attr_length_address_default (rtx_insn *insn)
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (MEM_P (recog_data.operand[i]))
       {
-        constrain_operands_cached (reload_completed);
+        constrain_operands_cached (insn, reload_completed);
         if (which_alternative != -1)
 	  {
 	    const char *constraints = recog_data.constraints[i];
@@ -39870,8 +39885,6 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
     case V8SFmode:
     case V8SImode:
     case V2DFmode:
-    case V64QImode:
-    case V32HImode:
     case V2DImode:
     case V4SFmode:
     case V4SImode:
@@ -39902,8 +39915,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V8HImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
 
       if (TARGET_SSE2)
 	{
@@ -39935,8 +39948,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       goto widen;
 
     case V16QImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
 
       if (TARGET_SSE2)
 	goto permute;
@@ -39967,11 +39980,28 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 
     case V16HImode:
     case V32QImode:
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-        return ix86_vector_duplicate_value (mode, target, val);
+      if (TARGET_AVX2)
+	return ix86_vector_duplicate_value (mode, target, val);
       else
 	{
 	  enum machine_mode hvmode = (mode == V16HImode ? V8HImode : V16QImode);
+	  rtx x = gen_reg_rtx (hvmode);
+
+	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
+	  gcc_assert (ok);
+
+	  x = gen_rtx_VEC_CONCAT (mode, x, x);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	}
+      return true;
+
+    case V64QImode:
+    case V32HImode:
+      if (TARGET_AVX512BW)
+	return ix86_vector_duplicate_value (mode, target, val);
+      else
+	{
+	  enum machine_mode hvmode = (mode == V32HImode ? V16HImode : V32QImode);
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
@@ -43567,6 +43597,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try the AVX2 vpalignr instruction.  */
   if (expand_vec_perm_palignr (d, true))
+    return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
   if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))

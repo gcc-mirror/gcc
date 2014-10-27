@@ -885,7 +885,7 @@ extern tree build_va_arg (location_t, tree, tree);
 
 extern const unsigned int c_family_lang_mask;
 extern unsigned int c_common_option_lang_mask (void);
-extern void c_common_initialize_diagnostics (diagnostic_context *);
+extern void c_common_diagnostics_set_defaults (diagnostic_context *);
 extern bool c_common_complain_wrong_lang_p (const struct cl_option *);
 extern void c_common_init_options_struct (struct gcc_options *);
 extern void c_common_init_options (unsigned int, struct cl_decoded_option *);

@@ -180,7 +180,6 @@ static tree fold_builtin_fabs (location_t, tree, tree);
 static tree fold_builtin_abs (location_t, tree, tree);
 static tree fold_builtin_unordered_cmp (location_t, tree, tree, tree, enum tree_code,
 					enum tree_code);
-static tree fold_builtin_n (location_t, tree, tree *, int, bool);
 static tree fold_builtin_0 (location_t, tree, bool);
 static tree fold_builtin_1 (location_t, tree, tree, bool);
 static tree fold_builtin_2 (location_t, tree, tree, tree, bool);
@@ -10395,7 +10394,7 @@ fold_builtin_4 (location_t loc, tree fndecl,
 
 #define MAX_ARGS_TO_FOLD_BUILTIN 4
 
-static tree
+tree
 fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
 {
   tree ret = NULL_TREE;

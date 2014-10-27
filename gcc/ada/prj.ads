@@ -77,7 +77,8 @@ package Prj is
       Empty_Value,         --  Empty string or empty string list
       Dot_Value,           --  "." or (".")
       Object_Dir_Value,    --  'Object_Dir
-      Target_Value);       --  'Target (special rules)
+      Target_Value,        --  'Target (special rules)
+      Runtime_Value);      --  'Runtime (special rules)
    --  Describe the default values of attributes that are referenced but not
    --  declared.
 

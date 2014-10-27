@@ -233,8 +233,8 @@ struct lra_insn_recog_data
      value can be NULL or points to array of the hard register numbers
      ending with a negative value.  */
   int *arg_hard_regs;
-  /* Alternative enabled for the insn.	NULL for debug insns.  */
-  alternative_mask enabled_alternatives;
+  /* Cached value of get_preferred_alternatives.  */
+  alternative_mask preferred_alternatives;
   /* The following member value is always NULL for a debug insn.  */
   struct lra_insn_reg *regs;
 };

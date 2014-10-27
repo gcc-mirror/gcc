@@ -17027,10 +17027,7 @@ note_invalid_constants (rtx_insn *insn, HOST_WIDE_INT address, int do_pushes)
 {
   int opno;
 
-  extract_insn (insn);
-
-  if (!constrain_operands (1))
-    fatal_insn_not_found (insn);
+  extract_constrain_insn (insn);
 
   if (recog_data.n_alternatives == 0)
     return;

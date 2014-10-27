@@ -2433,8 +2433,6 @@ cxx_pretty_printer::cxx_pretty_printer ()
   : c_pretty_printer (),
     enclosing_scope (global_namespace)
 {
-  pp_set_line_maximum_length (this, 0);
-
   type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
   parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
 }

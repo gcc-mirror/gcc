@@ -98,11 +98,6 @@ tree last_assemble_variable_decl;
 
 bool first_function_block_is_cold;
 
-/* We give all constants their own alias set.  Perhaps redundant with
-   MEM_READONLY_P, but pre-dates it.  */
-
-static alias_set_type const_alias_set;
-
 /* Whether we saw any functions with no_split_stack.  */
 
 static bool saw_no_split_stack;
@@ -3231,7 +3226,6 @@ build_constant_desc (tree exp)
   rtl = gen_const_mem (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
   set_mem_alias_set (rtl, 0);
-  set_mem_alias_set (rtl, const_alias_set);
 
   /* We cannot share RTX'es in pool entries.
      Mark this piece of RTL as required for unsharing.  */
@@ -5928,7 +5922,6 @@ init_varasm_once (void)
   object_block_htab = hash_table<object_block_hasher>::create_ggc (31);
   const_desc_htab = hash_table<tree_descriptor_hasher>::create_ggc (1009);
 
-  const_alias_set = new_alias_set ();
   shared_constant_pool = create_constant_pool ();
 
 #ifdef TEXT_SECTION_ASM_OP

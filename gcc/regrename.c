@@ -1569,9 +1569,7 @@ build_def_use (basic_block bb)
 	     to be marked unrenamable or even cause us to abort the entire
 	     basic block.  */
 
-	  extract_insn (insn);
-	  if (! constrain_operands (1))
-	    fatal_insn_not_found (insn);
+	  extract_constrain_insn (insn);
 	  preprocess_constraints (insn);
 	  const operand_alternative *op_alt = which_op_alt ();
 	  n_ops = recog_data.n_operands;

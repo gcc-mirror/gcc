@@ -17,6 +17,11 @@ struct arpreq
 };
 typedef struct _IO_FILE FILE;
 extern char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream);
+extern void *memset (void *s, int c, size_t n);
+extern void *memcpy (void *dest, const void *src, size_t n);
+extern int fprintf (FILE *stream, const char *format, ...);
+extern char * safe_strncpy (char *dst, const char *src, size_t size);
+extern size_t strlen (const char *s);
 extern struct _IO_FILE *stderr;
 extern int optind;
 struct aftype {

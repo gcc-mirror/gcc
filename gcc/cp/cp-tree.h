@@ -5961,6 +5961,7 @@ extern bool is_normal_capture_proxy             (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, bool);
 extern tree maybe_resolve_dummy			(tree, bool);
+extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);

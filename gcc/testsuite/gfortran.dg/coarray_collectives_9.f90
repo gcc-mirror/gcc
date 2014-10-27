@@ -49,8 +49,8 @@ program test
   call co_reduce(val, red_f, stat=[1,2]) ! { dg-error "must be a scalar" }
   call co_reduce(val, red_f, stat=1.0) ! { dg-error "must be INTEGER" }
   call co_reduce(val, red_f, stat=1) ! { dg-error "must be a variable" }
-  call co_reduce(val, red_f, stat=i, result_image=1) ! { dg-error "CO_REDUCE at \\(1\\) is not yet implemented" }
-  call co_reduce(val, red_f, stat=i, errmsg=errmsg, result_image=1) ! { dg-error "CO_REDUCE at \\(1\\) is not yet implemented" }
+  call co_reduce(val, red_f, stat=i, result_image=1) ! OK
+  call co_reduce(val, red_f, stat=i, errmsg=errmsg, result_image=1) ! OK
   call co_reduce(val, red_f, stat=i, errmsg=[errmsg], result_image=1) ! { dg-error "must be a scalar" }
   call co_reduce(val, red_f, stat=i, errmsg=5, result_image=1) ! { dg-error "must be CHARACTER" }
   call co_reduce(val, red_f, errmsg="abc") ! { dg-error "must be a variable" }

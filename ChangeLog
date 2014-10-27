@@ -1,3 +1,38 @@
+2014-10-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac (build_configargs): Don't share config.cache between
+	build subdirs.
+	* configure: Regenerate.
+
+2014-10-24  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config.gcc (sparc*-*-*): Accept mcpu=leon3v7 processor.
+	* doc/invoke.texi (SPARC options): Add mcpu=leon3v7 comment.
+	* config/sparc/leon.md (leon3_load, leon_store, leon_fp_*): Handle
+	leon3v7 as leon3.
+	* config/sparc/sparc-opts.h (enum processor_type): Add LEON3V7.
+	* config/sparc/sparc.c (sparc_option_override): Add leon3v7 support.
+	* config/sparc/sparc.h (TARGET_CPU_leon3v7): New define.
+	* config/sparc/sparc.md (cpu): Add leon3v7.
+	* config/sparc/sparc.opt (enum processor_type): Add leon3v7.
+
+2014-10-24  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
+2014-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Disable the Go frontend on systems where it is known
+	to not work.
+	* configure: Regenerate.
+
+2014-10-23  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.def: Add libcpp build module and dependencies.
+	* configure.ac: Add libcpp build module.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
 2014-10-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* MAINTAINERS (write-after-approval): Add myself.
@@ -634,6 +669,12 @@
 
 	* configure.ac: Set libgloss_dir for the aarch64*-*-* targets.
 	* configure: Regenerated.
+
+2013-02-05  Ian Lance Taylor  <iant@google.com>
+
+	PR go/55969
+	* configure.ac: Disable libgo on some systems where it does not
+	work.
 
 2013-02-04  David Edelsohn  <dje.gcc@gmail.com>
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -fno-sanitize-recover=signed-integer-overflow" } */
 
 __attribute__((noinline, noclone)) long long
 mul (long long x, long long y)

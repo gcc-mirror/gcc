@@ -1110,8 +1110,8 @@ extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
    personality routine must unwind one frame (per EHABI 7.3 4.).  */
 
 static _Unwind_Reason_Code
-continue_unwind (struct _Unwind_Exception* ue_header,
-		 struct _Unwind_Context* uw_context)
+continue_unwind (struct _Unwind_Exception* ue_header ATTRIBUTE_UNUSED,
+		 struct _Unwind_Context* uw_context ATTRIBUTE_UNUSED)
 {
 #ifdef __ARM_EABI_UNWINDER__
   if (__gnu_unwind_frame (ue_header, uw_context) != _URC_OK)
@@ -1253,9 +1253,6 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
      Condition Handling Facility.  */
   int uw_version = (int) version_arg;
   _Unwind_Action uw_phases = (_Unwind_Action) phases_arg;
-  region_descriptor region;
-  action_descriptor action;
-  _Unwind_Ptr ip;
 
   /* Check that we're called from the ABI context we expect, with a major
      possible variation on VMS for IA64.  */
@@ -1379,12 +1376,19 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *e)
 }
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
-			    void *handler,
-			    void *argument)
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
+			    void *handler ATTRIBUTE_UNUSED,
+			    void *argument ATTRIBUTE_UNUSED)
 {
 #ifdef __USING_SJLJ_EXCEPTIONS__
+
+# if defined (__APPLE__) && defined (__arm__)
+  /* There is not ForcedUnwind routine in arm-darwin system library.  */
+  return _URC_FATAL_PHASE1_ERROR;
+# else
   return _Unwind_SjLj_ForcedUnwind (e, handler, argument);
+# endif
+
 #else
   return _Unwind_ForcedUnwind (e, handler, argument);
 #endif

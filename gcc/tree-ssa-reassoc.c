@@ -2513,7 +2513,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	{
 	  tree high = wide_int_to_tree (TREE_TYPE (lowi),
 					wi::to_widest (lowi)
-					+ prec - wi::clz (mask));
+					+ prec - 1 - wi::clz (mask));
 	  operand_entry_t oe = (*ops)[ranges[i].idx];
 	  tree op = oe->op;
 	  gimple stmt = op ? SSA_NAME_DEF_STMT (op)

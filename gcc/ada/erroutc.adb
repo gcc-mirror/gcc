@@ -145,6 +145,9 @@ package body Erroutc is
                --  because this only gets incremented if we actually output the
                --  message, which we won't do if we are deleting it here!
 
+            elsif Errors.Table (D).Check then
+               Check_Messages := Check_Messages - 1;
+
             else
                Total_Errors_Detected := Total_Errors_Detected - 1;
 
@@ -653,6 +656,11 @@ package body Erroutc is
          elsif Errors.Table (E).Style then
             null;
 
+            --  No prefix needed for check message, severity is there already
+
+         elsif Errors.Table (E).Check then
+            null;
+
             --  All other cases, add "error: " if unique error tag set
 
          elsif Opt.Unique_Error_Tag then
@@ -765,6 +773,15 @@ package body Erroutc is
       Is_Info_Msg :=
         Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "info: ";
 
+      --  Check check message
+
+      Is_Check_Msg :=
+        (Msg'Length > 8 and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
+        or else
+          (Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "high: ")
+        or else
+          (Msg'Length > 5 and then Msg (Msg'First .. Msg'First + 4) = "low: ");
+
       --  Loop through message looking for relevant insertion sequences
 
       J := Msg'First;
@@ -833,7 +850,7 @@ package body Erroutc is
          end if;
       end loop;
 
-      if Is_Warning_Msg or Is_Style_Msg then
+      if Is_Warning_Msg or Is_Style_Msg or Is_Check_Msg then
          Is_Serious_Error := False;
       end if;
    end Prescan_Message;
@@ -1537,10 +1554,11 @@ package body Erroutc is
                elsif not SWE.Used
 
                  --  Do not issue this warning for -Wxxx messages since the
-                 --  back-end doesn't report the information.
+                 --  back-end doesn't report the information. Note that there
+                 --  is always an asterisk at the start of every message.
 
                  and then not
-                   (SWE.Msg'Length > 2 and then SWE.Msg (1 .. 2) = "-W")
+                   (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
                then
                   Eproc.all
                     ("?W?no warning suppressed by this pragma", SWE.Start);

@@ -921,7 +921,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
       data->insn_static_data = &debug_insn_static_data;
       data->dup_loc = NULL;
       data->arg_hard_regs = NULL;
-      data->enabled_alternatives = ALL_ALTERNATIVES;
+      data->preferred_alternatives = ALL_ALTERNATIVES;
       data->operand_loc = XNEWVEC (rtx *, 1);
       data->operand_loc[0] = &INSN_VAR_LOCATION_LOC (insn);
       return data;
@@ -981,7 +981,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	  = (insn_static_data->operand[i].constraint[0] == '=' ? OP_OUT
 	     : insn_static_data->operand[i].constraint[0] == '+' ? OP_INOUT
 	     : OP_IN);
-      data->enabled_alternatives = ALL_ALTERNATIVES;
+      data->preferred_alternatives = ALL_ALTERNATIVES;
       if (nop > 0)
 	{
 	  operand_alternative *op_alt = XCNEWVEC (operand_alternative,
@@ -1015,7 +1015,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	  memcpy (locs, recog_data.dup_loc, n * sizeof (rtx *));
 	}
       data->dup_loc = locs;
-      data->enabled_alternatives = get_enabled_alternatives (insn);
+      data->preferred_alternatives = get_preferred_alternatives (insn);
       const operand_alternative *op_alt = preprocess_insn_constraints (icode);
       if (!insn_static_data->operand_alternative)
 	setup_operand_alternative (data, op_alt);
@@ -1206,27 +1206,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
       n = insn_static_data->n_dups;
       if (n != 0)
 	memcpy (data->dup_loc, recog_data.dup_loc, n * sizeof (rtx *));
-#if HAVE_ATTR_enabled
-#ifdef ENABLE_CHECKING
-      {
-	int i;
-	alternative_mask enabled;
-
-	n = insn_static_data->n_alternatives;
-	enabled = data->enabled_alternatives;
-	lra_assert (n >= 0);
-	/* Cache the insn to prevent extract_insn call from
-	   get_attr_enabled.  */
-	recog_data.insn = insn;
-	for (i = 0; i < n; i++)
-	  {
-	    which_alternative = i;
-	    lra_assert (TEST_BIT (enabled, i)
-			== (bool) get_attr_enabled (insn));
-	  }
-      }
-#endif
-#endif
+      lra_assert (check_bool_attrs (insn));
     }
   return data;
 }
@@ -1923,8 +1903,9 @@ check_rtl (bool final_p)
       {
 	if (final_p)
 	  {
-	    extract_insn (insn);
-	    lra_assert (constrain_operands (1));
+#ifdef ENABLED_CHECKING
+	    extract_constrain_insn (insn);
+#endif
 	    continue;
 	  }
 	/* LRA code is based on assumption that all addresses can be
@@ -2138,11 +2119,6 @@ lra (FILE *f)
 #endif
 
   lra_in_progress = 1;
-
-  /* The enable attributes can change their values as LRA starts
-     although it is a bad practice.  To prevent reuse of the outdated
-     values, clear them.  */
-  recog_init ();
 
   lra_live_range_iter = lra_coalesce_iter = lra_constraint_iter = 0;
   lra_assignment_iter = lra_assignment_iter_after_spill = 0;

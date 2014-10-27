@@ -3396,7 +3396,7 @@ package body Exp_Aggr is
          --  that any finalization chain will be associated with that scope.
          --  For extended returns, we delay expansion to avoid the creation
          --  of an unwanted transient scope that could result in premature
-         --  finalization of the return object (which is built in in place
+         --  finalization of the return object (which is built in place
          --  within the caller's scope).
 
          or else
@@ -3409,7 +3409,14 @@ package body Exp_Aggr is
          return;
       end if;
 
-      if Requires_Transient_Scope (Typ) then
+      --  Otherwise, if a transient scope is required, create it now. If we
+      --  are within an initialization procedure do not create such, because
+      --  the target of the assignment must not be declared within a local
+      --  block, and because cleanup will take place on return from the
+      --  initialization procedure.
+      --  Should the condition be more restrictive ???
+
+      if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
          Establish_Transient_Scope (N, Sec_Stack => Needs_Finalization (Typ));
       end if;
 

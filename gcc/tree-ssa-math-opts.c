@@ -1916,7 +1916,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    if (!TYPE_UNSIGNED (n->type) && type_size > old_type_size
 		&& HEAD_MARKER (n->n, old_type_size))
 	      for (i = 0; i < type_size - old_type_size; i++)
-		n->n |= MARKER_BYTE_UNKNOWN << (type_size - 1 - i);
+		n->n |= MARKER_BYTE_UNKNOWN
+			<< ((type_size - 1 - i) * BITS_PER_MARKER);
 
 	    if (type_size < 64 / BITS_PER_MARKER)
 	      {

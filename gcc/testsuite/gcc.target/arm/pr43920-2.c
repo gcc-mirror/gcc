@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+extern int lseek(int, long, int);
+
 int getFileStartAndLength (int fd, int *start_, size_t *length_)
 {
       int start, end;

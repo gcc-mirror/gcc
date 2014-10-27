@@ -37,6 +37,7 @@ enum avr_arch
   ARCH_AVR5,
   ARCH_AVR51,
   ARCH_AVR6,
+  ARCH_AVRTINY,
   ARCH_AVRXMEGA2,
   ARCH_AVRXMEGA4,
   ARCH_AVRXMEGA5,
@@ -76,6 +77,9 @@ typedef struct
   /* This core has the RAMPD special function register
      and thus also the RAMPX, RAMPY and RAMPZ registers.  */
   int have_rampd;
+
+  /* This is a TINY core. */
+  int tiny_p;
 
   /* Default start of data section address for architecture.  */
   int default_data_section_start;

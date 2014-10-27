@@ -2156,6 +2156,7 @@ package body Sem_Ch4 is
       ---------------------------
 
       procedure Process_Function_Call is
+         Loc    : constant Source_Ptr := Sloc (N);
          Actual : Node_Id;
 
       begin
@@ -2187,7 +2188,26 @@ package body Sem_Ch4 is
             --  subsequent crashes or loops if there is an attempt to continue
             --  analysis of the program.
 
-            Next (Actual);
+            --  IF there is a single actual and it is a type name, the node
+            --  can only be interpreted as a slice of a parameterless call.
+            --  Rebuild the node as such and analyze.
+
+            if No (Next (Actual))
+              and then Is_Entity_Name (Actual)
+              and then Is_Type (Entity (Actual))
+              and then Is_Discrete_Type (Entity (Actual))
+            then
+               Replace (N,
+                 Make_Slice (Loc,
+                   Prefix         => P,
+                   Discrete_Range =>
+                     New_Occurrence_Of (Entity (Actual), Loc)));
+               Analyze (N);
+               return;
+
+            else
+               Next (Actual);
+            end if;
          end loop;
 
          Analyze_Call (N);
@@ -7571,7 +7591,7 @@ package body Sem_Ch4 is
                  or else not Is_Variable (Obj)
                then
                   Error_Msg_NE
-                    ("actual for& must be a variable", Obj, Control);
+                    ("actual for & must be a variable", Obj, Control);
                end if;
             end if;
 
@@ -7582,9 +7602,8 @@ package body Sem_Ch4 is
 
             if not Is_Aliased_View (Obj) then
                Error_Msg_NE
-                 ("object in prefixed call to& must be aliased"
-                      & " (RM-2005 4.3.1 (13))",
-                 Prefix (First_Actual), Subprog);
+                 ("object in prefixed call to & must be aliased "
+                  & " (RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
             end if;
 
             Analyze (First_Actual);
@@ -7596,6 +7615,17 @@ package body Sem_Ch4 is
 
             Rewrite (First_Actual, Obj);
          end if;
+
+         --  The operation is obtained from the dispatch table and not by
+         --  visibility, and may be declared in a unit that is not explicitly
+         --  referenced in the source, but is nevertheless required in the
+         --  context of the current unit. Indicate that operation and its scope
+         --  are referenced, to prevent spurious and misleading warnings. If
+         --  the operation is overloaded, all primitives are in the same scope
+         --  and we can use any of them.
+
+         Set_Referenced (Entity (Subprog), True);
+         Set_Referenced (Scope (Entity (Subprog)), True);
 
          Rewrite (Node_To_Replace, Call_Node);
 

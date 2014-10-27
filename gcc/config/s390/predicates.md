@@ -406,8 +406,7 @@
   if (icode < 0)
     return false;
 
-  extract_insn (insn);
-  constrain_operands (1);
+  extract_constrain_insn (insn);
 
   return which_alternative >= 0;
 })
