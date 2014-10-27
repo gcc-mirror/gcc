@@ -1673,6 +1673,7 @@ aclocal_deps = \
 	$(srcdir)/../config/codeset.m4 \
 	$(srcdir)/../config/extensions.m4 \
 	$(srcdir)/../config/gettext-sister.m4 \
+	$(srcdir)/../config/gcc-plugin.m4 \
 	$(srcdir)/../config/iconv.m4 \
 	$(srcdir)/../config/lcmessage.m4 \
 	$(srcdir)/../config/lib-ld.m4 \

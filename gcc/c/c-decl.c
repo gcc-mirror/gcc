@@ -220,21 +220,6 @@ struct GTY((chain_next ("%h.prev"))) c_binding {
 #define B_IN_FILE_SCOPE(b) ((b)->depth == 1 /*file_scope->depth*/)
 #define B_IN_EXTERNAL_SCOPE(b) ((b)->depth == 0 /*external_scope->depth*/)
 
-#define I_SYMBOL_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->symbol_binding)
-#define I_SYMBOL_DECL(node) \
- (I_SYMBOL_BINDING(node) ? I_SYMBOL_BINDING(node)->decl : 0)
-
-#define I_TAG_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->tag_binding)
-#define I_TAG_DECL(node) \
- (I_TAG_BINDING(node) ? I_TAG_BINDING(node)->decl : 0)
-
-#define I_LABEL_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->label_binding)
-#define I_LABEL_DECL(node) \
- (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
-
 /* Each C symbol points to three linked lists of c_binding structures.
    These describe the values of the identifier in the three different
    namespaces defined by the language.  */
@@ -249,6 +234,96 @@ struct GTY(()) lang_identifier {
 /* Validate c-lang.c's assumptions.  */
 extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 [(sizeof(struct lang_identifier) == C_SIZEOF_STRUCT_LANG_IDENTIFIER) ? 1 : -1];
+
+/* The binding oracle; see c-tree.h.  */
+void (*c_binding_oracle) (enum c_oracle_request, tree identifier);
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's symbol binding.  */
+#define I_SYMBOL_CHECKED(node) \
+  (TREE_LANG_FLAG_4 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding* *
+i_symbol_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->symbol_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_SYMBOL_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_SYMBOL_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_SYMBOL, node);
+    }
+
+  return &lid->symbol_binding;
+}
+
+#define I_SYMBOL_BINDING(node) (*i_symbol_binding (node))
+
+#define I_SYMBOL_DECL(node) \
+ (I_SYMBOL_BINDING(node) ? I_SYMBOL_BINDING(node)->decl : 0)
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's tag binding.  */
+#define I_TAG_CHECKED(node) \
+  (TREE_LANG_FLAG_5 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding **
+i_tag_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->tag_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_TAG_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_TAG_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_TAG, node);
+    }
+
+  return &lid->tag_binding;
+}
+
+#define I_TAG_BINDING(node) (*i_tag_binding (node))
+
+#define I_TAG_DECL(node) \
+ (I_TAG_BINDING(node) ? I_TAG_BINDING(node)->decl : 0)
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's label binding.  */
+#define I_LABEL_CHECKED(node) \
+  (TREE_LANG_FLAG_6 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding **
+i_label_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->label_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_LABEL_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_LABEL_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_LABEL, node);
+    }
+
+  return &lid->label_binding;
+}
+
+#define I_LABEL_BINDING(node) (*i_label_binding (node))
+
+#define I_LABEL_DECL(node) \
+ (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
 
 /* The resulting tree type.  */
 
@@ -618,6 +693,15 @@ decl_jump_unsafe (tree decl)
 void
 c_print_identifier (FILE *file, tree node, int indent)
 {
+  void (*save) (enum c_oracle_request, tree identifier);
+
+  /* Temporarily hide any binding oracle.  Without this, calls to
+     debug_tree from the debugger will end up calling into the oracle,
+     making for a confusing debug session.  As the oracle isn't needed
+     here for normal operation, it's simplest to suppress it.  */
+  save = c_binding_oracle;
+  c_binding_oracle = NULL;
+
   print_node (file, "symbol", I_SYMBOL_DECL (node), indent + 4);
   print_node (file, "tag", I_TAG_DECL (node), indent + 4);
   print_node (file, "label", I_LABEL_DECL (node), indent + 4);
@@ -628,6 +712,8 @@ c_print_identifier (FILE *file, tree node, int indent)
       fprintf (file, "rid " HOST_PTR_PRINTF " \"%s\"",
 	       (void *) rid, IDENTIFIER_POINTER (rid));
     }
+
+  c_binding_oracle = save;
 }
 
 /* Establish a binding between NAME, an IDENTIFIER_NODE, and DECL,
@@ -1493,6 +1579,54 @@ pushtag (location_t loc, tree name, tree type)
 	    inform (b->locus, "originally defined here");
 	}
     }
+}
+
+/* An exported interface to pushtag.  This is used by the gdb plugin's
+   binding oracle to introduce a new tag binding.  */
+
+void
+c_pushtag (location_t loc, tree name, tree type)
+{
+  pushtag (loc, name, type);
+}
+
+/* An exported interface to bind a declaration.  LOC is the location
+   to use.  DECL is the declaration to bind.  The decl's name is used
+   to determine how it is bound.  If DECL is a VAR_DECL, then
+   IS_GLOBAL determines whether the decl is put into the global (file
+   and external) scope or the current function's scope; if DECL is not
+   a VAR_DECL then it is always put into the file scope.  */
+
+void
+c_bind (location_t loc, tree decl, bool is_global)
+{
+  struct c_scope *scope;
+  bool nested = false;
+
+  if (TREE_CODE (decl) != VAR_DECL || current_function_scope == NULL)
+    {
+      /* Types and functions are always considered to be global.  */
+      scope = file_scope;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+  else if (is_global)
+    {
+      /* Also bind it into the external scope.  */
+      bind (DECL_NAME (decl), decl, external_scope, true, false, loc);
+      nested = true;
+      scope = file_scope;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+  else
+    {
+      DECL_CONTEXT (decl) = current_function_decl;
+      TREE_PUBLIC (decl) = 0;
+      scope = current_function_scope;
+    }
+
+  bind (DECL_NAME (decl), decl, scope, false, nested, loc);
 }
 
 /* Subroutine of compare_decls.  Allow harmless mismatches in return

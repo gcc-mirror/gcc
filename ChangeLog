@@ -1,3 +1,10 @@
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.def: Add libcc1 to host_modules.
+	* configure.ac (host_tools): Add libcc1.
+	* Makefile.in, configure: Rebuild.
+
 2014-10-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac (build_configargs): Don't share config.cache between

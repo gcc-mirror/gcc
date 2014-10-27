@@ -1,0 +1,26 @@
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Jan Kratochvil  <jan.kratochvil@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4: New file.
+	* callbacks.cc: New file.
+	* callbacks.hh: New file.
+	* cc1plugin-config.h.in: New file.
+	* configure: New file.
+	* configure.ac: New file.
+	* connection.cc: New file.
+	* connection.hh: New file.
+	* findcomp.cc: New file.
+	* findcomp.hh: New file.
+	* libcc1.cc: New file.
+	* libcc1plugin.sym: New file.
+	* libcc1.sym: New file.
+	* Makefile.am: New file.
+	* Makefile.in: New file.
+	* marshall.cc: New file.
+	* marshall.hh: New file.
+	* names.cc: New file.
+	* names.hh: New file.
+	* plugin.cc: New file.
+	* rpc.hh: New file.
+	* status.hh: New file.

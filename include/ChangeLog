@@ -1,3 +1,11 @@
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Jan Kratochvil  <jan.kratochvil@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* gcc-c-fe.def: New file.
+	* gcc-c-interface.h: New file.
+	* gcc-interface.h: New file.
+
 2014-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* libiberty.h (choose_tmpdir): New prototype.
