@@ -180,8 +180,10 @@ gnat_init_options_struct (struct gcc_options *opts)
   /* Uninitialized really means uninitialized in Ada.  */
   opts->x_flag_zero_initialized_in_bss = 0;
 
-  /* We can delete dead instructions that may throw exceptions in Ada.  */
-  opts->x_flag_delete_dead_exceptions = 1;
+  /* We don't care about errno in Ada and it causes __builtin_sqrt to
+     call the libm function rather than do it inline.  */
+  opts->x_flag_errno_math = 0;
+  opts->frontend_set_flag_errno_math = true;
 }
 
 /* Initialize for option processing.  */
@@ -385,17 +387,21 @@ gnat_init_gcc_eh (void)
      right exception regions.  */
   using_eh_for_cleanups ();
 
-  /* Turn on -fexceptions and -fnon-call-exceptions.  The first one triggers
-     the generation of the necessary exception tables.  The second one is
-     useful for two reasons: 1/ we map some asynchronous signals like SEGV to
-     exceptions, so we need to ensure that the insns which can lead to such
-     signals are correctly attached to the exception region they pertain to,
-     2/ Some calls to pure subprograms are handled as libcall blocks and then
-     marked as "cannot trap" if the flag is not set (see emit_libcall_block).
-     We should not let this be since it is possible for such calls to actually
-     raise in Ada.  */
+  /* Turn on -fexceptions, -fnon-call-exceptions and -fdelete-dead-exceptions.
+     The first one triggers the generation of the necessary exception tables.
+     The second one is useful for two reasons: 1/ we map some asynchronous
+     signals like SEGV to exceptions, so we need to ensure that the insns
+     which can lead to such signals are correctly attached to the exception
+     region they pertain to, 2/ some calls to pure subprograms are handled as
+     libcall blocks and then marked as "cannot trap" if the flag is not set
+     (see emit_libcall_block).  We should not let this be since it is possible
+     for such calls to actually raise in Ada.
+     The third one is an optimization that makes it possible to delete dead
+     instructions that may throw exceptions, most notably loads and stores,
+     as permitted in Ada.  */
   flag_exceptions = 1;
   flag_non_call_exceptions = 1;
+  flag_delete_dead_exceptions = 1;
 
   init_eh ();
 }
@@ -418,11 +424,6 @@ gnat_init_gcc_fp (void)
     flag_trapping_math = 1;
   else if (!global_options_set.x_flag_trapping_math)
     flag_trapping_math = 0;
-
-  /* We don't care in Ada about errno, and it causes __builtin_sqrt to
-     to call the libm function rather than do it inline.  */
-  if (!global_options_set.x_flag_errno_math)
-    flag_errno_math = 0;
 }
 
 /* Print language-specific items in declaration NODE.  */

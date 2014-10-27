@@ -1,5 +1,13 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c (gnat_init_options_struct): Parameterize errno
+	support here instead of...
+	Do not set flag_delete_dead_exceptions to 1 unconditionally.
+	(gnat_init_gcc_eh): Set flag_delete_dead_exceptions to 1.
+	(gnat_init_gcc_fp): ...here.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Real_Literal>: Minor tweaks.
 
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
