@@ -1,5 +1,11 @@
 2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Define again.
+	* config/aarch64/aarch64-builtins.c (aarch64_gimple_fold_builtin):
+	Restore, enable for bigendian, update to use __builtin..._scal...
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def (reduc_smax_, reduc_smin_,
 	reduc_umax_, reduc_umin_, reduc_smax_nan_, reduc_smin_nan_): Remove.
 	(reduc_smax_scal_, reduc_smin_scal_, reduc_umax_scal_,

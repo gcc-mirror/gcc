@@ -1207,9 +1207,6 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
   return NULL_TREE;
 }
 
-/* Handling of reduction operations temporarily removed so as to decouple
-   changes to tree codes from AArch64 NEON Intrinsics.  */
-#if 0
 bool
 aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
@@ -1218,19 +1215,6 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree call = gimple_call_fn (stmt);
   tree fndecl;
   gimple new_stmt = NULL;
-
-  /* The operations folded below are reduction operations.  These are
-     defined to leave their result in the 0'th element (from the perspective
-     of GCC).  The architectural instruction we are folding will leave the
-     result in the 0'th element (from the perspective of the architecture).
-     For big-endian systems, these perspectives are not aligned.
-
-     It is therefore wrong to perform this fold on big-endian.  There
-     are some tricks we could play with shuffling, but the mid-end is
-     inconsistent in the way it treats reduction operations, so we will
-     end up in difficulty.  Until we fix the ambiguity - just bail out.  */
-  if (BYTES_BIG_ENDIAN)
-    return false;
 
   if (call)
     {
@@ -1243,23 +1227,28 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 			? gimple_call_arg_ptr (stmt, 0)
 			: &error_mark_node);
 
+	  /* We use gimple's REDUC_(PLUS|MIN|MAX)_EXPRs for float, signed int
+	     and unsigned int; it will distinguish according to the types of
+	     the arguments to the __builtin.  */
 	  switch (fcode)
 	    {
-	      BUILTIN_VALL (UNOP, reduc_splus_, 10)
-		new_stmt = gimple_build_assign_with_ops (
+	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
+	        new_stmt = gimple_build_assign_with_ops (
 						REDUC_PLUS_EXPR,
 						gimple_call_lhs (stmt),
 						args[0],
 						NULL_TREE);
 		break;
-	      BUILTIN_VDQIF (UNOP, reduc_smax_, 10)
+	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
+	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
 		new_stmt = gimple_build_assign_with_ops (
 						REDUC_MAX_EXPR,
 						gimple_call_lhs (stmt),
 						args[0],
 						NULL_TREE);
 		break;
-	      BUILTIN_VDQIF (UNOP, reduc_smin_, 10)
+	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
+	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
 		new_stmt = gimple_build_assign_with_ops (
 						REDUC_MIN_EXPR,
 						gimple_call_lhs (stmt),
@@ -1281,7 +1270,6 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
   return changed;
 }
-#endif
 
 void
 aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
