@@ -75,7 +75,7 @@ extern rtx function_value (const_tree, const_tree, enum machine_mode);
 extern void alpha_start_function (FILE *, const char *, tree);
 extern void alpha_end_function (FILE *, const char *, tree);
 
-extern int alpha_find_lo_sum_using_gp (rtx);
+extern bool alpha_find_lo_sum_using_gp (rtx);
 
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value (enum machine_mode, REAL_VALUE_TYPE *, int);

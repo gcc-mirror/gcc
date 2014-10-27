@@ -1,5 +1,12 @@
 2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/alpha/alpha-protos.h (alpha_find_lo_sum_using_gp): Return
+	a bool.
+	* config/alpha/alpha.c (find_lo_sum_using_gp): Delete.
+	(alpha_find_lo_sum_using_gp): Use FOR_EACH_SUBRTX.  Return a bool.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/alpha/alpha.c (alpha_set_memflags_1): Delete.
 	(alpha_set_memflags): Use FOR_EACH_SUBRTX_VAR.
 
