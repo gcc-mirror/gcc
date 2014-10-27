@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "params.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -1244,30 +1245,24 @@ some_small_symbolic_operand_int (rtx *px, void *data ATTRIBUTE_UNUSED)
   return small_symbolic_operand (x, Pmode) != 0;
 }
 
-static int
-split_small_symbolic_operand_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  /* Don't re-split.  */
-  if (GET_CODE (x) == LO_SUM)
-    return -1;
-
-  if (small_symbolic_operand (x, Pmode))
-    {
-      x = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, x);
-      *px = x;
-      return -1;
-    }
-
-  return 0;
-}
-
 rtx
 split_small_symbolic_operand (rtx x)
 {
   x = copy_insn (x);
-  for_each_rtx (&x, split_small_symbolic_operand_1, NULL);
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &x, ALL)
+    {
+      rtx *ptr = *iter;
+      rtx x = *ptr;
+      /* Don't re-split.  */
+      if (GET_CODE (x) == LO_SUM)
+	iter.skip_subrtxes ();
+      else if (small_symbolic_operand (x, Pmode))
+	{
+	  *ptr = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, x);
+	  iter.skip_subrtxes ();
+	}
+    }
   return x;
 }
 
