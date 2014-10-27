@@ -7562,16 +7562,17 @@ vms_output_aligned_decl_common(FILE *file, tree decl, const char *name,
 
 #endif
 
-static int
-find_lo_sum_using_gp (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (*px) == LO_SUM && XEXP (*px, 0) == pic_offset_table_rtx;
-}
-
-int
+bool
 alpha_find_lo_sum_using_gp (rtx insn)
 {
-  return for_each_rtx (&PATTERN (insn), find_lo_sum_using_gp, NULL) > 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == LO_SUM && XEXP (x, 0) == pic_offset_table_rtx)
+	return true;
+    }
+  return false;
 }
 
 static int
