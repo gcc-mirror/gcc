@@ -112,8 +112,6 @@ runtime_goenvs_unix(void)
 	syscall_Envs.__values = (void*)s;
 	syscall_Envs.__count = n;
 	syscall_Envs.__capacity = n;
-
-	traceback_cache = ~(uint32)0;
 }
 
 int32
@@ -309,6 +307,16 @@ runtime_parsedebugvars(void)
 {
 	const byte *p;
 	intgo i, n;
+	bool tmp;
+	
+	// gotraceback caches the GOTRACEBACK setting in traceback_cache.
+	// gotraceback can be called before the environment is available.
+	// traceback_cache must be reset after the environment is made
+	// available, in order for the environment variable to take effect.
+	// The code is fixed differently in Go 1.4.
+	// This is a limited fix for Go 1.3.3.
+	traceback_cache = ~(uint32)0;
+	runtime_gotraceback(&tmp);
 
 	p = runtime_getenv("GODEBUG");
 	if(p == nil)
