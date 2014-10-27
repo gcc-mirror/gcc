@@ -1,5 +1,9 @@
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (create_subprog_decl): Adjust condition.
+
+2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (gnat_init_options_struct): Parameterize errno
 	support here instead of...
 	Do not set flag_delete_dead_exceptions to 1 unconditionally.
