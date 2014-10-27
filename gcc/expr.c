@@ -9051,7 +9051,17 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       {
         op0 = expand_normal (treeop0);
         this_optab = optab_for_tree_code (code, type, optab_default);
-        temp = expand_unop (mode, this_optab, op0, target, unsignedp);
+        enum machine_mode vec_mode = TYPE_MODE (TREE_TYPE (treeop0));
+        temp = expand_unop (vec_mode, this_optab, op0, NULL_RTX, unsignedp);
+        gcc_assert (temp);
+        /* The tree code produces a scalar result, but (somewhat by convention)
+           the optab produces a vector with the result in element 0 if
+           little-endian, or element N-1 if big-endian.  So pull the scalar
+           result out of that element.  */
+        int index = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (vec_mode) - 1 : 0;
+        int bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
+        temp = extract_bit_field (temp, bitsize, bitsize * index, unsignedp,
+				  target, mode, mode);
         gcc_assert (temp);
         return temp;
       }

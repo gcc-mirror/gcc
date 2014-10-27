@@ -1,3 +1,22 @@
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/61114
+	* expr.c (expand_expr_real_2): For REDUC_{MIN,MAX,PLUS}_EXPR, add
+	extract_bit_field around optab result.
+
+	* fold-const.c (fold_unary_loc): For REDUC_{MIN,MAX,PLUS}_EXPR, produce
+	scalar not vector.
+
+	* tree-cfg.c (verify_gimple_assign_unary): Check result vs operand type
+	for REDUC_{MIN,MAX,PLUS}_EXPR.
+
+	* tree-vect-loop.c (vect_analyze_loop): Update comment.
+	(vect_create_epilog_for_reduction): For direct vector reduction, use
+	result of tree code directly without extract_bit_field.
+
+	* tree.def (REDUC_MAX_EXPR, REDUC_MIN_EXPR, REDUC_PLUS_EXPR): Update
+	comment.
+
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* basic-block.h: Remove all includes.

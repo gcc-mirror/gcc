@@ -8259,12 +8259,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     case REDUC_MAX_EXPR:
     case REDUC_PLUS_EXPR:
       {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	unsigned int nelts, i;
 	tree *elts;
 	enum tree_code subcode;
 
 	if (TREE_CODE (op0) != VECTOR_CST)
 	  return NULL_TREE;
+        nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (op0));
 
 	elts = XALLOCAVEC (tree, nelts);
 	if (!vec_cst_ctor_to_array (op0, elts))
@@ -8283,10 +8284,9 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    elts[0] = const_binop (subcode, elts[0], elts[i]);
 	    if (elts[0] == NULL_TREE || !CONSTANT_CLASS_P (elts[0]))
 	      return NULL_TREE;
-	    elts[i] = build_zero_cst (TREE_TYPE (type));
 	  }
 
-	return build_vector (type, elts);
+	return elts[0];
       }
 
     default:

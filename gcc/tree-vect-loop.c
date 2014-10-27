@@ -1903,9 +1903,9 @@ vect_analyze_loop (struct loop *loop)
 
    Output:
    REDUC_CODE - the corresponding tree-code to be used to reduce the
-      vector of partial results into a single scalar result (which
-      will also reside in a vector) or ERROR_MARK if the operation is
-      a supported reduction operation, but does not have such tree-code.
+      vector of partial results into a single scalar result, or ERROR_MARK
+      if the operation is a supported reduction operation, but does not have
+      such a tree-code.
 
    Return FALSE if CODE currently cannot be vectorized as reduction.  */
 
@@ -4179,6 +4179,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   if (reduc_code != ERROR_MARK && !slp_reduc)
     {
       tree tmp;
+      tree vec_elem_type;
 
       /*** Case 1:  Create:
            v_out2 = reduc_expr <v_out1>  */
@@ -4187,14 +4188,26 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Reduce using direct vector reduction.\n");
 
-      vec_dest = vect_create_destination_var (scalar_dest, vectype);
-      tmp = build1 (reduc_code, vectype, new_phi_result);
-      epilog_stmt = gimple_build_assign (vec_dest, tmp);
-      new_temp = make_ssa_name (vec_dest, epilog_stmt);
+      vec_elem_type = TREE_TYPE (TREE_TYPE (new_phi_result));
+      if (!useless_type_conversion_p (scalar_type, vec_elem_type))
+	{
+          tree tmp_dest =
+	      vect_create_destination_var (scalar_dest, vec_elem_type);
+	  tmp = build1 (reduc_code, vec_elem_type, new_phi_result);
+	  epilog_stmt = gimple_build_assign (tmp_dest, tmp);
+	  new_temp = make_ssa_name (tmp_dest, epilog_stmt);
+	  gimple_assign_set_lhs (epilog_stmt, new_temp);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+
+	  tmp = build1 (NOP_EXPR, scalar_type, new_temp);
+	}
+      else
+	tmp = build1 (reduc_code, scalar_type, new_phi_result);
+      epilog_stmt = gimple_build_assign (new_scalar_dest, tmp);
+      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-
-      extract_scalar_result = true;
+      scalar_results.safe_push (new_temp);
     }
   else
     {
