@@ -33,6 +33,7 @@ extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree,
 extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
 extern tree no_follow_ssa_edges (tree);
+extern tree follow_single_use_edges (tree);
 extern tree gimple_fold_stmt_to_constant_1 (gimple, tree (*) (tree));
 extern tree gimple_fold_stmt_to_constant (gimple, tree (*) (tree));
 extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));

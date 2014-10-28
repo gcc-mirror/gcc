@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tree-eh.h"
 #include "gimple-match.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -3241,6 +3243,17 @@ no_follow_ssa_edges (tree)
   return NULL_TREE;
 }
 
+/* Valueization callback that ends up following single-use SSA edges only.  */
+
+tree
+follow_single_use_edges (tree val)
+{
+  if (TREE_CODE (val) == SSA_NAME
+      && !has_single_use (val))
+    return NULL_TREE;
+  return val;
+}
+
 /* Fold the statement pointed to by GSI.  In some cases, this function may
    replace the whole statement with a new one.  Returns true iff folding
    makes any changes.
@@ -4371,6 +4384,30 @@ maybe_fold_or_comparisons (enum tree_code code1, tree op1a, tree op1b,
 tree
 gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 {
+  code_helper rcode;
+  tree ops[3] = {};
+  /* ???  The SSA propagators do not correctly deal with following SSA use-def
+     edges if there are intermediate VARYING defs.  For this reason
+     do not follow SSA edges here even though SCCVN can technically
+     just deal fine with that.  */
+  if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges)
+      && rcode.is_tree_code ()
+      && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
+	  || ((tree_code) rcode) == ADDR_EXPR)
+      && is_gimple_val (ops[0]))
+    {
+      tree res = ops[0];
+      if (dump_file && dump_flags & TDF_DETAILS)
+	{
+	  fprintf (dump_file, "Match-and-simplified ");
+	  print_gimple_expr (dump_file, stmt, 0, TDF_SLIM);
+	  fprintf (dump_file, " to ");
+	  print_generic_expr (dump_file, res, 0);
+	  fprintf (dump_file, "\n");
+	}
+      return res;
+    }
+
   location_t loc = gimple_location (stmt);
   switch (gimple_code (stmt))
     {
