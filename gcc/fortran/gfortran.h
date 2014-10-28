@@ -2698,15 +2698,15 @@ const char *gfc_print_wide_char (gfc_char_t);
 
 void gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_warning_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
-bool gfc_warning_cmdline (const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(1,2);
-bool gfc_warning_cmdline (int opt, const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(2,3);
+bool gfc_warning_now_2 (const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(1,2);
+bool gfc_warning_now_2 (int opt, const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(2,3);
 
 void gfc_clear_warning (void);
 void gfc_warning_check (void);
 
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
-void gfc_error_cmdline (const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+void gfc_error_now_2 (const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_clear_error (void);
