@@ -1646,6 +1646,10 @@ common_handle_option (struct gcc_options *opts,
 	break;
       }
 
+    case OPT_fasan_shadow_offset_:
+      /* Deferred.  */
+      break;
+
     case OPT_fsanitize_recover:
       if (value)
 	opts->x_flag_sanitize_recover

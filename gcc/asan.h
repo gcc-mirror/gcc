@@ -36,7 +36,7 @@ extern gimple_stmt_iterator create_cond_insert_point
 extern alias_set_type asan_shadow_set;
 
 /* Shadow memory is found at
-   (address >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+   (address >> ASAN_SHADOW_SHIFT) + asan_shadow_offset ().  */
 #define ASAN_SHADOW_SHIFT	3
 
 /* Red zone size, stack and global variables are padded by ASAN_RED_ZONE_SIZE
@@ -75,5 +75,7 @@ asan_red_zone_size (unsigned int size)
   unsigned int c = size & (ASAN_RED_ZONE_SIZE - 1);
   return c ? 2 * ASAN_RED_ZONE_SIZE - c : ASAN_RED_ZONE_SIZE;
 }
+
+extern bool set_asan_shadow_offset (const char *);
 
 #endif /* TREE_ASAN */

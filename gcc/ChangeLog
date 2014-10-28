@@ -1,3 +1,18 @@
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (set_asan_shadow_offset): New function.
+	(asan_shadow_offset): Likewise.
+	(asan_emit_stack_protection): Call asan_shadow_offset.
+	(build_shadow_mem_access): Likewise.
+	* asan.h (set_asan_shadow_offset): Declare.
+	* common.opt (fasan-shadow-offset): New option.
+	(frandom-seed): Fixed parameter name.
+	* doc/invoke.texi (fasan-shadow-offset): Describe new option.
+	(frandom-seed): Fixed parameter name.
+	* opts-global.c (handle_common_deferred_options): Handle
+	-fasan-shadow-offset.
+	* opts.c (common_handle_option): Likewise.
+
 2014-10-27  Jiong Wang <jiong.wang@arm.com>
 
 	PR target/63442

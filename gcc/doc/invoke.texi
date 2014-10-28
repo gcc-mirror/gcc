@@ -297,7 +297,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
--fsanitize-undefined-trap-on-error @gol
+-fasan-shadow-offset=@var{number} -fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
@@ -342,7 +342,7 @@ Objective-C and Objective-C++ Dialects}.
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -fopt-info @gol
 -fopt-info-@var{options}@r{[}=@var{file}@r{]} @gol
--frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
+-frandom-seed=@var{number} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
 -fstack-usage  -ftest-coverage  -ftime-report -fvar-tracking @gol
 -fvar-tracking-assignments  -fvar-tracking-assignments-toggle @gol
@@ -5641,6 +5641,12 @@ While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
 
+@item -fasan-shadow-offset=@var{number}
+@opindex fasan-shadow-offset
+This option forces GCC to use custom shadow offset in AddressSanitizer checks.
+It is useful for experimenting with different shadow memory layouts in
+Kernel AddressSanitizer.
+
 @item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover
 @opindex fno-sanitize-recover
@@ -6804,7 +6810,7 @@ the first option takes effect and the subsequent options are
 ignored. Thus only the @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
-@item -frandom-seed=@var{string}
+@item -frandom-seed=@var{number}
 @opindex frandom-seed
 This option provides a seed that GCC uses in place of
 random numbers in generating certain symbol names
@@ -6813,7 +6819,7 @@ place unique stamps in coverage data files and the object files that
 produce them.  You can use the @option{-frandom-seed} option to produce
 reproducibly identical object files.
 
-The @var{string} should be different for every file you compile.
+The @var{number} should be different for every file you compile.
 
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose

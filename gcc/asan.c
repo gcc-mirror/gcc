@@ -249,6 +249,43 @@ along with GCC; see the file COPYING3.  If not see
    A destructor function that calls the runtime asan library function
    _asan_unregister_globals is also installed.  */
 
+static unsigned HOST_WIDE_INT asan_shadow_offset_value;
+static bool asan_shadow_offset_computed;
+
+/* Sets shadow offset to value in string VAL.  */
+
+bool
+set_asan_shadow_offset (const char *val)
+{
+  char *endp;
+  
+  errno = 0;
+#ifdef HAVE_LONG_LONG
+  asan_shadow_offset_value = strtoull (val, &endp, 0);
+#else
+  asan_shadow_offset_value = strtoul (val, &endp, 0);
+#endif
+  if (!(*val != '\0' && *endp == '\0' && errno == 0))
+    return false;
+
+  asan_shadow_offset_computed = true;
+
+  return true;
+}
+
+/* Returns Asan shadow offset.  */
+
+static unsigned HOST_WIDE_INT
+asan_shadow_offset ()
+{
+  if (!asan_shadow_offset_computed)
+    {
+      asan_shadow_offset_computed = true;
+      asan_shadow_offset_value = targetm.asan_shadow_offset ();
+    }
+  return asan_shadow_offset_value;
+}
+
 alias_set_type asan_shadow_set = -1;
 
 /* Pointer types to 1 resp. 2 byte integers in shadow memory.  A separate
@@ -1135,7 +1172,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base
     = plus_constant (Pmode, shadow_base,
-		     targetm.asan_shadow_offset ()
+		     asan_shadow_offset ()
 		     + (base_align_bias >> ASAN_SHADOW_SHIFT));
   gcc_assert (asan_shadow_set != -1
 	      && (ASAN_RED_ZONE_SIZE >> ASAN_SHADOW_SHIFT) == 4);
@@ -1514,7 +1551,7 @@ insert_if_then_before_iter (gimple cond,
 }
 
 /* Build
-   (base_addr >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+   (base_addr >> ASAN_SHADOW_SHIFT) + asan_shadow_offset ().  */
 
 static tree
 build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
@@ -1531,7 +1568,7 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
-  t = build_int_cst (uintptr_type, targetm.asan_shadow_offset ());
+  t = build_int_cst (uintptr_type, asan_shadow_offset ());
   g = gimple_build_assign_with_ops (PLUS_EXPR,
 				    make_ssa_name (uintptr_type, NULL),
 				    gimple_assign_lhs (g), t);
