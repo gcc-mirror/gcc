@@ -113,6 +113,10 @@
 #include "basic-block.h"
 #include "df.h"
 #include "bb-reorder.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "except.h"
 

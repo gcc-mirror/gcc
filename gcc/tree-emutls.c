@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "tree-pass.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
@@ -53,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "targhooks.h"
 #include "tree-iterator.h"
-#include "hash-map.h"
 
 /* Whenever a target does not support thread-local storage (TLS) natively,
    we can emulate it with some run-time support in libgcc.  This will in

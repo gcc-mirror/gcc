@@ -1,3 +1,10 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Adjust include files.
+	* decl.c: Ditto.
+	* jcf-parse.c: Ditto.
+	* resource.c: Ditto.
+
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* java-gimplify.c: Adjust include files.

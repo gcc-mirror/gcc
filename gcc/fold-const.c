@@ -77,6 +77,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 #include "builtins.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "generic-match.h"
 

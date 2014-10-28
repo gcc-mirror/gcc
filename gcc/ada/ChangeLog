@@ -1,3 +1,8 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Adjust include files.
+	* gcc-interface/utils.c: Ditto.
+
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (create_subprog_decl): Adjust condition.

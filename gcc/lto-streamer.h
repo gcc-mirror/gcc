@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "hash-map.h"
 #include "target.h"
-#include "cgraph.h"
 #include "vec.h"
 #include "alloc-pool.h"
 #include "gcov-io.h"

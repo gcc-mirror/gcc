@@ -39,8 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "plugin-api.h"
+#include "hash-map.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "ipa-utils.h"
+#include "alloc-pool.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "builtins.h"
 

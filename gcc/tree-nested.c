@@ -46,6 +46,9 @@
 #include "gimple-walk.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */

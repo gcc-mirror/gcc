@@ -44,6 +44,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 
 /* Event names.  */
 enum plugin_event
