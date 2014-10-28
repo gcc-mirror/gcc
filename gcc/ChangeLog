@@ -1,3 +1,26 @@
+2014-10-28  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+        * godump.c (precision_to_units): New helper function.
+        (go_append_artificial_name): Ditto.
+        (go_append_decl_name): Ditto.
+        (go_append_bitfield): Ditto.
+        (go_get_uinttype_for_precision): Ditto.
+        (go_append_padding): Ditto.
+        (go_force_record_alignment): Ditto.
+        (go_format_type): Represent unions with an array of uints of the size
+        of the alignment in go.  This fixes the 'random' size of the union's
+        representation using just the first field.
+        (go_format_type): Add argument that indicates whether a record is
+        nested (used for generation of artificial go names).
+        (go_output_fndecl): Adapt to new go_format_type signature.
+        (go_output_typedef): Ditto.
+        (go_output_var): Ditto.
+        (go_output_var): Prefer to output type as alias (typedef).
+        (go_format_type): Bitfields in records are simulated as arrays of bytes
+        in go.
+
+        * godump.c (go_format_type): Fix handling of arrays with zero elements.
+
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cgraph.h: Flatten.  Remove all include files.
