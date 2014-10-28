@@ -1,3 +1,8 @@
+2014-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Use uint64_t
+	type for the left shift in CASE_CONVERT case.
+
 2014-10-28  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* asan.h (asan_intercepted_p): New function.
