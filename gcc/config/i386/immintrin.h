@@ -50,6 +50,16 @@
 
 #include <avx512cdintrin.h>
 
+#include <avx512vlintrin.h>
+
+#include <avx512bwintrin.h>
+
+#include <avx512dqintrin.h>
+
+#include <avx512vlbwintrin.h>
+
+#include <avx512vldqintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>
