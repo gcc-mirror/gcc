@@ -9084,7 +9084,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
         return temp;
       }
 
-    case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
       {
 	target = expand_vec_shift_expr (ops, target);

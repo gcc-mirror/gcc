@@ -1242,10 +1242,9 @@ DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
    before adding operand three.  */
 DEFTREECODE (FMA_EXPR, "fma_expr", tcc_expression, 3)
 
-/* Whole vector left/right shift in bits.
+/* Whole vector right shift in bits.
    Operand 0 is a vector to be shifted.
    Operand 1 is an integer shift amount in bits.  */
-DEFTREECODE (VEC_LSHIFT_EXPR, "vec_lshift_expr", tcc_binary, 2)
 DEFTREECODE (VEC_RSHIFT_EXPR, "vec_rshift_expr", tcc_binary, 2)
 
 /* Widening vector multiplication.

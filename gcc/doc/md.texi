@@ -4796,10 +4796,9 @@ operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
 
-@cindex @code{vec_shl_@var{m}} instruction pattern
 @cindex @code{vec_shr_@var{m}} instruction pattern
-@item @samp{vec_shl_@var{m}}, @samp{vec_shr_@var{m}}
-Whole vector left/right shift in bits.
+@item @samp{vec_shr_@var{m}}
+Whole vector right shift in bits.
 Operand 1 is a vector to be shifted.
 Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.

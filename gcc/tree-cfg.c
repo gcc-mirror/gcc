@@ -3673,7 +3673,6 @@ verify_gimple_assign_binary (gimple stmt)
 	return false;
       }
 
-    case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
       {
 	if (TREE_CODE (rhs1_type) != VECTOR_TYPE

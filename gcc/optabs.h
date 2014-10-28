@@ -240,7 +240,7 @@ bool expand_vec_cond_expr_p (tree, tree);
 
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
-/* Generate code for VEC_LSHIFT_EXPR and VEC_RSHIFT_EXPR.  */
+/* Generate code for VEC_RSHIFT_EXPR.  */
 extern rtx expand_vec_shift_expr (sepops, rtx);
 
 /* Return true if target supports vector operations for VEC_PERM_EXPR.  */
