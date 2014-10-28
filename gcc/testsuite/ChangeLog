@@ -1,3 +1,21 @@
+2014-10-28  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Updated test.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Removed.
+	* c-c++-common/asan/no-redundant-instrumentation-9.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-10.c: New test.
+	* c-c++-common/asan/no-redundant-instrumentation-11.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-12.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-13.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-14.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-15.c: Likewise.
+	* c-c++-common/asan/pr63638.c: Likewise.
+
 2014-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63665

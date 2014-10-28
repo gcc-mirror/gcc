@@ -78,4 +78,28 @@ asan_red_zone_size (unsigned int size)
 
 extern bool set_asan_shadow_offset (const char *);
 
+/* Return TRUE if builtin with given FCODE will be intercepted by
+   libasan.  */
+
+static inline bool
+asan_intercepted_p (enum built_in_function fcode)
+{
+  return fcode == BUILT_IN_INDEX
+	 || fcode == BUILT_IN_MEMCHR
+	 || fcode == BUILT_IN_MEMCMP
+	 || fcode == BUILT_IN_MEMCPY
+	 || fcode == BUILT_IN_MEMMOVE
+	 || fcode == BUILT_IN_MEMSET
+	 || fcode == BUILT_IN_STRCASECMP
+	 || fcode == BUILT_IN_STRCAT
+	 || fcode == BUILT_IN_STRCHR
+	 || fcode == BUILT_IN_STRCMP
+	 || fcode == BUILT_IN_STRCPY
+	 || fcode == BUILT_IN_STRDUP
+	 || fcode == BUILT_IN_STRLEN
+	 || fcode == BUILT_IN_STRNCASECMP
+	 || fcode == BUILT_IN_STRNCAT
+	 || fcode == BUILT_IN_STRNCMP
+	 || fcode == BUILT_IN_STRNCPY;
+}
 #endif /* TREE_ASAN */
