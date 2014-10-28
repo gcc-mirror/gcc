@@ -1,3 +1,7 @@
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* libiberty.h (strtol, strtoul, strtoll, strtoull): New prototypes.
+
 2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
 	    Jan Kratochvil  <jan.kratochvil@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>

@@ -79,6 +79,22 @@
    don't. */
 #undef HAVE_DECL_SNPRINTF
 
+/* Define to 1 if you have the declaration of `strtol', and to 0 if you don't.
+   */
+#undef HAVE_DECL_STRTOL
+
+/* Define to 1 if you have the declaration of `strtoll', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRTOLL
+
+/* Define to 1 if you have the declaration of `strtoul', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRTOUL
+
+/* Define to 1 if you have the declaration of `strtoull', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRTOULL
+
 /* Define to 1 if you have the declaration of `strverscmp', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRVERSCMP
@@ -135,6 +151,9 @@
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define if you have the `long long' type. */
+#undef HAVE_LONG_LONG
 
 /* Define to 1 if you have the <machine/hal_sysinfo.h> header file. */
 #undef HAVE_MACHINE_HAL_SYSINFO_H
@@ -280,8 +299,14 @@
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
+/* Define to 1 if you have the `strtoll' function. */
+#undef HAVE_STRTOLL
+
 /* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
+
+/* Define to 1 if you have the `strtoull' function. */
+#undef HAVE_STRTOULL
 
 /* Define to 1 if you have the `strverscmp' function. */
 #undef HAVE_STRVERSCMP
@@ -438,6 +463,12 @@
 
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
 
 /* Define if you know the direction of stack growth for your system; otherwise
    it will be automatically deduced at run-time. STACK_DIRECTION > 0 => grows
