@@ -3696,7 +3696,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-    case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
 
     case BIT_IOR_EXPR:

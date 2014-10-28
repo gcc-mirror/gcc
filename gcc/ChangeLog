@@ -1,3 +1,17 @@
+2014-10-28  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* expr.c (expand_expr_real_2): Remove code handling VEC_LSHIFT_EXPR.
+	* fold-const.c (const_binop): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	(expand_vec_shift_expr): Likewise, update comment.
+	* tree.def: Delete VEC_LSHIFT_EXPR, remove comment.
+	* optabs.h (expand_vec_shift_expr): Remove comment re. VEC_LSHIFT_EXPR.
+	* optabs.def: Remove vec_shl_optab.
+	* doc/md.texi: Remove references to vec_shr_m.
+
 2014-10-28  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (report_error_func): Add noabort path.

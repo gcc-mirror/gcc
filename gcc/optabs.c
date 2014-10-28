@@ -519,9 +519,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case REDUC_PLUS_EXPR:
       return reduc_plus_scal_optab;
 
-    case VEC_LSHIFT_EXPR:
-      return vec_shl_optab;
-
     case VEC_RSHIFT_EXPR:
       return vec_shr_optab;
 
@@ -773,7 +770,7 @@ force_expand_binop (enum machine_mode mode, optab binoptab,
   return true;
 }
 
-/* Generate insns for VEC_LSHIFT_EXPR, VEC_RSHIFT_EXPR.  */
+/* Generate insns for VEC_RSHIFT_EXPR.  */
 
 rtx
 expand_vec_shift_expr (sepops ops, rtx target)
@@ -784,21 +781,10 @@ expand_vec_shift_expr (sepops ops, rtx target)
   enum machine_mode mode = TYPE_MODE (ops->type);
   tree vec_oprnd = ops->op0;
   tree shift_oprnd = ops->op1;
-  optab shift_optab;
 
-  switch (ops->code)
-    {
-      case VEC_RSHIFT_EXPR:
-	shift_optab = vec_shr_optab;
-	break;
-      case VEC_LSHIFT_EXPR:
-	shift_optab = vec_shl_optab;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  gcc_assert (ops->code == VEC_RSHIFT_EXPR);
 
-  icode = optab_handler (shift_optab, mode);
+  icode = optab_handler (vec_shr_optab, mode);
   gcc_assert (icode != CODE_FOR_nothing);
 
   rtx_op1 = expand_normal (vec_oprnd);
