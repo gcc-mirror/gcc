@@ -8,6 +8,36 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/i386.c
+	(ix86_init_mmx_sse_builtins):
+	Define __builtin_ia32_gather3siv2df, __builtin_ia32_gather3siv4df,
+	__builtin_ia32_gather3div2df, __builtin_ia32_gather3div4df,
+	__builtin_ia32_gather3siv4sf, __builtin_ia32_gather3siv8sf,
+	__builtin_ia32_gather3div4sf, __builtin_ia32_gather3div8sf,
+	__builtin_ia32_gather3siv2di, __builtin_ia32_gather3siv4di,
+	__builtin_ia32_gather3div2di, __builtin_ia32_gather3div4di,
+	__builtin_ia32_gather3siv4si, __builtin_ia32_gather3siv8si,
+	__builtin_ia32_gather3div4si, __builtin_ia32_gather3div8si,
+	__builtin_ia32_gather3altsiv4df, __builtin_ia32_gather3altdiv8sf,
+	__builtin_ia32_gather3altsiv4di, __builtin_ia32_gather3altdiv8si,
+	__builtin_ia32_scattersiv8sf, __builtin_ia32_scattersiv4sf,
+	__builtin_ia32_scattersiv4df, __builtin_ia32_scattersiv2df,
+	__builtin_ia32_scatterdiv8sf, __builtin_ia32_scatterdiv4sf,
+	__builtin_ia32_scatterdiv4df, __builtin_ia32_scatterdiv2df,
+	__builtin_ia32_scattersiv8si, __builtin_ia32_scattersiv4si,
+	__builtin_ia32_scattersiv4di, __builtin_ia32_scattersiv2di,
+	__builtin_ia32_scatterdiv8si, __builtin_ia32_scatterdiv4si,
+	__builtin_ia32_scatterdiv4di, __builtin_ia32_scatterdiv2di.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
 	(ix86_builtins): Add IX86_BUILTIN_GATHER3ALTSIV4DF,
 	IX86_BUILTIN_GATHER3ALTDIV8SF, IX86_BUILTIN_GATHER3ALTSIV4DI,
 	IX86_BUILTIN_GATHER3ALTDIV8SI.
