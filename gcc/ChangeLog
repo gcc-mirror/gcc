@@ -1,3 +1,27 @@
+2014-10-28  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.h (asan_intercepted_p): New function.
+	* asan.c (asan_mem_ref_hasher::hash): Remove MEM_REF access size from
+	hash value construction.  Call iterative_hash_expr instead of explicit
+	hash building.
+	(asan_mem_ref_hasher::equal): Change condition.
+	(has_mem_ref_been_instrumented): Likewise.
+	(update_mem_ref_hash_table): Likewise.
+	(maybe_update_mem_ref_hash_table): New function.
+	(instrument_strlen_call): Removed.
+	(get_mem_refs_of_builtin_call): Handle new parameter.
+	(instrument_builtin_call): Call maybe_update_mem_ref_hash_table instead
+	of instrument_mem_region_access if intercepted_p is true.
+	(instrument_mem_region_access): Instrument only base with len instead of
+	base and end with 1.
+	(build_check_stmt): Remove start_instrumented and end_instrumented
+	parameters.
+	(enum asan_check_flags): Remove ASAN_CHECK_START_INSTRUMENTED and
+	ASAN_CHECK_END_INSTRUMENTED.  Change ASAN_CHECK_LAST.
+	(asan_expand_check_ifn): Remove start_instrumented and end_instrumented.
+	* builtins.c (expand_builtin): Include asan.h.  Don't expand string/memory
+	builtin functions that have interceptors if ASan is enabled.
+
 2014-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63665
