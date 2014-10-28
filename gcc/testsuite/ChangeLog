@@ -1,3 +1,7 @@
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/shadow-offset-1.c: New test.
+
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/plugin/ggcplug.c: Shuffle includes to include

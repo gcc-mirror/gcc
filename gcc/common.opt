@@ -883,6 +883,10 @@ fsanitize=
 Common Driver Report Joined
 Select what to sanitize
 
+fasan-shadow-offset=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fasan-shadow-offset=<number>	Use custom shadow memory offset.
+
 fsanitize-recover=
 Common Report Joined
 After diagnosing undefined behavior attempt to continue execution
@@ -1808,7 +1812,7 @@ Common Var(common_deferred_options) Defer
 
 frandom-seed=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--frandom-seed=<string>	Make compile reproducible using <string>
+-frandom-seed=<number>	Make compile reproducible using <number>
 
 ; This switch causes the command line that was used to create an
 ; object file to be recorded into the object file.  The exact format
