@@ -1,3 +1,12 @@
+2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (follow_single_use_edges): Declare.
+	* gimple-fold.c (follow_single_use_edges): New function.
+	(gimple_fold_stmt_to_constant_1): Dispatch to gimple_simplify.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_dom_walker::before_dom_children): Allow
+	following single-use edges when folding stmts we propagated into.
+
 2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

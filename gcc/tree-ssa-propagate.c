@@ -1150,7 +1150,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
       /* If we made a replacement, fold the statement.  */
       if (did_replace)
-	fold_stmt (&i);
+	fold_stmt (&i, follow_single_use_edges);
 
       /* Now cleanup.  */
       if (did_replace)
