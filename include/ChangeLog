@@ -1,3 +1,7 @@
+2014-10-28  Richard Henderson  <rth@redhat.com>
+
+	* longlong.h [__alpha] (umul_ppmm): Disable for c++.
+
 2014-10-28  Yury Gribov  <y.gribov@samsung.com>
 
 	* libiberty.h (strtol, strtoul, strtoll, strtoull): New prototypes.
