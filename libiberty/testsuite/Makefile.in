@@ -45,7 +45,8 @@ all:
 # CHECK is set to "really_check" or the empty string by configure.
 check: @CHECK@
 
-really-check: check-cplus-dem check-d-demangle check-pexecute check-expandargv
+really-check: check-cplus-dem check-d-demangle check-pexecute check-expandargv \
+		check-strtol
 
 # Run some tests of the demangler.
 check-cplus-dem: test-demangle $(srcdir)/demangle-expected
@@ -61,6 +62,10 @@ check-pexecute: test-pexecute
 # Check the expandargv functionality
 check-expandargv: test-expandargv
 	./test-expandargv
+
+# Check the strtol functionality
+check-strtol: test-strtol
+	./test-strtol
 
 # Run the demangler fuzzer
 fuzz-demangler: demangler-fuzzer
@@ -79,6 +84,10 @@ test-expandargv: $(srcdir)/test-expandargv.c ../libiberty.a
 	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-expandargv \
 		$(srcdir)/test-expandargv.c ../libiberty.a
 
+test-strtol: $(srcdir)/test-strtol.c ../libiberty.a
+	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-strtol \
+		$(srcdir)/test-strtol.c ../libiberty.a
+
 demangler-fuzzer: $(srcdir)/demangler-fuzzer.c ../libiberty.a
 	$(TEST_COMPILE) -o demangler-fuzzer \
 		$(srcdir)/demangler-fuzzer.c ../libiberty.a
@@ -92,6 +101,7 @@ mostlyclean:
 	rm -f test-demangle
 	rm -f test-pexecute
 	rm -f test-expandargv
+	rm -f test-strtol
 	rm -f demangler-fuzzer
 	rm -f core
 clean: mostlyclean

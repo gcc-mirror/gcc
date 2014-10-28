@@ -1,3 +1,18 @@
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* strtoll.c: New file.
+	* strtoull.c: New file.
+	* configure.ac: Add long long checks.  Add harness for strtoll and
+	strtoull.  Check decls for strtol, strtoul, strtoll, strtoull.
+	* Makefile.in (CFILES, CONFIGURED_OFILES): Add strtoll and strtoull.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* functions.texi: Regenerate.
+	* testsuite/Makefile.in (check-strtol): New rule.
+	(test-strtol): Likewise.
+	(mostlyclean): Clean up strtol test.
+	* testsuite/test-strtol.c: New test.
+
 2014-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* choose-temp.c (choose_tmpdir): Remove now-redundant local

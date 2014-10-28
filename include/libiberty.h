@@ -655,6 +655,33 @@ extern size_t strnlen (const char *, size_t);
 extern int strverscmp (const char *, const char *);
 #endif
 
+#if defined(HAVE_DECL_STRTOL) && !HAVE_DECL_STRTOL
+extern long int strtol (const char *nptr,
+                        char **endptr, int base);
+#endif
+
+#if defined(HAVE_DECL_STRTOUL) && !HAVE_DECL_STRTOUL
+extern unsigned long int strtoul (const char *nptr,
+                                  char **endptr, int base);
+#endif
+
+#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
+__extension__
+extern long long int strtoll (const char *nptr,
+                              char **endptr, int base);
+#endif
+
+#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
+__extension__
+extern unsigned long long int strtoull (const char *nptr,
+                                        char **endptr, int base);
+#endif
+
+#if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
+/* Compare version strings.  */
+extern int strverscmp (const char *, const char *);
+#endif
+
 /* Set the title of a process */
 extern void setproctitle (const char *name, ...);
 
