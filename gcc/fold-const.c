@@ -8749,7 +8749,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
       /* If the constant operation overflowed this can be
 	 simplified as a comparison against INT_MAX/INT_MIN.  */
-      if (TREE_OVERFLOW (new_const))
+      if (TREE_OVERFLOW (new_const)
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
 	{
 	  int const1_sgn = tree_int_cst_sgn (const1);
 	  enum tree_code code2 = code;

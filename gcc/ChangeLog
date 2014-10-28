@@ -1,3 +1,9 @@
+2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63665
+	* fold-const.c (fold_comparison): Properly guard simplifying
+	against INT_MAX/INT_MIN with !TYPE_OVERFLOW_WRAPS.
+
 2014-10-28  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* expr.c (expand_expr_real_2): Remove code handling VEC_LSHIFT_EXPR.
