@@ -1,5 +1,19 @@
 2014-10-28  Yury Gribov  <y.gribov@samsung.com>
 
+	* c-c++-common/asan/kasan-recover-1.c: New test.
+	* c-c++-common/asan/kasan-recover-2.c: New test.
+	* c-c++-common/asan/instrument-with-calls-1.c: Get rid of -save-temps.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/instrument-with-calls-3.c: Likewise.
+	* c-c++-common/asan/kasan-recover-1.c: Likewise.
+	* c-c++-common/asan/kasan-recover-2.c: Likewise.
+	* c-c++-common/asan/no-asan-globals.c: Likewise.
+	* c-c++-common/asan/no-instrument-reads.c: Likewise.
+	* c-c++-common/asan/no-instrument-writes.c: Likewise.
+	* c-c++-common/asan/no-use-after-return.c: Likewise.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
 	* c-c++-common/asan/shadow-offset-1.c: New test.
 
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
