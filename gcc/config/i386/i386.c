@@ -29652,6 +29652,10 @@ enum ix86_builtins
   IX86_BUILTIN_GATHERALTDIV8SI,
   IX86_BUILTIN_GATHER3ALTDIV16SF,
   IX86_BUILTIN_GATHER3ALTDIV16SI,
+  IX86_BUILTIN_GATHER3ALTSIV4DF,
+  IX86_BUILTIN_GATHER3ALTDIV8SF,
+  IX86_BUILTIN_GATHER3ALTSIV4DI,
+  IX86_BUILTIN_GATHER3ALTDIV8SI,
   IX86_BUILTIN_GATHER3ALTSIV8DF,
   IX86_BUILTIN_GATHER3ALTSIV8DI,
   IX86_BUILTIN_GATHER3DIV16SF,
@@ -38282,6 +38286,66 @@ addcarryx:
     case IX86_BUILTIN_GATHER3ALTDIV16SI:
       icode = CODE_FOR_avx512f_gatherdiv16si;
       goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV2DF:
+      icode = CODE_FOR_avx512vl_gathersiv2df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV4DF:
+      icode = CODE_FOR_avx512vl_gathersiv4df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV2DF:
+      icode = CODE_FOR_avx512vl_gatherdiv2df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV4DF:
+      icode = CODE_FOR_avx512vl_gatherdiv4df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV4SF:
+      icode = CODE_FOR_avx512vl_gathersiv4sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV8SF:
+      icode = CODE_FOR_avx512vl_gathersiv8sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV4SF:
+      icode = CODE_FOR_avx512vl_gatherdiv4sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV8SF:
+      icode = CODE_FOR_avx512vl_gatherdiv8sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV2DI:
+      icode = CODE_FOR_avx512vl_gathersiv2di;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV4DI:
+      icode = CODE_FOR_avx512vl_gathersiv4di;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV2DI:
+      icode = CODE_FOR_avx512vl_gatherdiv2di;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV4DI:
+      icode = CODE_FOR_avx512vl_gatherdiv4di;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV4SI:
+      icode = CODE_FOR_avx512vl_gathersiv4si;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3SIV8SI:
+      icode = CODE_FOR_avx512vl_gathersiv8si;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV4SI:
+      icode = CODE_FOR_avx512vl_gatherdiv4si;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3DIV8SI:
+      icode = CODE_FOR_avx512vl_gatherdiv8si;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3ALTSIV4DF:
+      icode = CODE_FOR_avx512vl_gathersiv4df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3ALTDIV8SF:
+      icode = CODE_FOR_avx512vl_gatherdiv8sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3ALTSIV4DI:
+      icode = CODE_FOR_avx512vl_gathersiv4di;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHER3ALTDIV8SI:
+      icode = CODE_FOR_avx512vl_gatherdiv8si;
+      goto gather_gen;
     case IX86_BUILTIN_SCATTERSIV16SF:
       icode = CODE_FOR_avx512f_scattersiv16sf;
       goto scatter_gen;
@@ -38306,7 +38370,54 @@ addcarryx:
     case IX86_BUILTIN_SCATTERDIV8DI:
       icode = CODE_FOR_avx512f_scatterdiv8di;
       goto scatter_gen;
-
+    case IX86_BUILTIN_SCATTERSIV8SF:
+      icode = CODE_FOR_avx512vl_scattersiv8sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV4SF:
+      icode = CODE_FOR_avx512vl_scattersiv4sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV4DF:
+      icode = CODE_FOR_avx512vl_scattersiv4df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV2DF:
+      icode = CODE_FOR_avx512vl_scattersiv2df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV8SF:
+      icode = CODE_FOR_avx512vl_scatterdiv8sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV4SF:
+      icode = CODE_FOR_avx512vl_scatterdiv4sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV4DF:
+      icode = CODE_FOR_avx512vl_scatterdiv4df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV2DF:
+      icode = CODE_FOR_avx512vl_scatterdiv2df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV8SI:
+      icode = CODE_FOR_avx512vl_scattersiv8si;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV4SI:
+      icode = CODE_FOR_avx512vl_scattersiv4si;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV4DI:
+      icode = CODE_FOR_avx512vl_scattersiv4di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERSIV2DI:
+      icode = CODE_FOR_avx512vl_scattersiv2di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV8SI:
+      icode = CODE_FOR_avx512vl_scatterdiv8si;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV4SI:
+      icode = CODE_FOR_avx512vl_scatterdiv4si;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV4DI:
+      icode = CODE_FOR_avx512vl_scatterdiv4di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERDIV2DI:
+      icode = CODE_FOR_avx512vl_scatterdiv2di;
+      goto scatter_gen;
     case IX86_BUILTIN_GATHERPFDPD:
       icode = CODE_FOR_avx512pf_gatherpfv8sidf;
       goto vec_prefetch_gen;
@@ -38370,6 +38481,8 @@ addcarryx:
 	  emit_insn (gen_vec_extract_lo_v16si (half, op2));
 	  op2 = half;
 	  break;
+	case IX86_BUILTIN_GATHER3ALTSIV4DF:
+	case IX86_BUILTIN_GATHER3ALTSIV4DI:
 	case IX86_BUILTIN_GATHERALTSIV4DF:
 	case IX86_BUILTIN_GATHERALTSIV4DI:
 	  half = gen_reg_rtx (V4SImode);
@@ -38397,6 +38510,8 @@ addcarryx:
 	      op3 = half;
 	    }
 	  break;
+	case IX86_BUILTIN_GATHER3ALTDIV8SF:
+	case IX86_BUILTIN_GATHER3ALTDIV8SI:
 	case IX86_BUILTIN_GATHERALTDIV8SF:
 	case IX86_BUILTIN_GATHERALTDIV8SI:
 	  half = gen_reg_rtx (mode0);
@@ -38532,11 +38647,13 @@ addcarryx:
 	    target = gen_reg_rtx (V8SImode);
 	  emit_insn (gen_vec_extract_lo_v16si (target, subtarget));
 	  break;
+	case IX86_BUILTIN_GATHER3DIV8SF:
 	case IX86_BUILTIN_GATHERDIV8SF:
 	  if (target == NULL_RTX)
 	    target = gen_reg_rtx (V4SFmode);
 	  emit_insn (gen_vec_extract_lo_v8sf (target, subtarget));
 	  break;
+	case IX86_BUILTIN_GATHER3DIV8SI:
 	case IX86_BUILTIN_GATHERDIV8SI:
 	  if (target == NULL_RTX)
 	    target = gen_reg_rtx (V4SImode);
@@ -39368,28 +39485,52 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
   switch (TYPE_MODE (mem_vectype))
     {
     case V2DFmode:
-      code = si ? IX86_BUILTIN_GATHERSIV2DF : IX86_BUILTIN_GATHERDIV2DF;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV2DF : IX86_BUILTIN_GATHER3DIV2DF;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV2DF : IX86_BUILTIN_GATHERDIV2DF;
       break;
     case V4DFmode:
-      code = si ? IX86_BUILTIN_GATHERALTSIV4DF : IX86_BUILTIN_GATHERDIV4DF;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3ALTSIV4DF : IX86_BUILTIN_GATHER3DIV4DF;
+      else
+	code = si ? IX86_BUILTIN_GATHERALTSIV4DF : IX86_BUILTIN_GATHERDIV4DF;
       break;
     case V2DImode:
-      code = si ? IX86_BUILTIN_GATHERSIV2DI : IX86_BUILTIN_GATHERDIV2DI;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV2DI : IX86_BUILTIN_GATHER3DIV2DI;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV2DI : IX86_BUILTIN_GATHERDIV2DI;
       break;
     case V4DImode:
-      code = si ? IX86_BUILTIN_GATHERALTSIV4DI : IX86_BUILTIN_GATHERDIV4DI;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3ALTSIV4DI : IX86_BUILTIN_GATHER3DIV4DI;
+      else
+	code = si ? IX86_BUILTIN_GATHERALTSIV4DI : IX86_BUILTIN_GATHERDIV4DI;
       break;
     case V4SFmode:
-      code = si ? IX86_BUILTIN_GATHERSIV4SF : IX86_BUILTIN_GATHERDIV4SF;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV4SF : IX86_BUILTIN_GATHER3DIV4SF;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV4SF : IX86_BUILTIN_GATHERDIV4SF;
       break;
     case V8SFmode:
-      code = si ? IX86_BUILTIN_GATHERSIV8SF : IX86_BUILTIN_GATHERALTDIV8SF;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV8SF : IX86_BUILTIN_GATHER3ALTDIV8SF;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV8SF : IX86_BUILTIN_GATHERALTDIV8SF;
       break;
     case V4SImode:
-      code = si ? IX86_BUILTIN_GATHERSIV4SI : IX86_BUILTIN_GATHERDIV4SI;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV4SI : IX86_BUILTIN_GATHER3DIV4SI;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV4SI : IX86_BUILTIN_GATHERDIV4SI;
       break;
     case V8SImode:
-      code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_GATHER3SIV8SI : IX86_BUILTIN_GATHER3ALTDIV8SI;
+      else
+	code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
       break;
     case V8DFmode:
       if (TARGET_AVX512F)
