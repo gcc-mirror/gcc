@@ -1,3 +1,18 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* call.c: Adjust include files.
+	* class.c: Ditto.
+	* decl2.c: Ditto.
+	* decl.c: Ditto.
+	* lambda.c: Ditto.
+	* mangle.c: Ditto.
+	* method.c: Ditto.
+	* optimize.c: Ditto.
+	* parser.c: Ditto.
+	* semantics.c: Ditto.
+	* tree.c: Ditto.
+	* vtable-class-hierarchy.c: Ditto.
+
 2014-10-24  Jason Merrill  <jason@redhat.com>
 
 	Implement N3653 (Member initializers and aggregates) and fix

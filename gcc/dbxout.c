@@ -98,6 +98,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "obstack.h"
 #include "expr.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 
 #ifdef XCOFF_DEBUGGING_INFO

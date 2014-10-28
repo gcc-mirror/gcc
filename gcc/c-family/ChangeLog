@@ -1,3 +1,11 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-family/c-common.c: Adjust include files.
+	* c-family/c-gimplify.c: Ditto.
+	* c-family/cilk.c: Ditto.
+	* c-family/c-pragma.c: Ditto.
+	* c-family/c-ubsan.c: Ditto.
+
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-gimplify.c: Adjust include files.

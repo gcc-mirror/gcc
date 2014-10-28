@@ -1,3 +1,121 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cgraph.h: Flatten.  Remove all include files.
+	(symbol_table::initialize): Move to cgraph.c.
+	* cgraph.c: Adjust include files.
+	(symbol_table::initialize): Relocate from cgraph.h.
+	* gengtype.c (open_base_files): Adjust include files.
+	* gccplugin.h: Add hash-map.h, is-a.h, plugin-api.h, and ipa-ref.h to
+	included files.
+	* ipa-inline.h: Remove all include files.
+	* ipa-prop.h: Ditto.
+	* ipa-reference.h: Ditto.
+	* ipa-utils.h: Ditto:
+	* lto-streamer.h: Remove cgraph.h from include list.
+	* asan.c: Adjust include files.
+	* auto-profile.c: Ditto.
+	* bb-reorder.c: Ditto.
+	* calls.c: Ditto.
+	* cfgexpand.c: Ditto.
+	* cgraphbuild.c: Ditto.
+	* cgraphclones.c: Ditto.
+	* cgraphunit.c: Ditto.
+	* combine.c: Ditto.
+	* coverage.c: Ditto.
+	* data-streamer.c: Ditto.
+	* data-streamer-in.c: Ditto.
+	* data-streamer-out.c: Ditto.
+	* dbxout.c: Ditto.
+	* dwarf2out.c: Ditto.
+	* except.c: Ditto.
+	* expr.c: Ditto.
+	* final.c: Ditto.
+	* fold-const.c: Ditto.
+	* ggc-page.c: Ditto.
+	* gimple-fold.c: Ditto.
+	* gimple-iterator.c: Ditto.
+	* gimple-pretty-print.c: Ditto.
+	* gimple-streamer-in.c: Ditto.
+	* gimple-streamer-out.c: Ditto.
+	* gimplify.c: Ditto.
+	* ipa.c: Ditto.
+	* ipa-comdats.c: Ditto.
+	* ipa-cp.c: Ditto.
+	* ipa-devirt.c: Ditto.
+	* ipa-icf.c: Ditto.
+	* ipa-icf-gimple.c: Ditto.
+	* ipa-inline-analysis.c: Ditto.
+	* ipa-inline.c: Ditto.
+	* ipa-inline-transform.c: Ditto.
+	* ipa-polymorphic-call.c: Ditto.
+	* ipa-profile.c: Ditto.
+	* ipa-prop.c: Ditto.
+	* ipa-pure-const.c: Ditto.
+	* ipa-ref.c: Ditto.
+	* ipa-reference.c: Ditto.
+	* ipa-split.c: Ditto.
+	* ipa-utils.c: Ditto.
+	* ipa-visibility.c: Ditto.
+	* langhooks.c: Ditto.
+	* lto-cgraph.c: Ditto.
+	* lto-compress.c: Ditto.
+	* lto-opts.c: Ditto.
+	* lto-section-in.c: Ditto.
+	* lto-section-out.c: Ditto.
+	* lto-streamer.c: Ditto.
+	* lto-streamer-in.c: Ditto.
+	* lto-streamer-out.c: Ditto.
+	* omp-low.c: Ditto.
+	* opts-global.c: Ditto.
+	* passes.c: Ditto.
+	* predict.c: Ditto.
+	* print-tree.c: Ditto.
+	* profile.c: Ditto.
+	* ree.c: Ditto.
+	* stor-layout.c: Ditto.
+	* symtab.c: Ditto.
+	* toplev.c: Ditto.
+	* trans-mem.c: Ditto.
+	* tree.c: Ditto.
+	* tree-cfg.c: Ditto.
+	* tree-eh.c: Ditto.
+	* tree-emutls.c: Ditto.
+	* tree-inline.c: Ditto.
+	* tree-nested.c: Ditto.
+	* tree-pretty-print.c: Ditto.
+	* tree-profile.c: Ditto.
+	* tree-sra.c: Ditto.
+	* tree-ssa-alias.c: Ditto.
+	* tree-ssa-loop-ivcanon.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-ssa-pre.c: Ditto.
+	* tree-ssa-structalias.c: Ditto.
+	* tree-streamer.c: Ditto.
+	* tree-streamer-in.c: Ditto.
+	* tree-streamer-out.c: Ditto.
+	* tree-switch-conversion.c: Ditto.
+	* tree-tailcall.c: Ditto.
+	* tree-vect-data-refs.c: Ditto.
+	* tree-vectorizer.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tsan.c: Ditto.
+	* ubsan.c: Ditto.
+	* value-prof.c: Ditto.
+	* varasm.c: Ditto.
+	* varpool.c: Ditto.
+	* config/arm/arm.c: Ditto.
+	* config/bfin/bfin.c: Ditto.
+	* config/c6x/c6x.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/darwin.c: Ditto.
+	* config/darwin-c.c: Ditto.
+	* config/i386/i386.c: Ditto.
+	* config/i386/winnt.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/mips/mips.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rx/rx.c: Ditto.
+
 2014-10-28  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.h (follow_single_use_edges): Declare.

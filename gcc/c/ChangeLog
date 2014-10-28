@@ -1,3 +1,8 @@
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+	* c-parser.c: Ditto.
+
 2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>
 

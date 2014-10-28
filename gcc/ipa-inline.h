@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IPA_INLINE_H
 #define GCC_IPA_INLINE_H
 
-#include "ipa-prop.h"
 
 /* Representation of inline parameters that do depend on context function is
    inlined into (i.e. known constant values of function parameters.

@@ -21,19 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "ipa-ref.h"
-#include "dumpfile.h"
 
 /* Symbol table consists of functions and variables.
    TODO: add labels and CONST_DECLs.  */
@@ -1785,12 +1772,7 @@ public:
   friend class cgraph_edge;
 
   /* Initialize callgraph dump file.  */
-  inline void
-  initialize (void)
-  {
-    if (!dump_file)
-      dump_file = dump_begin (TDI_cgraph, NULL);
-  }
+  void initialize (void);
 
   /* Register a top-level asm statement ASM_STR.  */
   inline asm_node *finalize_toplevel_asm (tree asm_str);

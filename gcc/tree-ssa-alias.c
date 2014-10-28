@@ -55,6 +55,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "alloc-pool.h"
 #include "tree-ssa-alias.h"
+#include "bitmap.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "ipa-reference.h"
 
 /* Broad overview of how alias analysis on gimple works:
