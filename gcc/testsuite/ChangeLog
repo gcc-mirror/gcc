@@ -1,3 +1,8 @@
+2014-10-27  Guozhi Wei  <carrot@google.com>
+
+	PR tree-optimization/63530
+	gcc.dg/vect/pr63530.c: New test.
+
 2014-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/entry_queues2.adb: New test.
