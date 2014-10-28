@@ -36630,6 +36630,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_sse4_1_blendps:
 	      case CODE_FOR_avx_blendpd256:
 	      case CODE_FOR_avx_vpermilv4df:
+	      case CODE_FOR_avx_vpermilv4df_mask:
 	      case CODE_FOR_avx512f_getmantv8df_mask:
 	      case CODE_FOR_avx512f_getmantv16sf_mask:
 	      case CODE_FOR_avx512vl_getmantv8sf_mask:
@@ -36642,12 +36643,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx512dq_rangepv8sf_mask:
 	      case CODE_FOR_avx512dq_rangepv2df_mask:
 	      case CODE_FOR_avx512dq_rangepv4sf_mask:
+	      case CODE_FOR_avx_shufpd256_mask:
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 
 	      case CODE_FOR_sha1rnds4:
 	      case CODE_FOR_sse4_1_blendpd:
 	      case CODE_FOR_avx_vpermilv2df:
+	      case CODE_FOR_avx_vpermilv2df_mask:
 	      case CODE_FOR_xop_vpermil2v2df3:
 	      case CODE_FOR_xop_vpermil2v4sf3:
 	      case CODE_FOR_xop_vpermil2v4df3:
