@@ -1,3 +1,7 @@
+2014-10-28  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_outermost_constant_expr): Tweak.
+
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* call.c: Adjust include files.
