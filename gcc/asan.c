@@ -1392,44 +1392,72 @@ asan_protect_global (tree decl)
    IS_STORE is either 1 (for a store) or 0 (for a load).  */
 
 static tree
-report_error_func (bool is_store, HOST_WIDE_INT size_in_bytes, int *nargs)
+report_error_func (bool is_store, bool recover_p, HOST_WIDE_INT size_in_bytes,
+		   int *nargs)
 {
-  static enum built_in_function report[2][6]
-    = { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
-	  BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
-	  BUILT_IN_ASAN_REPORT_LOAD16, BUILT_IN_ASAN_REPORT_LOAD_N },
-	{ BUILT_IN_ASAN_REPORT_STORE1, BUILT_IN_ASAN_REPORT_STORE2,
-	  BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
-	  BUILT_IN_ASAN_REPORT_STORE16, BUILT_IN_ASAN_REPORT_STORE_N } };
+  static enum built_in_function report[2][2][6]
+    = { { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
+	    BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
+	    BUILT_IN_ASAN_REPORT_LOAD16, BUILT_IN_ASAN_REPORT_LOAD_N },
+	  { BUILT_IN_ASAN_REPORT_STORE1, BUILT_IN_ASAN_REPORT_STORE2,
+	    BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
+	    BUILT_IN_ASAN_REPORT_STORE16, BUILT_IN_ASAN_REPORT_STORE_N } },
+	{ { BUILT_IN_ASAN_REPORT_LOAD1_NOABORT,
+	    BUILT_IN_ASAN_REPORT_LOAD2_NOABORT,
+	    BUILT_IN_ASAN_REPORT_LOAD4_NOABORT,
+	    BUILT_IN_ASAN_REPORT_LOAD8_NOABORT,
+	    BUILT_IN_ASAN_REPORT_LOAD16_NOABORT,
+	    BUILT_IN_ASAN_REPORT_LOAD_N_NOABORT },
+	  { BUILT_IN_ASAN_REPORT_STORE1_NOABORT,
+	    BUILT_IN_ASAN_REPORT_STORE2_NOABORT,
+	    BUILT_IN_ASAN_REPORT_STORE4_NOABORT,
+	    BUILT_IN_ASAN_REPORT_STORE8_NOABORT,
+	    BUILT_IN_ASAN_REPORT_STORE16_NOABORT,
+	    BUILT_IN_ASAN_REPORT_STORE_N_NOABORT } } };
   if (size_in_bytes == -1)
     {
       *nargs = 2;
-      return builtin_decl_implicit (report[is_store][5]);
+      return builtin_decl_implicit (report[recover_p][is_store][5]);
     }
   *nargs = 1;
-  return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
+  int size_log2 = exact_log2 (size_in_bytes);
+  return builtin_decl_implicit (report[recover_p][is_store][size_log2]);
 }
 
 /* Construct a function tree for __asan_{load,store}{1,2,4,8,16,_n}.
    IS_STORE is either 1 (for a store) or 0 (for a load).  */
 
 static tree
-check_func (bool is_store, int size_in_bytes, int *nargs)
+check_func (bool is_store, bool recover_p, HOST_WIDE_INT size_in_bytes,
+	    int *nargs)
 {
-  static enum built_in_function check[2][6]
-    = { { BUILT_IN_ASAN_LOAD1, BUILT_IN_ASAN_LOAD2,
-      BUILT_IN_ASAN_LOAD4, BUILT_IN_ASAN_LOAD8,
-      BUILT_IN_ASAN_LOAD16, BUILT_IN_ASAN_LOADN },
-	{ BUILT_IN_ASAN_STORE1, BUILT_IN_ASAN_STORE2,
-      BUILT_IN_ASAN_STORE4, BUILT_IN_ASAN_STORE8,
-      BUILT_IN_ASAN_STORE16, BUILT_IN_ASAN_STOREN } };
+  static enum built_in_function check[2][2][6]
+    = { { { BUILT_IN_ASAN_LOAD1, BUILT_IN_ASAN_LOAD2,
+	    BUILT_IN_ASAN_LOAD4, BUILT_IN_ASAN_LOAD8,
+	    BUILT_IN_ASAN_LOAD16, BUILT_IN_ASAN_LOADN },
+	  { BUILT_IN_ASAN_STORE1, BUILT_IN_ASAN_STORE2,
+	    BUILT_IN_ASAN_STORE4, BUILT_IN_ASAN_STORE8,
+	    BUILT_IN_ASAN_STORE16, BUILT_IN_ASAN_STOREN } },
+	{ { BUILT_IN_ASAN_LOAD1_NOABORT,
+	    BUILT_IN_ASAN_LOAD2_NOABORT,
+	    BUILT_IN_ASAN_LOAD4_NOABORT,
+	    BUILT_IN_ASAN_LOAD8_NOABORT,
+	    BUILT_IN_ASAN_LOAD16_NOABORT,
+	    BUILT_IN_ASAN_LOADN_NOABORT },
+	  { BUILT_IN_ASAN_STORE1_NOABORT,
+	    BUILT_IN_ASAN_STORE2_NOABORT,
+	    BUILT_IN_ASAN_STORE4_NOABORT,
+	    BUILT_IN_ASAN_STORE8_NOABORT,
+	    BUILT_IN_ASAN_STORE16_NOABORT,
+	    BUILT_IN_ASAN_STOREN_NOABORT } } };
   if (size_in_bytes == -1)
     {
       *nargs = 2;
-      return builtin_decl_implicit (check[is_store][5]);
+      return builtin_decl_implicit (check[recover_p][is_store][5]);
     }
   *nargs = 1;
-  return builtin_decl_implicit (check[is_store][exact_log2 (size_in_bytes)]);
+  int size_log2 = exact_log2 (size_in_bytes);
+  return builtin_decl_implicit (check[recover_p][is_store][size_log2]);
 }
 
 /* Split the current basic block and create a condition statement
@@ -2550,6 +2578,9 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
   gimple g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
 
+  bool recover_p
+    = (flag_sanitize & flag_sanitize_recover & SANITIZE_KERNEL_ADDRESS) != 0;
+
   HOST_WIDE_INT flags = tree_to_shwi (gimple_call_arg (g, 0));
   gcc_assert (flags < ASAN_CHECK_LAST);
   bool is_scalar_access = (flags & ASAN_CHECK_SCALAR_ACCESS) != 0;
@@ -2578,7 +2609,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       tree base_addr = gimple_assign_lhs (g);
 
       int nargs;
-      tree fun = check_func (is_store, size_in_bytes, &nargs);
+      tree fun = check_func (is_store, recover_p, size_in_bytes, &nargs);
       if (nargs == 1)
 	g = gimple_build_call (fun, 1, base_addr);
       else
@@ -2639,7 +2670,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
   basic_block then_bb, else_bb;
   gsi = create_cond_insert_point (&gsi, /*before_p*/false,
 				  /*then_more_likely_p=*/false,
-				  /*create_then_fallthru_edge=*/false,
+				  /*create_then_fallthru_edge*/recover_p,
 				  &then_bb,
 				  &else_bb);
 
@@ -2748,7 +2779,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
   /* Generate call to the run-time library (e.g. __asan_report_load8).  */
   gsi = gsi_start_bb (then_bb);
   int nargs;
-  tree fun = report_error_func (is_store, size_in_bytes, &nargs);
+  tree fun = report_error_func (is_store, recover_p, size_in_bytes, &nargs);
   g = gimple_build_call (fun, nargs, base_addr, len);
   gimple_set_location (g, loc);
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);

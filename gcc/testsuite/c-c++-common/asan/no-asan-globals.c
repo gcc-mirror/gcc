@@ -1,5 +1,5 @@
-/* { dg-do assemble } */
-/* { dg-options "-save-temps --param asan-globals=0" } */
+/* { dg-do compile } */
+/* { dg-options "--param asan-globals=0" } */
 
 volatile int ten = 10;
 
@@ -10,4 +10,3 @@ int main() {
 }
 
 /* { dg-final { scan-assembler-not "__asan_register_globals" } } */
-/* { dg-final { cleanup-saved-temps } } */

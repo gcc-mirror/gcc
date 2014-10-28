@@ -1,5 +1,5 @@
-/* { dg-do assemble } */
-/* { dg-options "--param asan-instrumentation-with-call-threshold=0 -save-temps" } */
+/* { dg-do compile } */
+/* { dg-options "--param asan-instrumentation-with-call-threshold=0" } */
 
 void f(char *a, int *b) {
   *b = *a;
@@ -7,4 +7,3 @@ void f(char *a, int *b) {
 
 /* { dg-final { scan-assembler "__asan_load1" } } */
 /* { dg-final { scan-assembler "__asan_store4" } } */
-/* { dg-final { cleanup-saved-temps } } */

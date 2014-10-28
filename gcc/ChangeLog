@@ -1,5 +1,16 @@
 2014-10-28  Yury Gribov  <y.gribov@samsung.com>
 
+	* asan.c (report_error_func): Add noabort path.
+	(check_func): Ditto.  Formatting.
+	(asan_expand_check_ifn): Handle noabort path.
+	* common.opt (flag_sanitize_recover): Add SANITIZE_KERNEL_ADDRESS
+	to default value.
+	* doc/invoke.texi (-fsanitize-recover=): Mention KASan.
+	* opts.c (finish_options): Reword comment.
+	* sanitizer.def: Add noabort ASan builtins.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
 	* asan.c (set_asan_shadow_offset): New function.
 	(asan_shadow_offset): Likewise.
 	(asan_emit_stack_protection): Call asan_shadow_offset.

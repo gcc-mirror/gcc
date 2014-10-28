@@ -877,13 +877,15 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;
 
-  /* Userspace and kernel ASan conflict with each other and with TSan.  */
+  /* Userspace and kernel ASan conflict with each other.  */
 
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
     error_at (loc,
 	      "-fsanitize=address is incompatible with "
 	      "-fsanitize=kernel-address");
+
+  /* And with TSan.  */
 
   if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
