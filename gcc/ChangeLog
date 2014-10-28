@@ -7,6 +7,23 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/avx512bwintrin.h: New.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+	* config/i386/immintrin.h: Include avx512vlintrin.h, avx512bwintrin.h,
+	avx512dqintrin.h, avx512vlbwintrin.h, avx512vldqintrin.h.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c
 	(ix86_expand_args_builtin): Handle avx_vpermilv4df_mask,
 	avx_shufpd256_mask, avx_vpermilv2df_mask.
