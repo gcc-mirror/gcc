@@ -1,5 +1,14 @@
 2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional: (_Function_base::_Function_base()): Use
+	nullptr instead of literal zero.
+	(function::operator=(nullptr_t)): Likewise.
+	(_Function_handler::_M_invoke): Use perfect forwarding for _ArgTypes.
+	(function::_Invoker_type): Likewise.
+	* testsuite/20_util/function/invoke/forwarding.cc: New.
+
+2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/xml/manual/status_cxx2014.xml: Update TS status.
 	* include/Makefile.am: Add new headers.
 	* include/Makefile.in: Regenerate.

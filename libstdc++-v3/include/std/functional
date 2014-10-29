@@ -1990,7 +1990,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
       };
 
-    _Function_base() : _M_manager(0) { }
+    _Function_base() : _M_manager(nullptr) { }
 
     ~_Function_base()
     {
@@ -2019,7 +2019,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
     public:
       static _Res
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	return (*_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
@@ -2034,7 +2034,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
      public:
       static void
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	(*_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
@@ -2049,7 +2049,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
      public:
       static _Res
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	return __callable_functor(**_Base::_M_get_pointer(__functor))(
 	      std::forward<_ArgTypes>(__args)...);
@@ -2064,7 +2064,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
      public:
       static void
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	__callable_functor(**_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
@@ -2081,7 +2081,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
      public:
       static _Res
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	return std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
 	    std::forward<_ArgTypes>(__args)...);
@@ -2121,7 +2121,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       }
 
       static void
-      _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
+      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
 	std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
 	    std::forward<_ArgTypes>(__args)...);
@@ -2275,8 +2275,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	if (_M_manager)
 	  {
 	    _M_manager(_M_functor, _M_functor, __destroy_functor);
-	    _M_manager = 0;
-	    _M_invoker = 0;
+	    _M_manager = nullptr;
+	    _M_invoker = nullptr;
 	  }
 	return *this;
       }
@@ -2395,7 +2395,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 #endif
 
     private:
-      typedef _Res (*_Invoker_type)(const _Any_data&, _ArgTypes...);
+      using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);
       _Invoker_type _M_invoker;
   };
 
