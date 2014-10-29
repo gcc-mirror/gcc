@@ -1,3 +1,7 @@
+2014-10-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.misc-tests/godump-1.c: Add tests for complex types.
+
 2014-10-29  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/optimize-bswapsi-1.c (swap32_e): New bswap test.
