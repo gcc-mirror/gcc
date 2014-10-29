@@ -266,6 +266,19 @@ proc check_effective_target_avx512f { } {
     } "-mavx512f" ]
 }
 
+# Return 1 if avx512vl instructions can be compiled.
+proc check_effective_target_avx512vl { } {
+    return [check_no_compiler_messages avx512vl object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_and_epi64  (__v4di __X, __v4di __Y)
+	{
+            __v4di __W;
+            return __builtin_ia32_pandq256_mask (__X, __Y, __W, -1);
+	}
+    } "-mavx512vl" ]
+}
+
 # Return 1 if avx512cd instructions can be compiled.
 proc check_effective_target_avx512cd { } {
     return [check_no_compiler_messages avx512cd_trans object {
@@ -274,8 +287,8 @@ proc check_effective_target_avx512cd { } {
 	_mm512_conflict_epi64 (__v8di __W, __v8di __A)
 	{
 	  return (__v8di) __builtin_ia32_vpconflictdi_512_mask ((__v8di) __A,
-		  						 (__v8di) __W,
-			  					 -1);
+								 (__v8di) __W,
+								 -1);
 	}
    } "-Wno-psabi -mavx512cd" ]
 }
@@ -304,6 +317,36 @@ proc check_effective_target_sha { } {
 						      (__v4si)__Y);
 	}
     } "-O2 -msha" ]
+}
+
+# Return 1 if avx512dq instructions can be compiled.
+proc check_effective_target_avx512dq { } {
+    return [check_no_compiler_messages avx512dq object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_mask_mullo_epi64 (__v8di __W, __v8di __A, __v8di __B)
+	{
+	    return (__v8di) __builtin_ia32_pmullq512_mask ((__v8di) __A,
+							    (__v8di) __B,
+							    (__v8di) __W,
+							    -1);
+	}
+    } "-mavx512dq" ]
+}
+
+# Return 1 if avx512bw instructions can be compiled.
+proc check_effective_target_avx512bw { } {
+    return [check_no_compiler_messages avx512bw object {
+	typedef short __v32hi __attribute__ ((__vector_size__ (64)));
+	__v32hi
+	_mm512_mask_mulhrs_epi16 (__v32hi __W, __v32hi __A, __v32hi __B)
+	{
+	    return (__v32hi) __builtin_ia32_pmulhrsw512_mask ((__v32hi) __A,
+							    (__v32hi) __B,
+							    (__v32hi) __W,
+							    -1);
+	}
+    } "-mavx512bw" ]
 }
 
 # If a testcase doesn't have special options, use these.

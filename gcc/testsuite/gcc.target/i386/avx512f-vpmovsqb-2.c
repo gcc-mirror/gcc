@@ -14,7 +14,7 @@ void static
 CALC (char *r, long long *s, int mem)
 {
   int i;
-  int len = mem ? 8 : 16;
+  int len = mem ? SIZE : 16;
   for (i = 0; i < len; i++)
     {
       if (s[i] < CHAR_MIN)

@@ -10,11 +10,12 @@
 #include "avx512f-mask-type.h"
 #include <limits.h>
 
-void static
-CALC (short *r, long long *s)
+void 
+CALC (short *r, long long *s, int mem)
 {
   int i;
-  for (i = 0; i < 8; i++)
+  int len = mem ? SIZE : 8;
+  for (i = 0; i < len; i++)
     {
       if (s[i] < SHRT_MIN)
 	r[i] = SHRT_MIN;
@@ -35,6 +36,7 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, i_q) src;
   MASK_TYPE mask = MASK_VALUE;
   short res_ref[8];
+  short res_ref2[8];
 
   sign = -1;
   for (i = 0; i < SIZE; i++)
@@ -45,12 +47,17 @@ TEST (void)
       res4[i] = DEFAULT_VALUE;
     }
 
+  for (i = SIZE; i < 8; i++)
+    {
+      res_ref2[i] = DEFAULT_VALUE * 2;
+      res4[i] = DEFAULT_VALUE * 2;
+    }
+
   res1.x = INTRINSIC (_cvtsepi64_epi16) (src.x);
   res2.x = INTRINSIC (_mask_cvtsepi64_epi16) (res2.x, mask, src.x);
   res3.x = INTRINSIC (_maskz_cvtsepi64_epi16) (mask, src.x);
-  INTRINSIC (_mask_cvtsepi64_storeu_epi16) (res4, mask, src.x);
 
-  CALC (res_ref, src.a);
+  CALC (res_ref, src.a, 0);
 
   if (UNION_CHECK (128, i_w) (res1, res_ref))
     abort ();
@@ -59,10 +66,14 @@ TEST (void)
   if (UNION_CHECK (128, i_w) (res2, res_ref))
     abort ();
 
-  if (checkVs (res4, res_ref, 8))
-    abort ();
-
   MASK_ZERO (i_w) (res_ref, mask, SIZE);
   if (UNION_CHECK (128, i_w) (res3, res_ref))
+    abort ();
+
+  INTRINSIC (_mask_cvtsepi64_storeu_epi16) (res4, mask, src.x);
+  CALC (res_ref2, src.a, 1);
+
+  MASK_MERGE (i_w) (res_ref2, mask, SIZE);
+  if (checkVs (res4, res_ref2, 8))
     abort ();
 }
