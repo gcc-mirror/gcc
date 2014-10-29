@@ -24,8 +24,17 @@ AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
 	-I $(srcdir)/../libcpp/include
 WERROR_FLAG = -Werror
 AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR_FLAG) $(visibility)
-libiberty = ../libiberty/pic/libiberty.a
-
+override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
+override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
+# Can be simplified when libiberty becomes a normal convenience library.
+libiberty_normal = ../libiberty/libiberty.a
+libiberty_noasan = ../libiberty/noasan/libiberty.a
+libiberty_pic = ../libiberty/pic/libiberty.a
+Wc=-Wc,
+libiberty = $(if $(wildcard $(libiberty_noasan)),$(Wc)$(libiberty_noasan), \
+	    $(if $(wildcard $(libiberty_pic)),$(Wc)$(libiberty_pic), \
+	    $(Wc)$(libiberty_normal)))
+libiberty_dep = $(patsubst $(Wc)%,%,$(libiberty))
 
 plugindir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/plugin
 cc1libdir = $(libdir)/$(libsuffix)
@@ -49,7 +58,16 @@ shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
 libcc1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1plugin.sym
 libcc1plugin_la_SOURCES = plugin.cc $(shared_source)
 libcc1plugin_la_LIBADD = $(libiberty)
+libcc1plugin_la_DEPENDENCIES = $(libiberty_dep)
+libcc1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libcc1plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 libcc1_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1.sym
 libcc1_la_SOURCES = findcomp.cc libcc1.cc names.cc names.hh $(shared_source)
 libcc1_la_LIBADD = $(libiberty)
+libcc1_la_DEPENDENCIES = $(libiberty_dep)
+libcc1_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libcc1_la_LDFLAGS) $(LTLDFLAGS) -o $@
