@@ -1,3 +1,7 @@
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/madd_after_asm_1.c: New test.
+
 2014-10-29  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/20141029-1.c: New.
