@@ -1,3 +1,17 @@
+2014-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/t-hardfp (hardfp_exclusions): Document new variable for
+	user to define.
+	(hardfp_func_list): Exclude functions from $(hardfp_exclusions).
+	* config/t-softfp (softfp_extras): Document new variable for user
+	to define.
+	(softfp_func_list): Add functions from $(softfp_extras).
+	* config/rs6000/t-e500v1-fp, config/rs6000/t-e500v2-fp: New files.
+	* config.host (powerpc*-*-linux*): For e500v1, use
+	rs6000/t-e500v1-fp and t-hardfp; do not use t-softfp-sfdf and
+	t-softfp-excl.  For e500v2, use t-hardfp-sfdf, rs6000/t-e500v2-fp
+	and t-hardfp; do not use t-softfp-sfdf and t-softfp-excl.
+
 2014-10-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-unwind.h (pa32_read_access_ok): New function.
