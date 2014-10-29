@@ -1,5 +1,18 @@
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR rtl-optimization/63340 (part 2)
+	* rtl.h (invalid_mode_change_p): Delete.
+	(valid_mode_changes_for_regno): New function.
+	* reginfo.c (invalid_mode_change_p): Delete.
+	(valid_mode_changes_for_regno): New function.
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Restrict the
+	classes to registers that are allowed by valid_mode_changes_for_regno.
+	(setup_regno_cost_classes_by_mode): Likewise.
+	(print_allocno_costs): Remove invalid_mode_change_p test.
+	(print_pseudo_costs, find_costs_and_classes): Likewise.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR rtl-optimization/63340 (part 1)
 	* ira-costs.c (all_cost_classes): New variable.
 	(complete_cost_classes): New function, split out from...

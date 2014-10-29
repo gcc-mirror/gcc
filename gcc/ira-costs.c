@@ -387,12 +387,18 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
       classes_ptr = cost_classes_aclass_cache[aclass] = (cost_classes_t) *slot;
     }
   if (regno_reg_rtx[regno] != NULL_RTX)
-    /* Restrict the classes to those that are valid for REGNO's mode
-       (which might for example exclude singleton classes if the mode requires
-       two registers).  */
-    classes_ptr = restrict_cost_classes (classes_ptr,
-					 PSEUDO_REGNO_MODE (regno),
-					 reg_class_contents[ALL_REGS]);
+    {
+      /* Restrict the classes to those that are valid for REGNO's mode
+	 (which might for example exclude singleton classes if the mode
+	 requires two registers).  Also restrict the classes to those that
+	 are valid for subregs of REGNO.  */
+      const HARD_REG_SET *valid_regs = valid_mode_changes_for_regno (regno);
+      if (!valid_regs)
+	valid_regs = &reg_class_contents[ALL_REGS];
+      classes_ptr = restrict_cost_classes (classes_ptr,
+					   PSEUDO_REGNO_MODE (regno),
+					   *valid_regs);
+    }
   regno_cost_classes[regno] = classes_ptr;
 }
 
@@ -405,11 +411,17 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 static void
 setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
 {
-  if (cost_classes_mode_cache[mode] == NULL)
-    cost_classes_mode_cache[mode]
-      = restrict_cost_classes (&all_cost_classes, mode,
-			       reg_class_contents[ALL_REGS]);
-  regno_cost_classes[regno] = cost_classes_mode_cache[mode];
+  if (const HARD_REG_SET *valid_regs = valid_mode_changes_for_regno (regno))
+    regno_cost_classes[regno] = restrict_cost_classes (&all_cost_classes,
+						       mode, *valid_regs);
+  else
+    {
+      if (cost_classes_mode_cache[mode] == NULL)
+	cost_classes_mode_cache[mode]
+	  = restrict_cost_classes (&all_cost_classes, mode,
+				   reg_class_contents[ALL_REGS]);
+      regno_cost_classes[regno] = cost_classes_mode_cache[mode];
+    }
 }
 
 /* Finalize info about the cost classes for each pseudo.  */
@@ -1536,14 +1548,11 @@ print_allocno_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (! invalid_mode_change_p (regno, (enum reg_class) rclass))
-	    {
-	      fprintf (f, " %s:%d", reg_class_names[rclass],
-		       COSTS (costs, i)->cost[k]);
-	      if (flag_ira_region == IRA_REGION_ALL
-		  || flag_ira_region == IRA_REGION_MIXED)
-		fprintf (f, ",%d", COSTS (total_allocno_costs, i)->cost[k]);
-	    }
+	  fprintf (f, " %s:%d", reg_class_names[rclass],
+		   COSTS (costs, i)->cost[k]);
+	  if (flag_ira_region == IRA_REGION_ALL
+	      || flag_ira_region == IRA_REGION_MIXED)
+	    fprintf (f, ",%d", COSTS (total_allocno_costs, i)->cost[k]);
 	}
       fprintf (f, " MEM:%i", COSTS (costs, i)->mem_cost);
       if (flag_ira_region == IRA_REGION_ALL
@@ -1574,9 +1583,8 @@ print_pseudo_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (! invalid_mode_change_p (regno, (enum reg_class) rclass))
-	    fprintf (f, " %s:%d", reg_class_names[rclass],
-		     COSTS (costs, regno)->cost[k]);
+	  fprintf (f, " %s:%d", reg_class_names[rclass],
+		   COSTS (costs, regno)->cost[k]);
 	}
       fprintf (f, " MEM:%i\n", COSTS (costs, regno)->mem_cost);
     }
@@ -1813,10 +1821,6 @@ find_costs_and_classes (FILE *dump_file)
 	  for (k = 0; k < cost_classes_ptr->num; k++)
 	    {
 	      rclass = cost_classes[k];
-	      /* Ignore classes that are too small or invalid for this
-		 operand.  */
-	      if (invalid_mode_change_p (i, (enum reg_class) rclass))
-		continue;
 	      if (i_costs[k] < best_cost)
 		{
 		  best_cost = i_costs[k];
@@ -1906,11 +1910,7 @@ find_costs_and_classes (FILE *dump_file)
 		      rclass = cost_classes[k];
 		      if (! ira_class_subset_p[rclass][aclass])
 			continue;
-		      /* Ignore classes that are too small or invalid
-			 for this operand.  */
-		      if (invalid_mode_change_p (i, (enum reg_class) rclass))
-			;
-		      else if (total_a_costs[k] < best_cost)
+		      if (total_a_costs[k] < best_cost)
 			{
 			  best_cost = total_a_costs[k];
 			  allocno_cost = a_costs[k];
