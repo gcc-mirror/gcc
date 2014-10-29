@@ -1,3 +1,7 @@
+2014-10-29  DJ Delorie  <dj@redhat.com>
+
+	* expmed.c (strict_volatile_bitfield_p): Fix off-by-one error.
+
 2014-10-29  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63587
