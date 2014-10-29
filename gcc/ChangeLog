@@ -1,3 +1,9 @@
+2014-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63666
+	* tree-vect-slp.c (vect_get_mask_element): Properly handle
+	accessing out-of-bound elements.
+
 2014-10-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

@@ -2890,7 +2890,7 @@ vect_get_mask_element (gimple stmt, int first_mask_element, int m,
     }
 
   /* The mask requires the next vector.  */
-  if (*current_mask_element >= mask_nunits * 2)
+  while (*current_mask_element >= mask_nunits * 2)
     {
       if (*needs_first_vector || *mask_fixed)
         {
@@ -3041,6 +3041,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 					  &number_of_mask_fixes, &mask_fixed,
 					  &needs_first_vector))
 		return false;
+	      gcc_assert (current_mask_element < 2 * nunits);
 	      mask[index++] = current_mask_element;
 
               if (index == nunits)
