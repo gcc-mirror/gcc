@@ -611,7 +611,7 @@ enum arm_pcs
 #define MACHMODE int
 #else
 #include "insn-modes.h"
-#define MACHMODE machine_mode
+#define MACHMODE enum machine_mode
 #endif
 
 
