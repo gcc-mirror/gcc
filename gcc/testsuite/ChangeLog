@@ -1,3 +1,8 @@
+2014-10-29  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/optimize-bswapsi-1.c (swap32_e): New bswap test.
+	* gcc.dg/optimize-bswapsi-3.c: New test.
+
 2014-10-20  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
