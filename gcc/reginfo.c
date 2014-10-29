@@ -1333,14 +1333,10 @@ init_subregs_of_mode (void)
         find_subregs_of_mode (PATTERN (insn));
 }
 
-/* Return 1 if REGNO has had an invalid mode change in CLASS from FROM
-   mode.  */
-bool
-invalid_mode_change_p (unsigned int regno, enum reg_class rclass)
+const HARD_REG_SET *
+valid_mode_changes_for_regno (unsigned int regno)
 {
-  return (valid_mode_changes[regno]
-	  && !hard_reg_set_intersect_p (reg_class_contents[rclass],
-					*valid_mode_changes[regno]));
+  return valid_mode_changes[regno];
 }
 
 void

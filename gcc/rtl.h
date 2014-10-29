@@ -3468,7 +3468,9 @@ extern void init_reg_sets (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx_insn *, unsigned int);
 extern void fix_register (const char *, int, int);
-extern bool invalid_mode_change_p (unsigned int, enum reg_class);
+#ifdef HARD_CONST
+extern const HARD_REG_SET *valid_mode_changes_for_regno (unsigned int);
+#endif
 
 /* In reload1.c */
 extern int function_invariant_p (const_rtx);
