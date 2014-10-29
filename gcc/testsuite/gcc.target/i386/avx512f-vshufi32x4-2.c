@@ -38,7 +38,11 @@ TEST (void)
   MASK_TYPE mask = MASK_VALUE;
   int e[SIZE];
   int i;
+#if AVX512F_LEN == 512
   int imm = 203;
+#else
+  int imm = 1;
+#endif
 
   for (i = 0; i < SIZE; i++)
     {

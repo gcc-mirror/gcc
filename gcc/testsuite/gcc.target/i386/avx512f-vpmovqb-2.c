@@ -14,7 +14,7 @@ CALC (char *r, long long *s, int mem)
 {
   int i;
   /* Don't zero out upper half if destination is memory.  */
-  int len = mem ? 8 : 16;
+  int len = mem ? SIZE : 16;
   for (i = 0; i < len; i++)
     {
       r[i] = (i < SIZE) ? (char) s[i] : 0;
