@@ -1,5 +1,10 @@
 2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_madd_needs_nop): Restore
+	recog state after aarch64_prev_real_insn call.
+
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.h (MACHMODE): Add 'enum' to machine_mode.
 
 2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
