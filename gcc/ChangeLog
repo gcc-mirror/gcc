@@ -1,3 +1,18 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/63340 (part 1)
+	* ira-costs.c (all_cost_classes): New variable.
+	(complete_cost_classes): New function, split out from...
+	(setup_cost_classes): ...here.
+	(initiate_regno_cost_classes): Set up all_cost_classes.
+	(restrict_cost_classes): New function.
+	(setup_regno_cost_classes_by_aclass): Restrict the cost classes to
+	registers that are valid for the register's mode.
+	(setup_regno_cost_classes_by_mode): Model the mode cache as a
+	restriction of all_cost_classes to a particular mode.
+	(print_allocno_costs): Remove contains_reg_of_mode check.
+	(print_pseudo_costs, find_costs_and_classes): Likewise.
+
 2014-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63666

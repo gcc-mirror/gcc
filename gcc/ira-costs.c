@@ -185,6 +185,31 @@ static cost_classes_t cost_classes_aclass_cache[N_REG_CLASSES];
 /* Map mode -> cost classes for pseudo of give mode.  */
 static cost_classes_t cost_classes_mode_cache[MAX_MACHINE_MODE];
 
+/* Cost classes that include all classes in ira_important_classes.  */
+static cost_classes all_cost_classes;
+
+/* Use the array of classes in CLASSES_PTR to fill out the rest of
+   the structure.  */
+static void
+complete_cost_classes (cost_classes_t classes_ptr)
+{
+  for (int i = 0; i < N_REG_CLASSES; i++)
+    classes_ptr->index[i] = -1;
+  for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    classes_ptr->hard_regno_index[i] = -1;
+  for (int i = 0; i < classes_ptr->num; i++)
+    {
+      enum reg_class cl = classes_ptr->classes[i];
+      classes_ptr->index[cl] = i;
+      for (int j = ira_class_hard_regs_num[cl] - 1; j >= 0; j--)
+	{
+	  unsigned int hard_regno = ira_class_hard_regs[cl][j];
+	  if (classes_ptr->hard_regno_index[hard_regno] < 0)
+	    classes_ptr->hard_regno_index[hard_regno] = i;
+	}
+    }
+}
+
 /* Initialize info about the cost classes for each pseudo.  */
 static void
 initiate_regno_cost_classes (void)
@@ -198,6 +223,10 @@ initiate_regno_cost_classes (void)
   memset (cost_classes_mode_cache, 0,
 	  sizeof (cost_classes_t) * MAX_MACHINE_MODE);
   cost_classes_htab = new hash_table<cost_classes_hasher> (200);
+  all_cost_classes.num = ira_important_classes_num;
+  for (int i = 0; i < ira_important_classes_num; i++)
+    all_cost_classes.classes[i] = ira_important_classes[i];
+  complete_cost_classes (&all_cost_classes);
 }
 
 /* Create new cost classes from cost classes FROM and set up members
@@ -209,27 +238,105 @@ static cost_classes_t
 setup_cost_classes (cost_classes_t from)
 {
   cost_classes_t classes_ptr;
-  enum reg_class cl;
-  int i, j, hard_regno;
 
   classes_ptr = (cost_classes_t) ira_allocate (sizeof (struct cost_classes));
   classes_ptr->num = from->num;
-  for (i = 0; i < N_REG_CLASSES; i++)
-    classes_ptr->index[i] = -1;
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    classes_ptr->hard_regno_index[i] = -1;
-  for (i = 0; i < from->num; i++)
+  for (int i = 0; i < from->num; i++)
+    classes_ptr->classes[i] = from->classes[i];
+  complete_cost_classes (classes_ptr);
+  return classes_ptr;
+}
+
+/* Return a version of FULL that only considers registers in REGS that are
+   valid for mode MODE.  Both FULL and the returned class are globally
+   allocated.  */
+static cost_classes_t
+restrict_cost_classes (cost_classes_t full, enum machine_mode mode,
+		       const HARD_REG_SET &regs)
+{
+  static struct cost_classes narrow;
+  int map[N_REG_CLASSES];
+  narrow.num = 0;
+  for (int i = 0; i < full->num; i++)
     {
-      cl = classes_ptr->classes[i] = from->classes[i];
-      classes_ptr->index[cl] = i;
-      for (j = ira_class_hard_regs_num[cl] - 1; j >= 0; j--)
+      /* Assume that we'll drop the class.  */
+      map[i] = -1;
+
+      /* Ignore classes that are too small for the mode.  */
+      enum reg_class cl = full->classes[i];
+      if (!contains_reg_of_mode[cl][mode])
+	continue;
+
+      /* Calculate the set of registers in CL that belong to REGS and
+	 are valid for MODE.  */
+      HARD_REG_SET valid_for_cl;
+      COPY_HARD_REG_SET (valid_for_cl, reg_class_contents[cl]);
+      AND_HARD_REG_SET (valid_for_cl, regs);
+      AND_COMPL_HARD_REG_SET (valid_for_cl,
+			      ira_prohibited_class_mode_regs[cl][mode]);
+      AND_COMPL_HARD_REG_SET (valid_for_cl, ira_no_alloc_regs);
+      if (hard_reg_set_empty_p (valid_for_cl))
+	continue;
+
+      /* Don't use this class if the set of valid registers is a subset
+	 of an existing class.  For example, suppose we have two classes
+	 GR_REGS and FR_REGS and a union class GR_AND_FR_REGS.  Suppose
+	 that the mode changes allowed by FR_REGS are not as general as
+	 the mode changes allowed by GR_REGS.
+
+	 In this situation, the mode changes for GR_AND_FR_REGS could
+	 either be seen as the union or the intersection of the mode
+	 changes allowed by the two subclasses.  The justification for
+	 the union-based definition would be that, if you want a mode
+	 change that's only allowed by GR_REGS, you can pick a register
+	 from the GR_REGS subclass.  The justification for the
+	 intersection-based definition would be that every register
+	 from the class would allow the mode change.
+
+	 However, if we have a register that needs to be in GR_REGS,
+	 using GR_AND_FR_REGS with the intersection-based definition
+	 would be too pessimistic, since it would bring in restrictions
+	 that only apply to FR_REGS.  Conversely, if we have a register
+	 that needs to be in FR_REGS, using GR_AND_FR_REGS with the
+	 union-based definition would lose the extra restrictions
+	 placed on FR_REGS.  GR_AND_FR_REGS is therefore only useful
+	 for cases where GR_REGS and FP_REGS are both valid.  */
+      int pos;
+      for (pos = 0; pos < narrow.num; ++pos)
 	{
-	  hard_regno = ira_class_hard_regs[cl][j];
-	  if (classes_ptr->hard_regno_index[hard_regno] < 0)
-	    classes_ptr->hard_regno_index[hard_regno] = i;
+	  enum reg_class cl2 = narrow.classes[pos];
+	  if (hard_reg_set_subset_p (valid_for_cl, reg_class_contents[cl2]))
+	    break;
+	}
+      map[i] = pos;
+      if (pos == narrow.num)
+	{
+	  /* If several classes are equivalent, prefer to use the one
+	     that was chosen as the allocno class.  */
+	  enum reg_class cl2 = ira_allocno_class_translate[cl];
+	  if (ira_class_hard_regs_num[cl] == ira_class_hard_regs_num[cl2])
+	    cl = cl2;
+	  narrow.classes[narrow.num++] = cl;
 	}
     }
-  return classes_ptr;
+  if (narrow.num == full->num)
+    return full;
+
+  cost_classes **slot = cost_classes_htab->find_slot (&narrow, INSERT);
+  if (*slot == NULL)
+    {
+      cost_classes_t classes = setup_cost_classes (&narrow);
+      /* Map equivalent classes to the representative that we chose above.  */
+      for (int i = 0; i < ira_important_classes_num; i++)
+	{
+	  enum reg_class cl = ira_important_classes[i];
+	  int index = full->index[cl];
+	  if (index >= 0)
+	    classes->index[cl] = map[index];
+	}
+      *slot = classes;
+    }
+  return *slot;
 }
 
 /* Setup cost classes for pseudo REGNO whose allocno class is ACLASS.
@@ -279,6 +386,13 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 	}
       classes_ptr = cost_classes_aclass_cache[aclass] = (cost_classes_t) *slot;
     }
+  if (regno_reg_rtx[regno] != NULL_RTX)
+    /* Restrict the classes to those that are valid for REGNO's mode
+       (which might for example exclude singleton classes if the mode requires
+       two registers).  */
+    classes_ptr = restrict_cost_classes (classes_ptr,
+					 PSEUDO_REGNO_MODE (regno),
+					 reg_class_contents[ALL_REGS]);
   regno_cost_classes[regno] = classes_ptr;
 }
 
@@ -291,36 +405,11 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 static void
 setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
 {
-  static struct cost_classes classes;
-  cost_classes_t classes_ptr;
-  enum reg_class cl;
-  int i;
-  cost_classes **slot;
-  HARD_REG_SET temp;
-
-  if ((classes_ptr = cost_classes_mode_cache[mode]) == NULL)
-    {
-      classes.num = 0;
-      for (i = 0; i < ira_important_classes_num; i++)
-	{
-	  cl = ira_important_classes[i];
-	  COPY_HARD_REG_SET (temp, ira_prohibited_class_mode_regs[cl][mode]);
-	  IOR_HARD_REG_SET (temp, ira_no_alloc_regs);
-	  if (hard_reg_set_subset_p (reg_class_contents[cl], temp))
-	    continue;
-	  classes.classes[classes.num++] = cl;
-	}
-      slot = cost_classes_htab->find_slot (&classes, INSERT);
-      if (*slot == NULL)
-	{
-	  classes_ptr = setup_cost_classes (&classes);
-	  *slot = classes_ptr;
-	}
-      else
-	classes_ptr = (cost_classes_t) *slot;
-      cost_classes_mode_cache[mode] = (cost_classes_t) *slot;
-    }
-  regno_cost_classes[regno] = classes_ptr;
+  if (cost_classes_mode_cache[mode] == NULL)
+    cost_classes_mode_cache[mode]
+      = restrict_cost_classes (&all_cost_classes, mode,
+			       reg_class_contents[ALL_REGS]);
+  regno_cost_classes[regno] = cost_classes_mode_cache[mode];
 }
 
 /* Finalize info about the cost classes for each pseudo.  */
@@ -1447,8 +1536,7 @@ print_allocno_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)]
-	      && ! invalid_mode_change_p (regno, (enum reg_class) rclass))
+	  if (! invalid_mode_change_p (regno, (enum reg_class) rclass))
 	    {
 	      fprintf (f, " %s:%d", reg_class_names[rclass],
 		       COSTS (costs, i)->cost[k]);
@@ -1486,8 +1574,7 @@ print_pseudo_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)]
-	      && ! invalid_mode_change_p (regno, (enum reg_class) rclass))
+	  if (! invalid_mode_change_p (regno, (enum reg_class) rclass))
 	    fprintf (f, " %s:%d", reg_class_names[rclass],
 		     COSTS (costs, regno)->cost[k]);
 	}
@@ -1728,8 +1815,7 @@ find_costs_and_classes (FILE *dump_file)
 	      rclass = cost_classes[k];
 	      /* Ignore classes that are too small or invalid for this
 		 operand.  */
-	      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)]
-		  || invalid_mode_change_p (i, (enum reg_class) rclass))
+	      if (invalid_mode_change_p (i, (enum reg_class) rclass))
 		continue;
 	      if (i_costs[k] < best_cost)
 		{
@@ -1822,8 +1908,7 @@ find_costs_and_classes (FILE *dump_file)
 			continue;
 		      /* Ignore classes that are too small or invalid
 			 for this operand.  */
-		      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)]
-			  || invalid_mode_change_p (i, (enum reg_class) rclass))
+		      if (invalid_mode_change_p (i, (enum reg_class) rclass))
 			;
 		      else if (total_a_costs[k] < best_cost)
 			{
