@@ -37,11 +37,11 @@ extern enum machopic_addr_class machopic_classify_symbol (rtx);
 
 extern rtx machopic_indirect_data_reference (rtx, rtx);
 extern rtx machopic_indirect_call_target (rtx);
-extern rtx machopic_legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern rtx machopic_legitimize_pic_address (rtx, machine_mode, rtx);
 
 extern void machopic_asm_out_constructor (rtx, int);
 extern void machopic_asm_out_destructor (rtx, int);
-extern section *machopic_select_rtx_section (enum machine_mode, rtx,
+extern section *machopic_select_rtx_section (machine_mode, rtx,
 					     unsigned HOST_WIDE_INT);
 #endif /* RTX_CODE */
 

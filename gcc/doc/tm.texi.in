@@ -1226,7 +1226,7 @@ appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
 @end defmac
 
 @defmac STACK_SAVEAREA_MODE (@var{save_level})
-If defined, an expression of type @code{enum machine_mode} that
+If defined, an expression of type @code{machine_mode} that
 specifies the mode of the save area operand of a
 @code{save_stack_@var{level}} named pattern (@pxref{Standard Names}).
 @var{save_level} is one of @code{SAVE_BLOCK}, @code{SAVE_FUNCTION}, or
@@ -1240,7 +1240,7 @@ would most commonly define this macro if the
 @end defmac
 
 @defmac STACK_SIZE_MODE
-If defined, an expression of type @code{enum machine_mode} that
+If defined, an expression of type @code{machine_mode} that
 specifies the mode of the size increment operand of an
 @code{allocate_stack} named pattern (@pxref{Standard Names}).
 
@@ -7110,7 +7110,7 @@ Truncates @var{x} to an unsigned integer, rounding toward zero.  If
 @var{x} is negative, returns zero.
 @end deftypefn
 
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, enum machine_mode @var{mode})
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, machine_mode @var{mode})
 Converts @var{string} into a floating point number in the target machine's
 representation for mode @var{mode}.  This routine can handle both
 decimal and hexadecimal floating point constants, using the syntax

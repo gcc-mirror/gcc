@@ -2462,7 +2462,7 @@ dbxout_expand_expr (tree expr)
     case ARRAY_RANGE_REF:
     case BIT_FIELD_REF:
       {
-	enum machine_mode mode;
+	machine_mode mode;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset, tem;
 	int volatilep = 0, unsignedp = 0;

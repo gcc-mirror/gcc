@@ -321,7 +321,7 @@ mark_pseudo_dead (int regno, int point)
    Return TRUE if the liveness tracking sets were modified,
    or FALSE if nothing changed.  */
 static bool
-mark_regno_live (int regno, enum machine_mode mode, int point)
+mark_regno_live (int regno, machine_mode mode, int point)
 {
   int last;
   bool changed = false;
@@ -346,7 +346,7 @@ mark_regno_live (int regno, enum machine_mode mode, int point)
    Return TRUE if the liveness tracking sets were modified,
    or FALSE if nothing changed.  */
 static bool
-mark_regno_dead (int regno, enum machine_mode mode, int point)
+mark_regno_dead (int regno, machine_mode mode, int point)
 {
   int last;
   bool changed = false;

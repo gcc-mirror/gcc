@@ -81,20 +81,20 @@ static void expand_save_restore (struct lm32_frame_info *info, int op);
 static void stack_adjust (HOST_WIDE_INT amount);
 static bool lm32_in_small_data_p (const_tree);
 static void lm32_setup_incoming_varargs (cumulative_args_t cum,
-					 enum machine_mode mode, tree type,
+					 machine_mode mode, tree type,
 					 int *pretend_size, int no_rtl);
 static bool lm32_rtx_costs (rtx x, int code, int outer_code, int opno,
 			    int *total, bool speed);
 static bool lm32_can_eliminate (const int, const int);
 static bool
-lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
+lm32_legitimate_address_p (machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
 static rtx lm32_function_arg (cumulative_args_t cum,
-			      enum machine_mode mode, const_tree type,
+			      machine_mode mode, const_tree type,
 			      bool named);
 static void lm32_function_arg_advance (cumulative_args_t cum,
-				       enum machine_mode mode,
+				       machine_mode mode,
 				       const_tree type, bool named);
 
 #undef TARGET_OPTION_OVERRIDE
@@ -178,7 +178,7 @@ gen_int_relational (enum rtx_code code,
 		    rtx cmp1,	
 		    rtx destination)	
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int branch_p;
 
   mode = GET_MODE (cmp0);
@@ -632,7 +632,7 @@ lm32_print_operand_address (FILE * file, rtx addr)
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-lm32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+lm32_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		   const_tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -651,7 +651,7 @@ lm32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 }
 
 static void
-lm32_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
+lm32_function_arg_advance (cumulative_args_t cum, machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   *get_cumulative_args (cum) += LM32_NUM_REGS2 (mode, type);
@@ -687,7 +687,7 @@ lm32_compute_initial_elimination_offset (int from, int to)
 }
 
 static void
-lm32_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
+lm32_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 			     tree type, int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -831,7 +831,7 @@ lm32_block_move_inline (rtx dest, rtx src, HOST_WIDE_INT length,
   HOST_WIDE_INT offset, delta;
   unsigned HOST_WIDE_INT bits;
   int i;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx *regs;
 
   /* Work out how many bits to move at a time.  */
@@ -940,7 +940,7 @@ static bool
 lm32_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   bool small_mode;
 
   const int arithmetic_latency = 1;
@@ -1207,7 +1207,7 @@ lm32_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-lm32_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x, bool strict)
+lm32_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x, bool strict)
 {  
    /* (rM) */                                                    
   if (strict && REG_P (x) && STRICT_REG_OK_FOR_BASE_P (x))
@@ -1234,7 +1234,7 @@ lm32_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x, bool 
 /* Check a move is not memory to memory.  */ 
 
 bool 
-lm32_move_ok (enum machine_mode mode, rtx operands[2]) {
+lm32_move_ok (machine_mode mode, rtx operands[2]) {
   if (memory_operand (operands[0], mode))
     return register_or_zero_operand (operands[1], mode);
   return true;

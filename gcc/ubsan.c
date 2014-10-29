@@ -1113,7 +1113,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   int modebitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   tree base = get_inner_reference (rhs, &bitsize, &bitpos, &offset, &mode,
 				   &unsignedp, &volatilep, false);
@@ -1197,7 +1197,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
   tree t, tt, fn, min, max;
-  enum machine_mode mode = TYPE_MODE (expr_type);
+  machine_mode mode = TYPE_MODE (expr_type);
   int prec = TYPE_PRECISION (type);
   bool uns_p = TYPE_UNSIGNED (type);
 
@@ -1472,7 +1472,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
 				    &unsignedp, &volatilep, false);

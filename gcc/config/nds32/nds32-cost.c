@@ -204,7 +204,7 @@ size_cost:
 
 int
 nds32_address_cost_impl (rtx address,
-			 enum machine_mode mode ATTRIBUTE_UNUSED,
+			 machine_mode mode ATTRIBUTE_UNUSED,
 			 addr_space_t as ATTRIBUTE_UNUSED,
 			 bool speed)
 {

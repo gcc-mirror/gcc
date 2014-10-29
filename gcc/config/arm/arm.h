@@ -29,14 +29,14 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
-/* We can't use enum machine_mode inside a generator file because it
+/* We can't use machine_mode inside a generator file because it
    hasn't been created yet; we shouldn't be using any code that
    needs the real definition though, so this ought to be safe.  */
 #ifdef GENERATOR_FILE
 #define MACHMODE int
 #else
 #include "insn-modes.h"
-#define MACHMODE enum machine_mode
+#define MACHMODE machine_mode
 #endif
 
 #include "config/vxworks-dummy.h"
@@ -1547,7 +1547,7 @@ typedef struct GTY(()) machine_function
   rtx thumb1_cc_op0;
   rtx thumb1_cc_op1;
   /* Also record the CC mode that is supported.  */
-  enum machine_mode thumb1_cc_mode;
+  machine_mode thumb1_cc_mode;
   /* Set to 1 after arm_reorg has started.  */
   int after_arm_reorg;
 }

@@ -359,7 +359,7 @@ clast_name_to_gcc (struct clast_name *name, ivs_params_p ip)
 static tree
 max_precision_type (tree type1, tree type2)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int p1, p2, precision;
   tree type;
 
@@ -548,7 +548,7 @@ type_for_interval (mpz_t bound_one, mpz_t bound_two)
 {
   bool unsigned_p;
   tree type;
-  enum machine_mode mode;
+  machine_mode mode;
   int wider_precision;
   int precision = MAX (mpz_sizeinbase (bound_one, 2),
 		       mpz_sizeinbase (bound_two, 2));

@@ -135,7 +135,7 @@ static rtx replace_duplicating_operands_in_pattern (rtx);
    the gensupport programs.  */
 
 rtx
-gen_rtx_CONST_INT (enum machine_mode ARG_UNUSED (mode),
+gen_rtx_CONST_INT (machine_mode ARG_UNUSED (mode),
 		   HOST_WIDE_INT arg)
 {
   rtx rt = rtx_alloc (CONST_INT);

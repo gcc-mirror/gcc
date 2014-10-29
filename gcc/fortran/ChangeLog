@@ -1,3 +1,8 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* trans-types.c, trans-types.h: Remove redundant enum from
+	machine_mode.
+
 2014-10-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054

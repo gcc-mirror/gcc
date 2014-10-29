@@ -924,7 +924,7 @@ emit_move_list (move_t list, int freq)
   int to_regno, from_regno, cost, regno;
   rtx_insn *result, *insn;
   rtx set;
-  enum machine_mode mode;
+  machine_mode mode;
   enum reg_class aclass;
 
   grow_reg_equivs ();

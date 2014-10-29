@@ -30,8 +30,8 @@ extern void alpha_expand_prologue (void);
 extern void alpha_expand_epilogue (void);
 extern void alpha_output_filename (FILE *, const char *);
 
-extern bool alpha_legitimate_constant_p (enum machine_mode, rtx);
-extern rtx alpha_legitimize_reload_address (rtx, enum machine_mode,
+extern bool alpha_legitimate_constant_p (machine_mode, rtx);
+extern rtx alpha_legitimize_reload_address (rtx, machine_mode,
 					    int, int, int);
 
 extern rtx split_small_symbolic_operand (rtx);
@@ -42,13 +42,13 @@ extern rtx get_unaligned_offset (rtx, HOST_WIDE_INT);
 extern enum reg_class alpha_preferred_reload_class (rtx, enum reg_class);
 
 extern void alpha_set_memflags (rtx, rtx);
-extern bool alpha_split_const_mov (enum machine_mode, rtx *);
-extern bool alpha_expand_mov (enum machine_mode, rtx *);
-extern bool alpha_expand_mov_nobwx (enum machine_mode, rtx *);
-extern void alpha_expand_movmisalign (enum machine_mode, rtx *);
+extern bool alpha_split_const_mov (machine_mode, rtx *);
+extern bool alpha_expand_mov (machine_mode, rtx *);
+extern bool alpha_expand_mov_nobwx (machine_mode, rtx *);
+extern void alpha_expand_movmisalign (machine_mode, rtx *);
 extern void alpha_emit_floatuns (rtx[]);
-extern rtx alpha_emit_conditional_move (rtx, enum machine_mode);
-extern void alpha_split_tmode_pair (rtx[], enum machine_mode, bool);
+extern rtx alpha_emit_conditional_move (rtx, machine_mode);
+extern void alpha_split_tmode_pair (rtx[], machine_mode, bool);
 extern void alpha_split_tfmode_frobsign (rtx[], rtx (*)(rtx, rtx, rtx));
 extern void alpha_expand_unaligned_load (rtx, rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, int);
@@ -58,7 +58,7 @@ extern int alpha_expand_block_move (rtx []);
 extern int alpha_expand_block_clear (rtx []);
 extern rtx alpha_expand_zap_mask (HOST_WIDE_INT);
 extern void alpha_expand_builtin_vector_binop (rtx (*)(rtx, rtx, rtx),
-					       enum machine_mode,
+					       machine_mode,
 					       rtx, rtx, rtx);
 extern void alpha_expand_builtin_establish_vms_condition_handler (rtx, rtx);
 extern void alpha_expand_builtin_revert_vms_condition_handler (rtx);
@@ -70,7 +70,7 @@ extern void print_operand_address (FILE *, rtx);
 extern void alpha_initialize_trampoline (rtx, rtx, rtx, int, int, int);
 
 extern rtx alpha_va_arg (tree, tree);
-extern rtx function_value (const_tree, const_tree, enum machine_mode);
+extern rtx function_value (const_tree, const_tree, machine_mode);
 
 extern void alpha_start_function (FILE *, const char *, tree);
 extern void alpha_end_function (FILE *, const char *, tree);
@@ -78,12 +78,12 @@ extern void alpha_end_function (FILE *, const char *, tree);
 extern bool alpha_find_lo_sum_using_gp (rtx);
 
 #ifdef REAL_VALUE_TYPE
-extern int check_float_value (enum machine_mode, REAL_VALUE_TYPE *, int);
+extern int check_float_value (machine_mode, REAL_VALUE_TYPE *, int);
 #endif
 
 #ifdef RTX_CODE
-extern void alpha_emit_conditional_branch (rtx[], enum machine_mode);
-extern bool alpha_emit_setcc (rtx[], enum machine_mode);
+extern void alpha_emit_conditional_branch (rtx[], machine_mode);
+extern bool alpha_emit_setcc (rtx[], machine_mode);
 extern int alpha_split_conditional_move (enum rtx_code, rtx, rtx, rtx, rtx);
 extern void alpha_emit_xfloating_arith (enum rtx_code, rtx[]);
 extern void alpha_emit_xfloating_cvt (enum rtx_code, rtx[]);
@@ -100,7 +100,7 @@ extern void alpha_split_atomic_exchange_12 (rtx op[]);
 extern rtx alpha_use_linkage (rtx, bool, bool);
 
 #if TARGET_ABI_OPEN_VMS
-extern enum avms_arg_type alpha_arg_type (enum machine_mode);
+extern enum avms_arg_type alpha_arg_type (machine_mode);
 extern rtx alpha_arg_info_reg_val (CUMULATIVE_ARGS);
 extern void avms_asm_output_external (FILE *, tree, const char *);
 extern void vms_output_aligned_decl_common (FILE *, tree, const char *,

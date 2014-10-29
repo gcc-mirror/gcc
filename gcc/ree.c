@@ -265,7 +265,7 @@ typedef struct ext_cand
   enum rtx_code code;
 
   /* The destination mode.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* The instruction where it lives.  */
   rtx_insn *insn;
@@ -331,7 +331,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 	{
 	  /* Zero-extend the negative constant by masking out the bits outside
 	     the source mode.  */
-	  enum machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
+	  machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
 	  rtx new_const_int
 	    = gen_int_mode (INTVAL (orig_src) & GET_MODE_MASK (src_mode),
 			    GET_MODE (new_reg));
@@ -647,7 +647,7 @@ get_sub_rtx (rtx_insn *def_insn)
 static bool
 merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
 {
-  enum machine_mode ext_src_mode;
+  machine_mode ext_src_mode;
   rtx *sub_rtx;
 
   ext_src_mode = GET_MODE (XEXP (SET_SRC (cand->expr), 0));
@@ -756,7 +756,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (!SCALAR_INT_MODE_P (GET_MODE (SET_DEST (PATTERN (cand->insn)))))
 	return false;
 
-      enum machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
+      machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
       rtx src_reg = get_extended_src_reg (SET_SRC (PATTERN (cand->insn)));
 
       /* Ensure the number of hard registers of the copy match.  */
@@ -835,7 +835,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
      mode if possible, or punt.  */
   if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       rtx set;
 
       if (state->modified[INSN_UID (cand->insn)].kind
@@ -936,7 +936,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 			 unsigned *def_map)
 {
   enum rtx_code code;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int idx;
   rtx src, dest;
 

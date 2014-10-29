@@ -1780,7 +1780,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
 				    &mode, &unsignedp, &volatilep, false);

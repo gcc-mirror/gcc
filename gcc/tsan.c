@@ -130,7 +130,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
      TODO: handle bit-fields as if touching the whole field.  */
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   base = get_inner_reference (expr, &bitsize, &bitpos, &offset,
 			      &mode, &unsignedp, &volatilep, false);

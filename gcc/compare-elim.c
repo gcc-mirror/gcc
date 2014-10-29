@@ -118,7 +118,7 @@ struct comparison
   struct comparison_use uses[MAX_CMP_USE];
 
   /* The original CC_MODE for this comparison.  */
-  enum machine_mode orig_mode;
+  machine_mode orig_mode;
 
   /* The number of uses identified for this comparison.  */
   unsigned short n_uses;
@@ -317,7 +317,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
       src = conforming_compare (insn);
       if (src)
 	{
-	  enum machine_mode src_mode = GET_MODE (src);
+	  machine_mode src_mode = GET_MODE (src);
 	  rtx eh_note = NULL;
 
 	  if (flag_non_call_exceptions)
@@ -338,7 +338,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 
 	  /* New mode must be compatible with the previous compare mode.  */
 	  {
-	    enum machine_mode new_mode
+	    machine_mode new_mode
 	      = targetm.cc_modes_compatible (last_cmp->orig_mode, src_mode);
 	    if (new_mode == VOIDmode)
 	      goto dont_delete;
@@ -466,7 +466,7 @@ static rtx
 maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
 		      rtx b ATTRIBUTE_UNUSED)
 {
-  enum machine_mode sel_mode;
+  machine_mode sel_mode;
   const int n = cmp->n_uses;
   rtx flags = NULL;
 
@@ -498,7 +498,7 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
       sel_mode = SELECT_CC_MODE (cmp->uses[0].code, a, b);
       for (i = 1; i < n; ++i)
 	{
-	  enum machine_mode new_mode;
+	  machine_mode new_mode;
 	  new_mode = SELECT_CC_MODE (cmp->uses[i].code, a, b);
 	  if (new_mode != sel_mode)
 	    {

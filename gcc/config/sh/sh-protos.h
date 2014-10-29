@@ -98,8 +98,8 @@ extern const char *output_branch (int, rtx_insn *, rtx *);
 extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
 extern const char *output_branchy_insn (enum rtx_code, const char *,
 					rtx_insn *, rtx *);
-extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
-extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
+extern const char *output_movedouble (rtx, rtx[], machine_mode);
+extern const char *output_movepcrel (rtx, rtx[], machine_mode);
 extern const char *output_far_jump (rtx_insn *, rtx);
 
 extern rtx sfunc_uses_reg (rtx_insn *);
@@ -107,25 +107,25 @@ extern int barrier_align (rtx_insn *);
 extern int sh_loop_align (rtx_insn *);
 extern bool fp_zero_operand (rtx);
 extern bool fp_one_operand (rtx);
-extern bool sh_legitimate_index_p (enum machine_mode, rtx, bool, bool);
-extern bool sh_legitimize_reload_address (rtx *, enum machine_mode, int, int);
-extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern bool sh_legitimate_index_p (machine_mode, rtx, bool, bool);
+extern bool sh_legitimize_reload_address (rtx *, machine_mode, int, int);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
 extern bool nonpic_symbol_mentioned_p (rtx);
 extern void output_pic_addr_const (FILE *, rtx);
 extern bool expand_block_move (rtx *);
-extern void prepare_move_operands (rtx[], enum machine_mode mode);
+extern void prepare_move_operands (rtx[], machine_mode mode);
 extern bool sh_expand_cmpstr (rtx *);
 extern bool sh_expand_cmpnstr (rtx *);
 extern bool sh_expand_strlen  (rtx *);
 extern void sh_expand_setmem (rtx *);
-extern enum rtx_code prepare_cbranch_operands (rtx *, enum machine_mode mode,
+extern enum rtx_code prepare_cbranch_operands (rtx *, machine_mode mode,
 					       enum rtx_code comparison);
 extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);
 extern bool expand_cbranchdi4 (rtx *operands, enum rtx_code comparison);
 extern void sh_emit_scc_to_t (enum rtx_code, rtx, rtx);
-extern rtx sh_emit_cheap_store_flag (enum machine_mode, enum rtx_code, rtx, rtx);
-extern void sh_emit_compare_and_branch (rtx *, enum machine_mode);
-extern void sh_emit_compare_and_set (rtx *, enum machine_mode);
+extern rtx sh_emit_cheap_store_flag (machine_mode, enum rtx_code, rtx, rtx);
+extern void sh_emit_compare_and_branch (rtx *, machine_mode);
+extern void sh_emit_compare_and_set (rtx *, machine_mode);
 extern bool sh_ashlsi_clobbers_t_reg_p (rtx);
 extern bool sh_lshrsi_clobbers_t_reg_p (rtx);
 extern void gen_shifty_op (int, rtx *);
@@ -144,16 +144,16 @@ extern int regs_used (rtx, int);
 extern void fixup_addr_diff_vecs (rtx_insn *);
 extern int get_dest_uid (rtx, int);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
-extern enum tls_model tls_symbolic_operand (rtx, enum machine_mode);
-extern bool system_reg_operand (rtx, enum machine_mode);
+extern enum tls_model tls_symbolic_operand (rtx, machine_mode);
+extern bool system_reg_operand (rtx, machine_mode);
 extern bool reg_unused_after (rtx, rtx_insn *);
 extern int sh_insn_length_adjustment (rtx_insn *);
 extern bool sh_can_redirect_branch (rtx_insn *, rtx_insn *);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 extern bool sh_expand_t_scc (rtx *);
-extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
-extern bool sh_vector_mode_supported_p (enum machine_mode);
+extern rtx sh_gen_truncate (machine_mode, rtx, int);
+extern bool sh_vector_mode_supported_p (machine_mode);
 extern bool sh_cfun_trap_exit_p (void);
 extern rtx sh_find_equiv_gbr_addr (rtx_insn* cur_insn, rtx mem);
 extern int sh_eval_treg_value (rtx op);
@@ -195,8 +195,8 @@ extern bool sh_cfun_resbank_handler_p (void);
 extern bool sh_attr_renesas_p (const_tree);
 extern bool sh_cfun_attr_renesas_p (void);
 extern bool sh_cannot_change_mode_class
-	      (enum machine_mode, enum machine_mode, enum reg_class);
-extern bool sh_small_register_classes_for_mode_p (enum machine_mode);
+	      (machine_mode, machine_mode, enum reg_class);
+extern bool sh_small_register_classes_for_mode_p (machine_mode);
 extern void sh_mark_label (rtx, int);
 extern bool check_use_sfunc_addr (rtx_insn *, rtx);
 
@@ -211,7 +211,7 @@ extern rtx function_symbol (rtx, const char *, enum sh_function_kind);
 extern rtx sh_get_pr_initial_val (void);
 
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
-				     signed int, enum machine_mode);
+				     signed int, machine_mode);
 extern rtx sh_dwarf_register_span (rtx);
 
 extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);
@@ -223,6 +223,6 @@ extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
 extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
-extern bool sh_hard_regno_mode_ok (unsigned int, enum machine_mode);
+extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 extern bool sh_can_use_simple_return_p (void);
 #endif /* ! GCC_SH_PROTOS_H */

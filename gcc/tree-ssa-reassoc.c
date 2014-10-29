@@ -3640,7 +3640,7 @@ get_required_cycles (int ops_num, int cpu_width)
 
 static int
 get_reassociation_width (int ops_num, enum tree_code opc,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
   int param_width = PARAM_VALUE (PARAM_TREE_REASSOC_WIDTH);
   int width;
@@ -4815,7 +4815,7 @@ reassociate_bb (basic_block bb)
 		}
 	      else
 		{
-		  enum machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+		  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 		  int ops_num = ops.length ();
 		  int width = get_reassociation_width (ops_num, rhs_code, mode);
 		  tree new_lhs = lhs;

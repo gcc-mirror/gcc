@@ -32,14 +32,14 @@ struct optab_libcall_d
   char libcall_suffix;
   const char *libcall_basename;
   void (*libcall_gen) (optab, const char *name,
-		       char suffix, enum machine_mode);
+		       char suffix, machine_mode);
 };
 
 struct convert_optab_libcall_d
 {
   const char *libcall_basename;
   void (*libcall_gen) (convert_optab, const char *name,
-		       enum machine_mode, enum machine_mode);
+		       machine_mode, machine_mode);
 };
 
 /* Given an enum insn_code, access the function to construct
@@ -67,7 +67,7 @@ extern const struct optab_libcall_d normlib_def[NUM_NORMLIB_OPTABS];
 
 /* Returns the active icode for the given (encoded) optab.  */
 extern enum insn_code raw_optab_handler (unsigned);
-extern bool swap_optab_enable (optab, enum machine_mode, bool);
+extern bool swap_optab_enable (optab, machine_mode, bool);
 
 /* Target-dependent globals.  */
 struct target_optabs {
@@ -88,23 +88,23 @@ extern struct target_optabs *this_target_optabs;
 extern rtx expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
                                       rtx target, int unsignedp);
 
-extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab,
+extern rtx expand_ternary_op (machine_mode mode, optab ternary_optab,
 			      rtx op0, rtx op1, rtx op2, rtx target,
 			      int unsignedp);
 
 /* Expand a binary operation given optab and rtx operands.  */
-extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
+extern rtx expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 			 enum optab_methods);
 
-extern rtx simplify_expand_binop (enum machine_mode mode, optab binoptab,
+extern rtx simplify_expand_binop (machine_mode mode, optab binoptab,
 				  rtx op0, rtx op1, rtx target, int unsignedp,
 				  enum optab_methods methods);
 
-extern bool force_expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
+extern bool force_expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
 
 /* Expand a binary operation with both signed and unsigned forms.  */
-extern rtx sign_expand_binop (enum machine_mode, optab, optab, rtx, rtx,
+extern rtx sign_expand_binop (machine_mode, optab, optab, rtx, rtx,
 			      rtx, int, enum optab_methods);
 
 /* Generate code to perform an operation on one operand with two results.  */
@@ -119,14 +119,14 @@ extern bool expand_twoval_binop_libfunc (optab, rtx, rtx, rtx, rtx,
 					 enum rtx_code);
 
 /* Expand a unary arithmetic operation given optab rtx operand.  */
-extern rtx expand_unop (enum machine_mode, optab, rtx, rtx, int);
+extern rtx expand_unop (machine_mode, optab, rtx, rtx, int);
 
 /* Expand the absolute value operation.  */
-extern rtx expand_abs_nojump (enum machine_mode, rtx, rtx, int);
-extern rtx expand_abs (enum machine_mode, rtx, rtx, int, int);
+extern rtx expand_abs_nojump (machine_mode, rtx, rtx, int);
+extern rtx expand_abs (machine_mode, rtx, rtx, int, int);
 
 /* Expand the one's complement absolute value operation.  */
-extern rtx expand_one_cmpl_abs_nojump (enum machine_mode, rtx, rtx);
+extern rtx expand_one_cmpl_abs_nojump (machine_mode, rtx, rtx);
 
 /* Expand the copysign operation.  */
 extern rtx expand_copysign (rtx, rtx, rtx);
@@ -140,12 +140,12 @@ extern bool maybe_emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 #define find_widening_optab_handler(A,B,C,D) \
   find_widening_optab_handler_and_mode (A, B, C, D, NULL)
 extern enum insn_code find_widening_optab_handler_and_mode (optab,
-							    enum machine_mode,
-							    enum machine_mode,
+							    machine_mode,
+							    machine_mode,
 							    int,
-							    enum machine_mode *);
-extern enum insn_code widening_optab_handler (optab, enum machine_mode,
-					      enum machine_mode);
+							    machine_mode *);
+extern enum insn_code widening_optab_handler (optab, machine_mode,
+					      machine_mode);
 
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the
@@ -178,21 +178,21 @@ enum can_compare_purpose
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
-extern int can_compare_p (enum rtx_code, enum machine_mode,
+extern int can_compare_p (enum rtx_code, machine_mode,
 			  enum can_compare_purpose);
 
 /* Return the INSN_CODE to use for an extend operation.  */
-extern enum insn_code can_extend_p (enum machine_mode, enum machine_mode, int);
+extern enum insn_code can_extend_p (machine_mode, machine_mode, int);
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
-extern rtx gen_extend_insn (rtx, rtx, enum machine_mode,
-			    enum machine_mode, int);
+extern rtx gen_extend_insn (rtx, rtx, machine_mode,
+			    machine_mode, int);
 
 /* Call this to reset the function entry for one optab.  */
-extern void set_optab_libfunc (optab, enum machine_mode, const char *);
-extern void set_conv_libfunc (convert_optab, enum machine_mode,
-			      enum machine_mode, const char *);
+extern void set_optab_libfunc (optab, machine_mode, const char *);
+extern void set_conv_libfunc (convert_optab, machine_mode,
+			      machine_mode, const char *);
 
 /* Call this to install all of the __sync libcalls up to size MAX.  */
 extern void init_sync_libfuncs (int max);
@@ -204,13 +204,13 @@ extern void expand_fixed_convert (rtx, rtx, int, int);
 extern void expand_float (rtx, rtx, int);
 
 /* Return the insn_code for a FLOAT_EXPR.  */
-enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
+enum insn_code can_float_p (machine_mode, machine_mode, int);
 
 /* Return true if there is an inline compare and swap pattern.  */
-extern bool can_compare_and_swap_p (enum machine_mode, bool);
+extern bool can_compare_and_swap_p (machine_mode, bool);
 
 /* Return true if there is an inline atomic exchange pattern.  */
-extern bool can_atomic_exchange_p (enum machine_mode, bool);
+extern bool can_atomic_exchange_p (machine_mode, bool);
 
 /* Generate code for a compare and swap.  */
 extern bool expand_atomic_compare_and_swap (rtx *, rtx *, rtx, rtx, rtx, bool,
@@ -233,7 +233,7 @@ extern void expand_fix (rtx, rtx, int);
 extern bool expand_sfix_optab (rtx, rtx, convert_optab);
 
 /* Generate code for a widening multiply.  */
-extern rtx expand_widening_mult (enum machine_mode, rtx, rtx, rtx, int, optab);
+extern rtx expand_widening_mult (machine_mode, rtx, rtx, rtx, int, optab);
 
 /* Return tree if target supports vector operations for COND_EXPR.  */
 bool expand_vec_cond_expr_p (tree, tree);
@@ -244,25 +244,25 @@ extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 extern rtx expand_vec_shift_expr (sepops, rtx);
 
 /* Return true if target supports vector operations for VEC_PERM_EXPR.  */
-extern bool can_vec_perm_p (enum machine_mode, bool, const unsigned char *);
+extern bool can_vec_perm_p (machine_mode, bool, const unsigned char *);
 
 /* Generate code for VEC_PERM_EXPR.  */
-extern rtx expand_vec_perm (enum machine_mode, rtx, rtx, rtx, rtx);
+extern rtx expand_vec_perm (machine_mode, rtx, rtx, rtx, rtx);
 
 /* Return non-zero if target supports a given highpart multiplication.  */
-extern int can_mult_highpart_p (enum machine_mode, bool);
+extern int can_mult_highpart_p (machine_mode, bool);
 
 /* Generate code for MULT_HIGHPART_EXPR.  */
-extern rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, bool);
+extern rtx expand_mult_highpart (machine_mode, rtx, rtx, rtx, bool);
 
 /* Return true if target supports vector masked load/store for mode.  */
-extern bool can_vec_mask_load_store_p (enum machine_mode, bool);
+extern bool can_vec_mask_load_store_p (machine_mode, bool);
 
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */
 
 static inline enum insn_code
-optab_handler (optab op, enum machine_mode mode)
+optab_handler (optab op, machine_mode mode)
 {
   unsigned scode = (op << 16) | mode;
   gcc_assert (op > LAST_CONV_OPTAB);
@@ -274,8 +274,8 @@ optab_handler (optab op, enum machine_mode mode)
    such an insn.  */
 
 static inline enum insn_code
-convert_optab_handler (convert_optab op, enum machine_mode to_mode,
-		       enum machine_mode from_mode)
+convert_optab_handler (convert_optab op, machine_mode to_mode,
+		       machine_mode from_mode)
 {
   unsigned scode = (op << 16) | (from_mode << 8) | to_mode;
   gcc_assert (op > unknown_optab && op <= LAST_CONV_OPTAB);
@@ -286,7 +286,7 @@ convert_optab_handler (convert_optab op, enum machine_mode to_mode,
    if the target does not have such an insn.  */
 
 static inline enum insn_code
-direct_optab_handler (direct_optab op, enum machine_mode mode)
+direct_optab_handler (direct_optab op, machine_mode mode)
 {
   return optab_handler (op, mode);
 }
@@ -310,9 +310,9 @@ trapv_binoptab_p (optab binoptab)
 	  || binoptab == smulv_optab);
 }
 
-extern rtx optab_libfunc (optab optab, enum machine_mode mode);
-extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
-			          enum machine_mode mode2);
+extern rtx optab_libfunc (optab optab, machine_mode mode);
+extern rtx convert_optab_libfunc (convert_optab optab, machine_mode mode1,
+			          machine_mode mode2);
 
 /* Describes an instruction that inserts or extracts a bitfield.  */
 struct extraction_insn
@@ -322,15 +322,15 @@ struct extraction_insn
 
   /* The mode that the structure operand should have.  This is byte_mode
      when using the legacy insv, extv and extzv patterns to access memory.  */
-  enum machine_mode struct_mode;
+  machine_mode struct_mode;
 
   /* The mode of the field to be inserted or extracted, and by extension
      the mode of the insertion or extraction itself.  */
-  enum machine_mode field_mode;
+  machine_mode field_mode;
 
   /* The mode of the field's bit position.  This is only important
      when the position is variable rather than constant.  */
-  enum machine_mode pos_mode;
+  machine_mode pos_mode;
 };
 
 /* Enumerates the possible extraction_insn operations.  */
@@ -339,12 +339,12 @@ enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
 extern bool get_best_reg_extraction_insn (extraction_insn *,
 					  enum extraction_pattern,
 					  unsigned HOST_WIDE_INT,
-					  enum machine_mode);
+					  machine_mode);
 
 extern bool get_best_mem_extraction_insn (extraction_insn *,
 					  enum extraction_pattern,
 					  HOST_WIDE_INT, HOST_WIDE_INT,
-					  enum machine_mode);
+					  machine_mode);
 
 extern bool insn_operand_matches (enum insn_code icode, unsigned int opno,
 				  rtx operand);
@@ -388,7 +388,7 @@ struct expand_operand {
 static inline void
 create_expand_operand (struct expand_operand *op,
 		       enum expand_operand_type type,
-		       rtx value, enum machine_mode mode,
+		       rtx value, machine_mode mode,
 		       bool unsigned_p)
 {
   op->type = type;
@@ -413,7 +413,7 @@ create_fixed_operand (struct expand_operand *op, rtx x)
 
 static inline void
 create_output_operand (struct expand_operand *op, rtx x,
-		       enum machine_mode mode)
+		       machine_mode mode)
 {
   create_expand_operand (op, EXPAND_OUTPUT, x, mode, false);
 }
@@ -425,7 +425,7 @@ create_output_operand (struct expand_operand *op, rtx x,
 
 static inline void
 create_input_operand (struct expand_operand *op, rtx value,
-		      enum machine_mode mode)
+		      machine_mode mode)
 {
   create_expand_operand (op, EXPAND_INPUT, value, mode, false);
 }
@@ -435,7 +435,7 @@ create_input_operand (struct expand_operand *op, rtx value,
 
 static inline void
 create_convert_operand_to (struct expand_operand *op, rtx value,
-			   enum machine_mode mode, bool unsigned_p)
+			   machine_mode mode, bool unsigned_p)
 {
   create_expand_operand (op, EXPAND_CONVERT_TO, value, mode, unsigned_p);
 }
@@ -447,7 +447,7 @@ create_convert_operand_to (struct expand_operand *op, rtx value,
 
 static inline void
 create_convert_operand_from (struct expand_operand *op, rtx value,
-			     enum machine_mode mode, bool unsigned_p)
+			     machine_mode mode, bool unsigned_p)
 {
   create_expand_operand (op, EXPAND_CONVERT_FROM, value, mode, unsigned_p);
 }
@@ -492,56 +492,56 @@ extern void expand_insn (enum insn_code icode, unsigned int nops,
 extern void expand_jump_insn (enum insn_code icode, unsigned int nops,
 			      struct expand_operand *ops);
 
-extern rtx prepare_operand (enum insn_code, rtx, int, enum machine_mode,
-			    enum machine_mode, int);
+extern rtx prepare_operand (enum insn_code, rtx, int, machine_mode,
+			    machine_mode, int);
 
-extern void gen_int_libfunc (optab, const char *, char, enum machine_mode);
-extern void gen_fp_libfunc (optab, const char *, char, enum machine_mode);
-extern void gen_fixed_libfunc (optab, const char *, char, enum machine_mode);
+extern void gen_int_libfunc (optab, const char *, char, machine_mode);
+extern void gen_fp_libfunc (optab, const char *, char, machine_mode);
+extern void gen_fixed_libfunc (optab, const char *, char, machine_mode);
 extern void gen_signed_fixed_libfunc (optab, const char *, char,
-				      enum machine_mode);
+				      machine_mode);
 extern void gen_unsigned_fixed_libfunc (optab, const char *, char,
-					enum machine_mode);
-extern void gen_int_fp_libfunc (optab, const char *, char, enum machine_mode);
-extern void gen_intv_fp_libfunc (optab, const char *, char, enum machine_mode);
+					machine_mode);
+extern void gen_int_fp_libfunc (optab, const char *, char, machine_mode);
+extern void gen_intv_fp_libfunc (optab, const char *, char, machine_mode);
 extern void gen_int_fp_fixed_libfunc (optab, const char *, char,
-				      enum machine_mode);
+				      machine_mode);
 extern void gen_int_fp_signed_fixed_libfunc (optab, const char *, char,
-					     enum machine_mode);
+					     machine_mode);
 extern void gen_int_fixed_libfunc (optab, const char *, char,
-				   enum machine_mode);
+				   machine_mode);
 extern void gen_int_signed_fixed_libfunc (optab, const char *, char,
-					  enum machine_mode);
+					  machine_mode);
 extern void gen_int_unsigned_fixed_libfunc (optab, const char *, char,
-					    enum machine_mode);
+					    machine_mode);
 
 extern void gen_interclass_conv_libfunc (convert_optab, const char *,
-					 enum machine_mode, enum machine_mode);
+					 machine_mode, machine_mode);
 extern void gen_int_to_fp_conv_libfunc (convert_optab, const char *,
-					enum machine_mode, enum machine_mode);
+					machine_mode, machine_mode);
 extern void gen_ufloat_conv_libfunc (convert_optab, const char *,
-				     enum machine_mode, enum machine_mode);
+				     machine_mode, machine_mode);
 extern void gen_int_to_fp_nondecimal_conv_libfunc  (convert_optab,
 						    const char *,
-						    enum machine_mode,
-						    enum machine_mode);
+						    machine_mode,
+						    machine_mode);
 extern void gen_fp_to_int_conv_libfunc (convert_optab, const char *,
-					enum machine_mode, enum machine_mode);
+					machine_mode, machine_mode);
 extern void gen_intraclass_conv_libfunc (convert_optab, const char *,
-					 enum machine_mode, enum machine_mode);
+					 machine_mode, machine_mode);
 extern void gen_trunc_conv_libfunc (convert_optab, const char *,
-				    enum machine_mode, enum machine_mode);
+				    machine_mode, machine_mode);
 extern void gen_extend_conv_libfunc (convert_optab, const char *,
-				     enum machine_mode, enum machine_mode);
+				     machine_mode, machine_mode);
 extern void gen_fract_conv_libfunc (convert_optab, const char *,
-				    enum machine_mode, enum machine_mode);
+				    machine_mode, machine_mode);
 extern void gen_fractuns_conv_libfunc (convert_optab, const char *,
-				       enum machine_mode, enum machine_mode);
+				       machine_mode, machine_mode);
 extern void gen_satfract_conv_libfunc (convert_optab, const char *,
-				       enum machine_mode, enum machine_mode);
+				       machine_mode, machine_mode);
 extern void gen_satfractuns_conv_libfunc (convert_optab, const char *,
-					  enum machine_mode,
-					  enum machine_mode);
+					  machine_mode,
+					  machine_mode);
 extern void init_tree_optimization_optabs (tree);
 extern bool lshift_cheap_p (bool);
 

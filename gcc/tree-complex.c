@@ -957,7 +957,7 @@ static void
 expand_complex_libcall (gimple_stmt_iterator *gsi, tree ar, tree ai,
 			tree br, tree bi, enum tree_code code)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   enum built_in_function bcode;
   tree fn, type, lhs;
   gimple old_stmt, stmt;

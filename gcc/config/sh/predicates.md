@@ -710,7 +710,7 @@
 ;;(define_special_predicate "int_gpr_dest"
 ;;  (match_code "subreg,reg")
 ;;{
-;;  enum machine_mode op_mode = GET_MODE (op);
+;;  machine_mode op_mode = GET_MODE (op);
 ;;
 ;;  if (GET_MODE_CLASS (op_mode) != MODE_INT
 ;;      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
@@ -1022,7 +1022,7 @@
 (define_special_predicate "trunc_hi_operand"
   (match_code "subreg,reg,truncate")
 {
-  enum machine_mode op_mode = GET_MODE (op);
+  machine_mode op_mode = GET_MODE (op);
 
   if (op_mode != SImode && op_mode != DImode
       && op_mode != V4HImode && op_mode != V2SImode)

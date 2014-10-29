@@ -2944,7 +2944,7 @@ enum { ck_ok, ck_bad, ck_unknown };
 static int
 check_automatic_or_tls (tree ref)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   int volatilep = 0, unsignedp = 0;

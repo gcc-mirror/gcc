@@ -422,7 +422,7 @@ set_value_varying (tree var)
 static void
 canonicalize_value (ccp_prop_value_t *val)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   tree type;
   REAL_VALUE_TYPE d;
 

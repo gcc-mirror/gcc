@@ -506,7 +506,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
   alternative_mask preferred = get_preferred_alternatives (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       int regno;
       const char *p;
 
@@ -643,7 +643,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 
   for (i = 0; i < recog_data.n_operands; i++)
     {
-      enum machine_mode mode = recog_data.operand_mode[i];
+      machine_mode mode = recog_data.operand_mode[i];
       if (op_alt_regno[i][j] == -1)
 	continue;
 
@@ -654,7 +654,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
   for (i = recog_data.n_dups - 1; i >= 0; i--)
     {
       int op = recog_data.dup_num[i];
-      enum machine_mode mode = recog_data.operand_mode[op];
+      machine_mode mode = recog_data.operand_mode[op];
 
       if (op_alt_regno[op][j] == -1)
 	continue;
@@ -1430,7 +1430,7 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 {
   int regno = 0;
   int i;
-  enum machine_mode mode = GET_MODE (dst);
+  machine_mode mode = GET_MODE (dst);
 
   if (GET_CODE (dst) == SUBREG)
     {
@@ -1657,7 +1657,7 @@ static int reg_set_luid[FIRST_PSEUDO_REGISTER];
 static HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
 static int reg_base_reg[FIRST_PSEUDO_REGISTER];
 static rtx reg_symbol_ref[FIRST_PSEUDO_REGISTER];
-static enum machine_mode reg_mode[FIRST_PSEUDO_REGISTER];
+static machine_mode reg_mode[FIRST_PSEUDO_REGISTER];
 
 /* move2add_luid is linearly increased while scanning the instructions
    from first to last.  It is used to set reg_set_luid in
@@ -1681,7 +1681,7 @@ static void
 move2add_record_mode (rtx reg)
 {
   int regno, nregs;
-  enum machine_mode mode = GET_MODE (reg);
+  machine_mode mode = GET_MODE (reg);
 
   if (GET_CODE (reg) == SUBREG)
     {
@@ -1717,7 +1717,7 @@ move2add_record_sym_value (rtx reg, rtx sym, rtx off)
 /* Check if REGNO contains a valid value in MODE.  */
 
 static bool
-move2add_valid_value_p (int regno, enum machine_mode mode)
+move2add_valid_value_p (int regno, machine_mode mode)
 {
   if (reg_set_luid[regno] <= move2add_last_label_luid)
     return false;
@@ -1794,7 +1794,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
 	changed = validate_change (insn, &SET_SRC (pat), tem, 0);	
       else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
 	{
-	  enum machine_mode narrow_mode;
+	  machine_mode narrow_mode;
 	  for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	       narrow_mode != VOIDmode
 		 && narrow_mode != GET_MODE (reg);
@@ -2166,7 +2166,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 {
   rtx_insn *insn = (rtx_insn *) data;
   unsigned int regno = 0;
-  enum machine_mode mode = GET_MODE (dst);
+  machine_mode mode = GET_MODE (dst);
 
   /* Some targets do argument pushes without adding REG_INC notes.  */
 

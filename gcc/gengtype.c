@@ -5650,6 +5650,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("jword", &pos));
       POS_HERE (do_scalar_typedef ("JCF_u2", &pos));
       POS_HERE (do_scalar_typedef ("void", &pos));
+      POS_HERE (do_scalar_typedef ("machine_mode", &pos));
       POS_HERE (do_typedef ("PTR", 
 			    create_pointer (resolve_typedef ("void", &pos)),
 			    &pos));

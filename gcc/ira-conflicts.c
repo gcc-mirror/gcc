@@ -257,7 +257,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
   bool only_regs_p;
   ira_allocno_t a;
   reg_class_t rclass, aclass;
-  enum machine_mode mode;
+  machine_mode mode;
   ira_copy_t cp;
 
   gcc_assert (REG_SUBREG_P (reg1) && REG_SUBREG_P (reg2));
@@ -783,8 +783,8 @@ ira_build_conflicts (void)
 
 	  /* Now we deal with paradoxical subreg cases where certain registers
 	     cannot be accessed in the widest mode.  */
-	  enum machine_mode outer_mode = ALLOCNO_WMODE (a);
-	  enum machine_mode inner_mode = ALLOCNO_MODE (a);
+	  machine_mode outer_mode = ALLOCNO_WMODE (a);
+	  machine_mode inner_mode = ALLOCNO_MODE (a);
 	  if (GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
 	    {
 	      enum reg_class aclass = ALLOCNO_CLASS (a);

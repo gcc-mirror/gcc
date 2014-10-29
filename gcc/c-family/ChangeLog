@@ -1,3 +1,8 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c, c-common.h, c-cppbuiltin.c, c-lex.c: Remove redundant
+	enum from machine_mode.
+
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-family/c-common.c: Adjust include files.

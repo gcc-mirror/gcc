@@ -734,7 +734,7 @@ static bool
 ifcvt_can_use_mask_load_store (gimple stmt)
 {
   tree lhs, ref;
-  enum machine_mode mode;
+  machine_mode mode;
   basic_block bb = gimple_bb (stmt);
   bool is_load;
 

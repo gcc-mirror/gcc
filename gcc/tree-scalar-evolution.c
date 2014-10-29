@@ -1733,7 +1733,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
       if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == MEM_REF
 	  || handled_component_p (TREE_OPERAND (rhs1, 0)))
         {
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  HOST_WIDE_INT bitsize, bitpos;
 	  int unsignedp;
 	  int volatilep = 0;

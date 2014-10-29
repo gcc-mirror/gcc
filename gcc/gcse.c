@@ -482,9 +482,9 @@ static int want_to_gcse_p (rtx, int *);
 static int oprs_unchanged_p (const_rtx, const rtx_insn *, int);
 static int oprs_anticipatable_p (const_rtx, const rtx_insn *);
 static int oprs_available_p (const_rtx, const rtx_insn *);
-static void insert_expr_in_table (rtx, enum machine_mode, rtx_insn *, int, int,
+static void insert_expr_in_table (rtx, machine_mode, rtx_insn *, int, int,
 				  int, struct gcse_hash_table_d *);
-static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
+static unsigned int hash_expr (const_rtx, machine_mode, int *, int);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx_insn *);
 static void record_last_set_info (rtx, const_rtx, void *);
@@ -578,7 +578,7 @@ compute_can_copy (void)
 #ifdef AVOID_CCMODE_COPIES
 	can_copy[i] = 0;
 #else
-	reg = gen_rtx_REG ((enum machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
+	reg = gen_rtx_REG ((machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
 	insn = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
 	if (recog (PATTERN (insn), insn, NULL) >= 0)
 	  can_copy[i] = 1;
@@ -593,7 +593,7 @@ compute_can_copy (void)
 /* Returns whether the mode supports reg/reg copy operations.  */
 
 bool
-can_copy_p (enum machine_mode mode)
+can_copy_p (machine_mode mode)
 {
   if (! can_copy_init_p)
     {
@@ -1105,7 +1105,7 @@ oprs_available_p (const_rtx x, const rtx_insn *insn)
    the current size of the hash table to be probed.  */
 
 static unsigned int
-hash_expr (const_rtx x, enum machine_mode mode, int *do_not_record_p,
+hash_expr (const_rtx x, machine_mode mode, int *do_not_record_p,
 	   int hash_table_size)
 {
   unsigned int hash;
@@ -1138,7 +1138,7 @@ expr_equiv_p (const_rtx x, const_rtx y)
    be moved.  */
 
 static void
-insert_expr_in_table (rtx x, enum machine_mode mode, rtx_insn *insn,
+insert_expr_in_table (rtx x, machine_mode mode, rtx_insn *insn,
 		      int antic_p,
 		      int avail_p, int max_distance, struct gcse_hash_table_d *table)
 {

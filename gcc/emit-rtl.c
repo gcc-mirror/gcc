@@ -75,10 +75,10 @@ struct target_rtl *this_target_rtl = &default_target_rtl;
 
 /* Commonly used modes.  */
 
-enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
-enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
-enum machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
-enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
+machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
+machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
+machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
+machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* Datastructures maintained for currently processed function in RTL form.  */
 
@@ -171,7 +171,7 @@ static rtx lookup_const_fixed (rtx);
 static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
-static rtx gen_const_vector (enum machine_mode, int);
+static rtx gen_const_vector (machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
 /* Probability of the conditional branch currently proceeded by try_split.
@@ -405,7 +405,7 @@ gen_blockage (void)
    frame_pointer_rtx).  */
 
 rtx
-gen_raw_REG (enum machine_mode mode, int regno)
+gen_raw_REG (machine_mode mode, int regno)
 {
   rtx x = gen_rtx_raw_REG (mode, regno);
   ORIGINAL_REGNO (x) = regno;
@@ -417,21 +417,21 @@ gen_raw_REG (enum machine_mode mode, int regno)
    special_rtx in gengenrtl.c as well.  */
 
 rtx_expr_list *
-gen_rtx_EXPR_LIST (enum machine_mode mode, rtx expr, rtx expr_list)
+gen_rtx_EXPR_LIST (machine_mode mode, rtx expr, rtx expr_list)
 {
   return as_a <rtx_expr_list *> (gen_rtx_fmt_ee (EXPR_LIST, mode, expr,
 						 expr_list));
 }
 
 rtx_insn_list *
-gen_rtx_INSN_LIST (enum machine_mode mode, rtx insn, rtx insn_list)
+gen_rtx_INSN_LIST (machine_mode mode, rtx insn, rtx insn_list)
 {
   return as_a <rtx_insn_list *> (gen_rtx_fmt_ue (INSN_LIST, mode, insn,
 						 insn_list));
 }
 
 rtx_insn *
-gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
+gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 	      basic_block bb, rtx pattern, int location, int code,
 	      rtx reg_notes)
 {
@@ -442,7 +442,7 @@ gen_rtx_INSN (enum machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 }
 
 rtx
-gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
+gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 {
   void **slot;
 
@@ -464,7 +464,7 @@ gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 }
 
 rtx
-gen_int_mode (HOST_WIDE_INT c, enum machine_mode mode)
+gen_int_mode (HOST_WIDE_INT c, machine_mode mode)
 {
   return GEN_INT (trunc_int_for_mode (c, mode));
 }
@@ -489,7 +489,7 @@ lookup_const_double (rtx real)
 /* Return a CONST_DOUBLE rtx for a floating-point value specified by
    VALUE in mode MODE.  */
 rtx
-const_double_from_real_value (REAL_VALUE_TYPE value, enum machine_mode mode)
+const_double_from_real_value (REAL_VALUE_TYPE value, machine_mode mode)
 {
   rtx real = rtx_alloc (CONST_DOUBLE);
   PUT_MODE (real, mode);
@@ -517,7 +517,7 @@ lookup_const_fixed (rtx fixed)
    VALUE in mode MODE.  */
 
 rtx
-const_fixed_from_fixed_value (FIXED_VALUE_TYPE value, enum machine_mode mode)
+const_fixed_from_fixed_value (FIXED_VALUE_TYPE value, machine_mode mode)
 {
   rtx fixed = rtx_alloc (CONST_FIXED);
   PUT_MODE (fixed, mode);
@@ -571,7 +571,7 @@ lookup_const_wide_int (rtx wint)
    (if TARGET_SUPPORTS_WIDE_INT).  */
 
 rtx
-immed_wide_int_const (const wide_int_ref &v, enum machine_mode mode)
+immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
 {
   unsigned int len = v.get_len ();
   unsigned int prec = GET_MODE_PRECISION (mode);
@@ -620,7 +620,7 @@ immed_wide_int_const (const wide_int_ref &v, enum machine_mode mode)
    CONST_DOUBLE_FROM_REAL_VALUE.  */
 
 rtx
-immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
+immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
 {
   rtx value;
   unsigned int i;
@@ -665,7 +665,7 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
 #endif
 
 rtx
-gen_rtx_REG (enum machine_mode mode, unsigned int regno)
+gen_rtx_REG (machine_mode mode, unsigned int regno)
 {
   /* In case the MD file explicitly references the frame pointer, have
      all such references point to the same frame pointer.  This is
@@ -731,7 +731,7 @@ gen_rtx_REG (enum machine_mode mode, unsigned int regno)
 }
 
 rtx
-gen_rtx_MEM (enum machine_mode mode, rtx addr)
+gen_rtx_MEM (machine_mode mode, rtx addr)
 {
   rtx rt = gen_rtx_raw_MEM (mode, addr);
 
@@ -745,7 +745,7 @@ gen_rtx_MEM (enum machine_mode mode, rtx addr)
 /* Generate a memory referring to non-trapping constant memory.  */
 
 rtx
-gen_const_mem (enum machine_mode mode, rtx addr)
+gen_const_mem (machine_mode mode, rtx addr)
 {
   rtx mem = gen_rtx_MEM (mode, addr);
   MEM_READONLY_P (mem) = 1;
@@ -757,7 +757,7 @@ gen_const_mem (enum machine_mode mode, rtx addr)
    save areas.  */
 
 rtx
-gen_frame_mem (enum machine_mode mode, rtx addr)
+gen_frame_mem (machine_mode mode, rtx addr)
 {
   rtx mem = gen_rtx_MEM (mode, addr);
   MEM_NOTRAP_P (mem) = 1;
@@ -769,7 +769,7 @@ gen_frame_mem (enum machine_mode mode, rtx addr)
     of the fixed stack frame.  For example, something which is pushed
     by a target splitter.  */
 rtx
-gen_tmp_stack_mem (enum machine_mode mode, rtx addr)
+gen_tmp_stack_mem (machine_mode mode, rtx addr)
 {
   rtx mem = gen_rtx_MEM (mode, addr);
   MEM_NOTRAP_P (mem) = 1;
@@ -782,7 +782,7 @@ gen_tmp_stack_mem (enum machine_mode mode, rtx addr)
    this construct would be valid, and false otherwise.  */
 
 bool
-validate_subreg (enum machine_mode omode, enum machine_mode imode,
+validate_subreg (machine_mode omode, machine_mode imode,
 		 const_rtx reg, unsigned int offset)
 {
   unsigned int isize = GET_MODE_SIZE (imode);
@@ -866,7 +866,7 @@ validate_subreg (enum machine_mode omode, enum machine_mode imode,
   if (osize < UNITS_PER_WORD
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      enum machine_mode wmode = isize > UNITS_PER_WORD ? word_mode : imode;
+      machine_mode wmode = isize > UNITS_PER_WORD ? word_mode : imode;
       unsigned int low_off = subreg_lowpart_offset (omode, wmode);
       if (offset % UNITS_PER_WORD != low_off)
 	return false;
@@ -875,7 +875,7 @@ validate_subreg (enum machine_mode omode, enum machine_mode imode,
 }
 
 rtx
-gen_rtx_SUBREG (enum machine_mode mode, rtx reg, int offset)
+gen_rtx_SUBREG (machine_mode mode, rtx reg, int offset)
 {
   gcc_assert (validate_subreg (mode, GET_MODE (reg), reg, offset));
   return gen_rtx_raw_SUBREG (mode, reg, offset);
@@ -885,9 +885,9 @@ gen_rtx_SUBREG (enum machine_mode mode, rtx reg, int offset)
    is smaller than mode of REG, otherwise paradoxical SUBREG.  */
 
 rtx
-gen_lowpart_SUBREG (enum machine_mode mode, rtx reg)
+gen_lowpart_SUBREG (machine_mode mode, rtx reg)
 {
-  enum machine_mode inmode;
+  machine_mode inmode;
 
   inmode = GET_MODE (reg);
   if (inmode == VOIDmode)
@@ -897,7 +897,7 @@ gen_lowpart_SUBREG (enum machine_mode mode, rtx reg)
 }
 
 rtx
-gen_rtx_VAR_LOCATION (enum machine_mode mode, tree decl, rtx loc,
+gen_rtx_VAR_LOCATION (machine_mode mode, tree decl, rtx loc,
 		      enum var_init_status status)
 {
   rtx x = gen_rtx_fmt_te (VAR_LOCATION, mode, decl, loc);
@@ -977,8 +977,8 @@ gen_rtvec_v (int n, rtx_insn **argp)
    on big-endian targets.  */
 
 int
-byte_lowpart_offset (enum machine_mode outer_mode,
-		     enum machine_mode inner_mode)
+byte_lowpart_offset (machine_mode outer_mode,
+		     machine_mode inner_mode)
 {
   if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode))
     return subreg_lowpart_offset (outer_mode, inner_mode);
@@ -990,7 +990,7 @@ byte_lowpart_offset (enum machine_mode outer_mode,
    This pseudo is assigned the next sequential register number.  */
 
 rtx
-gen_reg_rtx (enum machine_mode mode)
+gen_reg_rtx (machine_mode mode)
 {
   rtx val;
   unsigned int align = GET_MODE_ALIGNMENT (mode);
@@ -1019,7 +1019,7 @@ gen_reg_rtx (enum machine_mode mode)
 	 which makes much better code.  Besides, allocating DCmode
 	 pseudos overstrains reload on some machines like the 386.  */
       rtx realpart, imagpart;
-      enum machine_mode partmode = GET_MODE_INNER (mode);
+      machine_mode partmode = GET_MODE_INNER (mode);
 
       realpart = gen_reg_rtx (partmode);
       imagpart = gen_reg_rtx (partmode);
@@ -1080,7 +1080,7 @@ update_reg_offset (rtx new_rtx, rtx reg, int offset)
    added to the REG_OFFSET.  */
 
 rtx
-gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno,
+gen_rtx_REG_offset (rtx reg, machine_mode mode, unsigned int regno,
 		    int offset)
 {
   rtx new_rtx = gen_rtx_REG (mode, regno);
@@ -1093,7 +1093,7 @@ gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno,
    with OFFSET added to the REG_OFFSET.  */
 
 rtx
-gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
+gen_reg_rtx_offset (rtx reg, machine_mode mode, int offset)
 {
   rtx new_rtx = gen_reg_rtx (mode);
 
@@ -1105,7 +1105,7 @@ gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
    new register is a (possibly paradoxical) lowpart of the old one.  */
 
 void
-adjust_reg_mode (rtx reg, enum machine_mode mode)
+adjust_reg_mode (rtx reg, machine_mode mode)
 {
   update_reg_offset (reg, reg, byte_lowpart_offset (mode, GET_MODE (reg)));
   PUT_MODE (reg, mode);
@@ -1340,12 +1340,12 @@ maybe_set_first_label_num (rtx x)
    If this is not a case we can handle, return 0.  */
 
 rtx
-gen_lowpart_common (enum machine_mode mode, rtx x)
+gen_lowpart_common (machine_mode mode, rtx x)
 {
   int msize = GET_MODE_SIZE (mode);
   int xsize;
   int offset = 0;
-  enum machine_mode innermode;
+  machine_mode innermode;
 
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
@@ -1403,7 +1403,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
 }
 
 rtx
-gen_highpart (enum machine_mode mode, rtx x)
+gen_highpart (machine_mode mode, rtx x)
 {
   unsigned int msize = GET_MODE_SIZE (mode);
   rtx result;
@@ -1432,7 +1432,7 @@ gen_highpart (enum machine_mode mode, rtx x)
 /* Like gen_highpart, but accept mode of EXP operand in case EXP can
    be VOIDmode constant.  */
 rtx
-gen_highpart_mode (enum machine_mode outermode, enum machine_mode innermode, rtx exp)
+gen_highpart_mode (machine_mode outermode, machine_mode innermode, rtx exp)
 {
   if (GET_MODE (exp) != VOIDmode)
     {
@@ -1446,7 +1446,7 @@ gen_highpart_mode (enum machine_mode outermode, enum machine_mode innermode, rtx
 /* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
 
 unsigned int
-subreg_lowpart_offset (enum machine_mode outermode, enum machine_mode innermode)
+subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 {
   unsigned int offset = 0;
   int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
@@ -1465,7 +1465,7 @@ subreg_lowpart_offset (enum machine_mode outermode, enum machine_mode innermode)
 /* Return offset in bytes to get OUTERMODE high part
    of the value in mode INNERMODE stored in memory in target format.  */
 unsigned int
-subreg_highpart_offset (enum machine_mode outermode, enum machine_mode innermode)
+subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 {
   unsigned int offset = 0;
   int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
@@ -1535,7 +1535,7 @@ paradoxical_subreg_p (const_rtx x)
  */
 
 rtx
-operand_subword (rtx op, unsigned int offset, int validate_address, enum machine_mode mode)
+operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -1583,7 +1583,7 @@ operand_subword (rtx op, unsigned int offset, int validate_address, enum machine
    MODE is the mode of OP, in case it is CONST_INT.  */
 
 rtx
-operand_subword_force (rtx op, unsigned int offset, enum machine_mode mode)
+operand_subword_force (rtx op, unsigned int offset, machine_mode mode)
 {
   rtx result = operand_subword (op, offset, 1, mode);
 
@@ -2072,7 +2072,7 @@ clear_mem_size (rtx mem)
    The memory attributes are not changed.  */
 
 static rtx
-change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate,
+change_address_1 (rtx memref, machine_mode mode, rtx addr, int validate,
 		  bool inplace)
 {
   addr_space_t as;
@@ -2116,10 +2116,10 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate,
    way we are changing MEMREF, so we only preserve the alias set.  */
 
 rtx
-change_address (rtx memref, enum machine_mode mode, rtx addr)
+change_address (rtx memref, machine_mode mode, rtx addr)
 {
   rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
-  enum machine_mode mmode = GET_MODE (new_rtx);
+  machine_mode mmode = GET_MODE (new_rtx);
   struct mem_attrs attrs, *defattrs;
 
   attrs = *get_mem_attrs (memref);
@@ -2157,18 +2157,18 @@ change_address (rtx memref, enum machine_mode mode, rtx addr)
    has no inherent size.  */
 
 rtx
-adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
+adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
 		  int validate, int adjust_address, int adjust_object,
 		  HOST_WIDE_INT size)
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
-  enum machine_mode address_mode;
+  machine_mode address_mode;
   int pbits;
   struct mem_attrs attrs = *get_mem_attrs (memref), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
-  enum machine_mode pointer_mode
+  machine_mode pointer_mode
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
 
@@ -2298,7 +2298,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
    nonzero, the memory address is forced to be valid.  */
 
 rtx
-adjust_automodify_address_1 (rtx memref, enum machine_mode mode, rtx addr,
+adjust_automodify_address_1 (rtx memref, machine_mode mode, rtx addr,
 			     HOST_WIDE_INT offset, int validate)
 {
   memref = change_address_1 (memref, VOIDmode, addr, validate, false);
@@ -2313,7 +2313,7 @@ rtx
 offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
-  enum machine_mode address_mode;
+  machine_mode address_mode;
   struct mem_attrs attrs, *defattrs;
 
   attrs = *get_mem_attrs (memref);
@@ -2384,7 +2384,7 @@ replace_equiv_address_nv (rtx memref, rtx addr, bool inplace)
    operations plus masking logic.  */
 
 rtx
-widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
+widen_memory_access (rtx memref, machine_mode mode, HOST_WIDE_INT offset)
 {
   rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0, 0);
   struct mem_attrs attrs;
@@ -5745,12 +5745,12 @@ init_emit (void)
 /* Generate a vector constant for mode MODE and constant value CONSTANT.  */
 
 static rtx
-gen_const_vector (enum machine_mode mode, int constant)
+gen_const_vector (machine_mode mode, int constant)
 {
   rtx tem;
   rtvec v;
   int units, i;
-  enum machine_mode inner;
+  machine_mode inner;
 
   units = GET_MODE_NUNITS (mode);
   inner = GET_MODE_INNER (mode);
@@ -5773,9 +5773,9 @@ gen_const_vector (enum machine_mode mode, int constant)
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
    all elements are zero, and the one vector when all elements are one.  */
 rtx
-gen_rtx_CONST_VECTOR (enum machine_mode mode, rtvec v)
+gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  enum machine_mode inner = GET_MODE_INNER (mode);
+  machine_mode inner = GET_MODE_INNER (mode);
   int nunits = GET_MODE_NUNITS (mode);
   rtx x;
   int i;
@@ -5807,7 +5807,7 @@ void
 init_emit_regs (void)
 {
   int i;
-  enum machine_mode mode;
+  machine_mode mode;
   mem_attrs *attrs;
 
   /* Reset register attributes */
@@ -5850,7 +5850,7 @@ init_emit_regs (void)
 
   for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
     {
-      mode = (enum machine_mode) i;
+      mode = (machine_mode) i;
       attrs = ggc_cleared_alloc<mem_attrs> ();
       attrs->align = BITS_PER_UNIT;
       attrs->addrspace = ADDR_SPACE_GENERIC;
@@ -5873,7 +5873,7 @@ init_derived_machine_modes (void)
   byte_mode = VOIDmode;
   word_mode = VOIDmode;
 
-  for (enum machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+  for (machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
@@ -5895,8 +5895,8 @@ void
 init_emit_once (void)
 {
   int i;
-  enum machine_mode mode;
-  enum machine_mode double_mode;
+  machine_mode mode;
+  machine_mode double_mode;
 
   /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
      CONST_FIXED, and memory attribute hash tables.  */
@@ -5976,7 +5976,7 @@ init_emit_once (void)
 
       for (mode = MIN_MODE_PARTIAL_INT;
 	   mode <= MAX_MODE_PARTIAL_INT;
-	   mode = (enum machine_mode)((int)(mode) + 1))
+	   mode = (machine_mode)((int)(mode) + 1))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
@@ -5989,7 +5989,7 @@ init_emit_once (void)
 
   for (mode = MIN_MODE_PARTIAL_INT;
        mode <= MAX_MODE_PARTIAL_INT;
-       mode = (enum machine_mode)((int)(mode) + 1))
+       mode = (machine_mode)((int)(mode) + 1))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
       
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_INT);
@@ -6122,7 +6122,7 @@ init_emit_once (void)
     }
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
-    if (GET_MODE_CLASS ((enum machine_mode) i) == MODE_CC)
+    if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
 
   const_tiny_rtx[0][(int) BImode] = const0_rtx;
@@ -6204,7 +6204,7 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
 
 static GTY((deletable)) rtx hard_reg_clobbers [NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 rtx
-gen_hard_reg_clobber (enum machine_mode mode, unsigned int regno)
+gen_hard_reg_clobber (machine_mode mode, unsigned int regno)
 {
   if (hard_reg_clobbers[mode][regno])
     return hard_reg_clobbers[mode][regno];

@@ -1053,7 +1053,7 @@ DEBUG_FUNCTION rtx
 debug_mem_addr_value (rtx x)
 {
   rtx t, addr;
-  enum machine_mode address_mode;
+  machine_mode address_mode;
 
   gcc_assert (MEM_P (x));
   address_mode = get_address_mode (x);

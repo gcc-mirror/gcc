@@ -251,7 +251,7 @@ setup_cost_classes (cost_classes_t from)
    valid for mode MODE.  Both FULL and the returned class are globally
    allocated.  */
 static cost_classes_t
-restrict_cost_classes (cost_classes_t full, enum machine_mode mode,
+restrict_cost_classes (cost_classes_t full, machine_mode mode,
 		       const HARD_REG_SET &regs)
 {
   static struct cost_classes narrow;
@@ -409,7 +409,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
    calculation for such important classes is only wasting CPU
    time.  */
 static void
-setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
+setup_regno_cost_classes_by_mode (int regno, machine_mode mode)
 {
   if (const HARD_REG_SET *valid_regs = valid_mode_changes_for_regno (regno))
     regno_cost_classes[regno] = restrict_cost_classes (&all_cost_classes,
@@ -439,7 +439,7 @@ finish_regno_cost_classes (void)
    TO_P is FALSE) a register of class RCLASS in mode MODE.  X must not
    be a pseudo register.  */
 static int
-copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
+copy_cost (rtx x, machine_mode mode, reg_class_t rclass, bool to_p,
 	   secondary_reload_info *prev_sri)
 {
   secondary_reload_info sri;
@@ -512,7 +512,7 @@ copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
    the alternatives.  */
 static void
 record_reg_classes (int n_alts, int n_ops, rtx *ops,
-		    enum machine_mode *modes, const char **constraints,
+		    machine_mode *modes, const char **constraints,
 		    rtx_insn *insn, enum reg_class *pref)
 {
   int alt;
@@ -548,7 +548,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  unsigned char c;
 	  const char *p = constraints[i];
 	  rtx op = ops[i];
-	  enum machine_mode mode = modes[i];
+	  machine_mode mode = modes[i];
 	  int allows_addr = 0;
 	  int win = 0;
 
@@ -1064,7 +1064,7 @@ ok_for_index_p_nonstrict (rtx reg)
    pseudo-registers should count as OK.  Arguments as for
    regno_ok_for_base_p.  */
 static inline bool
-ok_for_base_p_nonstrict (rtx reg, enum machine_mode mode, addr_space_t as,
+ok_for_base_p_nonstrict (rtx reg, machine_mode mode, addr_space_t as,
 			 enum rtx_code outer_code, enum rtx_code index_code)
 {
   unsigned regno = REGNO (reg);
@@ -1087,7 +1087,7 @@ ok_for_base_p_nonstrict (rtx reg, enum machine_mode mode, addr_space_t as,
    SCALE is twice the amount to multiply the cost by (it is twice so
    we can represent half-cost adjustments).  */
 static void
-record_address_regs (enum machine_mode mode, addr_space_t as, rtx x,
+record_address_regs (machine_mode mode, addr_space_t as, rtx x,
 		     int context, enum rtx_code outer_code,
 		     enum rtx_code index_code, int scale)
 {
@@ -1282,7 +1282,7 @@ static void
 record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
-  enum machine_mode modes[MAX_RECOG_OPERANDS];
+  machine_mode modes[MAX_RECOG_OPERANDS];
   rtx ops[MAX_RECOG_OPERANDS];
   rtx set;
   int i;
@@ -1384,7 +1384,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	      || ((regno = REGNO (dest)) >= FIRST_PSEUDO_REGISTER
 		  && (other_regno = REGNO (src)) < FIRST_PSEUDO_REGISTER)))
 	{
-	  enum machine_mode mode = GET_MODE (src);
+	  machine_mode mode = GET_MODE (src);
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
 	  enum reg_class *cost_classes = cost_classes_ptr->classes;
 	  reg_class_t rclass;
@@ -2039,7 +2039,7 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
       {
 	int cost;
 	enum reg_class hard_reg_class;
-	enum machine_mode mode;
+	machine_mode mode;
 	
 	mode = ALLOCNO_MODE (a);
 	hard_reg_class = REGNO_REG_CLASS (hard_regno);
@@ -2249,7 +2249,7 @@ ira_tune_allocno_costs (void)
   int j, n, regno;
   int cost, min_cost, *reg_costs;
   enum reg_class aclass, rclass;
-  enum machine_mode mode;
+  machine_mode mode;
   ira_allocno_t a;
   ira_allocno_iterator ai;
   ira_allocno_object_iterator oi;

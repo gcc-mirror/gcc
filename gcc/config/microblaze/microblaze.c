@@ -261,7 +261,7 @@ section *sdata2_section;
 
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
 static bool
-microblaze_const_double_ok (rtx op, enum machine_mode mode)
+microblaze_const_double_ok (rtx op, machine_mode mode)
 {
   REAL_VALUE_TYPE d;
 
@@ -303,7 +303,7 @@ microblaze_const_double_ok (rtx op, enum machine_mode mode)
    (ie, register + small offset) or (register + register).  */
 
 int
-simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+simple_memory_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx addr, plus0, plus1;
 
@@ -364,7 +364,7 @@ simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    a doubleword.  */
 
 int
-double_memory_operand (rtx op, enum machine_mode mode)
+double_memory_operand (rtx op, machine_mode mode)
 {
   rtx addr;
 
@@ -423,7 +423,7 @@ microblaze_regno_ok_for_base_p (int regno, int strict)
 
 static bool
 microblaze_valid_base_register_p (rtx x,
-				  enum machine_mode mode ATTRIBUTE_UNUSED,
+				  machine_mode mode ATTRIBUTE_UNUSED,
 				  int strict)
 {
   if (!strict && GET_CODE (x) == SUBREG)
@@ -480,7 +480,7 @@ microblaze_tls_referenced_p (rtx x)
 }
 
 bool
-microblaze_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+microblaze_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return microblaze_tls_referenced_p(x);
 }
@@ -683,7 +683,7 @@ microblaze_classify_unspec (struct microblaze_address_info *info, rtx x)
 
 static bool
 microblaze_valid_index_register_p (rtx x,
-				   enum machine_mode mode ATTRIBUTE_UNUSED,
+				   machine_mode mode ATTRIBUTE_UNUSED,
 				   int strict)
 {
   if (!strict && GET_CODE (x) == SUBREG)
@@ -744,7 +744,7 @@ get_base_reg (rtx x)
 
 static bool
 microblaze_classify_address (struct microblaze_address_info *info, rtx x,
-			     enum machine_mode mode, int strict)
+			     machine_mode mode, int strict)
 {
   rtx xplus0;
   rtx xplus1;
@@ -906,7 +906,7 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
    is called during reload.  */
 
 bool
-microblaze_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+microblaze_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   struct microblaze_address_info addr;
 
@@ -967,7 +967,7 @@ microblaze_legitimate_pic_operand (rtx x)
 
 static rtx
 microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			       enum machine_mode mode ATTRIBUTE_UNUSED)
+			       machine_mode mode ATTRIBUTE_UNUSED)
 {
   register rtx xinsn = x, result;
 
@@ -1101,7 +1101,7 @@ microblaze_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   HOST_WIDE_INT offset, delta;
   unsigned HOST_WIDE_INT bits;
   int i;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx *regs;
 
   bits = BITS_PER_WORD;
@@ -1244,7 +1244,7 @@ microblaze_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 		      int opno ATTRIBUTE_UNUSED, int *total,
 		      bool speed ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   switch (code)
     {
@@ -1388,7 +1388,7 @@ microblaze_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
    of mode MODE at X.  Return 0 if X isn't valid for MODE.  */
 
 static int
-microblaze_address_insns (rtx x, enum machine_mode mode)
+microblaze_address_insns (rtx x, machine_mode mode)
 {
   struct microblaze_address_info addr;
 
@@ -1433,7 +1433,7 @@ microblaze_address_insns (rtx x, enum machine_mode mode)
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 static int
-microblaze_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+microblaze_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 			 addr_space_t as ATTRIBUTE_UNUSED,
 			 bool speed ATTRIBUTE_UNUSED)
 {
@@ -1491,7 +1491,7 @@ init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 static void
 microblaze_function_arg_advance (cumulative_args_t cum_v,
-				 enum machine_mode mode,
+				 machine_mode mode,
 				 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -1548,7 +1548,7 @@ microblaze_function_arg_advance (cumulative_args_t cum_v,
    or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-microblaze_function_arg (cumulative_args_t cum_v, enum machine_mode mode, 
+microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode, 
 			 const_tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
@@ -1592,7 +1592,7 @@ microblaze_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
   if (mode == VOIDmode)
     {
       if (cum->num_adjusts > 0)
-	ret = gen_rtx_PARALLEL ((enum machine_mode) cum->fp_code,
+	ret = gen_rtx_PARALLEL ((machine_mode) cum->fp_code,
 				gen_rtvec_v (cum->num_adjusts, cum->adjust));
     }
 
@@ -1601,7 +1601,7 @@ microblaze_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 
 /* Return number of bytes of argument to put in registers. */
 static int
-function_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,	
+function_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,	
 			    tree type, bool named ATTRIBUTE_UNUSED)	
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -1694,7 +1694,7 @@ microblaze_option_override (void)
 {
   register int i, start;
   register int regno;
-  register enum machine_mode mode;
+  register machine_mode mode;
   int ver;
 
   microblaze_section_threshold = (global_options_set.x_g_switch_value
@@ -1842,7 +1842,7 @@ microblaze_option_override (void)
   /* Set up array giving whether a given register can hold a given mode.   */
 
   for (mode = VOIDmode;
-       mode != MAX_MACHINE_MODE; mode = (enum machine_mode) ((int) mode + 1))
+       mode != MAX_MACHINE_MODE; mode = (machine_mode) ((int) mode + 1))
     {
       register int size = GET_MODE_SIZE (mode);
 
@@ -2816,7 +2816,7 @@ microblaze_expand_prologue (void)
   for (cur_arg = fnargs; cur_arg != 0; cur_arg = next_arg)
     {
       tree passed_type = DECL_ARG_TYPE (cur_arg);
-      enum machine_mode passed_mode = TYPE_MODE (passed_type);
+      machine_mode passed_mode = TYPE_MODE (passed_type);
       rtx entry_parm;
 
       if (TREE_ADDRESSABLE (passed_type))
@@ -3082,7 +3082,7 @@ microblaze_can_use_return_insn (void)
 
 static reg_class_t
 microblaze_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED, 
-			     reg_class_t rclass, enum machine_mode mode ATTRIBUTE_UNUSED, 
+			     reg_class_t rclass, machine_mode mode ATTRIBUTE_UNUSED, 
 			     secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   if (rclass == ST_REGS)
@@ -3171,7 +3171,7 @@ microblaze_encode_section_info (tree decl, rtx rtl, int first)
 }
 
 static rtx
-expand_pic_symbol_ref (enum machine_mode mode ATTRIBUTE_UNUSED, rtx op)
+expand_pic_symbol_ref (machine_mode mode ATTRIBUTE_UNUSED, rtx op)
 {
   rtx result;
   result = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), UNSPEC_GOTOFF);
@@ -3250,7 +3250,7 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 }
 
 bool
-microblaze_expand_move (enum machine_mode mode, rtx operands[])
+microblaze_expand_move (machine_mode mode, rtx operands[])
 {
   rtx op0, op1;
 
@@ -3423,7 +3423,7 @@ microblaze_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    second, generate correct branch instruction.  */
 
 void
-microblaze_expand_conditional_branch (enum machine_mode mode, rtx operands[])
+microblaze_expand_conditional_branch (machine_mode mode, rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[0]);
   rtx cmp_op0 = operands[1];
@@ -3558,7 +3558,7 @@ microblaze_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
    At present, GAS doesn't understand li.[sd], so don't allow it
    to be generated at present.  */
 static bool
-microblaze_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+microblaze_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
 
   if (microblaze_cannot_force_const_mem(mode, x))

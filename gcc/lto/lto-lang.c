@@ -859,7 +859,7 @@ lto_type_for_size (unsigned precision, int unsignedp)
    then UNSIGNEDP selects between saturating and nonsaturating types.  */
 
 static tree
-lto_type_for_mode (enum machine_mode mode, int unsigned_p)
+lto_type_for_mode (machine_mode mode, int unsigned_p)
 {
   tree t;
 
@@ -919,7 +919,7 @@ lto_type_for_mode (enum machine_mode mode, int unsigned_p)
 
   if (COMPLEX_MODE_P (mode))
     {
-      enum machine_mode inner_mode;
+      machine_mode inner_mode;
       tree inner_type;
 
       if (mode == TYPE_MODE (complex_float_type_node))
@@ -939,7 +939,7 @@ lto_type_for_mode (enum machine_mode mode, int unsigned_p)
     }
   else if (VECTOR_MODE_P (mode))
     {
-      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = lto_type_for_mode (inner_mode, unsigned_p);
       if (inner_type != NULL_TREE)
 	return build_vector_type_for_mode (inner_type, mode);

@@ -156,10 +156,10 @@ expand_reg_data (int old)
    attributes of ORIGINAL if it is a register.  The created register
    will have unique held value.  */
 rtx
-lra_create_new_reg_with_unique_value (enum machine_mode md_mode, rtx original,
+lra_create_new_reg_with_unique_value (machine_mode md_mode, rtx original,
 				      enum reg_class rclass, const char *title)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx new_reg;
 
   if (original == NULL_RTX || (mode = GET_MODE (original)) == VOIDmode)
@@ -198,7 +198,7 @@ lra_create_new_reg_with_unique_value (enum machine_mode md_mode, rtx original,
 /* Analogous to the previous function but also inherits value of
    ORIGINAL.  */
 rtx
-lra_create_new_reg (enum machine_mode md_mode, rtx original,
+lra_create_new_reg (machine_mode md_mode, rtx original,
 		    enum reg_class rclass, const char *title)
 {
   rtx new_reg;
@@ -514,7 +514,7 @@ init_insn_regs (void)
    info (NEXT).	 */
 static struct lra_insn_reg *
 new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
-	      enum machine_mode mode,
+	      machine_mode mode,
 	      bool subreg_p, bool early_clobber, struct lra_insn_reg *next)
 {
   struct lra_insn_reg *ir;
@@ -789,7 +789,7 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
 {
   int i, j, regno, last;
   bool subreg_p;
-  enum machine_mode mode;
+  machine_mode mode;
   struct lra_insn_reg *curr;
   rtx op = *x;
   enum rtx_code code = GET_CODE (op);
@@ -934,7 +934,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   if (icode < 0)
     {
       int nop, nalt;
-      enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+      machine_mode operand_mode[MAX_RECOG_OPERANDS];
       const char *constraints[MAX_RECOG_OPERANDS];
 
       nop = asm_noperands (PATTERN (insn));
@@ -1165,7 +1165,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
   if (data->icode < 0)
     {
       int nop;
-      enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+      machine_mode operand_mode[MAX_RECOG_OPERANDS];
       const char *constraints[MAX_RECOG_OPERANDS];
 
       nop = asm_noperands (PATTERN (insn));
@@ -1405,7 +1405,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
 {
   int i, j, regno;
   bool subreg_p;
-  enum machine_mode mode;
+  machine_mode mode;
   const char *fmt;
   enum rtx_code code;
   struct lra_insn_reg *curr;
@@ -2081,7 +2081,7 @@ setup_reg_spill_flag (void)
     for (cl = 0; cl < (int) LIM_REG_CLASSES; cl++)
       for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
 	if (targetm.spill_class ((enum reg_class) cl,
-				 (enum machine_mode) mode) != NO_REGS)
+				 (machine_mode) mode) != NO_REGS)
 	  {
 	    lra_reg_spill_p = true;
 	    return;

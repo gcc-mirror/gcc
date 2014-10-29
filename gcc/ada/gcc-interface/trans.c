@@ -1268,7 +1268,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  Node_Id gnat_expr = Expression (gnat_temp);
 	  tree gnu_expr = gnat_to_gnu (gnat_expr);
 	  int use_address;
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  tree asm_constraint = NULL_TREE;
 #ifdef ASM_COMMENT_START
 	  char *comment;
@@ -2126,7 +2126,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	tree gnu_field_bitpos;
 	tree gnu_field_offset;
 	tree gnu_inner;
-	enum machine_mode mode;
+	machine_mode mode;
 	int unsignedp, volatilep;
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));

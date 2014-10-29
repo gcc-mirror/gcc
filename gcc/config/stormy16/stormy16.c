@@ -82,9 +82,9 @@ static void xstormy16_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					   HOST_WIDE_INT, tree);
 
 static void xstormy16_init_builtins (void);
-static rtx xstormy16_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static rtx xstormy16_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static bool xstormy16_rtx_costs (rtx, int, int, int, int *, bool);
-static int xstormy16_address_cost (rtx, enum machine_mode, addr_space_t, bool);
+static int xstormy16_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool xstormy16_return_in_memory (const_tree, const_tree);
 
 static GTY(()) section *bss100_section;
@@ -129,7 +129,7 @@ xstormy16_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 }
 
 static int
-xstormy16_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+xstormy16_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 			addr_space_t as ATTRIBUTE_UNUSED,
 			bool speed ATTRIBUTE_UNUSED)
 {
@@ -141,7 +141,7 @@ xstormy16_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Worker function for TARGET_MEMORY_MOVE_COST.  */
 
 static int
-xstormy16_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+xstormy16_memory_move_cost (machine_mode mode, reg_class_t rclass,
 			    bool in)
 {
   return (5 + memory_move_secondary_cost (mode, rclass, in));
@@ -176,7 +176,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
 {
   rtx condition_rtx, loc_ref, branch, cy_clobber;
   rtvec vec;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = GET_MODE (op0);
   gcc_assert (mode == HImode || mode == SImode);
@@ -270,7 +270,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
    xstormy16_expand_arith.  */
 
 void
-xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
+xstormy16_split_cbranch (machine_mode mode, rtx label, rtx comparison,
 			 rtx dest)
 {
   rtx op0 = XEXP (comparison, 0);
@@ -495,7 +495,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed,
 
 enum reg_class
 xstormy16_secondary_reload_class (enum reg_class rclass,
-				  enum machine_mode mode ATTRIBUTE_UNUSED,
+				  machine_mode mode ATTRIBUTE_UNUSED,
 				  rtx x)
 {
   /* This chip has the interesting property that only the first eight
@@ -527,7 +527,7 @@ xstormy16_preferred_reload_class (rtx x, reg_class_t rclass)
 
 int
 xstormy16_below100_symbol (rtx x,
-			   enum machine_mode mode ATTRIBUTE_UNUSED)
+			   machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
@@ -552,7 +552,7 @@ xstormy16_below100_symbol (rtx x,
    MEM will get split into smaller sized accesses.  */
 
 int
-xstormy16_splittable_below100_operand (rtx x, enum machine_mode mode)
+xstormy16_splittable_below100_operand (rtx x, machine_mode mode)
 {
   if (MEM_P (x) && MEM_VOLATILE_P (x))
     return 0;
@@ -660,7 +660,7 @@ xstormy16_expand_andqi3 (rtx *operands)
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
 bool
-xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+xstormy16_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 				rtx x, bool strict)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0))
@@ -716,7 +716,7 @@ xstormy16_mode_dependent_address_p (const_rtx x,
 }
 
 int
-short_memory_operand (rtx x, enum machine_mode mode)
+short_memory_operand (rtx x, machine_mode mode)
 {
   if (! memory_operand (x, mode))
     return 0;
@@ -730,7 +730,7 @@ short_memory_operand (rtx x, enum machine_mode mode)
    This function is only called when reload_completed.  */
 
 void
-xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
+xstormy16_split_move (machine_mode mode, rtx dest, rtx src)
 {
   int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
   int direction, end, i;
@@ -862,7 +862,7 @@ xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
    mode MODE from SRC to DEST.  */
 
 void
-xstormy16_expand_move (enum machine_mode mode, rtx dest, rtx src)
+xstormy16_expand_move (machine_mode mode, rtx dest, rtx src)
 {
   if (MEM_P (dest) && (GET_CODE (XEXP (dest, 0)) == PRE_MODIFY))
     {
@@ -1238,7 +1238,7 @@ xstormy16_function_profiler (void)
    the word count.  */
 
 static void
-xstormy16_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 				const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -1254,7 +1254,7 @@ xstormy16_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 }
 
 static rtx
-xstormy16_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+xstormy16_function_arg (cumulative_args_t cum_v, machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -1477,7 +1477,7 @@ xstormy16_function_value (const_tree valtype,
 			  const_tree func ATTRIBUTE_UNUSED,
 			  bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   mode = TYPE_MODE (valtype);
   PROMOTE_MODE (mode, 0, valtype);
   return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
@@ -1486,7 +1486,7 @@ xstormy16_function_value (const_tree valtype,
 /* Worker function for TARGET_LIBCALL_VALUE.  */
 
 static rtx
-xstormy16_libcall_value (enum machine_mode mode,
+xstormy16_libcall_value (machine_mode mode,
 			 const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
@@ -1929,7 +1929,7 @@ void
 xstormy16_expand_call (rtx retval, rtx dest, rtx counter)
 {
   rtx call, temp;
-  enum machine_mode mode;
+  machine_mode mode;
 
   gcc_assert (MEM_P (dest));
   dest = XEXP (dest, 0);
@@ -1970,7 +1970,7 @@ xstormy16_expand_call (rtx retval, rtx dest, rtx counter)
    (this saves duplicating code in xstormy16_split_cbranch).  */
 
 void
-xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
+xstormy16_expand_arith (machine_mode mode, enum rtx_code code,
 			rtx dest, rtx src0, rtx src1)
 {
   int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
@@ -2073,7 +2073,7 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
    SIZE_R will be a CONST_INT, X will be a hard register.  */
 
 const char *
-xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
+xstormy16_output_shift (machine_mode mode, enum rtx_code code,
 			rtx x, rtx size_r, rtx temp)
 {
   HOST_WIDE_INT size;
@@ -2334,7 +2334,7 @@ xstormy16_init_builtins (void)
 static rtx
 xstormy16_expand_builtin (tree exp, rtx target,
 			  rtx subtarget ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  int ignore ATTRIBUTE_UNUSED)
 {
   rtx op[10], args[10], pat, copyto[10], retval = 0;
@@ -2356,11 +2356,11 @@ xstormy16_expand_builtin (tree exp, rtx target,
     {
       char ao = s16builtins[i].arg_ops[o];
       char c = insn_data[code].operand[o].constraint[0];
-      enum machine_mode omode;
+      machine_mode omode;
 
       copyto[o] = 0;
 
-      omode = (enum machine_mode) insn_data[code].operand[o].mode;
+      omode = (machine_mode) insn_data[code].operand[o].mode;
       if (ao == 'r')
 	op[o] = target ? target : gen_reg_rtx (omode);
       else if (ao == 't')
@@ -2409,8 +2409,8 @@ combine_bnp (rtx_insn *insn)
   unsigned int mask;
   rtx cond, reg, qireg, mem;
   rtx_insn *and_insn, *load;
-  enum machine_mode load_mode = QImode;
-  enum machine_mode and_mode = QImode;
+  machine_mode load_mode = QImode;
+  machine_mode and_mode = QImode;
   rtx_insn *shift = NULL;
 
   insn_code = recog_memoized (insn);

@@ -842,7 +842,7 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
   int i, c, regno = 0;
   enum reg_class cl;
   rtx op;
-  enum machine_mode mode;
+  machine_mode mode;
 
   CLEAR_HARD_REG_SET (*set);
   for (i = 0; i < recog_data.n_operands; i++)
@@ -928,7 +928,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 		 a simplification of:
 
 		    (subreg:YMODE (reg:XMODE XREGNO) OFFSET).  */
-	      enum machine_mode ymode, xmode;
+	      machine_mode ymode, xmode;
 	      int xregno, yregno;
 	      HOST_WIDE_INT offset;
 

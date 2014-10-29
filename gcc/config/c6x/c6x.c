@@ -517,7 +517,7 @@ c6x_init_cumulative_args (CUMULATIVE_ARGS *cum, const_tree fntype, rtx libname,
 /* Implements the macro FUNCTION_ARG defined in c6x.h.  */
 
 static rtx
-c6x_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+c6x_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -543,7 +543,7 @@ c6x_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 
 static void
 c6x_function_arg_advance (cumulative_args_t cum_v,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED,
 			  bool named ATTRIBUTE_UNUSED)
 {
@@ -556,7 +556,7 @@ c6x_function_arg_advance (cumulative_args_t cum_v,
    upward rather than downward.  */
 
 bool
-c6x_block_reg_pad_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
+c6x_block_reg_pad_upward (machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type, bool first)
 {
   HOST_WIDE_INT size;
@@ -574,7 +574,7 @@ c6x_block_reg_pad_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  */
 
 static unsigned int
-c6x_function_arg_boundary (enum machine_mode mode, const_tree type)
+c6x_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int boundary = type ? TYPE_ALIGN (type) : GET_MODE_BITSIZE (mode);
 
@@ -599,7 +599,7 @@ c6x_function_arg_boundary (enum machine_mode mode, const_tree type)
 
 /* Implement TARGET_FUNCTION_ARG_ROUND_BOUNDARY.  */
 static unsigned int
-c6x_function_arg_round_boundary (enum machine_mode mode, const_tree type)
+c6x_function_arg_round_boundary (machine_mode mode, const_tree type)
 {
   return c6x_function_arg_boundary (mode, type);
 }
@@ -632,7 +632,7 @@ c6x_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED,
 /* Implement TARGET_LIBCALL_VALUE.  */
 
 static rtx
-c6x_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+c6x_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, REG_A4);
 }
@@ -658,7 +658,7 @@ c6x_function_value_regno_p (const unsigned int regno)
 
 static bool
 c6x_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		       enum machine_mode mode, const_tree type,
+		       machine_mode mode, const_tree type,
 		       bool named ATTRIBUTE_UNUSED)
 {
   int size = -1;
@@ -694,7 +694,7 @@ c6x_return_in_msb (const_tree valtype)
 
 static bool
 c6x_callee_copies (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   const_tree type ATTRIBUTE_UNUSED,
 		   bool named ATTRIBUTE_UNUSED)
 {
@@ -912,7 +912,7 @@ c6x_in_small_data_p (const_tree exp)
    everything sized 8 bytes or smaller into small data.  */
 
 static section *
-c6x_select_rtx_section (enum machine_mode mode, rtx x,
+c6x_select_rtx_section (machine_mode mode, rtx x,
 			unsigned HOST_WIDE_INT align)
 {
   if (c6x_sdata_mode == C6X_SDATA_ALL
@@ -1110,7 +1110,7 @@ c6x_call_saved_register_used (tree call_expr)
   cumulative_args_t cum;
   HARD_REG_SET call_saved_regset;
   tree parameter;
-  enum machine_mode mode;
+  machine_mode mode;
   tree type;
   rtx parm_rtx;
   int i;
@@ -1375,7 +1375,7 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
    should generate an insn to move OPERANDS[1] to OPERANDS[0].  */
 
 bool
-expand_move (rtx *operands, enum machine_mode mode)
+expand_move (rtx *operands, machine_mode mode)
 {
   rtx dest = operands[0];
   rtx op = operands[1];
@@ -1438,14 +1438,14 @@ c6x_force_op_for_comparison_p (enum rtx_code code, rtx op)
    that should be used in the jump insn.  */
 
 rtx
-c6x_expand_compare (rtx comparison, enum machine_mode mode)
+c6x_expand_compare (rtx comparison, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (comparison);
   rtx op0 = XEXP (comparison, 0);
   rtx op1 = XEXP (comparison, 1);
   rtx cmp;
   enum rtx_code jump_code = code;
-  enum machine_mode op_mode = GET_MODE (op0);
+  machine_mode op_mode = GET_MODE (op0);
 
   if (op_mode == DImode && (code == NE || code == EQ) && op1 == const0_rtx)
     {
@@ -1642,7 +1642,7 @@ rtx
 c6x_subword (rtx op, bool high_p)
 {
   unsigned int byte;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = GET_MODE (op);
   if (mode == VOIDmode)
@@ -1762,7 +1762,7 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   while (count > 0)
     {
       rtx reg, reg_lowpart;
-      enum machine_mode srcmode, dstmode;
+      machine_mode srcmode, dstmode;
       unsigned HOST_WIDE_INT src_size, dst_size, src_left;
       int shift;
       rtx srcmem, dstmem;
@@ -1852,7 +1852,7 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
    use the scaled form.  */
 
 static void
-print_address_offset (FILE *file, rtx off, enum machine_mode mem_mode)
+print_address_offset (FILE *file, rtx off, machine_mode mem_mode)
 {
   rtx pat;
 
@@ -1891,7 +1891,7 @@ static void c6x_print_operand (FILE *, rtx, int);
 /* Subroutine of c6x_print_operand; used to print a memory reference X to FILE.  */
 
 static void
-c6x_print_address_operand (FILE *file, rtx x, enum machine_mode mem_mode)
+c6x_print_address_operand (FILE *file, rtx x, machine_mode mem_mode)
 {
   rtx off;
   switch (GET_CODE (x))
@@ -2107,7 +2107,7 @@ c6x_print_operand (FILE *file, rtx x, int code)
   int i;
   HOST_WIDE_INT v;
   tree t;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (code == '|')
     {
@@ -2328,7 +2328,7 @@ c6x_print_operand (FILE *file, rtx x, int code)
 bool
 c6x_mem_operand (rtx op, enum reg_class c, bool small_offset)
 {
-  enum machine_mode mode = GET_MODE (op);
+  machine_mode mode = GET_MODE (op);
   rtx base = XEXP (op, 0);
   switch (GET_CODE (base))
     {
@@ -2372,7 +2372,7 @@ c6x_mem_operand (rtx op, enum reg_class c, bool small_offset)
    recursively examining an operand inside a PRE/POST_MODIFY.  */
 
 bool
-c6x_legitimate_address_p_1 (enum machine_mode mode, rtx x, bool strict,
+c6x_legitimate_address_p_1 (machine_mode mode, rtx x, bool strict,
 			    bool no_large_offset)
 {
   int size, size1;
@@ -2480,13 +2480,13 @@ c6x_legitimate_address_p_1 (enum machine_mode mode, rtx x, bool strict,
 }
 
 static bool
-c6x_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+c6x_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   return c6x_legitimate_address_p_1 (mode, x, strict, false);
 }
 
 static bool
-c6x_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+c6x_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED,
 			   rtx x ATTRIBUTE_UNUSED)
 {
   return true;
@@ -2834,7 +2834,7 @@ c6x_expand_prologue (void)
 	  int idx = N_SAVE_ORDER - i - 1;
 	  unsigned regno = reg_save_order[idx];
 	  rtx reg;
-	  enum machine_mode save_mode = SImode;
+	  machine_mode save_mode = SImode;
 
 	  if (regno == REG_A15 && frame_pointer_needed)
 	    /* Already saved.  */
@@ -2926,7 +2926,7 @@ c6x_expand_epilogue (bool sibcall)
 	{
 	  unsigned regno = reg_save_order[i];
 	  rtx reg;
-	  enum machine_mode save_mode = SImode;
+	  machine_mode save_mode = SImode;
 
 	  if (!c6x_save_reg (regno))
 	    continue;
@@ -6236,7 +6236,7 @@ c6x_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* Implements target hook vector_mode_supported_p.  */
 
 static bool
-c6x_vector_mode_supported_p (enum machine_mode mode)
+c6x_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -6252,8 +6252,8 @@ c6x_vector_mode_supported_p (enum machine_mode mode)
 }
 
 /* Implements TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
-static enum machine_mode
-c6x_preferred_simd_mode (enum machine_mode mode)
+static machine_mode
+c6x_preferred_simd_mode (machine_mode mode)
 {
   switch (mode)
     {
@@ -6270,7 +6270,7 @@ c6x_preferred_simd_mode (enum machine_mode mode)
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
-c6x_scalar_mode_supported_p (enum machine_mode mode)
+c6x_scalar_mode_supported_p (machine_mode mode)
 {
   if (ALL_FIXED_POINT_MODE_P (mode)
       && GET_MODE_PRECISION (mode) <= 2 * BITS_PER_WORD)
@@ -6550,7 +6550,7 @@ static const struct builtin_description bdesc_1arg[] =
    where we expect a vector.  To avoid crashing, use one of the vector
    clear instructions.  */
 static rtx
-safe_vector_operand (rtx x, enum machine_mode mode)
+safe_vector_operand (rtx x, machine_mode mode)
 {
   if (x != const0_rtx)
     return x;
@@ -6573,11 +6573,11 @@ c6x_expand_binop_builtin (enum insn_code icode, tree exp, rtx target,
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
   rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  enum machine_mode op0mode = GET_MODE (op0);
-  enum machine_mode op1mode = GET_MODE (op1);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1 + offs].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2 + offs].mode;
+  machine_mode op0mode = GET_MODE (op0);
+  machine_mode op1mode = GET_MODE (op1);
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode mode0 = insn_data[icode].operand[1 + offs].mode;
+  machine_mode mode1 = insn_data[icode].operand[2 + offs].mode;
   rtx ret = target;
 
   if (VECTOR_MODE_P (mode0))
@@ -6642,9 +6642,9 @@ c6x_expand_unop_builtin (enum insn_code icode, tree exp,
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  enum machine_mode op0mode = GET_MODE (op0);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  machine_mode op0mode = GET_MODE (op0);
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode mode0 = insn_data[icode].operand[1].mode;
 
   if (! target
       || GET_MODE (target) != tmode
@@ -6680,7 +6680,7 @@ c6x_expand_unop_builtin (enum insn_code icode, tree exp,
 static rtx
 c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 		     rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     machine_mode mode ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
   size_t i;

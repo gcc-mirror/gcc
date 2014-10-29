@@ -119,7 +119,7 @@ enum aarch64_type_qualifiers
 typedef struct
 {
   const char *name;
-  enum machine_mode mode;
+  machine_mode mode;
   const enum insn_code code;
   unsigned int fcode;
   enum aarch64_type_qualifiers *qualifiers;
@@ -316,7 +316,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 typedef struct
 {
   const char *name;
-  enum machine_mode mode;
+  machine_mode mode;
   const enum insn_code icode;
   unsigned int fcode;
 } aarch64_crc_builtin_datum;
@@ -365,7 +365,7 @@ static GTY(()) tree aarch64_builtin_decls[AARCH64_BUILTIN_MAX];
 /* Return a tree for a signed or unsigned argument of either
    the mode specified by MODE, or the inner mode of MODE.  */
 tree
-aarch64_build_scalar_type (enum machine_mode mode,
+aarch64_build_scalar_type (machine_mode mode,
 			   bool unsigned_p,
 			   bool poly_p)
 {
@@ -444,7 +444,7 @@ aarch64_build_scalar_type (enum machine_mode mode,
 }
 
 tree
-aarch64_build_vector_type (enum machine_mode mode,
+aarch64_build_vector_type (machine_mode mode,
 			   bool unsigned_p,
 			   bool poly_p)
 {
@@ -511,7 +511,7 @@ aarch64_build_vector_type (enum machine_mode mode,
 }
 
 tree
-aarch64_build_type (enum machine_mode mode, bool unsigned_p, bool poly_p)
+aarch64_build_type (machine_mode mode, bool unsigned_p, bool poly_p)
 {
   if (VECTOR_MODE_P (mode))
     return aarch64_build_vector_type (mode, unsigned_p, poly_p);
@@ -520,19 +520,19 @@ aarch64_build_type (enum machine_mode mode, bool unsigned_p, bool poly_p)
 }
 
 tree
-aarch64_build_signed_type (enum machine_mode mode)
+aarch64_build_signed_type (machine_mode mode)
 {
   return aarch64_build_type (mode, false, false);
 }
 
 tree
-aarch64_build_unsigned_type (enum machine_mode mode)
+aarch64_build_unsigned_type (machine_mode mode)
 {
   return aarch64_build_type (mode, true, false);
 }
 
 tree
-aarch64_build_poly_type (enum machine_mode mode)
+aarch64_build_poly_type (machine_mode mode)
 {
   return aarch64_build_type (mode, false, true);
 }
@@ -646,7 +646,7 @@ aarch64_init_simd_builtins (void)
 	 removing duplicates for us.  */
       for (; op_num >= 0; arg_num--, op_num--)
 	{
-	  enum machine_mode op_mode = insn_data[d->code].operand[op_num].mode;
+	  machine_mode op_mode = insn_data[d->code].operand[op_num].mode;
 	  enum aarch64_type_qualifiers qualifiers = d->qualifiers[arg_num];
 
 	  if (qualifiers & qualifier_unsigned)
@@ -781,8 +781,8 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
   rtx pat;
   tree arg[SIMD_MAX_BUILTIN_ARGS];
   rtx op[SIMD_MAX_BUILTIN_ARGS];
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
   int argc = 0;
 
   if (have_retval
@@ -959,9 +959,9 @@ aarch64_crc32_expand_builtin (int fcode, tree exp, rtx target)
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode mode0 = insn_data[icode].operand[1].mode;
+  machine_mode mode1 = insn_data[icode].operand[2].mode;
 
   if (! target
       || GET_MODE (target) != tmode
@@ -990,7 +990,7 @@ rtx
 aarch64_expand_builtin (tree exp,
 		     rtx target,
 		     rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     machine_mode mode ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -1037,7 +1037,7 @@ aarch64_expand_builtin (tree exp,
 tree
 aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 {
-  enum machine_mode in_mode, out_mode;
+  machine_mode in_mode, out_mode;
   int in_n, out_n;
 
   if (TREE_CODE (type_out) != VECTOR_TYPE

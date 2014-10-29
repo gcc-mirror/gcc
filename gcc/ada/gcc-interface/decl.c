@@ -3738,7 +3738,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* True if we make a dummy type here.  */
 	bool made_dummy = false;
 	/* The mode to be used for the pointer type.  */
-	enum machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
+	machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
 	/* The GCC type used for the designated type.  */
 	tree gnu_desig_type = NULL_TREE;
 
@@ -4470,7 +4470,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    unsigned int size
 		      = TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
 		    unsigned int i = BITS_PER_UNIT;
-		    enum machine_mode mode;
+		    machine_mode mode;
 
 		    while (i < size)
 		      i <<= 1;
@@ -6157,7 +6157,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 	{
 	  HOST_WIDE_INT bitsize, bitpos;
 	  tree offset;
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  int unsignedp, volatilep;
 
 	  inner = get_inner_reference (inner, &bitsize, &bitpos, &offset,
@@ -7841,7 +7841,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
      by the smallest integral mode that's valid for pointers.  */
   if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
     {
-      enum machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
       while (!targetm.valid_pointer_mode (p_mode))
 	p_mode = GET_MODE_WIDER_MODE (p_mode);
       type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
@@ -8051,7 +8051,7 @@ check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
 {
   Node_Id gnat_error_point = gnat_entity;
   Node_Id gnat_node;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int align;
   tree size;
 

@@ -157,7 +157,7 @@ convert (tree type, tree expr)
    then UNSIGNEDP selects between signed and unsigned types.  */
 
 tree
-java_type_for_mode (enum machine_mode mode, int unsignedp)
+java_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == TYPE_MODE (int_type_node))
     return unsignedp ? unsigned_int_type_node : int_type_node;

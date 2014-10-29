@@ -334,7 +334,7 @@ nios2_fpu_insn_enabled (enum n2fpu_code code)
    settings.  */
 
 static bool
-nios2_fpu_compare_enabled (enum rtx_code cond, enum machine_mode mode)
+nios2_fpu_compare_enabled (enum rtx_code cond, machine_mode mode)
 {
   if (mode == SFmode)
     switch (cond) 
@@ -1313,7 +1313,7 @@ nios2_legitimize_tls_address (rtx loc)
    sdata section we can save even more cycles by doing things
    gp relative.  */
 void
-nios2_emit_expensive_div (rtx *operands, enum machine_mode mode)
+nios2_emit_expensive_div (rtx *operands, machine_mode mode)
 {
   rtx or_result, shift_left_result;
   rtx lookup_value;
@@ -1380,7 +1380,7 @@ nios2_emit_expensive_div (rtx *operands, enum machine_mode mode)
 static void
 nios2_alternate_compare_const (enum rtx_code code, rtx op,
 			       enum rtx_code *alt_code, rtx *alt_op,
-			       enum machine_mode mode)
+			       machine_mode mode)
 {
   HOST_WIDE_INT opval = INTVAL (op);
   enum rtx_code scode = signed_condition (code);
@@ -1433,7 +1433,7 @@ nios2_valid_compare_const_p (enum rtx_code code, rtx op)
    Returns true if FPU compare can be done.  */
 
 bool
-nios2_validate_fpu_compare (enum machine_mode mode, rtx *cmp, rtx *op1, rtx *op2,
+nios2_validate_fpu_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2,
 			    bool modify_p)
 {
   bool rev_p = false;
@@ -1466,7 +1466,7 @@ nios2_validate_fpu_compare (enum machine_mode mode, rtx *cmp, rtx *op1, rtx *op2
 /* Checks and modifies the comparison in *CMP, *OP1, and *OP2 into valid
    nios2 supported form.  Returns true if success.  */
 bool
-nios2_validate_compare (enum machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
+nios2_validate_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
 {
   enum rtx_code code = GET_CODE (*cmp);
   enum rtx_code alt_code;
@@ -1525,7 +1525,7 @@ nios2_validate_compare (enum machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 static bool
-nios2_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+nios2_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx base, offset;
   split_const (x, &base, &offset);
@@ -1534,7 +1534,7 @@ nios2_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 static bool
-nios2_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+nios2_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return nios2_legitimate_constant_p (mode, x) == false;
 }
@@ -1580,7 +1580,7 @@ nios2_valid_addr_expr_p (rtx base, rtx offset, bool strict_p)
 
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 static bool
-nios2_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx operand, bool strict_p)
 {
   switch (GET_CODE (operand))
@@ -1784,7 +1784,7 @@ nios2_legitimize_constant_address (rtx addr)
 /* Implement TARGET_LEGITIMIZE_ADDRESS.  */
 static rtx
 nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED)
+			  machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (CONSTANT_P (x))
     return nios2_legitimize_constant_address (x);
@@ -1857,7 +1857,7 @@ nios2_delegitimize_address (rtx x)
 
 /* Main expander function for RTL moves.  */
 int
-nios2_emit_move_sequence (rtx *operands, enum machine_mode mode)
+nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 {
   rtx to = operands[0];
   rtx from = operands[1];
@@ -2184,8 +2184,8 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
   int num_operands = N2FPU (code).num_operands;
   const char *insn_name = N2FPU_NAME (code);
   tree ftype = nios2_ftype (N2FPU_FTCODE (code));
-  enum machine_mode dst_mode = TYPE_MODE (TREE_TYPE (ftype));
-  enum machine_mode src_mode = TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (ftype)));
+  machine_mode dst_mode = TYPE_MODE (TREE_TYPE (ftype));
+  machine_mode src_mode = TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (ftype)));
 
   /* Prepare X register for DF input operands.  */
   if (GET_MODE_SIZE (src_mode) == 8 && num_operands == 3)
@@ -2274,7 +2274,7 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
    (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-nios2_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+nios2_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		    const_tree type ATTRIBUTE_UNUSED,
 		    bool named ATTRIBUTE_UNUSED)
 {
@@ -2293,7 +2293,7 @@ nios2_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 
 static int
 nios2_arg_partial_bytes (cumulative_args_t cum_v,
-                         enum machine_mode mode, tree type ATTRIBUTE_UNUSED,
+                         machine_mode mode, tree type ATTRIBUTE_UNUSED,
                          bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
@@ -2322,7 +2322,7 @@ nios2_arg_partial_bytes (cumulative_args_t cum_v,
    may not be available.  */
 
 static void
-nios2_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+nios2_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			    const_tree type ATTRIBUTE_UNUSED,
 			    bool named ATTRIBUTE_UNUSED)
 {
@@ -2347,7 +2347,7 @@ nios2_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 }
 
 enum direction
-nios2_function_arg_padding (enum machine_mode mode, const_tree type)
+nios2_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
@@ -2370,7 +2370,7 @@ nios2_function_arg_padding (enum machine_mode mode, const_tree type)
 }
 
 enum direction
-nios2_block_reg_padding (enum machine_mode mode, tree type,
+nios2_block_reg_padding (machine_mode mode, tree type,
                          int first ATTRIBUTE_UNUSED)
 {
   return nios2_function_arg_padding (mode, type);
@@ -2402,7 +2402,7 @@ nios2_function_value (const_tree ret_type, const_tree fn ATTRIBUTE_UNUSED,
 
 /* Implement TARGET_LIBCALL_VALUE.  */
 static rtx
-nios2_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+nios2_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, FIRST_RETVAL_REGNO);
 }
@@ -2426,7 +2426,7 @@ nios2_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    own va_arg type.  */
 static void
 nios2_setup_incoming_varargs (cumulative_args_t cum_v,
-                              enum machine_mode mode, tree type,
+                              machine_mode mode, tree type,
                               int *pretend_size, int second_time)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
@@ -2484,7 +2484,7 @@ nios2_expand_fpu_builtin (tree exp, unsigned int code, rtx target)
   enum insn_code icode = N2FPU_ICODE (code);
   int nargs, argno, opno = 0;
   int num_operands = N2FPU (code).num_operands;
-  enum machine_mode dst_mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode dst_mode = TYPE_MODE (TREE_TYPE (exp));
   bool has_target_p = (dst_mode != VOIDmode);
 
   if (N2FPU_N (code) < 0)
@@ -2573,7 +2573,7 @@ static rtx
 nios2_expand_custom_builtin (tree exp, unsigned int index, rtx target)
 {
   bool has_target_p = (TREE_TYPE (exp) != void_type_node);
-  enum machine_mode tmode = VOIDmode;
+  machine_mode tmode = VOIDmode;
   int nargs, argno;
   rtx value, insn, unspec_args[3];
   tree arg;
@@ -2745,7 +2745,7 @@ nios2_expand_ldstio_builtin (tree exp, rtx target,
   bool has_target_p;
   rtx addr, mem, val;
   struct expand_operand ops[MAX_RECOG_OPERANDS];
-  enum machine_mode mode = insn_data[d->icode].operand[0].mode;
+  machine_mode mode = insn_data[d->icode].operand[0].mode;
 
   addr = expand_normal (CALL_EXPR_ARG (exp, 0));
   mem = gen_rtx_MEM (mode, addr);
@@ -2808,7 +2808,7 @@ nios2_expand_rdwrctl_builtin (tree exp, rtx target,
 
 static rtx
 nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-                      enum machine_mode mode ATTRIBUTE_UNUSED,
+                      machine_mode mode ATTRIBUTE_UNUSED,
 		      int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);

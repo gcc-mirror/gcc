@@ -971,7 +971,7 @@ extern void ira_free_bitmap (bitmap);
 extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
-extern void ira_init_register_move_cost (enum machine_mode);
+extern void ira_init_register_move_cost (machine_mode);
 extern void ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts);
 extern int ira_get_dup_out_num (int op_num, HARD_REG_SET &alts);
 
@@ -1088,7 +1088,7 @@ ira_equiv_no_lvalue_p (int regno)
 
 /* Initialize register costs for MODE if necessary.  */
 static inline void
-ira_init_register_move_cost_if_necessary (enum machine_mode mode)
+ira_init_register_move_cost_if_necessary (machine_mode mode)
 {
   if (ira_register_move_cost[mode] == NULL)
     ira_init_register_move_cost (mode);
@@ -1394,7 +1394,7 @@ ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
    starting with HARD_REGNO and containing value of MODE are in set
    HARD_REGSET.  */
 static inline bool
-ira_hard_reg_set_intersection_p (int hard_regno, enum machine_mode mode,
+ira_hard_reg_set_intersection_p (int hard_regno, machine_mode mode,
 				 HARD_REG_SET hard_regset)
 {
   int i;
@@ -1422,7 +1422,7 @@ hard_reg_set_size (HARD_REG_SET set)
    HARD_REGNO and containing value of MODE are fully in set
    HARD_REGSET.  */
 static inline bool
-ira_hard_reg_in_set_p (int hard_regno, enum machine_mode mode,
+ira_hard_reg_in_set_p (int hard_regno, machine_mode mode,
 		       HARD_REG_SET hard_regset)
 {
   int i;

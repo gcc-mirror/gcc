@@ -481,7 +481,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
   rtx_insn *mov_insn = NULL;
   int regno;
   rtx mem = *mem_insn.mem_loc;
-  enum machine_mode mode = GET_MODE (mem);
+  machine_mode mode = GET_MODE (mem);
   rtx new_mem;
   int old_cost = 0;
   int new_cost = 0;
@@ -621,7 +621,7 @@ try_merge (void)
   /* The width of the mem being accessed.  */
   int size = GET_MODE_SIZE (GET_MODE (mem));
   rtx_insn *last_insn = NULL;
-  enum machine_mode reg_mode = GET_MODE (inc_reg);
+  machine_mode reg_mode = GET_MODE (inc_reg);
 
   switch (inc_insn.form)
     {

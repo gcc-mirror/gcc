@@ -2371,14 +2371,14 @@
 #if HOST_BITS_PER_WIDE_INT == 32
       gcc_unreachable ();
 #else
-      enum machine_mode mode = GET_MODE (operands[1]);
+      machine_mode mode = GET_MODE (operands[1]);
       rtx tem = simplify_subreg (DImode, operands[1], mode, 0);
       emit_insn (gen_movdi (operands[0], tem));
 #endif
     }
   else
     {
-      enum machine_mode mode = GET_MODE (operands[1]);
+      machine_mode mode = GET_MODE (operands[1]);
       rtx hi = simplify_subreg (SImode, operands[1], mode, 0);
       rtx lo = simplify_subreg (SImode, operands[1], mode, 4);
 

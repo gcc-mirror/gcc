@@ -53,7 +53,7 @@
   t: tree
   T: tree (brief)
   C: enum rtx_code
-  m: enum machine_mode
+  m: machine_mode
   R: enum reg_class
   L: insn list
   H: location_t
@@ -238,7 +238,7 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
               break;
 
             case 'm':
-              fputs (GET_MODE_NAME ((enum machine_mode) va_arg (ap, int)),
+              fputs (GET_MODE_NAME ((machine_mode) va_arg (ap, int)),
                      file);
               break;
 

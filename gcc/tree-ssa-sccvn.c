@@ -977,7 +977,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     size_tree = op->op0;
   else
     {
-      enum machine_mode mode = TYPE_MODE (type);
+      machine_mode mode = TYPE_MODE (type);
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (type);
       else

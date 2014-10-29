@@ -30,7 +30,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern unsigned long sparc_type_code (tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding (enum machine_mode, const_tree);
+extern enum direction function_arg_padding (machine_mode, const_tree);
 #endif /* ARGS_SIZE_RTX */
 #endif /* TREE_CODE */
 
@@ -49,23 +49,23 @@ extern void sparc_output_scratch_registers (FILE *);
 extern void sparc_target_macros (void);
 
 #ifdef RTX_CODE
-extern enum machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
+extern machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
 /* Define the function that build the compare insn for scc and bcc.  */
 extern rtx gen_compare_reg (rtx cmp);
 extern rtx sparc_emit_float_lib_cmp (rtx, rtx, enum rtx_code);
-extern void sparc_emit_floatunsdi (rtx [2], enum machine_mode);
-extern void sparc_emit_fixunsdi (rtx [2], enum machine_mode);
+extern void sparc_emit_floatunsdi (rtx [2], machine_mode);
+extern void sparc_emit_fixunsdi (rtx [2], machine_mode);
 extern void emit_tfmode_binop (enum rtx_code, rtx *);
 extern void emit_tfmode_unop (enum rtx_code, rtx *);
 extern void emit_tfmode_cvt (enum rtx_code, rtx *);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
-extern rtx sparc_legitimize_reload_address (rtx, enum machine_mode, int, int,
+extern rtx sparc_legitimize_reload_address (rtx, machine_mode, int, int,
 					    int, int *win);
 extern void load_got_register (void);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
-extern bool sparc_expand_move (enum machine_mode, rtx *);
+extern bool sparc_expand_move (machine_mode, rtx *);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
 extern int sparc_splitdi_legitimate (rtx, rtx);
 extern int sparc_split_regreg_legitimate (rtx, rtx);
@@ -82,13 +82,13 @@ extern bool emit_scc_insn (rtx []);
 extern void emit_conditional_branch_insn (rtx []);
 extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
-extern rtx widen_mem_for_ldd_peep (rtx, rtx, enum machine_mode);
+extern rtx widen_mem_for_ldd_peep (rtx, rtx, machine_mode);
 extern int empty_delay_slot (rtx_insn *);
 extern int emit_cbcond_nop (rtx);
 extern int eligible_for_call_delay (rtx_insn *);
 extern int eligible_for_return_delay (rtx_insn *);
 extern int eligible_for_sibcall_delay (rtx_insn *);
-extern int emit_move_sequence (rtx, enum machine_mode);
+extern int emit_move_sequence (rtx, machine_mode);
 extern int fp_sethi_p (rtx);
 extern int fp_mov_p (rtx);
 extern int fp_high_losum_p (rtx);
@@ -103,11 +103,11 @@ extern int sparc_check_64 (rtx, rtx_insn *);
 extern rtx gen_df_reg (rtx, int);
 extern void sparc_expand_compare_and_swap (rtx op[]);
 extern void sparc_expand_vector_init (rtx, rtx);
-extern void sparc_expand_vec_perm_bmask(enum machine_mode, rtx);
-extern bool sparc_expand_conditional_move (enum machine_mode, rtx *);
-extern void sparc_expand_vcond (enum machine_mode, rtx *, int, int);
-unsigned int sparc_regmode_natural_size (enum machine_mode);
-bool sparc_modes_tieable_p (enum machine_mode, enum machine_mode);
+extern void sparc_expand_vec_perm_bmask(machine_mode, rtx);
+extern bool sparc_expand_conditional_move (machine_mode, rtx *);
+extern void sparc_expand_vcond (machine_mode, rtx *, int, int);
+unsigned int sparc_regmode_natural_size (machine_mode);
+bool sparc_modes_tieable_p (machine_mode, machine_mode);
 #endif /* RTX_CODE */
 
 extern void sparc_emit_membar_for_model (enum memmodel, int, int);

@@ -169,7 +169,7 @@ struct invariant_expr_entry
   rtx expr;
 
   /* Its mode.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* Its hash.  */
   hashval_t hash;
@@ -472,7 +472,7 @@ typedef hash_table<invariant_expr_hasher> invariant_htab_type;
    insert INV to the table for this expression and return INV.  */
 
 static struct invariant *
-find_or_insert_inv (invariant_htab_type *eq, rtx expr, enum machine_mode mode,
+find_or_insert_inv (invariant_htab_type *eq, rtx expr, machine_mode mode,
 		    struct invariant *inv)
 {
   hashval_t hash = hash_invariant_expr_1 (inv->insn, expr);
@@ -509,7 +509,7 @@ find_identical_invariants (invariant_htab_type *eq, struct invariant *inv)
   bitmap_iterator bi;
   struct invariant *dep;
   rtx expr, set;
-  enum machine_mode mode;
+  machine_mode mode;
   struct invariant *tmp;
 
   if (inv->eqto != ~0u)

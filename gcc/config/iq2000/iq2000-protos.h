@@ -20,8 +20,8 @@
 #ifndef GCC_IQ2000_PROTOS_H
 #define GCC_IQ2000_PROTOS_H
 
-extern int              iq2000_check_split (rtx, enum machine_mode);
-extern int              iq2000_reg_mode_ok_for_base_p (rtx, enum machine_mode, int);
+extern int              iq2000_check_split (rtx, machine_mode);
+extern int              iq2000_reg_mode_ok_for_base_p (rtx, machine_mode, int);
 extern const char *     iq2000_fill_delay_slot (const char *, enum delay_type, rtx *, rtx_insn *);
 extern const char *     iq2000_move_1word (rtx *, rtx_insn *, int);
 extern HOST_WIDE_INT    iq2000_debugger_offset (rtx, HOST_WIDE_INT);
@@ -38,7 +38,7 @@ extern char *           iq2000_output_conditional_branch (rtx_insn *, rtx *,
 
 #ifdef RTX_CODE
 extern rtx              gen_int_relational (enum rtx_code, rtx, rtx, rtx, int *);
-extern void             gen_conditional_branch (rtx *, enum machine_mode);
+extern void             gen_conditional_branch (rtx *, machine_mode);
 #endif
 
 #ifdef TREE_CODE

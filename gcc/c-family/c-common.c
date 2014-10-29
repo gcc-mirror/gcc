@@ -3507,7 +3507,7 @@ tree
 c_common_fixed_point_type_for_size (unsigned int ibit, unsigned int fbit,
 				    int unsignedp, int satp)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   if (ibit == 0)
     mode = unsignedp ? UQQmode : QQmode;
   else
@@ -3539,7 +3539,7 @@ tree registered_builtin_types;
    then UNSIGNEDP selects between saturating and nonsaturating types.  */
 
 tree
-c_common_type_for_mode (enum machine_mode mode, int unsignedp)
+c_common_type_for_mode (machine_mode mode, int unsignedp)
 {
   tree t;
   int i;
@@ -3610,7 +3610,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (COMPLEX_MODE_P (mode))
     {
-      enum machine_mode inner_mode;
+      machine_mode inner_mode;
       tree inner_type;
 
       if (mode == TYPE_MODE (complex_float_type_node))
@@ -3630,7 +3630,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
     }
   else if (VECTOR_MODE_P (mode))
     {
-      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
       if (inner_type != NULL_TREE)
 	return build_vector_type_for_mode (inner_type, mode);
@@ -7243,10 +7243,10 @@ handle_destructor_attribute (tree *node, tree name, tree args,
    vector mode, but we can emulate with narrower modes.  */
 
 static int
-vector_mode_valid_p (enum machine_mode mode)
+vector_mode_valid_p (machine_mode mode)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
-  enum machine_mode innermode;
+  machine_mode innermode;
 
   /* Doh!  What's going on?  */
   if (mclass != MODE_VECTOR_INT
@@ -7291,7 +7291,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       int j;
       const char *p = IDENTIFIER_POINTER (ident);
       int len = strlen (p);
-      enum machine_mode mode = VOIDmode;
+      machine_mode mode = VOIDmode;
       tree typefm;
       bool valid_mode;
 
@@ -7323,7 +7323,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	for (j = 0; j < NUM_MACHINE_MODES; j++)
 	  if (!strcmp (p, GET_MODE_NAME (j)))
 	    {
-	      mode = (enum machine_mode) j;
+	      mode = (machine_mode) j;
 	      break;
 	    }
 
@@ -7377,7 +7377,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       if (POINTER_TYPE_P (type))
 	{
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
-	  tree (*fn)(tree, enum machine_mode, bool);
+	  tree (*fn)(tree, machine_mode, bool);
 
 	  if (!targetm.addr_space.valid_pointer_mode (mode, as))
 	    {
@@ -8663,7 +8663,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 			      bool *no_add_attrs)
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
-  enum machine_mode orig_mode;
+  machine_mode orig_mode;
   tree type = *node, new_type, size;
 
   *no_add_attrs = true;

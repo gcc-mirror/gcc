@@ -942,7 +942,7 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, enum machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
+@deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
 function return values.  The target hook should return the new mode
 and possibly change @code{*@var{punsignedp}} if the promotion should
@@ -1268,7 +1268,7 @@ these accesses should use the bitfield container type.
 The default is @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_MEMBER_TYPE_FORCES_BLK (const_tree @var{field}, enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_MEMBER_TYPE_FORCES_BLK (const_tree @var{field}, machine_mode @var{mode})
 Return true if a structure, union or array containing @var{field} should
 be accessed using @code{BLKMODE}.
 
@@ -1299,7 +1299,7 @@ appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
 @end defmac
 
 @defmac STACK_SAVEAREA_MODE (@var{save_level})
-If defined, an expression of type @code{enum machine_mode} that
+If defined, an expression of type @code{machine_mode} that
 specifies the mode of the save area operand of a
 @code{save_stack_@var{level}} named pattern (@pxref{Standard Names}).
 @var{save_level} is one of @code{SAVE_BLOCK}, @code{SAVE_FUNCTION}, or
@@ -1313,7 +1313,7 @@ would most commonly define this macro if the
 @end defmac
 
 @defmac STACK_SIZE_MODE
-If defined, an expression of type @code{enum machine_mode} that
+If defined, an expression of type @code{machine_mode} that
 specifies the mode of the size increment operand of an
 @code{allocate_stack} named pattern (@pxref{Standard Names}).
 
@@ -1322,21 +1322,21 @@ You would most commonly define this macro if the @code{allocate_stack}
 pattern needs to support both a 32- and a 64-bit mode.
 @end defmac
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_CMP_RETURN_MODE (void)
+@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
 This target hook should return the mode to be used for the return value
 of compare instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
+@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
 This target hook should return the mode to be used for the shift count operand
 of shift instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_UNWIND_WORD_MODE (void)
+@deftypefn {Target Hook} machine_mode TARGET_UNWIND_WORD_MODE (void)
 Return machine mode to be used for @code{_Unwind_Word} type.
 The default is to use @code{word_mode}.
 @end deftypefn
@@ -2576,7 +2576,7 @@ Don't define this macro unless the target machine has limitations which
 require the macro to do something nontrivial.
 @end defmac
 
-@deftypefn {Target Hook} reg_class_t TARGET_SECONDARY_RELOAD (bool @var{in_p}, rtx @var{x}, reg_class_t @var{reload_class}, enum machine_mode @var{reload_mode}, secondary_reload_info *@var{sri})
+@deftypefn {Target Hook} reg_class_t TARGET_SECONDARY_RELOAD (bool @var{in_p}, rtx @var{x}, reg_class_t @var{reload_class}, machine_mode @var{reload_mode}, secondary_reload_info *@var{sri})
 Many machines have some registers that cannot be copied directly to or
 from memory or even from other types of registers.  An example is the
 @samp{MQ} register, which on most machines, can only be copied to or
@@ -2783,7 +2783,7 @@ transformations to throtle code motion, to avoid increasing register
 pressure.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned char} TARGET_CLASS_MAX_NREGS (reg_class_t @var{rclass}, enum machine_mode @var{mode})
+@deftypefn {Target Hook} {unsigned char} TARGET_CLASS_MAX_NREGS (reg_class_t @var{rclass}, machine_mode @var{mode})
 A target hook returns the maximum number of consecutive registers
 of class @var{rclass} needed to hold a value of mode @var{mode}.
 
@@ -2847,11 +2847,11 @@ A target hook which returns true if we need register usage leveling.  That means
 A target hook which returns true if an address with the same structure  can have different maximal legitimate displacement.  For example, the  displacement can depend on memory mode or on operand combinations in  the insn.    The default version of this target hook returns always false.
 @end deftypefn
 
-@deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, enum @var{machine_mode})
+@deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
 This hook defines a class of registers which could be used for spilling  pseudos of the given mode and class, or @code{NO_REGS} if only memory  should be used.  Not defining this hook is equivalent to returning  @code{NO_REGS} for all inputs.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_CSTORE_MODE (enum insn_code @var{icode})
+@deftypefn {Target Hook} machine_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
 This hook defines the machine mode to use for the boolean result of  conditional store patterns.  The ICODE argument is the instruction code  for the cstore being performed.  Not definiting this hook is the same  as accepting the mode encoded into operand 0 of the cstore expander  patterns.
 @end deftypefn
 
@@ -3826,7 +3826,7 @@ This section describes the macros which let you control how various
 types of arguments are passed in registers or how they are arranged in
 the stack.
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 Return an RTX indicating whether a function argument is passed in a
 register and if so, which register.
 
@@ -3879,14 +3879,14 @@ defined, the argument will be computed in the stack and then loaded into
 a register.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (enum machine_mode @var{mode}, const_tree @var{type})
+@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (machine_mode @var{mode}, const_tree @var{type})
 This target hook should return @code{true} if we should not pass @var{type}
 solely in registers.  The file @file{expr.h} defines a
 definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 Define this hook if the target machine has ``register windows'', so
 that the register in which a function sees an arguments is not
 necessarily the same as the one in which the caller passed the
@@ -3912,7 +3912,7 @@ Perform a target dependent initialization of pic_offset_table_rtx.
 This hook is called at the start of register allocation.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, machine_mode @var{mode}, tree @var{type}, bool @var{named})
 This target hook returns the number of bytes at the beginning of an
 argument that must be put in registers.  The value must be zero for
 arguments that are passed entirely in registers or that are entirely
@@ -3931,7 +3931,7 @@ register to be used by the caller for this argument; likewise
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 This target hook should return @code{true} if an argument at the
 position indicated by @var{cum} should be passed by reference.  This
 predicate is queried after target independent reasons for being
@@ -3943,7 +3943,7 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 The function argument described by the parameters to this hook is
 known to be passed by reference.  The hook should return true if the
 function argument should be copied by the callee instead of copied
@@ -4022,7 +4022,7 @@ argument @var{libname} exists for symmetry with
 @c --mew 5feb93   i switched the order of the sentences.  --mew 10feb93
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 This hook updates the summarizer variable pointed to by @var{ca} to
 advance past an argument in the argument list.  The values @var{mode},
 @var{type} and @var{named} describe that argument.  Once this is done,
@@ -4077,13 +4077,13 @@ a three byte aggregate may be passed in the high part of a register if so
 required.
 @end defmac
 
-@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_BOUNDARY (enum machine_mode @var{mode}, const_tree @var{type})
+@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_BOUNDARY (machine_mode @var{mode}, const_tree @var{type})
 This hook returns the alignment boundary, in bits, of an argument
 with the specified mode and type.  The default hook returns
 @code{PARM_BOUNDARY} for all arguments.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_ROUND_BOUNDARY (enum machine_mode @var{mode}, const_tree @var{type})
+@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_ROUND_BOUNDARY (machine_mode @var{mode}, const_tree @var{type})
 Normally, the size of an argument is rounded up to @code{PARM_BOUNDARY},
 which is the default value for this hook.  You can define this hook to
 return a different value if an argument size must be rounded to a larger
@@ -4150,7 +4150,7 @@ arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (machine_mode @var{mode})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
@@ -4160,7 +4160,7 @@ hook returns true for both @code{ptr_mode} and @code{Pmode}.
 Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (machine_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
 considered supported, all the basic arithmetic and comparisons
@@ -4172,13 +4172,13 @@ Included here are the double-word arithmetic supported by the
 code in @file{optabs.c}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (machine_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (enum machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
+@deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
 Return true if GCC should try to use a scalar mode to store an array
 of @var{nelems} elements, given that each element has mode @var{mode}.
 Returning true here overrides the usual @code{MAX_FIXED_MODE} limit
@@ -4206,7 +4206,7 @@ If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (machine_mode @var{mode})
 Define this to return nonzero if libgcc provides support for the 
 floating-point mode @var{mode}, which is known to pass 
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 
@@ -4214,7 +4214,7 @@ hook returns true for all of @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}, if such modes exist.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (enum machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given
 @var{mode}, the compiler will try to minimize the lifetime of registers
@@ -4318,7 +4318,7 @@ specially by the compiler and was not mentioned in the C code being
 compiled.
 @end defmac
 
-@deftypefn {Target Hook} rtx TARGET_LIBCALL_VALUE (enum machine_mode @var{mode}, const_rtx @var{fun})
+@deftypefn {Target Hook} rtx TARGET_LIBCALL_VALUE (machine_mode @var{mode}, const_rtx @var{fun})
 Define this hook if the back-end needs to know the name of the libcall
 function in order to determine where the result should be returned.
 
@@ -4466,11 +4466,11 @@ This macro has effect in @option{-fpcc-struct-return} mode, but it does
 nothing when you use @option{-freg-struct-return} mode.
 @end defmac
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_GET_RAW_RESULT_MODE (int @var{regno})
+@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw return registers in @code{__builtin_return}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_GET_RAW_ARG_MODE (int @var{regno})
+@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw argument registers in @code{__builtin_apply_args}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
@@ -4913,7 +4913,7 @@ return value of this function should be an RTX that contains the value
 to use as the return of @code{__builtin_saveregs}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, enum machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
 This target hook offers an alternative to using
 @code{__builtin_saveregs} and defining the hook
 @code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  Use it to store the anonymous
@@ -5257,7 +5257,7 @@ the maximum number that @code{TARGET_LEGITIMATE_ADDRESS_P} would ever
 accept.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (enum machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
 A function that returns whether @var{x} (an RTX) is a legitimate memory
 address on the target machine for a memory operand of mode @var{mode}.
 
@@ -5346,7 +5346,7 @@ The typical use of this macro is to handle addresses containing
 a label_ref or symbol_ref within an UNSPEC@.
 @end defmac
 
-@deftypefn {Target Hook} rtx TARGET_LEGITIMIZE_ADDRESS (rtx @var{x}, rtx @var{oldx}, enum machine_mode @var{mode})
+@deftypefn {Target Hook} rtx TARGET_LEGITIMIZE_ADDRESS (rtx @var{x}, rtx @var{oldx}, machine_mode @var{mode})
 This hook is given an invalid memory address @var{x} for an
 operand of mode @var{mode} and should try to return a valid memory
 address.
@@ -5435,7 +5435,7 @@ You may assume that @var{addr} is a valid address for the machine.
 The default version of this hook returns @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_CONSTANT_P (enum machine_mode @var{mode}, rtx @var{x})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_CONSTANT_P (machine_mode @var{mode}, rtx @var{x})
 This hook returns true if @var{x} is a legitimate constant for a
 @var{mode}-mode immediate operand on the target machine.  You can assume that
 @var{x} satisfies @code{CONSTANT_P}, so you need not check this.
@@ -5458,7 +5458,7 @@ This hook should return true if @var{x} should not be emitted into
 debug sections.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CANNOT_FORCE_CONST_MEM (enum machine_mode @var{mode}, rtx @var{x})
+@deftypefn {Target Hook} bool TARGET_CANNOT_FORCE_CONST_MEM (machine_mode @var{mode}, rtx @var{x})
 This hook should return true if @var{x} is of a form that cannot (or
 should not) be spilled to the constant pool.  @var{mode} is the mode
 of @var{x}.
@@ -5472,7 +5472,7 @@ holding the constant.  This restriction is often true of addresses
 of TLS symbols for various targets.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_USE_BLOCKS_FOR_CONSTANT_P (enum machine_mode @var{mode}, const_rtx @var{x})
+@deftypefn {Target Hook} bool TARGET_USE_BLOCKS_FOR_CONSTANT_P (machine_mode @var{mode}, const_rtx @var{x})
 This hook should return true if pool entries for constant @var{x} can
 be placed in an @code{object_block} structure.  @var{mode} is the mode
 of @var{x}.
@@ -5536,7 +5536,7 @@ misalignment value (@var{misalign}).
 Return true if vector alignment is reachable (by peeling N iterations) for the given type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (enum @var{machine_mode}, const unsigned char *@var{sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, const unsigned char *@var{sel})
 Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 
@@ -5561,7 +5561,7 @@ return type of the vectorized function shall be of vector type
 @var{vec_type_out} and the argument types should be @var{vec_type_in}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT (enum machine_mode @var{mode}, const_tree @var{type}, int @var{misalignment}, bool @var{is_packed})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT (machine_mode @var{mode}, const_tree @var{type}, int @var{misalignment}, bool @var{is_packed})
 This hook should return true if the target supports misaligned vector
 store/load of a specific factor denoted in the @var{misalignment}
 parameter.  The vector store/load should be of machine mode @var{mode} and
@@ -5569,7 +5569,7 @@ the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_VECTORIZE_PREFERRED_SIMD_MODE (enum machine_mode @var{mode})
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (machine_mode @var{mode})
 This hook should return the preferred mode for vectorizing scalar
 mode @var{mode}.  The default is
 equal to @code{word_mode}, because the vectorizer can do some
@@ -5945,7 +5945,7 @@ integer pointed to by @var{p2} should be set to
 The default version of this hook returns false.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_CC_MODES_COMPATIBLE (enum machine_mode @var{m1}, enum machine_mode @var{m2})
+@deftypefn {Target Hook} machine_mode TARGET_CC_MODES_COMPATIBLE (machine_mode @var{m1}, machine_mode @var{m2})
 On targets which use multiple condition code modes in class
 @code{MODE_CC}, it is sometimes the case that a comparison can be
 validly done in more than one mode.  On such a system, define this
@@ -5989,7 +5989,7 @@ These macros are obsolete, new ports should use the target hook
 @code{TARGET_REGISTER_MOVE_COST} instead.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_REGISTER_MOVE_COST (enum machine_mode @var{mode}, reg_class_t @var{from}, reg_class_t @var{to})
+@deftypefn {Target Hook} int TARGET_REGISTER_MOVE_COST (machine_mode @var{mode}, reg_class_t @var{from}, reg_class_t @var{to})
 This target hook should return the cost of moving data of mode @var{mode}
 from a register in class @var{from} to one in class @var{to}.  The classes
 are expressed using the enumeration values such as @code{GENERAL_REGS}.
@@ -6037,7 +6037,7 @@ These macros are obsolete, new ports should use the target hook
 @code{TARGET_MEMORY_MOVE_COST} instead.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MEMORY_MOVE_COST (enum machine_mode @var{mode}, reg_class_t @var{rclass}, bool @var{in})
+@deftypefn {Target Hook} int TARGET_MEMORY_MOVE_COST (machine_mode @var{mode}, reg_class_t @var{rclass}, bool @var{in})
 This target hook should return the cost of moving data of mode @var{mode}
 between a register of class @var{rclass} and memory; @var{in} is @code{false}
 if the value is to be written to memory, @code{true} if it is to be read in.
@@ -6276,7 +6276,7 @@ The hook returns true when all subexpressions of @var{x} have been
 processed, and false when @code{rtx_cost} should recurse.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, enum machine_mode @var{mode}, addr_space_t @var{as}, bool @var{speed})
+@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, machine_mode @var{mode}, addr_space_t @var{as}, bool @var{speed})
 This hook computes the cost of an addressing mode that contains
 @var{address}.  If not defined, the cost is computed from
 the @var{address} expression and the @code{TARGET_RTX_COST} hook.
@@ -6682,7 +6682,7 @@ the order of instructions is important for correctness when scheduling, but
 also the latencies of operations.
 @end deftypevr
 
-@deftypefn {Target Hook} int TARGET_SCHED_REASSOCIATION_WIDTH (unsigned int @var{opc}, enum machine_mode @var{mode})
+@deftypefn {Target Hook} int TARGET_SCHED_REASSOCIATION_WIDTH (unsigned int @var{opc}, machine_mode @var{mode})
 This hook is called by tree reassociator to determine a level of
 parallelism required in output calculations chain.
 @end deftypefn
@@ -6938,7 +6938,7 @@ the string if a different section name should be used.
 Return the section that should be used for transactional memory clone  tables.
 @end deftypefn
 
-@deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
+@deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which a constant @var{x}, of mode @var{mode},
 should be placed.  You can assume that @var{x} is some kind of
 constant in RTL@.  The argument @var{mode} is redundant except in the
@@ -8824,7 +8824,7 @@ register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
 If not defined, the default is to return @code{NULL_RTX}.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_DWARF_FRAME_REG_MODE (int @var{regno})
+@deftypefn {Target Hook} machine_mode TARGET_DWARF_FRAME_REG_MODE (int @var{regno})
 Given a register, this hook should return the mode which the
 corresponding Dwarf frame register should have.  This is normally
 used to return a smaller mode than the raw mode to prevent call
@@ -9463,7 +9463,7 @@ Truncates @var{x} to an unsigned integer, rounding toward zero.  If
 @var{x} is negative, returns zero.
 @end deftypefn
 
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, enum machine_mode @var{mode})
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, machine_mode @var{mode})
 Converts @var{string} into a floating point number in the target machine's
 representation for mode @var{mode}.  This routine can handle both
 decimal and hexadecimal floating point constants, using the syntax
@@ -10018,21 +10018,21 @@ named address space #1:
 c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @end smallexample
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{ptr_mode} for the
 generic address space only.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{Pmode} for the
 generic address space only.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (enum machine_mode @var{mode}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode} to address space @var{as}.  This target
 hook is the same as the @code{TARGET_VALID_POINTER_MODE} target hook,
@@ -10042,7 +10042,7 @@ version of this hook returns true for the modes returned by either the
 target hooks for the given address space.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (enum machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
 Define this to return true if @var{exp} is a valid address for mode
 @var{mode} in the named address space @var{as}.  The @var{strict}
 parameter says whether strict addressing is in effect after reload has
@@ -10051,7 +10051,7 @@ finished.  This target hook is the same as the
 explicit named address space support.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS (rtx @var{x}, rtx @var{oldx}, enum machine_mode @var{mode}, addr_space_t @var{as})
+@deftypefn {Target Hook} rtx TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS (rtx @var{x}, rtx @var{oldx}, machine_mode @var{mode}, addr_space_t @var{as})
 Define this to modify an invalid address @var{x} to be a valid address
 with mode @var{mode} in the named address space @var{as}.  This target
 hook is the same as the @code{TARGET_LEGITIMIZE_ADDRESS} target hook,
@@ -10169,7 +10169,7 @@ Define this macro if loading short immediate values into registers sign
 extends.
 @end defmac
 
-@deftypefn {Target Hook} {unsigned int} TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (enum machine_mode @var{mode})
+@deftypefn {Target Hook} {unsigned int} TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (machine_mode @var{mode})
 When @option{-ffast-math} is in effect, GCC tries to optimize
 divisions by the same divisor, by turning them into multiplications by
 the reciprocal.  This target hook specifies the minimum number of divisions
@@ -10217,7 +10217,7 @@ You need not define this macro if it would always have the value of zero.
 @end defmac
 
 @anchor{TARGET_SHIFT_TRUNCATION_MASK}
-@deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_SHIFT_TRUNCATION_MASK (enum machine_mode @var{mode})
+@deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_SHIFT_TRUNCATION_MASK (machine_mode @var{mode})
 This function describes how the standard shift patterns for @var{mode}
 deal with shifts by negative amounts or by more than the width of the mode.
 @xref{shift patterns}.
@@ -10257,7 +10257,7 @@ If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
 such cases may improve things.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (enum machine_mode @var{mode}, enum machine_mode @var{rep_mode})
+@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (machine_mode @var{mode}, machine_mode @var{rep_mode})
 The representation of an integral mode can be such that the values
 are always extended to a wider integral mode.  Return
 @code{SIGN_EXTEND} if values of @var{mode} are represented in
@@ -10724,7 +10724,7 @@ If @var{code} is out of range the function should return
 @code{error_mark_node}.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN (tree @var{exp}, rtx @var{target}, rtx @var{subtarget}, enum machine_mode @var{mode}, int @var{ignore})
+@deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN (tree @var{exp}, rtx @var{target}, rtx @var{subtarget}, machine_mode @var{mode}, int @var{ignore})
 
 Expand a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{exp} is the expression for the
@@ -11197,7 +11197,7 @@ The support includes the assembler, linker and dynamic linker.
 The default value of this hook is based on target's libc.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (enum machine_mode @var{mode})
+@deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (machine_mode @var{mode})
 If defined, this function returns an appropriate alignment in bits for an atomic object of machine_mode @var{mode}.  If 0 is returned then the default alignment for the specified mode is used. 
 @end deftypefn
 

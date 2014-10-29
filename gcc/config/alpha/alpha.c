@@ -229,7 +229,7 @@ static void alpha_align_insns (void);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *);
-static bool vms_valid_pointer_mode (enum machine_mode);
+static bool vms_valid_pointer_mode (machine_mode);
 #else
 #define vms_patch_builtins()  gcc_unreachable()
 #endif
@@ -718,7 +718,7 @@ resolve_reload_operand (rtx op)
    indicates only DFmode.  */
 
 static bool
-alpha_scalar_mode_supported_p (enum machine_mode mode)
+alpha_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -747,7 +747,7 @@ alpha_scalar_mode_supported_p (enum machine_mode mode)
    or when expand_vector_operations can do something useful.  */
 
 static bool
-alpha_vector_mode_supported_p (enum machine_mode mode)
+alpha_vector_mode_supported_p (machine_mode mode)
 {
   return mode == V8QImode || mode == V4HImode || mode == V2SImode;
 }
@@ -842,7 +842,7 @@ alpha_in_small_data_p (const_tree exp)
 
 #if TARGET_ABI_OPEN_VMS
 static bool
-vms_valid_pointer_mode (enum machine_mode mode)
+vms_valid_pointer_mode (machine_mode mode)
 {
   return (mode == SImode || mode == DImode);
 }
@@ -877,7 +877,7 @@ alpha_linkage_symbol_p (const char *symname)
    low-order three bits; this is an "unaligned" access.  */
 
 static bool
-alpha_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   /* If this is an ldq_u type address, discard the outer AND.  */
   if (mode == DImode
@@ -988,7 +988,7 @@ get_tls_get_addr (void)
    to be legitimate.  If we find one, return the new, valid address.  */
 
 static rtx
-alpha_legitimize_address_1 (rtx x, rtx scratch, enum machine_mode mode)
+alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 {
   HOST_WIDE_INT addend;
 
@@ -1188,7 +1188,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, enum machine_mode mode)
 
 static rtx
 alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			  enum machine_mode mode)
+			  machine_mode mode)
 {
   rtx new_x = alpha_legitimize_address_1 (x, NULL_RTX, mode);
   return new_x ? new_x : x;
@@ -1210,7 +1210,7 @@ alpha_mode_dependent_address_p (const_rtx addr,
    should never be spilling symbolic operands to the constant pool, ever.  */
 
 static bool
-alpha_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+alpha_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   return code == SYMBOL_REF || code == LABEL_REF || code == CONST;
@@ -1301,7 +1301,7 @@ alpha_cannot_copy_insn_p (rtx_insn *insn)
 
 rtx
 alpha_legitimize_reload_address (rtx x,
-				 enum machine_mode mode ATTRIBUTE_UNUSED,
+				 machine_mode mode ATTRIBUTE_UNUSED,
 				 int opnum, int type,
 				 int ind_levels ATTRIBUTE_UNUSED)
 {
@@ -1360,7 +1360,7 @@ static bool
 alpha_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 		 bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
   const struct alpha_rtx_cost_data *cost_data;
 
@@ -1645,7 +1645,7 @@ alpha_preferred_reload_class(rtx x, enum reg_class rclass)
 
 static reg_class_t
 alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
-			enum machine_mode mode, secondary_reload_info *sri)
+			machine_mode mode, secondary_reload_info *sri)
 {
   enum reg_class rclass = (enum reg_class) rclass_i;
 
@@ -1725,7 +1725,7 @@ alpha_set_memflags (rtx seq, rtx ref)
       gcc_unreachable ();
 }
 
-static rtx alpha_emit_set_const (rtx, enum machine_mode, HOST_WIDE_INT,
+static rtx alpha_emit_set_const (rtx, machine_mode, HOST_WIDE_INT,
 				 int, bool);
 
 /* Internal routine for alpha_emit_set_const to check for N or below insns.
@@ -1733,7 +1733,7 @@ static rtx alpha_emit_set_const (rtx, enum machine_mode, HOST_WIDE_INT,
    and return pc_rtx if successful.  */
 
 static rtx
-alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
+alpha_emit_set_const_1 (rtx target, machine_mode mode,
 			HOST_WIDE_INT c, int n, bool no_output)
 {
   HOST_WIDE_INT new_const;
@@ -1981,10 +1981,10 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
    insns and emitted.  */
 
 static rtx
-alpha_emit_set_const (rtx target, enum machine_mode mode,
+alpha_emit_set_const (rtx target, machine_mode mode,
 		      HOST_WIDE_INT c, int n, bool no_output)
 {
-  enum machine_mode orig_mode = mode;
+  machine_mode orig_mode = mode;
   rtx orig_target = target;
   rtx result = 0;
   int i;
@@ -2132,7 +2132,7 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
    take three or fewer instructions, and floating-point zero.  */
 
 bool
-alpha_legitimate_constant_p (enum machine_mode mode, rtx x)
+alpha_legitimate_constant_p (machine_mode mode, rtx x)
 {
   HOST_WIDE_INT i0, i1;
 
@@ -2192,7 +2192,7 @@ alpha_legitimate_constant_p (enum machine_mode mode, rtx x)
    instruction to load.  Emit that multi-part load.  */
 
 bool
-alpha_split_const_mov (enum machine_mode mode, rtx *operands)
+alpha_split_const_mov (machine_mode mode, rtx *operands)
 {
   HOST_WIDE_INT i0, i1;
   rtx temp = NULL_RTX;
@@ -2219,7 +2219,7 @@ alpha_split_const_mov (enum machine_mode mode, rtx *operands)
    We don't handle non-bwx subword loads here.  */
 
 bool
-alpha_expand_mov (enum machine_mode mode, rtx *operands)
+alpha_expand_mov (machine_mode mode, rtx *operands)
 {
   rtx tmp;
 
@@ -2274,7 +2274,7 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
    return true if all work is done.  */
 
 bool
-alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
+alpha_expand_mov_nobwx (machine_mode mode, rtx *operands)
 {
   rtx seq;
 
@@ -2396,7 +2396,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
    that is not naturally aligned.  Emit instructions to load it.  */
 
 void
-alpha_expand_movmisalign (enum machine_mode mode, rtx *operands)
+alpha_expand_movmisalign (machine_mode mode, rtx *operands)
 {
   /* Honor misaligned loads, for those we promised to do so.  */
   if (MEM_P (operands[1]))
@@ -2476,7 +2476,7 @@ void
 alpha_emit_floatuns (rtx operands[2])
 {
   rtx neglab, donelab, i0, i1, f0, in, out;
-  enum machine_mode mode;
+  machine_mode mode;
 
   out = operands[0];
   in = force_reg (DImode, operands[1]);
@@ -2507,10 +2507,10 @@ alpha_emit_floatuns (rtx operands[2])
 /* Generate the comparison for a conditional branch.  */
 
 void
-alpha_emit_conditional_branch (rtx operands[], enum machine_mode cmp_mode)
+alpha_emit_conditional_branch (rtx operands[], machine_mode cmp_mode)
 {
   enum rtx_code cmp_code, branch_code;
-  enum machine_mode branch_mode = VOIDmode;
+  machine_mode branch_mode = VOIDmode;
   enum rtx_code code = GET_CODE (operands[0]);
   rtx op0 = operands[1], op1 = operands[2];
   rtx tem;
@@ -2640,7 +2640,7 @@ alpha_emit_conditional_branch (rtx operands[], enum machine_mode cmp_mode)
    valid.  Return the final comparison, or NULL if we can't work.  */
 
 bool
-alpha_emit_setcc (rtx operands[], enum machine_mode cmp_mode)
+alpha_emit_setcc (rtx operands[], machine_mode cmp_mode)
 {
   enum rtx_code cmp_code;
   enum rtx_code code = GET_CODE (operands[1]);
@@ -2729,15 +2729,15 @@ alpha_emit_setcc (rtx operands[], enum machine_mode cmp_mode)
    the conditional move).  */
 
 rtx
-alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
+alpha_emit_conditional_move (rtx cmp, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (cmp);
   enum rtx_code cmov_code = NE;
   rtx op0 = XEXP (cmp, 0);
   rtx op1 = XEXP (cmp, 1);
-  enum machine_mode cmp_mode
+  machine_mode cmp_mode
     = (GET_MODE (op0) == VOIDmode ? DImode : GET_MODE (op0));
-  enum machine_mode cmov_mode = VOIDmode;
+  machine_mode cmov_mode = VOIDmode;
   int local_fast_math = flag_unsafe_math_optimizations;
   rtx tem;
 
@@ -2892,7 +2892,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
 			      rtx t_rtx, rtx f_rtx)
 {
   HOST_WIDE_INT t, f, diff;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx target, subtarget, tmp;
 
   mode = GET_MODE (dest);
@@ -3274,7 +3274,7 @@ alpha_emit_xfloating_cvt (enum rtx_code orig_code, rtx operands[])
    This is used by *movtf_internal and *movti_internal.  */
   
 void
-alpha_split_tmode_pair (rtx operands[4], enum machine_mode mode,
+alpha_split_tmode_pair (rtx operands[4], machine_mode mode,
 			bool fixup_overlap)
 {
   switch (GET_CODE (operands[1]))
@@ -3399,7 +3399,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 			     HOST_WIDE_INT ofs, int sign)
 {
   rtx meml, memh, addr, extl, exth, tmp, mema;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (TARGET_BWX && size == 2)
     {
@@ -4082,7 +4082,7 @@ alpha_expand_block_clear (rtx operands[])
 	       && align >= 32
 	       && !(alignofs == 4 && bytes >= 4))
 	{
-	  enum machine_mode mode = (align >= 64 ? DImode : SImode);
+	  machine_mode mode = (align >= 64 ? DImode : SImode);
 	  int inv_alignofs = (align >= 64 ? 8 : 4) - alignofs;
 	  rtx mem, tmp;
 	  HOST_WIDE_INT mask;
@@ -4353,7 +4353,7 @@ alpha_expand_zap_mask (HOST_WIDE_INT value)
 
 void
 alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
-				   enum machine_mode mode,
+				   machine_mode mode,
 				   rtx op0, rtx op1, rtx op2)
 {
   op0 = gen_lowpart (mode, op0);
@@ -4389,7 +4389,7 @@ emit_unlikely_jump (rtx cond, rtx label)
    instruction in MODE.  */
 
 static void
-emit_load_locked (enum machine_mode mode, rtx reg, rtx mem)
+emit_load_locked (machine_mode mode, rtx reg, rtx mem)
 {
   rtx (*fn) (rtx, rtx) = NULL;
   if (mode == SImode)
@@ -4403,7 +4403,7 @@ emit_load_locked (enum machine_mode mode, rtx reg, rtx mem)
    instruction in MODE.  */
 
 static void
-emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
+emit_store_conditional (machine_mode mode, rtx res, rtx mem, rtx val)
 {
   rtx (*fn) (rtx, rtx, rtx) = NULL;
   if (mode == SImode)
@@ -4434,7 +4434,7 @@ alpha_post_atomic_barrier (enum memmodel model)
    instruction in MODE.  */
 
 static rtx
-emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
+emit_insxl (machine_mode mode, rtx op1, rtx op2)
 {
   rtx ret = gen_reg_rtx (DImode);
   rtx (*fn) (rtx, rtx, rtx);
@@ -4473,7 +4473,7 @@ void
 alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
 		       rtx after, rtx scratch, enum memmodel model)
 {
-  enum machine_mode mode = GET_MODE (mem);
+  machine_mode mode = GET_MODE (mem);
   rtx label, x, cond = gen_rtx_REG (DImode, REGNO (scratch));
 
   alpha_pre_atomic_barrier (model);
@@ -4515,7 +4515,7 @@ alpha_split_compare_and_swap (rtx operands[])
   rtx cond, retval, mem, oldval, newval;
   bool is_weak;
   enum memmodel mod_s, mod_f;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx label1, label2, x;
 
   cond = operands[0];
@@ -4576,7 +4576,7 @@ void
 alpha_expand_compare_and_swap_12 (rtx operands[])
 {
   rtx cond, dst, mem, oldval, newval, is_weak, mod_s, mod_f;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx addr, align, wdst;
   rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
@@ -4617,7 +4617,7 @@ void
 alpha_split_compare_and_swap_12 (rtx operands[])
 {
   rtx cond, dest, orig_mem, oldval, newval, align, scratch;
-  enum machine_mode mode;
+  machine_mode mode;
   bool is_weak;
   enum memmodel mod_s, mod_f;
   rtx label1, label2, mem, addr, width, mask, x;
@@ -4698,7 +4698,7 @@ alpha_split_atomic_exchange (rtx operands[])
 {
   rtx retval, mem, val, scratch;
   enum memmodel model;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx label, x, cond;
 
   retval = operands[0];
@@ -4728,7 +4728,7 @@ void
 alpha_expand_atomic_exchange_12 (rtx operands[])
 {
   rtx dst, mem, val, model;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx addr, align, wdst;
   rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
 
@@ -4764,7 +4764,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
 {
   rtx dest, orig_mem, addr, val, align, scratch;
   rtx label, mem, width, mask, x;
-  enum machine_mode mode;
+  machine_mode mode;
   enum memmodel model;
 
   dest = operands[0];
@@ -5662,7 +5662,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    and the rest are pushed.  */
 
 static rtx
-alpha_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -5724,7 +5724,7 @@ alpha_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-alpha_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+alpha_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -5742,7 +5742,7 @@ alpha_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 
 static int
 alpha_arg_partial_bytes (cumulative_args_t cum_v,
-			 enum machine_mode mode ATTRIBUTE_UNUSED,
+			 machine_mode mode ATTRIBUTE_UNUSED,
 			 tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
@@ -5769,7 +5769,7 @@ alpha_arg_partial_bytes (cumulative_args_t cum_v,
 static bool
 alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
   int size;
 
   if (type)
@@ -5823,7 +5823,7 @@ alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
 static bool
 alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			 enum machine_mode mode,
+			 machine_mode mode,
 			 const_tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
@@ -5840,7 +5840,7 @@ alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 
 rtx
 function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
-		enum machine_mode mode)
+		machine_mode mode)
 {
   unsigned int regnum, dummy ATTRIBUTE_UNUSED;
   enum mode_class mclass;
@@ -5871,7 +5871,7 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 
     case MODE_COMPLEX_FLOAT:
       {
-	enum machine_mode cmode = GET_MODE_INNER (mode);
+	machine_mode cmode = GET_MODE_INNER (mode);
 
 	return gen_rtx_PARALLEL
 	  (VOIDmode,
@@ -6160,7 +6160,7 @@ escapes:
    variable number of arguments.  */
 
 static void
-alpha_setup_incoming_varargs (cumulative_args_t pcum, enum machine_mode mode,
+alpha_setup_incoming_varargs (cumulative_args_t pcum, machine_mode mode,
 			      tree type, int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
@@ -6683,7 +6683,7 @@ alpha_init_builtins (void)
 static rtx
 alpha_expand_builtin (tree exp, rtx target,
 		      rtx subtarget ATTRIBUTE_UNUSED,
-		      enum machine_mode mode ATTRIBUTE_UNUSED,
+		      machine_mode mode ATTRIBUTE_UNUSED,
 		      int ignore ATTRIBUTE_UNUSED)
 {
 #define MAX_ARGS 2
@@ -6726,7 +6726,7 @@ alpha_expand_builtin (tree exp, rtx target,
 
   if (nonvoid)
     {
-      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      machine_mode tmode = insn_data[icode].operand[0].mode;
       if (!target
 	  || GET_MODE (target) != tmode
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
@@ -9551,7 +9551,7 @@ alpha_elf_reloc_rw_mask (void)
    honor small data.  */
 
 static section *
-alpha_elf_select_rtx_section (enum machine_mode mode, rtx x,
+alpha_elf_select_rtx_section (machine_mode mode, rtx x,
 			      unsigned HOST_WIDE_INT align)
 {
   if (TARGET_SMALL_DATA && GET_MODE_SIZE (mode) <= g_switch_value)
@@ -9599,7 +9599,7 @@ struct GTY(()) alpha_links
 /* Return the VMS argument type corresponding to MODE.  */
 
 enum avms_arg_type
-alpha_arg_type (enum machine_mode mode)
+alpha_arg_type (machine_mode mode)
 {
   switch (mode)
     {

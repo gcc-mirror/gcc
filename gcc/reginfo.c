@@ -278,7 +278,7 @@ static void
 init_reg_sets_1 (void)
 {
   unsigned int i, j;
-  unsigned int /* enum machine_mode */ m;
+  unsigned int /* machine_mode */ m;
 
   restore_register_info ();
 
@@ -494,11 +494,11 @@ init_reg_sets_1 (void)
       HARD_REG_SET ok_regs;
       CLEAR_HARD_REG_SET (ok_regs);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	if (!fixed_regs [j] && HARD_REGNO_MODE_OK (j, (enum machine_mode) m))
+	if (!fixed_regs [j] && HARD_REGNO_MODE_OK (j, (machine_mode) m))
 	  SET_HARD_REG_BIT (ok_regs, j);
 
       for (i = 0; i < N_REG_CLASSES; i++)
-	if ((targetm.class_max_nregs ((reg_class_t) i, (enum machine_mode) m)
+	if ((targetm.class_max_nregs ((reg_class_t) i, (machine_mode) m)
 	     <= reg_class_size[i])
 	    && hard_reg_set_intersect_p (ok_regs, reg_class_contents[i]))
 	  {
@@ -521,7 +521,7 @@ init_reg_modes_target (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 0; j < MAX_MACHINE_MODE; j++)
-      hard_regno_nregs[i][j] = HARD_REGNO_NREGS (i, (enum machine_mode)j);
+      hard_regno_nregs[i][j] = HARD_REGNO_NREGS (i, (machine_mode)j);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -573,7 +573,7 @@ init_fake_stack_mems (void)
   int i;
 
   for (i = 0; i < MAX_MACHINE_MODE; i++)
-    top_of_stack[i] = gen_rtx_MEM ((enum machine_mode) i, stack_pointer_rtx);
+    top_of_stack[i] = gen_rtx_MEM ((machine_mode) i, stack_pointer_rtx);
 }
 
 
@@ -581,7 +581,7 @@ init_fake_stack_mems (void)
    TO, using MODE.  */
 
 int
-register_move_cost (enum machine_mode mode, reg_class_t from, reg_class_t to)
+register_move_cost (machine_mode mode, reg_class_t from, reg_class_t to)
 {
   return targetm.register_move_cost (mode, from, to);
 }
@@ -589,7 +589,7 @@ register_move_cost (enum machine_mode mode, reg_class_t from, reg_class_t to)
 /* Compute cost of moving registers to/from memory.  */
 
 int
-memory_move_cost (enum machine_mode mode, reg_class_t rclass, bool in)
+memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 {
   return targetm.memory_move_cost (mode, rclass, in);
 }
@@ -597,7 +597,7 @@ memory_move_cost (enum machine_mode mode, reg_class_t rclass, bool in)
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
 int
-memory_move_secondary_cost (enum machine_mode mode, reg_class_t rclass,
+memory_move_secondary_cost (machine_mode mode, reg_class_t rclass,
 			    bool in)
 {
   reg_class_t altclass;
@@ -634,12 +634,12 @@ memory_move_secondary_cost (enum machine_mode mode, reg_class_t rclass,
 /* Return a machine mode that is legitimate for hard reg REGNO and large
    enough to save nregs.  If we can't find one, return VOIDmode.
    If CALL_SAVED is true, only consider modes that are call saved.  */
-enum machine_mode
+machine_mode
 choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
 		      unsigned int nregs, bool call_saved)
 {
-  unsigned int /* enum machine_mode */ m;
-  enum machine_mode found_mode = VOIDmode, mode;
+  unsigned int /* machine_mode */ m;
+  machine_mode found_mode = VOIDmode, mode;
 
   /* We first look for the largest integer mode that can be validly
      held in REGNO.  If none, we look for the largest floating-point mode.
@@ -687,7 +687,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   /* Iterate over all of the CCmodes.  */
   for (m = (unsigned int) CCmode; m < (unsigned int) NUM_MACHINE_MODES; ++m)
     {
-      mode = (enum machine_mode) m;
+      mode = (machine_mode) m;
       if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	  && HARD_REGNO_MODE_OK (regno, mode)
 	  && (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))

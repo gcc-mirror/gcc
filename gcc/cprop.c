@@ -1307,7 +1307,7 @@ fis_get_condition (rtx_insn *jump)
 static bool
 implicit_set_cond_p (const_rtx cond)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx cst;
 
   /* COND must be either an EQ or NE comparison.  */
