@@ -457,7 +457,7 @@ strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
   /* Check for cases where the C++ memory model applies.  */
   if (bitregion_end != 0
       && (bitnum - bitnum % modesize < bitregion_start
-	  || bitnum - bitnum % modesize + modesize > bitregion_end))
+	  || bitnum - bitnum % modesize + modesize - 1 > bitregion_end))
     return false;
 
   return true;
