@@ -605,6 +605,8 @@ LIBOBJS
 ENABLE_PLUGIN_FALSE
 ENABLE_PLUGIN_TRUE
 libsuffix
+GMPINC
+WERROR
 WARN_FLAGS
 gcc_version
 visibility
@@ -743,6 +745,7 @@ with_pic
 enable_fast_install
 with_gnu_ld
 enable_libtool_lock
+enable_werror_always
 enable_plugin
 '
       ac_precious_vars='build_alias
@@ -757,7 +760,8 @@ CPP
 CXX
 CXXFLAGS
 CCC
-CXXCPP'
+CXXCPP
+GMPINC'
 
 
 # Initialize some variables set by options.
@@ -1387,6 +1391,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-werror-always  enable -Werror despite compiler version
   --enable-plugin         enable plugin support
 
 Optional Packages:
@@ -1409,6 +1414,7 @@ Some influential environment variables:
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   CXXCPP      C++ preprocessor
+  GMPINC      How to find GMP include files
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -10530,7 +10536,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10533 "configure"
+#line 10539 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10636,7 +10642,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10639 "configure"
+#line 10645 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14342,7 +14348,21 @@ fi
   done
 CFLAGS="$save_CFLAGS"
 
-WARN_FLAGS="$WARN_FLAGS -Werror"
+
+WERROR=
+# Check whether --enable-werror-always was given.
+if test "${enable_werror_always+set}" = set; then :
+  enableval=$enable_werror_always;
+else
+  enable_werror_always=no
+fi
+
+if test $enable_werror_always = yes; then :
+  WERROR="$WERROR${WERROR:+ }-Werror"
+fi
+
+
+
 
 
 libsuffix=

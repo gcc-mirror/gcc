@@ -52,8 +52,10 @@ gcc_version=`cat $srcdir/../gcc/BASE-VER`
 AC_SUBST(gcc_version)
 
 ACX_PROG_CC_WARNING_OPTS([-W -Wall], [WARN_FLAGS])
-WARN_FLAGS="$WARN_FLAGS -Werror"
 AC_SUBST(WARN_FLAGS)
+ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
+
+AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
 libsuffix=
 if test "$GXX" = yes; then

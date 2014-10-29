@@ -1,4 +1,15 @@
 2014-10-29  Jakub Jelinek  <jakub@redhat.com>
+	    Phil Muldoon  <pmuldoon@redhat.com>
+
+	* configure.ac: Remove -Werror addition to WARN_FLAGS.  Add
+	ACX_PROG_CC_WARNINGS_ARE_ERRORS and AC_ARG_VAR for GMPINC.
+	* Makefile.am (AM_CPPFLAGS): Add $(GMPINC).
+	(WERROR_FLAG): Remove.
+	(AM_CXXFLAGS): Use $(WERROR) instead of $(WERROR_FLAG).
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2014-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (CXXFLAGS, LDFLAGS): Filter out -fsanitize=address.
 	(libiberty_normal, libiberty_noasan, libiberty_pic, libiberty_dep):

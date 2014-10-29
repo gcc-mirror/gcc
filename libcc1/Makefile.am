@@ -21,9 +21,8 @@ gcc_build_dir = ../$(host_subdir)/gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
 	-I $(gcc_build_dir) -I$(srcdir)/../gcc \
 	-I $(srcdir)/../gcc/c -I $(srcdir)/../gcc/c-family \
-	-I $(srcdir)/../libcpp/include
-WERROR_FLAG = -Werror
-AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR_FLAG) $(visibility)
+	-I $(srcdir)/../libcpp/include $(GMPINC)
+AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 # Can be simplified when libiberty becomes a normal convenience library.
