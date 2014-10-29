@@ -1,3 +1,14 @@
+2014-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (CXXFLAGS, LDFLAGS): Filter out -fsanitize=address.
+	(libiberty_normal, libiberty_noasan, libiberty_pic, libiberty_dep):
+	New variables.
+	(libiberty): Set to -Wc, followed by the first existing noasan/,
+	pic/ or . libiberty.a.
+	(libcc1plugin_la_DEPENDENCIES, libcc1plugin_la_LINK,
+	libcc1_la_DEPENDENCIES, libcc1_la_LINK, LTLDFLAGS): New variables.
+	* Makefile.in: Regenerated.
+
 2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
 	    Jan Kratochvil  <jan.kratochvil@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>
