@@ -1,3 +1,9 @@
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.h (MACHMODE): Add 'enum' to machine_mode.
+	(struct machine_function): Gate definition on
+	!defined(USED_FOR_TARGET).
+
 2014-10-29  DJ Delorie  <dj@redhat.com>
 
 	* expmed.c (strict_volatile_bitfield_p): Fix off-by-one error.
