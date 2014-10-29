@@ -31,6 +31,10 @@
 # is a soft-float mode; for example, sftf where sf is hard-float and
 # tf is soft-float.
 #
+# If some additional functions should be built that are not implied by
+# the above settings, also define softfp_extras as a list of those
+# functions, e.g. unorddf2.
+#
 # If the libgcc2.c functions should not be replaced, also define:
 #
 # softfp_exclude_libgcc2 := y
@@ -61,7 +65,8 @@ softfp_func_list := \
               $(foreach i,$(softfp_int_modes), \
                           $(softfp_floatint_funcs))) \
   $(foreach e,$(softfp_extensions),extend$(e)2) \
-  $(foreach t,$(softfp_truncations),trunc$(t)2)
+  $(foreach t,$(softfp_truncations),trunc$(t)2) \
+  $(softfp_extras)
 
 ifeq ($(softfp_exclude_libgcc2),y)
 # This list is taken from mklibgcc.in and doesn't presently allow for

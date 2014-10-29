@@ -1000,8 +1000,11 @@ powerpc*-*-linux*)
 	soft)
 		tmake_file="${tmake_file} t-softfp-sfdf t-softfp"
 		;;
-	e500v1|e500v2)
-		tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp"
+	e500v1)
+		tmake_file="${tmake_file} rs6000/t-e500v1-fp t-softfp t-hardfp"
+		;;
+	e500v2)
+		tmake_file="${tmake_file} t-hardfp-sfdf rs6000/t-e500v2-fp t-softfp t-hardfp"
 		;;
 	*)
 		echo "Unknown ppc_fp_type $ppc_fp_type" 1>&2
