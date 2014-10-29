@@ -7,6 +7,17 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* gcc.target/i386/avx512dq-kmovb-1.c: New.
+
+2014-10-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* gcc.target/i386/avx512bw-vpcmpequb-1.c: New.
 	* gcc.target/i386/avx512bw-vpcmpequb-2.c: Ditto.
 	* gcc.target/i386/avx512bw-vpcmpequw-1.c: Ditto.
