@@ -104,6 +104,21 @@ d_t d_v2;
 typedef long double ld_t;
 long double ld_v1;
 ld_t ld_v2;
+typedef _Complex cx_t;
+_Complex cx_v1;
+cx_t cx_v2;
+typedef float _Complex fcx_t;
+float _Complex fcx_v1;
+fcx_t fcx_v2;
+typedef double _Complex dcx_t;
+double _Complex dcx_v1;
+dcx_t dcx_v2;
+typedef long double _Complex ldcx_t;
+long double _Complex ldcx_v1;
+ldcx_t ldcx_v2;
+typedef int _Complex icx_t;
+int _Complex icx_v1;
+icx_t icx_v2;
 
 /* nested typedefs */
 typedef int ni_t;
@@ -301,6 +316,11 @@ typedef int8_t (*func_t)(void *p);
 /* { dg-final { scan-file godump-1.out "(?n)^type _f_t float\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^type _d_t float\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^// type _ld_t INVALID-float-\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _cx_t complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _fcx_t complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _dcx_t complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// type _ldcx_t INVALID-complex-\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// type _icx_t INVALID-complex-non-real$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^type _ni_t int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^type _ni2_t int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^type _ni3_t int\[0-9\]*$" } } */
@@ -414,6 +434,16 @@ typedef int8_t (*func_t)(void *p);
 /* { dg-final { scan-file godump-1.out "(?n)^var _d_v2 _d_t$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^// var _ld_v1 INVALID-float-\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^// var _ld_v2 INVALID-float-\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _cx_v1 complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _cx_v2 _cx_t$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _fcx_v1 complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _fcx_v2 _fcx_t$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _dcx_v1 complex\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _dcx_v2 _dcx_t$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// var _ldcx_v1 INVALID-complex-\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// var _ldcx_v2 INVALID-complex-\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// var _icx_v1 INVALID-complex-non-real$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^// var _icx_v2 INVALID-complex-non-real$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^var _ni2_v2 _ni2_t$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^var _ni3_v2 _ni3_t$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^var _e1_v1 int$" } } */

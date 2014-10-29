@@ -780,6 +780,40 @@ go_format_type (struct godump_container *container, tree type,
       }
       break;
 
+    case COMPLEX_TYPE:
+      {
+	const char *s;
+	char buf[100];
+	tree real_type;
+
+	real_type = TREE_TYPE (type);
+	if (TREE_CODE (real_type) == REAL_TYPE)
+	  {
+	    switch (TYPE_PRECISION (real_type))
+	      {
+	      case 32:
+		s = "complex64";
+		break;
+	      case 64:
+		s = "complex128";
+		break;
+	      default:
+		snprintf (buf, sizeof buf, "INVALID-complex-%u",
+			  2 * TYPE_PRECISION (real_type));
+		s = buf;
+		ret = false;
+		break;
+	      }
+	  }
+	else
+	  {
+	    s = "INVALID-complex-non-real";
+	    ret = false;
+	  }
+	obstack_grow (ob, s, strlen (s));
+      }
+      break;
+
     case BOOLEAN_TYPE:
       obstack_grow (ob, "bool", 4);
       break;
