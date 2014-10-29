@@ -36,7 +36,7 @@
 #define MACHMODE int
 #else
 #include "insn-modes.h"
-#define MACHMODE machine_mode
+#define MACHMODE enum machine_mode
 #endif
 
 #include "config/vxworks-dummy.h"
@@ -1510,7 +1510,7 @@ typedef struct GTY(()) arm_stack_offsets
 }
 arm_stack_offsets;
 
-#ifndef GENERATOR_FILE
+#if !defined(GENERATOR_FILE) && !defined(USED_FOR_TARGET)
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
 typedef struct GTY(()) machine_function
