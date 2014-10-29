@@ -6557,6 +6557,10 @@ aarch64_madd_needs_nop (rtx insn)
     return false;
 
   prev = aarch64_prev_real_insn (insn);
+  /* aarch64_prev_real_insn can call recog_memoized on insns other than INSN.
+     Restore recog state to INSN to avoid state corruption.  */
+  extract_constrain_insn_cached (insn);
+
   if (!prev)
     return false;
 
