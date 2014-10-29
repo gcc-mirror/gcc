@@ -1,3 +1,10 @@
+2014-10-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.h (MACHMODE): Treat machine_mode as a
+	scalar typedef.
+	(CUMULATIVE_ARGS): Guard against target includes.
+	(machine_function): Likewise.
+
 2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_madd_needs_nop): Restore
