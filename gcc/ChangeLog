@@ -1,5 +1,9 @@
 2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.h (MACHMODE): Add 'enum' to machine_mode.
+
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.h (MACHMODE): Add 'enum' to machine_mode.
 	(struct machine_function): Gate definition on
 	!defined(USED_FOR_TARGET).
