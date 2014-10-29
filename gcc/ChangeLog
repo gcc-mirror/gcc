@@ -1,3 +1,10 @@
+2014-10-29  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement a first set of conversion patterns.
+	* fold-const.c (fold_unary_loc): Remove them here.
+	* tree-ssa-forwprop.c (simplify_vce): Remove.
+	(pass_forwprop::execute): Do not call simplify_vce.
+
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* addresses.h, alias.c, asan.c, auto-inc-dec.c, bt-load.c, builtins.c,

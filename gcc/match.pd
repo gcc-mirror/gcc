@@ -88,3 +88,45 @@ along with GCC; see the file COPYING3.  If not see
   (bit_xor @0 @0)
   { build_zero_cst (type); })
 
+
+/* Simplifications of conversions.  */
+
+/* Basic strip-useless-type-conversions / strip_nops.  */
+(for cvt (convert view_convert)
+ (simplify
+  (cvt @0)
+  (if ((GIMPLE && useless_type_conversion_p (type, TREE_TYPE (@0)))
+       || (GENERIC && type == TREE_TYPE (@0)))
+   @0)))
+
+/* Contract view-conversions.  */
+(simplify
+  (view_convert (view_convert @0))
+  (view_convert @0))
+
+/* For integral conversions with the same precision or pointer
+   conversions use a NOP_EXPR instead.  */
+(simplify
+  (view_convert @0)
+  (if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+       && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0)))
+   (convert @0)))
+
+/* Strip inner integral conversions that do not change precision or size.  */
+(simplify
+  (view_convert (convert@0 @1))
+  (if ((INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@1)) || POINTER_TYPE_P (TREE_TYPE (@1)))
+       && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
+       && (TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))))
+   (view_convert @1)))
+
+/* Re-association barriers around constants and other re-association
+   barriers can be removed.  */
+(simplify
+ (paren CONSTANT_CLASS_P@0)
+ @0)
+(simplify
+ (paren (paren@1 @0))
+ @1)

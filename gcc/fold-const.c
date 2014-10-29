@@ -7664,14 +7664,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 
   switch (code)
     {
-    case PAREN_EXPR:
-      /* Re-association barriers around constants and other re-association
-	 barriers can be removed.  */
-      if (CONSTANT_CLASS_P (op0)
-	  || TREE_CODE (op0) == PAREN_EXPR)
-	return fold_convert_loc (loc, type, op0);
-      return NULL_TREE;
-
     case NON_LVALUE_EXPR:
       if (!maybe_lvalue_p (op0))
 	return fold_convert_loc (loc, type, op0);
@@ -7680,9 +7672,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
-      if (TREE_TYPE (op0) == type)
-	return op0;
-
       if (COMPARISON_CLASS_P (op0))
 	{
 	  /* If we have (type) (a CMP b) and type is an integral type, return
@@ -7953,34 +7942,9 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       return tem ? tem : NULL_TREE;
 
     case VIEW_CONVERT_EXPR:
-      if (TREE_TYPE (op0) == type)
-	return op0;
-      if (TREE_CODE (op0) == VIEW_CONVERT_EXPR)
-	return fold_build1_loc (loc, VIEW_CONVERT_EXPR,
-			    type, TREE_OPERAND (op0, 0));
       if (TREE_CODE (op0) == MEM_REF)
 	return fold_build2_loc (loc, MEM_REF, type,
 				TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
-
-      /* For integral conversions with the same precision or pointer
-	 conversions use a NOP_EXPR instead.  */
-      if ((INTEGRAL_TYPE_P (type)
-	   || POINTER_TYPE_P (type))
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	      || POINTER_TYPE_P (TREE_TYPE (op0)))
-	  && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (op0)))
-	return fold_convert_loc (loc, type, op0);
-
-      /* Strip inner integral conversions that do not change the precision.  */
-      if (CONVERT_EXPR_P (op0)
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	      || POINTER_TYPE_P (TREE_TYPE (op0)))
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
-	      || POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0))))
-	  && (TYPE_PRECISION (TREE_TYPE (op0))
-	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))))
-	return fold_build1_loc (loc, VIEW_CONVERT_EXPR,
-			    type, TREE_OPERAND (op0, 0));
 
       return fold_view_convert_expr (type, op0);
 
