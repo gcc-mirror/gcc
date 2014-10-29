@@ -4921,7 +4921,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   rtx op0 = XEXP ((rtx)comp_rtx, 0);
   rtx op1 = XEXP ((rtx)comp_rtx, 1);
   enum rtx_code comp = GET_CODE ((rtx)comp_rtx);
-  enum machine_mode mode;
+  machine_mode mode;
 
 
   label = block_label (first_head);

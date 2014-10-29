@@ -121,7 +121,7 @@ struct lra_reg
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in
      whole function (possibly via subreg).  */
-  enum machine_mode biggest_mode;
+  machine_mode biggest_mode;
   /* Live ranges of the pseudo.	 */
   lra_live_range_t live_ranges;
   /* This member is set up in lra-lives.c for subsequent
@@ -290,7 +290,7 @@ extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);
 extern rtx_insn *lra_pop_insn (void);
 extern unsigned int lra_insn_stack_length (void);
 
-extern rtx lra_create_new_reg_with_unique_value (enum machine_mode, rtx,
+extern rtx lra_create_new_reg_with_unique_value (machine_mode, rtx,
 						 enum reg_class, const char *);
 extern void lra_set_regno_unique_value (int);
 extern void lra_invalidate_insn_data (rtx_insn *);
@@ -329,7 +329,7 @@ extern int lra_constraint_new_insn_uid_start;
 /* lra-constraints.c: */
 
 extern void lra_init_equiv (void);
-extern int lra_constraint_offset (int, enum machine_mode);
+extern int lra_constraint_offset (int, machine_mode);
 
 extern int lra_constraint_iter;
 extern bool lra_risky_transformations_p;
@@ -390,7 +390,7 @@ extern void lra_final_code_change (void);
 
 extern void lra_debug_elim_table (void);
 extern int lra_get_elimination_hard_regno (int);
-extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, enum machine_mode, bool,
+extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode, bool,
 				 bool, bool);
 extern void lra_eliminate (bool, bool);
 

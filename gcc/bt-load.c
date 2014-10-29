@@ -1153,7 +1153,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   rtx src;
   rtx btr_rtx;
   rtx_insn *new_insn;
-  enum machine_mode btr_mode;
+  machine_mode btr_mode;
   btr_user user;
   rtx set;
 

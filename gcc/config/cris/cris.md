@@ -4997,8 +4997,8 @@
   [(set (match_dup 0) (match_dup 4))
    (set (match_dup 5) (match_dup 6))]
 {
-  enum machine_mode zmode = INTVAL (operands[3]) <= 255 ? QImode : HImode;
-  enum machine_mode amode
+  machine_mode zmode = INTVAL (operands[3]) <= 255 ? QImode : HImode;
+  machine_mode amode
     = satisfies_constraint_O (operands[3]) ? SImode : zmode;
   rtx op1
     = (REG_S_P (operands[1])
@@ -5035,7 +5035,7 @@
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0) (and:SI (match_dup 0) (match_dup 4)))]
 {
-  enum machine_mode zmode = INTVAL (operands[2]) <= 255 ? QImode : HImode;
+  machine_mode zmode = INTVAL (operands[2]) <= 255 ? QImode : HImode;
   rtx op1
     = (REG_S_P (operands[2])
        ? gen_rtx_REG (zmode, REGNO (operands[2]))

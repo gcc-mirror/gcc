@@ -218,7 +218,7 @@ static enum spu_immediate which_immediate_load (HOST_WIDE_INT val);
 static enum spu_immediate which_logical_immediate (HOST_WIDE_INT val);
 static int cpat_info(unsigned char *arr, int size, int *prun, int *pstart);
 static enum immediate_class classify_immediate (rtx op,
-						enum machine_mode mode);
+						machine_mode mode);
 
 /* Pointer mode for __ea references.  */
 #define EAmode (spu_ea_model != 32 ? DImode : SImode)
@@ -307,7 +307,7 @@ spu_option_override (void)
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.  */
 static bool
-spu_scalar_mode_supported_p (enum machine_mode mode)
+spu_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -329,7 +329,7 @@ spu_scalar_mode_supported_p (enum machine_mode mode)
    least some operations are supported; need to check optabs or builtins
    for further details.  */
 static bool
-spu_vector_mode_supported_p (enum machine_mode mode)
+spu_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -352,8 +352,8 @@ spu_vector_mode_supported_p (enum machine_mode mode)
 int
 valid_subreg (rtx op)
 {
-  enum machine_mode om = GET_MODE (op);
-  enum machine_mode im = GET_MODE (SUBREG_REG (op));
+  machine_mode om = GET_MODE (op);
+  machine_mode im = GET_MODE (SUBREG_REG (op));
   return om != VOIDmode && im != VOIDmode
     && (GET_MODE_SIZE (im) == GET_MODE_SIZE (om)
 	|| (GET_MODE_SIZE (im) <= 4 && GET_MODE_SIZE (om) <= 4)
@@ -365,7 +365,7 @@ valid_subreg (rtx op)
 static rtx
 adjust_operand (rtx op, HOST_WIDE_INT * start)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int op_size;
   /* Strip any paradoxical SUBREG.  */
   if (GET_CODE (op) == SUBREG
@@ -480,7 +480,7 @@ spu_expand_insv (rtx ops[])
   HOST_WIDE_INT width = INTVAL (ops[1]);
   HOST_WIDE_INT start = INTVAL (ops[2]);
   HOST_WIDE_INT maskbits;
-  enum machine_mode dst_mode;
+  machine_mode dst_mode;
   rtx dst = ops[0], src = ops[3];
   int dst_size;
   rtx mask;
@@ -497,7 +497,7 @@ spu_expand_insv (rtx ops[])
 
   if (CONSTANT_P (src))
     {
-      enum machine_mode m =
+      machine_mode m =
 	(width <= 32 ? SImode : width <= 64 ? DImode : TImode);
       src = force_reg (m, convert_to_mode (m, src, 0));
     }
@@ -684,8 +684,8 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
   int reverse_test = 0;
   rtx compare_result, eq_result;
   rtx comp_rtx, eq_rtx;
-  enum machine_mode comp_mode;
-  enum machine_mode op_mode;
+  machine_mode comp_mode;
+  machine_mode op_mode;
   enum spu_comp_code scode, eq_code;
   enum insn_code ior_code;
   enum rtx_code code = GET_CODE (cmp);
@@ -954,7 +954,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
       rtx target = operands[0];
       int compare_size = GET_MODE_BITSIZE (comp_mode);
       int target_size = GET_MODE_BITSIZE (GET_MODE (target));
-      enum machine_mode mode = mode_for_size (target_size, MODE_INT, 0);
+      machine_mode mode = mode_for_size (target_size, MODE_INT, 0);
       rtx select_mask;
       rtx op_t = operands[2];
       rtx op_f = operands[3];
@@ -1024,7 +1024,7 @@ const_double_to_hwint (rtx x)
 }
 
 rtx
-hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v)
+hwint_to_const_double (machine_mode mode, HOST_WIDE_INT v)
 {
   long tv[2];
   REAL_VALUE_TYPE rv;
@@ -1091,7 +1091,7 @@ print_operand_address (FILE * file, register rtx addr)
 void
 print_operand (FILE * file, rtx x, int code)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   HOST_WIDE_INT val;
   unsigned char arr[16];
   int xcode = GET_CODE (x);
@@ -1506,7 +1506,7 @@ get_pic_reg (void)
 int
 spu_split_immediate (rtx * ops)
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
+  machine_mode mode = GET_MODE (ops[0]);
   enum immediate_class c = classify_immediate (ops[1], mode);
 
   switch (c)
@@ -1517,7 +1517,7 @@ spu_split_immediate (rtx * ops)
 	unsigned char arrlo[16];
 	rtx to, temp, hi, lo;
 	int i;
-	enum machine_mode imode = mode;
+	machine_mode imode = mode;
 	/* We need to do reals as ints because the constant used in the
 	   IOR might not be a legitimate real constant. */
 	imode = int_mode_for_mode (mode);
@@ -1547,7 +1547,7 @@ spu_split_immediate (rtx * ops)
 	unsigned char arr_andbi[16];
 	rtx to, reg_fsmbi, reg_and;
 	int i;
-	enum machine_mode imode = mode;
+	machine_mode imode = mode;
 	/* We need to do reals as ints because the constant used in the
 	 * AND might not be a legitimate real constant. */
 	imode = int_mode_for_mode (mode);
@@ -1920,7 +1920,7 @@ spu_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
    If MODE is a vector mode, every element will be VAL.
    For TImode, VAL will be zero extended to 128 bits. */
 rtx
-spu_const (enum machine_mode mode, HOST_WIDE_INT val)
+spu_const (machine_mode mode, HOST_WIDE_INT val)
 {
   rtx inner;
   rtvec v;
@@ -1955,7 +1955,7 @@ spu_const (enum machine_mode mode, HOST_WIDE_INT val)
 
 /* Create a MODE vector constant from 4 ints. */
 rtx
-spu_const_from_ints(enum machine_mode mode, int a, int b, int c, int d)
+spu_const_from_ints(machine_mode mode, int a, int b, int c, int d)
 {
   unsigned char arr[16];
   arr[0] = (a >> 24) & 0xff;
@@ -3080,7 +3080,7 @@ spu_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
 /* Create a CONST_DOUBLE from a string.  */
 rtx
-spu_float_const (const char *string, enum machine_mode mode)
+spu_float_const (const char *string, machine_mode mode)
 {
   REAL_VALUE_TYPE value;
   value = REAL_VALUE_ATOF (string, mode);
@@ -3115,7 +3115,7 @@ which_immediate_load (HOST_WIDE_INT val)
 /* Return true when OP can be loaded by one of the il instructions, or
    when flow2 is not completed and OP can be loaded using ilhu and iohl. */
 int
-immediate_load_p (rtx op, enum machine_mode mode)
+immediate_load_p (rtx op, machine_mode mode)
 {
   if (CONSTANT_P (op))
     {
@@ -3178,7 +3178,7 @@ cpat_info(unsigned char *arr, int size, int *prun, int *pstart)
 /* OP is a CONSTANT_P.  Determine what instructions can be used to load
    it into a register.  MODE is only valid when OP is a CONST_INT. */
 static enum immediate_class
-classify_immediate (rtx op, enum machine_mode mode)
+classify_immediate (rtx op, machine_mode mode)
 {
   HOST_WIDE_INT val;
   unsigned char arr[16];
@@ -3318,7 +3318,7 @@ const_vector_immediate_p (rtx x)
 }
 
 int
-logical_immediate_p (rtx op, enum machine_mode mode)
+logical_immediate_p (rtx op, machine_mode mode)
 {
   HOST_WIDE_INT val;
   unsigned char arr[16];
@@ -3350,7 +3350,7 @@ logical_immediate_p (rtx op, enum machine_mode mode)
 }
 
 int
-iohl_immediate_p (rtx op, enum machine_mode mode)
+iohl_immediate_p (rtx op, machine_mode mode)
 {
   HOST_WIDE_INT val;
   unsigned char arr[16];
@@ -3381,7 +3381,7 @@ iohl_immediate_p (rtx op, enum machine_mode mode)
 }
 
 int
-arith_immediate_p (rtx op, enum machine_mode mode,
+arith_immediate_p (rtx op, machine_mode mode,
 		   HOST_WIDE_INT low, HOST_WIDE_INT high)
 {
   HOST_WIDE_INT val;
@@ -3425,9 +3425,9 @@ arith_immediate_p (rtx op, enum machine_mode mode,
    OP is 2^scale, scale >= LOW && scale <= HIGH.  When OP is a vector,
    all entries must be the same. */
 bool
-exp2_immediate_p (rtx op, enum machine_mode mode, int low, int high)
+exp2_immediate_p (rtx op, machine_mode mode, int low, int high)
 {
-  enum machine_mode int_mode;
+  machine_mode int_mode;
   HOST_WIDE_INT val;
   unsigned char arr[16];
   int bytes, i, j;
@@ -3502,7 +3502,7 @@ ea_symbol_ref_p (const_rtx x)
      (DImode, DFmode)
    - a 128-bit constant where the four 32-bit words match.  */
 bool
-spu_legitimate_constant_p (enum machine_mode mode, rtx x)
+spu_legitimate_constant_p (machine_mode mode, rtx x)
 {
   subrtx_iterator::array_type array;
   if (GET_CODE (x) == HIGH)
@@ -3540,7 +3540,7 @@ spu_legitimate_constant_p (enum machine_mode mode, rtx x)
   16 byte modes because the expand phase will change all smaller MEM
   references to TImode.  */
 static bool
-spu_legitimate_address_p (enum machine_mode mode,
+spu_legitimate_address_p (machine_mode mode,
 			  rtx x, bool reg_ok_strict)
 {
   int aligned = GET_MODE_SIZE (mode) >= 16;
@@ -3611,7 +3611,7 @@ spu_legitimate_address_p (enum machine_mode mode,
 
 /* Like spu_legitimate_address_p, except with named addresses.  */
 static bool
-spu_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
+spu_addr_space_legitimate_address_p (machine_mode mode, rtx x,
 				     bool reg_ok_strict, addr_space_t as)
 {
   if (as == ADDR_SPACE_EA)
@@ -3627,7 +3627,7 @@ spu_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
    register.  */
 static rtx
 spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED)
+			machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0, op1;
   /* Make sure both operands are registers.  */
@@ -3656,7 +3656,7 @@ spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
 /* Like spu_legitimate_address, except with named address support.  */
 static rtx
-spu_addr_space_legitimize_address (rtx x, rtx oldx, enum machine_mode mode,
+spu_addr_space_legitimize_address (rtx x, rtx oldx, machine_mode mode,
 				   addr_space_t as)
 {
   if (as != ADDR_SPACE_GENERIC)
@@ -3667,7 +3667,7 @@ spu_addr_space_legitimize_address (rtx x, rtx oldx, enum machine_mode mode,
 
 /* Reload reg + const_int for out-of-range displacements.  */
 rtx
-spu_legitimize_reload_address (rtx ad, enum machine_mode mode ATTRIBUTE_UNUSED,
+spu_legitimize_reload_address (rtx ad, machine_mode mode ATTRIBUTE_UNUSED,
 			       int opnum, int type)
 {
   bool removed_and = false;
@@ -3729,7 +3729,7 @@ spu_handle_vector_attribute (tree * node, tree name,
 			     int flags ATTRIBUTE_UNUSED, bool * no_add_attrs)
 {
   tree type = *node, result = NULL_TREE;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsigned_p;
 
   while (POINTER_TYPE_P (type)
@@ -3816,7 +3816,7 @@ spu_initial_elimination_offset (int from, int to)
 rtx
 spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
   int byte_size = ((mode == BLKmode)
 		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
 
@@ -3824,7 +3824,7 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
   if ((mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
       && byte_size <= UNITS_PER_WORD * MAX_REGISTER_RETURN && byte_size > 0)
     {
-      enum machine_mode smode;
+      machine_mode smode;
       rtvec v;
       int i;
       int nregs = (byte_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
@@ -3858,7 +3858,7 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 
 static rtx
 spu_function_arg (cumulative_args_t cum_v,
-		  enum machine_mode mode,
+		  machine_mode mode,
 		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -3879,7 +3879,7 @@ spu_function_arg (cumulative_args_t cum_v,
   if ((mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
       && byte_size < UNITS_PER_WORD && byte_size > 0)
     {
-      enum machine_mode smode;
+      machine_mode smode;
       rtx gr_reg;
       if (byte_size < 4)
 	byte_size = 4;
@@ -3894,7 +3894,7 @@ spu_function_arg (cumulative_args_t cum_v,
 }
 
 static void
-spu_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -3911,7 +3911,7 @@ spu_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 /* Variable sized types are passed by reference.  */
 static bool
 spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       machine_mode mode ATTRIBUTE_UNUSED,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
@@ -4101,7 +4101,7 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
    in the stack then save no registers.  Set pretend_args_size to the
    amount of space needed to save the registers. */
 static void
-spu_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
+spu_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 			    tree type, int *pretend_size, int no_rtl)
 {
   if (!no_rtl)
@@ -4175,7 +4175,7 @@ spu_encode_section_info (tree decl, rtx rtl, int first)
 static int
 store_with_one_insn_p (rtx mem)
 {
-  enum machine_mode mode = GET_MODE (mem);
+  machine_mode mode = GET_MODE (mem);
   rtx addr = XEXP (mem, 0);
   if (mode == BLKmode)
     return 0;
@@ -4450,7 +4450,7 @@ expand_ea_mem (rtx mem, bool is_store)
 }
 
 int
-spu_expand_mov (rtx * ops, enum machine_mode mode)
+spu_expand_mov (rtx * ops, machine_mode mode)
 {
   if (GET_CODE (ops[0]) == SUBREG && !valid_subreg (ops[0]))
     {
@@ -4464,7 +4464,7 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
   if (GET_CODE (ops[1]) == SUBREG && !valid_subreg (ops[1]))
     {
       rtx from = SUBREG_REG (ops[1]);
-      enum machine_mode imode = int_mode_for_mode (GET_MODE (from));
+      machine_mode imode = int_mode_for_mode (GET_MODE (from));
 
       gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
 		  && GET_MODE_CLASS (imode) == MODE_INT
@@ -4531,8 +4531,8 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
 static void
 spu_convert_move (rtx dst, rtx src)
 {
-  enum machine_mode mode = GET_MODE (dst);
-  enum machine_mode int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+  machine_mode mode = GET_MODE (dst);
+  machine_mode int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
   rtx reg;
   gcc_assert (GET_MODE (src) == TImode);
   reg = int_mode != mode ? gen_reg_rtx (int_mode) : dst;
@@ -4695,7 +4695,7 @@ spu_expand_load (rtx dst0, rtx dst1, rtx src, int extra_rotby)
 int
 spu_split_load (rtx * ops)
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
+  machine_mode mode = GET_MODE (ops[0]);
   rtx addr, load, rot;
   int rot_amt;
 
@@ -4729,7 +4729,7 @@ spu_split_load (rtx * ops)
 int
 spu_split_store (rtx * ops)
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
+  machine_mode mode = GET_MODE (ops[0]);
   rtx reg;
   rtx addr, p0, p1, p1_lo, smem;
   int aform;
@@ -4986,7 +4986,7 @@ fsmbi_const_p (rtx x)
 /* Return TRUE if x is a CONST_INT, CONST_DOUBLE or CONST_VECTOR that
    can be generated using the cbd, chd, cwd or cdd instruction. */
 int
-cpat_const_p (rtx x, enum machine_mode mode)
+cpat_const_p (rtx x, machine_mode mode)
 {
   if (CONSTANT_P (x))
     {
@@ -5032,7 +5032,7 @@ gen_cpat_const (rtx * ops)
    array.  Use MODE for CONST_INT's.  When the constant's mode is smaller
    than 16 bytes, the value is repeated across the rest of the array. */
 void
-constant_to_array (enum machine_mode mode, rtx x, unsigned char arr[16])
+constant_to_array (machine_mode mode, rtx x, unsigned char arr[16])
 {
   HOST_WIDE_INT val;
   int i, j, first;
@@ -5111,9 +5111,9 @@ constant_to_array (enum machine_mode mode, rtx x, unsigned char arr[16])
    smaller than 16 bytes, use the bytes that would represent that value
    in a register, e.g., for QImode return the value of arr[3].  */
 rtx
-array_to_constant (enum machine_mode mode, const unsigned char arr[16])
+array_to_constant (machine_mode mode, const unsigned char arr[16])
 {
-  enum machine_mode inner_mode;
+  machine_mode inner_mode;
   rtvec v;
   int units, size, i, j, k;
   HOST_WIDE_INT val;
@@ -5249,7 +5249,7 @@ spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	       int opno ATTRIBUTE_UNUSED, int *total,
 	       bool speed ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   int cost = COSTS_N_INSNS (2);
 
   /* Folding to a CONST_VECTOR will use extra space but there might
@@ -5360,7 +5360,7 @@ spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
   return true;
 }
 
-static enum machine_mode
+static machine_mode
 spu_unwind_word_mode (void)
 {
   return SImode;
@@ -5489,7 +5489,7 @@ spu_init_libfuncs (void)
 /* Make a subreg, stripping any existing subreg.  We could possibly just
    call simplify_subreg, but in this case we know what we want. */
 rtx
-spu_gen_subreg (enum machine_mode mode, rtx x)
+spu_gen_subreg (machine_mode mode, rtx x)
 {
   if (GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
@@ -5660,7 +5660,7 @@ spu_safe_dma (HOST_WIDE_INT channel)
 void
 spu_builtin_splats (rtx ops[])
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
+  machine_mode mode = GET_MODE (ops[0]);
   if (GET_CODE (ops[1]) == CONST_INT || GET_CODE (ops[1]) == CONST_DOUBLE)
     {
       unsigned char arr[16];
@@ -5709,7 +5709,7 @@ spu_builtin_splats (rtx ops[])
 void
 spu_builtin_extract (rtx ops[])
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx rot, from, tmp;
 
   mode = GET_MODE (ops[1]);
@@ -5774,8 +5774,8 @@ spu_builtin_extract (rtx ops[])
 void
 spu_builtin_insert (rtx ops[])
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
-  enum machine_mode imode = GET_MODE_INNER (mode);
+  machine_mode mode = GET_MODE (ops[0]);
+  machine_mode imode = GET_MODE_INNER (mode);
   rtx mask = gen_reg_rtx (TImode);
   rtx offset;
 
@@ -5796,7 +5796,7 @@ spu_builtin_insert (rtx ops[])
 void
 spu_builtin_promote (rtx ops[])
 {
-  enum machine_mode mode, imode;
+  machine_mode mode, imode;
   rtx rot, from, offset;
   HOST_WIDE_INT pos;
 
@@ -5982,7 +5982,7 @@ spu_expand_sign_extend (rtx ops[])
 void
 spu_expand_vector_init (rtx target, rtx vals)
 {
-  enum machine_mode mode = GET_MODE (target);
+  machine_mode mode = GET_MODE (target);
   int n_elts = GET_MODE_NUNITS (mode);
   int n_var = 0;
   bool all_same = true;
@@ -6073,8 +6073,8 @@ spu_expand_vector_init (rtx target, rtx vals)
 
 static int
 get_vec_cmp_insn (enum rtx_code code,
-                  enum machine_mode dest_mode,
-                  enum machine_mode op_mode)
+                  machine_mode dest_mode,
+                  machine_mode op_mode)
 
 {
   switch (code)
@@ -6123,12 +6123,12 @@ get_vec_cmp_insn (enum rtx_code code,
 static rtx
 spu_emit_vector_compare (enum rtx_code rcode,
                          rtx op0, rtx op1,
-                         enum machine_mode dmode)
+                         machine_mode dmode)
 {
   int vec_cmp_insn;
   rtx mask;
-  enum machine_mode dest_mode;
-  enum machine_mode op_mode = GET_MODE (op1);
+  machine_mode dest_mode;
+  machine_mode op_mode = GET_MODE (op1);
 
   gcc_assert (GET_MODE (op0) == GET_MODE (op1));
 
@@ -6304,7 +6304,7 @@ int
 spu_emit_vector_cond_expr (rtx dest, rtx op1, rtx op2,
                            rtx cond, rtx cc_op0, rtx cc_op1)
 {   
-  enum machine_mode dest_mode = GET_MODE (dest);
+  machine_mode dest_mode = GET_MODE (dest);
   enum rtx_code rcode = GET_CODE (cond);
   rtx mask;
     
@@ -6317,7 +6317,7 @@ spu_emit_vector_cond_expr (rtx dest, rtx op1, rtx op2,
 }
 
 static rtx
-spu_force_reg (enum machine_mode mode, rtx op)
+spu_force_reg (machine_mode mode, rtx op)
 {
   rtx x, r;
   if (GET_MODE (op) == VOIDmode || GET_MODE (op) == BLKmode)
@@ -6438,7 +6438,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
   rtx pat;
   rtx ops[8];
   enum insn_code icode = (enum insn_code) d->icode;
-  enum machine_mode mode, tmode;
+  machine_mode mode, tmode;
   int i, p;
   int n_operands;
   tree return_type;
@@ -6473,7 +6473,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 
   if (d->fcode == SPU_MASK_FOR_LOAD)
     {
-      enum machine_mode mode = insn_data[icode].operand[1].mode;
+      machine_mode mode = insn_data[icode].operand[1].mode;
       tree arg;
       rtx addr, op, pat;
 
@@ -6524,7 +6524,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 	  else
 	    {
 	      rtx reg = gen_reg_rtx (mode);
-	      enum machine_mode imode = GET_MODE_INNER (mode);
+	      machine_mode imode = GET_MODE_INNER (mode);
 	      if (!spu_nonmem_operand (ops[i], GET_MODE (ops[i])))
 		ops[i] = force_reg (GET_MODE (ops[i]), ops[i]);
 	      if (imode != GET_MODE (ops[i]))
@@ -6598,7 +6598,7 @@ rtx
 spu_expand_builtin (tree exp,
 		    rtx target,
 		    rtx subtarget ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    machine_mode mode ATTRIBUTE_UNUSED,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -6737,7 +6737,7 @@ spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed
 }
 
 /* Return the appropriate mode for a named address pointer.  */
-static enum machine_mode
+static machine_mode
 spu_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -6752,7 +6752,7 @@ spu_addr_space_pointer_mode (addr_space_t addrspace)
 }
 
 /* Return the appropriate mode for a named address address.  */
-static enum machine_mode
+static machine_mode
 spu_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -6898,7 +6898,7 @@ spu_init_expanders (void)
     }
 }
 
-static enum machine_mode
+static machine_mode
 spu_libgcc_cmp_return_mode (void)
 {
 
@@ -6907,7 +6907,7 @@ spu_libgcc_cmp_return_mode (void)
   return SImode;
 }
 
-static enum machine_mode
+static machine_mode
 spu_libgcc_shift_count_mode (void)
 {
 /* For SPU word mode is TI mode so it is better to use SImode
@@ -6966,7 +6966,7 @@ spu_unique_section (tree decl, int reloc)
    the result is valid for MODE.  Currently, MODE must be V4SFmode and
    SCALE must be SImode. */
 rtx
-spu_gen_exp2 (enum machine_mode mode, rtx scale)
+spu_gen_exp2 (machine_mode mode, rtx scale)
 {
   gcc_assert (mode == V4SFmode);
   gcc_assert (GET_MODE (scale) == SImode || GET_CODE (scale) == CONST_INT);

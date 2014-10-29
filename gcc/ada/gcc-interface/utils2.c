@@ -1314,7 +1314,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      HOST_WIDE_INT bitsize;
 	      HOST_WIDE_INT bitpos;
 	      tree offset, inner;
-	      enum machine_mode mode;
+	      machine_mode mode;
 	      int unsignedp, volatilep;
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,

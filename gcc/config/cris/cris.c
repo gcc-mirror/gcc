@@ -109,10 +109,10 @@ static int in_code = 0;
 /* Fix for reg_overlap_mentioned_p.  */
 static int cris_reg_overlap_mentioned_p (rtx, rtx);
 
-static enum machine_mode cris_promote_function_mode (const_tree, enum machine_mode,
+static machine_mode cris_promote_function_mode (const_tree, machine_mode,
 						     int *, const_tree, int);
 
-static unsigned int cris_atomic_align_for_mode (enum machine_mode);
+static unsigned int cris_atomic_align_for_mode (machine_mode);
 
 static void cris_print_base (rtx, FILE *);
 
@@ -124,7 +124,7 @@ static struct machine_function * cris_init_machine_status (void);
 
 static rtx cris_struct_value_rtx (tree, int);
 
-static void cris_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
+static void cris_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					 tree type, int *, int);
 
 static int cris_initial_frame_pointer_offset (void);
@@ -151,22 +151,22 @@ static void cris_init_libfuncs (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
-static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
-static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
+static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
+static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
-static int cris_address_cost (rtx, enum machine_mode, addr_space_t, bool);
-static bool cris_pass_by_reference (cumulative_args_t, enum machine_mode,
+static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
+static bool cris_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
-static int cris_arg_partial_bytes (cumulative_args_t, enum machine_mode,
+static int cris_arg_partial_bytes (cumulative_args_t, machine_mode,
 				   tree, bool);
-static rtx cris_function_arg (cumulative_args_t, enum machine_mode,
+static rtx cris_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static rtx cris_function_incoming_arg (cumulative_args_t,
-				       enum machine_mode, const_tree, bool);
-static void cris_function_arg_advance (cumulative_args_t, enum machine_mode,
+				       machine_mode, const_tree, bool);
+static void cris_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
-static bool cris_cannot_force_const_mem (enum machine_mode, rtx);
+static bool cris_cannot_force_const_mem (machine_mode, rtx);
 
 static void cris_option_override (void);
 
@@ -176,7 +176,7 @@ static void cris_asm_trampoline_template (FILE *);
 static void cris_trampoline_init (rtx, tree, rtx);
 
 static rtx cris_function_value(const_tree, const_tree, bool);
-static rtx cris_libcall_value (enum machine_mode, const_rtx);
+static rtx cris_libcall_value (machine_mode, const_rtx);
 static bool cris_function_value_regno_p (const unsigned int);
 static void cris_file_end (void);
 
@@ -538,7 +538,7 @@ cris_cfun_uses_pic_table (void)
    can be reached as pc-relative as we can't tell when or how to do that.  */
 
 static bool
-cris_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+cris_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   enum cris_symbol_type t = cris_symbol_type_of (x);
 
@@ -1466,7 +1466,7 @@ cris_biap_index_p (const_rtx x, bool strict)
    symbol is valid for the plain "symbol + offset" case.  */
 
 bool
-cris_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   const_rtx x1, x2;
 
@@ -1517,7 +1517,7 @@ cris_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
    so don't bother; fix the documentation instead.  */
 
 bool
-cris_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+cris_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   enum cris_symbol_type t;
 
@@ -1536,7 +1536,7 @@ cris_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 
 bool
 cris_reload_address_legitimized (rtx x,
-				 enum machine_mode mode ATTRIBUTE_UNUSED,
+				 machine_mode mode ATTRIBUTE_UNUSED,
 				 int opnum ATTRIBUTE_UNUSED,
 				 int itype,
 				 int ind_levels ATTRIBUTE_UNUSED)
@@ -1636,7 +1636,7 @@ cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 /* Worker function for TARGET_REGISTER_MOVE_COST.  */
 
 static int
-cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+cris_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			 reg_class_t from, reg_class_t to)
 {
   /* Can't move to and from a SPECIAL_REGS register, so we have to say
@@ -1674,7 +1674,7 @@ cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    suffice.  */
 
 static int
-cris_memory_move_cost (enum machine_mode mode,
+cris_memory_move_cost (machine_mode mode,
                        reg_class_t rclass ATTRIBUTE_UNUSED,
                        bool in ATTRIBUTE_UNUSED)
 {
@@ -2220,7 +2220,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* The ADDRESS_COST worker.  */
 
 static int
-cris_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+cris_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 		   addr_space_t as ATTRIBUTE_UNUSED,
 		   bool speed ATTRIBUTE_UNUSED)
 {
@@ -2883,7 +2883,7 @@ cris_init_machine_status (void)
 rtx
 cris_split_movdx (rtx *operands)
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
   rtx dest = operands[0];
   rtx src  = operands[1];
   rtx val;
@@ -4055,7 +4055,7 @@ cris_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 static void
 cris_setup_incoming_varargs (cumulative_args_t ca_v,
-			     enum machine_mode mode ATTRIBUTE_UNUSED,
+			     machine_mode mode ATTRIBUTE_UNUSED,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_arg_size,
 			     int second_time)
@@ -4080,7 +4080,7 @@ cris_setup_incoming_varargs (cumulative_args_t ca_v,
 
 static bool
 cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			enum machine_mode mode, const_tree type,
+			machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   return (targetm.calls.must_pass_in_stack (mode, type)
@@ -4091,9 +4091,9 @@ cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
    and *not* defining TARGET_PROMOTE_PROTOTYPES or PROMOTE_MODE gives the
    best code size and speed for gcc, ipps and products in gcc-2.7.2.  */
 
-enum machine_mode
+machine_mode
 cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-                            enum machine_mode mode,
+                            machine_mode mode,
                             int *punsignedp ATTRIBUTE_UNUSED,
 			    const_tree fntype ATTRIBUTE_UNUSED,
                             int for_return)
@@ -4109,7 +4109,7 @@ cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Atomic types require alignment to be at least their "natural" size.  */
 
 static unsigned int
-cris_atomic_align_for_mode (enum machine_mode mode)
+cris_atomic_align_for_mode (machine_mode mode)
 {
   return GET_MODE_BITSIZE (mode);
 }
@@ -4129,7 +4129,7 @@ cris_function_value(const_tree type,
    time being.  */
 
 static rtx
-cris_libcall_value (enum machine_mode mode,
+cris_libcall_value (machine_mode mode,
 		    const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG);
@@ -4145,7 +4145,7 @@ cris_function_value_regno_p (const unsigned int regno)
 }
 
 static int
-cris_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
+cris_arg_partial_bytes (cumulative_args_t ca, machine_mode mode,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
@@ -4159,7 +4159,7 @@ cris_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
 
 static rtx
 cris_function_arg_1 (cumulative_args_t ca_v,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     machine_mode mode ATTRIBUTE_UNUSED,
 		     const_tree type ATTRIBUTE_UNUSED,
 		     bool named, bool incoming)
 {
@@ -4175,7 +4175,7 @@ cris_function_arg_1 (cumulative_args_t ca_v,
    The void_type_node is sent as a "closing" call.  */
 
 static rtx
-cris_function_arg (cumulative_args_t ca, enum machine_mode mode,
+cris_function_arg (cumulative_args_t ca, machine_mode mode,
 		   const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, false);
@@ -4189,7 +4189,7 @@ cris_function_arg (cumulative_args_t ca, enum machine_mode mode,
    void_type_node TYPE parameter.  */
 
 static rtx
-cris_function_incoming_arg (cumulative_args_t ca, enum machine_mode mode,
+cris_function_incoming_arg (cumulative_args_t ca, machine_mode mode,
 			    const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, true);
@@ -4198,7 +4198,7 @@ cris_function_incoming_arg (cumulative_args_t ca, enum machine_mode mode,
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-cris_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
+cris_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);

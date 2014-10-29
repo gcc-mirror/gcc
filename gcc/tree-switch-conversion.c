@@ -964,7 +964,7 @@ array_value_type (gimple swtch, tree type, int num,
 {
   unsigned int i, len = vec_safe_length (info->constructors[num]);
   constructor_elt *elt;
-  enum machine_mode mode;
+  machine_mode mode;
   int sign = 0;
   tree smaller_type;
 

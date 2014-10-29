@@ -1,3 +1,9 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.c, gcc-interface/gigi.h, gcc-interface/misc.c,
+	gcc-interface/trans.c, gcc-interface/utils.c, gcc-interface/utils2.c:
+	Remove redundant enum from machine_mode.
+
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/trans.c: Adjust include files.

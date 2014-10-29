@@ -199,7 +199,7 @@ static bool shmedia_space_reserved_for_target_registers;
 static void split_branches (rtx_insn *);
 static int branch_dest (rtx);
 static void print_slot (rtx_sequence *);
-static rtx_code_label *add_constant (rtx, enum machine_mode, rtx);
+static rtx_code_label *add_constant (rtx, machine_mode, rtx);
 static void dump_table (rtx_insn *, rtx_insn *);
 static bool broken_move (rtx_insn *);
 static bool mova_p (rtx_insn *);
@@ -240,20 +240,20 @@ static bool sh_asm_output_addr_const_extra (FILE *file, rtx x);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
-static int sh_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
+static int sh_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int sh_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *sort_p);
-static short find_set_regmode_weight (rtx, enum machine_mode);
-static short find_insn_regmode_weight (rtx, enum machine_mode);
-static void find_regmode_weight (basic_block, enum machine_mode);
+static short find_set_regmode_weight (rtx, machine_mode);
+static short find_insn_regmode_weight (rtx, machine_mode);
+static void find_regmode_weight (basic_block, machine_mode);
 static int find_r0_life_regions (basic_block);
 static void  sh_md_init_global (FILE *, int, int);
 static void  sh_md_finish_global (FILE *, int);
 static int rank_for_reorder (const void *, const void *);
 static void swap_reorder (rtx_insn **, int);
 static void ready_reorder (rtx_insn **, int);
-static bool high_pressure (enum machine_mode);
+static bool high_pressure (machine_mode);
 static int sh_reorder (FILE *, int, rtx_insn **, int *, int);
 static int sh_reorder2 (FILE *, int, rtx_insn **, int *, int);
 static void sh_md_init (FILE *, int, int);
@@ -268,7 +268,7 @@ static bool sh_ms_bitfield_layout_p (const_tree);
 
 static void sh_init_builtins (void);
 static tree sh_builtin_decl (unsigned, bool);
-static rtx sh_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static rtx sh_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static void sh_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				HOST_WIDE_INT, tree);
 static void sh_file_start (void);
@@ -281,15 +281,15 @@ static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx_insn *);
 static bool sh_rtx_costs (rtx, int, int, int, int *, bool);
-static int sh_address_cost (rtx, enum machine_mode, addr_space_t, bool);
+static int sh_address_cost (rtx, machine_mode, addr_space_t, bool);
 static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
 static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
-                                        enum machine_mode,
+                                        machine_mode,
                                         struct secondary_reload_info *);
-static bool sh_legitimate_address_p (enum machine_mode, rtx, bool);
-static rtx sh_legitimize_address (rtx, rtx, enum machine_mode);
+static bool sh_legitimate_address_p (machine_mode, rtx, bool);
+static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
@@ -302,10 +302,10 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 static rtx sh_struct_value_rtx (tree, int);
 static rtx sh_function_value (const_tree, const_tree, bool);
 static bool sh_function_value_regno_p (const unsigned int);
-static rtx sh_libcall_value (enum machine_mode, const_rtx);
+static rtx sh_libcall_value (machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
-static void sh_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
+static void sh_setup_incoming_varargs (cumulative_args_t, machine_mode,
 				       tree, int *, int);
 static bool sh_strict_argument_naming (cumulative_args_t);
 static bool sh_pretend_outgoing_varargs_named (cumulative_args_t);
@@ -313,35 +313,35 @@ static tree sh_build_builtin_va_list (void);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool sh_promote_prototypes (const_tree);
-static enum machine_mode sh_promote_function_mode (const_tree type,
-						   enum machine_mode,
+static machine_mode sh_promote_function_mode (const_tree type,
+						   machine_mode,
 						   int *punsignedp,
 						   const_tree funtype,
 						   int for_return);
-static bool sh_pass_by_reference (cumulative_args_t, enum machine_mode,
+static bool sh_pass_by_reference (cumulative_args_t, machine_mode,
 				  const_tree, bool);
-static bool sh_callee_copies (cumulative_args_t, enum machine_mode,
+static bool sh_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
-static int sh_arg_partial_bytes (cumulative_args_t, enum machine_mode,
+static int sh_arg_partial_bytes (cumulative_args_t, machine_mode,
 			         tree, bool);
-static void sh_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void sh_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
-static rtx sh_function_arg (cumulative_args_t, enum machine_mode,
+static rtx sh_function_arg (cumulative_args_t, machine_mode,
 			    const_tree, bool);
-static bool sh_scalar_mode_supported_p (enum machine_mode);
+static bool sh_scalar_mode_supported_p (machine_mode);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
 static bool sh2a_function_vector_p (tree);
 static void sh_trampoline_init (rtx, tree, rtx);
 static rtx sh_trampoline_adjust_address (rtx);
 static void sh_conditional_register_usage (void);
-static bool sh_legitimate_constant_p (enum machine_mode, rtx);
-static int mov_insn_size (enum machine_mode, bool);
-static int mov_insn_alignment_mask (enum machine_mode, bool);
+static bool sh_legitimate_constant_p (machine_mode, rtx);
+static int mov_insn_size (machine_mode, bool);
+static int mov_insn_alignment_mask (machine_mode, bool);
 static bool sequence_insn_p (rtx_insn *);
 static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
 static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
-					enum machine_mode, bool);
+					machine_mode, bool);
 static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
@@ -1211,7 +1211,7 @@ static void
 sh_print_operand (FILE *stream, rtx x, int code)
 {
   int regno;
-  enum machine_mode mode;
+  machine_mode mode;
 
   switch (code)
     {
@@ -1473,7 +1473,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  {
 	    rtx inner = XEXP (x, 0);
 	    int offset = 0;
-	    enum machine_mode inner_mode;
+	    machine_mode inner_mode;
 
 	    /* We might see SUBREGs with vector mode registers inside.  */
 	    if (GET_CODE (inner) == SUBREG
@@ -1691,7 +1691,7 @@ sh_encode_section_info (tree decl, rtx rtl, int first)
 /* Prepare operands for a move define_expand; specifically, one of the
    operands must be in a register.  */
 void
-prepare_move_operands (rtx operands[], enum machine_mode mode)
+prepare_move_operands (rtx operands[], machine_mode mode)
 {
   if ((mode == SImode || mode == DImode)
       && flag_pic
@@ -1861,7 +1861,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
    canonicalize comparisons in cbranch pattern expanders.  */
 static void
 sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
-			    enum machine_mode mode,
+			    machine_mode mode,
 			    bool op0_preserve_value)
 {
   /* When invoked from within the combine pass the mode is not specified,
@@ -1982,7 +1982,7 @@ sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2)
 }
 
 enum rtx_code
-prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
+prepare_cbranch_operands (rtx *operands, machine_mode mode,
 			  enum rtx_code comparison)
 {
   /* The scratch reg is only available when this is invoked from within
@@ -2298,7 +2298,7 @@ sh_eval_treg_value (rtx op)
 /* Emit INSN, possibly in a PARALLEL with an USE/CLOBBER of FPSCR bits in case
    of floating-point comparisons.  */
 static void
-sh_emit_set_t_insn (rtx insn, enum machine_mode mode)
+sh_emit_set_t_insn (rtx insn, machine_mode mode)
 {
   if (TARGET_FPU_ANY && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_CODE (insn) != PARALLEL)
@@ -2318,7 +2318,7 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
 {
   rtx t_reg = get_t_reg_rtx ();
   enum rtx_code oldcode = code;
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* First need a compare insn.  */
   switch (code)
@@ -2366,7 +2366,7 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
 }
 
 rtx
-sh_emit_cheap_store_flag (enum machine_mode mode, enum rtx_code code,
+sh_emit_cheap_store_flag (machine_mode mode, enum rtx_code code,
 			  rtx op0, rtx op1)
 {
   rtx target = gen_reg_rtx (SImode);
@@ -2421,7 +2421,7 @@ sh_emit_cheap_store_flag (enum machine_mode mode, enum rtx_code code,
 
 /* Called from the md file, set up the operands of a compare instruction.  */
 void
-sh_emit_compare_and_branch (rtx *operands, enum machine_mode mode)
+sh_emit_compare_and_branch (rtx *operands, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (operands[0]);
   enum rtx_code branch_code;
@@ -2504,7 +2504,7 @@ sh_emit_compare_and_branch (rtx *operands, enum machine_mode mode)
 }
 
 void
-sh_emit_compare_and_set (rtx *operands, enum machine_mode mode)
+sh_emit_compare_and_set (rtx *operands, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (operands[1]);
   rtx op0 = operands[2];
@@ -2568,7 +2568,7 @@ sh_emit_compare_and_set (rtx *operands, enum machine_mode mode)
    to take care when we see overlapping source and dest registers.  */
 const char *
 output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
-		   enum machine_mode mode)
+		   machine_mode mode)
 {
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -3366,7 +3366,7 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	    && (register_operand (SET_SRC (x), VOIDmode)
 		|| satisfies_constraint_Z (SET_SRC (x))))
 	{
-	  const enum machine_mode mode = GET_MODE (SET_DEST (x));
+	  const machine_mode mode = GET_MODE (SET_DEST (x));
 	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode)
 				  / mov_insn_size (mode, TARGET_SH2A));
 	  return true;
@@ -3620,7 +3620,7 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Determine the size of the fundamental move insn that will be used
    for the specified mode.  */
 static inline int
-mov_insn_size (enum machine_mode mode, bool consider_sh2a)
+mov_insn_size (machine_mode mode, bool consider_sh2a)
 {
   const int mode_sz = GET_MODE_SIZE (mode);
 
@@ -3668,7 +3668,7 @@ sh_max_mov_insn_displacement (machine_mode mode, bool consider_sh2a)
 /* Determine the alignment mask for a move insn of the
    specified mode.  */
 static inline int
-mov_insn_alignment_mask (enum machine_mode mode, bool consider_sh2a)
+mov_insn_alignment_mask (machine_mode mode, bool consider_sh2a)
 {
   const int mov_insn_sz = mov_insn_size (mode, consider_sh2a);
   return mov_insn_sz > 0 ? (mov_insn_sz - 1) : 0;
@@ -3684,7 +3684,7 @@ sh_disp_addr_displacement (rtx x)
 
 /* Compute the cost of an address.  */
 static int
-sh_address_cost (rtx x, enum machine_mode mode,
+sh_address_cost (rtx x, machine_mode mode,
 		 addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   /* 'GBR + 0'.  Account one more because of R0 restriction.  */
@@ -4590,7 +4590,7 @@ typedef struct
   rtx value;			/* Value in table.  */
   rtx_code_label *label;	/* Label of value.  */
   label_ref_list_t wend;	/* End of window.  */
-  enum machine_mode mode;	/* Mode of value.  */
+  machine_mode mode;	/* Mode of value.  */
 
   /* True if this constant is accessed as part of a post-increment
      sequence.  Note that HImode constants are never accessed in this way.  */
@@ -4621,7 +4621,7 @@ static int max_labelno_before_reorg;
 
 /* Add a constant to the pool and return its label.  */
 static rtx_code_label *
-add_constant (rtx x, enum machine_mode mode, rtx last_value)
+add_constant (rtx x, machine_mode mode, rtx last_value)
 {
   int i;
   rtx_code_label *lab, *new_rtx;
@@ -5140,7 +5140,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
       if (broken_move (from))
 	{
 	  rtx pat, src, dst;
-	  enum machine_mode mode;
+	  machine_mode mode;
 
 	  pat = PATTERN (from);
 	  if (GET_CODE (pat) == PARALLEL)
@@ -6320,7 +6320,7 @@ sh_reorg (void)
 		  rtx src, dst;
 		  rtx lab;
 		  rtx newsrc;
-		  enum machine_mode mode;
+		  machine_mode mode;
 
 		  if (GET_CODE (pat) == PARALLEL)
 		    patp = &XVECEXP (pat, 0, 0), pat = *patp;
@@ -6851,7 +6851,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 		  int nreg = 0;
 		  if (crtl->return_rtx)
 		    {
-		      enum machine_mode mode;
+		      machine_mode mode;
 		      mode = GET_MODE (crtl->return_rtx);
 		      if (BASE_RETURN_VALUE_REG (mode) == FIRST_RET_REG)
 			nreg = HARD_REGNO_NREGS (FIRST_RET_REG, mode);
@@ -7444,7 +7444,7 @@ sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
       for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
 	if (TEST_HARD_REG_BIT (*live_regs_mask, i))
 	  {
-	    enum machine_mode mode = REGISTER_NATURAL_MODE (i);
+	    machine_mode mode = REGISTER_NATURAL_MODE (i);
 	    int reg = i;
 
 	    if (current_function_interrupt)
@@ -7662,7 +7662,7 @@ sh_expand_prologue (void)
       tmp_pnt = schedule.temps;
       for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
         {
-	  enum machine_mode mode = (enum machine_mode) entry->mode;
+	  machine_mode mode = (machine_mode) entry->mode;
 	  unsigned int reg = entry->reg;
 	  rtx reg_rtx, mem_rtx, pre_dec = NULL_RTX;
 	  rtx orig_reg_rtx;
@@ -7962,7 +7962,7 @@ sh_expand_epilogue (bool sibcall_p)
       tmp_pnt = schedule.temps;
       for (; entry->mode != VOIDmode; entry--)
 	{
-	  enum machine_mode mode = (enum machine_mode) entry->mode;
+	  machine_mode mode = (machine_mode) entry->mode;
 	  int reg = entry->reg;
 	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX;
 
@@ -8775,8 +8775,8 @@ sh_dwarf_register_span (rtx reg)
 				 gen_rtx_REG (SFmode, regno)));
 }
 
-static enum machine_mode
-sh_promote_function_mode (const_tree type, enum machine_mode mode,
+static machine_mode
+sh_promote_function_mode (const_tree type, machine_mode mode,
 			  int *punsignedp, const_tree funtype,
 			  int for_return)
 {
@@ -8802,7 +8802,7 @@ sh_promote_prototypes (const_tree type)
    registers are passed by reference, so that an SHmedia trampoline
    loads them into the full 64-bits registers.  */
 static int
-shcompact_byref (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+shcompact_byref (const CUMULATIVE_ARGS *cum, machine_mode mode,
 		 const_tree type, bool named)
 {
   unsigned HOST_WIDE_INT size;
@@ -8826,7 +8826,7 @@ shcompact_byref (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static bool
-sh_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
+sh_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
 		      const_tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -8850,7 +8850,7 @@ sh_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
 }
 
 static bool
-sh_callee_copies (cumulative_args_t cum, enum machine_mode mode,
+sh_callee_copies (cumulative_args_t cum, machine_mode mode,
 		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* ??? How can it possibly be correct to return true only on the
@@ -8910,7 +8910,7 @@ sh_pass_in_reg_p (const CUMULATIVE_ARGS& cum, machine_mode mode,
 }
 
 static int
-sh_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
+sh_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 		      tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -8952,7 +8952,7 @@ sh_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 static rtx
-sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
+sh_function_arg (cumulative_args_t ca_v, machine_mode mode,
 		 const_tree type, bool named)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
@@ -9041,7 +9041,7 @@ sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be
    available.)  */
 static void
-sh_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
+sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
 			 const_tree type, bool named)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
@@ -9053,7 +9053,7 @@ sh_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
       const_tree type2 = (ca->byref && type
 			  ? TREE_TYPE (type)
 			  : type);
-      enum machine_mode mode2 = (ca->byref && type
+      machine_mode mode2 = (ca->byref && type
 				 ? TYPE_MODE (type2)
 				 : mode);
       int dwords = ((ca->byref
@@ -9228,7 +9228,7 @@ sh_function_value (const_tree valtype,
 
 /* Worker function for TARGET_LIBCALL_VALUE.  */
 static rtx
-sh_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+sh_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, BASE_RETURN_VALUE_REG (mode));
 }
@@ -9268,7 +9268,7 @@ sh_return_in_memory (const_tree type, const_tree fndecl)
    function that tell if a function uses varargs or stdarg.  */
 static void
 sh_setup_incoming_varargs (cumulative_args_t ca,
-			   enum machine_mode mode,
+			   machine_mode mode,
 			   tree type,
 			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
@@ -9843,7 +9843,7 @@ sh_check_pch_target_flags (int old_flags)
 /* Returns true if OP is MACL, MACH or PR.  The input must be a REG rtx.
    Used only in general_movsrc_operand.  */
 bool
-system_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+system_reg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (REGNO (op))
     {
@@ -9883,7 +9883,7 @@ fp_one_operand (rtx op)
 
 /* Return the TLS type for TLS symbols.  */
 enum tls_model
-tls_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+tls_symbolic_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) != SYMBOL_REF)
     return TLS_MODEL_NONE;
@@ -10190,7 +10190,7 @@ sh_insn_length_adjustment (rtx_insn *insn)
 /* Return TRUE for a valid displacement for the REG+disp addressing
    with MODE.  */
 bool
-sh_legitimate_index_p (enum machine_mode mode, rtx op, bool consider_sh2a,
+sh_legitimate_index_p (machine_mode mode, rtx op, bool consider_sh2a,
 		       bool allow_zero)
 {
   if (! CONST_INT_P (op))
@@ -10239,7 +10239,7 @@ sh_legitimate_index_p (enum machine_mode mode, rtx op, bool consider_sh2a,
 	  GBR
 	  GBR+disp  */
 static bool
-sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+sh_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   if (! ALLOW_INDEXED_ADDRESS
       && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
@@ -10341,7 +10341,7 @@ nonpic_symbol_mentioned_p (rtx x)
 /* Convert a non-PIC address in `orig' to a PIC address using @GOT or
    @GOTOFF in `reg'.  */
 rtx
-legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
+legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
 			rtx reg)
 {
   if (tls_symbolic_operand (orig, Pmode) != TLS_MODEL_NONE)
@@ -10393,7 +10393,7 @@ struct disp_adjust
 };
 
 static struct disp_adjust
-sh_find_mov_disp_adjust (enum machine_mode mode, HOST_WIDE_INT offset)
+sh_find_mov_disp_adjust (machine_mode mode, HOST_WIDE_INT offset)
 {
   struct disp_adjust res = { NULL_RTX, NULL_RTX };
 
@@ -10432,7 +10432,7 @@ sh_find_mov_disp_adjust (enum machine_mode mode, HOST_WIDE_INT offset)
    If we find one, return the new, valid address.
    Otherwise, return the original address.  */
 static rtx
-sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
+sh_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 {
   if (flag_pic)
     x = legitimize_pic_address (oldx, mode, NULL_RTX);
@@ -10466,7 +10466,7 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
    Like for sh_legitimize_address, for the SH we try to get a normal form
    of the address.  That will allow inheritance of the address reloads.  */
 bool
-sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
+sh_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
 			      int itype)
 {
   enum reload_type type = (enum reload_type) itype;
@@ -10994,7 +10994,7 @@ sh_issue_rate (void)
 
 /* Get weight for mode for a set x.  */
 static short
-find_set_regmode_weight (rtx x, enum machine_mode mode)
+find_set_regmode_weight (rtx x, machine_mode mode)
 {
   if (GET_CODE (x) == CLOBBER && register_operand (SET_DEST (x), mode))
     return 1;
@@ -11014,7 +11014,7 @@ find_set_regmode_weight (rtx x, enum machine_mode mode)
 
 /* Get regmode weight for insn.  */
 static short
-find_insn_regmode_weight (rtx insn, enum machine_mode mode)
+find_insn_regmode_weight (rtx insn, machine_mode mode)
 {
   short reg_weight = 0;
   rtx x;
@@ -11046,7 +11046,7 @@ find_insn_regmode_weight (rtx insn, enum machine_mode mode)
 
 /* Calculate regmode weights for all insns of a basic block.  */
 static void
-find_regmode_weight (basic_block b, enum machine_mode mode)
+find_regmode_weight (basic_block b, machine_mode mode)
 {
   rtx_insn *insn, *next_tail, *head, *tail;
 
@@ -11206,7 +11206,7 @@ sh_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
 /* The scalar modes supported differs from the default version in TImode
    for 32-bit SHMEDIA.  */
 static bool
-sh_scalar_mode_supported_p (enum machine_mode mode)
+sh_scalar_mode_supported_p (machine_mode mode)
 {
   if (TARGET_SHMEDIA32 && mode == TImode)
     return false;
@@ -11256,7 +11256,7 @@ sh_md_init (FILE *dump ATTRIBUTE_UNUSED,
 
 /* Return true if the pressure is high for MODE.  */
 static bool
-high_pressure (enum machine_mode mode)
+high_pressure (machine_mode mode)
 {
   /* Pressure on register r0 can lead to spill failures. so avoid sched1 for
      functions that already have high pressure on r0. */
@@ -11904,7 +11904,7 @@ sh_init_builtins (void)
 
 /* Implements target hook vector_mode_supported_p.  */
 bool
-sh_vector_mode_supported_p (enum machine_mode mode)
+sh_vector_mode_supported_p (machine_mode mode)
 {
   if (TARGET_FPU_ANY
       && ((mode == V2SFmode)
@@ -11967,7 +11967,7 @@ sh_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
    IGNORE is nonzero if the value is to be ignored.  */
 static rtx
 sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED, int ignore)
+		   machine_mode mode ATTRIBUTE_UNUSED, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
@@ -11982,7 +11982,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (ignore)
 	return NULL_RTX;
 
-      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      machine_mode tmode = insn_data[icode].operand[0].mode;
       if (! target || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -11994,7 +11994,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   for (int i = 1; i <= 3; i++, nop++)
     {
       tree arg;
-      enum machine_mode opmode, argmode;
+      machine_mode opmode, argmode;
       tree optype;
 
       if (! signature_args[signature][i])
@@ -12082,7 +12082,7 @@ sh_expand_binop_v2sf (enum rtx_code code, rtx op0, rtx op1, rtx op2)
    We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
    it won't be ferried through GP registers first.  */
 bool
-sh_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
+sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (SPECIAL_REGISTER_P (regno))
     return mode == SImode;
@@ -12170,7 +12170,7 @@ sh_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 /* Return the class of registers for which a mode change from FROM to TO
    is invalid.  */
 bool
-sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
+sh_cannot_change_mode_class (machine_mode from, machine_mode to,
 			     enum reg_class rclass)
 {
   /* We want to enable the use of SUBREGs as a means to
@@ -12202,7 +12202,7 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
 /* Return true if registers in machine mode MODE will likely be
    allocated to registers in small register classes.  */
 bool
-sh_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
+sh_small_register_classes_for_mode_p (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (! TARGET_SHMEDIA);
 }
@@ -12232,7 +12232,7 @@ sh_mark_label (rtx address, int nuses)
    uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 static int
-sh_register_move_cost (enum machine_mode mode,
+sh_register_move_cost (machine_mode mode,
 		       reg_class_t srcclass, reg_class_t dstclass)
 {
   if (dstclass == T_REGS || dstclass == PR_REGS)
@@ -12722,7 +12722,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 			 rtx		    libname ATTRIBUTE_UNUSED,
 			 tree		    fndecl,
 			 signed int	    n_named_args,
-			 enum machine_mode  mode)
+			 machine_mode  mode)
 {
   pcum->arg_count [(int) SH_ARG_FLOAT] = 0;
   pcum->free_single_fp_reg = 0;
@@ -12926,14 +12926,14 @@ replace_n_hard_rtx (rtx x, rtx *replacements, int n_replacements, int modify)
 }
 
 rtx
-sh_gen_truncate (enum machine_mode mode, rtx x, int need_sign_ext)
+sh_gen_truncate (machine_mode mode, rtx x, int need_sign_ext)
 {
   enum rtx_code code = TRUNCATE;
 
   if (GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
     {
       rtx inner = XEXP (x, 0);
-      enum machine_mode inner_mode = GET_MODE (inner);
+      machine_mode inner_mode = GET_MODE (inner);
 
       if (inner_mode == mode)
 	return inner;
@@ -12962,7 +12962,7 @@ shmedia_cleanup_truncate (rtx x)
       if (GET_CODE (x) == TRUNCATE)
 	{
 	  rtx reg = XEXP (x, 0);
-	  enum machine_mode reg_mode = GET_MODE (reg);
+	  machine_mode reg_mode = GET_MODE (reg);
 	  if (REG_P (reg) && GET_MODE_SIZE (reg_mode) > 8)
 	    {
 	      int offset = subreg_lowpart_offset (DImode, reg_mode);
@@ -13070,7 +13070,7 @@ sh_preferred_reload_class (rtx x, reg_class_t rclass)
 /* Implement TARGET_SECONDARY_RELOAD.  */
 static reg_class_t
 sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
-		     enum machine_mode mode, secondary_reload_info *sri)
+		     machine_mode mode, secondary_reload_info *sri)
 {
   enum reg_class rclass = (enum reg_class) rclass_i;
 
@@ -13263,7 +13263,7 @@ sh_conditional_register_usage (void)
 
    can_store_by_pieces constructs VOIDmode CONST_DOUBLEs.  */
 static bool
-sh_legitimate_constant_p (enum machine_mode mode, rtx x)
+sh_legitimate_constant_p (machine_mode mode, rtx x)
 {
   return (TARGET_SHMEDIA
 	  ? ((mode != DFmode && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)

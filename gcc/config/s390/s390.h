@@ -891,7 +891,7 @@ do {									\
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode ((enum machine_mode) (TARGET_64BIT ? DImode : SImode))
+#define Pmode ((machine_mode) (TARGET_64BIT ? DImode : SImode))
 
 /* This is -1 for "pointer mode" extend.  See ptr_extend in s390.md.  */
 #define POINTERS_EXTEND_UNSIGNED -1

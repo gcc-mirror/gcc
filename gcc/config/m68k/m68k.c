@@ -152,7 +152,7 @@ static int m68k_sched_first_cycle_multipass_dfa_lookahead (void);
 
 static bool m68k_can_eliminate (const int, const int);
 static void m68k_conditional_register_usage (void);
-static bool m68k_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool m68k_legitimate_address_p (machine_mode, rtx, bool);
 static void m68k_option_override (void);
 static void m68k_override_options_after_change (void);
 static rtx find_addr_reg (rtx);
@@ -167,7 +167,7 @@ static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_tls_symbol_p (rtx);
-static rtx m68k_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx m68k_legitimize_address (rtx, rtx, machine_mode);
 static bool m68k_rtx_costs (rtx, int, int, int, int *, bool);
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 static bool m68k_return_in_memory (const_tree, const_tree);
@@ -176,11 +176,11 @@ static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
 static int m68k_return_pops_args (tree, tree, int);
 static rtx m68k_delegitimize_address (rtx);
-static void m68k_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void m68k_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
-static rtx m68k_function_arg (cumulative_args_t, enum machine_mode,
+static rtx m68k_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
-static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
+static bool m68k_cannot_force_const_mem (machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
@@ -933,7 +933,7 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 {
   int i;
   rtx body, addr, src, operands[2];
-  enum machine_mode mode;
+  machine_mode mode;
 
   body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (adjust_stack_p + count));
   mode = reg_raw_mode[regno];
@@ -1326,7 +1326,7 @@ m68k_expand_epilogue (bool sibcall_p)
    It also rejects some comparisons when CC_NO_OVERFLOW is set.  */
    
 int
-valid_dbcc_comparison_p_2 (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+valid_dbcc_comparison_p_2 (rtx x, machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (x))
     {
@@ -1425,7 +1425,7 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
 
 static rtx
 m68k_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   const_tree type ATTRIBUTE_UNUSED,
 		   bool named ATTRIBUTE_UNUSED)
 {
@@ -1433,7 +1433,7 @@ m68k_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
 }
 
 static void
-m68k_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+m68k_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -1477,7 +1477,7 @@ m68k_legitimize_sibcall_address (rtx x)
    nothing needs to be done because REG can certainly go in an address reg.  */
 
 static rtx
-m68k_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
+m68k_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 {
   if (m68k_tls_symbol_p (x))
     return m68k_legitimize_tls_address (x);
@@ -1906,7 +1906,7 @@ m68k_illegitimate_symbolic_constant_p (rtx x)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
-m68k_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+m68k_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return m68k_illegitimate_symbolic_constant_p (x);
 }
@@ -1961,7 +1961,7 @@ m68k_jump_table_ref_p (rtx x)
    is valid, describe its components in *ADDRESS.  */
 
 static bool
-m68k_decompose_address (enum machine_mode mode, rtx x,
+m68k_decompose_address (machine_mode mode, rtx x,
 			bool strict_p, struct m68k_address *address)
 {
   unsigned int reach;
@@ -2109,7 +2109,7 @@ m68k_decompose_address (enum machine_mode mode, rtx x,
    STRICT_P says whether strict checking is needed.  */
 
 bool
-m68k_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
+m68k_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
 {
   struct m68k_address address;
 
@@ -2131,7 +2131,7 @@ m68k_legitimate_mem_p (rtx x, struct m68k_address *address)
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
 bool
-m68k_legitimate_constant_p (enum machine_mode mode, rtx x)
+m68k_legitimate_constant_p (machine_mode mode, rtx x)
 {
   return mode != XFmode && !m68k_illegitimate_symbolic_constant_p (x);
 }
@@ -2435,7 +2435,7 @@ m68k_wrap_symbol_into_got_ref (rtx x, enum m68k_reloc reloc, rtx temp_reg)
    handled.  */
 
 rtx
-legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
+legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
 		        rtx reg)
 {
   rtx pic_ref = orig;
@@ -3568,7 +3568,7 @@ output_movsi (rtx operands[2])
 
 /* Copy OP and change its mode to MODE.  */
 static rtx
-copy_operand (rtx op, enum machine_mode mode)
+copy_operand (rtx op, machine_mode mode)
 {
   /* ??? This looks really ugly.  There must be a better way
      to change a mode on the operand.  */
@@ -3619,7 +3619,7 @@ m68k_emit_move_double (rtx operands[2])
    new rtx with the correct mode.  */
 
 static rtx
-force_mode (enum machine_mode mode, rtx orig)
+force_mode (machine_mode mode, rtx orig)
 {
   if (mode == GET_MODE (orig))
     return orig;
@@ -3631,7 +3631,7 @@ force_mode (enum machine_mode mode, rtx orig)
 }
 
 static int
-fp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+fp_reg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   return reg_renumber && FP_REG_P (op);
 }
@@ -3647,7 +3647,7 @@ fp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    of SCRATCH_REG in the proper mode.  */
 
 int
-emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
+emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
@@ -4309,7 +4309,7 @@ init_68881_table (void)
 {
   int i;
   REAL_VALUE_TYPE r;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = SFmode;
   for (i = 0; i < 7; i++)
@@ -4804,7 +4804,7 @@ print_operand_address (FILE *file, rtx addr)
    clear insn.  */
 
 bool
-strict_low_part_peephole_ok (enum machine_mode mode, rtx_insn *first_insn,
+strict_low_part_peephole_ok (machine_mode mode, rtx_insn *first_insn,
                              rtx target)
 {
   rtx_insn *p = first_insn;
@@ -5167,7 +5167,7 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    restrict the 68881 registers to floating-point modes.  */
 
 bool
-m68k_regno_mode_ok (int regno, enum machine_mode mode)
+m68k_regno_mode_ok (int regno, machine_mode mode)
 {
   if (DATA_REGNO_P (regno))
     {
@@ -5196,7 +5196,7 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
 
 enum reg_class
 m68k_secondary_reload_class (enum reg_class rclass,
-			     enum machine_mode mode, rtx x)
+			     machine_mode mode, rtx x)
 {
   int regno;
 
@@ -5259,7 +5259,7 @@ m68k_preferred_reload_class (rtx x, enum reg_class rclass)
    If there is need for a hard-float ABI it is probably worth doing it
    properly and also passing function arguments in FP registers.  */
 rtx
-m68k_libcall_value (enum machine_mode mode)
+m68k_libcall_value (machine_mode mode)
 {
   switch (mode) {
   case SFmode:
@@ -5281,7 +5281,7 @@ m68k_libcall_value (enum machine_mode mode)
 rtx
 m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = TYPE_MODE (valtype);
   switch (mode) {
@@ -5324,7 +5324,7 @@ m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 static bool
 m68k_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
 
   if (mode == BLKmode)
     return true;
@@ -5386,7 +5386,7 @@ enum attr_op_type
 
 /* Return type of memory ADDR_RTX refers to.  */
 static enum attr_op_type
-sched_address_type (enum machine_mode mode, rtx addr_rtx)
+sched_address_type (machine_mode mode, rtx addr_rtx)
 {
   struct m68k_address address;
 

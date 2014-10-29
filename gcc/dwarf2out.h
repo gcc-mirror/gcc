@@ -223,7 +223,7 @@ extern struct dw_loc_descr_node *build_cfa_loc
 extern struct dw_loc_descr_node *build_cfa_aligned_loc
   (dw_cfa_location *, HOST_WIDE_INT offset, HOST_WIDE_INT alignment);
 extern struct dw_loc_descr_node *mem_loc_descriptor
-  (rtx, enum machine_mode mode, enum machine_mode mem_mode,
+  (rtx, machine_mode mode, machine_mode mem_mode,
    enum var_init_status);
 extern bool loc_descr_equal_p (dw_loc_descr_ref, dw_loc_descr_ref);
 extern dw_fde_ref dwarf2out_alloc_current_fde (void);

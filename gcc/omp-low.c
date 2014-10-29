@@ -3071,7 +3071,7 @@ omp_clause_aligned_alignment (tree clause)
 
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
-  enum machine_mode mode, vmode;
+  machine_mode mode, vmode;
   int vs = targetm.vectorize.autovectorize_vector_sizes ();
   if (vs)
     vs = 1 << floor_log2 (vs);
@@ -3122,7 +3122,7 @@ omp_max_vf (void)
       vs = 1 << floor_log2 (vs);
       return vs;
     }
-  enum machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
+  machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
   if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
     return GET_MODE_NUNITS (vqimode);
   return 1;
@@ -7735,7 +7735,7 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   location_t loc;
   gimple stmt;
   tree decl, call, type, itype;
-  enum machine_mode imode;
+  machine_mode imode;
   bool exchange;
 
   gsi = gsi_last_bb (load_bb);
@@ -7818,7 +7818,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   location_t loc;
   enum tree_code code;
   bool need_old, need_new;
-  enum machine_mode imode;
+  machine_mode imode;
   bool seq_cst;
 
   /* We expect to find the following sequences:

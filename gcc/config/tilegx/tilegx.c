@@ -81,7 +81,7 @@ static GTY(()) rtx g_got_symbol = NULL;
 /* In case of a POST_INC or POST_DEC memory reference, we must report
    the mode of the memory reference from TARGET_PRINT_OPERAND to
    TARGET_PRINT_OPERAND_ADDRESS.  */
-static enum machine_mode output_memory_reference_mode;
+static machine_mode output_memory_reference_mode;
 
 /* Report whether we're printing out the first address fragment of a
    POST_INC or POST_DEC memory reference, from TARGET_PRINT_OPERAND to
@@ -129,7 +129,7 @@ tilegx_option_override (void)
 
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 static bool
-tilegx_scalar_mode_supported_p (enum machine_mode mode)
+tilegx_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -152,7 +152,7 @@ tilegx_scalar_mode_supported_p (enum machine_mode mode)
 
 /* Implement TARGET_VECTOR_MODE_SUPPORTED_P.  */
 static bool
-tilegx_vector_mode_supported_p (enum machine_mode mode)
+tilegx_vector_mode_supported_p (machine_mode mode)
 {
   return mode == V8QImode || mode == V4HImode || mode == V2SImode;
 }
@@ -160,7 +160,7 @@ tilegx_vector_mode_supported_p (enum machine_mode mode)
 
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 static bool
-tilegx_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED,
+tilegx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 			       rtx x ATTRIBUTE_UNUSED)
 {
   return true;
@@ -180,7 +180,7 @@ tilegx_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
    passed by reference.  */
 static bool
 tilegx_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   return (type && TYPE_SIZE (type)
@@ -210,7 +210,7 @@ tilegx_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_MODE_REP_EXTENDED.  */
 static int
-tilegx_mode_rep_extended (enum machine_mode mode, enum machine_mode mode_rep)
+tilegx_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
 {
   /* SImode register values are sign-extended to DImode.  */
   if (mode == SImode && mode_rep == DImode)
@@ -222,7 +222,7 @@ tilegx_mode_rep_extended (enum machine_mode mode, enum machine_mode mode_rep)
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  */
 static unsigned int
-tilegx_function_arg_boundary (enum machine_mode mode, const_tree type)
+tilegx_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 
@@ -238,7 +238,7 @@ tilegx_function_arg_boundary (enum machine_mode mode, const_tree type)
 /* Implement TARGET_FUNCTION_ARG.  */
 static rtx
 tilegx_function_arg (cumulative_args_t cum_v,
-		     enum machine_mode mode,
+		     machine_mode mode,
 		     const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
@@ -269,7 +269,7 @@ tilegx_function_arg (cumulative_args_t cum_v,
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
 tilegx_function_arg_advance (cumulative_args_t cum_v,
-			     enum machine_mode mode,
+			     machine_mode mode,
 			     const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -301,7 +301,7 @@ static rtx
 tilegx_function_value (const_tree valtype, const_tree fn_decl_or_type,
 		       bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int unsigned_p;
 
   mode = TYPE_MODE (valtype);
@@ -316,7 +316,7 @@ tilegx_function_value (const_tree valtype, const_tree fn_decl_or_type,
 
 /* Implement TARGET_LIBCALL_VALUE.  */
 static rtx
-tilegx_libcall_value (enum machine_mode mode,
+tilegx_libcall_value (machine_mode mode,
 		       const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, 0);
@@ -411,7 +411,7 @@ tilegx_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 static void
 tilegx_setup_incoming_varargs (cumulative_args_t cum,
-			       enum machine_mode mode,
+			       machine_mode mode,
 			       tree type, int *pretend_args, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum = *get_cumulative_args (cum);
@@ -738,7 +738,7 @@ tilegx_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* Create a temporary variable to hold a partial result, to enable
    CSE.  */
 static rtx
-create_temp_reg_if_possible (enum machine_mode mode, rtx default_reg)
+create_temp_reg_if_possible (machine_mode mode, rtx default_reg)
 {
   return can_create_pseudo_p () ? gen_reg_rtx (mode) : default_reg;
 }
@@ -798,7 +798,7 @@ tilegx_expand_to_rtl_hook (void)
    modulo 64.  SImode shifts sometimes use the 64 bit version so do
    not hold such guarantee.  */
 static unsigned HOST_WIDE_INT
-tilegx_shift_truncation_mask (enum machine_mode mode)
+tilegx_shift_truncation_mask (machine_mode mode)
 {
   return mode == DImode ? 63 : 0;
 }
@@ -858,7 +858,7 @@ tilegx_pic_address_needs_scratch (rtx x)
    pattern.  TLS cannot be treated as a constant because it can
    include a function call.  */
 static bool
-tilegx_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+tilegx_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -890,7 +890,7 @@ tilegx_legitimate_pic_operand_p (rtx x)
 
 /* Return true if the rtx X can be used as an address operand.  */
 static bool
-tilegx_legitimate_address_p (enum machine_mode ARG_UNUSED (mode), rtx x,
+tilegx_legitimate_address_p (machine_mode ARG_UNUSED (mode), rtx x,
 			     bool strict)
 {
   if (GET_CODE (x) == SUBREG)
@@ -1223,7 +1223,7 @@ tilegx_compute_pcrel_plt_address (rtx result, rtx addr)
    nonzero, otherwise we allocate register(s) as necessary.  */
 static rtx
 tilegx_legitimize_pic_address (rtx orig,
-			       enum machine_mode mode ATTRIBUTE_UNUSED,
+			       machine_mode mode ATTRIBUTE_UNUSED,
 			       rtx reg)
 {
   if (GET_CODE (orig) == SYMBOL_REF)
@@ -1379,7 +1379,7 @@ tilegx_legitimize_pic_address (rtx orig,
 /* Implement TARGET_LEGITIMIZE_ADDRESS.  */
 static rtx
 tilegx_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			   enum machine_mode mode)
+			   machine_mode mode)
 {
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
       && symbolic_operand (x, Pmode) && tilegx_tls_referenced_p (x))
@@ -1475,7 +1475,7 @@ load_pic_register (bool delay_pic_helper ATTRIBUTE_UNUSED)
    replicating it to fill an interger of mode DImode.  NUM is first
    truncated to fit in MODE.  */
 rtx
-tilegx_simd_int (rtx num, enum machine_mode mode)
+tilegx_simd_int (rtx num, machine_mode mode)
 {
   HOST_WIDE_INT n = 0;
 
@@ -1820,7 +1820,7 @@ tilegx_expand_set_const64 (rtx op0, rtx op1)
 
 /* Expand a move instruction.  Return true if all work is done.  */
 bool
-tilegx_expand_mov (enum machine_mode mode, rtx *operands)
+tilegx_expand_mov (machine_mode mode, rtx *operands)
 {
   /* Handle sets of MEM first.  */
   if (MEM_P (operands[0]))
@@ -1874,7 +1874,7 @@ void
 tilegx_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
 			      HOST_WIDE_INT bit_offset, bool sign)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx addr_lo, addr_hi;
   rtx mem_lo, mem_hi, hi;
   rtx mema, wide_result;
@@ -2030,7 +2030,7 @@ tilegx_expand_unaligned_store (rtx mem, rtx src, HOST_WIDE_INT bitsize,
    memory that is not naturally aligned.  Emit instructions to load
    it.  */
 void
-tilegx_expand_movmisalign (enum machine_mode mode, rtx *operands)
+tilegx_expand_movmisalign (machine_mode mode, rtx *operands)
 {
   if (MEM_P (operands[1]))
     {
@@ -2344,7 +2344,7 @@ tilegx_expand_umuldi3_highpart (rtx op0, rtx op1, rtx op2)
 /* Produce the rtx yielding a bool for a floating point
    comparison.  */
 static bool
-tilegx_emit_fp_setcc (rtx res, enum rtx_code code, enum machine_mode mode,
+tilegx_emit_fp_setcc (rtx res, enum rtx_code code, machine_mode mode,
 		      rtx op0, rtx op1)
 {
   /* TODO: Certain compares again constants can be done using entirely
@@ -2391,7 +2391,7 @@ tilegx_emit_fp_setcc (rtx res, enum rtx_code code, enum machine_mode mode,
    work.  */
 static bool
 tilegx_emit_setcc_internal (rtx res, enum rtx_code code, rtx op0, rtx op1,
-			    enum machine_mode cmp_mode)
+			    machine_mode cmp_mode)
 {
   rtx tmp;
   bool swap = false;
@@ -2449,7 +2449,7 @@ tilegx_emit_setcc_internal (rtx res, enum rtx_code code, rtx op0, rtx op1,
 
 /* Implement cstore patterns.  */
 bool
-tilegx_emit_setcc (rtx operands[], enum machine_mode cmp_mode)
+tilegx_emit_setcc (rtx operands[], machine_mode cmp_mode)
 {
   return
     tilegx_emit_setcc_internal (operands[0], GET_CODE (operands[1]),
@@ -2469,7 +2469,7 @@ signed_compare_p (enum rtx_code code)
 /* Generate the comparison for a DImode conditional branch.  */
 static rtx
 tilegx_emit_cc_test (enum rtx_code code, rtx op0, rtx op1,
-		     enum machine_mode cmp_mode, bool eq_ne_only)
+		     machine_mode cmp_mode, bool eq_ne_only)
 {
   enum rtx_code branch_code;
   rtx temp;
@@ -2606,7 +2606,7 @@ tilegx_emit_cc_test (enum rtx_code code, rtx op0, rtx op1,
 
 /* Generate the comparison for a conditional branch.  */
 void
-tilegx_emit_conditional_branch (rtx operands[], enum machine_mode cmp_mode)
+tilegx_emit_conditional_branch (rtx operands[], machine_mode cmp_mode)
 {
   rtx cmp_rtx =
     tilegx_emit_cc_test (GET_CODE (operands[0]), operands[1], operands[2],
@@ -2803,9 +2803,9 @@ tilegx_post_atomic_barrier (enum memmodel model)
    src0 and src1 (if DO_SRC1 is true) is converted to SRC_MODE.  */
 void
 tilegx_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
-				    enum machine_mode dest_mode,
+				    machine_mode dest_mode,
 				    rtx dest,
-				    enum machine_mode src_mode,
+				    machine_mode src_mode,
 				    rtx src0, rtx src1, bool do_src1)
 {
   dest = gen_lowpart (dest_mode, dest);
@@ -3544,7 +3544,7 @@ static rtx
 tilegx_expand_builtin (tree exp,
 		       rtx target,
 		       rtx subtarget ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       machine_mode mode ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
 {
 #define MAX_BUILTIN_ARGS 4
@@ -3583,7 +3583,7 @@ tilegx_expand_builtin (tree exp,
 
       if (!(*insn_op->predicate) (op[opnum], insn_op->mode))
 	{
-	  enum machine_mode opmode = insn_op->mode;
+	  machine_mode opmode = insn_op->mode;
 
 	  /* pointer_operand and pmode_register_operand operands do
 	     not specify a mode, so use the operand's mode instead
@@ -3591,7 +3591,7 @@ tilegx_expand_builtin (tree exp,
 	     except for constants, which are VOIDmode).  */
 	  if (opmode == VOIDmode)
 	    {
-	      enum machine_mode m = GET_MODE (op[opnum]);
+	      machine_mode m = GET_MODE (op[opnum]);
 	      gcc_assert (m == Pmode || m == VOIDmode);
 	      opmode = Pmode;
 	    }
@@ -3613,7 +3613,7 @@ tilegx_expand_builtin (tree exp,
 
   if (nonvoid)
     {
-      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      machine_mode tmode = insn_data[icode].operand[0].mode;
       if (!target
 	  || GET_MODE (target) != tmode
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
@@ -4399,7 +4399,7 @@ tilegx_frame_pointer_required (void)
 int
 tilegx_adjust_insn_length (rtx_insn *insn, int length)
 {
-  enum machine_mode mode = GET_MODE (insn);
+  machine_mode mode = GET_MODE (insn);
 
   /* A non-termininating instruction in a bundle has length 0.  */
   if (mode == SImode)
@@ -5475,7 +5475,7 @@ tilegx_print_operand_address (FILE *file, rtx addr)
 
 /* Machine mode of current insn, for determining curly brace
    placement.  */
-static enum machine_mode insn_mode;
+static machine_mode insn_mode;
 
 
 /* Implement FINAL_PRESCAN_INSN.  This is used to emit bundles.  */

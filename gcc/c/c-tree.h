@@ -670,7 +670,7 @@ extern int current_function_returns_abnormally;
 
 /* Mode used to build pointers (VOIDmode means ptr_mode).  */
 
-extern enum machine_mode c_default_pointer_mode;
+extern machine_mode c_default_pointer_mode;
 
 /* In c-decl.c */
 

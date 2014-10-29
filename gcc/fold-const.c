@@ -128,7 +128,7 @@ static tree optimize_bit_field_compare (location_t, enum tree_code,
 					tree, tree, tree);
 static tree decode_field_reference (location_t, tree, HOST_WIDE_INT *,
 				    HOST_WIDE_INT *,
-				    enum machine_mode *, int *, int *,
+				    machine_mode *, int *, int *,
 				    tree *, tree *);
 static tree sign_bit_p (tree, const_tree);
 static int simple_operand_p (const_tree);
@@ -1138,7 +1138,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 
   if (TREE_CODE (arg1) == REAL_CST)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       REAL_VALUE_TYPE d1;
       REAL_VALUE_TYPE d2;
       REAL_VALUE_TYPE value;
@@ -3458,7 +3458,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree type = TREE_TYPE (lhs);
   tree unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
-  enum machine_mode lmode, rmode, nmode;
+  machine_mode lmode, rmode, nmode;
   int lunsignedp, runsignedp;
   int lvolatilep = 0, rvolatilep = 0;
   tree linner, rinner = NULL_TREE;
@@ -3615,7 +3615,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
 static tree
 decode_field_reference (location_t loc, tree exp, HOST_WIDE_INT *pbitsize,
-			HOST_WIDE_INT *pbitpos, enum machine_mode *pmode,
+			HOST_WIDE_INT *pbitpos, machine_mode *pmode,
 			int *punsignedp, int *pvolatilep,
 			tree *pmask, tree *pand_mask)
 {
@@ -5155,8 +5155,8 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
   HOST_WIDE_INT xll_bitpos, xlr_bitpos, xrl_bitpos, xrr_bitpos;
   HOST_WIDE_INT lnbitsize, lnbitpos, rnbitsize, rnbitpos;
   int ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
-  enum machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
-  enum machine_mode lnmode, rnmode;
+  machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
+  machine_mode lnmode, rnmode;
   tree ll_mask, lr_mask, rl_mask, rr_mask;
   tree ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   tree l_const, r_const;
@@ -6187,7 +6187,7 @@ fold_mathfn_compare (location_t loc,
   if (BUILTIN_SQRT_P (fcode))
     {
       tree arg = CALL_EXPR_ARG (arg0, 0);
-      enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
+      machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
 
       c = TREE_REAL_CST (arg1);
       if (REAL_VALUE_NEGATIVE (c))
@@ -6299,7 +6299,7 @@ static tree
 fold_inf_compare (location_t loc, enum tree_code code, tree type,
 		  tree arg0, tree arg1)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   REAL_VALUE_TYPE max;
   tree temp;
   bool neg;
@@ -6567,7 +6567,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       tree inner = TREE_OPERAND (arg0, 0);
       tree type = TREE_TYPE (arg0);
       int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
-      enum machine_mode operand_mode = TYPE_MODE (type);
+      machine_mode operand_mode = TYPE_MODE (type);
       int ops_unsigned;
       tree signed_type, unsigned_type, intermediate_type;
       tree tem, one;
@@ -7072,7 +7072,7 @@ static int
 native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   FIXED_VALUE_TYPE value;
   tree i_value, i_type;
@@ -7334,7 +7334,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   int byte, offset, word, words, bitpos;
   unsigned char value;
@@ -7799,7 +7799,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
         {
 	  HOST_WIDE_INT bitsize, bitpos;
 	  tree offset;
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  int unsignedp, volatilep;
           tree base = TREE_OPERAND (op0, 0);
 	  base = get_inner_reference (base, &bitsize, &bitpos, &offset,
@@ -8831,7 +8831,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
     {
       tree base0, base1, offset0 = NULL_TREE, offset1 = NULL_TREE;
       HOST_WIDE_INT bitsize, bitpos0 = 0, bitpos1 = 0;
-      enum machine_mode mode;
+      machine_mode mode;
       int volatilep, unsignedp;
       bool indirect_base0 = false, indirect_base1 = false;
 
@@ -9683,7 +9683,7 @@ exact_inverse (tree type, tree cst)
 {
   REAL_VALUE_TYPE r;
   tree unit_type, *elts;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned vec_nelts, i;
 
   switch (TREE_CODE (cst))
@@ -16564,7 +16564,7 @@ split_address_to_core_and_offset (tree exp,
 				  HOST_WIDE_INT *pbitpos, tree *poffset)
 {
   tree core;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
   HOST_WIDE_INT bitsize;
   location_t loc = EXPR_LOCATION (exp);

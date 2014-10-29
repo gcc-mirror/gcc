@@ -81,11 +81,11 @@ static int n_regs_saved;
 static HARD_REG_SET referenced_regs;
 
 
-typedef void refmarker_fn (rtx *loc, enum machine_mode mode, int hardregno,
+typedef void refmarker_fn (rtx *loc, machine_mode mode, int hardregno,
 			   void *mark_arg);
 
-static int reg_save_code (int, enum machine_mode);
-static int reg_restore_code (int, enum machine_mode);
+static int reg_save_code (int, machine_mode);
+static int reg_restore_code (int, machine_mode);
 
 struct saved_hard_reg;
 static void initiate_saved_hard_regs (void);
@@ -98,9 +98,9 @@ static void mark_referenced_regs (rtx *, refmarker_fn *mark, void *mark_arg);
 static refmarker_fn mark_reg_as_referenced;
 static refmarker_fn replace_reg_with_saved_mem;
 static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
-			enum machine_mode *);
+			machine_mode *);
 static int insert_restore (struct insn_chain *, int, int, int,
-			   enum machine_mode *);
+			   machine_mode *);
 static struct insn_chain *insert_one_insn (struct insn_chain *, int, int,
 					   rtx);
 static void add_stored_regs (rtx, const_rtx, void *);
@@ -116,7 +116,7 @@ static GTY(()) rtx_insn *restinsn;
 
 /* Return the INSN_CODE used to save register REG in mode MODE.  */
 static int
-reg_save_code (int reg, enum machine_mode mode)
+reg_save_code (int reg, machine_mode mode)
 {
   bool ok;
   if (cached_reg_save_code[reg][mode])
@@ -170,7 +170,7 @@ reg_save_code (int reg, enum machine_mode mode)
 
 /* Return the INSN_CODE used to restore register REG in mode MODE.  */
 static int
-reg_restore_code (int reg, enum machine_mode mode)
+reg_restore_code (int reg, machine_mode mode)
 {
   if (cached_reg_restore_code[reg][mode])
      return cached_reg_restore_code[reg][mode];
@@ -755,7 +755,7 @@ void
 save_call_clobbered_regs (void)
 {
   struct insn_chain *chain, *next, *last = NULL;
-  enum machine_mode save_mode [FIRST_PSEUDO_REGISTER];
+  machine_mode save_mode [FIRST_PSEUDO_REGISTER];
 
   /* Computed in mark_set_regs, holds all registers set by the current
      instruction.  */
@@ -841,7 +841,7 @@ save_call_clobbered_regs (void)
 		{
 		  int r = reg_renumber[regno];
 		  int nregs;
-		  enum machine_mode mode;
+		  machine_mode mode;
 
 		  if (r < 0 || regno_reg_rtx[regno] == cheap)
 		    continue;
@@ -994,7 +994,7 @@ static void
 add_stored_regs (rtx reg, const_rtx setter, void *data)
 {
   int regno, endregno, i;
-  enum machine_mode mode = GET_MODE (reg);
+  machine_mode mode = GET_MODE (reg);
   int offset = 0;
 
   if (GET_CODE (setter) == CLOBBER)
@@ -1097,7 +1097,7 @@ mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
 
 static void
 mark_reg_as_referenced (rtx *loc ATTRIBUTE_UNUSED,
-			enum machine_mode mode,
+			machine_mode mode,
 			int hardregno,
 			void *arg ATTRIBUTE_UNUSED)
 {
@@ -1110,13 +1110,13 @@ mark_reg_as_referenced (rtx *loc ATTRIBUTE_UNUSED,
 
 static void
 replace_reg_with_saved_mem (rtx *loc,
-			    enum machine_mode mode,
+			    machine_mode mode,
 			    int regno,
 			    void *arg)
 {
   unsigned int i, nregs = hard_regno_nregs [regno][mode];
   rtx mem;
-  enum machine_mode *save_mode = (enum machine_mode *)arg;
+  machine_mode *save_mode = (machine_mode *)arg;
 
   for (i = 0; i < nregs; i++)
     if (TEST_HARD_REG_BIT (hard_regs_saved, regno + i))
@@ -1168,7 +1168,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	  }
 	else
 	  {
-	    enum machine_mode smode = save_mode[regno];
+	    machine_mode smode = save_mode[regno];
 	    gcc_assert (smode != VOIDmode);
 	    if (hard_regno_nregs [regno][smode] > 1)
 	      smode = mode_for_size (GET_MODE_SIZE (mode) / nregs,
@@ -1197,7 +1197,7 @@ replace_reg_with_saved_mem (rtx *loc,
 
 static int
 insert_restore (struct insn_chain *chain, int before_p, int regno,
-		int maxrestore, enum machine_mode *save_mode)
+		int maxrestore, machine_mode *save_mode)
 {
   int i, k;
   rtx pat = NULL_RTX;
@@ -1278,7 +1278,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 
 static int
 insert_save (struct insn_chain *chain, int before_p, int regno,
-	     HARD_REG_SET (*to_save), enum machine_mode *save_mode)
+	     HARD_REG_SET (*to_save), machine_mode *save_mode)
 {
   int i;
   unsigned int k;

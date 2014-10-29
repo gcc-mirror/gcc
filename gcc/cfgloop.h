@@ -355,10 +355,10 @@ struct rtx_iv
   rtx delta, mult;
 
   /* The mode it is extended to.  */
-  enum machine_mode extend_mode;
+  machine_mode extend_mode;
 
   /* The mode the variable iterates in.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* Whether the first iteration needs to be handled specially.  */
   unsigned first_special : 1;
@@ -399,7 +399,7 @@ struct GTY(()) niter_desc
   bool signed_p;
 
   /* The mode in that niter_expr should be computed.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* The number of iterations of the loop.  */
   rtx niter_expr;
@@ -408,7 +408,7 @@ struct GTY(()) niter_desc
 extern void iv_analysis_loop_init (struct loop *);
 extern bool iv_analyze (rtx_insn *, rtx, struct rtx_iv *);
 extern bool iv_analyze_result (rtx_insn *, rtx, struct rtx_iv *);
-extern bool iv_analyze_expr (rtx_insn *, rtx, enum machine_mode,
+extern bool iv_analyze_expr (rtx_insn *, rtx, machine_mode,
 			     struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
 extern bool biv_p (rtx_insn *, rtx);

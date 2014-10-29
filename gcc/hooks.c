@@ -70,47 +70,47 @@ bool hook_bool_const_int_const_int_true (const int a ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Generic hook that takes (enum machine_mode) and returns false.  */
+/* Generic hook that takes (machine_mode) and returns false.  */
 bool
-hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)
+hook_bool_mode_false (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
-/* Generic hook that takes (enum machine_mode) and returns true.  */
+/* Generic hook that takes (machine_mode) and returns true.  */
 bool
-hook_bool_mode_true (enum machine_mode mode ATTRIBUTE_UNUSED)
+hook_bool_mode_true (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return true;
 }
 
-/* Generic hook that takes (enum machine_mode, const_rtx) and returns false.  */
+/* Generic hook that takes (machine_mode, const_rtx) and returns false.  */
 bool
-hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
+hook_bool_mode_const_rtx_false (machine_mode mode ATTRIBUTE_UNUSED,
 				const_rtx value ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
-/* Generic hook that takes (enum machine_mode, const_rtx) and returns true.  */
+/* Generic hook that takes (machine_mode, const_rtx) and returns true.  */
 bool
-hook_bool_mode_const_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
+hook_bool_mode_const_rtx_true (machine_mode mode ATTRIBUTE_UNUSED,
 			       const_rtx value ATTRIBUTE_UNUSED)
 {
   return true;
 }
 
-/* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
+/* Generic hook that takes (machine_mode, rtx) and returns false.  */
 bool
-hook_bool_mode_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
+hook_bool_mode_rtx_false (machine_mode mode ATTRIBUTE_UNUSED,
 			  rtx value ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
-/* Generic hook that takes (enum machine_mode, rtx) and returns true.  */
+/* Generic hook that takes (machine_mode, rtx) and returns true.  */
 bool
-hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
+hook_bool_mode_rtx_true (machine_mode mode ATTRIBUTE_UNUSED,
 			 rtx value ATTRIBUTE_UNUSED)
 {
   return true;
@@ -124,10 +124,10 @@ hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *follower ATTRIBUTE
   return true;
 }
 
-/* Generic hook that takes (enum machine_mode, unsigned HOST_WIDE_INT)
+/* Generic hook that takes (machine_mode, unsigned HOST_WIDE_INT)
    and returns false.  */
 bool
-hook_bool_mode_uhwi_false (enum machine_mode mode ATTRIBUTE_UNUSED,
+hook_bool_mode_uhwi_false (machine_mode mode ATTRIBUTE_UNUSED,
 			   unsigned HOST_WIDE_INT value ATTRIBUTE_UNUSED)
 {
   return false;
@@ -185,7 +185,7 @@ default_can_output_mi_thunk_no_vcall (const_tree a ATTRIBUTE_UNUSED,
 
 int
 hook_int_uint_mode_1 (unsigned int a ATTRIBUTE_UNUSED,
-		      enum machine_mode b ATTRIBUTE_UNUSED)
+		      machine_mode b ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -228,7 +228,7 @@ hook_int_rtx_bool_0 (rtx a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
 }
 
 int
-hook_int_rtx_mode_as_bool_0 (rtx, enum machine_mode, addr_space_t, bool)
+hook_int_rtx_mode_as_bool_0 (rtx, machine_mode, addr_space_t, bool)
 {
   return 0;
 }
@@ -361,7 +361,7 @@ hook_rtx_tree_int_null (tree a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
 
 /* Generic hook that takes a machine mode and returns an unsigned int 0.  */
 unsigned int
-hook_uint_mode_0 (enum machine_mode m ATTRIBUTE_UNUSED)
+hook_uint_mode_0 (machine_mode m ATTRIBUTE_UNUSED)
 {
   return 0;
 }

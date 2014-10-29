@@ -3831,7 +3831,7 @@
 		(match_operand 2 "aarch64_valid_symref" "S")))]
   ""
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
 
   emit_insn ((mode == DImode
 	      ? gen_add_losym_di
@@ -3942,7 +3942,7 @@
                    UNSPEC_GOTSMALLTLS))]
   ""
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
   emit_insn ((mode == DImode
 	      ? gen_tlsle_small_di
 	      : gen_tlsle_small_si) (operands[0],
@@ -4001,7 +4001,7 @@
    (match_operand 1 "memory_operand")]
   ""
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
 
   emit_insn ((mode == DImode
 	      ? gen_stack_protect_set_di
@@ -4026,7 +4026,7 @@
   ""
 {
   rtx result;
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
 
   result = gen_reg_rtx(mode);
 

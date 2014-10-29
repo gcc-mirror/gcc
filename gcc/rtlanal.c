@@ -53,17 +53,17 @@ static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
 static int computed_jump_p_1 (const_rtx);
 static void parms_set (rtx, const_rtx, void *);
 
-static unsigned HOST_WIDE_INT cached_nonzero_bits (const_rtx, enum machine_mode,
-                                                   const_rtx, enum machine_mode,
+static unsigned HOST_WIDE_INT cached_nonzero_bits (const_rtx, machine_mode,
+                                                   const_rtx, machine_mode,
                                                    unsigned HOST_WIDE_INT);
-static unsigned HOST_WIDE_INT nonzero_bits1 (const_rtx, enum machine_mode,
-					     const_rtx, enum machine_mode,
+static unsigned HOST_WIDE_INT nonzero_bits1 (const_rtx, machine_mode,
+					     const_rtx, machine_mode,
                                              unsigned HOST_WIDE_INT);
-static unsigned int cached_num_sign_bit_copies (const_rtx, enum machine_mode, const_rtx,
-                                                enum machine_mode,
+static unsigned int cached_num_sign_bit_copies (const_rtx, machine_mode, const_rtx,
+                                                machine_mode,
                                                 unsigned int);
-static unsigned int num_sign_bit_copies1 (const_rtx, enum machine_mode, const_rtx,
-                                          enum machine_mode, unsigned int);
+static unsigned int num_sign_bit_copies1 (const_rtx, machine_mode, const_rtx,
+                                          machine_mode, unsigned int);
 
 /* Offset of the first 'e', 'E' or 'V' operand for each rtx code, or
    -1 if a code has no such operand.  */
@@ -357,7 +357,7 @@ rtx_varies_p (const_rtx x, bool for_alias)
 
 static int
 rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
-		       enum machine_mode mode, bool unaligned_mems)
+		       machine_mode mode, bool unaligned_mems)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -2100,7 +2100,7 @@ void
 add_int_reg_note (rtx insn, enum reg_note kind, int datum)
 {
   gcc_checking_assert (int_reg_note_p (kind));
-  REG_NOTES (insn) = gen_rtx_INT_LIST ((enum machine_mode) kind,
+  REG_NOTES (insn) = gen_rtx_INT_LIST ((machine_mode) kind,
 				       datum, REG_NOTES (insn));
 }
 
@@ -3394,8 +3394,8 @@ loc_mentioned_in_p (rtx *loc, const_rtx in)
    (counting from the least significant bit of the operand).  */
 
 unsigned int
-subreg_lsb_1 (enum machine_mode outer_mode,
-	      enum machine_mode inner_mode,
+subreg_lsb_1 (machine_mode outer_mode,
+	      machine_mode inner_mode,
 	      unsigned int subreg_byte)
 {
   unsigned int bitpos;
@@ -3461,8 +3461,8 @@ subreg_lsb (const_rtx x)
    use simplify_subreg_regno.  */
 
 void
-subreg_get_info (unsigned int xregno, enum machine_mode xmode,
-		 unsigned int offset, enum machine_mode ymode,
+subreg_get_info (unsigned int xregno, machine_mode xmode,
+		 unsigned int offset, machine_mode ymode,
 		 struct subreg_info *info)
 {
   int nregs_xmode, nregs_ymode;
@@ -3479,7 +3479,7 @@ subreg_get_info (unsigned int xregno, enum machine_mode xmode,
      that it is made up of its units concatenated together.  */
   if (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode))
     {
-      enum machine_mode xmode_unit;
+      machine_mode xmode_unit;
 
       nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
       if (GET_MODE_INNER (xmode) == VOIDmode)
@@ -3628,8 +3628,8 @@ subreg_get_info (unsigned int xregno, enum machine_mode xmode,
    ymode  - The mode of a top level SUBREG (or what may become one).
    RETURN - The regno offset which would be used.  */
 unsigned int
-subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
-		     unsigned int offset, enum machine_mode ymode)
+subreg_regno_offset (unsigned int xregno, machine_mode xmode,
+		     unsigned int offset, machine_mode ymode)
 {
   struct subreg_info info;
   subreg_get_info (xregno, xmode, offset, ymode, &info);
@@ -3644,8 +3644,8 @@ subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
    ymode  - The mode of a top level SUBREG (or what may become one).
    RETURN - Whether the offset is representable.  */
 bool
-subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
-			       unsigned int offset, enum machine_mode ymode)
+subreg_offset_representable_p (unsigned int xregno, machine_mode xmode,
+			       unsigned int offset, machine_mode ymode)
 {
   struct subreg_info info;
   subreg_get_info (xregno, xmode, offset, ymode, &info);
@@ -3661,8 +3661,8 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
    XREGNO is a hard register number.  */
 
 int
-simplify_subreg_regno (unsigned int xregno, enum machine_mode xmode,
-		       unsigned int offset, enum machine_mode ymode)
+simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
+		       unsigned int offset, machine_mode ymode)
 {
   struct subreg_info info;
   unsigned int yregno;
@@ -4025,7 +4025,7 @@ get_full_rtx_cost (rtx x, enum rtx_code outer, int opno,
    be returned.  */
 
 int
-address_cost (rtx x, enum machine_mode mode, addr_space_t as, bool speed)
+address_cost (rtx x, machine_mode mode, addr_space_t as, bool speed)
 {
   /* We may be asked for cost of various unusual addresses, such as operands
      of push instruction.  It is not worthwhile to complicate writing
@@ -4040,20 +4040,20 @@ address_cost (rtx x, enum machine_mode mode, addr_space_t as, bool speed)
 /* If the target doesn't override, compute the cost as with arithmetic.  */
 
 int
-default_address_cost (rtx x, enum machine_mode, addr_space_t, bool speed)
+default_address_cost (rtx x, machine_mode, addr_space_t, bool speed)
 {
   return rtx_cost (x, MEM, 0, speed);
 }
 
 
 unsigned HOST_WIDE_INT
-nonzero_bits (const_rtx x, enum machine_mode mode)
+nonzero_bits (const_rtx x, machine_mode mode)
 {
   return cached_nonzero_bits (x, mode, NULL_RTX, VOIDmode, 0);
 }
 
 unsigned int
-num_sign_bit_copies (const_rtx x, enum machine_mode mode)
+num_sign_bit_copies (const_rtx x, machine_mode mode)
 {
   return cached_num_sign_bit_copies (x, mode, NULL_RTX, VOIDmode, 0);
 }
@@ -4063,8 +4063,8 @@ num_sign_bit_copies (const_rtx x, enum machine_mode mode)
    identical subexpressions on the first or the second level.  */
 
 static unsigned HOST_WIDE_INT
-cached_nonzero_bits (const_rtx x, enum machine_mode mode, const_rtx known_x,
-		     enum machine_mode known_mode,
+cached_nonzero_bits (const_rtx x, machine_mode mode, const_rtx known_x,
+		     machine_mode known_mode,
 		     unsigned HOST_WIDE_INT known_ret)
 {
   if (x == known_x && mode == known_mode)
@@ -4116,14 +4116,14 @@ cached_nonzero_bits (const_rtx x, enum machine_mode mode, const_rtx known_x,
    an arithmetic operation, we can do better.  */
 
 static unsigned HOST_WIDE_INT
-nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
-	       enum machine_mode known_mode,
+nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
+	       machine_mode known_mode,
 	       unsigned HOST_WIDE_INT known_ret)
 {
   unsigned HOST_WIDE_INT nonzero = GET_MODE_MASK (mode);
   unsigned HOST_WIDE_INT inner_nz;
   enum rtx_code code;
-  enum machine_mode inner_mode;
+  machine_mode inner_mode;
   unsigned int mode_width = GET_MODE_PRECISION (mode);
 
   /* For floating-point and vector values, assume all bits are needed.  */
@@ -4471,7 +4471,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (XEXP (x, 1)) < GET_MODE_PRECISION (GET_MODE (x)))
 	{
-	  enum machine_mode inner_mode = GET_MODE (x);
+	  machine_mode inner_mode = GET_MODE (x);
 	  unsigned int width = GET_MODE_PRECISION (inner_mode);
 	  int count = INTVAL (XEXP (x, 1));
 	  unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (inner_mode);
@@ -4574,8 +4574,8 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
    first or the second level.  */
 
 static unsigned int
-cached_num_sign_bit_copies (const_rtx x, enum machine_mode mode, const_rtx known_x,
-			    enum machine_mode known_mode,
+cached_num_sign_bit_copies (const_rtx x, machine_mode mode, const_rtx known_x,
+			    machine_mode known_mode,
 			    unsigned int known_ret)
 {
   if (x == known_x && mode == known_mode)
@@ -4625,8 +4625,8 @@ cached_num_sign_bit_copies (const_rtx x, enum machine_mode mode, const_rtx known
    be between 1 and the number of bits in MODE.  */
 
 static unsigned int
-num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
-		      enum machine_mode known_mode,
+num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
+		      machine_mode known_mode,
 		      unsigned int known_ret)
 {
   enum rtx_code code = GET_CODE (x);
@@ -5111,7 +5111,7 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
   rtx tem;
   rtx op0, op1;
   int reverse_code = 0;
-  enum machine_mode mode;
+  machine_mode mode;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
   code = GET_CODE (cond);
@@ -5194,7 +5194,7 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
 	 relevant.  */
       if (set)
 	{
-	  enum machine_mode inner_mode = GET_MODE (SET_DEST (set));
+	  machine_mode inner_mode = GET_MODE (SET_DEST (set));
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  REAL_VALUE_TYPE fsfv;
 #endif
@@ -5408,14 +5408,14 @@ get_condition (rtx_insn *jump, rtx_insn **earliest, int allow_cc_mode,
 static void
 init_num_sign_bit_copies_in_rep (void)
 {
-  enum machine_mode mode, in_mode;
+  machine_mode mode, in_mode;
 
   for (in_mode = GET_CLASS_NARROWEST_MODE (MODE_INT); in_mode != VOIDmode;
        in_mode = GET_MODE_WIDER_MODE (mode))
     for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != in_mode;
 	 mode = GET_MODE_WIDER_MODE (mode))
       {
-	enum machine_mode i;
+	machine_mode i;
 
 	/* Currently, it is assumed that TARGET_MODE_REP_EXTENDED
 	   extends to the next widest mode.  */
@@ -5426,7 +5426,7 @@ init_num_sign_bit_copies_in_rep (void)
 	   have to be copies of the sign-bit.  */
 	for (i = mode; i != in_mode; i = GET_MODE_WIDER_MODE (i))
 	  {
-	    enum machine_mode wider = GET_MODE_WIDER_MODE (i);
+	    machine_mode wider = GET_MODE_WIDER_MODE (i);
 
 	    if (targetm.mode_rep_extended (i, wider) == SIGN_EXTEND
 		/* We can only check sign-bit copies starting from the
@@ -5445,7 +5445,7 @@ init_num_sign_bit_copies_in_rep (void)
    assume it already contains a truncated value of MODE.  */
 
 bool
-truncated_to_mode (enum machine_mode mode, const_rtx x)
+truncated_to_mode (machine_mode mode, const_rtx x)
 {
   /* This register has already been used in MODE without explicit
      truncation.  */
@@ -5529,7 +5529,7 @@ constant_pool_constant_p (rtx x)
    M is used in machine mode MODE.  */
 
 int
-low_bitmask_len (enum machine_mode mode, unsigned HOST_WIDE_INT m)
+low_bitmask_len (machine_mode mode, unsigned HOST_WIDE_INT m)
 {
   if (mode != VOIDmode)
     {
@@ -5543,10 +5543,10 @@ low_bitmask_len (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 
 /* Return the mode of MEM's address.  */
 
-enum machine_mode
+machine_mode
 get_address_mode (rtx mem)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   gcc_assert (MEM_P (mem));
   mode = GET_MODE (XEXP (mem, 0));
@@ -5725,7 +5725,7 @@ lsb_bitfield_op_p (rtx x)
 {
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_BITFIELD_OPS)
     {
-      enum machine_mode mode = GET_MODE (XEXP (x, 0));
+      machine_mode mode = GET_MODE (XEXP (x, 0));
       HOST_WIDE_INT len = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
 
@@ -5933,7 +5933,7 @@ extract_plus_operands (rtx *loc, rtx **ptr, rtx **end)
    MODE, AS, OUTER_CODE and INDEX_CODE are as for ok_for_base_p_1.  */
 
 static int
-baseness (rtx x, enum machine_mode mode, addr_space_t as,
+baseness (rtx x, machine_mode mode, addr_space_t as,
 	  enum rtx_code outer_code, enum rtx_code index_code)
 {
   /* Believe *_POINTER unless the address shape requires otherwise.  */
@@ -6039,7 +6039,7 @@ decompose_normal_address (struct address_info *info)
    OUTER_CODE is MEM if *LOC is a MEM address and ADDRESS otherwise.  */
 
 void
-decompose_address (struct address_info *info, rtx *loc, enum machine_mode mode,
+decompose_address (struct address_info *info, rtx *loc, machine_mode mode,
 		   addr_space_t as, enum rtx_code outer_code)
 {
   memset (info, 0, sizeof (*info));

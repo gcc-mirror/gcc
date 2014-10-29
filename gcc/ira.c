@@ -593,11 +593,11 @@ setup_class_subset_and_memory_move_costs (void)
 	  {
 	    ira_max_memory_move_cost[mode][cl][0]
 	      = ira_memory_move_cost[mode][cl][0]
-	      = memory_move_cost ((enum machine_mode) mode,
+	      = memory_move_cost ((machine_mode) mode,
 				  (reg_class_t) cl, false);
 	    ira_max_memory_move_cost[mode][cl][1]
 	      = ira_memory_move_cost[mode][cl][1]
-	      = memory_move_cost ((enum machine_mode) mode,
+	      = memory_move_cost ((machine_mode) mode,
 				  (reg_class_t) cl, true);
 	    /* Costs for NO_REGS are used in cost calculation on the
 	       1st pass when the preferred register classes are not
@@ -830,7 +830,7 @@ setup_pressure_classes (void)
 				      ira_prohibited_class_mode_regs[cl][m]);
 	      if (hard_reg_set_empty_p (temp_hard_regset))
 		continue;
-	      ira_init_register_move_cost_if_necessary ((enum machine_mode) m);
+	      ira_init_register_move_cost_if_necessary ((machine_mode) m);
 	      cost = ira_register_move_cost[m][cl][cl];
 	      if (cost <= ira_max_memory_move_cost[m][cl][1]
 		  || cost <= ira_max_memory_move_cost[m][cl][0])
@@ -954,7 +954,7 @@ setup_uniform_class_p (void)
       	  for (m = 0; m < NUM_MACHINE_MODES; m++)
 	    if (contains_reg_of_mode[cl][m] && contains_reg_of_mode[cl2][m])
 	      {
-		ira_init_register_move_cost_if_necessary ((enum machine_mode) m);
+		ira_init_register_move_cost_if_necessary ((machine_mode) m);
 		if (ira_register_move_cost[m][cl][cl]
 		    != ira_register_move_cost[m][cl2][cl2])
 		  break;
@@ -1484,7 +1484,7 @@ setup_reg_class_nregs (void)
       for (cl = 0; cl < N_REG_CLASSES; cl++)
 	ira_reg_class_max_nregs[cl][m]
 	  = ira_reg_class_min_nregs[cl][m]
-	  = targetm.class_max_nregs ((reg_class_t) cl, (enum machine_mode) m);
+	  = targetm.class_max_nregs ((reg_class_t) cl, (machine_mode) m);
       for (cl = 0; cl < N_REG_CLASSES; cl++)
 	for (i = 0;
 	     (cl2 = alloc_reg_class_subclasses[cl][i]) != LIM_REG_CLASSES;
@@ -1516,11 +1516,11 @@ setup_prohibited_class_mode_regs (void)
 	  for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
 	    {
 	      hard_regno = ira_class_hard_regs[cl][k];
-	      if (! HARD_REGNO_MODE_OK (hard_regno, (enum machine_mode) j))
+	      if (! HARD_REGNO_MODE_OK (hard_regno, (machine_mode) j))
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
 				  hard_regno);
 	      else if (in_hard_reg_set_p (temp_hard_regset,
-					  (enum machine_mode) j, hard_regno))
+					  (machine_mode) j, hard_regno))
 		{
 		  last_hard_regno = hard_regno;
 		  count++;
@@ -1568,7 +1568,7 @@ clarify_prohibited_class_mode_regs (void)
 	    if (!TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
 				    hard_regno))
 	      add_to_hard_reg_set (&ira_useful_class_mode_regs[cl][j],
-				   (enum machine_mode) j, hard_regno);
+				   (machine_mode) j, hard_regno);
 	  }
       }
 }
@@ -1576,7 +1576,7 @@ clarify_prohibited_class_mode_regs (void)
 /* Allocate and initialize IRA_REGISTER_MOVE_COST, IRA_MAY_MOVE_IN_COST
    and IRA_MAY_MOVE_OUT_COST for MODE.  */
 void
-ira_init_register_move_cost (enum machine_mode mode)
+ira_init_register_move_cost (machine_mode mode)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
   bool all_match = true;
@@ -1760,12 +1760,12 @@ setup_prohibited_mode_move_regs (void)
       SET_HARD_REG_SET (ira_prohibited_mode_move_regs[i]);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	{
-	  if (! HARD_REGNO_MODE_OK (j, (enum machine_mode) i))
+	  if (! HARD_REGNO_MODE_OK (j, (machine_mode) i))
 	    continue;
 	  SET_REGNO_RAW (test_reg1, j);
-	  PUT_MODE (test_reg1, (enum machine_mode) i);
+	  PUT_MODE (test_reg1, (machine_mode) i);
 	  SET_REGNO_RAW (test_reg2, j);
-	  PUT_MODE (test_reg2, (enum machine_mode) i);
+	  PUT_MODE (test_reg2, (machine_mode) i);
 	  INSN_CODE (move_insn) = -1;
 	  recog_memoized (move_insn);
 	  if (INSN_CODE (move_insn) < 0)
@@ -3939,7 +3939,7 @@ setup_reg_equiv (void)
 		  }
 		else if (function_invariant_p (x))
 		  {
-		    enum machine_mode mode;
+		    machine_mode mode;
 		    
 		    mode = GET_MODE (SET_DEST (set));
 		    if (GET_CODE (x) == PLUS
@@ -4534,7 +4534,7 @@ find_moveable_pseudos (void)
 	    df_ref def, use;
 	    unsigned regno;
 	    bool all_dominated, all_local;
-	    enum machine_mode mode;
+	    machine_mode mode;
 
 	    def = df_single_def (insn_info);
 	    /* There must be exactly one def in this insn.  */

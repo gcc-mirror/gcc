@@ -66,12 +66,12 @@ static void unchain_one_value (cselib_val *);
 static void unchain_one_elt_list (struct elt_list **);
 static void unchain_one_elt_loc_list (struct elt_loc_list **);
 static void remove_useless_values (void);
-static int rtx_equal_for_cselib_1 (rtx, rtx, enum machine_mode);
-static unsigned int cselib_hash_rtx (rtx, int, enum machine_mode);
-static cselib_val *new_cselib_val (unsigned int, enum machine_mode, rtx);
+static int rtx_equal_for_cselib_1 (rtx, rtx, machine_mode);
+static unsigned int cselib_hash_rtx (rtx, int, machine_mode);
+static cselib_val *new_cselib_val (unsigned int, machine_mode, rtx);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
 static cselib_val *cselib_lookup_mem (rtx, int);
-static void cselib_invalidate_regno (unsigned int, enum machine_mode);
+static void cselib_invalidate_regno (unsigned int, machine_mode);
 static void cselib_invalidate_mem (rtx);
 static void cselib_record_set (rtx, cselib_val *, cselib_val *);
 static void cselib_record_sets (rtx_insn *);
@@ -101,10 +101,10 @@ struct cselib_hasher : typed_noop_remove <cselib_val>
   struct compare_type {
     /* The rtx value and its mode (needed separately for constant
        integers).  */
-    enum machine_mode mode;
+    machine_mode mode;
     rtx x;
     /* The mode of the contaning MEM, if any, otherwise VOIDmode.  */
-    enum machine_mode memmode;
+    machine_mode memmode;
   };
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
@@ -130,8 +130,8 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
 {
   struct elt_loc_list *l;
   rtx x = x_arg->x;
-  enum machine_mode mode = x_arg->mode;
-  enum machine_mode memmode = x_arg->memmode;
+  machine_mode mode = x_arg->mode;
+  machine_mode memmode = x_arg->memmode;
 
   if (mode != GET_MODE (v->val_rtx))
     return false;
@@ -583,8 +583,8 @@ cselib_get_next_uid (void)
    MEMMODE should specify the mode of the MEM.  */
 
 static cselib_val **
-cselib_find_slot (enum machine_mode mode, rtx x, hashval_t hash,
-		  enum insert_option insert, enum machine_mode memmode)
+cselib_find_slot (machine_mode mode, rtx x, hashval_t hash,
+		  enum insert_option insert, machine_mode memmode)
 {
   cselib_val **slot = NULL;
   cselib_hasher::compare_type lookup = { mode, x, memmode };
@@ -788,7 +788,7 @@ cselib_sp_based_value_p (cselib_val *v)
    set is not known, or the value was already clobbered, return
    VOIDmode.  */
 
-enum machine_mode
+machine_mode
 cselib_reg_set_mode (const_rtx x)
 {
   if (!REG_P (x))
@@ -814,7 +814,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
    storing the offset, if any, in *OFF.  */
 
 static rtx
-autoinc_split (rtx x, rtx *off, enum machine_mode memmode)
+autoinc_split (rtx x, rtx *off, machine_mode memmode)
 {
   switch (GET_CODE (x))
     {
@@ -857,7 +857,7 @@ autoinc_split (rtx x, rtx *off, enum machine_mode memmode)
    addresses, MEMMODE should be VOIDmode.  */
 
 static int
-rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
+rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
 {
   enum rtx_code code;
   const char *fmt;
@@ -1069,7 +1069,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
    in a comparison anyway, since relying on hash differences is unsafe.  */
 
 static unsigned int
-cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
+cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 {
   cselib_val *e;
   int i, j;
@@ -1295,7 +1295,7 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
    value is MODE.  */
 
 static inline cselib_val *
-new_cselib_val (unsigned int hash, enum machine_mode mode, rtx x)
+new_cselib_val (unsigned int hash, machine_mode mode, rtx x)
 {
   cselib_val *e = (cselib_val *) pool_alloc (cselib_val_pool);
 
@@ -1369,8 +1369,8 @@ add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
 static cselib_val *
 cselib_lookup_mem (rtx x, int create)
 {
-  enum machine_mode mode = GET_MODE (x);
-  enum machine_mode addr_mode;
+  machine_mode mode = GET_MODE (x);
+  machine_mode addr_mode;
   cselib_val **slot;
   cselib_val *addr;
   cselib_val *mem_elt;
@@ -1575,7 +1575,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
   int i, j;
   RTX_CODE code;
   const char *format_ptr;
-  enum machine_mode mode;
+  machine_mode mode;
 
   code = GET_CODE (orig);
 
@@ -1849,7 +1849,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
    If X is within a MEM, MEMMODE must be the mode of the MEM.  */
 
 rtx
-cselib_subst_to_values (rtx x, enum machine_mode memmode)
+cselib_subst_to_values (rtx x, machine_mode memmode)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
@@ -1955,7 +1955,7 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
 /* Wrapper for cselib_subst_to_values, that indicates X is in INSN.  */
 
 rtx
-cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx_insn *insn)
+cselib_subst_to_values_from_insn (rtx x, machine_mode memmode, rtx_insn *insn)
 {
   rtx ret;
   gcc_assert (!cselib_current_insn);
@@ -1973,8 +1973,8 @@ cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx_insn *in
    we're tracking autoinc expressions.  */
 
 static cselib_val *
-cselib_lookup_1 (rtx x, enum machine_mode mode,
-		 int create, enum machine_mode memmode)
+cselib_lookup_1 (rtx x, machine_mode mode,
+		 int create, machine_mode memmode)
 {
   cselib_val **slot;
   cselib_val *e;
@@ -2095,8 +2095,8 @@ cselib_lookup_1 (rtx x, enum machine_mode mode,
 /* Wrapper for cselib_lookup, that indicates X is in INSN.  */
 
 cselib_val *
-cselib_lookup_from_insn (rtx x, enum machine_mode mode,
-			 int create, enum machine_mode memmode, rtx_insn *insn)
+cselib_lookup_from_insn (rtx x, machine_mode mode,
+			 int create, machine_mode memmode, rtx_insn *insn)
 {
   cselib_val *ret;
 
@@ -2114,8 +2114,8 @@ cselib_lookup_from_insn (rtx x, enum machine_mode mode,
    maintains invariants related with debug insns.  */
 
 cselib_val *
-cselib_lookup (rtx x, enum machine_mode mode,
-	       int create, enum machine_mode memmode)
+cselib_lookup (rtx x, machine_mode mode,
+	       int create, machine_mode memmode)
 {
   cselib_val *ret = cselib_lookup_1 (x, mode, create, memmode);
 
@@ -2144,7 +2144,7 @@ cselib_lookup (rtx x, enum machine_mode mode,
    invalidating call clobbered registers across a call.  */
 
 static void
-cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
+cselib_invalidate_regno (unsigned int regno, machine_mode mode)
 {
   unsigned int endregno;
   unsigned int i;
@@ -2554,7 +2554,7 @@ cselib_record_sets (rtx_insn *insn)
 	  sets[i].src_elt = cselib_lookup (src, GET_MODE (dest), 1, VOIDmode);
 	  if (MEM_P (dest))
 	    {
-	      enum machine_mode address_mode = get_address_mode (dest);
+	      machine_mode address_mode = get_address_mode (dest);
 
 	      sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0),
 						     address_mode, 1,

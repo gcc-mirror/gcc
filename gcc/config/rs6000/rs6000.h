@@ -2066,7 +2066,7 @@ do {									     \
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 extern unsigned rs6000_pmode;
-#define Pmode ((enum machine_mode)rs6000_pmode)
+#define Pmode ((machine_mode)rs6000_pmode)
 
 /* Supply definition of STACK_SIZE_MODE for allocate_dynamic_stack_space.  */
 #define STACK_SIZE_MODE (TARGET_32BIT ? SImode : DImode)

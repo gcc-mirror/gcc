@@ -36,22 +36,22 @@ extern const char *output_simode_bld (int, rtx[]);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern void notice_update_cc (rtx, rtx_insn *);
-extern const char *output_logical_op (enum machine_mode, rtx *);
-extern unsigned int compute_logical_op_length (enum machine_mode,
+extern const char *output_logical_op (machine_mode, rtx *);
+extern unsigned int compute_logical_op_length (machine_mode,
 					       rtx *);
 #ifdef HAVE_ATTR_cc
 extern enum attr_cc compute_plussi_cc (rtx *);
 extern enum attr_cc compute_a_shift_cc (rtx, rtx *);
-extern enum attr_cc compute_logical_op_cc (enum machine_mode, rtx *);
+extern enum attr_cc compute_logical_op_cc (machine_mode, rtx *);
 #endif
 extern void h8300_expand_branch (rtx[]);
 extern void h8300_expand_store (rtx[]);
-extern bool expand_a_shift (enum machine_mode, enum rtx_code, rtx[]);
-extern int h8300_shift_needs_scratch_p (int, enum machine_mode);
+extern bool expand_a_shift (machine_mode, enum rtx_code, rtx[]);
+extern int h8300_shift_needs_scratch_p (int, machine_mode);
 extern int expand_a_rotate (rtx[]);
 extern int fix_bit_operand (rtx *, enum rtx_code);
 extern int h8300_adjust_insn_length (rtx, int);
-extern void split_adds_subs (enum machine_mode, rtx[]);
+extern void split_adds_subs (machine_mode, rtx[]);
 
 extern int h8300_eightbit_constant_address_p (rtx);
 extern int h8300_tiny_constant_address_p (rtx);
@@ -81,7 +81,7 @@ enum h8sx_shift_type {
   H8SX_SHIFT_BINARY
 };
 
-extern enum h8sx_shift_type h8sx_classify_shift (enum machine_mode, enum rtx_code, rtx);
+extern enum h8sx_shift_type h8sx_classify_shift (machine_mode, enum rtx_code, rtx);
 extern int h8300_ldm_stm_parallel (rtvec, int, int);
 #endif /* RTX_CODE */
 
@@ -99,8 +99,8 @@ extern int h8300_current_function_monitor_function_p (void);
 extern int h8300_initial_elimination_offset (int, int);
 extern int h8300_regs_ok_for_stm (int, rtx[]);
 extern int h8300_hard_regno_rename_ok (unsigned int, unsigned int);
-extern int h8300_hard_regno_nregs (int, enum machine_mode);
-extern int h8300_hard_regno_mode_ok (int, enum machine_mode);
+extern int h8300_hard_regno_nregs (int, machine_mode);
+extern int h8300_hard_regno_mode_ok (int, machine_mode);
 extern bool h8300_move_ok (rtx, rtx);
 
 struct cpp_reader;

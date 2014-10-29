@@ -9412,8 +9412,8 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range_t *vr = get_value_range (rhs1);
-  enum machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
-  enum machine_mode mode;
+  machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
+  machine_mode mode;
   tree tem;
   gimple conv;
 

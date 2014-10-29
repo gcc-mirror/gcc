@@ -2425,7 +2425,7 @@ df_word_lr_mark_ref (df_ref ref, bool is_set, regset live)
 {
   rtx orig_reg = DF_REF_REG (ref);
   rtx reg = orig_reg;
-  enum machine_mode reg_mode;
+  machine_mode reg_mode;
   unsigned regno;
   /* Left at -1 for whole accesses.  */
   int which_subword = -1;

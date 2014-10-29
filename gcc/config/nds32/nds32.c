@@ -1019,7 +1019,7 @@ nds32_force_addi_stack_int (int full_value)
 
 /* Return true if MODE/TYPE need double word alignment.  */
 static bool
-nds32_needs_double_word_align (enum machine_mode mode, const_tree type)
+nds32_needs_double_word_align (machine_mode mode, const_tree type)
 {
   unsigned int align;
 
@@ -1075,7 +1075,7 @@ nds32_address_register_rtx_p (rtx x, bool strict)
         INDEX : Check if this rtx is valid to be a index for address.
        STRICT : If it is true, we are in reload pass or after reload pass.  */
 static bool
-nds32_legitimate_index_p (enum machine_mode outer_mode,
+nds32_legitimate_index_p (machine_mode outer_mode,
 			  rtx index,
 			  bool strict)
 {
@@ -1203,7 +1203,7 @@ nds32_legitimate_index_p (enum machine_mode outer_mode,
 
 static unsigned char
 nds32_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
-		       enum machine_mode mode)
+		       machine_mode mode)
 {
   /* Return the maximum number of consecutive registers
      needed to represent "mode" in a register of "rclass".  */
@@ -1305,7 +1305,7 @@ nds32_can_eliminate (const int from_reg, const int to_reg)
 /* -- Passing Arguments in Registers.  */
 
 static rtx
-nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
+nds32_function_arg (cumulative_args_t ca, machine_mode mode,
 		    const_tree type, bool named)
 {
   unsigned int regno;
@@ -1367,7 +1367,7 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
 }
 
 static bool
-nds32_must_pass_in_stack (enum machine_mode mode, const_tree type)
+nds32_must_pass_in_stack (machine_mode mode, const_tree type)
 {
   /* Return true if a type must be passed in memory.
      If it is NOT using hard float abi, small aggregates can be
@@ -1380,7 +1380,7 @@ nds32_must_pass_in_stack (enum machine_mode mode, const_tree type)
 }
 
 static int
-nds32_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
+nds32_arg_partial_bytes (cumulative_args_t ca, machine_mode mode,
 			 tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* Returns the number of bytes at the beginning of an argument that
@@ -1424,10 +1424,10 @@ nds32_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
 }
 
 static void
-nds32_function_arg_advance (cumulative_args_t ca, enum machine_mode mode,
+nds32_function_arg_advance (cumulative_args_t ca, machine_mode mode,
 			    const_tree type, bool named)
 {
-  enum machine_mode sub_mode;
+  machine_mode sub_mode;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
 
   if (named)
@@ -1470,7 +1470,7 @@ nds32_function_arg_advance (cumulative_args_t ca, enum machine_mode mode,
 }
 
 static unsigned int
-nds32_function_arg_boundary (enum machine_mode mode, const_tree type)
+nds32_function_arg_boundary (machine_mode mode, const_tree type)
 {
   return (nds32_needs_double_word_align (mode, type)
 	  ? NDS32_DOUBLE_WORD_ALIGNMENT
@@ -1484,7 +1484,7 @@ nds32_function_value (const_tree ret_type,
 		      const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		      bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp;
 
   mode = TYPE_MODE (ret_type);
@@ -1496,7 +1496,7 @@ nds32_function_value (const_tree ret_type,
 }
 
 static rtx
-nds32_libcall_value (enum machine_mode mode,
+nds32_libcall_value (machine_mode mode,
 		     const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
@@ -1695,7 +1695,7 @@ nds32_warn_func_return (tree decl)
 
 static void
 nds32_setup_incoming_varargs (cumulative_args_t ca,
-			      enum machine_mode mode,
+			      machine_mode mode,
 			      tree type,
 			      int *pretend_args_size,
 			      int second_time ATTRIBUTE_UNUSED)
@@ -1910,7 +1910,7 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 /* Addressing Modes.  */
 
 static bool
-nds32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   /* For (mem:DI addr) or (mem:DF addr) case,
      we only allow 'addr' to be [reg], [symbol_ref],
@@ -2043,7 +2043,7 @@ nds32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 /* Describing Relative Costs of Operations.  */
 
 static int
-nds32_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+nds32_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t from,
 			  reg_class_t to)
 {
@@ -2054,7 +2054,7 @@ nds32_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static int
-nds32_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+nds32_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			reg_class_t rclass ATTRIBUTE_UNUSED,
 			bool in ATTRIBUTE_UNUSED)
 {
@@ -2078,7 +2078,7 @@ nds32_rtx_costs (rtx x,
 
 static int
 nds32_address_cost (rtx address,
-		    enum machine_mode mode,
+		    machine_mode mode,
 		    addr_space_t as,
 		    bool speed)
 {
@@ -2686,7 +2686,7 @@ static rtx
 nds32_expand_builtin (tree exp,
 		      rtx target,
 		      rtx subtarget,
-		      enum machine_mode mode,
+		      machine_mode mode,
 		      int ignore)
 {
   return nds32_expand_builtin_impl (exp, target, subtarget, mode, ignore);
@@ -2714,13 +2714,13 @@ nds32_init_expanders (void)
 
 int
 nds32_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
-			enum machine_mode mode)
+			machine_mode mode)
 {
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 }
 
 int
-nds32_hard_regno_mode_ok (int regno, enum machine_mode mode)
+nds32_hard_regno_mode_ok (int regno, machine_mode mode)
 {
   /* Restrict double-word quantities to even register pairs.  */
   if (HARD_REGNO_NREGS (regno, mode) == 1
@@ -3383,7 +3383,7 @@ nds32_expand_epilogue_v3pop (void)
    This is auxiliary extern function for auxiliary macro in nds32.h.
    Because it is a little complicated, we use function instead of macro.  */
 bool
-nds32_ls_333_p (rtx rt, rtx ra, rtx imm, enum machine_mode mode)
+nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
 {
   if (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS
       && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)

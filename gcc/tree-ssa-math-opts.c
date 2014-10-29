@@ -1147,7 +1147,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   REAL_VALUE_TYPE c2, dconst3;
   HOST_WIDE_INT n;
   tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, result, cbrt_x, powi_cbrt_x;
-  enum machine_mode mode;
+  machine_mode mode;
   bool hw_sqrt_exists, c_is_int, c2_is_int;
 
   /* If the exponent isn't a constant, there's nothing of interest
@@ -1387,7 +1387,7 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
   tree real_part, imag_part, addend1, addend2, sum, result;
   tree type = TREE_TYPE (TREE_TYPE (arg));
   tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
 
   if (!flag_unsafe_math_optimizations
       || !optimize_bb_for_speed_p (gimple_bb (gsi_stmt (*gsi)))
@@ -1765,7 +1765,7 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   /* Leaf node is an array or component ref. Memorize its base and
      offset from base to compare to other such leaf node.  */
   HOST_WIDE_INT bitsize, bitpos;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
   tree offset, base_addr;
 
@@ -2627,7 +2627,7 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs, rhs1, rhs2, type, type1, type2;
   enum insn_code handler;
-  enum machine_mode to_mode, from_mode, actual_mode;
+  machine_mode to_mode, from_mode, actual_mode;
   optab op;
   int actual_precision;
   location_t loc = gimple_location (stmt);
@@ -2735,7 +2735,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   optab this_optab;
   enum tree_code wmult_code;
   enum insn_code handler;
-  enum machine_mode to_mode, from_mode, actual_mode;
+  machine_mode to_mode, from_mode, actual_mode;
   location_t loc = gimple_location (stmt);
   int actual_precision;
   bool from_unsigned1, from_unsigned2;

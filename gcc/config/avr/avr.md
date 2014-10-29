@@ -1075,7 +1075,7 @@
   ""
   {
     rtx addr0;
-    enum machine_mode mode;
+    machine_mode mode;
 
     /* If value to set is not zero, use the library routine.  */
     if (operands[2] != const0_rtx)

@@ -2319,7 +2319,7 @@ maybe_extend_reg_info_p (void)
    CLOBBER, PRE_DEC, POST_DEC, PRE_INC, POST_INC or USE.  */
 
 static void
-sched_analyze_reg (struct deps_desc *deps, int regno, enum machine_mode mode,
+sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
 		   enum rtx_code ref, rtx_insn *insn)
 {
   /* We could emit new pseudos in renaming.  Extend the reg structures.  */
@@ -2466,7 +2466,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (REG_P (dest))
     {
       int regno = REGNO (dest);
-      enum machine_mode mode = GET_MODE (dest);
+      machine_mode mode = GET_MODE (dest);
 
       sched_analyze_reg (deps, regno, mode, code, insn);
 
@@ -2490,7 +2490,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       if (sched_deps_info->use_cselib)
 	{
-	  enum machine_mode address_mode = get_address_mode (dest);
+	  machine_mode address_mode = get_address_mode (dest);
 
 	  t = shallow_copy_rtx (dest);
 	  cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
@@ -2620,7 +2620,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     case REG:
       {
 	int regno = REGNO (x);
-	enum machine_mode mode = GET_MODE (x);
+	machine_mode mode = GET_MODE (x);
 
 	sched_analyze_reg (deps, regno, mode, USE, insn);
 
@@ -2651,7 +2651,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
 	if (sched_deps_info->use_cselib)
 	  {
-	    enum machine_mode address_mode = get_address_mode (t);
+	    machine_mode address_mode = get_address_mode (t);
 
 	    t = shallow_copy_rtx (t);
 	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,

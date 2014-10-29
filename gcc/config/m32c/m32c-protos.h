@@ -38,7 +38,7 @@ int  m32c_trampoline_size (void);
 
 #ifdef RTX_CODE
 
-int  m32c_cannot_change_mode_class (enum machine_mode, enum machine_mode, int);
+int  m32c_cannot_change_mode_class (machine_mode, machine_mode, int);
 rtx  m32c_eh_return_stackadj_rtx (void);
 void m32c_emit_eh_epilogue (rtx);
 int  m32c_expand_cmpstr (rtx *);
@@ -49,24 +49,24 @@ int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);
 bool m32c_matches_constraint_p (rtx, int);
-int  m32c_hard_regno_nregs (int, enum machine_mode);
-int  m32c_hard_regno_ok (int, enum machine_mode);
+int  m32c_hard_regno_nregs (int, machine_mode);
+int  m32c_hard_regno_ok (int, machine_mode);
 bool m32c_illegal_subreg_p (rtx);
-bool m32c_immd_dbl_mov (rtx *, enum machine_mode);
+bool m32c_immd_dbl_mov (rtx *, machine_mode);
 rtx  m32c_incoming_return_addr_rtx (void);
-int  m32c_legitimize_reload_address (rtx *, enum machine_mode, int, int, int);
-int  m32c_limit_reload_class (enum machine_mode, int);
-int  m32c_modes_tieable_p (enum machine_mode, enum machine_mode);
-bool m32c_mov_ok (rtx *, enum machine_mode);
+int  m32c_legitimize_reload_address (rtx *, machine_mode, int, int, int);
+int  m32c_limit_reload_class (machine_mode, int);
+int  m32c_modes_tieable_p (machine_mode, machine_mode);
+bool m32c_mov_ok (rtx *, machine_mode);
 char * m32c_output_compare (rtx_insn *, rtx *);
-int  m32c_prepare_move (rtx *, enum machine_mode);
+int  m32c_prepare_move (rtx *, machine_mode);
 int  m32c_prepare_shift (rtx *, int, int);
 int  m32c_reg_ok_for_base_p (rtx, int);
 enum reg_class m32c_regno_reg_class (int);
 rtx  m32c_return_addr_rtx (int);
 const char *m32c_scc_pattern (rtx *, RTX_CODE);
-int  m32c_secondary_reload_class (int, enum machine_mode, rtx);
-int  m32c_split_move (rtx *, enum machine_mode, int);
+int  m32c_secondary_reload_class (int, machine_mode, rtx);
+int  m32c_split_move (rtx *, machine_mode, int);
 int  m32c_split_psi_p (rtx *);
 int current_function_special_page_vector (rtx);
 

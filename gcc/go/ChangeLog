@@ -1,3 +1,7 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* go-lang.c: Remove redundant enum from machine_mode.
+
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-gcc.cc: Adjust include files.

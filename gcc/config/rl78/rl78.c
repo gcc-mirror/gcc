@@ -364,7 +364,7 @@ rl78_real_insns_ok (void)
 
 /* Implements HARD_REGNO_NREGS.  */
 int
-rl78_hard_regno_nregs (int regno, enum machine_mode mode)
+rl78_hard_regno_nregs (int regno, machine_mode mode)
 {
   int rs = register_sizes[regno];
   if (rs < 1)
@@ -374,7 +374,7 @@ rl78_hard_regno_nregs (int regno, enum machine_mode mode)
 
 /* Implements HARD_REGNO_MODE_OK.  */
 int
-rl78_hard_regno_mode_ok (int regno, enum machine_mode mode)
+rl78_hard_regno_mode_ok (int regno, machine_mode mode)
 {
   int s = GET_MODE_SIZE (mode);
 
@@ -406,7 +406,7 @@ rl78_hard_regno_mode_ok (int regno, enum machine_mode mode)
    need it to below, so we use this function for when we must get a
    valid subreg in a "natural" state.  */
 static rtx
-rl78_subreg (enum machine_mode mode, rtx r, enum machine_mode omode, int byte)
+rl78_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 {
   if (GET_CODE (r) == MEM)
     return adjust_address (r, mode, byte);
@@ -831,7 +831,7 @@ rl78_far_p (rtx x)
 /* Return the appropriate mode for a named address pointer.  */
 #undef  TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE rl78_addr_space_pointer_mode
-static enum machine_mode
+static machine_mode
 rl78_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -849,7 +849,7 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
 #undef  TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
 static bool
-rl78_valid_pointer_mode (enum machine_mode m)
+rl78_valid_pointer_mode (machine_mode m)
 {
   return (m == HImode || m == SImode);
 }
@@ -857,7 +857,7 @@ rl78_valid_pointer_mode (enum machine_mode m)
 /* Return the appropriate mode for a named address address.  */
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
-static enum machine_mode
+static machine_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -875,7 +875,7 @@ rl78_addr_space_address_mode (addr_space_t addrspace)
 #define TARGET_LEGITIMATE_CONSTANT_P		rl78_is_legitimate_constant
 
 static bool
-rl78_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED)
+rl78_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -884,7 +884,7 @@ rl78_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTR
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P	rl78_as_legitimate_address
 
 bool
-rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 			    bool strict ATTRIBUTE_UNUSED, addr_space_t as ATTRIBUTE_UNUSED)
 {
   rtx base, index, addend;
@@ -984,7 +984,7 @@ rl78_addr_space_convert (rtx op, tree from_type, tree to_type)
 
 /* Implements REGNO_MODE_CODE_OK_FOR_BASE_P.  */
 bool
-rl78_regno_mode_code_ok_for_base_p (int regno, enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_regno_mode_code_ok_for_base_p (int regno, machine_mode mode ATTRIBUTE_UNUSED,
 				    addr_space_t address_space ATTRIBUTE_UNUSED,
 				    int outer_code ATTRIBUTE_UNUSED, int index_code)
 {
@@ -999,7 +999,7 @@ rl78_regno_mode_code_ok_for_base_p (int regno, enum machine_mode mode ATTRIBUTE_
 
 /* Implements MODE_CODE_BASE_REG_CLASS.  */
 enum reg_class
-rl78_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_mode_code_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 			       addr_space_t address_space ATTRIBUTE_UNUSED,
 			       int outer_code ATTRIBUTE_UNUSED,
 			       int index_code ATTRIBUTE_UNUSED)
@@ -1246,7 +1246,7 @@ rl78_function_value (const_tree ret_type,
 		     const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		     bool       outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (ret_type);
+  machine_mode mode = TYPE_MODE (ret_type);
 
   return gen_rtx_REG (mode, 8);
 }
@@ -1254,9 +1254,9 @@ rl78_function_value (const_tree ret_type,
 #undef  TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE rl78_promote_function_mode
 
-static enum machine_mode
+static machine_mode
 rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-			    enum machine_mode mode,
+			    machine_mode mode,
 			    int *punsignedp ATTRIBUTE_UNUSED,
 			    const_tree funtype ATTRIBUTE_UNUSED, int for_return ATTRIBUTE_UNUSED)
 {
@@ -1275,7 +1275,7 @@ rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 static rtx
 rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   const_tree type ATTRIBUTE_UNUSED,
 		   bool named ATTRIBUTE_UNUSED)
 {
@@ -1286,7 +1286,7 @@ rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG_ADVANCE     rl78_function_arg_advance
 
 static void
-rl78_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode, const_tree type,
+rl78_function_arg_advance (cumulative_args_t cum_v, machine_mode mode, const_tree type,
 			   bool named ATTRIBUTE_UNUSED)
 {
   int rounded_size;
@@ -1303,7 +1303,7 @@ rl78_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode, cons
 #define	TARGET_FUNCTION_ARG_BOUNDARY rl78_function_arg_boundary
 
 static unsigned int
-rl78_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 			    const_tree type ATTRIBUTE_UNUSED)
 {
   return 16;
@@ -1933,7 +1933,7 @@ static unsigned char content_memory [32 + NUM_STACK_LOCS];
 
 static unsigned char saved_update_index = NOT_KNOWN;
 static unsigned char saved_update_value;
-static enum machine_mode saved_update_mode;
+static machine_mode saved_update_mode;
 
 
 static inline void
@@ -1951,7 +1951,7 @@ clear_content_memory (void)
 static unsigned char
 get_content_index (rtx loc)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (loc == NULL_RTX)
     return NOT_KNOWN;
@@ -1986,7 +1986,7 @@ get_content_index (rtx loc)
 /* Return a string describing content INDEX in mode MODE.
    WARNING: Can return a pointer to a static buffer.  */
 static const char *
-get_content_name (unsigned char index, enum machine_mode mode)
+get_content_name (unsigned char index, machine_mode mode)
 {
   static char buffer [128];
 
@@ -2023,7 +2023,7 @@ display_content_memory (FILE * file)
 #endif
 
 static void
-update_content (unsigned char index, unsigned char val, enum machine_mode mode)
+update_content (unsigned char index, unsigned char val, machine_mode mode)
 {
   unsigned int i;
 
@@ -2088,7 +2088,7 @@ update_content (unsigned char index, unsigned char val, enum machine_mode mode)
 static void
 record_content (rtx loc, rtx value)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned char index;
   unsigned char val;
 
@@ -2356,7 +2356,7 @@ process_postponed_content_update (void)
 static rtx
 gen_and_emit_move (rtx to, rtx from, rtx where, bool before)
 {
-  enum machine_mode mode = GET_MODE (to);
+  machine_mode mode = GET_MODE (to);
 
   if (optimize && before && already_contains (to, from))
     {
@@ -2511,7 +2511,7 @@ static rtx
 move_to_acc (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
 
   if (REG_P (src) && REGNO (src) < 2)
     return src;
@@ -2525,7 +2525,7 @@ move_to_acc (int opno, rtx before)
 static void
 force_into_acc (rtx src, rtx before)
 {
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx move;
 
   if (REG_P (src) && REGNO (src) < 2)
@@ -2545,7 +2545,7 @@ static rtx
 move_from_acc (unsigned int opno, rtx after)
 {
   rtx dest = OP (opno);
-  enum machine_mode mode = GET_MODE (dest);
+  machine_mode mode = GET_MODE (dest);
 
   if (REG_P (dest) && REGNO (dest) < 2)
     return dest;
@@ -2558,7 +2558,7 @@ move_from_acc (unsigned int opno, rtx after)
 static rtx
 move_acc_to_reg (rtx acc, int regno, rtx before)
 {
-  enum machine_mode mode = GET_MODE (acc);
+  machine_mode mode = GET_MODE (acc);
   rtx reg;
 
   reg = gen_rtx_REG (mode, regno);
@@ -2572,7 +2572,7 @@ static rtx
 move_to_x (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -2595,7 +2595,7 @@ static rtx
 move_to_hl (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -2618,7 +2618,7 @@ static rtx
 move_to_de (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -3746,7 +3746,7 @@ static bool rl78_rtx_costs (rtx   x,
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
 
-static enum machine_mode
+static machine_mode
 rl78_unwind_word_mode (void)
 {
   return HImode;

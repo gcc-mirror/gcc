@@ -594,7 +594,7 @@ static htab_t clear_alias_mode_table;
 struct clear_alias_mode_holder
 {
   alias_set_type alias_set;
-  enum machine_mode mode;
+  machine_mode mode;
 };
 
 /* This is true except if cfun->stdarg -- i.e. we cannot do
@@ -1173,7 +1173,7 @@ canon_address (rtx mem,
 	       HOST_WIDE_INT *offset,
 	       cselib_val **base)
 {
-  enum machine_mode address_mode = get_address_mode (mem);
+  machine_mode address_mode = get_address_mode (mem);
   rtx mem_address = XEXP (mem, 0);
   rtx expanded_address, address;
   int expanded;
@@ -1364,7 +1364,7 @@ all_positions_needed_p (store_info_t s_info, int start, int width)
 }
 
 
-static rtx get_stored_val (store_info_t, enum machine_mode, HOST_WIDE_INT,
+static rtx get_stored_val (store_info_t, machine_mode, HOST_WIDE_INT,
 			   HOST_WIDE_INT, basic_block, bool);
 
 
@@ -1728,11 +1728,11 @@ dump_insn_info (const char * start, insn_info_t insn_info)
 static rtx
 find_shift_sequence (int access_size,
 		     store_info_t store_info,
-		     enum machine_mode read_mode,
+		     machine_mode read_mode,
 		     int shift, bool speed, bool require_cst)
 {
-  enum machine_mode store_mode = GET_MODE (store_info->mem);
-  enum machine_mode new_mode;
+  machine_mode store_mode = GET_MODE (store_info->mem);
+  machine_mode new_mode;
   rtx read_reg = NULL;
 
   /* Some machines like the x86 have shift insns for each size of
@@ -1862,11 +1862,11 @@ look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    if not successful.  If REQUIRE_CST is true, return always constant.  */
 
 static rtx
-get_stored_val (store_info_t store_info, enum machine_mode read_mode,
+get_stored_val (store_info_t store_info, machine_mode read_mode,
 		HOST_WIDE_INT read_begin, HOST_WIDE_INT read_end,
 		basic_block bb, bool require_cst)
 {
-  enum machine_mode store_mode = GET_MODE (store_info->mem);
+  machine_mode store_mode = GET_MODE (store_info->mem);
   int shift;
   int access_size; /* In bytes.  */
   rtx read_reg;
@@ -1966,8 +1966,8 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 	      read_info_t read_info, insn_info_t read_insn, rtx *loc,
 	      bitmap regs_live)
 {
-  enum machine_mode store_mode = GET_MODE (store_info->mem);
-  enum machine_mode read_mode = GET_MODE (read_info->mem);
+  machine_mode store_mode = GET_MODE (store_info->mem);
+  machine_mode read_mode = GET_MODE (read_info->mem);
   rtx_insn *insns, *this_insn;
   rtx read_reg;
   basic_block bb;
@@ -2391,7 +2391,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
        arg != void_list_node && idx < nargs;
        arg = TREE_CHAIN (arg), idx++)
     {
-      enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
+      machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
       rtx reg, link, tmp;
       reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
       if (!reg || !REG_P (reg) || GET_MODE (reg) != mode

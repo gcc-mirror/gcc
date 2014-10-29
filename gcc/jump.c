@@ -351,7 +351,7 @@ enum rtx_code
 reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
 				const_rtx arg1, const_rtx insn)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* If this is not actually a comparison, we can't reverse it.  */
   if (GET_RTX_CLASS (code) != RTX_COMPARE
@@ -478,7 +478,7 @@ reversed_comparison_code (const_rtx comparison, const_rtx insn)
 /* Return comparison with reversed code of EXP.
    Return NULL_RTX in case we fail to do the reversal.  */
 rtx
-reversed_comparison (const_rtx exp, enum machine_mode mode)
+reversed_comparison (const_rtx exp, machine_mode mode)
 {
   enum rtx_code reversed_code = reversed_comparison_code (exp, NULL_RTX);
   if (reversed_code == UNKNOWN)

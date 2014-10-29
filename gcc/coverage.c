@@ -166,7 +166,7 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  enum machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
+  machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -175,7 +175,7 @@ get_gcov_type (void)
 static tree
 get_gcov_unsigned_t (void)
 {
-  enum machine_mode mode = smallest_mode_for_size (32, MODE_INT);
+  machine_mode mode = smallest_mode_for_size (32, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, true);
 }
 

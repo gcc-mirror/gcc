@@ -65,12 +65,12 @@ extern rtvec gen_rtvec (int, ...);
 extern rtx copy_insn_1 (rtx);
 extern rtx copy_insn (rtx);
 extern rtx_insn *copy_delay_slot_insn (rtx_insn *);
-extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
+extern rtx gen_int_mode (HOST_WIDE_INT, machine_mode);
 extern rtx_insn *emit_copy_of_insn_after (rtx_insn *, rtx_insn *);
 extern void set_reg_attrs_from_value (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
 extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
-extern void adjust_reg_mode (rtx, enum machine_mode);
+extern void adjust_reg_mode (rtx, machine_mode);
 extern int mem_expr_equal_p (const_tree, const_tree);
 
 extern bool need_atomic_barrier_p (enum memmodel, bool);

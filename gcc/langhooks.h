@@ -69,7 +69,7 @@ struct lang_hooks_for_types
 
   /* Given MODE and UNSIGNEDP, return a suitable type-tree with that
      mode.  */
-  tree (*type_for_mode) (enum machine_mode, int);
+  tree (*type_for_mode) (machine_mode, int);
 
   /* Given PRECISION and UNSIGNEDP, return a suitable type-tree for an
      integer type with at least that precision.  */

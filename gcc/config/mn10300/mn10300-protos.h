@@ -21,22 +21,22 @@
 #ifdef RTX_CODE
 extern rtx   mn10300_legitimize_pic_address (rtx, rtx);
 extern int   mn10300_legitimate_pic_operand_p (rtx);
-extern rtx   mn10300_legitimize_reload_address (rtx, enum machine_mode,
+extern rtx   mn10300_legitimize_reload_address (rtx, machine_mode,
 						int, int, int);
 extern bool  mn10300_function_value_regno_p (const unsigned int);
 extern unsigned int   mn10300_get_live_callee_saved_regs (unsigned int *);
-extern bool  mn10300_hard_regno_mode_ok (unsigned int, enum machine_mode);
-extern bool  mn10300_modes_tieable (enum machine_mode, enum machine_mode);
+extern bool  mn10300_hard_regno_mode_ok (unsigned int, machine_mode);
+extern bool  mn10300_modes_tieable (machine_mode, machine_mode);
 extern const char *mn10300_output_add (rtx[3], bool);
 extern void  mn10300_print_operand (FILE *, rtx, int);
 extern void  mn10300_print_operand_address (FILE *, rtx);
 extern void  mn10300_print_reg_list (FILE *, int);
-extern enum machine_mode mn10300_select_cc_mode (enum rtx_code, rtx, rtx);
+extern machine_mode mn10300_select_cc_mode (enum rtx_code, rtx, rtx);
 extern unsigned int mn10300_store_multiple_regs (rtx);
-extern int   mn10300_symbolic_operand (rtx, enum machine_mode);
-extern void  mn10300_split_cbranch (enum machine_mode, rtx, rtx);
+extern int   mn10300_symbolic_operand (rtx, machine_mode);
+extern void  mn10300_split_cbranch (machine_mode, rtx, rtx);
 extern int   mn10300_split_and_operand_count (rtx);
-extern bool  mn10300_match_ccmode (rtx, enum machine_mode);
+extern bool  mn10300_match_ccmode (rtx, machine_mode);
 #endif /* RTX_CODE */
 
 extern bool  mn10300_regno_in_class_p (unsigned, int, bool);

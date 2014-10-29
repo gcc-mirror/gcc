@@ -952,7 +952,7 @@ struct GTY(()) lang_type {
 struct eh_range;
 
 extern void java_parse_file (void);
-extern tree java_type_for_mode (enum machine_mode, int);
+extern tree java_type_for_mode (machine_mode, int);
 extern tree java_type_for_size (unsigned int, int);
 extern tree java_truthvalue_conversion (tree);
 extern void add_assume_compiled (const char *, int);

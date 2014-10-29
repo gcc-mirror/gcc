@@ -72,8 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 int
 pa_fpstore_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
-  enum machine_mode store_mode;
-  enum machine_mode other_mode;
+  machine_mode store_mode;
+  machine_mode other_mode;
   rtx set;
 
   if (recog_memoized (in_insn) < 0
@@ -105,11 +105,11 @@ pa_fpstore_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 static void pa_option_override (void);
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
-static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
+static int hppa_register_move_cost (machine_mode mode, reg_class_t,
 				    reg_class_t);
-static int hppa_address_cost (rtx, enum machine_mode mode, addr_space_t, bool);
+static int hppa_address_cost (rtx, machine_mode mode, addr_space_t, bool);
 static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
-static inline rtx force_mode (enum machine_mode, rtx);
+static inline rtx force_mode (machine_mode, rtx);
 static void pa_reorg (void);
 static void pa_combine_instructions (void);
 static int pa_can_combine_p (rtx_insn *, rtx_insn *, rtx_insn *, int, rtx,
@@ -126,7 +126,7 @@ static void store_reg_modify (int, int, HOST_WIDE_INT);
 static void load_reg (int, HOST_WIDE_INT, int);
 static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
 static rtx pa_function_value (const_tree, const_tree, bool);
-static rtx pa_libcall_value (enum machine_mode, const_rtx);
+static rtx pa_libcall_value (machine_mode, const_rtx);
 static bool pa_function_value_regno_p (const unsigned int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
@@ -150,15 +150,15 @@ static void pa_asm_out_constructor (rtx, int);
 static void pa_asm_out_destructor (rtx, int);
 #endif
 static void pa_init_builtins (void);
-static rtx pa_expand_builtin (tree, rtx, rtx, enum machine_mode mode, int);
+static rtx pa_expand_builtin (tree, rtx, rtx, machine_mode mode, int);
 static rtx hppa_builtin_saveregs (void);
 static void hppa_va_start (tree, rtx);
 static tree hppa_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
-static bool pa_scalar_mode_supported_p (enum machine_mode);
+static bool pa_scalar_mode_supported_p (machine_mode);
 static bool pa_commutative_p (const_rtx x, int outer_code);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
-static rtx hppa_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx hppa_legitimize_address (rtx, rtx, machine_mode);
 static inline void pa_file_start_level (void) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_space (int) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_file (int) ATTRIBUTE_UNUSED;
@@ -175,22 +175,22 @@ static void pa_hpux_file_end (void);
 #endif
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
-static bool pa_pass_by_reference (cumulative_args_t, enum machine_mode,
+static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
 				  const_tree, bool);
-static int pa_arg_partial_bytes (cumulative_args_t, enum machine_mode,
+static int pa_arg_partial_bytes (cumulative_args_t, machine_mode,
 				 tree, bool);
-static void pa_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void pa_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
-static rtx pa_function_arg (cumulative_args_t, enum machine_mode,
+static rtx pa_function_arg (cumulative_args_t, machine_mode,
 			    const_tree, bool);
-static unsigned int pa_function_arg_boundary (enum machine_mode, const_tree);
+static unsigned int pa_function_arg_boundary (machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
 static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
-					enum machine_mode,
+					machine_mode,
 					secondary_reload_info *);
 static void pa_extra_live_on_entry (bitmap);
-static enum machine_mode pa_promote_function_mode (const_tree,
-						   enum machine_mode, int *,
+static machine_mode pa_promote_function_mode (const_tree,
+						   machine_mode, int *,
 						   const_tree, int);
 
 static void pa_asm_trampoline_template (FILE *);
@@ -201,12 +201,12 @@ static bool pa_print_operand_punct_valid_p (unsigned char);
 static rtx pa_internal_arg_pointer (void);
 static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
-static enum machine_mode pa_c_mode_for_suffix (char);
+static machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
-static bool pa_cannot_force_const_mem (enum machine_mode, rtx);
-static bool pa_legitimate_constant_p (enum machine_mode, rtx);
+static bool pa_cannot_force_const_mem (machine_mode, rtx);
+static bool pa_legitimate_constant_p (machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
-static bool pa_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool pa_legitimate_address_p (machine_mode, rtx, bool);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -629,7 +629,7 @@ pa_init_builtins (void)
 
 static rtx
 pa_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -644,7 +644,7 @@ pa_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case PA_BUILTIN_INFQ:
     case PA_BUILTIN_HUGE_VALQ:
       {
-	enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
+	machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
 	REAL_VALUE_TYPE inf;
 	rtx tmp;
 
@@ -766,7 +766,7 @@ pa_ior_mask_p (unsigned HOST_WIDE_INT mask)
    than one register, we lose.  */
 
 static rtx
-legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
+legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 {
   rtx pic_ref = orig;
 
@@ -1026,7 +1026,7 @@ legitimize_tls_address (rtx addr)
 
 rtx
 hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
   rtx orig = x;
 
@@ -1391,7 +1391,7 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
    Other copies are reasonably cheap.  */
 
 static int
-hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+hppa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			 reg_class_t from, reg_class_t to)
 {
   if (from == SHIFT_REGS)
@@ -1414,7 +1414,7 @@ hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    as pa_legitimate_address_p.  */
 
 static int
-hppa_address_cost (rtx X, enum machine_mode mode ATTRIBUTE_UNUSED,
+hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
 		   addr_space_t as ATTRIBUTE_UNUSED,
 		   bool speed ATTRIBUTE_UNUSED)
 {
@@ -1537,7 +1537,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Ensure mode of ORIG, a REG rtx, is MODE.  Returns either ORIG or a
    new rtx with the correct mode.  */
 static inline rtx
-force_mode (enum machine_mode mode, rtx orig)
+force_mode (machine_mode mode, rtx orig)
 {
   if (mode == GET_MODE (orig))
     return orig;
@@ -1550,7 +1550,7 @@ force_mode (enum machine_mode mode, rtx orig)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
-pa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+pa_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return tls_referenced_p (x);
 }
@@ -1566,7 +1566,7 @@ pa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
    of SCRATCH_REG in the proper mode.  */
 
 int
-pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
+pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
@@ -5829,7 +5829,7 @@ void
 pa_output_arg_descriptor (rtx call_insn)
 {
   const char *arg_regs[4];
-  enum machine_mode arg_mode;
+  machine_mode arg_mode;
   rtx link;
   int i, output_flag = 0;
   int regno;
@@ -5905,7 +5905,7 @@ pa_output_arg_descriptor (rtx call_insn)
 
 static reg_class_t
 pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
-		     enum machine_mode mode, secondary_reload_info *sri)
+		     machine_mode mode, secondary_reload_info *sri)
 {
   int regno;
   enum reg_class rclass = (enum reg_class) rclass_i;
@@ -6093,7 +6093,7 @@ pa_eh_return_handler_rtx (void)
 
 static bool
 pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		      enum machine_mode mode, const_tree type,
+		      machine_mode mode, const_tree type,
 		      bool named ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size;
@@ -6110,7 +6110,7 @@ pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 }
 
 enum direction
-pa_function_arg_padding (enum machine_mode mode, const_tree type)
+pa_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (mode == BLKmode
       || (TARGET_64BIT
@@ -6291,7 +6291,7 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
    2 * BITS_PER_WORD isn't equal LONG_LONG_TYPE_SIZE.  */
 
 static bool
-pa_scalar_mode_supported_p (enum machine_mode mode)
+pa_scalar_mode_supported_p (machine_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
 
@@ -8478,7 +8478,7 @@ pa_commutative_p (const_rtx x, int outer_code)
 int
 pa_fmpyaddoperands (rtx *operands)
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
 
   /* Must be a floating point mode.  */
   if (mode != SFmode && mode != DFmode)
@@ -8656,7 +8656,7 @@ pa_asm_output_aligned_local (FILE *stream,
 int
 pa_fmpysuboperands (rtx *operands)
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
 
   /* Must be a floating point mode.  */
   if (mode != SFmode && mode != DFmode)
@@ -9144,9 +9144,9 @@ pa_insn_refs_are_delayed (rtx_insn *insn)
 
 /* Promote the return value, but not the arguments.  */
 
-static enum machine_mode
+static machine_mode
 pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-                          enum machine_mode mode,
+                          machine_mode mode,
                           int *punsignedp ATTRIBUTE_UNUSED,
                           const_tree fntype ATTRIBUTE_UNUSED,
                           int for_return)
@@ -9170,7 +9170,7 @@ pa_function_value (const_tree valtype,
                    const_tree func ATTRIBUTE_UNUSED, 
                    bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode valmode;
+  machine_mode valmode;
 
   if (AGGREGATE_TYPE_P (valtype)
       || TREE_CODE (valtype) == COMPLEX_TYPE
@@ -9235,7 +9235,7 @@ pa_function_value (const_tree valtype,
 /* Implement the TARGET_LIBCALL_VALUE hook.  */
 
 static rtx
-pa_libcall_value (enum machine_mode mode,
+pa_libcall_value (machine_mode mode,
 		  const_rtx fun ATTRIBUTE_UNUSED)
 {
   if (! TARGET_SOFT_FLOAT
@@ -9262,7 +9262,7 @@ pa_function_value_regno_p (const unsigned int regno)
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-pa_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -9284,7 +9284,7 @@ pa_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
    ??? We might want to restructure this so that it looks more like other
    ports.  */
 static rtx
-pa_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -9480,7 +9480,7 @@ pa_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 /* Arguments larger than one word are double word aligned.  */
 
 static unsigned int
-pa_function_arg_boundary (enum machine_mode mode, const_tree type)
+pa_function_arg_boundary (machine_mode mode, const_tree type)
 {
   bool singleword = (type
 		     ? (integer_zerop (TYPE_SIZE (type))
@@ -9495,7 +9495,7 @@ pa_function_arg_boundary (enum machine_mode mode, const_tree type)
    then this routine should return zero.  */
 
 static int
-pa_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
+pa_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 		      tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -9780,7 +9780,7 @@ pa_hpux_file_end (void)
    in register class RCLASS is invalid.  */
 
 bool
-pa_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
+pa_cannot_change_mode_class (machine_mode from, machine_mode to,
 			     enum reg_class rclass)
 {
   if (from == to)
@@ -9825,7 +9825,7 @@ pa_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
    in the floating-point registers.  */
 
 bool
-pa_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+pa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* Don't tie modes in different classes.  */
   if (GET_MODE_CLASS (mode1) != GET_MODE_CLASS (mode2))
@@ -10091,7 +10091,7 @@ pa_conditional_register_usage (void)
 
 /* Target hook for c_mode_for_suffix.  */
 
-static enum machine_mode
+static machine_mode
 pa_c_mode_for_suffix (char suffix)
 {
   if (HPUX_LONG_DOUBLE_LIBRARY)
@@ -10136,7 +10136,7 @@ pa_function_section (tree decl, enum node_frequency freq,
    to handle CONST_DOUBLES.  */
 
 static bool
-pa_legitimate_constant_p (enum machine_mode mode, rtx x)
+pa_legitimate_constant_p (machine_mode mode, rtx x)
 {
   if (GET_MODE_CLASS (mode) == MODE_FLOAT && x != CONST0_RTX (mode))
     return false;
@@ -10236,7 +10236,7 @@ pa_section_type_flags (tree decl, const char *name, int reloc)
    output as REG+SMALLINT.  */
 
 static bool
-pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+pa_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   if ((REG_P (x)
        && (strict ? STRICT_REG_OK_FOR_BASE_P (x)
@@ -10377,7 +10377,7 @@ pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
    There may be more opportunities to improve code with this hook.  */
 
 rtx
-pa_legitimize_reload_address (rtx ad, enum machine_mode mode,
+pa_legitimize_reload_address (rtx ad, machine_mode mode,
 			      int opnum, int type,
 			      int ind_levels ATTRIBUTE_UNUSED)
 {

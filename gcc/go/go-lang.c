@@ -331,7 +331,7 @@ go_langhook_type_for_size (unsigned int bits, int unsignedp)
 }
 
 static tree
-go_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
+go_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
   tree type;
   /* Go has no vector types.  Build them here.  FIXME: It does not

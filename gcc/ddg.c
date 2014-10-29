@@ -179,7 +179,7 @@ def_has_ccmode_p (rtx_insn *insn)
 
   FOR_EACH_INSN_DEF (def, insn)
     {
-      enum machine_mode mode = GET_MODE (DF_REF_REG (def));
+      machine_mode mode = GET_MODE (DF_REF_REG (def));
 
       if (GET_MODE_CLASS (mode) == MODE_CC)
 	return true;

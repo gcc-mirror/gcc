@@ -3991,7 +3991,7 @@ label:
   [(set (match_dup 5) (match_dup 4))
    (set (match_dup 0) (sign_extend:DI (match_dup 5)))]
 {
-  enum machine_mode inmode = GET_MODE (operands[1]);
+  machine_mode inmode = GET_MODE (operands[1]);
   int offset = 0;
 
   if (GET_CODE (operands[0]) == SUBREG)
@@ -8690,7 +8690,7 @@ label:
 		      (pc)))]
   "TARGET_SHMEDIA"
 {
-  enum machine_mode mode = GET_MODE (operands[1]);
+  machine_mode mode = GET_MODE (operands[1]);
   if (mode == VOIDmode)
     mode = GET_MODE (operands[2]);
   if (GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
@@ -11299,7 +11299,7 @@ label:
 	  (match_operand 3 "cmp_operand" "")]))]
   "TARGET_SHMEDIA"
 {
-  enum machine_mode mode = GET_MODE (operands[2]);
+  machine_mode mode = GET_MODE (operands[2]);
   enum rtx_code code = GET_CODE (operands[1]);
   bool invert, swap;
   if (mode == VOIDmode)
@@ -14034,7 +14034,7 @@ label:
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx v = operands[1];
-  enum machine_mode new_mode
+  machine_mode new_mode
     = mode_for_size (GET_MODE_BITSIZE (GET_MODE (v)), MODE_INT, 0);
 
   operands[0] = gen_rtx_REG (new_mode, true_regnum (operands[0]));
@@ -15123,7 +15123,7 @@ label:
   [(set (match_dup 0) (match_dup 3))]
 {
   rtx count = operands[2];
-  enum machine_mode outer_mode = GET_MODE (operands[2]), inner_mode;
+  machine_mode outer_mode = GET_MODE (operands[2]), inner_mode;
 
   while (GET_CODE (count) == ZERO_EXTEND || GET_CODE (count) == SIGN_EXTEND
 	 || (GET_CODE (count) == SUBREG && SUBREG_BYTE (count) == 0)

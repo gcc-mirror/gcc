@@ -246,7 +246,7 @@ msp430_option_override (void)
 #define TARGET_SCALAR_MODE_SUPPORTED_P msp430_scalar_mode_supported_p
 
 static bool
-msp430_scalar_mode_supported_p (enum machine_mode m)
+msp430_scalar_mode_supported_p (machine_mode m)
 {
   if (m == PSImode && msp430x)
     return true;
@@ -278,7 +278,7 @@ msp430_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
    PSImode value, but not an SImode value.  */
 int
 msp430_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
   if (mode == PSImode && msp430x)
     return 1;
@@ -289,7 +289,7 @@ msp430_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
 /* Implements HARD_REGNO_NREGS_HAS_PADDING.  */
 int
 msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
-				     enum machine_mode mode)
+				     machine_mode mode)
 {
   if (mode == PSImode && msp430x)
     return 1;
@@ -300,7 +300,7 @@ msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
 /* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
 int
 msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
-				     enum machine_mode mode)
+				     machine_mode mode)
 {
   if (mode == PSImode)
     return 2;
@@ -310,14 +310,14 @@ msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
 /* Implements HARD_REGNO_MODE_OK.  */
 int
 msp430_hard_regno_mode_ok (int regno ATTRIBUTE_UNUSED,
-			   enum machine_mode mode)
+			   machine_mode mode)
 {
   return regno <= (ARG_POINTER_REGNUM - msp430_hard_regno_nregs (regno, mode));
 }
 
 /* Implements MODES_TIEABLE_P.  */
 bool
-msp430_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+msp430_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if ((mode1 == PSImode || mode2 == SImode)
       || (mode1 == SImode || mode2 == PSImode))
@@ -397,7 +397,7 @@ msp430_initial_elimination_offset (int from, int to)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE msp430_addr_space_pointer_mode
 
-static enum machine_mode
+static machine_mode
 msp430_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -417,7 +417,7 @@ msp430_addr_space_pointer_mode (addr_space_t addrspace)
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE msp430_unwind_word_mode
 
-static enum machine_mode
+static machine_mode
 msp430_unwind_word_mode (void)
 {
   return TARGET_LARGE ? PSImode : HImode;
@@ -533,7 +533,7 @@ msp430_function_value (const_tree ret_type,
 #define TARGET_LIBCALL_VALUE msp430_libcall_value
 
 rtx
-msp430_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+msp430_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, 12);
 }
@@ -566,7 +566,7 @@ msp430_init_cumulative_args (CUMULATIVE_ARGS *ca,
    code that determines where an argument will be passed.  */
 static void
 msp430_evaluate_arg (cumulative_args_t cap,
-		     enum machine_mode mode,
+		     machine_mode mode,
 		     const_tree type ATTRIBUTE_UNUSED,
 		     bool named)
 {
@@ -651,7 +651,7 @@ msp430_promote_prototypes (const_tree fntype ATTRIBUTE_UNUSED)
 
 rtx
 msp430_function_arg (cumulative_args_t cap,
-		     enum machine_mode mode,
+		     machine_mode mode,
 		     const_tree type,
 		     bool named)
 {
@@ -670,7 +670,7 @@ msp430_function_arg (cumulative_args_t cap,
 
 int
 msp430_arg_partial_bytes (cumulative_args_t cap,
-			  enum machine_mode mode,
+			  machine_mode mode,
 			  tree type,
 			  bool named)
 {
@@ -689,7 +689,7 @@ msp430_arg_partial_bytes (cumulative_args_t cap,
 
 static bool
 msp430_pass_by_reference (cumulative_args_t cap ATTRIBUTE_UNUSED,
-			  enum machine_mode mode,
+			  machine_mode mode,
 			  const_tree type,
 			  bool named ATTRIBUTE_UNUSED)
 {
@@ -703,7 +703,7 @@ msp430_pass_by_reference (cumulative_args_t cap ATTRIBUTE_UNUSED,
 
 static bool
 msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
-                     enum machine_mode mode ATTRIBUTE_UNUSED,
+                     machine_mode mode ATTRIBUTE_UNUSED,
                      const_tree type ATTRIBUTE_UNUSED,
                      bool named ATTRIBUTE_UNUSED)
 {
@@ -715,7 +715,7 @@ msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
 
 void
 msp430_function_arg_advance (cumulative_args_t cap,
-			     enum machine_mode mode,
+			     machine_mode mode,
 			     const_tree type,
 			     bool named)
 {
@@ -735,7 +735,7 @@ msp430_function_arg_advance (cumulative_args_t cap,
 #define TARGET_FUNCTION_ARG_BOUNDARY msp430_function_arg_boundary
 
 static unsigned int
-msp430_function_arg_boundary (enum machine_mode mode, const_tree type)
+msp430_function_arg_boundary (machine_mode mode, const_tree type)
 {
   if (mode == BLKmode
       && int_size_in_bytes (type) > 1)
@@ -751,7 +751,7 @@ msp430_function_arg_boundary (enum machine_mode mode, const_tree type)
 static bool
 msp430_return_in_memory (const_tree ret_type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (ret_type);
+  machine_mode mode = TYPE_MODE (ret_type);
 
   if (mode == BLKmode
       || (fntype && TREE_CODE (TREE_TYPE (fntype)) == RECORD_TYPE)
@@ -767,7 +767,7 @@ msp430_return_in_memory (const_tree ret_type, const_tree fntype ATTRIBUTE_UNUSED
 #undef  TARGET_GET_RAW_ARG_MODE
 #define TARGET_GET_RAW_ARG_MODE msp430_get_raw_arg_mode
 
-static enum machine_mode
+static machine_mode
 msp430_get_raw_arg_mode (int regno)
 {
   return (regno == ARG_POINTER_REGNUM) ? VOIDmode : Pmode;
@@ -776,7 +776,7 @@ msp430_get_raw_arg_mode (int regno)
 #undef  TARGET_GET_RAW_RESULT_MODE
 #define TARGET_GET_RAW_RESULT_MODE msp430_get_raw_result_mode
 
-static enum machine_mode
+static machine_mode
 msp430_get_raw_result_mode (int regno ATTRIBUTE_UNUSED)
 {
   return Pmode;
@@ -893,7 +893,7 @@ reg_ok_for_addr (rtx r, bool strict)
 }
 
 bool
-msp430_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			     rtx x ATTRIBUTE_UNUSED,
 			     bool strict ATTRIBUTE_UNUSED)
 {
@@ -939,7 +939,7 @@ msp430_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P msp430_addr_space_legitimate_address_p
 
 bool
-msp430_addr_space_legitimate_address_p (enum machine_mode mode,
+msp430_addr_space_legitimate_address_p (machine_mode mode,
 					rtx x,
 					bool strict,
 					addr_space_t as ATTRIBUTE_UNUSED)
@@ -985,7 +985,7 @@ msp430_asm_output_addr_const_extra (FILE *file, rtx x)
 #define TARGET_LEGITIMATE_CONSTANT_P msp430_legitimate_constant
 
 static bool
-msp430_legitimate_constant (enum machine_mode mode, rtx x)
+msp430_legitimate_constant (machine_mode mode, rtx x)
 {
   return ! CONST_INT_P (x)
     || mode != PSImode
@@ -1538,7 +1538,7 @@ static rtx
 msp430_expand_builtin (tree exp,
 		       rtx target ATTRIBUTE_UNUSED,
 		       rtx subtarget ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       machine_mode mode ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -1913,9 +1913,9 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
   char *helper_const = NULL;
   int arg2 = 13;
   int arg1sz = 1;
-  enum machine_mode arg0mode = GET_MODE (operands[0]);
-  enum machine_mode arg1mode = GET_MODE (operands[1]);
-  enum machine_mode arg2mode = GET_MODE (operands[2]);
+  machine_mode arg0mode = GET_MODE (operands[0]);
+  machine_mode arg1mode = GET_MODE (operands[1]);
+  machine_mode arg2mode = GET_MODE (operands[2]);
   int have_430x = msp430x ? 1 : 0;
 
   if (CONST_INT_P (operands[2]))
@@ -1980,7 +1980,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
 
 /* Called by cbranch<mode>4 to coerce operands into usable forms.  */
 void
-msp430_fixup_compare_operands (enum machine_mode my_mode, rtx * operands)
+msp430_fixup_compare_operands (machine_mode my_mode, rtx * operands)
 {
   /* constants we're looking for, not constants which are allowed.  */
   int const_op_idx = 1;
@@ -1997,7 +1997,7 @@ msp430_fixup_compare_operands (enum machine_mode my_mode, rtx * operands)
    need it to below, so we use this function for when we must get a
    valid subreg in a "natural" state.  */
 rtx
-msp430_subreg (enum machine_mode mode, rtx r, enum machine_mode omode, int byte)
+msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 {
   rtx rv;
 
@@ -2005,7 +2005,7 @@ msp430_subreg (enum machine_mode mode, rtx r, enum machine_mode omode, int byte)
       && SUBREG_BYTE (r) == 0)
     {
       rtx ireg = SUBREG_REG (r);
-      enum machine_mode imode = GET_MODE (ireg);
+      machine_mode imode = GET_MODE (ireg);
 
       /* special case for (HI (SI (PSI ...), 0)) */
       if (imode == PSImode

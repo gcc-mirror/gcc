@@ -2440,7 +2440,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
 			bool important, struct iv_use *use)
 {
   basic_block use_bb = gimple_bb (use->stmt);
-  enum machine_mode mem_mode;
+  machine_mode mem_mode;
   unsigned HOST_WIDE_INT cstepi;
 
   /* If we insert the increment in any position other than the standard
@@ -2859,7 +2859,7 @@ static rtx
 produce_memory_decl_rtl (tree obj, int *regno)
 {
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  machine_mode address_mode = targetm.addr_space.address_mode (as);
   rtx x;
 
   gcc_assert (obj);
@@ -3167,7 +3167,7 @@ adjust_setup_cost (struct ivopts_data *data, unsigned cost)
 
 
 bool
-multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
+multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, machine_mode mode,
 				 addr_space_t as)
 {
 #define MAX_RATIO 128
@@ -3181,7 +3181,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
   valid_mult = valid_mult_list[data_index];
   if (!valid_mult)
     {
-      enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+      machine_mode address_mode = targetm.addr_space.address_mode (as);
       rtx reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
       rtx reg2 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
       rtx addr, scaled;
@@ -3252,11 +3252,11 @@ typedef struct address_cost_data_s
 static comp_cost
 get_address_cost (bool symbol_present, bool var_present,
 		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
-		  HOST_WIDE_INT cstep, enum machine_mode mem_mode,
+		  HOST_WIDE_INT cstep, machine_mode mem_mode,
 		  addr_space_t as, bool speed,
 		  bool stmt_after_inc, bool *may_autoinc)
 {
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  machine_mode address_mode = targetm.addr_space.address_mode (as);
   static vec<address_cost_data> address_cost_data_list;
   unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
   address_cost_data data;
@@ -3571,7 +3571,7 @@ get_address_cost (bool symbol_present, bool var_present,
     the cost in COST.  */
 
 static bool
-get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
+get_shiftadd_cost (tree expr, machine_mode mode, comp_cost cost0,
                    comp_cost cost1, tree mult, bool speed, comp_cost *cost)
 {
   comp_cost res;
@@ -3616,7 +3616,7 @@ force_expr_to_var_cost (tree expr, bool speed)
   static unsigned address_cost [2];
   tree op0, op1;
   comp_cost cost0, cost1, cost;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (!costs_initialized)
     {
@@ -3808,7 +3808,7 @@ split_address_cost (struct ivopts_data *data,
   HOST_WIDE_INT bitsize;
   HOST_WIDE_INT bitpos;
   tree toffset;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
 
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
@@ -3891,7 +3891,7 @@ difference_cost (struct ivopts_data *data,
 		 tree e1, tree e2, bool *symbol_present, bool *var_present,
 		 unsigned HOST_WIDE_INT *offset, bitmap *depends_on)
 {
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (e1));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (e1));
   unsigned HOST_WIDE_INT off1, off2;
   aff_tree aff_e1, aff_e2;
   tree type;
@@ -4105,7 +4105,7 @@ get_computation_cost_at (struct ivopts_data *data,
   comp_cost cost;
   widest_int rat;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
-  enum machine_mode mem_mode = (address_p
+  machine_mode mem_mode = (address_p
 				? TYPE_MODE (TREE_TYPE (*use->op_p))
 				: VOIDmode);
 

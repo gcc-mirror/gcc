@@ -314,7 +314,7 @@
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
 {
-  enum machine_mode elt_mode;
+  machine_mode elt_mode;
   int count = XVECLEN (op, 0);
   unsigned int dest_regno;
   rtx src_addr;
@@ -417,7 +417,7 @@
 (define_special_predicate "store_multiple_operation"
   (match_code "parallel")
 {
-  enum machine_mode elt_mode;
+  machine_mode elt_mode;
   int count = XVECLEN (op, 0);
   unsigned int src_regno;
   rtx dest_addr;

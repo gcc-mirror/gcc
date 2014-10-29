@@ -352,7 +352,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   SET_TYPE_MODE (expr, mode);

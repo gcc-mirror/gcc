@@ -161,8 +161,8 @@ static int get_sequence_length (rtx_insn *insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
-static int avr_num_arg_regs (enum machine_mode, const_tree);
-static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code,
+static int avr_num_arg_regs (machine_mode, const_tree);
+static int avr_operand_rtx_cost (rtx, machine_mode, enum rtx_code,
                                  int, bool);
 static void output_reload_in_const (rtx*, rtx, int*, bool);
 static struct machine_function * avr_init_machine_status (void);
@@ -283,7 +283,7 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 {
   int i;
 
-  enum machine_mode mode = GET_MODE (xval);
+  machine_mode mode = GET_MODE (xval);
 
   if (VOIDmode == mode)
     mode = SImode;
@@ -307,7 +307,7 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 rtx
 avr_to_int_mode (rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   return VOIDmode == mode
     ? x
@@ -480,7 +480,7 @@ avr_regno_reg_class (int r)
 /* Implement `TARGET_SCALAR_MODE_SUPPORTED_P'.  */
 
 static bool
-avr_scalar_mode_supported_p (enum machine_mode mode)
+avr_scalar_mode_supported_p (machine_mode mode)
 {
   if (ALL_FIXED_POINT_MODE_P (mode))
     return true;
@@ -832,7 +832,7 @@ avr_initial_elimination_offset (int from, int to)
 /* Helper for the function below.  */
 
 static void
-avr_adjust_type_node (tree *node, enum machine_mode mode, int sat_p)
+avr_adjust_type_node (tree *node, machine_mode mode, int sat_p)
 {
   *node = make_node (FIXED_POINT_TYPE);
   TYPE_SATURATING (*node) = sat_p;
@@ -1749,7 +1749,7 @@ avr_reg_ok_for_addr_p (rtx reg, addr_space_t as,
    machine for a memory operand of mode MODE.  */
 
 static bool
-avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   bool ok = CONSTANT_ADDRESS_P (x);
 
@@ -1839,7 +1839,7 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
    memory address for an operand of mode MODE  */
 
 static rtx
-avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
+avr_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 {
   bool big_offset_p = false;
 
@@ -1880,7 +1880,7 @@ avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
    than 63 bytes or for R++ or --R addressing.  */
 
 rtx
-avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
+avr_legitimize_reload_address (rtx *px, machine_mode mode,
                                int opnum, int type, int addr_type,
                                int ind_levels ATTRIBUTE_UNUSED,
                                rtx (*mk_memloc)(rtx,int))
@@ -1962,7 +1962,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
 static reg_class_t
 avr_secondary_reload (bool in_p, rtx x,
                       reg_class_t reload_class ATTRIBUTE_UNUSED,
-                      enum machine_mode mode, secondary_reload_info *sri)
+                      machine_mode mode, secondary_reload_info *sri)
 {
   if (in_p
       && MEM_P (x)
@@ -2621,7 +2621,7 @@ avr_final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
 /* Return 0 if undefined, 1 if always true or always false.  */
 
 int
-avr_simplify_comparison_p (enum machine_mode mode, RTX_CODE op, rtx x)
+avr_simplify_comparison_p (machine_mode mode, RTX_CODE op, rtx x)
 {
   unsigned int max = (mode == QImode ? 0xff :
                       mode == HImode ? 0xffff :
@@ -2672,7 +2672,7 @@ avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 /* Returns the number of registers to allocate for a function argument.  */
 
 static int
-avr_num_arg_regs (enum machine_mode mode, const_tree type)
+avr_num_arg_regs (machine_mode mode, const_tree type)
 {
   int size;
 
@@ -2693,7 +2693,7 @@ avr_num_arg_regs (enum machine_mode mode, const_tree type)
    in a register, and which register.  */
 
 static rtx
-avr_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+avr_function_arg (cumulative_args_t cum_v, machine_mode mode,
                   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -2711,7 +2711,7 @@ avr_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
    in the argument list.  */
 
 static void
-avr_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
                           const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -2827,7 +2827,7 @@ avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
 bool
 avr_load_libgcc_p (rtx op)
 {
-  enum machine_mode mode = GET_MODE (op);
+  machine_mode mode = GET_MODE (op);
   int n_bytes = GET_MODE_SIZE (mode);
 
   return (n_bytes > 2
@@ -2838,7 +2838,7 @@ avr_load_libgcc_p (rtx op)
 /* Return true if a value of mode MODE is read by __xload_* function.  */
 
 bool
-avr_xload_libgcc_p (enum machine_mode mode)
+avr_xload_libgcc_p (machine_mode mode)
 {
   int n_bytes = GET_MODE_SIZE (mode);
 
@@ -3204,7 +3204,7 @@ avr_out_xload (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
    IN / OUT instruction will be generated.  */
 
 bool
-tiny_valid_direct_memory_access_range (rtx op, enum machine_mode mode)
+tiny_valid_direct_memory_access_range (rtx op, machine_mode mode)
 {
   rtx x;
 
@@ -5218,7 +5218,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
   rtx xval = xop[1];
 
   /* MODE of the comparison.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* Number of bytes to operate on.  */
   int i, n_bytes = GET_MODE_SIZE (GET_MODE (xreg));
@@ -7007,10 +7007,10 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
                 enum rtx_code code_sat, int sign, bool out_label)
 {
   /* MODE of the operation.  */
-  enum machine_mode mode = GET_MODE (xop[0]);
+  machine_mode mode = GET_MODE (xop[0]);
 
   /* INT_MODE of the same size.  */
-  enum machine_mode imode = int_mode_for_mode (mode);
+  machine_mode imode = int_mode_for_mode (mode);
 
   /* Number of bytes to operate on.  */
   int i, n_bytes = GET_MODE_SIZE (mode);
@@ -7461,7 +7461,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
 static const char*
 avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen, int *pcc)
 {
-  enum machine_mode mode = GET_MODE (xop[0]);
+  machine_mode mode = GET_MODE (xop[0]);
 
   /* Only pointer modes want to add symbols.  */
 
@@ -7512,8 +7512,8 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
   rtx op[4];
   rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   rtx xdest = SET_DEST (xpattern);
-  enum machine_mode mode = GET_MODE (xdest);
-  enum machine_mode imode = int_mode_for_mode (mode);
+  machine_mode mode = GET_MODE (xdest);
+  machine_mode imode = int_mode_for_mode (mode);
   int n_bytes = GET_MODE_SIZE (mode);
   enum rtx_code code_sat = GET_CODE (SET_SRC (xpattern));
   enum rtx_code code
@@ -7607,7 +7607,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
   /* CODE and MODE of the operation.  */
   rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   enum rtx_code code = GET_CODE (SET_SRC (xpattern));
-  enum machine_mode mode = GET_MODE (xop[0]);
+  machine_mode mode = GET_MODE (xop[0]);
 
   /* Number of bytes to operate on.  */
   int i, n_bytes = GET_MODE_SIZE (mode);
@@ -7884,7 +7884,7 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 
   for (i = 0; i < sizeof (val) / sizeof (*val); i++)
     {
-      enum machine_mode mode;
+      machine_mode mode;
 
       xop[i] = operands[i];
 
@@ -8378,8 +8378,8 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 const char*
 avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 {
-  enum machine_mode mode = GET_MODE (xop[0]);
-  enum machine_mode imode = int_mode_for_mode (mode);
+  machine_mode mode = GET_MODE (xop[0]);
+  machine_mode imode = int_mode_for_mode (mode);
   // The smallest fractional bit not cleared by the rounding is 2^(-RP).
   int fbit = (int) GET_MODE_FBIT (mode);
   double_int i_add = double_int_zero.set_bit (fbit-1 - INTVAL (xop[2]));
@@ -8440,14 +8440,14 @@ bool
 avr_rotate_bytes (rtx operands[])
 {
     int i, j;
-    enum machine_mode mode = GET_MODE (operands[0]);
+    machine_mode mode = GET_MODE (operands[0]);
     bool overlapped = reg_overlap_mentioned_p (operands[0], operands[1]);
     bool same_reg = rtx_equal_p (operands[0], operands[1]);
     int num = INTVAL (operands[2]);
     rtx scratch = operands[3];
     /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
        Word move if no scratch is needed, otherwise use size of scratch.  */
-    enum machine_mode move_mode = QImode;
+    machine_mode move_mode = QImode;
     int move_size, offset, size;
 
     if (num & 0xf)
@@ -9803,7 +9803,7 @@ avr_adjust_reg_alloc_order (void)
 /* Implement `TARGET_REGISTER_MOVE_COST' */
 
 static int
-avr_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+avr_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
                         reg_class_t from, reg_class_t to)
 {
   return (from == STACK_REG ? 6
@@ -9815,7 +9815,7 @@ avr_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Implement `TARGET_MEMORY_MOVE_COST' */
 
 static int
-avr_memory_move_cost (enum machine_mode mode,
+avr_memory_move_cost (machine_mode mode,
                       reg_class_t rclass ATTRIBUTE_UNUSED,
                       bool in ATTRIBUTE_UNUSED)
 {
@@ -9833,7 +9833,7 @@ avr_memory_move_cost (enum machine_mode mode,
    operand's parent operator.  */
 
 static int
-avr_operand_rtx_cost (rtx x, enum machine_mode mode, enum rtx_code outer,
+avr_operand_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer,
 		      int opno, bool speed)
 {
   enum rtx_code code = GET_CODE (x);
@@ -9870,7 +9870,7 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
                  int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
   enum rtx_code code = (enum rtx_code) codearg;
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   HOST_WIDE_INT val;
 
   switch (code)
@@ -10717,7 +10717,7 @@ avr_rtx_costs (rtx x, int codearg, int outer_code,
 /* Implement `TARGET_ADDRESS_COST'.  */
 
 static int
-avr_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+avr_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
                   addr_space_t as ATTRIBUTE_UNUSED,
                   bool speed ATTRIBUTE_UNUSED)
 {
@@ -10809,8 +10809,8 @@ avr_compare_pattern (rtx_insn *insn)
       && SET_DEST (pattern) == cc0_rtx
       && GET_CODE (SET_SRC (pattern)) == COMPARE)
     {
-      enum machine_mode mode0 = GET_MODE (XEXP (SET_SRC (pattern), 0));
-      enum machine_mode mode1 = GET_MODE (XEXP (SET_SRC (pattern), 1));
+      machine_mode mode0 = GET_MODE (XEXP (SET_SRC (pattern), 0));
+      machine_mode mode1 = GET_MODE (XEXP (SET_SRC (pattern), 1));
 
       /* The 64-bit comparisons have fixed operands ACC_A and ACC_B.
          They must not be swapped, thus skip them.  */
@@ -11056,7 +11056,7 @@ avr_reorg (void)
               rtx x = XEXP (pattern, 1);
               rtx src = SET_SRC (pat);
               rtx t = XEXP (src,0);
-              enum machine_mode mode = GET_MODE (XEXP (pattern, 0));
+              machine_mode mode = GET_MODE (XEXP (pattern, 0));
 
               if (avr_simplify_comparison_p (mode, GET_CODE (t), x))
                 {
@@ -11093,7 +11093,7 @@ avr_function_value_regno_p (const unsigned int regno)
    library function returns a value of mode MODE.  */
 
 static rtx
-avr_libcall_value (enum machine_mode mode,
+avr_libcall_value (machine_mode mode,
 		   const_rtx func ATTRIBUTE_UNUSED)
 {
   int offs = GET_MODE_SIZE (mode);
@@ -11216,7 +11216,7 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
    (this way we don't have to check for odd registers everywhere).  */
 
 int
-avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
+avr_hard_regno_mode_ok (int regno, machine_mode mode)
 {
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
         Disallowing QI et al. in these regs might lead to code like
@@ -11249,7 +11249,7 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 /* Implement `HARD_REGNO_CALL_PART_CLOBBERED'.  */
 
 int
-avr_hard_regno_call_part_clobbered (unsigned regno, enum machine_mode mode)
+avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
         represent valid hard registers like, e.g. HI:29.  Returning TRUE
@@ -11271,7 +11271,7 @@ avr_hard_regno_call_part_clobbered (unsigned regno, enum machine_mode mode)
 /* Implement `MODE_CODE_BASE_REG_CLASS'.  */
 
 enum reg_class
-avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+avr_mode_code_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
                               addr_space_t as, RTX_CODE outer_code,
                               RTX_CODE index_code ATTRIBUTE_UNUSED)
 {
@@ -11291,7 +11291,7 @@ avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 bool
 avr_regno_mode_code_ok_for_base_p (int regno,
-                                   enum machine_mode mode ATTRIBUTE_UNUSED,
+                                   machine_mode mode ATTRIBUTE_UNUSED,
                                    addr_space_t as ATTRIBUTE_UNUSED,
                                    RTX_CODE outer_code,
                                    RTX_CODE index_code ATTRIBUTE_UNUSED)
@@ -11376,7 +11376,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   int clobber_val = 1234;
   bool cooked_clobber_p = false;
   bool set_p = false;
-  enum machine_mode mode = GET_MODE (dest);
+  machine_mode mode = GET_MODE (dest);
   int n, n_bytes = GET_MODE_SIZE (mode);
 
   gcc_assert (REG_P (dest)
@@ -11920,7 +11920,7 @@ avr_case_values_threshold (void)
 
 /* Implement `TARGET_ADDR_SPACE_ADDRESS_MODE'.  */
 
-static enum machine_mode
+static machine_mode
 avr_addr_space_address_mode (addr_space_t as)
 {
   return avr_addrspace[as].pointer_size == 3 ? PSImode : HImode;
@@ -11929,7 +11929,7 @@ avr_addr_space_address_mode (addr_space_t as)
 
 /* Implement `TARGET_ADDR_SPACE_POINTER_MODE'.  */
 
-static enum machine_mode
+static machine_mode
 avr_addr_space_pointer_mode (addr_space_t as)
 {
   return avr_addr_space_address_mode (as);
@@ -11963,7 +11963,7 @@ avr_reg_ok_for_pgm_addr (rtx reg, bool strict)
 /* Implement `TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P'.  */
 
 static bool
-avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
+avr_addr_space_legitimate_address_p (machine_mode mode, rtx x,
                                      bool strict, addr_space_t as)
 {
   bool ok = false;
@@ -12046,7 +12046,7 @@ avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
 
 static rtx
 avr_addr_space_legitimize_address (rtx x, rtx old_x,
-                                   enum machine_mode mode, addr_space_t as)
+                                   machine_mode mode, addr_space_t as)
 {
   if (ADDR_SPACE_GENERIC_P (as))
     return avr_legitimize_address (x, old_x, mode);
@@ -12213,7 +12213,7 @@ bool
 avr_emit_movmemhi (rtx *xop)
 {
   HOST_WIDE_INT count;
-  enum machine_mode loop_mode;
+  machine_mode loop_mode;
   addr_space_t as = MEM_ADDR_SPACE (xop[1]);
   rtx loop_reg, addr1, a_src, a_dest, insn, xas;
   rtx a_hi8 = NULL_RTX;
@@ -12319,7 +12319,7 @@ const char*
 avr_out_movmem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 {
   addr_space_t as = (addr_space_t) INTVAL (op[0]);
-  enum machine_mode loop_mode = GET_MODE (op[1]);
+  machine_mode loop_mode = GET_MODE (op[1]);
   bool sbiw_p = test_hard_reg_class (ADDW_REGS, op[1]);
   rtx xop[3];
 
@@ -13048,7 +13048,7 @@ avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat, xop[3];
   int n, n_args = call_expr_nargs (exp);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode tmode = insn_data[icode].operand[0].mode;
 
   gcc_assert (n_args >= 1 && n_args <= 3);
 
@@ -13063,8 +13063,8 @@ avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
     {
       tree arg = CALL_EXPR_ARG (exp, n);
       rtx op = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-      enum machine_mode opmode = GET_MODE (op);
-      enum machine_mode mode = insn_data[icode].operand[n+1].mode;
+      machine_mode opmode = GET_MODE (op);
+      machine_mode mode = insn_data[icode].operand[n+1].mode;
 
       if ((opmode == SImode || opmode == VOIDmode) && mode == HImode)
         {
@@ -13112,7 +13112,7 @@ avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
 static rtx
 avr_expand_builtin (tree exp, rtx target,
                     rtx subtarget ATTRIBUTE_UNUSED,
-                    enum machine_mode mode ATTRIBUTE_UNUSED,
+                    machine_mode mode ATTRIBUTE_UNUSED,
                     int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);

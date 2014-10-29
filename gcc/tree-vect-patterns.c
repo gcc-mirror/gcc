@@ -2261,7 +2261,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
   optab = optab_for_tree_code (rhs_code, vectype, optab_default);
   if (optab != unknown_optab)
     {
-      enum machine_mode vec_mode = TYPE_MODE (vectype);
+      machine_mode vec_mode = TYPE_MODE (vectype);
       int icode = (int) optab_handler (optab, vec_mode);
       if (icode != CODE_FOR_nothing)
 	return NULL;
@@ -2701,7 +2701,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt), def_stmt_info;
   tree type, vectype, comp_vectype, itype = NULL_TREE, vecitype;
-  enum machine_mode cmpmode;
+  machine_mode cmpmode;
   gimple pattern_stmt, def_stmt;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
@@ -2890,7 +2890,7 @@ check_bool_pattern (tree var, loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
 	  if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE)
 	    {
-	      enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
+	      machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	      tree itype
 		= build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	      vecitype = get_vectype_for_scalar_type (itype);
@@ -3092,7 +3092,7 @@ adjust_bool_pattern (tree var, tree out_type, tree trueval,
 	  || (TYPE_PRECISION (TREE_TYPE (rhs1))
 	      != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1)))))
 	{
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
+	  machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	  itype
 	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	}
@@ -3416,7 +3416,7 @@ vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
     }
   else
     {
-      enum machine_mode vec_mode;
+      machine_mode vec_mode;
       enum insn_code icode;
       optab optab;
 

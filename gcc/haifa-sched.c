@@ -1729,7 +1729,7 @@ setup_insn_reg_pressure_info (rtx_insn *insn)
 {
   int i, change, before, after, hard_regno;
   int excess_cost_change;
-  enum machine_mode mode;
+  machine_mode mode;
   enum reg_class cl;
   struct reg_pressure_data *pressure_info;
   int *max_reg_pressure;

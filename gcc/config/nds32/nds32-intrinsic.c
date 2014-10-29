@@ -211,7 +211,7 @@ rtx
 nds32_expand_builtin_impl (tree exp,
 			   rtx target,
 			   rtx subtarget ATTRIBUTE_UNUSED,
-			   enum machine_mode mode ATTRIBUTE_UNUSED,
+			   machine_mode mode ATTRIBUTE_UNUSED,
 			   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);

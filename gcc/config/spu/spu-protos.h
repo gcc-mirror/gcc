@@ -37,37 +37,37 @@ extern void spu_expand_epilogue (bool sibcall_p);
 extern rtx spu_return_addr (int count, rtx frame);
 
 #ifdef RTX_CODE
-extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
-extern rtx spu_const (enum machine_mode mode, HOST_WIDE_INT val);
-extern rtx spu_const_from_ints (enum machine_mode mode, 
+extern rtx hwint_to_const_double (machine_mode mode, HOST_WIDE_INT v);
+extern rtx spu_const (machine_mode mode, HOST_WIDE_INT val);
+extern rtx spu_const_from_ints (machine_mode mode, 
 			        int a, int b, int c, int d);
 extern rtx spu_float_const (const char *string,
-			    enum machine_mode mode);
-extern int immediate_load_p (rtx op, enum machine_mode mode);
-extern int logical_immediate_p (rtx op, enum machine_mode mode);
-extern int iohl_immediate_p (rtx op, enum machine_mode mode);
-extern int arith_immediate_p (rtx op, enum machine_mode mode,
+			    machine_mode mode);
+extern int immediate_load_p (rtx op, machine_mode mode);
+extern int logical_immediate_p (rtx op, machine_mode mode);
+extern int iohl_immediate_p (rtx op, machine_mode mode);
+extern int arith_immediate_p (rtx op, machine_mode mode,
 			      HOST_WIDE_INT low, HOST_WIDE_INT high);
-extern bool exp2_immediate_p (rtx op, enum machine_mode mode, int low,
+extern bool exp2_immediate_p (rtx op, machine_mode mode, int low,
 			      int high);
 extern int spu_constant_address_p (rtx x);
-extern bool spu_legitimate_constant_p (enum machine_mode, rtx);
+extern bool spu_legitimate_constant_p (machine_mode, rtx);
 extern int spu_initial_elimination_offset (int from, int to);
 extern rtx spu_function_value (const_tree type, const_tree func);
-extern int spu_expand_mov (rtx * ops, enum machine_mode mode);
+extern int spu_expand_mov (rtx * ops, machine_mode mode);
 extern int spu_split_load (rtx * ops);
 extern int spu_split_store (rtx * ops);
 extern int fsmbi_const_p (rtx x);
-extern int cpat_const_p (rtx x, enum machine_mode mode);
+extern int cpat_const_p (rtx x, machine_mode mode);
 extern rtx gen_cpat_const (rtx * ops);
-extern void constant_to_array (enum machine_mode mode, rtx x,
+extern void constant_to_array (machine_mode mode, rtx x,
 			       unsigned char *arr);
-extern rtx array_to_constant (enum machine_mode mode, const unsigned char *arr);
-extern rtx spu_gen_exp2 (enum machine_mode mode, rtx x);
+extern rtx array_to_constant (machine_mode mode, const unsigned char *arr);
+extern rtx spu_gen_exp2 (machine_mode mode, rtx x);
 extern void spu_allocate_stack (rtx op0, rtx op1);
 extern void spu_restore_stack_nonlocal (rtx op0, rtx op1);
 extern void spu_restore_stack_block (rtx op0, rtx op1);
-extern rtx spu_gen_subreg (enum machine_mode mode, rtx x);
+extern rtx spu_gen_subreg (machine_mode mode, rtx x);
 extern int spu_safe_dma(HOST_WIDE_INT channel);
 extern void spu_builtin_splats (rtx ops[]);
 extern void spu_builtin_extract (rtx ops[]);
@@ -75,7 +75,7 @@ extern void spu_builtin_insert (rtx ops[]);
 extern void spu_builtin_promote (rtx ops[]);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
-extern rtx spu_legitimize_reload_address (rtx, enum machine_mode, int, int);
+extern rtx spu_legitimize_reload_address (rtx, machine_mode, int, int);
 #endif /* RTX_CODE  */
 
 extern void spu_init_expanders (void);
@@ -86,8 +86,8 @@ extern void spu_function_profiler (FILE *, int);
 extern tree spu_resolve_overloaded_builtin (location_t, tree fndecl,
     					    void *fnargs);
 extern rtx spu_expand_builtin (tree exp, rtx target, rtx subtarget,
-			       enum machine_mode mode, int ignore);
-extern rtx spu_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+			       machine_mode mode, int ignore);
+extern rtx spu_expand_builtin (tree, rtx, rtx, machine_mode, int);
 
 #endif /* _SPU_PROTOS_  */
 

@@ -1207,7 +1207,7 @@ issue_prefetches (struct mem_ref_group *groups,
 static bool
 nontemporal_store_p (struct mem_ref *ref)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   enum insn_code code;
 
   /* REF must be a write that is not reused.  We require it to be independent

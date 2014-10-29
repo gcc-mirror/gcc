@@ -32,15 +32,15 @@ extern int 		rx_align_for_label (rtx, int);
 extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
 extern char *		rx_gen_move_template (rtx *, bool);
-extern bool		rx_is_legitimate_constant (enum machine_mode, rtx);
+extern bool		rx_is_legitimate_constant (machine_mode, rtx);
 extern bool		rx_is_restricted_memory_address (rtx,
-							 enum machine_mode);
-extern bool		rx_match_ccmode (rtx, enum machine_mode);
+							 machine_mode);
+extern bool		rx_match_ccmode (rtx, machine_mode);
 extern rtx		rx_maybe_pidify_operand (rtx, int);
 extern void		rx_notice_update_cc (rtx, rtx);
-extern void		rx_split_cbranch (enum machine_mode, enum rtx_code,
+extern void		rx_split_cbranch (machine_mode, enum rtx_code,
 					  rtx, rtx, rtx);
-extern enum machine_mode	rx_select_cc_mode (enum rtx_code, rtx, rtx);
+extern machine_mode	rx_select_cc_mode (enum rtx_code, rtx, rtx);
 #endif
 
 #endif /* GCC_RX_PROTOS_H */

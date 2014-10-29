@@ -461,8 +461,8 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   tree vectype, scalar_type, first_op1 = NULL_TREE;
   optab optab;
   int icode;
-  enum machine_mode optab_op2_mode;
-  enum machine_mode vec_mode;
+  machine_mode optab_op2_mode;
+  machine_mode vec_mode;
   struct data_reference *first_dr;
   HOST_WIDE_INT dummy;
   gimple first_load = NULL, prev_first_load = NULL, old_first_load = NULL;
@@ -2960,7 +2960,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   int number_of_mask_fixes = 1;
   bool mask_fixed = false;
   bool needs_first_vector = false;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = TYPE_MODE (vectype);
 

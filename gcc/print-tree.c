@@ -194,7 +194,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 {
   int hash;
   struct bucket *b;
-  enum machine_mode mode;
+  machine_mode mode;
   enum tree_code_class tclass;
   int len;
   int i;

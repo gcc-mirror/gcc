@@ -466,7 +466,7 @@ main (int argc, char **argv)
 
   fprintf (s_file,
 	   "bool\n"
-	   "swap_optab_enable (optab op, enum machine_mode m, bool set)\n"
+	   "swap_optab_enable (optab op, machine_mode m, bool set)\n"
 	   "{\n"
 	   "  unsigned scode = (op << 16) | m;\n"
 	   "  int i = lookup_handler (scode);\n"

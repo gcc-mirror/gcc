@@ -3102,7 +3102,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   tree vectype;
   gimple stmt, orig_stmt;
   tree reduction_op;
-  enum machine_mode mode;
+  machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
@@ -3859,7 +3859,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
   tree vectype;
-  enum machine_mode mode;
+  machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *outer_loop = NULL;
   basic_block exit_bb;
@@ -4745,7 +4745,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, orig_code, epilog_reduc_code;
-  enum machine_mode vec_mode;
+  machine_mode vec_mode;
   int op_type;
   optab optab, reduc_optab;
   tree new_temp = NULL_TREE;

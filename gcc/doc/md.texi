@@ -352,7 +352,7 @@ commutative arithmetic operators of RTL and whose mode is @var{mode}:
 int
 commutative_integer_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     machine_mode mode;
 @{
   enum rtx_code code = GET_CODE (x);
   if (GET_MODE (x) != mode)

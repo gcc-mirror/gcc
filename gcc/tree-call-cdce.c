@@ -143,7 +143,7 @@ static bool
 check_target_format (tree arg)
 {
   tree type;
-  enum machine_mode mode;
+  machine_mode mode;
   const struct real_format *rfmt;
 
   type = TREE_TYPE (arg);

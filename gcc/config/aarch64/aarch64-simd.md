@@ -3807,7 +3807,7 @@
     if (GP_REGNUM_P (REGNO (operands[0]))
 	&& GP_REGNUM_P (REGNO (operands[1])))
       {
-	enum machine_mode mode = SELECT_CC_MODE (<CMP>, operands[1], operands[2]);
+	machine_mode mode = SELECT_CC_MODE (<CMP>, operands[1], operands[2]);
 	rtx cc_reg = aarch64_gen_compare_reg (<CMP>, operands[1], operands[2]);
 	rtx comparison = gen_rtx_<CMP> (mode, operands[1], operands[2]);
 	emit_insn (gen_cstoredi_neg (operands[0], comparison, cc_reg));
@@ -3870,7 +3870,7 @@
     if (GP_REGNUM_P (REGNO (operands[0]))
 	&& GP_REGNUM_P (REGNO (operands[1])))
       {
-	enum machine_mode mode = CCmode;
+	machine_mode mode = CCmode;
 	rtx cc_reg = aarch64_gen_compare_reg (<CMP>, operands[1], operands[2]);
 	rtx comparison = gen_rtx_<CMP> (mode, operands[1], operands[2]);
 	emit_insn (gen_cstoredi_neg (operands[0], comparison, cc_reg));
@@ -3943,7 +3943,7 @@
 	&& GP_REGNUM_P (REGNO (operands[1])))
       {
 	rtx and_tree = gen_rtx_AND (DImode, operands[1], operands[2]);
-	enum machine_mode mode = SELECT_CC_MODE (NE, and_tree, const0_rtx);
+	machine_mode mode = SELECT_CC_MODE (NE, and_tree, const0_rtx);
 	rtx cc_reg = aarch64_gen_compare_reg (NE, and_tree, const0_rtx);
 	rtx comparison = gen_rtx_NE (mode, and_tree, const0_rtx);
 	emit_insn (gen_cstoredi_neg (operands[0], comparison, cc_reg));
@@ -4319,7 +4319,7 @@
    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_TWO_ELEM>mode;
+  machine_mode mode = <V_TWO_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   emit_insn (gen_aarch64_simd_ld2r<mode> (operands[0], mem));
@@ -4332,7 +4332,7 @@
    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_THREE_ELEM>mode;
+  machine_mode mode = <V_THREE_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   emit_insn (gen_aarch64_simd_ld3r<mode> (operands[0], mem));
@@ -4345,7 +4345,7 @@
    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_FOUR_ELEM>mode;
+  machine_mode mode = <V_FOUR_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   emit_insn (gen_aarch64_simd_ld4r<mode> (operands[0],mem));
@@ -4490,7 +4490,7 @@
   (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
+  machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg (operands[0], mem));
@@ -4502,7 +4502,7 @@
   (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VALL:MODE>mode;
+  machine_mode mode = <VALL:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   if (BYTES_BIG_ENDIAN)
@@ -4518,7 +4518,7 @@
   (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VSTRUCT:MODE>mode;
+  machine_mode mode = <VSTRUCT:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   emit_insn (gen_vec_load_lanes<VSTRUCT:mode><VQ:mode> (operands[0], mem));
@@ -4533,7 +4533,7 @@
 	(unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_TWO_ELEM>mode;
+  machine_mode mode = <V_TWO_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
@@ -4552,7 +4552,7 @@
 	(unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_THREE_ELEM>mode;
+  machine_mode mode = <V_THREE_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
@@ -4571,7 +4571,7 @@
 	(unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_FOUR_ELEM>mode;
+  machine_mode mode = <V_FOUR_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
@@ -4804,7 +4804,7 @@
   (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
+  machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   emit_insn (gen_aarch64_st<VSTRUCT:nregs><VDC:mode>_dreg (mem, operands[1]));
@@ -4817,7 +4817,7 @@
   (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VSTRUCT:MODE>mode;
+  machine_mode mode = <VSTRUCT:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   emit_insn (gen_vec_store_lanes<VSTRUCT:mode><VQ:mode> (mem, operands[1]));
@@ -4831,7 +4831,7 @@
   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_TWO_ELEM>mode;
+  machine_mode mode = <V_TWO_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
   operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
 
@@ -4848,7 +4848,7 @@
   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_THREE_ELEM>mode;
+  machine_mode mode = <V_THREE_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
   operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
 
@@ -4865,7 +4865,7 @@
   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <V_FOUR_ELEM>mode;
+  machine_mode mode = <V_FOUR_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
   operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
 
@@ -4880,7 +4880,7 @@
   (match_operand:VALL 1 "register_operand")]
   "TARGET_SIMD"
 {
-  enum machine_mode mode = <VALL:MODE>mode;
+  machine_mode mode = <VALL:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   if (BYTES_BIG_ENDIAN)

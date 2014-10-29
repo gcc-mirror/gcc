@@ -1057,7 +1057,7 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
-/*extern enum machine_mode arc_select_cc_mode ();*/
+/*extern machine_mode arc_select_cc_mode ();*/
 #define SELECT_CC_MODE(OP, X, Y) \
 arc_select_cc_mode (OP, X, Y)
 
