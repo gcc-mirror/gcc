@@ -1,3 +1,17 @@
+2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/algorithm: New.
+	* include/experimental/functional: New.
+	* testsuite/experimental/algorithm/sample.cc: New.
+	* testsuite/experimental/algorithm/search.cc: New.
+	* testsuite/experimental/functional/not_fn.cc: New.
+	* testsuite/experimental/functional/searchers.cc: New.
+	* testsuite/experimental/functional/value.cc: New.
+	* testsuite/experimental/feat-lib-fund.cc: Add headers and reorder.
+
 2014-10-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* doc/xml/manual/status_cxx2011.xml: Update unordered container
