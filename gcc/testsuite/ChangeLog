@@ -1,3 +1,9 @@
+2014-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63587
+	* g++.dg/ipa/pr63587-1.C: New test.
+	* g++.dg/ipa/pr63587-2.C: New test.
+
 2014-10-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.misc-tests/godump-1.c: Add tests for complex types.

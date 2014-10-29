@@ -1,3 +1,12 @@
+2014-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63587
+	* cgraphunit.c (cgraph_node::expand_thunk): Only VAR_DECLs are put
+	to local declarations.
+	* function.c (add_local_decl): Implementation moved from header
+	file, assert introduced for tree type.
+	* function.h: Likewise.
+
 2014-10-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* godump.c (go_format_type): Represent "float _Complex" and
