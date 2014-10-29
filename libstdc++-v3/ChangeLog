@@ -12,6 +12,13 @@
 	* testsuite/experimental/functional/value.cc: New.
 	* testsuite/experimental/feat-lib-fund.cc: Add headers and reorder.
 
+	* include/experimental/any: Add feature-testing macro.
+	* include/experimental/optional: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 2014-10-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* doc/xml/manual/status_cxx2011.xml: Update unordered container
