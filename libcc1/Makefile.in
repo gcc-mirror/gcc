@@ -140,6 +140,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GMPINC = @GMPINC@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -178,6 +179,7 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
+WERROR = @WERROR@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -247,10 +249,9 @@ gcc_build_dir = ../$(host_subdir)/gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
 	-I $(gcc_build_dir) -I$(srcdir)/../gcc \
 	-I $(srcdir)/../gcc/c -I $(srcdir)/../gcc/c-family \
-	-I $(srcdir)/../libcpp/include
+	-I $(srcdir)/../libcpp/include $(GMPINC)
 
-WERROR_FLAG = -Werror
-AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR_FLAG) $(visibility)
+AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty_normal = ../libiberty/libiberty.a
 libiberty_noasan = ../libiberty/noasan/libiberty.a
