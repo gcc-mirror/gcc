@@ -67,6 +67,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#define __cpp_lib_experimental_optional 201406
+
   // All subsequent [X.Y.n] references are against n3793.
 
   // [X.Y.4]
