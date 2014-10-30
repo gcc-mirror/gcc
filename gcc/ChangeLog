@@ -1,3 +1,19 @@
+2014-10-30  Jeff Law  <law@redhat.com>
+	
+	* config/pa/pa-protos.h (pa_output_arg_descriptor): Strengthen
+	argument from rtx to rtx_insn *.
+	(compute_movmem_length, compute_clrmem_length): Likewise.
+	(copy_fp_args, length_fp_args): Likewise.
+	* config/pa/pa.c (legitimize_pic_address): Promote local variable
+	"insn" from rtx to rtx_insn *.
+	(legitimize_tls_address, pa_emit_move_sequence): Likewise.
+	(pa_output_block_move, store_reg, store_reg_modify): Likewise.
+	(set_reg_plus_d, pa_expand_prologue, hppa_profile_hook): Likewise.
+	(branch_to_delay_slot_p, branch_needs_nop_p, use_skip_p): Likewise.
+	(pa_output_arg_descriptor): Strengthen argument to an rtx_insn *.
+	(compute_movmem_length, compute_clrmem_length): Likewise.
+	(copy_fp-args, length_fp_args): Likewise.
+
 2014-10-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.h (MACHMODE): Treat machine_mode as a

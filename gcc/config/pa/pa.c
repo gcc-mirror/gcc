@@ -117,8 +117,8 @@ static int pa_can_combine_p (rtx_insn *, rtx_insn *, rtx_insn *, int, rtx,
 static bool forward_branch_p (rtx_insn *);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static void compute_zdepdi_operands (unsigned HOST_WIDE_INT, unsigned *);
-static int compute_movmem_length (rtx);
-static int compute_clrmem_length (rtx);
+static int compute_movmem_length (rtx_insn *);
+static int compute_clrmem_length (rtx_insn *);
 static bool pa_assemble_integer (rtx, unsigned int, int);
 static void remove_useless_addtr_insns (int);
 static void store_reg (int, HOST_WIDE_INT, int);
@@ -156,8 +156,8 @@ static void hppa_va_start (tree, rtx);
 static tree hppa_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool pa_scalar_mode_supported_p (machine_mode);
 static bool pa_commutative_p (const_rtx x, int outer_code);
-static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
-static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
+static void copy_fp_args (rtx_insn *) ATTRIBUTE_UNUSED;
+static int length_fp_args (rtx_insn *) ATTRIBUTE_UNUSED;
 static rtx hppa_legitimize_address (rtx, rtx, machine_mode);
 static inline void pa_file_start_level (void) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_space (int) ATTRIBUTE_UNUSED;
@@ -775,7 +775,7 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
   /* Labels need special handling.  */
   if (pic_label_operand (orig, mode))
     {
-      rtx insn;
+      rtx_insn *insn;
 
       /* We do not want to go through the movXX expanders here since that
 	 would create recursion.
@@ -811,7 +811,8 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
     }
   if (GET_CODE (orig) == SYMBOL_REF)
     {
-      rtx insn, tmp_reg;
+      rtx_insn *insn;
+      rtx tmp_reg;
 
       gcc_assert (reg);
 
@@ -915,7 +916,8 @@ hppa_tls_call (rtx arg)
 static rtx
 legitimize_tls_address (rtx addr)
 {
-  rtx ret, insn, tmp, t1, t2, tp;
+  rtx ret, tmp, t1, t2, tp;
+  rtx_insn *insn;
 
   /* Currently, we can't handle anything but a SYMBOL_REF.  */
   if (GET_CODE (addr) != SYMBOL_REF)
@@ -2090,7 +2092,8 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
       else if (GET_CODE (operand1) != CONST_INT
 	       || !pa_cint_ok_for_move (INTVAL (operand1)))
 	{
-	  rtx insn, temp;
+	  rtx temp;
+	  rtx_insn *insn;
 	  rtx op1 = operand1;
 	  HOST_WIDE_INT value = 0;
 	  HOST_WIDE_INT insv = 0;
@@ -2884,7 +2887,7 @@ pa_output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_movmem_length (rtx insn)
+compute_movmem_length (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 7), 0));
@@ -3026,7 +3029,7 @@ pa_output_block_clear (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_clrmem_length (rtx insn)
+compute_clrmem_length (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 4), 0));
@@ -3515,7 +3518,8 @@ static int save_fregs;
 static void
 store_reg (int reg, HOST_WIDE_INT disp, int base)
 {
-  rtx insn, dest, src, basereg;
+  rtx dest, src, basereg;
+  rtx_insn *insn;
 
   src = gen_rtx_REG (word_mode, reg);
   basereg = gen_rtx_REG (Pmode, base);
@@ -3570,7 +3574,8 @@ store_reg (int reg, HOST_WIDE_INT disp, int base)
 static void
 store_reg_modify (int base, int reg, HOST_WIDE_INT mod)
 {
-  rtx insn, basereg, srcreg, delta;
+  rtx basereg, srcreg, delta;
+  rtx_insn *insn;
 
   gcc_assert (VAL_14_BITS_P (mod));
 
@@ -3600,7 +3605,7 @@ store_reg_modify (int base, int reg, HOST_WIDE_INT mod)
 static void
 set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (VAL_14_BITS_P (disp))
     {
@@ -3790,7 +3795,8 @@ pa_expand_prologue (void)
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT offset;
   int i;
-  rtx insn, tmpreg;
+  rtx tmpreg;
+  rtx_insn *insn;
 
   gr_saved = 0;
   fr_saved = 0;
@@ -4035,7 +4041,8 @@ pa_expand_prologue (void)
 	  if (df_regs_ever_live_p (i)
 	      || (! TARGET_64BIT && df_regs_ever_live_p (i + 1)))
 	    {
-	      rtx addr, insn, reg;
+	      rtx addr, reg;
+	      rtx_insn *insn;
 	      addr = gen_rtx_MEM (DFmode,
 				  gen_rtx_POST_INC (word_mode, tmpreg));
 	      reg = gen_rtx_REG (DFmode, i);
@@ -4454,7 +4461,8 @@ hppa_profile_hook (int label_no)
      lcla2 and load_offset_label_address insn patterns.  */
   rtx reg = gen_reg_rtx (SImode);
   rtx_code_label *label_rtx = gen_label_rtx ();
-  rtx begin_label_rtx, call_insn;
+  rtx begin_label_rtx;
+  rtx_insn *call_insn;
   char begin_label_name[16];
 
   ASM_GENERATE_INTERNAL_LABEL (begin_label_name, FUNC_BEGIN_PROLOG_LABEL,
@@ -5826,7 +5834,7 @@ pa_output_mod_insn (int unsignedp, rtx_insn *insn)
 }
 
 void
-pa_output_arg_descriptor (rtx call_insn)
+pa_output_arg_descriptor (rtx_insn *call_insn)
 {
   const char *arg_regs[4];
   machine_mode arg_mode;
@@ -6334,7 +6342,7 @@ pa_scalar_mode_supported_p (machine_mode mode)
 static bool
 branch_to_delay_slot_p (rtx_insn *insn)
 {
-  rtx jump_insn;
+  rtx_insn *jump_insn;
 
   if (dbr_sequence_length ())
     return FALSE;
@@ -6368,7 +6376,7 @@ branch_to_delay_slot_p (rtx_insn *insn)
 static bool
 branch_needs_nop_p (rtx_insn *insn)
 {
-  rtx jump_insn;
+  rtx_insn *jump_insn;
 
   if (dbr_sequence_length ())
     return FALSE;
@@ -6396,7 +6404,7 @@ branch_needs_nop_p (rtx_insn *insn)
 static bool
 use_skip_p (rtx_insn *insn)
 {
-  rtx jump_insn = next_active_insn (JUMP_LABEL (insn));
+  rtx_insn *jump_insn = next_active_insn (JUMP_LABEL (insn));
 
   while (insn)
     {
@@ -7428,7 +7436,7 @@ pa_output_movb (rtx *operands, rtx_insn *insn, int which_alternative,
 
 /* Copy any FP arguments in INSN into integer registers.  */
 static void
-copy_fp_args (rtx insn)
+copy_fp_args (rtx_insn *insn)
 {
   rtx link;
   rtx xoperands[2];
@@ -7471,7 +7479,7 @@ copy_fp_args (rtx insn)
 
 /* Compute length of the FP argument copy sequence for INSN.  */
 static int
-length_fp_args (rtx insn)
+length_fp_args (rtx_insn *insn)
 {
   int length = 0;
   rtx link;
