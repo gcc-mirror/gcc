@@ -1,3 +1,8 @@
+2014-10-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.misc-tests/godump-1.c: Skip -fdump-go-spec tests for all
+	platforms except s390[x] and x86_64.
+
 2014-10-30  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63574

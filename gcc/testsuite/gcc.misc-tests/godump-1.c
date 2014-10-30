@@ -2,6 +2,7 @@
 
 /* { dg-options "-c -fdump-go-spec=godump-1.out" } */
 /* { dg-do compile } */
+/* { dg-skip-if "not supported for target" { ! "s390*-*-* x86_64-*-*" } } */
 
 #include <stdint.h>
 
