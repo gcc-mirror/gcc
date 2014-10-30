@@ -1,3 +1,9 @@
+2014-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (extra_host_libiberty_configure_flags): Add
+	--enable-shared also for libcc1's benefit.
+	* configure: Regenerate.
+
 2014-10-29  Tristan Gingold  <gingold@adacore.com>
 
 	* MAINTAINERS: Change my email address.
