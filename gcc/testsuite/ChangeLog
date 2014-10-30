@@ -1,3 +1,7 @@
+2014-10-30  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.misc-tests/godump-1.c: Skip if ! lp64.
+
 2014-10-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.misc-tests/godump-1.c: Skip -fdump-go-spec tests for all
