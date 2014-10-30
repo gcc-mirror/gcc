@@ -1,5 +1,17 @@
 2014-10-30  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (capture_info::walk_c_expr): Ignore capture
+	uses inside TREE_TYPE ().
+	* gimple-ssa-strength-reduction.c (stmt_cost): Use CASE_CONVERT.
+	(find_candidates_dom_walker::before_dom_children): Likewise.
+	(replace_mult_candidate): Use CONVERT_EXPR_CODE_P.
+	(replace_profitable_candidates): Likewise.
+	* tree-ssa-dom.c (initialize_hash_element): Canonicalize
+	CONVERT_EXPR_CODE_P to CONVERT_EXPR.
+	* convert.c (convert_to_integer): Use CASE_CONVERT.
+
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Implement more patterns that simplify to a single value.
 	* fold-const.c (fold_binary_loc): Remove them here.
 	* tree-ssa-forwprop.c (simplify_bitwise_binary): Likewise.

@@ -2004,21 +2004,34 @@ capture_info::walk_result (operand *o, bool conditional_p)
 void
 capture_info::walk_c_expr (c_expr *e)
 {
-  /* Give up for C exprs mentioning captures.  */
+  /* Give up for C exprs mentioning captures not inside TREE_TYPE ().  */
+  unsigned p_depth = 0;
   for (unsigned i = 0; i < e->code.length (); ++i)
-    if (e->code[i].type == CPP_ATSIGN
-	&& (e->code[i+1].type == CPP_NUMBER
-	    || e->code[i+1].type == CPP_NAME)
-	&& !(e->code[i+1].flags & PREV_WHITE))
-      {
-	const cpp_token *n = &e->code[i+1];
-	const char *id;
-	if (n->type == CPP_NUMBER)
-	  id = (const char *)n->val.str.text;
-	else
-	  id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	info[(*e->capture_ids)[id]].force_no_side_effects_p = true;
-      }
+    {
+      const cpp_token *t = &e->code[i];
+      const cpp_token *n = i < e->code.length () - 1 ? &e->code[i+1] : NULL;
+      if (t->type == CPP_NAME
+	  && strcmp ((const char *)CPP_HASHNODE
+		       (t->val.node.node)->ident.str, "TREE_TYPE") == 0
+	  && n->type == CPP_OPEN_PAREN)
+	p_depth++;
+      else if (t->type == CPP_CLOSE_PAREN
+	       && p_depth > 0)
+	p_depth--;
+      else if (p_depth == 0
+	       && t->type == CPP_ATSIGN
+	       && (n->type == CPP_NUMBER
+		   || n->type == CPP_NAME)
+	       && !(n->flags & PREV_WHITE))
+	{
+	  const char *id;
+	  if (n->type == CPP_NUMBER)
+	    id = (const char *)n->val.str.text;
+	  else
+	    id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
+	  info[(*e->capture_ids)[id]].force_no_side_effects_p = true;
+	}
+    }
 }
 
 
