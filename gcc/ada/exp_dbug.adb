@@ -604,10 +604,15 @@ package body Exp_Dbug is
             Add_Real_To_Buffer (Small_Value (E));
          end if;
 
-      --  Discrete case where bounds do not match size
+      --  Discrete case where bounds do not match size. Match only biased
+      --  types when asked to output as little encodings as possible.
 
-      elsif Is_Discrete_Type (E)
-        and then not Bounds_Match_Size (E)
+      elsif ((GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+               and then Is_Discrete_Type (E))
+             or else
+             (GNAT_Encodings = DWARF_GNAT_Encodings_Minimal
+               and then Has_Biased_Representation (E)))
+            and then not Bounds_Match_Size (E)
       then
          declare
             Lo : constant Node_Id := Type_Low_Bound (E);
@@ -618,13 +623,11 @@ package body Exp_Dbug is
 
             Lo_Discr : constant Boolean :=
                          Nkind (Lo) = N_Identifier
-                           and then
-                         Ekind (Entity (Lo)) = E_Discriminant;
+                          and then Ekind (Entity (Lo)) = E_Discriminant;
 
             Hi_Discr : constant Boolean :=
                          Nkind (Hi) = N_Identifier
-                           and then
-                         Ekind (Entity (Hi)) = E_Discriminant;
+                          and then Ekind (Entity (Hi)) = E_Discriminant;
 
             Lo_Encode : constant Boolean := Lo_Con or Lo_Discr;
             Hi_Encode : constant Boolean := Hi_Con or Hi_Discr;

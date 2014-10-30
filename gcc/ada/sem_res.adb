@@ -4421,7 +4421,7 @@ package body Sem_Res is
             --  A formal parameter of a specific tagged type whose related
             --  subprogram is subject to pragma Extensions_Visible with value
             --  "False" cannot act as an actual in a subprogram with value
-            --  "True".
+            --  "True" (SPARK RM 6.1.7(3)).
 
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =

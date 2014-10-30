@@ -5019,7 +5019,7 @@ package body Sem_Ch4 is
 
       --  A formal parameter of a specific tagged type whose related subprogram
       --  is subject to pragma Extensions_Visible with value "False" cannot
-      --  appear in a class-wide conversion.
+      --  appear in a class-wide conversion (SPARK RM 6.1.7(3)).
 
       if Is_Class_Wide_Type (Typ) and then Is_EVF_Expression (Expr) then
          Error_Msg_N

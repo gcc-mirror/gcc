@@ -3704,7 +3704,7 @@ package body Sem_Ch3 is
          --  A formal parameter of a specific tagged type whose related
          --  subprogram is subject to pragma Extensions_Visible with value
          --  "False" cannot be implicitly converted to a class-wide type by
-         --  means of an initialization expression.
+         --  means of an initialization expression (SPARK RM 6.1.7(3)).
 
          if Is_Class_Wide_Type (T) and then Is_EVF_Expression (E) then
             Error_Msg_N
@@ -9809,7 +9809,8 @@ package body Sem_Ch3 is
 
                   --  A null extension is not obliged to override an inherited
                   --  procedure subject to pragma Extensions_Visible with value
-                  --  False and at least one controlling OUT parameter.
+                  --  False and at least one controlling OUT parameter
+                  --  (SPARK RM 6.1.7(6)).
 
                   elsif Is_Null_Extension (T)
                     and then Is_EVF_Procedure (Subp)
@@ -9941,7 +9942,7 @@ package body Sem_Ch3 is
 
          --  A subprogram subject to pragma Extensions_Visible with value
          --  "True" cannot override a subprogram subject to the same pragma
-         --  with value "False".
+         --  with value "False" (SPARK RM 6.1.7(5)).
 
          elsif Extensions_Visible_Status (Subp) = Extensions_Visible_True
            and then Present (Overridden_Operation (Subp))
@@ -14541,7 +14542,7 @@ package body Sem_Ch3 is
 
       --  A subprogram subject to pragma Extensions_Visible with value False
       --  requires overriding if the subprogram has at least one controlling
-      --  OUT parameter.
+      --  OUT parameter (SPARK RM 6.1.7(6)).
 
       elsif Ada_Version >= Ada_2005
         and then (Is_Abstract_Subprogram (Alias (New_Subp))
