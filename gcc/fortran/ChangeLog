@@ -1,3 +1,7 @@
+2014-10-30  Release Manager
+
+	* GCC 4.9.2 released.
+
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/59488
