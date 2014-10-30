@@ -1,3 +1,7 @@
+2014-10-30  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config.gcc (mips*-*-linux*): Combine 32 and 64 bit cases.
+
 2014-10-30  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c: Remove <map>, <utility> and <string> includes.
