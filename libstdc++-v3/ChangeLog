@@ -1,3 +1,8 @@
+2014-10-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.host (aix5+): New stanza.
+	(aix4.3+): Do not use -G in link command.
+
 2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional: (_Function_base::_Function_base()): Use
