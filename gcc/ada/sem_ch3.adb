@@ -590,6 +590,12 @@ package body Sem_Ch3 is
    --  Propagate static and dynamic predicate flags from a parent to the
    --  subtype in a subtype declaration with and without constraints.
 
+   function Is_EVF_Procedure (Subp : Entity_Id) return Boolean;
+   --  Subsidiary to Check_Abstract_Overriding and Derive_Subprogram.
+   --  Determine whether subprogram Subp is a procedure subject to pragma
+   --  Extensions_Visible with value False and has at least one controlling
+   --  parameter of mode OUT.
+
    function Is_Valid_Constraint_Kind
      (T_Kind          : Type_Kind;
       Constraint_Kind : Node_Kind) return Boolean;
@@ -3638,8 +3644,8 @@ package body Sem_Ch3 is
            and then Is_Access_Constant (Etype (E))
          then
             Error_Msg_N
-              ("access to variable cannot be initialized "
-               & "with an access-to-constant expression", E);
+              ("access to variable cannot be initialized with an "
+               & "access-to-constant expression", E);
          end if;
 
          if not Assignment_OK (N) then
@@ -3693,6 +3699,17 @@ package body Sem_Ch3 is
          then
             Check_SPARK_05_Restriction
               ("initialization expression is not appropriate", E);
+         end if;
+
+         --  A formal parameter of a specific tagged type whose related
+         --  subprogram is subject to pragma Extensions_Visible with value
+         --  "False" cannot be implicitly converted to a class-wide type by
+         --  means of an initialization expression.
+
+         if Is_Class_Wide_Type (T) and then Is_EVF_Expression (E) then
+            Error_Msg_N
+              ("formal parameter with Extensions_Visible False cannot be "
+               & "implicitly converted to class-wide type", E);
          end if;
       end if;
 
@@ -9790,6 +9807,15 @@ package body Sem_Ch3 is
                   then
                      null;
 
+                  --  A null extension is not obliged to override an inherited
+                  --  procedure subject to pragma Extensions_Visible with value
+                  --  False and at least one controlling OUT parameter.
+
+                  elsif Is_Null_Extension (T)
+                    and then Is_EVF_Procedure (Subp)
+                  then
+                     null;
+
                   else
                      Error_Msg_NE
                        ("type must be declared abstract or & overridden",
@@ -9831,6 +9857,16 @@ package body Sem_Ch3 is
                            then
                               Error_Msg_NE
                                 ("\& subprogram# is not visible",
+                                 T, Subp);
+
+                           --  Clarify the case where a non-null extension must
+                           --  override inherited procedure subject to pragma
+                           --  Extensions_Visible with value False and at least
+                           --  one controlling OUT param.
+
+                           elsif Is_EVF_Procedure (E) then
+                              Error_Msg_NE
+                                ("\& # is subject to Extensions_Visible False",
                                  T, Subp);
 
                            else
@@ -9902,6 +9938,20 @@ package body Sem_Ch3 is
                Error_Msg_Node_2 := Subp;
                Error_Msg_N ("nonabstract type& has abstract subprogram&!", T);
             end if;
+
+         --  A subprogram subject to pragma Extensions_Visible with value
+         --  "True" cannot override a subprogram subject to the same pragma
+         --  with value "False".
+
+         elsif Extensions_Visible_Status (Subp) = Extensions_Visible_True
+           and then Present (Overridden_Operation (Subp))
+           and then Extensions_Visible_Status (Overridden_Operation (Subp)) =
+                    Extensions_Visible_False
+         then
+            Error_Msg_Sloc := Sloc (Overridden_Operation (Subp));
+            Error_Msg_N
+              ("subprogram & with Extensions_Visible True cannot override "
+               & "subprogram # with Extensions_Visible False", Subp);
          end if;
 
          --  Ada 2012 (AI05-0030): Perform checks related to pragma Implemented
@@ -14254,8 +14304,7 @@ package body Sem_Ch3 is
    --  Start of processing for Derive_Subprogram
 
    begin
-      New_Subp :=
-         New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
+      New_Subp := New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
       Set_Ekind (New_Subp, Ekind (Parent_Subp));
       Set_Contract (New_Subp, Make_Contract (Sloc (New_Subp)));
 
@@ -14490,6 +14539,10 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-228): Calculate the "require overriding" and "abstract"
       --  properties of the subprogram, as defined in RM-3.9.3(4/2-6/2).
 
+      --  A subprogram subject to pragma Extensions_Visible with value False
+      --  requires overriding if the subprogram has at least one controlling
+      --  OUT parameter.
+
       elsif Ada_Version >= Ada_2005
         and then (Is_Abstract_Subprogram (Alias (New_Subp))
                    or else (Is_Tagged_Type (Derived_Type)
@@ -14500,7 +14553,8 @@ package body Sem_Ch3 is
                                                        E_Anonymous_Access_Type
                              and then Designated_Type (Etype (New_Subp)) =
                                                         Derived_Type
-                             and then not Is_Null_Extension (Derived_Type)))
+                             and then not Is_Null_Extension (Derived_Type))
+                   or else Is_EVF_Procedure (Alias (New_Subp)))
         and then No (Actual_Subp)
       then
          if not Is_Tagged_Type (Derived_Type)
@@ -17338,6 +17392,35 @@ package body Sem_Ch3 is
       Set_Has_Dynamic_Predicate_Aspect
         (Subt, Has_Dynamic_Predicate_Aspect (Par));
    end Inherit_Predicate_Flags;
+
+   ----------------------
+   -- Is_EVF_Procedure --
+   ----------------------
+
+   function Is_EVF_Procedure (Subp : Entity_Id) return Boolean is
+      Formal : Entity_Id;
+
+   begin
+      --  Examine the formals of an Extensions_Visible False procedure looking
+      --  for a controlling OUT parameter.
+
+      if Ekind (Subp) = E_Procedure
+        and then Extensions_Visible_Status (Subp) = Extensions_Visible_False
+      then
+         Formal := First_Formal (Subp);
+         while Present (Formal) loop
+            if Ekind (Formal) = E_Out_Parameter
+              and then Is_Controlling_Formal (Formal)
+            then
+               return True;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+      end if;
+
+      return False;
+   end Is_EVF_Procedure;
 
    -----------------------
    -- Is_Null_Extension --

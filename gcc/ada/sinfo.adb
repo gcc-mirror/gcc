@@ -1889,6 +1889,14 @@ package body Sinfo is
       return Flag11 (N);
    end Is_In_Discriminant_Check;
 
+   function Is_Inherited
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag4 (N);
+   end Is_Inherited;
+
    function Is_Machine_Number
       (N : Node_Id) return Boolean is
    begin
@@ -5077,6 +5085,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Selected_Component);
       Set_Flag11 (N, Val);
    end Set_Is_In_Discriminant_Check;
+
+   procedure Set_Is_Inherited
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag4 (N, Val);
+   end Set_Is_Inherited;
 
    procedure Set_Is_Machine_Number
       (N : Node_Id; Val : Boolean := True) is

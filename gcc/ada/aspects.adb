@@ -522,6 +522,7 @@ package body Aspects is
     Aspect_Effective_Writes             => Aspect_Effective_Writes,
     Aspect_Elaborate_Body               => Aspect_Elaborate_Body,
     Aspect_Export                       => Aspect_Export,
+    Aspect_Extensions_Visible           => Aspect_Extensions_Visible,
     Aspect_External_Name                => Aspect_External_Name,
     Aspect_External_Tag                 => Aspect_External_Tag,
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,

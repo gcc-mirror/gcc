@@ -60,6 +60,7 @@ package Sem_Util is
    --    Depends
    --    Effective_Reads
    --    Effective_Writes
+   --    Extensions_Visible
    --    Global
    --    Initial_Condition
    --    Initializes
@@ -565,6 +566,26 @@ package Sem_Util is
    --  inappropriate use of limited type T. If useful, it adds additional
    --  continuation lines to the message explaining why type T is limited.
    --  Messages are placed at node N.
+
+   type Extensions_Visible_Mode is
+     (Extensions_Visible_None,
+      --  Extensions_Visible does not yield a mode when SPARK_Mode is off. This
+      --  value acts as a default in a non-SPARK compilation.
+
+      Extensions_Visible_False,
+      --  A value of "False" signifies that Extensions_Visible is either
+      --  missing or the pragma is present and the value of its Boolean
+      --  expression is False.
+
+      Extensions_Visible_True);
+      --  A value of "True" signifies that Extensions_Visible is present and
+      --  the value of its Boolean expression is True.
+
+   function Extensions_Visible_Status
+     (Id : Entity_Id) return Extensions_Visible_Mode;
+   --  Given the entity of a subprogram or formal parameter subject to pragma
+   --  Extensions_Visible, return the Boolean value denoted by the expression
+   --  of the pragma.
 
    procedure Find_Actual
      (N      : Node_Id;
@@ -1087,6 +1108,14 @@ package Sem_Util is
    --  Inherit the rep item chain of type From_Typ without clobbering any
    --  existing rep items on Typ's chain. Typ is the destination type.
 
+   procedure Inherit_Subprogram_Contract
+     (Subp      : Entity_Id;
+      From_Subp : Entity_Id);
+   --  Inherit relevant contract items from source subprogram From_Subp. Subp
+   --  denotes the destination subprogram. The inherited items are:
+   --    Extensions_Visible
+   --  ??? it would be nice if this routine handles Pre'Class and Post'Class
+
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the
@@ -1207,6 +1236,16 @@ package Sem_Util is
    --  Predicate to determine whether a scope entity comes from a rewritten
    --  expression function call, and should be inlined unconditionally. Also
    --  used to determine that such a call does not constitute a freeze point.
+
+   function Is_EVF_Expression (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes a reference to a formal parameter of
+   --  a specific tagged type whose related subprogram is subject to pragma
+   --  Extensions_Visible with value "False". Several other constructs fall
+   --  under this category:
+   --    1) A qualified expression whose operand is EVF
+   --    2) A type conversion whose operand is EVF
+   --    3) An if expression with at least one EVF dependent_expression
+   --    4) A case expression with at least one EVF dependent_expression
 
    function Is_False (U : Uint) return Boolean;
    pragma Inline (Is_False);
@@ -1344,6 +1383,9 @@ package Sem_Util is
    --  2005. This differs from Is_Object_Reference in that only variables,
    --  constants, formal parameters, and selected_components of those are
    --  valid objects in SPARK 2005.
+
+   function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
+   --  Determine whether an arbitrary [private] type is specifically tagged
 
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);

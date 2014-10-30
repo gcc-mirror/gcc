@@ -3260,8 +3260,8 @@ package body Sem_Res is
 
                if not Is_Aliased_View (Act) then
                   Error_Msg_NE
-                    ("object in prefixed call to& must be aliased"
-                         & " (RM-2005 4.3.1 (13))",
+                    ("object in prefixed call to& must be aliased "
+                     & "(RM-2005 4.3.1 (13))",
                     Prefix (Act), Nam);
                end if;
 
@@ -4416,6 +4416,22 @@ package body Sem_Res is
                        ("\\corresponding formal parameter has mode Out", A);
                   end if;
                end if;
+            end if;
+
+            --  A formal parameter of a specific tagged type whose related
+            --  subprogram is subject to pragma Extensions_Visible with value
+            --  "False" cannot act as an actual in a subprogram with value
+            --  "True".
+
+            if Is_EVF_Expression (A)
+              and then Extensions_Visible_Status (Nam) =
+                       Extensions_Visible_True
+            then
+               Error_Msg_N
+                 ("formal parameter with Extensions_Visible False cannot act "
+                  & "as actual parameter", A);
+               Error_Msg_NE
+                 ("\subprogram & has Extensions_Visible True", A, Nam);
             end if;
 
             Next_Actual (A);

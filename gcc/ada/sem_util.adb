@@ -251,8 +251,52 @@ package body Sem_Util is
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id) is
       Items : constant Node_Id := Contract (Id);
-      Nam   : Name_Id;
-      N     : Node_Id;
+
+      procedure Add_Classification;
+      --  Prepend Prag to the list of classifications
+
+      procedure Add_Contract_Test_Case;
+      --  Prepend Prag to the list of contract and test cases
+
+      procedure Add_Pre_Post_Condition;
+      --  Prepend Prag to the list of pre- and postconditions
+
+      ------------------------
+      -- Add_Classification --
+      ------------------------
+
+      procedure Add_Classification is
+      begin
+         Set_Next_Pragma (Prag, Classifications (Items));
+         Set_Classifications (Items, Prag);
+      end Add_Classification;
+
+      ----------------------------
+      -- Add_Contract_Test_Case --
+      ----------------------------
+
+      procedure Add_Contract_Test_Case is
+      begin
+         Set_Next_Pragma (Prag, Contract_Test_Cases (Items));
+         Set_Contract_Test_Cases (Items, Prag);
+      end Add_Contract_Test_Case;
+
+      ----------------------------
+      -- Add_Pre_Post_Condition --
+      ----------------------------
+
+      procedure Add_Pre_Post_Condition is
+      begin
+         Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
+         Set_Pre_Post_Conditions (Items, Prag);
+      end Add_Pre_Post_Condition;
+
+      --  Local variables
+
+      Nam : Name_Id;
+      PPC : Node_Id;
+
+   --  Start of processing for Add_Contract_Item
 
    begin
       --  The related context must have a contract and the item to be added
@@ -275,14 +319,12 @@ package body Sem_Util is
                          Name_Initial_Condition,
                          Name_Initializes)
          then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+            Add_Classification;
 
          --  Indicator Part_Of must be associated with a package instantiation
 
          elsif Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+            Add_Classification;
 
          --  The pragma is not a proper contract item
 
@@ -295,8 +337,7 @@ package body Sem_Util is
 
       elsif Ekind (Id) = E_Package_Body then
          if Nam = Name_Refined_State then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+            Add_Classification;
 
          --  The pragma is not a proper contract item
 
@@ -308,6 +349,7 @@ package body Sem_Util is
       --  applicable pragmas are:
       --    Contract_Cases
       --    Depends
+      --    Extensions_Visible
       --    Global
       --    Post
       --    Postcondition
@@ -319,51 +361,49 @@ package body Sem_Util is
         or else Is_Generic_Subprogram (Id)
         or else Is_Subprogram (Id)
       then
-         if Nam_In (Nam, Name_Precondition,
-                         Name_Postcondition,
-                         Name_Pre,
-                         Name_Post,
+         if Nam_In (Nam, Name_Pre,
+                         Name_Precondition,
                          Name_uPre,
+                         Name_Post,
+                         Name_Postcondition,
                          Name_uPost)
          then
-            --  Before we add a precondition or postcondition to the list,
-            --  make sure we do not have a disallowed duplicate, which can
-            --  happen if we use a pragma for Pre[_Class] or Post[_Class]
-            --  instead of the corresponding aspect.
+            --  Before we add a precondition or postcondition to the list, make
+            --  sure we do not have a disallowed duplicate, which can happen if
+            --  we use a pragma for Pre[_Class] or Post[_Class] instead of the
+            --  corresponding aspect.
 
             if not From_Aspect_Specification (Prag)
-              and then Nam_In (Nam, Name_Pre_Class,
-                                    Name_Pre,
+              and then Nam_In (Nam, Name_Pre,
                                     Name_uPre,
-                                    Name_Post_Class,
                                     Name_Post,
-                                    Name_uPost)
+                                    Name_Post_Class)
             then
-               N := Pre_Post_Conditions (Items);
-               while Present (N) loop
-                  if not Split_PPC (N)
-                    and then Original_Aspect_Name (N) = Nam
+               PPC := Pre_Post_Conditions (Items);
+               while Present (PPC) loop
+                  if not Split_PPC (PPC)
+                    and then Original_Aspect_Name (PPC) = Nam
                   then
-                     Error_Msg_Sloc := Sloc (N);
+                     Error_Msg_Sloc := Sloc (PPC);
                      Error_Msg_NE
                        ("duplication of aspect for & given#", Prag, Id);
                      return;
-                  else
-                     N := Next_Pragma (N);
                   end if;
+
+                  PPC := Next_Pragma (PPC);
                end loop;
             end if;
 
-            Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
-            Set_Pre_Post_Conditions (Items, Prag);
+            Add_Pre_Post_Condition;
 
          elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
-            Set_Next_Pragma (Prag, Contract_Test_Cases (Items));
-            Set_Contract_Test_Cases (Items, Prag);
+            Add_Contract_Test_Case;
 
-         elsif Nam_In (Nam, Name_Depends, Name_Global) then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+         elsif Nam_In (Nam, Name_Depends,
+                            Name_Extensions_Visible,
+                            Name_Global)
+         then
+            Add_Classification;
 
          --  The pragma is not a proper contract item
 
@@ -377,13 +417,11 @@ package body Sem_Util is
       --    Refined_Post
 
       elsif Ekind (Id) = E_Subprogram_Body then
-         if Nam = Name_Refined_Post then
-            Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
-            Set_Pre_Post_Conditions (Items, Prag);
+         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
+            Add_Classification;
 
-         elsif Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+         elsif Nam = Name_Refined_Post then
+            Add_Pre_Post_Condition;
 
          --  The pragma is not a proper contract item
 
@@ -405,8 +443,7 @@ package body Sem_Util is
                          Name_Effective_Writes,
                          Name_Part_Of)
          then
-            Set_Next_Pragma (Prag, Classifications (Items));
-            Set_Classifications (Items, Prag);
+            Add_Classification;
 
          --  The pragma is not a proper contract item
 
@@ -5772,6 +5809,84 @@ package body Sem_Util is
       end if;
    end Explain_Limited_Type;
 
+   -------------------------------
+   -- Extensions_Visible_Status --
+   -------------------------------
+
+   function Extensions_Visible_Status
+     (Id : Entity_Id) return Extensions_Visible_Mode
+   is
+      Arg1 : Node_Id;
+      Expr : Node_Id;
+      Prag : Node_Id;
+      Subp : Entity_Id;
+
+   begin
+      if SPARK_Mode = On then
+
+         --  When a formal parameter is subject to Extensions_Visible, the
+         --  pragma is stored in the contract of related subprogram.
+
+         if Is_Formal (Id) then
+            Subp := Scope (Id);
+
+         elsif Is_Subprogram_Or_Generic_Subprogram (Id) then
+            Subp := Id;
+
+         --  No other construct carries this pragma
+
+         else
+            return Extensions_Visible_None;
+         end if;
+
+         Prag := Get_Pragma (Subp, Pragma_Extensions_Visible);
+
+         --  Extract the value from the Boolean expression (if any)
+
+         if Present (Prag) then
+            Arg1 := First (Pragma_Argument_Associations (Prag));
+
+            --  The pragma appears with an argument
+
+            if Present (Arg1) then
+               Expr := Get_Pragma_Arg (Arg1);
+
+               --  Guarg against cascading errors when the argument of pragma
+               --  Extensions_Visible is not a valid static Boolean expression.
+
+               if Error_Posted (Expr) then
+                  return Extensions_Visible_None;
+
+               elsif Is_True (Expr_Value (Expr)) then
+                  return Extensions_Visible_True;
+
+               else
+                  return Extensions_Visible_False;
+               end if;
+
+            --  Otherwise the pragma defaults to True
+
+            else
+               return Extensions_Visible_True;
+            end if;
+
+         --  Otherwise pragma Expresions_Visible is not inherited or directly
+         --  specified, its value defaults to "False".
+
+         else
+            return Extensions_Visible_False;
+         end if;
+
+      --  When SPARK_Mode is disabled, all semantic checks related to pragma
+      --  Extensions_Visible are disabled as well. Instead of saturating the
+      --  code with "if SPARK_Mode /= Off then" checks, the predicate returns
+      --  a default value.
+
+      else
+         return Extensions_Visible_None;
+      end if;
+   end Extensions_Visible_Status;
+
    -----------------
    -- Find_Actual --
    -----------------
@@ -9331,6 +9446,51 @@ package body Sem_Util is
    end Inherit_Rep_Item_Chain;
 
    ---------------------------------
+   -- Inherit_Subprogram_Contract --
+   ---------------------------------
+
+   procedure Inherit_Subprogram_Contract
+     (Subp      : Entity_Id;
+      From_Subp : Entity_Id)
+   is
+      procedure Inherit_Pragma (Prag_Id : Pragma_Id);
+      --  Propagate a pragma denoted by Prag_Id from From_Subp's contract to
+      --  Subp's contract.
+
+      --------------------
+      -- Inherit_Pragma --
+      --------------------
+
+      procedure Inherit_Pragma (Prag_Id : Pragma_Id) is
+         Prag     : constant Node_Id := Get_Pragma (From_Subp, Prag_Id);
+         New_Prag : Node_Id;
+
+      begin
+         --  A pragma cannot be part of more than one First_Pragma/Next_Pragma
+         --  chains, therefore the node must be replicated. The new pragma is
+         --  flagged is inherited for distrinction purposes.
+
+         if Present (Prag) then
+            New_Prag := New_Copy_Tree (Prag);
+            Set_Is_Inherited (New_Prag);
+
+            Add_Contract_Item (New_Prag, Subp);
+         end if;
+      end Inherit_Pragma;
+
+   --   Start of processing for Inherit_Subprogram_Contract
+
+   begin
+      --  Inheritance is carried out only when both subprograms have contracts
+
+      if Present (Contract (Subp))
+        and then Present (Contract (From_Subp))
+      then
+         Inherit_Pragma (Pragma_Extensions_Visible);
+      end if;
+   end Inherit_Subprogram_Contract;
+
+   ---------------------------------
    -- Insert_Explicit_Dereference --
    ---------------------------------
 
@@ -10515,6 +10675,71 @@ package body Sem_Util is
                                   N_Expression_Function));
       end if;
    end Is_Expression_Function;
+
+   -----------------------
+   -- Is_EVF_Expression --
+   -----------------------
+
+   function Is_EVF_Expression (N : Node_Id) return Boolean is
+      Orig_N : constant Node_Id := Original_Node (N);
+      Alt    : Node_Id;
+      Expr   : Node_Id;
+      Id     : Entity_Id;
+
+   begin
+      --  Detect a reference to a formal parameter of a specific tagged type
+      --  whose related subprogram is subject to pragma Expresions_Visible with
+      --  value "False".
+
+      if Is_Entity_Name (N) and then Present (Entity (N)) then
+         Id := Entity (N);
+
+         return
+           Is_Formal (Id)
+             and then Is_Specific_Tagged_Type (Etype (Id))
+             and then Extensions_Visible_Status (Id) =
+                      Extensions_Visible_False;
+
+      --  A case expression is an EVF expression when it contains at least one
+      --  EVF dependent_expression. Note that a case expression may have been
+      --  expanded, hence the use of Original_Node.
+
+      elsif Nkind (Orig_N) = N_Case_Expression then
+         Alt := First (Alternatives (Orig_N));
+         while Present (Alt) loop
+            if Is_EVF_Expression (Expression (Alt)) then
+               return True;
+            end if;
+
+            Next (Alt);
+         end loop;
+
+      --  An if expression is an EVF expression when it contains at least one
+      --  EVF dependent_expression. Note that an if expression may have been
+      --  expanded, hence the use of Original_Node.
+
+      elsif Nkind (Orig_N) = N_If_Expression then
+         Expr := Next (First (Expressions (Orig_N)));
+         while Present (Expr) loop
+            if Is_EVF_Expression (Expr) then
+               return True;
+            end if;
+
+            Next (Expr);
+         end loop;
+
+      --  A qualified expression or a type conversion is an EVF expression when
+      --  its operand is an EVF expression.
+
+      elsif Nkind_In (N, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion,
+                         N_Type_Conversion)
+      then
+         return Is_EVF_Expression (Expression (N));
+      end if;
+
+      return False;
+   end Is_EVF_Expression;
 
    --------------
    -- Is_False --
@@ -11884,6 +12109,27 @@ package body Sem_Util is
          end case;
       end if;
    end Is_SPARK_05_Object_Reference;
+
+   -----------------------------
+   -- Is_Specific_Tagged_Type --
+   -----------------------------
+
+   function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean is
+      Full_Typ : Entity_Id;
+
+   begin
+      --  Handle private types
+
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         Full_Typ := Full_View (Typ);
+      else
+         Full_Typ := Typ;
+      end if;
+
+      --  A specific tagged type is a non-class-wide tagged type
+
+      return Is_Tagged_Type (Full_Typ) and not Is_Class_Wide_Type (Full_Typ);
+   end Is_Specific_Tagged_Type;
 
    ------------------
    -- Is_Statement --
