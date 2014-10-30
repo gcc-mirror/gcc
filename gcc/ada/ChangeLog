@@ -1,5 +1,20 @@
 2014-10-30  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch3.adb (Expand_N_Object_Declaration): Code cleanup.
+
+2014-10-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If a subtype
+	indication is provided, check properly that it covers the element
+	type of of the container type.
+
+2014-10-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-dynhta.ads, g-dynhta.adb: Add the implementation of a load facto
+	-based hash table.
+
+2014-10-30  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_util.ads, exp_util.adb (Following_Address_Clause): Modify
 	Has_Following_Address_Clause so that it returns the address
 	clause if present, rather than a boolean value.

@@ -2009,10 +2009,10 @@ package body Sem_Ch5 is
                      Set_Etype (Def_Id, Entity (Element));
 
                      --  If subtype indication was given, verify that it
-                     --  matches element type of container.
+                     --  covers the element type of the container.
 
                      if Present (Subt)
-                       and then Bas /= Base_Type (Etype (Def_Id))
+                       and then not Covers (Bas, Etype (Def_Id))
                      then
                         Error_Msg_N
                           ("subtype indication does not match element type",
