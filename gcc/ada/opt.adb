@@ -171,6 +171,7 @@ package body Opt is
 
          Ada_Version                 := Ada_Version_Runtime;
          Ada_Version_Pragma          := Empty;
+         Default_SSO                 := ' ';
          Dynamic_Elaboration_Checks  := False;
          Extensions_Allowed          := True;
          External_Name_Exp_Casing    := As_Is;
@@ -194,7 +195,6 @@ package body Opt is
             Assertions_Enabled       := Assertions_Enabled_Config;
             Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
             Check_Policy_List        := Check_Policy_List_Config;
-            Default_SSO              := Default_SSO_Config;
             SPARK_Mode               := SPARK_Mode_Config;
             SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
          else

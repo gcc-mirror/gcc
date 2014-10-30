@@ -797,6 +797,8 @@ package body System.OS_Lib is
          return C_Create_File (C_Name (C_Name'First)'Address);
       end Create_New_Output_Text_File;
 
+   --  Start of processing for Create_Temp_File_Internal
+
    begin
       --  Loop until a new temp file can be created
 
