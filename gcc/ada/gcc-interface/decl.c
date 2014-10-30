@@ -2486,16 +2486,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* We need special types for debugging information to point to
 		 the index types if they have variable bounds, are not integer
-		 types, are biased or are wider than sizetype.  */
-	      if (!integer_onep (gnu_orig_min)
+		 types or are biased.  */
+	      if (TREE_CODE (gnu_orig_min) != INTEGER_CST
 		  || TREE_CODE (gnu_orig_max) != INTEGER_CST
 		  || TREE_CODE (gnu_index_type) != INTEGER_TYPE
 		  || (TREE_TYPE (gnu_index_type)
 		      && TREE_CODE (TREE_TYPE (gnu_index_type))
 			 != INTEGER_TYPE)
-		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)
-		  || compare_tree_int (rm_size (gnu_index_type),
-				       TYPE_PRECISION (sizetype)) > 0)
+		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
 		need_index_type_struct = true;
 	    }
 

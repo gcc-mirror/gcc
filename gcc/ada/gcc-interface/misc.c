@@ -238,6 +238,7 @@ gnat_init_options (unsigned int decoded_options_count,
 #undef flag_compare_debug
 #undef flag_short_enums
 #undef flag_stack_check
+int gnat_encodings = 0;
 int optimize;
 int optimize_size;
 int flag_compare_debug;
