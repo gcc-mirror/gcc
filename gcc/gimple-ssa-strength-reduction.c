@@ -705,7 +705,7 @@ stmt_cost (gimple gs, bool speed)
     case NEGATE_EXPR:
       return neg_cost (speed, lhs_mode);
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       return convert_cost (lhs_mode, TYPE_MODE (TREE_TYPE (rhs1)), speed);
 
     /* Note that we don't assign costs to copies that in most cases
@@ -1715,7 +1715,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	      rhs2 = gimple_assign_rhs2 (gs);
 	      /* Fall-through.  */
 
-	    case NOP_EXPR:
+	    CASE_CONVERT:
 	    case MODIFY_EXPR:
 	    case NEGATE_EXPR:
 	      rhs1 = gimple_assign_rhs1 (gs);
@@ -1743,7 +1743,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	      slsr_process_neg (gs, rhs1, speed);
 	      break;
 
-	    case NOP_EXPR:
+	    CASE_CONVERT:
 	      slsr_process_cast (gs, rhs1, speed);
 	      break;
 
@@ -2033,7 +2033,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       /* It is not useful to replace casts, copies, or adds of
 	 an SSA name and a constant.  */
       && cand_code != MODIFY_EXPR
-      && cand_code != NOP_EXPR
+      && !CONVERT_EXPR_CODE_P (cand_code)
       && cand_code != PLUS_EXPR
       && cand_code != POINTER_PLUS_EXPR
       && cand_code != MINUS_EXPR)
@@ -3472,7 +3472,7 @@ replace_profitable_candidates (slsr_cand_t c)
       if (i >= 0
 	  && profitable_increment_p (i) 
 	  && orig_code != MODIFY_EXPR
-	  && orig_code != NOP_EXPR)
+	  && !CONVERT_EXPR_CODE_P (orig_code))
 	{
 	  if (phi_dependent_cand_p (c))
 	    {

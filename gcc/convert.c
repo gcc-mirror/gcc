@@ -831,7 +831,7 @@ convert_to_integer (tree type, tree expr)
 						  TREE_OPERAND (expr, 0))));
 	  }
 
-	case NOP_EXPR:
+	CASE_CONVERT:
 	  /* Don't introduce a
 	     "can't convert between vector values of different size" error.  */
 	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE

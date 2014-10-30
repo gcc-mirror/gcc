@@ -305,6 +305,8 @@ initialize_hash_element (gimple stmt, tree lhs,
         case GIMPLE_UNARY_RHS:
 	  expr->kind = EXPR_UNARY;
 	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
+	  if (CONVERT_EXPR_CODE_P (subcode))
+	    subcode = CONVERT_EXPR;
 	  expr->ops.unary.op = subcode;
 	  expr->ops.unary.opnd = gimple_assign_rhs1 (stmt);
 	  break;
