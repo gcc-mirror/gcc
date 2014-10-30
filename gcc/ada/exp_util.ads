@@ -502,6 +502,12 @@ package Exp_Util is
    --  be evaluated, for example if N is the right operand of a short circuit
    --  operator.
 
+   function Following_Address_Clause (D : Node_Id) return Node_Id;
+   --  D is the node for an object declaration. This function searches the
+   --  current declarative part to look for an address clause for the object
+   --  being declared, and returns the clause if one is found, returns
+   --  Empty otherwise.
+
    procedure Force_Evaluation
      (Exp      : Node_Id;
       Name_Req : Boolean := False);
@@ -568,11 +574,6 @@ package Exp_Util is
    --  Returns whether E is a package entity, for which the initial list of
    --  pragmas at the start of the package declaration contains
    --    pragma Annotate (GNATprove, External_Axiomatization);
-
-   function Has_Following_Address_Clause (D : Node_Id) return Boolean;
-   --  D is the node for an object declaration. This function searches the
-   --  current declarative part to look for an address clause for the object
-   --  being declared, and returns True if one is found.
 
    function Homonym_Number (Subp : Entity_Id) return Nat;
    --  Here subp is the entity for a subprogram. This routine returns the

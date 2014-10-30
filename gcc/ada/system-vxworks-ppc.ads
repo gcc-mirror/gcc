@@ -40,6 +40,9 @@ package System is
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada
    --  2005, this is Pure in any case (AI-362).
 
+   pragma No_Elaboration_Code_All;
+   --  Allow the use of that restriction in units that WITH this unit
+
    type Name is (SYSTEM_NAME_GNAT);
    System_Name : constant Name := SYSTEM_NAME_GNAT;
 
