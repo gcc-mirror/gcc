@@ -1,5 +1,18 @@
 2014-10-30  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c: Remove <map>, <utility> and <string> includes.
+	Include ggc.h and hash-map.h.
+	(ggc_internal_cleared_alloc): Provide stub definition.
+	(ggc_free): Likewise.
+	(struct capture_id_map_hasher): New traits for hash_map.
+	(cid_map_t): New typedef.
+	(everywhere else): Replace std::map use with cid_map_t.
+	* hash-map.h (hash_map::elements): New member function.
+	* Makefile.in (build/genmatch.o): Add $(HASH_TABLE_H),
+	hash-map.h and $(GGC_H) as dependency.
+
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (capture_info::walk_c_expr): Ignore capture
 	uses inside TREE_TYPE ().
 	* gimple-ssa-strength-reduction.c (stmt_cost): Use CASE_CONVERT.
