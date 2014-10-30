@@ -1,3 +1,23 @@
+2014-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (libgcc.map.in): New target.
+	(libgcc.map): Use libgcc.map.in.
+	* config/t-softfp (softfp_compat): New variable to be set by
+	users.
+	[$(softfp_compat) = y] (softfp_map_dep, softfp_set_symver): New
+	variables.
+	[$(softfp_compat) = y] (softfp_file_list): Use files in the build
+	directory.
+	[$(softfp_compat) = y] ($(softfp_file_list)): Generate wrappers
+	that use compat symbols and disable all code unless [SHARED].
+	* config/t-softfp-compat: New file.
+	* find-symver.awk: New file.
+	* configure.ac (--with-glibc-version): New configure option.
+	(ppc_fp_compat): New variable set for powerpc*-*-linux*.
+	* configure: Regenerate.
+	* config.host (powerpc*-*-linux*): Use ${ppc_fp_compat} for
+	soft-float and e500.
+
 2014-10-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/t-hardfp (hardfp_exclusions): Document new variable for

@@ -666,6 +666,7 @@ enable_decimal_float
 with_system_libunwind
 enable_sjlj_exceptions
 enable_explicit_exception_frame_registration
+with_glibc_version
 enable_tls
 '
       ac_precious_vars='build_alias
@@ -1318,6 +1319,8 @@ Optional Packages:
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-libunwind use installed libunwind
+  --with-glibc-version=M.N
+                          assume GCC used with glibc version M.N or later
 
 Some influential environment variables:
   CC          C compiler command
@@ -4376,6 +4379,38 @@ fi
 $as_echo "$libgcc_cv_mips_hard_float" >&6; }
 esac
 
+# Determine the version of glibc, if any, used on the target.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for target glibc version" >&5
+$as_echo_n "checking for target glibc version... " >&6; }
+
+# Check whether --with-glibc-version was given.
+if test "${with_glibc_version+set}" = set; then :
+  withval=$with_glibc_version;
+if echo "$with_glibc_version" | grep '^[0-9][0-9]*\.[0-9][0-9]*$'; then
+  glibc_version_major=`echo "$with_glibc_version" | sed -e 's/\..*//'`
+  glibc_version_minor=`echo "$with_glibc_version" | sed -e 's/.*\.//'`
+else
+  as_fn_error "option --with-glibc-version requires a version number M.N" "$LINENO" 5
+fi
+else
+
+if ac_fn_c_compute_int "$LINENO" "__GLIBC__" "glibc_version_major"        "#include <features.h>"; then :
+
+else
+  glibc_version_major=0
+fi
+
+if ac_fn_c_compute_int "$LINENO" "__GLIBC_MINOR__" "glibc_version_minor"        "#include <features.h>"; then :
+
+else
+  glibc_version_minor=0
+fi
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibc_version_major.$glibc_version_minor" >&5
+$as_echo "$glibc_version_major.$glibc_version_minor" >&6; }
+
 # Determine floating-point type for powerpc*-*-linux*.
 # Single-precision-only FPRs are not a supported configuration for
 # this target, so are not allowed for in this test.
@@ -4396,6 +4431,20 @@ ppc_fp_type=hard
 EOF
 eval `${CC-cc} -E conftest.c | grep ppc_fp_type=`
 rm -f conftest.c
+# glibc 2.19 and later provide all the soft-fp functions, with proper
+# interactions with <fenv.h> exception and rounding mode handling, so
+# make libgcc's versions into compat symbols if a recent enough glibc
+# version is being used.
+ppc_fp_compat=
+case ${ppc_fp_type} in
+soft|e500v1|e500v2)
+  if test $glibc_version_major -gt 2 \
+    || ( test $glibc_version_major -eq 2 \
+        && test $glibc_version_minor -ge 19 ); then
+    ppc_fp_compat="t-softfp-compat"
+  fi
+  ;;
+esac
 ;;
 esac
 
