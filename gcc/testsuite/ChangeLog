@@ -1,3 +1,10 @@
+2014-10-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/diag-aka-1.c: New test.
+	* gcc.dg/pr13804-1.c: Adjust dg-error.
+	* gcc.dg/redecl-14.c: Likewise.
+	* gcc.dg/pr56980.c: Adjust dg-message.
+
 2014-10-30  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.misc-tests/godump-1.c: Skip if ! lp64.
