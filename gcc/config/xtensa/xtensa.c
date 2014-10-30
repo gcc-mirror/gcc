@@ -74,6 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "df.h"
 #include "builtins.h"
+#include "dumpfile.h"
+#include "hw-doloop.h"
 #include "rtl-iter.h"
 
 
@@ -200,6 +202,10 @@ static reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
 
 static bool constantpool_address_p (const_rtx addr);
 static bool xtensa_legitimate_constant_p (machine_mode, rtx);
+static void xtensa_reorg (void);
+static bool xtensa_can_use_doloop_p (const widest_int &, const widest_int &,
+                                     unsigned int, bool);
+static const char *xtensa_invalid_within_doloop (const rtx_insn *);
 
 static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
@@ -325,6 +331,15 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P xtensa_legitimate_constant_p
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG xtensa_reorg
+
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P xtensa_can_use_doloop_p
+
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP xtensa_invalid_within_doloop
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1690,7 +1705,7 @@ xtensa_emit_loop_end (rtx_insn *insn, rtx *operands)
         }
     }
 
-  output_asm_insn ("# loop end for %0", operands);
+  output_asm_insn ("%1_LEND:", operands);
 }
 
 
@@ -3718,6 +3733,238 @@ static bool
 xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return !xtensa_tls_referenced_p (x);
+}
+
+/* Implement TARGET_CAN_USE_DOLOOP_P.  */
+
+static bool
+xtensa_can_use_doloop_p (const widest_int &, const widest_int &,
+                         unsigned int loop_depth, bool entered_at_top)
+{
+  /* Considering limitations in the hardware, only use doloop
+     for innermost loops which must be entered from the top.  */
+  if (loop_depth > 1 || !entered_at_top)
+    return false;
+
+  return true;
+}
+
+/* NULL if INSN insn is valid within a low-overhead loop.
+   Otherwise return why doloop cannot be applied.  */
+
+static const char *
+xtensa_invalid_within_doloop (const rtx_insn *insn)
+{
+  if (CALL_P (insn))
+    return "Function call in the loop.";
+
+  if (JUMP_P (insn) && INSN_CODE (insn) == CODE_FOR_return)
+    return "Return from a call instruction in the loop.";
+
+  return NULL;
+}
+
+/* Optimize LOOP.  */
+
+static bool
+hwloop_optimize (hwloop_info loop)
+{
+  int i;
+  edge entry_edge;
+  basic_block entry_bb;
+  rtx iter_reg;
+  rtx_insn *insn, *seq, *entry_after;
+
+  if (loop->depth > 1)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d is not innermost\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (!loop->incoming_dest)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d has more than one entry\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (loop->incoming_dest != loop->head)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d is not entered from head\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (loop->has_call || loop->has_asm)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d has invalid insn\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Scan all the blocks to make sure they don't use iter_reg.  */
+  if (loop->iter_reg_used || loop->iter_reg_used_outside)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d uses iterator\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Check if start_label appears before doloop_end.  */
+  insn = loop->start_label;
+  while (insn && insn != loop->loop_end)
+    insn = NEXT_INSN (insn);
+
+  if (!insn)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Get the loop iteration register.  */
+  iter_reg = loop->iter_reg;
+
+  gcc_assert (REG_P (iter_reg));
+
+  entry_edge = NULL;
+
+  FOR_EACH_VEC_SAFE_ELT (loop->incoming, i, entry_edge)
+    if (entry_edge->flags & EDGE_FALLTHRU)
+      break;
+
+  if (entry_edge == NULL)
+    return false;
+
+  /* Place the zero_cost_loop_start instruction before the loop.  */
+  entry_bb = entry_edge->src;
+
+  start_sequence ();
+
+  insn = emit_insn (gen_zero_cost_loop_start (loop->iter_reg,
+                                              loop->start_label,
+                                              loop->iter_reg));
+
+  seq = get_insns ();
+
+  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1)
+    {
+      basic_block new_bb;
+      edge e;
+      edge_iterator ei;
+
+      emit_insn_before (seq, BB_HEAD (loop->head));
+      seq = emit_label_before (gen_label_rtx (), seq);
+      new_bb = create_basic_block (seq, insn, entry_bb);
+      FOR_EACH_EDGE (e, ei, loop->incoming)
+        {
+          if (!(e->flags & EDGE_FALLTHRU))
+            redirect_edge_and_branch_force (e, new_bb);
+          else
+            redirect_edge_succ (e, new_bb);
+        }
+
+      make_edge (new_bb, loop->head, 0);
+    }
+  else
+    {
+      entry_after = BB_END (entry_bb);
+      while (DEBUG_INSN_P (entry_after)
+             || (NOTE_P (entry_after)
+                 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
+        entry_after = PREV_INSN (entry_after);
+
+      emit_insn_after (seq, entry_after);
+    }
+
+  end_sequence ();
+
+  return true;
+}
+
+/* A callback for the hw-doloop pass.  Called when a loop we have discovered
+   turns out not to be optimizable; we have to split the loop_end pattern into
+   a subtract and a test.  */
+
+static void
+hwloop_fail (hwloop_info loop)
+{
+  rtx test;
+  rtx_insn *insn = loop->loop_end;
+
+  emit_insn_before (gen_addsi3 (loop->iter_reg,
+                                loop->iter_reg,
+                                constm1_rtx),
+                    loop->loop_end);
+
+  test = gen_rtx_NE (VOIDmode, loop->iter_reg, const0_rtx);
+  insn = emit_jump_insn_before (gen_cbranchsi4 (test,
+                                                loop->iter_reg, const0_rtx,
+                                                loop->start_label),
+                                loop->loop_end);
+
+  JUMP_LABEL (insn) = loop->start_label;
+  LABEL_NUSES (loop->start_label)++;
+  delete_insn (loop->loop_end);
+}
+
+/* A callback for the hw-doloop pass.  This function examines INSN; if
+   it is a doloop_end pattern we recognize, return the reg rtx for the
+   loop counter.  Otherwise, return NULL_RTX.  */
+
+static rtx
+hwloop_pattern_reg (rtx_insn *insn)
+{
+  rtx reg;
+
+  if (!JUMP_P (insn) || recog_memoized (insn) != CODE_FOR_loop_end)
+    return NULL_RTX;
+
+  reg = SET_DEST (XVECEXP (PATTERN (insn), 0, 1));
+  if (!REG_P (reg))
+    return NULL_RTX;
+
+  return reg;
+}
+
+
+static struct hw_doloop_hooks xtensa_doloop_hooks =
+{
+  hwloop_pattern_reg,
+  hwloop_optimize,
+  hwloop_fail
+};
+
+/* Run from machine_dependent_reorg, this pass looks for doloop_end insns
+   and tries to rewrite the RTL of these loops so that proper Xtensa
+   hardware loops are generated.  */
+
+static void
+xtensa_reorg_loops (void)
+{
+  reorg_loops (false, &xtensa_doloop_hooks);
+}
+
+/* Implement the TARGET_MACHINE_DEPENDENT_REORG pass.  */
+
+static void
+xtensa_reorg (void)
+{
+  /* We are freeing block_for_insn in the toplev to keep compatibility
+     with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
+  compute_bb_for_insn ();
+
+  df_analyze ();
+
+  /* Doloop optimization.  */
+  xtensa_reorg_loops ();
 }
 
 #include "gt-xtensa.h"
