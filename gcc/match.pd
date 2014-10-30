@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Simplifications of operations with one constant operand and
-   simplifications to constants.  */
+   simplifications to constants or single values.  */
 
 (for op (plus pointer_plus minus bit_ior bit_xor)
   (simplify
@@ -87,6 +87,22 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
   (bit_xor @0 @0)
   { build_zero_cst (type); })
+
+/* Canonicalize X ^ ~0 to ~X.  */
+(simplify
+  (bit_xor @0 integer_all_onesp@1)
+  (bit_not @0))
+
+/* x & ~0 -> x  */
+(simplify
+ (bit_and @0 integer_all_onesp)
+  (non_lvalue @0))
+
+/* x & x -> x,  x | x -> x  */
+(for bitop (bit_and bit_ior)
+ (simplify
+  (bitop @0 @0)
+  (non_lvalue @0)))
 
 
 /* Simplifications of conversions.  */

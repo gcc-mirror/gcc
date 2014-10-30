@@ -2097,16 +2097,6 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  /* Canonicalize X ^ ~0 to ~X.  */
-  if (code == BIT_XOR_EXPR
-      && integer_all_onesp (arg2))
-    {
-      gimple_assign_set_rhs_with_ops (gsi, BIT_NOT_EXPR, arg1, NULL_TREE);
-      gcc_assert (gsi_stmt (*gsi) == stmt);
-      update_stmt (stmt);
-      return true;
-    }
-
   /* Try simple folding for X op !X, and X op X.  */
   res = simplify_bitwise_binary_1 (code, TREE_TYPE (arg1), arg1, arg2);
   if (res != NULL_TREE)
@@ -3554,11 +3544,9 @@ fwprop_ssa_val (tree name)
       if (val)
 	name = val;
     }
-  /* If NAME is not the only use signal we don't want to continue
-     matching into its definition.  */
-  if (TREE_CODE (name) == SSA_NAME
-      && !has_single_use (name))
-    return NULL_TREE;
+  /* We continue matching along SSA use-def edges for SSA names
+     that are not single-use.  Currently there are no patterns
+     that would cause any issues with that.  */
   return name;
 }
 
