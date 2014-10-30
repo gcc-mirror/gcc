@@ -11089,9 +11089,6 @@ fold_binary_loc (location_t loc,
 
     case BIT_IOR_EXPR:
     bit_ior:
-      if (operand_equal_p (arg0, arg1, 0))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
       /* ~X | X is -1.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
@@ -11227,9 +11224,6 @@ fold_binary_loc (location_t loc,
       goto bit_rotate;
 
     case BIT_XOR_EXPR:
-      if (integer_all_onesp (arg1))
-	return fold_build1_loc (loc, BIT_NOT_EXPR, type, op0);
-
       /* ~X ^ X is -1.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
@@ -11384,11 +11378,6 @@ fold_binary_loc (location_t loc,
       goto bit_rotate;
 
     case BIT_AND_EXPR:
-      if (integer_all_onesp (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-      if (operand_equal_p (arg0, arg1, 0))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
       /* ~X & X, (X == 0) & X, and !X & X are always zero.  */
       if ((TREE_CODE (arg0) == BIT_NOT_EXPR
 	   || TREE_CODE (arg0) == TRUTH_NOT_EXPR

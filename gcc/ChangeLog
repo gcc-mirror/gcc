@@ -1,3 +1,10 @@
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement more patterns that simplify to a single value.
+	* fold-const.c (fold_binary_loc): Remove them here.
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Likewise.
+	(fwprop_ssa_val): Remove restriction on single uses.
+
 2014-10-30  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/avr/driver-avr.c (avr_set_current_device): Remove.
