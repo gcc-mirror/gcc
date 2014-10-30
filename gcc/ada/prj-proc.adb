@@ -2308,7 +2308,9 @@ package body Prj.Proc is
                  Name_Of
                    (Project_Node_Of (Variable_Node, Node_Tree), Node_Tree);
                The_Project :=
-                 Imported_Or_Extended_Project_From (Project, Name);
+                 Imported_Or_Extended_Project_From
+                   (Project, Name, No_Extending => True);
+               The_Package := No_Package;
             end if;
 
             --  If a package was specified for the case variable, get its id
