@@ -1,3 +1,16 @@
+2014-10-10  Felix Yang  <felix.yang@huawei.com>
+
+	* config/xtensa/xtensa.h (TARGET_LOOPS): New Macro.
+	* config/xtensa/xtensa.c: Include dumpfile.h and hw-doloop.h.
+	(xtensa_reorg, xtensa_reorg_loops): New.
+	(xtensa_can_use_doloop_p, xtensa_invalid_within_doloop): New.
+	(hwloop_optimize, hwloop_fail, hwloop_pattern_reg): New.
+	(xtensa_emit_loop_end): Emit the zero-overhead loop end label.
+	(xtensa_doloop_hooks): Define.
+	* config/xtensa/xtensa.md (doloop_end, loop_end): New
+	(zero_cost_loop_start): Rewritten.
+	(zero_cost_loop_end): Likewise.
+
 2014-10-30  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc (mips*-*-linux*): Combine 32 and 64 bit cases.
