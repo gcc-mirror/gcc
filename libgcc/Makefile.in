@@ -922,12 +922,16 @@ ifeq ($(enable_shared),yes)
 
 # Map-file generation.
 ifneq ($(SHLIB_MKMAP),)
-libgcc.map: $(SHLIB_MKMAP) $(SHLIB_MAPFILES) $(libgcc-s-objects)
-	{ $(NM) $(SHLIB_NM_FLAGS) $(libgcc-s-objects); echo %%; \
-	  cat $(SHLIB_MAPFILES) \
+libgcc.map.in: $(SHLIB_MAPFILES)
+	{ cat $(SHLIB_MAPFILES) \
 	    | sed -e '/^[ 	]*#/d' \
 		  -e 's/^%\(if\|else\|elif\|endif\|define\)/#\1/' \
 	    | $(gcc_compile_bare) -E -xassembler-with-cpp -; \
+	} > tmp-$@
+	mv tmp-$@ $@
+libgcc.map: $(SHLIB_MKMAP) libgcc.map.in $(libgcc-s-objects)
+	{ $(NM) $(SHLIB_NM_FLAGS) $(libgcc-s-objects); echo %%; \
+	  cat libgcc.map.in; \
 	} | $(AWK) -f $(SHLIB_MKMAP) $(SHLIB_MKMAP_OPTS) > tmp-$@
 	mv tmp-$@ $@
 libgcc_s$(SHLIB_EXT): libgcc.map
