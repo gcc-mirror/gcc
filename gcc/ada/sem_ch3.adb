@@ -3600,7 +3600,7 @@ package body Sem_Ch3 is
 
          if Comes_From_Source (N)
            and then Expander_Active
-           and then Has_Following_Address_Clause (N)
+           and then Present (Following_Address_Clause (N))
            and then Nkind (E) = N_Aggregate
          then
             Set_Etype (E, T);
