@@ -1,3 +1,22 @@
+2014-10-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR63633
+	* config/avr/avr-protos.h (regmask): New inline function.
+	(avr_fix_inputs, avr_emit3_fix_outputs): New protos.
+	* config/avr/avr.c (avr_fix_operands, avr_move_fixed_operands)
+	(avr_fix_inputs, avr_emit3_fix_outputs): New functions.
+	* config/avr/avr-fixed.md (mulqq3_nomul, muluqq3_nomul)
+	(mul<ALL2QA>3, mul<ALL4A>3, <usdiv><ALL1Q>3, <usdiv><ALL2QA>3)
+	(<usdiv><ALL4A>3, round<ALL124QA>3): Fix input operands.
+	* config/avr/avr-dimode.md (add<ALL8>3, sub<ALL8>3)
+	(<ss_addsub><ALL8S>3, <us_addsub><ALL8U>3, cbranch<ALL8>4)
+	(<di_shifts><ALL8>3, <any_extend>mulsidi3): Fix input operands.
+	* config/avr/avr.md (mulqi3_call, mulhi3_call, mulsi3, mulpsi3)
+	(mulu<QIHI>si3, muls<QIHI>si3, mulohisi3, <any_extend>mulhisi3)
+	(usmulhisi3, <any_extend>mulhi3_highpart, mulsqipsi3)
+	(fmul, fmuls, fmulsu): Fix operands.  Turn insn into expander as
+	needed.
+
 2014-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.9.3.
