@@ -1,3 +1,135 @@
+2014-10-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Has_Single_Return_In_GNATprove_Mode):
+	Return False when return statement is inside one or more blocks.
+
+2014-10-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Is_Subprogram_Call): Account for the case where an
+	object declaration initialized by a function call that returns
+	an unconstrained result may be rewritted as a renaming of the
+	secondary stack result.
+
+2014-10-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry for aspect Extensions_Visible in
+	table Canonical_Aspect.
+	* aspects.ads: Add entry for aspect Extensions_Visible in
+	tables Aspect_Argument, Aspect_Delay, Aspect_Id, Aspect_Names,
+	Implementation_Defined_Aspect.
+	* einfo.adb (Get_Pragma): Include pragma Extensions_Visible in
+	the list of contract pragmas.
+	* par-prag.adb Pragma Extensions_Visible does not require special
+	processing from the parser.
+	* sem_ch3.adb (Analyze_Object_Declaration): Prevent an
+	implicit class-wide conversion of a formal parameter
+	of a specific tagged type whose related subprogram is
+	subject to pragma Extensions_Visible with value "False".
+	(Check_Abstract_Overriding): Add various overriding checks
+	related to pragma Extensions_Visible.
+	(Derive_Subprogram):
+	A subprogram subject to pragma Extensions_Visible with value
+	False requires overriding if the subprogram has at least one
+	controlling OUT parameter.
+	(Is_EVF_Procedure): New routine.
+	* sem_ch4.adb (Analyze_Type_Conversion): A formal parameter of
+	a specific tagged type whose related subprogram is subject to
+	pragma Extensions_Visible with value "False" cannot appear in
+	a class-wide conversion.
+	* sem_ch6.adb (Analyze_Subprogram_Contract): Remove
+	the assertion to account for pragma Extensions_Visible.
+	(Check_Overriding_Indicator): An overriding subprogram
+	inherits the contact of the overridden subprogram.
+	(New_Overloaded_Entity): An overriding subprogram inherits the
+	contact of the overridden subprogram.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Extensions_Visible.
+	(Check_Aspect_At_Freeze_Point): Aspect Extensions_Visible does not
+	require special processing at the freeze point.
+	* sem_prag.adb Add an entry for pragma Extensions_Visible in
+	table Sig_Flags.
+	(Analyze_Pragma): Ensure that various SPARK
+	pragmas lack identifiers in their arguments. Add processing for
+	pragma Extensions_Visible.
+	(Chain_CTC): Code reformatting.
+	* sem_res.adb (Resolve_Actuals): A formal parameter of a
+	specific tagged type whose related subprogram is subject to
+	pragma Extensions_Visible with value "False" cannot act as an
+	actual in a subprogram with value "True".
+	* sem_util.adb (Add_Classification): New routine.
+	(Add_Contract_Item): Account for pragma Extensions_Visible. Code
+	reformatting.
+	(Add_Contract_Test_Case): New routine.
+	(Add_Pre_Post_Condition): New routine.
+	(Extensions_Visible_Status): New routine.
+	(Inherit_Subprogram_Contract): New routine.
+	(Is_EVF_Expression): New routine.
+	(Is_Specific_Tagged_Type): New routine.
+	* sem_util.ads Add type Extensions_Visible_Mode and document all values.
+	(Add_Contract_Item): Add pragma Extensions_Visible to the
+	comment on usage.
+	(Inherit_Subprogram_Contract): New routine.
+	(Is_EVF_Expression): New routine.
+	(Is_Specific_Tagged_Type): New routine.
+	* sinfo.adb (Is_Inherited): New routine.
+	(Set_Is_Inherited): New routine.
+	* sinfo.ads Add flag Is_Inherited along with its usage in
+	nodes.
+	(Is_Inherited): New routine along with pragma Inline.
+	(Set_Is_Inherited): New routine along with pragma Inline.
+	* snames.ads-tmpl: Add predefined name "Extensions_Visible"
+	and a new Pragma_Id for the pragma.
+
+2014-10-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Case_Construction): Do not look for
+	the ultimate extending project for a case variable.
+
+2014-10-30  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* exp_dbug.adb, opt.ads (GNAT_Encodings): Import from C. Define
+	enumerators.
+	(gnat_encodings): Define a dummy variable for the AAMP back-end.
+	(Get_Encoded_Name): When -fgnat-encodings=all|gdb, encode names
+	for all discrete types whose bounds do not match size and do so
+	only for biased types when -fgnat-encodings=minimal.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not create ___XA
+	parallel types when array bounds are constant while the lower bound is
+        not 1.  Also stop generating them because the bound type is
+        larger than sizetype.
+	* gcc-interface/misc.c (gnat_encodings): New.
+
+2014-10-30  Thomas Quinot  <quinot@adacore.com>
+
+	* opt.adb (Set_Opt_Config_Switches): For an internal unit,
+	always reset Default_SSO to ' '.
+
+2014-10-30  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Set SSO from default before
+	checking SSO consistency.
+
+2014-10-30  Javier Miranda  <miranda@adacore.com>
+
+	* inline.adb (Check_Package_Body_For_Inlining):
+	Cleanup this subprogram to implement exactly the behavior
+	documented in the spec.
+
+2014-10-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-comutr.adb, a-cimutr.adb (Insert_Child): Add new variable First.
+	Update the position after all insertions have taken place.
+
+2014-10-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case License): Do not perform
+	analysis of pragma arguments when in CodePeer mode, pragma has
+	different format on other compilers.
+
+2014-10-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-os_lib.adb: Minor reformatting.
+
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc-interface/decl.c, gcc-interface/gigi.h, gcc-interface/misc.c,

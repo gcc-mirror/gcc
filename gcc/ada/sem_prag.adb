@@ -3842,9 +3842,9 @@ package body Sem_Prag is
                --  pragma is inserted in its declarative part.
 
                elsif From_Aspect_Specification (N)
+                 and then  Ent = Current_Scope
                  and then
                    Nkind (Unit_Declaration_Node (Ent)) = N_Subprogram_Body
-                 and then  Ent = Current_Scope
                then
                   OK := True;
 
@@ -5370,7 +5370,9 @@ package body Sem_Prag is
          ---------------
 
          procedure Chain_CTC (PO : Node_Id) is
-            S   : Entity_Id;
+            Name : constant String_Id := Get_Name_From_CTC_Pragma (N);
+            CTC  : Node_Id;
+            S    : Entity_Id;
 
          begin
             if Nkind (PO) = N_Abstract_Subprogram_Declaration then
@@ -5399,31 +5401,23 @@ package body Sem_Prag is
             --  There should not be another test-case with the same name
             --  associated to this subprogram.
 
-            declare
-               Name : constant String_Id := Get_Name_From_CTC_Pragma (N);
-               CTC  : Node_Id;
+            CTC := Contract_Test_Cases (Contract (S));
+            while Present (CTC) loop
 
-            begin
-               CTC := Contract_Test_Cases (Contract (S));
-               while Present (CTC) loop
+               --  Omit pragma Contract_Cases because it does not introduce
+               --  a unique case name and it does not follow the syntax of
+               --  Test_Case.
 
-                  --  Omit pragma Contract_Cases because it does not introduce
-                  --  a unique case name and it does not follow the syntax of
-                  --  Test_Case.
+               if Pragma_Name (CTC) = Name_Contract_Cases then
+                  null;
 
-                  if Pragma_Name (CTC) = Name_Contract_Cases then
-                     null;
+               elsif String_Equal (Name, Get_Name_From_CTC_Pragma (CTC)) then
+                  Error_Msg_Sloc := Sloc (CTC);
+                  Error_Pragma ("name for pragma% is already used#");
+               end if;
 
-                  elsif String_Equal
-                          (Name, Get_Name_From_CTC_Pragma (CTC))
-                  then
-                     Error_Msg_Sloc := Sloc (CTC);
-                     Error_Pragma ("name for pragma% is already used#");
-                  end if;
-
-                  CTC := Next_Pragma (CTC);
-               end loop;
-            end;
+               CTC := Next_Pragma (CTC);
+            end loop;
 
             --  Chain spec CTC pragma to list for subprogram
 
@@ -10518,6 +10512,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -12292,6 +12287,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -12805,12 +12801,11 @@ package body Sem_Prag is
                     Expression => Get_Pragma_Arg (Arg1)))));
             Analyze (N);
 
-         --------------------------------------
-         -- Pragma_Default_Initial_Condition --
-         --------------------------------------
+         -------------------------------
+         -- Default_Initial_Condition --
+         -------------------------------
 
-         --  pragma Pragma_Default_Initial_Condition
-         --           [ (null | boolean_EXPRESSION) ];
+         --  pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
 
          when Pragma_Default_Initial_Condition => Default_Init_Cond : declare
             Discard : Boolean;
@@ -12819,6 +12814,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
             Stmt := Prev (N);
@@ -13883,6 +13879,135 @@ package body Sem_Prag is
                Ada_Version_Pragma := Empty;
             end if;
 
+         ------------------------
+         -- Extensions_Visible --
+         ------------------------
+
+         --  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+
+         when Pragma_Extensions_Visible => Extensions_Visible : declare
+            Context : constant Node_Id := Parent (N);
+            Expr    : Node_Id;
+            Formal  : Entity_Id;
+            Subp    : Entity_Id;
+            Stmt    : Node_Id;
+
+            Has_OK_Formal : Boolean := False;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Most_N_Arguments  (1);
+
+            Subp := Empty;
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Skip prior pragmas, but check for duplicates
+
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared#", N);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
+
+               --  The associated [generic] subprogram declaration has been
+               --  found, stop the search.
+
+               elsif Nkind_In (Stmt, N_Generic_Subprogram_Declaration,
+                                     N_Subprogram_Declaration)
+               then
+                  Subp := Defining_Entity (Stmt);
+                  exit;
+
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
+
+               else
+                  Error_Pragma ("pragma % must apply to a subprogram");
+                  return;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            --  When the pragma applies to a stand alone subprogram body, it
+            --  appears within the declarations of the body. In that case the
+            --  enclosing construct is the proper context. This check is done
+            --  after the traversal above to allow for duplicate detection.
+
+            if Nkind (Context) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Context))
+            then
+               Subp := Defining_Entity (Context);
+            end if;
+
+            if No (Subp) then
+               Error_Pragma ("pragma % must apply to a subprogram");
+               return;
+            end if;
+
+            --  Examine the formals of the related subprogram
+
+            Formal := First_Formal (Subp);
+            while Present (Formal) loop
+
+               --  At least one of the formals is of a specific tagged type,
+               --  the pragma is legal.
+
+               if Is_Specific_Tagged_Type (Etype (Formal)) then
+                  Has_OK_Formal := True;
+                  exit;
+
+               --  A generic subprogram with at least one formal of a private
+               --  type ensures the legality of the pragma because the actual
+               --  may be specifically tagged. Note that this is verified by
+               --  the check above at instantiation time.
+
+               elsif Is_Private_Type (Etype (Formal))
+                 and then Is_Generic_Type (Etype (Formal))
+               then
+                  Has_OK_Formal := True;
+                  exit;
+               end if;
+
+               Next_Formal (Formal);
+            end loop;
+
+            if not Has_OK_Formal then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N (Fix_Error ("incorrect placement of pragma %"), N);
+               Error_Msg_NE
+                 ("\subprogram & lacks parameter of specific tagged or "
+                  & "generic private type", N, Subp);
+               return;
+            end if;
+
+            --  Analyze the Boolean expression (if any)
+
+            if Present (Arg1) then
+               Expr := Get_Pragma_Arg (Arg1);
+
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+
+               if not Is_OK_Static_Expression (Expr) then
+                  Error_Pragma_Arg
+                    ("expression of pragma % must be static", Expr);
+                  return;
+               end if;
+            end if;
+
+            --  Chain the pragma on the contract for further processing
+
+            Add_Contract_Item (N, Subp);
+         end Extensions_Visible;
+
          --------------
          -- External --
          --------------
@@ -14713,6 +14838,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Initial_Condition
@@ -14827,6 +14953,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -15760,6 +15887,15 @@ package body Sem_Prag is
 
          when Pragma_License =>
             GNAT_Pragma;
+
+            --  Do not analyze pragma any further in CodePeer mode, to avoid
+            --  extraneous errors in this implementation-dependent pragma,
+            --  which has a different profile on other compilers.
+
+            if CodePeer_Mode then
+               return;
+            end if;
+
             Check_Arg_Count (1);
             Check_No_Identifiers;
             Check_Valid_Configuration_Pragma;
@@ -17296,6 +17432,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Part_Of must appear
@@ -18675,6 +18812,7 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Refined states must
@@ -24918,6 +25056,7 @@ package body Sem_Prag is
       Pragma_Export_Valued_Procedure        => -1,
       Pragma_Extend_System                  => -1,
       Pragma_Extensions_Allowed             =>  0,
+      Pragma_Extensions_Visible             =>  0,
       Pragma_External                       => -1,
       Pragma_Favor_Top_Level                =>  0,
       Pragma_External_Name_Casing           =>  0,

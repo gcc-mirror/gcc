@@ -4532,11 +4532,14 @@ package body Exp_Ch7 is
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
             --  Complex constructs are factored out by the expander and their
-            --  occurrences are replaced with references to temporaries. Due to
-            --  this expansion activity, inspect the original tree to detect
-            --  subprogram calls.
+            --  occurrences are replaced with references to temporaries or
+            --  object renamings. Due to this expansion activity, inspect the
+            --  original tree to detect subprogram calls.
 
-            if Nkind (N) = N_Identifier and then Original_Node (N) /= N then
+            if Nkind_In (N, N_Identifier,
+                            N_Object_Renaming_Declaration)
+              and then Original_Node (N) /= N
+            then
                Detect_Subprogram_Call (Original_Node (N));
 
                --  The original construct contains a subprogram call, there is

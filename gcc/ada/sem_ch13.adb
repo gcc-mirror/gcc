@@ -2256,6 +2256,21 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
+               --  Aspect Extensions_Visible is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related subprogram.
+
+               when Aspect_Extensions_Visible =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Extensions_Visible);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Global
 
                --  Aspect Global is never delayed because it is equivalent to
@@ -8817,6 +8832,7 @@ package body Sem_Ch13 is
               Aspect_Default_Initial_Condition |
               Aspect_Dimension                 |
               Aspect_Dimension_System          |
+              Aspect_Extensions_Visible        |
               Aspect_Implicit_Dereference      |
               Aspect_Initial_Condition         |
               Aspect_Initializes               |

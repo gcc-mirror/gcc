@@ -4944,14 +4944,13 @@ package body Sem_Ch4 is
 
    procedure Analyze_Type_Conversion (N : Node_Id) is
       Expr : constant Node_Id := Expression (N);
-      T    : Entity_Id;
+      Typ  : Entity_Id;
 
    begin
-      --  If Conversion_OK is set, then the Etype is already set, and the
-      --  only processing required is to analyze the expression. This is
-      --  used to construct certain "illegal" conversions which are not
-      --  allowed by Ada semantics, but can be handled OK by Gigi, see
-      --  Sinfo for further details.
+      --  If Conversion_OK is set, then the Etype is already set, and the only
+      --  processing required is to analyze the expression. This is used to
+      --  construct certain "illegal" conversions which are not allowed by Ada
+      --  semantics, but can be handled by Gigi, see Sinfo for further details.
 
       if Conversion_OK (N) then
          Analyze (Expr);
@@ -4962,9 +4961,9 @@ package body Sem_Ch4 is
       --  checks to make sure the argument of the conversion is appropriate.
 
       Find_Type (Subtype_Mark (N));
-      T := Entity (Subtype_Mark (N));
-      Set_Etype (N, T);
-      Check_Fully_Declared (T, N);
+      Typ := Entity (Subtype_Mark (N));
+      Set_Etype (N, Typ);
+      Check_Fully_Declared (Typ, N);
       Analyze_Expression (Expr);
       Validate_Remote_Type_Type_Conversion (N);
 
@@ -5002,7 +5001,7 @@ package body Sem_Ch4 is
 
       elsif Nkind (Expr) = N_Character_Literal then
          if Ada_Version = Ada_83 then
-            Resolve (Expr, T);
+            Resolve (Expr, Typ);
          else
             Error_Msg_N ("argument of conversion cannot be character literal",
               N);
@@ -5010,13 +5009,22 @@ package body Sem_Ch4 is
          end if;
 
       elsif Nkind (Expr) = N_Attribute_Reference
-        and then
-          Nam_In (Attribute_Name (Expr), Name_Access,
-                                         Name_Unchecked_Access,
-                                         Name_Unrestricted_Access)
+        and then Nam_In (Attribute_Name (Expr), Name_Access,
+                                                Name_Unchecked_Access,
+                                                Name_Unrestricted_Access)
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
          Error_Msg_N ("\use qualified expression instead", N);
+      end if;
+
+      --  A formal parameter of a specific tagged type whose related subprogram
+      --  is subject to pragma Extensions_Visible with value "False" cannot
+      --  appear in a class-wide conversion.
+
+      if Is_Class_Wide_Type (Typ) and then Is_EVF_Expression (Expr) then
+         Error_Msg_N
+           ("formal parameter with Extensions_Visible False cannot be "
+            & "converted to class-wide type", Expr);
       end if;
    end Analyze_Type_Conversion;
 
@@ -7603,7 +7611,7 @@ package body Sem_Ch4 is
             if not Is_Aliased_View (Obj) then
                Error_Msg_NE
                  ("object in prefixed call to & must be aliased "
-                  & " (RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
+                  & "(RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
             end if;
 
             Analyze (First_Actual);

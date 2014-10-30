@@ -1220,6 +1220,7 @@ begin
            Pragma_Export_Value                   |
            Pragma_Export_Valued_Procedure        |
            Pragma_Extend_System                  |
+           Pragma_Extensions_Visible             |
            Pragma_External                       |
            Pragma_External_Name_Casing           |
            Pragma_Favor_Top_Level                |

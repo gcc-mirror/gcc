@@ -6684,31 +6684,32 @@ package body Einfo is
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
       Is_CDG  : constant Boolean :=
-                  Id = Pragma_Abstract_State    or else
-                  Id = Pragma_Async_Readers     or else
-                  Id = Pragma_Async_Writers     or else
-                  Id = Pragma_Depends           or else
-                  Id = Pragma_Effective_Reads   or else
-                  Id = Pragma_Effective_Writes  or else
-                  Id = Pragma_Global            or else
-                  Id = Pragma_Initial_Condition or else
-                  Id = Pragma_Initializes       or else
-                  Id = Pragma_Part_Of           or else
-                  Id = Pragma_Refined_Depends   or else
-                  Id = Pragma_Refined_Global    or else
+                  Id = Pragma_Abstract_State     or else
+                  Id = Pragma_Async_Readers      or else
+                  Id = Pragma_Async_Writers      or else
+                  Id = Pragma_Depends            or else
+                  Id = Pragma_Effective_Reads    or else
+                  Id = Pragma_Effective_Writes   or else
+                  Id = Pragma_Extensions_Visible or else
+                  Id = Pragma_Global             or else
+                  Id = Pragma_Initial_Condition  or else
+                  Id = Pragma_Initializes        or else
+                  Id = Pragma_Part_Of            or else
+                  Id = Pragma_Refined_Depends    or else
+                  Id = Pragma_Refined_Global     or else
                   Id = Pragma_Refined_State;
       Is_CTC : constant Boolean :=
-                  Id = Pragma_Contract_Cases    or else
+                  Id = Pragma_Contract_Cases     or else
                   Id = Pragma_Test_Case;
       Is_PPC : constant Boolean :=
-                  Id = Pragma_Precondition      or else
-                  Id = Pragma_Postcondition     or else
+                  Id = Pragma_Precondition       or else
+                  Id = Pragma_Postcondition      or else
                   Id = Pragma_Refined_Post;
 
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
 
-      Item   : Node_Id;
-      Items  : Node_Id;
+      Item  : Node_Id;
+      Items : Node_Id;
 
    begin
       --  Handle pragmas that appear in N_Contract nodes. Those have to be

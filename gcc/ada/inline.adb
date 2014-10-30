@@ -933,7 +933,10 @@ package body Inline is
       function Has_Single_Return_In_GNATprove_Mode return Boolean;
       --  This function is called only in GNATprove mode, and it returns
       --  True if the subprogram has no return statement or a single return
-      --  statement as last statement.
+      --  statement as last statement. It returns False for subprogram with
+      --  a single return as last statement inside one or more blocks, as
+      --  inlining would generate gotos in that case as well (although the
+      --  goto is useless in that case).
 
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
@@ -1003,14 +1006,9 @@ package body Inline is
       --  Start of processing for Has_Single_Return_In_GNATprove_Mode
 
       begin
-         --  Retrieve last statement inside possible block statements
+         --  Retrieve the last statement
 
          Last_Statement := Last (Statements (Handled_Statement_Sequence (N)));
-
-         while Nkind (Last_Statement) = N_Block_Statement loop
-            Last_Statement :=
-              Last (Statements (Handled_Statement_Sequence (Last_Statement)));
-         end loop;
 
          --  Check that the last statement is the only possible return
          --  statement in the subprogram.
@@ -2049,16 +2047,15 @@ package body Inline is
       OK    : Boolean;
 
    begin
-      if Is_Compilation_Unit (P)
+      if Front_End_Inlining
+        and then Is_Compilation_Unit (P)
         and then not Is_Generic_Instance (P)
       then
          Bname := Get_Body_Name (Get_Unit_Name (Unit (N)));
 
          E := First_Entity (P);
          while Present (E) loop
-            if Has_Pragma_Inline_Always (E)
-              or else (Front_End_Inlining and then Has_Pragma_Inline (E))
-            then
+            if Has_Pragma_Inline (E) then
                if not Is_Loaded (Bname) then
                   Load_Needed_Body (N, OK);
 
