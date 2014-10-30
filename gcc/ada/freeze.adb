@@ -3569,10 +3569,14 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         SSO_ADC := Get_Attribute_Definition_Clause
-                      (Rec, Attribute_Scalar_Storage_Order);
+         --  Deal with default setting of reverse storage order
+
+         Set_SSO_From_Default (Rec);
 
          --  Check consistent attribute setting on component types
+
+         SSO_ADC := Get_Attribute_Definition_Clause
+                      (Rec, Attribute_Scalar_Storage_Order);
 
          declare
             Comp_ADC_Present : Boolean;
@@ -3588,10 +3592,6 @@ package body Freeze is
                Next_Component (Comp);
             end loop;
          end;
-
-         --  Deal with default setting of reverse storage order
-
-         Set_SSO_From_Default (Rec);
 
          --  Now deal with reverse storage order/bit order issues
 
