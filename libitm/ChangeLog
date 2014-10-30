@@ -1,3 +1,7 @@
+2014-10-30  Release Manager
+
+	* GCC 4.9.2 released.
+
 2014-07-24  Richard Henderson  <rth@redhat.com>
 
 	* config/aarch64/sjlj.S: New file.
