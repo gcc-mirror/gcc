@@ -9481,9 +9481,12 @@ package body Sem_Util is
    --   Start of processing for Inherit_Subprogram_Contract
 
    begin
-      --  Inheritance is carried out only when both subprograms have contracts
+      --  Inheritance is carried out only when both entities are subprograms
+      --  with contracts.
 
-      if Present (Contract (Subp))
+      if Is_Subprogram_Or_Generic_Subprogram (Subp)
+        and then Is_Subprogram_Or_Generic_Subprogram (From_Subp)
+        and then Present (Contract (Subp))
         and then Present (Contract (From_Subp))
       then
          Inherit_Pragma (Pragma_Extensions_Visible);

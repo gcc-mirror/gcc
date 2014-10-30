@@ -1,3 +1,14 @@
+2014-10-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Inherit_Subprogram_Contract):
+	Add a guard to protect against enumeration literal overriding.
+	* sem_ch3.adb, sem_ch4.adb, sem_res.adb, sem_util.adb:
+	Minor reformatting (add SPARK RM references).
+
+2014-10-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_dbug.adb, opt.ads: Minor reformatting.
+
 2014-10-30  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Has_Single_Return_In_GNATprove_Mode):

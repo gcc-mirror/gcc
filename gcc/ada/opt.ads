@@ -730,6 +730,17 @@ package Opt is
    --  True if a pragma Discard_Names appeared as a configuration pragma for
    --  the current compilation unit.
 
+   GNAT_Encodings : Int;
+   pragma Import (C, GNAT_Encodings, "gnat_encodings");
+   --  Constant controlling the balance between GNAT encodings and standard
+   --  DWARF to emit in the debug information. See jmissing.c and aamissing.c
+   --  for definitions for dotnet/jgnat and GNAAMP back ends. It accepts the
+   --  following values.
+
+   DWARF_GNAT_Encodings_All     : constant Int := 0;
+   DWARF_GNAT_Encodings_GDB     : constant Int := 1;
+   DWARF_GNAT_Encodings_Minimal : constant Int := 2;
+
    Identifier_Character_Set : Character;
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.
