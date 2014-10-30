@@ -23,17 +23,28 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "bconfig.h"
 #include <new>
-#include <map>
-#include <utility>
-#include <string>
 #include "system.h"
 #include "coretypes.h"
+#include "ggc.h"
 #include <cpplib.h>
 #include "errors.h"
 #include "hashtab.h"
 #include "hash-table.h"
+#include "hash-map.h"
 #include "vec.h"
 #include "is-a.h"
+
+
+/* Stubs for GGC referenced through instantiations triggered by hash-map.  */
+void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
+				  size_t, size_t
+				  CXX_MEM_STAT_INFO)
+{
+  return NULL;
+}
+void ggc_free (void *)
+{
+}
 
 
 /* libccp helpers.  */
@@ -350,6 +361,28 @@ get_operator (const char *id)
 }
 
 
+/* Helper for the capture-id map.  */
+
+struct capture_id_map_hasher : default_hashmap_traits
+{
+  static inline hashval_t hash (const char *);
+  static inline bool equal_keys (const char *, const char *);
+};
+
+inline hashval_t
+capture_id_map_hasher::hash (const char *id)
+{
+  return htab_hash_string (id);
+}
+
+inline bool
+capture_id_map_hasher::equal_keys (const char *id1, const char *id2)
+{
+  return strcmp (id1, id2) == 0;
+}
+
+typedef hash_map<const char *, unsigned, capture_id_map_hasher> cid_map_t;
+
 
 /* The AST produced by parsing of the pattern definitions.  */
 
@@ -410,13 +443,13 @@ struct c_expr : public operand
   };
 
   c_expr (cpp_reader *r_, vec<cpp_token> code_, unsigned nr_stmts_,
-	  vec<id_tab> ids_, std::map<std::string, unsigned> *capture_ids_)
+	  vec<id_tab> ids_, cid_map_t *capture_ids_)
     : operand (OP_C_EXPR), r (r_), code (code_), capture_ids (capture_ids_),
       nr_stmts (nr_stmts_), ids (ids_) {}
   /* cpplib tokens and state to transform this back to source.  */
   cpp_reader *r;
   vec<cpp_token> code;
-  std::map<std::string, unsigned> *capture_ids;
+  cid_map_t *capture_ids;
   /* The number of statements parsed (well, the number of ';'s).  */
   unsigned nr_stmts;
   /* The identifier replacement vector.  */
@@ -492,11 +525,11 @@ struct simplify
   simplify (operand *match_, source_location match_location_,
 	    struct operand *result_, source_location result_location_,
 	    vec<if_or_with> ifexpr_vec_, vec<vec<user_id *> > for_vec_,
-	    std::map<std::string, unsigned> *capture_ids_)
+	    cid_map_t *capture_ids_)
       : match (match_), match_location (match_location_),
       result (result_), result_location (result_location_),
       ifexpr_vec (ifexpr_vec_), for_vec (for_vec_),
-      capture_ids (capture_ids_), capture_max (capture_ids_->size () - 1) {}
+      capture_ids (capture_ids_), capture_max (capture_ids_->elements () - 1) {}
 
   /* The expression that is matched against the GENERIC or GIMPLE IL.  */
   operand *match;
@@ -513,7 +546,7 @@ struct simplify
      in the lowering phase.  */
   vec<vec<user_id *> > for_vec;
   /* A map of capture identifiers to indexes.  */
-  std::map<std::string, unsigned> *capture_ids;
+  cid_map_t *capture_ids;
   int capture_max;
 };
 
@@ -1419,7 +1452,7 @@ c_expr::gen_transform (FILE *f, const char *dest,
 		id = (const char *)n->val.str.text;
 	      else
 		id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	      fprintf (f, "captures[%u]", (*capture_ids)[id]);
+	      fprintf (f, "captures[%u]", *capture_ids->get(id));
 	      ++i;
 	      continue;
 	    }
@@ -2029,7 +2062,7 @@ capture_info::walk_c_expr (c_expr *e)
 	    id = (const char *)n->val.str.text;
 	  else
 	    id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	  info[(*e->capture_ids)[id]].force_no_side_effects_p = true;
+	  info[*e->capture_ids->get(id)].force_no_side_effects_p = true;
 	}
     }
 }
@@ -2439,7 +2472,7 @@ private:
   vec<if_or_with> active_ifs;
   vec<vec<user_id *> > active_fors;
 
-  std::map<std::string, unsigned> *capture_ids;
+  cid_map_t *capture_ids;
 
 public:
   vec<simplify *> simplifiers;
@@ -2615,10 +2648,12 @@ parser::parse_capture (operand *op)
     id = get_ident ();
   else
     fatal_at (token, "expected number or identifier");
-  unsigned next_id = capture_ids->size ();
-  std::pair<std::map<std::string, unsigned>::iterator, bool> res
-    = capture_ids->insert (std::pair<std::string, unsigned>(id, next_id));
-  return new capture ((*res.first).second, op);
+  unsigned next_id = capture_ids->elements ();
+  bool existed;
+  unsigned &num = capture_ids->get_or_insert (id, &existed);
+  if (!existed)
+    num = next_id;
+  return new capture (num, op);
 }
 
 /* Parse an expression
@@ -2799,7 +2834,7 @@ parser::parse_simplify (source_location match_location,
 			expr *result)
 {
   /* Reset the capture map.  */
-  capture_ids = new std::map<std::string, unsigned>;
+  capture_ids = new cid_map_t;
 
   const cpp_token *loc = peek ();
   struct operand *match = parse_op ();

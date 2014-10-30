@@ -264,6 +264,8 @@ public:
 	  break;
     }
 
+  size_t elements () const { return m_table.elements (); }
+
 private:
 
   template<typename T, typename U, typename V> friend void gt_ggc_mx (hash_map<T, U, V> *);
