@@ -1,3 +1,7 @@
+2014-10-30  Release Manager
+
+	* GCC 4.9.2 released.
+
 2014-08-12  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* Makefile.in: Add CFLAGS_FOR_TARGET to GNATLIBCFLAGS_FOR_C.
