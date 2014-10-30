@@ -1,3 +1,8 @@
+2014-10-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-objc-common.c (c_tree_printer) <case 'T'>: For a typedef name,
+	print the stripped version as well, if they're not the same.
+
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-decl.c, c-tree.h, c-typeck.c: Remove redundant enum from

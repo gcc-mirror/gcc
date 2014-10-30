@@ -20,9 +20,9 @@ void
 f (void)
 {
   x0.c; /* { dg-error "'struct s0' has no member named 'c'" } */
-  x1.c; /* { dg-error "'S0' has no member named 'c'" } */
+  x1.c; /* { dg-error "'S0 {aka struct s0}' has no member named 'c'" } */
   x2.c; /* { dg-error "'union u0' has no member named 'c'" } */
-  x3.c; /* { dg-error "'U0' has no member named 'c'" } */
+  x3.c; /* { dg-error "'U0 {aka union u0}' has no member named 'c'" } */
   x4->c; /* { dg-error "'struct s0' has no member named 'c'" } */
   x5->c; /* { dg-error "'union u0' has no member named 'c'" } */
 }
