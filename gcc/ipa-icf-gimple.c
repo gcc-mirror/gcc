@@ -527,6 +527,10 @@ func_checker::compare_variable_decl (tree t1, tree t2)
   return return_with_debug (ret);
 }
 
+
+/* Function visits all gimple labels and creates corresponding
+   mapping between basic blocks and labels.  */
+
 void
 func_checker::parse_labels (sem_bb *bb)
 {
@@ -765,7 +769,8 @@ func_checker::compare_gimple_label (gimple g1, gimple g2)
   if (FORCED_LABEL (t1) || FORCED_LABEL (t2))
     return return_false_with_msg ("FORCED_LABEL");
 
-  return compare_tree_ssa_label (t1, t2);
+  /* As the pass build BB to label mapping, no further check is needed.  */
+  return true;
 }
 
 /* Verifies for given GIMPLEs S1 and S2 that

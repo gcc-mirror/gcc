@@ -1,3 +1,11 @@
+2014-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63574
+	PR ipa/63664
+	* ipa-icf-gimple.c (func_checker::parse_labels): Missing comment added.
+	(func_checker::compare_gimple_label): Simlified comparison introduced.
+	* ipa-icf-gimple.h: Missing comment added.
+
 2014-10-30  Jeff Law  <law@redhat.com>
 	
 	* config/pa/pa-protos.h (pa_output_arg_descriptor): Strengthen
