@@ -1,3 +1,7 @@
+2014-10-30  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/driver-avr.c (avr_set_current_device): Remove.
+
 2014-10-30  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63574
@@ -7,7 +11,7 @@
 	* ipa-icf-gimple.h: Missing comment added.
 
 2014-10-30  Jeff Law  <law@redhat.com>
-	
+
 	* config/pa/pa-protos.h (pa_output_arg_descriptor): Strengthen
 	argument from rtx to rtx_insn *.
 	(compute_movmem_length, compute_clrmem_length): Likewise.
