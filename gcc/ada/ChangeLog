@@ -1,3 +1,155 @@
+2014-10-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add an entry for aspect Ghost in table
+	Canonical_Aspect.
+	* aspects.ads Add an entry for aspect Ghost in tables
+	Aspect_Argument, Aspect_Delay, Aspect_Id, Aspect_Names and
+	Implementation_Defined_Aspect.
+	* einfo.adb: Flags 277 and 278 are now in use.
+	(Is_Checked_Ghost_Entity): New routine.
+	(Is_Ghost_Entity): Removed.
+	(Is_Ghost_Subprogram): Removed.
+	(Is_Ignored_Ghost_Entity): New routine.
+	(Set_Is_Checked_Ghost_Entity): New routine.
+	(Set_Is_Ignored_Ghost_Entity): New routine.
+	(Write_Entity_Flags): Output flags Is_Checked_Ghost_Entity and
+	Is_Ignored_Ghost_Entity.
+	* einfo.ads: Add new flags Is_Checked_Ghost_Entity
+	and Is_Ignored_Ghost_Entity along with usage in nodes.
+	(Is_Checked_Ghost_Entity): New routine and pragma Inline.
+	(Is_Ghost_Entity): Removed along with synthesized flag
+	description and usage in nodes.
+	(Is_Ghost_Subprogram): Removed along with synthesized flag description
+	and usage in nodes.
+	(Is_Ignored_Ghost_Entity): New routine and pragma Inline.
+	(Set_Is_Checked_Ghost_Entity): New routine and pragma Inline.
+	(Set_Is_Ignored_Ghost_Entity): New routine and pragma Inline.
+	* freeze.adb (Freeze_Entity): A Ghost type cannot be effectively
+	volatile.
+	* par-prag.adb Pragma Ghost does not need special handling by
+	the parser.
+	* repinfo.adb (List_Mechanisms): Remove the entry for convention Ghost.
+	* sem_attr.adb (Analyze_Access_Attribute): Remove obsolete check.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Mark
+	the type as Ghost when its enclosing context is Ghost.
+	(Analyze_Incomplete_Type_Decl): Mark the type as Ghost when
+	its enclosing context is Ghost.
+	(Analyze_Number_Declaration): Mark the number as Ghost when its
+	enclosing context is Ghost.
+	(Analyze_Object_Declaration): Mark the object as Ghost when its
+	enclosing context is Ghost. Verify the Ghost policy between
+	initial declaration and completion of a deferred constant.
+	(Analyze_Object_Contract): A Ghost variable cannot be effectively
+	volatile, imported or exported.
+	(Build_Derived_Record_Type): Mark a type extension as Ghost when it
+	implements a Ghost interface.
+	(Build_Record_Type): Inherit volatility and "ghostness" from
+	the parent type.
+	(Check_Completion): A Ghost entity declared
+	in a non-Ghost package does not require completion in a body.
+	(Implements_Ghost_Interface): New routine.
+	(Process_Full_View): Inherit "ghostness" from the partial view. Verify
+	the Ghost policy between the partial and full views. Verify the
+	completion of a Ghost type extension.
+	* sem_ch4.adb (Check_Ghost_Subprogram_Call): Removed.
+	* sem_ch5.adb (Analyze_Assignment): Analyze the left hand side first.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Mark
+	the subprogram as Ghost when its enclosing context is Ghost.
+	(Analyze_Generic_Subprogram_Body): Mark the generic body as Ghost
+	when its enclosing context is Ghost. Verify the Ghost policy
+	between the spec and body.
+	(Analyze_Subprogram_Body_Helper): Mark the body as Ghost when its
+	enclosing context is Ghost. Verify the Ghost policy between the spec
+	and body.
+	(Check_Conformance): A Ghost subprogram profile and a non-Ghost
+	subprogram profile are not subtype conformant.
+	(Convention_Of): Removed.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Inherit the
+	"ghostness" from the spec. Verify the Ghost policy between
+	the spec and body.
+	(Analyze_Private_Type_Declaration): Mark the type as Ghost when its
+	enclosing context is Ghost.
+	(Requires_Completion_In_Body): New routine.
+	(Unit_Requires_Body): Use Requires_Completion_In_Body.
+	(Unit_Requires_Body_Info): Rename formal parameter P to Pack_Id, update
+	comment on usage and all uses of P in the body. Use
+	Requires_Completion_In_Body.
+	* sem_ch7.ads (Unit_Requires_Body): Rename formal parameter P
+	to Pack_Id, update comment on usage and all uses of P in the body.
+	* sem_ch8.adb (Analyze_Exception_Renaming): Inherit the "ghostness"
+	from the renamed excention.
+	(Analyze_Generic_Renaming): Inherit the "ghostness" from the
+	renamed generic subprogram.
+	(Analyze_Object_Renaming): Inherit the "ghostness" from the renamed
+	object.
+	(Analyze_Package_Renaming): Inherit the "ghostness" from the
+	renamed package.
+	(Analyze_Subprogram_Renaming): Inherit the "ghostness" from the
+	renamed subprogram.
+	* sem_ch11.adb (Analyze_Exception_Declaration): Mark an exception
+	as Ghost when its enclosing context is Ghost.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration,
+	Analyze_Generic_Subprogram_Declaration): Mark an exception as
+	Ghost when its enclosing context is Ghost.
+	(Preanalyze_Actuals): Remove obsolete check.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Ghost.
+	(Check_Aspect_At_Freeze_Point): Aspects
+	Depends and Global do no need special checking at freeze point.
+	(Insert_After_SPARK_Mode): Update comment on usage.
+	* sem_mech.adb (Set_Mechanisms): Remove the entry for convention Ghost.
+	* sem_prag.adb Add an entry for pragma Ghost in table Sig_Flags.
+	(Analyze_Abstract_State): Update the grammar of the pragma. Add
+	formal parameter Pack_Id along with comment on usage. Mark an
+	abstract state as Ghost when its enclosing context is Ghost. Add
+	processing for option Ghost.
+	(Analyze_Constituent): Verify
+	that a Ghost abstract state is refined by Ghost constituents.
+	(Analyze_Pragma): "Ghost" is now a valid policy. Add checks
+	related to the use and placement of Check_Policy Ghost. Add
+	processing for pragma Ghost.
+	(Check_Ghost_Constituent): New routine.
+	(Is_Valid_Assertion_Kind): "Ghost" is now a valid assertion.
+	(Process_Convention): Remove obsolete check.
+	(Set_Convention_From_Pragma): Remove the processing for convention
+	Ghost.
+	* sem_res.adb (Check_Ghost_Context): New routine.
+	(Resolve_Call): Verify that a reference to a Ghost entity appears in a
+	suitable context. Verify the Ghost polity between point of declaration
+	and point of use.
+	(Resolve_Entity_Name): Verify that a reference to
+	a Ghost entity appears in a suitable context. Verify the Ghost
+	polity between point of declaration and point of use.
+	* sem_util.adb (Check_Ghost_Completion): New routine.
+	(Check_Ghost_Derivation): New routine.
+	(Incomplete_Or_Partial_View): New routine.
+	(Incomplete_Or_Private_View): Removed.
+	(Is_Ghost_Entity): New routine.
+	(Is_Ghost_Statement_Or_Pragma): New routine.
+	(Is_Subject_To_Ghost): New routine.
+	(Policy_In_Effect): New routine.
+	(Set_Is_Ghost_Entity): New routine.
+	(Within_Ghost_Scope): New routine.
+	* sem_util.ads (Check_Ghost_Completion): New routine.
+	(Check_Ghost_Derivation): New routine.
+	(Incomplete_Or_Partial_View): New routine.
+	(Incomplete_Or_Private_View): Removed.
+	(Is_Ghost_Entity): New routine.
+	(Is_Ghost_Statement_Or_Pragma): New routine.
+	(Is_Subject_To_Ghost): New routine.
+	(Policy_In_Effect): New routine.
+	(Set_Is_Ghost_Entity): New routine.
+	(Within_Ghost_Scope): New routine.
+	* snames.adb-tmpl (Get_Convention_Id): Remove the entry for
+	convention Ghost.
+	(Get_Convention_Name): Remove the entry for convention Ghost.
+	* snames.ads-tmpl Remove the convention id for Ghost. Add a
+	pragma id for Ghost.
+
+2014-10-31  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: Add description of --RTS option for ASIS tools.
+
 2014-10-31  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/Makefile.in (arm-vxworks): Update target pairs.

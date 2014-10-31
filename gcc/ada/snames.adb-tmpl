@@ -155,7 +155,6 @@ package body Snames is
          when Name_COBOL                 => return Convention_COBOL;
          when Name_CPP                   => return Convention_CPP;
          when Name_Fortran               => return Convention_Fortran;
-         when Name_Ghost                 => return Convention_Ghost;
          when Name_Intrinsic             => return Convention_Intrinsic;
          when Name_Java                  => return Convention_Java;
          when Name_Stdcall               => return Convention_Stdcall;
@@ -193,7 +192,6 @@ package body Snames is
          when Convention_CPP                   => return Name_CPP;
          when Convention_Entry                 => return Name_Entry;
          when Convention_Fortran               => return Name_Fortran;
-         when Convention_Ghost                 => return Name_Ghost;
          when Convention_Intrinsic             => return Name_Intrinsic;
          when Convention_Java                  => return Name_Java;
          when Convention_Protected             => return Name_Protected;

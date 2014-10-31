@@ -285,6 +285,17 @@ package Sem_Util is
    --  the one containing C2, that is known to refer to the same object (RM
    --  6.4.1(6.17/3)).
 
+   procedure Check_Ghost_Completion
+     (Partial_View : Entity_Id;
+      Full_View    : Entity_Id);
+   --  Verify that the Ghost policy of a full view or a completion is the same
+   --  as the Ghost policy of the partial view. Emit an error if this is not
+   --  the case.
+
+   procedure Check_Ghost_Derivation (Typ : Entity_Id);
+   --  Verify that the parent type and all progenitors of derived type or type
+   --  extension Typ are Ghost. If this is not the case, issue an error.
+
    procedure Check_Implicit_Dereference (N : Node_Id; Typ : Entity_Id);
    --  AI05-139-2: Accessors and iterators for containers. This procedure
    --  checks whether T is a reference type, and if so it adds an interprettion
@@ -1097,10 +1108,10 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
-   function Incomplete_Or_Private_View (Typ : Entity_Id) return Entity_Id;
-   --  Given the entity of a type, retrieve the incomplete or private view of
-   --  the same type. Note that Typ may not have a partial view to begin with,
-   --  in that case the function returns Empty.
+   function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
+   --  Given the entity of a constant or a type, retrieve the incomplete or
+   --  partial view of the same entity. Note that Id may not have a partial
+   --  view in which case the function returns Empty.
 
    procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id);
    --  Inherit the default initial condition procedure from the parent type of
@@ -1268,6 +1279,18 @@ package Sem_Util is
    --  means that the result returned is not crucial, but should err on the
    --  side of thinking things are fully initialized if it does not know.
 
+   function Is_Ghost_Entity (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id is Ghost. To qualify as such, the entity
+   --  must be subject to Convention Ghost.
+
+   function Is_Ghost_Statement_Or_Pragma (N : Node_Id) return Boolean;
+   --  Determine whether statement or pragma N is ghost. To qualify as such, N
+   --  must either
+   --    1) Occur within a ghost subprogram or package
+   --    2) Denote a call to a ghost procedure
+   --    3) Denote an assignment statement whose target is a ghost variable
+   --    4) Denote a pragma that mentions a ghost entity
+
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by a derived type declaration.
@@ -1395,6 +1418,12 @@ package Sem_Util is
    --  the case of procedure call statements (unlike the direct use of
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
+
+   function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
+   --  Determine whether declarative node N is subject to aspect or pragma
+   --  Ghost. Use this routine in cases where [source] pragma Ghost has not
+   --  been analyzed yet, but the context needs to establish the "ghostness"
+   --  of N.
 
    function Is_Subprogram_Stub_Without_Prior_Declaration
      (N : Node_Id) return Boolean;
@@ -1680,6 +1709,10 @@ package Sem_Util is
    --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
    --  returned to represent the corresponding aspects with x'Class names.
 
+   function Policy_In_Effect (Policy : Name_Id) return Name_Id;
+   --  Given a policy, return the policy identifier associated with it. If no
+   --  such policy is in effect, the value returned is No_Name.
+
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
    --  predicate tests are required for the arguments in this call (this is the
@@ -1881,6 +1914,10 @@ package Sem_Util is
    --    If restriction No_Implementation_Identifiers is set, then it checks
    --    that the entity is not implementation defined.
 
+   procedure Set_Is_Ghost_Entity (Id : Entity_Id);
+   --  Set the relevant ghost attribute of entity Id depending on the current
+   --  Ghost assertion policy in effect.
+
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);
    --  Sets the Entity_Id value associated with the given name, which is the
@@ -2007,6 +2044,12 @@ package Sem_Util is
    --  of private parents and progenitors is available then it is used to
    --  generate the list of visible ancestors; otherwise their partial
    --  view is added to the resulting list.
+
+   function Within_Ghost_Scope
+     (Id : Entity_Id := Current_Scope) return Boolean;
+   --  Determine whether an arbitrary entity is either a scope or within a
+   --  scope subject to convention Ghost or one that inherits "ghostness" from
+   --  an enclosing construct.
 
    function Within_Init_Proc return Boolean;
    --  Determines if Current_Scope is within an init proc

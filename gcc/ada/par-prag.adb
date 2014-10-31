@@ -1226,6 +1226,7 @@ begin
            Pragma_Favor_Top_Level                |
            Pragma_Fast_Math                      |
            Pragma_Finalize_Storage_Only          |
+           Pragma_Ghost                          |
            Pragma_Global                         |
            Pragma_Ident                          |
            Pragma_Implementation_Defined         |

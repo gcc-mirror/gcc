@@ -2669,6 +2669,82 @@ package body Sem_Util is
       end if;
    end Check_Function_Writable_Actuals;
 
+   ----------------------------
+   -- Check_Ghost_Completion --
+   ----------------------------
+
+   procedure Check_Ghost_Completion
+     (Partial_View : Entity_Id;
+      Full_View    : Entity_Id)
+   is
+      Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
+
+   begin
+      --  The Ghost policy in effect at the point of declaration and at the
+      --  point of completion must match (SPARK RM 6.9(14)).
+
+      if Is_Checked_Ghost_Entity (Partial_View)
+        and then Policy = Name_Ignore
+      then
+         Error_Msg_Sloc := Sloc (Full_View);
+
+         SPARK_Msg_N ("incompatible ghost policies in effect",   Partial_View);
+         SPARK_Msg_N ("\& declared with ghost policy Check",     Partial_View);
+         SPARK_Msg_N ("\& completed # with ghost policy Ignore", Partial_View);
+
+      elsif Is_Ignored_Ghost_Entity (Partial_View)
+        and then Policy = Name_Check
+      then
+         Error_Msg_Sloc := Sloc (Full_View);
+
+         SPARK_Msg_N ("incompatible ghost policies in effect",  Partial_View);
+         SPARK_Msg_N ("\& declared with ghost policy Ignore",   Partial_View);
+         SPARK_Msg_N ("\& completed # with ghost policy Check", Partial_View);
+      end if;
+   end Check_Ghost_Completion;
+
+   ----------------------------
+   -- Check_Ghost_Derivation --
+   ----------------------------
+
+   procedure Check_Ghost_Derivation (Typ : Entity_Id) is
+      Parent_Typ : constant Entity_Id := Etype (Typ);
+      Iface      : Entity_Id;
+      Iface_Elmt : Elmt_Id;
+
+   begin
+      --  Allow untagged derivations from predefined types such as Integer as
+      --  those are not Ghost by definition.
+
+      if Is_Scalar_Type (Typ) and then Parent_Typ = Base_Type (Typ) then
+         null;
+
+      --  The parent type of a Ghost type extension must be Ghost
+
+      elsif not Is_Ghost_Entity (Parent_Typ) then
+         SPARK_Msg_N  ("type extension & cannot be ghost", Typ);
+         SPARK_Msg_NE ("\parent type & is not ghost", Typ, Parent_Typ);
+         return;
+      end if;
+
+      --  All progenitors (if any) must be Ghost as well
+
+      if Is_Tagged_Type (Typ) and then Present (Interfaces (Typ)) then
+         Iface_Elmt := First_Elmt (Interfaces (Typ));
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+
+            if not Is_Ghost_Entity (Iface) then
+               SPARK_Msg_N  ("type extension & cannot be ghost", Typ);
+               SPARK_Msg_NE ("\interface type & is not ghost", Typ, Iface);
+               return;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+      end if;
+   end Check_Ghost_Derivation;
+
    --------------------------------
    -- Check_Implicit_Dereference --
    --------------------------------
@@ -9306,15 +9382,15 @@ package body Sem_Util is
    end In_Visible_Part;
 
    --------------------------------
-   -- Incomplete_Or_Private_View --
+   -- Incomplete_Or_Partial_View --
    --------------------------------
 
-   function Incomplete_Or_Private_View (Typ : Entity_Id) return Entity_Id is
+   function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id is
       function Inspect_Decls
         (Decls : List_Id;
          Taft  : Boolean := False) return Entity_Id;
-      --  Check whether a declarative region contains the incomplete or private
-      --  view of Typ.
+      --  Check whether a declarative region contains the incomplete or partial
+      --  view of Id.
 
       -------------------
       -- Inspect_Decls --
@@ -9347,7 +9423,7 @@ package body Sem_Util is
 
             if Present (Match)
               and then Present (Full_View (Match))
-              and then Full_View (Match) = Typ
+              and then Full_View (Match) = Id
             then
                return Match;
             end if;
@@ -9365,14 +9441,14 @@ package body Sem_Util is
    --  Start of processing for Incomplete_Or_Partial_View
 
    begin
-      --  Incomplete type case
+      --  Deferred constant or incomplete type case
 
-      Prev := Current_Entity_In_Scope (Typ);
+      Prev := Current_Entity_In_Scope (Id);
 
       if Present (Prev)
-        and then Is_Incomplete_Type (Prev)
+        and then (Is_Incomplete_Type (Prev) or else Ekind (Prev) = E_Constant)
         and then Present (Full_View (Prev))
-        and then Full_View (Prev) = Typ
+        and then Full_View (Prev) = Id
       then
          return Prev;
       end if;
@@ -9380,7 +9456,7 @@ package body Sem_Util is
       --  Private or Taft amendment type case
 
       declare
-         Pkg      : constant Entity_Id := Scope (Typ);
+         Pkg      : constant Entity_Id := Scope (Id);
          Pkg_Decl : Node_Id := Pkg;
 
       begin
@@ -9394,7 +9470,7 @@ package body Sem_Util is
             --  of this is when the two views have been exchanged - the full
             --  appears earlier than the private.
 
-            if Has_Private_Declaration (Typ) then
+            if Has_Private_Declaration (Id) then
                Prev := Inspect_Decls (Visible_Declarations (Pkg_Decl));
 
                --  Exchanged view case, look in the private declarations
@@ -9418,7 +9494,7 @@ package body Sem_Util is
       --  The type has no incomplete or private view
 
       return Empty;
-   end Incomplete_Or_Private_View;
+   end Incomplete_Or_Partial_View;
 
    -----------------------------------------
    -- Inherit_Default_Init_Cond_Procedure --
@@ -11085,6 +11161,110 @@ package body Sem_Util is
       end if;
    end Is_Fully_Initialized_Variant;
 
+   ---------------------
+   -- Is_Ghost_Entity --
+   ---------------------
+
+   function Is_Ghost_Entity (Id : Entity_Id) return Boolean is
+   begin
+      return Is_Checked_Ghost_Entity (Id) or else Is_Ignored_Ghost_Entity (Id);
+   end Is_Ghost_Entity;
+
+   ----------------------------------
+   -- Is_Ghost_Statement_Or_Pragma --
+   ----------------------------------
+
+   function Is_Ghost_Statement_Or_Pragma (N : Node_Id) return Boolean is
+      function Is_Ghost_Entity_Reference (N : Node_Id) return Boolean;
+      --  Determine whether an arbitrary node denotes a reference to a Ghost
+      --  entity.
+
+      -------------------------------
+      -- Is_Ghost_Entity_Reference --
+      -------------------------------
+
+      function Is_Ghost_Entity_Reference (N : Node_Id) return Boolean is
+         Ref : Node_Id;
+
+      begin
+         Ref := N;
+
+         --  When the reference extracts a subcomponent, recover the related
+         --  object (SPARK RM 6.9(1)).
+
+         while Nkind_In (Ref, N_Explicit_Dereference,
+                              N_Indexed_Component,
+                              N_Selected_Component,
+                              N_Slice)
+         loop
+            Ref := Prefix (Ref);
+         end loop;
+
+         return
+           Is_Entity_Name (Ref)
+             and then Present (Entity (Ref))
+             and then Is_Ghost_Entity (Entity (Ref));
+      end Is_Ghost_Entity_Reference;
+
+      --  Local variables
+
+      Arg  : Node_Id;
+      Stmt : Node_Id;
+
+   --  Start of processing for Is_Ghost_Statement_Or_Pragma
+
+   begin
+      if Nkind (N) = N_Pragma then
+
+         --  A pragma is Ghost when it appears within a Ghost package or
+         --  subprogram.
+
+         if Within_Ghost_Scope then
+            return True;
+         end if;
+
+         --  A pragma is Ghost when it mentions a Ghost entity
+
+         Arg := First (Pragma_Argument_Associations (N));
+         while Present (Arg) loop
+            if Is_Ghost_Entity_Reference (Get_Pragma_Arg (Arg)) then
+               return True;
+            end if;
+
+            Next (Arg);
+         end loop;
+      end if;
+
+      Stmt := N;
+      while Present (Stmt) loop
+
+         --  A statement is Ghost when it appears within a Ghost package or
+         --  subprogram.
+
+         if Is_Statement (Stmt) and then Within_Ghost_Scope then
+            return True;
+
+         --  An assignment statement is Ghost when the target is a Ghost
+         --  variable. A procedure call is Ghost when the invoked procedure
+         --  is Ghost.
+
+         elsif Nkind_In (Stmt, N_Assignment_Statement,
+                               N_Procedure_Call_Statement)
+         then
+            return Is_Ghost_Entity_Reference (Name (Stmt));
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Stmt) then
+            return False;
+         end if;
+
+         Stmt := Parent (Stmt);
+      end loop;
+
+      return False;
+   end Is_Ghost_Statement_Or_Pragma;
+
    ----------------------------
    -- Is_Inherited_Operation --
    ----------------------------
@@ -12176,6 +12356,123 @@ package body Sem_Util is
         Nkind (N) in N_Statement_Other_Than_Procedure_Call
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
+
+   -------------------------
+   -- Is_Subject_To_Ghost --
+   -------------------------
+
+   function Is_Subject_To_Ghost (N : Node_Id) return Boolean is
+      function Enables_Ghostness (Arg : Node_Id) return Boolean;
+      --  Determine whether aspect or pragma argument Arg enables "ghostness"
+
+      -----------------------
+      -- Enables_Ghostness --
+      -----------------------
+
+      function Enables_Ghostness (Arg : Node_Id) return Boolean is
+         Expr : Node_Id;
+
+      begin
+         Expr := Arg;
+
+         if Nkind (Expr) = N_Pragma_Argument_Association then
+            Expr := Get_Pragma_Arg (Expr);
+         end if;
+
+         --  Determine whether the expression of the aspect is static and
+         --  denotes True.
+
+         if Present (Expr) then
+            Preanalyze_And_Resolve (Expr);
+
+            return
+              Is_OK_Static_Expression (Expr)
+                and then Is_True (Expr_Value (Expr));
+
+         --  Otherwise Ghost defaults to True
+
+         else
+            return True;
+         end if;
+      end Enables_Ghostness;
+
+      --  Local variables
+
+      Id      : constant Entity_Id := Defining_Entity (N);
+      Asp     : Node_Id;
+      Decl    : Node_Id;
+      Prev_Id : Entity_Id;
+
+   --  Start of processing for Is_Subject_To_Ghost
+
+   begin
+      if Is_Ghost_Entity (Id) then
+         return True;
+
+      --  The completion of a type or a constant is not fully analyzed when the
+      --  reference to the Ghost entity is resolved. Because the completion is
+      --  not marked as Ghost yet, inspect the partial view.
+
+      elsif Is_Record_Type (Id)
+        or else Ekind (Id) = E_Constant
+        or else (Nkind (N) = N_Object_Declaration
+                  and then Constant_Present (N))
+      then
+         Prev_Id := Incomplete_Or_Partial_View (Id);
+
+         if Present (Prev_Id) and then Is_Ghost_Entity (Prev_Id) then
+            return True;
+         end if;
+      end if;
+
+      --  Examine the aspect specifications (if any) looking for aspect Ghost
+
+      if Permits_Aspect_Specifications (N) then
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            if Chars (Identifier (Asp)) = Name_Ghost then
+               return Enables_Ghostness (Expression (Asp));
+            end if;
+
+            Next (Asp);
+         end loop;
+      end if;
+
+      Decl := Empty;
+
+      --  When the context is a [generic] package declaration, pragma Ghost
+      --  resides in the visible declarations.
+
+      if Nkind_In (N, N_Generic_Package_Declaration,
+                      N_Package_Declaration)
+      then
+         Decl := First (Visible_Declarations (Specification (N)));
+
+      --  Otherwise pragma Ghost appears in the declarations following N
+
+      elsif Is_List_Member (N) then
+         Decl := Next (N);
+      end if;
+
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Pragma
+           and then Pragma_Name (Decl) = Name_Ghost
+         then
+            return
+              Enables_Ghostness (First (Pragma_Argument_Associations (Decl)));
+
+         --  A source construct ends the region where pragma Ghost may appear,
+         --  stop the traversal.
+
+         elsif Comes_From_Source (Decl) then
+            exit;
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return False;
+   end Is_Subject_To_Ghost;
 
    --------------------------------------------------
    -- Is_Subprogram_Stub_Without_Prior_Declaration --
@@ -15316,6 +15613,77 @@ package body Sem_Util is
       end if;
    end Original_Corresponding_Operation;
 
+   ----------------------
+   -- Policy_In_Effect --
+   ----------------------
+
+   function Policy_In_Effect (Policy : Name_Id) return Name_Id is
+      function Policy_In_List (List : Node_Id) return Name_Id;
+      --  Determine the the mode of a policy in a N_Pragma list
+
+      --------------------
+      -- Policy_In_List --
+      --------------------
+
+      function Policy_In_List (List : Node_Id) return Name_Id is
+         Arg  : Node_Id;
+         Expr : Node_Id;
+         Prag : Node_Id;
+
+      begin
+         Prag := List;
+         while Present (Prag) loop
+            Arg  := First (Pragma_Argument_Associations (Prag));
+            Expr := Get_Pragma_Arg (Arg);
+
+            --  The current Check_Policy pragma matches the requested policy,
+            --  return the second argument which denotes the policy identifier.
+
+            if Chars (Expr) = Policy then
+               return Chars (Get_Pragma_Arg (Next (Arg)));
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         return No_Name;
+      end Policy_In_List;
+
+      --  Local variables
+
+      Kind : Name_Id;
+
+   --  Start of processing for Policy_In_Effect
+
+   begin
+      if not Is_Valid_Assertion_Kind (Policy) then
+         raise Program_Error;
+      end if;
+
+      --  Inspect all policy pragmas that appear within scopes (if any)
+
+      Kind := Policy_In_List (Check_Policy_List);
+
+      --  Inspect all configuration policy pragmas (if any)
+
+      if Kind = No_Name then
+         Kind := Policy_In_List (Check_Policy_List_Config);
+      end if;
+
+      --  The context lacks policy pragmas, determine the mode based on whether
+      --  assertions are enabled.
+
+      if Kind = No_Name then
+         if Assertions_Enabled then
+            Kind := Name_Check;
+         else
+            Kind := Name_Ignore;
+         end if;
+      end if;
+
+      return Kind;
+   end Policy_In_Effect;
+
    ----------------------------------
    -- Predicate_Tests_On_Arguments --
    ----------------------------------
@@ -16825,6 +17193,22 @@ package body Sem_Util is
       Set_Entity (N, Val);
    end Set_Entity_With_Checks;
 
+   -------------------------
+   -- Set_Is_Ghost_Entity --
+   -------------------------
+
+   procedure Set_Is_Ghost_Entity (Id : Entity_Id) is
+      Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
+
+   begin
+      if Policy = Name_Check then
+         Set_Is_Checked_Ghost_Entity (Id);
+
+      elsif Policy = Name_Ignore then
+         Set_Is_Ignored_Ghost_Entity (Id);
+      end if;
+   end Set_Is_Ghost_Entity;
+
    ------------------------
    -- Set_Name_Entity_Id --
    ------------------------
@@ -17717,6 +18101,30 @@ package body Sem_Util is
 
       return List_1;
    end Visible_Ancestors;
+
+   ------------------------
+   -- Within_Ghost_Scope --
+   ------------------------
+
+   function Within_Ghost_Scope
+     (Id : Entity_Id := Current_Scope) return Boolean
+   is
+      S : Entity_Id;
+
+   begin
+      --  Climb the scope stack looking for a Ghost scope
+
+      S := Id;
+      while Present (S) and then S /= Standard_Standard loop
+         if Is_Ghost_Entity (S) then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end Within_Ghost_Scope;
 
    ----------------------
    -- Within_Init_Proc --

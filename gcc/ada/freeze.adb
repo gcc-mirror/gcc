@@ -4815,6 +4815,14 @@ package body Freeze is
             end if;
          end;
 
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+
+         if Is_Ghost_Entity (E)
+           and then Is_Effectively_Volatile (E)
+         then
+            SPARK_Msg_N ("ghost type & cannot be volatile", E);
+         end if;
+
          --  Deal with special cases of freezing for subtype
 
          if E /= Base_Type (E) then

@@ -2188,6 +2188,13 @@ package Einfo is
 --       Defined in all entities. Set for character types and subtypes,
 --       i.e. enumeration types that have at least one character literal.
 
+--    Is_Checked_Ghost_Entity (Flag277)
+--       Applies to all entities. Set for abstract states, [generic] packages,
+--       [generic] subprograms, components, discriminants, formal parameters,
+--       objects, package bodies, subprogram bodies, and [sub]types subject to
+--       pragma Ghost or inherit "ghostness" from an enclosing construct, and
+--       subject to Assertion_Policy Ghost => Check.
+
 --    Is_Child_Unit (Flag73)
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
@@ -2425,18 +2432,6 @@ package Einfo is
 --       package, generic function, generic procedure), and False for all
 --       other entities.
 
---    Is_Ghost_Entity (synthesized)
---       Applies to all entities. Yields True for a subprogram or a whole
---       object that has convention Ghost. For now only functions can have
---       Ghost convention, so this will be false for other than functions,
---       but we expect that to change in the future.
-
---    Is_Ghost_Subprogram (synthesized)
---       Applies to all entities. Yields True for a subprogram that has a Ghost
---       convention. Note: for now, only ghost functions are allowed, so this
---       will always be false for procedures, but that is expected to change in
---       the future.
-
 --    Is_Hidden (Flag57)
 --       Defined in all entities. Set for all entities declared in the
 --       private part or body of a package. Also marks generic formals of a
@@ -2457,6 +2452,13 @@ package Einfo is
 --       Defined in all entities. Set for a scope that contains the
 --       instantiation of a child unit, and whose entities are not visible
 --       during analysis of the instance.
+
+--    Is_Ignored_Ghost_Entity (Flag278)
+--       Applies to all entities. Set for abstract states, [generic] packages,
+--       [generic] subprograms, components, discriminants, formal parameters,
+--       objects, package bodies, subprogram bodies, and [sub]types subject to
+--       pragma Ghost or inherit "ghostness" from an enclosing construct, and
+--       subject to Assertion_Policy Ghost => Ignore.
 
 --    Is_Immediately_Visible (Flag7)
 --       Defined in all entities. Set if entity is immediately visible, i.e.
@@ -5178,6 +5180,7 @@ package Einfo is
    --    Is_Bit_Packed_Array                 (Flag122)  (base type only)
    --    Is_Aliased                          (Flag15)
    --    Is_Character_Type                   (Flag63)
+   --    Is_Checked_Ghost_Entity             (Flag277)
    --    Is_Child_Unit                       (Flag73)
    --    Is_Compilation_Unit                 (Flag149)
    --    Is_Completely_Hidden                (Flag103)
@@ -5194,6 +5197,7 @@ package Einfo is
    --    Is_Generic_Type                     (Flag13)
    --    Is_Hidden                           (Flag57)
    --    Is_Hidden_Open_Scope                (Flag171)
+   --    Is_Ignored_Ghost_Entity             (Flag278)
    --    Is_Immediately_Visible              (Flag7)
    --    Is_Implementation_Defined           (Flag254)
    --    Is_Imported                         (Flag24)
@@ -5740,8 +5744,6 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
-   --    Is_Ghost_Entity                     (synth)    (non-generic case only)
-   --    Is_Ghost_Subprogram                 (synth)    (non-generic case only)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
@@ -6037,8 +6039,6 @@ package Einfo is
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Is_Finalizer                        (synth)
-   --    Is_Ghost_Entity                     (synth)    (non-generic case only)
-   --    Is_Ghost_Subprogram                 (synth)    (non-generic case only)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
 
@@ -6249,7 +6249,6 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
-   --    Is_Ghost_Entity                     (synth)
    --    Size_Clause                         (synth)
 
    --  E_Void
@@ -6704,6 +6703,7 @@ package Einfo is
    function Is_CPP_Class                        (Id : E) return B;
    function Is_Called                           (Id : E) return B;
    function Is_Character_Type                   (Id : E) return B;
+   function Is_Checked_Ghost_Entity             (Id : E) return B;
    function Is_Child_Unit                       (Id : E) return B;
    function Is_Class_Wide_Equivalent_Type       (Id : E) return B;
    function Is_Compilation_Unit                 (Id : E) return B;
@@ -6730,6 +6730,7 @@ package Einfo is
    function Is_Hidden                           (Id : E) return B;
    function Is_Hidden_Non_Overridden_Subpgm     (Id : E) return B;
    function Is_Hidden_Open_Scope                (Id : E) return B;
+   function Is_Ignored_Ghost_Entity             (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
    function Is_Implementation_Defined           (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
@@ -7012,8 +7013,6 @@ package Einfo is
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_External_State                   (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
-   function Is_Ghost_Entity                     (Id : E) return B;
-   function Is_Ghost_Subprogram                 (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
    function Is_Packed_Array                     (Id : E) return B;
@@ -7343,6 +7342,7 @@ package Einfo is
    procedure Set_Is_CPP_Class                    (Id : E; V : B := True);
    procedure Set_Is_Called                       (Id : E; V : B := True);
    procedure Set_Is_Character_Type               (Id : E; V : B := True);
+   procedure Set_Is_Checked_Ghost_Entity         (Id : E; V : B := True);
    procedure Set_Is_Child_Unit                   (Id : E; V : B := True);
    procedure Set_Is_Class_Wide_Equivalent_Type   (Id : E; V : B := True);
    procedure Set_Is_Compilation_Unit             (Id : E; V : B := True);
@@ -7374,6 +7374,7 @@ package Einfo is
    procedure Set_Is_Hidden                       (Id : E; V : B := True);
    procedure Set_Is_Hidden_Non_Overridden_Subpgm (Id : E; V : B := True);
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
+   procedure Set_Is_Ignored_Ghost_Entity         (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
    procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
@@ -8101,6 +8102,7 @@ package Einfo is
    pragma Inline (Is_CPP_Class);
    pragma Inline (Is_Called);
    pragma Inline (Is_Character_Type);
+   pragma Inline (Is_Checked_Ghost_Entity);
    pragma Inline (Is_Child_Unit);
    pragma Inline (Is_Class_Wide_Equivalent_Type);
    pragma Inline (Is_Class_Wide_Type);
@@ -8149,6 +8151,7 @@ package Einfo is
    pragma Inline (Is_Hidden);
    pragma Inline (Is_Hidden_Non_Overridden_Subpgm);
    pragma Inline (Is_Hidden_Open_Scope);
+   pragma Inline (Is_Ignored_Ghost_Entity);
    pragma Inline (Is_Immediately_Visible);
    pragma Inline (Is_Implementation_Defined);
    pragma Inline (Is_Imported);
@@ -8580,6 +8583,7 @@ package Einfo is
    pragma Inline (Set_Is_CPP_Class);
    pragma Inline (Set_Is_Called);
    pragma Inline (Set_Is_Character_Type);
+   pragma Inline (Set_Is_Checked_Ghost_Entity);
    pragma Inline (Set_Is_Child_Unit);
    pragma Inline (Set_Is_Class_Wide_Equivalent_Type);
    pragma Inline (Set_Is_Compilation_Unit);
@@ -8611,6 +8615,7 @@ package Einfo is
    pragma Inline (Set_Is_Hidden);
    pragma Inline (Set_Is_Hidden_Non_Overridden_Subpgm);
    pragma Inline (Set_Is_Hidden_Open_Scope);
+   pragma Inline (Set_Is_Ignored_Ghost_Entity);
    pragma Inline (Set_Is_Immediately_Visible);
    pragma Inline (Set_Is_Implementation_Defined);
    pragma Inline (Set_Is_Imported);

@@ -98,6 +98,7 @@ package Aspects is
       Aspect_Extensions_Visible,            -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
+      Aspect_Ghost,                         -- GNAT
       Aspect_Global,                        -- GNAT
       Aspect_Implicit_Dereference,
       Aspect_Initial_Condition,             -- GNAT
@@ -234,6 +235,7 @@ package Aspects is
       Aspect_Effective_Writes         => True,
       Aspect_Extensions_Visible       => True,
       Aspect_Favor_Top_Level          => True,
+      Aspect_Ghost                    => True,
       Aspect_Global                   => True,
       Aspect_Inline_Always            => True,
       Aspect_Invariant                => True,
@@ -325,6 +327,7 @@ package Aspects is
       Aspect_Extensions_Visible        => Optional_Expression,
       Aspect_External_Name             => Expression,
       Aspect_External_Tag              => Expression,
+      Aspect_Ghost                     => Optional_Expression,
       Aspect_Global                    => Expression,
       Aspect_Implicit_Dereference      => Name,
       Aspect_Initial_Condition         => Expression,
@@ -419,6 +422,7 @@ package Aspects is
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+      Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
       Aspect_Import                       => Name_Import,
@@ -698,6 +702,7 @@ package Aspects is
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
+      Aspect_Ghost                        => Never_Delay,
       Aspect_Global                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
