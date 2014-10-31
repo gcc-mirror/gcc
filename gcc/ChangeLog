@@ -1,3 +1,9 @@
+2014-10-31  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (expr::gen_transform): Use NOP_EXPRs instead of
+	CONVERT_EXPRs in generated code.
+	(dt_simplify::gen): Likewise.
+
 2014-10-31  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/63534
