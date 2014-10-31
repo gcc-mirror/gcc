@@ -2659,7 +2659,9 @@ package body Inline is
       --  Body_To_Inline is also set for renamings (see sinfo.ads)
 
       elsif Nkind (Orig_Bod) in N_Entity then
-         return;
+         if not Has_Pragma_Inline (Subp) then
+            return;
+         end if;
 
       --  Skip inlining if the function returns an unconstrained type using
       --  an extended return statement since this part of the new inlining

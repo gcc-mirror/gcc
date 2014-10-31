@@ -6740,7 +6740,7 @@ package body Sem_Res is
       --  Local variables
 
       E   : constant Entity_Id := Entity (N);
-      Par : constant Node_Id   := Parent (N);
+      Par : Node_Id;
 
    --  Start of processing for Resolve_Entity_Name
 
@@ -6846,6 +6846,15 @@ package body Sem_Res is
          Eval_Entity_Name (N);
       end if;
 
+      Par := Parent (N);
+
+      --  When the entity appears in a parameter association, retrieve the
+      --  related subprogram call.
+
+      if Nkind (Par) = N_Parameter_Association then
+         Par := Parent (Par);
+      end if;
+
       --  An effectively volatile object subject to enabled properties
       --  Async_Writers or Effective_Reads must appear in a specific context.
       --  The following checks are only relevant when SPARK_Mode is on as they
@@ -6865,8 +6874,8 @@ package body Sem_Res is
             null;
 
          --  Assume that references to effectively volatile objects that appear
-         --  as actual parameters in a procedure call are always legal. The
-         --  full legality check is done when the actuals are resolved.
+         --  as actual parameters in a procedure call are always legal. A full
+         --  legality check is done when the actuals are resolved.
 
          elsif Nkind (Par) = N_Procedure_Call_Statement then
             null;
