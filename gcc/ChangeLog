@@ -1,3 +1,14 @@
+2014-10-31  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/63534
+	* config/i386/i386.c (ix86_init_pic_reg): Emit SET_GOT to
+	REAL_PIC_OFFSET_TABLE_REGNUM for mcount profiling.
+	(ix86_save_reg): Save REAL_PIC_OFFSET_TABLE_REGNUM when profiling
+	using mcount in 32bit PIC mode.
+	(ix86_elim_entry_set_got): New.
+	(ix86_expand_prologue): For the mcount profiling emit new SET_GOT
+	in PROLOGUE, delete initial if possible.
+
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline.c (want_inline_small_function_p): Fix typo and formatting.

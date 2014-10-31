@@ -1,5 +1,10 @@
 2014-10-31  Evgeny Stupachenko  <evstupac@gmail.com>
 
+	PR target/63534
+	* gcc.target/i386/mcount_pic.c: New.
+
+2014-10-31  Evgeny Stupachenko  <evstupac@gmail.com>
+
 	* gcc.target/i386/pr23098.c: Remove xfail.
 
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>

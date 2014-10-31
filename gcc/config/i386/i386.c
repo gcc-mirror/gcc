@@ -6205,8 +6205,15 @@ ix86_init_pic_reg (void)
     }
   else
     {
-      rtx insn = emit_insn (gen_set_got (pic_offset_table_rtx));
+      /*  If there is future mcount call in the function it is more profitable
+	  to emit SET_GOT into ABI defined REAL_PIC_OFFSET_TABLE_REGNUM.  */
+      rtx reg = crtl->profile
+		? gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM)
+		: pic_offset_table_rtx;
+      rtx insn = emit_insn (gen_set_got (reg));
       RTX_FRAME_RELATED_P (insn) = 1;
+      if (crtl->profile)
+        emit_move_insn (pic_offset_table_rtx, reg);
       add_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL_RTX);
     }
 
@@ -9486,15 +9493,23 @@ ix86_select_alt_pic_regnum (void)
 static bool
 ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 {
-  if (pic_offset_table_rtx
-      && !ix86_use_pseudo_pic_reg ()
-      && regno == REAL_PIC_OFFSET_TABLE_REGNUM
-      && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
-	  || crtl->profile
-	  || crtl->calls_eh_return
-	  || crtl->uses_const_pool
-	  || cfun->has_nonlocal_label))
-    return ix86_select_alt_pic_regnum () == INVALID_REGNUM;
+  if (regno == REAL_PIC_OFFSET_TABLE_REGNUM
+      && pic_offset_table_rtx)
+    {
+      if (ix86_use_pseudo_pic_reg ())
+	{
+	  /* REAL_PIC_OFFSET_TABLE_REGNUM used by call to
+	  _mcount in prologue.  */
+	  if (!TARGET_64BIT && flag_pic && crtl->profile)
+	    return true;
+	}
+      else if (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
+	       || crtl->profile
+	       || crtl->calls_eh_return
+	       || crtl->uses_const_pool
+	       || cfun->has_nonlocal_label)
+        return ix86_select_alt_pic_regnum () == INVALID_REGNUM;
+    }
 
   if (crtl->calls_eh_return && maybe_eh_return)
     {
@@ -10833,6 +10848,29 @@ ix86_finalize_stack_realign_flags (void)
   crtl->stack_realign_finalized = true;
 }
 
+/* Delete SET_GOT right after entry block if it is allocated to reg.  */
+
+static void
+ix86_elim_entry_set_got (rtx reg)
+{
+  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+  rtx_insn *c_insn = BB_HEAD (bb);
+  if (!NONDEBUG_INSN_P (c_insn))
+    c_insn = next_nonnote_nondebug_insn (c_insn);
+  if (c_insn && NONJUMP_INSN_P (c_insn))
+    {
+      rtx pat = PATTERN (c_insn);
+      if (GET_CODE (pat) == PARALLEL)
+	{
+	  rtx vec = XVECEXP (pat, 0, 0);
+	  if (GET_CODE (vec) == SET
+	      && XINT (XEXP (vec, 1), 1) == UNSPEC_SET_GOT
+	      && REGNO (XEXP (vec, 0)) == REGNO (reg))
+	    delete_insn (c_insn);
+	}
+    }
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -11285,6 +11323,20 @@ ix86_expand_prologue (void)
     ix86_emit_save_regs_using_mov (frame.reg_save_offset);
   if (!sse_registers_saved)
     ix86_emit_save_sse_regs_using_mov (frame.sse_reg_save_offset);
+
+  /* For the mcount profiling on 32 bit PIC mode we need to emit SET_GOT
+     in PROLOGUE.  */
+  if (!TARGET_64BIT && pic_offset_table_rtx && crtl->profile && !flag_fentry)
+    {
+      rtx pic = gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM);
+      insn = emit_insn (gen_set_got (pic));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL_RTX);
+      emit_insn (gen_prologue_use (pic));
+      /* Deleting already emmitted SET_GOT if exist and allocated to
+	 REAL_PIC_OFFSET_TABLE_REGNUM.  */
+      ix86_elim_entry_set_got (pic);
+    }
 
   if (crtl->drap_reg && !crtl->stack_realign_needed)
     {
