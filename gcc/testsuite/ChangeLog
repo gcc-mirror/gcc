@@ -1,3 +1,7 @@
+2014-10-31  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/20141029-1.c: New.
+
 2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63697
