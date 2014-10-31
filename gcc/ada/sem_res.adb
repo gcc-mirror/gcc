@@ -3261,7 +3261,7 @@ package body Sem_Res is
                if not Is_Aliased_View (Act) then
                   Error_Msg_NE
                     ("object in prefixed call to& must be aliased "
-                     & "(RM-2005 4.3.1 (13))",
+                     & "(RM 4.1.3 (13 1/2))",
                     Prefix (Act), Nam);
                end if;
 
