@@ -1,5 +1,11 @@
 2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/63702
+	* config/i386/i386.c (ix86_expand_args_builtin): Remove extra
+	assignment to 'nargs' variable.
+
+2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/63620
 	* config/i386/i386-protos.h (ix86_use_pseudo_pic_reg): Declare.
 	* config/i386/i386.c (ix86_use_pseudo_pic_reg): Export.

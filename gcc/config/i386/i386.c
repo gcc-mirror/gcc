@@ -36273,7 +36273,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case QI_FTYPE_V4DI_V4DI_QI:
     case V4SF_FTYPE_V2DF_V4SF_QI:
     case V4SF_FTYPE_V4DF_V4SF_QI:
-       nargs = 3;
     case V16SI_FTYPE_V16SI_V16SI_HI:
     case V16SI_FTYPE_V16SI_V16SI_V16SI:
     case V16SI_FTYPE_V4SI_V16SI_HI:
