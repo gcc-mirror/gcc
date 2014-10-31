@@ -2994,7 +2994,15 @@ package body Prj.Proc is
             Processed_Projects.Set (Name, Project);
 
             Project.Name := Name;
-            Project.Display_Name := Name_Node.Display_Name;
+
+            --  Make sure that the project display name is never No_Name
+
+            if Name_Node.Display_Name = No_Name then
+               Project.Display_Name := Name;
+            else
+               Project.Display_Name := Name_Node.Display_Name;
+            end if;
+
             Get_Name_String (Name);
 
             --  If name starts with the virtual prefix, flag the project as
