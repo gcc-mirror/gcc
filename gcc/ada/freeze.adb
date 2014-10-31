@@ -4004,6 +4004,47 @@ package body Freeze is
             --  call to the Analyze_Freeze_Entity for the record type.
 
          end Check_Variant_Part;
+
+         --  Check that all the primitives of an interface type are abstract
+         --  or null procedures.
+
+         if Is_Interface (Rec)
+           and then not Error_Posted (Parent (Rec))
+         then
+            declare
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               Elmt := First_Elmt (Primitive_Operations (Rec));
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+
+                  if not Is_Abstract_Subprogram (Subp)
+
+                     --  Avoid reporting the error on inherited primitives
+
+                    and then Comes_From_Source (Subp)
+                  then
+                     Error_Msg_Name_1 := Chars (Subp);
+
+                     if Ekind (Subp) = E_Procedure then
+                        if not Null_Present (Parent (Subp)) then
+                           Error_Msg_N
+                             ("interface procedure % must be abstract or null",
+                              Parent (Subp));
+                        end if;
+                     else
+                        Error_Msg_N
+                          ("interface function % must be abstract",
+                           Parent (Subp));
+                     end if;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
       end Freeze_Record_Type;
 
       -------------------------------

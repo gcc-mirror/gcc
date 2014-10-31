@@ -1,3 +1,46 @@
+2014-10-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Look_For_Project_Paths): New procedure
+	(Parse_Project_And_Apply_Config): Initially, parse the project
+	files ignoring missing withs. If there are missing withs, extend
+	the project path with directories rooted at the compiler roots,
+	including directories rooted at the runtime roots, if there are
+	non default runtimes, in the PATH orser.
+	* prj-env.adb (Initialize_Default_Project_Path): Do not add
+	any directory from the prefix if the target is "-".
+	* prj-part.adb (Parse): Initialize the tables, as Parse may be
+	call several times by gprbuild.
+	* prj.adb (Update_Ignore_Missing_With): New procedure.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (First_Stored_Discriminant,
+	Has_Completely_Hidden_Discriminant): When scanning the list of
+	discriminants to locate possibly hidden (inherited) discriminants,
+	ignore itypes that may appear in the entity list, when an access
+	discriminants is constrained by an access attribute reference.
+
+2014-10-31  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Add missing
+	check to verify that all the primitives of an interface type
+	are abstract or null procedures.
+
+2014-10-31  Vincent Celier  <celier@adacore.com>
+
+	* s-os_lib.adb, s-os_lib.ads: New function Non_Blocking_Spawn that
+	redirects standard output and standard error to two different files.
+
+2014-10-31  Bob Duff  <duff@adacore.com>
+
+	* makeutl.ads: Minor comment fix.
+
+2014-10-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* system-linux-x86_64.ads, system-mingw-x86_64.ads (Word_Size,
+	Memory_Size): Use Standard'Word_Size so that the value can be changed
+	via a target configuration file.
+
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb: Minor tweak.
