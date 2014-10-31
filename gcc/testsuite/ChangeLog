@@ -1,3 +1,7 @@
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt42.ad[sb]: New test.
+
 2014-10-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63259
