@@ -42,11 +42,10 @@ uint32_t read_be16_3 (unsigned char *data)
   return *(data + 1) | (*data << 8);
 }
 
-typedef int SItype __attribute__ ((mode (SI)));
 typedef int HItype __attribute__ ((mode (HI)));
 
 /* Test that detection of significant sign extension works correctly. This
-   checks that unknown byte marker are set correctly in cast of cast.  */
+   checks that unknown byte markers are set correctly in cast of cast.  */
 
 HItype
 swap16 (HItype in)
