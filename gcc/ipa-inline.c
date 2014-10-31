@@ -590,19 +590,21 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       want_inline = false;
     }
   /* Do fast and conservative check if the function can be good
-     inline cnadidate.  At themoment we allow inline hints to
-     promote non-inline function to inline and we increase
-     MAX_INLINE_INSNS_SINGLE 16fold for inline functions.  */
+     inline candidate.  At the moment we allow inline hints to
+     promote non-inline functions to inline and we increase
+     MAX_INLINE_INSNS_SINGLE 16-fold for inline functions.  */
   else if ((!DECL_DECLARED_INLINE_P (callee->decl)
 	   && (!e->count || !e->maybe_hot_p ()))
-	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
+	   && inline_summary (callee)->min_size
+		- inline_edge_summary (e)->call_stmt_size
 	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl) || e->count)
-	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
+	   && inline_summary (callee)->min_size
+		- inline_edge_summary (e)->call_stmt_size
 	      > 16 * MAX_INLINE_INSNS_SINGLE)
     {
       e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
@@ -836,27 +838,26 @@ has_caller_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 static bool
 want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
 {
-   struct cgraph_node *function = node->ultimate_alias_target ();
-   bool has_hot_call = false;
+  bool has_hot_call = false;
 
-   /* Does it have callers?  */
-   if (!node->call_for_symbol_thunks_and_aliases (has_caller_p, NULL, true))
-     return false;
-   /* Already inlined?  */
-   if (function->global.inlined_to)
-     return false;
-   if (node->ultimate_alias_target () != node)
-     return false;
-   /* Inlining into all callers would increase size?  */
-   if (estimate_growth (node) > 0)
-     return false;
-   /* All inlines must be possible.  */
-   if (node->call_for_symbol_thunks_and_aliases
-     (check_callers, &has_hot_call, true))
-     return false;
-   if (!cold && !has_hot_call)
-     return false;
-   return true;
+  if (node->ultimate_alias_target () != node)
+    return false;
+  /* Already inlined?  */
+  if (node->global.inlined_to)
+    return false;
+  /* Does it have callers?  */
+  if (!node->call_for_symbol_thunks_and_aliases (has_caller_p, NULL, true))
+    return false;
+  /* Inlining into all callers would increase size?  */
+  if (estimate_growth (node) > 0)
+    return false;
+  /* All inlines must be possible.  */
+  if (node->call_for_symbol_thunks_and_aliases (check_callers, &has_hot_call,
+						true))
+    return false;
+  if (!cold && !has_hot_call)
+    return false;
+  return true;
 }
 
 #define RELATIVE_TIME_BENEFIT_RANGE (INT_MAX / 64)

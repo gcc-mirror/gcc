@@ -1,3 +1,8 @@
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline.c (want_inline_small_function_p): Fix typo and formatting.
+	(want_inline_function_to_all_callers_p): Fix formatting and simplify.
+
 2014-10-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63259
@@ -19,7 +24,7 @@
 	* ipa-icf.c (sem_function::~sem_function): Change free to delete to avoid
 	alloc-dealloc mismatch with new, called in ipa_icf::sem_function::init.
 
-2014-10-10  Felix Yang  <felix.yang@huawei.com>
+2014-10-30  Felix Yang  <felix.yang@huawei.com>
 
 	* config/xtensa/xtensa.h (TARGET_LOOPS): New Macro.
 	* config/xtensa/xtensa.c: Include dumpfile.h and hw-doloop.h.
