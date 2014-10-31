@@ -1,3 +1,9 @@
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63659
+	* ree.c (update_reg_equal_equiv_notes): New function.
+	(combine_set_extension, transform_ifelse): Use it.
+
 2014-10-31  Jeff Law  <law@redhat.com>
 
 	* doc/contrib.texi: Add contribution notes for Balaji Iyer (Cilk+)
