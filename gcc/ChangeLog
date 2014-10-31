@@ -1,3 +1,9 @@
+2014-10-31  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR ipa/63696
+	* ipa-icf.c (sem_function::~sem_function): Change free to delete to avoid
+	alloc-dealloc mismatch with new, called in ipa_icf::sem_function::init.
+
 2014-10-10  Felix Yang  <felix.yang@huawei.com>
 
 	* config/xtensa/xtensa.h (TARGET_LOOPS): New Macro.

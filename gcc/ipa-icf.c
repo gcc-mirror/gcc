@@ -216,7 +216,7 @@ sem_function::sem_function (cgraph_node *node, hashval_t hash,
 sem_function::~sem_function ()
 {
   for (unsigned i = 0; i < bb_sorted.length (); i++)
-    free (bb_sorted[i]);
+    delete (bb_sorted[i]);
 
   arg_types.release ();
   bb_sizes.release ();
