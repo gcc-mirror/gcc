@@ -1,7 +1,9 @@
 2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63620
-	* config/i386/i386.md (*pushtf): Allow only CONST_DOUBLES that won't
+	* config/i386/i386-protos.h (ix86_use_pseudo_pic_reg): Declare.
+	* config/i386/i386.c (ix86_use_pseudo_pic_reg): Export.
+	* config/i386/i386.md (*pushtf): Allow only CONST_DOUBLEs that won't
 	be reloaded through memory.
 	(*pushxf): Ditto.
 	(*pushdf): Ditto.
