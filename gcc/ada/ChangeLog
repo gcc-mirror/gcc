@@ -1,3 +1,26 @@
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Has_Excluded_Declaration): With back-end inlining,
+	only return true for nested packages.
+	(Cannot_Inline): Issue errors/warnings whatever the optimization level
+	for back-end inlining and remove assertion.
+
+2014-10-31  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* table.adb (Tree_Read, Tree_Write): Use parentheses to specify
+	the desired order of '*' and '/' operations to avoid overflow.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Do_Inline): Remove unreachable code.
+	(Do_Inline_Always): Likewise.
+
+2014-10-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Stand_Alone_Library): Change error message
+	when library has no Ada interfaces and Library_Standalone is
+	declared.
+
 2014-10-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch13.adb (Check_Constant_Address_Clause): Disable checks

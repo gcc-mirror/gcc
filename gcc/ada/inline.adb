@@ -1225,9 +1225,7 @@ package body Inline is
             Error_Msg_NE (Msg & "p?", N, Subp);
          end if;
 
-         return;
-
-      --  New semantics
+      --  New semantics relying on back end inlining
 
       elsif Is_Serious then
 
@@ -1242,9 +1240,7 @@ package body Inline is
          Set_Is_Inlined_Always (Subp, False);
          Error_Msg_NE (Msg & "p?", N, Subp);
 
-      --  Do not issue errors/warnings when compiling with optimizations
-
-      elsif Optimization_Level = 0 then
+      else
 
          --  Do not emit warning if this is a predefined unit which is not
          --  the main unit. This behavior is currently provided for backward
@@ -1281,24 +1277,13 @@ package body Inline is
 
             Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-         else pragma Assert (Front_End_Inlining);
+         else
             Set_Is_Inlined (Subp, False);
-
-            --  When inlining cannot take place we must issue an error.
-            --  For backward compatibility we still report a warning.
 
             if Ineffective_Inline_Warnings then
                Error_Msg_NE (Msg & "p?", N, Subp);
             end if;
          end if;
-
-      --  Compiling with optimizations enabled it is too early to report
-      --  problems since the backend may still perform inlining. In order
-      --  to report unhandled inlinings the program must be compiled with
-      --  -Winline and the error is reported by the backend.
-
-      else
-         null;
       end if;
    end Cannot_Inline;
 
@@ -3327,11 +3312,25 @@ package body Inline is
 
       D := First (Decls);
       while Present (D) loop
-         if Nkind (D) = N_Subprogram_Body then
+         --  First declarations universally excluded
+
+         if Nkind (D) = N_Package_Declaration then
             Cannot_Inline
-              ("cannot inline & (nested subprogram)?",
+              ("cannot inline & (nested package declaration)?",
                D, Subp);
             return True;
+
+         elsif Nkind (D) = N_Package_Instantiation then
+            Cannot_Inline
+              ("cannot inline & (nested package instantiation)?",
+               D, Subp);
+            return True;
+         end if;
+
+         --  Then declarations excluded only for front end inlining
+
+         if Back_End_Inlining then
+            null;
 
          elsif Nkind (D) = N_Task_Type_Declaration
            or else Nkind (D) = N_Single_Task_Declaration
@@ -3349,9 +3348,9 @@ package body Inline is
                D, Subp);
             return True;
 
-         elsif Nkind (D) = N_Package_Declaration then
+         elsif Nkind (D) = N_Subprogram_Body then
             Cannot_Inline
-              ("cannot inline & (nested package declaration)?",
+              ("cannot inline & (nested subprogram)?",
                D, Subp);
             return True;
 
@@ -3366,12 +3365,6 @@ package body Inline is
          elsif Nkind (D) = N_Procedure_Instantiation then
             Cannot_Inline
               ("cannot inline & (nested procedure instantiation)?",
-               D, Subp);
-            return True;
-
-         elsif Nkind (D) = N_Package_Instantiation then
-            Cannot_Inline
-              ("cannot inline & (nested package instantiation)?",
                D, Subp);
             return True;
          end if;
