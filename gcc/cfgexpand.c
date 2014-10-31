@@ -3882,8 +3882,7 @@ expand_debug_expr (tree exp)
 
     adjust_mode:
     case PAREN_EXPR:
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       {
 	inner_mode = GET_MODE (op0);
 

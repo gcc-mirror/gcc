@@ -1,5 +1,31 @@
 2014-10-31  Richard Biener  <rguenther@suse.de>
 
+	* builtins.c (fold_builtin_atomic_always_lock_free): Use
+	CONVERT_EXPR_P, CONVERT_EXPR_CODE_P and CASE_CONVERT where
+	approprate.
+	(fold_builtin_expect): Likewise.
+	(integer_valued_real_p): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Likewise.
+	(find_foldable_builtin_expect): Likewise.
+	* trans-mem.c (thread_private_new_memory): Likewise.
+	* tree-affine.c (aff_combination_expand): Likewise.
+	* tree-data-ref.c (initialize_matrix_A): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	* tree-pretty-print.c (dump_function_name): Likewise.
+	(print_call_name): Likewise.
+	* tree-ssa-forwprop.c (constant_pointer_difference): Likewise.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* tree-vect-patterns.c (vect_handle_widen_op_by_const): Likewise.
+	(vect_recog_widen_mult_pattern): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	* tree-vrp.c (find_assert_locations_1): Likewise.
+	* tree-ssa-dom.c (initialize_hash_element): Canonicalize
+	converts to NOP_EXPR.
+
+2014-10-31  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (expr::gen_transform): Use NOP_EXPRs instead of
 	CONVERT_EXPRs in generated code.
 	(dt_simplify::gen): Likewise.

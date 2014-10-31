@@ -2100,7 +2100,7 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
 	return chrec_fold_op (TREE_CODE (chrec), chrec_type (chrec), op0, op1);
       }
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       {
 	tree op = initialize_matrix_A (A, TREE_OPERAND (chrec, 0), index, mult);
 	return chrec_convert (chrec_type (chrec), op, NULL);

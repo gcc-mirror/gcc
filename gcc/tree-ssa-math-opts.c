@@ -1867,8 +1867,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  && code != RSHIFT_EXPR
 	  && code != LROTATE_EXPR
 	  && code != RROTATE_EXPR
-	  && code != NOP_EXPR
-	  && code != CONVERT_EXPR)
+	  && !CONVERT_EXPR_CODE_P (code))
 	return NULL;
 
       source_stmt1 = find_bswap_or_nop_1 (rhs1_stmt, n, limit - 1);

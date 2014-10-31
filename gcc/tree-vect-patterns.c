@@ -747,7 +747,7 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
       new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
       /* Check if the already created pattern stmt is what we need.  */
       if (!is_gimple_assign (new_stmt)
-          || gimple_assign_rhs_code (new_stmt) != NOP_EXPR
+          || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (new_stmt))
           || TREE_TYPE (gimple_assign_lhs (new_stmt)) != new_type)
         return false;
 
@@ -952,7 +952,7 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
 
       use_stmt = vect_single_imm_use (last_stmt);
       if (!use_stmt || !is_gimple_assign (use_stmt)
-	  || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
         return NULL;
 
       use_lhs = gimple_assign_lhs (use_stmt);
@@ -1429,7 +1429,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
               new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
               /* Check if the already created pattern stmt is what we need.  */
               if (!is_gimple_assign (new_stmt)
-                  || gimple_assign_rhs_code (new_stmt) != NOP_EXPR
+                  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (new_stmt))
                   || TREE_TYPE (gimple_assign_lhs (new_stmt)) != interm_type)
                 return false;
 
