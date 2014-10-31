@@ -63,14 +63,6 @@ package body Prj.Conf is
    --  Stores the runtime names for the various languages. This is in general
    --  set from a --RTS command line option.
 
-   procedure Locate_Runtime
-     (Language : Name_Id;
-      Env      : Prj.Tree.Environment);
-   --  If RTS_Name is a base name (a name without path separator), then
-   --  do nothing. Otherwise, convert it to an absolute path (possibly by
-   --  searching it in the project path) and call Set_Runtime_For with the
-   --  absolute path. Raise Invalid_Config if the path does not exist.
-
    -----------------------
    -- Local_Subprograms --
    -----------------------
@@ -732,7 +724,6 @@ package body Prj.Conf is
                               Set_Runtime_For
                                 (Name_Ada,
                                  Name_Buffer (7 .. Name_Len));
-                              Locate_Runtime (Name_Ada, Env);
                            end if;
 
                         elsif Name_Len > 7
@@ -759,7 +750,6 @@ package body Prj.Conf is
 
                                  if not Runtime_Name_Set_For (Lang) then
                                     Set_Runtime_For (Lang, RTS);
-                                    Locate_Runtime (Lang, Env);
                                  end if;
                               end;
                            end if;
@@ -1543,48 +1533,6 @@ package body Prj.Conf is
          return Locate_Regular_File (Name, ".");
       end if;
    end Locate_Config_File;
-
-   --------------------
-   -- Locate_Runtime --
-   --------------------
-
-   procedure Locate_Runtime
-     (Language : Name_Id;
-      Env      : Prj.Tree.Environment)
-   is
-      function Is_RTS_Directory (Path : String) return Boolean;
-      --  Returns True if Path is a directory for a runtime. This simply check
-      --  that Path has a "adalib" subdirectoy, which is a property for
-      --  runtimes on the project path.
-
-      ----------------------
-      -- Is_RTS_Directory --
-      ----------------------
-
-      function Is_RTS_Directory (Path : String) return Boolean is
-      begin
-         return Is_Directory (Path & Directory_Separator & "adalib");
-      end Is_RTS_Directory;
-
-      --  Local declarations
-
-      function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
-        (Check_Filename => Is_RTS_Directory);
-
-      RTS_Name : constant String := Runtime_Name_For (Language);
-
-      Full_Path : String_Access;
-
-   --  Start of processing for Locate_Runtime
-
-   begin
-      Full_Path := Find_Rts_In_Path (Env.Project_Path, RTS_Name);
-
-      if Full_Path /= null then
-         Set_Runtime_For (Language, Normalize_Pathname (Full_Path.all));
-         Free (Full_Path);
-      end if;
-   end Locate_Runtime;
 
    ------------------------------------
    -- Parse_Project_And_Apply_Config --
