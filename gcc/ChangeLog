@@ -1,3 +1,11 @@
+2014-10-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63259
+	* tree-ssa-math-opts.c (bswap_replace): Replace expression by a
+	rotation left if it is a 16 bit byte swap.
+	(pass_optimize_bswap::execute): Also consider bswap in LROTATE_EXPR
+	and RROTATE_EXPR statements if it is a byte rotation.
+
 2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63697

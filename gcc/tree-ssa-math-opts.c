@@ -2187,7 +2187,7 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
 	       struct symbolic_number *n, bool bswap)
 {
   tree src, tmp, tgt;
-  gimple call;
+  gimple bswap_stmt;
 
   src = gimple_assign_rhs1 (src_stmt);
   tgt = gimple_assign_lhs (cur_stmt);
@@ -2293,16 +2293,28 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
 
   tmp = src;
 
-  /* Convert the src expression if necessary.  */
-  if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
+  /* Canonical form for 16 bit bswap is a rotate expression.  */
+  if (bswap && n->range == 16)
     {
-      gimple convert_stmt;
-      tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
-      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src, NULL);
-      gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
+      tree count = build_int_cst (NULL, BITS_PER_UNIT);
+      bswap_type = TREE_TYPE (src);
+      src = fold_build2 (LROTATE_EXPR, bswap_type, src, count);
+      bswap_stmt = gimple_build_assign (NULL, src);
     }
+  else
+    {
+      /* Convert the src expression if necessary.  */
+      if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
+	{
+	  gimple convert_stmt;
+	  tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
+	  convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src,
+						       NULL);
+	  gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
+	}
 
-  call = gimple_build_call (fndecl, 1, tmp);
+      bswap_stmt = gimple_build_call (fndecl, 1, tmp);
+    }
 
   tmp = tgt;
 
@@ -2315,7 +2327,7 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
-  gimple_call_set_lhs (call, tmp);
+  gimple_set_lhs (bswap_stmt, tmp);
 
   if (dump_file)
     {
@@ -2324,7 +2336,7 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
       print_gimple_stmt (dump_file, cur_stmt, 0, 0);
     }
 
-  gsi_insert_after (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_after (&gsi, bswap_stmt, GSI_SAME_STMT);
   gsi_remove (&gsi, true);
   return true;
 }
@@ -2388,12 +2400,28 @@ pass_optimize_bswap::execute (function *fun)
         {
 	  gimple src_stmt, cur_stmt = gsi_stmt (gsi);
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
+	  enum tree_code code;
 	  struct symbolic_number n;
 	  bool bswap;
 
-	  if (!is_gimple_assign (cur_stmt)
-	      || gimple_assign_rhs_code (cur_stmt) != BIT_IOR_EXPR)
+	  if (!is_gimple_assign (cur_stmt))
 	    continue;
+
+	  code = gimple_assign_rhs_code (cur_stmt);
+	  switch (code)
+	    {
+	    case LROTATE_EXPR:
+	    case RROTATE_EXPR:
+	      if (!tree_fits_uhwi_p (gimple_assign_rhs2 (cur_stmt))
+		  || tree_to_uhwi (gimple_assign_rhs2 (cur_stmt))
+		     % BITS_PER_UNIT)
+		continue;
+	      /* Fall through.  */
+	    case BIT_IOR_EXPR:
+	      break;
+	    default:
+	      continue;
+	    }
 
 	  src_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
 

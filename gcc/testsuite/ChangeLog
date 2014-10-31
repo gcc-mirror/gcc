@@ -1,3 +1,10 @@
+2014-10-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63259
+	* optimize-bswapsi-1.c (swap32_f): New bswap pass test.
+	* optimize-bswaphi-1.c: Drop useless SIType definition and fix typo in
+	following comment.
+
 2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63697
