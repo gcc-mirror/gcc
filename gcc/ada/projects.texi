@@ -4109,7 +4109,14 @@ case-insensitive values are "false" and "true" (the default).
 
 @item @b{Target}: single
 
-Value is the name of the target platform.
+Value is the name of the target platform. Taken into account only in the main
+project.
+
+@item @b{Runtime}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates the runtime directory that is to be used
+when using the compiler of the language. Taken into account only in the main
+project.
 
 @end itemize
 
@@ -4777,6 +4784,13 @@ Value is the directory used to generate the documentation of source code.
 @subsubsection Package Install Attributes
 
 @itemize @bullet
+
+@item @b{Artifacts}: list, indexed
+
+An array attribute to declare a set of files not part of the sources
+to be installed. The array discriminant is the directory where the
+file is to be installed. If a relative directory then Prefix (see
+below) is prepended.
 
 @item @b{Prefix}: single
 
