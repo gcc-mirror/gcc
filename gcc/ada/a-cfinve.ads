@@ -2,11 +2,12 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---         A D A . C O N T A I N E R S . F O R M A L _ V E C T O R S        --
+--                          A D A . C O N T A I N E R S
+--           . F O R M A L _ I N D E F I N I T E _ V E C T O R S            --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--             Copyright (C) 2014, Free Software Foundation, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,15 +30,20 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  This spec is derived from package Ada.Containers.Bounded_Vectors in the Ada
---  2012 RM. The modifications are meant to facilitate formal proofs by making
---  it easier to express properties, and by making the specification of this
---  unit compatible with SPARK 2014. Note that the API of this unit may be
---  subject to incompatible changes as SPARK 2014 evolves.
+--  Similar to Ada.Containers.Formal_Vectors. The main difference is that
+--  Element_Type may be indefinite (but not an unconstrained array). In
+--  addition, this is simplified by removing less-used functionality.
+
+with Ada.Containers.Bounded_Holders;
+with Ada.Containers.Formal_Vectors;
 
 generic
    type Index_Type is range <>;
-   type Element_Type is private;
+   type Element_Type (<>) is private;
+   Max_Size_In_Storage_Elements : Natural :=
+     Element_Type'Max_Size_In_Storage_Elements;
+   --  This has the same meaning as in Ada.Containers.Bounded_Holders, with the
+   --  same restrictions.
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
@@ -46,7 +52,7 @@ generic
    --  size, and heap allocation will be avoided. If False, the containers can
    --  grow via heap allocation.
 
-package Ada.Containers.Formal_Vectors is
+package Ada.Containers.Formal_Indefinite_Vectors is
    pragma Annotate (GNATprove, External_Axiomatization);
 
    subtype Extended_Index is Index_Type'Base
@@ -60,15 +66,6 @@ package Ada.Containers.Formal_Vectors is
 
    type Vector (Capacity : Capacity_Range) is limited private with
      Default_Initial_Condition;
-   --  In the bounded case, Capacity is the capacity of the container, which
-   --  never changes. In the unbounded case, Capacity is the initial capacity
-   --  of the container, and operations such as Reserve_Capacity and Append can
-   --  increase the capacity. The capacity never shrinks, except in the case of
-   --  Clear.
-   --
-   --  Note that all objects of type Vector are constrained, including in the
-   --  unbounded case; you can't assign from one object to another if the
-   --  Capacity is different.
 
    function Empty_Vector return Vector;
 
@@ -101,7 +98,7 @@ package Ada.Containers.Formal_Vectors is
      Global => null;
    --  Note that this reclaims storage in the unbounded case. You need to call
    --  this before a container goes out of scope in order to avoid storage
-   --  leaks. In addition, "X := ..." can leak unless you Clear(X) first.
+   --  leaks.
 
    procedure Assign (Target : in out Vector; Source : Vector) with
      Global => null,
@@ -218,13 +215,6 @@ package Ada.Containers.Formal_Vectors is
       Current : Index_Type) return Vector
    with
      Global => null;
-   --  First_To_Previous returns a container containing all elements preceding
-   --  Current (excluded) in Container. Current_To_Last returns a container
-   --  containing all elements following Current (included) in Container.
-   --  These two new functions can be used to express invariant properties in
-   --  loops which iterate over containers. First_To_Previous returns the part
-   --  of the container already scanned and Current_To_Last the part not
-   --  scanned yet.
 
 private
 
@@ -236,32 +226,24 @@ private
    pragma Inline (Replace_Element);
    pragma Inline (Contains);
 
-   type Elements_Array is array (Capacity_Range range <>) of Element_Type;
-   function "=" (L, R : Elements_Array) return Boolean is abstract;
+   --  The implementation method is to instantiate Bounded_Holders to get a
+   --  definite type for Element_Type, and then use that Holder type to
+   --  instantiate Formal_Vectors. All the operations are just wrappers.
 
-   type Elements_Array_Ptr is access all Elements_Array;
+   package Holders is new Bounded_Holders
+     (Element_Type, Max_Size_In_Storage_Elements, "=");
+   use Holders;
+
+   package Def is new Formal_Vectors (Index_Type, Holder, "=", Bounded);
+   use Def;
+
+   --  ????Assert that Def subtypes have the same range.
 
    type Vector (Capacity : Capacity_Range) is limited record
-      --  In the bounded case, the elements are stored in Elements. In the
-      --  unbounded case, the elements are initially stored in Elements, until
-      --  we run out of room, then we switch to Elements_Ptr.
-      Elements     : aliased Elements_Array (1 .. Capacity);
-      Last         : Extended_Index := No_Index;
-      Elements_Ptr : Elements_Array_Ptr := null;
+      V : Def.Vector (Capacity);
    end record;
 
-   --  The primary reason Vector is limited is that in the unbounded case, once
-   --  Elements_Ptr is in use, assignment statements won't work. "X := Y;" will
-   --  cause X and Y to share state; that is, X.Elements_Ptr = Y.Elements_Ptr,
-   --  so for example "Append (X, ...);" will modify BOTH X and Y. That would
-   --  allow SPARK to "prove" things that are false. We could fix that by
-   --  making Vector a controlled type, and override Adjust to make a deep
-   --  copy, but finalization is not allowed in SPARK.
-   --
-   --  Note that (unfortunately) this means that 'Old and 'Loop_Entry are not
-   --  allowed on Vectors.
-
    function Empty_Vector return Vector is
-     ((Capacity => 0, others => <>));
+     ((Capacity => 0, V => Def.Empty_Vector));
 
-end Ada.Containers.Formal_Vectors;
+end Ada.Containers.Formal_Indefinite_Vectors;
