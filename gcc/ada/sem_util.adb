@@ -2673,17 +2673,29 @@ package body Sem_Util is
    -- Check_Implicit_Dereference --
    --------------------------------
 
-   procedure Check_Implicit_Dereference (Nam : Node_Id;  Typ : Entity_Id) is
+   procedure Check_Implicit_Dereference (N : Node_Id;  Typ : Entity_Id) is
       Disc  : Entity_Id;
       Desig : Entity_Id;
+      Nam   : Node_Id;
 
    begin
+      if Nkind (N) = N_Indexed_Component
+        and then Present (Generalized_Indexing (N))
+      then
+         Nam := Generalized_Indexing (N);
+
+      else
+         Nam := N;
+      end if;
+
       if Ada_Version < Ada_2012
         or else not Has_Implicit_Dereference (Base_Type (Typ))
       then
          return;
 
-      elsif not Comes_From_Source (Nam) then
+      elsif not Comes_From_Source (N)
+        and then Nkind (N) /= N_Indexed_Component
+      then
          return;
 
       elsif Is_Entity_Name (Nam) and then Is_Type (Entity (Nam)) then
@@ -2695,6 +2707,26 @@ package body Sem_Util is
             if Has_Implicit_Dereference (Disc) then
                Desig := Designated_Type (Etype (Disc));
                Add_One_Interp (Nam, Disc, Desig);
+
+               --  If the node is a generalized indexing, add interpretation
+               --  to that node as well, for subsequent resolution.
+
+               if Nkind (N) = N_Indexed_Component then
+                  Add_One_Interp (N, Disc, Desig);
+               end if;
+
+               --  If the operation comes from a generic unit and the context
+               --  is a selected component, the selector name may be global
+               --  and set in the instance already. Remove the entity to
+               --  force resolution of the selected component, and the
+               --  generation of an explicit dereference if needed.
+
+               if In_Instance
+                 and then Nkind (Parent (Nam)) = N_Selected_Component
+               then
+                  Set_Entity (Selector_Name (Parent (Nam)), Empty);
+               end if;
+
                exit;
             end if;
 
@@ -16543,11 +16575,21 @@ package body Sem_Util is
    begin
       --  Nothing to do if argument is Empty or has Debug_Info_Off set, which
       --  indicates that Debug_Info_Needed is never required for the entity.
+      --  Nothing to do if entity comes from a predefined file. Library files
+      --  are compiled without debug information, but inlined bodies of these
+      --  routines may appear in user code, and debug information on them ends
+      --  up complicating debugging the user code.
 
       if No (T)
         or else Debug_Info_Off (T)
       then
          return;
+
+      elsif In_Inlined_Body
+        and then Is_Predefined_File_Name
+           (Unit_File_Name (Get_Source_Unit (Sloc (T))))
+      then
+         Set_Needs_Debug_Info (T, False);
       end if;
 
       --  Set flag in entity itself. Note that we will go through the following

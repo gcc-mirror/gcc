@@ -285,10 +285,12 @@ package Sem_Util is
    --  the one containing C2, that is known to refer to the same object (RM
    --  6.4.1(6.17/3)).
 
-   procedure Check_Implicit_Dereference (Nam : Node_Id; Typ : Entity_Id);
+   procedure Check_Implicit_Dereference (N : Node_Id; Typ : Entity_Id);
    --  AI05-139-2: Accessors and iterators for containers. This procedure
    --  checks whether T is a reference type, and if so it adds an interprettion
-   --  to Expr whose type is the designated type of the reference_discriminant.
+   --  to N whose type is the designated type of the reference_discriminant.
+   --  If N is a generalized indexing operation, the interpretation is added
+   --  both to the corresponding function call, and to the indexing node.
 
    procedure Check_Internal_Protected_Use (N : Node_Id; Nam : Entity_Id);
    --  Within a protected function, the current object is a constant, and

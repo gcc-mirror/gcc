@@ -7036,7 +7036,6 @@ package body Sem_Ch4 is
       Loc       : constant Source_Ptr := Sloc (N);
       C_Type    : Entity_Id;
       Assoc     : List_Id;
-      Disc      : Entity_Id;
       Func      : Entity_Id;
       Func_Name : Node_Id;
       Indexing  : Node_Id;
@@ -7149,21 +7148,7 @@ package body Sem_Ch4 is
          --  discriminant is not the first discriminant.
 
          if Has_Discriminants (Etype (Func)) then
-            Disc := First_Discriminant (Etype (Func));
-            while Present (Disc) loop
-               declare
-                  Elmt_Type : Entity_Id;
-               begin
-                  if Has_Implicit_Dereference (Disc) then
-                     Elmt_Type := Designated_Type (Etype (Disc));
-                     Add_One_Interp (Indexing, Disc, Elmt_Type);
-                     Add_One_Interp (N, Disc, Elmt_Type);
-                     exit;
-                  end if;
-               end;
-
-               Next_Discriminant (Disc);
-            end loop;
+            Check_Implicit_Dereference (N, Etype (Func));
          end if;
 
       else
@@ -7194,18 +7179,7 @@ package body Sem_Ch4 is
                   --  Add implicit dereference interpretation
 
                   if Has_Discriminants (Etype (It.Nam)) then
-                     Disc := First_Discriminant (Etype (It.Nam));
-                     while Present (Disc) loop
-                        if Has_Implicit_Dereference (Disc) then
-                           Add_One_Interp
-                             (Indexing, Disc, Designated_Type (Etype (Disc)));
-                           Add_One_Interp
-                             (N, Disc, Designated_Type (Etype (Disc)));
-                           exit;
-                        end if;
-
-                        Next_Discriminant (Disc);
-                     end loop;
+                     Check_Implicit_Dereference (N, Etype (It.Nam));
                   end if;
 
                   exit;

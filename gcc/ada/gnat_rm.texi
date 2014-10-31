@@ -7974,14 +7974,16 @@ pragma Warnings (On, Pattern);
 @end smallexample
 
 @noindent
-In this usage, the pattern string must match in the Off and On pragmas,
-and at least one matching warning must be suppressed.
+In this usage, the pattern string must match in the Off and On
+pragmas, and (if @option{-gnatw.w} is given) at least one matching
+warning must be suppressed.
 
 Note: to write a string that will match any warning, use the string
-@code{"***"}. It will not work to use a single asterisk or two asterisks
-since this looks like an operator name. This form with three asterisks
-is similar in effect to specifying @code{pragma Warnings (Off)} except that a
-matching @code{pragma Warnings (On, "***")} will be required. This can be
+@code{"***"}. It will not work to use a single asterisk or two
+asterisks since this looks like an operator name. This form with three
+asterisks is similar in effect to specifying @code{pragma Warnings
+(Off)} except (if @option{-gnatw.w} is given) that a matching
+@code{pragma Warnings (On, "***")} will be required. This can be
 helpful in avoiding forgetting to turn warnings back on.
 
 Note: the debug flag -gnatd.i (@code{/NOWARNINGS_PRAGMAS} in VMS) can be

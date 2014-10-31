@@ -1,5 +1,29 @@
 2014-10-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Do not check component size
+	if its type is generic.
+
+2014-10-31  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi: Fix documentation w.r.t -gnatw.w.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): Use Check_Implicit_Dereference.
+	* sem_util.adb (Check_Implicit_Dereference): a)	Handle generalized
+	indexing as well as function calls.  b)  If the context is a
+	selected component and whe are in an instance, remove entity from
+	selector name to force resolution of the node, so that explicit
+	dereferences can be generated in the instance if they were in
+	the generic unit.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Back_End_Cannot_Inline): Delete.
+	(Add_Inlined_Subprogram): Do not call it.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch3.ads (Make_Tag_Assignment): New function, used to
 	re-initialize the tag in a tagged object declaration with
 	initial value.
