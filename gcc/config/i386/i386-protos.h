@@ -42,6 +42,8 @@ extern enum calling_abi ix86_function_type_abi (const_tree);
 
 extern void ix86_reset_previous_fndecl (void);
 
+extern bool ix86_use_pseudo_pic_reg (void);
+
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
