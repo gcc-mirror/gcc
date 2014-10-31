@@ -553,6 +553,8 @@ package body Prj.Part is
 
    begin
       In_Tree.Incomplete_With := False;
+      Project_Stack.Init;
+      Tree_Private_Part.Projects_Htable.Reset (In_Tree.Projects_HT);
 
       if not Is_Initialized (Env.Project_Path) then
          Prj.Env.Initialize_Default_Project_Path
