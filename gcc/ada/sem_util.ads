@@ -1541,9 +1541,6 @@ package Sem_Util is
    --  to guarantee this in all cases. Note that it is more possible to give
    --  correct answer if the tree is fully analyzed.
 
-   function Must_Inline (Subp : Entity_Id) return Boolean;
-   --  Return true if Subp must be inlined by the frontend
-
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first
    --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that

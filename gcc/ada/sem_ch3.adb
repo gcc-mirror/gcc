@@ -6943,6 +6943,28 @@ package body Sem_Ch3 is
 
                Set_Is_Frozen (Full_Der);
 
+               --  If the derived type has access discriminants, create
+               --  references to their anonymous types now, to prevent
+               --  back-end problems when their first use is in generated
+               --  bodies of primitives.
+
+               declare
+                  E : Entity_Id;
+
+               begin
+                  E := First_Entity (Full_Der);
+
+                  while Present (E) loop
+                     if Ekind (E) = E_Discriminant
+                       and then Ekind (Etype (E)) = E_Anonymous_Access_Type
+                     then
+                        Build_Itype_Reference (Etype (E), Decl);
+                     end if;
+
+                     Next_Entity (E);
+                  end loop;
+               end;
+
                --  Set up links between real entity and underlying record view
 
                Set_Underlying_Record_View (Derived_Type, Base_Type (Full_Der));

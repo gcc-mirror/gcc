@@ -12945,11 +12945,16 @@ package body Sem_Prag is
                end if;
 
                --  The expected type for a non-"null" argument is
-               --  Root_Storage_Pool'Class.
+               --  Root_Storage_Pool'Class, and the pool must be a variable.
 
                Analyze_And_Resolve
                  (Get_Pragma_Arg (Arg1),
                   Typ => Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+
+               if not Is_Variable (Expression (Arg1)) then
+                  Error_Pragma_Arg
+                    ("default storage pool must be a variable", Arg1);
+               end if;
             end if;
 
             --  Finally, record the pool name (or null). Freeze.Freeze_Entity

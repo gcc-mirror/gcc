@@ -1,5 +1,38 @@
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_ch4.adb: Minor tweak.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Do not inline with
+	back-end inlining.
+	(Must_Inline_Subp): Delete.
+	* sem_util.ads, sem_util.adb (Must_Inline): Likewise.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): A default_pool does not apply to
+	internal access types generated for 'access references.
+	* sem_prag (Analyze_Pragma, case Default_Pool): If the name is
+	not null it must designate a variable.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb: Minor reformatting.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): If the derived
+	type has access discriminants, create itype references for their
+	anonymous types, so that they are elaborated before the generated
+	bodies for the primitive operations of the type.
+
+2014-10-31  Tristan Gingold  <gingold@adacore.com>
+
+	* prj-conf.adb (Locate_Runtime): Remove procedure.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* inline.adb (Has_Excluded_Declaration): With back-end inlining,
 	only return true for nested packages.
 	(Cannot_Inline): Issue errors/warnings whatever the optimization level

@@ -3826,9 +3826,7 @@ package body Inline is
 
       --  Generate listing of subprograms passed to the backend
 
-      if Present (Backend_Inlined_Subps)
-        and then Back_End_Inlining
-      then
+      if Present (Backend_Inlined_Subps) and then Back_End_Inlining then
          Count := 0;
 
          Elmt := First_Elmt (Backend_Inlined_Subps);
@@ -3858,9 +3856,7 @@ package body Inline is
 
       --  Generate listing of subprograms that cannot be inlined by the backend
 
-      if Present (Backend_Not_Inlined_Subps)
-        and then Back_End_Inlining
-      then
+      if Present (Backend_Not_Inlined_Subps) and then Back_End_Inlining then
          Count := 0;
 
          Elmt := First_Elmt (Backend_Not_Inlined_Subps);
