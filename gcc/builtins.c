@@ -5551,7 +5551,7 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 	 end before anything else has a chance to look at it.  The pointer
 	 parameter at this point is usually cast to a void *, so check for that
 	 and look past the cast.  */
-      if (TREE_CODE (arg1) == NOP_EXPR && POINTER_TYPE_P (ttype)
+      if (CONVERT_EXPR_P (arg1) && POINTER_TYPE_P (ttype)
 	  && VOID_TYPE_P (TREE_TYPE (ttype)))
 	arg1 = TREE_OPERAND (arg1, 0);
 
@@ -6989,7 +6989,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
   /* Distribute the expected value over short-circuiting operators.
      See through the cast from truthvalue_type_node to long.  */
   inner_arg0 = arg0;
-  while (TREE_CODE (inner_arg0) == NOP_EXPR
+  while (CONVERT_EXPR_P (inner_arg0)
 	 && INTEGRAL_TYPE_P (TREE_TYPE (inner_arg0))
 	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner_arg0, 0))))
     inner_arg0 = TREE_OPERAND (inner_arg0, 0);
@@ -7155,7 +7155,7 @@ integer_valued_real_p (tree t)
     case REAL_CST:
       return real_isinteger (TREE_REAL_CST_PTR (t), TYPE_MODE (TREE_TYPE (t)));
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       {
 	tree type = TREE_TYPE (TREE_OPERAND (t, 0));
 	if (TREE_CODE (type) == INTEGER_TYPE)

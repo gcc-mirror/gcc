@@ -648,7 +648,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
       type = TREE_TYPE (e);
       name = e;
       /* Look through some conversions.  */
-      if (TREE_CODE (e) == NOP_EXPR
+      if (CONVERT_EXPR_P (e)
           && (TYPE_PRECISION (type)
 	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (e, 0)))))
 	name = TREE_OPERAND (e, 0);

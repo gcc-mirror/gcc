@@ -6004,7 +6004,8 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 		  gimple def_stmt = SSA_NAME_DEF_STMT (t);
 
 		  while (is_gimple_assign (def_stmt)
-			 && gimple_assign_rhs_code (def_stmt)  == NOP_EXPR
+			 && CONVERT_EXPR_CODE_P
+			     (gimple_assign_rhs_code (def_stmt))
 			 && TREE_CODE
 			     (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
 			 && POINTER_TYPE_P

@@ -1686,7 +1686,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
       /* With return slot optimization we can end up with
 	 non-gimple (foo *)&this->m, fix that here.  */
       if (is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == NOP_EXPR
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 	  && !is_gimple_val (gimple_assign_rhs1 (stmt)))
 	{
 	  tree new_rhs;

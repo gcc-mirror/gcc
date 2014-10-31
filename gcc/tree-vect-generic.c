@@ -1449,13 +1449,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != VECTOR_TYPE)
     return;
 
-  if (code == NOP_EXPR
+  if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
       || code == FIX_TRUNC_EXPR
       || code == VIEW_CONVERT_EXPR)
     return;
-
-  gcc_assert (code != CONVERT_EXPR);
 
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
