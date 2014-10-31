@@ -511,6 +511,7 @@ package body Aspects is
     Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
     Aspect_Default_Initial_Condition    => Aspect_Default_Initial_Condition,
     Aspect_Default_Iterator             => Aspect_Default_Iterator,
+    Aspect_Default_Storage_Pool         => Aspect_Default_Storage_Pool,
     Aspect_Default_Value                => Aspect_Default_Value,
     Aspect_Depends                      => Aspect_Depends,
     Aspect_Dimension                    => Aspect_Dimension,

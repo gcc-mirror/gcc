@@ -1,5 +1,16 @@
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* inline.adb (Check_And_Split_Unconstrained_Function): Do not
+	test for the presence of nested subprograms.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspect Default_Storage_Pool.
+	* sem_ch13.adb (Analyze_One_Aspect): Generate pragma for aspect
+	Default_Storage_Pool.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch6.adb: Remove obsolete comment.
 
 2014-10-31  Olivier Hainque  <hainque@adacore.com>
