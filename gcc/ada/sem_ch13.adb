@@ -9197,8 +9197,9 @@ package body Sem_Ch13 is
       --  particular, no need to pester user about rep clauses that violate
       --  the rule on constant addresses, given that these clauses will be
       --  removed by Freeze before they reach the back end.
+      --  Similarly in CodePeer mode, we want to relax these checks.
 
-      if not Ignore_Rep_Clauses then
+      if not Ignore_Rep_Clauses and not CodePeer_Mode then
          Check_Expr_Constants (Expr);
       end if;
    end Check_Constant_Address_Clause;

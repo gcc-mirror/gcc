@@ -1,3 +1,19 @@
+2014-10-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Check_Constant_Address_Clause): Disable checks
+	on address clauses in CodePeer mode.
+
+2014-10-31  Javier Miranda  <miranda@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Do not skip
+	inlining of calls to subprogram renamings.
+
+2014-10-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Account for
+	the case where the immediate parent of a reference to an entity
+	is a parameter association.
+
 2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Check_And_Split_Unconstrained_Function): Do not
