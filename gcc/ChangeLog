@@ -1,3 +1,8 @@
+2014-10-31  Jeff Law  <law@redhat.com>
+
+	* doc/contrib.texi: Add contribution notes for Balaji Iyer (Cilk+)
+	and Jonny Grant (collect2).
+
 2014-10-31  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_atomic_always_lock_free): Use
