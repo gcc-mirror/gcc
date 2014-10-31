@@ -1,3 +1,8 @@
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63697
+	* c-c++-common/ubsan/overflow-sub-3.c: New test.
+
 2014-10-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR63633

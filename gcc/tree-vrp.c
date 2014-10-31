@@ -9377,8 +9377,10 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
     }
   else
     {
-      tree r1 = int_const_binop (subcode, vr0.min, vr1.min);
-      tree r2 = int_const_binop (subcode, vr0.max, vr1.max);
+      tree r1 = int_const_binop (subcode, vr0.min,
+				 subcode == MINUS_EXPR ? vr1.max : vr1.min);
+      tree r2 = int_const_binop (subcode, vr0.max,
+				 subcode == MINUS_EXPR ? vr1.min : vr1.max);
       if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
 	  || r2 == NULL_TREE || TREE_OVERFLOW (r2))
 	return false;

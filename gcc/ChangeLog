@@ -1,3 +1,10 @@
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63697
+	* tree-vrp.c (simplify_internal_call_using_ranges): For subcode ==
+	MINUS_EXPR, check overflow on vr0.min - vr1.max and vr0.max - vr1.min
+	instead of vr0.min - vr1.min and vr0.max - vr1.max.
+
 2014-10-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR63633
