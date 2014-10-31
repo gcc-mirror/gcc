@@ -1384,14 +1384,19 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
       ops[i]->gen_transform (f, dest, gimple, depth + 1, optype, indexes);
     }
 
+  const char *opr;
+  if (*operation == CONVERT_EXPR)
+    opr = "NOP_EXPR";
+  else
+    opr = operation->id;
+
   if (gimple)
     {
       /* ???  Have another helper that is like gimple_build but may
 	 fail if seq == NULL.  */
       fprintf (f, "  if (!seq)\n"
 	       "    {\n"
-	       "      res = gimple_simplify (%s, %s",
-	       operation->id, type);
+	       "      res = gimple_simplify (%s, %s", opr, type);
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ", seq, valueize);\n");
@@ -1399,7 +1404,7 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
       fprintf (f, "    }\n");
       fprintf (f, "  else\n");
       fprintf (f, "    res = gimple_build (seq, UNKNOWN_LOCATION, %s, %s",
-	       operation->id, type);
+	       opr, type);
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ", valueize);\n");
@@ -1408,11 +1413,10 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
     {
       if (operation->kind == id_base::CODE)
 	fprintf (f, "  res = fold_build%d_loc (loc, %s, %s",
-		 ops.length(), operation->id, type);
+		 ops.length(), opr, type);
       else
 	fprintf (f, "  res = build_call_expr_loc (loc, "
-		 "builtin_decl_implicit (%s), %d",
-		 operation->id, ops.length());
+		 "builtin_decl_implicit (%s), %d", opr, ops.length());
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ");\n");
@@ -2186,7 +2190,9 @@ dt_simplify::gen (FILE *f, bool gimple)
 	  expr *e = as_a <expr *> (result);
 	  bool is_predicate = is_a <predicate_id *> (e->operation);
 	  if (!is_predicate)
-	    fprintf (f, "*res_code = %s;\n", e->operation->id);
+	    fprintf (f, "*res_code = %s;\n",
+		     *e->operation == CONVERT_EXPR
+		     ? "NOP_EXPR" : e->operation->id);
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {
 	      char dest[32];
@@ -2264,7 +2270,9 @@ dt_simplify::gen (FILE *f, bool gimple)
 		{
 		  if (e->operation->kind == id_base::CODE)
 		    fprintf (f, "  res = fold_build%d_loc (loc, %s, type",
-			     e->ops.length (), e->operation->id);
+			     e->ops.length (),
+			     *e->operation == CONVERT_EXPR
+			     ? "NOP_EXPR" : e->operation->id);
 		  else
 		    fprintf (f, "  res = build_call_expr_loc "
 			     "(loc, builtin_decl_implicit (%s), %d",
