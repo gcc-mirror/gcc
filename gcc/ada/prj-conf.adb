@@ -1753,7 +1753,7 @@ package body Prj.Conf is
          Update_Ignore_Missing_With (Env.Flags, False);
 
          if Config_File_Path /= null then
-            Conf_File_Name := new String'(Simple_Name (Config_File_Path.all));
+            Conf_File_Name := new String'(Config_File_Path.all);
          end if;
 
          --  For the second time the project files are parsed, the warning for

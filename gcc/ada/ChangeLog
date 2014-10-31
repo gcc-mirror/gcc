@@ -1,5 +1,32 @@
 2014-10-31  Vincent Celier  <celier@adacore.com>
 
+	* prj-part.adb (Parse_Single_Project): Call Set_Display_Name_Of.
+	* prj-proc.adb (Recursive_Process): Call Display_Name_Of to
+	get the project Display_Name.
+	* prj-tree.adb (Display_Name_Of): New function
+	(Set_Display_Name_Of): New procedure.
+	(Create_Project): Call Set_Display_Name_Of.
+	* prj-tree.ads (Display_Name_Of): New function.
+	(Set_Display_Name_Of): New procedure.
+	(Project_Node_Record): New component Display_Name.
+	(Project_Name_And_Node): Remove component Display_Name.
+	* prj-conf.adb (Parse_Project_And_Apply_Config): Use the full
+	Config_File_Path as the Config_File_Name, not just its simple
+	name.
+
+2014-10-31  Thomas Quinot  <quinot@adacore.com>
+
+	* get_scos.adb: Minor reformatting.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Loop): Create block to
+	capture declaration for cursor to prevent spurious errors when
+	several formal iterators that use the same cursoe name appear
+	in the same context.
+
+2014-10-31  Vincent Celier  <celier@adacore.com>
+
 	* prj-proc.adb (Recursive_Process): Make sure that the project
 	display name is never No_Name.
 
