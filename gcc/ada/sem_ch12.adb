@@ -3437,6 +3437,27 @@ package body Sem_Ch12 is
             Check_References (Id);
          end if;
       end if;
+
+      --  If there is a specified storage pool in the context, create an
+      --  aspect on the package declaration, so that it is used in any
+      --  instance that does not override it.
+
+      if Present (Default_Pool) then
+         declare
+            ASN : Node_Id;
+
+         begin
+            ASN := Make_Aspect_Specification (Loc,
+               Identifier => Make_Identifier (Loc, Name_Default_Storage_Pool),
+               Expression => New_Copy (Default_Pool));
+
+            if No (Aspect_Specifications (Specification (N))) then
+               Set_Aspect_Specifications (Specification (N), New_List (ASN));
+            else
+               Append (ASN, Aspect_Specifications (Specification (N)));
+            end if;
+         end;
+      end if;
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -3605,6 +3626,7 @@ package body Sem_Ch12 is
       Act_Tree      : Node_Id;
 
       Gen_Decl : Node_Id;
+      Gen_Spec : Node_Id;
       Gen_Unit : Entity_Id;
 
       Is_Actual_Pack : constant Boolean :=
@@ -3837,6 +3859,7 @@ package body Sem_Ch12 is
          end if;
 
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
+         Gen_Spec := Specification (Gen_Decl);
 
          --  Initialize renamings map, for error checking, and the list that
          --  holds private entities whose views have changed between generic
@@ -3908,6 +3931,52 @@ package body Sem_Ch12 is
          if Has_Aspects (Act_Tree) then
             Set_Aspect_Specifications (Act_Decl,
               New_Copy_List_Tree (Aspect_Specifications (Act_Tree)));
+         end if;
+
+         --  The generic may have a generated Default_Storage_Pool aspect,
+         --  set at the point of generic declaration. If the instance has
+         --  that aspect, it overrides the one inherited from the generic.
+
+         if Has_Aspects (Gen_Spec) then
+            if No (Aspect_Specifications (N)) then
+               Set_Aspect_Specifications (N,
+                 (New_Copy_List_Tree
+                   (Aspect_Specifications (Gen_Spec))));
+
+            else
+               declare
+                  ASN1, ASN2 : Node_Id;
+
+               begin
+                  ASN1 := First (Aspect_Specifications (N));
+                  while Present (ASN1) loop
+                     if Chars (Identifier (ASN1))
+                        = Name_Default_Storage_Pool
+                     then
+                        --  If generic carries a default storage pool, remove
+                        --  it in favor of the instance one.
+
+                        ASN2 := First (Aspect_Specifications (Gen_Spec));
+                        while Present (ASN2) loop
+                           if Chars (Identifier (ASN2))
+                              = Name_Default_Storage_Pool
+                           then
+                              Remove (ASN2);
+                              exit;
+                           end if;
+
+                           Next (ASN2);
+                        end loop;
+                     end if;
+
+                     Next (ASN1);
+                  end loop;
+
+                  Prepend_List_To (Aspect_Specifications (N),
+                    (New_Copy_List_Tree
+                      (Aspect_Specifications (Gen_Spec))));
+               end;
+            end if;
          end if;
 
          --  Save the instantiation node, for subsequent instantiation of the
@@ -4212,6 +4281,40 @@ package body Sem_Ch12 is
          if Nkind (Parent (N)) /= N_Compilation_Unit then
             Mark_Rewrite_Insertion (Act_Decl);
             Insert_Before (N, Act_Decl);
+
+            if Has_Aspects (N) then
+               Analyze_Aspect_Specifications (N, Act_Decl_Id);
+
+               --  The pragma created for a Default_Storage_Pool aspect must
+               --  appear ahead of the declarations in the instance spec.
+               --  Analysis has placed it after the instance node, so remove
+               --  it and reinsert it properly now.
+
+               declare
+                  ASN : constant Node_Id := First (Aspect_Specifications (N));
+                  A_Name : constant Name_Id := Chars (Identifier (ASN));
+                  Decl : Node_Id;
+
+               begin
+                  if A_Name = Name_Default_Storage_Pool then
+                     if No (Visible_Declarations (Act_Spec)) then
+                        Set_Visible_Declarations (Act_Spec, New_List);
+                     end if;
+
+                     Decl := Next (N);
+                     while Present (Decl) loop
+                        if Nkind (Decl) = N_Pragma then
+                           Remove (Decl);
+                           Prepend (Decl, Visible_Declarations (Act_Spec));
+                           exit;
+                        end if;
+
+                        Next (Decl);
+                     end loop;
+                  end if;
+               end;
+            end if;
+
             Analyze (Act_Decl);
 
          --  For an instantiation that is a compilation unit, place

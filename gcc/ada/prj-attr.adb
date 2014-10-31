@@ -280,9 +280,6 @@ package body Prj.Attr is
    --  Configuration - Linking
 
    "SVdriver#" &
-   "LVexecutable_switch#" &
-   "SVlib_dir_switch#" &
-   "SVlib_name_switch#" &
 
    --  Configuration - Response files
 
