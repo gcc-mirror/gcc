@@ -1,3 +1,7 @@
+2014-10-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-10-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (extra_host_libiberty_configure_flags): Add
