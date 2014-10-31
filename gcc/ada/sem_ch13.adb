@@ -2236,6 +2236,20 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
+               --  Default_Storage_Pool
+
+               when Aspect_Default_Storage_Pool =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Default_Storage_Pool);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Depends
 
                --  Aspect Depends is never delayed because it is equivalent to
@@ -8692,6 +8706,9 @@ package body Sem_Ch13 is
 
          when Aspect_Default_Component_Value =>
             T := Component_Type (Entity (ASN));
+
+         when Aspect_Default_Storage_Pool =>
+            T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
 
          --  Default_Value is resolved with the type entity in question
 

@@ -88,6 +88,7 @@ package Aspects is
       Aspect_Default_Component_Value,
       Aspect_Default_Initial_Condition,     -- GNAT
       Aspect_Default_Iterator,
+      Aspect_Default_Storage_Pool,
       Aspect_Default_Value,
       Aspect_Depends,                       -- GNAT
       Aspect_Dimension,                     -- GNAT
@@ -314,6 +315,7 @@ package Aspects is
       Aspect_Default_Component_Value   => Expression,
       Aspect_Default_Initial_Condition => Optional_Expression,
       Aspect_Default_Iterator          => Name,
+      Aspect_Default_Storage_Pool      => Expression,
       Aspect_Default_Value             => Expression,
       Aspect_Depends                   => Expression,
       Aspect_Dimension                 => Expression,
@@ -401,6 +403,7 @@ package Aspects is
       Aspect_Default_Component_Value      => Name_Default_Component_Value,
       Aspect_Default_Initial_Condition    => Name_Default_Initial_Condition,
       Aspect_Default_Iterator             => Name_Default_Iterator,
+      Aspect_Default_Storage_Pool         => Name_Default_Storage_Pool,
       Aspect_Default_Value                => Name_Default_Value,
       Aspect_Depends                      => Name_Depends,
       Aspect_Dimension                    => Name_Dimension,
@@ -616,6 +619,7 @@ package Aspects is
       Aspect_Constant_Indexing            => Always_Delay,
       Aspect_CPU                          => Always_Delay,
       Aspect_Default_Iterator             => Always_Delay,
+      Aspect_Default_Storage_Pool         => Always_Delay,
       Aspect_Default_Value                => Always_Delay,
       Aspect_Default_Component_Value      => Always_Delay,
       Aspect_Discard_Names                => Always_Delay,
