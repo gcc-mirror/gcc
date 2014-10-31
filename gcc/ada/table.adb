@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -399,7 +399,7 @@ package body Table is
          Tree_Read_Data
            (Tree_Get_Table_Address,
              (Last_Val - Int (First) + 1) *
-               Table_Type'Component_Size / Storage_Unit);
+               (Table_Type'Component_Size / Storage_Unit));
       end Tree_Read;
 
       ----------------
@@ -415,7 +415,7 @@ package body Table is
          Tree_Write_Data
            (Tree_Get_Table_Address,
             (Last_Val - Int (First) + 1) *
-              Table_Type'Component_Size / Storage_Unit);
+              (Table_Type'Component_Size / Storage_Unit));
       end Tree_Write;
 
    begin

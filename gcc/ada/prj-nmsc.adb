@@ -4711,7 +4711,7 @@ package body Prj.Nmsc is
          then
             Error_Msg
               (Data.Flags,
-               "Library_Standalone valid only if Library_Interface is set",
+               "Library_Standalone valid only if library has Ada interfaces",
                Lib_Standalone.Location, Project);
          end if;
 
