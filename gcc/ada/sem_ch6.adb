@@ -3595,8 +3595,7 @@ package body Sem_Ch6 is
                Build_Body_To_Inline (N, Spec_Id);
             end if;
 
-         --  New implementation (relying on backend inlining). Enabled by
-         --  debug flag gnatd.z for testing
+         --  New implementation (relying on backend inlining)
 
          else
             if Has_Pragma_Inline_Always (Spec_Id)

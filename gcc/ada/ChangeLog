@@ -1,3 +1,28 @@
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb: Remove obsolete comment.
+
+2014-10-31  Olivier Hainque  <hainque@adacore.com>
+
+	* g-allein.ads: bind vec_sld for pixels to 8hi vsldoi instead
+	of 4si, as pixels are short.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not reject a call to a protected
+	operation in the spec of a protected type, when the call appears
+	in a pre/postcondition for another protected operation.
+
+2014-10-31  Tristan Gingold  <gingold@adacore.com>
+
+	* prj-conf.adb: Locate_Runtime: Always search the runtime in
+	project path.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Check_Package_Body_For_Inlining): Adjust previous
+	change to use correct idiom for back-end inlining.
+
 2014-10-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Do not check component size

@@ -26,7 +26,6 @@
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
-with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
@@ -1553,28 +1552,24 @@ package body Prj.Conf is
      (Language : Name_Id;
       Env      : Prj.Tree.Environment)
    is
-      function Is_Base_Name (Path : String) return Boolean;
-      --  Returns True if Path has no directory separator
+      function Is_RTS_Directory (Path : String) return Boolean;
+      --  Returns True if Path is a directory for a runtime. This simply check
+      --  that Path has a "adalib" subdirectoy, which is a property for
+      --  runtimes on the project path.
 
-      ------------------
-      -- Is_Base_Name --
-      ------------------
+      ----------------------
+      -- Is_RTS_Directory --
+      ----------------------
 
-      function Is_Base_Name (Path : String) return Boolean is
+      function Is_RTS_Directory (Path : String) return Boolean is
       begin
-         for J in Path'Range loop
-            if Is_Directory_Separator (Path (J)) then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Is_Base_Name;
+         return Is_Directory (Path & Directory_Separator & "adalib");
+      end Is_RTS_Directory;
 
       --  Local declarations
 
       function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
-        (Check_Filename => Is_Directory);
+        (Check_Filename => Is_RTS_Directory);
 
       RTS_Name : constant String := Runtime_Name_For (Language);
 
@@ -1583,14 +1578,9 @@ package body Prj.Conf is
    --  Start of processing for Locate_Runtime
 
    begin
-      if not Is_Base_Name (RTS_Name) then
-         Full_Path :=
-           Find_Rts_In_Path (Env.Project_Path, RTS_Name);
+      Full_Path := Find_Rts_In_Path (Env.Project_Path, RTS_Name);
 
-         if Full_Path = null then
-            Raise_Invalid_Config ("cannot find RTS " & RTS_Name);
-         end if;
-
+      if Full_Path /= null then
          Set_Runtime_For (Language, Normalize_Pathname (Full_Path.all));
          Free (Full_Path);
       end if;
