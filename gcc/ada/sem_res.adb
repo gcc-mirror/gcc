@@ -6022,11 +6022,13 @@ package body Sem_Res is
       end if;
 
       --  A protected function cannot be called within the definition of the
-      --  enclosing protected type.
+      --  enclosing protected type, unless it is part of a pre/postcondition
+      --  on another protected operation.
 
       if Is_Protected_Type (Scope (Nam))
         and then In_Open_Scopes (Scope (Nam))
         and then not Has_Completion (Scope (Nam))
+        and then not In_Spec_Expression
       then
          Error_Msg_NE
            ("& cannot be called before end of protected definition", N, Nam);

@@ -1981,7 +1981,9 @@ package body Inline is
       OK    : Boolean;
 
    begin
-      if Front_End_Inlining
+      --  Legacy implementation (relying on frontend inlining)
+
+      if not Back_End_Inlining
         and then Is_Compilation_Unit (P)
         and then not Is_Generic_Instance (P)
       then
@@ -1989,7 +1991,9 @@ package body Inline is
 
          E := First_Entity (P);
          while Present (E) loop
-            if Has_Pragma_Inline (E) then
+            if Has_Pragma_Inline_Always (E)
+              or else (Has_Pragma_Inline (E) and Front_End_Inlining)
+            then
                if not Is_Loaded (Bname) then
                   Load_Needed_Body (N, OK);
 
