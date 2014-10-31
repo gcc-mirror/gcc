@@ -1216,6 +1216,12 @@ package body Sem_Elab is
         and then No (Enclosing_Generic_Body (N))
       then
          return;
+
+      --  Nothing to do if call is being pre-analyzed, as when within a
+      --  pre/postcondition, a predicate, or an invariant.
+
+      elsif In_Spec_Expression then
+         return;
       end if;
 
       --  Nothing to do if this is a call to a postcondition, which is always

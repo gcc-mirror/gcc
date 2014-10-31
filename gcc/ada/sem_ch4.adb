@@ -7585,7 +7585,7 @@ package body Sem_Ch4 is
             if not Is_Aliased_View (Obj) then
                Error_Msg_NE
                  ("object in prefixed call to & must be aliased "
-                  & "(RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
+                  & "(RM 4.1.3 (13 1/2))", Prefix (First_Actual), Subprog);
             end if;
 
             Analyze (First_Actual);

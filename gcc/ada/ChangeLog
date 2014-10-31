@@ -1,5 +1,36 @@
 2014-10-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_attr.adb (Analyze_Access_Attribute): Do not emit error
+	message if reference does not come from source, as in the case
+	for the controlling argument of a dispatching call. Error is
+	diagnosed when call is resolved.
+	* sem_ch4.adb (Complete_Object_Operation); Fix incorrect RM
+	reference in error message.
+	* sem_res.adb (Check_Prefixed_Call): ditto.
+
+2014-10-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings): Do not
+	suppress checks when pragma Restrictions (No_Exception) is used in
+	CodePeer or GNATprove mode.
+
+2014-10-31  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Explicitly mark language
+	checks as not suppressed in GNATprove mode.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Check_Elab_Call): Nothing to check if call is
+	being pre-analyzed.
+	* sem_ch3.adb (Complete_Private_Subtype): If all rep items of full
+	view are those of the base, use rep_item chain of partial view,
+	which may include aspects.
+	* sem_cat.adb (Is_non_Remote_Access_Type): Use underlying type
+	of base type, to handle properly declared subtypes.
+
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch12.adb (Analyze_Generic_Package_Declaration): If there
 	is a default storage pool, add a corresponding aspect to the
 	generic unit, to be used at the point of instantiation.

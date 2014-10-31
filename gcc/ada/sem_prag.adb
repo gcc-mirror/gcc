@@ -8952,7 +8952,15 @@ package body Sem_Prag is
                --  Atomic_Synchronization is not a real check, so it is not
                --  affected by this processing).
 
-               if R_Id = No_Exceptions and then not Warn then
+               --  Ignore the effect of pragma Restrictions (No_Exceptions) on
+               --  run-time checks in CodePeer and GNATprove modes: we want to
+               --  generate checks for analysis purposes, as set respectively
+               --  by -gnatC and -gnatd.F
+
+               if not Warn
+                 and then not (CodePeer_Mode or GNATprove_Mode)
+                 and then R_Id = No_Exceptions
+               then
                   for J in Scope_Suppress.Suppress'Range loop
                      if J /= Atomic_Synchronization then
                         Scope_Suppress.Suppress (J) := True;
