@@ -123,8 +123,7 @@ host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
 		extra_make_flags='@extra_linker_plugin_flags@'; };
-host_modules= { module= libcc1; bootstrap=true;
-		extra_configure_flags=--enable-shared; };
+host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;

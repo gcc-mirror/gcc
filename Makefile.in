@@ -1085,9 +1085,7 @@ all-host: maybe-all-gnattools
 @if lto-plugin-no-bootstrap
 all-host: maybe-all-lto-plugin
 @endif lto-plugin-no-bootstrap
-@if libcc1-no-bootstrap
 all-host: maybe-all-libcc1
-@endif libcc1-no-bootstrap
 
 .PHONY: all-target
 
@@ -32264,6 +32262,7 @@ configure-libcc1: stage_current
 @if libcc1
 maybe-configure-libcc1: configure-libcc1
 configure-libcc1: 
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
@@ -32287,211 +32286,6 @@ configure-libcc1:
 
 
 
-.PHONY: configure-stage1-libcc1 maybe-configure-stage1-libcc1
-maybe-configure-stage1-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stage1-libcc1: configure-stage1-libcc1
-configure-stage1-libcc1:
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 1 in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   \
-	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-.PHONY: configure-stage2-libcc1 maybe-configure-stage2-libcc1
-maybe-configure-stage2-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stage2-libcc1: configure-stage2-libcc1
-configure-stage2-libcc1:
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 2 in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-.PHONY: configure-stage3-libcc1 maybe-configure-stage3-libcc1
-maybe-configure-stage3-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stage3-libcc1: configure-stage3-libcc1
-configure-stage3-libcc1:
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 3 in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-.PHONY: configure-stage4-libcc1 maybe-configure-stage4-libcc1
-maybe-configure-stage4-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stage4-libcc1: configure-stage4-libcc1
-configure-stage4-libcc1:
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 4 in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-.PHONY: configure-stageprofile-libcc1 maybe-configure-stageprofile-libcc1
-maybe-configure-stageprofile-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stageprofile-libcc1: configure-stageprofile-libcc1
-configure-stageprofile-libcc1:
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage profile in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-.PHONY: configure-stagefeedback-libcc1 maybe-configure-stagefeedback-libcc1
-maybe-configure-stagefeedback-libcc1:
-@if libcc1-bootstrap
-maybe-configure-stagefeedback-libcc1: configure-stagefeedback-libcc1
-configure-stagefeedback-libcc1:
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage feedback in $(HOST_SUBDIR)/libcc1 ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
-	cd $(HOST_SUBDIR)/libcc1 || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcc1; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --enable-shared
-@endif libcc1-bootstrap
-
-
-
 
 
 .PHONY: all-libcc1 maybe-all-libcc1
@@ -32503,6 +32297,7 @@ all-libcc1: stage_current
 TARGET-libcc1=all
 maybe-all-libcc1: all-libcc1
 all-libcc1: configure-libcc1
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
@@ -32510,255 +32305,6 @@ all-libcc1: configure-libcc1
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libcc1))
 @endif libcc1
-
-
-
-.PHONY: all-stage1-libcc1 maybe-all-stage1-libcc1
-.PHONY: clean-stage1-libcc1 maybe-clean-stage1-libcc1
-maybe-all-stage1-libcc1:
-maybe-clean-stage1-libcc1:
-@if libcc1-bootstrap
-maybe-all-stage1-libcc1: all-stage1-libcc1
-all-stage1: all-stage1-libcc1
-TARGET-stage1-libcc1 = $(TARGET-libcc1)
-all-stage1-libcc1: configure-stage1-libcc1
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE1_CFLAGS)" \
-		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
-		LIBCFLAGS="$(LIBCFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  \
-		$(STAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE1_TFLAGS)" \
-		$(TARGET-stage1-libcc1)
-
-maybe-clean-stage1-libcc1: clean-stage1-libcc1
-clean-stage1: clean-stage1-libcc1
-clean-stage1-libcc1:
-	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage1-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stage1-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-	$(STAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
-
-.PHONY: all-stage2-libcc1 maybe-all-stage2-libcc1
-.PHONY: clean-stage2-libcc1 maybe-clean-stage2-libcc1
-maybe-all-stage2-libcc1:
-maybe-clean-stage2-libcc1:
-@if libcc1-bootstrap
-maybe-all-stage2-libcc1: all-stage2-libcc1
-all-stage2: all-stage2-libcc1
-TARGET-stage2-libcc1 = $(TARGET-libcc1)
-all-stage2-libcc1: configure-stage2-libcc1
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE2_CFLAGS)" \
-		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE2_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE2_TFLAGS)" \
-		$(TARGET-stage2-libcc1)
-
-maybe-clean-stage2-libcc1: clean-stage2-libcc1
-clean-stage2: clean-stage2-libcc1
-clean-stage2-libcc1:
-	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage2-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stage2-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
-
-.PHONY: all-stage3-libcc1 maybe-all-stage3-libcc1
-.PHONY: clean-stage3-libcc1 maybe-clean-stage3-libcc1
-maybe-all-stage3-libcc1:
-maybe-clean-stage3-libcc1:
-@if libcc1-bootstrap
-maybe-all-stage3-libcc1: all-stage3-libcc1
-all-stage3: all-stage3-libcc1
-TARGET-stage3-libcc1 = $(TARGET-libcc1)
-all-stage3-libcc1: configure-stage3-libcc1
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE3_CFLAGS)" \
-		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE3_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE3_TFLAGS)" \
-		$(TARGET-stage3-libcc1)
-
-maybe-clean-stage3-libcc1: clean-stage3-libcc1
-clean-stage3: clean-stage3-libcc1
-clean-stage3-libcc1:
-	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage3-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stage3-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
-
-.PHONY: all-stage4-libcc1 maybe-all-stage4-libcc1
-.PHONY: clean-stage4-libcc1 maybe-clean-stage4-libcc1
-maybe-all-stage4-libcc1:
-maybe-clean-stage4-libcc1:
-@if libcc1-bootstrap
-maybe-all-stage4-libcc1: all-stage4-libcc1
-all-stage4: all-stage4-libcc1
-TARGET-stage4-libcc1 = $(TARGET-libcc1)
-all-stage4-libcc1: configure-stage4-libcc1
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE4_CFLAGS)" \
-		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE4_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE4_TFLAGS)" \
-		$(TARGET-stage4-libcc1)
-
-maybe-clean-stage4-libcc1: clean-stage4-libcc1
-clean-stage4: clean-stage4-libcc1
-clean-stage4-libcc1:
-	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage4-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stage4-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
-
-.PHONY: all-stageprofile-libcc1 maybe-all-stageprofile-libcc1
-.PHONY: clean-stageprofile-libcc1 maybe-clean-stageprofile-libcc1
-maybe-all-stageprofile-libcc1:
-maybe-clean-stageprofile-libcc1:
-@if libcc1-bootstrap
-maybe-all-stageprofile-libcc1: all-stageprofile-libcc1
-all-stageprofile: all-stageprofile-libcc1
-TARGET-stageprofile-libcc1 = $(TARGET-libcc1)
-all-stageprofile-libcc1: configure-stageprofile-libcc1
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEprofile_CFLAGS)" \
-		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEprofile_TFLAGS)" \
-		$(TARGET-stageprofile-libcc1)
-
-maybe-clean-stageprofile-libcc1: clean-stageprofile-libcc1
-clean-stageprofile: clean-stageprofile-libcc1
-clean-stageprofile-libcc1:
-	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stageprofile-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stageprofile-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
-
-.PHONY: all-stagefeedback-libcc1 maybe-all-stagefeedback-libcc1
-.PHONY: clean-stagefeedback-libcc1 maybe-clean-stagefeedback-libcc1
-maybe-all-stagefeedback-libcc1:
-maybe-clean-stagefeedback-libcc1:
-@if libcc1-bootstrap
-maybe-all-stagefeedback-libcc1: all-stagefeedback-libcc1
-all-stagefeedback: all-stagefeedback-libcc1
-TARGET-stagefeedback-libcc1 = $(TARGET-libcc1)
-all-stagefeedback-libcc1: configure-stagefeedback-libcc1
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEfeedback_CFLAGS)" \
-		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEfeedback_TFLAGS)" \
-		$(TARGET-stagefeedback-libcc1)
-
-maybe-clean-stagefeedback-libcc1: clean-stagefeedback-libcc1
-clean-stagefeedback: clean-stagefeedback-libcc1
-clean-stagefeedback-libcc1:
-	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/libcc1/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stagefeedback-libcc1/Makefile ] || exit 0; \
-	  $(MAKE) stagefeedback-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libcc1 && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libcc1-bootstrap
-
 
 
 
@@ -32817,6 +32363,7 @@ maybe-info-libcc1: info-libcc1
 
 info-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32842,6 +32389,7 @@ maybe-dvi-libcc1: dvi-libcc1
 
 dvi-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32867,6 +32415,7 @@ maybe-pdf-libcc1: pdf-libcc1
 
 pdf-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32892,6 +32441,7 @@ maybe-html-libcc1: html-libcc1
 
 html-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32917,6 +32467,7 @@ maybe-TAGS-libcc1: TAGS-libcc1
 
 TAGS-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32943,6 +32494,7 @@ maybe-install-info-libcc1: install-info-libcc1
 install-info-libcc1: \
     configure-libcc1 \
     info-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32969,6 +32521,7 @@ maybe-install-pdf-libcc1: install-pdf-libcc1
 install-pdf-libcc1: \
     configure-libcc1 \
     pdf-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -32995,6 +32548,7 @@ maybe-install-html-libcc1: install-html-libcc1
 install-html-libcc1: \
     configure-libcc1 \
     html-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -33020,6 +32574,7 @@ maybe-installcheck-libcc1: installcheck-libcc1
 
 installcheck-libcc1: \
     configure-libcc1 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -33044,6 +32599,7 @@ maybe-mostlyclean-libcc1:
 maybe-mostlyclean-libcc1: mostlyclean-libcc1
 
 mostlyclean-libcc1: 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -33068,6 +32624,7 @@ maybe-clean-libcc1:
 maybe-clean-libcc1: clean-libcc1
 
 clean-libcc1: 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -33092,6 +32649,7 @@ maybe-distclean-libcc1:
 maybe-distclean-libcc1: distclean-libcc1
 
 distclean-libcc1: 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -33116,6 +32674,7 @@ maybe-maintainer-clean-libcc1:
 maybe-maintainer-clean-libcc1: maintainer-clean-libcc1
 
 maintainer-clean-libcc1: 
+	@: $(MAKE); $(unstage)
 	@[ -f ./libcc1/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -46918,11 +46477,6 @@ stage1-start::
 	  mkdir stage1-lto-plugin; \
 	mv stage1-lto-plugin lto-plugin 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stage1-libcc1 ] || \
-	  mkdir stage1-libcc1; \
-	mv stage1-libcc1 libcc1 
-@endif libcc1
 	@[ -d stage1-$(TARGET_SUBDIR) ] || \
 	  mkdir stage1-$(TARGET_SUBDIR); \
 	mv stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR) 
@@ -47038,11 +46592,6 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv lto-plugin stage1-lto-plugin  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stage1-libcc1  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR)  ; \
 	fi
@@ -47223,12 +46772,6 @@ stage2-start::
 	mv stage2-lto-plugin lto-plugin  ; \
 	mv stage1-lto-plugin prev-lto-plugin || test -f stage1-lean 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stage2-libcc1 ] || \
-	  mkdir stage2-libcc1; \
-	mv stage2-libcc1 libcc1  ; \
-	mv stage1-libcc1 prev-libcc1 || test -f stage1-lean 
-@endif libcc1
 	@[ -d stage2-$(TARGET_SUBDIR) ] || \
 	  mkdir stage2-$(TARGET_SUBDIR); \
 	mv stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -47367,12 +46910,6 @@ stage2-end::
 	  mv prev-lto-plugin stage1-lto-plugin ; :  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stage2-libcc1 ; \
-	  mv prev-libcc1 stage1-libcc1 ; :  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
@@ -47577,12 +47114,6 @@ stage3-start::
 	mv stage3-lto-plugin lto-plugin  ; \
 	mv stage2-lto-plugin prev-lto-plugin || test -f stage2-lean 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stage3-libcc1 ] || \
-	  mkdir stage3-libcc1; \
-	mv stage3-libcc1 libcc1  ; \
-	mv stage2-libcc1 prev-libcc1 || test -f stage2-lean 
-@endif libcc1
 	@[ -d stage3-$(TARGET_SUBDIR) ] || \
 	  mkdir stage3-$(TARGET_SUBDIR); \
 	mv stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -47721,12 +47252,6 @@ stage3-end::
 	  mv prev-lto-plugin stage2-lto-plugin ; :  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stage3-libcc1 ; \
-	  mv prev-libcc1 stage2-libcc1 ; :  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR) ; :  ; \
@@ -47987,12 +47512,6 @@ stage4-start::
 	mv stage4-lto-plugin lto-plugin  ; \
 	mv stage3-lto-plugin prev-lto-plugin || test -f stage3-lean 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stage4-libcc1 ] || \
-	  mkdir stage4-libcc1; \
-	mv stage4-libcc1 libcc1  ; \
-	mv stage3-libcc1 prev-libcc1 || test -f stage3-lean 
-@endif libcc1
 	@[ -d stage4-$(TARGET_SUBDIR) ] || \
 	  mkdir stage4-$(TARGET_SUBDIR); \
 	mv stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -48131,12 +47650,6 @@ stage4-end::
 	  mv prev-lto-plugin stage3-lto-plugin ; :  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stage4-libcc1 ; \
-	  mv prev-libcc1 stage3-libcc1 ; :  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR) ; :  ; \
@@ -48385,12 +47898,6 @@ stageprofile-start::
 	mv stageprofile-lto-plugin lto-plugin  ; \
 	mv stage1-lto-plugin prev-lto-plugin || test -f stage1-lean 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stageprofile-libcc1 ] || \
-	  mkdir stageprofile-libcc1; \
-	mv stageprofile-libcc1 libcc1  ; \
-	mv stage1-libcc1 prev-libcc1 || test -f stage1-lean 
-@endif libcc1
 	@[ -d stageprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageprofile-$(TARGET_SUBDIR); \
 	mv stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -48529,12 +48036,6 @@ stageprofile-end::
 	  mv prev-lto-plugin stage1-lto-plugin ; :  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stageprofile-libcc1 ; \
-	  mv prev-libcc1 stage1-libcc1 ; :  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
@@ -48716,12 +48217,6 @@ stagefeedback-start::
 	mv stagefeedback-lto-plugin lto-plugin  ; \
 	mv stageprofile-lto-plugin prev-lto-plugin || test -f stageprofile-lean 
 @endif lto-plugin
-@if libcc1
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-libcc1 ] || \
-	  mkdir stagefeedback-libcc1; \
-	mv stagefeedback-libcc1 libcc1  ; \
-	mv stageprofile-libcc1 prev-libcc1 || test -f stageprofile-lean 
-@endif libcc1
 	@[ -d stagefeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stagefeedback-$(TARGET_SUBDIR); \
 	mv stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -48860,12 +48355,6 @@ stagefeedback-end::
 	  mv prev-lto-plugin stageprofile-lto-plugin ; :  ; \
 	fi
 @endif lto-plugin
-@if libcc1
-	@if test -d $(HOST_SUBDIR)/libcc1 ; then \
-	  cd $(HOST_SUBDIR); mv libcc1 stagefeedback-libcc1 ; \
-	  mv prev-libcc1 stageprofile-libcc1 ; :  ; \
-	fi
-@endif libcc1
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR) ; :  ; \
@@ -49380,21 +48869,7 @@ all-stage4-lto-plugin: maybe-all-stage4-libiberty-linker-plugin
 all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty-linker-plugin
 all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty-linker-plugin
 configure-libcc1: maybe-configure-gcc
-
-configure-stage1-libcc1: maybe-configure-stage1-gcc
-configure-stage2-libcc1: maybe-configure-stage2-gcc
-configure-stage3-libcc1: maybe-configure-stage3-gcc
-configure-stage4-libcc1: maybe-configure-stage4-gcc
-configure-stageprofile-libcc1: maybe-configure-stageprofile-gcc
-configure-stagefeedback-libcc1: maybe-configure-stagefeedback-gcc
 all-libcc1: maybe-all-gcc
-
-all-stage1-libcc1: maybe-all-stage1-gcc
-all-stage2-libcc1: maybe-all-stage2-gcc
-all-stage3-libcc1: maybe-all-stage3-gcc
-all-stage4-libcc1: maybe-all-stage4-gcc
-all-stageprofile-libcc1: maybe-all-stageprofile-gcc
-all-stagefeedback-libcc1: maybe-all-stagefeedback-gcc
 all-utils: maybe-all-libiberty
 configure-mpfr: maybe-all-gmp
 
