@@ -1,3 +1,21 @@
+2014-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (_Bvector_base): Use allocator_traits.
+	(_Bvector_base::_Bvector_impl): Use allocator's pointer type.
+	(_Bvector_base::_M_end_addr()): Convert to raw pointer.
+	(vector<bool>): Use allocator_traits and _M_end_addr. Add allocator
+	extended constructors.
+	* include/bits/vector.tcc (vector<bool>): Use allocator_traits and
+	_M_end_addr.
+	* testsuite/23_containers/vector/bool/allocator/copy.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/minimal.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/noexcept.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/move.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/swap.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/move_assign.cc: New.
+
 2014-10-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.host (aix5+): New stanza.
