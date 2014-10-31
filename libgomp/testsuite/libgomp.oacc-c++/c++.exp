@@ -33,9 +33,6 @@ lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
 set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
 set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
 
-set blddir [lookfor_file [get_multilibs] libgomp]
-
-
 if { $blddir != "" } {
     # Look for a static libstdc++ first.
     if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
