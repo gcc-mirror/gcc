@@ -542,6 +542,8 @@ The GNAT Library
 * Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
 * Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
 * Ada.Containers.Formal_Vectors (a-cofove.ads)::
+* Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)::
+* Ada.Containers.Bounded_Holders (a-coboho.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -5164,6 +5166,10 @@ requests warnings for inappropriate uses (comparisons and explicit
 subranges) for unordered types. If this switch is used, then any
 enumeration type not marked with pragma @code{Ordered} will be considered
 as unordered, and will generate warnings for inappropriate uses.
+
+Note that generic types are not considered ordered or unordered (since the
+template can be instantiated for both cases), so we never generate warnings
+for the case of generic enumerated types.
 
 For additional information please refer to the description of the
 @option{-gnatw.u} switch in the @value{EDITION} User's Guide.
@@ -19022,6 +19028,8 @@ of GNAT, and will generate a warning message.
 * Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
 * Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
 * Ada.Containers.Formal_Vectors (a-cofove.ads)::
+* Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)::
+* Ada.Containers.Bounded_Holders (a-coboho.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -19324,6 +19332,31 @@ Note that although this container was designed with formal verification
 in mind, it may well be generally useful in that it is a simplified more
 efficient version than the one defined in the standard. In particular it
 does not have the complex overhead required to detect cursor tampering.
+
+@node Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)
+@section @code{Ada.Containers.Formal_Indefinite_Vectors} (@file{a-cfinve.ads})
+@cindex @code{Ada.Containers.Formal_Indefinite_Vectors} (@file{a-cfinve.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for vectors of indefinite elements, meant to
+facilitate formal verification of code using such containers. The
+specification of this unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
+
+@node Ada.Containers.Bounded_Holders (a-coboho.ads)
+@section @code{Ada.Containers.Bounded_Holders} (@file{a-coboho.ads})
+@cindex @code{Ada.Containers.Bounded_Holders} (@file{a-coboho.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of
+Indefinite_Holders that avoids heap allocation.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})

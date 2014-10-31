@@ -1101,21 +1101,21 @@ package body Prj.Conf is
                Args (3) := Conf_File_Name;
             end if;
 
-            if Normalized_Hostname = "" then
-               Arg_Last := 3;
-            else
-               if Selected_Target'Length = 0 then
-                  if At_Least_One_Compiler_Command then
-                     Args (4) :=
-                       new String'("--target=all");
-                  else
-                     Args (4) :=
-                       new String'("--target=" & Normalized_Hostname);
-                  end if;
+            Arg_Last := 3;
 
+            if Selected_Target /= null and then
+               Selected_Target.all /= ""
+            then
+               Args (4) :=
+                  new String'("--target=" & Selected_Target.all);
+               Arg_Last := 4;
+            elsif Normalized_Hostname /= "" then
+               if At_Least_One_Compiler_Command then
+                  Args (4) :=
+                    new String'("--target=all");
                else
                   Args (4) :=
-                    new String'("--target=" & Selected_Target.all);
+                    new String'("--target=" & Normalized_Hostname);
                end if;
 
                Arg_Last := 4;
@@ -1496,7 +1496,7 @@ package body Prj.Conf is
       then
          Write_Line
            ("warning: " &
-              "--RTS is taken into account only in auto-configuration");
+              "runtimes are taken into account only in auto-configuration");
       end if;
 
       --  Parse the configuration file
@@ -1610,6 +1610,8 @@ package body Prj.Conf is
       procedure Add_Directory (Dir : String);
       --  Add a directory at the end of the Project Path
 
+      Auto_Generated : Boolean;
+
       -------------------
       -- Add_Directory --
       -------------------
@@ -1630,6 +1632,11 @@ package body Prj.Conf is
 
       Update_Ignore_Missing_With (Env.Flags, True);
 
+      Automatically_Generated := False;
+      --  If in fact the config file is automatically generated,
+      --  Automatically_Generated will be set to True after invocation of
+      --  Process_Project_And_Apply_Config.
+
       --  Record Target_Value and Target_Origin.
 
       if Target_Name = "" then
@@ -1647,7 +1654,6 @@ package body Prj.Conf is
       Prj.Initialize (Project_Tree);
 
       Main_Project := No_Project;
-      Automatically_Generated := False;
 
       Prj.Part.Parse
         (In_Tree           => Project_Node_Tree,
@@ -1728,13 +1734,17 @@ package body Prj.Conf is
          Env                        => Env,
          Packages_To_Check          => Packages_To_Check,
          Allow_Automatic_Generation => Allow_Automatic_Generation,
-         Automatically_Generated    => Automatically_Generated,
+         Automatically_Generated    => Auto_Generated,
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
          On_Load_Config             => On_Load_Config,
          On_New_Tree_Loaded         => On_New_Tree_Loaded,
          Do_Phase_1                 => Opt.Target_Origin = Specified);
+
+      if Auto_Generated then
+         Automatically_Generated := True;
+      end if;
 
       --  Exit if there was an error. Otherwise, if Config_Try_Again is True,
       --  update the project path and try again.
