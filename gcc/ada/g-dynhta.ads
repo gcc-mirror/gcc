@@ -238,10 +238,10 @@ package GNAT.Dynamic_HTables is
    -- Load_Factor_HTable --
    ------------------------
 
-   --  A simple hash table abstraction capable of growing once a treshold has
+   --  A simple hash table abstraction capable of growing once a threshold has
    --  been exceeded. Collisions are resolved by chaining elements onto lists
    --  hanging from individual buckets. This implementation does not make any
-   --  effort in minimizing the number of necessary rehashes once the table has
+   --  effort to minimize the number of necessary rehashes once the table has
    --  been expanded, hence the term "simple".
 
    --  WARNING: This hash table implementation utilizes dynamic allocation.
@@ -254,7 +254,7 @@ package GNAT.Dynamic_HTables is
    generic
       type Range_Type is range <>;
       --  The underlying range of the hash table. Note that this type must be
-      --  large enough to accomodate multiple expansions of the table.
+      --  large enough to accommodate multiple expansions of the table.
 
       type Key_Type is private;
       type Value_Type is private;
@@ -270,12 +270,12 @@ package GNAT.Dynamic_HTables is
       Growth_Percentage : Positive;
       --  The amount of increase expressed as a percentage. The hash table must
       --  grow by at least 1%. To illustrate, a value of 100 will increase the
-      --  table by 100% effectively doubling its size.
+      --  table by 100%, effectively doubling its size.
 
       Load_Factor : Float;
       --  The ratio of the elements stored within the hash table divided by the
-      --  current size of the table. This value acts as the growth treshold. If
-      --  exceeded, the hash table is expanded by Growth_Percentage.
+      --  current size of the table. This value acts as the growth threshold.
+      --  If exceeded, the hash table is expanded by Growth_Percentage.
 
       with function Equal
         (Left  : Key_Type;
@@ -293,7 +293,7 @@ package GNAT.Dynamic_HTables is
       --  Obtain the current size of the table
 
       function Get (T : Table; Key : Key_Type) return Value_Type;
-      --  Obtain the value associated with a key. This routne returns No_Value
+      --  Obtain the value associated with a key. This routine returns No_Value
       --  if the key is not present in the hash table.
 
       procedure Remove (T : in out Table; Key : Key_Type);

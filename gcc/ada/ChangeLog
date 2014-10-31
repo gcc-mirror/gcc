@@ -1,3 +1,24 @@
+2014-10-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.ads (Make_Tag_Assignment): New function, used to
+	re-initialize the tag in a tagged object declaration with
+	initial value.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Use
+	Make_Tag_Assignment to simplify code for a tagged object
+	declaration.
+	* exp_ch13.adb (Expand_Freeze_Entity): Analyze freeze actions
+	for the freeze node of an object.
+	* freeze.adb (Check_Address_Clause): Use Make_Tag_Assignment when
+	needed to extend Freeze_Actions for a tagged object declaration.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Further minor improvement to -flto entry.
+
+2014-10-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* g-dynhta.adb, g-dynhta.ads: Minor typo fixes and reformatting.
+
 2014-10-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Code cleanup.
