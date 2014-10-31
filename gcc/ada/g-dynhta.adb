@@ -507,7 +507,7 @@ package body GNAT.Dynamic_HTables is
 
       begin
          --  Skip the dummy head, inspect the bucket chain for an element whose
-         --  key matches the requested key. Since each bucket chain is curcular
+         --  key matches the requested key. Since each bucket chain is circular
          --  the search must stop once the dummy head is encountered.
 
          Elmt := Chain.Next;
