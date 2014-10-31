@@ -1,3 +1,8 @@
+2014-10-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure.ac: Update comment.
+	* configure: Regenerate.
+
 2014-10-31  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
