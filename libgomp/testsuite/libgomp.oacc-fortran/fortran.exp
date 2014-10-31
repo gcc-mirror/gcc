@@ -28,19 +28,15 @@ if { $blddir != "" } {
     set lang_include_flags "-fintrinsic-modules-path=${blddir}"
     # Look for a static libgfortran first.
     if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
-        set lang_test_file "${lang_library_path}/libgfortran.a"
         set lang_test_file_found 1
 	# We may have a shared only build, so look for a shared libgfortran.
     } elseif [file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] {
-        set lang_test_file "${lang_library_path}/libgfortran.${shlib_ext}"
         set lang_test_file_found 1
     } else {
         puts "No libgfortran library found, will not execute fortran tests"
     }
 } elseif [info exists GFORTRAN_UNDER_TEST] {
     set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
-    set lang_test_file ""
 } else {
     puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
 }

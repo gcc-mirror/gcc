@@ -234,13 +234,13 @@ proc libgomp_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global GCC_UNDER_TEST
-    global lang_test_file
+    global lang_test_file_found
     global lang_library_path
     global lang_link_flags
     global lang_include_flags
     global lang_source_re
 
-    if { [info exists lang_test_file] } {
+    if { [info exists lang_test_file_found] } {
         if { $blddir != "" } {
             # Some targets use libgfortran.a%s in their specs, so they need
             # a -B option for uninstalled testing.
