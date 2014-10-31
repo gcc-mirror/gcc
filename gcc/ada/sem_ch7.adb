@@ -108,20 +108,6 @@ package body Sem_Ch7 is
    --  created at the beginning of the corresponding package body and inserted
    --  before other body declarations.
 
-   procedure Install_Package_Entity (Id : Entity_Id);
-   --  Supporting procedure for Install_{Visible,Private}_Declarations. Places
-   --  one entity on its visibility chain, and recurses on the visible part if
-   --  the entity is an inner package.
-
-   function Is_Private_Base_Type (E : Entity_Id) return Boolean;
-   --  True for a private type that is not a subtype
-
-   function Is_Visible_Dependent (Dep : Entity_Id) return Boolean;
-   --  If the private dependent is a private type whose full view is derived
-   --  from the parent type, its full properties are revealed only if we are in
-   --  the immediate scope of the private dependent. Should this predicate be
-   --  tightened further???
-
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id);
    --  Called upon entering the private part of a public child package and the
    --  body of a nested package, to potentially declare certain inherited
@@ -137,10 +123,31 @@ package body Sem_Ch7 is
    --  inherited private operation has been overridden, then it's replaced by
    --  the overriding operation.
 
-   procedure Unit_Requires_Body_Info (P : Entity_Id);
-   --  Outputs info messages showing why package specification P requires a
-   --  body. Caller has checked that the switch requesting this information
-   --  is set, and that the package does indeed require a body.
+   procedure Install_Package_Entity (Id : Entity_Id);
+   --  Supporting procedure for Install_{Visible,Private}_Declarations. Places
+   --  one entity on its visibility chain, and recurses on the visible part if
+   --  the entity is an inner package.
+
+   function Is_Private_Base_Type (E : Entity_Id) return Boolean;
+   --  True for a private type that is not a subtype
+
+   function Is_Visible_Dependent (Dep : Entity_Id) return Boolean;
+   --  If the private dependent is a private type whose full view is derived
+   --  from the parent type, its full properties are revealed only if we are in
+   --  the immediate scope of the private dependent. Should this predicate be
+   --  tightened further???
+
+   function Requires_Completion_In_Body
+     (Id      : Entity_Id;
+      Pack_Id : Entity_Id) return Boolean;
+   --  Subsidiary to routines Unit_Requires_Body and Unit_Requires_Body_Info.
+   --  Determine whether entity Id declared in package spec Pack_Id requires
+   --  completion in a package body.
+
+   procedure Unit_Requires_Body_Info (Pack_Id : Entity_Id);
+   --  Outputs info messages showing why package Pack_Id requires a body. The
+   --  caller has checked that the switch requesting this information is set,
+   --  and that the package does indeed require a body.
 
    --------------------------
    -- Analyze_Package_Body --
@@ -588,13 +595,14 @@ package body Sem_Ch7 is
       --  been set.
 
       if Present (Corresponding_Spec (N)) then
-         Spec_Id := Corresponding_Spec (N);
+         Spec_Id   := Corresponding_Spec (N);
          Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
       else
          Spec_Id := Current_Entity_In_Scope (Defining_Entity (N));
 
-         if Present (Spec_Id) and then Is_Package_Or_Generic_Package (Spec_Id)
+         if Present (Spec_Id)
+           and then Is_Package_Or_Generic_Package (Spec_Id)
          then
             Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
@@ -717,6 +725,19 @@ package body Sem_Ch7 is
 
          Set_SPARK_Aux_Pragma (Body_Id, SPARK_Pragma (Body_Id));
          Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
+      end if;
+
+      --  Inherit the "ghostness" of the subprogram spec. Note that this
+      --  property is not directly inherited as the body may be subject to a
+      --  different Ghost assertion policy.
+
+      if Is_Ghost_Entity (Spec_Id) or else Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Body_Id);
+
+         --  The Ghost policy in effect at the point of declaration and at the
+         --  point of completion must match (SPARK RM 6.9(14)).
+
+         Check_Ghost_Completion (Spec_Id, Body_Id);
       end if;
 
       Set_Categorization_From_Pragmas (N);
@@ -1754,6 +1775,13 @@ package body Sem_Ch7 is
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
 
+      --  A type declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Id);
+      end if;
+
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
@@ -2410,6 +2438,82 @@ package body Sem_Ch7 is
       end if;
    end New_Private_Type;
 
+   ---------------------------------
+   -- Requires_Completion_In_Body --
+   ---------------------------------
+
+   function Requires_Completion_In_Body
+     (Id      : Entity_Id;
+      Pack_Id : Entity_Id) return Boolean is
+   begin
+      --  Always ignore child units. Child units get added to the entity list
+      --  of a parent unit, but are not original entities of the parent, and
+      --  so do not affect whether the parent needs a body.
+
+      if Is_Child_Unit (Id) then
+         return False;
+
+      --  Ignore formal packages and their renamings
+
+      elsif Ekind (Id) = E_Package
+        and then Nkind (Original_Node (Unit_Declaration_Node (Id))) =
+                                                   N_Formal_Package_Declaration
+      then
+         return False;
+
+      --  A Ghost entity declared in a non-Ghost package does not force the
+      --  need for a body (SPARK RM 6.9(11)).
+
+      elsif not Is_Ghost_Entity (Pack_Id) and then Is_Ghost_Entity (Id) then
+         return False;
+
+      --  Otherwise test to see if entity requires a completion. Note that
+      --  subprogram entities whose declaration does not come from source are
+      --  ignored here on the basis that we assume the expander will provide an
+      --  implicit completion at some point.
+
+      elsif (Is_Overloadable (Id)
+              and then Ekind (Id) /= E_Enumeration_Literal
+              and then Ekind (Id) /= E_Operator
+              and then not Is_Abstract_Subprogram (Id)
+              and then not Has_Completion (Id)
+              and then Comes_From_Source (Parent (Id)))
+
+        or else
+          (Ekind (Id) = E_Package
+            and then Id /= Pack_Id
+            and then not Has_Completion (Id)
+            and then Unit_Requires_Body (Id))
+
+        or else
+          (Ekind (Id) = E_Incomplete_Type
+            and then No (Full_View (Id))
+            and then not Is_Generic_Type (Id))
+
+        or else
+          (Ekind_In (Id, E_Task_Type, E_Protected_Type)
+            and then not Has_Completion (Id))
+
+        or else
+          (Ekind (Id) = E_Generic_Package
+            and then Id /= Pack_Id
+            and then not Has_Completion (Id)
+            and then Unit_Requires_Body (Id))
+
+        or else
+          (Is_Generic_Subprogram (Id)
+            and then not Has_Completion (Id))
+
+      then
+         return True;
+
+      --  Otherwise the entity does not require completion in a package body
+
+      else
+         return False;
+      end if;
+   end Requires_Completion_In_Body;
+
    ----------------------------
    -- Uninstall_Declarations --
    ----------------------------
@@ -2859,7 +2963,7 @@ package body Sem_Ch7 is
    ------------------------
 
    function Unit_Requires_Body
-     (P                     : Entity_Id;
+     (Pack_Id               : Entity_Id;
       Ignore_Abstract_State : Boolean := False) return Boolean
    is
       E : Entity_Id;
@@ -2869,30 +2973,30 @@ package body Sem_Ch7 is
       --  be imported, but perhaps in the future we will allow import of
       --  packages.
 
-      if Is_Imported (P) then
+      if Is_Imported (Pack_Id) then
          return False;
 
       --  Body required if library package with pragma Elaborate_Body
 
-      elsif Has_Pragma_Elaborate_Body (P) then
+      elsif Has_Pragma_Elaborate_Body (Pack_Id) then
          return True;
 
       --  Body required if subprogram
 
-      elsif Is_Subprogram_Or_Generic_Subprogram (P) then
+      elsif Is_Subprogram_Or_Generic_Subprogram (Pack_Id) then
          return True;
 
       --  Treat a block as requiring a body
 
-      elsif Ekind (P) = E_Block then
+      elsif Ekind (Pack_Id) = E_Block then
          return True;
 
-      elsif Ekind (P) = E_Package
-        and then Nkind (Parent (P)) = N_Package_Specification
-        and then Present (Generic_Parent (Parent (P)))
+      elsif Ekind (Pack_Id) = E_Package
+        and then Nkind (Parent (Pack_Id)) = N_Package_Specification
+        and then Present (Generic_Parent (Parent (Pack_Id)))
       then
          declare
-            G_P : constant Entity_Id := Generic_Parent (Parent (P));
+            G_P : constant Entity_Id := Generic_Parent (Parent (Pack_Id));
          begin
             if Has_Pragma_Elaborate_Body (G_P) then
                return True;
@@ -2906,78 +3010,21 @@ package body Sem_Ch7 is
       --  provided). If Ignore_Abstract_State is True, we don't do this check
       --  (so we can use Unit_Requires_Body to check for some other reason).
 
-      elsif Ekind_In (P, E_Generic_Package, E_Package)
+      elsif Ekind_In (Pack_Id, E_Generic_Package, E_Package)
         and then not Ignore_Abstract_State
-        and then Present (Abstract_States (P))
-        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+        and then Present (Abstract_States (Pack_Id))
+        and then not Is_Null_State
+                       (Node (First_Elmt (Abstract_States (Pack_Id))))
       then
          return True;
       end if;
 
       --  Otherwise search entity chain for entity requiring completion
 
-      E := First_Entity (P);
+      E := First_Entity (Pack_Id);
       while Present (E) loop
-
-         --  Always ignore child units. Child units get added to the entity
-         --  list of a parent unit, but are not original entities of the
-         --  parent, and so do not affect whether the parent needs a body.
-
-         if Is_Child_Unit (E) then
-            null;
-
-         --  Ignore formal packages and their renamings
-
-         elsif Ekind (E) = E_Package
-           and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
-                                                N_Formal_Package_Declaration
-         then
-            null;
-
-         --  Otherwise test to see if entity requires a completion.
-         --  Note that subprogram entities whose declaration does not come
-         --  from source are ignored here on the basis that we assume the
-         --  expander will provide an implicit completion at some point.
-
-         elsif (Is_Overloadable (E)
-                 and then Ekind (E) /= E_Enumeration_Literal
-                 and then Ekind (E) /= E_Operator
-                 and then not Is_Abstract_Subprogram (E)
-                 and then not Has_Completion (E)
-                 and then Comes_From_Source (Parent (E)))
-
-           or else
-             (Ekind (E) = E_Package
-               and then E /= P
-               and then not Has_Completion (E)
-               and then Unit_Requires_Body (E))
-
-           or else
-             (Ekind (E) = E_Incomplete_Type
-               and then No (Full_View (E))
-               and then not Is_Generic_Type (E))
-
-           or else
-             (Ekind_In (E, E_Task_Type, E_Protected_Type)
-               and then not Has_Completion (E))
-
-           or else
-             (Ekind (E) = E_Generic_Package
-               and then E /= P
-               and then not Has_Completion (E)
-               and then Unit_Requires_Body (E))
-
-           or else
-             (Is_Generic_Subprogram (E)
-               and then not Has_Completion (E))
-
-         then
+         if Requires_Completion_In_Body (E, Pack_Id) then
             return True;
-
-         --  Entity that does not require completion
-
-         else
-            null;
          end if;
 
          Next_Entity (E);
@@ -2990,40 +3037,40 @@ package body Sem_Ch7 is
    -- Unit_Requires_Body_Info --
    -----------------------------
 
-   procedure Unit_Requires_Body_Info (P : Entity_Id) is
+   procedure Unit_Requires_Body_Info (Pack_Id : Entity_Id) is
       E : Entity_Id;
 
    begin
-      --  Imported entity never requires body. Right now, only subprograms can
-      --  be imported, but perhaps in the future we will allow import of
+      --  An imported entity never requires body. Right now, only subprograms
+      --  can be imported, but perhaps in the future we will allow import of
       --  packages.
 
-      if Is_Imported (P) then
+      if Is_Imported (Pack_Id) then
          return;
 
       --  Body required if library package with pragma Elaborate_Body
 
-      elsif Has_Pragma_Elaborate_Body (P) then
-         Error_Msg_N ("info: & requires body (Elaborate_Body)?Y?", P);
+      elsif Has_Pragma_Elaborate_Body (Pack_Id) then
+         Error_Msg_N ("info: & requires body (Elaborate_Body)?Y?", Pack_Id);
 
       --  Body required if subprogram
 
-      elsif Is_Subprogram_Or_Generic_Subprogram (P) then
-         Error_Msg_N ("info: & requires body (subprogram case)?Y?", P);
+      elsif Is_Subprogram_Or_Generic_Subprogram (Pack_Id) then
+         Error_Msg_N ("info: & requires body (subprogram case)?Y?", Pack_Id);
 
       --  Body required if generic parent has Elaborate_Body
 
-      elsif Ekind (P) = E_Package
-        and then Nkind (Parent (P)) = N_Package_Specification
-        and then Present (Generic_Parent (Parent (P)))
+      elsif Ekind (Pack_Id) = E_Package
+        and then Nkind (Parent (Pack_Id)) = N_Package_Specification
+        and then Present (Generic_Parent (Parent (Pack_Id)))
       then
          declare
-            G_P : constant Entity_Id := Generic_Parent (Parent (P));
+            G_P : constant Entity_Id := Generic_Parent (Parent (Pack_Id));
          begin
             if Has_Pragma_Elaborate_Body (G_P) then
                Error_Msg_N
                  ("info: & requires body (generic parent Elaborate_Body)?Y?",
-                  P);
+                  Pack_Id);
             end if;
          end;
 
@@ -3034,79 +3081,24 @@ package body Sem_Ch7 is
       --  provided). If Ignore_Abstract_State is True, we don't do this check
       --  (so we can use Unit_Requires_Body to check for some other reason).
 
-      elsif Ekind_In (P, E_Generic_Package, E_Package)
-        and then Present (Abstract_States (P))
-        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+      elsif Ekind_In (Pack_Id, E_Generic_Package, E_Package)
+        and then Present (Abstract_States (Pack_Id))
+        and then not Is_Null_State
+                       (Node (First_Elmt (Abstract_States (Pack_Id))))
       then
          Error_Msg_N
-           ("info: & requires body (non-null abstract state aspect)?Y?", P);
+           ("info: & requires body (non-null abstract state aspect)?Y?",
+            Pack_Id);
       end if;
 
       --  Otherwise search entity chain for entity requiring completion
 
-      E := First_Entity (P);
+      E := First_Entity (Pack_Id);
       while Present (E) loop
-
-         --  Always ignore child units. Child units get added to the entity
-         --  list of a parent unit, but are not original entities of the
-         --  parent, and so do not affect whether the parent needs a body.
-
-         if Is_Child_Unit (E) then
-            null;
-
-         --  Ignore formal packages and their renamings
-
-         elsif Ekind (E) = E_Package
-           and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
-                                                N_Formal_Package_Declaration
-         then
-            null;
-
-         --  Otherwise test to see if entity requires a completion.
-         --  Note that subprogram entities whose declaration does not come
-         --  from source are ignored here on the basis that we assume the
-         --  expander will provide an implicit completion at some point.
-
-         elsif (Is_Overloadable (E)
-                 and then Ekind (E) /= E_Enumeration_Literal
-                 and then Ekind (E) /= E_Operator
-                 and then not Is_Abstract_Subprogram (E)
-                 and then not Has_Completion (E)
-                 and then Comes_From_Source (Parent (E)))
-
-           or else
-             (Ekind (E) = E_Package
-               and then E /= P
-               and then not Has_Completion (E)
-               and then Unit_Requires_Body (E))
-
-           or else
-             (Ekind (E) = E_Incomplete_Type
-               and then No (Full_View (E))
-               and then not Is_Generic_Type (E))
-
-           or else
-             (Ekind_In (E, E_Task_Type, E_Protected_Type)
-               and then not Has_Completion (E))
-
-           or else
-             (Ekind (E) = E_Generic_Package
-               and then E /= P
-               and then not Has_Completion (E)
-               and then Unit_Requires_Body (E))
-
-           or else
-             (Is_Generic_Subprogram (E)
-               and then not Has_Completion (E))
-         then
+         if Requires_Completion_In_Body (E, Pack_Id) then
             Error_Msg_Node_2 := E;
             Error_Msg_NE
-              ("info: & requires body (& requires completion)?Y?", E, P);
-
-         --  Entity that does not require completion
-
-         else
-            null;
+              ("info: & requires body (& requires completion)?Y?", E, Pack_Id);
          end if;
 
          Next_Entity (E);

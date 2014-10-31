@@ -2617,7 +2617,6 @@ package body Sem_Ch3 is
          Set_Analyzed (T);
 
          case Nkind (Def) is
-
             when N_Access_To_Subprogram_Definition =>
                Access_Subprogram_Declaration (T, Def);
 
@@ -2705,13 +2704,20 @@ package body Sem_Ch3 is
          Check_SPARK_05_Restriction ("controlled type is not allowed", N);
       end if;
 
+      --  A type declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Comes_From_Source (T) and then Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (T);
+      end if;
+
       --  Some common processing for all types
 
       Set_Depends_On_Private (T, Has_Private_Component (T));
       Check_Ops_From_Incomplete_Type;
 
-      --  Both the declared entity, and its anonymous base type if one
-      --  was created, need freeze nodes allocated.
+      --  Both the declared entity, and its anonymous base type if one was
+      --  created, need freeze nodes allocated.
 
       declare
          B : constant Entity_Id := Base_Type (T);
@@ -2850,6 +2856,13 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (T, True);
       Set_Etype (T, T);
 
+      --  An incomplete type declared within a Ghost scope is automatically
+      --  Ghost (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (T);
+      end if;
+
       --  Ada 2005 (AI-326): Minimum decoration to give support to tagged
       --  incomplete types.
 
@@ -2959,6 +2972,13 @@ package body Sem_Ch3 is
    begin
       Generate_Definition (Id);
       Enter_Name (Id);
+
+      --  A number declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Id);
+      end if;
 
       --  This is an optimization of a common case of an integer literal
 
@@ -3099,6 +3119,13 @@ package body Sem_Ch3 is
       Seen    : Boolean := False;
 
    begin
+      --  The loop parameter in an element iterator over a formal container
+      --  is declared with an object declaration but no contracts apply.
+
+      if Ekind (Obj_Id) = E_Loop_Parameter then
+         return;
+      end if;
+
       if Ekind (Obj_Id) = E_Constant then
 
          --  A constant cannot be effectively volatile. This check is only
@@ -3112,12 +3139,6 @@ package body Sem_Ch3 is
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
-
-      --  The loop parameter in an element iterator over a formal container
-      --  is declared with an object declaration but no contracts apply.
-
-      elsif Ekind (Obj_Id) = E_Loop_Parameter then
-         null;
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
@@ -3162,6 +3183,25 @@ package body Sem_Ch3 is
                   Error_Msg_N
                     ("non-volatile object & cannot have volatile components",
                      Obj_Id);
+               end if;
+            end if;
+
+            if Is_Ghost_Entity (Obj_Id) then
+
+               --  A Ghost object cannot be effectively volatile
+               --  (SPARK RM 6.9(8)).
+
+               if Is_Effectively_Volatile (Obj_Id) then
+                  SPARK_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
+
+               --  A Ghost object cannot be imported or exported
+               --  (SPARK RM 6.9(8)).
+
+               elsif Is_Imported (Obj_Id) then
+                  SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
+
+               elsif Is_Exported (Obj_Id) then
+                  SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
                end if;
             end if;
          end if;
@@ -3209,6 +3249,17 @@ package body Sem_Ch3 is
 
          if No (Prag) then
             Check_Missing_Part_Of (Obj_Id);
+         end if;
+      end if;
+
+      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8))
+
+      if Is_Ghost_Entity (Obj_Id) then
+         if Is_Exported (Obj_Id) then
+            SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
+
+         elsif Is_Imported (Obj_Id) then
+            SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
          end if;
       end if;
    end Analyze_Object_Contract;
@@ -3522,8 +3573,7 @@ package body Sem_Ch3 is
       --  and must not be unconstrained. (The only exception to this is the
       --  acceptance of declarations of constants of type String.)
 
-      if not
-        Nkind_In (Object_Definition (N), N_Identifier, N_Expanded_Name)
+      if not Nkind_In (Object_Definition (N), N_Expanded_Name, N_Identifier)
       then
          Check_SPARK_05_Restriction
            ("subtype mark required", Object_Definition (N));
@@ -3869,6 +3919,23 @@ package body Sem_Ch3 is
                   Set_Ekind (Id, E_Variable);
                end if;
 
+               --  An object declared within a Ghost scope is automatically
+               --  Ghost (SPARK RM 6.9(2)).
+
+               if Comes_From_Source (Id) and then Within_Ghost_Scope then
+                  Set_Is_Ghost_Entity (Id);
+
+                  --  The Ghost policy in effect at the point of declaration
+                  --  and at the point of completion must match
+                  --  (SPARK RM 6.9(14)).
+
+                  if Present (Prev_Entity)
+                    and then Is_Ghost_Entity (Prev_Entity)
+                  then
+                     Check_Ghost_Completion (Prev_Entity, Id);
+                  end if;
+               end if;
+
                Rewrite (N,
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
@@ -3991,7 +4058,7 @@ package body Sem_Ch3 is
       --  true for variables so far (will be reset for a variable if and when
       --  we encounter a modification in the source).
 
-      Set_Never_Set_In_Source (Id, True);
+      Set_Never_Set_In_Source (Id);
 
       --  Now establish the proper kind and type of the object
 
@@ -4021,7 +4088,7 @@ package body Sem_Ch3 is
          --  the case of exception choice variables, it will already be true).
 
          if Present (E) then
-            Set_Has_Initial_Value (Id, True);
+            Set_Has_Initial_Value (Id);
          end if;
 
          Set_Contract (Id, Make_Contract (Sloc (Id)));
@@ -4032,6 +4099,27 @@ package body Sem_Ch3 is
       Init_Alignment               (Id);
       Init_Esize                   (Id);
       Set_Optimize_Alignment_Flags (Id);
+
+      --  An object declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)). This property is also inherited when its type
+      --  is Ghost or the previous declaration of the deferred constant is
+      --  Ghost.
+
+      if Comes_From_Source (Id)
+        and then (Is_Ghost_Entity (T)
+                   or else (Present (Prev_Entity)
+                             and then Is_Ghost_Entity (Prev_Entity))
+                   or else Within_Ghost_Scope)
+      then
+         Set_Is_Ghost_Entity (Id);
+
+         --  The Ghost policy in effect at the point of declaration and at the
+         --  point of completion must match (SPARK RM 6.9(14)).
+
+         if Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity) then
+            Check_Ghost_Completion (Prev_Entity, Id);
+         end if;
+      end if;
 
       --  Deal with aliased case
 
@@ -7636,6 +7724,34 @@ package body Sem_Ch3 is
       Derived_Type : Entity_Id;
       Derive_Subps : Boolean := True)
    is
+      function Implements_Ghost_Interface (Typ : Entity_Id) return Boolean;
+      --  Determine whether type Typ implements at least one Ghost interface
+
+      --------------------------------
+      -- Implements_Ghost_Interface --
+      --------------------------------
+
+      function Implements_Ghost_Interface (Typ : Entity_Id) return Boolean is
+         Iface_Elmt : Elmt_Id;
+      begin
+         --  Traverse the list of interfaces looking for a Ghost interface
+
+         if Is_Tagged_Type (Typ) and then Present (Interfaces (Typ)) then
+            Iface_Elmt := First_Elmt (Interfaces (Typ));
+            while Present (Iface_Elmt) loop
+               if Is_Ghost_Entity (Node (Iface_Elmt)) then
+                  return True;
+               end if;
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end if;
+
+         return False;
+      end Implements_Ghost_Interface;
+
+      --  Local variables
+
       Discriminant_Specs : constant Boolean :=
                              Present (Discriminant_Specifications (N));
       Is_Tagged          : constant Boolean := Is_Tagged_Type (Parent_Type);
@@ -7662,6 +7778,8 @@ package body Sem_Ch3 is
       Discs : Elist_Id := New_Elmt_List;
       --  An empty Discs list means that there were no constraints in the
       --  subtype indication or that there was an error processing it.
+
+   --  Start of processing for Build_Derived_Record_Type
 
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
@@ -8214,7 +8332,7 @@ package body Sem_Ch3 is
 
                declare
                   Corr_Disc : constant Entity_Id :=
-                      Corresponding_Discriminant (Discrim);
+                                Corresponding_Discriminant (Discrim);
                   Disc_Type : constant Entity_Id := Etype (Discrim);
                   Corr_Type : Entity_Id;
 
@@ -8496,7 +8614,7 @@ package body Sem_Ch3 is
                if Is_Itype (Derived_Type) then
                   declare
                      Def : constant Node_Id :=
-                       Associated_Node_For_Itype (Derived_Type);
+                             Associated_Node_For_Itype (Derived_Type);
                   begin
                      if Present (Def)
                        and then Nkind (Def) = N_Full_Type_Declaration
@@ -8505,6 +8623,16 @@ package body Sem_Ch3 is
                           (Defining_Identifier (Def), Ifaces_List);
                      end if;
                   end;
+               end if;
+
+               --  A type extension is automatically Ghost when one of its
+               --  progenitors is Ghost (SPARK RM 6.9(9)). This property is
+               --  also inherited when the parent type is Ghost, but this is
+               --  done in Build_Derived_Type as the mechanism also handles
+               --  untagged derivations.
+
+               if Implements_Ghost_Interface (Derived_Type) then
+                  Set_Is_Ghost_Entity (Derived_Type);
                end if;
             end;
          end if;
@@ -8700,6 +8828,7 @@ package body Sem_Ch3 is
       Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
       Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
+      Set_Is_Volatile    (Derived_Type, Is_Volatile    (Parent_Type));
 
       if Is_Tagged_Type (Derived_Type) then
          Set_No_Tagged_Streams_Pragma
@@ -8716,7 +8845,7 @@ package body Sem_Ch3 is
       --  type may be set in the private part, and not propagated to the
       --  subtype until later, so we obtain the convention from the base type.
 
-      Set_Convention (Derived_Type, Convention     (Parent_Base));
+      Set_Convention (Derived_Type, Convention (Parent_Base));
 
       --  Set SSO default for record or array type
 
@@ -8757,6 +8886,13 @@ package body Sem_Ch3 is
 
       if Has_Delayed_Rep_Aspects (Parent_Type) then
          Set_May_Inherit_Delayed_Rep_Aspects (Derived_Type);
+      end if;
+
+      --  Propagate the attributes related to pragma Ghost from the parent type
+      --  to the derived type or type extension (SPARK RM 6.9(9)).
+
+      if Is_Ghost_Entity (Parent_Type) then
+         Set_Is_Ghost_Entity (Derived_Type);
       end if;
 
       --  Type dependent processing
@@ -10646,12 +10782,22 @@ package body Sem_Ch3 is
          end if;
       end Post_Error;
 
+      --  Local variables
+
+      Pack_Id : constant Entity_Id := Current_Scope;
+
    --  Start of processing for Check_Completion
 
    begin
-      E := First_Entity (Current_Scope);
+      E := First_Entity (Pack_Id);
       while Present (E) loop
          if Is_Intrinsic_Subprogram (E) then
+            null;
+
+         --  A Ghost entity declared in a non-Ghost package does not force the
+         --  need for a body (SPARK RM 6.9(11)).
+
+         elsif not Is_Ghost_Entity (Pack_Id) and then Is_Ghost_Entity (E) then
             null;
 
          --  The following situation requires special handling: a child unit
@@ -10678,10 +10824,10 @@ package body Sem_Ch3 is
          --  this kind is reserved for predefined operators, that are
          --  intrinsic and do not need completion.
 
-         elsif  Ekind_In (E, E_Function,
-                             E_Procedure,
-                             E_Generic_Function,
-                             E_Generic_Procedure)
+         elsif Ekind_In (E, E_Function,
+                            E_Procedure,
+                            E_Generic_Function,
+                            E_Generic_Procedure)
          then
             if Has_Completion (E) then
                null;
@@ -11834,8 +11980,7 @@ package body Sem_Ch3 is
          then
             Error_Msg_Sloc := Sloc (Prev);
             Error_Msg_N
-              ("full constant for declaration#"
-               & " must be in private part", N);
+              ("full constant for declaration # must be in private part", N);
 
          elsif Ekind (Current_Scope) = E_Package
            and then
@@ -14581,7 +14726,8 @@ package body Sem_Ch3 is
                              and then Designated_Type (Etype (New_Subp)) =
                                                         Derived_Type
                              and then not Is_Null_Extension (Derived_Type))
-                   or else Is_EVF_Procedure (Alias (New_Subp)))
+                   or else (Comes_From_Source (Alias (New_Subp))
+                             and then Is_EVF_Procedure (Alias (New_Subp))))
         and then No (Actual_Subp)
       then
          if not Is_Tagged_Type (Derived_Type)
@@ -19634,6 +19780,26 @@ package body Sem_Ch3 is
            (From_Typ             => Full_T,
             To_Typ               => Priv_T,
             Private_To_Full_View => True);
+      end if;
+
+      --  Propagate the attributes related to pragma Ghost from the private to
+      --  the full view.
+
+      if Is_Ghost_Entity (Priv_T) then
+         Set_Is_Ghost_Entity (Full_T);
+
+         --  The Ghost policy in effect at the point of declaration and at the
+         --  point of completion must match (SPARK RM 6.9(14)).
+
+         Check_Ghost_Completion (Priv_T, Full_T);
+
+         --  In the case where the private view of a tagged type lacks a parent
+         --  type and is subject to pragma Ghost, ensure that the parent type
+         --  specified by the full view is also Ghost (SPARK RM 6.9(9)).
+
+         if Is_Derived_Type (Full_T) then
+            Check_Ghost_Derivation (Full_T);
+         end if;
       end if;
 
       --  Propagate invariants to full type

@@ -569,15 +569,12 @@ package body Einfo is
    --    (Has_Protected)                 Flag271
    --    (SSO_Set_Low_By_Default)        Flag272
    --    (SSO_Set_High_By_Default)       Flag273
-
    --    Is_Generic_Actual_Subprogram    Flag274
    --    No_Predicate_On_Actual          Flag275
    --    No_Dynamic_Predicate_On_Actual  Flag276
+   --    Is_Checked_Ghost_Entity         Flag277
+   --    Is_Ignored_Ghost_Entity         Flag278
 
-   --    (unused)                        Flag275
-   --    (unused)                        Flag276
-   --    (unused)                        Flag277
-   --    (unused)                        Flag278
    --    (unused)                        Flag279
    --    (unused)                        Flag280
 
@@ -1926,6 +1923,12 @@ package body Einfo is
       return Flag63 (Id);
    end Is_Character_Type;
 
+   function Is_Checked_Ghost_Entity (Id : E) return B is
+   begin
+      pragma Assert (Nkind (Id) in N_Entity);
+      return Flag277 (Id);
+   end Is_Checked_Ghost_Entity;
+
    function Is_Child_Unit (Id : E) return B is
    begin
       return Flag73 (Id);
@@ -2089,6 +2092,12 @@ package body Einfo is
    begin
       return Flag171 (Id);
    end Is_Hidden_Open_Scope;
+
+   function Is_Ignored_Ghost_Entity (Id : E) return B is
+   begin
+      pragma Assert (Nkind (Id) in N_Entity);
+      return Flag278 (Id);
+   end Is_Ignored_Ghost_Entity;
 
    function Is_Immediately_Visible (Id : E) return B is
    begin
@@ -4729,6 +4738,21 @@ package body Einfo is
       Set_Flag63 (Id, V);
    end Set_Is_Character_Type;
 
+   procedure Set_Is_Checked_Ghost_Entity (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Formal (Id)
+        or else Is_Object (Id)
+        or else Is_Package_Or_Generic_Package (Id)
+        or else Is_Subprogram_Or_Generic_Subprogram (Id)
+        or else Is_Type (Id)
+        or else Ekind (Id) = E_Abstract_State
+        or else Ekind (Id) = E_Component
+        or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Package_Body
+        or else Ekind (Id) = E_Subprogram_Body);
+      Set_Flag277 (Id, V);
+   end Set_Is_Checked_Ghost_Entity;
+
    procedure Set_Is_Child_Unit (Id : E; V : B := True) is
    begin
       Set_Flag73 (Id, V);
@@ -4871,7 +4895,7 @@ package body Einfo is
 
    procedure Set_Is_Generic_Actual_Subprogram (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       Set_Flag274 (Id, V);
    end Set_Is_Generic_Actual_Subprogram;
 
@@ -4907,6 +4931,21 @@ package body Einfo is
    begin
       Set_Flag171 (Id, V);
    end Set_Is_Hidden_Open_Scope;
+
+   procedure Set_Is_Ignored_Ghost_Entity (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Formal (Id)
+        or else Is_Object (Id)
+        or else Is_Package_Or_Generic_Package (Id)
+        or else Is_Subprogram_Or_Generic_Subprogram (Id)
+        or else Is_Type (Id)
+        or else Ekind (Id) = E_Abstract_State
+        or else Ekind (Id) = E_Component
+        or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Package_Body
+        or else Ekind (Id) = E_Subprogram_Body);
+      Set_Flag278 (Id, V);
+   end Set_Is_Ignored_Ghost_Entity;
 
    procedure Set_Is_Immediately_Visible (Id : E; V : B := True) is
    begin
@@ -7156,36 +7195,6 @@ package body Einfo is
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
 
-   ---------------------
-   -- Is_Ghost_Entity --
-   ---------------------
-
-   --  Note: coding below allows for ghost variables. They are not currently
-   --  implemented, so we will always get False for variables, but that is
-   --  expected to change in the future.
-
-   function Is_Ghost_Entity (Id : E) return B is
-   begin
-      if Present (Id) and then Ekind (Id) = E_Variable then
-         return Convention (Id) = Convention_Ghost;
-      else
-         return Is_Ghost_Subprogram (Id);
-      end if;
-   end Is_Ghost_Entity;
-
-   -------------------------
-   -- Is_Ghost_Subprogram --
-   -------------------------
-
-   function Is_Ghost_Subprogram (Id : E) return B is
-   begin
-      if Present (Id) and then Ekind_In (Id, E_Function, E_Procedure) then
-         return Convention (Id) = Convention_Ghost;
-      else
-         return False;
-      end if;
-   end Is_Ghost_Subprogram;
-
    -------------------
    -- Is_Null_State --
    -------------------
@@ -8479,6 +8488,7 @@ package body Einfo is
       W ("Is_CPP_Class",                    Flag74  (Id));
       W ("Is_Called",                       Flag102 (Id));
       W ("Is_Character_Type",               Flag63  (Id));
+      W ("Is_Checked_Ghost_Entity",         Flag277 (Id));
       W ("Is_Child_Unit",                   Flag73  (Id));
       W ("Is_Class_Wide_Equivalent_Type",   Flag35  (Id));
       W ("Is_Compilation_Unit",             Flag149 (Id));
@@ -8510,6 +8520,7 @@ package body Einfo is
       W ("Is_Hidden",                       Flag57  (Id));
       W ("Is_Hidden_Non_Overridden_Subpgm", Flag2   (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
+      W ("Is_Ignored_Ghost_Entity",         Flag278 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));

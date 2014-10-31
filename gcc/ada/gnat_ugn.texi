@@ -10942,6 +10942,11 @@ Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
 
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatelim})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
+
 @item -files=@var{filename}
 @cindex @option{-files} (@code{gnatelim})
 Take the argument source files from the specified file. This file should be an
@@ -13998,9 +14003,6 @@ uses the same switches as the GNAT compiler, with the same effects:
 @item -gnatec=@var{path}
 @cindex @option{-gnatec} (@command{gnatpp})
 
-@item --RTS=@var{path}
-@cindex @option{--RTS} (@command{gnatpp})
-
 @end table
 
 @node Output File Control
@@ -14147,6 +14149,11 @@ has no effect.
 Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatpp})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item --incremental
 @cindex @option{--incremental} @command{gnatpp}
@@ -14585,6 +14592,10 @@ options:
 -X@var{name}=@var{value} -- indicates that external variable @var{name} in
       the argument project has the value @var{value}. Has no effect if no
       project is specified as tool argument.
+
+--RTS=@var{rts-path}  -- Specifies the default location of the runtime
+      library. Same meaning as the equivalent @command{gnatmake} flag
+      (@pxref{Switches for gnatmake}).
 
 --incremental -- incremental processing on a per-file basis. Source files are
       only processed if they have been modified, or if files they depend
@@ -15938,6 +15949,11 @@ has no effect.
 Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatmetric})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item --subdirs=@var{dir}
 @cindex @option{--subdirs=@var{dir}} @command{gnatmetric}
@@ -18763,6 +18779,11 @@ Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
 
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatstub})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
+
 @item --subunits
 @cindex @option{--subunits} (@command{gnatstub})
 Generate subunits for body stubs. If this switch is specified,
@@ -19065,6 +19086,11 @@ Recursively consider all sources from all projects.
 @item -X@var{name=value}
 @cindex @option{-X} (@command{gnattest})
 Indicate that external variable @var{name} has the value @var{value}.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnattest})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item -q
 @cindex @option{-q} (@command{gnattest})

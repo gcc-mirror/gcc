@@ -561,8 +561,8 @@ package body Sem_Ch8 is
       Set_Etype          (Id, Standard_Exception_Type);
       Set_Is_Pure        (Id, Is_Pure (Current_Scope));
 
-      if not Is_Entity_Name (Nam) or else
-        Ekind (Entity (Nam)) /= E_Exception
+      if not Is_Entity_Name (Nam)
+        or else Ekind (Entity (Nam)) /= E_Exception
       then
          Error_Msg_N ("invalid exception name in renaming", Nam);
       else
@@ -570,6 +570,13 @@ package body Sem_Ch8 is
             Set_Renamed_Object (Id, Renamed_Object (Entity (Nam)));
          else
             Set_Renamed_Object (Id, Entity (Nam));
+         end if;
+
+         --  An exception renaming is Ghost if the renamed entity is Ghost or
+         --  the construct appears within a Ghost scope.
+
+         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+            Set_Is_Ghost_Entity (Id);
          end if;
       end if;
 
@@ -700,6 +707,13 @@ package body Sem_Ch8 is
 
          Set_Etype (New_P, Etype (Old_P));
          Set_Has_Completion (New_P);
+
+         --  An generic renaming is Ghost if the renamed entity is Ghost or the
+         --  construct appears within a Ghost scope.
+
+         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+            Set_Is_Ghost_Entity (New_P);
+         end if;
 
          if In_Open_Scopes (Old_P) then
             Error_Msg_N ("within its scope, generic denotes its instance", N);
@@ -849,7 +863,7 @@ package body Sem_Ch8 is
 
       if Nkind (Nam) = N_Selected_Component and then Analyzed (Nam) then
          T := Etype (Nam);
-         Dec :=  Build_Actual_Subtype_Of_Component (Etype (Nam), Nam);
+         Dec := Build_Actual_Subtype_Of_Component (Etype (Nam), Nam);
 
          if Present (Dec) then
             Insert_Action (N, Dec);
@@ -1295,6 +1309,16 @@ package body Sem_Ch8 is
          Set_Is_True_Constant    (Id, True);
       end if;
 
+      --  An object renaming is Ghost if the renamed entity is Ghost or the
+      --  construct appears within a Ghost scope.
+
+      if (Is_Entity_Name (Nam)
+           and then Is_Ghost_Entity (Entity (Nam)))
+        or else Within_Ghost_Scope
+      then
+         Set_Is_Ghost_Entity (Id);
+      end if;
+
       --  The entity of the renaming declaration needs to reflect whether the
       --  renamed object is volatile. Is_Volatile is set if the renamed object
       --  is volatile in the RM legality sense.
@@ -1408,6 +1432,13 @@ package body Sem_Ch8 is
          Set_First_Private_Entity (New_P, First_Private_Entity (Old_P));
          Check_Library_Unit_Renaming (N, Old_P);
          Generate_Reference (Old_P, Name (N));
+
+         --  A package renaming is Ghost if the renamed entity is Ghost or
+         --  the construct appears within a Ghost scope.
+
+         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+            Set_Is_Ghost_Entity (New_P);
+         end if;
 
          --  If the renaming is in the visible part of a package, then we set
          --  Renamed_In_Spec for the renamed package, to prevent giving
@@ -2991,6 +3022,13 @@ package body Sem_Ch8 is
          Set_Is_Imported      (New_S, Is_Imported      (Entity (Nam)));
          Set_Is_Pure          (New_S, Is_Pure          (Entity (Nam)));
          Set_Is_Preelaborated (New_S, Is_Preelaborated (Entity (Nam)));
+
+         --  A subprogram renaming is Ghost if the renamed entity is Ghost or
+         --  the construct appears within a Ghost scope.
+
+         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+            Set_Is_Ghost_Entity (New_S);
+         end if;
 
          --  Ada 2005 (AI-423): Check the consistency of null exclusions
          --  between a subprogram and its correct renaming.

@@ -3380,6 +3380,13 @@ package body Sem_Ch12 is
       Set_Etype    (Id, Standard_Void_Type);
       Set_Contract (Id, Make_Contract (Sloc (Id)));
 
+      --  A generic package declared within a Ghost scope is rendered Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Id);
+      end if;
+
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
@@ -3578,6 +3585,13 @@ package body Sem_Ch12 is
       else
          Set_Ekind (Id, E_Generic_Procedure);
          Set_Etype (Id, Standard_Void_Type);
+      end if;
+
+      --  A generic subprogram declared within a Ghost scope is rendered Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Id);
       end if;
 
       --  For a library unit, we have reconstructed the entity for the unit,
@@ -13040,16 +13054,7 @@ package body Sem_Ch12 is
                Analyze (Act);
             end if;
 
-            --  Ensure that a ghost subprogram does not act as generic actual
-
-            if Is_Entity_Name (Act)
-              and then Is_Ghost_Subprogram (Entity (Act))
-            then
-               Error_Msg_N
-                 ("ghost subprogram & cannot act as generic actual", Act);
-               Abandon_Instantiation (Act);
-
-            elsif Errs /= Serious_Errors_Detected then
+            if Errs /= Serious_Errors_Detected then
 
                --  Do a minimal analysis of the generic, to prevent spurious
                --  warnings complaining about the generic being unreferenced,
