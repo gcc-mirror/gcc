@@ -1,5 +1,14 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/s390/s390.c (s390_use_by_pieces_infrastructure_p): New.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Likewise.
+	* config/s390/s390.h (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES): Likewise.
+	(SET_BY_PIECES): Likewise.
+	(STORE_BY_PIECES): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* target.def (use_by_pieces_infrastructure_p): New.
 	* doc/tm.texi.in (MOVE_BY_PIECES_P): Describe that this macro
 	is deprecated.
