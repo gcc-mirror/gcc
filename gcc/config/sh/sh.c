@@ -338,6 +338,10 @@ static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (machine_mode, rtx);
 static int mov_insn_size (machine_mode, bool);
 static int mov_insn_alignment_mask (machine_mode, bool);
+static bool sh_use_by_pieces_infrastructure_p (unsigned int,
+					       unsigned int,
+					       enum by_pieces_operation,
+					       bool);
 static bool sequence_insn_p (rtx_insn *);
 static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
 static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
@@ -639,6 +643,10 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS sh_fixed_condition_code_regs
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  sh_use_by_pieces_infrastructure_p
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
@@ -13672,6 +13680,29 @@ static int
 sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 {
   return ((TARGET_FPU_SINGLE != 0) ^ (n) ? FP_MODE_SINGLE : FP_MODE_DOUBLE);
+}
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+static bool
+sh_use_by_pieces_infrastructure_p (unsigned int size,
+				   unsigned int align,
+				   enum by_pieces_operation op,
+				   bool speed_p)
+{
+  switch (op)
+    {
+      case MOVE_BY_PIECES:
+	return move_by_pieces_ninsns (size, align, MOVE_MAX_PIECES + 1)
+	  < (!speed_p ? 2 : (align >= 32) ? 16 : 2);
+      case STORE_BY_PIECES:
+      case SET_BY_PIECES:
+	return move_by_pieces_ninsns (size, align, STORE_MAX_PIECES + 1)
+	  < (!speed_p ? 2 : (align >= 32) ? 16 : 2);
+      default:
+	return default_use_by_pieces_infrastructure_p (size, align,
+						       op, speed_p);
+    }
 }
 
 #include "gt-sh.h"

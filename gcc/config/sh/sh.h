@@ -1591,16 +1591,6 @@ struct sh_args {
 #define USE_STORE_PRE_DECREMENT(mode)    ((mode == SImode || mode == DImode) \
 					  ? 0 : TARGET_SH1)
 
-#define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1) \
-   < (optimize_size ? 2 : ((ALIGN >= 32) ? 16 : 2)))
-
-#define STORE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
-   < (optimize_size ? 2 : ((ALIGN >= 32) ? 16 : 2)))
-
-#define SET_BY_PIECES_P(SIZE, ALIGN) STORE_BY_PIECES_P(SIZE, ALIGN)
-
 /* If a memory clear move would take CLEAR_RATIO or more simple
    move-instruction pairs, we will do a setmem instead.  */
 
