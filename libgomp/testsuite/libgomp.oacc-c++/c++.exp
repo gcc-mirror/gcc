@@ -11,26 +11,10 @@ proc check_effective_target_c++ { } {
     return 1
 }
 
-global shlib_ext
-
-set shlib_ext [get_shlib_extension]
-set lang_link_flags "-lstdc++"
 set lang_test_file_found 0
-set lang_library_path "../libstdc++-v3/src/.libs"
-
-# Initialize dg.
-dg-init
-torture-init
-
-# Turn on OpenACC.
-lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
-
-# Switch into C++ mode.  Otherwise, the libgomp.oacc-c-c++-common/*.c
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
-
 if { $blddir != "" } {
+    set lang_library_path "../libstdc++-v3/src/.libs"
+    set shlib_ext [get_shlib_extension]
     # Look for a static libstdc++ first.
     if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
         set lang_test_file_found 1
@@ -45,6 +29,19 @@ if { $blddir != "" } {
 } else {
     puts "GXX_UNDER_TEST not defined, will not execute c++ tests"
 }
+set lang_link_flags "-lstdc++"
+
+# Initialize dg.
+dg-init
+torture-init
+
+# Turn on OpenACC.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
+
+# Switch into C++ mode.  Otherwise, the libgomp.oacc-c-c++-common/*.c
+# files would be compiled as C files.
+set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
+set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
 
 if { $lang_test_file_found } {
     # Gather a list of all tests.
@@ -153,7 +150,9 @@ if [info exists lang_include_flags] then {
     unset lang_source_re
     unset lang_include_flags
 }
-unset lang_library_path
+if { $blddir != "" } {
+    unset lang_library_path
+}
 unset lang_link_flags
 unset lang_test_file_found
 

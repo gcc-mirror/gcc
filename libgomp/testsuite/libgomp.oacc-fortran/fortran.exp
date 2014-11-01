@@ -4,23 +4,10 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
-global shlib_ext
-global ALWAYS_CFLAGS
-
-set shlib_ext [get_shlib_extension]
-set lang_library_path	"../libgfortran/.libs"
-set lang_link_flags	"-lgfortran -foffload=-lgfortran"
 set lang_test_file_found 0
-
-# Initialize dg.
-dg-init
-
-# Turn on OpenACC.
-lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
-
 if { $blddir != "" } {
-    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
-    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
+    set lang_library_path "../libgfortran/.libs"
+    set shlib_ext [get_shlib_extension]
     # Look for a static libgfortran first.
     if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
         set lang_test_file_found 1
@@ -35,6 +22,18 @@ if { $blddir != "" } {
 } else {
     puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
 }
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
+    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
+}
+set lang_link_flags "-lgfortran -foffload=-lgfortran"
+
+# Initialize dg.
+dg-init
+
+# Turn on OpenACC.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
+
 
 if { $lang_test_file_found } {
     # Gather a list of all tests.
@@ -120,8 +119,8 @@ if { $lang_test_file_found } {
 if { $blddir != "" } {
     unset lang_source_re
     unset lang_include_flags
+    unset lang_library_path
 }
-unset lang_library_path
 unset lang_link_flags
 unset lang_test_file_found
 
