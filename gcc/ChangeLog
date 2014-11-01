@@ -1,5 +1,12 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arc/arc.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(arc_use_by_pieces_infrastructure_p): Likewise.
+	* confir/arc/arc.h (MOVE_BY_PIECES_P): Delete.
+	(CAN_MOVE_BY_PIECES): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/s390/s390.c (s390_use_by_pieces_infrastructure_p): New.
 	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Likewise.
 	* config/s390/s390.h (MOVE_BY_PIECES_P): Remove.
