@@ -1,5 +1,12 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c
+	(aarch64_use_by_pieces_infrastructre_p): New.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE): Likewise.
+	* config/aarch64/aarch64.h (STORE_BY_PIECES_P): Delete.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/mips/mips.h (MOVE_BY_PIECES_P): Remove.
 	(STORE_BY_PIECES_P): Likewise.
 	* config/mips/mips.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.

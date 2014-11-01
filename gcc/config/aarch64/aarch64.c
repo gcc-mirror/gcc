@@ -10001,6 +10001,22 @@ aarch64_asan_shadow_offset (void)
   return (HOST_WIDE_INT_1 << 36);
 }
 
+static bool
+aarch64_use_by_pieces_infrastructure_p (unsigned int size,
+					unsigned int align,
+					enum by_pieces_operation op,
+					bool speed_p)
+{
+  /* STORE_BY_PIECES can be used when copying a constant string, but
+     in that case each 64-bit chunk takes 5 insns instead of 2 (LDR/STR).
+     For now we always fail this and let the move_by_pieces code copy
+     the string from read-only memory.  */
+  if (op == STORE_BY_PIECES)
+    return false;
+
+  return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -10252,6 +10268,10 @@ aarch64_asan_shadow_offset (void)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS aarch64_legitimize_address
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  aarch64_use_by_pieces_infrastructure_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
