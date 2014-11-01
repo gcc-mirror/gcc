@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "regs.h"
 #include "reload.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
 #include "intl.h"
@@ -78,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
-#include "insn-codes.h"
 
 
 bool

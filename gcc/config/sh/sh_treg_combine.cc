@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "tree-pass.h"
 #include "target.h"
+#include "tree-core.h"
+#include "optabs.h"
 #include "expr.h"
 
 #include <algorithm>

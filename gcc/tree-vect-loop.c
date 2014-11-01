@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "recog.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "params.h"
 #include "diagnostic-core.h"

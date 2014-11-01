@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "target.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "output.h"
 #include "tm_p.h"

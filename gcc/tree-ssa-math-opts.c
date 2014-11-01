@@ -129,6 +129,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
 #include "expr.h"		/* Because optabs.h wants sepops.  */
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* This structure represents one basic block that either computes a

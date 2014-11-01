@@ -40,6 +40,7 @@
 #include "varasm.h"
 #include "calls.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
 #include "hashtab.h"

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "ggc.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "dominance.h"
 #include "cfg.h"

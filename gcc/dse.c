@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "expr.h"
 #include "recog.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "dbgcnt.h"
 #include "target.h"

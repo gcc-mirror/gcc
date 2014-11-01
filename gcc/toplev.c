@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-reference.h"
 #include "ipa-prop.h"
 #include "gcse.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)

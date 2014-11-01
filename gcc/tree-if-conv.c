@@ -125,6 +125,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */

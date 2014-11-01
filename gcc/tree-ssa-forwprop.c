@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "expr.h"
 #include "cfgloop.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dom.h"

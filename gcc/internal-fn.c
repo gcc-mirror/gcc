@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stor-layout.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "predict.h"
 #include "vec.h"

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "recog.h"		/* FIXME: for insn_data */
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tree-vectorizer.h"
 #include "langhooks.h"

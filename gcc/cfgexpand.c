@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
 #include "basic-block.h"
+#include "insn-codes.h"
+#include "optabs.h"
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"

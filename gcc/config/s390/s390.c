@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "debug.h"
 #include "langhooks.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"

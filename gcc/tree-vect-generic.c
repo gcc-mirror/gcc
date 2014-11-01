@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 

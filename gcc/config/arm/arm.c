@@ -47,6 +47,7 @@
 #include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "recog.h"

@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-ssa-threadupdate.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tree-ssa-threadedge.h"
 #include "wide-int.h"

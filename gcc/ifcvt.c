@@ -44,6 +44,7 @@
 #include "basic-block.h"
 #include "expr.h"
 #include "output.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"

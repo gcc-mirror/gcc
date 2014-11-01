@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "params.h"
+#include "insn-codes.h"
+#include "optabs.h"
 #include "expr.h"
 #include "hash-table.h"
 #include "recog.h"
