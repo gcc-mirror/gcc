@@ -1,3 +1,8 @@
+2014-11-01  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_gmem.c (gupc_gmem_get): Advance remote offset
+	if more then one PtlGet() are executed.
+
 2014-08-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_mem.c (upc_memcpy): Make sure outstanding

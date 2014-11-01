@@ -198,6 +198,7 @@ gupcr_gmem_get (void *dest, int thread, size_t offset, size_t n)
 {
   ptl_process_t rpid;
   char *dest_addr = (char *) (dest - USER_PROG_MEM_START);
+  size_t rem_offset = offset;
   size_t n_rem = n;
 
   gupcr_debug (FC_MEM, "%d:0x%lx 0x%lx",
@@ -211,9 +212,10 @@ gupcr_gmem_get (void *dest, int thread, size_t offset, size_t n)
       gupcr_portals_call (PtlGet, (gupcr_gmem_gets.md,
 				   (ptl_size_t) dest_addr, n_xfer, rpid,
 				   GUPCR_PTL_PTE_GMEM, PTL_NO_MATCH_BITS,
-				   offset, PTL_NULL_USER_PTR));
+				   rem_offset, PTL_NULL_USER_PTR));
       n_rem -= n_xfer;
       dest_addr += n_xfer;
+      rem_offset += n_xfer;
     }
 }
 
