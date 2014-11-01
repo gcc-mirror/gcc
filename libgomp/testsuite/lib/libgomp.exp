@@ -234,24 +234,23 @@ proc libgomp_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global GCC_UNDER_TEST
-    global lang_test_file_found
-    global lang_library_path
-    global lang_link_flags
-    global lang_include_flags
-    global lang_source_re
 
-    if { [info exists lang_test_file_found] } {
-        if { $blddir != "" } {
-            # Some targets use libgfortran.a%s in their specs, so they need
-            # a -B option for uninstalled testing.
-            lappend options "additional_flags=-B${blddir}/${lang_library_path}"
-            lappend options "ldflags=-L${blddir}/${lang_library_path}"
-        }
-        lappend options "ldflags=${lang_link_flags}"
-	if { [info exists lang_include_flags] \
-	     && [regexp ${lang_source_re} ${source}] } {
-	    lappend options "additional_flags=${lang_include_flags}"
-	}
+    global lang_source_re lang_include_flags
+    if { [info exists lang_include_flags] \
+	 && [regexp ${lang_source_re} ${source}] } {
+	lappend options "additional_flags=${lang_include_flags}"
+    }
+
+    global lang_library_path
+    if { [info exists lang_library_path] } {
+	# Some targets use libgfortran.a%s in their specs, so they need
+	# a -B option for uninstalled testing.
+	lappend options "additional_flags=-B${blddir}/${lang_library_path}"
+	lappend options "ldflags=-L${blddir}/${lang_library_path}"
+    }
+    global lang_link_flags
+    if { [info exists lang_link_flags] } {
+	lappend options "ldflags=${lang_link_flags}"
     }
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {

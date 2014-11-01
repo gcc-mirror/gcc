@@ -2,23 +2,18 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
-set lang_test_file_found 0
 if { $blddir != "" } {
     set lang_library_path "../libgfortran/.libs"
     set shlib_ext [get_shlib_extension]
-    # Look for a static libgfortran first.
-    if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
-        set lang_test_file_found 1
-	# We may have a shared only build, so look for a shared libgfortran.
-    } elseif [file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] {
-        set lang_test_file_found 1
-    } else {
-        puts "No libgfortran library found, will not execute fortran tests"
+    if { ![file exists "${blddir}/${lang_library_path}/libgfortran.a"]
+	 && ![file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] } {
+        verbose -log "No libgfortran library found, will not execute fortran tests"
+	unset lang_library_path
+	return
     }
-} elseif [info exists GFORTRAN_UNDER_TEST] {
-    set lang_test_file_found 1
-} else {
-    puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+} elseif { ![info exists GFORTRAN_UNDER_TEST] } {
+    verbose -log "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+    return
 }
 if { $blddir != "" } {
     set lang_source_re {^.*\.[fF](|90|95|03|08)$}
@@ -32,39 +27,37 @@ dg-init
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 
-if { $lang_test_file_found } {
-    # Gather a list of all tests.
-    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
-    if { $blddir != "" } {
-	set quadmath_library_path "../libquadmath/.libs"
-	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
-	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
-	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
-	    # Allow for spec subsitution.
-	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
-	    append lang_link_flags " -lquadmath"
-	} else {
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
-	}
-	unset quadmath_library_path
-    } else {
-        set ld_library_path "$always_ld_library_path"
-        if { [check_no_compiler_messages has_libquadmath executable {
-                 int main() {return 0;}
-              } "-lgfortran -lquadmath"] } then {
-            append lang_link_flags " -lquadmath"
-        }
+set ld_library_path $always_ld_library_path
+if { $blddir != "" } {
+    append ld_library_path ":${blddir}/${lang_library_path}"
+
+    set quadmath_library_path "../libquadmath/.libs"
+    if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
+	 || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
+	# Allow for spec subsitution.
+	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
+	append ld_library_path ":${blddir}/${quadmath_library_path}"
+	append lang_link_flags " -lquadmath"
     }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-
-    # For Fortran we're doing torture testing, as Fortran has far more tests
-    # with arrays etc. that testing just -O0 or -O2 is insufficient, that is
-    # typically not the case for C/C++.
-    gfortran-dg-runtest $tests "" ""
+    unset quadmath_library_path
+} else {
+    if { [check_no_compiler_messages has_libquadmath executable {
+             int main() {return 0;}
+          } "-lgfortran -lquadmath"] } then {
+	append lang_link_flags " -lquadmath"
+    }
 }
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
+
+# For Fortran we're doing torture testing, as Fortran has far more tests
+# with arrays etc. that testing just -O0 or -O2 is insufficient, that is
+# typically not the case for C/C++.
+gfortran-dg-runtest $tests "" ""
 
 if { $blddir != "" } {
     unset lang_source_re
@@ -72,7 +65,6 @@ if { $blddir != "" } {
     unset lang_library_path
 }
 unset lang_link_flags
-unset lang_test_file_found
 
 # All done.
 dg-finish
