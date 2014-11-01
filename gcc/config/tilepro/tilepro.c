@@ -30,6 +30,7 @@
 #include "recog.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "dominance.h"
 #include "cfg.h"

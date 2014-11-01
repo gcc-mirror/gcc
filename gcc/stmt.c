@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "langhooks.h"
 #include "predict.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "target.h"
 #include "cfganal.h"

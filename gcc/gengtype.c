@@ -1826,7 +1826,7 @@ open_base_files (void)
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
-      "config.h", "system.h", "coretypes.h", "tm.h",
+      "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
       "tree.h", "rtl.h", "wide-int.h", "hashtab.h", "hash-set.h", "vec.h",
       "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",

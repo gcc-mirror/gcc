@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
    between the GIMPLE and RTL worlds.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
 

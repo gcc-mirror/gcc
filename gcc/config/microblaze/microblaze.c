@@ -61,6 +61,7 @@
 #include "predict.h"
 #include "basic-block.h"
 #include "df.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "hash-map.h"

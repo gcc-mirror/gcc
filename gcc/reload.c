@@ -96,6 +96,7 @@ a register with any other reload.  */
 #include "tm_p.h"
 #include "insn-config.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
 #include "dominance.h"

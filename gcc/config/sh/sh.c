@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "flags.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
 #include "hashtab.h"

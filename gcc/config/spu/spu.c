@@ -33,6 +33,7 @@
 #include "calls.h"
 #include "varasm.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
 #include "hashtab.h"

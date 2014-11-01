@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
@@ -3626,6 +3627,21 @@ emit_move_insn (rtx x, rtx y)
     set_unique_reg_note (last_insn, REG_EQUAL, copy_rtx (y_cst));
 
   return last_insn;
+}
+
+/* Generate the body of an instruction to copy Y into X.
+   It may be a list of insns, if one insn isn't enough.  */
+
+rtx
+gen_move_insn (rtx x, rtx y)
+{
+  rtx_insn *seq;
+
+  start_sequence ();
+  emit_move_insn_1 (x, y);
+  seq = get_insns ();
+  end_sequence ();
+  return seq;
 }
 
 /* If Y is representable exactly in a narrower mode, and the target can

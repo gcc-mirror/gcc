@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ssize_int, TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
 #include "tree-core.h"
 /* For GET_MODE_BITSIZE, word_mode */
+#include "insn-config.h"
 
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
@@ -71,93 +72,6 @@ typedef struct separate_ops
   tree type;
   tree op0, op1, op2;
 } *sepops;
-
-/* Functions from optabs.c, commonly used, and without need for the optabs
-   tables:  */
-
-/* Passed to expand_simple_binop and expand_binop to say which options
-   to try to use if the requested operation can't be open-coded on the
-   requisite mode.  Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using
-   a library call.  Either OPTAB_WIDEN or OPTAB_LIB_WIDEN says try
-   using a wider mode.  OPTAB_MUST_WIDEN says try widening and don't
-   try anything else.  */
-
-enum optab_methods
-{
-  OPTAB_DIRECT,
-  OPTAB_LIB,
-  OPTAB_WIDEN,
-  OPTAB_LIB_WIDEN,
-  OPTAB_MUST_WIDEN
-};
-
-/* Generate code for a simple binary or unary operation.  "Simple" in
-   this case means "can be unambiguously described by a (mode, code)
-   pair and mapped to a single optab."  */
-extern rtx expand_simple_binop (machine_mode, enum rtx_code, rtx,
-				rtx, rtx, int, enum optab_methods);
-extern rtx expand_simple_unop (machine_mode, enum rtx_code, rtx, rtx,
-			       int);
-
-/* Report whether the machine description contains an insn which can
-   perform the operation described by CODE and MODE.  */
-extern int have_insn_for (enum rtx_code, machine_mode);
-
-/* Emit code to make a call to a constant function or a library call.  */
-extern void emit_libcall_block (rtx, rtx, rtx, rtx);
-
-/* Create but don't emit one rtl instruction to perform certain operations.
-   Modes must match; operands must meet the operation's predicates.
-   Likewise for subtraction and for just copying.  */
-extern rtx gen_add2_insn (rtx, rtx);
-extern rtx gen_add3_insn (rtx, rtx, rtx);
-extern rtx gen_addptr3_insn (rtx, rtx, rtx);
-extern rtx gen_sub2_insn (rtx, rtx);
-extern rtx gen_sub3_insn (rtx, rtx, rtx);
-extern rtx gen_move_insn (rtx, rtx);
-extern int have_add2_insn (rtx, rtx);
-extern int have_addptr3_insn (rtx, rtx, rtx);
-extern int have_sub2_insn (rtx, rtx);
-
-/* Emit a pair of rtl insns to compare two rtx's and to jump
-   to a label if the comparison is true.  */
-extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
-				     machine_mode, int, rtx, int prob=-1);
-
-/* Generate code to indirectly jump to a location given in the rtx LOC.  */
-extern void emit_indirect_jump (rtx);
-
-/* Generate a conditional trap instruction.  */
-extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
-
-#include "insn-config.h"
-
-#ifdef HAVE_conditional_move
-/* Emit a conditional move operation.  */
-rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
-			   rtx, rtx, machine_mode, int);
-
-/* Return nonzero if the conditional move is supported.  */
-int can_conditionally_move_p (machine_mode mode);
-
-#endif
-rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, machine_mode,
-			  rtx, rtx, machine_mode, int);
-
-rtx expand_sync_operation (rtx, rtx, enum rtx_code);
-rtx expand_sync_fetch_operation (rtx, rtx, enum rtx_code, bool, rtx);
-rtx expand_sync_lock_test_and_set (rtx, rtx, rtx);
-
-rtx expand_atomic_exchange (rtx, rtx, rtx, enum memmodel);
-rtx expand_atomic_load (rtx, rtx, enum memmodel);
-rtx expand_atomic_store (rtx, rtx, enum memmodel, bool);
-rtx expand_atomic_fetch_op (rtx, rtx, rtx, enum rtx_code, enum memmodel, 
-			      bool);
-rtx expand_atomic_test_and_set (rtx, rtx, enum memmodel);
-rtx expand_atomic_clear (rtx, enum memmodel);
-void expand_atomic_thread_fence (enum memmodel);
-void expand_atomic_signal_fence (enum memmodel);
-
 
 /* Functions from expmed.c:  */
 
@@ -334,6 +248,7 @@ extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT,
 
 /* Emit insns to set X from Y.  */
 extern rtx_insn *emit_move_insn (rtx, rtx);
+extern rtx gen_move_insn (rtx, rtx);
 
 /* Emit insns to set X from Y, with no frills.  */
 extern rtx_insn *emit_move_insn_1 (rtx, rtx);
@@ -670,18 +585,6 @@ extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 extern int safe_from_p (const_rtx, tree, int);
 extern bool split_comparison (enum rtx_code, machine_mode,
 			      enum rtx_code *, enum rtx_code *);
-
-/* Call this once to initialize the contents of the optabs
-   appropriately for the current target machine.  */
-extern void init_optabs (void);
-extern void init_all_optabs (struct target_optabs *);
-
-/* Call this to initialize an optab function entry.  */
-extern rtx init_one_libfunc (const char *);
-extern rtx set_user_assembler_libfunc (const char *, const char *);
-
-/* Build a decl for a libfunc named NAME. */
-extern tree build_libfunc_function (const char *);
 
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);

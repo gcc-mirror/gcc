@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "insn-config.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"

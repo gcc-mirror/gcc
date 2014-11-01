@@ -71,6 +71,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Need to include expr.h and optabs.h for lshift_cheap_p.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* Maximum number of case bit tests.

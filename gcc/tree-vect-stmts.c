@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "expr.h"
 #include "recog.h"		/* FIXME: for insn_data */
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"

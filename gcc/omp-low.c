@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "except.h"
 #include "splay-tree.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "cfgloop.h"
 #include "target.h"

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "flags.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"

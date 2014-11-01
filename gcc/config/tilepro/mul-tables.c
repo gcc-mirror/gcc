@@ -22,6 +22,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tilepro-multiply.h"
 

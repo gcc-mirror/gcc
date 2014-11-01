@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "builtins.h"
 #include "gimplify.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based

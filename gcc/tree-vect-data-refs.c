@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "builtins.h"
 #include "varasm.h"

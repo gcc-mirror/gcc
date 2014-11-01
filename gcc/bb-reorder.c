@@ -99,6 +99,7 @@
 #include "tm_p.h"
 #include "obstack.h"
 #include "expr.h"
+#include "optabs.h"
 #include "params.h"
 #include "diagnostic-core.h"
 #include "toplev.h" /* user_defined_section_attribute */

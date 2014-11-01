@@ -35,6 +35,7 @@
 #include "flags.h"
 #include "recog.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "hashtab.h"
 #include "hash-set.h"

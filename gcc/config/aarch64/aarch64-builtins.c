@@ -32,6 +32,7 @@
 #include "recog.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "hash-table.h"
 #include "vec.h"

@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "except.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
@@ -4893,21 +4894,6 @@ have_sub2_insn (rtx x, rtx y)
     return 0;
 
   return 1;
-}
-
-/* Generate the body of an instruction to copy Y into X.
-   It may be a list of insns, if one insn isn't enough.  */
-
-rtx
-gen_move_insn (rtx x, rtx y)
-{
-  rtx_insn *seq;
-
-  start_sequence ();
-  emit_move_insn_1 (x, y);
-  seq = get_insns ();
-  end_sequence ();
-  return seq;
 }
 
 /* Return the insn code used to extend FROM_MODE to TO_MODE.
