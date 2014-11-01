@@ -3049,6 +3049,43 @@ are the same as to this target hook.",
  int, (machine_mode mode, reg_class_t rclass, bool in),
  default_memory_move_cost)
 
+DEFHOOK
+(use_by_pieces_infrastructure_p,
+ "GCC will attempt several strategies when asked to copy between\n\
+two areas of memory, or to set, clear or store to memory, for example\n\
+when copying a @code{struct}. The @code{by_pieces} infrastructure\n\
+implements such memory operations as a sequence of load, store or move\n\
+insns.  Alternate strategies are to expand the\n\
+@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit\n\
+unit-by-unit, loop-based operations.\n\
+\n\
+This target hook should return true if, for a memory operation with a\n\
+given @var{size} and @var{alignment}, using the @code{by_pieces}\n\
+infrastructure is expected to result in better code generation.\n\
+Both @var{size} and @var{alignment} are measured in terms of storage\n\
+units.\n\
+\n\
+The parameter @var{op} is one of: @code{CLEAR_BY_PIECES},\n\
+@code{MOVE_BY_PIECES}, @code{SET_BY_PIECES}, @code{STORE_BY_PIECES}.\n\
+These describe the type of memory operation under consideration.\n\
+\n\
+The parameter @var{speed_p} is true if the code is currently being\n\
+optimized for speed rather than size.\n\
+\n\
+Returning true for higher values of @var{size} can improve code generation\n\
+for speed if the target does not provide an implementation of the\n\
+@code{movmem} or @code{setmem} standard names, if the @code{movmem} or\n\
+@code{setmem} implementation would be more expensive than a sequence of\n\
+insns, or if the overhead of a library call would dominate that of\n\
+the body of the memory operation.\n\
+\n\
+Returning true for higher values of @code{size} may also cause an increase\n\
+in code size, for example where the number of insns emitted to perform a\n\
+move would be greater than that of a library call.",
+ bool, (unsigned int size, unsigned int alignment,
+        enum by_pieces_operation op, bool speed_p),
+ default_use_by_pieces_infrastructure_p)
+
 /* True for MODE if the target expects that registers in this mode will
    be allocated to registers in a small register class.  The compiler is
    allowed to use registers explicitly used in the rtl as spill registers

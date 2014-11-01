@@ -4605,7 +4605,12 @@ A C expression used to determine whether @code{move_by_pieces} will be used to
 copy a chunk of memory, or whether some other block move mechanism
 will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
+
+@hook TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 
 @defmac MOVE_MAX_PIECES
 A C expression used by @code{move_by_pieces} to determine the largest unit
@@ -4629,6 +4634,9 @@ A C expression used to determine whether @code{clear_by_pieces} will be used
 to clear a chunk of memory, or whether some other block clear mechanism
 will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{CLEAR_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac SET_RATIO (@var{speed})
@@ -4651,6 +4659,9 @@ other mechanism will be used.  Used by @code{__builtin_memset} when
 storing values other than constant zero.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{SET_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac STORE_BY_PIECES_P (@var{size}, @var{alignment})
@@ -4660,6 +4671,9 @@ other mechanism will be used.  Used by @code{__builtin_strcpy} when
 called with a constant source string.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac USE_LOAD_POST_INCREMENT (@var{mode})

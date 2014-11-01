@@ -6128,7 +6128,44 @@ A C expression used to determine whether @code{move_by_pieces} will be used to
 copy a chunk of memory, or whether some other block move mechanism
 will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_USE_BY_PIECES_INFRASTRUCTURE_P (unsigned int @var{size}, unsigned int @var{alignment}, enum by_pieces_operation @var{op}, bool @var{speed_p})
+GCC will attempt several strategies when asked to copy between
+two areas of memory, or to set, clear or store to memory, for example
+when copying a @code{struct}. The @code{by_pieces} infrastructure
+implements such memory operations as a sequence of load, store or move
+insns.  Alternate strategies are to expand the
+@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit
+unit-by-unit, loop-based operations.
+
+This target hook should return true if, for a memory operation with a
+given @var{size} and @var{alignment}, using the @code{by_pieces}
+infrastructure is expected to result in better code generation.
+Both @var{size} and @var{alignment} are measured in terms of storage
+units.
+
+The parameter @var{op} is one of: @code{CLEAR_BY_PIECES},
+@code{MOVE_BY_PIECES}, @code{SET_BY_PIECES}, @code{STORE_BY_PIECES}.
+These describe the type of memory operation under consideration.
+
+The parameter @var{speed_p} is true if the code is currently being
+optimized for speed rather than size.
+
+Returning true for higher values of @var{size} can improve code generation
+for speed if the target does not provide an implementation of the
+@code{movmem} or @code{setmem} standard names, if the @code{movmem} or
+@code{setmem} implementation would be more expensive than a sequence of
+insns, or if the overhead of a library call would dominate that of
+the body of the memory operation.
+
+Returning true for higher values of @code{size} may also cause an increase
+in code size, for example where the number of insns emitted to perform a
+move would be greater than that of a library call.
+@end deftypefn
 
 @defmac MOVE_MAX_PIECES
 A C expression used by @code{move_by_pieces} to determine the largest unit
@@ -6152,6 +6189,9 @@ A C expression used to determine whether @code{clear_by_pieces} will be used
 to clear a chunk of memory, or whether some other block clear mechanism
 will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{CLEAR_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac SET_RATIO (@var{speed})
@@ -6174,6 +6214,9 @@ other mechanism will be used.  Used by @code{__builtin_memset} when
 storing values other than constant zero.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{SET_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac STORE_BY_PIECES_P (@var{size}, @var{alignment})
@@ -6183,6 +6226,9 @@ other mechanism will be used.  Used by @code{__builtin_strcpy} when
 called with a constant source string.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
+
+This macro is deprecated.  New ports should implement
+@code{TARGET_USE_BY_PIECES_INFRASTRUCTURE_P} instead.
 @end defmac
 
 @defmac USE_LOAD_POST_INCREMENT (@var{mode})

@@ -1006,6 +1006,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MOVE_MAX_PIECES   MOVE_MAX
 #endif
 
+/* STORE_MAX_PIECES is the number of bytes at a time that we can
+   store efficiently.  Due to internal GCC limitations, this is
+   MOVE_MAX_PIECES limited by the number of bytes GCC can represent
+   for an immediate constant.  */
+
+#ifndef STORE_MAX_PIECES
+#define STORE_MAX_PIECES  MIN (MOVE_MAX_PIECES, 2 * sizeof (HOST_WIDE_INT))
+#endif
+
 #ifndef MAX_MOVE_MAX
 #define MAX_MOVE_MAX MOVE_MAX
 #endif

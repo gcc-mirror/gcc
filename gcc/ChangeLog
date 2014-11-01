@@ -1,3 +1,25 @@
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* target.def (use_by_pieces_infrastructure_p): New.
+	* doc/tm.texi.in (MOVE_BY_PIECES_P): Describe that this macro
+	is deprecated.
+	(STORE_BY_PIECES_P): Likewise.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(TARGET_MOVE_BY_PIECES_PROFITABLE_P): Add hook.
+	* doc/tm.texi: Regenerate.
+	* expr.c (MOVE_BY_PIECES_P): Rewrite in terms of
+	TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.
+	(STORE_BY_PIECES_P): Likewise.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_MAX_PIECES): Move to...
+	* defaults.h (STORE_MAX_PIECES): ...here.
+	* targhooks.c (get_move_ratio): New.
+	(default_use_by_pieces_infrastructure_p): Likewise.
+	* targhooks.h (default_use_by_pieces_infrastructure_p): New.
+	* target.h (by_pieces_operation): New.
+
 2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63702
