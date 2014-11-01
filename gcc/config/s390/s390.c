@@ -12032,6 +12032,18 @@ s390_option_override (void)
   register_pass (&insert_pass_s390_early_mach);
 }
 
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+static bool
+s390_use_by_pieces_infrastructure_p (unsigned int size,
+				     unsigned int align ATTRIBUTE_UNUSED,
+				     enum by_pieces_operation op ATTRIBUTE_UNUSED,
+				     bool speed_p ATTRIBUTE_UNUSED)
+{
+  return (size == 1 || size == 2
+	  || size == 4 || (TARGET_ZARCH && size == 8));
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -12216,6 +12228,10 @@ s390_option_override (void)
 
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE s300_set_up_by_prologue
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  s390_use_by_pieces_infrastructure_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
