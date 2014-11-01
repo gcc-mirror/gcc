@@ -415,6 +415,11 @@ static void output_short_suffix (FILE *file);
 
 static bool arc_frame_pointer_required (void);
 
+static bool arc_use_by_pieces_infrastructure_p (unsigned int,
+						unsigned int,
+						enum by_pieces_operation op,
+						bool);
+
 /* Implements target hook vector_mode_supported_p.  */
 
 static bool
@@ -529,6 +534,10 @@ static void arc_finalize_pic (void);
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS arc_delegitimize_address
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  arc_use_by_pieces_infrastructure_p
 
 /* Usually, we will be able to scale anchor offsets.
    When this fails, we want LEGITIMIZE_ADDRESS to kick in.  */
@@ -9381,6 +9390,21 @@ arc_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
       return true;
     }
   return false;
+}
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+static bool
+arc_use_by_pieces_infrastructure_p (unsigned int size,
+				    unsigned int align,
+				    enum by_pieces_operation op,
+				    bool speed_p)
+{
+  /* Let the movmem expander handle small block moves.  */
+  if (op == MOVE_BY_PIECES)
+    return false;
+
+  return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1553,12 +1553,6 @@ extern int arc_return_address_regs[4];
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* Let the movmem expander handle small block moves.  */
-#define MOVE_BY_PIECES_P(LEN, ALIGN)  0
-#define CAN_MOVE_BY_PIECES(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1) \
-   < (unsigned int) MOVE_RATIO (!optimize_size))
-
 /* Undo the effects of the movmem pattern presence on STORE_BY_PIECES_P .  */
 #define MOVE_RATIO(SPEED) ((SPEED) ? 15 : 3)
 
