@@ -723,12 +723,6 @@ do {									     \
 #define SET_RATIO(speed) \
   ((speed) ? 15 : AARCH64_CALL_RATIO - 2)
 
-/* STORE_BY_PIECES_P can be used when copying a constant string, but
-   in that case each 64-bit chunk takes 5 insns instead of 2 (LDR/STR).
-   For now we always fail this and let the move_by_pieces code copy
-   the string from read-only memory.  */
-#define STORE_BY_PIECES_P(SIZE, ALIGN) 0
-
 /* Disable auto-increment in move_by_pieces et al.  Use of auto-increment is
    rarely a good idea in straight-line code since it adds an extra address
    dependency between each instruction.  Better to use incrementing offsets.  */
