@@ -80,6 +80,17 @@ enum print_switch_type
   SWITCH_TYPE_LINE_END		/* Please emit a line terminator.  */
 };
 
+/* Types of memory operation understood by the "by_pieces" infrastructure.
+   Used by the TARGET_USE_BY_PIECES_INFRASTRUCTURE_P target hook.  */
+
+enum by_pieces_operation
+{
+  CLEAR_BY_PIECES,
+  MOVE_BY_PIECES,
+  SET_BY_PIECES,
+  STORE_BY_PIECES
+};
+
 typedef int (* print_switch_fn_type) (print_switch_type, const char *);
 
 /* An example implementation for ELF targets.  Defined in varasm.c  */

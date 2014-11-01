@@ -171,32 +171,32 @@ static void write_complex_part (rtx, rtx, bool);
    to perform a structure copy.  */
 #ifndef MOVE_BY_PIECES_P
 #define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1) \
-   < (unsigned int) MOVE_RATIO (optimize_insn_for_speed_p ()))
+  (targetm.use_by_pieces_infrastructure_p (SIZE, ALIGN, MOVE_BY_PIECES, \
+					   optimize_insn_for_speed_p ()))
 #endif
 
 /* This macro is used to determine whether clear_by_pieces should be
    called to clear storage.  */
 #ifndef CLEAR_BY_PIECES_P
 #define CLEAR_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
-   < (unsigned int) CLEAR_RATIO (optimize_insn_for_speed_p ()))
+  (targetm.use_by_pieces_infrastructure_p (SIZE, ALIGN, CLEAR_BY_PIECES, \
+					   optimize_insn_for_speed_p ()))
 #endif
 
 /* This macro is used to determine whether store_by_pieces should be
    called to "memset" storage with byte values other than zero.  */
 #ifndef SET_BY_PIECES_P
 #define SET_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
-   < (unsigned int) SET_RATIO (optimize_insn_for_speed_p ()))
+  (targetm.use_by_pieces_infrastructure_p (SIZE, ALIGN, SET_BY_PIECES, \
+					   optimize_insn_for_speed_p ()))
 #endif
 
 /* This macro is used to determine whether store_by_pieces should be
    called to "memcpy" storage when the source is a constant string.  */
 #ifndef STORE_BY_PIECES_P
 #define STORE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
-   < (unsigned int) MOVE_RATIO (optimize_insn_for_speed_p ()))
+  (targetm.use_by_pieces_infrastructure_p (SIZE, ALIGN, STORE_BY_PIECES, \
+					   optimize_insn_for_speed_p ()))
 #endif
 
 /* This is run to set up which modes can be used
@@ -826,13 +826,6 @@ widest_int_mode_for_size (unsigned int size)
 
   return mode;
 }
-
-/* STORE_MAX_PIECES is the number of bytes at a time that we can
-   store efficiently.  Due to internal GCC limitations, this is
-   MOVE_MAX_PIECES limited by the number of bytes GCC can represent
-   for an immediate constant.  */
-
-#define STORE_MAX_PIECES  MIN (MOVE_MAX_PIECES, 2 * sizeof (HOST_WIDE_INT))
 
 /* Determine whether the LEN bytes can be moved by using several move
    instructions.  Return nonzero if a call to move_by_pieces should

@@ -1406,6 +1406,61 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* For hooks which use the MOVE_RATIO macro, this gives the legacy default
+   behaviour.  SPEED_P is true if we are compiling for speed.  */
+
+static unsigned int
+get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
+{
+  unsigned int move_ratio;
+#ifdef MOVE_RATIO
+  move_ratio = (unsigned int) MOVE_RATIO (speed_p);
+#else
+#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+  move_ratio = 2;
+#else /* No movmem patterns, pick a default.  */
+  move_ratio = ((speed_p) ? 15 : 3);
+#endif
+#endif
+  return move_ratio;
+}
+
+/* Return TRUE if the move_by_pieces/set_by_pieces infrastructure should be
+   used; return FALSE if the movmem/setmem optab should be expanded, or
+   a call to memcpy emitted.  */
+
+bool
+default_use_by_pieces_infrastructure_p (unsigned int size,
+					unsigned int alignment,
+					enum by_pieces_operation op,
+					bool speed_p)
+{
+  unsigned int max_size = 0;
+  unsigned int ratio = 0;
+
+  switch (op)
+    {
+      case CLEAR_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = CLEAR_RATIO (speed_p);
+	break;
+      case MOVE_BY_PIECES:
+	max_size = MOVE_MAX_PIECES;
+	ratio = get_move_ratio (speed_p);
+	break;
+      case SET_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = SET_RATIO (speed_p);
+	break;
+      case STORE_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = get_move_ratio (speed_p);
+	break;
+    }
+
+  return move_by_pieces_ninsns (size, alignment, max_size + 1) < ratio;
+}
+
 bool
 default_profile_before_prologue (void)
 {
