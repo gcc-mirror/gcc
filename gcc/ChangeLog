@@ -1,5 +1,27 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* doc/tm.texi.in (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_BY_PIECES_P): Likewise.
+	* doc/tm.texi: Regenerate.
+	* system.h: Poison MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P,
+	SET_BY_PIECES_P, STORE_BY_PIECES_P.
+	* expr.c (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_BY_PIECES_P): Likewise.
+	(can_move_by_pieces): Rewrite in terms of
+	targetm.use_by_pieces_infrastructure_p.
+	(emit_block_move_hints): Likewise.
+	(can_store_by_pieces): Likewise.
+	(store_by_pieces): Likewise.
+	(clear_storage_hints): Likewise.
+	(emit_push_insn): Likewise.
+	(expand_constructor): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c
 	(aarch64_use_by_pieces_infrastructre_p): New.
 	(TARGET_USE_BY_PIECES_INFRASTRUCTURE): Likewise.
