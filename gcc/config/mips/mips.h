@@ -2872,9 +2872,6 @@ while (0)
    ? MIPS_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX		\
    : MIPS_CALL_RATIO / 2)
 
-#define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  mips_move_by_pieces_p (SIZE, ALIGN)
-
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
 
@@ -2887,9 +2884,6 @@ while (0)
 
 #define SET_RATIO(speed) \
   ((speed) ? 15 : MIPS_CALL_RATIO - 2)
-
-#define STORE_BY_PIECES_P(SIZE, ALIGN) \
-  mips_store_by_pieces_p (SIZE, ALIGN)
 
 /* Since the bits of the _init and _fini function is spread across
    many object files, each potentially with its own GP, we must assume
