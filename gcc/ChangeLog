@@ -1,5 +1,13 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/sh/sh.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(sh_use_by_pieces_infrastructure_p): Likewise.
+	* config/sh/sh.h (MOVE_BY_PIECES_P): Remove.
+	(STORE_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arc/arc.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
 	(arc_use_by_pieces_infrastructure_p): Likewise.
 	* confir/arc/arc.h (MOVE_BY_PIECES_P): Delete.
