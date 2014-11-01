@@ -1,5 +1,15 @@
 2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/mips/mips.h (MOVE_BY_PIECES_P): Remove.
+	(STORE_BY_PIECES_P): Likewise.
+	* config/mips/mips.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(mips_move_by_pieces_p): Rename to...
+	(mips_use_by_pieces_infrastructure_p): ...this, use new hook
+	parameters, use the default hook implementation as a
+	fall-back.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/sh/sh.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
 	(sh_use_by_pieces_infrastructure_p): Likewise.
 	* config/sh/sh.h (MOVE_BY_PIECES_P): Remove.
