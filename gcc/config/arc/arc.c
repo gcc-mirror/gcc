@@ -8441,34 +8441,30 @@ arc_predicate_delay_insns (void)
   be hoisted out into a delay slot, a basic block can also be emptied this
   way, and branch and/or fall through targets be redirected.  Hence we don't
   want such writes in a delay slot.  */
-/* Called by arc_write_ext_corereg via for_each_rtx.  */
-
-static int
-write_ext_corereg_1 (rtx *xp, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *xp;
-  rtx dest;
-
-  switch (GET_CODE (x))
-    {
-    case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
-      break;
-    default:
-    /* This is also fine for PRE/POST_MODIFY, because they contain a SET.  */
-      return 0;
-    }
-  dest = XEXP (x, 0);
-  if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61)
-    return 1;
-  return 0;
-}
 
 /* Return nonzreo iff INSN writes to an extension core register.  */
 
 int
 arc_write_ext_corereg (rtx insn)
 {
-  return for_each_rtx (&PATTERN (insn), write_ext_corereg_1, 0);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx x = *iter;
+      switch (GET_CODE (x))
+	{
+	case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
+	  break;
+	default:
+	  /* This is also fine for PRE/POST_MODIFY, because they
+	     contain a SET.  */
+	  continue;
+	}
+      const_rtx dest = XEXP (x, 0);
+      if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61)
+	return 1;
+    }
+  return 0;
 }
 
 /* This is like the hook, but returns NULL when it can't / won't generate
