@@ -1,5 +1,10 @@
 2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arc/arc.c (write_ext_corereg_1): Delete.
+	(arc_write_ext_corereg): Use FOR_EACH_SUBRTX.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arc/arc.c (arc600_corereg_hazard_1): Delete.
 	(arc600_corereg_hazard): Use FOR_EACH_SUBRTX.
 
