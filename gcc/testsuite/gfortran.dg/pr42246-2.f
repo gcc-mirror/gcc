@@ -1,5 +1,5 @@
 C PR rtl-optimization/42246
-C { dg-do compile { target powerpc*-*-* ia64-*-* x86_64-*-* } }
+C { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } }
 C { dg-options "-O2 -fselective-scheduling -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops" }
 
       subroutine distance(x,clo)

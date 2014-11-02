@@ -1,4 +1,4 @@
-/* { dg-do compile { target { x86_64-*-linux* } } } */
+/* { dg-do compile { target { i?86-*-linux* x86_64-*-linux* } } } */
 /* { dg-options "-fgnu-tm -O" } */
 
 /* Test the TM vector logging functions.  */

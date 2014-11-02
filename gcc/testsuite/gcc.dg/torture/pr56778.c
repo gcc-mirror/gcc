@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=core-avx2" { target x86_64-*-* } } */
+/* { dg-options "-march=core-avx2" { target i?86-*-* x86_64-*-* } } */
 
 typedef struct {
     float a,b,c;

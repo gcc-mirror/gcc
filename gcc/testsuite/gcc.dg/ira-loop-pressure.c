@@ -2,7 +2,7 @@
    register classes.  In this case, register pressue of INT is high.  But
    we can still move the FP invariant out of the loop.  */
 
-/* { dg-do compile { target { x86_64-*-* && lp64 } } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-O2 -fira-loop-pressure -fdump-rtl-loop2_invariant " } */
 
 float tt;
