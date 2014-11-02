@@ -1,6 +1,8 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
+//  C++11 features:
+
 #ifndef __cpp_unicode_characters
 #  error "__cpp_unicode_characters"
 #elif __cpp_unicode_characters != 200704
@@ -73,13 +75,17 @@
 #  error "__cpp_alias_templates != 200704"
 #endif
 
-//  These C++14 features are allowed in C++11 in non-ANSI modes.
+//  C++14 features allowed in C++11 in non-ANSI modes:
+
 #ifndef __cpp_binary_literals
 #  error "__cpp_binary_literals"
 #elif __cpp_binary_literals != 201304
 #  error "__cpp_binary_literals != 201304"
 #endif
 
+//  Attribute checks:
+
+//  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
 #ifndef __cpp_attribute_deprecated
 #  error "__cpp_attribute_deprecated"
 #elif __cpp_attribute_deprecated != 201309
