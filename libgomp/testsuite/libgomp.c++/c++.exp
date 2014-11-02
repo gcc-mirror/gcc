@@ -2,14 +2,15 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
 if { $blddir != "" } {
-    set lang_library_path "../libstdc++-v3/src/.libs"
+    set libstdc++_library_path "../libstdc++-v3/src/.libs"
     set shlib_ext [get_shlib_extension]
-    if { ![file exists "${blddir}/${lang_library_path}/libstdc++.a"]
-	 && ![file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] } {
+    if { ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.a"]
+	 && ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.${shlib_ext}"] } {
 	verbose -log "No libstdc++ library found, will not execute c++ tests"
-	unset lang_library_path
+	unset libstdc++_library_path
 	return
     }
+    lappend lang_library_paths ${libstdc++_library_path}
 } elseif { ![info exists GXX_UNDER_TEST] } {
     verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
     return
@@ -39,7 +40,7 @@ set tests [lsort [concat \
 
 set ld_library_path $always_ld_library_path
 if { $blddir != "" } {
-    append ld_library_path ":${blddir}/${lang_library_path}"
+    append ld_library_path ":${blddir}/${libstdc++_library_path}"
 }
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
 set_ld_library_path_env_vars
@@ -62,7 +63,8 @@ if [info exists lang_include_flags] then {
     unset lang_include_flags
 }
 if { $blddir != "" } {
-    unset lang_library_path
+    unset libstdc++_library_path
+    unset lang_library_paths
 }
 unset lang_link_flags
 

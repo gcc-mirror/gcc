@@ -3,13 +3,22 @@ load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
 if { $blddir != "" } {
-    set lang_library_path "../libgfortran/.libs"
+    set libgfortran_library_path "../libgfortran/.libs"
     set shlib_ext [get_shlib_extension]
-    if { ![file exists "${blddir}/${lang_library_path}/libgfortran.a"]
-	 && ![file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] } {
+    if { ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.a"]
+	 && ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.${shlib_ext}"] } {
         verbose -log "No libgfortran library found, will not execute fortran tests"
-	unset lang_library_path
+	unset libgfortran_library_path
 	return
+    }
+    lappend lang_library_paths $libgfortran_library_path
+
+    set libquadmath_library_path "../libquadmath/.libs"
+    if { [file exists "${blddir}/${libquadmath_library_path}/libquadmath.a"]
+	 || [file exists "${blddir}/${libquadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	lappend lang_library_paths $libquadmath_library_path
+    } else {
+	set libquadmath_library_path ""
     }
 } elseif { ![info exists GFORTRAN_UNDER_TEST] } {
     verbose -log "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
@@ -32,18 +41,12 @@ set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
 set ld_library_path $always_ld_library_path
 if { $blddir != "" } {
-    append ld_library_path ":${blddir}/${lang_library_path}"
+    append ld_library_path ":${blddir}/${libgfortran_library_path}"
 
-    set quadmath_library_path "../libquadmath/.libs"
-    if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
-	 || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
-	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
-	# Allow for spec subsitution.
-	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
-	append ld_library_path ":${blddir}/${quadmath_library_path}"
+    if { $libquadmath_library_path != "" } {
+	append ld_library_path ":${blddir}/${libquadmath_library_path}"
 	append lang_link_flags " -lquadmath"
     }
-    unset quadmath_library_path
 } else {
     if { [check_no_compiler_messages has_libquadmath executable {
              int main() {return 0;}
@@ -62,7 +65,9 @@ gfortran-dg-runtest $tests "" ""
 if { $blddir != "" } {
     unset lang_source_re
     unset lang_include_flags
-    unset lang_library_path
+    unset libgfortran_library_path
+    unset libquadmath_library_path
+    unset lang_library_paths
 }
 unset lang_link_flags
 
