@@ -1,3 +1,13 @@
+2014-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx11.C: Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Add aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx14.C: Enable aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto
+	* g++.dg/cpp1y/feat-cxx98.C: Commentary.
+
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c, c-common.h, c-cppbuiltin.c, c-lex.c: Remove redundant

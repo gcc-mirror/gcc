@@ -841,7 +841,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  //cpp_undef (pfile, "__cpp_constexpr");
 	  //cpp_define (pfile, "__cpp_constexpr=201304");
 	  cpp_define (pfile, "__cpp_decltype_auto=201304");
-	  //cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
+	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
 	  //cpp_define (pfile, "__cpp_sized_deallocation=201309");
