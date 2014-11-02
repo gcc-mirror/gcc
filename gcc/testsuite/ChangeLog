@@ -1,5 +1,17 @@
 2014-11-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* g++.dg/cpp0x/gen-attrs-42.C: Add x86_64-*-* target.
+	* g++.dg/ext/attrib42.C: Ditto.
+	* g++.dg/torture/pr51344.C: Ditto.
+	* g++.dg/tree-ssa/pr29902.C: Ditto.
+	* gcc.c-torture/execute/20010129-1.c: Ditto.
+	* gcc.dg/combine_ashiftrt_2.c: Ditto.
+	* gcc.dg/march-generic.c: Ditto.
+	* gcc.dg/torture/pr17526.c: Ditto.
+	* gcc.dg/union-4.c: Ditto.
+
+2014-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	* c-c++-common/ubsan/float-cast-overflow-6.c: Add i?86-*-* target.
 	* g++.dg/abi/no-weak1.C: Ditto.
 	* g++.dg/opt/pr44919.C: Ditto.

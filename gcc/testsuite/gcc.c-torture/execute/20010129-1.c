@@ -1,4 +1,4 @@
-/* { dg-options "-mtune=i686" { target { { i?86*-*-* } && ilp32 } } } */
+/* { dg-options "-mtune=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 extern void abort (void);
 extern void exit (int);
