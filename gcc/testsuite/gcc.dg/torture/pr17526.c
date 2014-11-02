@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fno-pcc-struct-return" { target i?86-*-* } } */
+/* { dg-options "-fno-pcc-struct-return" { target i?86-*-* x86_64-*-* } } */
 
 void abort(void);
 

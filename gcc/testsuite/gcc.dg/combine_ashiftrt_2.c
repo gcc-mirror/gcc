@@ -1,4 +1,5 @@
-/* { dg-do compile {target arm*-*-* i?86-*-* powerpc-*-* sparc-*-*} } */
+/* { dg-do compile {target arm*-*-* i?86-*-* x86_64-*-* powerpc-*-* sparc-*-*} } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -fdump-rtl-combine-all" } */
 
 typedef long int32_t;
