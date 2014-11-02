@@ -1,5 +1,11 @@
 2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arc/arc.c (arc_rewrite_small_data_p): Constify argument.
+	(small_data_pattern_1): Delete.
+	(small_data_pattern): Use FOR_EACH_SUBRTX.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arc/arc.c: Include rtl-iter.h.
 	(arc_rewrite_small_data_1): Delete.
 	(arc_rewrite_small_data): Use FOR_EACH_SUBRTX_PTR.

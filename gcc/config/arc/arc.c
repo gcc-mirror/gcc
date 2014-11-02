@@ -6355,7 +6355,7 @@ arc_in_small_data_p (const_tree decl)
    as a gp+symref.  */
 
 static bool
-arc_rewrite_small_data_p (rtx x)
+arc_rewrite_small_data_p (const_rtx x)
 {
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
@@ -6405,26 +6405,25 @@ arc_rewrite_small_data (rtx op)
   return op;
 }
 
-/* A for_each_rtx callback for small_data_pattern.  */
-
-static int
-small_data_pattern_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (*loc) == PLUS
-      && rtx_equal_p (XEXP (*loc, 0), pic_offset_table_rtx))
-    return  -1;
-
-  return arc_rewrite_small_data_p (*loc);
-}
-
 /* Return true if OP refers to small data symbols directly, not through
    a PLUS.  */
 
 bool
 small_data_pattern (rtx op, machine_mode)
 {
-  return (GET_CODE (op) != SEQUENCE
-	  && for_each_rtx (&op, small_data_pattern_1, 0));
+  if (GET_CODE (op) == SEQUENCE)
+    return false;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, op, ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == PLUS
+	  && rtx_equal_p (XEXP (x, 0), pic_offset_table_rtx))
+	iter.skip_subrtxes ();
+      else if (arc_rewrite_small_data_p (x))
+	return true;
+    }
+  return false;
 }
 
 /* Return true if OP is an acceptable memory operand for ARCompact
