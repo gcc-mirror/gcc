@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "wide-int.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Which cpu we're compiling for (A5, ARC600, ARC601, ARC700).  */
 static const char *arc_cpu_string = "";
@@ -6369,38 +6370,6 @@ arc_rewrite_small_data_p (rtx x)
 	  && SYMBOL_REF_SMALL_P(x));
 }
 
-/* A for_each_rtx callback, used by arc_rewrite_small_data.  */
-
-static int
-arc_rewrite_small_data_1 (rtx *loc, void *data)
-{
-  if (arc_rewrite_small_data_p (*loc))
-    {
-      rtx top;
-
-      gcc_assert (SDATA_BASE_REGNUM == PIC_OFFSET_TABLE_REGNUM);
-      *loc = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, *loc);
-      if (loc == data)
-	return -1;
-      top = *(rtx*) data;
-      if (GET_CODE (top) == MEM && &XEXP (top, 0) == loc)
-	; /* OK.  */
-      else if (GET_CODE (top) == MEM
-	  && GET_CODE (XEXP (top, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (top, 0), 0)) == MULT)
-	*loc = force_reg (Pmode, *loc);
-      else
-	gcc_unreachable ();
-      return -1;
-    }
-
-  if (GET_CODE (*loc) == PLUS
-      && rtx_equal_p (XEXP (*loc, 0), pic_offset_table_rtx))
-    return -1;
-
-  return 0;
-}
-
 /* If possible, rewrite OP so that it refers to small data using
    explicit relocations.  */
 
@@ -6408,7 +6377,31 @@ rtx
 arc_rewrite_small_data (rtx op)
 {
   op = copy_insn (op);
-  for_each_rtx (&op, arc_rewrite_small_data_1, &op);
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &op, ALL)
+    {
+      rtx *loc = *iter;
+      if (arc_rewrite_small_data_p (*loc))
+	{
+	  gcc_assert (SDATA_BASE_REGNUM == PIC_OFFSET_TABLE_REGNUM);
+	  *loc = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, *loc);
+	  if (loc != &op)
+	    {
+	      if (GET_CODE (op) == MEM && &XEXP (op, 0) == loc)
+		; /* OK.  */
+	      else if (GET_CODE (op) == MEM
+		       && GET_CODE (XEXP (op, 0)) == PLUS
+		       && GET_CODE (XEXP (XEXP (op, 0), 0)) == MULT)
+		*loc = force_reg (Pmode, *loc);
+	      else
+		gcc_unreachable ();
+	    }
+	  iter.skip_subrtxes ();
+	}
+      else if (GET_CODE (*loc) == PLUS
+	       && rtx_equal_p (XEXP (*loc, 0), pic_offset_table_rtx))
+	iter.skip_subrtxes ();
+    }
   return op;
 }
 
