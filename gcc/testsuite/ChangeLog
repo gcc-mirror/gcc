@@ -1,3 +1,84 @@
+2014-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-c++-common/ubsan/float-cast-overflow-6.c: Add i?86-*-* target.
+	* g++.dg/abi/no-weak1.C: Ditto.
+	* g++.dg/opt/pr44919.C: Ditto.
+	* g++.dg/opt/pr46640.C: Ditto.
+	* g++.dg/opt/pr46649.C: Ditto.
+	* g++.dg/opt/pr47036.C: Ditto.
+	* g++.dg/opt/pr48273.C: Ditto.
+	* g++.dg/opt/pr48302.C: Ditto.
+	* g++.dg/opt/pr45788.C: Ditto.
+	* g++.dg/opt/pr57662.C: Ditto.
+	* gcc.dg/20031102-1.c: Ditto.
+	* gcc.dg/builtin-bswap-7.c: Ditto.
+	* gcc.dg/builtin-bswap-7a.c: Ditto.
+	* gcc.dg/builtin-bswap-9.c: Ditto.
+	* gcc.dg/combine_ashiftrt_1.c: Ditto.
+	* gcc.dg/guality/bswaptest.c: Ditto.
+	* gcc.dg/guality/clztest.c: Ditto.
+	* gcc.dg/guality/ctztest.c: Ditto.
+	* gcc.dg/guality/pr45003-1.c: Ditto.
+	* gcc.dg/guality/pr45003-2.c: Ditto.
+	* gcc.dg/guality/pr45003-3.c: Ditto.
+	* gcc.dg/guality/pr58791-4.c: Ditto.
+	* gcc.dg/guality/rotatetest.c:Ditto.
+	* gcc.dg/ifcvt-fabs-1.c: Ditto.
+	* gcc.dg/ira-loop-pressure.c: Ditto.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Ditto.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Ditto.
+	* gcc.dg/lto/pr47259_0.c: Ditto.
+	* gcc.dg/memcpy-5.c: Ditto.
+	* gcc.dg/pr10474.c: Ditto.
+	* gcc.dg/pr37438.c: Ditto.
+	* gcc.dg/pr39453.c: Ditto.
+	* gcc.dg/pr40501.c: Ditto.
+	* gcc.dg/pr42245-2.c: Ditto.
+	* gcc.dg/pr42245.c: Ditto.
+	* gcc.dg/pr42246.c: Ditto.
+	* gcc.dg/pr42249.c: Ditto.
+	* gcc.dg/pr42388.c: Ditto.
+	* gcc.dg/pr42389.c: Ditto.
+	* gcc.dg/pr45352-1.c: Ditto.
+	* gcc.dg/pr45352-2.c: Ditto.
+	* gcc.dg/pr45352-3.c: Ditto.
+	* gcc.dg/pr45352.c: Ditto.
+	* gcc.dg/pr45472.c: Ditto.
+	* gcc.dg/pr45652.c: Ditto.
+	* gcc.dg/pr46212.c: Ditto.
+	* gcc.dg/pr46521.c: Ditto.
+	* gcc.dg/pr46522.c: Ditto.
+	* gcc.dg/pr46875.c: Ditto.
+	* gcc.dg/pr48374.c: Ditto.
+	* gcc.dg/pr50251.c: Ditto.
+	* gcc.dg/pr54472.c: Ditto.
+	* gcc.dg/pr55702.c: Ditto.
+	* gcc.dg/pr56990.c: Ditto.
+	* gcc.dg/pr57104.c: Ditto.
+	* gcc.dg/pr57662.c: Ditto.
+	* gcc.dg/pr60866.c: Ditto.
+	* gcc.dg/shrink-wrap-loop.c: Ditto.
+	* gcc.dg/tm/memopt-15.c: Ditto.
+	* gcc.dg/torture/pr52720.c: Ditto.
+	* gcc.dg/torture/pr56778.c: Ditto.
+	* gcc.dg/tree-prof/pr45354.c: Ditto.
+	* gcc.dg/tree-prof/pr50907.c: Ditto.
+	* gcc.dg/tree-ssa/loop-16.c: Ditto.
+	* gcc.dg/tree-ssa/loop-18.c: Ditto.
+	* gcc.dg/tree-ssa/pr44423.c: Ditto.
+	* gcc.dg/misc-tests/godump-1.c: Ditto.
+	* gfortran.dg/PR24188.f: Ditto.
+	* gfortran.dg/errnocheck_1.f90: Ditto.
+	* gfortran.dg/g77/20010216-1.f: Ditto.
+	* gfortran.dg/pr42246-2.f: Ditto.
+	* gfortran.dg/pr42294.f: Ditto.
+	* gfortran.dg/pr44691.f: Ditto.
+	* gfortran.dg/vect/pr45714-a.f: Ditto.
+	* gcc.c-torture/execute/ieee/ieee.exp: Ditto.
+	* gcc.misc-tests/linkage.exp: Ditto.
+	* lib/target-supports.exp: Reformat x86 tagets.
+	(check_effective_target_whole_vector_shift): Add i?86-*-* target.
+
 2014-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57694

@@ -3,7 +3,7 @@
    and we may use 64-bit variable to represent them.  */
 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 
 unsigned a[100];
 

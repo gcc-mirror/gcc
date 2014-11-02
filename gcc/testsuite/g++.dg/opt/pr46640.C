@@ -1,4 +1,4 @@
-// { dg-do compile { target x86_64-*-* } }
+// { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-options "-fschedule-insns2 -fsel-sched-pipelining -fselective-scheduling2 -fno-exceptions -O" }
 
 struct QBasicAtomicInt
