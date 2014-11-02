@@ -7716,38 +7716,6 @@ disi_highpart (rtx in)
   return simplify_gen_subreg (SImode, in, DImode, TARGET_BIG_ENDIAN ? 0 : 4);
 }
 
-/* Called by arc600_corereg_hazard via for_each_rtx.
-   If a hazard is found, return a conservative estimate of the required
-   length adjustment to accomodate a nop.  */
-
-static int
-arc600_corereg_hazard_1 (rtx *xp, void *data)
-{
-  rtx x = *xp;
-  rtx dest;
-  rtx pat = (rtx) data;
-
-  switch (GET_CODE (x))
-    {
-    case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
-      break;
-    default:
-    /* This is also fine for PRE/POST_MODIFY, because they contain a SET.  */
-      return 0;
-    }
-  dest = XEXP (x, 0);
-  /* Check if this sets a an extension register.  N.B. we use 61 for the
-     condition codes, which is definitely not an extension register.  */
-  if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
-      /* Check if the same register is used by the PAT.  */
-      && (refers_to_regno_p
-	   (REGNO (dest),
-	   REGNO (dest) + (GET_MODE_SIZE (GET_MODE (dest)) + 3) / 4U, pat, 0)))
-    return 4;
-
-  return 0;
-}
-
 /* Return length adjustment for INSN.
    For ARC600:
    A write to a core reg greater or equal to 32 must not be immediately
@@ -7779,8 +7747,31 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
       || recog_memoized (pred) == CODE_FOR_umul64_600
       || recog_memoized (pred) == CODE_FOR_umac64_600)
     return 0;
-  return for_each_rtx (&PATTERN (pred), arc600_corereg_hazard_1,
-		       PATTERN (succ));
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (pred), NONCONST)
+    {
+      const_rtx x = *iter;
+      switch (GET_CODE (x))
+	{
+	case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
+	  break;
+	default:
+	  /* This is also fine for PRE/POST_MODIFY, because they
+	     contain a SET.  */
+	  continue;
+	}
+      rtx dest = XEXP (x, 0);
+      /* Check if this sets a an extension register.  N.B. we use 61 for the
+	 condition codes, which is definitely not an extension register.  */
+      if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
+	  /* Check if the same register is used by the PAT.  */
+	  && (refers_to_regno_p
+	      (REGNO (dest),
+	       REGNO (dest) + (GET_MODE_SIZE (GET_MODE (dest)) + 3) / 4U,
+	       PATTERN (succ), 0)))
+	return 4;
+    }
+  return 0;
 }
 
 /* For ARC600:
