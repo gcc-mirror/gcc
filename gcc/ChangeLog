@@ -1,3 +1,9 @@
+2014-11-02  Michael Collison  <michael.collison@linaro.org>
+
+	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO) : Update
+	to support vector modes.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Ditto.
+
 2014-11-01  Andrew MacLeod  <amacleod@redhat,com>
 
 	* optabs.h: Flatten insn-codes.h to source files.  Move some prototypes
