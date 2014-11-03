@@ -53,7 +53,7 @@ print_mcu (const avr_mcu_t *mcu)
 	 ? " -msp8" : " %<msp8");
 
   errata_skip = (mcu->dev_attribute & AVR_ERRATA_SKIP) ? " -mskip-bug" : "";
-  rmw = (mcu->dev_attribute & AVR_ISA_RMW) ? "%%{!mno-rmw: -mrmw}" : "";
+  rmw = (mcu->dev_attribute & AVR_ISA_RMW) ? "%{!mno-rmw: -mrmw}" : "";
 
   const char *arch_name = avr_arch_types[mcu->arch].arch_name;
 
