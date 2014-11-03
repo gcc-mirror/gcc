@@ -7958,8 +7958,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     case ABS_EXPR:
       if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
 	return fold_abs_const (arg0, type);
-      else if (TREE_CODE (arg0) == NEGATE_EXPR)
-	return fold_build1_loc (loc, ABS_EXPR, type, TREE_OPERAND (arg0, 0));
       /* Convert fabs((double)float) into (double)fabsf(float).  */
       else if (TREE_CODE (arg0) == NOP_EXPR
 	       && TREE_CODE (type) == REAL_TYPE)
@@ -7973,8 +7971,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	}
       /* ABS_EXPR<ABS_EXPR<x>> = ABS_EXPR<x> even if flag_wrapv is on.  */
       else if (TREE_CODE (arg0) == ABS_EXPR)
-	return arg0;
-      else if (tree_expr_nonnegative_p (arg0))
 	return arg0;
 
       /* Strip sign ops from argument.  */

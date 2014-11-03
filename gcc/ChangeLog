@@ -1,3 +1,14 @@
+2014-11-03  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add two abs patterns.  Announce tree_expr_nonnegative_p.
+	Also drop bogus FLOAT_EXPR and FIX_TRUNC_EXPR.
+	* fold-const.c (fold_unary_loc): Remove them here.
+	(tree_unary_nonnegative_warnv_p): Use CASE_CONVERT.
+	* gimple-fold.c (fold_gimple_assign): Remove now obsolete
+	GIMPLE_UNARY_RHS case.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	(replace_stmt_with_simplification): Fix inverted comparison.
+
 2014-11-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/60770
