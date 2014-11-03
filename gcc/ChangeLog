@@ -1,3 +1,10 @@
+2014-11-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/63666
+	* fold-const.c: Include "optabs.h".
+	(fold_ternary_loc) <VEC_PERM_EXPR>: Avoid canonicalizing a
+	can_vec_perm_p permutation to one that is not.
+
 2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* ifcvt.c (noce_try_store_flag_mask): Check rtx cost.
