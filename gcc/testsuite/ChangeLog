@@ -1,3 +1,9 @@
+2014-11-03  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/i386.exp: Extend option set to test
+	vect-args.c with to include -mavx, -mavx2, and -mavx512f.
+	* gcc.target/i386/vect-args.c: Add AVX* modes and tests.
+
 2014-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/execute/20010129-1.c: Compile with -mtune=i686
