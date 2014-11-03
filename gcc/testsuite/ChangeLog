@@ -1,3 +1,11 @@
+2014-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/execute/20010129-1.c: Compile with -mtune=i686
+	for ia32 targets only.
+	* g++.dg/ext/attrib42.C: Compile for ia32 targets only.
+	* g++.dg/tree-ssa/pr29902.C: Ditto.
+	* g++.dg/cpp0x/gen-attrs-42.C: Ditto.
+
 2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.target/arm/ifcvt-size-check.c: New test.
