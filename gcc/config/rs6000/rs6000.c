@@ -34590,13 +34590,66 @@ make_pass_analyze_swaps (gcc::context *ctxt)
   return new pass_analyze_swaps (ctxt);
 }
 
+/* Function declarations for rs6000_atomic_assign_expand_fenv.  */
+static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
+
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
 
 static void
 rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
   if (!TARGET_HARD_FLOAT || !TARGET_FPRS)
-    return;
+    {
+#ifdef RS6000_GLIBC_ATOMIC_FENV
+      if (atomic_hold_decl == NULL_TREE)
+	{
+	  atomic_hold_decl
+	    = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			  get_identifier ("__atomic_feholdexcept"),
+			  build_function_type_list (void_type_node,
+						    double_ptr_type_node,
+						    NULL_TREE));
+	  TREE_PUBLIC (atomic_hold_decl) = 1;
+	  DECL_EXTERNAL (atomic_hold_decl) = 1;
+	}
+
+      if (atomic_clear_decl == NULL_TREE)
+	{
+	  atomic_clear_decl
+	    = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			  get_identifier ("__atomic_feclearexcept"),
+			  build_function_type_list (void_type_node,
+						    NULL_TREE));
+	  TREE_PUBLIC (atomic_clear_decl) = 1;
+	  DECL_EXTERNAL (atomic_clear_decl) = 1;
+	}
+
+      tree const_double = build_qualified_type (double_type_node,
+						TYPE_QUAL_CONST);
+      tree const_double_ptr = build_pointer_type (const_double);
+      if (atomic_update_decl == NULL_TREE)
+	{
+	  atomic_update_decl
+	    = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			  get_identifier ("__atomic_feupdateenv"),
+			  build_function_type_list (void_type_node,
+						    const_double_ptr,
+						    NULL_TREE));
+	  TREE_PUBLIC (atomic_update_decl) = 1;
+	  DECL_EXTERNAL (atomic_update_decl) = 1;
+	}
+
+      tree fenv_var = create_tmp_var (double_type_node, NULL);
+      mark_addressable (fenv_var);
+      tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node, fenv_var);
+
+      *hold = build_call_expr (atomic_hold_decl, 1, fenv_addr);
+      *clear = build_call_expr (atomic_clear_decl, 0);
+      *update = build_call_expr (atomic_update_decl, 1,
+				 fold_convert (const_double_ptr, fenv_addr));
+#endif
+      return;
+    }
 
   tree mffs = rs6000_builtin_decls[RS6000_BUILTIN_MFFS];
   tree mtfsf = rs6000_builtin_decls[RS6000_BUILTIN_MTFSF];

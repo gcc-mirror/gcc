@@ -4503,6 +4503,10 @@ glibc_version_minor=0
   glibc_version_minor=`echo "$glibc_version_minor_define" | sed -e 's/.*__GLIBC_MINOR__[ 	]*//'`
 fi]])
 AC_MSG_RESULT([$glibc_version_major.$glibc_version_minor])
+AC_DEFINE_UNQUOTED([TARGET_GLIBC_MAJOR], [$glibc_version_major],
+[GNU C Library major version number used on the target, or 0.])
+AC_DEFINE_UNQUOTED([TARGET_GLIBC_MINOR], [$glibc_version_minor],
+[GNU C Library minor version number used on the target, or 0.])
 
 AC_ARG_ENABLE(gnu-unique-object,
  [AS_HELP_STRING([--enable-gnu-unique-object],
