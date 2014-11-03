@@ -1,3 +1,8 @@
+2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* ifcvt.c (noce_emit_cmove, noce_get_alt_condition, noce_get_condition):
+	Allow CC mode if HAVE_cbranchcc4.
+
 2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/arc/arc.c (write_ext_corereg_1): Delete.
