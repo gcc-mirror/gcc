@@ -504,344 +504,231 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
     : std::binary_function<_T1, _T2, _Res> { };
 
-  /// Implementation of @c mem_fn for member function pointers.
+  template<typename _Signature>
+    struct _Mem_fn_traits;
+
   template<typename _Res, typename _Class, typename... _ArgTypes>
-    class _Mem_fn<_Res (_Class::*)(_ArgTypes...)>
-    : public _Maybe_unary_or_binary_function<_Res, _Class*, _ArgTypes...>
+    struct _Mem_fn_traits_base
     {
-      typedef _Res (_Class::*_Functor)(_ArgTypes...);
+      using __result_type = _Res;
+      using __class_type =  _Class;
+      using __arg_types = _Pack<_ArgTypes...>;
+      using __maybe_type
+	= _Maybe_unary_or_binary_function<_Res, _Class*, _ArgTypes...>;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)>
+    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...);
+      using __lvalue = true_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const>
+    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const;
+      using __lvalue = true_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile>
+    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile;
+      using __lvalue = true_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile>
+    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile;
+      using __lvalue = true_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)&>
+    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...)&;
+      using __lvalue = true_type;
+      using __rvalue = false_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const&>
+    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const&;
+      using __lvalue = true_type;
+      using __rvalue = false_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile&>
+    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile&;
+      using __lvalue = true_type;
+      using __rvalue = false_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile&>
+    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile&;
+      using __lvalue = true_type;
+      using __rvalue = false_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)&&>
+    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...)&&;
+      using __lvalue = false_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const&&>
+    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const&&;
+      using __lvalue = false_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile&&>
+    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile&&;
+      using __lvalue = false_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile&&>
+    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
+    {
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile&&;
+      using __lvalue = false_type;
+      using __rvalue = true_type;
+    };
+
+  template<typename _MemFunPtr,
+	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>
+    class _Mem_fn_base
+    : public _Mem_fn_traits<_MemFunPtr>::__maybe_type
+    {
+      using _Traits = _Mem_fn_traits<_MemFunPtr>;
+
+    public:
+      using result_type = typename _Traits::__result_type;
+
+    private:
+      using _Class = typename _Traits::__class_type;
+      using _ArgTypes = typename _Traits::__arg_types;
+      using _Pmf = typename _Traits::__pmf_type;
 
       template<typename _Tp, typename... _Args>
-	_Res
+	result_type
 	_M_call(_Tp&& __object, const volatile _Class *,
 		_Args&&... __args) const
 	{
-	  return (std::forward<_Tp>(__object).*__pmf)
+	  return (std::forward<_Tp>(__object).*_M_pmf)
 	    (std::forward<_Args>(__args)...);
 	}
 
       template<typename _Tp, typename... _Args>
-	_Res
+	result_type
 	_M_call(_Tp&& __ptr, const volatile void *, _Args&&... __args) const
-	{ return ((*__ptr).*__pmf)(std::forward<_Args>(__args)...); }
+	{ return ((*__ptr).*_M_pmf)(std::forward<_Args>(__args)...); }
 
       // Require each _Args to be convertible to corresponding _ArgTypes
       template<typename... _Args>
 	using _RequireValidArgs
-	  = _Require<_AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
+	  = _Require<_AllConvertible<_Pack<_Args...>, _ArgTypes>>;
 
       // Require each _Args to be convertible to corresponding _ArgTypes
       // and require _Tp is not _Class, _Class& or _Class*
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
 	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
+		     _AllConvertible<_Pack<_Args...>, _ArgTypes>>;
 
       // Require each _Args to be convertible to corresponding _ArgTypes
       // and require _Tp is _Class or derived from _Class
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs3
 	  = _Require<is_base_of<_Class, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
+		     _AllConvertible<_Pack<_Args...>, _ArgTypes>>;
 
     public:
-      typedef _Res result_type;
-
-      explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
+      explicit _Mem_fn_base(_Pmf __pmf) : _M_pmf(__pmf) { }
 
       // Handle objects
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__lvalue,
+                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
+	result_type
 	operator()(_Class& __object, _Args&&... __args) const
-	{ return (__object.*__pmf)(std::forward<_Args>(__args)...); }
+	{ return (__object.*_M_pmf)(std::forward<_Args>(__args)...); }
 
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__rvalue,
+                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
+	result_type
 	operator()(_Class&& __object, _Args&&... __args) const
 	{
-	  return (std::move(__object).*__pmf)(std::forward<_Args>(__args)...);
+	  return (std::move(__object).*_M_pmf)(std::forward<_Args>(__args)...);
 	}
 
       // Handle pointers
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__lvalue,
+                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
+	result_type
 	operator()(_Class* __object, _Args&&... __args) const
-	{ return (__object->*__pmf)(std::forward<_Args>(__args)...); }
+	{ return (__object->*_M_pmf)(std::forward<_Args>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs2<_Tp, _Args...>>
-	_Res
+      // TODO how to constrain to lvalue/rvalue here? constrain _M_call?
+      template<typename _Tp, typename... _Args, typename _Req
+               = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
+	result_type
 	operator()(_Tp&& __object, _Args&&... __args) const
 	{
 	  return _M_call(std::forward<_Tp>(__object), &__object,
 	      std::forward<_Args>(__args)...);
 	}
 
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs3<_Tp, _Args...>>
-	_Res
+      // Handle reference wrappers
+      template<typename _Tp, typename... _Args, typename _Req
+               = _Require<is_base_of<_Class, _Tp>,
+                          typename _Traits::__lvalue,
+                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
+	result_type
 	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
 	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
 
     private:
-      _Functor __pmf;
+      _Pmf _M_pmf;
     };
 
-  /// Implementation of @c mem_fn for const member function pointers.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    class _Mem_fn<_Res (_Class::*)(_ArgTypes...) const>
-    : public _Maybe_unary_or_binary_function<_Res, const _Class*,
-					     _ArgTypes...>
-    {
-      typedef _Res (_Class::*_Functor)(_ArgTypes...) const;
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __object, const volatile _Class *,
-		_Args&&... __args) const
-	{
-	  return (std::forward<_Tp>(__object).*__pmf)
-	    (std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __ptr, const volatile void *, _Args&&... __args) const
-	{ return ((*__ptr).*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	using _RequireValidArgs
-	  = _Require<_AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<const _Class*, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs3
-	  = _Require<is_base_of<_Class, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-    public:
-      typedef _Res result_type;
-
-      explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
-
-      // Handle objects
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const _Class& __object, _Args&&... __args) const
-	{ return (__object.*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const _Class&& __object, _Args&&... __args) const
-	{
-	  return (std::move(__object).*__pmf)(std::forward<_Args>(__args)...);
-	}
-
-      // Handle pointers
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const _Class* __object, _Args&&... __args) const
-	{ return (__object->*__pmf)(std::forward<_Args>(__args)...); }
-
-      // Handle smart pointers, references and pointers to derived
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs2<_Tp, _Args...>>
-	_Res operator()(_Tp&& __object, _Args&&... __args) const
-	{
-	  return _M_call(std::forward<_Tp>(__object), &__object,
-	      std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs3<_Tp, _Args...>>
-	_Res
-	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
-	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
-
-    private:
-      _Functor __pmf;
-    };
-
-  /// Implementation of @c mem_fn for volatile member function pointers.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    class _Mem_fn<_Res (_Class::*)(_ArgTypes...) volatile>
-    : public _Maybe_unary_or_binary_function<_Res, volatile _Class*,
-					     _ArgTypes...>
-    {
-      typedef _Res (_Class::*_Functor)(_ArgTypes...) volatile;
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __object, const volatile _Class *,
-		_Args&&... __args) const
-	{
-	  return (std::forward<_Tp>(__object).*__pmf)
-	    (std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __ptr, const volatile void *, _Args&&... __args) const
-	{ return ((*__ptr).*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	using _RequireValidArgs
-	  = _Require<_AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<volatile _Class*, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs3
-	  = _Require<is_base_of<_Class, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-    public:
-      typedef _Res result_type;
-
-      explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
-
-      // Handle objects
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(volatile _Class& __object, _Args&&... __args) const
-	{ return (__object.*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(volatile _Class&& __object, _Args&&... __args) const
-	{
-	  return (std::move(__object).*__pmf)(std::forward<_Args>(__args)...);
-	}
-
-      // Handle pointers
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(volatile _Class* __object, _Args&&... __args) const
-	{ return (__object->*__pmf)(std::forward<_Args>(__args)...); }
-
-      // Handle smart pointers, references and pointers to derived
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs2<_Tp, _Args...>>
-	_Res
-	operator()(_Tp&& __object, _Args&&... __args) const
-	{
-	  return _M_call(std::forward<_Tp>(__object), &__object,
-	      std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs3<_Tp, _Args...>>
-	_Res
-	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
-	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
-
-    private:
-      _Functor __pmf;
-    };
-
-  /// Implementation of @c mem_fn for const volatile member function pointers.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    class _Mem_fn<_Res (_Class::*)(_ArgTypes...) const volatile>
-    : public _Maybe_unary_or_binary_function<_Res, const volatile _Class*,
-					     _ArgTypes...>
-    {
-      typedef _Res (_Class::*_Functor)(_ArgTypes...) const volatile;
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __object, const volatile _Class *,
-		_Args&&... __args) const
-	{
-	  return (std::forward<_Tp>(__object).*__pmf)
-	    (std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args>
-	_Res
-	_M_call(_Tp&& __ptr, const volatile void *, _Args&&... __args) const
-	{ return ((*__ptr).*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	using _RequireValidArgs
-	  = _Require<_AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>,
-		     _NotSame<const volatile _Class*, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs3
-	  = _Require<is_base_of<_Class, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
-
-    public:
-      typedef _Res result_type;
-
-      explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
-
-      // Handle objects
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const volatile _Class& __object, _Args&&... __args) const
-	{ return (__object.*__pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const volatile _Class&& __object, _Args&&... __args) const
-	{
-	  return (std::move(__object).*__pmf)(std::forward<_Args>(__args)...);
-	}
-
-      // Handle pointers
-      template<typename... _Args, typename _Req = _RequireValidArgs<_Args...>>
-	_Res
-	operator()(const volatile _Class* __object, _Args&&... __args) const
-	{ return (__object->*__pmf)(std::forward<_Args>(__args)...); }
-
-      // Handle smart pointers, references and pointers to derived
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs2<_Tp, _Args...>>
-	_Res operator()(_Tp&& __object, _Args&&... __args) const
-	{
-	  return _M_call(std::forward<_Tp>(__object), &__object,
-	      std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp, typename... _Args,
-	       typename _Req = _RequireValidArgs3<_Tp, _Args...>>
-	_Res
-	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
-	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
-
-    private:
-      _Functor __pmf;
-    };
-
-
-  template<typename _Tp, bool>
-    struct _Mem_fn_const_or_non
-    {
-      typedef const _Tp& type;
-    };
-
-  template<typename _Tp>
-    struct _Mem_fn_const_or_non<_Tp, false>
-    {
-      typedef _Tp& type;
-    };
-
+  // Partial specialization for member object pointers.
   template<typename _Res, typename _Class>
-    class _Mem_fn<_Res _Class::*>
+    class _Mem_fn_base<_Res _Class::*, false>
     {
       using __pm_type = _Res _Class::*;
 
@@ -852,56 +739,56 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	auto
 	_M_call(_Tp&& __object, const _Class *) const noexcept
 	-> decltype(std::forward<_Tp>(__object).*std::declval<__pm_type&>())
-	{ return std::forward<_Tp>(__object).*__pm; }
+	{ return std::forward<_Tp>(__object).*_M_pm; }
 
       template<typename _Tp, typename _Up>
 	auto
 	_M_call(_Tp&& __object, _Up * const *) const noexcept
 	-> decltype((*std::forward<_Tp>(__object)).*std::declval<__pm_type&>())
-	{ return (*std::forward<_Tp>(__object)).*__pm; }
+	{ return (*std::forward<_Tp>(__object)).*_M_pm; }
 
       template<typename _Tp>
 	auto
 	_M_call(_Tp&& __ptr, const volatile void*) const
 	noexcept(noexcept((*__ptr).*std::declval<__pm_type&>()))
 	-> decltype((*__ptr).*std::declval<__pm_type&>())
-	{ return (*__ptr).*__pm; }
+	{ return (*__ptr).*_M_pm; }
 
     public:
       explicit
-      _Mem_fn(_Res _Class::*__pm) noexcept : __pm(__pm) { }
+      _Mem_fn_base(_Res _Class::*__pm) noexcept : _M_pm(__pm) { }
 
       // Handle objects
       _Res&
       operator()(_Class& __object) const noexcept
-      { return __object.*__pm; }
+      { return __object.*_M_pm; }
 
       const _Res&
       operator()(const _Class& __object) const noexcept
-      { return __object.*__pm; }
+      { return __object.*_M_pm; }
 
       _Res&&
       operator()(_Class&& __object) const noexcept
-      { return std::forward<_Class>(__object).*__pm; }
+      { return std::forward<_Class>(__object).*_M_pm; }
 
       const _Res&&
       operator()(const _Class&& __object) const noexcept
-      { return std::forward<const _Class>(__object).*__pm; }
+      { return std::forward<const _Class>(__object).*_M_pm; }
 
       // Handle pointers
       _Res&
       operator()(_Class* __object) const noexcept
-      { return __object->*__pm; }
+      { return __object->*_M_pm; }
 
       const _Res&
       operator()(const _Class* __object) const noexcept
-      { return __object->*__pm; }
+      { return __object->*_M_pm; }
 
       // Handle smart pointers and derived
       template<typename _Tp, typename _Req = _Require<_NotSame<_Class*, _Tp>>>
 	auto
 	operator()(_Tp&& __unknown) const
-	noexcept(noexcept(std::declval<_Mem_fn*>()->_M_call
+	noexcept(noexcept(std::declval<_Mem_fn_base*>()->_M_call
 			  (std::forward<_Tp>(__unknown), &__unknown)))
 	-> decltype(this->_M_call(std::forward<_Tp>(__unknown), &__unknown))
 	{ return _M_call(std::forward<_Tp>(__unknown), &__unknown); }
@@ -909,12 +796,19 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       template<typename _Tp, typename _Req = _Require<is_base_of<_Class, _Tp>>>
 	auto
 	operator()(reference_wrapper<_Tp> __ref) const
-	noexcept(noexcept(std::declval<_Mem_fn&>()(__ref.get())))
+	noexcept(noexcept(std::declval<_Mem_fn_base&>()(__ref.get())))
 	-> decltype((*this)(__ref.get()))
 	{ return (*this)(__ref.get()); }
 
     private:
-      _Res _Class::*__pm;
+      _Res _Class::*_M_pm;
+    };
+
+  template<typename _Res, typename _Class>
+    struct _Mem_fn<_Res _Class::*>
+    : _Mem_fn_base<_Res _Class::*>
+    {
+      using _Mem_fn_base<_Res _Class::*>::_Mem_fn_base;
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
