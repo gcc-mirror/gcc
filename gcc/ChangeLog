@@ -1,3 +1,8 @@
+2014-11-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* input.c (expand_location_to_spelling_point): Fix typo.
+	(expansion_point_location_if_in_system_header): Fix comment.
+
 2014-11-03  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
 	* config/avr/gen-avr-mmcu-specs.c: Remove unnecessary format specifier.
