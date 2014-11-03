@@ -1,6 +1,5 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-options "-O1 -fprefetch-loop-arrays -march=athlon" } */
-/* { dg-require-effective-target ilp32 } */
 
 int length1();
 int g(int);
