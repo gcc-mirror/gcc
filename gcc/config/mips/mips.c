@@ -976,6 +976,20 @@ static const struct mips_rtx_cost_data
                      4,		  /* branch_cost */
                      4		  /* memory_latency */
   },
+    /* Octeon III */
+  {
+    COSTS_N_INSNS (6),            /* fp_add */
+    COSTS_N_INSNS (6),            /* fp_mult_sf */
+    COSTS_N_INSNS (7),            /* fp_mult_df */
+    COSTS_N_INSNS (25),           /* fp_div_sf */
+    COSTS_N_INSNS (48),           /* fp_div_df */
+    COSTS_N_INSNS (6),            /* int_mult_si */
+    COSTS_N_INSNS (6),            /* int_mult_di */
+    COSTS_N_INSNS (18),           /* int_div_si */
+    COSTS_N_INSNS (35),           /* int_div_di */
+                     4,		  /* branch_cost */
+                     4		  /* memory_latency */
+  },
   { /* R3900 */
     COSTS_N_INSNS (2),            /* fp_add */
     COSTS_N_INSNS (4),            /* fp_mult_sf */
@@ -13177,6 +13191,7 @@ mips_issue_rate (void)
     case PROCESSOR_R9000:
     case PROCESSOR_OCTEON:
     case PROCESSOR_OCTEON2:
+    case PROCESSOR_OCTEON3:
       return 2;
 
     case PROCESSOR_SB1:

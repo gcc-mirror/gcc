@@ -230,8 +230,10 @@ struct mips_cpu_info {
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
 #define TARGET_OCTEON		    (mips_arch == PROCESSOR_OCTEON	\
-				     || mips_arch == PROCESSOR_OCTEON2)
-#define TARGET_OCTEON2		    (mips_arch == PROCESSOR_OCTEON2)
+				     || mips_arch == PROCESSOR_OCTEON2	\
+				     || mips_arch == PROCESSOR_OCTEON3)
+#define TARGET_OCTEON2		    (mips_arch == PROCESSOR_OCTEON2	\
+				     || mips_arch == PROCESSOR_OCTEON3)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
@@ -261,7 +263,8 @@ struct mips_cpu_info {
 #define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
 #define TUNE_OCTEON		    (mips_tune == PROCESSOR_OCTEON	\
-				     || mips_tune == PROCESSOR_OCTEON2)
+				     || mips_tune == PROCESSOR_OCTEON2	\
+				     || mips_tune == PROCESSOR_OCTEON3)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
 				     || mips_tune == PROCESSOR_SB1A)
 #define TUNE_P5600                  (mips_tune == PROCESSOR_P5600)

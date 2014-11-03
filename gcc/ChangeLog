@@ -1,3 +1,54 @@
+2014-11-03  Andrew Pinski  <apinski@cavium.com>
+
+	* config/mips/mips-cpus.def (octeon3): New cpu.
+	* config/mips/mips.c (mips_rtx_cost_data): Add octeon3.
+	(mips_print_operand <case 'T', case 't'>): Fix a bug as the mode
+	of the comparison no longer matches mode of the operands.
+	(mips_issue_rate): Handle PROCESSOR_OCTEON3.
+	* config/mips/mips.h (TARGET_OCTEON):  Add Octeon3.
+	(TARGET_OCTEON2): Likewise.
+	(TUNE_OCTEON): Add Octeon3.
+	* config/mips/mips.md (processor): Add octeon3.
+	* config/mips/octeon.md (octeon_fpu): New automaton and cpu_unit.
+	(octeon_arith): Add octeon3.
+	(octeon_condmove): Remove.
+	(octeon_condmove_o1): New reservation.
+	(octeon_condmove_o2): New reservation.
+	(octeon_condmove_o3_int_on_cc): New reservation.
+	(octeon_load_o2): Add octeon3.
+	(octeon_cop_o2): Likewise.
+	(octeon_store): Likewise.
+	(octeon_brj_o2): Likewise.
+	(octeon_imul3_o2): Likewise.
+	(octeon_imul_o2): Likewise.
+	(octeon_mfhilo_o2): Likewise.
+	(octeon_imadd_o2): Likewise.
+	(octeon_idiv_o2_si): Likewise.
+	(octeon_idiv_o2_di): Likewise.
+	(octeon_fpu): Add to the automaton.
+	(octeon_fpu): New cpu unit.
+	(octeon_condmove_o2): Check for non floating point modes.
+	(octeon_load_o2): Add prefetchx.
+	(octeon_cop_o2): Don't check for octeon3.
+	(octeon3_faddsubcvt): New reservation.
+	(octeon3_fmul): Likewise.
+	(octeon3_fmadd): Likewise.
+	(octeon3_div_sf): Likewise.
+	(octeon3_div_df): Likewise.
+	(octeon3_sqrt_sf): Likewise.
+	(octeon3_sqrt_df): Likewise.
+	(octeon3_rsqrt_sf): Likewise.
+	(octeon3_rsqrt_df): Likewise.
+	(octeon3_fabsnegmov): Likewise.
+	(octeon_fcond): Likewise.
+	(octeon_fcondmov): Likewise.
+	(octeon_fpmtc1): Likewise.
+	(octeon_fpmfc1): Likewise.
+	(octeon_fpload): Likewise.
+	(octeon_fpstore): Likewise.
+	* config/mips/mips-tables.opt: Regenerate.
+	* doc/invoke.texi (-march=@var{arch}): Add octeon3.
+
 2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* ifcvt.c (noce_emit_cmove, noce_get_alt_condition, noce_get_condition):
