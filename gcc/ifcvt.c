@@ -1394,11 +1394,22 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
       if (target)
 	{
+	  int old_cost, new_cost, insn_cost;
+	  int speed_p;
+
 	  if (target != if_info->x)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
 	  if (!seq)
+	    return FALSE;
+
+	  speed_p = optimize_bb_for_speed_p (BLOCK_FOR_INSN (if_info->insn_a));
+	  insn_cost = insn_rtx_cost (PATTERN (if_info->insn_a), speed_p);
+	  old_cost = COSTS_N_INSNS (if_info->branch_cost) + insn_cost;
+	  new_cost = seq_cost (seq, speed_p);
+
+	  if (new_cost > old_cost)
 	    return FALSE;
 
 	  emit_insn_before_setloc (seq, if_info->jump,

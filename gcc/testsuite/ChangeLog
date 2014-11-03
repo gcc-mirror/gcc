@@ -1,3 +1,7 @@
+2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/ifcvt-size-check.c: New test.
+
 2014-11-03  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/mips/octeon3-pipe-1.c: New test.
