@@ -1,3 +1,8 @@
+2014-11-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/60770
+	* gcc.dg/tree-ssa/pr60770-1.c: New file.
+
 2014-11-03  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.target/i386/i386.exp: Extend option set to test
