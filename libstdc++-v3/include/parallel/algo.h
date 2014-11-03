@@ -81,9 +81,8 @@ namespace __parallel
   template<typename _RAIter, typename _Function>
     _Function
     __for_each_switch(_RAIter __begin, _RAIter __end, 
-                    _Function __f, random_access_iterator_tag, 
-                    __gnu_parallel::_Parallelism __parallelism_tag
-                    = __gnu_parallel::parallel_balanced)
+                    _Function __f, random_access_iterator_tag,
+                    __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -896,8 +895,7 @@ namespace __parallel
     typename iterator_traits<_RAIter>::difference_type
     __count_switch(_RAIter __begin, _RAIter __end, 
                  const _Tp& __value, random_access_iterator_tag, 
-                 __gnu_parallel::_Parallelism __parallelism_tag 
-                 = __gnu_parallel::parallel_unbalanced)
+                 __gnu_parallel::_Parallelism __parallelism_tag)
     {
       typedef iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
@@ -966,8 +964,7 @@ namespace __parallel
     typename iterator_traits<_RAIter>::difference_type
     __count_if_switch(_RAIter __begin, _RAIter __end, 
                     _Predicate __pred, random_access_iterator_tag,
-                    __gnu_parallel::_Parallelism __parallelism_tag
-                    = __gnu_parallel::parallel_unbalanced)
+                    __gnu_parallel::_Parallelism __parallelism_tag)
     {
       typedef iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
@@ -1225,8 +1222,7 @@ namespace __parallel
     __transform1_switch(_RAIter1 __begin, _RAIter1 __end,
                       _RAIter2 __result, _UnaryOperation __unary_op,
                       random_access_iterator_tag, random_access_iterator_tag,
-                      __gnu_parallel::_Parallelism __parallelism_tag
-                      = __gnu_parallel::parallel_balanced)
+                      __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -1315,8 +1311,7 @@ namespace __parallel
                       _RAIter3 __result, _BinaryOperation __binary_op,
                       random_access_iterator_tag, random_access_iterator_tag,
                       random_access_iterator_tag,
-                      __gnu_parallel::_Parallelism __parallelism_tag 
-                      = __gnu_parallel::parallel_balanced)
+                      __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             (__end1 - __begin1) >=
@@ -1422,8 +1417,7 @@ namespace __parallel
     __replace_switch(_RAIter __begin, _RAIter __end, 
                    const _Tp& __old_value, const _Tp& __new_value, 
                    random_access_iterator_tag, 
-                   __gnu_parallel::_Parallelism __parallelism_tag
-                   = __gnu_parallel::parallel_balanced)
+                   __gnu_parallel::_Parallelism __parallelism_tag)
     {
       // XXX parallel version is where?
       replace(__begin, __end, __old_value, __new_value, 
@@ -1478,8 +1472,7 @@ namespace __parallel
     __replace_if_switch(_RAIter __begin, _RAIter __end,
                       _Predicate __pred, const _Tp& __new_value,
                       random_access_iterator_tag,
-                      __gnu_parallel::_Parallelism __parallelism_tag
-                      = __gnu_parallel::parallel_balanced)
+                      __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -1544,8 +1537,7 @@ namespace __parallel
     void
     __generate_switch(_RAIter __begin, _RAIter __end,
                     _Generator __gen, random_access_iterator_tag, 
-                    __gnu_parallel::_Parallelism __parallelism_tag
-                    = __gnu_parallel::parallel_balanced)
+                    __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -1608,8 +1600,7 @@ namespace __parallel
     inline _RAIter
     __generate_n_switch(_RAIter __begin, _Size __n, _Generator __gen, 
                       random_access_iterator_tag, 
-                      __gnu_parallel::_Parallelism __parallelism_tag
-                      = __gnu_parallel::parallel_balanced)
+                      __gnu_parallel::_Parallelism __parallelism_tag)
     {
       // XXX parallel version is where?
       return generate_n(__begin, __n, __gen, __gnu_parallel::sequential_tag());
@@ -2204,8 +2195,7 @@ namespace __parallel
     _RAIter
     __max_element_switch(_RAIter __begin, _RAIter __end, 
                        _Compare __comp, random_access_iterator_tag, 
-                       __gnu_parallel::_Parallelism __parallelism_tag
-                       = __gnu_parallel::parallel_balanced)
+			 __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -2296,8 +2286,7 @@ namespace __parallel
     _RAIter
     __min_element_switch(_RAIter __begin, _RAIter __end, 
                        _Compare __comp, random_access_iterator_tag, 
-                       __gnu_parallel::_Parallelism __parallelism_tag
-                       = __gnu_parallel::parallel_balanced)
+                       __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
