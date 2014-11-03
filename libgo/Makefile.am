@@ -15,7 +15,7 @@ endif
 
 SUBDIRS = ${subdirs}
 
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell $(GOC) -dumpversion)
 
 MAINT_CHARSET = latin1
 
