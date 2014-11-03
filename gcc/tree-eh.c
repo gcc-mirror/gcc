@@ -2436,11 +2436,6 @@ operation_could_trap_helper_p (enum tree_code op,
     case UNEQ_EXPR:
       return honor_snans;
 
-    case CONVERT_EXPR:
-    case FIX_TRUNC_EXPR:
-      /* Conversion of floating point might trap.  */
-      return honor_nans;
-
     case NEGATE_EXPR:
     case ABS_EXPR:
     case CONJ_EXPR:

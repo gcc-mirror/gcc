@@ -1739,6 +1739,10 @@ gimplify_conversion (tree *expr_p)
     *expr_p = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (*expr_p),
 			       TREE_OPERAND (*expr_p, 0));
 
+  /* Canonicalize CONVERT_EXPR to NOP_EXPR.  */
+  if (TREE_CODE (*expr_p) == CONVERT_EXPR)
+    TREE_SET_CODE (*expr_p, NOP_EXPR);
+
   return GS_OK;
 }
 

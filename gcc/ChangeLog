@@ -1,3 +1,10 @@
+2014-11-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-eh.c (operation_could_trap_helper_p): Handle conversions
+	like ordinary operations.
+	* gimplify.c (gimplify_conversion): Gimplify CONVERT_EXPR
+	as NOP_EXPR.
+
 2014-11-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (TARGET_GLIBC_MAJOR, TARGET_GLIBC_MINOR): Define
