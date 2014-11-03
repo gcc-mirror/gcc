@@ -66,7 +66,6 @@ proc libgomp_init { args } {
     global srcdir blddir objdir tool_root_dir
     global libgomp_initialized
     global tmpdir
-    global blddir
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global CFLAGS
@@ -118,7 +117,7 @@ proc libgomp_init { args } {
     }
 
     # Compute what needs to be put into LD_LIBRARY_PATH
-    set always_ld_library_path ".:${blddir}/.libs"
+    set always_ld_library_path "."
 
     global offload_additional_lib_paths
     if { $offload_additional_lib_paths != "" } {
@@ -157,6 +156,8 @@ proc libgomp_init { args } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+
+	append always_ld_library_path ":${blddir}/.libs"
     }
     # The top-level include directory, for gomp-constants.h.
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"

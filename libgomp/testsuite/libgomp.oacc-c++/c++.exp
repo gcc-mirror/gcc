@@ -68,7 +68,8 @@ if { $lang_test_file_found } {
     set_ld_library_path_env_vars
 
     set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
-    if { [file exists $flags_file] } {
+    if { $blddir != ""
+	 && [file exists $flags_file] } {
 	set lang_source_re {^.*\.[cC]$}
 	set lang_include_flags [exec sh $flags_file --build-includes]
     }
