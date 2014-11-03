@@ -1,3 +1,7 @@
+2014-11-03  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* config/avr/gen-avr-mmcu-specs.c: Remove unnecessary format specifier.
+
 2014-11-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-eh.c (operation_could_trap_helper_p): Handle conversions
