@@ -1,5 +1,22 @@
 2014-11-03  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/60770
+	* tree-into-ssa.c (rewrite_update_stmt): Return whether the
+	statement should be removed.
+	(maybe_register_def): Likewise. Replace clobbers with default
+	definitions.
+	(rewrite_dom_walker::before_dom_children): Remove statement if
+	rewrite_update_stmt says so.
+	* tree-ssa-live.c: Include tree-ssa.h.
+	(set_var_live_on_entry): Do not mark undefined variables as live.
+	(verify_live_on_entry): Do not check undefined variables.
+	* tree-ssa.h (ssa_undefined_value_p): New parameter for the case
+	of partially undefined variables.
+	* tree-ssa.c (ssa_undefined_value_p): Likewise.
+	(execute_update_addresses_taken): Do not drop clobbers.
+
+2014-11-03  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR tree-optimization/63666
 	* fold-const.c: Include "optabs.h".
 	(fold_ternary_loc) <VEC_PERM_EXPR>: Avoid canonicalizing a

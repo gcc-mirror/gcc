@@ -51,7 +51,7 @@ extern void delete_tree_ssa (void);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
 
-extern bool ssa_undefined_value_p (tree);
+extern bool ssa_undefined_value_p (tree, bool = true);
 extern void execute_update_addresses_taken (void);
 
 /* Given an edge_var_map V, return the PHI arg definition.  */
