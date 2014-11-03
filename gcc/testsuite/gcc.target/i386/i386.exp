@@ -361,9 +361,9 @@ clearcap-init
 
 global runtests
 # Special case compilation of vect-args.c so we don't have to
-# replicate it 10 times.
+# replicate it 16 times.
 if [runtest_file_p $runtests $srcdir/$subdir/vect-args.c] {
-  foreach type { "" -mmmx -m3dnow -msse -msse2 } {
+  foreach type { "" -mmmx -m3dnow -msse -msse2 -mavx -mavx2 -mavx512f } {
     foreach level { "" -O } {
       set flags "$type $level"
       verbose -log "Testing vect-args, $flags" 1
