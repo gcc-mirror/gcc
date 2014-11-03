@@ -27,7 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 (define_predicates
    integer_onep integer_zerop integer_all_onesp
    real_zerop real_onep
-   CONSTANT_CLASS_P)
+   CONSTANT_CLASS_P
+   tree_expr_nonnegative_p)
 
 
 /* Simplifications of operations with one constant operand and
@@ -104,11 +105,18 @@ along with GCC; see the file COPYING3.  If not see
   (bitop @0 @0)
   (non_lvalue @0)))
 
+(simplify
+ (abs (negate @0))
+ (abs @0))
+(simplify
+ (abs tree_expr_nonnegative_p@0)
+ @0)
+
 
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */
-(for cvt (convert view_convert)
+(for cvt (convert view_convert float fix_trunc)
  (simplify
   (cvt @0)
   (if ((GIMPLE && useless_type_conversion_p (type, TREE_TYPE (@0)))
