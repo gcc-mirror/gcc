@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "generic-match.h"
+#include "optabs.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -14196,16 +14197,19 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
-	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i, mask;
-	  unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
+	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i, mask, mask2;
+	  unsigned char *sel = XALLOCAVEC (unsigned char, 2 * nelts);
+	  unsigned char *sel2 = sel + nelts;
 	  bool need_mask_canon = false;
+	  bool need_mask_canon2 = false;
 	  bool all_in_vec0 = true;
 	  bool all_in_vec1 = true;
 	  bool maybe_identity = true;
 	  bool single_arg = (op0 == op1);
 	  bool changed = false;
 
-	  mask = single_arg ? (nelts - 1) : (2 * nelts - 1);
+	  mask2 = 2 * nelts - 1;
+	  mask = single_arg ? (nelts - 1) : mask2;
 	  gcc_assert (nelts == VECTOR_CST_NELTS (arg2));
 	  for (i = 0; i < nelts; i++)
 	    {
@@ -14216,13 +14220,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      /* Make sure that the perm value is in an acceptable
 		 range.  */
 	      wide_int t = val;
-	      if (wi::gtu_p (t, mask))
-		{
-		  need_mask_canon = true;
-		  sel[i] = t.to_uhwi () & mask;
-		}
-	      else
-		sel[i] = t.to_uhwi ();
+	      need_mask_canon |= wi::gtu_p (t, mask);
+	      need_mask_canon2 |= wi::gtu_p (t, mask2);
+	      sel[i] = t.to_uhwi () & mask;
+	      sel2[i] = t.to_uhwi () & mask2;
 
 	      if (sel[i] < nelts)
 		all_in_vec1 = false;
@@ -14263,6 +14264,17 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
 	  if (op0 == op1 && !single_arg)
 	    changed = true;
+
+	  /* Some targets are deficient and fail to expand a single
+	     argument permutation while still allowing an equivalent
+	     2-argument version.  */
+	  if (need_mask_canon && arg2 == op2
+	      && !can_vec_perm_p (TYPE_MODE (type), false, sel)
+	      && can_vec_perm_p (TYPE_MODE (type), false, sel2))
+	    {
+	      need_mask_canon = need_mask_canon2;
+	      sel = sel2;
+	    }
 
 	  if (need_mask_canon && arg2 == op2)
 	    {
