@@ -26700,6 +26700,16 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibc_version_major.$glibc_version_minor" >&5
 $as_echo "$glibc_version_major.$glibc_version_minor" >&6; }
 
+cat >>confdefs.h <<_ACEOF
+#define TARGET_GLIBC_MAJOR $glibc_version_major
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define TARGET_GLIBC_MINOR $glibc_version_minor
+_ACEOF
+
+
 # Check whether --enable-gnu-unique-object was given.
 if test "${enable_gnu_unique_object+set}" = set; then :
   enableval=$enable_gnu_unique_object; case $enable_gnu_unique_object in

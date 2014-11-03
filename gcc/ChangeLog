@@ -1,3 +1,20 @@
+2014-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (TARGET_GLIBC_MAJOR, TARGET_GLIBC_MINOR): Define
+	macros.
+	* configure, config.h.in: Regenerate.
+	* config/rs6000/linux.h [TARGET_GLIBC_MAJOR > 2 ||
+	(TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)]
+	(RS6000_GLIBC_ATOMIC_FENV): New macro.
+	* config/rs6000/linux64.h [TARGET_GLIBC_MAJOR > 2 ||
+	(TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)]
+	(RS6000_GLIBC_ATOMIC_FENV): New macro.
+	* config/rs6000/rs6000.c (atomic_hold_decl, atomic_clear_decl)
+	(atomic_update_decl): New static variables.
+	(rs6000_atomic_assign_expand_fenv) [RS6000_GLIBC_ATOMIC_FENV]:
+	Generate calls to __atomic_feholdexcept, __atomic_feclearexcept
+	and __atomic_feupdateenv for soft-float and no-FPRs.
+
 2014-11-03  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Add two abs patterns.  Announce tree_expr_nonnegative_p.

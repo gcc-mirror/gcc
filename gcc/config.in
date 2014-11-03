@@ -1699,15 +1699,18 @@
 #undef HAVE_WORKING_VFORK
 #endif
 
-/* Define if isl is in use. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_isl
-#endif
 
 /* Define if cloog is in use. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_cloog
 #endif
+
+
+/* Define if isl is in use. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_isl
+#endif
+
 
 /* Define if F_SETLKW supported by fcntl. */
 #ifndef USED_FOR_TARGET
@@ -1881,6 +1884,18 @@
 
 /* Define if your target C library provides the `dl_iterate_phdr' function. */
 #undef TARGET_DL_ITERATE_PHDR
+
+/* GNU C Library major version number used on the target, or 0. */
+#ifndef USED_FOR_TARGET
+#undef TARGET_GLIBC_MAJOR
+#endif
+
+
+/* GNU C Library minor version number used on the target, or 0. */
+#ifndef USED_FOR_TARGET
+#undef TARGET_GLIBC_MINOR
+#endif
+
 
 /* Define if your target C library provides stack protector support */
 #ifndef USED_FOR_TARGET
