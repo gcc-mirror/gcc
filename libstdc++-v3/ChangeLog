@@ -1,3 +1,14 @@
+2014-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57898
+	* include/std/functional (_Mem_fn_traits_base): New class template.
+	(_Mem_fn_traits): New class template with specializations for every
+	combination of cv-qualified and ref-qualified member function.
+	(_Mem_fn_base): New class template for all pointer to member function
+	types and partial specialization for pointer to member object types.
+	(_Mem_fn): Inherit from _Mem_fn_base.
+	* testsuite/20_util/function_objects/mem_fn/refqual.cc: New.
+
 2014-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_bvector.h (_Bvector_base): Use allocator_traits.
