@@ -515,6 +515,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       using __arg_types = _Pack<_ArgTypes...>;
       using __maybe_type
 	= _Maybe_unary_or_binary_function<_Res, _Class*, _ArgTypes...>;
+      using __arity = integral_constant<size_t, sizeof...(_ArgTypes)>;
     };
 
   template<typename _Res, typename _Class, typename... _ArgTypes>
@@ -634,6 +635,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
     public:
       using result_type = typename _Traits::__result_type;
+      using _Arity = typename _Traits::__arity;
 
     private:
       using _Class = typename _Traits::__class_type;
@@ -755,6 +757,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	{ return (*__ptr).*_M_pm; }
 
     public:
+      using _Arity = integral_constant<size_t, 0>;
+
       explicit
       _Mem_fn_base(_Res _Class::*__pm) noexcept : _M_pm(__pm) { }
 
@@ -1485,6 +1489,24 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     struct is_bind_expression<const volatile _Bind_result<_Result, _Signature>>
     : public true_type { };
 
+  template<typename _Func, typename... _BoundArgs>
+    struct _Bind_check_arity { };
+
+  template<typename _Ret, typename... _Args, typename... _BoundArgs>
+    struct _Bind_check_arity<_Ret (*)(_Args...), _BoundArgs...>
+    {
+      static_assert(sizeof...(_BoundArgs) == sizeof...(_Args),
+                   "Wrong number of arguments for function");
+    };
+
+  template<typename _Tp, typename _Class, typename... _BoundArgs>
+    struct _Bind_check_arity<_Tp _Class::*, _BoundArgs...>
+    {
+      using _Arity = typename _Mem_fn<_Tp _Class::*>::_Arity;
+      static_assert(sizeof...(_BoundArgs) == _Arity::value + 1,
+                   "Wrong number of arguments for pointer-to-member");
+    };
+
   // Trait type used to remove std::bind() from overload set via SFINAE
   // when first argument has integer type, so that std::bind() will
   // not be a better match than ::bind() from the BSD Sockets API.
@@ -1493,6 +1515,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   template<bool _SocketLike, typename _Func, typename... _BoundArgs>
     struct _Bind_helper
+    : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
     {
       typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
 	__maybe_type;
@@ -1525,6 +1548,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   template<typename _Result, typename _Func, typename... _BoundArgs>
     struct _Bindres_helper
+    : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
     {
       typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
 	__maybe_type;
@@ -1599,6 +1623,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   template<typename _Func, typename... _BoundArgs>
     struct _Bind_simple_helper
+    : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
     {
       typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
         __maybe_type;
