@@ -9,6 +9,12 @@
 	(_Mem_fn): Inherit from _Mem_fn_base.
 	* testsuite/20_util/function_objects/mem_fn/refqual.cc: New.
 
+	* include/std/functional (_Mem_fn_traits_base::__arity): New typedef.
+	(_Mem_fn_base::_Arity): New typedef.
+	(_Bind_check_arity): New class template.
+	(_Bind_helper, _Bindres_helper, _Bind_simple_helper): Check arity.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error.
+
 2014-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_bvector.h (_Bvector_base): Use allocator_traits.
