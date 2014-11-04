@@ -52,4 +52,4 @@ int main()
 }
 
 /* { dg-final-use { scan-ipa-dump-times "Indirect call -> direct call" 2 "profile" } } */
-
+/* { dg-final-use { cleanup-ipa-dump "profile" } } */
