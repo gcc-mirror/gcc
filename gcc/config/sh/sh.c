@@ -10024,7 +10024,7 @@ static GTY(()) tree fpscr_values;
 static void
 emit_fpu_switch (rtx scratch, int index)
 {
-  rtx dst, src;
+  rtx src;
 
   if (fpscr_values == NULL)
     {
