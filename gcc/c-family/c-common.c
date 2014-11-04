@@ -4314,9 +4314,15 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   /* If either arg is decimal float and the other is float, find the
      proper common type to use for comparison.  */
   else if (real1 && real2
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1))))
+    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+
+  /* If either arg is decimal float and the other is float, fail.  */
+  else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+    return 0;
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))
