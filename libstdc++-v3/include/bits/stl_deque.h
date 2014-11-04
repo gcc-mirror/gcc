@@ -503,23 +503,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
       _Deque_base(_Deque_base&& __x)
-      : _M_impl(std::move(__x._M_get_Tp_allocator()))
+      : _M_impl(__x._M_get_Tp_allocator())
       {
+	_M_initialize_map(0);
 	if (__x._M_impl._M_map)
-	  {
-	    this->_M_impl._M_swap_data(__x._M_impl);
-	    __try
-	      {
-		// Re-initialize __x using its moved-from allocator.
-		__x._M_initialize_map(0);
-	      }
-	    __catch (...)
-	      {
-		this->_M_impl._M_swap_data(__x._M_impl);
-		__x._M_get_Tp_allocator() = std::move(_M_get_Tp_allocator());
-		__throw_exception_again;
-	      }
-	  }
+	  this->_M_impl._M_swap_data(__x._M_impl);
       }
 
       _Deque_base(_Deque_base&& __x, const allocator_type& __a, size_type __n)

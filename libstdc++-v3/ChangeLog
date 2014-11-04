@@ -16,6 +16,10 @@
 	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error.
 	* testsuite/20_util/reference_wrapper/requirements.cc: New.
 
+	* include/bits/stl_deque.h (_Deque_base(_Deque_base&&)): Copy
+	allocator instead of moving.
+	* testsuite/23_containers/deque/allocator/move-2.cc: New.
+
 2014-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/algo.h: Do not use default arguments in function
