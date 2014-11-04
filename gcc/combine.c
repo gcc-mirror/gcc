@@ -5811,10 +5811,11 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    ;
 
 	  else if (STORE_FLAG_VALUE == -1
-	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
-	      && op1 == const0_rtx
-	      && (num_sign_bit_copies (op0, mode)
-		  == GET_MODE_PRECISION (mode)))
+		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
+		   && (num_sign_bit_copies (op0, mode)
+		       == GET_MODE_PRECISION (mode)))
 	    return gen_lowpart (mode,
 				expand_compound_operation (op0));
 

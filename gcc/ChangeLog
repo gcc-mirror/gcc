@@ -1,5 +1,8 @@
 2014-11-04  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* combine.c (combine_simplify_rtx): In STORE_FLAG_VALUE == -1 case,
+	also verify that mode is equal to the mode of op0.
+
 	* bb-reorder.c (get_uncond_jump_length): Avoid using delete_insn,
 	emit into a sequence instead.
 
