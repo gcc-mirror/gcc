@@ -1,3 +1,8 @@
+2014-11-04  Alan Lawrence  <alan.lawrence@arm.com>
+
+	config/arm/neon.md (reduc_plus_*): Rename to...
+	(reduc_plus_scal_*): ...this; reduce to temp and extract scalar result.
+
 2014-11-04  Michael Collison <michael.collison@linaro.org>
 
 	* config/aarch64/iterators.md (lconst_atomic): New mode attribute
