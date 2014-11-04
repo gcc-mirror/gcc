@@ -1582,18 +1582,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     {
       typedef typename result_of<_Callable(_Args...)>::type result_type;
 
-      template<typename... _Args2, typename = typename
-               enable_if< sizeof...(_Args) == sizeof...(_Args2)>::type>
+      template<typename _Tp, typename... _Up>
         explicit
-        _Bind_simple(const _Callable& __callable, _Args2&&... __args)
-        : _M_bound(__callable, std::forward<_Args2>(__args)...)
-        { }
-
-      template<typename... _Args2, typename = typename
-               enable_if< sizeof...(_Args) == sizeof...(_Args2)>::type>
-        explicit
-        _Bind_simple(_Callable&& __callable, _Args2&&... __args)
-        : _M_bound(std::move(__callable), std::forward<_Args2>(__args)...)
+        _Bind_simple(_Tp&& __f, _Up&&... __args)
+        : _M_bound(std::forward<_Tp>(__f), std::forward<_Up>(__args)...)
         { }
 
       _Bind_simple(const _Bind_simple&) = default;
@@ -1607,7 +1599,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       }
 
     private:
-
       template<std::size_t... _Indices>
         typename result_of<_Callable(_Args...)>::type
         _M_invoke(_Index_tuple<_Indices...>)
