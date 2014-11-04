@@ -117,9 +117,6 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 		     for this pointer.  Perhaps we can drop this one.
 		     But only if this check doesn't specify stricter
 		     alignment.  */
-		  int i;
-		  gimple g;
-
 		  while (!v.is_empty ())
 		    {
 		      gimple g = v.last ();
