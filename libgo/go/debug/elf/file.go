@@ -528,6 +528,9 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 	if f.Class == ELFCLASS64 && f.Machine == EM_PPC64 {
 		return f.applyRelocationsPPC64(dst, rels)
 	}
+	if f.Class == ELFCLASS64 && f.Machine == EM_S390 {
+		return f.applyRelocationsS390x(dst, rels)
+	}
 
 	return errors.New("not implemented")
 }
@@ -659,6 +662,47 @@ func (f *File) applyRelocationsPPC64(dst []byte, rels []byte) error {
 	return nil
 }
 
+func (f *File) applyRelocationsS390x(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewBuffer(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_390(rela.Info & 0xffff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+
+		switch t {
+		case R_390_64:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend)+uint64(sym.Value))
+		case R_390_32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend)+uint32(sym.Value))
+		}
+	}
+
+	return nil
+}
+
 func (f *File) DWARF() (*dwarf.Data, error) {
 	// There are many other DWARF sections, but these
 	// are the required ones, and the debug/dwarf package
@@ -681,7 +725,7 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 	// If there's a relocation table for .debug_info, we have to process it
 	// now otherwise the data in .debug_info is invalid for x86-64 objects.
 	rela := f.Section(".rela.debug_info")
-	if rela != nil && rela.Type == SHT_RELA && (f.Machine == EM_X86_64 || f.Machine == EM_PPC64) {
+	if rela != nil && rela.Type == SHT_RELA && (f.Machine == EM_X86_64 || f.Machine == EM_PPC64 || f.Machine == EM_S390) {
 		data, err := rela.Data()
 		if err != nil {
 			return nil, err
