@@ -1,3 +1,8 @@
+2014-11-04  Martin Jambor  <mjambor@suse.cz>
+
+	* g++/dg/ipa/devirt-40.C: Changed dump to not matching OBJ_TYPE_REF in
+	function body.
+
 2014-11-04  Jason Merrill  <jason@redhat.com>
 
 	* lib/g++-dg.exp (g++-dg-runtest): Change -std=c++1y to -std=c++14.
