@@ -943,9 +943,24 @@ go_reflect_makefunc_file = \
 go_reflect_makefunc_s_file = \
 	go/reflect/makefunc_386.S
 else
+if LIBGO_IS_S390
+go_reflect_makefunc_file = \
+	go/reflect/makefuncgo_s390.go
+go_reflect_makefunc_s_file = \
+	go/reflect/makefunc_s390.c
+else
+if LIBGO_IS_S390X
+go_reflect_makefunc_file = \
+	go/reflect/makefuncgo_s390x.go \
+	go/reflect/makefuncgo_s390.go
+go_reflect_makefunc_s_file = \
+	go/reflect/makefunc_s390.c
+else
 go_reflect_makefunc_file =
 go_reflect_makefunc_s_file = \
 	go/reflect/makefunc_dummy.c
+endif
+endif
 endif
 endif
 
