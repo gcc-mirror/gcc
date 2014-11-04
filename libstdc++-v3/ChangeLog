@@ -4,6 +4,8 @@
 	* include/experimental/optional (__constexpr_addressof): Likewise.
 	(_Optional_base, optional, make_optional): Likewise.
 
+	* include/std/functional (_Bind_simple): Simplify construction.
+
 2014-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/algo.h: Do not use default arguments in function
