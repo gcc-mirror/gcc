@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-O2 -mcpu=power6 -msched-groups" } */
 /* { dg-final { scan-assembler "ori 1,1,0" } } */
 

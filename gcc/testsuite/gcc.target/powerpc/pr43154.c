@@ -2,6 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-skip-if "" { powerpc*le-*-* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O2 -mcpu=power7" } */
 
 /* Make sure that vec_mergel and vec_mergeh are supported for V2DF/V2DI types.  */

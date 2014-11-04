@@ -1,5 +1,6 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=G3" } } */
 /* { dg-options "-mcpu=G3 -funwind-tables" } */
 /* { dg-final { scan-assembler "bl save_world" } } */
 /* { dg-final { scan-assembler ".byte\t0x6b" } } */

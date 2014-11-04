@@ -1,5 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-require-effective-target powerpc64 } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=G5" } } */
 /* { dg-options "-mcpu=G5" } */
 
 #include <stdlib.h>

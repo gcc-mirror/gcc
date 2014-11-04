@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-skip-if "" { powerpc_elfv2 } { "*" } { "" } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O2 -mcpu=power7" } */
 
 /* Verify that vs is 16-byte aligned in the absence of -mcompat-align-parm.  */

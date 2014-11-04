@@ -1,4 +1,5 @@
 /* { dg-require-effective-target stdint_types } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O2 -mcpu=power5" } */
 
 #include <stdint.h>
