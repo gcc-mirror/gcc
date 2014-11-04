@@ -1,3 +1,17 @@
+2014-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/devirt-44.C (dg-options): Remove -fdump-tree-optimized.
+	* g++.dg/ipa/devirt-45.C (dg-options): Ditto.
+	* g++.dg/tree-prof/morefunc.C (dg-final-use): Cleanup profile ipa dump.
+	* g++.dg/tree-prof/reorder.C (dg-final-use): Ditto.
+	* g++.dg/tree-prof/pr35545.C (dg-fina-use): Cleanup profile_estimate
+	ipa dump.
+	* gcc.dg/fold-reassoc-3.c (dg-final): Fix scan string.
+	Cleanup original tree dump.
+	* gcc.dg/tree-prof/20050826-2.c (dg-final-use): Cleanup dom1 tree dump.
+	* gcc.dg/tree-prof/cmpsf-1.c (dg-final-use): Ditto.
+	* gcc.dg/tree-ssa/pr61144.c (dg-final): Cleanup optimized tree dump.
+
 2014-11-04  Martin Jambor  <mjambor@suse.cz>
 
 	* g++/dg/ipa/devirt-40.C: Changed dump to not matching OBJ_TYPE_REF in
@@ -10,7 +24,6 @@
 
 2014-11-04  Andrew Stubbs  <ams@codesourcery.com>
 
-	gcc/testsuite/
 	* gcc.target/powerpc/pr60102.c: Move dg-skip-if after dg-options.
 	* gcc.target/powerpc/swaps-p8-12.c: Skip test if there would be
 	conflicting -mcpu options.
@@ -2256,10 +2269,10 @@
 
 	* gcc.dg/tree-prof/peel-1.c: Update.
 	* gcc.dg/tree-prof/unroll-1.c: Update.
-	* gcc.dg/gcc.dg/unroll_1.c: Update.
-	* gcc.dg/gcc.dg/unroll_2.c: Update.
-	* gcc.dg/gcc.dg/unroll_3.c: Update.
-	* gcc.dg/gcc.dg/unroll_4.c: Update.
+	* gcc.dg/unroll_1.c: Update.
+	* gcc.dg/unroll_2.c: Update.
+	* gcc.dg/unroll_3.c: Update.
+	* gcc.dg/unroll_4.c: Update.
 
 2014-10-14  DJ Delorie  <dj@redhat.com>
 

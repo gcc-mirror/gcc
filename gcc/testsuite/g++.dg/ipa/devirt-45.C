@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-ipa-cp -fdump-ipa-inline-details -fno-early-inlining -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-ipa-cp -fdump-ipa-inline-details -fno-early-inlining" } */
 struct A {
   virtual int foo () {return 1;}
   int wrapfoo () {foo();}
