@@ -1,3 +1,7 @@
+2014-11-04  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/sh/sh.c (emit_fpu_switch): Drop unused automatic variable.
+
 2014-11-04  Alan Lawrence  <alan.lawrence@arm.com>
 
 	config/arm/neon.md (reduc_smin_<mode> *2): Rename to...
