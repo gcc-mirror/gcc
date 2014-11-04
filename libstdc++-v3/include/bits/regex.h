@@ -97,14 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       struct _RegexMask
 	{
-	  typedef typename std::ctype<char_type>::mask _BaseType;
+	  typedef std::ctype_base::mask _BaseType;
 	  _BaseType _M_base;
 	  unsigned char _M_extended;
 	  static constexpr unsigned char _S_under = 1 << 0;
-	  // FIXME: _S_blank should be removed in the future,
-	  // when locale's complete.
-	  static constexpr unsigned char _S_blank = 1 << 1;
-	  static constexpr unsigned char _S_valid_mask = 0x3;
+	  static constexpr unsigned char _S_valid_mask = 0x1;
 
 	  constexpr _RegexMask(_BaseType __base = 0,
 			       unsigned char __extended = 0)

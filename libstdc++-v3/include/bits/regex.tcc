@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{"s", ctype_base::space},
 	{"alnum", ctype_base::alnum},
 	{"alpha", ctype_base::alpha},
-	{"blank", {0, _RegexMask::_S_blank}},
+	{"blank", ctype_base::blank},
 	{"cntrl", ctype_base::cntrl},
 	{"digit", ctype_base::digit},
 	{"graph", ctype_base::graph},
@@ -377,11 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __fctyp.is(__f._M_base, __c)
 	// [[:w:]]
 	|| ((__f._M_extended & _RegexMask::_S_under)
-	    && __c == __fctyp.widen('_'))
-	// [[:blank:]]
-	|| ((__f._M_extended & _RegexMask::_S_blank)
-	    && (__c == __fctyp.widen(' ')
-		|| __c == __fctyp.widen('\t')));
+	    && __c == __fctyp.widen('_'));
     }
 
   template<typename _Ch_type>
