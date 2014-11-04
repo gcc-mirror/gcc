@@ -28,6 +28,7 @@ extern rtx_insn *asan_emit_stack_protection (rtx, rtx, unsigned int,
 extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
+extern bool asan_expand_check_ifn (gimple_stmt_iterator *, bool);
 
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
