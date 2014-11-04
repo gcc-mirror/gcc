@@ -1,3 +1,15 @@
+2014-11-04  Michael Collison <michael.collison@linaro.org>
+
+	* config/aarch64/iterators.md (lconst_atomic): New mode attribute
+	to support constraints for CONST_INT in atomic operations.
+	* config/aarch64/atomics.md
+	(atomic_<atomic_optab><mode>): Use lconst_atomic constraint.
+	(atomic_nand<mode>): Likewise.
+	(atomic_fetch_<atomic_optab><mode>): Likewise.
+	(atomic_fetch_nand<mode>): Likewise.
+	(atomic_<atomic_optab>_fetch<mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+
 2014-11-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix typo in definition
