@@ -678,11 +678,13 @@ go_force_record_alignment (struct obstack *ob, const char *type_string,
 
 static bool
 go_format_type (struct godump_container *container, tree type,
-		bool use_type_name, bool is_func_ok, unsigned int *p_art_i)
+		bool use_type_name, bool is_func_ok, unsigned int *p_art_i,
+		bool is_anon_record_or_union)
 {
   bool ret;
   struct obstack *ob;
   unsigned int art_i_dummy;
+  bool is_union = false;
 
   if (p_art_i == NULL)
     {
@@ -856,7 +858,7 @@ go_format_type (struct godump_container *container, tree type,
       else
 	{
 	  if (!go_format_type (container, TREE_TYPE (type), use_type_name,
-			       true, NULL))
+			       true, NULL, false))
 	    ret = false;
 	}
       break;
@@ -882,15 +884,19 @@ go_format_type (struct godump_container *container, tree type,
 	obstack_1grow (ob, '0');
       obstack_1grow (ob, ']');
       if (!go_format_type (container, TREE_TYPE (type), use_type_name, false,
-			   NULL))
+			   NULL, false))
 	ret = false;
       break;
 
+    case UNION_TYPE:
+      is_union = true;
+      /* Fall through to RECORD_TYPE case.  */
     case RECORD_TYPE:
       {
 	unsigned int prev_field_end;
-	unsigned int most_strict_known_alignment;
+	unsigned int known_alignment;
 	tree field;
+	bool emitted_a_field;
 
 	/* FIXME: Why is this necessary?  Without it we can get a core
 	   dump on the s390x headers, or from a file containing simply
@@ -898,51 +904,77 @@ go_format_type (struct godump_container *container, tree type,
 	layout_type (type);
 
 	prev_field_end = 0;
-	most_strict_known_alignment = 1;
-	obstack_grow (ob, "struct { ", 9);
-	for (field = TYPE_FIELDS (type);
+	known_alignment = 1;
+	/* Anonymous records and unions are flattened, i.e. they are not put
+	   into "struct { ... }".  */
+	if (!is_anon_record_or_union)
+	  obstack_grow (ob, "struct { ", 9);
+	for (field = TYPE_FIELDS (type), emitted_a_field = false;
 	     field != NULL_TREE;
 	     field = TREE_CHAIN (field))
 	  {
-	    bool field_ok;
-
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
-	    field_ok = true;
 	    if (DECL_BIT_FIELD (field))
+	      /* Bit fields are replaced by padding.  */
 	      continue;
-	    else
-              {
+	    /* Only the first non-bitfield field is emitted for unions.  */
+	    if (!is_union || !emitted_a_field)
+	      {
+		/* Emit the field.  */
+		bool field_ok;
+		bool is_anon_substructure;
+		unsigned int decl_align_unit;
+		unsigned int decl_offset;
+
+		field_ok = true;
+		emitted_a_field = true;
+		is_anon_substructure =
+		  (DECL_NAME (field) == NULL
+		   && (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		       || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE));
+		/* Keep track of the alignment of named substructures, either
+		   of the whole record, or the alignment of the emitted field
+		   (for unions).  */
+		decl_align_unit = DECL_ALIGN_UNIT (field);
+		if (!is_anon_substructure && decl_align_unit > known_alignment)
+		  known_alignment = decl_align_unit;
+		/* Pad to start of field.  */
+		decl_offset =
+		  TREE_INT_CST_LOW (DECL_FIELD_OFFSET (field))
+		  + precision_to_units
+		  (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field)));
 		{
-		  unsigned int decl_align_unit;
-		  unsigned int decl_offset;
+		  unsigned int align_unit;
 
-		  decl_align_unit = DECL_ALIGN_UNIT (field);
-		  decl_offset =
-		    TREE_INT_CST_LOW (DECL_FIELD_OFFSET (field))
-		    + precision_to_units
-		    (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field)));
-		  if (decl_align_unit > most_strict_known_alignment)
-		    most_strict_known_alignment = decl_align_unit;
+		  /* For anonymous records and unions there is no automatic
+		     structure alignment, so use 1 as the alignment.  */
+		  align_unit = (is_anon_substructure) ? 1 : decl_align_unit;
 		  *p_art_i = go_append_padding
-		    (ob, prev_field_end, decl_offset, decl_align_unit, *p_art_i,
+		    (ob, prev_field_end, decl_offset, align_unit, *p_art_i,
 		     &prev_field_end);
-		  if (DECL_SIZE_UNIT (field))
-		    prev_field_end += TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
 		}
-		if (DECL_NAME (field) == NULL)
-		  *p_art_i = go_append_artificial_name (ob, *p_art_i);
-		else
-		  go_append_decl_name (ob, field, container->keyword_hash);
-		obstack_1grow (ob, ' ');
-
-		/* Do not expand type if a record or union type or a
-		   function pointer.  */
+		if (DECL_SIZE_UNIT (field))
+		  prev_field_end +=
+		    TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
+		/* Emit the field name, but not for anonymous records and
+		   unions.  */
+		if (!is_anon_substructure)
+		  {
+		    if ((DECL_NAME (field) == NULL))
+		      *p_art_i = go_append_artificial_name (ob, *p_art_i);
+		    else
+		      go_append_decl_name
+			(ob, field, container->keyword_hash);
+		    obstack_1grow (ob, ' ');
+		  }
+		/* Do not expand type if a record or union type or a function
+		   pointer.  */
 		if (TYPE_NAME (TREE_TYPE (field)) != NULL_TREE
 		    && (RECORD_OR_UNION_TYPE_P (TREE_TYPE (field))
 			|| (POINTER_TYPE_P (TREE_TYPE (field))
 			    && (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
-                                == FUNCTION_TYPE))))
+				== FUNCTION_TYPE))))
 		  {
 		    tree name;
 		    void **slot;
@@ -961,24 +993,27 @@ go_format_type (struct godump_container *container, tree type,
 		else
 		  {
 		    if (!go_format_type (container, TREE_TYPE (field), true,
-					 false, p_art_i))
+					 false, p_art_i, is_anon_substructure))
 		      field_ok = false;
 		  }
-		obstack_grow (ob, "; ", 2);
-              }
-	    if (!field_ok)
-	      ret = false;
+		if (!is_anon_substructure)
+		  obstack_grow (ob, "; ", 2);
+		if (!field_ok)
+		  ret = false;
+	      }
 	  }
-	/* Alignment and padding as necessary.  */
+	/* Padding.  */
 	{
-	  unsigned int type_align_unit;
+	  unsigned int align_unit;
 
-	  type_align_unit = TYPE_ALIGN_UNIT (type);
-	  /* Padding.  */
+	  align_unit = (is_anon_record_or_union) ? 1 : TYPE_ALIGN_UNIT (type);
 	  *p_art_i = go_append_padding
 	    (ob, prev_field_end, TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type)),
-	     type_align_unit, *p_art_i, &prev_field_end);
-	  if (most_strict_known_alignment < type_align_unit)
+	     align_unit, *p_art_i, &prev_field_end);
+	}
+	/* Alignment.  */
+	if (!is_anon_record_or_union
+	    && known_alignment < TYPE_ALIGN_UNIT (type))
 	  {
 	    const char *s;
 	    char buf[100];
@@ -995,46 +1030,10 @@ go_format_type (struct godump_container *container, tree type,
 	      }
 	    *p_art_i = go_force_record_alignment (ob, s, *p_art_i, buf);
 	  }
-	}
-	obstack_1grow (ob, '}');
+	if (!is_anon_record_or_union)
+	  obstack_1grow (ob, '}');
       }
-      break;
-
-    case UNION_TYPE:
-      {
-	const char *s;
-	unsigned int sz_units;
-
-	layout_type (type);
-	sz_units = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
-	s = go_get_uinttype_for_precision (TYPE_ALIGN (type), true);
-	obstack_grow (ob, "struct { ", 9);
-	if (s == NULL)
-	  {
-	    ret = false;
-	    s = "INVALID-union-alignment";
-	    obstack_grow (ob, s, strlen (s));
-	  }
-	else
-	  {
-	    char buf[100];
-	    tree field;
-
-	    field = TYPE_FIELDS (type);
-	    /* Use the same index as the byte field's artificial name for
-	       padding.  */
-	    if (field != NULL_TREE && DECL_NAME (field) != NULL)
-	      go_append_decl_name (ob, field, container->keyword_hash);
-	    else
-	      *p_art_i = go_append_artificial_name (ob, *p_art_i);
-	    snprintf (buf, sizeof buf, " [%u]byte; ", sz_units);
-	    obstack_grow (ob, buf, strlen (buf));
-	    if (TYPE_ALIGN_UNIT (type) > 1)
-	      *p_art_i = go_force_record_alignment (ob, s, *p_art_i, NULL);
-	  }
-	obstack_1grow (ob, '}');
-      }
-      break;
+    break;
 
     case FUNCTION_TYPE:
       {
@@ -1061,7 +1060,7 @@ go_format_type (struct godump_container *container, tree type,
 	      break;
 	    if (seen_arg)
 	      obstack_grow (ob, ", ", 2);
-	    if (!go_format_type (container, arg_type, true, false, NULL))
+	    if (!go_format_type (container, arg_type, true, false, NULL, false))
 	      ret = false;
 	    seen_arg = true;
 	  }
@@ -1077,7 +1076,8 @@ go_format_type (struct godump_container *container, tree type,
 	if (!VOID_TYPE_P (result))
 	  {
 	    obstack_1grow (ob, ' ');
-	    if (!go_format_type (container, result, use_type_name, false, NULL))
+	    if (!go_format_type (container, result, use_type_name, false, NULL,
+				 false))
 	      ret = false;
 	  }
       }
@@ -1111,7 +1111,7 @@ go_output_type (struct godump_container *container)
 static void
 go_output_fndecl (struct godump_container *container, tree decl)
 {
-  if (!go_format_type (container, TREE_TYPE (decl), false, true, NULL))
+  if (!go_format_type (container, TREE_TYPE (decl), false, true, NULL, false))
     fprintf (go_dump_file, "// ");
   fprintf (go_dump_file, "func _%s ",
 	   IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -1186,7 +1186,8 @@ go_output_typedef (struct godump_container *container, tree decl)
 	return;
       *slot = CONST_CAST (void *, (const void *) type);
 
-      if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL))
+      if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL,
+			   false))
 	{
 	  fprintf (go_dump_file, "// ");
 	  slot = htab_find_slot (container->invalid_hash, type, INSERT);
@@ -1222,7 +1223,8 @@ go_output_typedef (struct godump_container *container, tree decl)
          return;
        *slot = CONST_CAST (void *, (const void *) type);
 
-       if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL))
+       if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL,
+			    false))
 	 {
 	   fprintf (go_dump_file, "// ");
 	   slot = htab_find_slot (container->invalid_hash, type, INSERT);
@@ -1285,7 +1287,8 @@ go_output_var (struct godump_container *container, tree decl)
 				 NO_INSERT) != NULL;
     }
   else
-    is_valid = go_format_type (container, TREE_TYPE (decl), true, false, NULL);
+    is_valid = go_format_type (container, TREE_TYPE (decl), true, false, NULL,
+			       false);
   if (is_valid
       && htab_find_slot (container->type_hash,
 			 IDENTIFIER_POINTER (DECL_NAME (decl)),

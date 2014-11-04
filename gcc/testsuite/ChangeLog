@@ -1,3 +1,7 @@
+2014-11-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* build-go/gcc/testsuite/gcc/godump-1.out: Update godump tests.
+
 2014-11-03  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_collectives_14.f90: Fix testcase.
