@@ -1349,33 +1349,47 @@
 
 ;; Reduction operations
 
-(define_expand "reduc_splus_<mode>"
-  [(match_operand:VD 0 "s_register_operand" "")
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<V_elem> 0 "nonimmediate_operand" "")
    (match_operand:VD 1 "s_register_operand" "")]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
-  neon_pairwise_reduce (operands[0], operands[1], <MODE>mode,
+  rtx vec = gen_reg_rtx (<MODE>mode);
+  neon_pairwise_reduce (vec, operands[1], <MODE>mode,
 			&gen_neon_vpadd_internal<mode>);
+  /* The same result is actually computed into every element.  */
+  emit_insn (gen_vec_extract<mode> (operands[0], vec, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_<mode>"
-  [(match_operand:VQ 0 "s_register_operand" "")
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<V_elem> 0 "nonimmediate_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
    && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
-  rtx res_d = gen_reg_rtx (<V_HALF>mode);
 
   emit_insn (gen_quad_halves_plus<mode> (step1, operands[1]));
-  emit_insn (gen_reduc_splus_<V_half> (res_d, step1));
-  emit_insn (gen_move_lo_quad_<mode> (operands[0], res_d));
+  emit_insn (gen_reduc_plus_scal_<V_half> (operands[0], step1));
 
   DONE;
 })
 
-(define_insn "reduc_splus_v2di"
+(define_expand "reduc_plus_scal_v2di"
+  [(match_operand:DI 0 "nonimmediate_operand" "=w")
+   (match_operand:V2DI 1 "s_register_operand" "")]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+{
+  rtx vec = gen_reg_rtx (V2DImode);
+
+  emit_insn (gen_arm_reduc_plus_internal_v2di (vec, operands[1]));
+  emit_insn (gen_vec_extractv2di (operands[0], vec, const0_rtx));
+
+  DONE;
+})
+
+(define_insn "arm_reduc_plus_internal_v2di"
   [(set (match_operand:V2DI 0 "s_register_operand" "=w")
 	(unspec:V2DI [(match_operand:V2DI 1 "s_register_operand" "w")]
 		     UNSPEC_VPADD))]
@@ -1383,17 +1397,6 @@
   "vadd.i64\t%e0, %e1, %f1"
   [(set_attr "type" "neon_add_q")]
 )
-
-;; NEON does not distinguish between signed and unsigned addition except on
-;; widening operations.
-(define_expand "reduc_uplus_<mode>"
-  [(match_operand:VDQI 0 "s_register_operand" "")
-   (match_operand:VDQI 1 "s_register_operand" "")]
-  "TARGET_NEON && (<Is_d_reg> || !BYTES_BIG_ENDIAN)"
-{
-  emit_insn (gen_reduc_splus_<mode> (operands[0], operands[1]));
-  DONE;
-})
 
 (define_expand "reduc_smin_<mode>"
   [(match_operand:VD 0 "s_register_operand" "")
