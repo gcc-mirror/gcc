@@ -1,5 +1,9 @@
 2014-11-04  Marek Polacek  <polacek@redhat.com>
 
+	* sanopt.c (sanopt_optimize_walker): Remove unused variables.
+
+2014-11-04  Marek Polacek  <polacek@redhat.com>
+
 	* Makefile.in (OBJS): Add sanopt.o.
 	(GTFILES): Add sanopt.c.
 	* asan.h (asan_expand_check_ifn): Declare.
