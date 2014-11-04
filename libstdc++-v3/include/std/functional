@@ -410,16 +410,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       reference_wrapper(_Tp&&) = delete;
 
-      reference_wrapper(const reference_wrapper<_Tp>& __inref) noexcept
-      : _M_data(__inref._M_data)
-      { }
+      reference_wrapper(const reference_wrapper&) = default;
 
       reference_wrapper&
-      operator=(const reference_wrapper<_Tp>& __inref) noexcept
-      {
-	_M_data = __inref._M_data;
-	return *this;
-      }
+      operator=(const reference_wrapper&) = default;
 
       operator _Tp&() const noexcept
       { return this->get(); }
