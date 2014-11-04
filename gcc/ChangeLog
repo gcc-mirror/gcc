@@ -1,5 +1,16 @@
 2014-11-04  Alan Lawrence  <alan.lawrence@arm.com>
 
+	config/arm/neon.md (reduc_smin_<mode> *2): Rename to...
+	(reduc_smin_scal_<mode> *2): ...this; extract scalar result.
+	(reduc_smax_<mode> *2): Rename to...
+	(reduc_smax_scal_<mode> *2): ...this; extract scalar result.
+	(reduc_umin_<mode> *2): Rename to...
+	(reduc_umin_scal_<mode> *2): ...this; extract scalar result.
+	(reduc_umax_<mode> *2): Rename to...
+	(reduc_umax_scal_<mode> *2): ...this; extract scalar result.
+
+2014-11-04  Alan Lawrence  <alan.lawrence@arm.com>
+
 	config/arm/neon.md (reduc_plus_*): Rename to...
 	(reduc_plus_scal_*): ...this; reduce to temp and extract scalar result.
 
