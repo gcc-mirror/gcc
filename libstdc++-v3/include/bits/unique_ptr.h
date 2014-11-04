@@ -768,7 +768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline typename _MakeUniq<_Tp>::__array
     make_unique(size_t __num)
-    { return unique_ptr<_Tp>(new typename remove_extent<_Tp>::type[__num]()); }
+    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__num]()); }
 
   /// Disable std::make_unique for arrays of known bound
   template<typename _Tp, typename... _Args>

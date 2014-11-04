@@ -151,16 +151,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * overloaded addressof operator (unary operator&), in which case the call
     * will not be a constant expression.
     */
-  template<typename _Tp, typename enable_if<!_Has_addressof<_Tp>::value,
-                                            int>::type...>
+  template<typename _Tp, enable_if_t<!_Has_addressof<_Tp>::value, int>...>
     constexpr _Tp* __constexpr_addressof(_Tp& __t)
     { return &__t; }
 
   /**
     * @brief Fallback overload that defers to __addressof.
     */
-  template<typename _Tp, typename enable_if<_Has_addressof<_Tp>::value,
-                                            int>::type...>
+  template<typename _Tp, enable_if_t<_Has_addressof<_Tp>::value, int>...>
     inline _Tp* __constexpr_addressof(_Tp& __t)
     { return std::__addressof(__t); }
 
@@ -184,7 +182,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Remove const to avoid prohibition of reusing object storage for
       // const-qualified types in [3.8/9]. This is strictly internal
       // and even optional itself is oblivious to it.
-      using _Stored_type = typename remove_const<_Tp>::type;
+      using _Stored_type = remove_const_t<_Tp>;
 
     public:
       // [X.Y.4.1] Constructors.
@@ -208,10 +206,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
 
       template<typename _Up, typename... _Args,
-               typename enable_if<is_constructible<_Tp,
-                                                   initializer_list<_Up>&,
-                                                   _Args&&...>::value,
-                                  int>::type...>
+               enable_if_t<is_constructible<_Tp,
+                                            initializer_list<_Up>&,
+                                            _Args&&...>::value,
+                           int>...>
         constexpr explicit _Optional_base(in_place_t,
                                           initializer_list<_Up> __il,
                                           _Args&&... __args)
@@ -330,7 +328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Optional_base<_Tp, false>
     {
     private:
-      using _Stored_type = typename remove_const<_Tp>::type;
+      using _Stored_type = remove_const_t<_Tp>;
 
     public:
       constexpr _Optional_base() noexcept
@@ -350,10 +348,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
 
       template<typename _Up, typename... _Args,
-               typename enable_if<is_constructible<_Tp,
-                                                   initializer_list<_Up>&,
-                                                   _Args&&...>::value,
-                                  int>::type...>
+               enable_if_t<is_constructible<_Tp,
+                                            initializer_list<_Up>&,
+                                            _Args&&...>::value,
+			   int>...>
         constexpr explicit _Optional_base(in_place_t,
                                           initializer_list<_Up> __il,
                                           _Args&&... __args)
@@ -472,10 +470,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         // Unique tag type.
         optional<_Tp>>
     {
-      static_assert(__and_<__not_<is_same<typename remove_cv<_Tp>::type,
-					  nullopt_t>>,
-			   __not_<is_same<typename remove_cv<_Tp>::type,
-					  in_place_t>>,
+      static_assert(__and_<__not_<is_same<remove_cv_t<_Tp>, nullopt_t>>,
+			   __not_<is_same<remove_cv_t<_Tp>, in_place_t>>,
 			   __not_<is_reference<_Tp>>>(),
                     "Invalid instantiation of optional<T>");
 
@@ -497,10 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Up>
-        typename enable_if<
-                 is_same<_Tp, typename decay<_Up>::type>::value,
-                 optional&
-               >::type
+        enable_if_t<is_same<_Tp, decay_t<_Up>>::value, optional&>
         operator=(_Up&& __u)
         {
           static_assert(__and_<is_constructible<_Tp, _Up>,
@@ -527,11 +520,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up, typename... _Args>
-        typename enable_if<
-                 is_constructible<_Tp,
-                                  initializer_list<_Up>&,
-                                  _Args&&...>::value
-               >::type
+        enable_if_t<is_constructible<_Tp, initializer_list<_Up>&,
+				     _Args&&...>::value>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  this->_M_reset();
@@ -795,9 +785,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __lhs.swap(__rhs); }
 
   template<typename _Tp>
-    constexpr optional<typename decay<_Tp>::type>
+    constexpr optional<decay_t<_Tp>>
     make_optional(_Tp&& __t)
-    { return optional<typename decay<_Tp>::type> { std::forward<_Tp>(__t) }; }
+    { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
   // @} group optional
 _GLIBCXX_END_NAMESPACE_VERSION
