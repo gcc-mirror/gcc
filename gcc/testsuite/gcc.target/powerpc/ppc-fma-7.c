@@ -2,6 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-require-effective-target powerpc_fprs } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-O3 -ftree-vectorize -mcpu=power6 -ffast-math" } */
 /* { dg-final { scan-assembler-times "fmadd" 1 } } */
 /* { dg-final { scan-assembler-times "fmsub " 1 } } */

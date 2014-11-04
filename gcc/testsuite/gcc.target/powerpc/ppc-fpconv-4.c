@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=750" } } */
 /* { dg-options "-O2 -mcpu=750 -ffast-math" } */
 /* { dg-final { scan-assembler-not "lfiwax" } } */
 /* { dg-final { scan-assembler-not "lfiwzx" } } */

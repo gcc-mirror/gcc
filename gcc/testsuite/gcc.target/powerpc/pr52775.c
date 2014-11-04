@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power4" } } */
 /* { dg-options "-O1 -mcpu=power4" } */
 /* { dg-final { scan-assembler-times "fcfid" 2 } } */
 

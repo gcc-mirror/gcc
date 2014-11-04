@@ -1,5 +1,6 @@
 /* Test generation of DFP instructions for POWER6.  */
 /* { dg-do compile { target { powerpc*-*-linux* && powerpc_fprs } } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-std=gnu99 -O1 -mcpu=power6" } */
 
 /* { dg-final { scan-assembler-times "fneg" 1 } } */

@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O2 -mcpu=power5 -mabi=altivec -mno-altivec -mno-vsx" } */
 /* { dg-final { scan-assembler	   "\[ \t\]and "     } } */
 /* { dg-final { scan-assembler	   "\[ \t\]or "      } } */

@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O2 -ffast-math -mcpu=power5 -mabi=no-altivec" } */
 /* { dg-final { scan-assembler-times "fabs" 3 } } */
 /* { dg-final { scan-assembler-times "fnabs" 3 } } */
