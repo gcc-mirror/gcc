@@ -1,3 +1,10 @@
+2014-11-04  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/align-2.c: Remove dg-output.
+	* c-c++-common/ubsan/align-4.c: Likewise.
+	* g++.dg/ubsan/null-1.C: Likewise.
+	* g++.dg/ubsan/null-2.C: Likewise.
+
 2014-11-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.misc-tests/godump-1.c (dg-skip-if): Add alpha*-*-*.
