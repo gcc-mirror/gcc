@@ -1,3 +1,8 @@
+2014-11-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix typo in definition
+	of __ARM_FEATURE_IDIV.
+
 2014-11-04  Marek Polacek  <polacek@redhat.com>
 
 	* ubsan.c (instrument_object_size): Optimize [x & CST] array accesses.
