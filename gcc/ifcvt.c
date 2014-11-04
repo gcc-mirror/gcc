@@ -1459,17 +1459,10 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
       end_sequence ();
     }
 
-  /* Don't even try if the comparison operands are weird
-     except that the target supports cbranchcc4.  */
+  /* Don't even try if the comparison operands are weird.  */
   if (! general_operand (cmp_a, GET_MODE (cmp_a))
       || ! general_operand (cmp_b, GET_MODE (cmp_b)))
-    {
-#if HAVE_cbranchcc4
-      if (GET_MODE_CLASS (GET_MODE (cmp_a)) != MODE_CC
-	  || cmp_b != const0_rtx)
-#endif
-	return NULL_RTX;
-    }
+    return NULL_RTX;
 
 #if HAVE_conditional_move
   unsignedp = (code == LTU || code == GEU
@@ -1795,11 +1788,6 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
   rtx cond, set;
   rtx_insn *insn;
   int reverse;
-  int allow_cc_mode = false;
-#if HAVE_cbranchcc4
-  allow_cc_mode = true;
-#endif
-
 
   /* If target is already mentioned in the known condition, return it.  */
   if (reg_mentioned_p (target, if_info->cond))
@@ -1921,7 +1909,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
     }
 
   cond = canonicalize_condition (if_info->jump, cond, reverse,
-				 earliest, target, allow_cc_mode, true);
+				 earliest, target, false, true);
   if (! cond || ! reg_mentioned_p (target, cond))
     return NULL;
 
@@ -2377,10 +2365,6 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
 {
   rtx cond, set, tmp;
   bool reverse;
-  int allow_cc_mode = false;
-#if HAVE_cbranchcc4
-  allow_cc_mode = true;
-#endif
 
   if (! any_condjump_p (jump))
     return NULL_RTX;
@@ -2417,7 +2401,7 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
   tmp = canonicalize_condition (jump, cond, reverse, earliest,
-				NULL_RTX, allow_cc_mode, true);
+				NULL_RTX, false, true);
 
   /* We don't handle side-effects in the condition, like handling
      REG_INC notes and making sure no duplicate conditions are emitted.  */
