@@ -6,6 +6,11 @@
 
 	* include/std/functional (_Bind_simple): Simplify construction.
 
+	* include/bits/regex.h (regex_traits::_RegexMask): Remove _S_blank and
+	adjust _S_valid_mask.
+	* include/bits/regex.tcc (regex_traits::lookup_classname): Use
+	ctype_base::blank.
+
 2014-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/algo.h: Do not use default arguments in function
