@@ -166,7 +166,7 @@ extern char arm_arch_name[];
 	if (TARGET_IDIV)				\
          {						\
             builtin_define ("__ARM_ARCH_EXT_IDIV__");	\
-            builtin_define ("__ARM_FEATURE_IDIV__");	\
+            builtin_define ("__ARM_FEATURE_IDIV");	\
          }						\
     } while (0)
 
