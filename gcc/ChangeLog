@@ -1,3 +1,10 @@
+2014-11-04  Jiong Wang  <jiong.wang@arm.com>
+2014-11-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/63293
+	* config/aarch64/aarch64.c (aarch64_expand_epiloue): Add barriers before
+	stack adjustment.
+
 2014-11-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* combine.c (combine_simplify_rtx): In STORE_FLAG_VALUE == -1 case,
