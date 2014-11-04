@@ -5706,7 +5706,7 @@ proc check_effective_target_c++14_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
+    return [check-flags { { } { } { -std=c++14 -std=gnu++14 -std=c++14 -std=gnu++14 } }]
 }
 
 proc check_effective_target_c++14 { } {
