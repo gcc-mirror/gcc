@@ -1,3 +1,8 @@
+2014-11-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* bb-reorder.c (get_uncond_jump_length): Avoid using delete_insn,
+	emit into a sequence instead.
+
 2014-11-04  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/sh/sh.c (emit_fpu_switch): Drop unused automatic variable.

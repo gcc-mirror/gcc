@@ -1393,13 +1393,12 @@ get_uncond_jump_length (void)
   rtx_insn *label, *jump;
   int length;
 
-  label = emit_label_before (gen_label_rtx (), get_insns ());
+  start_sequence ();
+  label = emit_label (gen_label_rtx ());
   jump = emit_jump_insn (gen_jump (label));
-
   length = get_attr_min_length (jump);
+  end_sequence ();
 
-  delete_insn (jump);
-  delete_insn (label);
   return length;
 }
 
