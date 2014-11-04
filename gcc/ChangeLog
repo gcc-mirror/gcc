@@ -1,3 +1,8 @@
+2014-11-04  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (atomic_hold_decl, atomic_clear_decl,
+	atomic_update_decl): Guard declaration with #ifdef.
+
 2014-11-04  Marek Polacek  <polacek@redhat.com>
 
 	* sanopt.c (sanopt_optimize_walker): Remove unused variables.

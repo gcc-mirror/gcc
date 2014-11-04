@@ -34590,8 +34590,10 @@ make_pass_analyze_swaps (gcc::context *ctxt)
   return new pass_analyze_swaps (ctxt);
 }
 
+#ifdef RS6000_GLIBC_ATOMIC_FENV
 /* Function declarations for rs6000_atomic_assign_expand_fenv.  */
 static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
+#endif
 
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
 
