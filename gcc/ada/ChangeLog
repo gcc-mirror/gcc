@@ -1,5 +1,12 @@
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: For a
+	derived untagged type that renames discriminants, be prepared for
+	a type derived from a private discriminated type when changing the
+	type of the stored discriminants.
+
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): Set
 	the SLOC of the node on the call to set_jmpbuf_address_soft emitted
 	on block entry with SJLJ.
