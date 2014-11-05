@@ -1,3 +1,25 @@
+2014-11-05  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_build_scalar_type): Remove.
+	(aarch64_scalar_builtin_types, aarch64_simd_type,
+	aarch64_simd_type, aarch64_mangle_builtin_scalar_type,
+	aarch64_mangle_builtin_vector_type,
+	aarch64_mangle_builtin_type, aarch64_simd_builtin_std_type,
+	aarch64_lookup_simd_builtin_type, aarch64_simd_builtin_type,
+	aarch64_init_simd_builtin_types,
+	aarch64_init_simd_builtin_scalar_types): New.
+	(aarch64_init_simd_builtins): Refactor.
+	(aarch64_init_crc32_builtins): Fixup with qualifier.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_mangle_builtin_type): Export.
+	* config/aarch64/aarch64-simd-builtin-types.def: New.
+	* config/aarch64/aarch64.c (aarch64_simd_mangle_map): Remove.
+	(aarch64_mangle_type): Refactor.
+	* config/aarch64/arm_neon.h: Declare vector types based on
+	internal types.
+	* config/aarch64/t-aarch64: Update dependency.
+
 2014-11-04  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (atomic_hold_decl, atomic_clear_decl,
