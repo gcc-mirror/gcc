@@ -1,5 +1,10 @@
 2014-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Skip tests if target does not support Neon.
+
+2014-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* lib/target-supports.exp (check_effective_target_bswap): Update
 	conditions for AArch64 and ARM targets.
 
