@@ -6297,6 +6297,18 @@
     (set_attr "prefix" "vex")
     (set_attr "mode" "V8SF")])
 
+(define_insn "avx512f_vec_dup<mode>_1"
+  [(set (match_operand:VF_512 0 "register_operand" "=v")
+	(vec_duplicate:VF_512
+	  (vec_select:<ssescalarmode>
+	    (match_operand:VF_512 1 "register_operand" "v")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX512F"
+  "vbroadcast<bcstscalarsuff>\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "sselog1")
+    (set_attr "prefix" "evex")
+    (set_attr "mode" "<MODE>")])
+
 (define_insn "vec_dupv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x,x,x")
 	(vec_duplicate:V4SF
@@ -15922,20 +15934,33 @@
 	  (match_operand:VI48_256 2 "nonimmediate_operand")))]
   "TARGET_AVX2")
 
-(define_expand "vashr<mode>3<mask_name>"
-  [(set (match_operand:VI12_128 0 "register_operand")
-	(ashiftrt:VI12_128
-	  (match_operand:VI12_128 1 "register_operand")
-	  (match_operand:VI12_128 2 "nonimmediate_operand")))]
+(define_expand "vashrv8hi3<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand")
+	(ashiftrt:V8HI
+	  (match_operand:V8HI 1 "register_operand")
+	  (match_operand:V8HI 2 "nonimmediate_operand")))]
   "TARGET_XOP || (TARGET_AVX512BW && TARGET_AVX512VL)"
 {
   if (TARGET_XOP)
     {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], neg));
+      rtx neg = gen_reg_rtx (V8HImode);
+      emit_insn (gen_negv8hi2 (neg, operands[2]));
+      emit_insn (gen_xop_shav8hi3 (operands[0], operands[1], neg));
       DONE;
     }
+})
+
+(define_expand "vashrv16qi3"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(ashiftrt:V16QI
+	  (match_operand:V16QI 1 "register_operand")
+	  (match_operand:V16QI 2 "nonimmediate_operand")))]
+  "TARGET_XOP"
+{
+   rtx neg = gen_reg_rtx (V16QImode);
+   emit_insn (gen_negv16qi2 (neg, operands[2]));
+   emit_insn (gen_xop_shav16qi3 (operands[0], operands[1], neg));
+   DONE;
 })
 
 (define_expand "vashrv2di3<mask_name>"
@@ -16530,6 +16555,19 @@
   [(set_attr "type" "sselog1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
+
+(define_insn "<avx512>_vec_dup<mode>_1"
+  [(set (match_operand:VI_AVX512BW 0 "register_operand" "=v,v")
+	(vec_duplicate:VI_AVX512BW
+	  (vec_select:VI_AVX512BW
+	    (match_operand:VI_AVX512BW 1 "nonimmediate_operand" "v,m")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX512F"
+  "vpbroadcast<ssemodesuffix>\t{%1, %0|%0, %<iptr>1}
+   vpbroadcast<ssemodesuffix>\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_vec_dup<mode><mask_name>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v")
