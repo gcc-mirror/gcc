@@ -1,5 +1,9 @@
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnatvsn.ads (Library_Version): Bump to 5.0.
+
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): For a function with
 	copy-in/copy-out parameters and which returns by invisible reference,
 	do not create the variable for the return value; instead, manually
