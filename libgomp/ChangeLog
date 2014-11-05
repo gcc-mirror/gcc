@@ -1,3 +1,7 @@
+2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/posix/lock.c (_XOPEN_SOURCE) Define as 600.
+
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/libgomp.c/affinity-1.c: Include <sys/wait.h>.

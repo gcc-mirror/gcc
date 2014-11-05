@@ -1,3 +1,7 @@
+2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sigsetmask.c (_POSIX_SOURCE): Remove.
+
 2014-10-28  Yury Gribov  <y.gribov@samsung.com>
 
 	* strtoll.c: New file.
