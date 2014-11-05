@@ -1,5 +1,10 @@
 2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* target.def (omit_struct_return_reg): New data hook.
+	* doc/tm.texi.in: Add @hook TARGET_OMIT_STRUCT_RETURN_REG.
+	* doc/tm.texi: Regenerate.
+	* function.c (expand_function_end): Use it.
+
 	* target.def (no_register_allocation): New data hook.
 	* doc/tm.texi.in: Add @hook TARGET_NO_REGISTER_ALLOCATION.
 	* doc/tm.texi: Regenerate.

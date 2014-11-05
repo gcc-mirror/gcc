@@ -3731,6 +3731,16 @@ structure value address at the beginning of a function.  If you need\n\
 to emit adjusting code, you should do it at this point.",
  rtx, (tree fndecl, int incoming),
  hook_rtx_tree_int_null)
+
+DEFHOOKPOD
+(omit_struct_return_reg,
+ "Normally, when a function returns a structure by memory, the address\n\
+is passed as an invisible pointer argument, but the compiler also\n\
+arranges to return the address from the function like it would a normal\n\
+pointer return value.  Define this to true if that behaviour is\n\
+undesirable on your target.",
+ bool, false)
+
 DEFHOOK
 (return_in_memory,
  "This target hook should return a nonzero value to say to return the\n\

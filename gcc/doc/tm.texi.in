@@ -3567,6 +3567,8 @@ need more space than is implied by @code{FUNCTION_VALUE_REGNO_P} for
 saving and restoring an arbitrary return value.
 @end defmac
 
+@hook TARGET_OMIT_STRUCT_RETURN_REG
+
 @hook TARGET_RETURN_IN_MSB
 
 @node Aggregate Return

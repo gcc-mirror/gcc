@@ -4371,6 +4371,14 @@ need more space than is implied by @code{FUNCTION_VALUE_REGNO_P} for
 saving and restoring an arbitrary return value.
 @end defmac
 
+@deftypevr {Target Hook} bool TARGET_OMIT_STRUCT_RETURN_REG
+Normally, when a function returns a structure by memory, the address
+is passed as an invisible pointer argument, but the compiler also
+arranges to return the address from the function like it would a normal
+pointer return value.  Define this to true if that behaviour is
+undesirable on your target.
+@end deftypevr
+
 @deftypefn {Target Hook} bool TARGET_RETURN_IN_MSB (const_tree @var{type})
 This hook should return true if values of type @var{type} are returned
 at the most significant end of a register (in other words, if they are

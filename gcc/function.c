@@ -5177,8 +5177,8 @@ expand_function_end (void)
      If returning a structure PCC style,
      the caller also depends on this value.
      And cfun->returns_pcc_struct is not necessarily set.  */
-  if (cfun->returns_struct
-      || cfun->returns_pcc_struct)
+  if ((cfun->returns_struct || cfun->returns_pcc_struct)
+      && !targetm.calls.omit_struct_return_reg)
     {
       rtx value_address = DECL_RTL (DECL_RESULT (current_function_decl));
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
