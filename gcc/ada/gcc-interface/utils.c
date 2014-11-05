@@ -3027,18 +3027,6 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 				 TREE_TYPE (subprog_type));
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
 
-  /* If this is a non-inline function nested inside an inlined external
-     function, we cannot honor both requests without cloning the nested
-     function in the current unit since it is private to the other unit.
-     We could inline the nested function as well but it's probably better
-     to err on the side of too little inlining.  */
-  if ((inline_status == is_suppressed || inline_status == is_disabled)
-      && !public_flag
-      && current_function_decl
-      && DECL_DECLARED_INLINE_P (current_function_decl)
-      && DECL_EXTERNAL (current_function_decl))
-    DECL_DECLARED_INLINE_P (current_function_decl) = 0;
-
   DECL_ARTIFICIAL (subprog_decl) = artificial_flag;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
 

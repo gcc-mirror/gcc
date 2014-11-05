@@ -1,3 +1,30 @@
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline1.adb: New test.
+	* gnat.dg/inline1_pkg.ad[sb]: New helper.
+	* gnat.dg/inline2.adb: New test.
+	* gnat.dg/inline2_pkg.ad[sb]: New helper.
+	* gnat.dg/inline3.adb: New test.
+	* gnat.dg/inline3_pkg.ad[sb]: New helper.
+	* gnat.dg/inline4.adb: New test.
+	* gnat.dg/inline4_pkg.ad[sb]: New helper.
+	* gnat.dg/inline5.adb: New test.
+	* gnat.dg/inline5_pkg.ad[sb]: New helper.
+	* gnat.dg/inline6.adb: New test.
+	* gnat.dg/inline6_pkg.ad[sb]: New helper.	
+	* gnat.dg/inline7.adb: New test.
+	* gnat.dg/inline7_pkg1.ad[sb]: New helper.
+	* gnat.dg/inline7_pkg2.ad[sb]: Likewise.
+	* gnat.dg/inline8.adb: New test.
+	* gnat.dg/inline8_pkg1.ad[sb]: New helper.
+	* gnat.dg/inline8_pkg2.ad[sb]: New helper.
+	* gnat.dg/inline9.adb: New test.
+	* gnat.dg/inline9_pkg.ad[sb]: New helper.
+	* gnat.dg/inline10.adb: New test.
+	* gnat.dg/inline10_pkg.ad[sb]: New helper.
+	* gnat.dg/inline11.adb: New test.
+	* gnat.dg/inline11_pkg.ad[sb]: New helper.
+
 2014-11-05  Anthony Brandon  <anthony.brandon@gmail.com>
 
 	PR driver/36312

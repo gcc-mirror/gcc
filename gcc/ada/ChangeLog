@@ -1,3 +1,13 @@
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (create_subprog_decl): Move code dealing with
+	conflicting inlining status of nested subprograms to...
+	* gcc-interface/trans.c (check_inlining_for_nested_subprog): ...here.
+	(Attribute_to_gnu) <Attr_Access>: Call it.
+	(Call_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Drop the body if it is an inlined external
+	function that has been marked uninlinable.
+
 2014-10-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb Add an entry for aspect Ghost in table
