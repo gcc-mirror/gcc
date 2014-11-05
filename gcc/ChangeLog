@@ -1,5 +1,15 @@
 2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/63538
+	* config/i386/i386.c (in_large_data_p): Reject automatic variables.
+	(ix86_encode_section_info): Do not check for non-automatic varibles
+	when setting SYMBOL_FLAG_FAR_ADDR flag.
+	(x86_64_elf_select_section): Do not check ix86_cmodel here.
+	(x86_64_elf_unique_section): Ditto.
+	(x86_elf_aligned_common): Emit tab before .largecomm.
+
+2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	Backport from mainline:
 	2014-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
