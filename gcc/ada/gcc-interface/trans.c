@@ -4629,9 +4629,13 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   start_stmt_group ();
 
   if (setjmp_longjmp)
-    add_stmt (build_call_n_expr (set_jmpbuf_decl, 1,
-				 build_unary_op (ADDR_EXPR, NULL_TREE,
-						 gnu_jmpbuf_decl)));
+    {
+      gnu_expr = build_call_n_expr (set_jmpbuf_decl, 1,
+				    build_unary_op (ADDR_EXPR, NULL_TREE,
+						    gnu_jmpbuf_decl));
+      set_expr_location_from_node (gnu_expr, gnat_node);
+      add_stmt (gnu_expr);
+    }
 
   if (Present (First_Real_Statement (gnat_node)))
     process_decls (Statements (gnat_node), Empty,
