@@ -1,3 +1,544 @@
+2014-11-05  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-chkp.c: New.
+	* ipa-chkp.h: New.
+	* tree-chkp.c: New.
+	* tree-chkp.h: New.
+	* tree-chkp-opt.c: New.
+	* rtl-chkp.c: New.
+	* rtl-chkp.h: New.
+	* Makefile.in (OBJS): Add ipa-chkp.o, rtl-chkp.o, tree-chkp.o
+	tree-chkp-opt.o.
+	(GTFILES): Add tree-chkp.c.
+	* mode-classes.def (MODE_POINTER_BOUNDS): New.
+	* tree.def (POINTER_BOUNDS_TYPE): New.
+	* genmodes.c (complete_mode): Support MODE_POINTER_BOUNDS.
+	(POINTER_BOUNDS_MODE): New.
+	(make_pointer_bounds_mode): New.
+	* machmode.h (POINTER_BOUNDS_MODE_P): New.
+	* stor-layout.c (int_mode_for_mode): Support MODE_POINTER_BOUNDS.
+	(layout_type): Support POINTER_BOUNDS_TYPE.
+	* tree-pretty-print.c (dump_generic_node): Support POINTER_BOUNDS_TYPE.
+	* tree-core.h (tree_index): Add TI_POINTER_BOUNDS_TYPE.
+	* tree.c (build_int_cst_wide): Support POINTER_BOUNDS_TYPE.
+	(type_contains_placeholder_1): Likewise.
+	(build_common_tree_nodes): Initialize
+	pointer_bounds_type_node.
+	* tree.h (POINTER_BOUNDS_TYPE_P): New.
+	(pointer_bounds_type_node): New.
+	(POINTER_BOUNDS_P): New.
+	(BOUNDED_TYPE_P): New.
+	(BOUNDED_P): New.
+	(CALL_WITH_BOUNDS_P): New.
+	* gimple.h (gf_mask): Add GF_CALL_WITH_BOUNDS.
+	(gimple_call_with_bounds_p): New.
+	(gimple_call_set_with_bounds): New.
+	(gimple_return_retbnd): New.
+	(gimple_return_set_retbnd): New
+	* gimple.c (gimple_build_return): Increase number of ops
+	for return statement.
+	(gimple_build_call_from_tree): Propagate CALL_WITH_BOUNDS_P
+	flag.
+	* gimple-pretty-print.c (dump_gimple_return): Print second op.
+	* rtl.h (CALL_EXPR_WITH_BOUNDS_P): New.
+	* gimplify.c (gimplify_init_constructor): Avoid infinite
+	loop during gimplification of bounds initializer.
+	* calls.c: Include tree-chkp.h, rtl-chkp.h, bitmap.h.
+	(special_function_p): Use original decl name when analyzing
+	instrumentation clone.
+	(arg_data): Add fields special_slot, pointer_arg and
+	pointer_offset.
+	(store_bounds): New.
+	(emit_call_1): Propagate instrumentation flag for CALL.
+	(initialize_argument_information): Compute pointer_arg,
+	pointer_offset and special_slot for pointer bounds arguments.
+	(finalize_must_preallocate): Preallocate when storing bounds
+	in bounds table.
+	(compute_argument_addresses): Skip pointer bounds.
+	(expand_call): Store bounds into tables separately.  Return
+	result joined with resulting bounds.
+	* cfgexpand.c: Include tree-chkp.h, rtl-chkp.h.
+	(expand_call_stmt): Propagate bounds flag for CALL_EXPR.
+	(expand_return): Add returned bounds arg.  Handle returned bounds.
+	(expand_gimple_stmt_1): Adjust to new expand_return signature.
+	(gimple_expand_cfg): Reset rtx bounds map.
+	* expr.c: Include tree-chkp.h, rtl-chkp.h.
+	(expand_assignment): Handle returned bounds.
+	(store_expr_with_bounds): New.  Replaces store_expr with new bounds
+	target argument.  Handle bounds returned by calls.
+	(store_expr): Now wraps store_expr_with_bounds.
+	* expr.h (store_expr_with_bounds): New.
+	* function.c: Include tree-chkp.h, rtl-chkp.h.
+	(bounds_parm_data): New.
+	(use_register_for_decl): Do not registerize decls used for bounds
+	stores and loads.
+	(assign_parms_augmented_arg_list): Add bounds of the result
+	structure pointer as the second argument.
+	(assign_parm_find_entry_rtl): Mark bounds are never passed on
+	the stack.
+	(assign_parm_is_stack_parm): Likewise.
+	(assign_parm_load_bounds): New.
+	(assign_bounds): New.
+	(assign_parms): Load bounds and determine a location for
+	returned bounds.
+	(diddle_return_value_1): New.
+	(diddle_return_value): Handle returned bounds.
+	* function.h (rtl_data): Add field for returned bounds.
+	* varasm.c: Include tree-chkp.h.
+	(output_constant): Support POINTER_BOUNDS_TYPE.
+	(output_constant_pool_2): Support MODE_POINTER_BOUNDS.
+	(ultimate_transparent_alias_target): Move up.
+	(make_decl_rtl): For instrumented function use
+	name of the original decl.
+	(assemble_start_function): Mark function as global
+	in case it is instrumentation clone of the global
+	function.
+	(do_assemble_alias): Follow transparent alias chain
+	for identifier.  Check if original alias is public.
+	(maybe_assemble_visibility): Use visibility of the
+	original function for instrumented version.
+	(default_unique_section): Likewise.
+	* emit-rtl.c (immed_double_const): Support MODE_POINTER_BOUNDS.
+	(init_emit_once): Build pointer bounds zero constants.
+	* explow.c (trunc_int_for_mode): Support MODE_POINTER_BOUNDS.
+	* target.def (builtin_chkp_function): New.
+	(chkp_bound_type): New.
+	(chkp_bound_mode): New.
+	(chkp_make_bounds_constant): New.
+	(chkp_initialize_bounds): New.
+	(load_bounds_for_arg): New.
+	(store_bounds_for_arg): New.
+	(load_returned_bounds): New.
+	(store_returned_bounds): New.
+	(chkp_function_value_bounds): New.
+	(setup_incoming_vararg_bounds): New.
+	(function_arg): Update hook description with new possible return
+	value CONST_INT.
+	* targhooks.h (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_load_returned_bounds): New.
+	(default_store_returned_bounds): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode): New.
+	(default_builtin_chkp_function): New.
+	(default_chkp_function_value_bounds): New.
+	(default_chkp_make_bounds_constant): New.
+	(default_chkp_initialize_bounds): New.
+	(default_setup_incoming_vararg_bounds): New.
+	* targhooks.c (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_load_returned_bounds): New.
+	(default_store_returned_bounds): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode); New.
+	(default_builtin_chkp_function): New.
+	(default_chkp_function_value_bounds): New.
+	(default_chkp_make_bounds_constant): New.
+	(default_chkp_initialize_bounds): New.
+	(default_setup_incoming_vararg_bounds): New.
+	* builtin-types.def (BT_BND): New.
+	(BT_FN_PTR_CONST_PTR): New.
+	(BT_FN_CONST_PTR_CONST_PTR): New.
+	(BT_FN_BND_CONST_PTR): New.
+	(BT_FN_CONST_PTR_BND): New.
+	(BT_FN_PTR_CONST_PTR_SIZE): New.
+	(BT_FN_PTR_CONST_PTR_CONST_PTR): New.
+	(BT_FN_VOID_PTRPTR_CONST_PTR): New.
+	(BT_FN_VOID_CONST_PTR_SIZE): New.
+	(BT_FN_VOID_PTR_BND): New.
+	(BT_FN_CONST_PTR_CONST_PTR_CONST_PTR): New.
+	(BT_FN_BND_CONST_PTR_SIZE): New.
+	(BT_FN_PTR_CONST_PTR_CONST_PTR_SIZE): New.
+	(BT_FN_VOID_CONST_PTR_BND_CONST_PTR): New.
+	* chkp-builtins.def: New.
+	* builtins.def: include chkp-builtins.def.
+	(DEF_CHKP_BUILTIN): New.
+	* builtins.c: Include tree-chkp.h and rtl-chkp.h.
+	(expand_builtin): Support BUILT_IN_CHKP_INIT_PTR_BOUNDS,
+	BUILT_IN_CHKP_NULL_PTR_BOUNDS, BUILT_IN_CHKP_COPY_PTR_BOUNDS,
+	BUILT_IN_CHKP_CHECK_PTR_LBOUNDS, BUILT_IN_CHKP_CHECK_PTR_UBOUNDS,
+	BUILT_IN_CHKP_CHECK_PTR_BOUNDS, BUILT_IN_CHKP_SET_PTR_BOUNDS,
+	BUILT_IN_CHKP_NARROW_PTR_BOUNDS, BUILT_IN_CHKP_STORE_PTR_BOUNDS,
+	BUILT_IN_CHKP_GET_PTR_LBOUND, BUILT_IN_CHKP_GET_PTR_UBOUND,
+	BUILT_IN_CHKP_BNDMK, BUILT_IN_CHKP_BNDSTX, BUILT_IN_CHKP_BNDCL,
+	BUILT_IN_CHKP_BNDCU, BUILT_IN_CHKP_BNDLDX, BUILT_IN_CHKP_BNDRET,
+	BUILT_IN_CHKP_INTERSECT, BUILT_IN_CHKP_NARROW,
+	BUILT_IN_CHKP_EXTRACT_LOWER, BUILT_IN_CHKP_EXTRACT_UPPER.
+	(std_expand_builtin_va_start): Init bounds for va_list.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags): Add
+	__CHKP__ macro when Pointer Bounds Checker is on.
+	* params.def (PARAM_CHKP_MAX_CTOR_SIZE): New.
+	* passes.def (pass_ipa_chkp_versioning): New.
+	(pass_early_local_passes): Renamed to pass_build_ssa_passes.
+	(pass_fixup_cfg): Moved to pass_chkp_instrumentation_passes.
+	(pass_chkp_instrumentation_passes): New.
+	(pass_ipa_chkp_produce_thunks): New.
+	(pass_local_optimization_passes): New.
+	(pass_chkp_opt): New.
+	* tree-pass.h (make_pass_ipa_chkp_versioning): New.
+	(make_pass_ipa_chkp_produce_thunks): New.
+	(make_pass_chkp): New.
+	(make_pass_chkp_opt): New.
+	(make_pass_early_local_passes): Renamed to ...
+	(make_pass_build_ssa_passes): This.
+	(make_pass_chkp_instrumentation_passes): New.
+	(make_pass_local_optimization_passes): New.
+	* passes.c (pass_manager::execute_early_local_passes): Execute
+	early passes in three steps.
+	(execute_all_early_local_passes): Renamed to ...
+	(execute_build_ssa_passes): This.
+	(pass_data_early_local_passes): Renamed to ...
+	(pass_data_build_ssa_passes): This.
+	(pass_early_local_passes): Renamed to ...
+	(pass_build_ssa_passes): This.
+	(pass_data_chkp_instrumentation_passes): New.
+	(pass_chkp_instrumentation_passes): New.
+	(pass_data_local_optimization_passes): New.
+	(pass_local_optimization_passes): New.
+	(make_pass_early_local_passes): Renamed to ...
+	(make_pass_build_ssa_passes): This.
+	(make_pass_chkp_instrumentation_passes): New.
+	(make_pass_local_optimization_passes): New.
+	* c-family/c.opt (fcheck-pointer-bounds): New.
+	(fchkp-check-incomplete-type): New.
+	(fchkp-zero-input-bounds-for-main): New.
+	(fchkp-first-field-has-own-bounds): New.
+	(fchkp-narrow-bounds): New.
+	(fchkp-narrow-to-innermost-array): New.
+	(fchkp-optimize): New.
+	(fchkp-use-fast-string-functions): New.
+	(fchkp-use-nochk-string-functions): New.
+	(fchkp-use-static-bounds): New.
+	(fchkp-use-static-const-bounds): New.
+	(fchkp-treat-zero-dynamic-size-as-infinite): New.
+	(fchkp-check-read): New.
+	(fchkp-check-write): New.
+	(fchkp-store-bounds): New.
+	(fchkp-instrument-calls): New.
+	(fchkp-instrument-marked-only): New.
+	(Wchkp): New.
+	* c-family/c-common.c (handle_bnd_variable_size_attribute): New.
+	(handle_bnd_legacy): New.
+	(handle_bnd_instrument): New.
+	(c_common_attribute_table): Add bnd_variable_size, bnd_legacy
+	and bnd_instrument.  Fix documentation.
+	(c_common_format_attribute_table): Likewsie.
+	* toplev.c: include tree-chkp.h.
+	(process_options): Check Pointer Bounds Checker is supported.
+	(compile_file): Add chkp_finish_file call.
+	* ipa-cp.c (initialize_node_lattices): Use cgraph_local_p
+	to handle instrumentation clones properly.
+	(propagate_constants_accross_call): Do not propagate
+	through instrumentation thunks.
+	* ipa-pure-const.c (propagate_pure_const): Support
+	IPA_REF_CHKP.
+	* ipa-inline.c (early_inliner): Check edge has summary allocated.
+	* ipa-split.c: Include tree-chkp.h.
+	(find_retbnd): New.
+	(split_part_set_ssa_name_p): New.
+	(consider_split): Do not split retbnd and retval
+	producers.
+	(insert_bndret_call_after): new.
+	(split_function): Propagate Pointer Bounds Checker
+	instrumentation marks and handle returned bounds.
+	* tree-ssa-sccvn.h (vn_reference_op_struct): Transform opcode
+	into bit field and add with_bounds field.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Set
+	with_bounds field for instrumented calls.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Restore
+	CALL_WITH_BOUNDS_P flag for calls.
+	* tree-ssa-ccp.c: Include tree-chkp.h.
+	(insert_clobber_before_stack_restore): Handle
+	BUILT_IN_CHKP_BNDRET calls.
+	* tree-ssa-dce.c: Include tree-chkp.h.
+	(propagate_necessity): For free call fed by alloc check
+	bounds are also provided by the same alloc.
+	(eliminate_unnecessary_stmts): Handle BUILT_IN_CHKP_BNDRET
+	used by free calls.
+	* tree-inline.c: Include tree-chkp.h.
+	(declare_return_variable): Add arg holding
+	returned bounds slot.  Create and initialize returned bounds var.
+	(remap_gimple_stmt): Handle returned bounds.
+	Return sequence of statements instead of a single statement.
+	(insert_init_stmt): Add declaration.
+	(remap_gimple_seq): Adjust to new remap_gimple_stmt signature.
+	(copy_bb): Adjust to changed return type of remap_gimple_stmt.
+	Properly handle bounds in va_arg_pack and va_arg_pack_len.
+	(expand_call_inline): Handle returned bounds.  Add bounds copy
+	for generated mem to mem assignments.
+	* tree-inline.h (copy_body_data): Add fields retbnd and
+	assign_stmts.
+	* value-prof.c: Include tree-chkp.h.
+	(gimple_ic): Support returned bounds.
+	* ipa.c (cgraph_build_static_cdtor_1): Support contructors
+	with "chkp ctor" and "bnd_legacy" attributes.
+	(symtab_remove_unreachable_nodes): Keep initial values for
+	pointer bounds to be used for checks eliminations.
+	(process_references): Handle IPA_REF_CHKP.
+	(walk_polymorphic_call_targets): Likewise.
+	* ipa-visibility.c (cgraph_externally_visible_p): Mark
+	instrumented 'main' as externally visible.
+	(function_and_variable_visibility): Filter instrumentation
+	thunks.
+	* cgraph.h (cgraph_thunk_info): Add add_pointer_bounds_args
+	field.
+	(cgraph_node): Add instrumented_version, orig_decl and
+	instrumentation_clone fields.
+	(symtab_node::get_alias_target): Allow IPA_REF_CHKP reference.
+	(varpool_node): Add need_bounds_init field.
+	(cgraph_local_p): New.
+	* cgraph.c: Include tree-chkp.h.
+	(cgraph_node::remove): Fix instrumented_version
+	of the referenced node if any.
+	(cgraph_node::dump): Dump instrumentation_clone and
+	instrumented_version fields.
+	(cgraph_node::verify_node): Check correctness of IPA_REF_CHKP
+	references and instrumentation thunks.
+	(cgraph_can_remove_if_no_direct_calls_and_refs_p): Keep
+	all not instrumented instrumentation clones alive.
+	(cgraph_redirect_edge_call_stmt_to_callee): Support
+	returned bounds.
+	* cgraphbuild.c (rebuild_cgraph_edges): Rebuild IPA_REF_CHKP
+	reference.
+	(cgraph_rebuild_references): Likewise.
+	* cgraphunit.c: Include tree-chkp.h.
+	(assemble_thunks_and_aliases): Skip thunks calling instrumneted
+	function version.
+	(varpool_finalize_decl): Register statically initialized decls
+	in Pointer Bounds Checker.
+	(walk_polymorphic_call_targets): Do not mark generated call to
+	__builtin_unreachable as with_bounds.
+	(output_weakrefs): If there are both instrumented and original
+	versions, output only one of them.
+	(cgraph_node::expand_thunk): Set with_bounds flag
+	for created call statement.
+	* ipa-ref.h (ipa_ref_use): Add IPA_REF_CHKP.
+	(ipa_ref): increase size of use field.
+	* symtab.c (ipa_ref_use_name): Add element for IPA_REF_CHKP.
+	* varpool.c (dump_varpool_node): Dump need_bounds_init field.
+	(ctor_for_folding): Do not fold constant bounds vars.
+	* lto-streamer.h (LTO_minor_version): Change minor version from
+	0 to 1.
+	* lto-cgraph.c (compute_ltrans_boundary): Keep initial values for
+	pointer bounds.
+	(lto_output_node): Output instrumentation_clone,
+	thunk.add_pointer_bounds_args and orig_decl field.
+	(lto_output_ref): Adjust to new ipa_ref::use field size.
+	(input_overwrite_node): Read instrumentation_clone field.
+	(input_node): Read thunk.add_pointer_bounds_args and orig_decl
+	fields.
+	(input_ref): Adjust to new ipa_ref::use field size.
+	(input_cgraph_1): Compute instrumented_version fields and restore
+	IDENTIFIER_TRANSPARENT_ALIAS chains.
+	(lto_output_varpool_node): Output
+	need_bounds_init value.
+	(input_varpool_node): Read need_bounds_init value.
+	* lto-partition.c (add_symbol_to_partition_1): Keep original
+	and instrumented versions together.
+	(privatize_symbol_name): Restore transparent alias chain if required.
+	(add_references_to_partition): Add references to pointer bounds vars.
+	* dbxout.c (dbxout_type): Ignore POINTER_BOUNDS_TYPE.
+	* dwarf2out.c (gen_subprogram_die): Ignore bound args.
+	(gen_type_die_with_usage): Skip pointer bounds.
+	(dwarf2out_global_decl): Likewise.
+	(is_base_type): Support POINTER_BOUNDS_TYPE.
+	(gen_formal_types_die): Skip pointer bounds.
+	(gen_decl_die): Likewise.
+	* var-tracking.c (vt_add_function_parameters): Skip
+	bounds parameters.
+	* ipa-icf.c (sem_function::merge): Do not merge when instrumentation
+	thunk still exists.
+	(sem_variable::merge): Reset need_bounds_init flag.
+	* doc/extend.texi: Document Pointer Bounds Checker built-in functions
+	and attributes.
+	* doc/tm.texi.in (TARGET_LOAD_BOUNDS_FOR_ARG): New.
+	(TARGET_STORE_BOUNDS_FOR_ARG): New.
+	(TARGET_LOAD_RETURNED_BOUNDS): New.
+	(TARGET_STORE_RETURNED_BOUNDS): New.
+	(TARGET_CHKP_FUNCTION_VALUE_BOUNDS): New.
+	(TARGET_SETUP_INCOMING_VARARG_BOUNDS): New.
+	(TARGET_BUILTIN_CHKP_FUNCTION): New.
+	(TARGET_CHKP_BOUND_TYPE): New.
+	(TARGET_CHKP_BOUND_MODE): New.
+	(TARGET_CHKP_MAKE_BOUNDS_CONSTANT): New.
+	(TARGET_CHKP_INITIALIZE_BOUNDS): New.
+	* doc/tm.texi: Regenerated.
+	* doc/rtl.texi (MODE_POINTER_BOUNDS): New.
+	(BND32mode): New.
+	(BND64mode): New.
+	* doc/invoke.texi (-mmpx): New.
+	(-mno-mpx): New.
+	(chkp-max-ctor-size): New.
+	* config/i386/constraints.md (w): New.
+	(Ti): New.
+	(Tb): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add __MPX__.
+	* config/i386/i386-modes.def (BND32): New.
+	(BND64): New.
+	* config/i386/i386-protos.h (ix86_bnd_prefixed_insn_p): New.
+	* config/i386/i386.c: Include tree-chkp.h, rtl-chkp.h, tree-iterator.h.
+	(regclass_map): Add bound registers.
+	(dbx_register_map): Likewise.
+	(dbx64_register_map): Likewise.
+	(svr4_dbx_register_map): Likewise.
+	(isa_opts): Add -mmpx.
+	(PTA_MPX): New.
+	(ix86_option_override_internal): Support MPX ISA.
+	(ix86_conditional_register_usage): Support bound registers.
+	(ix86_code_end): Add MPX bnd prefix.
+	(output_set_got): Likewise.
+	(print_reg): Avoid prefixes for bound registers.
+	(ix86_print_operand): Add '!' (MPX bnd) print prefix support.
+	(ix86_print_operand_punct_valid_p): Likewise.
+	(ix86_print_operand_address): Support UNSPEC_BNDMK_ADDR and
+	UNSPEC_BNDLDX_ADDR.
+	(ix86_output_call_insn): Add MPX bnd prefix to branch instructions.
+	(ix86_class_likely_spilled_p): Add bound regs support.
+	(ix86_hard_regno_mode_ok): Likewise.
+	(x86_order_regs_for_local_alloc): Likewise.
+	(ix86_bnd_prefixed_insn_p): New.
+	(ix86_builtins): Add
+	IX86_BUILTIN_BNDMK, IX86_BUILTIN_BNDSTX,
+	IX86_BUILTIN_BNDLDX, IX86_BUILTIN_BNDCL,
+	IX86_BUILTIN_BNDCU, IX86_BUILTIN_BNDRET,
+	IX86_BUILTIN_BNDNARROW, IX86_BUILTIN_BNDINT,
+	IX86_BUILTIN_SIZEOF, IX86_BUILTIN_BNDLOWER,
+	IX86_BUILTIN_BNDUPPER.
+	(builtin_isa): Add leaf_p and nothrow_p fields.
+	(def_builtin): Initialize leaf_p and nothrow_p.
+	(ix86_add_new_builtins): Handle leaf_p and nothrow_p
+	flags.
+	(bdesc_mpx): New.
+	(bdesc_mpx_const): New.
+	(ix86_init_mpx_builtins): New.
+	(ix86_init_builtins): Call ix86_init_mpx_builtins.
+	(ix86_emit_cmove): New.
+	(ix86_emit_move_max): New.
+	(ix86_expand_builtin): Expand IX86_BUILTIN_BNDMK,
+	IX86_BUILTIN_BNDSTX, IX86_BUILTIN_BNDLDX,
+	IX86_BUILTIN_BNDCL, IX86_BUILTIN_BNDCU,
+	IX86_BUILTIN_BNDRET, IX86_BUILTIN_BNDNARROW,
+	IX86_BUILTIN_BNDINT, IX86_BUILTIN_SIZEOF,
+	IX86_BUILTIN_BNDLOWER, IX86_BUILTIN_BNDUPPER.
+	(ix86_function_value_bounds): New.
+	(ix86_builtin_mpx_function): New.
+	(ix86_get_arg_address_for_bt): New.
+	(ix86_load_bounds): New.
+	(ix86_store_bounds): New.
+	(ix86_load_returned_bounds): New.
+	(ix86_store_returned_bounds): New.
+	(ix86_mpx_bound_mode): New.
+	(ix86_make_bounds_constant): New.
+	(ix86_initialize_bounds):
+	(TARGET_LOAD_BOUNDS_FOR_ARG): New.
+	(TARGET_STORE_BOUNDS_FOR_ARG): New.
+	(TARGET_LOAD_RETURNED_BOUNDS): New.
+	(TARGET_STORE_RETURNED_BOUNDS): New.
+	(TARGET_CHKP_BOUND_MODE): New.
+	(TARGET_BUILTIN_CHKP_FUNCTION): New.
+	(TARGET_CHKP_FUNCTION_VALUE_BOUNDS): New.
+	(TARGET_CHKP_MAKE_BOUNDS_CONSTANT): New.
+	(TARGET_CHKP_INITIALIZE_BOUNDS): New.
+	(ix86_option_override_internal): Do not
+	support x32 with MPX.
+	(init_cumulative_args): Init stdarg, bnd_regno, bnds_in_bt
+	and force_bnd_pass.
+	(function_arg_advance_32): Return number of used integer
+	registers.
+	(function_arg_advance_64): Likewise.
+	(function_arg_advance_ms_64): Likewise.
+	(ix86_function_arg_advance): Handle pointer bounds.
+	(ix86_function_arg): Likewise.
+	(ix86_function_value_regno_p): Mark fisrt bounds registers as
+	possible function value.
+	(ix86_function_value_1): Handle pointer bounds type/mode
+	(ix86_return_in_memory): Likewise.
+	(ix86_print_operand): Analyse insn to decide abounf "bnd" prefix.
+	(ix86_expand_call): Generate returned bounds.
+	(ix86_setup_incoming_vararg_bounds): New.
+	(ix86_va_start): Initialize bounds for pointers in va_list.
+	(TARGET_SETUP_INCOMING_VARARG_BOUNDS): New.
+	* config/i386/i386.h (TARGET_MPX): New.
+	(TARGET_MPX_P): New.
+	(FIRST_PSEUDO_REGISTER): Fix to new value.
+	(FIXED_REGISTERS): Add bound registers.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(HARD_REGNO_NREGS): Likewise.
+	(VALID_BND_REG_MODE): New.
+	(FIRST_BND_REG): New.
+	(LAST_BND_REG): New.
+	(reg_class): Add BND_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(BND_REGNO_P): New.
+	(ANY_BND_REG_P): New.
+	(BNDmode): New.
+	(HI_REGISTER_NAMES): Add bound registers.
+	(ix86_args): Add bnd_regno, bnds_in_bt,	force_bnd_pass and
+	stdarg fields.
+	* config/i386/i386.md (UNSPEC_BNDMK): New.
+	(UNSPEC_BNDMK_ADDR): New.
+	(UNSPEC_BNDSTX): New.
+	(UNSPEC_BNDLDX): New.
+	(UNSPEC_BNDLDX_ADDR): New.
+	(UNSPEC_BNDCL): New.
+	(UNSPEC_BNDCU): New.
+	(UNSPEC_BNDCN): New.
+	(UNSPEC_MPX_FENCE): New.
+	(UNSPEC_SIZEOF): New.
+	(BND0_REG): New.
+	(BND1_REG): New.
+	(type): Add mpxmov, mpxmk, mpxchk, mpxld, mpxst.
+	(length_immediate): Support mpxmov, mpxmk, mpxchk, mpxld, mpxst.
+	(prefix_rep): Check for bnd prefix.
+	(prefix_0f): Support mpxmov, mpxmk, mpxchk, mpxld, mpxst.
+	(length_nobnd): New.
+	(length): Use length_nobnd when specified.
+	(memory): Support mpxmov, mpxmk, mpxchk, mpxld, mpxst.
+	(BND): New.
+	(bnd_ptr): New.
+	(BNDCHECK): New.
+	(bndcheck): New.
+	(*jcc_1): Add MPX bnd prefix.
+	(*jcc_2): Likewise.
+	(jump): Likewise.
+	(*indirect_jump): Likewise.
+	(*tablejump_1): Likewise.
+	(simple_return_internal): Likewise.
+	(simple_return_internal_long): Likewise.
+	(simple_return_pop_internal): Likewise.
+	(simple_return_indirect_internal): Likewise.
+	(<mode>_mk): New.
+	(*<mode>_mk): New.
+	(mov<mode>): New.
+	(*mov<mode>_internal_mpx): New.
+	(<mode>_<bndcheck>): New.
+	(*<mode>_<bndcheck>): New.
+	(<mode>_ldx): New.
+	(*<mode>_ldx): New.
+	(<mode>_stx): New.
+	(*<mode>_stx): New.
+	move_size_reloc_<mode>): New.
+	* config/i386/predicates.md (address_mpx_no_base_operand): New.
+	(address_mpx_no_index_operand): New.
+	(bnd_mem_operator): New.
+	(symbol_operand): New.
+	(x86_64_immediate_size_operand): New.
+	* config/i386/i386.opt (mmpx): New.
+	* config/i386/i386-builtin-types.def (BND): New.
+	(ULONG): New.
+	(BND_FTYPE_PCVOID_ULONG): New.
+	(VOID_FTYPE_BND_PCVOID): New.
+	(VOID_FTYPE_PCVOID_PCVOID_BND): New.
+	(BND_FTYPE_PCVOID_PCVOID): New.
+	(BND_FTYPE_PCVOID): New.
+	(BND_FTYPE_BND_BND): New.
+	(PVOID_FTYPE_PVOID_PVOID_ULONG): New.
+	(PVOID_FTYPE_PCVOID_BND_ULONG): New.
+	(ULONG_FTYPE_VOID): New.
+	(PVOID_FTYPE_BND): New.
+
 2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* passes.def (pass_compute_alignments, pass_duplicate_computed_gotos,

@@ -144,6 +144,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_XSAVEOPT_P(x)	TARGET_ISA_XSAVEOPT_P(x)
 #define TARGET_PREFETCHWT1	TARGET_ISA_PREFETCHWT1
 #define TARGET_PREFETCHWT1_P(x)	TARGET_ISA_PREFETCHWT1_P(x)
+#define TARGET_MPX	TARGET_ISA_MPX
+#define TARGET_MPX_P(x)	TARGET_ISA_MPX_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -943,7 +945,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 77
+#define FIRST_PSEUDO_REGISTER 81
 
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER.  */
@@ -975,7 +977,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      0,   0,    0,    0,    0,    0,    0,    0,		\
 /*  k0,  k1, k2, k3, k4, k5, k6, k7*/				\
-     0,  0,   0,  0,  0,  0,  0,  0 }
+     0,  0,   0,  0,  0,  0,  0,  0,				\
+/*   b0, b1, b2, b3*/						\
+     0,  0,  0,  0 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -1009,7 +1013,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      6,    6,     6,    6,    6,    6,    6,    6,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
-     1,   1,   1,   1,   1,   1,   1,   1 }
+     1,   1,   1,   1,   1,   1,   1,   1,			\
+/*   b0, b1, b2, b3*/						\
+     1,  1,  1,  1 }
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -1025,7 +1031,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,	\
    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,	\
-   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76 }
+   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,  \
+   78, 79, 80 }
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1046,8 +1053,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    applied to them.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO)				\
-   || MMX_REGNO_P (REGNO) || MASK_REGNO_P (REGNO)			\
+  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+   || MASK_REGNO_P (REGNO) || BND_REGNO_P (REGNO)			\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
@@ -1101,6 +1108,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE == V1DImode) || (MODE) == DImode				\
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode)
+
+#define VALID_BND_REG_MODE(MODE) \
+  (TARGET_64BIT ? (MODE) == BND64mode : (MODE) == BND32mode)
 
 #define VALID_DFP_MODE_P(MODE) \
   ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
@@ -1210,6 +1220,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIRST_MASK_REG  (LAST_EXT_REX_SSE_REG + 1) /*69*/
 #define LAST_MASK_REG   (FIRST_MASK_REG + 7) /*76*/
 
+#define FIRST_BND_REG  (LAST_MASK_REG + 1) /*77*/
+#define LAST_BND_REG   (FIRST_BND_REG + 3) /*80*/
+
 /* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
@@ -1292,6 +1305,7 @@ enum reg_class
   SSE_FIRST_REG,
   SSE_REGS,
   EVEX_SSE_REGS,
+  BND_REGS,
   ALL_SSE_REGS,
   MMX_REGS,
   FP_TOP_SSE_REGS,
@@ -1349,6 +1363,7 @@ enum reg_class
    "SSE_FIRST_REG",			\
    "SSE_REGS",				\
    "EVEX_SSE_REGS",			\
+   "BND_REGS",				\
    "ALL_SSE_REGS",			\
    "MMX_REGS",				\
    "FP_TOP_SSE_REGS",			\
@@ -1368,37 +1383,38 @@ enum reg_class
    TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
 #define REG_CLASS_CONTENTS                                              \
-{     { 0x00,       0x0,   0x0 },                                       \
-      { 0x01,       0x0,   0x0 },       /* AREG */                      \
-      { 0x02,       0x0,   0x0 },       /* DREG */                      \
-      { 0x04,       0x0,   0x0 },       /* CREG */                      \
-      { 0x08,       0x0,   0x0 },       /* BREG */                      \
-      { 0x10,       0x0,   0x0 },       /* SIREG */                     \
-      { 0x20,       0x0,   0x0 },       /* DIREG */                     \
-      { 0x03,       0x0,   0x0 },       /* AD_REGS */                   \
-      { 0x0f,       0x0,   0x0 },       /* Q_REGS */                    \
-  { 0x1100f0,    0x1fe0,   0x0 },       /* NON_Q_REGS */                \
-      { 0x7f,    0x1fe0,   0x0 },       /* INDEX_REGS */                \
-  { 0x1100ff,       0x0,   0x0 },       /* LEGACY_REGS */               \
-      { 0x07,       0x0,   0x0 },       /* CLOBBERED_REGS */            \
-  { 0x1100ff,    0x1fe0,   0x0 },       /* GENERAL_REGS */              \
-     { 0x100,       0x0,   0x0 },       /* FP_TOP_REG */                \
-    { 0x0200,       0x0,   0x0 },       /* FP_SECOND_REG */             \
-    { 0xff00,       0x0,   0x0 },       /* FLOAT_REGS */                \
-  { 0x200000,       0x0,   0x0 },       /* SSE_FIRST_REG */             \
-{ 0x1fe00000,  0x1fe000,   0x0 },       /* SSE_REGS */                  \
-       { 0x0,0xffe00000,  0x1f },       /* EVEX_SSE_REGS */             \
-{ 0x1fe00000,0xffffe000,  0x1f },       /* ALL_SSE_REGS */              \
-{ 0xe0000000,      0x1f,   0x0 },       /* MMX_REGS */                  \
-{ 0x1fe00100,0xffffe000,  0x1f },       /* FP_TOP_SSE_REG */            \
-{ 0x1fe00200,0xffffe000,  0x1f },       /* FP_SECOND_SSE_REG */         \
-{ 0x1fe0ff00,0xffffe000,  0x1f },       /* FLOAT_SSE_REGS */            \
-{   0x11ffff,    0x1fe0,   0x0 },       /* FLOAT_INT_REGS */            \
-{ 0x1ff100ff,0xffffffe0,  0x1f },       /* INT_SSE_REGS */              \
-{ 0x1ff1ffff,0xffffffe0,  0x1f },       /* FLOAT_INT_SSE_REGS */        \
-       { 0x0,       0x0,0x1fc0 },       /* MASK_EVEX_REGS */           \
-       { 0x0,       0x0,0x1fe0 },       /* MASK_REGS */                 \
-{ 0xffffffff,0xffffffff,0x1fff }                                        \
+{     { 0x00,       0x0,    0x0 },                                       \
+      { 0x01,       0x0,    0x0 },       /* AREG */                      \
+      { 0x02,       0x0,    0x0 },       /* DREG */                      \
+      { 0x04,       0x0,    0x0 },       /* CREG */                      \
+      { 0x08,       0x0,    0x0 },       /* BREG */                      \
+      { 0x10,       0x0,    0x0 },       /* SIREG */                     \
+      { 0x20,       0x0,    0x0 },       /* DIREG */                     \
+      { 0x03,       0x0,    0x0 },       /* AD_REGS */                   \
+      { 0x0f,       0x0,    0x0 },       /* Q_REGS */                    \
+  { 0x1100f0,    0x1fe0,    0x0 },       /* NON_Q_REGS */                \
+      { 0x7f,    0x1fe0,    0x0 },       /* INDEX_REGS */                \
+  { 0x1100ff,       0x0,    0x0 },       /* LEGACY_REGS */               \
+      { 0x07,       0x0,    0x0 },       /* CLOBBERED_REGS */            \
+  { 0x1100ff,    0x1fe0,    0x0 },       /* GENERAL_REGS */              \
+     { 0x100,       0x0,    0x0 },       /* FP_TOP_REG */                \
+    { 0x0200,       0x0,    0x0 },       /* FP_SECOND_REG */             \
+    { 0xff00,       0x0,    0x0 },       /* FLOAT_REGS */                \
+  { 0x200000,       0x0,    0x0 },       /* SSE_FIRST_REG */             \
+{ 0x1fe00000,  0x1fe000,    0x0 },       /* SSE_REGS */                  \
+       { 0x0,0xffe00000,   0x1f },       /* EVEX_SSE_REGS */             \
+       { 0x0,       0x0,0x1e000 },       /* BND_REGS */			 \
+{ 0x1fe00000,0xffffe000,   0x1f },       /* ALL_SSE_REGS */              \
+{ 0xe0000000,      0x1f,    0x0 },       /* MMX_REGS */                  \
+{ 0x1fe00100,0xffffe000,   0x1f },       /* FP_TOP_SSE_REG */            \
+{ 0x1fe00200,0xffffe000,   0x1f },       /* FP_SECOND_SSE_REG */         \
+{ 0x1fe0ff00,0xffffe000,   0x1f },       /* FLOAT_SSE_REGS */            \
+{   0x11ffff,    0x1fe0,    0x0 },       /* FLOAT_INT_REGS */            \
+{ 0x1ff100ff,0xffffffe0,   0x1f },       /* INT_SSE_REGS */              \
+{ 0x1ff1ffff,0xffffffe0,   0x1f },       /* FLOAT_INT_SSE_REGS */        \
+       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */           \
+       { 0x0,       0x0, 0x1fe0 },       /* MASK_REGS */                 \
+{ 0xffffffff,0xffffffff, 0x1fff }                                        \
 }
 
 /* The same information, inverted:
@@ -1474,6 +1490,9 @@ enum reg_class
 
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
+
+#define BND_REGNO_P(N) IN_RANGE ((N), FIRST_BND_REG, LAST_BND_REG)
+#define ANY_BND_REG_P(X) (REG_P (X) && BND_REGNO_P (REGNO (X)))
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -1644,6 +1663,10 @@ typedef struct ix86_args {
   int float_in_sse;		/* Set to 1 or 2 for 32bit targets if
 				   SFmode/DFmode arguments should be passed
 				   in SSE registers.  Otherwise 0.  */
+  int bnd_regno;                /* next available bnd register number */
+  int bnds_in_bt;               /* number of bounds expected in BT.  */
+  int force_bnd_pass;           /* number of bounds expected for stdarg arg.  */
+  int stdarg;                   /* Set to 1 if function is stdarg.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
 } CUMULATIVE_ARGS;
@@ -1921,6 +1944,9 @@ do {							\
    between pointers and any other objects of this machine mode.  */
 #define Pmode (ix86_pmode == PMODE_DI ? DImode : SImode)
 
+/* Specify the machine mode that bounds have.  */
+#define BNDmode (ix86_pmode == PMODE_DI ? BND64mode : BND32mode)
+
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
    greater then zero if they are zero-extended and less then zero if the
@@ -2031,7 +2057,8 @@ do {							\
  "xmm20", "xmm21", "xmm22", "xmm23",					\
  "xmm24", "xmm25", "xmm26", "xmm27",					\
  "xmm28", "xmm29", "xmm30", "xmm31",					\
- "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7" }
+ "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7",			\
+ "bnd0", "bnd1", "bnd2", "bnd3" }
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 

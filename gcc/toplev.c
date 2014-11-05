@@ -97,6 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "tree-chkp.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -596,6 +597,9 @@ compile_file (void)
 
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
+
+      if (flag_check_pointer_bounds)
+	chkp_finish_file ();
 
       output_shared_constant_pool ();
       output_object_blocks ();
@@ -1308,6 +1312,12 @@ process_options (void)
 	   "-floop-interchange, -floop-strip-mine, -floop-parallelize-all, "
 	   "and -ftree-loop-linear)");
 #endif
+
+  if (flag_check_pointer_bounds)
+    {
+      if (targetm.chkp_bound_mode () == VOIDmode)
+	error ("-fcheck-pointer-bounds is not supported for this target");
+    }
 
   /* One region RA really helps to decrease the code size.  */
   if (flag_ira_region == IRA_REGION_AUTODETECT)

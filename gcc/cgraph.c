@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "profile.h"
 #include "params.h"
+#include "tree-chkp.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1344,6 +1345,33 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  e->speculative = false;
 	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
 						     false);
+
+	  /* Fix edges for BUILT_IN_CHKP_BNDRET calls attached to the
+	     processed call stmt.  */
+	  if (gimple_call_with_bounds_p (new_stmt)
+	      && gimple_call_lhs (new_stmt)
+	      && chkp_retbnd_call_by_val (gimple_call_lhs (e2->call_stmt)))
+	    {
+	      tree dresult = gimple_call_lhs (new_stmt);
+	      tree iresult = gimple_call_lhs (e2->call_stmt);
+	      gimple dbndret = chkp_retbnd_call_by_val (dresult);
+	      gimple ibndret = chkp_retbnd_call_by_val (iresult);
+	      struct cgraph_edge *iedge
+		= e2->caller->cgraph_node::get_edge (ibndret);
+	      struct cgraph_edge *dedge;
+
+	      if (dbndret)
+		{
+		  dedge = iedge->caller->create_edge (iedge->callee,
+						      dbndret, e->count,
+						      e->frequency);
+		  dedge->frequency = compute_call_stmt_bb_frequency
+		    (dedge->caller->decl, gimple_bb (dedge->call_stmt));
+		}
+	      iedge->frequency = compute_call_stmt_bb_frequency
+		(iedge->caller->decl, gimple_bb (iedge->call_stmt));
+	    }
+
 	  e->frequency = compute_call_stmt_bb_frequency
 			   (e->caller->decl, gimple_bb (e->call_stmt));
 	  e2->frequency = compute_call_stmt_bb_frequency
@@ -1776,6 +1804,12 @@ cgraph_node::remove (void)
       call_site_hash = NULL;
     }
 
+  if (instrumented_version)
+    {
+      instrumented_version->instrumented_version = NULL;
+      instrumented_version = NULL;
+    }
+
   symtab->release_symbol (this, uid);
 }
 
@@ -2027,6 +2061,11 @@ cgraph_node::dump (FILE *f)
       if (edge->indirect_info->polymorphic)
 	edge->indirect_info->context.dump (f);
     }
+
+  if (instrumentation_clone)
+    fprintf (f, "  Is instrumented version.\n");
+  else if (instrumented_version)
+    fprintf (f, "  Has instrumented version.\n");
 }
 
 /* Dump call graph node NODE to stderr.  */
@@ -2389,6 +2428,12 @@ bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
   gcc_assert (!global.inlined_to);
+  /* Instrumentation clones should not be removed before
+     instrumentation happens.  New callers may appear after
+     instrumentation.  */
+  if (instrumentation_clone
+      && !chkp_function_instrumented_p (decl))
+    return false;
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -2825,7 +2870,9 @@ cgraph_node::verify_node (void)
           error_found = true;
 	}
       for (i = 0; iterate_reference (i, ref); i++)
-	if (ref->use != IPA_REF_ALIAS)
+	if (ref->use == IPA_REF_CHKP)
+	  ;
+	else if (ref->use != IPA_REF_ALIAS)
 	  {
 	    error ("Alias has non-alias reference");
 	    error_found = true;
@@ -2843,6 +2890,64 @@ cgraph_node::verify_node (void)
 	    error_found = true;
 	  }
     }
+
+  /* Check instrumented version reference.  */
+  if (instrumented_version
+      && instrumented_version->instrumented_version != this)
+    {
+      error ("Instrumentation clone does not reference original node");
+      error_found = true;
+    }
+
+  /* Cannot have orig_decl for not instrumented nodes.  */
+  if (!instrumentation_clone && orig_decl)
+    {
+      error ("Not instrumented node has non-NULL original declaration");
+      error_found = true;
+    }
+
+  /* If original not instrumented node still exists then we may check
+     original declaration is set properly.  */
+  if (instrumented_version
+      && orig_decl
+      && orig_decl != instrumented_version->decl)
+    {
+      error ("Instrumented node has wrong original declaration");
+      error_found = true;
+    }
+
+  /* Check all nodes have chkp reference to their instrumented versions.  */
+  if (analyzed
+      && instrumented_version
+      && !instrumentation_clone)
+    {
+      bool ref_found = false;
+      int i;
+      struct ipa_ref *ref;
+
+      for (i = 0; iterate_reference (i, ref); i++)
+	if (ref->use == IPA_REF_CHKP)
+	  {
+	    if (ref_found)
+	      {
+		error ("Node has more than one chkp reference");
+		error_found = true;
+	      }
+	    if (ref->referred != instrumented_version)
+	      {
+		error ("Wrong node is referenced with chkp reference");
+		error_found = true;
+	      }
+	    ref_found = true;
+	  }
+
+      if (!ref_found)
+	{
+	  error ("Analyzed node has no reference to instrumented version");
+	  error_found = true;
+	}
+    }
+
   if (analyzed && thunk.thunk_p)
     {
       if (!callees)
@@ -2860,6 +2965,12 @@ cgraph_node::verify_node (void)
 	  error ("Thunk is not supposed to have body");
           error_found = true;
         }
+      if (thunk.add_pointer_bounds_args
+	  && !instrumented_version->semantically_equivalent_p (callees->callee))
+	{
+	  error ("Instrumentation thunk has wrong edge callee");
+          error_found = true;
+	}
     }
   else if (analyzed && gimple_has_body_p (decl)
 	   && !TREE_ASM_WRITTEN (decl)

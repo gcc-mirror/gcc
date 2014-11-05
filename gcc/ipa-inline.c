@@ -2453,11 +2453,15 @@ early_inliner (function *fun)
 	     info that might be cleared out for newly discovered edges.  */
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    {
-	      struct inline_edge_summary *es = inline_edge_summary (edge);
-	      es->call_stmt_size
-		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
-	      es->call_stmt_time
-		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
+	      /* We have no summary for new bound store calls yet.  */
+	      if (inline_edge_summary_vec.length () > (unsigned)edge->uid)
+		{
+		  struct inline_edge_summary *es = inline_edge_summary (edge);
+		  es->call_stmt_size
+		    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
+		  es->call_stmt_time
+		    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
+		}
 	      if (edge->callee->decl
 		  && !gimple_check_call_matching_types (
 		      edge->call_stmt, edge->callee->decl, false))

@@ -1326,6 +1326,7 @@ propagate_pure_const (void)
 		    fprintf (dump_file, "    global var write\n");
 		  break;
 		case IPA_REF_ADDR:
+		case IPA_REF_CHKP:
 		  break;
 		default:
 		  gcc_unreachable ();

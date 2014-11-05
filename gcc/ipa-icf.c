@@ -579,7 +579,8 @@ sem_function::merge (sem_item *alias_item)
       redirect_callers
 	= (!original_discardable
 	   && alias->get_availability () > AVAIL_INTERPOSABLE
-	   && original->get_availability () > AVAIL_INTERPOSABLE);
+	   && original->get_availability () > AVAIL_INTERPOSABLE
+	   && !alias->instrumented_version);
     }
   else
     {
@@ -1200,6 +1201,7 @@ sem_variable::merge (sem_item *alias_item)
       alias->analyzed = false;
 
       DECL_INITIAL (alias->decl) = NULL;
+      alias->need_bounds_init = false;
       alias->remove_all_references ();
 
       varpool_node::create_alias (alias_var->decl, decl);

@@ -191,7 +191,7 @@ gimple_build_with_ops_stat (enum gimple_code code, unsigned subcode,
 gimple
 gimple_build_return (tree retval)
 {
-  gimple s = gimple_build_with_ops (GIMPLE_RETURN, ERROR_MARK, 1);
+  gimple s = gimple_build_with_ops (GIMPLE_RETURN, ERROR_MARK, 2);
   if (retval)
     gimple_return_set_retval (s, retval);
   return s;
@@ -378,6 +378,7 @@ gimple_build_call_from_tree (tree t)
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
+  gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
 
   return call;
 }

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "timevar.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "langhooks.h"
 #include "target.h"
 #include "hash-map.h"
@@ -61,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -88,6 +91,15 @@ struct arg_data
   /* If REG is a PARALLEL, this is a copy of VALUE pulled into the correct
      form for emit_group_move.  */
   rtx parallel_value;
+  /* If value is passed in neither reg nor stack, this field holds a number
+     of a special slot to be used.  */
+  rtx special_slot;
+  /* For pointer bounds hold an index of parm bounds are bound to.  -1 if
+     there is no such pointer.  */
+  int pointer_arg;
+  /* If pointer_arg refers a structure, then pointer_offset holds an offset
+     of a pointer in this structure.  */
+  int pointer_offset;
   /* If REG was promoted from the actual mode of the argument expression,
      indicates whether the promotion is sign- or zero-extended.  */
   int unsignedp;
@@ -145,6 +157,7 @@ static void emit_call_1 (rtx, tree, tree, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 			 HOST_WIDE_INT, rtx, rtx, int, rtx, int,
 			 cumulative_args_t);
 static void precompute_register_parameters (int, struct arg_data *, int *);
+static void store_bounds (struct arg_data *, struct arg_data *);
 static int store_one_arg (struct arg_data *, rtx, int, int, int);
 static void store_unaligned_arguments_into_pseudos (struct arg_data *, int);
 static int finalize_must_preallocate (int, int, struct arg_data *,
@@ -409,6 +422,10 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       && MEM_EXPR (funmem) != NULL_TREE)
     set_mem_expr (XEXP (call, 0), MEM_EXPR (funmem));
 
+  /* Mark instrumented calls.  */
+  if (call && fntree)
+    CALL_EXPR_WITH_BOUNDS_P (call) = CALL_WITH_BOUNDS_P (fntree);
+
   /* Put the register usage information there.  */
   add_function_usage_to (call_insn, call_fusage);
 
@@ -515,8 +532,16 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 static int
 special_function_p (const_tree fndecl, int flags)
 {
-  if (fndecl && DECL_NAME (fndecl)
-      && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
+  tree name_decl = DECL_NAME (fndecl);
+
+  /* For instrumentation clones we want to derive flags
+     from the original name.  */
+  if (cgraph_node::get (fndecl)
+      && cgraph_node::get (fndecl)->instrumentation_clone)
+    name_decl = DECL_NAME (cgraph_node::get (fndecl)->orig_decl);
+
+  if (fndecl && name_decl
+      && IDENTIFIER_LENGTH (name_decl) <= 17
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
 	 think they are.
@@ -528,16 +553,16 @@ special_function_p (const_tree fndecl, int flags)
 	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
       && TREE_PUBLIC (fndecl))
     {
-      const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+      const char *name = IDENTIFIER_POINTER (name_decl);
       const char *tname = name;
 
       /* We assume that alloca will always be called by name.  It
 	 makes no sense to pass it as a pointer-to-function to
 	 anything that does not understand its behavior.  */
-      if (((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
+      if (((IDENTIFIER_LENGTH (name_decl) == 6
 	    && name[0] == 'a'
 	    && ! strcmp (name, "alloca"))
-	   || (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
+	   || (IDENTIFIER_LENGTH (name_decl) == 16
 	       && name[0] == '_'
 	       && ! strcmp (name, "__builtin_alloca"))))
 	flags |= ECF_MAY_BE_ALLOCA;
@@ -1126,23 +1151,86 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   args_size->constant = 0;
   args_size->var = 0;
 
+  bitmap_obstack_initialize (NULL);
+
   /* In this loop, we consider args in the order they are written.
      We fill up ARGS from the back.  */
 
   i = num_actuals - 1;
   {
-    int j = i;
+    int j = i, ptr_arg = -1;
     call_expr_arg_iterator iter;
     tree arg;
+    bitmap slots = NULL;
 
     if (struct_value_addr_value)
       {
 	args[j].tree_value = struct_value_addr_value;
 	j--;
+
+	/* If we pass structure address then we need to
+	   create bounds for it.  Since created bounds is
+	   a call statement, we expand it right here to avoid
+	   fixing all other places where it may be expanded.  */
+	if (CALL_WITH_BOUNDS_P (exp))
+	  {
+	    args[j].value = gen_reg_rtx (targetm.chkp_bound_mode ());
+	    args[j].tree_value
+	      = chkp_make_bounds_for_struct_addr (struct_value_addr_value);
+	    expand_expr_real (args[j].tree_value, args[j].value, VOIDmode,
+			      EXPAND_NORMAL, 0, false);
+	    args[j].pointer_arg = j + 1;
+	    j--;
+	  }
       }
     FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
       {
 	tree argtype = TREE_TYPE (arg);
+
+	/* Remember last param with pointer and associate it
+	   with following pointer bounds.  */
+	if (CALL_WITH_BOUNDS_P (exp)
+	    && chkp_type_has_pointer (argtype))
+	  {
+	    if (slots)
+	      BITMAP_FREE (slots);
+	    ptr_arg = j;
+	    if (!BOUNDED_TYPE_P (argtype))
+	      {
+		slots = BITMAP_ALLOC (NULL);
+		chkp_find_bound_slots (argtype, slots);
+	      }
+	  }
+	else if (POINTER_BOUNDS_TYPE_P (argtype))
+	  {
+	    /* We expect bounds in instrumented calls only.
+	       Otherwise it is a sign we lost flag due to some optimization
+	       and may emit call args incorrectly.  */
+	    gcc_assert (CALL_WITH_BOUNDS_P (exp));
+
+	    /* For structures look for the next available pointer.  */
+	    if (ptr_arg != -1 && slots)
+	      {
+		unsigned bnd_no = bitmap_first_set_bit (slots);
+		args[j].pointer_offset =
+		  bnd_no * POINTER_SIZE / BITS_PER_UNIT;
+
+		bitmap_clear_bit (slots, bnd_no);
+
+		/* Check we have no more pointers in the structure.  */
+		if (bitmap_empty_p (slots))
+		  BITMAP_FREE (slots);
+	      }
+	    args[j].pointer_arg = ptr_arg;
+
+	    /* Check we covered all pointers in the previous
+	       non bounds arg.  */
+	    if (!slots)
+	      ptr_arg = -1;
+	  }
+	else
+	  ptr_arg = -1;
+
 	if (targetm.calls.split_complex_arg
 	    && argtype
 	    && TREE_CODE (argtype) == COMPLEX_TYPE
@@ -1157,7 +1245,12 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  args[j].tree_value = arg;
 	j--;
       }
+
+    if (slots)
+      BITMAP_FREE (slots);
   }
+
+  bitmap_obstack_release (NULL);
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -1292,6 +1385,12 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       args[i].reg = targetm.calls.function_arg (args_so_far, mode, type,
 						argpos < n_named_args);
 
+      if (args[i].reg && CONST_INT_P (args[i].reg))
+	{
+	  args[i].special_slot = args[i].reg;
+	  args[i].reg = NULL;
+	}
+
       /* If this is a sibling call and the machine has register windows, the
 	 register window has to be unwinded before calling the routine, so
 	 arguments have to go into the incoming registers.  */
@@ -1325,10 +1424,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  || (args[i].pass_on_stack && args[i].reg != 0))
 	*must_preallocate = 1;
 
+      /* No stack allocation and padding for bounds.  */
+      if (POINTER_BOUNDS_P (args[i].tree_value))
+	;
       /* Compute the stack-size of this argument.  */
-      if (args[i].reg == 0 || args[i].partial != 0
-	  || reg_parm_stack_space > 0
-	  || args[i].pass_on_stack)
+      else if (args[i].reg == 0 || args[i].partial != 0
+	       || reg_parm_stack_space > 0
+	       || args[i].pass_on_stack)
 	locate_and_pad_parm (mode, type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			     1,
@@ -1542,6 +1644,12 @@ finalize_must_preallocate (int must_preallocate, int num_actuals,
 	    partial_seen = 1;
 	  else if (partial_seen && args[i].reg == 0)
 	    must_preallocate = 1;
+	  /* We preallocate in case there are bounds passed
+	     in the bounds table to have precomputed address
+	     for bounds association.  */
+	  else if (POINTER_BOUNDS_P (args[i].tree_value)
+		   && !args[i].reg)
+	    must_preallocate = 1;
 
 	  if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
 	      && (TREE_CODE (args[i].tree_value) == CALL_EXPR
@@ -1591,6 +1699,10 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  if (! args[i].pass_on_stack
 	      && args[i].reg != 0
 	      && args[i].partial == 0)
+	    continue;
+
+	  /* Pointer Bounds are never passed on the stack.  */
+	  if (POINTER_BOUNDS_P (args[i].tree_value))
 	    continue;
 
 	  if (CONST_INT_P (offset))
@@ -2215,6 +2327,8 @@ expand_call (tree exp, rtx target, int ignore)
   /* Register in which non-BLKmode value will be returned,
      or 0 if no value or if value is BLKmode.  */
   rtx valreg;
+  /* Register(s) in which bounds are returned.  */
+  rtx valbnd = NULL;
   /* Address where we should return a BLKmode value;
      0 if value not BLKmode.  */
   rtx structure_value_addr = 0;
@@ -2473,7 +2587,7 @@ expand_call (tree exp, rtx target, int ignore)
 
       structure_value_addr_value =
 	make_tree (build_pointer_type (TREE_TYPE (funtype)), temp);
-      structure_value_addr_parm = 1;
+      structure_value_addr_parm = CALL_WITH_BOUNDS_P (exp) ? 2 : 1;
     }
 
   /* Count the arguments and set NUM_ACTUALS.  */
@@ -2991,15 +3105,28 @@ expand_call (tree exp, rtx target, int ignore)
 
       /* Figure out the register where the value, if any, will come back.  */
       valreg = 0;
+      valbnd = 0;
       if (TYPE_MODE (rettype) != VOIDmode
 	  && ! structure_value_addr)
 	{
 	  if (pcc_struct_value)
-	    valreg = hard_function_value (build_pointer_type (rettype),
-					  fndecl, NULL, (pass == 0));
+	    {
+	      valreg = hard_function_value (build_pointer_type (rettype),
+					    fndecl, NULL, (pass == 0));
+	      if (CALL_WITH_BOUNDS_P (exp))
+		valbnd = targetm.calls.
+		  chkp_function_value_bounds (build_pointer_type (rettype),
+					      fndecl, (pass == 0));
+	    }
 	  else
-	    valreg = hard_function_value (rettype, fndecl, fntype,
-					  (pass == 0));
+	    {
+	      valreg = hard_function_value (rettype, fndecl, fntype,
+					    (pass == 0));
+	      if (CALL_WITH_BOUNDS_P (exp))
+		valbnd = targetm.calls.chkp_function_value_bounds (rettype,
+								   fndecl,
+								   (pass == 0));
+	    }
 
 	  /* If VALREG is a PARALLEL whose first member has a zero
 	     offset, use that.  This is for targets such as m68k that
@@ -3040,7 +3167,10 @@ expand_call (tree exp, rtx target, int ignore)
 
       for (i = 0; i < num_actuals; i++)
 	{
-	  if (args[i].reg == 0 || args[i].pass_on_stack)
+	  /* Delay bounds until all other args are stored.  */
+	  if (POINTER_BOUNDS_P (args[i].tree_value))
+	    continue;
+	  else if (args[i].reg == 0 || args[i].pass_on_stack)
 	    {
 	      rtx_insn *before_arg = get_last_insn ();
 
@@ -3092,6 +3222,17 @@ expand_call (tree exp, rtx target, int ignore)
 							 &args[i], 1)))
 		sibcall_failure = 1;
 	    }
+
+      /* Store all bounds not passed in registers.  */
+      for (i = 0; i < num_actuals; i++)
+	{
+	  if (POINTER_BOUNDS_P (args[i].tree_value)
+	      && !args[i].reg)
+	    store_bounds (&args[i],
+			  args[i].pointer_arg == -1
+			  ? NULL
+			  : &args[args[i].pointer_arg]);
+	}
 
       /* If register arguments require space on the stack and stack space
 	 was not preallocated, allocate stack space here for arguments
@@ -3496,6 +3637,9 @@ expand_call (tree exp, rtx target, int ignore)
   currently_expanding_call--;
 
   free (stack_usage_map_buf);
+
+  /* Join result with returned bounds so caller may use them if needed.  */
+  target = chkp_join_splitted_slot (target, valbnd);
 
   return target;
 }
@@ -4366,6 +4510,68 @@ emit_library_call_value (rtx orgfun, rtx value,
   return result;
 }
 
+
+/* Store pointer bounds argument ARG  into Bounds Table entry
+   associated with PARM.  */
+static void
+store_bounds (struct arg_data *arg, struct arg_data *parm)
+{
+  rtx slot = NULL, ptr = NULL, addr = NULL;
+
+  /* We may pass bounds not associated with any pointer.  */
+  if (!parm)
+    {
+      gcc_assert (arg->special_slot);
+      slot = arg->special_slot;
+      ptr = const0_rtx;
+    }
+  /* Find pointer associated with bounds and where it is
+     passed.  */
+  else
+    {
+      if (!parm->reg)
+	{
+	  gcc_assert (!arg->special_slot);
+
+	  addr = adjust_address (parm->stack, Pmode, arg->pointer_offset);
+	}
+      else if (REG_P (parm->reg))
+	{
+	  gcc_assert (arg->special_slot);
+	  slot = arg->special_slot;
+
+	  if (MEM_P (parm->value))
+	    addr = adjust_address (parm->value, Pmode, arg->pointer_offset);
+	  else if (REG_P (parm->value))
+	    ptr = gen_rtx_SUBREG (Pmode, parm->value, arg->pointer_offset);
+	  else
+	    {
+	      gcc_assert (!arg->pointer_offset);
+	      ptr = parm->value;
+	    }
+	}
+      else
+	{
+	  gcc_assert (GET_CODE (parm->reg) == PARALLEL);
+
+	  gcc_assert (arg->special_slot);
+	  slot = arg->special_slot;
+
+	  if (parm->parallel_value)
+	    ptr = chkp_get_value_with_offs (parm->parallel_value,
+					    GEN_INT (arg->pointer_offset));
+	  else
+	    gcc_unreachable ();
+	}
+    }
+
+  /* Expand bounds.  */
+  if (!arg->value)
+    arg->value = expand_normal (arg->tree_value);
+
+  targetm.calls.store_bounds_for_arg (ptr, addr, arg->value, slot);
+}
+
 /* Store a single argument for a function call
    into the register or memory area where it must be passed.
    *ARG describes the argument value and where to pass it.

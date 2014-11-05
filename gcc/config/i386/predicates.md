@@ -124,6 +124,10 @@
        (match_test "TARGET_64BIT")
        (match_test "REGNO (op) > BX_REG")))
 
+;; Return true if VALUE is symbol reference
+(define_predicate "symbol_operand"
+  (match_code "symbol_ref"))
+
 ;; Return true if VALUE can be stored in a sign extended immediate field.
 (define_predicate "x86_64_immediate_operand"
   (match_code "const_int,symbol_ref,label_ref,const")
@@ -335,6 +339,14 @@
     }
   return false;
 })
+
+;; Return true if size of VALUE can be stored in a sign
+;; extended immediate field.
+(define_predicate "x86_64_immediate_size_operand"
+  (and (match_code "symbol_ref")
+       (ior (not (match_test "TARGET_64BIT"))
+	    (match_test "ix86_cmodel == CM_SMALL")
+	    (match_test "ix86_cmodel == CM_KERNEL"))))
 
 ;; Return true if OP is general operand representable on x86_64.
 (define_predicate "x86_64_general_operand"
@@ -1006,7 +1018,72 @@
   return true;
 })
 
+;; Return true if op is valid MPX address operand without base
+(define_predicate "address_mpx_no_base_operand"
+  (match_operand 0 "address_operand")
+{
+  struct ix86_address parts;
+  int ok;
+
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
+
+  if (parts.index && parts.base)
+    return false;
+
+  if (parts.seg != SEG_DEFAULT)
+    return false;
+
+  /* Do not support (%rip).  */
+  if (parts.disp && flag_pic && TARGET_64BIT
+      && SYMBOLIC_CONST (parts.disp))
+    {
+      if (GET_CODE (parts.disp) != CONST
+	  || GET_CODE (XEXP (parts.disp, 0)) != PLUS
+	  || GET_CODE (XEXP (XEXP (parts.disp, 0), 0)) != UNSPEC
+	  || !CONST_INT_P (XEXP (XEXP (parts.disp, 0), 1))
+	  || (XINT (XEXP (XEXP (parts.disp, 0), 0), 1) != UNSPEC_DTPOFF
+	      && XINT (XEXP (XEXP (parts.disp, 0), 0), 1) != UNSPEC_NTPOFF))
+	return false;
+    }
+
+  return true;
+})
+
+;; Return true if op is valid MPX address operand without index
+(define_predicate "address_mpx_no_index_operand"
+  (match_operand 0 "address_operand")
+{
+  struct ix86_address parts;
+  int ok;
+
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
+
+  if (parts.index)
+    return false;
+
+  if (parts.seg != SEG_DEFAULT)
+    return false;
+
+  /* Do not support (%rip).  */
+  if (parts.disp && flag_pic && TARGET_64BIT
+      && SYMBOLIC_CONST (parts.disp)
+      && (GET_CODE (parts.disp) != CONST
+	  || GET_CODE (XEXP (parts.disp, 0)) != PLUS
+	  || GET_CODE (XEXP (XEXP (parts.disp, 0), 0)) != UNSPEC
+	  || !CONST_INT_P (XEXP (XEXP (parts.disp, 0), 1))
+	  || (XINT (XEXP (XEXP (parts.disp, 0), 0), 1) != UNSPEC_DTPOFF
+	      && XINT (XEXP (XEXP (parts.disp, 0), 0), 1) != UNSPEC_NTPOFF)))
+    return false;
+
+  return true;
+})
+
 (define_predicate "vsib_mem_operator"
+  (match_code "mem"))
+
+(define_predicate "bnd_mem_operator"
   (match_code "mem"))
 
 ;; Return true if the rtx is known to be at least 32 bits aligned.

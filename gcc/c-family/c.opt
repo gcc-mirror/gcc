@@ -323,6 +323,10 @@ Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about subscripts whose type is \"char\"
 
+Wchkp
+C ObjC C++ ObjC++ Var(warn_chkp) Warning EnabledBy(Wall)
+Warn about memory access errors found by Pointer Bounds Checker
+
 Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
@@ -949,6 +953,84 @@ C ObjC C++ ObjC++ Joined
 fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
+
+fcheck-pointer-bounds
+Common Report Var(flag_check_pointer_bounds)
+Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
+control instrumentation.  Currently available for C, C++ and ObjC.
+
+fchkp-check-incomplete-type
+C ObjC C++ ObjC++ Report Var(flag_chkp_incomplete_type) Init(1)
+Generate pointer bounds checks for variables with incomplete type
+
+fchkp-zero-input-bounds-for-main
+C ObjC C++ ObjC++ Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
+Use zero bounds for all incoming arguments in 'main' function.  It helps when
+instrumented binaries are used with legacy libs.
+
+fchkp-first-field-has-own-bounds
+C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
+Forces Pointer Bounds Checker to use narrowed bounds for address of the first
+field in the structure.  By default pointer to the first field has the same
+bounds as pointer to the whole structure.
+
+fchkp-narrow-bounds
+C ObjC C++ ObjC++ Report Var(flag_chkp_narrow_bounds) Init(1)
+Control how Pointer Bounds Checker handle pointers to object fields.  When
+narrowing is on, field bounds are used.  Otherwise full object bounds are used.
+
+fchkp-narrow-to-innermost-array
+C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
+Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of
+nested static arryas access.  By default outermost array is used.
+
+fchkp-optimize
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_optimize) Init(-1)
+Allow Pointer Bounds Checker optimizations.  By default allowed
+on optimization levels >0.
+
+fchkp-use-fast-string-functions
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_fast_string_functions) Init(0)
+Allow to use *_nobnd versions of string functions by Pointer Bounds Checker.
+
+fchkp-use-nochk-string-functions
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0)
+Allow to use *_nochk versions of string functions by Pointer Bounds Checker.
+
+fchkp-use-static-bounds
+C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_bounds) Init(1)
+Use statically initialized variable for vars bounds instead of
+generating them each time it is required.
+
+fchkp-use-static-const-bounds
+C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_const_bounds) Init(-1)
+Use statically initialized variable for constant bounds instead of
+generating them each time it is required.
+
+fchkp-treat-zero-dynamic-size-as-infinite
+C ObjC C++ ObjC++ Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
+With this option zero size obtained dynamically for objects with
+incomplete type will be treated as infinite.
+
+fchkp-check-read
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_read) Init(1)
+Generate checks for all read accesses to memory.
+
+fchkp-check-write
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_write) Init(1)
+Generate checks for all write accesses to memory.
+
+fchkp-store-bounds
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_store_bounds) Init(1)
+Generate bounds stores for pointer writes.
+
+fchkp-instrument-calls
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_calls) Init(1)
+Generate bounds passing for calls.
+
+fchkp-instrument-marked-only
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0)
+Instrument only functions marked with bnd_instrument attribute.
 
 fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)

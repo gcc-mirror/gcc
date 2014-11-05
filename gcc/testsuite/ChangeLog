@@ -1,3 +1,17 @@
+2014-11-05  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-builtins-1.c: New.
+	* gcc.target/i386/chkp-builtins-2.c: New.
+	* gcc.target/i386/chkp-builtins-3.c: New.
+	* gcc.target/i386/chkp-builtins-4.c: New.
+	* gcc.target/i386/chkp-remove-bndint-1.c: New.
+	* gcc.target/i386/chkp-remove-bndint-2.c: New.
+	* gcc.target/i386/chkp-const-check-1.c: New.
+	* gcc.target/i386/chkp-const-check-2.c: New.
+	* gcc.target/i386/chkp-lifetime-1.c: New.
+	* gcc.dg/pr37858.c: Replace early_local_cleanups pass name
+	with build_ssa_passes.
+
 2014-11-05  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.dg/asr-div1.c: New testcase.
