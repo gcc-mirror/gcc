@@ -1,3 +1,47 @@
+2014-11-05  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/asm-1.c (bar): Add prototype.
+	* gcc.target/mips/call-1.c (f, h): Add return type.
+	* gcc.target/mips/call-5.c (f, h): Likewise.
+	* gcc.target/mips/call-6.c (f, h): Likewise.
+	* gcc.target/mips/call-3.c (f): Likewise.
+	* gcc.target/mips/call-2.c (g): Add prototype.
+	(f): Add return type.
+	* gcc.target/mips/call-4.c: Likewise.
+	* gcc.target/mips/code-readable-1.c (foo): Add type for x.
+	* gcc.target/mips/code-readable-2.c (foo): Likewise.
+	* gcc.target/mips/code-readable-3.c (foo): Likewise.
+	* gcc.target/mips/code-readable-4.c (foo): Likewise.
+	* gcc.target/mips/const-anchor-1.c (g): Add prototype.
+	* gcc.target/mips/const-anchor-2.c (g): Likewise.
+	* gcc.target/mips/const-anchor-3.c (g): Likewise.
+	* gcc.target/mips/const-anchor-4.c (g): Likewise.
+	* gcc.target/mips/interrupt_handler.c (t): Likewise.
+	* gcc.target/mips/mips-nonpic/main-1.c (main): Add return type.
+	* gcc.target/mips/mips-nonpic/main-2.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-3.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-4.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-5.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-6.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-7.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-8.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-9.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-10.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-11.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-12.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-13.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-14.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-15.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/main-16.c (main): Likewise.
+	* gcc.target/mips/mips-nonpic/mips-nonpic.h
+	(nonpic_call, nonpic_addr_call): Add prototype.
+	(pic_call, pic_addr_call): Likewise.
+	* gcc.target/mips/mips16e-extends.c (validate): Likewise.
+	* gcc.target/mips/octeon-bbit-3.c (foo): Likewise.
+	* gcc.target/mips/octeon-seq-4.c (h): Likewise.
+	* gcc.target/mips/truncate-3.c (g): Add prototype.
+	(f): Add return type.
+
 2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63538

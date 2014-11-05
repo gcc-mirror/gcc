@@ -2,6 +2,8 @@
 /* { dg-options "(-mips16) isa_rev>=1 -mlong32" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
+extern int validate ();
+
 MIPS16 short cksum16 (unsigned long n)
 {
   unsigned long l;

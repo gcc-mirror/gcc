@@ -13,7 +13,7 @@ volatile int x10;
 volatile int x11;
 
 MIPS16 int
-foo (int i, volatile *x)
+foo (int i, volatile int *x)
 {
   switch (i)
     {

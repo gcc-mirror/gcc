@@ -6,6 +6,8 @@
 unsigned
 m (unsigned e);
 
+extern void h ();
+
 NOMIPS16 void
 f (unsigned i)
 {
