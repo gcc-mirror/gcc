@@ -90,8 +90,6 @@ extern hashval_t filename_hash (const void *s);
 
 extern int filename_eq (const void *s1, const void *s2);
 
-extern int canonical_filename_eq (const char *a, const char *b);
-
 #ifdef __cplusplus
 }
 #endif
