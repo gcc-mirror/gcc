@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=gnu++98 -pedantic -fextended-identifiers" } */
+/* { dg-options "-std=gnu++98 -pedantic" } */
 
 \u00AA /* { dg-error "not valid in an identifier" } */
 \u00AB /* { dg-error "not valid in an identifier" } */

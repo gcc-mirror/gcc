@@ -2020,8 +2020,9 @@ proc check_effective_target_ucn_nocache { } {
     # -std=c99 is only valid for C
     if [check_effective_target_c] {
 	set ucnopts "-std=c99"
+    } else {
+	set ucnopts ""
     }
-    append ucnopts " -fextended-identifiers"
     verbose "check_effective_target_ucn_nocache: compiling source" 2
     set ret [check_no_compiler_messages_nocache ucn object {
 	int \u00C0;

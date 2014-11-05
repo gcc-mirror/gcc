@@ -1,6 +1,6 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c11 -pedantic -fextended-identifiers" { target c } } */
-/* { dg-options "-std=c++11 -pedantic -fextended-identifiers" { target c++ } } */
+/* { dg-options "-std=c11 -pedantic" { target c } } */
+/* { dg-options "-std=c++11 -pedantic" { target c++ } } */
 
 \u00A8
 

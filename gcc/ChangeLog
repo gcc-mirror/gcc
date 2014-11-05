@@ -1,3 +1,14 @@
+2014-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/9449
+	* doc/cpp.texi (Character sets, Tokenization)
+	(Implementation-defined behavior): Don't refer to UCNs in
+	identifiers requiring -fextended-identifiers.
+	* doc/cppopts.texi (-fextended-identifiers): Document as enabled
+	by default for C99 and later and C++.
+	* doc/invoke.texi (-std=c99, -std=c11): Don't refer to extended
+	identifiers needing -fextended-identifiers.
+
 2014-11-05  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/i386.c (expand_vec_perm_pshufb): Try vpermq/vpermd

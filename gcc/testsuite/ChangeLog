@@ -1,3 +1,32 @@
+2014-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/9449
+	* lib/target-supports.exp (check_effective_target_ucn_nocache):
+	Don't use -fextended-identifiers.
+	* c-c++-common/cpp/normalize-3.c, c-c++-common/cpp/ucnid-2011-1.c,
+	g++.dg/cpp/ucn-1.C, g++.dg/cpp/ucnid-1.C, g++.dg/other/ucnid-1.C,
+	gcc.dg/cpp/normalize-1.c, gcc.dg/cpp/normalize-2.c,
+	gcc.dg/cpp/normalize-4.c: Don't use -fextended-identifiers.
+	* gcc.dg/cpp/ucnid-1.c: Don't use -fextended-identifiers.  Use
+	-g3.
+	* gcc.dg/cpp/ucnid-10.c, gcc.dg/cpp/ucnid-2.c,
+	gcc.dg/cpp/ucnid-3.c, gcc.dg/cpp/ucnid-4.c, gcc.dg/cpp/ucnid-5.c,
+	gcc.dg/cpp/ucnid-7.c, gcc.dg/cpp/ucnid-9.c,
+	gcc.dg/cpp/warn-normalized-1.c, gcc.dg/cpp/warn-normalized-2.c,
+	gcc.dg/cpp/warn-normalized-3.c: Don't use -fextended-identifiers.
+	* gcc.dg/ucnid-1.c, gcc.dg/ucnid-2.c, gcc.dg/ucnid-3.c,
+	gcc.dg/ucnid-4.c, gcc.dg/ucnid-5.c, gcc.dg/ucnid-6.c: Don't use
+	-fextended-identifiers.  Use -g.
+	* gcc.dg/ucnid-7.c, gcc.dg/ucnid-8.c: Don't use
+	-fextended-identifiers.
+	* gcc.dg/ucnid-9.c: Don't use -fextended-identifiers.  Use -g.
+	* gcc.dg/ucnid-10.c: Don't use -fextended-identifiers.
+	* gcc.dg/ucnid-11.c, gcc.dg/ucnid-12.c: Don't use
+	-fextended-identifiers.  Use -g.
+	* gcc.dg/ucnid-13.c: Don't use -fextended-identifiers.
+	* gcc.dg/cpp/ucnid-8.c: Remove test.
+	* gcc.dg/cpp/ucnid-10.c, gcc.dg/ucnid-14.c: New tests.
+
 2014-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
