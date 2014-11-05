@@ -560,8 +560,7 @@ Accept @samp{$} in identifiers.
 @item -fextended-identifiers
 @opindex fextended-identifiers
 Accept universal character names in identifiers.  This option is
-experimental; in a future version of GCC, it will be enabled by
-default for C99 and C++.
+enabled by default for C99 (and later C standard versions) and C++.
 
 @item -fno-canonical-system-headers
 @opindex fno-canonical-system-headers

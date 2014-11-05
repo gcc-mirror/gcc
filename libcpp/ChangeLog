@@ -1,3 +1,9 @@
+2014-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/9449
+	* init.c (lang_defaults): Enable extended identifiers for C++ and
+	C99-based standards.
+
 2014-10-22  Alan Modra  <amodra@gmail.com>
 
 	* symtab.c (ht_create): Use obstack_specify_allocation in place of
