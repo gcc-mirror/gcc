@@ -5421,13 +5421,19 @@ DEFHOOKPOD
  bool, false)
 
 DEFHOOKPOD
-(delay_sched2, "True if sched2 is not to be run at its normal place.  \
+(delay_sched2, "True if sched2 is not to be run at its normal place.\n\
 This usually means it will be run as part of machine-specific reorg.",
 bool, false)
 
 DEFHOOKPOD
-(delay_vartrack, "True if vartrack is not to be run at its normal place.  \
+(delay_vartrack, "True if vartrack is not to be run at its normal place.\n\
 This usually means it will be run as part of machine-specific reorg.",
+bool, false)
+
+DEFHOOKPOD
+(no_register_allocation, "True if register allocation and the passes\n\
+following it should not be run.  Usually true only for virtual assembler\n\
+targets.",
 bool, false)
 
 /* Leave the boolean fields at the end.  */

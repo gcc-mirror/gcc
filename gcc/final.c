@@ -3189,7 +3189,7 @@ alter_subreg (rtx *xp, bool final_p)
       else
 	*xp = adjust_address_nv (y, GET_MODE (x), offset);
     }
-  else
+  else if (REG_P (y) && HARD_REGISTER_P (y))
     {
       rtx new_rtx = simplify_subreg (GET_MODE (x), y, GET_MODE (y),
 				     SUBREG_BYTE (x));
@@ -3857,7 +3857,8 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
     x = alter_subreg (&x, true);
 
   /* X must not be a pseudo reg.  */
-  gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
+  if (!targetm.no_register_allocation)
+    gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
   targetm.asm_out.print_operand (asm_out_file, x, code);
 

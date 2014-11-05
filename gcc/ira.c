@@ -5498,6 +5498,10 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return !targetm.no_register_allocation;
+    }
   virtual unsigned int execute (function *)
     {
       ira (dump_file);
@@ -5537,6 +5541,10 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return !targetm.no_register_allocation;
+    }
   virtual unsigned int execute (function *)
     {
       do_reload ();
