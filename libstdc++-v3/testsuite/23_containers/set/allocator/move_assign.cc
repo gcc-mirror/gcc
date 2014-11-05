@@ -18,6 +18,8 @@
 // { dg-options "-std=gnu++11" }
 
 #include <set>
+#include <random>
+
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
@@ -89,10 +91,43 @@ void test03()
   VERIFY( tracker_allocator_counter::get_construct_count() == constructs + 2 );
 }
 
+void test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  using namespace __gnu_test;
+
+  typedef tracker_allocator<int> alloc_type;
+  typedef std::set<int, std::less<int>, alloc_type> test_type;
+
+  std::mt19937 rng;
+  std::uniform_int_distribution<int> d;
+  std::uniform_int_distribution<int>::param_type p{0, 100};
+  std::uniform_int_distribution<int>::param_type x{0, 1000};
+
+  for (int i = 0; i < 10; ++i)
+  {
+    test_type l, r;
+    for (int n = d(rng, p); n > 0; --n)
+    {
+      int i = d(rng, x);
+      l.insert(i);
+      r.insert(i);
+
+      tracker_allocator_counter::reset();
+
+      l = r;
+
+      VERIFY( tracker_allocator_counter::get_allocation_count() == 0 );
+    }
+  }
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

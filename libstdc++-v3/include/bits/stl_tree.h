@@ -359,16 +359,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const _Rb_tree_node<_Val>*	_Const_Link_type;
 
     private:
-      // Functor recycling a pool of nodes and using allocation once the pool is
-      // empty.
+      // Functor recycling a pool of nodes and using allocation once the pool
+      // is empty.
       struct _Reuse_or_alloc_node
       {
-	_Reuse_or_alloc_node(const _Rb_tree_node_base& __header,
-			     _Rb_tree& __t)
-	  : _M_root(__header._M_parent), _M_nodes(__header._M_right), _M_t(__t)
+	_Reuse_or_alloc_node(_Rb_tree& __t)
+	  : _M_root(__t._M_root()), _M_nodes(__t._M_rightmost()), _M_t(__t)
 	{
 	  if (_M_root)
-	    _M_root->_M_parent = 0;
+	    {
+	      _M_root->_M_parent = 0;
+
+	      if (_M_nodes->_M_left)
+		_M_nodes = _M_nodes->_M_left;
+	    }
 	  else
 	    _M_nodes = 0;
 	}
@@ -420,6 +424,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 		      while (_M_nodes->_M_right)
 			_M_nodes = _M_nodes->_M_right;
+
+		      if (_M_nodes->_M_left)
+			_M_nodes = _M_nodes->_M_left;
 		    }
 		}
 	      else // __node is on the left.
@@ -436,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Rb_tree& _M_t;
       };
 
-      // Functor similar to the previous one but without any pool of node to
+      // Functor similar to the previous one but without any pool of nodes to
       // recycle.
       struct _Alloc_node
       {
@@ -1271,7 +1278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Try to move each node reusing existing nodes and copying __x nodes
       // structure.
-      _Reuse_or_alloc_node __roan(_M_impl._M_header, *this);
+      _Reuse_or_alloc_node __roan(*this);
       _M_impl._M_reset();
       if (__x._M_root() != nullptr)
 	{
@@ -1297,7 +1304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
       _M_assign_unique(_Iterator __first, _Iterator __last)
       {
-	_Reuse_or_alloc_node __roan(this->_M_impl._M_header, *this);
+	_Reuse_or_alloc_node __roan(*this);
 	_M_impl._M_reset();
 	for (; __first != __last; ++__first)
 	  _M_insert_unique_(end(), *__first, __roan);
@@ -1310,7 +1317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
       _M_assign_equal(_Iterator __first, _Iterator __last)
       {
-	_Reuse_or_alloc_node __roan(this->_M_impl._M_header, *this);
+	_Reuse_or_alloc_node __roan(*this);
 	_M_impl._M_reset();
 	for (; __first != __last; ++__first)
 	  _M_insert_equal_(end(), *__first, __roan);
@@ -1342,7 +1349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 #endif
 
-	  _Reuse_or_alloc_node __roan(this->_M_impl._M_header, *this);
+	  _Reuse_or_alloc_node __roan(*this);
 	  _M_impl._M_reset();
 	  _M_impl._M_key_compare = __x._M_impl._M_key_compare;
 	  if (__x._M_root() != 0)

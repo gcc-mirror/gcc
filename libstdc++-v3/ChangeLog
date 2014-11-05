@@ -1,3 +1,11 @@
+2014-11-05  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63698
+	* include/bits/stl_tree.h (_Reuse_or_alloc_node): Simplify constructor.
+	Always move to the left node if there is one.
+	* testsuite/23_containers/set/allocator/move_assign.cc (test04): New.
+
 2014-11-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_ptr.h (make_unique): Use alias for trait.
