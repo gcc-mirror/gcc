@@ -5090,6 +5090,10 @@ ix86_in_large_data_p (tree exp)
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
+  /* Automatic variables are never large data.  */
+  if (TREE_CODE (exp) == VAR_DECL && !is_global_var (exp))
+    return false;
+
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
@@ -5123,8 +5127,7 @@ ATTRIBUTE_UNUSED static section *
 x86_64_elf_select_section (tree decl, int reloc,
 			   unsigned HOST_WIDE_INT align)
 {
-  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
-      && ix86_in_large_data_p (decl))
+  if (ix86_in_large_data_p (decl))
     {
       const char *sname = NULL;
       unsigned int flags = SECTION_WRITE;
@@ -5210,8 +5213,7 @@ x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
 static void ATTRIBUTE_UNUSED
 x86_64_elf_unique_section (tree decl, int reloc)
 {
-  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
-      && ix86_in_large_data_p (decl))
+  if (ix86_in_large_data_p (decl))
     {
       const char *prefix = NULL;
       /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
@@ -5280,7 +5282,7 @@ x86_elf_aligned_common (FILE *file,
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)
-    fputs (".largecomm\t", file);
+    fputs ("\t.largecomm\t", file);
   else
     fputs (COMMON_ASM_OP, file);
   assemble_name (file, name);
@@ -45178,9 +45180,7 @@ ix86_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  if (TREE_CODE (decl) == VAR_DECL
-      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-      && ix86_in_large_data_p (decl))
+  if (ix86_in_large_data_p (decl))
     SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_FAR_ADDR;
 }
 
