@@ -942,10 +942,17 @@ init_asm_output (const char *name)
 	}
       if (!strcmp (asm_file_name, "-"))
 	asm_out_file = stdout;
-      else
+      else if (!canonical_filename_eq (asm_file_name, name))
 	asm_out_file = fopen (asm_file_name, "w");
+      else
+	/* Use fatal_error (UNKOWN_LOCATION) instead of just fatal_error to
+	   prevent gcc from printing the first line in the current file. */
+	fatal_error (UNKNOWN_LOCATION,
+		     "output file %s is the same as input file",
+		     asm_file_name);
       if (asm_out_file == 0)
-	fatal_error ("can%'t open %s for writing: %m", asm_file_name);
+	fatal_error (UNKNOWN_LOCATION,
+		     "can%'t open %s for writing: %m", asm_file_name);
     }
 
   if (!flag_syntax_only)

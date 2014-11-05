@@ -1,3 +1,13 @@
+2014-11-05  Anthony Brandon  <anthony.brandon@gmail.com>
+
+	PR driver/36312
+	* diagnostic-core.h: Add prototype for fatal_error.
+	* diagnostic.c (fatal_error): New function fatal_error.
+	* gcc.c (store_arg): Remove have_o_argbuf_index.
+	(process_command): Check if input and output files are the same.
+	* toplev.c (init_asm_output): Check if input and output files are
+	the same.
+
 2014-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/9449

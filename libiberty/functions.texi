@@ -125,6 +125,16 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 
 @end deftypefn
 
+@c filename_cmp.c:201
+@deftypefn Extension int canonical_filename_eq (const char *@var{a}, const char *@var{b})
+
+Return non-zero if file names @var{a} and @var{b} are equivalent.
+This function compares the canonical versions of the filenames as returned by
+@code{lrealpath()}, so that so that different file names pointing to the same
+underlying file are treated as being identical.
+
+@end deftypefn
+
 @c choose-temp.c:45
 @deftypefn Extension char* choose_temp_base (void)
 
@@ -286,7 +296,7 @@ value 1).  If @var{valu} is zero, zero is returned.
 
 @end deftypefn
 
-@c filename_cmp.c:32
+@c filename_cmp.c:37
 @deftypefn Extension int filename_cmp (const char *@var{s1}, const char *@var{s2})
 
 Return zero if the two file names @var{s1} and @var{s2} are equivalent.
@@ -303,7 +313,7 @@ and backward slashes are equal.
 
 @end deftypefn
 
-@c filename_cmp.c:178
+@c filename_cmp.c:183
 @deftypefn Extension int filename_eq (const void *@var{s1}, const void *@var{s2})
 
 Return non-zero if file names @var{s1} and @var{s2} are equivalent.
@@ -311,7 +321,7 @@ This function is for use with hashtab.c hash tables.
 
 @end deftypefn
 
-@c filename_cmp.c:147
+@c filename_cmp.c:152
 @deftypefn Extension hashval_t filename_hash (const void *@var{s})
 
 Return the hash value for file name @var{s} that will be compared
@@ -320,7 +330,7 @@ This function is for use with hashtab.c hash tables.
 
 @end deftypefn
 
-@c filename_cmp.c:89
+@c filename_cmp.c:94
 @deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
 
 Return zero if the two file names @var{s1} and @var{s2} are equivalent
