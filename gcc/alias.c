@@ -2517,6 +2517,7 @@ static int
 true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 		   const_rtx x, rtx x_addr, bool mem_canonicalized)
 {
+  rtx true_mem_addr;
   rtx base;
   int ret;
 
@@ -2536,10 +2537,26 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
+  if (! x_addr)
+    x_addr = XEXP (x, 0);
+  x_addr = get_addr (x_addr);
+
+  if (! mem_addr)
+    {
+      mem_addr = XEXP (mem, 0);
+      if (mem_mode == VOIDmode)
+	mem_mode = GET_MODE (mem);
+    }
+  true_mem_addr = get_addr (mem_addr);
+
   /* Read-only memory is by definition never modified, and therefore can't
-     conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't die.  */
-  if (MEM_READONLY_P (x))
+     conflict with anything.  However, don't assume anything when AND
+     addresses are involved and leave to the code below to determine
+     dependence.  We don't expect to find read-only set on MEM, but
+     stupid user tricks can produce them, so don't die.  */
+  if (MEM_READONLY_P (x)
+      && GET_CODE (x_addr) != AND
+      && GET_CODE (true_mem_addr) != AND)
     return 0;
 
   /* If we have MEMs referring to different address spaces (which can
@@ -2548,43 +2565,20 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
     return 1;
 
-  if (! mem_addr)
-    {
-      mem_addr = XEXP (mem, 0);
-      if (mem_mode == VOIDmode)
-	mem_mode = GET_MODE (mem);
-    }
-
-  if (! x_addr)
-    {
-      x_addr = XEXP (x, 0);
-      if (!((GET_CODE (x_addr) == VALUE
-	     && GET_CODE (mem_addr) != VALUE
-	     && reg_mentioned_p (x_addr, mem_addr))
-	    || (GET_CODE (x_addr) != VALUE
-		&& GET_CODE (mem_addr) == VALUE
-		&& reg_mentioned_p (mem_addr, x_addr))))
-	{
-	  x_addr = get_addr (x_addr);
-	  if (! mem_canonicalized)
-	    mem_addr = get_addr (mem_addr);
-	}
-    }
-
   base = find_base_term (x_addr);
   if (base && (GET_CODE (base) == LABEL_REF
 	       || (GET_CODE (base) == SYMBOL_REF
 		   && CONSTANT_POOL_ADDRESS_P (base))))
     return 0;
 
-  rtx mem_base = find_base_term (mem_addr);
-  if (! base_alias_check (x_addr, base, mem_addr, mem_base,
+  rtx mem_base = find_base_term (true_mem_addr);
+  if (! base_alias_check (x_addr, base, true_mem_addr, mem_base,
 			  GET_MODE (x), mem_mode))
     return 0;
 
   x_addr = canon_rtx (x_addr);
   if (!mem_canonicalized)
-    mem_addr = canon_rtx (mem_addr);
+    mem_addr = canon_rtx (true_mem_addr);
 
   if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
@@ -2637,6 +2631,7 @@ write_dependence_p (const_rtx mem,
 		    bool mem_canonicalized, bool x_canonicalized, bool writep)
 {
   rtx mem_addr;
+  rtx true_mem_addr, true_x_addr;
   rtx base;
   int ret;
 
@@ -2657,8 +2652,20 @@ write_dependence_p (const_rtx mem,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  /* A read from read-only memory can't conflict with read-write memory.  */
-  if (!writep && MEM_READONLY_P (mem))
+  if (!x_addr)
+    x_addr = XEXP (x, 0);
+  true_x_addr = get_addr (x_addr);
+
+  mem_addr = XEXP (mem, 0);
+  true_mem_addr = get_addr (mem_addr);
+
+  /* A read from read-only memory can't conflict with read-write memory.
+     Don't assume anything when AND addresses are involved and leave to
+     the code below to determine dependence.  */
+  if (!writep
+      && MEM_READONLY_P (mem)
+      && GET_CODE (true_x_addr) != AND
+      && GET_CODE (true_mem_addr) != AND)
     return 0;
 
   /* If we have MEMs referring to different address spaces (which can
@@ -2667,24 +2674,7 @@ write_dependence_p (const_rtx mem,
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
     return 1;
 
-  mem_addr = XEXP (mem, 0);
-  if (!x_addr)
-    {
-      x_addr = XEXP (x, 0);
-      if (!((GET_CODE (x_addr) == VALUE
-	     && GET_CODE (mem_addr) != VALUE
-	     && reg_mentioned_p (x_addr, mem_addr))
-	    || (GET_CODE (x_addr) != VALUE
-		&& GET_CODE (mem_addr) == VALUE
-		&& reg_mentioned_p (mem_addr, x_addr))))
-	{
-	  x_addr = get_addr (x_addr);
-	  if (!mem_canonicalized)
-	    mem_addr = get_addr (mem_addr);
-	}
-    }
-
-  base = find_base_term (mem_addr);
+  base = find_base_term (true_mem_addr);
   if (! writep
       && base
       && (GET_CODE (base) == LABEL_REF
@@ -2692,18 +2682,18 @@ write_dependence_p (const_rtx mem,
 	      && CONSTANT_POOL_ADDRESS_P (base))))
     return 0;
 
-  rtx x_base = find_base_term (x_addr);
-  if (! base_alias_check (x_addr, x_base, mem_addr, base, GET_MODE (x),
-			  GET_MODE (mem)))
+  rtx x_base = find_base_term (true_x_addr);
+  if (! base_alias_check (true_x_addr, x_base, true_mem_addr, base,
+			  GET_MODE (x), GET_MODE (mem)))
     return 0;
 
   if (!x_canonicalized)
     {
-      x_addr = canon_rtx (x_addr);
+      x_addr = canon_rtx (true_x_addr);
       x_mode = GET_MODE (x);
     }
   if (!mem_canonicalized)
-    mem_addr = canon_rtx (mem_addr);
+    mem_addr = canon_rtx (true_mem_addr);
 
   if ((ret = memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
 				 GET_MODE_SIZE (x_mode), x_addr, 0)) != -1)
@@ -2771,10 +2761,20 @@ may_alias_p (const_rtx mem, const_rtx x)
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
+  x_addr = XEXP (x, 0);
+  x_addr = get_addr (x_addr);
+
+  mem_addr = XEXP (mem, 0);
+  mem_addr = get_addr (mem_addr);
+
   /* Read-only memory is by definition never modified, and therefore can't
-     conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't die.  */
-  if (MEM_READONLY_P (x))
+     conflict with anything.  However, don't assume anything when AND
+     addresses are involved and leave to the code below to determine
+     dependence.  We don't expect to find read-only set on MEM, but
+     stupid user tricks can produce them, so don't die.  */
+  if (MEM_READONLY_P (x)
+      && GET_CODE (x_addr) != AND
+      && GET_CODE (mem_addr) != AND)
     return 0;
 
   /* If we have MEMs referring to different address spaces (which can
@@ -2783,27 +2783,11 @@ may_alias_p (const_rtx mem, const_rtx x)
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
     return 1;
 
-  x_addr = XEXP (x, 0);
-  mem_addr = XEXP (mem, 0);
-  if (!((GET_CODE (x_addr) == VALUE
-	 && GET_CODE (mem_addr) != VALUE
-	 && reg_mentioned_p (x_addr, mem_addr))
-	|| (GET_CODE (x_addr) != VALUE
-	    && GET_CODE (mem_addr) == VALUE
-	    && reg_mentioned_p (mem_addr, x_addr))))
-    {
-      x_addr = get_addr (x_addr);
-      mem_addr = get_addr (mem_addr);
-    }
-
   rtx x_base = find_base_term (x_addr);
   rtx mem_base = find_base_term (mem_addr);
   if (! base_alias_check (x_addr, x_base, mem_addr, mem_base,
 			  GET_MODE (x), GET_MODE (mem_addr)))
     return 0;
-
-  x_addr = canon_rtx (x_addr);
-  mem_addr = canon_rtx (mem_addr);
 
   if (nonoverlapping_memrefs_p (mem, x, true))
     return 0;

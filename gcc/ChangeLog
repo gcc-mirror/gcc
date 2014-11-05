@@ -1,3 +1,34 @@
+2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2014-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* varasm.c (const_alias_set): Remove.
+	(init_varasm_once): Remove initialization of const_alias_set.
+	(build_constant_desc): Do not set alias set to const_alias_set.
+
+	Backport from mainline:
+	2014-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/63475
+	* alias.c (true_dependence_1): Always use get_addr to extract
+	true address operands from x_addr and mem_addr.  Use extracted
+	address operands to check for references with alignment ANDs.
+	Use extracted address operands with find_base_term and
+	base_alias_check. For noncanonicalized operands call canon_rtx with
+	extracted address operand.
+	(write_dependence_1): Ditto.
+	(may_alias_p): Ditto.  Remove unused calls to canon_rtx.
+
+	Backport from mainline:
+	2014-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/63483
+	* alias.c (true_dependence_1): Do not exit early for MEM_READONLY_P
+	references when alignment ANDs are involved.
+	(write_dependence_p): Ditto.
+	(may_alias_p): Ditto.
+
 2014-10-31  DJ Delorie  <dj@redhat.com>
 
 	* expmed.c (strict_volatile_bitfield_p): Fix off-by-one error.
