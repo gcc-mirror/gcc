@@ -1,3 +1,11 @@
+2014-11-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/torture/pr59166.c: XFAIL on AIX.
+	* g++.dg/ext/visitibility/anon1.C: XFAIL on AIX.
+	* g++.dg/opt/pr60002.C: XFAIL on AIX.
+	* g++.dg/torture/pr63419.C: Ignore non-standard ABI warning.
+	* g++.dg/ipa/ipa-icf-5.C: Require visibility support.
+
 2014-11-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/chkp-builtins-1.c: New.
