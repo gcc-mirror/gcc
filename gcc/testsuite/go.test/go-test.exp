@@ -449,13 +449,22 @@ proc go-gc-tests { } {
 	    }
 
 	    if { [ string match "// +build *" $test_line ] } {
-		if { [ string match "*[getenv GOARCH]*" $test_line ] } {
-		    continue
+		set matches_pos 0
+		set matches_neg 0
+		if { [ regexp -line "\[ 	\][getenv GOARCH]\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_pos 1
+		} elseif { [ regexp -line "\[ 	\]\![getenv GOARCH]\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_neg 1
+		} elseif { [ regexp -line "\[ 	\]linux\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_pos 1
+		} elseif { [ regexp -line "\[ 	\]\!linux\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_neg 1
+		} elseif { [ regexp -line "\[ 	\]\!windows\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_pos 1
+		} elseif { [ regexp -line "\[ 	\]windows\(\[ 	\]\|\$\)" $test_line ] } {
+		    set matches_neg 1
 		}
-		if { [ string match "*linux*" $test_line ] } {
-		    continue
-		}
-		if { [ string match "*!windows*" $test_line ] } {
+		if { $matches_pos == 1 && $matches_neg == 0 } {
 		    continue
 		}
 		close $fd
