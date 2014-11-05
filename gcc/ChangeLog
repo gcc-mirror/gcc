@@ -1,3 +1,8 @@
+2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* optabs.c (emit_indirect_jump): Test HAVE_indirect_jump and emit a
+	sorry if necessary.
+
 2014-11-05  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Div check added.
