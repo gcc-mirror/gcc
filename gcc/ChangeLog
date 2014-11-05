@@ -1,5 +1,8 @@
 2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* dbxout.c (dbxout_symbol): Don't call eliminate_regs on decls for
+	global vars.
+
 	* optabs.c (emit_indirect_jump): Test HAVE_indirect_jump and emit a
 	sorry if necessary.
 
