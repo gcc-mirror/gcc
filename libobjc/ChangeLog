@@ -1,3 +1,7 @@
+2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* thr.c (_XOPEN_SOURCE): Define as 600.
+
 2014-07-27  Alan Modra  <amodra@gmail.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
