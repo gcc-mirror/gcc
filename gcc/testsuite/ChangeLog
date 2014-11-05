@@ -1,3 +1,8 @@
+2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63538
+	* gcc.target/i386/pr63538.c: New test.
+
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr42.adb: New test.
@@ -21,7 +26,7 @@
 	* gnat.dg/inline5.adb: New test.
 	* gnat.dg/inline5_pkg.ad[sb]: New helper.
 	* gnat.dg/inline6.adb: New test.
-	* gnat.dg/inline6_pkg.ad[sb]: New helper.	
+	* gnat.dg/inline6_pkg.ad[sb]: New helper.
 	* gnat.dg/inline7.adb: New test.
 	* gnat.dg/inline7_pkg1.ad[sb]: New helper.
 	* gnat.dg/inline7_pkg2.ad[sb]: Likewise.
