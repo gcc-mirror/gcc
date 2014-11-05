@@ -1,3 +1,10 @@
+2014-11-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from mainline.
+	2014-10-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.host (aix4.3+, 5+): Do not use -G in link command.
+
 2014-10-15  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/dyncast.cc (__dynamic_cast): Handle mid-destruction
