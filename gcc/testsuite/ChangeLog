@@ -1,5 +1,10 @@
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr42.adb: New test.
+	* gnat.dg/discr42_pkg.ad[sb]: New helper.
+
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/private2.ads: New test.
 	* gnat.dg/specs/private2_pkg.ads: New helper.
 

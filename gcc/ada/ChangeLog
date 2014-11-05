@@ -1,5 +1,14 @@
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): For a function with
+	copy-in/copy-out parameters and which returns by invisible reference,
+	do not create the variable for the return value; instead, manually
+	generate the indirect copy out statements on exit.
+	(gnat_to_gnu) <N_Simple_Return_Statement>: Adjust accordingly and build
+	a simple indirect assignment for the return value.
+
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: For a
 	derived untagged type that renames discriminants, be prepared for
 	a type derived from a private discriminated type when changing the
