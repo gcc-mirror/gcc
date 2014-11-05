@@ -2,6 +2,8 @@
    of the call.  */
 /* { dg-do assemble } */
 
+extern void bar (void);
+
 NOMIPS16 int foo (int n)
 {
   register int k asm ("$16") = n;

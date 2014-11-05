@@ -14,6 +14,7 @@ __attribute__ ((noinline)) static void staticfunc () { asm (""); }
 int normal ();
 void normal2 ();
 
+int
 NOMIPS16 f (int *p)
 {
   *p = normal ();
@@ -24,6 +25,7 @@ NOMIPS16 f (int *p)
 
 int tail ();
 
+int
 NOMIPS16 h ()
 {
   return tail ();
