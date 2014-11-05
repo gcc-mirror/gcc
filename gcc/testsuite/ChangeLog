@@ -1,3 +1,8 @@
+2014-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_bswap): Update
+	conditions for AArch64 and ARM targets.
+
 2014-11-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/pr59166.c: XFAIL on AIX.
