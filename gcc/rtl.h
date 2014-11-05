@@ -789,6 +789,9 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff X is a data for a jump table.  */
 #define JUMP_TABLE_DATA_P(INSN) (GET_CODE (INSN) == JUMP_TABLE_DATA)
 
+/* Predicate yielding nonzero iff RTX is a subreg.  */
+#define SUBREG_P(RTX) (GET_CODE (RTX) == SUBREG)
+
 template <>
 template <>
 inline bool
