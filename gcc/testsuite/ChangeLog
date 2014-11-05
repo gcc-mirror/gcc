@@ -40,12 +40,6 @@
 	* gnat.dg/inline11.adb: New test.
 	* gnat.dg/inline11_pkg.ad[sb]: New helper.
 
-2014-11-05  Anthony Brandon  <anthony.brandon@gmail.com>
-
-	PR driver/36312
-	* gcc.misc-tests/output.exp: New test case for identical input and
-	output files.
-
 2014-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/9449
