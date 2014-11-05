@@ -1,3 +1,8 @@
+2014-11-05  Anthony Brandon  <anthony.brandon@gmail.com>
+
+	PR driver/36312
+	* filenames.h: Add prototype for canonical_filename_eq.
+
 2014-10-28  Richard Henderson  <rth@redhat.com>
 
 	* longlong.h [__alpha] (umul_ppmm): Disable for c++.

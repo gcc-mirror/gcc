@@ -1,3 +1,10 @@
+2014-11-05  Anthony Brandon  <anthony.brandon@gmail.com>
+
+	PR driver/36312
+	* filename_cmp.c (canonical_filename_eq): New function to check if
+	file names are the same.
+	* functions.texi: Updated with documentation for new function.
+
 2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sigsetmask.c (_POSIX_SOURCE): Remove.
