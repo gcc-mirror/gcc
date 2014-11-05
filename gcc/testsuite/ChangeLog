@@ -1,5 +1,10 @@
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/private2.ads: New test.
+	* gnat.dg/specs/private2_pkg.ads: New helper.
+
+2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/inline1.adb: New test.
 	* gnat.dg/inline1_pkg.ad[sb]: New helper.
 	* gnat.dg/inline2.adb: New test.
