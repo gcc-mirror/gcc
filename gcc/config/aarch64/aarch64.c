@@ -7597,54 +7597,6 @@ aarch64_autovectorize_vector_sizes (void)
   return (16 | 8);
 }
 
-/* A table to help perform AArch64-specific name mangling for AdvSIMD
-   vector types in order to conform to the AAPCS64 (see "Procedure
-   Call Standard for the ARM 64-bit Architecture", Appendix A).  To
-   qualify for emission with the mangled names defined in that document,
-   a vector type must not only be of the correct mode but also be
-   composed of AdvSIMD vector element types (e.g.
-   _builtin_aarch64_simd_qi); these types are registered by
-   aarch64_init_simd_builtins ().  In other words, vector types defined
-   in other ways e.g. via vector_size attribute will get default
-   mangled names.  */
-typedef struct
-{
-  machine_mode mode;
-  const char *element_type_name;
-  const char *mangled_name;
-} aarch64_simd_mangle_map_entry;
-
-static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
-  /* 64-bit containerized types.  */
-  { V8QImode,  "__builtin_aarch64_simd_qi",     "10__Int8x8_t" },
-  { V8QImode,  "__builtin_aarch64_simd_uqi",    "11__Uint8x8_t" },
-  { V4HImode,  "__builtin_aarch64_simd_hi",     "11__Int16x4_t" },
-  { V4HImode,  "__builtin_aarch64_simd_uhi",    "12__Uint16x4_t" },
-  { V2SImode,  "__builtin_aarch64_simd_si",     "11__Int32x2_t" },
-  { V2SImode,  "__builtin_aarch64_simd_usi",    "12__Uint32x2_t" },
-  { V2SFmode,  "__builtin_aarch64_simd_sf",     "13__Float32x2_t" },
-  { DImode,    "__builtin_aarch64_simd_di",     "11__Int64x1_t" },
-  { DImode,    "__builtin_aarch64_simd_udi",    "12__Uint64x1_t" },
-  { V1DFmode,  "__builtin_aarch64_simd_df",	"13__Float64x1_t" },
-  { V8QImode,  "__builtin_aarch64_simd_poly8",  "11__Poly8x8_t" },
-  { V4HImode,  "__builtin_aarch64_simd_poly16", "12__Poly16x4_t" },
-  /* 128-bit containerized types.  */
-  { V16QImode, "__builtin_aarch64_simd_qi",     "11__Int8x16_t" },
-  { V16QImode, "__builtin_aarch64_simd_uqi",    "12__Uint8x16_t" },
-  { V8HImode,  "__builtin_aarch64_simd_hi",     "11__Int16x8_t" },
-  { V8HImode,  "__builtin_aarch64_simd_uhi",    "12__Uint16x8_t" },
-  { V4SImode,  "__builtin_aarch64_simd_si",     "11__Int32x4_t" },
-  { V4SImode,  "__builtin_aarch64_simd_usi",    "12__Uint32x4_t" },
-  { V2DImode,  "__builtin_aarch64_simd_di",     "11__Int64x2_t" },
-  { V2DImode,  "__builtin_aarch64_simd_udi",    "12__Uint64x2_t" },
-  { V4SFmode,  "__builtin_aarch64_simd_sf",     "13__Float32x4_t" },
-  { V2DFmode,  "__builtin_aarch64_simd_df",     "13__Float64x2_t" },
-  { V16QImode, "__builtin_aarch64_simd_poly8",  "12__Poly8x16_t" },
-  { V8HImode,  "__builtin_aarch64_simd_poly16", "12__Poly16x8_t" },
-  { V2DImode,  "__builtin_aarch64_simd_poly64", "12__Poly64x2_t" },
-  { VOIDmode, NULL, NULL }
-};
-
 /* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
@@ -7655,25 +7607,10 @@ aarch64_mangle_type (const_tree type)
   if (lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     return "St9__va_list";
 
-  /* Check the mode of the vector type, and the name of the vector
-     element type, against the table.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      aarch64_simd_mangle_map_entry *pos = aarch64_simd_mangle_map;
-
-      while (pos->mode != VOIDmode)
-	{
-	  tree elt_type = TREE_TYPE (type);
-
-	  if (pos->mode == TYPE_MODE (type)
-	      && TREE_CODE (TYPE_NAME (elt_type)) == TYPE_DECL
-	      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (elt_type))),
-			  pos->element_type_name))
-	    return pos->mangled_name;
-
-	  pos++;
-	}
-    }
+  /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
+     builtin types.  */
+  if (TYPE_NAME (type) != NULL)
+    return aarch64_mangle_builtin_type (type);
 
   /* Use the default mangling.  */
   return NULL;

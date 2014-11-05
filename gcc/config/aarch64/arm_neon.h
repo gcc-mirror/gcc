@@ -32,63 +32,39 @@
 #define __AARCH64_UINT64_C(__C) ((uint64_t) __C)
 #define __AARCH64_INT64_C(__C) ((int64_t) __C)
 
-typedef __builtin_aarch64_simd_qi int8x8_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_hi int16x4_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_si int32x2_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_di int64x1_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_df float64x1_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_sf float32x2_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_poly8 poly8x8_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_poly16 poly16x4_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_uqi uint8x8_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_uhi uint16x4_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_usi uint32x2_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_udi uint64x1_t
-  __attribute__ ((__vector_size__ (8)));
-typedef __builtin_aarch64_simd_qi int8x16_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_hi int16x8_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_si int32x4_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_di int64x2_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_sf float32x4_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_df float64x2_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_poly8 poly8x16_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_poly16 poly16x8_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_poly64 poly64x2_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_uqi uint8x16_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_uhi uint16x8_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_usi uint32x4_t
-  __attribute__ ((__vector_size__ (16)));
-typedef __builtin_aarch64_simd_udi uint64x2_t
-  __attribute__ ((__vector_size__ (16)));
+typedef __Int8x8_t int8x8_t;
+typedef __Int16x4_t int16x4_t;
+typedef __Int32x2_t int32x2_t;
+typedef __Int64x1_t int64x1_t;
+typedef __Float32x2_t float32x2_t;
+typedef __Poly8x8_t poly8x8_t;
+typedef __Poly16x4_t poly16x4_t;
+typedef __Uint8x8_t uint8x8_t;
+typedef __Uint16x4_t uint16x4_t;
+typedef __Uint32x2_t uint32x2_t;
+typedef __Float64x1_t float64x1_t;
+typedef __Uint64x1_t uint64x1_t;
+typedef __Int8x16_t int8x16_t;
+typedef __Int16x8_t int16x8_t;
+typedef __Int32x4_t int32x4_t;
+typedef __Int64x2_t int64x2_t;
+typedef __Float32x4_t float32x4_t;
+typedef __Float64x2_t float64x2_t;
+typedef __Poly8x16_t poly8x16_t;
+typedef __Poly16x8_t poly16x8_t;
+typedef __Poly64x2_t poly64x2_t;
+typedef __Uint8x16_t uint8x16_t;
+typedef __Uint16x8_t uint16x8_t;
+typedef __Uint32x4_t uint32x4_t;
+typedef __Uint64x2_t uint64x2_t;
+
+typedef __Poly8_t poly8_t;
+typedef __Poly16_t poly16_t;
+typedef __Poly64_t poly64_t;
+typedef __Poly128_t poly128_t;
 
 typedef float float32_t;
 typedef double float64_t;
-typedef __builtin_aarch64_simd_poly8 poly8_t;
-typedef __builtin_aarch64_simd_poly16 poly16_t;
-typedef __builtin_aarch64_simd_poly64 poly64_t;
-typedef __builtin_aarch64_simd_poly128 poly128_t;
 
 typedef struct int8x8x2_t
 {
