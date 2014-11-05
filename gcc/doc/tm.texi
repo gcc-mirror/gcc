@@ -9323,11 +9323,19 @@ True if the @code{DW_AT_comp_dir} attribute should be emitted for each  compilat
 @end deftypevr
 
 @deftypevr {Target Hook} bool TARGET_DELAY_SCHED2
-True if sched2 is not to be run at its normal place.  This usually means it will be run as part of machine-specific reorg.
+True if sched2 is not to be run at its normal place.
+This usually means it will be run as part of machine-specific reorg.
 @end deftypevr
 
 @deftypevr {Target Hook} bool TARGET_DELAY_VARTRACK
-True if vartrack is not to be run at its normal place.  This usually means it will be run as part of machine-specific reorg.
+True if vartrack is not to be run at its normal place.
+This usually means it will be run as part of machine-specific reorg.
+@end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_NO_REGISTER_ALLOCATION
+True if register allocation and the passes
+following it should not be run.  Usually true only for virtual assembler
+targets.
 @end deftypevr
 
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})

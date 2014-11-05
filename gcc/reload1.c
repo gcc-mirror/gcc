@@ -2968,6 +2968,11 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 rtx
 eliminate_regs (rtx x, machine_mode mem_mode, rtx insn)
 {
+  if (reg_eliminate == NULL)
+    {
+      gcc_assert (targetm.no_register_allocation);
+      return x;
+    }
   return eliminate_regs_1 (x, mem_mode, insn, false, false);
 }
 

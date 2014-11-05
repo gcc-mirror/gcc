@@ -1,5 +1,21 @@
 2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* target.def (no_register_allocation): New data hook.
+	* doc/tm.texi.in: Add @hook TARGET_NO_REGISTER_ALLOCATION.
+	* doc/tm.texi: Regenerate.
+	* ira.c (gate_ira): New function.
+	(pass_data_ira): Set has_gate.
+	(pass_ira): Add a gate function.
+	(pass_data_reload): Likewise.
+	(pass_reload): Add a gate function.
+	(pass_ira): Use it.
+	* reload1.c (eliminate_regs): If reg_eliminate_is NULL, assert that
+	no register allocation happens on the target and return.
+	* final.c (alter_subreg): Ensure register is not a pseudo before
+	calling simplify_subreg.
+	(output_operand): Assert that x isn't a pseudo only if doing
+	register allocation.
+
 	* dbxout.c (dbxout_symbol): Don't call eliminate_regs on decls for
 	global vars.
 
