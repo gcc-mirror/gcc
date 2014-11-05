@@ -1,3 +1,11 @@
+2014-11-05  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/i386.c (expand_vec_perm_pshufb): Try vpermq/vpermd
+	for 512-bit wide modes.
+	(expand_vec_perm_1): Use correct versions of patterns.
+	* config/i386/sse.md (avx512f_vec_dup<mode>_1): New.
+	(vashr<mode>3<mask_name>): Split V8HImode and V16QImode.
+
 2014-11-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-chkp.c: New.

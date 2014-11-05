@@ -46891,6 +46891,42 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	{
 	  if (!TARGET_AVX512BW)
 	    return false;
+
+	  /* If vpermq didn't work, vpshufb won't work either.  */
+	  if (d->vmode == V8DFmode || d->vmode == V8DImode)
+	    return false;
+
+	  vmode = V64QImode;
+	  if (d->vmode == V16SImode
+	      || d->vmode == V32HImode
+	      || d->vmode == V64QImode)
+	    {
+	      /* First see if vpermq can be used for
+		 V16SImode/V32HImode/V64QImode.  */
+	      if (valid_perm_using_mode_p (V8DImode, d))
+		{
+		  for (i = 0; i < 8; i++)
+		    perm[i] = (d->perm[i * nelt / 8] * 8 / nelt) & 7;
+		  if (d->testing_p)
+		    return true;
+		  target = gen_reg_rtx (V8DImode);
+		  if (expand_vselect (target, gen_lowpart (V8DImode, d->op0),
+				      perm, 8, false))
+		    {
+		      emit_move_insn (d->target,
+				      gen_lowpart (d->vmode, target));
+		      return true;
+		    }
+		  return false;
+		}
+
+	      /* Next see if vpermd can be used.  */
+	      if (valid_perm_using_mode_p (V16SImode, d))
+		vmode = V16SImode;
+	    }
+	  /* Or if vpermps can be used.  */
+	  else if (d->vmode == V16SFmode)
+	    vmode = V16SImode;
 	  if (vmode == V64QImode)
 	    {
 	      /* vpshufb only works intra lanes, it is not
@@ -46910,6 +46946,9 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
   if (vmode == V8SImode)
     for (i = 0; i < 8; ++i)
       rperm[i] = GEN_INT ((d->perm[i * nelt / 8] * 8 / nelt) & 7);
+  else if (vmode == V16SImode)
+    for (i = 0; i < 16; ++i)
+      rperm[i] = GEN_INT ((d->perm[i * nelt / 16] * 16 / nelt) & 15);
   else
     {
       eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
@@ -46948,8 +46987,14 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	emit_insn (gen_avx512bw_pshufbv64qi3 (target, op0, vperm));
       else if (vmode == V8SFmode)
 	emit_insn (gen_avx2_permvarv8sf (target, op0, vperm));
-      else
+      else if (vmode == V8SImode)
 	emit_insn (gen_avx2_permvarv8si (target, op0, vperm));
+      else if (vmode == V16SFmode)
+	emit_insn (gen_avx512f_permvarv16sf (target, op0, vperm));
+      else if (vmode == V16SImode)
+	emit_insn (gen_avx512f_permvarv16si (target, op0, vperm));
+      else
+	gcc_unreachable ();
     }
   else
     {
@@ -47003,21 +47048,21 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    {
 	    case V64QImode:
 	      if (TARGET_AVX512BW)
-		gen = gen_avx512bw_vec_dupv64qi;
+		gen = gen_avx512bw_vec_dupv64qi_1;
 	      break;
 	    case V32QImode:
 	      gen = gen_avx2_pbroadcastv32qi_1;
 	      break;
 	    case V32HImode:
 	      if (TARGET_AVX512BW)
-		gen = gen_avx512bw_vec_dupv32hi;
+		gen = gen_avx512bw_vec_dupv32hi_1;
 	      break;
 	    case V16HImode:
 	      gen = gen_avx2_pbroadcastv16hi_1;
 	      break;
 	    case V16SImode:
 	      if (TARGET_AVX512F)
-		gen = gen_avx512f_vec_dupv16si;
+		gen = gen_avx512f_vec_dupv16si_1;
 	      break;
 	    case V8SImode:
 	      gen = gen_avx2_pbroadcastv8si_1;
@@ -47030,18 +47075,18 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	      break;
 	    case V16SFmode:
 	      if (TARGET_AVX512F)
-		gen = gen_avx512f_vec_dupv16sf;
+		gen = gen_avx512f_vec_dupv16sf_1;
 	      break;
 	    case V8SFmode:
 	      gen = gen_avx2_vec_dupv8sf_1;
 	      break;
 	    case V8DFmode:
 	      if (TARGET_AVX512F)
-		gen = gen_avx512f_vec_dupv8df;
+		gen = gen_avx512f_vec_dupv8df_1;
 	      break;
 	    case V8DImode:
 	      if (TARGET_AVX512F)
-		gen = gen_avx512f_vec_dupv8di;
+		gen = gen_avx512f_vec_dupv8di_1;
 	      break;
 	    /* For other modes prefer other shuffles this function creates.  */
 	    default: break;
