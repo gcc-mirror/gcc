@@ -4531,13 +4531,16 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 
 void
-emit_indirect_jump (rtx loc)
+emit_indirect_jump (rtx loc ATTRIBUTE_UNUSED)
 {
+#ifndef HAVE_indirect_jump
+  sorry ("indirect jumps are not available on this target");
+#else
   struct expand_operand ops[1];
-
   create_address_operand (&ops[0], loc);
   expand_jump_insn (CODE_FOR_indirect_jump, 1, ops);
   emit_barrier ();
+#endif
 }
 
 #ifdef HAVE_conditional_move
