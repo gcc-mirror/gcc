@@ -1,3 +1,10 @@
+2014-11-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* go.test/go-test.exp (go-set-goarch): Enable tests on s390[x].
+
+	* go.test/go-test.exp: In +build lines, require whitespace around
+	expected strings, fix check for negation.
+
 2014-11-04  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/align-2.c: Remove dg-output.
