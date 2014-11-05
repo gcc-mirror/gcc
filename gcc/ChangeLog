@@ -1,5 +1,17 @@
 2014-11-05  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* passes.def (pass_compute_alignments, pass_duplicate_computed_gotos,
+	pass_variable_tracking, pass_free_cfg, pass_machine_reorg,
+	pass_cleanup_barriers, pass_delay_slots,
+	pass_split_for_shorten_branches, pass_convert_to_eh_region_ranges,
+	pass_shorten_branches, pass_est_nothrow_function_flags,
+	pass_dwarf2_frame, pass_final): Move outside of pass_postreload and
+	into pass_late_compilation.
+	(pass_late_compilation): Add.
+	* passes.c (pass_data_late_compilation, pass_late_compilation,
+	make_pass_late_compilation): New.
+	* timevar.def (TV_LATE_COMPILATION): New.
+
 	* target.def (omit_struct_return_reg): New data hook.
 	* doc/tm.texi.in: Add @hook TARGET_OMIT_STRUCT_RETURN_REG.
 	* doc/tm.texi: Regenerate.
