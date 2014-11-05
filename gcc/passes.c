@@ -576,6 +576,44 @@ make_pass_postreload (gcc::context *ctxt)
   return new pass_postreload (ctxt);
 }
 
+namespace {
+
+const pass_data pass_data_late_compilation =
+{
+  RTL_PASS, /* type */
+  "*all-late_compilation", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_LATE_COMPILATION, /* tv_id */
+  PROP_rtl, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_late_compilation : public rtl_opt_pass
+{
+public:
+  pass_late_compilation (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_late_compilation, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+  {
+    return reload_completed || targetm.no_register_allocation;
+  }
+
+}; // class pass_late_compilation
+
+} // anon namespace
+
+static rtl_opt_pass *
+make_pass_late_compilation (gcc::context *ctxt)
+{
+  return new pass_late_compilation (ctxt);
+}
+
 
 
 /* Set the static pass number of pass PASS to ID and record that

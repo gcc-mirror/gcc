@@ -417,6 +417,9 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_split_before_regstack);
 	      NEXT_PASS (pass_stack_regs_run);
 	  POP_INSERT_PASSES ()
+      POP_INSERT_PASSES ()
+      NEXT_PASS (pass_late_compilation);
+      PUSH_INSERT_PASSES_WITHIN (pass_late_compilation)
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_variable_tracking);
 	  NEXT_PASS (pass_free_cfg);
