@@ -3547,13 +3547,12 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnu_result_decl = DECL_RESULT (gnu_subprog_decl);
   gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
-  if (gnu_cico_list)
-    gnu_return_var_elmt = value_member (void_type_node, gnu_cico_list);
+  if (gnu_cico_list && TREE_VALUE (gnu_cico_list) == void_type_node)
+    gnu_return_var_elmt = gnu_cico_list;
 
   /* If the function returns by invisible reference, make it explicit in the
-     function body.  See gnat_to_gnu_entity, E_Subprogram_Type case.
-     Handle the explicit case here and the copy-in/copy-out case below.  */
-  if (TREE_ADDRESSABLE (gnu_subprog_type) && !gnu_return_var_elmt)
+     function body.  See gnat_to_gnu_entity, E_Subprogram_Type case.  */
+  if (TREE_ADDRESSABLE (gnu_subprog_type))
     {
       TREE_TYPE (gnu_result_decl)
 	= build_reference_type (TREE_TYPE (gnu_result_decl));
@@ -3573,9 +3572,10 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   begin_subprog_body (gnu_subprog_decl);
 
-  /* If there are In Out or Out parameters, we need to ensure that the return
-     statement properly copies them out.  We do this by making a new block and
-     converting any return into a goto to a label at the end of the block.  */
+  /* If there are copy-in/copy-out parameters, we need to ensure that they are
+     properly copied out by the return statement.  We do this by making a new
+     block and converting any return into a goto to a label at the end of the
+     block.  */
   if (gnu_cico_list)
     {
       tree gnu_return_var = NULL_TREE;
@@ -3586,18 +3586,13 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       start_stmt_group ();
       gnat_pushlevel ();
 
-      /* If this is a function with In Out or Out parameters, we also need a
-	 variable for the return value to be placed.  */
-      if (gnu_return_var_elmt)
+      /* If this is a function with copy-in/copy-out parameters and which does
+	 not return by invisible reference, we also need a variable for the
+	 return value to be placed.  */
+      if (gnu_return_var_elmt && !TREE_ADDRESSABLE (gnu_subprog_type))
 	{
 	  tree gnu_return_type
 	    = TREE_TYPE (TREE_PURPOSE (gnu_return_var_elmt));
-
-	  /* If the function returns by invisible reference, make it
-	     explicit in the function body.  See gnat_to_gnu_entity,
-	     E_Subprogram_Type case.  */
-	  if (TREE_ADDRESSABLE (gnu_subprog_type))
-	    gnu_return_type = build_reference_type (gnu_return_type);
 
 	  gnu_return_var
 	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
@@ -3693,7 +3688,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      the label and copy statement.  */
   if (gnu_cico_list)
     {
-      tree gnu_retval;
+      const Node_Id gnat_end_label
+	= End_Label (Handled_Statement_Sequence (gnat_node));
 
       gnu_return_var_stack->pop ();
 
@@ -3701,14 +3697,45 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       add_stmt (build1 (LABEL_EXPR, void_type_node,
 			gnu_return_label_stack->last ()));
 
-      if (list_length (gnu_cico_list) == 1)
-	gnu_retval = TREE_VALUE (gnu_cico_list);
-      else
-	gnu_retval = build_constructor_from_list (TREE_TYPE (gnu_subprog_type),
-						  gnu_cico_list);
+      /* If this is a function which returns by invisible reference, the
+	 return value has already been dealt with at the return statements,
+	 so we only need to indirectly copy out the parameters.  */
+      if (TREE_ADDRESSABLE (gnu_subprog_type))
+	{
+	  tree gnu_ret_deref
+	    = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result_decl);
+	  tree t;
 
-      add_stmt_with_node (build_return_expr (gnu_result_decl, gnu_retval),
-			  End_Label (Handled_Statement_Sequence (gnat_node)));
+	  gcc_assert (TREE_VALUE (gnu_cico_list) == void_type_node);
+
+	  for (t = TREE_CHAIN (gnu_cico_list); t; t = TREE_CHAIN (t))
+	    {
+	      tree gnu_field_deref
+		= build_component_ref (gnu_ret_deref, NULL_TREE,
+				       TREE_PURPOSE (t), true);
+	      gnu_result = build2 (MODIFY_EXPR, void_type_node,
+				   gnu_field_deref, TREE_VALUE (t));
+	      add_stmt_with_node (gnu_result, gnat_end_label);
+	    }
+	}
+
+      /* Otherwise, if this is a procedure or a function which does not return
+	 by invisible reference, we can do a direct block-copy out.  */
+      else
+	{
+	  tree gnu_retval;
+
+	  if (list_length (gnu_cico_list) == 1)
+	    gnu_retval = TREE_VALUE (gnu_cico_list);
+	  else
+	    gnu_retval
+	      = build_constructor_from_list (TREE_TYPE (gnu_subprog_type),
+					     gnu_cico_list);
+
+	  gnu_result = build_return_expr (gnu_result_decl, gnu_retval);
+	  add_stmt_with_node (gnu_result, gnat_end_label);
+	}
+
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
     }
@@ -6539,9 +6566,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    tree gnu_subprog_type = TREE_TYPE (current_function_decl);
 
-	    /* If this function has copy-in/copy-out parameters, get the real
-	       object for the return.  See Subprogram_to_gnu.  */
-	    if (TYPE_CI_CO_LIST (gnu_subprog_type))
+	    /* If this function has copy-in/copy-out parameters parameters and
+	       doesn't return by invisible reference, get the real object for
+	       the return.  See Subprogram_Body_to_gnu.  */
+	    if (TYPE_CI_CO_LIST (gnu_subprog_type)
+		&& !TREE_ADDRESSABLE (gnu_subprog_type))
 	      gnu_ret_obj = gnu_return_var_stack->last ();
 	    else
 	      gnu_ret_obj = DECL_RESULT (current_function_decl);
@@ -6615,8 +6644,8 @@ gnat_to_gnu (Node_Id gnat_node)
 		tree gnu_ret_deref
 		  = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
 				    gnu_ret_obj);
-		gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
-					      gnu_ret_deref, gnu_ret_val);
+		gnu_result = build2 (MODIFY_EXPR, void_type_node,
+				     gnu_ret_deref, gnu_ret_val);
 		add_stmt_with_node (gnu_result, gnat_node);
 		gnu_ret_val = NULL_TREE;
 	      }
@@ -6629,7 +6658,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   that label.  The return proper will be handled elsewhere.  */
 	if (gnu_return_label_stack->last ())
 	  {
-	    if (gnu_ret_obj)
+	    if (gnu_ret_val)
 	      add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_ret_obj,
 					 gnu_ret_val));
 
