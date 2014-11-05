@@ -716,7 +716,7 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (!node->local.local)
+  if (!cgraph_local_p (node))
     {
       /* When cloning is allowed, we can assume that externally visible
 	 functions are not called.  We will compensate this by cloning
@@ -1463,6 +1463,24 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   parms_count = ipa_get_param_count (callee_info);
   if (parms_count == 0)
     return false;
+
+  /* No propagation through instrumentation thunks is available yet.
+     It should be possible with proper mapping of call args and
+     instrumented callee params in the propagation loop below.  But
+     this case mostly occurs when legacy code calls instrumented code
+     and it is not a primary target for optimizations.
+     We detect instrumentation thunks in aliases and thunks chain by
+     checking instrumentation_clone flag for chain source and target.
+     Going through instrumentation thunks we always have it changed
+     from 0 to 1 and all other nodes do not change it.  */
+  if (!cs->callee->instrumentation_clone
+      && callee->instrumentation_clone)
+    {
+      for (i = 0; i < parms_count; i++)
+	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
+								 i));
+      return ret;
+    }
 
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series

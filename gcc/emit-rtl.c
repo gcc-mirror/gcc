@@ -640,7 +640,8 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
 		  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
 		  /* We can get a 0 for an error mark.  */
 		  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT);
+		  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+		  || GET_MODE_CLASS (mode) == MODE_POINTER_BOUNDS);
 
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	return gen_int_mode (i0, mode);
@@ -6128,6 +6129,14 @@ init_emit_once (void)
   const_tiny_rtx[0][(int) BImode] = const0_rtx;
   if (STORE_FLAG_VALUE == 1)
     const_tiny_rtx[1][(int) BImode] = const1_rtx;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_POINTER_BOUNDS);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (mode));
+      const_tiny_rtx[0][mode] = immed_wide_int_const (wi_zero, mode);
+    }
 
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);

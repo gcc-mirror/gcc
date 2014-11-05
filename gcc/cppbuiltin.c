@@ -107,6 +107,9 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
 			flag_finite_math_only);
   if (flag_cilkplus)
     cpp_define (pfile, "__cilk=200");
+
+  if (flag_check_pointer_bounds)
+    cpp_define (pfile, "__CHKP__");
 }
 
 

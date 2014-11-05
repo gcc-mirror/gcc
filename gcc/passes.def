@@ -49,14 +49,27 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASSES_AFTER (all_small_ipa_passes)
   NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
-  NEXT_PASS (pass_early_local_passes);
-  PUSH_INSERT_PASSES_WITHIN (pass_early_local_passes)
+  NEXT_PASS (pass_ipa_chkp_versioning);
+  NEXT_PASS (pass_build_ssa_passes);
+  PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_init_datastructures);
-
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_early_warn_uninitialized);
+  POP_INSERT_PASSES ()
+
+  NEXT_PASS (pass_chkp_instrumentation_passes);
+  PUSH_INSERT_PASSES_WITHIN (pass_chkp_instrumentation_passes)
+      NEXT_PASS (pass_fixup_cfg);
+      NEXT_PASS (pass_chkp);
+      NEXT_PASS (pass_rebuild_cgraph_edges);
+  POP_INSERT_PASSES ()
+  NEXT_PASS (pass_ipa_chkp_produce_thunks);
+
+  NEXT_PASS (pass_local_optimization_passes);
+  PUSH_INSERT_PASSES_WITHIN (pass_local_optimization_passes)
+      NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
       NEXT_PASS (pass_early_inline);
@@ -78,13 +91,13 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_early_ipa_sra);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
-          NEXT_PASS (pass_cleanup_eh);
-          NEXT_PASS (pass_profile);
-          NEXT_PASS (pass_local_pure_const);
+	  NEXT_PASS (pass_cleanup_eh);
+	  NEXT_PASS (pass_profile);
+	  NEXT_PASS (pass_local_pure_const);
 	  /* Split functions creates parts that are not run through
 	     early optimizations again.  It is thus good idea to do this
-	     late.  */
-          NEXT_PASS (pass_split_functions);
+	      late.  */
+	  NEXT_PASS (pass_split_functions);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -154,6 +167,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fre);
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_chkp_opt);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);

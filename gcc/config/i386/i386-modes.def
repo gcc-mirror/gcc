@@ -90,6 +90,9 @@ VECTOR_MODE (INT, QI, 12);    /*                  V12QI */
 VECTOR_MODE (INT, QI, 14);    /*                  V14QI */
 VECTOR_MODE (INT, HI, 6);     /*                   V6HI */
 
+POINTER_BOUNDS_MODE (BND32, 8);
+POINTER_BOUNDS_MODE (BND64, 16);
+
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);
 

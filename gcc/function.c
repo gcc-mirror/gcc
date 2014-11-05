@@ -78,6 +78,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "shrink-wrap.h"
 #include "toplev.h"
 #include "rtl-iter.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -2101,6 +2103,14 @@ use_register_for_decl (const_tree decl)
   if (TREE_ADDRESSABLE (decl))
     return false;
 
+  /* Decl is implicitly addressible by bound stores and loads
+     if it is an aggregate holding bounds.  */
+  if (chkp_function_instrumented_p (current_function_decl)
+      && TREE_TYPE (decl)
+      && !BOUNDED_P (decl)
+      && chkp_type_has_pointer (TREE_TYPE (decl)))
+    return false;
+
   /* Only register-like things go in registers.  */
   if (DECL_MODE (decl) == BLKmode)
     return false;
@@ -2221,6 +2231,15 @@ struct assign_parm_data_one
   BOOL_BITFIELD loaded_in_reg : 1;
 };
 
+struct bounds_parm_data
+{
+  assign_parm_data_one parm_data;
+  tree bounds_parm;
+  tree ptr_parm;
+  rtx ptr_entry;
+  int bound_no;
+};
+
 /* A subroutine of assign_parms.  Initialize ALL.  */
 
 static void
@@ -2332,6 +2351,23 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       fnargs.safe_insert (0, decl);
 
       all->function_result_decl = decl;
+
+      /* If function is instrumented then bounds of the
+	 passed structure address is the second argument.  */
+      if (chkp_function_instrumented_p (fndecl))
+	{
+	  decl = build_decl (DECL_SOURCE_LOCATION (fndecl),
+			     PARM_DECL, get_identifier (".result_bnd"),
+			     pointer_bounds_type_node);
+	  DECL_ARG_TYPE (decl) = pointer_bounds_type_node;
+	  DECL_ARTIFICIAL (decl) = 1;
+	  DECL_NAMELESS (decl) = 1;
+	  TREE_CONSTANT (decl) = 1;
+
+	  DECL_CHAIN (decl) = DECL_CHAIN (all->orig_fnargs);
+	  DECL_CHAIN (all->orig_fnargs) = decl;
+	  fnargs.safe_insert (1, decl);
+	}
     }
 
   /* If the target wants to split complex arguments into scalars, do so.  */
@@ -2472,7 +2508,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
      it came in a register so that REG_PARM_STACK_SPACE isn't skipped.
      In this case, we call FUNCTION_ARG with NAMED set to 1 instead of 0
      as it was the previous time.  */
-  in_regs = entry_parm != 0;
+  in_regs = (entry_parm != 0) || POINTER_BOUNDS_TYPE_P (data->passed_type);
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
   in_regs = true;
 #endif
@@ -2561,8 +2597,12 @@ static bool
 assign_parm_is_stack_parm (struct assign_parm_data_all *all,
 			   struct assign_parm_data_one *data)
 {
+  /* Bounds are never passed on the stack to keep compatibility
+     with not instrumented code.  */
+  if (POINTER_BOUNDS_TYPE_P (data->passed_type))
+    return false;
   /* Trivially true if we've no incoming register.  */
-  if (data->entry_parm == NULL)
+  else if (data->entry_parm == NULL)
     ;
   /* Also true if we're partially in registers and partially not,
      since we've arranged to drop the entire argument on the stack.  */
@@ -3371,6 +3411,123 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
     }
 }
 
+/* Load bounds of PARM from bounds table.  */
+static void
+assign_parm_load_bounds (struct assign_parm_data_one *data,
+			 tree parm,
+			 rtx entry,
+			 unsigned bound_no)
+{
+  bitmap_iterator bi;
+  unsigned i, offs = 0;
+  int bnd_no = -1;
+  rtx slot = NULL, ptr = NULL;
+
+  if (parm)
+    {
+      bitmap slots;
+      bitmap_obstack_initialize (NULL);
+      slots = BITMAP_ALLOC (NULL);
+      chkp_find_bound_slots (TREE_TYPE (parm), slots);
+      EXECUTE_IF_SET_IN_BITMAP (slots, 0, i, bi)
+	{
+	  if (bound_no)
+	    bound_no--;
+	  else
+	    {
+	      bnd_no = i;
+	      break;
+	    }
+	}
+      BITMAP_FREE (slots);
+      bitmap_obstack_release (NULL);
+    }
+
+  /* We may have bounds not associated with any pointer.  */
+  if (bnd_no != -1)
+    offs = bnd_no * POINTER_SIZE / BITS_PER_UNIT;
+
+  /* Find associated pointer.  */
+  if (bnd_no == -1)
+    {
+      /* If bounds are not associated with any bounds,
+	 then it is passed in a register or special slot.  */
+      gcc_assert (data->entry_parm);
+      ptr = const0_rtx;
+    }
+  else if (MEM_P (entry))
+    slot = adjust_address (entry, Pmode, offs);
+  else if (REG_P (entry))
+    ptr = gen_rtx_REG (Pmode, REGNO (entry) + bnd_no);
+  else if (GET_CODE (entry) == PARALLEL)
+    ptr = chkp_get_value_with_offs (entry, GEN_INT (offs));
+  else
+    gcc_unreachable ();
+  data->entry_parm = targetm.calls.load_bounds_for_arg (slot, ptr,
+							data->entry_parm);
+}
+
+/* Assign RTL expressions to the function's bounds parameters BNDARGS.  */
+
+static void
+assign_bounds (vec<bounds_parm_data> &bndargs,
+	       struct assign_parm_data_all &all)
+{
+  unsigned i, pass, handled = 0;
+  bounds_parm_data *pbdata;
+
+  if (!bndargs.exists ())
+    return;
+
+  /* We make few passes to store input bounds.  Firstly handle bounds
+     passed in registers.  After that we load bounds passed in special
+     slots.  Finally we load bounds from Bounds Table.  */
+  for (pass = 0; pass < 3; pass++)
+    FOR_EACH_VEC_ELT (bndargs, i, pbdata)
+      {
+	/* Pass 0 => regs only.  */
+	if (pass == 0
+	    && (!pbdata->parm_data.entry_parm
+		|| GET_CODE (pbdata->parm_data.entry_parm) != REG))
+	  continue;
+	/* Pass 1 => slots only.  */
+	else if (pass == 1
+		 && (!pbdata->parm_data.entry_parm
+		     || GET_CODE (pbdata->parm_data.entry_parm) == REG))
+	  continue;
+	/* Pass 2 => BT only.  */
+	else if (pass == 2
+		 && pbdata->parm_data.entry_parm)
+	  continue;
+
+	if (!pbdata->parm_data.entry_parm
+	    || GET_CODE (pbdata->parm_data.entry_parm) != REG)
+	  assign_parm_load_bounds (&pbdata->parm_data, pbdata->ptr_parm,
+				   pbdata->ptr_entry, pbdata->bound_no);
+
+	set_decl_incoming_rtl (pbdata->bounds_parm,
+			       pbdata->parm_data.entry_parm, false);
+
+	if (assign_parm_setup_block_p (&pbdata->parm_data))
+	  assign_parm_setup_block (&all, pbdata->bounds_parm,
+				   &pbdata->parm_data);
+	else if (pbdata->parm_data.passed_pointer
+		 || use_register_for_decl (pbdata->bounds_parm))
+	  assign_parm_setup_reg (&all, pbdata->bounds_parm,
+				 &pbdata->parm_data);
+	else
+	  assign_parm_setup_stack (&all, pbdata->bounds_parm,
+				   &pbdata->parm_data);
+
+	/* Count handled bounds to make sure we miss nothing.  */
+	handled++;
+      }
+
+  gcc_assert (handled == bndargs.length ());
+
+  bndargs.release ();
+}
+
 /* Assign RTL expressions to the function's parameters.  This may involve
    copying them into registers and using those registers as the DECL_RTL.  */
 
@@ -3380,7 +3537,11 @@ assign_parms (tree fndecl)
   struct assign_parm_data_all all;
   tree parm;
   vec<tree> fnargs;
-  unsigned i;
+  unsigned i, bound_no = 0;
+  tree last_arg = NULL;
+  rtx last_arg_entry = NULL;
+  vec<bounds_parm_data> bndargs = vNULL;
+  bounds_parm_data bdata;
 
   crtl->args.internal_arg_pointer
     = targetm.calls.internal_arg_pointer ();
@@ -3422,9 +3583,6 @@ assign_parms (tree fndecl)
 	    }
 	}
 
-      if (cfun->stdarg && !DECL_CHAIN (parm))
-	assign_parms_setup_varargs (&all, &data, false);
-
       /* Find out where the parameter arrives in this function.  */
       assign_parm_find_entry_rtl (&all, &data);
 
@@ -3434,7 +3592,15 @@ assign_parms (tree fndecl)
 	  assign_parm_find_stack_rtl (parm, &data);
 	  assign_parm_adjust_entry_rtl (&data);
 	}
-
+      if (!POINTER_BOUNDS_TYPE_P (data.passed_type))
+	{
+	  /* Remember where last non bounds arg was passed in case
+	     we have to load associated bounds for it from Bounds
+	     Table.  */
+	  last_arg = parm;
+	  last_arg_entry = data.entry_parm;
+	  bound_no = 0;
+	}
       /* Record permanently how this parm was passed.  */
       if (data.passed_pointer)
 	{
@@ -3446,19 +3612,62 @@ assign_parms (tree fndecl)
       else
 	set_decl_incoming_rtl (parm, data.entry_parm, false);
 
+      /* Boudns should be loaded in the particular order to
+	 have registers allocated correctly.  Collect info about
+	 input bounds and load them later.  */
+      if (POINTER_BOUNDS_TYPE_P (data.passed_type))
+	{
+	  /* Expect bounds in instrumented functions only.  */
+	  gcc_assert (chkp_function_instrumented_p (fndecl));
+
+	  bdata.parm_data = data;
+	  bdata.bounds_parm = parm;
+	  bdata.ptr_parm = last_arg;
+	  bdata.ptr_entry = last_arg_entry;
+	  bdata.bound_no = bound_no;
+	  bndargs.safe_push (bdata);
+	}
+      else
+	{
+	  assign_parm_adjust_stack_rtl (&data);
+
+	  if (assign_parm_setup_block_p (&data))
+	    assign_parm_setup_block (&all, parm, &data);
+	  else if (data.passed_pointer || use_register_for_decl (parm))
+	    assign_parm_setup_reg (&all, parm, &data);
+	  else
+	    assign_parm_setup_stack (&all, parm, &data);
+	}
+
+      if (cfun->stdarg && !DECL_CHAIN (parm))
+	{
+	  int pretend_bytes = 0;
+
+	  assign_parms_setup_varargs (&all, &data, false);
+
+	  if (chkp_function_instrumented_p (fndecl))
+	    {
+	      /* We expect this is the last parm.  Otherwise it is wrong
+		 to assign bounds right now.  */
+	      gcc_assert (i == (fnargs.length () - 1));
+	      assign_bounds (bndargs, all);
+	      targetm.calls.setup_incoming_vararg_bounds (all.args_so_far,
+							  data.promoted_mode,
+							  data.passed_type,
+							  &pretend_bytes,
+							  false);
+	    }
+	}
+
       /* Update info on where next arg arrives in registers.  */
       targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
 					  data.passed_type, data.named_arg);
 
-      assign_parm_adjust_stack_rtl (&data);
-
-      if (assign_parm_setup_block_p (&data))
-	assign_parm_setup_block (&all, parm, &data);
-      else if (data.passed_pointer || use_register_for_decl (parm))
-	assign_parm_setup_reg (&all, parm, &data);
-      else
-	assign_parm_setup_stack (&all, parm, &data);
+      if (POINTER_BOUNDS_TYPE_P (data.passed_type))
+	bound_no++;
     }
+
+  assign_bounds (bndargs, all);
 
   if (targetm.calls.split_complex_arg)
     assign_parms_unsplit_complex (&all, fnargs);
@@ -3585,6 +3794,10 @@ assign_parms (tree fndecl)
 
 	  real_decl_rtl = targetm.calls.function_value (TREE_TYPE (decl_result),
 							fndecl, true);
+	  if (chkp_function_instrumented_p (fndecl))
+	    crtl->return_bnd
+	      = targetm.calls.chkp_function_value_bounds (TREE_TYPE (decl_result),
+							  fndecl, true);
 	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
 	  /* The delay slot scheduler assumes that crtl->return_rtx
 	     holds the hard register containing the return value, not a
@@ -4815,6 +5028,14 @@ expand_function_start (tree subr)
       /* Set DECL_REGISTER flag so that expand_function_end will copy the
 	 result to the real return register(s).  */
       DECL_REGISTER (DECL_RESULT (subr)) = 1;
+
+      if (chkp_function_instrumented_p (current_function_decl))
+	{
+	  tree return_type = TREE_TYPE (DECL_RESULT (subr));
+	  rtx bounds = targetm.calls.chkp_function_value_bounds (return_type,
+								 subr, 1);
+	  SET_DECL_BOUNDS_RTL (DECL_RESULT (subr), bounds);
+	}
     }
 
   /* Initialize rtx for parameters and local variables.
@@ -4918,14 +5139,11 @@ expand_dummy_function_end (void)
   in_dummy_function = false;
 }
 
-/* Call DOIT for each hard register used as a return value from
-   the current function.  */
+/* Helper for diddle_return_value.  */
 
 void
-diddle_return_value (void (*doit) (rtx, void *), void *arg)
+diddle_return_value_1 (void (*doit) (rtx, void *), void *arg, rtx outgoing)
 {
-  rtx outgoing = crtl->return_rtx;
-
   if (! outgoing)
     return;
 
@@ -4943,6 +5161,16 @@ diddle_return_value (void (*doit) (rtx, void *), void *arg)
 	    (*doit) (x, arg);
 	}
     }
+}
+
+/* Call DOIT for each hard register used as a return value from
+   the current function.  */
+
+void
+diddle_return_value (void (*doit) (rtx, void *), void *arg)
+{
+  diddle_return_value_1 (doit, arg, crtl->return_rtx);
+  diddle_return_value_1 (doit, arg, crtl->return_bnd);
 }
 
 static void
