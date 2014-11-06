@@ -959,8 +959,9 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 
       if (is_idstart (*cur))
 	{
+	  struct cpp_hashnode *id = lex_identifier (pfile, cur);
 	  ok = false;
-	  if (_cpp_save_parameter (pfile, macro, lex_identifier (pfile, cur)))
+	  if (_cpp_save_parameter (pfile, macro, id, id))
 	    break;
 	  cur = skip_whitespace (pfile, CUR (pfile->context),
 				 true /* skip_comments */);

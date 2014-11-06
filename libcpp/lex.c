@@ -1302,7 +1302,7 @@ _cpp_lex_identifier (cpp_reader *pfile, const char *name)
 /* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
 lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
-		struct normalize_state *nst)
+		struct normalize_state *nst, cpp_hashnode **spelling)
 {
   cpp_hashnode *result;
   const uchar *cur;
@@ -1332,6 +1332,7 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
       } while (forms_identifier_p (pfile, false, nst));
       result = _cpp_interpret_identifier (pfile, base,
 					  pfile->buffer->cur - base);
+      *spelling = cpp_lookup (pfile, base, pfile->buffer->cur - base);
     }
   else
     {
@@ -1340,6 +1341,7 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 
       result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
 						  base, len, hash, HT_ALLOC));
+      *spelling = result;
     }
 
   /* Rarely, identifiers require diagnostics when lexed.  */
@@ -2388,7 +2390,8 @@ _cpp_lex_direct (cpp_reader *pfile)
       {
 	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 	result->val.node.node = lex_identifier (pfile, buffer->cur - 1, false,
-						&nst);
+						&nst,
+						&result->val.node.spelling);
 	warn_about_normalization (pfile, result, &nst);
       }
 
@@ -2666,7 +2669,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	if (forms_identifier_p (pfile, true, &nst))
 	  {
 	    result->type = CPP_NAME;
-	    result->val.node.node = lex_identifier (pfile, base, true, &nst);
+	    result->val.node.node = lex_identifier (pfile, base, true, &nst,
+						    &result->val.node.spelling);
 	    warn_about_normalization (pfile, result, &nst);
 	    break;
 	  }
@@ -2740,11 +2744,35 @@ cpp_digraph2name (enum cpp_ttype type)
   return digraph_spellings[(int) type - (int) CPP_FIRST_DIGRAPH];
 }
 
+/* Write the spelling of an identifier IDENT, using UCNs, to BUFFER.
+   The buffer must already contain the enough space to hold the
+   token's spelling.  Returns a pointer to the character after the
+   last character written.  */
+unsigned char *
+_cpp_spell_ident_ucns (unsigned char *buffer, cpp_hashnode *ident)
+{
+  size_t i;
+  const unsigned char *name = NODE_NAME (ident);
+	  
+  for (i = 0; i < NODE_LEN (ident); i++)
+    if (name[i] & ~0x7F)
+      {
+	i += utf8_to_ucn (buffer, name + i) - 1;
+	buffer += 10;
+      }
+    else
+      *buffer++ = name[i];
+
+  return buffer;
+}
+
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
    already contain the enough space to hold the token's spelling.
    Returns a pointer to the character after the last character written.
    FORSTRING is true if this is to be the spelling after translation
-   phase 1 (this is different for UCNs).
+   phase 1 (with the original spelling of extended identifiers), false
+   if extended identifiers should always be written using UCNs (there is
+   no option for always writing them in the internal UTF-8 form).
    FIXME: Would be nice if we didn't need the PFILE argument.  */
 unsigned char *
 cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
@@ -2773,24 +2801,12 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
     case SPELL_IDENT:
       if (forstring)
 	{
-	  memcpy (buffer, NODE_NAME (token->val.node.node),
-		  NODE_LEN (token->val.node.node));
-	  buffer += NODE_LEN (token->val.node.node);
+	  memcpy (buffer, NODE_NAME (token->val.node.spelling),
+		  NODE_LEN (token->val.node.spelling));
+	  buffer += NODE_LEN (token->val.node.spelling);
 	}
       else
-	{
-	  size_t i;
-	  const unsigned char * name = NODE_NAME (token->val.node.node);
-	  
-	  for (i = 0; i < NODE_LEN (token->val.node.node); i++)
-	    if (name[i] & ~0x7F)
-	      {
-		i += utf8_to_ucn (buffer, name + i) - 1;
-		buffer += 10;
-	      }
-	    else
-	      *buffer++ = NODE_NAME (token->val.node.node)[i];
-	}
+	buffer = _cpp_spell_ident_ucns (buffer, token->val.node.node);
       break;
 
     case SPELL_LITERAL:
@@ -2904,9 +2920,11 @@ _cpp_equiv_tokens (const cpp_token *a, const cpp_token *b)
 	return (a->type != CPP_PASTE || a->val.token_no == b->val.token_no);
       case SPELL_NONE:
 	return (a->type != CPP_MACRO_ARG
-		|| a->val.macro_arg.arg_no == b->val.macro_arg.arg_no);
+		|| (a->val.macro_arg.arg_no == b->val.macro_arg.arg_no
+		    && a->val.macro_arg.spelling == b->val.macro_arg.spelling));
       case SPELL_IDENT:
-	return a->val.node.node == b->val.node.node;
+	return (a->val.node.node == b->val.node.node
+		&& a->val.node.spelling == b->val.node.spelling);
       case SPELL_LITERAL:
 	return (a->val.str.len == b->val.str.len
 		&& !memcmp (a->val.str.text, b->val.str.text,

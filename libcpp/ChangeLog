@@ -1,3 +1,35 @@
+2014-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpp-id-data.h (struct cpp_macro): Update comment
+	regarding parameters.
+	* include/cpplib.h (struct cpp_macro_arg, struct cpp_identifier):
+	Add spelling fields.
+	(struct cpp_token): Update comment on macro_arg.
+	* internal.h (_cpp_save_parameter): Add extra argument.
+	(_cpp_spell_ident_ucns): New declaration.
+	* lex.c (lex_identifier): Add SPELLING argument.  Set *SPELLING to
+	original spelling of identifier.
+	(_cpp_lex_direct): Update calls to lex_identifier.
+	(_cpp_spell_ident_ucns): New function, factored out of
+	cpp_spell_token.
+	(cpp_spell_token): Adjust FORSTRING argument semantics to return
+	original spelling of identifiers.  Use _cpp_spell_ident_ucns in
+	!FORSTRING case.
+	(_cpp_equiv_tokens): Check spellings of identifiers and macro
+	arguments are identical.
+	* macro.c (macro_arg_saved_data): New structure.
+	(paste_tokens): Use original spellings of identifiers from
+	cpp_spell_token.
+	(_cpp_save_parameter): Add argument SPELLING.  Save both canonical
+	node and its value.
+	(parse_params): Update calls to _cpp_save_parameter.
+	(lex_expansion_token): Save spelling of macro argument tokens.
+	(_cpp_create_definition): Extract canonical node from saved data.
+	(cpp_macro_definition): Use UCNs in spelling of macro name.  Use
+	original spellings of macro argument tokens and identifiers.
+	* traditional.c (scan_parameters): Update call to
+	_cpp_save_parameter.
+
 2014-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/9449

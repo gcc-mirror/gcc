@@ -1,3 +1,8 @@
+2014-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-std=c99, -std=c11): Don't refer to corner
+	cases of extended identifiers.
+
 2014-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfgcleanup.c (fixup_noreturn_call): Do not perform DCE here.
