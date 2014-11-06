@@ -1,3 +1,7 @@
+2014-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfgcleanup.c (fixup_noreturn_call): Do not perform DCE here.
+
 2014-11-06  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/cond.md (movqicc_<code>_<mode>): Remove mode of
