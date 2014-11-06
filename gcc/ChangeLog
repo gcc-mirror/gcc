@@ -1,3 +1,11 @@
+2014-11-06  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_architecture_version): New.
+	(processor): New architecture_version field.
+	(aarch64_override_options): Initialize aarch64_architecture_version.
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_ARCH,
+	__ARM_ARCH_PROFILE, aarch64_arch_name macro.
+
 2014-11-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* params.def (sra-max-scalarization-size-Ospeed): New.

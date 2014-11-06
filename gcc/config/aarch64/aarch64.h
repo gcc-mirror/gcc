@@ -28,7 +28,13 @@
     {							\
       builtin_define ("__aarch64__");                   \
       builtin_define ("__ARM_64BIT_STATE");             \
+      builtin_define_with_int_value                     \
+        ("__ARM_ARCH", aarch64_architecture_version);   \
+      cpp_define_formatted                                              \
+        (parse_in, "__ARM_ARCH_%dA", aarch64_architecture_version);     \
       builtin_define ("__ARM_ARCH_ISA_A64");            \
+      builtin_define_with_int_value                     \
+        ("__ARM_ARCH_PROFILE", 'A');                    \
       builtin_define ("__ARM_FEATURE_CLZ");             \
       builtin_define ("__ARM_FEATURE_IDIV");            \
       builtin_define ("__ARM_FEATURE_UNALIGNED");       \
@@ -172,6 +178,8 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
+/* Major revision number of the ARM Architecture implemented by the target.  */
+extern unsigned aarch64_architecture_version;
 
 /* Instruction tuning/selection flags.  */
 
