@@ -4976,6 +4976,29 @@ except the last are treated as named.
 You need not define this hook if it always returns @code{false}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_CALL_ARGS (rtx, @var{tree})
+While generating RTL for a function call, this target hook is invoked once
+for each argument passed to the function, either a register returned by
+@code{TARGET_FUNCTION_ARG} or a memory location.  It is called just
+before the point where argument registers are stored.  The type of the
+function to be called is also passed as the second argument; it is
+@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is
+invoked just after the code to copy the return reg has been emitted.
+This functionality can be used to perform special setup of call argument
+registers if a target needs it.
+For functions without arguments, the hook is called once with @code{pc_rtx}
+passed instead of an argument register.
+Most ports do not need to implement anything for this hook.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_END_CALL_ARGS (void)
+This target hook is invoked while generating RTL for a function call,
+just after the point where the return reg is copied into a pseudo.  It
+signals that all the call argument and return registers for the just
+emitted call are now no longer in use.
+Most ports do not need to implement anything for this hook.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED (cumulative_args_t @var{ca})
 If you need to conditionally change ABIs so that one works with
 @code{TARGET_SETUP_INCOMING_VARARGS}, but the other works like neither

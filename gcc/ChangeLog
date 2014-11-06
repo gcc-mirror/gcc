@@ -1,5 +1,14 @@
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* target.def (call_args, end_call_args): New hooks.
+	* hooks.c (hook_void_rtx_tree): New empty function.
+	* hooks.h (hook_void_rtx_tree): Declare.
+	* doc/tm.texi.in (TARGET_CALL_ARGS, TARGET_END_CALL_ARGS): Add.
+	* doc/tm.texi: Regenerate.
+	* calls.c (expand_call): Slightly rearrange the code.  Use the two new
+	hooks.
+	(expand_library_call_value_1): Use the two new hooks.
+
 	* expr.c (use_reg_mode): Just return for pseudo registers.
 
 	* combine.c (try_combine): Don't allow a call as one of the source
