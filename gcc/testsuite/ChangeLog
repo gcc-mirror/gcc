@@ -1,3 +1,16 @@
+2014-11-06  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/align-2.c: Add dg-output.
+	* c-c++-common/ubsan/align-4.c: Likewise.
+	* c-c++-common/ubsan/align-6.c: New test.
+	* c-c++-common/ubsan/align-7.c: New test.
+	* c-c++-common/ubsan/align-8.c: New test.
+	* g++.dg/ubsan/null-1.C: Add dg-output.
+	* g++.dg/ubsan/null-2.C: Likewise.
+	* g++.dg/ubsan/null-3.C: New test.
+	* g++.dg/ubsan/null-4.C: New test.
+	* g++.dg/ubsan/null-5.C: New test.
+
 2014-11-06  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512vl-vandnpd-2.c: Fix

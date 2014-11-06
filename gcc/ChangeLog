@@ -1,3 +1,8 @@
+2014-11-06  Marek Polacek  <polacek@redhat.com>
+
+	* sanopt.c (sanopt_optimize_walker): Limit removal of the checks.
+	Remove vector limit.
+
 2014-11-06  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Implement bitwise binary and unary simplifications

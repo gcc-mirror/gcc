@@ -130,7 +130,30 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 			  /* At this point we shouldn't have any statements
 			     that aren't dominating the current BB.  */
 			  tree align = gimple_call_arg (g, 2);
-			  remove = tree_int_cst_le (cur_align, align);
+			  int kind = tree_to_shwi (gimple_call_arg (g, 1));
+			  /* If this is a NULL pointer check where we had segv
+			     anyway, we can remove it.  */
+			  if (integer_zerop (align)
+			      && (kind == UBSAN_LOAD_OF
+				  || kind == UBSAN_STORE_OF
+				  || kind == UBSAN_MEMBER_ACCESS))
+			    remove = true;
+			  /* Otherwise remove the check in non-recovering
+			     mode, or if the stmts have same location.  */
+			  else if (integer_zerop (align))
+			    remove = !(flag_sanitize_recover & SANITIZE_NULL)
+				     || flag_sanitize_undefined_trap_on_error
+				     || gimple_location (g)
+					== gimple_location (stmt);
+			  else if (tree_int_cst_le (cur_align, align))
+			    remove = !(flag_sanitize_recover
+				       & SANITIZE_ALIGNMENT)
+				     || flag_sanitize_undefined_trap_on_error
+				     || gimple_location (g)
+					== gimple_location (stmt);
+			  if (!remove && gimple_bb (g) == gimple_bb (stmt)
+			      && tree_int_cst_compare (cur_align, align) == 0)
+			    v.pop ();
 			  break;
 			}
 		    }
@@ -147,7 +170,7 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 			}
 		      gsi_remove (&gsi, true);
 		    }
-		  else if (v.length () < 30)
+		  else
 		    v.safe_push (stmt);
 		  }
 	    }
