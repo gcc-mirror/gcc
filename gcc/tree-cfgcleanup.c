@@ -568,7 +568,6 @@ bool
 fixup_noreturn_call (gimple stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  bool changed = false;
 
   if (gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
     return false;
@@ -590,46 +589,25 @@ fixup_noreturn_call (gimple stmt)
 	split_block (bb, stmt);
     }
 
-  changed |= remove_fallthru_edge (bb->succs);
-
-  /* If there is LHS, remove it.  */
-  if (gimple_call_lhs (stmt))
+  /* If there is an LHS, remove it.  */
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs)
     {
-      tree op = gimple_call_lhs (stmt);
       gimple_call_set_lhs (stmt, NULL_TREE);
 
-      /* We need to remove SSA name to avoid checking errors.
-	 All uses are dominated by the noreturn and thus will
-	 be removed afterwards.
-	 We proactively remove affected non-PHI statements to avoid
-	 fixup_cfg from trying to update them and crashing.  */
-      if (TREE_CODE (op) == SSA_NAME)
+      /* We need to fix up the SSA name to avoid checking errors.  */
+      if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  use_operand_p use_p;
-          imm_use_iterator iter;
-	  gimple use_stmt;
-	  bitmap_iterator bi;
-	  unsigned int bb_index;
-
-	  bitmap blocks = BITMAP_ALLOC (NULL);
-
-          FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
-	    {
-	      if (gimple_code (use_stmt) != GIMPLE_PHI)
-	        bitmap_set_bit (blocks, gimple_bb (use_stmt)->index);
-	      else
-		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		  SET_USE (use_p, error_mark_node);
-	    }
-	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, bb_index, bi)
-	    delete_basic_block (BASIC_BLOCK_FOR_FN (cfun, bb_index));
-	  BITMAP_FREE (blocks);
-	  release_ssa_name (op);
+	  tree new_var = create_tmp_reg (TREE_TYPE (lhs), NULL);
+	  SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, new_var);
+	  SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
+	  set_ssa_default_def (cfun, new_var, lhs);
 	}
+
       update_stmt (stmt);
-      changed = true;
     }
-  return changed;
+
+  return remove_fallthru_edge (bb->succs);
 }
 
 
