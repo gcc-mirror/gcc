@@ -34,7 +34,16 @@
    -X						\
    %{mbig-endian:-EB} %{mlittle-endian:-EL}"
 
-#define LINK_SPEC LINUX_TARGET_LINK_SPEC
+#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+#define CA53_ERR_835769_SPEC \
+  " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
+#else
+#define CA53_ERR_835769_SPEC \
+  " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
+#endif
+
+#define LINK_SPEC LINUX_TARGET_LINK_SPEC \
+                  CA53_ERR_835769_SPEC
 
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\

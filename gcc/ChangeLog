@@ -1,3 +1,11 @@
+2014-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Define.
+	(LINK_SPEC): Include CA53_ERR_835769_SPEC.
+	* config/aarch64/aarch64-linux.h
+	(CA53_ERR_835769_SPEC): Define.
+	(LINK_SPEC): Include CA53_ERR_835769_SPEC.
+
 2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_madd_needs_nop): Restore
