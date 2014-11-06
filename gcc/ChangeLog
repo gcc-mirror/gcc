@@ -1,3 +1,21 @@
+2014-11-06  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement bitwise binary and unary simplifications
+	from tree-ssa-forwprop.c.
+	* fold-const.c (fold_unary_loc): Remove them here.
+	(fold_binary_loc): Likewise.
+	* tree-ssa-forwprop.c (simplify_not_neg_expr): Remove.
+	(truth_valued_ssa_name): Likewise.
+	(lookup_logical_inverted_value): Likewise.
+	(simplify_bitwise_binary_1): Likewise.
+	(hoist_conversion_for_bitop_p): Likewise.
+	(simplify_bitwise_binary_boolean): Likewise.
+	(simplify_bitwise_binary): Likewise.
+	(pass_forwprop::execute): Remove calls to simplify_not_neg_expr
+	and simplify_bitwise_binary.
+	* genmatch.c (dt_node::append_true_op): Use safe_as_a for parent.
+	(decision_tree::insert): Also insert non-expressions.
+
 2014-11-06  Hale Wang  <Hale.Wang@arm.com>
 
 	* config/arm/arm-cores.def: Add support for

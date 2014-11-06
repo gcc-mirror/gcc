@@ -1,3 +1,8 @@
+2014-11-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Adjust scanning for the
+	desired transform.
+
 2014-11-05  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/asm-1.c (bar): Add prototype.

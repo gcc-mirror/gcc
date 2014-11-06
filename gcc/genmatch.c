@@ -1126,7 +1126,7 @@ dt_node::append_op (operand *op, dt_node *parent, unsigned pos)
 dt_node *
 dt_node::append_true_op (dt_node *parent, unsigned pos)
 {
-  dt_operand *parent_ = as_a<dt_operand *> (parent);
+  dt_operand *parent_ = safe_as_a<dt_operand *> (parent);
   dt_operand *n = new dt_operand (DT_TRUE, 0, 0, parent_, pos);
   return append_node (n);
 }
@@ -1232,9 +1232,6 @@ at_assert_elm:
 void
 decision_tree::insert (struct simplify *s, unsigned pattern_no)
 {
-  if (s->match->type != operand::OP_EXPR)
-    return;
-
   dt_operand **indexes = XCNEWVEC (dt_operand *, s->capture_max + 1);
   dt_node *p = decision_tree::insert_operand (root, s->match, indexes);
   p->append_simplify (s, pattern_no, indexes);
