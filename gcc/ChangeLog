@@ -1,5 +1,7 @@
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* expr.c (use_reg_mode): Just return for pseudo registers.
+
 	* combine.c (try_combine): Don't allow a call as one of the source
 	insns.
 
