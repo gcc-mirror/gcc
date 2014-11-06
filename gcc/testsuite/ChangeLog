@@ -1,17 +1,17 @@
-2014-11-06  Hale Wang  <Hale.Wang@arm.com>
+2014-11-06  Hale Wang  <hale.wang@arm.com>
 
-	* testsuite/gcc.target/arm/small-multiply-m0-1.c: New test case for
+	* gcc.target/arm/small-multiply-m0-1.c: New test for
 	target -mcpu=cortex-m0.small-multiply.
-	* testsuite/gcc.target/arm/small-multiply-m0-2.c: Likewise.
-	* testsuite/gcc.target/arm/small-multiply-m0-3.c: Likewise.
-	* testsuite/gcc.target/arm/small-multiply-m0plus-1.c: New test case for
+	* gcc.target/arm/small-multiply-m0-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-1.c: New test for
 	target -mcpu=cortex-m0plus.small-multiply.
-	* testsuite/gcc.target/arm/small-multiply-m0plus-2.c: Likewise.
-	* testsuite/gcc.target/arm/small-multiply-m0plus-3.c: Likewise.
-	* testsuite/gcc.target/arm/small-multiply-m1-1.c: New test case for
+	* gcc.target/arm/small-multiply-m0plus-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-1.c: New test for
 	target -mcpu=cortex-m1.small-multiply.
-	* testsuite/gcc.target/arm/small-multiply-m1-2.c: Likewise.
-	* testsuite/gcc.target/arm/small-multiply-m1-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-3.c: Likewise.
 
 2014-11-06  Ilya Enkovich  <ilya.enkovich@intel.com>
 

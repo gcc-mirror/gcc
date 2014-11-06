@@ -16,7 +16,7 @@
 	* genmatch.c (dt_node::append_true_op): Use safe_as_a for parent.
 	(decision_tree::insert): Also insert non-expressions.
 
-2014-11-06  Hale Wang  <Hale.Wang@arm.com>
+2014-11-06  Hale Wang  <hale.wang@arm.com>
 
 	* config/arm/arm-cores.def: Add support for
 	-mcpu=cortex-m0.small-multiply,cortex-m0plus.small-multiply,
@@ -31,7 +31,7 @@
 	-mcpu=cortex-m0.small-multiply,cortex-m0plus.small-multiply,
 	cortex-m1.small-multiply.
 
-2014-11-06  Hale Wang  <Hale.Wang@arm.com>
+2014-11-06  Hale Wang  <hale.wang@arm.com>
 
 	* config/arm/arm.c: Add cortex-m7 tune.
 	* config/arm/arm-cores.def: Use cortex-m7 tune.
