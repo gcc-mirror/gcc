@@ -1,5 +1,8 @@
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* combine.c (try_combine): Don't allow a call as one of the source
+	insns.
+
 	* target.def (decl_end): New hook.
 	* varasm.c (assemble_variable_contents, assemble_constant_contents):
 	Use it.
