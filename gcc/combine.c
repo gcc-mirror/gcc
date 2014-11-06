@@ -2553,7 +2553,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   /* Exit early if one of the insns involved can't be used for
      combinations.  */
-  if (cant_combine_insn_p (i3)
+  if (CALL_P (i2)
+      || (i1 && CALL_P (i1))
+      || (i0 && CALL_P (i0))
+      || cant_combine_insn_p (i3)
       || cant_combine_insn_p (i2)
       || (i1 && cant_combine_insn_p (i1))
       || (i0 && cant_combine_insn_p (i0))
