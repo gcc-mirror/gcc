@@ -245,6 +245,11 @@ hook_void_tree (tree a ATTRIBUTE_UNUSED)
 }
 
 void
+hook_void_rtx_tree (rtx, tree)
+{
+}
+
+void
 hook_void_constcharptr (const char *a ATTRIBUTE_UNUSED)
 {
 }

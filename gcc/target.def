@@ -4002,6 +4002,33 @@ into the stack.  Arguments meaning is similar to\n\
  default_setup_incoming_vararg_bounds)
 
 DEFHOOK
+(call_args,
+ "While generating RTL for a function call, this target hook is invoked once\n\
+for each argument passed to the function, either a register returned by\n\
+@code{TARGET_FUNCTION_ARG} or a memory location.  It is called just\n\
+before the point where argument registers are stored.  The type of the\n\
+function to be called is also passed as the second argument; it is\n\
+@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is\n\
+invoked just after the code to copy the return reg has been emitted.\n\
+This functionality can be used to perform special setup of call argument\n\
+registers if a target needs it.\n\
+For functions without arguments, the hook is called once with @code{pc_rtx}\n\
+passed instead of an argument register.\n\
+Most ports do not need to implement anything for this hook.",
+ void, (rtx, tree),
+ hook_void_rtx_tree)
+
+DEFHOOK
+(end_call_args,
+ "This target hook is invoked while generating RTL for a function call,\n\
+just after the point where the return reg is copied into a pseudo.  It\n\
+signals that all the call argument and return registers for the just\n\
+emitted call are now no longer in use.\n\
+Most ports do not need to implement anything for this hook.",
+ void, (void),
+ hook_void_void)
+
+DEFHOOK
 (strict_argument_naming,
  "Define this hook to return @code{true} if the location where a function\n\
 argument is passed depends on whether or not it is a named argument.\n\

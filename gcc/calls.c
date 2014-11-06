@@ -3103,45 +3103,6 @@ expand_call (tree exp, rtx target, int ignore)
 
       funexp = rtx_for_function_call (fndecl, addr);
 
-      /* Figure out the register where the value, if any, will come back.  */
-      valreg = 0;
-      valbnd = 0;
-      if (TYPE_MODE (rettype) != VOIDmode
-	  && ! structure_value_addr)
-	{
-	  if (pcc_struct_value)
-	    {
-	      valreg = hard_function_value (build_pointer_type (rettype),
-					    fndecl, NULL, (pass == 0));
-	      if (CALL_WITH_BOUNDS_P (exp))
-		valbnd = targetm.calls.
-		  chkp_function_value_bounds (build_pointer_type (rettype),
-					      fndecl, (pass == 0));
-	    }
-	  else
-	    {
-	      valreg = hard_function_value (rettype, fndecl, fntype,
-					    (pass == 0));
-	      if (CALL_WITH_BOUNDS_P (exp))
-		valbnd = targetm.calls.chkp_function_value_bounds (rettype,
-								   fndecl,
-								   (pass == 0));
-	    }
-
-	  /* If VALREG is a PARALLEL whose first member has a zero
-	     offset, use that.  This is for targets such as m68k that
-	     return the same value in multiple places.  */
-	  if (GET_CODE (valreg) == PARALLEL)
-	    {
-	      rtx elem = XVECEXP (valreg, 0, 0);
-	      rtx where = XEXP (elem, 0);
-	      rtx offset = XEXP (elem, 1);
-	      if (offset == const0_rtx
-		  && GET_MODE (where) == GET_MODE (valreg))
-		valreg = where;
-	    }
-	}
-
       /* Precompute all register parameters.  It isn't safe to compute anything
 	 once we have started filling any specific hard regs.  */
       precompute_register_parameters (num_actuals, args, &reg_parm_seen);
@@ -3222,6 +3183,55 @@ expand_call (tree exp, rtx target, int ignore)
 							 &args[i], 1)))
 		sibcall_failure = 1;
 	    }
+
+      bool any_regs = false;
+      for (i = 0; i < num_actuals; i++)
+	if (args[i].reg != NULL_RTX)
+	  {
+	    any_regs = true;
+	    targetm.calls.call_args (args[i].reg, funtype);
+	  }
+      if (!any_regs)
+	targetm.calls.call_args (pc_rtx, funtype);
+
+      /* Figure out the register where the value, if any, will come back.  */
+      valreg = 0;
+      valbnd = 0;
+      if (TYPE_MODE (rettype) != VOIDmode
+	  && ! structure_value_addr)
+	{
+	  if (pcc_struct_value)
+	    {
+	      valreg = hard_function_value (build_pointer_type (rettype),
+					    fndecl, NULL, (pass == 0));
+	      if (CALL_WITH_BOUNDS_P (exp))
+		valbnd = targetm.calls.
+		  chkp_function_value_bounds (build_pointer_type (rettype),
+					      fndecl, (pass == 0));
+	    }
+	  else
+	    {
+	      valreg = hard_function_value (rettype, fndecl, fntype,
+					    (pass == 0));
+	      if (CALL_WITH_BOUNDS_P (exp))
+		valbnd = targetm.calls.chkp_function_value_bounds (rettype,
+								   fndecl,
+								   (pass == 0));
+	    }
+
+	  /* If VALREG is a PARALLEL whose first member has a zero
+	     offset, use that.  This is for targets such as m68k that
+	     return the same value in multiple places.  */
+	  if (GET_CODE (valreg) == PARALLEL)
+	    {
+	      rtx elem = XVECEXP (valreg, 0, 0);
+	      rtx where = XEXP (elem, 0);
+	      rtx offset = XEXP (elem, 1);
+	      if (offset == const0_rtx
+		  && GET_MODE (where) == GET_MODE (valreg))
+		valreg = where;
+	    }
+	}
 
       /* Store all bounds not passed in registers.  */
       for (i = 0; i < num_actuals; i++)
@@ -3581,6 +3591,8 @@ expand_call (tree exp, rtx target, int ignore)
       /* Free up storage we no longer need.  */
       for (i = 0; i < num_actuals; ++i)
 	free (args[i].aligned_regs);
+
+      targetm.calls.end_call_args ();
 
       insns = get_insns ();
       end_sequence ();
@@ -4111,6 +4123,18 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
     }
 #endif
 
+  /* When expanding a normal call, args are stored in push order,
+     which is the reverse of what we have here.  */
+  bool any_regs = false;
+  for (int i = nargs; i-- > 0; )
+    if (argvec[i].reg != NULL_RTX)
+      {
+	targetm.calls.call_args (argvec[i].reg, NULL_TREE);
+	any_regs = true;
+      }
+  if (!any_regs)
+    targetm.calls.call_args (pc_rtx, NULL_TREE);
+
   /* Push the args that need to be pushed.  */
 
   /* ARGNUM indexes the ARGVEC array in the order in which the arguments
@@ -4350,6 +4374,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       shift_return_value (TYPE_MODE (tfom), false, valreg);
       valreg = gen_rtx_REG (TYPE_MODE (tfom), REGNO (valreg));
     }
+
+  targetm.calls.end_call_args ();
 
   /* For calls to `setjmp', etc., inform function.c:setjmp_warnings
      that it should complain if nonvolatile values are live.  For
