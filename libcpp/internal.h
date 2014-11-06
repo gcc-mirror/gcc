@@ -616,7 +616,8 @@ extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);
 extern void _cpp_push_text_context (cpp_reader *, cpp_hashnode *,
 				    const unsigned char *, size_t);
-extern bool _cpp_save_parameter (cpp_reader *, cpp_macro *, cpp_hashnode *);
+extern bool _cpp_save_parameter (cpp_reader *, cpp_macro *, cpp_hashnode *,
+				 cpp_hashnode *);
 extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
 			       unsigned int);
 extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
@@ -665,6 +666,7 @@ extern bool _cpp_skip_block_comment (cpp_reader *);
 extern cpp_token *_cpp_temp_token (cpp_reader *);
 extern const cpp_token *_cpp_lex_token (cpp_reader *);
 extern cpp_token *_cpp_lex_direct (cpp_reader *);
+extern unsigned char *_cpp_spell_ident_ucns (unsigned char *, cpp_hashnode *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);

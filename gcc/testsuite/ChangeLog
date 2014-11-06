@@ -1,3 +1,10 @@
+2014-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp/ucnid-2.C, g++.dg/cpp/ucnid-3.C,
+	gcc.dg/cpp/ucnid-11.c, gcc.dg/cpp/ucnid-12.c,
+	gcc.dg/cpp/ucnid-13.c, gcc.dg/cpp/ucnid-14.c,
+	gcc.dg/cpp/ucnid-15.c: New tests.
+
 2014-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt43.adb: New test.

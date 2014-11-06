@@ -33,7 +33,9 @@ struct GTY(()) answer {
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
-  /* Parameters, if any.  */
+  /* Parameters, if any.  If parameter names use extended identifiers,
+     the original spelling of those identifiers, not the canonical
+     UTF-8 spelling, goes here.  */
   cpp_hashnode ** GTY ((nested_ptr (union tree_node,
 		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
 			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
