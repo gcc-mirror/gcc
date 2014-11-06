@@ -1952,30 +1952,30 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_options="${extra_options} linux-android.opt"
 	case ${target} in
 		mipsisa32r2*)
-			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
+			default_mips_arch=mips32r2
 			;;
 		mipsisa32*)
-			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+			default_mips_arch=mips32
 			;;
 		mips64el-st-linux-gnu)
-			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
+			default_mips_abi=n32
 			tm_file="${tm_file} mips/st.h"
 			tmake_file="${tmake_file} mips/t-st"
 			enable_mips_multilibs="yes"
 			;;
 		mips64octeon*-*-linux*)
-			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
+			default_mips_abi=n32
 			tm_defines="${tm_defines} MIPS_CPU_STRING_DEFAULT=\\\"octeon\\\""
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
 			enable_mips_multilibs="yes"
 			;;
 		mipsisa64r2*-*-linux*)
-			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
-			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
+			default_mips_abi=n32
+			default_mips_arch=mips64r2
 			enable_mips_multilibs="yes"
 			;;
 		mips64*-*-linux* | mipsisa64*-*-linux*)
-			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
+			default_mips_abi=n32
 			enable_mips_multilibs="yes"
 			;;
 	esac
@@ -4119,6 +4119,29 @@ case ${target} in
 			mips*el-*-*)
 				tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 				;;
+		esac
+		if test x$with_arch != x; then
+			default_mips_arch=$with_arch
+		fi
+		if test x$with_abi != x; then
+			default_mips_abi=$with_abi
+		fi
+		case ${default_mips_arch} in
+		    mips1)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=1" ;;
+		    mips2)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=2" ;;
+		    mips3)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=3" ;;
+		    mips4)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=4" ;;
+		    mips32)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=32" ;;
+		    mips32r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=33" ;;
+		    mips64)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=64" ;;
+		    mips64r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=65" ;;
+		esac
+		case ${default_mips_abi} in
+		    32)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_32" ;;
+		    o64)  tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_O64" ;;
+		    n32)  tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_N32" ;;
+		    64)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_64" ;;
+		    eabi) tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_EABI" ;;
 		esac
 		tmake_file="mips/t-mips $tmake_file"
 		;;
