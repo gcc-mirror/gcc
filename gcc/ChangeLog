@@ -1,4 +1,4 @@
-2014-10-11  Hale Wang  <Hale.Wang@arm.com>
+2014-11-06  Hale Wang  <Hale.Wang@arm.com>
 
 	* config/arm/arm.c: Add cortex-m7 tune.
 	* config/arm/arm-cores.def: Use cortex-m7 tune.
