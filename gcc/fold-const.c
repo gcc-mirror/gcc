@@ -8008,8 +8008,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     case BIT_NOT_EXPR:
       if (TREE_CODE (arg0) == INTEGER_CST)
         return fold_not_const (arg0, type);
-      else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
-	return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
       /* Convert ~ (-A) to A - 1.  */
       else if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == NEGATE_EXPR)
 	return fold_build2_loc (loc, MINUS_EXPR, type,
@@ -11152,26 +11150,6 @@ fold_binary_loc (location_t loc,
 				    arg1);
 	}
 
-      /* (X & Y) | Y is (X, Y).  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
-	return omit_one_operand_loc (loc, type, arg1, TREE_OPERAND (arg0, 0));
-      /* (X & Y) | X is (Y, X).  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
-	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
-	return omit_one_operand_loc (loc, type, arg1, TREE_OPERAND (arg0, 1));
-      /* X | (X & Y) is (Y, X).  */
-      if (TREE_CODE (arg1) == BIT_AND_EXPR
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
-	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 1)))
-	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 1));
-      /* X | (Y & X) is (Y, X).  */
-      if (TREE_CODE (arg1) == BIT_AND_EXPR
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
-	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
-	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 0));
-
       /* (X & ~Y) | (~X & Y) is X ^ Y */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
 	  && TREE_CODE (arg1) == BIT_AND_EXPR)
@@ -11390,42 +11368,6 @@ fold_binary_loc (location_t loc,
 	       && integer_zerop (TREE_OPERAND (arg1, 1))))
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
-
-      /* Canonicalize (X | C1) & C2 as (X & C2) | (C1 & C2).  */
-      if (TREE_CODE (arg0) == BIT_IOR_EXPR
-	  && TREE_CODE (arg1) == INTEGER_CST
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	{
-	  tree tmp1 = fold_convert_loc (loc, type, arg1);
-	  tree tmp2 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-	  tree tmp3 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
-	  tmp2 = fold_build2_loc (loc, BIT_AND_EXPR, type, tmp2, tmp1);
-	  tmp3 = fold_build2_loc (loc, BIT_AND_EXPR, type, tmp3, tmp1);
-	  return
-	    fold_convert_loc (loc, type,
-			      fold_build2_loc (loc, BIT_IOR_EXPR,
-					   type, tmp2, tmp3));
-	}
-
-      /* (X | Y) & Y is (X, Y).  */
-      if (TREE_CODE (arg0) == BIT_IOR_EXPR
-	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
-	return omit_one_operand_loc (loc, type, arg1, TREE_OPERAND (arg0, 0));
-      /* (X | Y) & X is (Y, X).  */
-      if (TREE_CODE (arg0) == BIT_IOR_EXPR
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
-	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
-	return omit_one_operand_loc (loc, type, arg1, TREE_OPERAND (arg0, 1));
-      /* X & (X | Y) is (Y, X).  */
-      if (TREE_CODE (arg1) == BIT_IOR_EXPR
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
-	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 1)))
-	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 1));
-      /* X & (Y | X) is (Y, X).  */
-      if (TREE_CODE (arg1) == BIT_IOR_EXPR
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0)
-	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
-	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 0));
 
       /* Fold (X ^ 1) & 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR

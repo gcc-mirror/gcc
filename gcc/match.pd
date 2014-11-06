@@ -113,6 +113,134 @@ along with GCC; see the file COPYING3.  If not see
  @0)
 
 
+/* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
+   when profitable.
+   For bitwise binary operations apply operand conversions to the
+   binary operation result instead of to the operands.  This allows
+   to combine successive conversions and bitwise binary operations.
+   We combine the above two cases by using a conditional convert.  */
+(for bitop (bit_and bit_ior bit_xor)
+ (simplify
+  (bitop (convert @0) (convert? @1))
+  (if (((TREE_CODE (@1) == INTEGER_CST
+	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	 && int_fits_type_p (@1, TREE_TYPE (@0))
+	 /* ???  This transform conflicts with fold-const.c doing
+	    Convert (T)(x & c) into (T)x & (T)c, if c is an integer
+	    constants (if x has signed type, the sign bit cannot be set
+	    in c).  This folds extension into the BIT_AND_EXPR.
+	    Restrict it to GIMPLE to avoid endless recursions.  */
+	 && (bitop != BIT_AND_EXPR || GIMPLE))
+	|| types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
+       && (/* That's a good idea if the conversion widens the operand, thus
+	      after hoisting the conversion the operation will be narrower.  */
+	   TYPE_PRECISION (TREE_TYPE (@0)) < TYPE_PRECISION (type)
+	   /* It's also a good idea if the conversion is to a non-integer
+	      mode.  */
+	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
+	   /* Or if the precision of TO is not the same as the precision
+	      of its mode.  */
+	   || TYPE_PRECISION (type) != GET_MODE_PRECISION (TYPE_MODE (type))))
+   (convert (bitop @0 (convert @1))))))
+
+/* Simplify (A & B) OP0 (C & B) to (A OP0 C) & B. */
+(for bitop (bit_and bit_ior bit_xor)
+ (simplify
+  (bitop (bit_and:c @0 @1) (bit_and @2 @1))
+  (bit_and (bitop @0 @2) @1)))
+
+/* (x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2) */
+(simplify
+  (bit_and (bit_ior @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
+  (bit_ior (bit_and @0 @2) (bit_and @1 @2)))
+
+/* Combine successive equal operations with constants.  */
+(for bitop (bit_and bit_ior bit_xor)
+ (simplify
+  (bitop (bitop @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
+  (bitop @0 (bitop @1 @2))))
+
+/* Try simple folding for X op !X, and X op X with the help
+   of the truth_valued_p and logical_inverted_value predicates.  */
+(match truth_valued_p
+ @0
+ (if (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1)))
+(for op (lt le eq ne ge gt truth_and truth_andif truth_or truth_orif truth_xor)
+ (match truth_valued_p
+  (op @0 @1)))
+(match truth_valued_p
+  (truth_not @0))
+
+(match (logical_inverted_value @0)
+ (bit_not truth_valued_p@0))
+(match (logical_inverted_value @0)
+ (eq @0 integer_zerop)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
+(match (logical_inverted_value @0)
+ (ne truth_valued_p@0 integer_onep)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
+(match (logical_inverted_value @0)
+ (bit_xor truth_valued_p@0 integer_onep))
+
+/* X & !X -> 0.  */
+(simplify
+ (bit_and:c @0 (logical_inverted_value @0))
+ { build_zero_cst (type); })
+/* X | !X and X ^ !X -> 1, , if X is truth-valued.  */
+(for op (bit_ior bit_xor)
+ (simplify
+  (op:c truth_valued_p@0 (logical_inverted_value @0))
+  { build_one_cst (type); }))
+
+(for bitop (bit_and bit_ior)
+     rbitop (bit_ior bit_and)
+  /* (x | y) & x -> x */
+  /* (x & y) | x -> x */
+ (simplify
+  (bitop:c (rbitop:c @0 @1) @0)
+  @0)
+ /* (~x | y) & x -> x & y */
+ /* (~x & y) | x -> x | y */
+ (simplify
+  (bitop:c (rbitop:c (bit_not @0) @1) @0)
+  (bitop @0 @1)))
+
+/* If arg1 and arg2 are booleans (or any single bit type)
+   then try to simplify:
+
+   (~X & Y) -> X < Y
+   (X & ~Y) -> Y < X
+   (~X | Y) -> X <= Y
+   (X | ~Y) -> Y <= X
+
+   But only do this if our result feeds into a comparison as
+   this transformation is not always a win, particularly on
+   targets with and-not instructions.
+   -> simplify_bitwise_binary_boolean */
+(simplify
+  (ne (bit_and:c (bit_not @0) @1) integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_PRECISION (TREE_TYPE (@1)) == 1)
+   (lt @0 @1)))
+(simplify
+  (ne (bit_ior:c (bit_not @0) @1) integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_PRECISION (TREE_TYPE (@1)) == 1)
+   (le @0 @1)))
+
+/* From tree-ssa-forwprop.c:simplify_not_neg_expr.  */
+
+/* ~~x -> x */
+(simplify
+  (bit_not (bit_not @0))
+  @0)
+
+/* The corresponding (negate (negate @0)) -> @0 is in match-plusminus.pd.  */
+(simplify
+ (negate (negate @0))
+ @0)
+
+
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */
