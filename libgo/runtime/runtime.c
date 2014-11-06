@@ -195,12 +195,12 @@ runtime_cputicks(void)
   asm("rdtsc" : "=a" (low), "=d" (high));
   return (int64)(((uint64)high << 32) | (uint64)low);
 #elif defined (__s390__) || defined (__s390x__)
-  uint64 clock;
-#ifdef S390_HAVE_STCKF
-  asm("stckf\t%0" : "=Q" (clock) : : );
-#else
-  clock = 0;
-#endif
+  uint64 clock = 0;
+  /* stckf may not write the return variable in case of a clock error, so make
+     it read-write to prevent that the initialisation is optimised out.
+     Note: Targets below z9-109 will crash when executing store clock fast, i.e.
+     we don't support Go for machines older than that.  */
+  asm volatile(".insn s,0xb27c0000,%0" /* stckf */ : "+Q" (clock) : : "cc" );
   return (int64)clock;
 #else
   // FIXME: implement for other processors.
