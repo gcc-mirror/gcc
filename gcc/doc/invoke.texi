@@ -10401,6 +10401,16 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item sra-max-scalarization-size-Ospeed
+@item sra-max-scalarization-size-Osize
+The two Scalar Reduction of Aggregates passes (SRA and IPA-SRA) aim to
+replace scalar parts of aggregates with uses of independent scalar
+variables.  These parameters control the maximum size, in storage units,
+of aggregate which will be considered for replacement when compiling for
+speed
+(@option{sra-max-scalarization-size-Ospeed}) or size
+(@option{sra-max-scalarization-size-Osize}) respectively.
+
 @item tm-max-aggregate-size
 When making copies of thread-local variables in a transaction, this
 parameter specifies the size in bytes after which variables are

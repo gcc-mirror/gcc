@@ -950,6 +950,18 @@ DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
 	  "pairs",
 	  9, 0, 0)
 
+DEFPARAM (PARAM_SRA_MAX_SCALARIZATION_SIZE_SPEED,
+	  "sra-max-scalarization-size-Ospeed",
+	  "Maximum size, in storage units, of an aggregate which should be "
+	  "considered for scalarization when compiling for speed",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_SRA_MAX_SCALARIZATION_SIZE_SIZE,
+	  "sra-max-scalarization-size-Osize",
+	  "Maximum size, in storage units, of an aggregate which should be "
+	  "considered for scalarization when compiling for size",
+	  0, 0, 0)
+
 DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
 	  "ipa-cp-value-list-size",
 	  "Maximum size of a list of values associated with each parameter for "

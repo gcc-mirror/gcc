@@ -1,3 +1,15 @@
+2014-11-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* params.def (sra-max-scalarization-size-Ospeed): New.
+	(sra-max-scalarization-size-Osize): Likewise.
+	* doc/invoke.texi (sra-max-scalarization-size-Ospeed): Document.
+	(sra-max-scalarization-size-Osize): Likewise.
+	* toplev.c (process_options): Set default values for new
+	parameters.
+	* tree-sra.c (analyze_all_variable_accesses): Use new parameters.
+	* targhooks.c (get_move_ratio): Remove static designator.
+	* target.h (get_move_ratio): Declare.
+
 2014-11-06  Marek Polacek  <polacek@redhat.com>
 
 	* sanopt.c (sanopt_optimize_walker): Limit removal of the checks.

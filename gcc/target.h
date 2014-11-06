@@ -102,6 +102,10 @@ extern int elf_record_gcc_switches (print_switch_type type, const char *);
    we disable such optimizations on such targets, using this function.  */
 extern bool target_default_pointer_address_modes_p (void);
 
+/* For hooks which use the MOVE_RATIO macro, this gives the legacy default
+   behaviour.  */
+extern unsigned int get_move_ratio (bool);
+
 struct stdarg_info;
 struct spec_info_def;
 struct hard_reg_set_container;
