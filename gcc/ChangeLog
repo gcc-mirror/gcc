@@ -1,3 +1,11 @@
+2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* target.def (decl_end): New hook.
+	* varasm.c (assemble_variable_contents, assemble_constant_contents):
+	Use it.
+	* doc/tm.texi.in (TARGET_ASM_DECL_END): Add.
+	* doc/tm.texi: Regenerate.
+
 2014-11-06  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_architecture_version): New.

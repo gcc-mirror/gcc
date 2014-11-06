@@ -2041,6 +2041,7 @@ assemble_variable_contents (tree decl, const char *name,
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
+      targetm.asm_out.decl_end ();
     }
 }
 
@@ -3347,6 +3348,8 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
 
   /* Output the value of EXP.  */
   output_constant (exp, size, align);
+
+  targetm.asm_out.decl_end ();
 }
 
 /* We must output the constant data referred to by SYMBOL; do so.  */

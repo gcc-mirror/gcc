@@ -127,6 +127,15 @@ when the relevant string is @code{NULL}.",
  bool, (rtx x, unsigned int size, int aligned_p),
  default_assemble_integer)
 
+/* Notify the backend that we have completed emitting the data for a
+   decl.  */
+DEFHOOK
+(decl_end,
+ "Define this hook if the target assembler requires a special marker to\n\
+terminate an initialized variable declaration.",
+ void, (void),
+ hook_void_void)
+
 /* Output code that will globalize a label.  */
 DEFHOOK
 (globalize_label,
