@@ -3006,3 +3006,13 @@ extern GTY(()) struct target_globals *mips16_globals;
    with arguments ARGS.  */
 #define PMODE_INSN(NAME, ARGS) \
   (Pmode == SImode ? NAME ## _si ARGS : NAME ## _di ARGS)
+
+/* If we are *not* using multilibs and the default ABI is not ABI_32 we
+   need to change these from /lib and /usr/lib.  */
+#if MIPS_ABI_DEFAULT == ABI_N32
+#define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
+#elif MIPS_ABI_DEFAULT == ABI_64
+#define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
+#endif

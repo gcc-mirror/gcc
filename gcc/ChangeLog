@@ -1,3 +1,14 @@
+2014-11-06  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config.gcc (mips*-mti-linux*): Remove gnu_ld and gas assignments.
+	Set default_mips_arch and default_mips_abi instead of tm_defines.
+	(mips*-*-linux*): Set default_mips_arch and default_mips_abi instead
+	of tm_defines.
+	(mips*-*-*): Check with_arch and with_abi.  Set tm_defines.
+	* config/mips/mips.h (STANDARD_STARTFILE_PREFIX_1): Set default
+	based on MIPS_ABI_DEFAULT.
+	(STANDARD_STARTFILE_PREFIX_2): Ditto.
+
 2014-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (-std=c99, -std=c11): Don't refer to corner
