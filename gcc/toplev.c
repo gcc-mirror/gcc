@@ -1270,6 +1270,20 @@ process_options (void)
      so we can correctly initialize debug output.  */
   no_backend = lang_hooks.post_options (&main_input_filename);
 
+  /* Set default values for parameters relation to the Scalar Reduction
+     of Aggregates passes (SRA and IP-SRA).  We must do this here, rather
+     than in opts.c:default_options_optimization as historically these
+     tuning heuristics have been based on MOVE_RATIO, which on some
+     targets requires other symbols from the backend.  */
+  maybe_set_param_value
+    (PARAM_SRA_MAX_SCALARIZATION_SIZE_SPEED,
+     get_move_ratio (true) * UNITS_PER_WORD,
+     global_options.x_param_values, global_options_set.x_param_values);
+  maybe_set_param_value
+    (PARAM_SRA_MAX_SCALARIZATION_SIZE_SIZE,
+     get_move_ratio (false) * UNITS_PER_WORD,
+     global_options.x_param_values, global_options_set.x_param_values);
+
   /* Some machines may reject certain combinations of options.  */
   targetm.target_option.override ();
 

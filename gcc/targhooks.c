@@ -1409,7 +1409,7 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 /* For hooks which use the MOVE_RATIO macro, this gives the legacy default
    behaviour.  SPEED_P is true if we are compiling for speed.  */
 
-static unsigned int
+unsigned int
 get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 {
   unsigned int move_ratio;
