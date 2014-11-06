@@ -95,6 +95,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ira.h"
 #include "lra.h"
@@ -3197,7 +3201,7 @@ static int is_based_loc (const_rtx);
 static bool resolve_one_addr (rtx *);
 static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx,
 					       enum var_init_status);
-static dw_loc_descr_ref loc_descriptor (rtx, enum machine_mode mode,
+static dw_loc_descr_ref loc_descriptor (rtx, machine_mode mode,
 					enum var_init_status);
 static dw_loc_list_ref loc_list_from_tree (tree, int);
 static dw_loc_descr_ref loc_descriptor_from_tree (tree, int);
@@ -10529,7 +10533,6 @@ get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
 static dw_die_ref
 modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 {
-  const int is_const_type = ((cv_quals & TYPE_QUAL_CONST) != 0);
   const int is_volatile_type = ((cv_quals & TYPE_QUAL_VOLATILE) != 0);
   enum tree_code code = TREE_CODE (type);
   dw_die_ref mod_type_die;
@@ -11640,7 +11643,7 @@ const_ok_for_output (rtx rtl)
    if possible, NULL otherwise.  */
 
 static dw_die_ref
-base_type_for_mode (enum machine_mode mode, bool unsignedp)
+base_type_for_mode (machine_mode mode, bool unsignedp)
 {
   dw_die_ref type_die;
   tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
@@ -11669,9 +11672,9 @@ base_type_for_mode (enum machine_mode mode, bool unsignedp)
    possible.  */
 
 static dw_loc_descr_ref
-convert_descriptor_to_mode (enum machine_mode mode, dw_loc_descr_ref op)
+convert_descriptor_to_mode (machine_mode mode, dw_loc_descr_ref op)
 {
-  enum machine_mode outer_mode = mode;
+  machine_mode outer_mode = mode;
   dw_die_ref type_die;
   dw_loc_descr_ref cvt;
 
@@ -11712,9 +11715,9 @@ compare_loc_descriptor (enum dwarf_location_atom op, dw_loc_descr_ref op0,
 
 static dw_loc_descr_ref
 scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
-			 enum machine_mode mem_mode)
+			 machine_mode mem_mode)
 {
-  enum machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
+  machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
   dw_loc_descr_ref op0, op1;
   int shift;
 
@@ -11822,9 +11825,9 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
 
 static dw_loc_descr_ref
 ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
-			 enum machine_mode mem_mode)
+			 machine_mode mem_mode)
 {
-  enum machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
+  machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
   dw_loc_descr_ref op0, op1;
 
   if (op_mode == VOIDmode)
@@ -11890,8 +11893,8 @@ ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
 /* Return location descriptor for {U,S}{MIN,MAX}.  */
 
 static dw_loc_descr_ref
-minmax_loc_descriptor (rtx rtl, enum machine_mode mode,
-		       enum machine_mode mem_mode)
+minmax_loc_descriptor (rtx rtl, machine_mode mode,
+		       machine_mode mem_mode)
 {
   enum dwarf_location_atom op;
   dw_loc_descr_ref op0, op1, ret;
@@ -11986,7 +11989,7 @@ minmax_loc_descriptor (rtx rtl, enum machine_mode mode,
 
 static dw_loc_descr_ref
 typed_binop (enum dwarf_location_atom op, rtx rtl, dw_die_ref type_die,
-	     enum machine_mode mode, enum machine_mode mem_mode)
+	     machine_mode mode, machine_mode mem_mode)
 {
   dw_loc_descr_ref cvt, op0, op1;
 
@@ -12042,8 +12045,8 @@ typed_binop (enum dwarf_location_atom op, rtx rtl, dw_die_ref type_die,
    L4: DW_OP_nop  */
 
 static dw_loc_descr_ref
-clz_loc_descriptor (rtx rtl, enum machine_mode mode,
-		    enum machine_mode mem_mode)
+clz_loc_descriptor (rtx rtl, machine_mode mode,
+		    machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
   HOST_WIDE_INT valv;
@@ -12154,8 +12157,8 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
    L2: DW_OP_drop  */
 
 static dw_loc_descr_ref
-popcount_loc_descriptor (rtx rtl, enum machine_mode mode,
-			 enum machine_mode mem_mode)
+popcount_loc_descriptor (rtx rtl, machine_mode mode,
+			 machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
   dw_loc_descr_ref l1jump, l1label;
@@ -12215,8 +12218,8 @@ popcount_loc_descriptor (rtx rtl, enum machine_mode mode,
    L2: DW_OP_drop DW_OP_swap DW_OP_drop  */
 
 static dw_loc_descr_ref
-bswap_loc_descriptor (rtx rtl, enum machine_mode mode,
-		      enum machine_mode mem_mode)
+bswap_loc_descriptor (rtx rtl, machine_mode mode,
+		      machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
   dw_loc_descr_ref l1jump, l1label;
@@ -12300,8 +12303,8 @@ bswap_loc_descriptor (rtx rtl, enum machine_mode mode,
    [ DW_OP_swap constMASK DW_OP_and DW_OP_swap ] DW_OP_shr DW_OP_or  */
 
 static dw_loc_descr_ref
-rotate_loc_descriptor (rtx rtl, enum machine_mode mode,
-		       enum machine_mode mem_mode)
+rotate_loc_descriptor (rtx rtl, machine_mode mode,
+		       machine_mode mem_mode)
 {
   rtx rtlop1 = XEXP (rtl, 1);
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
@@ -12415,8 +12418,8 @@ parameter_ref_descriptor (rtx rtl)
    Return 0 if we can't represent the location.  */
 
 dw_loc_descr_ref
-mem_loc_descriptor (rtx rtl, enum machine_mode mode,
-		    enum machine_mode mem_mode,
+mem_loc_descriptor (rtx rtl, machine_mode mode,
+		    machine_mode mem_mode,
 		    enum var_init_status initialized)
 {
   dw_loc_descr_ref mem_loc_result = NULL;
@@ -12583,7 +12586,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 		  masking.  */
 	       && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= 4)
 	{
-	  enum machine_mode imode = GET_MODE (XEXP (rtl, 0));
+	  machine_mode imode = GET_MODE (XEXP (rtl, 0));
 	  mem_loc_result = op0;
 	  add_loc_descr (&mem_loc_result,
 			 int_loc_descriptor (GET_MODE_MASK (imode)));
@@ -12984,7 +12987,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      || GET_MODE_BITSIZE (mode) == HOST_BITS_PER_DOUBLE_INT))
 	{
 	  dw_die_ref type_die = base_type_for_mode (mode, 1);
-	  enum machine_mode amode;
+	  machine_mode amode;
 	  if (type_die == NULL)
 	    return NULL;
 	  amode = mode_for_size (DWARF2_ADDR_SIZE * BITS_PER_UNIT,
@@ -13448,7 +13451,7 @@ implicit_ptr_descriptor (rtx rtl, HOST_WIDE_INT offset)
    If we don't know how to describe it, return 0.  */
 
 static dw_loc_descr_ref
-loc_descriptor (rtx rtl, enum machine_mode mode,
+loc_descriptor (rtx rtl, machine_mode mode,
 		enum var_init_status initialized)
 {
   dw_loc_descr_ref loc_result = NULL;
@@ -13512,7 +13515,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
       {
 	rtvec par_elems = XVEC (rtl, 0);
 	int num_elem = GET_NUM_ELEM (par_elems);
-	enum machine_mode mode;
+	machine_mode mode;
 	int i;
 
 	/* Create the first one, so we have something to add to.  */
@@ -13605,7 +13608,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	    = ggc_vec_alloc<unsigned char> (length * elt_size);
 	  unsigned int i;
 	  unsigned char *p;
-	  enum machine_mode imode = GET_MODE_INNER (mode);
+	  machine_mode imode = GET_MODE_INNER (mode);
 
 	  gcc_assert (mode == GET_MODE (rtl) || VOIDmode == GET_MODE (rtl));
 	  switch (GET_MODE_CLASS (mode))
@@ -13739,7 +13742,7 @@ dw_loc_list_1 (tree loc, rtx varloc, int want_address,
 {
   int have_address = 0;
   dw_loc_descr_ref descr;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (want_address != 2)
     {
@@ -14238,7 +14241,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
 {
   tree obj, offset;
   HOST_WIDE_INT bitsize, bitpos, bytepos;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep = 0;
   dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
 
@@ -14459,7 +14462,7 @@ loc_list_from_tree (tree loc, int want_address)
           ret = new_addr_loc_descr (rtl, dtprel_false);
 	else
 	  {
-	    enum machine_mode mode, mem_mode;
+	    machine_mode mode, mem_mode;
 
 	    /* Certain constructs can only be represented at top-level.  */
 	    if (want_address == 2)
@@ -14523,7 +14526,7 @@ loc_list_from_tree (tree loc, int want_address)
       {
 	tree obj, offset;
 	HOST_WIDE_INT bitsize, bitpos, bytepos;
-	enum machine_mode mode;
+	machine_mode mode;
 	int unsignedp, volatilep = 0;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
@@ -15335,7 +15338,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	 constant requires more than one word in order to be adequately
 	 represented.  */
       {
-	enum machine_mode mode = GET_MODE (rtl);
+	machine_mode mode = GET_MODE (rtl);
 
 	if (TARGET_SUPPORTS_WIDE_INT == 0 && !SCALAR_FLOAT_MODE_P (mode))
 	  add_AT_double (die, DW_AT_const_value,
@@ -15353,14 +15356,14 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST_VECTOR:
       {
-	enum machine_mode mode = GET_MODE (rtl);
+	machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
 	unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	unsigned char *array
 	  = ggc_vec_alloc<unsigned char> (length * elt_size);
 	unsigned int i;
 	unsigned char *p;
-	enum machine_mode imode = GET_MODE_INNER (mode);
+	machine_mode imode = GET_MODE_INNER (mode);
 
 	switch (GET_MODE_CLASS (mode))
 	  {
@@ -15506,7 +15509,7 @@ rtl_for_decl_init (tree init, tree type)
     {
       tree enttype = TREE_TYPE (type);
       tree domain = TYPE_DOMAIN (type);
-      enum machine_mode mode = TYPE_MODE (enttype);
+      machine_mode mode = TYPE_MODE (enttype);
 
       if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE_SIZE (mode) == 1
 	  && domain
@@ -15696,8 +15699,8 @@ rtl_for_decl_location (tree decl)
 	{
 	  tree declared_type = TREE_TYPE (decl);
 	  tree passed_type = DECL_ARG_TYPE (decl);
-	  enum machine_mode dmode = TYPE_MODE (declared_type);
-	  enum machine_mode pmode = TYPE_MODE (passed_type);
+	  machine_mode dmode = TYPE_MODE (declared_type);
+	  machine_mode pmode = TYPE_MODE (passed_type);
 
 	  /* This decl represents a formal parameter which was optimized out.
 	     Note that DECL_INCOMING_RTL may be NULL in here, but we handle
@@ -15750,7 +15753,7 @@ rtl_for_decl_location (tree decl)
 	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
 		   < UNITS_PER_WORD))
 	{
-	  enum machine_mode addr_mode = get_address_mode (rtl);
+	  machine_mode addr_mode = get_address_mode (rtl);
 	  int offset = (UNITS_PER_WORD
 			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
 
@@ -15764,7 +15767,7 @@ rtl_for_decl_location (tree decl)
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
 	   && BYTES_BIG_ENDIAN)
     {
-      enum machine_mode addr_mode = get_address_mode (rtl);
+      machine_mode addr_mode = get_address_mode (rtl);
       int rsize = GET_MODE_SIZE (GET_MODE (rtl));
       int dsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)));
 
@@ -15824,7 +15827,7 @@ static tree
 fortran_common (tree decl, HOST_WIDE_INT *value)
 {
   tree val_expr, cvar;
-  enum machine_mode mode;
+  machine_mode mode;
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   int unsignedp, volatilep = 0;
@@ -15993,7 +15996,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  tree enttype = TREE_TYPE (type);
-	  enum machine_mode mode = TYPE_MODE (enttype);
+	  machine_mode mode = TYPE_MODE (enttype);
 
 	  if (GET_MODE_CLASS (mode) != MODE_INT || GET_MODE_SIZE (mode) != 1)
 	    return false;
@@ -18722,7 +18725,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		   arg; arg = next_arg)
 		{
 		  dw_loc_descr_ref reg, val;
-		  enum machine_mode mode = GET_MODE (XEXP (XEXP (arg, 0), 1));
+		  machine_mode mode = GET_MODE (XEXP (XEXP (arg, 0), 1));
 		  dw_die_ref cdie, tdie = NULL;
 
 		  next_arg = XEXP (arg, 1);

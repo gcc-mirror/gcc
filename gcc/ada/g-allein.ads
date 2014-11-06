@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -830,7 +830,7 @@ package GNAT.Altivec.Low_Level_Interface is
       C : c_int) return vector_pixel;
 
    pragma Import
-     (LL_Altivec, vec_sld_vx_vx_cint_r_vx, "__builtin_altivec_vsldoi_4si");
+     (LL_Altivec, vec_sld_vx_vx_cint_r_vx, "__builtin_altivec_vsldoi_8hi");
 
    function vec_sld_vsc_vsc_cint_r_vsc
      (A : vector_signed_char;

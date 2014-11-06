@@ -668,11 +668,7 @@ struct GTY(()) function {
 
 /* Add the decl D to the local_decls list of FUN.  */
 
-static inline void
-add_local_decl (struct function *fun, tree d)
-{
-  vec_safe_push (fun->local_decls, d);
-}
+void add_local_decl (struct function *fun, tree d);
 
 #define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
   FOR_EACH_VEC_SAFE_ELT_REVERSE ((FUN)->local_decls, I, D)
@@ -846,10 +842,10 @@ extern HOST_WIDE_INT get_frame_size (void);
    return FALSE.  */
 extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
 
-extern rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int, int);
-extern rtx assign_stack_local (enum machine_mode, HOST_WIDE_INT, int);
-extern rtx assign_stack_temp_for_type (enum machine_mode, HOST_WIDE_INT, tree);
-extern rtx assign_stack_temp (enum machine_mode, HOST_WIDE_INT);
+extern rtx assign_stack_local_1 (machine_mode, HOST_WIDE_INT, int, int);
+extern rtx assign_stack_local (machine_mode, HOST_WIDE_INT, int);
+extern rtx assign_stack_temp_for_type (machine_mode, HOST_WIDE_INT, tree);
+extern rtx assign_stack_temp (machine_mode, HOST_WIDE_INT);
 extern rtx assign_temp (tree, int, int);
 extern void update_temp_slot_address (rtx, rtx);
 extern void preserve_temp_slots (rtx);
@@ -858,8 +854,8 @@ extern void push_temp_slots (void);
 extern void pop_temp_slots (void);
 extern void init_temp_slots (void);
 extern rtx get_hard_reg_initial_reg (rtx);
-extern rtx get_hard_reg_initial_val (enum machine_mode, unsigned int);
-extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
+extern rtx get_hard_reg_initial_val (machine_mode, unsigned int);
+extern rtx has_hard_reg_initial_val (machine_mode, unsigned int);
 
 /* Called from gimple_expand_cfg.  */
 extern unsigned int emit_initial_value_sets (void);
@@ -868,12 +864,12 @@ extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
 extern int aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
-extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
 			       tree, bool);
-extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
+extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 				     tree, bool);
 extern gimple_seq gimplify_parameters (void);
-extern void locate_and_pad_parm (enum machine_mode, tree, int, int, int,
+extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
 				 tree, struct args_size *,
 				 struct locate_and_pad_arg_data *);
 extern void generate_setjmp_warnings (void);

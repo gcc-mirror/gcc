@@ -29,26 +29,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-iterator.h"
 #include "c/c-tree.h"
-#include "c/c-objc-common.h"
 #include "ggc.h"
-#include "toplev.h"
-#include "diagnostic.h"
 #include "stor-layout.h"
-#include "output.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "c-family/c-pretty-print.h"
 #include "c-family/c-upc.h"
-#include "c/c-upc-lang.h"
-#include "c-family/c-upc-low.h"
 #include "c-family/c-upc-pts.h"
+#include "c-family/c-upc-low.h"
 #include "c-family/c-upc-rts-names.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "varasm.h"
-#include "flags.h"
-#include "opts.h"
-#include "options.h"
 
 static GTY (()) section *upc_init_array_section;
 
@@ -211,7 +199,7 @@ upc_pts_struct_init_type (void)
   tree fields = NULL_TREE;
   tree name = NULL_TREE;
   tree ref;
-  enum machine_mode pts_mode;
+  machine_mode pts_mode;
   const location_t loc = UNKNOWN_LOCATION;
   struct c_struct_parse_info *null_struct_parse_info = NULL;
   int save_pedantic = pedantic;

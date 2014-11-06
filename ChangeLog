@@ -1,3 +1,34 @@
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.def (libcc1): Remove bootstrap=true;.
+	* Makefile.in: Regenerated.
+
+2014-10-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure.ac: Update comment.
+	* configure: Regenerate.
+
+2014-10-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (extra_host_libiberty_configure_flags): Add
+	--enable-shared also for libcc1's benefit.
+	* configure: Regenerate.
+
+2014-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* MAINTAINERS: Change my email address.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.def: Add libcc1 to host_modules.
+	* configure.ac (host_tools): Add libcc1.
+	* Makefile.in, configure: Rebuild.
+
 2014-10-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac (build_configargs): Don't share config.cache between

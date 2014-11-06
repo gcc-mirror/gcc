@@ -54,6 +54,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "expr.h"
@@ -203,8 +212,8 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
    INNER_MODE) to OUTER_MODE.  */
 
 rtx
-lowpart_subreg (enum machine_mode outer_mode, rtx expr,
-		enum machine_mode inner_mode)
+lowpart_subreg (machine_mode outer_mode, rtx expr,
+		machine_mode inner_mode)
 {
   return simplify_gen_subreg (outer_mode, expr, inner_mode,
 			      subreg_lowpart_offset (outer_mode, inner_mode));
@@ -398,7 +407,7 @@ iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
    consistency with other iv manipulation functions that may fail).  */
 
 static bool
-iv_constant (struct rtx_iv *iv, rtx cst, enum machine_mode mode)
+iv_constant (struct rtx_iv *iv, rtx cst, machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (cst);
@@ -418,7 +427,7 @@ iv_constant (struct rtx_iv *iv, rtx cst, enum machine_mode mode)
 /* Evaluates application of subreg to MODE on IV.  */
 
 static bool
-iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
+iv_subreg (struct rtx_iv *iv, machine_mode mode)
 {
   /* If iv is invariant, just calculate the new value.  */
   if (iv->step == const0_rtx
@@ -460,7 +469,7 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
 /* Evaluates application of EXTEND to MODE on IV.  */
 
 static bool
-iv_extend (struct rtx_iv *iv, enum iv_extend_code extend, enum machine_mode mode)
+iv_extend (struct rtx_iv *iv, enum iv_extend_code extend, machine_mode mode)
 {
   /* If iv is invariant, just calculate the new value.  */
   if (iv->step == const0_rtx
@@ -523,7 +532,7 @@ iv_neg (struct rtx_iv *iv)
 static bool
 iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx arg;
 
   /* Extend the constant to extend_mode of the other operand if necessary.  */
@@ -593,7 +602,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
 static bool
 iv_mult (struct rtx_iv *iv, rtx mby)
 {
-  enum machine_mode mode = iv->extend_mode;
+  machine_mode mode = iv->extend_mode;
 
   if (GET_MODE (mby) != VOIDmode
       && GET_MODE (mby) != mode)
@@ -618,7 +627,7 @@ iv_mult (struct rtx_iv *iv, rtx mby)
 static bool
 iv_shift (struct rtx_iv *iv, rtx mby)
 {
-  enum machine_mode mode = iv->extend_mode;
+  machine_mode mode = iv->extend_mode;
 
   if (GET_MODE (mby) != VOIDmode
       && GET_MODE (mby) != mode)
@@ -644,8 +653,8 @@ iv_shift (struct rtx_iv *iv, rtx mby)
 
 static bool
 get_biv_step_1 (df_ref def, rtx reg,
-		rtx *inner_step, enum machine_mode *inner_mode,
-		enum iv_extend_code *extend, enum machine_mode outer_mode,
+		rtx *inner_step, machine_mode *inner_mode,
+		enum iv_extend_code *extend, machine_mode outer_mode,
 		rtx *outer_step)
 {
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
@@ -756,7 +765,7 @@ get_biv_step_1 (df_ref def, rtx reg,
 
   if (GET_CODE (next) == SUBREG)
     {
-      enum machine_mode amode = GET_MODE (next);
+      machine_mode amode = GET_MODE (next);
 
       if (GET_MODE_SIZE (amode) > GET_MODE_SIZE (*inner_mode))
 	return false;
@@ -811,8 +820,8 @@ get_biv_step_1 (df_ref def, rtx reg,
 
 static bool
 get_biv_step (df_ref last_def, rtx reg, rtx *inner_step,
-	      enum machine_mode *inner_mode, enum iv_extend_code *extend,
-	      enum machine_mode *outer_mode, rtx *outer_step)
+	      machine_mode *inner_mode, enum iv_extend_code *extend,
+	      machine_mode *outer_mode, rtx *outer_step)
 {
   *outer_mode = GET_MODE (reg);
 
@@ -873,7 +882,7 @@ static bool
 iv_analyze_biv (rtx def, struct rtx_iv *iv)
 {
   rtx inner_step, outer_step;
-  enum machine_mode inner_mode, outer_mode;
+  machine_mode inner_mode, outer_mode;
   enum iv_extend_code extend;
   df_ref last_def;
 
@@ -947,14 +956,14 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
    The mode of the induction variable is MODE.  */
 
 bool
-iv_analyze_expr (rtx_insn *insn, rtx rhs, enum machine_mode mode,
+iv_analyze_expr (rtx_insn *insn, rtx rhs, machine_mode mode,
 		 struct rtx_iv *iv)
 {
   rtx mby = NULL_RTX, tmp;
   rtx op0 = NULL_RTX, op1 = NULL_RTX;
   struct rtx_iv iv0, iv1;
   enum rtx_code code = GET_CODE (rhs);
-  enum machine_mode omode = mode;
+  machine_mode omode = mode;
 
   iv->mode = VOIDmode;
   iv->base = NULL_RTX;
@@ -1518,7 +1527,7 @@ static bool
 implies_p (rtx a, rtx b)
 {
   rtx op0, op1, opb0, opb1, r;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (rtx_equal_p (a, b))
     return true;
@@ -1683,7 +1692,7 @@ canon_condition (rtx cond)
   rtx tem;
   rtx op0, op1;
   enum rtx_code code;
-  enum machine_mode mode;
+  machine_mode mode;
 
   code = GET_CODE (cond);
   op0 = XEXP (cond, 0);
@@ -2107,7 +2116,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
    is SIGNED_P to DESC.  */
 
 static void
-shorten_into_mode (struct rtx_iv *iv, enum machine_mode mode,
+shorten_into_mode (struct rtx_iv *iv, machine_mode mode,
 		   enum rtx_code cond, bool signed_p, struct niter_desc *desc)
 {
   rtx mmin, mmax, cond_over, cond_under;
@@ -2169,7 +2178,7 @@ static bool
 canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
 			 enum rtx_code cond, struct niter_desc *desc)
 {
-  enum machine_mode comp_mode;
+  machine_mode comp_mode;
   bool signed_p;
 
   /* If the ivs behave specially in the first iteration, or are
@@ -2347,7 +2356,7 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
   struct rtx_iv iv0, iv1, tmp_iv;
   rtx assumption, may_not_xform;
   enum rtx_code cond;
-  enum machine_mode mode, comp_mode;
+  machine_mode mode, comp_mode;
   rtx mmin, mmax, mode_mmin, mode_mmax;
   uint64_t s, size, d, inv, max;
   int64_t up, down, inc, step_val;

@@ -35,9 +35,16 @@
 #include "insn-config.h"
 #include "recog.h"
 #include "except.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgcleanup.h"
 #include "basic-block.h"
 #include "expr.h"
 #include "output.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"
@@ -421,7 +428,7 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 
       if (CALL_P (insn) && prob_val >= 0)
 	validate_change (insn, &REG_NOTES (insn),
-			 gen_rtx_INT_LIST ((enum machine_mode) REG_BR_PROB,
+			 gen_rtx_INT_LIST ((machine_mode) REG_BR_PROB,
 					   prob_val, REG_NOTES (insn)), 1);
 
     insn_done:
@@ -903,7 +910,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
 static void
 noce_emit_move_insn (rtx x, rtx y)
 {
-  enum machine_mode outmode;
+  machine_mode outmode;
   rtx outer, inner;
   int bitpos;
 
@@ -1143,7 +1150,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
   int reversep;
   HOST_WIDE_INT itrue, ifalse, diff, tmp;
   int normalize, can_reverse;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (CONST_INT_P (if_info->a)
       && CONST_INT_P (if_info->b))
@@ -1387,11 +1394,22 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
       if (target)
 	{
+	  int old_cost, new_cost, insn_cost;
+	  int speed_p;
+
 	  if (target != if_info->x)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
 	  if (!seq)
+	    return FALSE;
+
+	  speed_p = optimize_bb_for_speed_p (BLOCK_FOR_INSN (if_info->insn_a));
+	  insn_cost = insn_rtx_cost (PATTERN (if_info->insn_a), speed_p);
+	  old_cost = COSTS_N_INSNS (if_info->branch_cost) + insn_cost;
+	  new_cost = seq_cost (seq, speed_p);
+
+	  if (new_cost > old_cost)
 	    return FALSE;
 
 	  emit_insn_before_setloc (seq, if_info->jump,
@@ -1441,10 +1459,17 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
       end_sequence ();
     }
 
-  /* Don't even try if the comparison operands are weird.  */
+  /* Don't even try if the comparison operands are weird
+     except that the target supports cbranchcc4.  */
   if (! general_operand (cmp_a, GET_MODE (cmp_a))
       || ! general_operand (cmp_b, GET_MODE (cmp_b)))
-    return NULL_RTX;
+    {
+#if HAVE_cbranchcc4
+      if (GET_MODE_CLASS (GET_MODE (cmp_a)) != MODE_CC
+	  || cmp_b != const0_rtx)
+#endif
+	return NULL_RTX;
+    }
 
 #if HAVE_conditional_move
   unsignedp = (code == LTU || code == GEU
@@ -1583,7 +1608,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       && MEM_ADDR_SPACE (a) == MEM_ADDR_SPACE (b)
       && if_info->branch_cost >= 5)
     {
-      enum machine_mode address_mode = get_address_mode (a);
+      machine_mode address_mode = get_address_mode (a);
 
       a = XEXP (a, 0);
       b = XEXP (b, 0);
@@ -1770,6 +1795,11 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
   rtx cond, set;
   rtx_insn *insn;
   int reverse;
+  int allow_cc_mode = false;
+#if HAVE_cbranchcc4
+  allow_cc_mode = true;
+#endif
+
 
   /* If target is already mentioned in the known condition, return it.  */
   if (reg_mentioned_p (target, if_info->cond))
@@ -1891,7 +1921,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
     }
 
   cond = canonicalize_condition (if_info->jump, cond, reverse,
-				 earliest, target, false, true);
+				 earliest, target, allow_cc_mode, true);
   if (! cond || ! reg_mentioned_p (target, cond))
     return NULL;
 
@@ -2163,7 +2193,7 @@ noce_try_sign_mask (struct noce_if_info *if_info)
 {
   rtx cond, t, m, c;
   rtx_insn *seq;
-  enum machine_mode mode;
+  machine_mode mode;
   enum rtx_code code;
   bool t_unconditional;
 
@@ -2242,7 +2272,7 @@ noce_try_bitop (struct noce_if_info *if_info)
 {
   rtx cond, x, a, result;
   rtx_insn *seq;
-  enum machine_mode mode;
+  machine_mode mode;
   enum rtx_code code;
   int bitnum;
 
@@ -2347,6 +2377,10 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
 {
   rtx cond, set, tmp;
   bool reverse;
+  int allow_cc_mode = false;
+#if HAVE_cbranchcc4
+  allow_cc_mode = true;
+#endif
 
   if (! any_condjump_p (jump))
     return NULL_RTX;
@@ -2383,7 +2417,7 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
   tmp = canonicalize_condition (jump, cond, reverse, earliest,
-				NULL_RTX, false, true);
+				NULL_RTX, allow_cc_mode, true);
 
   /* We don't handle side-effects in the condition, like handling
      REG_INC notes and making sure no duplicate conditions are emitted.  */

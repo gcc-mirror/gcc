@@ -20,6 +20,58 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFG_H
 #define GCC_CFG_H
 
+/* What sort of profiling information we have.  */
+enum profile_status_d
+{
+  PROFILE_ABSENT,
+  PROFILE_GUESSED,
+  PROFILE_READ,
+  PROFILE_LAST	/* Last value, used by profile streaming.  */
+};
+
+/* A structure to group all the per-function control flow graph data.
+   The x_* prefixing is necessary because otherwise references to the
+   fields of this struct are interpreted as the defines for backward
+   source compatibility following the definition of this struct.  */
+struct GTY(()) control_flow_graph {
+  /* Block pointers for the exit and entry of a function.
+     These are always the head and tail of the basic block list.  */
+  basic_block x_entry_block_ptr;
+  basic_block x_exit_block_ptr;
+
+  /* Index by basic block number, get basic block struct info.  */
+  vec<basic_block, va_gc> *x_basic_block_info;
+
+  /* Number of basic blocks in this flow graph.  */
+  int x_n_basic_blocks;
+
+  /* Number of edges in this flow graph.  */
+  int x_n_edges;
+
+  /* The first free basic block number.  */
+  int x_last_basic_block;
+
+  /* UIDs for LABEL_DECLs.  */
+  int last_label_uid;
+
+  /* Mapping of labels to their associated blocks.  At present
+     only used for the gimple CFG.  */
+  vec<basic_block, va_gc> *x_label_to_block_map;
+
+  enum profile_status_d x_profile_status;
+
+  /* Whether the dominators and the postdominators are available.  */
+  enum dom_state x_dom_computed[2];
+
+  /* Number of basic blocks in the dominance tree.  */
+  unsigned x_n_bbs_in_dom_tree[2];
+
+  /* Maximal number of entities in the single jumptable.  Used to estimate
+     final flowgraph size.  */
+  int max_jumptable_ents;
+};
+
+
 extern void init_flow (struct function *);
 extern void clear_edges (void);
 extern basic_block alloc_block (void);

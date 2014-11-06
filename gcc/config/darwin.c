@@ -49,11 +49,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "debug.h"
 #include "obstack.h"
 #include "hash-table.h"
-#include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -62,6 +70,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 
@@ -786,7 +798,7 @@ machopic_indirect_call_target (rtx target)
       rtx sym_ref = XEXP (target, 0);
       const char *stub_name = machopic_indirection_name (sym_ref,
 							 /*stub_p=*/true);
-      enum machine_mode mode = GET_MODE (sym_ref);
+      machine_mode mode = GET_MODE (sym_ref);
 
       XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
       SYMBOL_REF_DATA (XEXP (target, 0)) = SYMBOL_REF_DATA (sym_ref);
@@ -798,7 +810,7 @@ machopic_indirect_call_target (rtx target)
 }
 
 rtx
-machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
+machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 {
   rtx pic_ref = orig;
 
@@ -1281,7 +1293,7 @@ darwin_mergeable_constant_section (tree exp,
 				   unsigned HOST_WIDE_INT align,
 				   bool zsize)
 {
-  enum machine_mode mode = DECL_MODE (exp);
+  machine_mode mode = DECL_MODE (exp);
   unsigned int modesize = GET_MODE_BITSIZE (mode);
 
   if (DARWIN_SECTION_ANCHORS 
@@ -1731,7 +1743,7 @@ machopic_select_section (tree decl,
    They must go in "const".  */
 
 section *
-machopic_select_rtx_section (enum machine_mode mode, rtx x,
+machopic_select_rtx_section (machine_mode mode, rtx x,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (GET_MODE_SIZE (mode) == 8

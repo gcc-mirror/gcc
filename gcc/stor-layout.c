@@ -43,6 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "regs.h"
 #include "params.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "tree-dump.h"
@@ -310,10 +314,10 @@ finalize_size_functions (void)
    it may have padding as well.  If LIMIT is nonzero, modes of wider
    than MAX_FIXED_MODE_SIZE will not be used.  */
 
-enum machine_mode
+machine_mode
 mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int i;
 
   if (limit && size > MAX_FIXED_MODE_SIZE)
@@ -336,7 +340,7 @@ mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 
 /* Similar, except passed a tree node.  */
 
-enum machine_mode
+machine_mode
 mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 {
   unsigned HOST_WIDE_INT uhwi;
@@ -354,10 +358,10 @@ mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 /* Similar, but never return BLKmode; return the narrowest mode that
    contains at least the requested number of value bits.  */
 
-enum machine_mode
+machine_mode
 smallest_mode_for_size (unsigned int size, enum mode_class mclass)
 {
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
   int i;
 
   /* Get the first mode which has at least this size, in the
@@ -382,8 +386,8 @@ smallest_mode_for_size (unsigned int size, enum mode_class mclass)
 
 /* Find an integer mode of the exact same size, or BLKmode on failure.  */
 
-enum machine_mode
-int_mode_for_mode (enum machine_mode mode)
+machine_mode
+int_mode_for_mode (machine_mode mode)
 {
   switch (GET_MODE_CLASS (mode))
     {
@@ -425,8 +429,8 @@ int_mode_for_mode (enum machine_mode mode)
 /* Find a mode that can be used for efficient bitwise operations on MODE.
    Return BLKmode if no such mode exists.  */
 
-enum machine_mode
-bitwise_mode_for_mode (enum machine_mode mode)
+machine_mode
+bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
   unsigned int bitsize = GET_MODE_BITSIZE (mode);
@@ -441,7 +445,7 @@ bitwise_mode_for_mode (enum machine_mode mode)
      care whether there is a register for the inner mode.  */
   if (COMPLEX_MODE_P (mode))
     {
-      enum machine_mode trial = mode;
+      machine_mode trial = mode;
       if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT)
 	trial = mode_for_size (bitsize, MODE_COMPLEX_INT, false);
       if (trial != BLKmode
@@ -453,7 +457,7 @@ bitwise_mode_for_mode (enum machine_mode mode)
      modes if an integer mode would be too big.  */
   if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
     {
-      enum machine_mode trial = mode;
+      machine_mode trial = mode;
       if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
 	trial = mode_for_size (bitsize, MODE_VECTOR_INT, 0);
       if (trial != BLKmode
@@ -470,7 +474,7 @@ bitwise_mode_for_mode (enum machine_mode mode)
    Return null if no such mode exists.  */
 
 tree
-bitwise_type_for_mode (enum machine_mode mode)
+bitwise_type_for_mode (machine_mode mode)
 {
   mode = bitwise_mode_for_mode (mode);
   if (mode == BLKmode)
@@ -493,10 +497,10 @@ bitwise_type_for_mode (enum machine_mode mode)
    NUNITS elements of mode INNERMODE.  Returns BLKmode if there
    is no suitable mode.  */
 
-enum machine_mode
-mode_for_vector (enum machine_mode innermode, unsigned nunits)
+machine_mode
+mode_for_vector (machine_mode innermode, unsigned nunits)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* First, look for a supported vector type.  */
   if (SCALAR_FLOAT_MODE_P (innermode))
@@ -537,7 +541,7 @@ mode_for_vector (enum machine_mode innermode, unsigned nunits)
    BIGGEST_ALIGNMENT.  */
 
 unsigned int
-get_mode_alignment (enum machine_mode mode)
+get_mode_alignment (machine_mode mode)
 {
   return MIN (BIGGEST_ALIGNMENT, MAX (1, mode_base_align[mode]*BITS_PER_UNIT));
 }
@@ -546,7 +550,7 @@ get_mode_alignment (enum machine_mode mode)
    precision of the mode of its elements.  */
 
 unsigned int
-element_precision (enum machine_mode mode)
+element_precision (machine_mode mode)
 {
   if (COMPLEX_MODE_P (mode) || VECTOR_MODE_P (mode))
     mode = GET_MODE_INNER (mode);
@@ -557,7 +561,7 @@ element_precision (enum machine_mode mode)
 /* Return the natural mode of an array, given that it is SIZE bytes in
    total and has elements of type ELEM_TYPE.  */
 
-static enum machine_mode
+static machine_mode
 mode_for_array (tree elem_type, tree size)
 {
   tree elem_size;
@@ -704,7 +708,7 @@ layout_decl (tree decl, unsigned int known_align)
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
 	    {
-	      enum machine_mode xmode
+	      machine_mode xmode
 		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
 	      unsigned int xalign = GET_MODE_ALIGNMENT (xmode);
 
@@ -1675,7 +1679,7 @@ void
 compute_record_mode (tree type)
 {
   tree field;
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
 
   /* Most RECORD_TYPEs have BLKmode, so we start off assuming that.
      However, if possible, we use a mode that fits in a register
@@ -1810,7 +1814,7 @@ finalize_type_size (tree type)
       unsigned int align = TYPE_ALIGN (type);
       unsigned int precision = TYPE_PRECISION (type);
       unsigned int user_align = TYPE_USER_ALIGN (type);
-      enum machine_mode mode = TYPE_MODE (type);
+      machine_mode mode = TYPE_MODE (type);
 
       /* Copy it into all variants.  */
       for (variant = TYPE_MAIN_VARIANT (type);
@@ -1859,7 +1863,7 @@ static void
 finish_bitfield_representative (tree repr, tree field)
 {
   unsigned HOST_WIDE_INT bitsize, maxbitsize;
-  enum machine_mode mode;
+  machine_mode mode;
   tree nextf, size;
 
   size = size_diffop (DECL_FIELD_OFFSET (field),
@@ -1963,10 +1967,10 @@ finish_bitfield_representative (tree repr, tree field)
 }
 
 /* Compute and set FIELD_DECLs for the underlying objects we should
-   use for bitfield access for the structure laid out with RLI.  */
+   use for bitfield access for the structure T.  */
 
-static void
-finish_bitfield_layout (record_layout_info rli)
+void
+finish_bitfield_layout (tree t)
 {
   tree field, prev;
   tree repr = NULL_TREE;
@@ -1975,10 +1979,10 @@ finish_bitfield_layout (record_layout_info rli)
      we could use the underlying type as hint for the representative
      if the bitfield would fit and the representative would not exceed
      the union in size.  */
-  if (TREE_CODE (rli->t) != RECORD_TYPE)
+  if (TREE_CODE (t) != RECORD_TYPE)
     return;
 
-  for (prev = NULL_TREE, field = TYPE_FIELDS (rli->t);
+  for (prev = NULL_TREE, field = TYPE_FIELDS (t);
        field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) != FIELD_DECL)
@@ -2065,7 +2069,7 @@ finish_record_layout (record_layout_info rli, int free_p)
   finalize_type_size (rli->t);
 
   /* Compute bitfield representatives.  */
-  finish_bitfield_layout (rli);
+  finish_bitfield_layout (rli->t);
 
   /* Propagate TYPE_PACKED to variants.  With C++ templates,
      handle_packed_attribute is too early to do this.  */
@@ -2250,7 +2254,7 @@ layout_type (tree type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	enum machine_mode mode = TYPE_MODE (type);
+	machine_mode mode = TYPE_MODE (type);
 	if (TREE_CODE (type) == REFERENCE_TYPE && reference_types_internal)
 	  {
 	    addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
@@ -2450,10 +2454,10 @@ min_align_of_type (tree type)
    referenced by a function and re-compute the TYPE_MODE once, rather
    than make the TYPE_MODE macro call a function.  */
 
-enum machine_mode
+machine_mode
 vector_type_mode (const_tree t)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   gcc_assert (TREE_CODE (t) == VECTOR_TYPE);
 
@@ -2462,7 +2466,7 @@ vector_type_mode (const_tree t)
       && (!targetm.vector_mode_supported_p (mode)
 	  || !have_regs_of_mode[mode]))
     {
-      enum machine_mode innermode = TREE_TYPE (t)->type_common.mode;
+      machine_mode innermode = TREE_TYPE (t)->type_common.mode;
 
       /* For integers, try mapping it to a same-sized scalar mode.  */
       if (GET_MODE_CLASS (innermode) == MODE_INT)
@@ -2732,7 +2736,7 @@ bit_field_mode_iterator
    available, storing it in *OUT_MODE if so.  */
 
 bool
-bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
+bit_field_mode_iterator::next_mode (machine_mode *out_mode)
 {
   for (; m_mode != VOIDmode; m_mode = GET_MODE_WIDER_MODE (m_mode))
     {
@@ -2814,17 +2818,17 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    If VOLATILEP is true the narrow_volatile_bitfields target hook is used to
    decide which of the above modes should be used.  */
 
-enum machine_mode
+machine_mode
 get_best_mode (int bitsize, int bitpos,
 	       unsigned HOST_WIDE_INT bitregion_start,
 	       unsigned HOST_WIDE_INT bitregion_end,
 	       unsigned int align,
-	       enum machine_mode largest_mode, bool volatilep)
+	       machine_mode largest_mode, bool volatilep)
 {
   bit_field_mode_iterator iter (bitsize, bitpos, bitregion_start,
 				bitregion_end, align, volatilep);
-  enum machine_mode widest_mode = VOIDmode;
-  enum machine_mode mode;
+  machine_mode widest_mode = VOIDmode;
+  machine_mode mode;
   while (iter.next_mode (&mode)
 	 /* ??? For historical reasons, reject modes that would normally
 	    receive greater alignment, even if unaligned accesses are
@@ -2897,8 +2901,8 @@ get_best_mode (int bitsize, int bitpos,
    SIGN).  The returned constants are made to be usable in TARGET_MODE.  */
 
 void
-get_mode_bounds (enum machine_mode mode, int sign,
-		 enum machine_mode target_mode,
+get_mode_bounds (machine_mode mode, int sign,
+		 machine_mode target_mode,
 		 rtx *mmin, rtx *mmax)
 {
   unsigned size = GET_MODE_PRECISION (mode);

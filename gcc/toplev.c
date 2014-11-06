@@ -67,6 +67,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h" /* for init_set_costs */
 #include "hosthooks.h"
+#include "predict.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "opts.h"
 #include "opts-diagnostic.h"
@@ -85,9 +91,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "auto-profile.h"
 #include "dwarf2out.h"
+#include "bitmap.h"
 #include "ipa-reference.h"
 #include "ipa-prop.h"
 #include "gcse.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)

@@ -32,6 +32,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h" /* FIXME */
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-dump.h"
@@ -184,7 +195,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 {
   int hash;
   struct bucket *b;
-  enum machine_mode mode;
+  machine_mode mode;
   enum tree_code_class tclass;
   int len;
   int i;

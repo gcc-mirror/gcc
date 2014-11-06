@@ -1040,10 +1040,10 @@ In an RTL dump, this flag is represented as @samp{/v}.
 @section Machine Modes
 @cindex machine modes
 
-@findex enum machine_mode
+@findex machine_mode
 A machine mode describes a size of data object and the representation used
 for it.  In the C code, machine modes are represented by an enumeration
-type, @code{enum machine_mode}, defined in @file{machmode.def}.  Each RTL
+type, @code{machine_mode}, defined in @file{machmode.def}.  Each RTL
 expression has room for a machine mode and so do certain kinds of tree
 expressions (declarations and types, to be precise).
 

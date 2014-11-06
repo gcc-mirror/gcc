@@ -28,6 +28,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tm_p.h"
 #include "target.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -53,9 +63,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "diagnostic-core.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "builtins.h"
 #include "varasm.h"
@@ -67,7 +81,7 @@ static bool
 vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 			      tree vectype, unsigned HOST_WIDE_INT count)
 {
-  enum machine_mode mode, array_mode;
+  machine_mode mode, array_mode;
   bool limit_p;
 
   mode = TYPE_MODE (vectype);
@@ -2981,7 +2995,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
   tree decl, base, off;
-  enum machine_mode pmode;
+  machine_mode pmode;
   int punsignedp, pvolatilep;
 
   base = DR_REF (dr);
@@ -3554,7 +3568,7 @@ again:
 	  tree outer_step, outer_base, outer_init;
 	  HOST_WIDE_INT pbitsize, pbitpos;
 	  tree poffset;
-	  enum machine_mode pmode;
+	  machine_mode pmode;
 	  int punsignedp, pvolatilep;
 	  affine_iv base_iv, offset_iv;
 	  tree dinit;
@@ -4408,7 +4422,7 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 bool
 vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  enum machine_mode mode = TYPE_MODE (vectype);
+  machine_mode mode = TYPE_MODE (vectype);
 
   /* vect_permute_store_chain requires the group size to be equal to 3 or
      be a power of two.  */
@@ -4980,7 +4994,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 bool
 vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  enum machine_mode mode = TYPE_MODE (vectype);
+  machine_mode mode = TYPE_MODE (vectype);
 
   /* vect_permute_load_chain requires the group size to be equal to 3 or
      be a power of two.  */
@@ -5606,7 +5620,7 @@ void
 vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   vec<tree> result_chain = vNULL;
 
   /* DR_CHAIN contains input data-refs that are a part of the interleaving.
@@ -5783,7 +5797,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
   gimple stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  enum machine_mode mode = TYPE_MODE (vectype);
+  machine_mode mode = TYPE_MODE (vectype);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = NULL;
   bool nested_in_vect_loop = false;

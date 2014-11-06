@@ -1876,7 +1876,7 @@ package body Prj.Env is
      (Self        : in out Project_Search_Path;
       Target_Name : String)
    is
-      Add_Default_Dir : Boolean := True;
+      Add_Default_Dir : Boolean := Target_Name /= "-";
       First           : Positive;
       Last            : Positive;
 

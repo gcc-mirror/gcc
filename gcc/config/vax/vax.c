@@ -22,6 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "tree.h"
 #include "calls.h"
@@ -40,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "recog.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "flags.h"
 #include "debug.h"
@@ -54,17 +64,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 
 static void vax_option_override (void);
-static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool vax_legitimate_address_p (machine_mode, rtx, bool);
 static void vax_file_start (void);
 static void vax_init_libfuncs (void);
 static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
-static int vax_address_cost (rtx, enum machine_mode, addr_space_t, bool);
+static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, int, int, int, int *, bool);
-static rtx vax_function_arg (cumulative_args_t, enum machine_mode,
+static rtx vax_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
-static void vax_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void vax_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
 static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
@@ -632,7 +642,7 @@ rev_cond_name (rtx op)
 static bool
 vax_float_literal (rtx c)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   REAL_VALUE_TYPE r, s;
   int i;
 
@@ -745,7 +755,7 @@ vax_address_cost_1 (rtx addr)
 }
 
 static int
-vax_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+vax_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 		  addr_space_t as ATTRIBUTE_UNUSED,
 		  bool speed ATTRIBUTE_UNUSED)
 {
@@ -764,7 +774,7 @@ static bool
 vax_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	       int *total, bool speed ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   int i = 0;				   /* may be modified in switch */
   const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
@@ -1140,7 +1150,7 @@ vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
 
 const char *
 vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
-		     enum machine_mode mode)
+		     machine_mode mode)
 {
   rtx hi[3], lo[3];
   const char *pattern_hi, *pattern_lo;
@@ -1351,7 +1361,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
    which are not modified very often.  */
 
 const char *
-vax_output_int_add (rtx insn, rtx *operands, enum machine_mode mode)
+vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
@@ -1561,7 +1571,7 @@ vax_output_int_add (rtx insn, rtx *operands, enum machine_mode mode)
 }
 
 const char *
-vax_output_int_subtract (rtx insn, rtx *operands, enum machine_mode mode)
+vax_output_int_subtract (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
@@ -1741,7 +1751,7 @@ nonindexed_address_p (rtx x, bool strict)
    than or equal 8 bytes, or just a reg if MODE is one byte.  */
 
 static bool
-index_term_p (rtx prod, enum machine_mode mode, bool strict)
+index_term_p (rtx prod, machine_mode mode, bool strict)
 {
   rtx xfoo0, xfoo1;
 
@@ -1770,7 +1780,7 @@ index_term_p (rtx prod, enum machine_mode mode, bool strict)
 /* Return true if X is the sum of a register
    and a valid index term for mode MODE.  */
 static bool
-reg_plus_index_p (rtx x, enum machine_mode mode, bool strict)
+reg_plus_index_p (rtx x, machine_mode mode, bool strict)
 {
   rtx xfoo0, xfoo1;
 
@@ -1791,7 +1801,7 @@ reg_plus_index_p (rtx x, enum machine_mode mode, bool strict)
 
 /* Return true if xfoo0 and xfoo1 constitute a valid indexed address.  */
 static bool
-indexable_address_p (rtx xfoo0, rtx xfoo1, enum machine_mode mode, bool strict)
+indexable_address_p (rtx xfoo0, rtx xfoo1, machine_mode mode, bool strict)
 {
   if (!CONSTANT_ADDRESS_P (xfoo0))
     return false;
@@ -1807,7 +1817,7 @@ indexable_address_p (rtx xfoo0, rtx xfoo1, enum machine_mode mode, bool strict)
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.  */
 bool
-vax_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+vax_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   rtx xfoo0, xfoo1;
 
@@ -1870,7 +1880,7 @@ vax_mode_dependent_address_p (const_rtx x, addr_space_t as ATTRIBUTE_UNUSED)
 }
 
 static rtx
-fixup_mathdi_operand (rtx x, enum machine_mode mode)
+fixup_mathdi_operand (rtx x, machine_mode mode)
 {
   if (illegal_addsub_di_memory_operand (x, mode))
     {
@@ -2015,7 +2025,7 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
 }
 
 bool
-adjacent_operands_p (rtx lo, rtx hi, enum machine_mode mode)
+adjacent_operands_p (rtx lo, rtx hi, machine_mode mode)
 {
   HOST_WIDE_INT lo_offset;
   HOST_WIDE_INT hi_offset;
@@ -2161,7 +2171,7 @@ vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
 
 static rtx
 vax_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		  enum machine_mode mode ATTRIBUTE_UNUSED,
+		  machine_mode mode ATTRIBUTE_UNUSED,
 		  const_tree type ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
@@ -2173,7 +2183,7 @@ vax_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
    may not be available.)  */
 
 static void
-vax_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);

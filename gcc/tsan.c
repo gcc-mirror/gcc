@@ -26,6 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "intl.h"
 #include "tm.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -34,14 +44,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "stringpool.h"
@@ -124,7 +130,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
      TODO: handle bit-fields as if touching the whole field.  */
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   base = get_inner_reference (expr, &bitsize, &bitpos, &offset,
 			      &mode, &unsignedp, &volatilep, false);

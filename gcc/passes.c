@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "toplev.h"
 #include "expr.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "intl.h"
 #include "graph.h"
@@ -79,7 +80,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-dump.h"
 #include "df.h"
-#include "predict.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "plugin.h"
 #include "ipa-utils.h"
@@ -88,7 +92,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "tree-ssa-live.h"  /* For remove_unused_locals.  */
 #include "tree-cfgcleanup.h"
-#include "hash-map.h"
 
 using namespace gcc;
 

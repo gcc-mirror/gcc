@@ -98,6 +98,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "obstack.h"
 #include "expr.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -2458,7 +2462,7 @@ dbxout_expand_expr (tree expr)
     case ARRAY_RANGE_REF:
     case BIT_FIELD_REF:
       {
-	enum machine_mode mode;
+	machine_mode mode;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset, tem;
 	int volatilep = 0, unsignedp = 0;

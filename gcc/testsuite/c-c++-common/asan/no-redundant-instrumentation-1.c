@@ -6,7 +6,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
-extern char tab[4];
+extern char tab[6];
 
 static int
 test0 ()
@@ -35,17 +35,10 @@ test1 (int i)
     the initialization.  */
   foo[i] = 1;
 
-  /*__builtin___asan_report_store_n called once here to instrument
-    the store to the memory region of tab.  */
+  /* Instrument tab memory region.  */
   __builtin_memset (tab, 3, sizeof (tab));
 
-  /* There is no instrumentation for the two memset calls below.  */
-  __builtin_memset (tab, 4, sizeof (tab));
-  __builtin_memset (tab, 5, sizeof (tab));
-
-  /* There is a call to __builtin___asan_report_store_n and a call
-     to __builtin___asan_report_load_n to instrument the store to
-     (subset of) the memory region of tab.  */
+  /* Instrument tab[1] with access size 3.  */
   __builtin_memcpy (&tab[1], foo + i, 3);
 
   /* This should not generate a __builtin___asan_report_load1 because
@@ -63,6 +56,5 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "__builtin___asan_report_store1" 3 "sanopt" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "sanopt" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load" 1 "sanopt" }  } */
+/* { dg-final { scan-tree-dump-not "__builtin___asan_report_load1" "sanopt" } } */
 /* { dg-final { cleanup-tree-dump "sanopt" } } */

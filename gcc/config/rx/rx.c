@@ -45,12 +45,22 @@
 #include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "reload.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -59,6 +69,10 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "opts.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 
@@ -106,7 +120,7 @@ static void rx_print_operand (FILE *, rtx, int);
 #define CC_FLAG_C	(1 << 3)
 #define CC_FLAG_FP	(1 << 4)	/* Fake, to differentiate CC_Fmode.  */
 
-static unsigned int flags_from_mode (enum machine_mode mode);
+static unsigned int flags_from_mode (machine_mode mode);
 static unsigned int flags_from_code (enum rtx_code code);
 
 /* Return true if OP is a reference to an object in a PID data area.  */
@@ -153,7 +167,7 @@ rx_pid_data_operand (rtx op)
 static rtx
 rx_legitimize_address (rtx x,
 		       rtx oldx ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED)
+		       machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (rx_pid_data_operand (x) == PID_UNENCODED)
     {
@@ -185,7 +199,7 @@ rx_small_data_operand (rtx op)
 }
 
 static bool
-rx_is_legitimate_address (enum machine_mode mode, rtx x,
+rx_is_legitimate_address (machine_mode mode, rtx x,
 			  bool strict ATTRIBUTE_UNUSED)
 {
   if (RTX_OK_FOR_BASE (x, strict))
@@ -283,7 +297,7 @@ rx_is_legitimate_address (enum machine_mode mode, rtx x,
    or pre/post increment/decrement.  */
 
 bool
-rx_is_restricted_memory_address (rtx mem, enum machine_mode mode)
+rx_is_restricted_memory_address (rtx mem, machine_mode mode)
 {
   if (! rx_is_legitimate_address
       (mode, mem, reload_in_progress || reload_completed))
@@ -557,7 +571,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
     case 'B':
       {
 	enum rtx_code code = GET_CODE (op);
-	enum machine_mode mode = GET_MODE (XEXP (op, 0));
+	machine_mode mode = GET_MODE (XEXP (op, 0));
 	const char *ret;
 
 	if (mode == CC_Fmode)
@@ -1053,7 +1067,7 @@ rx_round_up (unsigned int value, unsigned int alignment)
    occupied by an argument of type TYPE and mode MODE.  */
 
 static unsigned int
-rx_function_arg_size (enum machine_mode mode, const_tree type)
+rx_function_arg_size (machine_mode mode, const_tree type)
 {
   unsigned int num_bytes;
 
@@ -1073,7 +1087,7 @@ rx_function_arg_size (enum machine_mode mode, const_tree type)
    variable parameter list.  */
 
 static rtx
-rx_function_arg (cumulative_args_t cum, enum machine_mode mode,
+rx_function_arg (cumulative_args_t cum, machine_mode mode,
 		 const_tree type, bool named)
 {
   unsigned int next_reg;
@@ -1111,14 +1125,14 @@ rx_function_arg (cumulative_args_t cum, enum machine_mode mode,
 }
 
 static void
-rx_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
+rx_function_arg_advance (cumulative_args_t cum, machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   *get_cumulative_args (cum) += rx_function_arg_size (mode, type);
 }
 
 static unsigned int
-rx_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+rx_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED)
 {
   /* Older versions of the RX backend aligned all on-stack arguments
@@ -1145,7 +1159,7 @@ rx_function_value (const_tree ret_type,
 		   const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		   bool       outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (ret_type);
+  machine_mode mode = TYPE_MODE (ret_type);
 
   /* RX ABI specifies that small integer types are
      promoted to int when returned by a function.  */
@@ -1161,9 +1175,9 @@ rx_function_value (const_tree ret_type,
 /* TARGET_PROMOTE_FUNCTION_MODE must behave in the same way with
    regard to function returns as does TARGET_FUNCTION_VALUE.  */
 
-static enum machine_mode
+static machine_mode
 rx_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-			  enum machine_mode mode,
+			  machine_mode mode,
 			  int * punsignedp ATTRIBUTE_UNUSED,
 			  const_tree funtype ATTRIBUTE_UNUSED,
 			  int for_return)
@@ -2254,7 +2268,7 @@ rx_in_small_data (const_tree decl)
    The only special thing we do here is to honor small data.  */
 
 static section *
-rx_select_rtx_section (enum machine_mode mode,
+rx_select_rtx_section (machine_mode mode,
 		       rtx x,
 		       unsigned HOST_WIDE_INT align)
 {
@@ -2560,7 +2574,7 @@ static rtx
 rx_expand_builtin (tree exp,
 		   rtx target,
 		   rtx subtarget ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -2863,7 +2877,7 @@ rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
    operand on the RX.  X is already known to satisfy CONSTANT_P.  */
 
 bool
-rx_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+rx_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2912,7 +2926,7 @@ rx_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static int
-rx_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+rx_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 		 addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   rtx a, b;
@@ -3034,7 +3048,7 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 }
 
 static int
-rx_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+rx_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 		     reg_class_t regclass ATTRIBUTE_UNUSED,
 		     bool in)
 {
@@ -3044,7 +3058,7 @@ rx_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Convert a CC_MODE to the set of flags that it represents.  */
 
 static unsigned int
-flags_from_mode (enum machine_mode mode)
+flags_from_mode (machine_mode mode)
 {
   switch (mode)
     {
@@ -3065,7 +3079,7 @@ flags_from_mode (enum machine_mode mode)
 
 /* Convert a set of flags to a CC_MODE that can implement it.  */
 
-static enum machine_mode
+static machine_mode
 mode_from_flags (unsigned int f)
 {
   if (f & CC_FLAG_FP)
@@ -3113,8 +3127,8 @@ flags_from_code (enum rtx_code code)
 
 /* Return a CC_MODE of which both M1 and M2 are subsets.  */
 
-static enum machine_mode
-rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+static machine_mode
+rx_cc_modes_compatible (machine_mode m1, machine_mode m2)
 {
   unsigned f;
 
@@ -3133,7 +3147,7 @@ rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 
 /* Return the minimal CC mode needed to implement (CMP_CODE X Y).  */
 
-enum machine_mode
+machine_mode
 rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y)
 {
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
@@ -3149,7 +3163,7 @@ rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y)
    CC_MODE, and use that in branches based on that compare.  */
 
 void
-rx_split_cbranch (enum machine_mode cc_mode, enum rtx_code cmp1,
+rx_split_cbranch (machine_mode cc_mode, enum rtx_code cmp1,
 		  rtx c1, rtx c2, rtx label)
 {
   rtx flags, x;
@@ -3168,10 +3182,10 @@ rx_split_cbranch (enum machine_mode cc_mode, enum rtx_code cmp1,
 /* A helper function for matching parallels that set the flags.  */
 
 bool
-rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
+rx_match_ccmode (rtx insn, machine_mode cc_mode)
 {
   rtx op1, flags;
-  enum machine_mode flags_mode;
+  machine_mode flags_mode;
 
   gcc_checking_assert (XVECLEN (PATTERN (insn), 0) == 2);
 

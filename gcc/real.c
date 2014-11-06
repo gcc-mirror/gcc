@@ -1254,7 +1254,7 @@ real_identical (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b)
    mode MODE.  Return true if successful.  */
 
 bool
-exact_real_inverse (enum machine_mode mode, REAL_VALUE_TYPE *r)
+exact_real_inverse (machine_mode mode, REAL_VALUE_TYPE *r)
 {
   const REAL_VALUE_TYPE *one = real_digit (1);
   REAL_VALUE_TYPE u;
@@ -1292,7 +1292,7 @@ exact_real_inverse (enum machine_mode mode, REAL_VALUE_TYPE *r)
    in TMODE.  */
 
 bool
-real_can_shorten_arithmetic (enum machine_mode imode, enum machine_mode tmode)
+real_can_shorten_arithmetic (machine_mode imode, machine_mode tmode)
 {
   const struct real_format *tfmt, *ifmt;
   tfmt = REAL_MODE_FORMAT (tmode);
@@ -1501,7 +1501,7 @@ rtd_divmod (REAL_VALUE_TYPE *num, REAL_VALUE_TYPE *den)
 void
 real_to_decimal_for_mode (char *str, const REAL_VALUE_TYPE *r_orig,
 			  size_t buf_size, size_t digits,
-			  int crop_trailing_zeros, enum machine_mode mode)
+			  int crop_trailing_zeros, machine_mode mode)
 {
   const struct real_format *fmt = NULL;
   const REAL_VALUE_TYPE *one, *ten;
@@ -2089,7 +2089,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 /* Legacy.  Similar, but return the result directly.  */
 
 REAL_VALUE_TYPE
-real_from_string2 (const char *s, enum machine_mode mode)
+real_from_string2 (const char *s, machine_mode mode)
 {
   REAL_VALUE_TYPE r;
 
@@ -2103,7 +2103,7 @@ real_from_string2 (const char *s, enum machine_mode mode)
 /* Initialize R from string S and desired MODE. */
 
 void
-real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
+real_from_string3 (REAL_VALUE_TYPE *r, const char *s, machine_mode mode)
 {
   if (DECIMAL_FLOAT_MODE_P (mode))
     decimal_real_from_string (r, s);
@@ -2117,7 +2117,7 @@ real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
 /* Initialize R from the wide_int VAL_IN.  The MODE is not VOIDmode,*/
 
 void
-real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_from_integer (REAL_VALUE_TYPE *r, machine_mode mode,
 		   const wide_int_ref &val_in, signop sgn)
 {
   if (val_in == 0)
@@ -2428,7 +2428,7 @@ real_inf (REAL_VALUE_TYPE *r)
 
 bool
 real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
-	  enum machine_mode mode)
+	  machine_mode mode)
 {
   const struct real_format *fmt;
 
@@ -2519,7 +2519,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
    If SIGN is nonzero, R is set to the most negative finite value.  */
 
 void
-real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
+real_maxval (REAL_VALUE_TYPE *r, int sign, machine_mode mode)
 {
   const struct real_format *fmt;
   int np2;
@@ -2554,7 +2554,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
 /* Fills R with 2**N.  */
 
 void
-real_2expN (REAL_VALUE_TYPE *r, int n, enum machine_mode fmode)
+real_2expN (REAL_VALUE_TYPE *r, int n, machine_mode fmode)
 {
   memset (r, 0, sizeof (*r));
 
@@ -2701,7 +2701,7 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
 /* Extend or truncate to a new mode.  */
 
 void
-real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_convert (REAL_VALUE_TYPE *r, machine_mode mode,
 	      const REAL_VALUE_TYPE *a)
 {
   const struct real_format *fmt;
@@ -2724,7 +2724,7 @@ real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
 /* Legacy.  Likewise, except return the struct directly.  */
 
 REAL_VALUE_TYPE
-real_value_truncate (enum machine_mode mode, REAL_VALUE_TYPE a)
+real_value_truncate (machine_mode mode, REAL_VALUE_TYPE a)
 {
   REAL_VALUE_TYPE r;
   real_convert (&r, mode, &a);
@@ -2734,7 +2734,7 @@ real_value_truncate (enum machine_mode mode, REAL_VALUE_TYPE a)
 /* Return true if truncating to MODE is exact.  */
 
 bool
-exact_real_truncate (enum machine_mode mode, const REAL_VALUE_TYPE *a)
+exact_real_truncate (machine_mode mode, const REAL_VALUE_TYPE *a)
 {
   const struct real_format *fmt;
   REAL_VALUE_TYPE t;
@@ -2779,7 +2779,7 @@ real_to_target_fmt (long *buf, const REAL_VALUE_TYPE *r_orig,
 /* Similar, but look up the format from MODE.  */
 
 long
-real_to_target (long *buf, const REAL_VALUE_TYPE *r, enum machine_mode mode)
+real_to_target (long *buf, const REAL_VALUE_TYPE *r, machine_mode mode)
 {
   const struct real_format *fmt;
 
@@ -2803,7 +2803,7 @@ real_from_target_fmt (REAL_VALUE_TYPE *r, const long *buf,
 /* Similar, but look up the format from MODE.  */
 
 void
-real_from_target (REAL_VALUE_TYPE *r, const long *buf, enum machine_mode mode)
+real_from_target (REAL_VALUE_TYPE *r, const long *buf, machine_mode mode)
 {
   const struct real_format *fmt;
 
@@ -2818,7 +2818,7 @@ real_from_target (REAL_VALUE_TYPE *r, const long *buf, enum machine_mode mode)
 /* ??? Legacy.  Should get access to real_format directly.  */
 
 int
-significand_size (enum machine_mode mode)
+significand_size (machine_mode mode)
 {
   const struct real_format *fmt;
 
@@ -4824,7 +4824,7 @@ const struct real_format real_internal_format =
    Algorithms", "The Art of Computer Programming", Volume 2.  */
 
 bool
-real_powi (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_powi (REAL_VALUE_TYPE *r, machine_mode mode,
 	   const REAL_VALUE_TYPE *x, HOST_WIDE_INT n)
 {
   unsigned HOST_WIDE_INT bit;
@@ -4874,7 +4874,7 @@ real_powi (REAL_VALUE_TYPE *r, enum machine_mode mode,
    towards zero, placing the result in R in mode MODE.  */
 
 void
-real_trunc (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_trunc (REAL_VALUE_TYPE *r, machine_mode mode,
 	    const REAL_VALUE_TYPE *x)
 {
   do_fix_trunc (r, x);
@@ -4886,7 +4886,7 @@ real_trunc (REAL_VALUE_TYPE *r, enum machine_mode mode,
    down, placing the result in R in mode MODE.  */
 
 void
-real_floor (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_floor (REAL_VALUE_TYPE *r, machine_mode mode,
 	    const REAL_VALUE_TYPE *x)
 {
   REAL_VALUE_TYPE t;
@@ -4904,7 +4904,7 @@ real_floor (REAL_VALUE_TYPE *r, enum machine_mode mode,
    up, placing the result in R in mode MODE.  */
 
 void
-real_ceil (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_ceil (REAL_VALUE_TYPE *r, machine_mode mode,
 	   const REAL_VALUE_TYPE *x)
 {
   REAL_VALUE_TYPE t;
@@ -4922,7 +4922,7 @@ real_ceil (REAL_VALUE_TYPE *r, enum machine_mode mode,
    zero.  */
 
 void
-real_round (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_round (REAL_VALUE_TYPE *r, machine_mode mode,
 	    const REAL_VALUE_TYPE *x)
 {
   do_add (r, x, &dconsthalf, x->sign);
@@ -4942,7 +4942,7 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
 /* Check whether the real constant value given is an integer.  */
 
 bool
-real_isinteger (const REAL_VALUE_TYPE *c, enum machine_mode mode)
+real_isinteger (const REAL_VALUE_TYPE *c, machine_mode mode)
 {
   REAL_VALUE_TYPE cint;
 

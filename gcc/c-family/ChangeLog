@@ -1,3 +1,30 @@
+2014-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx11.C: Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Add aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx14.C: Enable aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto
+	* g++.dg/cpp1y/feat-cxx98.C: Commentary.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c, c-common.h, c-cppbuiltin.c, c-lex.c: Remove redundant
+	enum from machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-family/c-common.c: Adjust include files.
+	* c-family/c-gimplify.c: Ditto.
+	* c-family/cilk.c: Ditto.
+	* c-family/c-pragma.c: Ditto.
+	* c-family/c-ubsan.c: Ditto.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-gimplify.c: Adjust include files.
+
 2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53061

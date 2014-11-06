@@ -31,6 +31,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "flags.h"
 #include "obstack.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgcleanup.h"
 #include "basic-block.h"
 #include "df.h"
 #include "target.h"
@@ -382,7 +394,7 @@ canonicalize_address (rtx x)
    for a memory access in the given MODE.  */
 
 static bool
-should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode,
+should_replace_address (rtx old_rtx, rtx new_rtx, machine_mode mode,
 			addr_space_t as, bool speed)
 {
   int gain;
@@ -452,8 +464,8 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
 {
   rtx x = *px, tem = NULL_RTX, op0, op1, op2;
   enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
-  enum machine_mode op_mode;
+  machine_mode mode = GET_MODE (x);
+  machine_mode op_mode;
   bool can_appear = (flags & PR_CAN_APPEAR) != 0;
   bool valid_ops = true;
 
@@ -646,7 +658,7 @@ varying_mem_p (const_rtx x)
    Otherwise, we accept simplifications that have a lower or equal cost.  */
 
 static rtx
-propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
+propagate_rtx (rtx x, machine_mode mode, rtx old_rtx, rtx new_rtx,
 	       bool speed)
 {
   rtx tem;
@@ -1068,7 +1080,7 @@ forward_propagate_subreg (df_ref use, rtx_insn *def_insn, rtx def_set)
   rtx src;
 
   /* Only consider subregs... */
-  enum machine_mode use_mode = GET_MODE (use_reg);
+  machine_mode use_mode = GET_MODE (use_reg);
   if (GET_CODE (use_reg) != SUBREG
       || !REG_P (SET_DEST (def_set)))
     return false;
@@ -1216,7 +1228,7 @@ forward_propagate_and_simplify (df_ref use, rtx_insn *def_insn, rtx def_set)
   rtx use_set = single_set (use_insn);
   rtx src, reg, new_rtx, *loc;
   bool set_reg_equal;
-  enum machine_mode mode;
+  machine_mode mode;
   int asm_use = -1;
 
   if (INSN_CODE (use_insn) < 0)

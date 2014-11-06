@@ -212,14 +212,19 @@ cpu_opt_ext_random=cpu/generic/opt/bits/opt_random.h
 # CPU-specifc, set those here too.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_os}" in
-  aix4.[3456789]* | aix[56789]*)
+  aix[56789]*)
+    # Newer versions of AIX only support PowerPC architecture, so use
+    # atomic instructions directly.
+    os_include_dir="os/aix"
+    atomic_word_dir="os/aix"
+    ;;
+  aix4.[3456789]*)
     # We set os_include_dir to os/aix only on AIX 4.3 and newer, but
     # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
     atomicity_dir="os/aix"
     atomic_word_dir="os/aix"
-    OPT_LDFLAGS="-Wl,-G"
     ;;
   aix4.*)
     os_include_dir="os/generic"

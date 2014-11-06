@@ -1010,7 +1010,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     s-vxwext.ads<s-vxwext-rtp.ads \
     s-vxwext.adb<s-vxwext-rtp-smp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-    system.ads<system-vxworks-arm-rtp.ads
+    system.ads<system-vxworks-arm-rtp-smp.ads
 
     EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
     EXTRA_LIBGNAT_SRCS+=sigtramp.h
@@ -1051,6 +1051,8 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
   GCC_SPEC_FILES+=vxworks-crtbe-link.spec
+  GCC_SPEC_FILES+=vxworks-arm-link.spec
+  GCC_SPEC_FILES+=vxworks-smp-arm-link.spec
 endif
 
 # MIPS VxWorks

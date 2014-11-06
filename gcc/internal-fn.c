@@ -24,7 +24,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stor-layout.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -33,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ubsan.h"
 #include "target.h"
-#include "predict.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
 #include "diagnostic-core.h"
@@ -75,8 +86,8 @@ static enum insn_code
 get_multi_vector_move (tree array_type, convert_optab optab)
 {
   enum insn_code icode;
-  enum machine_mode imode;
-  enum machine_mode vmode;
+  machine_mode imode;
+  machine_mode vmode;
 
   gcc_assert (TREE_CODE (array_type) == ARRAY_TYPE);
   imode = TYPE_MODE (array_type);
@@ -217,7 +228,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
   op0 = expand_normal (arg0);
   op1 = expand_normal (arg1);
 
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
   if (lhs)
     target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
@@ -365,7 +376,7 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
   do_pending_stack_adjust ();
   op1 = expand_normal (arg1);
 
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg1));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (arg1));
   if (lhs)
     target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
@@ -444,7 +455,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   op0 = expand_normal (arg0);
   op1 = expand_normal (arg1);
 
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
   if (lhs)
     target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
@@ -479,7 +490,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   if (icode == CODE_FOR_nothing)
     {
       struct separate_ops ops;
-      enum machine_mode hmode
+      machine_mode hmode
 	= mode_for_size (GET_MODE_PRECISION (mode) / 2, MODE_INT, 1);
       ops.op0 = arg0;
       ops.op1 = arg1;
@@ -488,7 +499,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
       if (GET_MODE_2XWIDER_MODE (mode) != VOIDmode
 	  && targetm.scalar_mode_supported_p (GET_MODE_2XWIDER_MODE (mode)))
 	{
-	  enum machine_mode wmode = GET_MODE_2XWIDER_MODE (mode);
+	  machine_mode wmode = GET_MODE_2XWIDER_MODE (mode);
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type
 	    = build_nonstandard_integer_type (GET_MODE_PRECISION (wmode), 0);

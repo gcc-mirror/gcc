@@ -364,7 +364,8 @@ i[34567]86-*-*)
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
 		       shaintrin.h clflushoptintrin.h xsavecintrin.h
-		       xsavesintrin.h"
+		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
+		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -382,7 +383,8 @@ x86_64-*-*)
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
 		       shaintrin.h clflushoptintrin.h xsavecintrin.h
-		       xsavesintrin.h"
+		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
+		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -1945,41 +1947,44 @@ mips*-mti-linux*)
 	gnu_ld=yes
 	gas=yes
 	;;
-mips64*-*-linux* | mipsisa64*-*-linux*)
+mips*-*-linux*)				# Linux MIPS, either endian.
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h"
 	extra_options="${extra_options} linux-android.opt"
-	tmake_file="${tmake_file} mips/t-linux64"
-	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
+		mipsisa32r2*)
+			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
+			;;
+		mipsisa32*)
+			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+			;;
 		mips64el-st-linux-gnu)
+			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 			tm_file="${tm_file} mips/st.h"
 			tmake_file="${tmake_file} mips/t-st"
+			enable_mips_multilibs="yes"
 			;;
 		mips64octeon*-*-linux*)
+			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 			tm_defines="${tm_defines} MIPS_CPU_STRING_DEFAULT=\\\"octeon\\\""
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
+			enable_mips_multilibs="yes"
 			;;
 		mipsisa64r2*-*-linux*)
+			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
+			enable_mips_multilibs="yes"
+			;;
+		mips64*-*-linux* | mipsisa64*-*-linux*)
+			tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
+			enable_mips_multilibs="yes"
 			;;
 	esac
-	gnu_ld=yes
-	gas=yes
-	;;
-mips*-*-linux*)				# Linux MIPS, either endian.
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
-	extra_options="${extra_options} linux-android.opt"
 	if test x$enable_targets = xall; then
+		enable_mips_multilibs="yes"
+	fi
+	if test x$enable_mips_multilibs = xyes; then
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
-	tm_file="${tm_file} mips/linux-common.h"
-	case ${target} in
-        mipsisa32r2*)
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
-                ;;
-        mipsisa32*)
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
-        esac
 	;;
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"

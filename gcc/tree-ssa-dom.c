@@ -27,16 +27,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "basic-block.h"
-#include "cfgloop.h"
-#include "inchash.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
+#include "basic-block.h"
+#include "cfgloop.h"
+#include "inchash.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -301,6 +305,8 @@ initialize_hash_element (gimple stmt, tree lhs,
         case GIMPLE_UNARY_RHS:
 	  expr->kind = EXPR_UNARY;
 	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
+	  if (CONVERT_EXPR_CODE_P (subcode))
+	    subcode = NOP_EXPR;
 	  expr->ops.unary.op = subcode;
 	  expr->ops.unary.opnd = gimple_assign_rhs1 (stmt);
 	  break;

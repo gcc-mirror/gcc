@@ -27,7 +27,7 @@ extern int frv_initial_elimination_offset	(int, int);
 extern void frv_ifcvt_machdep_init		(void *);
 
 #ifdef RTX_CODE
-extern int frv_legitimate_address_p_1		(enum machine_mode, rtx,
+extern int frv_legitimate_address_p_1		(machine_mode, rtx,
 						 int, int, int);
 extern rtx frv_find_base_term			(rtx);
 
@@ -42,11 +42,11 @@ extern int frv_expand_block_move		(rtx *);
 extern int frv_expand_block_clear		(rtx *);
 extern rtx frv_dynamic_chain_address		(rtx);
 extern rtx frv_return_addr_rtx			(int, rtx);
-extern rtx frv_index_memory			(rtx, enum machine_mode, int);
+extern rtx frv_index_memory			(rtx, machine_mode, int);
 extern const char *frv_asm_output_opcode
 				 	(FILE *, const char *);
 extern void frv_final_prescan_insn	(rtx_insn *, rtx *, int);
-extern void frv_emit_move		(enum machine_mode, rtx, rtx);
+extern void frv_emit_move		(machine_mode, rtx, rtx);
 extern int frv_emit_movsi		(rtx, rtx);
 extern const char *output_move_single	(rtx *, rtx);
 extern const char *output_move_double	(rtx *, rtx);
@@ -73,12 +73,12 @@ extern void frv_ifcvt_modify_cancel	(struct ce_if_block *);
 #endif
 extern enum reg_class frv_secondary_reload_class
 					(enum reg_class,
-					 enum machine_mode, rtx);
-extern int frv_hard_regno_mode_ok	(int, enum machine_mode);
-extern int frv_hard_regno_nregs		(int, enum machine_mode);
+					 machine_mode, rtx);
+extern int frv_hard_regno_mode_ok	(int, machine_mode);
+extern int frv_hard_regno_nregs		(int, machine_mode);
 extern int frv_class_max_nregs		(enum reg_class rclass,
-					 enum machine_mode mode);
-extern enum machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);
+					 machine_mode mode);
+extern machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);
 #endif	/* RTX_CODE */
 
 extern int frv_trampoline_size		(void);
@@ -91,77 +91,77 @@ extern int frv_adjust_field_align	(tree, int);
 #endif
 
 #ifdef RTX_CODE
-extern int integer_register_operand	(rtx, enum machine_mode);
-extern int frv_load_operand		(rtx, enum machine_mode);
-extern int gpr_or_fpr_operand		(rtx, enum machine_mode);
-extern int gpr_no_subreg_operand	(rtx, enum machine_mode);
-extern int gpr_or_int6_operand		(rtx, enum machine_mode);
-extern int fpr_or_int6_operand		(rtx, enum machine_mode);
-extern int gpr_or_int_operand		(rtx, enum machine_mode);
-extern int gpr_or_int12_operand		(rtx, enum machine_mode);
-extern int gpr_fpr_or_int12_operand	(rtx, enum machine_mode);
-extern int gpr_or_int10_operand		(rtx, enum machine_mode);
-extern int move_source_operand		(rtx, enum machine_mode);
-extern int move_destination_operand	(rtx, enum machine_mode);
-extern int condexec_source_operand	(rtx, enum machine_mode);
-extern int condexec_dest_operand	(rtx, enum machine_mode);
-extern int lr_operand			(rtx, enum machine_mode);
-extern int gpr_or_memory_operand	(rtx, enum machine_mode);
-extern int fpr_or_memory_operand	(rtx, enum machine_mode);
-extern int reg_or_0_operand		(rtx, enum machine_mode);
-extern int fcc_operand			(rtx, enum machine_mode);
-extern int icc_operand			(rtx, enum machine_mode);
-extern int cc_operand			(rtx, enum machine_mode);
-extern int fcr_operand			(rtx, enum machine_mode);
-extern int icr_operand			(rtx, enum machine_mode);
-extern int cr_operand			(rtx, enum machine_mode);
-extern int call_operand			(rtx, enum machine_mode);
-extern int fpr_operand			(rtx, enum machine_mode);
-extern int even_reg_operand		(rtx, enum machine_mode);
-extern int odd_reg_operand		(rtx, enum machine_mode);
-extern int even_gpr_operand		(rtx, enum machine_mode);
-extern int odd_gpr_operand		(rtx, enum machine_mode);
-extern int quad_fpr_operand		(rtx, enum machine_mode);
-extern int even_fpr_operand		(rtx, enum machine_mode);
-extern int odd_fpr_operand		(rtx, enum machine_mode);
-extern int dbl_memory_one_insn_operand	(rtx, enum machine_mode);
-extern int dbl_memory_two_insn_operand	(rtx, enum machine_mode);
-extern int int12_operand		(rtx, enum machine_mode);
-extern int int6_operand			(rtx, enum machine_mode);
-extern int int5_operand			(rtx, enum machine_mode);
-extern int uint5_operand		(rtx, enum machine_mode);
-extern int uint4_operand		(rtx, enum machine_mode);
-extern int uint1_operand		(rtx, enum machine_mode);
-extern int int_2word_operand		(rtx, enum machine_mode);
-extern int pic_register_operand		(rtx, enum machine_mode);
-extern int pic_symbolic_operand		(rtx, enum machine_mode);
-extern int small_data_register_operand	(rtx, enum machine_mode);
-extern int small_data_symbolic_operand	(rtx, enum machine_mode);
-extern int upper_int16_operand		(rtx, enum machine_mode);
-extern int uint16_operand		(rtx, enum machine_mode);
-extern int symbolic_operand		(rtx, enum machine_mode);
-extern int relational_operator		(rtx, enum machine_mode);
-extern int signed_relational_operator	(rtx, enum machine_mode);
-extern int unsigned_relational_operator	(rtx, enum machine_mode);
-extern int float_relational_operator	(rtx, enum machine_mode);
-extern int ccr_eqne_operator		(rtx, enum machine_mode);
-extern int minmax_operator		(rtx, enum machine_mode);
-extern int condexec_si_binary_operator	(rtx, enum machine_mode);
-extern int condexec_si_media_operator	(rtx, enum machine_mode);
-extern int condexec_si_divide_operator	(rtx, enum machine_mode);
-extern int condexec_si_unary_operator	(rtx, enum machine_mode);
-extern int condexec_sf_conv_operator	(rtx, enum machine_mode);
-extern int condexec_sf_add_operator	(rtx, enum machine_mode);
-extern int condexec_memory_operand	(rtx, enum machine_mode);
-extern int intop_compare_operator	(rtx, enum machine_mode);
-extern int acc_operand			(rtx, enum machine_mode);
-extern int even_acc_operand		(rtx, enum machine_mode);
-extern int quad_acc_operand		(rtx, enum machine_mode);
-extern int accg_operand			(rtx, enum machine_mode);
+extern int integer_register_operand	(rtx, machine_mode);
+extern int frv_load_operand		(rtx, machine_mode);
+extern int gpr_or_fpr_operand		(rtx, machine_mode);
+extern int gpr_no_subreg_operand	(rtx, machine_mode);
+extern int gpr_or_int6_operand		(rtx, machine_mode);
+extern int fpr_or_int6_operand		(rtx, machine_mode);
+extern int gpr_or_int_operand		(rtx, machine_mode);
+extern int gpr_or_int12_operand		(rtx, machine_mode);
+extern int gpr_fpr_or_int12_operand	(rtx, machine_mode);
+extern int gpr_or_int10_operand		(rtx, machine_mode);
+extern int move_source_operand		(rtx, machine_mode);
+extern int move_destination_operand	(rtx, machine_mode);
+extern int condexec_source_operand	(rtx, machine_mode);
+extern int condexec_dest_operand	(rtx, machine_mode);
+extern int lr_operand			(rtx, machine_mode);
+extern int gpr_or_memory_operand	(rtx, machine_mode);
+extern int fpr_or_memory_operand	(rtx, machine_mode);
+extern int reg_or_0_operand		(rtx, machine_mode);
+extern int fcc_operand			(rtx, machine_mode);
+extern int icc_operand			(rtx, machine_mode);
+extern int cc_operand			(rtx, machine_mode);
+extern int fcr_operand			(rtx, machine_mode);
+extern int icr_operand			(rtx, machine_mode);
+extern int cr_operand			(rtx, machine_mode);
+extern int call_operand			(rtx, machine_mode);
+extern int fpr_operand			(rtx, machine_mode);
+extern int even_reg_operand		(rtx, machine_mode);
+extern int odd_reg_operand		(rtx, machine_mode);
+extern int even_gpr_operand		(rtx, machine_mode);
+extern int odd_gpr_operand		(rtx, machine_mode);
+extern int quad_fpr_operand		(rtx, machine_mode);
+extern int even_fpr_operand		(rtx, machine_mode);
+extern int odd_fpr_operand		(rtx, machine_mode);
+extern int dbl_memory_one_insn_operand	(rtx, machine_mode);
+extern int dbl_memory_two_insn_operand	(rtx, machine_mode);
+extern int int12_operand		(rtx, machine_mode);
+extern int int6_operand			(rtx, machine_mode);
+extern int int5_operand			(rtx, machine_mode);
+extern int uint5_operand		(rtx, machine_mode);
+extern int uint4_operand		(rtx, machine_mode);
+extern int uint1_operand		(rtx, machine_mode);
+extern int int_2word_operand		(rtx, machine_mode);
+extern int pic_register_operand		(rtx, machine_mode);
+extern int pic_symbolic_operand		(rtx, machine_mode);
+extern int small_data_register_operand	(rtx, machine_mode);
+extern int small_data_symbolic_operand	(rtx, machine_mode);
+extern int upper_int16_operand		(rtx, machine_mode);
+extern int uint16_operand		(rtx, machine_mode);
+extern int symbolic_operand		(rtx, machine_mode);
+extern int relational_operator		(rtx, machine_mode);
+extern int signed_relational_operator	(rtx, machine_mode);
+extern int unsigned_relational_operator	(rtx, machine_mode);
+extern int float_relational_operator	(rtx, machine_mode);
+extern int ccr_eqne_operator		(rtx, machine_mode);
+extern int minmax_operator		(rtx, machine_mode);
+extern int condexec_si_binary_operator	(rtx, machine_mode);
+extern int condexec_si_media_operator	(rtx, machine_mode);
+extern int condexec_si_divide_operator	(rtx, machine_mode);
+extern int condexec_si_unary_operator	(rtx, machine_mode);
+extern int condexec_sf_conv_operator	(rtx, machine_mode);
+extern int condexec_sf_add_operator	(rtx, machine_mode);
+extern int condexec_memory_operand	(rtx, machine_mode);
+extern int intop_compare_operator	(rtx, machine_mode);
+extern int acc_operand			(rtx, machine_mode);
+extern int even_acc_operand		(rtx, machine_mode);
+extern int quad_acc_operand		(rtx, machine_mode);
+extern int accg_operand			(rtx, machine_mode);
 extern rtx frv_matching_accg_for_acc	(rtx);
 extern void frv_expand_fdpic_call	(rtx *, bool, bool);
 extern rtx frv_gen_GPsym2reg		(rtx, rtx);
-extern int frv_legitimate_memory_operand (rtx, enum machine_mode, int);
+extern int frv_legitimate_memory_operand (rtx, machine_mode, int);
 
 /* Information about a relocation unspec.  SYMBOL is the relocation symbol
    (a SYMBOL_REF or LABEL_REF), RELOC is the type of relocation and OFFSET

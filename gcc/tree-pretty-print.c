@@ -30,13 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "hash-set.h"
 #include "gimple-expr.h"
+#include "predict.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-chrec.h"
 #include "dumpfile.h"
 #include "value-prof.h"
-#include "predict.h"
 #include "wide-int-print.h"
 #include "internal-fn.h"
 
@@ -217,7 +226,7 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
 static void
 dump_function_name (pretty_printer *buffer, tree node, int flags)
 {
-  if (TREE_CODE (node) == NOP_EXPR)
+  if (CONVERT_EXPR_P (node))
     node = TREE_OPERAND (node, 0);
   if (DECL_NAME (node) && (flags & TDF_ASMNAME) == 0)
     pp_string (buffer, lang_hooks.decl_printable_name (node, 1));
@@ -1885,7 +1894,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-    case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
     case WIDEN_LSHIFT_EXPR:
     case BIT_IOR_EXPR:
@@ -3066,7 +3074,6 @@ op_code_prio (enum tree_code code)
     case REDUC_MAX_EXPR:
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
-    case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
@@ -3176,9 +3183,6 @@ op_symbol_code (enum tree_code code)
 
     case RROTATE_EXPR:
       return "r>>";
-
-    case VEC_LSHIFT_EXPR:
-      return "v<<";
 
     case VEC_RSHIFT_EXPR:
       return "v>>";
@@ -3299,7 +3303,7 @@ print_call_name (pretty_printer *buffer, tree node, int flags)
 
     case ADDR_EXPR:
     case INDIRECT_REF:
-    case NOP_EXPR:
+    CASE_CONVERT:
       op0 = TREE_OPERAND (op0, 0);
       goto again;
 

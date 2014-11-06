@@ -639,8 +639,10 @@ decimal_headers = \
 experimental_srcdir = ${glibcxx_srcdir}/include/experimental
 experimental_builddir = ./experimental
 experimental_headers = \
+	${experimental_srcdir}/algorithm \
 	${experimental_srcdir}/any \
 	${experimental_srcdir}/chrono \
+	${experimental_srcdir}/functional \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/string_view \

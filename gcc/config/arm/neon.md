@@ -1210,7 +1210,7 @@
   rtx zero_reg;
   HOST_WIDE_INT num_bits = INTVAL (operands[2]);
   const int width = GET_MODE_BITSIZE (<MODE>mode);
-  const enum machine_mode bvecmode = (width == 128) ? V16QImode : V8QImode;
+  const machine_mode bvecmode = (width == 128) ? V16QImode : V8QImode;
   rtx (*gen_ext) (rtx, rtx, rtx, rtx) =
     (width == 128) ? gen_neon_vextv16qi : gen_neon_vextv8qi;
 
@@ -1238,7 +1238,7 @@
   rtx zero_reg;
   HOST_WIDE_INT num_bits = INTVAL (operands[2]);
   const int width = GET_MODE_BITSIZE (<MODE>mode);
-  const enum machine_mode bvecmode = (width == 128) ? V16QImode : V8QImode;
+  const machine_mode bvecmode = (width == 128) ? V16QImode : V8QImode;
   rtx (*gen_ext) (rtx, rtx, rtx, rtx) =
     (width == 128) ? gen_neon_vextv16qi : gen_neon_vextv8qi;
 

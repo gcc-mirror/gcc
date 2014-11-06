@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_IPA_REFERENCE_H
 #define GCC_IPA_REFERENCE_H
-#include "bitmap.h"
-#include "cgraph.h"
 
 /* In ipa-reference.c  */
 bitmap ipa_reference_get_not_read_global (struct cgraph_node *fn);

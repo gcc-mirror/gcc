@@ -125,6 +125,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "insn-codes.h"
+#include "optabs.h"
 #include "expr.h"
 #include "libfuncs.h"
 #include "insn-config.h"
@@ -140,6 +142,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
@@ -1264,8 +1275,8 @@ sjlj_emit_function_exit (void)
 static void
 sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 {
-  enum machine_mode unwind_word_mode = targetm.unwind_word_mode ();
-  enum machine_mode filter_mode = targetm.eh_return_filter_mode ();
+  machine_mode unwind_word_mode = targetm.unwind_word_mode ();
+  machine_mode filter_mode = targetm.eh_return_filter_mode ();
   eh_landing_pad lp;
   rtx mem, fc, before, exc_ptr_reg, filter_reg;
   rtx_insn *seq;
@@ -2081,7 +2092,7 @@ expand_builtin_eh_copy_values (tree exp)
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 0));
   eh_region src
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 1));
-  enum machine_mode fmode = targetm.eh_return_filter_mode ();
+  machine_mode fmode = targetm.eh_return_filter_mode ();
 
   if (dst->exc_ptr_reg == NULL)
     dst->exc_ptr_reg = gen_reg_rtx (ptr_mode);

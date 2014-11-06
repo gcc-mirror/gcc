@@ -1,3 +1,19 @@
+2014-10-28  Richard Henderson  <rth@redhat.com>
+
+	* longlong.h [__alpha] (umul_ppmm): Disable for c++.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* libiberty.h (strtol, strtoul, strtoll, strtoull): New prototypes.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Jan Kratochvil  <jan.kratochvil@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* gcc-c-fe.def: New file.
+	* gcc-c-interface.h: New file.
+	* gcc-interface.h: New file.
+
 2014-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* libiberty.h (choose_tmpdir): New prototype.

@@ -44,7 +44,7 @@ extern const char *output_call (rtx);
 extern const char *output_sibcall (rtx);
 extern void output_dbcc_and_branch (rtx *);
 extern int floating_exact_log2 (rtx);
-extern bool strict_low_part_peephole_ok (enum machine_mode mode,
+extern bool strict_low_part_peephole_ok (machine_mode mode,
 					 rtx_insn *first_insn, rtx target);
 
 /* Functions from m68k.c used in macros.  */
@@ -55,16 +55,16 @@ extern void notice_update_cc (rtx, rtx);
 extern bool m68k_legitimate_base_reg_p (rtx, bool);
 extern bool m68k_legitimate_index_reg_p (rtx, bool);
 extern bool m68k_illegitimate_symbolic_constant_p (rtx);
-extern bool m68k_legitimate_constant_p (enum machine_mode, rtx);
+extern bool m68k_legitimate_constant_p (machine_mode, rtx);
 extern bool m68k_matches_q_p (rtx);
 extern bool m68k_matches_u_p (rtx);
-extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
 extern rtx m68k_legitimize_tls_address (rtx);
 extern bool m68k_tls_reference_p (rtx, bool);
-extern int valid_dbcc_comparison_p_2 (rtx, enum machine_mode);
-extern rtx m68k_libcall_value (enum machine_mode);
+extern int valid_dbcc_comparison_p_2 (rtx, machine_mode);
+extern rtx m68k_libcall_value (machine_mode);
 extern rtx m68k_function_value (const_tree, const_tree);
-extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
+extern int emit_move_sequence (rtx *, machine_mode, rtx);
 extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
 extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 extern void m68k_final_prescan_insn (rtx_insn *, rtx *, int);
@@ -86,9 +86,9 @@ extern enum attr_op_mem m68k_sched_attr_op_mem (rtx_insn *);
 
 #endif /* RTX_CODE */
 
-extern bool m68k_regno_mode_ok (int, enum machine_mode);
+extern bool m68k_regno_mode_ok (int, machine_mode);
 extern enum reg_class m68k_secondary_reload_class (enum reg_class,
-						   enum machine_mode, rtx);
+						   machine_mode, rtx);
 extern enum reg_class m68k_preferred_reload_class (rtx, enum reg_class);
 extern int flags_in_68881 (void);
 extern void m68k_expand_prologue (void);

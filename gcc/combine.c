@@ -86,27 +86,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
-#include "insn-config.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgcleanup.h"
+#include "basic-block.h"
+#include "insn-config.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
 #include "insn-attr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "target.h"
-#include "optabs.h"
 #include "insn-codes.h"
+#include "optabs.h"
 #include "rtlhooks-def.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "valtrack.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "obstack.h"
 #include "statistics.h"
@@ -358,7 +367,7 @@ static int label_tick_ebb_start;
 /* Mode used to compute significance in reg_stat[].nonzero_bits.  It is the
    largest integer mode that can fit in HOST_BITS_PER_WIDE_INT.  */
 
-static enum machine_mode nonzero_bits_mode;
+static machine_mode nonzero_bits_mode;
 
 /* Nonzero when reg_stat[].nonzero_bits and reg_stat[].sign_bit_copies can
    be safely used.  It is zero while computing them and after combine has
@@ -378,7 +387,7 @@ struct undo
 {
   struct undo *next;
   enum undo_kind kind;
-  union { rtx r; int i; enum machine_mode m; struct insn_link *l; } old_contents;
+  union { rtx r; int i; machine_mode m; struct insn_link *l; } old_contents;
   union { rtx *r; int *i; struct insn_link **l; } where;
 };
 
@@ -402,12 +411,12 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
-static rtx reg_nonzero_bits_for_combine (const_rtx, enum machine_mode, const_rtx,
-					 enum machine_mode,
+static rtx reg_nonzero_bits_for_combine (const_rtx, machine_mode, const_rtx,
+					 machine_mode,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT *);
-static rtx reg_num_sign_bit_copies_for_combine (const_rtx, enum machine_mode, const_rtx,
-						enum machine_mode,
+static rtx reg_num_sign_bit_copies_for_combine (const_rtx, machine_mode, const_rtx,
+						machine_mode,
 						unsigned int, unsigned int *);
 static void do_SUBST (rtx *, rtx);
 static void do_SUBST_INT (int *, int);
@@ -425,19 +434,19 @@ static void undo_all (void);
 static void undo_commit (void);
 static rtx *find_split_point (rtx *, rtx_insn *, bool);
 static rtx subst (rtx, rtx, rtx, int, int, int);
-static rtx combine_simplify_rtx (rtx, enum machine_mode, int, int);
+static rtx combine_simplify_rtx (rtx, machine_mode, int, int);
 static rtx simplify_if_then_else (rtx);
 static rtx simplify_set (rtx);
 static rtx simplify_logical (rtx);
 static rtx expand_compound_operation (rtx);
 static const_rtx expand_field_assignment (const_rtx);
-static rtx make_extraction (enum machine_mode, rtx, HOST_WIDE_INT,
+static rtx make_extraction (machine_mode, rtx, HOST_WIDE_INT,
 			    rtx, unsigned HOST_WIDE_INT, int, int, int);
 static rtx extract_left_shift (rtx, int);
 static int get_pos_from_mask (unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT *);
 static rtx canon_reg_for_combine (rtx, rtx);
-static rtx force_to_mode (rtx, enum machine_mode,
+static rtx force_to_mode (rtx, machine_mode,
 			  unsigned HOST_WIDE_INT, int);
 static rtx if_then_else_cond (rtx, rtx *, rtx *);
 static rtx known_cond (rtx, enum rtx_code, rtx, rtx);
@@ -445,18 +454,18 @@ static int rtx_equal_for_field_assignment_p (rtx, rtx);
 static rtx make_field_assignment (rtx);
 static rtx apply_distributive_law (rtx);
 static rtx distribute_and_simplify_rtx (rtx, int);
-static rtx simplify_and_const_int_1 (enum machine_mode, rtx,
+static rtx simplify_and_const_int_1 (machine_mode, rtx,
 				     unsigned HOST_WIDE_INT);
-static rtx simplify_and_const_int (rtx, enum machine_mode, rtx,
+static rtx simplify_and_const_int (rtx, machine_mode, rtx,
 				   unsigned HOST_WIDE_INT);
 static int merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
-			    HOST_WIDE_INT, enum machine_mode, int *);
-static rtx simplify_shift_const_1 (enum rtx_code, enum machine_mode, rtx, int);
-static rtx simplify_shift_const (rtx, enum rtx_code, enum machine_mode, rtx,
+			    HOST_WIDE_INT, machine_mode, int *);
+static rtx simplify_shift_const_1 (enum rtx_code, machine_mode, rtx, int);
+static rtx simplify_shift_const (rtx, enum rtx_code, machine_mode, rtx,
 				 int);
 static int recog_for_combine (rtx *, rtx_insn *, rtx *);
-static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
-static enum rtx_code simplify_compare_const (enum rtx_code, enum machine_mode,
+static rtx gen_lowpart_for_combine (machine_mode, rtx);
+static enum rtx_code simplify_compare_const (enum rtx_code, machine_mode,
 					     rtx, rtx *);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
@@ -477,8 +486,8 @@ static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
 static bool unmentioned_reg_p (rtx, rtx);
 static void record_truncated_values (rtx *, void *);
-static bool reg_truncated_to_mode (enum machine_mode, const_rtx);
-static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
+static bool reg_truncated_to_mode (machine_mode, const_rtx);
+static rtx gen_lowpart_or_truncate (machine_mode, rtx);
 
 
 /* It is not safe to use ordinary gen_lowpart in combine.
@@ -781,10 +790,10 @@ do_SUBST_INT (int *into, int newval)
    well.  */
 
 static void
-do_SUBST_MODE (rtx *into, enum machine_mode newval)
+do_SUBST_MODE (rtx *into, machine_mode newval)
 {
   struct undo *buf;
-  enum machine_mode oldval = GET_MODE (*into);
+  machine_mode oldval = GET_MODE (*into);
 
   if (oldval == newval)
     return;
@@ -1542,7 +1551,7 @@ setup_incoming_promotions (rtx_insn *first)
     {
       rtx x, reg = DECL_INCOMING_RTL (arg);
       int uns1, uns3;
-      enum machine_mode mode1, mode2, mode3, mode4;
+      machine_mode mode1, mode2, mode3, mode4;
 
       /* Only continue if the incoming argument is in a register.  */
       if (!REG_P (reg))
@@ -2359,7 +2368,7 @@ adjust_for_new_dest (rtx_insn *insn)
 /* Return TRUE if combine can reuse reg X in mode MODE.
    ADDED_SETS is nonzero if the original set is still required.  */
 static bool
-can_change_dest_mode (rtx x, int added_sets, enum machine_mode mode)
+can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
 {
   unsigned int regno;
 
@@ -2966,7 +2975,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       rtx *cc_use_loc = NULL;
       rtx_insn *cc_use_insn = NULL;
       rtx op0 = i2src, op1 = XEXP (SET_SRC (PATTERN (i3)), 1);
-      enum machine_mode compare_mode, orig_compare_mode;
+      machine_mode compare_mode, orig_compare_mode;
       enum rtx_code compare_code = UNKNOWN, orig_compare_code = UNKNOWN;
 
       newpat = PATTERN (i3);
@@ -2995,7 +3004,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  if (cc_use_loc)
 	    {
 #ifdef SELECT_CC_MODE
-	      enum machine_mode new_mode
+	      machine_mode new_mode
 		= SELECT_CC_MODE (compare_code, op0, op1);
 	      if (new_mode != orig_compare_mode
 		  && can_change_dest_mode (SET_DEST (newpat),
@@ -3352,7 +3361,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
       if (m_split_insn == 0 && ! reg_overlap_mentioned_p (i2dest, newpat))
 	{
-	  enum machine_mode new_mode = GET_MODE (SET_DEST (newpat));
+	  machine_mode new_mode = GET_MODE (SET_DEST (newpat));
 
 	  /* First try to split using the original register as a
 	     scratch register.  */
@@ -3369,7 +3378,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      && new_mode != VOIDmode
 	      && can_change_dest_mode (i2dest, added_sets_2, new_mode))
 	    {
-	      enum machine_mode old_mode = GET_MODE (i2dest);
+	      machine_mode old_mode = GET_MODE (i2dest);
 	      rtx ni2dest;
 
 	      if (REGNO (i2dest) < FIRST_PSEUDO_REGISTER)
@@ -3492,7 +3501,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	{
 	  rtx newdest = i2dest;
 	  enum rtx_code split_code = GET_CODE (*split);
-	  enum machine_mode split_mode = GET_MODE (*split);
+	  machine_mode split_mode = GET_MODE (*split);
 	  bool subst_done = false;
 	  newi2pat = NULL_RTX;
 
@@ -3559,7 +3568,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      && ! side_effects_p (SET_SRC (newpat)))
 	    {
 	      rtx setsrc = SET_SRC (newpat);
-	      enum machine_mode mode = GET_MODE (setsrc);
+	      machine_mode mode = GET_MODE (setsrc);
 	      enum rtx_code code = GET_CODE (setsrc);
 	      rtx src_op0 = XEXP (setsrc, 0);
 	      rtx src_op1 = XEXP (setsrc, 1);
@@ -3854,8 +3863,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	if (undo->kind == UNDO_MODE)
 	  {
 	    rtx reg = *undo->where.r;
-	    enum machine_mode new_mode = GET_MODE (reg);
-	    enum machine_mode old_mode = undo->old_contents.m;
+	    machine_mode new_mode = GET_MODE (reg);
+	    machine_mode old_mode = undo->old_contents.m;
 
 	    /* Temporarily revert mode back.  */
 	    adjust_reg_mode (reg, old_mode);
@@ -4515,7 +4524,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       if (GET_CODE (XEXP (x, 0)) == CONST
 	  || GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	{
-	  enum machine_mode address_mode = get_address_mode (x);
+	  machine_mode address_mode = get_address_mode (x);
 
 	  SUBST (XEXP (x, 0),
 		 gen_rtx_LO_SUM (address_mode,
@@ -4647,7 +4656,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  unsigned HOST_WIDE_INT len = INTVAL (XEXP (SET_DEST (x), 1));
 	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x));
 	  rtx dest = XEXP (SET_DEST (x), 0);
-	  enum machine_mode mode = GET_MODE (dest);
+	  machine_mode mode = GET_MODE (dest);
 	  unsigned HOST_WIDE_INT mask
 	    = ((unsigned HOST_WIDE_INT) 1 << len) - 1;
 	  rtx or_mask;
@@ -4721,7 +4730,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 		       (nonzero_bits (XEXP (SET_SRC (x), 0),
 				      GET_MODE (XEXP (SET_SRC (x), 0))))))
 	    {
-	      enum machine_mode mode = GET_MODE (XEXP (SET_SRC (x), 0));
+	      machine_mode mode = GET_MODE (XEXP (SET_SRC (x), 0));
 
 	      SUBST (SET_SRC (x),
 		     gen_rtx_NEG (mode,
@@ -4772,7 +4781,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       if (len && pos >= 0
 	  && pos + len <= GET_MODE_PRECISION (GET_MODE (inner)))
 	{
-	  enum machine_mode mode = GET_MODE (SET_SRC (x));
+	  machine_mode mode = GET_MODE (SET_SRC (x));
 
 	  /* For unsigned, we have a choice of a shift followed by an
 	     AND or two shifts.  Use two shifts for field sizes where the
@@ -4869,7 +4878,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
 	  && exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1))) < 0)
 	{
-	  enum machine_mode mode = GET_MODE (x);
+	  machine_mode mode = GET_MODE (x);
 	  unsigned HOST_WIDE_INT this_int = INTVAL (XEXP (XEXP (x, 1), 1));
 	  HOST_WIDE_INT other_int = trunc_int_for_mode (-this_int, mode);
 	  SUBST (*loc, gen_rtx_PLUS (mode,
@@ -4950,7 +4959,7 @@ static rtx
 subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 {
   enum rtx_code code = GET_CODE (x);
-  enum machine_mode op0_mode = VOIDmode;
+  machine_mode op0_mode = VOIDmode;
   const char *fmt;
   int len, i;
   rtx new_rtx;
@@ -5167,7 +5176,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 
 	      if (GET_CODE (x) == SUBREG && CONST_SCALAR_INT_P (new_rtx))
 		{
-		  enum machine_mode mode = GET_MODE (x);
+		  machine_mode mode = GET_MODE (x);
 
 		  x = simplify_subreg (GET_MODE (x), new_rtx,
 				       GET_MODE (SUBREG_REG (x)),
@@ -5233,11 +5242,11 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
    of a condition.  */
 
 static rtx
-combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
+combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 		      int in_cond)
 {
   enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   rtx temp;
   int i;
 
@@ -5363,7 +5372,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
     case RTX_COMPARE:
     case RTX_COMM_COMPARE:
       {
-	enum machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
+	machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
 	if (cmp_mode == VOIDmode)
 	  {
 	    cmp_mode = GET_MODE (XEXP (x, 1));
@@ -5935,7 +5944,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 static rtx
 simplify_if_then_else (rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   rtx cond = XEXP (x, 0);
   rtx true_rtx = XEXP (x, 1);
   rtx false_rtx = XEXP (x, 2);
@@ -6133,7 +6142,7 @@ simplify_if_then_else (rtx x)
       rtx cond_op0 = XEXP (cond, 0);
       rtx cond_op1 = XEXP (cond, 1);
       enum rtx_code op = UNKNOWN, extend_op = UNKNOWN;
-      enum machine_mode m = mode;
+      machine_mode m = mode;
       rtx z = 0, c1 = NULL_RTX;
 
       if ((GET_CODE (t) == PLUS || GET_CODE (t) == MINUS
@@ -6275,7 +6284,7 @@ simplify_set (rtx x)
 {
   rtx src = SET_SRC (x);
   rtx dest = SET_DEST (x);
-  enum machine_mode mode
+  machine_mode mode
     = GET_MODE (src) != VOIDmode ? GET_MODE (src) : GET_MODE (dest);
   rtx_insn *other_insn;
   rtx *cc_use;
@@ -6310,7 +6319,7 @@ simplify_set (rtx x)
       rtx op0, op1, tmp;
       int other_changed = 0;
       rtx inner_compare = NULL_RTX;
-      enum machine_mode compare_mode = GET_MODE (dest);
+      machine_mode compare_mode = GET_MODE (dest);
 
       if (GET_CODE (src) == COMPARE)
 	{
@@ -6521,7 +6530,7 @@ simplify_set (rtx x)
 	  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (src)))))
     {
       rtx inner = SUBREG_REG (src);
-      enum machine_mode inner_mode = GET_MODE (inner);
+      machine_mode inner_mode = GET_MODE (inner);
 
       /* Here we make sure that we don't have a sign bit on.  */
       if (val_signbit_known_clear_p (GET_MODE (src),
@@ -6626,7 +6635,7 @@ simplify_set (rtx x)
 static rtx
 simplify_logical (rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
   rtx op1 = XEXP (x, 1);
 
@@ -6880,7 +6889,7 @@ expand_compound_operation (rtx x)
   modewidth = GET_MODE_PRECISION (GET_MODE (x));
   if (modewidth >= pos + len)
     {
-      enum machine_mode mode = GET_MODE (x);
+      machine_mode mode = GET_MODE (x);
       tem = gen_lowpart (mode, XEXP (x, 0));
       if (!tem || GET_CODE (tem) == CLOBBER)
 	return x;
@@ -6922,7 +6931,7 @@ expand_field_assignment (const_rtx x)
   rtx pos;			/* Always counts from low bit.  */
   int len;
   rtx mask, cleared, masked;
-  enum machine_mode compute_mode;
+  machine_mode compute_mode;
 
   /* Loop until we find something we can't simplify.  */
   while (1)
@@ -6995,7 +7004,7 @@ expand_field_assignment (const_rtx x)
       /* Don't attempt bitwise arithmetic on non scalar integer modes.  */
       if (! SCALAR_INT_MODE_P (compute_mode))
 	{
-	  enum machine_mode imode;
+	  machine_mode imode;
 
 	  /* Don't do anything for vector or complex integral types.  */
 	  if (! FLOAT_MODE_P (compute_mode))
@@ -7061,20 +7070,20 @@ expand_field_assignment (const_rtx x)
    can't handle it.  */
 
 static rtx
-make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
+make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		 rtx pos_rtx, unsigned HOST_WIDE_INT len, int unsignedp,
 		 int in_dest, int in_compare)
 {
   /* This mode describes the size of the storage area
      to fetch the overall value from.  Within that, we
      ignore the POS lowest bits, etc.  */
-  enum machine_mode is_mode = GET_MODE (inner);
-  enum machine_mode inner_mode;
-  enum machine_mode wanted_inner_mode;
-  enum machine_mode wanted_inner_reg_mode = word_mode;
-  enum machine_mode pos_mode = word_mode;
-  enum machine_mode extraction_mode = word_mode;
-  enum machine_mode tmode = mode_for_size (len, MODE_INT, 1);
+  machine_mode is_mode = GET_MODE (inner);
+  machine_mode inner_mode;
+  machine_mode wanted_inner_mode;
+  machine_mode wanted_inner_reg_mode = word_mode;
+  machine_mode pos_mode = word_mode;
+  machine_mode extraction_mode = word_mode;
+  machine_mode tmode = mode_for_size (len, MODE_INT, 1);
   rtx new_rtx = 0;
   rtx orig_pos_rtx = pos_rtx;
   HOST_WIDE_INT orig_pos;
@@ -7454,7 +7463,7 @@ static rtx
 extract_left_shift (rtx x, int count)
 {
   enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   rtx tem;
 
   switch (code)
@@ -7518,7 +7527,7 @@ rtx
 make_compound_operation (rtx x, enum rtx_code in_code)
 {
   enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   int mode_width = GET_MODE_PRECISION (mode);
   rtx rhs, lhs;
   enum rtx_code next_code;
@@ -8027,7 +8036,7 @@ canon_reg_for_combine (rtx x, rtx reg)
    would need an explicit truncation.  */
 
 static rtx
-gen_lowpart_or_truncate (enum machine_mode mode, rtx x)
+gen_lowpart_or_truncate (machine_mode mode, rtx x)
 {
   if (!CONST_INT_P (x)
       && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
@@ -8058,12 +8067,12 @@ gen_lowpart_or_truncate (enum machine_mode mode, rtx x)
    NOT, NEG, or XOR.  */
 
 static rtx
-force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
+force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 	       int just_select)
 {
   enum rtx_code code = GET_CODE (x);
   int next_select = just_select || code == XOR || code == NOT || code == NEG;
-  enum machine_mode op_mode;
+  machine_mode op_mode;
   unsigned HOST_WIDE_INT fuller_mask, nonzero;
   rtx op0, op1, temp;
 
@@ -8606,7 +8615,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 static rtx
 if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   enum rtx_code code = GET_CODE (x);
   rtx cond0, cond1, true0, true1, false0, false1;
   unsigned HOST_WIDE_INT nz;
@@ -8905,7 +8914,7 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
     }
   else if (code == SUBREG)
     {
-      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+      machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
       rtx new_rtx, r = known_cond (SUBREG_REG (x), cond, reg, val);
 
       if (SUBREG_REG (x) != r)
@@ -8930,7 +8939,7 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
      story is different.  */
   else if (code == ZERO_EXTEND)
     {
-      enum machine_mode inner_mode = GET_MODE (XEXP (x, 0));
+      machine_mode inner_mode = GET_MODE (XEXP (x, 0));
       rtx new_rtx, r = known_cond (XEXP (x, 0), cond, reg, val);
 
       if (XEXP (x, 0) != r)
@@ -9013,7 +9022,7 @@ make_field_assignment (rtx x)
   HOST_WIDE_INT pos;
   unsigned HOST_WIDE_INT len;
   rtx other;
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* If SRC was (and (not (ashift (const_int 1) POS)) DEST), this is
      a clear of a one-bit field.  We will have changed it to
@@ -9296,7 +9305,7 @@ apply_distributive_law (rtx x)
 static rtx
 distribute_and_simplify_rtx (rtx x, int n)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   enum rtx_code outer_code, inner_code;
   rtx decomposed, distributed, inner_op0, inner_op1, new_op0, new_op1, tmp;
 
@@ -9354,7 +9363,7 @@ distribute_and_simplify_rtx (rtx x, int n)
    (const_int CONSTOP)).  Otherwise, return NULL_RTX.  */
 
 static rtx
-simplify_and_const_int_1 (enum machine_mode mode, rtx varop,
+simplify_and_const_int_1 (machine_mode mode, rtx varop,
 			  unsigned HOST_WIDE_INT constop)
 {
   unsigned HOST_WIDE_INT nonzero;
@@ -9469,7 +9478,7 @@ simplify_and_const_int_1 (enum machine_mode mode, rtx varop,
    X is zero, we are to always construct the equivalent form.  */
 
 static rtx
-simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
+simplify_and_const_int (rtx x, machine_mode mode, rtx varop,
 			unsigned HOST_WIDE_INT constop)
 {
   rtx tem = simplify_and_const_int_1 (mode, varop, constop);
@@ -9491,9 +9500,9 @@ simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
    a shift, AND, or zero_extract, we can do better.  */
 
 static rtx
-reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
+reg_nonzero_bits_for_combine (const_rtx x, machine_mode mode,
 			      const_rtx known_x ATTRIBUTE_UNUSED,
-			      enum machine_mode known_mode ATTRIBUTE_UNUSED,
+			      machine_mode known_mode ATTRIBUTE_UNUSED,
 			      unsigned HOST_WIDE_INT known_ret ATTRIBUTE_UNUSED,
 			      unsigned HOST_WIDE_INT *nonzero)
 {
@@ -9572,9 +9581,9 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
    be between 1 and the number of bits in MODE.  */
 
 static rtx
-reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
+reg_num_sign_bit_copies_for_combine (const_rtx x, machine_mode mode,
 				     const_rtx known_x ATTRIBUTE_UNUSED,
-				     enum machine_mode known_mode
+				     machine_mode known_mode
 				     ATTRIBUTE_UNUSED,
 				     unsigned int known_ret ATTRIBUTE_UNUSED,
 				     unsigned int *result)
@@ -9622,7 +9631,7 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
    implies that it must be called from a define_split.  */
 
 unsigned int
-extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
+extended_count (const_rtx x, machine_mode mode, int unsignedp)
 {
   if (nonzero_sign_valid == 0)
     return 0;
@@ -9657,7 +9666,7 @@ extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
    return 0 and do not change *POP0, *PCONST0, and *PCOMP_P.  */
 
 static int
-merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1, HOST_WIDE_INT const1, enum machine_mode mode, int *pcomp_p)
+merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1, HOST_WIDE_INT const1, machine_mode mode, int *pcomp_p)
 {
   enum rtx_code op0 = *pop0;
   HOST_WIDE_INT const0 = *pconst0;
@@ -9773,9 +9782,9 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
    result of the shift is subject to operation OUTER_CODE with operand
    OUTER_CONST.  */
 
-static enum machine_mode
+static machine_mode
 try_widen_shift_mode (enum rtx_code code, rtx op, int count,
-		      enum machine_mode orig_mode, enum machine_mode mode,
+		      machine_mode orig_mode, machine_mode mode,
 		      enum rtx_code outer_code, HOST_WIDE_INT outer_const)
 {
   if (orig_mode == mode)
@@ -9832,14 +9841,14 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
    are ASHIFTRT and ROTATE, which are always done in their original mode.  */
 
 static rtx
-simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
+simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 			rtx varop, int orig_count)
 {
   enum rtx_code orig_code = code;
   rtx orig_varop = varop;
   int count;
-  enum machine_mode mode = result_mode;
-  enum machine_mode shift_mode, tmode;
+  machine_mode mode = result_mode;
+  machine_mode shift_mode, tmode;
   unsigned int mode_words
     = (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
   /* We form (outer_op (code varop count) (outer_const)).  */
@@ -10568,7 +10577,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
    are ASHIFTRT and ROTATE, which are always done in their original mode.  */
 
 static rtx
-simplify_shift_const (rtx x, enum rtx_code code, enum machine_mode result_mode,
+simplify_shift_const (rtx x, enum rtx_code code, machine_mode result_mode,
 		      rtx varop, int count)
 {
   rtx tem = simplify_shift_const_1 (code, result_mode, varop, count);
@@ -10756,9 +10765,9 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
    An insn containing that will not be recognized.  */
 
 static rtx
-gen_lowpart_for_combine (enum machine_mode omode, rtx x)
+gen_lowpart_for_combine (machine_mode omode, rtx x)
 {
-  enum machine_mode imode = GET_MODE (x);
+  machine_mode imode = GET_MODE (x);
   unsigned int osize = GET_MODE_SIZE (omode);
   unsigned int isize = GET_MODE_SIZE (imode);
   rtx result;
@@ -10860,7 +10869,7 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
    *POP1 may be updated.  */
 
 static enum rtx_code
-simplify_compare_const (enum rtx_code code, enum machine_mode mode,
+simplify_compare_const (enum rtx_code code, machine_mode mode,
 			rtx op0, rtx *pop1)
 {
   unsigned int mode_width = GET_MODE_PRECISION (mode);
@@ -11056,7 +11065,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   rtx op1 = *pop1;
   rtx tem, tem1;
   int i;
-  enum machine_mode mode, tmode;
+  machine_mode mode, tmode;
 
   /* Try a few ways of applying the same transformation to both operands.  */
   while (1)
@@ -11103,7 +11112,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT
 	  && XEXP (op0, 1) == XEXP (op1, 1))
 	{
-	  enum machine_mode mode = GET_MODE (op0);
+	  machine_mode mode = GET_MODE (op0);
 	  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
 	  int shift_count = INTVAL (XEXP (op0, 1));
 
@@ -11208,7 +11217,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
   while (CONST_INT_P (op1))
     {
-      enum machine_mode mode = GET_MODE (op0);
+      machine_mode mode = GET_MODE (op0);
       unsigned int mode_width = GET_MODE_PRECISION (mode);
       unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
       int equality_comparison_p;
@@ -11433,7 +11442,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && GET_CODE (SUBREG_REG (op0)) == PLUS
 	      && CONST_INT_P (XEXP (SUBREG_REG (op0), 1)))
 	    {
-	      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
+	      machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
 	      rtx a = XEXP (SUBREG_REG (op0), 0);
 	      HOST_WIDE_INT c1 = -INTVAL (XEXP (SUBREG_REG (op0), 1));
 
@@ -12316,7 +12325,7 @@ record_value_for_reg (rtx reg, rtx_insn *insn, rtx value)
 
   if (value)
     {
-      enum machine_mode mode = GET_MODE (reg);
+      machine_mode mode = GET_MODE (reg);
       subst_low_luid = DF_INSN_LUID (insn);
       rsp->last_set_mode = mode;
       if (GET_MODE_CLASS (mode) == MODE_INT
@@ -12452,7 +12461,7 @@ record_promoted_value (rtx_insn *insn, rtx subreg)
   struct insn_link *links;
   rtx set;
   unsigned int regno = REGNO (SUBREG_REG (subreg));
-  enum machine_mode mode = GET_MODE (subreg);
+  machine_mode mode = GET_MODE (subreg);
 
   if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
     return;
@@ -12495,10 +12504,10 @@ record_promoted_value (rtx_insn *insn, rtx subreg)
    an explicit truncation.  */
 
 static bool
-reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
+reg_truncated_to_mode (machine_mode mode, const_rtx x)
 {
   reg_stat_type *rsp = &reg_stat[REGNO (x)];
-  enum machine_mode truncated = rsp->truncated_to_mode;
+  machine_mode truncated = rsp->truncated_to_mode;
 
   if (truncated == 0
       || rsp->truncation_label < label_tick_ebb_start)
@@ -12518,12 +12527,12 @@ reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
 static bool
 record_truncated_value (rtx x)
 {
-  enum machine_mode truncated_mode;
+  machine_mode truncated_mode;
   reg_stat_type *rsp;
 
   if (GET_CODE (x) == SUBREG && REG_P (SUBREG_REG (x)))
     {
-      enum machine_mode original_mode = GET_MODE (SUBREG_REG (x));
+      machine_mode original_mode = GET_MODE (SUBREG_REG (x));
       truncated_mode = GET_MODE (x);
 
       if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))

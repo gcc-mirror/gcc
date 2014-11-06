@@ -39,6 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "function.h"
 #include "flags.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
 #include "basic-block.h"
 #include "reload.h"
 #include "target.h"
@@ -577,7 +583,7 @@ cancel_changes (int num)
 
 static void
 simplify_while_replacing (rtx *loc, rtx to, rtx object,
-                          enum machine_mode op0_mode)
+                          machine_mode op0_mode)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -683,8 +689,8 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 					MEM_ADDR_SPACE (XEXP (x, 0)))
 	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
-	  enum machine_mode wanted_mode = VOIDmode;
-	  enum machine_mode is_mode = GET_MODE (XEXP (x, 0));
+	  machine_mode wanted_mode = VOIDmode;
+	  machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
 	  if (GET_CODE (x) == ZERO_EXTRACT && HAVE_extzv)
@@ -743,7 +749,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
   const char *fmt;
   rtx x = *loc;
   enum rtx_code code;
-  enum machine_mode op0_mode = VOIDmode;
+  machine_mode op0_mode = VOIDmode;
   int prev_changes = num_changes;
 
   if (!x)
@@ -983,7 +989,7 @@ next_insn_tests_no_inequality (rtx insn)
    expressions in the machine description.  */
 
 int
-general_operand (rtx op, enum machine_mode mode)
+general_operand (rtx op, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -1098,7 +1104,7 @@ general_operand (rtx op, enum machine_mode mode)
    expressions in the machine description.  */
 
 int
-address_operand (rtx op, enum machine_mode mode)
+address_operand (rtx op, machine_mode mode)
 {
   return memory_address_p (mode, op);
 }
@@ -1110,7 +1116,7 @@ address_operand (rtx op, enum machine_mode mode)
    expressions in the machine description.  */
 
 int
-register_operand (rtx op, enum machine_mode mode)
+register_operand (rtx op, machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG)
     {
@@ -1133,7 +1139,7 @@ register_operand (rtx op, enum machine_mode mode)
 /* Return 1 for a register in Pmode; ignore the tested mode.  */
 
 int
-pmode_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+pmode_register_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   return register_operand (op, Pmode);
 }
@@ -1142,7 +1148,7 @@ pmode_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    or a hard register.  */
 
 int
-scratch_operand (rtx op, enum machine_mode mode)
+scratch_operand (rtx op, machine_mode mode)
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return 0;
@@ -1160,7 +1166,7 @@ scratch_operand (rtx op, enum machine_mode mode)
    expressions in the machine description.  */
 
 int
-immediate_operand (rtx op, enum machine_mode mode)
+immediate_operand (rtx op, machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
@@ -1186,7 +1192,7 @@ immediate_operand (rtx op, enum machine_mode mode)
 /* Returns 1 if OP is an operand that is a CONST_INT of mode MODE.  */
 
 int
-const_int_operand (rtx op, enum machine_mode mode)
+const_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_INT_P (op))
     return 0;
@@ -1202,7 +1208,7 @@ const_int_operand (rtx op, enum machine_mode mode)
 /* Returns 1 if OP is an operand that is a CONST_INT or CONST_WIDE_INT
    of mode MODE.  */
 int
-const_scalar_int_operand (rtx op, enum machine_mode mode)
+const_scalar_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_SCALAR_INT_P (op))
     return 0;
@@ -1235,7 +1241,7 @@ const_scalar_int_operand (rtx op, enum machine_mode mode)
    floating-point number of MODE.  */
 
 int
-const_double_operand (rtx op, enum machine_mode mode)
+const_double_operand (rtx op, machine_mode mode)
 {
   return (GET_CODE (op) == CONST_DOUBLE)
 	  && (GET_MODE (op) == mode || mode == VOIDmode);
@@ -1245,7 +1251,7 @@ const_double_operand (rtx op, enum machine_mode mode)
    floating-point number of MODE.  */
 
 int
-const_double_operand (rtx op, enum machine_mode mode)
+const_double_operand (rtx op, machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
@@ -1263,7 +1269,7 @@ const_double_operand (rtx op, enum machine_mode mode)
    operand of mode MODE.  */
 
 int
-nonimmediate_operand (rtx op, enum machine_mode mode)
+nonimmediate_operand (rtx op, machine_mode mode)
 {
   return (general_operand (op, mode) && ! CONSTANT_P (op));
 }
@@ -1271,7 +1277,7 @@ nonimmediate_operand (rtx op, enum machine_mode mode)
 /* Return 1 if OP is a register reference or immediate value of mode MODE.  */
 
 int
-nonmemory_operand (rtx op, enum machine_mode mode)
+nonmemory_operand (rtx op, machine_mode mode)
 {
   if (CONSTANT_P (op))
     return immediate_operand (op, mode);
@@ -1285,7 +1291,7 @@ nonmemory_operand (rtx op, enum machine_mode mode)
    expressions in the machine description.  */
 
 int
-push_operand (rtx op, enum machine_mode mode)
+push_operand (rtx op, machine_mode mode)
 {
   unsigned int rounded_size = GET_MODE_SIZE (mode);
 
@@ -1331,7 +1337,7 @@ push_operand (rtx op, enum machine_mode mode)
    expressions in the machine description.  */
 
 int
-pop_operand (rtx op, enum machine_mode mode)
+pop_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
     return 0;
@@ -1351,7 +1357,7 @@ pop_operand (rtx op, enum machine_mode mode)
    for mode MODE in address space AS.  */
 
 int
-memory_address_addr_space_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
 			     rtx addr, addr_space_t as)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
@@ -1373,7 +1379,7 @@ memory_address_addr_space_p (enum machine_mode mode ATTRIBUTE_UNUSED,
    expressions in the machine description.  */
 
 int
-memory_operand (rtx op, enum machine_mode mode)
+memory_operand (rtx op, machine_mode mode)
 {
   rtx inner;
 
@@ -1396,7 +1402,7 @@ memory_operand (rtx op, enum machine_mode mode)
    that is, a memory reference whose address is a general_operand.  */
 
 int
-indirect_operand (rtx op, enum machine_mode mode)
+indirect_operand (rtx op, machine_mode mode)
 {
   /* Before reload, a SUBREG isn't in memory (see memory_operand, above).  */
   if (! reload_completed
@@ -1429,7 +1435,7 @@ indirect_operand (rtx op, enum machine_mode mode)
    ORDERED and UNORDERED).  */
 
 int
-ordered_comparison_operator (rtx op, enum machine_mode mode)
+ordered_comparison_operator (rtx op, machine_mode mode)
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return false;
@@ -1455,7 +1461,7 @@ ordered_comparison_operator (rtx op, enum machine_mode mode)
    MATCH_OPERATOR to recognize all the branch insns.  */
 
 int
-comparison_operator (rtx op, enum machine_mode mode)
+comparison_operator (rtx op, machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
 	  && COMPARISON_P (op));
@@ -1576,7 +1582,7 @@ asm_noperands (const_rtx body)
 
 const char *
 decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
-		     const char **constraints, enum machine_mode *modes,
+		     const char **constraints, machine_mode *modes,
 		     location_t *loc)
 {
   int nbase = 0, n, i;
@@ -1954,14 +1960,14 @@ offsettable_nonstrict_memref_p (rtx op)
    for the sake of use in reload.c.  */
 
 int
-offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
+offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
 				  addr_space_t as)
 {
   enum rtx_code ycode = GET_CODE (y);
   rtx z;
   rtx y1 = y;
   rtx *y2;
-  int (*addressp) (enum machine_mode, rtx, addr_space_t) =
+  int (*addressp) (machine_mode, rtx, addr_space_t) =
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
   unsigned int mode_sz = GET_MODE_SIZE (mode);
@@ -1975,11 +1981,11 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
   if (mode_dependent_address_p (y, as))
     return 0;
 
-  enum machine_mode address_mode = GET_MODE (y);
+  machine_mode address_mode = GET_MODE (y);
   if (address_mode == VOIDmode)
     address_mode = targetm.addr_space.address_mode (as);
 #ifdef POINTERS_EXTEND_UNSIGNED
-  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
 #endif
 
   /* ??? How much offset does an offsettable BLKmode reference need?
@@ -2589,7 +2595,7 @@ constrain_operands (int strict, alternative_mask alternatives)
       for (opno = 0; opno < recog_data.n_operands; opno++)
 	{
 	  rtx op = recog_data.operand[opno];
-	  enum machine_mode mode = GET_MODE (op);
+	  machine_mode mode = GET_MODE (op);
 	  const char *p = constraints[opno];
 	  int offset = 0;
 	  int win = 0;
@@ -2869,7 +2875,7 @@ constrain_operands (int strict, alternative_mask alternatives)
 
 bool
 reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
-		  enum machine_mode mode)
+		  machine_mode mode)
 {
   unsigned int regno = REGNO (operand);
 
@@ -3136,7 +3142,7 @@ static int search_ofs;
 
 rtx
 peep2_find_free_register (int from, int to, const char *class_str,
-			  enum machine_mode mode, HARD_REG_SET *reg_set)
+			  machine_mode mode, HARD_REG_SET *reg_set)
 {
   enum reg_class cl;
   HARD_REG_SET live;

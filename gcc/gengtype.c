@@ -1826,14 +1826,14 @@ open_base_files (void)
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
-      "config.h", "system.h", "coretypes.h", "tm.h",
+      "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
       "tree.h", "rtl.h", "wide-int.h", "hashtab.h", "hash-set.h", "vec.h",
-      "machmode.h", "tm.h", "hard-reg-set.h", "input.h",
-      "function.h", "insn-config.h", "expr.h",
+      "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
+      "function.h", "insn-config.h", "expr.h", "alloc-pool.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
-      "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
-      "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
+      "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
+      "hash-table.h", "vec.h", "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
@@ -1841,8 +1841,8 @@ open_base_files (void)
       "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h", "tree-ssa-loop-manip.h",
       "tree-ssa-loop-niter.h", "tree-into-ssa.h", "tree-dfa.h", 
       "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
-      "except.h", "output.h",  "cfgloop.h",
-      "target.h", "ipa-prop.h", "lto-streamer.h", "target-globals.h",
+      "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
+      "target-globals.h", "ipa-ref.h", "cgraph.h", "ipa-prop.h", 
       "ipa-inline.h", "dwarf2out.h", NULL
     };
     const char *const *ifp;
@@ -5650,6 +5650,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("jword", &pos));
       POS_HERE (do_scalar_typedef ("JCF_u2", &pos));
       POS_HERE (do_scalar_typedef ("void", &pos));
+      POS_HERE (do_scalar_typedef ("machine_mode", &pos));
       POS_HERE (do_typedef ("PTR", 
 			    create_pointer (resolve_typedef ("void", &pos)),
 			    &pos));

@@ -854,11 +854,6 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
-      procedure Check_Ghost_Subprogram_Call;
-      --  Verify the legality of a call to a ghost subprogram. Such calls can
-      --  appear only in assertion expressions except subtype predicates or
-      --  from within another ghost subprogram.
-
       procedure Check_Mixed_Parameter_And_Named_Associations;
       --  Check that parameter and named associations are not mixed. This is
       --  a restriction in SPARK mode.
@@ -872,53 +867,6 @@ package body Sem_Ch4 is
 
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
-
-      ---------------------------------
-      -- Check_Ghost_Subprogram_Call --
-      ---------------------------------
-
-      procedure Check_Ghost_Subprogram_Call is
-         S : Entity_Id;
-
-      begin
-         --  Do not perform the check while preanalyzing the enclosing context
-         --  because the call is not in its final place. Premature attempts to
-         --  verify the placement lead to bogus errors.
-
-         if In_Spec_Expression then
-            return;
-
-         --  The ghost subprogram appears inside an assertion expression which
-         --  is one of the allowed cases.
-
-         elsif In_Assertion_Expression_Pragma (N) then
-            return;
-
-         --  Otherwise see if it inside another ghost subprogram
-
-         else
-            --  Loop to climb scopes
-
-            S := Current_Scope;
-            while Present (S) and then S /= Standard_Standard loop
-
-               --  The call appears inside another ghost subprogram
-
-               if Is_Ghost_Subprogram (S) then
-                  return;
-               end if;
-
-               S := Scope (S);
-            end loop;
-
-            --  If we fall through the loop it was not within another
-            --  ghost subprogram, so we have bad placement.
-
-            Error_Msg_N
-              ("call to ghost subprogram must appear in assertion expression "
-               & "or another ghost subprogram", N);
-         end if;
-      end Check_Ghost_Subprogram_Call;
 
       --------------------------------------------------
       -- Check_Mixed_Parameter_And_Named_Associations --
@@ -1307,13 +1255,6 @@ package body Sem_Ch4 is
          end if;
 
          End_Interp_List;
-      end if;
-
-      --  A call to a ghost subprogram is allowed only in assertion expressions
-      --  excluding subtype predicates or from within another ghost subprogram.
-
-      if Is_Ghost_Subprogram (Get_Subprogram_Entity (N)) then
-         Check_Ghost_Subprogram_Call;
       end if;
    end Analyze_Call;
 
@@ -4944,14 +4885,13 @@ package body Sem_Ch4 is
 
    procedure Analyze_Type_Conversion (N : Node_Id) is
       Expr : constant Node_Id := Expression (N);
-      T    : Entity_Id;
+      Typ  : Entity_Id;
 
    begin
-      --  If Conversion_OK is set, then the Etype is already set, and the
-      --  only processing required is to analyze the expression. This is
-      --  used to construct certain "illegal" conversions which are not
-      --  allowed by Ada semantics, but can be handled OK by Gigi, see
-      --  Sinfo for further details.
+      --  If Conversion_OK is set, then the Etype is already set, and the only
+      --  processing required is to analyze the expression. This is used to
+      --  construct certain "illegal" conversions which are not allowed by Ada
+      --  semantics, but can be handled by Gigi, see Sinfo for further details.
 
       if Conversion_OK (N) then
          Analyze (Expr);
@@ -4962,9 +4902,9 @@ package body Sem_Ch4 is
       --  checks to make sure the argument of the conversion is appropriate.
 
       Find_Type (Subtype_Mark (N));
-      T := Entity (Subtype_Mark (N));
-      Set_Etype (N, T);
-      Check_Fully_Declared (T, N);
+      Typ := Entity (Subtype_Mark (N));
+      Set_Etype (N, Typ);
+      Check_Fully_Declared (Typ, N);
       Analyze_Expression (Expr);
       Validate_Remote_Type_Type_Conversion (N);
 
@@ -5002,7 +4942,7 @@ package body Sem_Ch4 is
 
       elsif Nkind (Expr) = N_Character_Literal then
          if Ada_Version = Ada_83 then
-            Resolve (Expr, T);
+            Resolve (Expr, Typ);
          else
             Error_Msg_N ("argument of conversion cannot be character literal",
               N);
@@ -5010,13 +4950,22 @@ package body Sem_Ch4 is
          end if;
 
       elsif Nkind (Expr) = N_Attribute_Reference
-        and then
-          Nam_In (Attribute_Name (Expr), Name_Access,
-                                         Name_Unchecked_Access,
-                                         Name_Unrestricted_Access)
+        and then Nam_In (Attribute_Name (Expr), Name_Access,
+                                                Name_Unchecked_Access,
+                                                Name_Unrestricted_Access)
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
          Error_Msg_N ("\use qualified expression instead", N);
+      end if;
+
+      --  A formal parameter of a specific tagged type whose related subprogram
+      --  is subject to pragma Extensions_Visible with value "False" cannot
+      --  appear in a class-wide conversion (SPARK RM 6.1.7(3)).
+
+      if Is_Class_Wide_Type (Typ) and then Is_EVF_Expression (Expr) then
+         Error_Msg_N
+           ("formal parameter with Extensions_Visible False cannot be "
+            & "converted to class-wide type", Expr);
       end if;
    end Analyze_Type_Conversion;
 
@@ -7028,7 +6977,6 @@ package body Sem_Ch4 is
       Loc       : constant Source_Ptr := Sloc (N);
       C_Type    : Entity_Id;
       Assoc     : List_Id;
-      Disc      : Entity_Id;
       Func      : Entity_Id;
       Func_Name : Node_Id;
       Indexing  : Node_Id;
@@ -7141,21 +7089,7 @@ package body Sem_Ch4 is
          --  discriminant is not the first discriminant.
 
          if Has_Discriminants (Etype (Func)) then
-            Disc := First_Discriminant (Etype (Func));
-            while Present (Disc) loop
-               declare
-                  Elmt_Type : Entity_Id;
-               begin
-                  if Has_Implicit_Dereference (Disc) then
-                     Elmt_Type := Designated_Type (Etype (Disc));
-                     Add_One_Interp (Indexing, Disc, Elmt_Type);
-                     Add_One_Interp (N, Disc, Elmt_Type);
-                     exit;
-                  end if;
-               end;
-
-               Next_Discriminant (Disc);
-            end loop;
+            Check_Implicit_Dereference (N, Etype (Func));
          end if;
 
       else
@@ -7186,18 +7120,7 @@ package body Sem_Ch4 is
                   --  Add implicit dereference interpretation
 
                   if Has_Discriminants (Etype (It.Nam)) then
-                     Disc := First_Discriminant (Etype (It.Nam));
-                     while Present (Disc) loop
-                        if Has_Implicit_Dereference (Disc) then
-                           Add_One_Interp
-                             (Indexing, Disc, Designated_Type (Etype (Disc)));
-                           Add_One_Interp
-                             (N, Disc, Designated_Type (Etype (Disc)));
-                           exit;
-                        end if;
-
-                        Next_Discriminant (Disc);
-                     end loop;
+                     Check_Implicit_Dereference (N, Etype (It.Nam));
                   end if;
 
                   exit;
@@ -7603,7 +7526,7 @@ package body Sem_Ch4 is
             if not Is_Aliased_View (Obj) then
                Error_Msg_NE
                  ("object in prefixed call to & must be aliased "
-                  & " (RM-2005 4.3.1 (13))", Prefix (First_Actual), Subprog);
+                  & "(RM 4.1.3 (13 1/2))", Prefix (First_Actual), Subprog);
             end if;
 
             Analyze (First_Actual);

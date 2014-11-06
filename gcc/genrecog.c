@@ -138,7 +138,7 @@ struct decision_test
   union
   {
     int num_insns;		/* Number if insn in a define_peephole2.  */
-    enum machine_mode mode;	/* Machine mode of node.  */
+    machine_mode mode;	/* Machine mode of node.  */
     RTX_CODE code;		/* Code to test.  */
 
     struct
@@ -146,7 +146,7 @@ struct decision_test
       const char *name;		/* Predicate to call.  */
       const struct pred_data *data;
                                 /* Optimization hints for this predicate.  */
-      enum machine_mode mode;	/* Machine mode for node.  */
+      machine_mode mode;	/* Machine mode for node.  */
     } pred;
 
     const char *c_test;		/* Additional test to perform.  */
@@ -573,7 +573,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 
     case SET:
       {
-	enum machine_mode dmode, smode;
+	machine_mode dmode, smode;
 	rtx dest, src;
 
 	dest = SET_DEST (pattern);
@@ -709,7 +709,7 @@ add_to_sequence (rtx pattern, struct decision_head *last,
   size_t i;
   const char *fmt;
   int len;
-  enum machine_mode mode;
+  machine_mode mode;
   enum position_type pos_type;
 
   if (pos->depth > max_depth)
@@ -2317,6 +2317,8 @@ write_header (void)
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
+#include \"predict.h\"\n\
+#include \"basic-block.h\"\n\
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\

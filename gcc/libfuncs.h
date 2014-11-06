@@ -48,7 +48,7 @@ enum libfunc_index
 };
 
 /* Information about an optab-related libfunc.  The op field is logically
-   an enum optab_d, and the mode fields are logically enum machine_mode.
+   an enum optab_d, and the mode fields are logically machine_mode.
    However, in the absence of forward-declared enums, there's no practical
    benefit of pulling in the defining headers.
 

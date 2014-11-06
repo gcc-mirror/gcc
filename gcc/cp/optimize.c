@@ -36,6 +36,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "tree-iterator.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 
 /* Prototypes.  */

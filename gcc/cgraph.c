@@ -39,6 +39,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "debug.h"
 #include "target.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "intl.h"
 #include "tree-ssa-alias.h"
@@ -50,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "dumpfile.h"
 #include "gimple-ssa.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "value-prof.h"
@@ -59,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "ipa-utils.h"
 #include "lto-streamer.h"
+#include "alloc-pool.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
@@ -237,6 +251,30 @@ cgraph_node::record_function_versions (tree decl1, tree decl2)
 
   before->next = after;
   after->prev = before;
+}
+
+/* Initialize callgraph dump file.  */
+
+void
+symbol_table::initialize (void)
+{
+  if (!dump_file)
+    dump_file = dump_begin (TDI_cgraph, NULL);
+}
+
+/* Allocate new callgraph node and insert it into basic data structures.  */
+
+cgraph_node *
+symbol_table::create_empty (void)
+{
+  cgraph_node *node = allocate_cgraph_symbol ();
+
+  node->type = SYMTAB_FUNCTION;
+  node->frequency = NODE_FREQUENCY_NORMAL;
+  node->count_materialization_scale = REG_BR_PROB_BASE;
+  cgraph_count++;
+
+  return node;
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */

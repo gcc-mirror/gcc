@@ -27,6 +27,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -35,15 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "flags.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "regs.h"
 #include "diagnostic-core.h"
 #include "output.h"
@@ -52,6 +54,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "langhooks.h"
 #include "target.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "except.h"
 #include "dbgcnt.h"
@@ -67,7 +72,7 @@ struct arg_data
   /* Tree node for this argument.  */
   tree tree_value;
   /* Mode for value; TYPE_MODE unless promoted.  */
-  enum machine_mode mode;
+  machine_mode mode;
   /* Current RTL value for argument, or 0 if it isn't precomputed.  */
   rtx value;
   /* Initially-compute RTL value for argument; only for const functions.  */
@@ -157,7 +162,7 @@ static rtx rtx_for_function_call (tree, tree);
 static void load_register_parameters (struct arg_data *, int, rtx *, int,
 				      int, int *);
 static rtx emit_library_call_value_1 (int, rtx, rtx, enum libcall_type,
-				      enum machine_mode, int, va_list);
+				      machine_mode, int, va_list);
 static int special_function_p (const_tree, int);
 static int check_sibcall_argument_overlap_1 (rtx);
 static int check_sibcall_argument_overlap (rtx_insn *, struct arg_data *, int);
@@ -911,7 +916,7 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
     if (stack_usage_map[low] != 0)
       {
 	int num_to_save;
-	enum machine_mode save_mode;
+	machine_mode save_mode;
 	int delta;
 	rtx addr;
 	rtx stack_area;
@@ -962,7 +967,7 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 static void
 restore_fixed_argument_area (rtx save_area, rtx argblock, int high_to_save, int low_to_save)
 {
-  enum machine_mode save_mode = GET_MODE (save_area);
+  machine_mode save_mode = GET_MODE (save_area);
   int delta;
   rtx addr, stack_area;
 
@@ -1159,7 +1164,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
     {
       tree type = TREE_TYPE (args[i].tree_value);
       int unsignedp;
-      enum machine_mode mode;
+      machine_mode mode;
 
       /* Replace erroneous argument with constant zero.  */
       if (type == error_mark_node || !COMPLETE_TYPE_P (type))
@@ -1462,7 +1467,7 @@ precompute_arguments (int num_actuals, struct arg_data *args)
   for (i = 0; i < num_actuals; i++)
     {
       tree type;
-      enum machine_mode mode;
+      machine_mode mode;
 
       if (TREE_CODE (args[i].tree_value) != CALL_EXPR)
 	continue;
@@ -1580,7 +1585,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  rtx addr;
 	  unsigned int align, boundary;
 	  unsigned int units_on_stack = 0;
-	  enum machine_mode partial_mode = VOIDmode;
+	  machine_mode partial_mode = VOIDmode;
 
 	  /* Skip this parm if it will not be passed on the stack.  */
 	  if (! args[i].pass_on_stack
@@ -2134,7 +2139,7 @@ check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
    as specified by LEFT_P.  Return true if some action was needed.  */
 
 bool
-shift_return_value (enum machine_mode mode, bool left_p, rtx value)
+shift_return_value (machine_mode mode, bool left_p, rtx value)
 {
   HOST_WIDE_INT shift;
 
@@ -2619,8 +2624,8 @@ expand_call (tree exp, rtx target, int ignore)
      return value.  */
   if (try_tail_call)
     {
-      enum machine_mode caller_mode, caller_promoted_mode;
-      enum machine_mode callee_mode, callee_promoted_mode;
+      machine_mode caller_mode, caller_promoted_mode;
+      machine_mode callee_mode, callee_promoted_mode;
       int caller_unsignedp, callee_unsignedp;
       tree caller_res = DECL_RESULT (current_function_decl);
 
@@ -3352,7 +3357,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
 	  int offset = 0;
-	  enum machine_mode pmode;
+	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
 	  pmode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
@@ -3407,7 +3412,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  for (i = 0; i < num_actuals; i++)
 	    if (args[i].save_area)
 	      {
-		enum machine_mode save_mode = GET_MODE (args[i].save_area);
+		machine_mode save_mode = GET_MODE (args[i].save_area);
 		rtx stack_area
 		  = gen_rtx_MEM (save_mode,
 				 memory_address (save_mode,
@@ -3583,7 +3588,7 @@ split_complex_types (tree types)
 static rtx
 emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			   enum libcall_type fn_type,
-			   enum machine_mode outmode, int nargs, va_list p)
+			   machine_mode outmode, int nargs, va_list p)
 {
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
@@ -3602,7 +3607,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   struct arg
   {
     rtx value;
-    enum machine_mode mode;
+    machine_mode mode;
     rtx reg;
     int partial;
     struct locate_and_pad_arg_data locate;
@@ -3767,7 +3772,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   for (; count < nargs; count++)
     {
       rtx val = va_arg (p, rtx);
-      enum machine_mode mode = (enum machine_mode) va_arg (p, int);
+      machine_mode mode = (machine_mode) va_arg (p, int);
       int unsigned_p = 0;
 
       /* We cannot convert the arg value to the mode the library wants here;
@@ -3968,7 +3973,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum--)
     {
-      enum machine_mode mode = argvec[argnum].mode;
+      machine_mode mode = argvec[argnum].mode;
       rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
@@ -4007,7 +4012,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		  /* We need to make a save area.  */
 		  unsigned int size
 		    = argvec[argnum].locate.size.constant * BITS_PER_UNIT;
-		  enum machine_mode save_mode
+		  machine_mode save_mode
 		    = mode_for_size (size, MODE_INT, 1);
 		  rtx adr
 		    = plus_constant (Pmode, argblock,
@@ -4079,7 +4084,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum--)
     {
-      enum machine_mode mode = argvec[argnum].mode;
+      machine_mode mode = argvec[argnum].mode;
       rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
@@ -4290,7 +4295,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       for (count = 0; count < nargs; count++)
 	if (argvec[count].save_area)
 	  {
-	    enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
+	    machine_mode save_mode = GET_MODE (argvec[count].save_area);
 	    rtx adr = plus_constant (Pmode, argblock,
 				     argvec[count].locate.offset.constant);
 	    rtx stack_area = gen_rtx_MEM (save_mode,
@@ -4328,7 +4333,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
 void
 emit_library_call (rtx orgfun, enum libcall_type fn_type,
-		   enum machine_mode outmode, int nargs, ...)
+		   machine_mode outmode, int nargs, ...)
 {
   va_list p;
 
@@ -4348,7 +4353,7 @@ emit_library_call (rtx orgfun, enum libcall_type fn_type,
 rtx
 emit_library_call_value (rtx orgfun, rtx value,
 			 enum libcall_type fn_type,
-			 enum machine_mode outmode, int nargs, ...)
+			 machine_mode outmode, int nargs, ...)
 {
   rtx result;
   va_list p;
@@ -4434,7 +4439,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    {
 	      /* We need to make a save area.  */
 	      unsigned int size = arg->locate.size.constant * BITS_PER_UNIT;
-	      enum machine_mode save_mode = mode_for_size (size, MODE_INT, 1);
+	      machine_mode save_mode = mode_for_size (size, MODE_INT, 1);
 	      rtx adr = memory_address (save_mode, XEXP (arg->stack_slot, 0));
 	      rtx stack_area = gen_rtx_MEM (save_mode, adr);
 
@@ -4728,7 +4733,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 /* Nonzero if we do not know how to pass TYPE solely in registers.  */
 
 bool
-must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
+must_pass_in_stack_var_size (machine_mode mode ATTRIBUTE_UNUSED,
 			     const_tree type)
 {
   if (!type)
@@ -4751,7 +4756,7 @@ must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
 
 bool
-must_pass_in_stack_var_size_or_pad (enum machine_mode mode, const_tree type)
+must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
 {
   if (!type)
     return false;

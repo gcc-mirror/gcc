@@ -1,3 +1,73 @@
+2014-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57898
+	* include/std/functional (_Mem_fn_traits_base): New class template.
+	(_Mem_fn_traits): New class template with specializations for every
+	combination of cv-qualified and ref-qualified member function.
+	(_Mem_fn_base): New class template for all pointer to member function
+	types and partial specialization for pointer to member object types.
+	(_Mem_fn): Inherit from _Mem_fn_base.
+	* testsuite/20_util/function_objects/mem_fn/refqual.cc: New.
+
+	* include/std/functional (_Mem_fn_traits_base::__arity): New typedef.
+	(_Mem_fn_base::_Arity): New typedef.
+	(_Bind_check_arity): New class template.
+	(_Bind_helper, _Bindres_helper, _Bind_simple_helper): Check arity.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error.
+
+2014-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (_Bvector_base): Use allocator_traits.
+	(_Bvector_base::_Bvector_impl): Use allocator's pointer type.
+	(_Bvector_base::_M_end_addr()): Convert to raw pointer.
+	(vector<bool>): Use allocator_traits and _M_end_addr. Add allocator
+	extended constructors.
+	* include/bits/vector.tcc (vector<bool>): Use allocator_traits and
+	_M_end_addr.
+	* testsuite/23_containers/vector/bool/allocator/copy.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/minimal.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/noexcept.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/move.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/swap.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/vector/bool/allocator/move_assign.cc: New.
+
+2014-10-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.host (aix5+): New stanza.
+	(aix4.3+): Do not use -G in link command.
+
+2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional: (_Function_base::_Function_base()): Use
+	nullptr instead of literal zero.
+	(function::operator=(nullptr_t)): Likewise.
+	(_Function_handler::_M_invoke): Use perfect forwarding for _ArgTypes.
+	(function::_Invoker_type): Likewise.
+	* testsuite/20_util/function/invoke/forwarding.cc: New.
+
+2014-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Update TS status.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/algorithm: New.
+	* include/experimental/functional: New.
+	* testsuite/experimental/algorithm/sample.cc: New.
+	* testsuite/experimental/algorithm/search.cc: New.
+	* testsuite/experimental/functional/not_fn.cc: New.
+	* testsuite/experimental/functional/searchers.cc: New.
+	* testsuite/experimental/functional/value.cc: New.
+	* testsuite/experimental/feat-lib-fund.cc: Add headers and reorder.
+
+	* include/experimental/any: Add feature-testing macro.
+	* include/experimental/optional: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 2014-10-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* doc/xml/manual/status_cxx2011.xml: Update unordered container

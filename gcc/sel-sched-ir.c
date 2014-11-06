@@ -32,6 +32,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgbuild.h"
+#include "basic-block.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
@@ -1126,8 +1133,8 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
    to support ia64 speculation.  When changes are needed, new rtx X and new mode
    NMODE are written, and the callback returns true.  */
 static int
-hash_with_unspec_callback (const_rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
-                           rtx *nx, enum machine_mode* nmode)
+hash_with_unspec_callback (const_rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+                           rtx *nx, machine_mode* nmode)
 {
   if (GET_CODE (x) == UNSPEC
       && targetm.sched.skip_rtx_p
@@ -3586,7 +3593,7 @@ sel_insn_is_speculation_check (rtx insn)
 /* Extracts machine mode MODE and destination location DST_LOC
    for given INSN.  */
 void
-get_dest_and_mode (rtx insn, rtx *dst_loc, enum machine_mode *mode)
+get_dest_and_mode (rtx insn, rtx *dst_loc, machine_mode *mode)
 {
   rtx pat = PATTERN (insn);
 

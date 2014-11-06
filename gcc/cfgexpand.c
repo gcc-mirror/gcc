@@ -30,13 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "print-tree.h"
 #include "tm_p.h"
-#include "basic-block.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "basic-block.h"
+#include "insn-codes.h"
+#include "optabs.h"
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
@@ -49,6 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -1135,7 +1147,7 @@ expand_one_register_var (tree var)
 {
   tree decl = SSAVAR (var);
   tree type = TREE_TYPE (decl);
-  enum machine_mode reg_mode = promote_decl_mode (decl, NULL);
+  machine_mode reg_mode = promote_decl_mode (decl, NULL);
   rtx x = gen_reg_rtx (reg_mode);
 
   set_rtl (var, x);
@@ -1155,7 +1167,7 @@ expand_one_register_var (tree var)
 static void
 expand_one_error_var (tree var)
 {
-  enum machine_mode mode = DECL_MODE (var);
+  machine_mode mode = DECL_MODE (var);
   rtx x;
 
   if (mode == BLKmode)
@@ -2470,7 +2482,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   rtx *output_rtx = XALLOCAVEC (rtx, noutputs);
   int *inout_opnum = XALLOCAVEC (int, noutputs);
   rtx *real_output_rtx = XALLOCAVEC (rtx, noutputs);
-  enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
+  machine_mode *inout_mode = XALLOCAVEC (machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
   rtx_code_label *fallthru_label = NULL;
@@ -3091,8 +3103,8 @@ expand_value_return (rtx val)
       tree funtype = TREE_TYPE (current_function_decl);
       tree type = TREE_TYPE (decl);
       int unsignedp = TYPE_UNSIGNED (type);
-      enum machine_mode old_mode = DECL_MODE (decl);
-      enum machine_mode mode;
+      machine_mode old_mode = DECL_MODE (decl);
+      machine_mode mode;
       if (DECL_BY_REFERENCE (decl))
         mode = promote_function_mode (type, old_mode, &unsignedp, funtype, 2);
       else
@@ -3508,7 +3520,7 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
 /* Return the difference between the floor and the truncated result of
    a signed division by OP1 with remainder MOD.  */
 static rtx
-floor_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+floor_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod != 0 ? (op1 / mod < 0 ? -1 : 0) : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3524,7 +3536,7 @@ floor_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
 /* Return the difference between the ceil and the truncated result of
    a signed division by OP1 with remainder MOD.  */
 static rtx
-ceil_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+ceil_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod != 0 ? (op1 / mod > 0 ? 1 : 0) : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3540,7 +3552,7 @@ ceil_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
 /* Return the difference between the ceil and the truncated result of
    an unsigned division by OP1 with remainder MOD.  */
 static rtx
-ceil_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
+ceil_udiv_adjust (machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
 {
   /* (mod != 0 ? 1 : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3552,7 +3564,7 @@ ceil_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
    of a signed division by OP1 with remainder MOD.  Halfway cases are
    rounded away from zero, rather than to the nearest even number.  */
 static rtx
-round_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+round_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (abs (mod) >= abs (op1) - abs (mod)
       ? (op1 / mod > 0 ? 1 : -1)
@@ -3575,7 +3587,7 @@ round_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    are rounded away from zero, rather than to the nearest even
    number.  */
 static rtx
-round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+round_udiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod >= op1 - mod ? 1 : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3588,10 +3600,10 @@ round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    any rtl.  */
 
 static rtx
-convert_debug_memory_address (enum machine_mode mode, rtx x,
+convert_debug_memory_address (machine_mode mode, rtx x,
 			      addr_space_t as)
 {
-  enum machine_mode xmode = GET_MODE (x);
+  machine_mode xmode = GET_MODE (x);
 
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (mode == Pmode
@@ -3721,8 +3733,8 @@ static rtx
 expand_debug_expr (tree exp)
 {
   rtx op0 = NULL_RTX, op1 = NULL_RTX, op2 = NULL_RTX;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  enum machine_mode inner_mode = VOIDmode;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
 
@@ -3872,8 +3884,7 @@ expand_debug_expr (tree exp)
 
     adjust_mode:
     case PAREN_EXPR:
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       {
 	inner_mode = GET_MODE (op0);
 
@@ -4009,7 +4020,7 @@ expand_debug_expr (tree exp)
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       {
-	enum machine_mode mode1;
+	machine_mode mode1;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset;
 	int volatilep = 0;
@@ -4027,7 +4038,7 @@ expand_debug_expr (tree exp)
 
 	if (offset)
 	  {
-	    enum machine_mode addrmode, offmode;
+	    machine_mode addrmode, offmode;
 
 	    if (!MEM_P (op0))
 	      return NULL;
@@ -4097,7 +4108,7 @@ expand_debug_expr (tree exp)
 	if ((bitpos % BITS_PER_UNIT) == 0
 	    && bitsize == GET_MODE_BITSIZE (mode1))
 	  {
-	    enum machine_mode opmode = GET_MODE (op0);
+	    machine_mode opmode = GET_MODE (op0);
 
 	    if (opmode == VOIDmode)
 	      opmode = TYPE_MODE (TREE_TYPE (tem));
@@ -4392,7 +4403,7 @@ expand_debug_expr (tree exp)
 						   GET_MODE_INNER (mode)));
       else
 	{
-	  enum machine_mode imode = GET_MODE_INNER (mode);
+	  machine_mode imode = GET_MODE_INNER (mode);
 	  rtx re, im;
 
 	  if (MEM_P (op0))
@@ -4402,8 +4413,8 @@ expand_debug_expr (tree exp)
 	    }
 	  else
 	    {
-	      enum machine_mode ifmode = int_mode_for_mode (mode);
-	      enum machine_mode ihmode = int_mode_for_mode (imode);
+	      machine_mode ifmode = int_mode_for_mode (mode);
+	      machine_mode ihmode = int_mode_for_mode (imode);
 	      rtx halfsize;
 	      if (ifmode == BLKmode || ihmode == BLKmode)
 		return NULL;
@@ -4591,7 +4602,6 @@ expand_debug_expr (tree exp)
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
     case VEC_COND_EXPR:
-    case VEC_LSHIFT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_TRUNC_EXPR:
@@ -4700,7 +4710,7 @@ static rtx
 expand_debug_source_expr (tree exp)
 {
   rtx op0 = NULL_RTX;
-  enum machine_mode mode = VOIDmode, inner_mode;
+  machine_mode mode = VOIDmode, inner_mode;
 
   switch (TREE_CODE (exp))
     {
@@ -4848,7 +4858,7 @@ expand_debug_locations (void)
 	tree value = (tree)INSN_VAR_LOCATION_LOC (insn);
 	rtx val;
 	rtx_insn *prev_insn, *insn2;
-	enum machine_mode mode;
+	machine_mode mode;
 
 	if (value == NULL_TREE)
 	  val = NULL_RTX;
@@ -5037,7 +5047,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		    tree value = gimple_assign_rhs_to_tree (def);
 		    tree vexpr = make_node (DEBUG_EXPR_DECL);
 		    rtx val;
-		    enum machine_mode mode;
+		    machine_mode mode;
 
 		    set_curr_insn_location (gimple_location (def));
 
@@ -5089,7 +5099,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      tree var = gimple_debug_bind_get_var (stmt);
 	      tree value;
 	      rtx val;
-	      enum machine_mode mode;
+	      machine_mode mode;
 
 	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
 		  && TREE_CODE (var) != LABEL_DECL
@@ -5149,7 +5159,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	  tree var = gimple_debug_source_bind_get_var (stmt);
 	  tree value = gimple_debug_source_bind_get_value (stmt);
 	  rtx val;
-	  enum machine_mode mode;
+	  machine_mode mode;
 
 	  last = get_last_insn ();
 

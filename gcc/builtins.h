@@ -29,14 +29,14 @@ struct target_builtins {
      the register is not used for calling a function.  If the machine
      has register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  enum machine_mode x_apply_args_mode[FIRST_PSEUDO_REGISTER];
+  machine_mode x_apply_args_mode[FIRST_PSEUDO_REGISTER];
 
   /* For each register that may be used for returning values, this gives
      a mode used to copy the register's value.  VOIDmode indicates the
      register is not used for returning values.  If the machine has
      register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  enum machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
+  machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
 };
 
 extern struct target_builtins default_target_builtins;
@@ -60,15 +60,15 @@ extern tree c_strlen (tree, int);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
-extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
-extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, machine_mode);
+extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, machine_mode);
 extern rtx expand_builtin_saveregs (void);
 extern tree std_build_builtin_va_list (void);
 extern tree std_fn_abi_va_list (tree);
 extern tree std_canonical_va_list_type (tree);
 extern void std_expand_builtin_va_start (tree, rtx);
 extern void expand_builtin_trap (void);
-extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree);
 extern tree fold_fma (location_t, tree, tree, tree, tree);
@@ -77,7 +77,7 @@ extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
 extern tree fold_builtin_n (location_t, tree, tree *, int, bool);
 extern bool validate_gimple_arglist (const_gimple, ...);
-extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern rtx default_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern bool fold_builtin_next_arg (tree, bool);
 extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
 extern tree fold_call_stmt (gimple, bool);

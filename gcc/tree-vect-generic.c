@@ -24,6 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tm.h"
 #include "langhooks.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -45,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 
@@ -275,7 +286,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
 			enum tree_code code)
 {
   tree result, compute_type;
-  enum machine_mode mode;
+  machine_mode mode;
   int n_words = tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -900,7 +911,7 @@ static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
 			 gimple assign, enum tree_code code)
 {
-  enum machine_mode compute_mode = TYPE_MODE (compute_type);
+  machine_mode compute_mode = TYPE_MODE (compute_type);
 
   /* If the compute mode is not a vector mode (hence we are not decomposing
      a BLKmode vector to smaller, hardware-supported vectors), we may want
@@ -1082,8 +1093,8 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
 static tree
 type_for_widest_vector_mode (tree type, optab op)
 {
-  enum machine_mode inner_mode = TYPE_MODE (type);
-  enum machine_mode best_mode = VOIDmode, mode;
+  machine_mode inner_mode = TYPE_MODE (type);
+  machine_mode best_mode = VOIDmode, mode;
   int best_nunits = 0;
 
   if (SCALAR_FLOAT_MODE_P (inner_mode))
@@ -1361,7 +1372,7 @@ get_compute_type (enum tree_code code, optab op, tree type)
      so skip these checks.  */
   if (compute_type == type)
     {
-      enum machine_mode compute_mode = TYPE_MODE (compute_type);
+      machine_mode compute_mode = TYPE_MODE (compute_type);
       if (VECTOR_MODE_P (compute_mode))
 	{
 	  if (op && optab_handler (op, compute_mode) != CODE_FOR_nothing)
@@ -1439,13 +1450,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != VECTOR_TYPE)
     return;
 
-  if (code == NOP_EXPR
+  if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
       || code == FIX_TRUNC_EXPR
       || code == VIEW_CONVERT_EXPR)
     return;
-
-  gcc_assert (code != CONVERT_EXPR);
 
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
@@ -1595,7 +1604,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (compute_type == type)
     return;
 
-  gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);
+  gcc_assert (code != VEC_RSHIFT_EXPR);
   new_rhs = expand_vector_operation (gsi, type, compute_type, stmt, code);
 
   /* Leave expression untouched for later expansion.  */

@@ -23,47 +23,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tree.h"
 #include "tree-upc.h"
 #include "stringpool.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "c/c-tree.h"
-#include "flags.h"
-#include "opts.h"
-#include "options.h"
-#include "toplev.h"
 #include "output.h"
-#include "insn-flags.h"
-#include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "langhooks.h"
 #include "function.h"
-#include "bitmap.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
-#include "basic-block.h"
 #include "gimple-expr.h"
 #include "gimple-low.h"
 #include "gimplify.h"
 #include "stor-layout.h"
+#include "ggc.h"
 #include "varasm.h"
 #include "timevar.h"
-#include "tree-check.h"
-#include "tree-cfg.h"
 #include "tree-iterator.h"
-#include "ggc.h"
-#include "target.h"
 #include "c-upc-low.h"
 #include "c-family/c-upc.h"
 #include "c-family/c-upc-gasp.h"
-#include "c-family/c-upc-pts.h"
 #include "c-family/c-upc-pts-ops.h"
 #include "c-family/c-upc-rts-names.h"
 
 static GTY (()) tree upc_init_stmt_list;
 
-static void get_lc_mode_name (char *, enum machine_mode);
+static void get_lc_mode_name (char *, machine_mode);
 static tree upc_expand_get (location_t, tree, int);
 static tree upc_expand_put (location_t, tree, tree, int);
 static tree upc_create_tmp_var (tree);
@@ -158,7 +147,7 @@ upc_copy_value_to_tmp_var (tree *val_expr, tree val)
 }
 
 static void
-get_lc_mode_name (char *mname, enum machine_mode mode)
+get_lc_mode_name (char *mname, machine_mode mode)
 {
   char *m = mname;
   const char *m_upper = GET_MODE_NAME (mode);
@@ -181,8 +170,8 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
     || (!TYPE_UPC_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
-  enum machine_mode mode = TYPE_MODE (type);
-  enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
+  machine_mode mode = TYPE_MODE (type);
+  machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
   expanded_location s = expand_location (loc);
   const char *src_filename = s.file;
   const int src_line = s.line;
@@ -262,8 +251,8 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
     || (!TYPE_UPC_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
-  enum machine_mode mode = TYPE_MODE (type);
-  enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
+  machine_mode mode = TYPE_MODE (type);
+  machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
   int is_src_shared = (TREE_SHARED (src)
 		       || upc_shared_type_p (TREE_TYPE (src)));
   int local_copy = want_value
@@ -380,7 +369,7 @@ upc_simplify_shared_ref (location_t loc, tree exp)
 {
   tree ref_type = TREE_TYPE (exp);
   tree base, base_addr, ref, t_offset;
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
   HOST_WIDE_INT bitsize = 0;
   HOST_WIDE_INT bitpos = 0;
   int unsignedp = 0;

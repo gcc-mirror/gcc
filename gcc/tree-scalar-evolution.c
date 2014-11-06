@@ -259,6 +259,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "gimple-pretty-print.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -1722,7 +1733,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
       if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == MEM_REF
 	  || handled_component_p (TREE_OPERAND (rhs1, 0)))
         {
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  HOST_WIDE_INT bitsize, bitpos;
 	  int unsignedp;
 	  int volatilep = 0;

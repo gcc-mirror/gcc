@@ -11,8 +11,8 @@ foo (float a, float b, float c, float d, float l, double u)
   float f = d * e;
   double g = (double) f;
   double h = (double) b;
-  double i = g * h;			/* { dg-final { gdb-test pr58791-4.c:32 "i" "486" { target { x86_64-*-* && lp64 } } } } */
-  double i2 = i + 1.0;			/* { dg-final { gdb-test pr58791-4.c:32 "i2" "487" { target { x86_64-*-* && lp64 } } } } */
+  double i = g * h;			/* { dg-final { gdb-test pr58791-4.c:32 "i" "486" { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+  double i2 = i + 1.0;			/* { dg-final { gdb-test pr58791-4.c:32 "i2" "487" { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
   double j = i * 3.25;
   double k = h + j;
   float m = l * 8.75;

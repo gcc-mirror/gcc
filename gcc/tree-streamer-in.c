@@ -25,12 +25,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "gimple.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "tree-streamer.h"
 #include "data-streamer.h"
 #include "streamer-hooks.h"
@@ -339,7 +352,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   SET_TYPE_MODE (expr, mode);

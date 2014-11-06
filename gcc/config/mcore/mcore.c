@@ -50,6 +50,15 @@
 #include "diagnostic-core.h"
 #include "target.h"
 #include "target-def.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
 
@@ -103,15 +112,15 @@ cond_type;
 static void       output_stack_adjust           (int, int);
 static int        calc_live_regs                (int *);
 static int        try_constant_tricks           (HOST_WIDE_INT, HOST_WIDE_INT *, HOST_WIDE_INT *);
-static const char *     output_inline_const     (enum machine_mode, rtx *);
+static const char *     output_inline_const     (machine_mode, rtx *);
 static void       layout_mcore_frame            (struct mcore_frame *);
-static void       mcore_setup_incoming_varargs	(cumulative_args_t, enum machine_mode, tree, int *, int);
+static void       mcore_setup_incoming_varargs	(cumulative_args_t, machine_mode, tree, int *, int);
 static cond_type  is_cond_candidate             (rtx);
 static rtx_insn  *emit_new_cond_insn            (rtx, int);
 static rtx_insn  *conditionalize_block          (rtx_insn *);
 static void       conditionalize_optimization   (void);
 static void       mcore_reorg                   (void);
-static rtx        handle_structs_in_regs        (enum machine_mode, const_tree, int);
+static rtx        handle_structs_in_regs        (machine_mode, const_tree, int);
 static void       mcore_mark_dllexport          (tree);
 static void       mcore_mark_dllimport          (tree);
 static int        mcore_dllexport_p             (tree);
@@ -135,21 +144,21 @@ static bool       mcore_rtx_costs		(rtx, int, int, int,
 static void       mcore_external_libcall	(rtx);
 static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (cumulative_args_t,
-						 enum machine_mode,
+						 machine_mode,
 						 tree, bool);
 static rtx        mcore_function_arg            (cumulative_args_t,
-						 enum machine_mode,
+						 machine_mode,
 						 const_tree, bool);
 static void       mcore_function_arg_advance    (cumulative_args_t,
-						 enum machine_mode,
+						 machine_mode,
 						 const_tree, bool);
-static unsigned int mcore_function_arg_boundary (enum machine_mode,
+static unsigned int mcore_function_arg_boundary (machine_mode,
 						 const_tree);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
 static bool       mcore_warn_func_return        (tree);
 static void       mcore_option_override		(void);
-static bool       mcore_legitimate_constant_p   (enum machine_mode, rtx);
+static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
 
 /* MCore specific attributes.  */
 
@@ -1161,7 +1170,7 @@ mcore_output_andn (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 /* Output an inline constant.  */
 
 static const char *
-output_inline_const (enum machine_mode mode, rtx operands[])
+output_inline_const (machine_mode mode, rtx operands[])
 {
   HOST_WIDE_INT x = 0, y = 0;
   int trick_no;
@@ -1261,7 +1270,7 @@ output_inline_const (enum machine_mode mode, rtx operands[])
 
 const char *
 mcore_output_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
-		   enum machine_mode mode ATTRIBUTE_UNUSED)
+		   machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -1331,7 +1340,7 @@ mcore_output_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
    to take care when we see overlapping source and dest registers.  */
 
 const char *
-mcore_output_movedouble (rtx operands[], enum machine_mode mode ATTRIBUTE_UNUSED)
+mcore_output_movedouble (rtx operands[], machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -1553,7 +1562,7 @@ mcore_expand_insv (rtx operands[])
    known constants.  DEST and SRC are registers.  OFFSET is the known
    starting point for the output pattern.  */
 
-static const enum machine_mode mode_from_align[] =
+static const machine_mode mode_from_align[] =
 {
   VOIDmode, QImode, HImode, VOIDmode, SImode,
 };
@@ -1562,7 +1571,7 @@ static void
 block_move_sequence (rtx dst_mem, rtx src_mem, int size, int align)
 {
   rtx temp[2];
-  enum machine_mode mode[2];
+  machine_mode mode[2];
   int amount[2];
   bool active[2];
   int phase = 0;
@@ -1926,7 +1935,7 @@ mcore_initial_elimination_offset (int from, int to)
 
 static void
 mcore_setup_incoming_varargs (cumulative_args_t args_so_far_v,
-			      enum machine_mode mode, tree type,
+			      machine_mode mode, tree type,
 			      int * ptr_pretend_size ATTRIBUTE_UNUSED,
 			      int second_time ATTRIBUTE_UNUSED)
 {
@@ -2636,7 +2645,7 @@ mcore_r15_operand_p (rtx x)
 
 enum reg_class
 mcore_secondary_reload_class (enum reg_class rclass,
-			      enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+			      machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   if (TEST_HARD_REG_BIT (reg_class_contents[rclass], 15)
       && !mcore_r15_operand_p (x))
@@ -2692,7 +2701,7 @@ mcore_option_override (void)
    hold a function argument of mode MODE and type TYPE.  */
 
 int
-mcore_num_arg_regs (enum machine_mode mode, const_tree type)
+mcore_num_arg_regs (machine_mode mode, const_tree type)
 {
   int size;
 
@@ -2708,7 +2717,7 @@ mcore_num_arg_regs (enum machine_mode mode, const_tree type)
 }
 
 static rtx
-handle_structs_in_regs (enum machine_mode mode, const_tree type, int reg)
+handle_structs_in_regs (machine_mode mode, const_tree type, int reg)
 {
   int size;
 
@@ -2754,7 +2763,7 @@ handle_structs_in_regs (enum machine_mode mode, const_tree type, int reg)
 rtx
 mcore_function_value (const_tree valtype, const_tree func)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int unsigned_p;
   
   mode = TYPE_MODE (valtype);
@@ -2784,7 +2793,7 @@ mcore_function_value (const_tree valtype, const_tree func)
    its data type forbids.  */
 
 static rtx
-mcore_function_arg (cumulative_args_t cum, enum machine_mode mode,
+mcore_function_arg (cumulative_args_t cum, machine_mode mode,
 		    const_tree type, bool named)
 {
   int arg_reg;
@@ -2804,7 +2813,7 @@ mcore_function_arg (cumulative_args_t cum, enum machine_mode mode,
 }
 
 static void
-mcore_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+mcore_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -2814,7 +2823,7 @@ mcore_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 }
 
 static unsigned int
-mcore_function_arg_boundary (enum machine_mode mode,
+mcore_function_arg_boundary (machine_mode mode,
 			     const_tree type ATTRIBUTE_UNUSED)
 {
   /* Doubles must be aligned to an 8 byte boundary.  */
@@ -2831,7 +2840,7 @@ mcore_function_arg_boundary (enum machine_mode mode,
    the function.  */
 
 static int
-mcore_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
+mcore_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
 			 tree type, bool named)
 {
   int reg = ROUND_REG (*get_cumulative_args (cum), mode);
@@ -3184,7 +3193,7 @@ mcore_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    On the MCore, allow anything but a double.  */
 
 static bool
-mcore_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+mcore_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return GET_CODE (x) != CONST_DOUBLE;
 }

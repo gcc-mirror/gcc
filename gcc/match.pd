@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Simplifications of operations with one constant operand and
-   simplifications to constants.  */
+   simplifications to constants or single values.  */
 
 (for op (plus pointer_plus minus bit_ior bit_xor)
   (simplify
@@ -64,13 +64,13 @@ along with GCC; see the file COPYING3.  If not see
 (for op (ceil_mod floor_mod round_mod trunc_mod)
  /* 0 % X is always zero.  */
  (simplify
-  (trunc_mod integer_zerop@0 @1)
+  (op integer_zerop@0 @1)
   /* But not for 0 % 0 so that we can get the proper warnings and errors.  */
   (if (!integer_zerop (@1))
    @0))
  /* X % 1 is always zero.  */
  (simplify
-  (trunc_mod @0 integer_onep)
+  (op @0 integer_onep)
   { build_zero_cst (type); }))
 
 /* x | ~0 -> ~0  */
@@ -88,3 +88,73 @@ along with GCC; see the file COPYING3.  If not see
   (bit_xor @0 @0)
   { build_zero_cst (type); })
 
+/* Canonicalize X ^ ~0 to ~X.  */
+(simplify
+  (bit_xor @0 integer_all_onesp@1)
+  (bit_not @0))
+
+/* x & ~0 -> x  */
+(simplify
+ (bit_and @0 integer_all_onesp)
+  (non_lvalue @0))
+
+/* x & x -> x,  x | x -> x  */
+(for bitop (bit_and bit_ior)
+ (simplify
+  (bitop @0 @0)
+  (non_lvalue @0)))
+
+
+/* Simplifications of conversions.  */
+
+/* Basic strip-useless-type-conversions / strip_nops.  */
+(for cvt (convert view_convert)
+ (simplify
+  (cvt @0)
+  (if ((GIMPLE && useless_type_conversion_p (type, TREE_TYPE (@0)))
+       || (GENERIC && type == TREE_TYPE (@0)))
+   @0)))
+
+/* Contract view-conversions.  */
+(simplify
+  (view_convert (view_convert @0))
+  (view_convert @0))
+
+/* For integral conversions with the same precision or pointer
+   conversions use a NOP_EXPR instead.
+   (Do not apply this simplification to UPC pointers-to-shared
+   because they are not directly convertible to integers.)  */
+(simplify
+  (view_convert @0)
+  (if ((INTEGRAL_TYPE_P (type)
+        || (POINTER_TYPE_P (type)
+	    && !upc_shared_type_p (TREE_TYPE (type))))
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+           || (POINTER_TYPE_P (TREE_TYPE (@0))
+	       && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (@0)))))
+       && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0)))
+   (convert @0)))
+
+/* Strip inner integral conversions that do not change precision or size.
+   (Do not apply this simplification to UPC pointers-to-shared
+   because they are not directly convertible to integers.)  */
+(simplify
+  (view_convert (convert@0 @1))
+  (if ((INTEGRAL_TYPE_P (TREE_TYPE (@0))
+        || (POINTER_TYPE_P (TREE_TYPE (@0))
+	    && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (@0)))))
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+           || (POINTER_TYPE_P (TREE_TYPE (@1))
+	       && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (@1)))))
+       && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
+       && (TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))))
+   (view_convert @1)))
+
+/* Re-association barriers around constants and other re-association
+   barriers can be removed.  */
+(simplify
+ (paren CONSTANT_CLASS_P@0)
+ @0)
+(simplify
+ (paren (paren@1 @0))
+ @1)

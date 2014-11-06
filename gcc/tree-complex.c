@@ -24,6 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "flags.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -947,7 +957,7 @@ static void
 expand_complex_libcall (gimple_stmt_iterator *gsi, tree ar, tree ai,
 			tree br, tree bi, enum tree_code code)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   enum built_in_function bcode;
   tree fn, type, lhs;
   gimple old_stmt, stmt;

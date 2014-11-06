@@ -213,7 +213,7 @@ unsigned int flag_sanitize
 
 ; What sanitizers should recover from errors
 Variable
-unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT
+unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -882,6 +882,10 @@ Does nothing. Preserved for backward compatibility.
 fsanitize=
 Common Driver Report Joined
 Select what to sanitize
+
+fasan-shadow-offset=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fasan-shadow-offset=<number>	Use custom shadow memory offset.
 
 fsanitize-recover=
 Common Report Joined
@@ -1808,7 +1812,7 @@ Common Var(common_deferred_options) Defer
 
 frandom-seed=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--frandom-seed=<string>	Make compile reproducible using <string>
+-frandom-seed=<number>	Make compile reproducible using <number>
 
 ; This switch causes the command line that was used to create an
 ; object file to be recorded into the object file.  The exact format

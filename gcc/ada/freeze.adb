@@ -578,11 +578,13 @@ package body Freeze is
    --------------------------
 
    procedure Check_Address_Clause (E : Entity_Id) is
-      Addr : constant Node_Id    := Address_Clause (E);
-      Expr : Node_Id;
-      Decl : constant Node_Id    := Declaration_Node (E);
-      Loc  : constant Source_Ptr := Sloc (Decl);
-      Typ  : constant Entity_Id  := Etype (E);
+      Addr       : constant Node_Id    := Address_Clause (E);
+      Expr       : Node_Id;
+      Decl       : constant Node_Id    := Declaration_Node (E);
+      Loc        : constant Source_Ptr := Sloc (Decl);
+      Typ        : constant Entity_Id  := Etype (E);
+      Lhs        : Node_Id;
+      Tag_Assign : Node_Id;
 
    begin
       if Present (Addr) then
@@ -636,9 +638,13 @@ package body Freeze is
 
          if Present (Expression (Decl)) then
 
-            --  Capture initialization value at point of declaration
+            --  Capture initialization value at point of declaration,
+            --  and make explicit assignment legal, because object may
+            --  be a constant.
 
             Remove_Side_Effects (Expression (Decl));
+            Lhs := New_Occurrence_Of (E, Loc);
+            Set_Assignment_OK (Lhs);
 
             --  Move initialization to freeze actions (once the object has
             --  been frozen, and the address clause alignment check has been
@@ -646,10 +652,19 @@ package body Freeze is
 
             Append_Freeze_Action (E,
               Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (E, Loc),
+                Name       => Lhs,
                 Expression => Expression (Decl)));
 
             Set_No_Initialization (Decl);
+
+            --  If the objet is tagged, check whether the tag must be
+            --  reassigned expliitly.
+
+            Tag_Assign := Make_Tag_Assignment (Decl);
+            if Present (Tag_Assign) then
+               Append_Freeze_Action (E, Tag_Assign);
+            end if;
+
          end if;
       end if;
    end Check_Address_Clause;
@@ -3341,6 +3356,14 @@ package body Freeze is
                      elsif CodePeer_Mode then
                         null;
 
+                     --  Omit check if component has a generic type. This can
+                     --  happen in an instantiation within a generic in ASIS
+                     --  mode, where we force freeze actions without full
+                     --  expansion.
+
+                     elsif Is_Generic_Type (Etype (Comp)) then
+                        null;
+
                      --  Do the check
 
                      elsif not
@@ -3569,10 +3592,14 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         SSO_ADC := Get_Attribute_Definition_Clause
-                      (Rec, Attribute_Scalar_Storage_Order);
+         --  Deal with default setting of reverse storage order
+
+         Set_SSO_From_Default (Rec);
 
          --  Check consistent attribute setting on component types
+
+         SSO_ADC := Get_Attribute_Definition_Clause
+                      (Rec, Attribute_Scalar_Storage_Order);
 
          declare
             Comp_ADC_Present : Boolean;
@@ -3588,10 +3615,6 @@ package body Freeze is
                Next_Component (Comp);
             end loop;
          end;
-
-         --  Deal with default setting of reverse storage order
-
-         Set_SSO_From_Default (Rec);
 
          --  Now deal with reverse storage order/bit order issues
 
@@ -3981,6 +4004,47 @@ package body Freeze is
             --  call to the Analyze_Freeze_Entity for the record type.
 
          end Check_Variant_Part;
+
+         --  Check that all the primitives of an interface type are abstract
+         --  or null procedures.
+
+         if Is_Interface (Rec)
+           and then not Error_Posted (Parent (Rec))
+         then
+            declare
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               Elmt := First_Elmt (Primitive_Operations (Rec));
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+
+                  if not Is_Abstract_Subprogram (Subp)
+
+                     --  Avoid reporting the error on inherited primitives
+
+                    and then Comes_From_Source (Subp)
+                  then
+                     Error_Msg_Name_1 := Chars (Subp);
+
+                     if Ekind (Subp) = E_Procedure then
+                        if not Null_Present (Parent (Subp)) then
+                           Error_Msg_N
+                             ("interface procedure % must be abstract or null",
+                              Parent (Subp));
+                        end if;
+                     else
+                        Error_Msg_N
+                          ("interface function % must be abstract",
+                           Parent (Subp));
+                     end if;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
       end Freeze_Record_Type;
 
       -------------------------------
@@ -4751,6 +4815,14 @@ package body Freeze is
             end if;
          end;
 
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+
+         if Is_Ghost_Entity (E)
+           and then Is_Effectively_Volatile (E)
+         then
+            SPARK_Msg_N ("ghost type & cannot be volatile", E);
+         end if;
+
          --  Deal with special cases of freezing for subtype
 
          if E /= Base_Type (E) then
@@ -5360,8 +5432,13 @@ package body Freeze is
                Check_Suspicious_Modulus (E);
             end if;
 
+         --  the pool applies to named and anonymous access types, but not
+         --  to subprogram and to  internal types generated for 'Access
+         --  references.
+
          elsif Is_Access_Type (E)
            and then not Is_Access_Subprogram_Type (E)
+           and then Ekind (E) /= E_Access_Attribute_Type
          then
             --  If a pragma Default_Storage_Pool applies, and this type has no
             --  Storage_Pool or Storage_Size clause (which must have occurred

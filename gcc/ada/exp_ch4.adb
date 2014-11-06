@@ -3610,7 +3610,7 @@ package body Exp_Ch4 is
       if Atyp = Standard_String
         and then NN in 2 .. 9
         and then (Lib_Level_Target
-          or else ((Opt.Optimization_Level = 0 or else Debug_Flag_Dot_CC)
+          or else ((Optimization_Level = 0 or else Debug_Flag_Dot_CC)
                      and then not Debug_Flag_Dot_C))
       then
          declare

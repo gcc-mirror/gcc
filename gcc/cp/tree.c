@@ -32,6 +32,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "debug.h"
 #include "convert.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "splay-tree.h"
 #include "hash-table.h"
@@ -158,6 +169,7 @@ lvalue_kind (const_tree ref)
     case ARRAY_NOTATION_REF:
     case PARM_DECL:
     case RESULT_DECL:
+    case PLACEHOLDER_EXPR:
       return clk_ordinary;
 
       /* A scope ref in a template, left as SCOPE_REF to support later
@@ -2448,6 +2460,103 @@ break_out_target_exprs (tree t)
     }
 
   return t;
+}
+
+/* Build an expression for the subobject of OBJ at CONSTRUCTOR index INDEX,
+   which we expect to have type TYPE.  */
+
+tree
+build_ctor_subob_ref (tree index, tree type, tree obj)
+{
+  if (index == NULL_TREE)
+    /* Can't refer to a particular member of a vector.  */
+    obj = NULL_TREE;
+  else if (TREE_CODE (index) == INTEGER_CST)
+    obj = cp_build_array_ref (input_location, obj, index, tf_none);
+  else
+    obj = build_class_member_access_expr (obj, index, NULL_TREE,
+					  /*reference*/false, tf_none);
+  if (obj)
+    gcc_assert (same_type_ignoring_top_level_qualifiers_p (type,
+							   TREE_TYPE (obj)));
+  return obj;
+}
+
+/* Like substitute_placeholder_in_expr, but handle C++ tree codes and
+   build up subexpressions as we go deeper.  */
+
+struct replace_placeholders_t
+{
+  tree obj;
+  hash_set<tree> *pset;
+};
+
+static tree
+replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
+{
+  tree obj = static_cast<tree>(data_);
+
+  if (TREE_CONSTANT (*t))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (*t))
+    {
+    case PLACEHOLDER_EXPR:
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (*t), TREE_TYPE (obj)));
+      *t = obj;
+      *walk_subtrees = false;
+      break;
+
+    case TARGET_EXPR:
+      /* Don't mess with placeholders in an unrelated object.  */
+      *walk_subtrees = false;
+      break;
+
+    case CONSTRUCTOR:
+      {
+	constructor_elt *ce;
+	vec<constructor_elt,va_gc> *v = CONSTRUCTOR_ELTS (*t);
+	for (unsigned i = 0; vec_safe_iterate (v, i, &ce); ++i)
+	  {
+	    tree *valp = &ce->value;
+	    tree type = TREE_TYPE (*valp);
+	    tree subob = obj;
+
+	    if (TREE_CODE (*valp) == CONSTRUCTOR
+		&& AGGREGATE_TYPE_P (type))
+	      {
+		subob = build_ctor_subob_ref (ce->index, type, obj);
+		if (TREE_CODE (*valp) == TARGET_EXPR)
+		  valp = &TARGET_EXPR_INITIAL (*valp);
+	      }
+
+	    cp_walk_tree (valp, replace_placeholders_r,
+			  subob, NULL);
+	  }
+	*walk_subtrees = false;
+	break;
+      }
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+tree
+replace_placeholders (tree exp, tree obj)
+{
+  hash_set<tree> pset;
+  tree *tp = &exp;
+  if (TREE_CODE (exp) == TARGET_EXPR)
+    tp = &TARGET_EXPR_INITIAL (exp);
+  cp_walk_tree (tp, replace_placeholders_r, obj, NULL);
+  return exp;
 }
 
 /* Similar to `build_nt', but for template definitions of dependent

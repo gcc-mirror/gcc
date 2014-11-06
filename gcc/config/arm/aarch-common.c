@@ -193,7 +193,7 @@ arm_get_set_operands (rtx producer, rtx consumer,
 }
 
 bool
-aarch_rev16_shright_mask_imm_p (rtx val, enum machine_mode mode)
+aarch_rev16_shright_mask_imm_p (rtx val, machine_mode mode)
 {
   return CONST_INT_P (val)
          && INTVAL (val)
@@ -202,7 +202,7 @@ aarch_rev16_shright_mask_imm_p (rtx val, enum machine_mode mode)
 }
 
 bool
-aarch_rev16_shleft_mask_imm_p (rtx val, enum machine_mode mode)
+aarch_rev16_shleft_mask_imm_p (rtx val, machine_mode mode)
 {
   return CONST_INT_P (val)
          && INTVAL (val)
@@ -212,7 +212,7 @@ aarch_rev16_shleft_mask_imm_p (rtx val, enum machine_mode mode)
 
 
 static bool
-aarch_rev16_p_1 (rtx lhs, rtx rhs, enum machine_mode mode)
+aarch_rev16_p_1 (rtx lhs, rtx rhs, machine_mode mode)
 {
   if (GET_CODE (lhs) == AND
          && GET_CODE (XEXP (lhs, 0)) == ASHIFT

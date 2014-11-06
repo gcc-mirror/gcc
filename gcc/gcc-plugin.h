@@ -35,6 +35,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
+#include "function.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 
 /* Event names.  */
 enum plugin_event

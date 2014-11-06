@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ssize_int, TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
 #include "tree-core.h"
 /* For GET_MODE_BITSIZE, word_mode */
+#include "insn-config.h"
 
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
@@ -72,109 +73,22 @@ typedef struct separate_ops
   tree op0, op1, op2;
 } *sepops;
 
-/* Functions from optabs.c, commonly used, and without need for the optabs
-   tables:  */
-
-/* Passed to expand_simple_binop and expand_binop to say which options
-   to try to use if the requested operation can't be open-coded on the
-   requisite mode.  Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using
-   a library call.  Either OPTAB_WIDEN or OPTAB_LIB_WIDEN says try
-   using a wider mode.  OPTAB_MUST_WIDEN says try widening and don't
-   try anything else.  */
-
-enum optab_methods
-{
-  OPTAB_DIRECT,
-  OPTAB_LIB,
-  OPTAB_WIDEN,
-  OPTAB_LIB_WIDEN,
-  OPTAB_MUST_WIDEN
-};
-
-/* Generate code for a simple binary or unary operation.  "Simple" in
-   this case means "can be unambiguously described by a (mode, code)
-   pair and mapped to a single optab."  */
-extern rtx expand_simple_binop (enum machine_mode, enum rtx_code, rtx,
-				rtx, rtx, int, enum optab_methods);
-extern rtx expand_simple_unop (enum machine_mode, enum rtx_code, rtx, rtx,
-			       int);
-
-/* Report whether the machine description contains an insn which can
-   perform the operation described by CODE and MODE.  */
-extern int have_insn_for (enum rtx_code, enum machine_mode);
-
-/* Emit code to make a call to a constant function or a library call.  */
-extern void emit_libcall_block (rtx, rtx, rtx, rtx);
-
-/* Create but don't emit one rtl instruction to perform certain operations.
-   Modes must match; operands must meet the operation's predicates.
-   Likewise for subtraction and for just copying.  */
-extern rtx gen_add2_insn (rtx, rtx);
-extern rtx gen_add3_insn (rtx, rtx, rtx);
-extern rtx gen_addptr3_insn (rtx, rtx, rtx);
-extern rtx gen_sub2_insn (rtx, rtx);
-extern rtx gen_sub3_insn (rtx, rtx, rtx);
-extern rtx gen_move_insn (rtx, rtx);
-extern int have_add2_insn (rtx, rtx);
-extern int have_addptr3_insn (rtx, rtx, rtx);
-extern int have_sub2_insn (rtx, rtx);
-
-/* Emit a pair of rtl insns to compare two rtx's and to jump
-   to a label if the comparison is true.  */
-extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
-				     enum machine_mode, int, rtx, int prob=-1);
-
-/* Generate code to indirectly jump to a location given in the rtx LOC.  */
-extern void emit_indirect_jump (rtx);
-
-/* Generate a conditional trap instruction.  */
-extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
-
-#include "insn-config.h"
-
-#ifdef HAVE_conditional_move
-/* Emit a conditional move operation.  */
-rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
-			   rtx, rtx, enum machine_mode, int);
-
-/* Return nonzero if the conditional move is supported.  */
-int can_conditionally_move_p (enum machine_mode mode);
-
-#endif
-rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
-			  rtx, rtx, enum machine_mode, int);
-
-rtx expand_sync_operation (rtx, rtx, enum rtx_code);
-rtx expand_sync_fetch_operation (rtx, rtx, enum rtx_code, bool, rtx);
-rtx expand_sync_lock_test_and_set (rtx, rtx, rtx);
-
-rtx expand_atomic_exchange (rtx, rtx, rtx, enum memmodel);
-rtx expand_atomic_load (rtx, rtx, enum memmodel);
-rtx expand_atomic_store (rtx, rtx, enum memmodel, bool);
-rtx expand_atomic_fetch_op (rtx, rtx, rtx, enum rtx_code, enum memmodel, 
-			      bool);
-rtx expand_atomic_test_and_set (rtx, rtx, enum memmodel);
-rtx expand_atomic_clear (rtx, enum memmodel);
-void expand_atomic_thread_fence (enum memmodel);
-void expand_atomic_signal_fence (enum memmodel);
-
-
 /* Functions from expmed.c:  */
 
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
-extern rtx negate_rtx (enum machine_mode, rtx);
+extern rtx negate_rtx (machine_mode, rtx);
 
 /* Expand a logical AND operation.  */
-extern rtx expand_and (enum machine_mode, rtx, rtx, rtx);
+extern rtx expand_and (machine_mode, rtx, rtx, rtx);
 
 /* Emit a store-flag operation.  */
-extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
+extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			    int, int);
 
 /* Like emit_store_flag, but always succeeds.  */
 extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
-				  enum machine_mode, int, int);
+				  machine_mode, int, int);
 
 /* Choose a minimal N + 1 bit approximation to 1/D that can be used to
    replace division by D, and put the least significant N bits of the result
@@ -197,10 +111,10 @@ extern void init_expr (void);
 extern void convert_move (rtx, rtx, int);
 
 /* Convert an rtx to specified machine mode and return the result.  */
-extern rtx convert_to_mode (enum machine_mode, rtx, int);
+extern rtx convert_to_mode (machine_mode, rtx, int);
 
 /* Convert an rtx to MODE from OLDMODE and return the result.  */
-extern rtx convert_modes (enum machine_mode, enum machine_mode, rtx, int);
+extern rtx convert_modes (machine_mode, machine_mode, rtx, int);
 
 /* Emit code to move a block Y to a block X.  */
 
@@ -228,7 +142,7 @@ extern bool emit_storent_insn (rtx to, rtx from);
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
-extern void move_block_to_reg (int, rtx, int, enum machine_mode);
+extern void move_block_to_reg (int, rtx, int, machine_mode);
 
 /* Copy all or part of a BLKmode value X out of registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
@@ -262,10 +176,10 @@ extern void copy_blkmode_from_reg (rtx, rtx, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.
    Mode is TYPE_MODE of the non-promoted parameter, or VOIDmode.  */
-extern void use_reg_mode (rtx *, rtx, enum machine_mode);
-extern void clobber_reg_mode (rtx *, rtx, enum machine_mode);
+extern void use_reg_mode (rtx *, rtx, machine_mode);
+extern void clobber_reg_mode (rtx *, rtx, machine_mode);
 
-extern rtx copy_blkmode_to_reg (enum machine_mode, tree);
+extern rtx copy_blkmode_to_reg (machine_mode, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 static inline void
@@ -319,7 +233,7 @@ extern unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
    of a const string.  */
 extern int can_store_by_pieces (unsigned HOST_WIDE_INT,
 				rtx (*) (void *, HOST_WIDE_INT,
-					 enum machine_mode),
+					 machine_mode),
 				void *, unsigned int, bool);
 
 /* Generate several move instructions to store LEN bytes generated by
@@ -329,25 +243,26 @@ extern int can_store_by_pieces (unsigned HOST_WIDE_INT,
    MEMSETP is true if this is a real memset/bzero, not a copy.
    Returns TO + LEN.  */
 extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT,
-			    rtx (*) (void *, HOST_WIDE_INT, enum machine_mode),
+			    rtx (*) (void *, HOST_WIDE_INT, machine_mode),
 			    void *, unsigned int, bool, int);
 
 /* Emit insns to set X from Y.  */
 extern rtx_insn *emit_move_insn (rtx, rtx);
+extern rtx gen_move_insn (rtx, rtx);
 
 /* Emit insns to set X from Y, with no frills.  */
 extern rtx_insn *emit_move_insn_1 (rtx, rtx);
 
-extern rtx_insn *emit_move_complex_push (enum machine_mode, rtx, rtx);
+extern rtx_insn *emit_move_complex_push (machine_mode, rtx, rtx);
 extern rtx_insn *emit_move_complex_parts (rtx, rtx);
-extern rtx emit_move_resolve_push (enum machine_mode, rtx);
+extern rtx emit_move_resolve_push (machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.  */
 extern rtx push_block (rtx, int, int);
 
 /* Generate code to push something onto the stack, given its mode and type.  */
-extern void emit_push_insn (rtx, enum machine_mode, tree, rtx, unsigned int,
+extern void emit_push_insn (rtx, machine_mode, tree, rtx, unsigned int,
 			    int, rtx, int, rtx, rtx, int, rtx);
 
 /* Expand an assignment that stores the value of FROM into TO.  */
@@ -365,18 +280,18 @@ extern rtx store_expr (tree, rtx, int, bool);
 extern rtx force_operand (rtx, rtx);
 
 /* Work horses for expand_expr.  */
-extern rtx expand_expr_real (tree, rtx, enum machine_mode,
+extern rtx expand_expr_real (tree, rtx, machine_mode,
 			     enum expand_modifier, rtx *, bool);
-extern rtx expand_expr_real_1 (tree, rtx, enum machine_mode,
+extern rtx expand_expr_real_1 (tree, rtx, machine_mode,
 			       enum expand_modifier, rtx *, bool);
-extern rtx expand_expr_real_2 (sepops, rtx, enum machine_mode,
+extern rtx expand_expr_real_2 (sepops, rtx, machine_mode,
 			       enum expand_modifier);
 
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.  */
 static inline rtx
-expand_expr (tree exp, rtx target, enum machine_mode mode,
+expand_expr (tree exp, rtx target, machine_mode mode,
 	     enum expand_modifier modifier)
 {
   return expand_expr_real (exp, target, mode, modifier, NULL, false);
@@ -442,7 +357,7 @@ extern void do_jump (tree, rtx, rtx, int);
 extern void do_jump_1 (enum tree_code, tree, tree, rtx, rtx, int);
 
 extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
-				     enum machine_mode, rtx, rtx, rtx, int);
+				     machine_mode, rtx, rtx, rtx, int);
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, int);
@@ -466,18 +381,18 @@ extern rtx hard_function_value (const_tree, const_tree, const_tree, int);
 
 extern rtx prepare_call_address (tree, rtx, rtx, rtx *, int, int);
 
-extern bool shift_return_value (enum machine_mode, bool, rtx);
+extern bool shift_return_value (machine_mode, bool, rtx);
 
 extern rtx expand_call (tree, rtx, int);
 
 extern void fixup_tail_calls (void);
 
 #ifdef TREE_CODE
-extern rtx expand_variable_shift (enum tree_code, enum machine_mode,
+extern rtx expand_variable_shift (enum tree_code, machine_mode,
 				  rtx, tree, rtx, int);
-extern rtx expand_shift (enum tree_code, enum machine_mode, rtx, int, rtx,
+extern rtx expand_shift (enum tree_code, machine_mode, rtx, int, rtx,
 			     int);
-extern rtx expand_divmod (int, enum tree_code, enum machine_mode, rtx, rtx,
+extern rtx expand_divmod (int, enum tree_code, machine_mode, rtx, rtx,
 			  rtx, int);
 #endif
 
@@ -497,7 +412,7 @@ extern rtx eliminate_constant_term (rtx, rtx *);
 /* Convert arg to a valid memory address for specified machine mode that points
    to a specific named address space, by emitting insns to perform arithmetic
    if necessary.  */
-extern rtx memory_address_addr_space (enum machine_mode, rtx, addr_space_t);
+extern rtx memory_address_addr_space (machine_mode, rtx, addr_space_t);
 
 /* Like memory_address_addr_space, except assume the memory address points to
    the generic named address space.  */
@@ -508,7 +423,7 @@ extern rtx memory_address_addr_space (enum machine_mode, rtx, addr_space_t);
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
    NULL for ADDR means don't change the address.)  */
-extern rtx change_address (rtx, enum machine_mode, rtx);
+extern rtx change_address (rtx, machine_mode, rtx);
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
@@ -545,9 +460,9 @@ extern rtx change_address (rtx, enum machine_mode, rtx);
 #define adjust_automodify_address_nv(MEMREF, MODE, ADDR, OFFSET) \
   adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 0)
 
-extern rtx adjust_address_1 (rtx, enum machine_mode, HOST_WIDE_INT, int, int,
+extern rtx adjust_address_1 (rtx, machine_mode, HOST_WIDE_INT, int, int,
 			     int, HOST_WIDE_INT);
-extern rtx adjust_automodify_address_1 (rtx, enum machine_mode, rtx,
+extern rtx adjust_automodify_address_1 (rtx, machine_mode, rtx,
 					HOST_WIDE_INT, int);
 
 /* Return a memory reference like MEMREF, but whose address is changed by
@@ -560,7 +475,7 @@ extern rtx offset_address (rtx, rtx, unsigned HOST_WIDE_INT);
 
 /* Return a memory reference like MEMREF, but with its mode widened to
    MODE and adjusted by OFFSET.  */
-extern rtx widen_memory_access (rtx, enum machine_mode, HOST_WIDE_INT);
+extern rtx widen_memory_access (rtx, machine_mode, HOST_WIDE_INT);
 
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */
@@ -593,29 +508,29 @@ extern rtx copy_to_reg (rtx);
 extern rtx copy_addr_to_reg (rtx);
 
 /* Like copy_to_reg but always make the reg the specified mode MODE.  */
-extern rtx copy_to_mode_reg (enum machine_mode, rtx);
+extern rtx copy_to_mode_reg (machine_mode, rtx);
 
 /* Copy given rtx to given temp reg and return that.  */
-extern rtx copy_to_suggested_reg (rtx, rtx, enum machine_mode);
+extern rtx copy_to_suggested_reg (rtx, rtx, machine_mode);
 
 /* Copy a value to a register if it isn't already a register.
    Args are mode (in case value is a constant) and the value.  */
-extern rtx force_reg (enum machine_mode, rtx);
+extern rtx force_reg (machine_mode, rtx);
 
 /* Return given rtx, copied into a new temp reg if it was in memory.  */
 extern rtx force_not_mem (rtx);
 
 /* Return mode and signedness to use when an argument or result in the
    given mode is promoted.  */
-extern enum machine_mode promote_function_mode (const_tree, enum machine_mode, int *,
+extern machine_mode promote_function_mode (const_tree, machine_mode, int *,
 					        const_tree, int);
 
 /* Return mode and signedness to use when an object in the given mode
    is promoted.  */
-extern enum machine_mode promote_mode (const_tree, enum machine_mode, int *);
+extern machine_mode promote_mode (const_tree, machine_mode, int *);
 
 /* Return mode and signedness to use when object is promoted.  */
-enum machine_mode promote_decl_mode (const_tree, int *);
+machine_mode promote_decl_mode (const_tree, int *);
 
 /* Remove some bytes from the stack.  An rtx says how many.  */
 extern void adjust_stack (rtx);
@@ -652,36 +567,24 @@ extern void probe_stack_range (HOST_WIDE_INT, rtx);
 
 /* Return an rtx that refers to the value returned by a library call
    in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_libcall_value (enum machine_mode, rtx);
+extern rtx hard_libcall_value (machine_mode, rtx);
 
 extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
-			     enum machine_mode, rtx);
+			     machine_mode, rtx);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT, int, rtx,
-			      enum machine_mode, enum machine_mode);
-extern rtx extract_low_bits (enum machine_mode, enum machine_mode, rtx);
-extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_highpart_adjust (enum machine_mode, rtx, rtx, rtx, rtx, int);
+			      machine_mode, machine_mode);
+extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
+extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
+extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
 
 extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 extern int safe_from_p (const_rtx, tree, int);
-extern bool split_comparison (enum rtx_code, enum machine_mode,
+extern bool split_comparison (enum rtx_code, machine_mode,
 			      enum rtx_code *, enum rtx_code *);
-
-/* Call this once to initialize the contents of the optabs
-   appropriately for the current target machine.  */
-extern void init_optabs (void);
-extern void init_all_optabs (struct target_optabs *);
-
-/* Call this to initialize an optab function entry.  */
-extern rtx init_one_libfunc (const char *);
-extern rtx set_user_assembler_libfunc (const char *, const char *);
-
-/* Build a decl for a libfunc named NAME. */
-extern tree build_libfunc_function (const char *);
 
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);

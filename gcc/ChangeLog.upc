@@ -1,3 +1,11 @@
+2014-11-05  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 217032 into gupc branch.
+	* c/c-upc-lang.c c/gupcspec.c c-family/c-upc.c
+	c-family/c-upc-gasp.c c-family/c-upc-low.c
+	c-family/c-upc-pts-ops.c c-family/c-upc-pts-packed.c
+	c-family/c-upc-pts-struct.c: Remove unnecessary #include's.
+
 2014-10-27  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 216723 into gupc branch.

@@ -174,6 +174,9 @@ enum {
 #ifdef TIOCGWINSZ
   TIOCGWINSZ_val = TIOCGWINSZ,
 #endif
+#ifdef TIOCSWINSZ
+  TIOCSWINSZ_val = TIOCSWINSZ,
+#endif
 #ifdef TIOCNOTTY
   TIOCNOTTY_val = TIOCNOTTY,
 #endif
@@ -191,6 +194,12 @@ enum {
 #endif
 #ifdef TIOCSIG
   TIOCSIG_val = TIOCSIG,
+#endif
+#ifdef TCGETS
+  TCGETS_val = TCGETS,
+#endif
+#ifdef TCSETS
+  TCSETS_val = TCSETS,
 #endif
 };
 EOF
@@ -790,6 +799,11 @@ if ! grep '^const TIOCGWINSZ' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCGWINSZ = _TIOCGWINSZ_val' >> ${OUT}
   fi
 fi
+if ! grep '^const TIOCSWINSZ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSWINSZ_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSWINSZ = _TIOCSWINSZ_val' >> ${OUT}
+  fi
+fi
 if ! grep '^const TIOCNOTTY' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCNOTTY_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCNOTTY = _TIOCNOTTY_val' >> ${OUT}
@@ -822,8 +836,18 @@ if ! grep '^const TIOCSIG' ${OUT} >/dev/null 2>&1; then
 fi
 
 # The ioctl flags for terminal control
-grep '^const _TC[GS]ET' gen-sysinfo.go | \
+grep '^const _TC[GS]ET' gen-sysinfo.go | grep -v _val | \
     sed -e 's/^\(const \)_\(TC[GS]ET[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+if ! grep '^const TCGETS' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TCGETS_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TCGETS = _TCGETS_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TCSETS' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TCSETS_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TCSETS = _TCSETS_val' >> ${OUT}
+  fi
+fi
 
 # ioctl constants.  Might fall back to 0 if TIOCNXCL is missing, too, but
 # needs handling in syscalls.exec.go.

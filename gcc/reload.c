@@ -96,8 +96,13 @@ a register with any other reload.  */
 #include "tm_p.h"
 #include "insn-config.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "reload.h"
 #include "regs.h"
@@ -161,7 +166,7 @@ struct replacement
 {
   rtx *where;			/* Location to store in */
   int what;			/* which reload this is for */
-  enum machine_mode mode;	/* mode it must have */
+  machine_mode mode;	/* mode it must have */
 };
 
 static struct replacement replacements[MAX_RECOG_OPERANDS * ((MAX_REGS_PER_ADDRESS * 2) + 1)];
@@ -254,17 +259,17 @@ static int output_reloadnum;
       : (type)))
 
 static int push_secondary_reload (int, rtx, int, int, enum reg_class,
-				  enum machine_mode, enum reload_type,
+				  machine_mode, enum reload_type,
 				  enum insn_code *, secondary_reload_info *);
-static enum reg_class find_valid_class (enum machine_mode, enum machine_mode,
+static enum reg_class find_valid_class (machine_mode, machine_mode,
 					int, unsigned int);
-static void push_replacement (rtx *, int, enum machine_mode);
+static void push_replacement (rtx *, int, machine_mode);
 static void dup_replacements (rtx *, rtx *);
 static void combine_reloads (void);
 static int find_reusable_reload (rtx *, rtx, enum reg_class,
 				 enum reload_type, int, int);
-static rtx find_dummy_reload (rtx, rtx, rtx *, rtx *, enum machine_mode,
-			      enum machine_mode, reg_class_t, int, int);
+static rtx find_dummy_reload (rtx, rtx, rtx *, rtx *, machine_mode,
+			      machine_mode, reg_class_t, int, int);
 static int hard_reg_set_here_p (unsigned int, unsigned int, rtx);
 static struct decomposition decompose (rtx);
 static int immune_p (rtx, rtx, struct decomposition);
@@ -272,18 +277,18 @@ static bool alternative_allows_const_pool_ref (rtx, const char *, int);
 static rtx find_reloads_toplev (rtx, int, enum reload_type, int, int,
 				rtx_insn *, int *);
 static rtx make_memloc (rtx, int);
-static int maybe_memory_address_addr_space_p (enum machine_mode, rtx,
+static int maybe_memory_address_addr_space_p (machine_mode, rtx,
 					      addr_space_t, rtx *);
-static int find_reloads_address (enum machine_mode, rtx *, rtx, rtx *,
+static int find_reloads_address (machine_mode, rtx *, rtx, rtx *,
 				 int, enum reload_type, int, rtx_insn *);
 static rtx subst_reg_equivs (rtx, rtx_insn *);
 static rtx subst_indexed_address (rtx);
 static void update_auto_inc_notes (rtx_insn *, int, int);
-static int find_reloads_address_1 (enum machine_mode, addr_space_t, rtx, int,
+static int find_reloads_address_1 (machine_mode, addr_space_t, rtx, int,
 				   enum rtx_code, enum rtx_code, rtx *,
 				   int, enum reload_type,int, rtx_insn *);
 static void find_reloads_address_part (rtx, rtx *, enum reg_class,
-				       enum machine_mode, int,
+				       machine_mode, int,
 				       enum reload_type, int);
 static rtx find_reloads_subreg_address (rtx, int, enum reload_type,
 					int, rtx_insn *, int *);
@@ -322,12 +327,12 @@ push_reg_equiv_alt_mem (int regno, rtx mem)
 static int
 push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 		       enum reg_class reload_class,
-		       enum machine_mode reload_mode, enum reload_type type,
+		       machine_mode reload_mode, enum reload_type type,
 		       enum insn_code *picode, secondary_reload_info *prev_sri)
 {
   enum reg_class rclass = NO_REGS;
   enum reg_class scratch_class;
-  enum machine_mode mode = reload_mode;
+  machine_mode mode = reload_mode;
   enum insn_code icode = CODE_FOR_nothing;
   enum insn_code t_icode = CODE_FOR_nothing;
   enum reload_type secondary_type;
@@ -519,7 +524,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
    register and a scratch register is needed, we return the class of the
    intermediate register.  */
 reg_class_t
-secondary_reload_class (bool in_p, reg_class_t rclass, enum machine_mode mode,
+secondary_reload_class (bool in_p, reg_class_t rclass, machine_mode mode,
 			rtx x)
 {
   enum insn_code icode;
@@ -570,7 +575,7 @@ scratch_reload_class (enum insn_code icode)
    call find_reloads_address on the location being returned.  */
 
 rtx
-get_secondary_mem (rtx x ATTRIBUTE_UNUSED, enum machine_mode mode,
+get_secondary_mem (rtx x ATTRIBUTE_UNUSED, machine_mode mode,
 		   int opnum, enum reload_type type)
 {
   rtx loc;
@@ -655,8 +660,8 @@ clear_secondary_mem (void)
    into REGNO.  Such a class must exist.  */
 
 static enum reg_class
-find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
-		  enum machine_mode inner ATTRIBUTE_UNUSED, int n,
+find_valid_class (machine_mode outer ATTRIBUTE_UNUSED,
+		  machine_mode inner ATTRIBUTE_UNUSED, int n,
 		  unsigned int dest_regno ATTRIBUTE_UNUSED)
 {
   int best_cost = -1;
@@ -709,8 +714,8 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
    which we would eventually like to obtain the object.  */
 
 static enum reg_class
-find_valid_class_1 (enum machine_mode outer ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED,
+find_valid_class_1 (machine_mode outer ATTRIBUTE_UNUSED,
+		    machine_mode mode ATTRIBUTE_UNUSED,
 		    enum reg_class dest_class ATTRIBUTE_UNUSED)
 {
   int best_cost = -1;
@@ -840,7 +845,7 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
    the function is invoked for the output part of an enclosing reload.  */
 
 static bool
-reload_inner_reg_of_subreg (rtx x, enum machine_mode mode, bool output)
+reload_inner_reg_of_subreg (rtx x, machine_mode mode, bool output)
 {
   rtx inner;
 
@@ -888,7 +893,7 @@ reload_inner_reg_of_subreg (rtx x, enum machine_mode mode, bool output)
    patterns by register elimination and substituting pseudos without a home
    by their function-invariant equivalences.  */
 static int
-can_reload_into (rtx in, int regno, enum machine_mode mode)
+can_reload_into (rtx in, int regno, machine_mode mode)
 {
   rtx dst;
   rtx_insn *test_insn;
@@ -959,8 +964,8 @@ can_reload_into (rtx in, int regno, enum machine_mode mode)
 
 int
 push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
-	     enum reg_class rclass, enum machine_mode inmode,
-	     enum machine_mode outmode, int strict_low, int optional,
+	     enum reg_class rclass, machine_mode inmode,
+	     machine_mode outmode, int strict_low, int optional,
 	     int opnum, enum reload_type type)
 {
   int i;
@@ -1312,7 +1317,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
      is specified.  */
   if (this_insn_is_asm)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       if (GET_MODE_SIZE (inmode) > GET_MODE_SIZE (outmode))
 	mode = inmode;
       else
@@ -1601,7 +1606,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
     {
       rtx note;
       int regno;
-      enum machine_mode rel_mode = inmode;
+      machine_mode rel_mode = inmode;
 
       if (out && GET_MODE_SIZE (outmode) > GET_MODE_SIZE (inmode))
 	rel_mode = outmode;
@@ -1676,7 +1681,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
    This is used in insn patterns that use match_dup.  */
 
 static void
-push_replacement (rtx *loc, int reloadnum, enum machine_mode mode)
+push_replacement (rtx *loc, int reloadnum, machine_mode mode)
 {
   if (replace_reloads)
     {
@@ -1969,7 +1974,7 @@ combine_reloads (void)
 
 static rtx
 find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
-		   enum machine_mode inmode, enum machine_mode outmode,
+		   machine_mode inmode, machine_mode outmode,
 		   reg_class_t rclass, int for_real, int earlyclobber)
 {
   rtx in = real_in;
@@ -2201,7 +2206,7 @@ hard_reg_set_here_p (unsigned int beg_regno, unsigned int end_regno, rtx x)
    proper kind of hard reg.  */
 
 int
-strict_memory_address_addr_space_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+strict_memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
 				    rtx addr, addr_space_t as)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
@@ -2666,7 +2671,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
   rtx body = PATTERN (insn);
   rtx set = single_set (insn);
   int goal_earlyclobber = 0, this_earlyclobber;
-  enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+  machine_mode operand_mode[MAX_RECOG_OPERANDS];
   int retval = 0;
 
   this_insn = insn;
@@ -2728,7 +2733,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
   this_insn_is_asm = insn_code_number < 0;
 
   memcpy (operand_mode, recog_data.operand_mode,
-	  noperands * sizeof (enum machine_mode));
+	  noperands * sizeof (machine_mode));
   memcpy (constraints, recog_data.constraints,
 	  noperands * sizeof (const char *));
 
@@ -3928,7 +3933,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	rtx op = recog_data.operand[i];
 	rtx subreg = NULL_RTX;
 	rtx plus = NULL_RTX;
-	enum machine_mode mode = operand_mode[i];
+	machine_mode mode = operand_mode[i];
 
 	/* Reloads of SUBREGs of CONSTANT RTXs are handled later in
 	   push_reload so we have to let them pass here.  */
@@ -4006,7 +4011,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	       use the default address mode as mode of the reload register,
 	       as would have been done by find_reloads_address.  */
 	    addr_space_t as = MEM_ADDR_SPACE (recog_data.operand[i]);
-	    enum machine_mode address_mode;
+	    machine_mode address_mode;
 
 	    address_mode = get_address_mode (recog_data.operand[i]);
 	    operand_reloadnum[i]
@@ -4841,7 +4846,7 @@ make_memloc (rtx ad, int regno)
    by PART into a register.  */
 
 static int
-maybe_memory_address_addr_space_p (enum machine_mode mode, rtx ad,
+maybe_memory_address_addr_space_p (machine_mode mode, rtx ad,
 				   addr_space_t as, rtx *part)
 {
   int retv;
@@ -4881,7 +4886,7 @@ maybe_memory_address_addr_space_p (enum machine_mode mode, rtx ad,
    to a hard register, and frame pointer elimination.  */
 
 static int
-find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
+find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
 		      rtx *loc, int opnum, enum reload_type type,
 		      int ind_levels, rtx_insn *insn)
 {
@@ -5253,7 +5258,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
      into a register.  */
   if (CONSTANT_P (ad) && ! strict_memory_address_addr_space_p (mode, ad, as))
     {
-      enum machine_mode address_mode = GET_MODE (ad);
+      machine_mode address_mode = GET_MODE (ad);
       if (address_mode == VOIDmode)
 	address_mode = targetm.addr_space.address_mode (as);
 
@@ -5354,7 +5359,7 @@ subst_reg_equivs (rtx ad, rtx_insn *insn)
    This routine assumes both inputs are already in canonical form.  */
 
 rtx
-form_sum (enum machine_mode mode, rtx x, rtx y)
+form_sum (machine_mode mode, rtx x, rtx y)
 {
   rtx tem;
 
@@ -5505,7 +5510,7 @@ update_auto_inc_notes (rtx_insn *insn ATTRIBUTE_UNUSED, int regno ATTRIBUTE_UNUS
    handles those cases gracefully.  */
 
 static int
-find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
+find_reloads_address_1 (machine_mode mode, addr_space_t as,
 			rtx x, int context,
 			enum rtx_code outer_code, enum rtx_code index_code,
 			rtx *loc, int opnum, enum reload_type type,
@@ -6094,7 +6099,7 @@ find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
 
 static void
 find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
-			   enum machine_mode mode, int opnum,
+			   machine_mode mode, int opnum,
 			   enum reload_type type, int ind_levels)
 {
   if (CONSTANT_P (x)
@@ -6146,8 +6151,8 @@ find_reloads_subreg_address (rtx x, int opnum, enum reload_type type,
 			     int ind_levels, rtx_insn *insn,
 			     int *address_reloaded)
 {
-  enum machine_mode outer_mode = GET_MODE (x);
-  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+  machine_mode outer_mode = GET_MODE (x);
+  machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
   int regno = REGNO (SUBREG_REG (x));
   int reloaded = 0;
   rtx tem, orig;
@@ -6681,7 +6686,7 @@ refers_to_mem_for_reload_p (rtx x)
 
 rtx
 find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
-		short *reload_reg_p, int goalreg, enum machine_mode mode)
+		short *reload_reg_p, int goalreg, machine_mode mode)
 {
   rtx_insn *p = insn;
   rtx goaltry, valtry, value;
@@ -7217,7 +7222,7 @@ reg_inc_found_and_valid_p (unsigned int regno, unsigned int endregno,
    REG_INC.  REGNO must refer to a hard register.  */
 
 int
-regno_clobbered_p (unsigned int regno, rtx_insn *insn, enum machine_mode mode,
+regno_clobbered_p (unsigned int regno, rtx_insn *insn, machine_mode mode,
 		   int sets)
 {
   unsigned int nregs, endregno;
@@ -7267,7 +7272,7 @@ regno_clobbered_p (unsigned int regno, rtx_insn *insn, enum machine_mode mode,
 
 /* Find the low part, with mode MODE, of a hard regno RELOADREG.  */
 rtx
-reload_adjust_reg_for_mode (rtx reloadreg, enum machine_mode mode)
+reload_adjust_reg_for_mode (rtx reloadreg, machine_mode mode)
 {
   int regno;
 

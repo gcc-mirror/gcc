@@ -28,6 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -35,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
-#include "hashtab.h"
 #include "flags.h"
 #include "splay-tree.h"
 #include "target.h"
@@ -487,6 +494,10 @@ cp_gimplify_init_expr (tree *expr_p)
 	  if (from != sub)
 	    TREE_TYPE (from) = void_type_node;
 	}
+
+      if (cxx_dialect >= cxx14 && TREE_CODE (sub) == CONSTRUCTOR)
+	/* Handle aggregate NSDMI.  */
+	replace_placeholders (sub, to);
 
       if (t == sub)
 	break;

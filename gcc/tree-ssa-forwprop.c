@@ -24,6 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -50,10 +60,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "expr.h"
 #include "cfgloop.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dom.h"
 #include "builtins.h"
+#include "tree-cfgcleanup.h"
+#include "tree-into-ssa.h"
+#include "cfganal.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -1474,7 +1488,7 @@ constant_pointer_difference (tree p1, tree p2)
 	      off = size_binop (PLUS_EXPR, off, gimple_assign_rhs2 (stmt));
 	      p = gimple_assign_rhs1 (stmt);
 	    }
-	  else if (code == ADDR_EXPR || code == NOP_EXPR)
+	  else if (code == ADDR_EXPR || CONVERT_EXPR_CODE_P (code))
 	    p = gimple_assign_rhs1 (stmt);
 	  else
 	    break;
@@ -2080,16 +2094,6 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 			      arg2, def1_arg2);
       gimple_assign_set_rhs1 (stmt, def1_arg1);
       gimple_assign_set_rhs2 (stmt, cst);
-      update_stmt (stmt);
-      return true;
-    }
-
-  /* Canonicalize X ^ ~0 to ~X.  */
-  if (code == BIT_XOR_EXPR
-      && integer_all_onesp (arg2))
-    {
-      gimple_assign_set_rhs_with_ops (gsi, BIT_NOT_EXPR, arg1, NULL_TREE);
-      gcc_assert (gsi_stmt (*gsi) == stmt);
       update_stmt (stmt);
       return true;
     }
@@ -3161,69 +3165,6 @@ combine_conversions (gimple_stmt_iterator *gsi)
   return 0;
 }
 
-/* Combine VIEW_CONVERT_EXPRs with their defining statement.  */
-
-static bool
-simplify_vce (gimple_stmt_iterator *gsi)
-{
-  gimple stmt = gsi_stmt (*gsi);
-  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
-
-  /* Drop useless VIEW_CONVERT_EXPRs.  */
-  tree op = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-  if (useless_type_conversion_p (type, TREE_TYPE (op)))
-    {
-      gimple_assign_set_rhs1 (stmt, op);
-      update_stmt (stmt);
-      return true;
-    }
-
-  if (TREE_CODE (op) != SSA_NAME)
-    return false;
-
-  gimple def_stmt = SSA_NAME_DEF_STMT (op);
-  if (!is_gimple_assign (def_stmt))
-    return false;
-
-  tree def_op = gimple_assign_rhs1 (def_stmt);
-  switch (gimple_assign_rhs_code (def_stmt))
-    {
-    CASE_CONVERT:
-      /* Strip integral conversions that do not change the precision.  */
-      if ((INTEGRAL_TYPE_P (TREE_TYPE (op))
-	   || POINTER_TYPE_P (TREE_TYPE (op)))
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (def_op))
-	      || POINTER_TYPE_P (TREE_TYPE (def_op)))
-	  && (TYPE_PRECISION (TREE_TYPE (op))
-	      == TYPE_PRECISION (TREE_TYPE (def_op))))
-	{
-	  TREE_OPERAND (gimple_assign_rhs1 (stmt), 0) = def_op;
-	  update_stmt (stmt);
-	  return true;
-	}
-      break;
-
-    case VIEW_CONVERT_EXPR:
-      /* Series of VIEW_CONVERT_EXPRs on register operands can
-	 be contracted.  */
-      if (TREE_CODE (TREE_OPERAND (def_op, 0)) == SSA_NAME)
-	{
-	  if (useless_type_conversion_p (type,
-					 TREE_TYPE (TREE_OPERAND (def_op, 0))))
-	    gimple_assign_set_rhs1 (stmt, TREE_OPERAND (def_op, 0));
-	  else
-	    TREE_OPERAND (gimple_assign_rhs1 (stmt), 0)
-		= TREE_OPERAND (def_op, 0);
-	  update_stmt (stmt);
-	  return true;
-	}
-
-    default:;
-    }
-
-  return false;
-}
-
 /* Combine an element access with a shuffle.  Returns true if there were
    any changes made, else it returns false.  */
  
@@ -3586,6 +3527,91 @@ simplify_mult (gimple_stmt_iterator *gsi)
 
   return false;
 }
+
+
+/* Const-and-copy lattice for fold_all_stmts.  */
+static vec<tree> lattice;
+
+/* Primitive "lattice" function for gimple_simplify.  */
+
+static tree
+fwprop_ssa_val (tree name)
+{
+  /* First valueize NAME.  */
+  if (TREE_CODE (name) == SSA_NAME
+      && SSA_NAME_VERSION (name) < lattice.length ())
+    {
+      tree val = lattice[SSA_NAME_VERSION (name)];
+      if (val)
+	name = val;
+    }
+  /* We continue matching along SSA use-def edges for SSA names
+     that are not single-use.  Currently there are no patterns
+     that would cause any issues with that.  */
+  return name;
+}
+
+/* Fold all stmts using fold_stmt following only single-use chains
+   and using a simple const-and-copy lattice.  */
+
+static bool
+fold_all_stmts (struct function *fun)
+{
+  bool cfg_changed = false;
+
+  /* Combine stmts with the stmts defining their operands.  Do that
+     in an order that guarantees visiting SSA defs before SSA uses.  */
+  lattice.create (num_ssa_names);
+  lattice.quick_grow_cleared (num_ssa_names);
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
+  int postorder_num = inverted_post_order_compute (postorder);
+  for (int i = 0; i < postorder_num; ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple orig_stmt = stmt;
+
+	  if (fold_stmt (&gsi, fwprop_ssa_val))
+	    {
+	      stmt = gsi_stmt (gsi);
+	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt)
+		  && gimple_purge_dead_eh_edges (bb))
+		cfg_changed = true;
+	      /* Cleanup the CFG if we simplified a condition to
+	         true or false.  */
+	      if (gimple_code (stmt) == GIMPLE_COND
+		  && (gimple_cond_true_p (stmt)
+		      || gimple_cond_false_p (stmt)))
+		cfg_changed = true;
+	      update_stmt (stmt);
+	    }
+
+	  /* Fill up the lattice.  */
+	  if (gimple_assign_single_p (stmt))
+	    {
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  if (TREE_CODE (rhs) == SSA_NAME)
+		    lattice[SSA_NAME_VERSION (lhs)] = fwprop_ssa_val (rhs);
+		  else if (is_gimple_min_invariant (rhs))
+		    lattice[SSA_NAME_VERSION (lhs)] = rhs;
+		  else
+		    lattice[SSA_NAME_VERSION (lhs)] = lhs;
+		}
+	    }
+	}
+    }
+  free (postorder);
+  lattice.release ();
+
+  return cfg_changed;
+}
+
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -3812,8 +3838,6 @@ pass_forwprop::execute (function *fun)
 		      
 		    changed = did_something != 0;
 		  }
-		else if (code == VIEW_CONVERT_EXPR)
-		  changed = simplify_vce (&gsi);
 		else if (code == VEC_PERM_EXPR)
 		  {
 		    int did_something = simplify_permutation (&gsi);
@@ -3875,6 +3899,9 @@ pass_forwprop::execute (function *fun)
 	    }
 	}
     }
+
+  /* At the end fold all statements.  */
+  cfg_changed |= fold_all_stmts (fun);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;

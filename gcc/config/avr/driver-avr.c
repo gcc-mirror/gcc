@@ -28,22 +28,3 @@ const avr_arch_t *avr_current_arch = NULL;
 
 /* Current device.  */
 const avr_mcu_t *avr_current_device = NULL;
-
-/* Initialize avr_current_arch and avr_current_device variables.  */
-
-static void
-avr_set_current_device (const char *name)
-{
- 
- if (NULL != avr_current_arch)
-   return;
- 
-  for (avr_current_device = avr_mcu_types; avr_current_device->name;
-       avr_current_device++)
-    {
-      if (strcmp (avr_current_device->name, name) == 0)
-        break;
-    }
-
-  avr_current_arch = &avr_arch_types[avr_current_device->arch];
-}

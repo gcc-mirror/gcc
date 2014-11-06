@@ -80,6 +80,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-pass.h"
 #include "coverage.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -94,12 +105,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"
 #include "ipa-inline.h"
-#include "alloc-pool.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
@@ -1602,8 +1617,7 @@ eliminated_by_inlining_prob (gimple stmt)
          and stores to return value or parameters are often free after
          inlining dua to SRA and further combining.
          Assume that half of statements goes away.  */
-      if (rhs_code == CONVERT_EXPR
-	  || rhs_code == NOP_EXPR
+      if (CONVERT_EXPR_CODE_P (rhs_code)
 	  || rhs_code == VIEW_CONVERT_EXPR
 	  || rhs_code == ADDR_EXPR
 	  || gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
@@ -2362,7 +2376,7 @@ find_foldable_builtin_expect (basic_block bb)
                     match = true;
                     done = true;
                     break;
-                  case NOP_EXPR:
+                  CASE_CONVERT:
                     break;
                   default:
                     done = true;

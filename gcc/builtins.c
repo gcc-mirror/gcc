@@ -30,6 +30,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "tree-object-size.h"
 #include "realmpfr.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "cfgrtl.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -38,21 +46,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "flags.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "input.h"
-#include "function.h"
 #include "insn-config.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
 #include "output.h"
 #include "typeclass.h"
-#include "predict.h"
 #include "tm_p.h"
 #include "target.h"
 #include "langhooks.h"
@@ -61,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "diagnostic-core.h"
 #include "builtins.h"
+#include "asan.h"
 #include "ubsan.h"
 #include "cilk.h"
 
@@ -90,7 +93,7 @@ builtin_info_type builtin_info;
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
 
-static rtx c_readstr (const char *, enum machine_mode);
+static rtx c_readstr (const char *, machine_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
@@ -120,25 +123,25 @@ static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
 static rtx expand_builtin_va_end (tree);
 static rtx expand_builtin_va_copy (tree);
-static rtx expand_builtin_memcmp (tree, rtx, enum machine_mode);
+static rtx expand_builtin_memcmp (tree, rtx, machine_mode);
 static rtx expand_builtin_strcmp (tree, rtx);
-static rtx expand_builtin_strncmp (tree, rtx, enum machine_mode);
-static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
+static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx);
-static rtx expand_builtin_mempcpy (tree, rtx, enum machine_mode);
+static rtx expand_builtin_mempcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx,
-					enum machine_mode, int);
+					machine_mode, int);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, rtx);
-static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
+static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx);
-static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, enum machine_mode);
-static rtx expand_builtin_memset (tree, rtx, enum machine_mode);
-static rtx expand_builtin_memset_args (tree, tree, tree, rtx, enum machine_mode, tree);
+static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, machine_mode);
+static rtx expand_builtin_memset (tree, rtx, machine_mode);
+static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
-static rtx expand_builtin_strlen (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strlen (tree, rtx, machine_mode);
 static rtx expand_builtin_alloca (tree, bool);
-static rtx expand_builtin_unop (enum machine_mode, tree, rtx, rtx, optab);
+static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
@@ -195,7 +198,7 @@ static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
 
 static rtx expand_builtin_object_size (tree);
-static rtx expand_builtin_memory_chk (tree, rtx, enum machine_mode,
+static rtx expand_builtin_memory_chk (tree, rtx, machine_mode,
 				      enum built_in_function);
 static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
@@ -288,7 +291,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 {
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
   unsigned int align = BITS_PER_UNIT;
   bool known_alignment = false;
@@ -650,7 +653,7 @@ c_getstr (tree src)
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
-c_readstr (const char *str, enum machine_mode mode)
+c_readstr (const char *str, machine_mode mode)
 {
   HOST_WIDE_INT ch;
   unsigned int i, j;
@@ -824,7 +827,7 @@ static alias_set_type setjmp_alias_set = -1;
 void
 expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 {
-  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
   rtx stack_save;
   rtx mem;
 
@@ -968,7 +971,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 {
   rtx fp, lab, stack;
   rtx_insn *insn, *last;
-  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
   /* DRAP is needed for stack realign if longjmp is expanded to current
      function  */
@@ -1195,7 +1198,7 @@ expand_builtin_nonlocal_goto (tree exp)
 static void
 expand_builtin_update_setjmp_buf (rtx buf_addr)
 {
-  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
   rtx stack_save
     = gen_rtx_MEM (sa_mode,
 		   memory_address
@@ -1357,7 +1360,7 @@ apply_args_size (void)
   static int size = -1;
   int align;
   unsigned int regno;
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* The values computed by this function never change.  */
   if (size < 0)
@@ -1399,7 +1402,7 @@ apply_result_size (void)
 {
   static int size = -1;
   int align, regno;
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* The values computed by this function never change.  */
   if (size < 0)
@@ -1440,7 +1443,7 @@ static rtx
 result_vector (int savep, rtx result)
 {
   int regno, size, align, nelts;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx reg, mem;
   rtx *savevec = XALLOCAVEC (rtx, FIRST_PSEUDO_REGISTER);
 
@@ -1470,7 +1473,7 @@ expand_builtin_apply_args_1 (void)
 {
   rtx registers, tem;
   int size, align, regno;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx struct_incoming_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 1);
 
   /* Create a block where the arg-pointer, structure value address,
@@ -1575,7 +1578,7 @@ static rtx
 expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 {
   int size, align, regno;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx incoming_args, result, reg, dest, src;
   rtx_call_insn *call_insn;
   rtx old_stack_level = 0;
@@ -1742,7 +1745,7 @@ static void
 expand_builtin_return (rtx result)
 {
   int size, align, regno;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx reg;
   rtx_insn *call_fusage = 0;
 
@@ -2022,7 +2025,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   rtx op0;
   rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
-  enum machine_mode mode;
+  machine_mode mode;
   bool errno_set = false;
   bool try_widening = false;
   tree arg;
@@ -2151,7 +2154,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   int op1_type = REAL_TYPE;
   tree fndecl = get_callee_fndecl (exp);
   tree arg0, arg1;
-  enum machine_mode mode;
+  machine_mode mode;
   bool errno_set = true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -2260,7 +2263,7 @@ expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
   rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   tree arg0, arg1, arg2;
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (!validate_arglist (exp, REAL_TYPE, REAL_TYPE, REAL_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2333,7 +2336,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
   rtx op0;
   rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
-  enum machine_mode mode;
+  machine_mode mode;
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -2429,7 +2432,7 @@ interclass_mathfn_icode (tree arg, tree fndecl)
 {
   bool errno_set = false;
   optab builtin_optab = unknown_optab;
-  enum machine_mode mode;
+  machine_mode mode;
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -2477,7 +2480,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
   enum insn_code icode = CODE_FOR_nothing;
   rtx op0;
   tree fndecl = get_callee_fndecl (exp);
-  enum machine_mode mode;
+  machine_mode mode;
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -2524,7 +2527,7 @@ static rtx
 expand_builtin_sincos (tree exp)
 {
   rtx op0, op1, op2, target1, target2;
-  enum machine_mode mode;
+  machine_mode mode;
   tree arg, sinp, cosp;
   int result;
   location_t loc = EXPR_LOCATION (exp);
@@ -2578,7 +2581,7 @@ expand_builtin_cexpi (tree exp, rtx target)
 {
   tree fndecl = get_callee_fndecl (exp);
   tree arg, type;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx op0, op1, op2;
   location_t loc = EXPR_LOCATION (exp);
 
@@ -2713,7 +2716,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fallback_fn;
   tree fallback_fndecl;
-  enum machine_mode mode;
+  machine_mode mode;
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -2849,7 +2852,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
   rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   tree arg;
-  enum machine_mode mode;
+  machine_mode mode;
   enum built_in_function fallback_fn = BUILT_IN_NONE;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -2947,8 +2950,8 @@ expand_builtin_powi (tree exp, rtx target)
 {
   tree arg0, arg1;
   rtx op0, op1;
-  enum machine_mode mode;
-  enum machine_mode mode2;
+  machine_mode mode;
+  machine_mode mode2;
 
   if (! validate_arglist (exp, REAL_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2985,7 +2988,7 @@ expand_builtin_powi (tree exp, rtx target)
 
 static rtx
 expand_builtin_strlen (tree exp, rtx target,
-		       enum machine_mode target_mode)
+		       machine_mode target_mode)
 {
   if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2997,7 +3000,7 @@ expand_builtin_strlen (tree exp, rtx target,
       tree src = CALL_EXPR_ARG (exp, 0);
       rtx src_reg;
       rtx_insn *before_strlen;
-      enum machine_mode insn_mode = target_mode;
+      machine_mode insn_mode = target_mode;
       enum insn_code icode = CODE_FOR_nothing;
       unsigned int align;
 
@@ -3090,7 +3093,7 @@ expand_builtin_strlen (tree exp, rtx target,
 
 static rtx
 builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -3263,7 +3266,7 @@ expand_builtin_memcpy (tree exp, rtx target)
    stpcpy.  */
 
 static rtx
-expand_builtin_mempcpy (tree exp, rtx target, enum machine_mode mode)
+expand_builtin_mempcpy (tree exp, rtx target, machine_mode mode)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3286,7 +3289,7 @@ expand_builtin_mempcpy (tree exp, rtx target, enum machine_mode mode)
 
 static rtx
 expand_builtin_mempcpy_args (tree dest, tree src, tree len,
-			     rtx target, enum machine_mode mode, int endp)
+			     rtx target, machine_mode mode, int endp)
 {
     /* If return value is ignored, transform mempcpy into memcpy.  */
   if (target == const0_rtx && builtin_decl_implicit_p (BUILT_IN_MEMCPY))
@@ -3442,7 +3445,7 @@ expand_builtin_strcpy_args (tree dest, tree src, rtx target)
    mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
+expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
 {
   tree dst, src;
   location_t loc = EXPR_LOCATION (exp);
@@ -3518,7 +3521,7 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 
 rtx
 builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
-			  enum machine_mode mode)
+			  machine_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -3584,7 +3587,7 @@ expand_builtin_strncpy (tree exp, rtx target)
 
 rtx
 builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
   const char *c = (const char *) data;
   char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
@@ -3601,7 +3604,7 @@ builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 
 static rtx
 builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
-			enum machine_mode mode)
+			machine_mode mode)
 {
   rtx target, coeff;
   size_t size;
@@ -3626,7 +3629,7 @@ builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
    convenient).  */
 
 static rtx
-expand_builtin_memset (tree exp, rtx target, enum machine_mode mode)
+expand_builtin_memset (tree exp, rtx target, machine_mode mode)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3648,11 +3651,11 @@ expand_builtin_memset (tree exp, rtx target, enum machine_mode mode)
 
 static rtx
 expand_builtin_memset_args (tree dest, tree val, tree len,
-			    rtx target, enum machine_mode mode, tree orig_exp)
+			    rtx target, machine_mode mode, tree orig_exp)
 {
   tree fndecl, fn;
   enum built_in_function fcode;
-  enum machine_mode val_mode;
+  machine_mode val_mode;
   char c;
   unsigned int dest_align;
   rtx dest_mem, dest_addr, len_rtx;
@@ -3814,7 +3817,7 @@ expand_builtin_bzero (tree exp)
 
 static rtx
 expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
-		       ATTRIBUTE_UNUSED enum machine_mode mode)
+		       ATTRIBUTE_UNUSED machine_mode mode)
 {
   location_t loc ATTRIBUTE_UNUSED = EXPR_LOCATION (exp);
 
@@ -3836,7 +3839,7 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 
     unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
     unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
-    enum machine_mode insn_mode;
+    machine_mode insn_mode;
 
     if (HAVE_cmpmemsi)
       insn_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
@@ -3937,7 +3940,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
       /* Try to call cmpstrsi.  */
       if (HAVE_cmpstrsi)
 	{
-	  enum machine_mode insn_mode
+	  machine_mode insn_mode
 	    = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
 
 	  /* Make a place to write the result of the instruction.  */
@@ -3958,7 +3961,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 	  tree len;
 	  rtx arg3_rtx;
 
-	  enum machine_mode insn_mode
+	  machine_mode insn_mode
 	    = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
 	  tree len1 = c_strlen (arg1, 1);
 	  tree len2 = c_strlen (arg2, 1);
@@ -4012,7 +4015,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 
       if (insn)
 	{
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  emit_insn (insn);
 
 	  /* Return the value in the proper mode for this function.  */
@@ -4046,7 +4049,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 
 static rtx
 expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
-			ATTRIBUTE_UNUSED enum machine_mode mode)
+			ATTRIBUTE_UNUSED machine_mode mode)
 {
   location_t loc ATTRIBUTE_UNUSED = EXPR_LOCATION (exp);
 
@@ -4070,7 +4073,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 
     unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
     unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
-    enum machine_mode insn_mode
+    machine_mode insn_mode
       = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
 
     len1 = c_strlen (arg1, 1);
@@ -4509,7 +4512,7 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_bswap (enum machine_mode target_mode, tree exp, rtx target,
+expand_builtin_bswap (machine_mode target_mode, tree exp, rtx target,
 		      rtx subtarget)
 {
   tree arg;
@@ -4539,7 +4542,7 @@ expand_builtin_bswap (enum machine_mode target_mode, tree exp, rtx target,
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
+expand_builtin_unop (machine_mode target_mode, tree exp, rtx target,
 		     rtx subtarget, optab op_optab)
 {
   rtx op0;
@@ -4638,7 +4641,7 @@ expand_builtin_unreachable (void)
 static rtx
 expand_builtin_fabs (tree exp, rtx target, rtx subtarget)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   tree arg;
   rtx op0;
 
@@ -4835,7 +4838,7 @@ static rtx
 expand_builtin_signbit (tree exp, rtx target)
 {
   const struct real_format *fmt;
-  enum machine_mode fmode, imode, rmode;
+  machine_mode fmode, imode, rmode;
   tree arg;
   int word, bitpos;
   enum insn_code icode;
@@ -5008,7 +5011,7 @@ expand_builtin_fork_or_exec (tree fn, tree exp, rtx target, int ignore)
    FCODE_DIFF should be fcode - base, where base is the FOO_1 code for the
    group of builtins.  This gives us log2 of the mode size.  */
 
-static inline enum machine_mode
+static inline machine_mode
 get_builtin_sync_mode (int fcode_diff)
 {
   /* The size is not negotiable, so ask not to get BLKmode in return
@@ -5020,7 +5023,7 @@ get_builtin_sync_mode (int fcode_diff)
    for the builtin_sync operations.  */
 
 static rtx
-get_builtin_sync_mem (tree loc, enum machine_mode mode)
+get_builtin_sync_mem (tree loc, machine_mode mode)
 {
   rtx addr, mem;
 
@@ -5046,10 +5049,10 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
    MODE is the mode it should be in.  */
 
 static rtx
-expand_expr_force_mode (tree exp, enum machine_mode mode)
+expand_expr_force_mode (tree exp, machine_mode mode)
 {
   rtx val;
-  enum machine_mode old_mode;
+  machine_mode old_mode;
 
   val = expand_expr (exp, NULL_RTX, mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
@@ -5071,7 +5074,7 @@ expand_expr_force_mode (tree exp, enum machine_mode mode)
    fetch_and_xxx form.  */
 
 static rtx
-expand_builtin_sync_operation (enum machine_mode mode, tree exp,
+expand_builtin_sync_operation (machine_mode mode, tree exp,
 			       enum rtx_code code, bool after,
 			       rtx target)
 {
@@ -5132,7 +5135,7 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
    results; this is NOT optional if IS_BOOL is true.  */
 
 static rtx
-expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
+expand_builtin_compare_and_swap (machine_mode mode, tree exp,
 				 bool is_bool, rtx target)
 {
   rtx old_val, new_val, mem;
@@ -5166,7 +5169,7 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
    the results.  */
 
 static rtx
-expand_builtin_sync_lock_test_and_set (enum machine_mode mode, tree exp,
+expand_builtin_sync_lock_test_and_set (machine_mode mode, tree exp,
 				       rtx target)
 {
   rtx val, mem;
@@ -5181,7 +5184,7 @@ expand_builtin_sync_lock_test_and_set (enum machine_mode mode, tree exp,
 /* Expand the __sync_lock_release intrinsic.  EXP is the CALL_EXPR.  */
 
 static void
-expand_builtin_sync_lock_release (enum machine_mode mode, tree exp)
+expand_builtin_sync_lock_release (machine_mode mode, tree exp)
 {
   rtx mem;
 
@@ -5233,7 +5236,7 @@ get_memmodel (tree exp)
    TARGET is an optional place for us to store the results.  */
 
 static rtx
-expand_builtin_atomic_exchange (enum machine_mode mode, tree exp, rtx target)
+expand_builtin_atomic_exchange (machine_mode mode, tree exp, rtx target)
 {
   rtx val, mem;
   enum memmodel model;
@@ -5264,7 +5267,7 @@ expand_builtin_atomic_exchange (enum machine_mode mode, tree exp, rtx target)
    TARGET is an optional place for us to store the results.  */
 
 static rtx
-expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp, 
+expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp, 
 					rtx target)
 {
   rtx expect, desired, mem, oldval;
@@ -5336,7 +5339,7 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
    TARGET is an optional place for us to store the results.  */
 
 static rtx
-expand_builtin_atomic_load (enum machine_mode mode, tree exp, rtx target)
+expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
 {
   rtx mem;
   enum memmodel model;
@@ -5365,7 +5368,7 @@ expand_builtin_atomic_load (enum machine_mode mode, tree exp, rtx target)
    TARGET is an optional place for us to store the results.  */
 
 static rtx
-expand_builtin_atomic_store (enum machine_mode mode, tree exp)
+expand_builtin_atomic_store (machine_mode mode, tree exp)
 {
   rtx mem, val;
   enum memmodel model;
@@ -5401,7 +5404,7 @@ expand_builtin_atomic_store (enum machine_mode mode, tree exp)
    resolved to an instruction sequence.  */
 
 static rtx
-expand_builtin_atomic_fetch_op (enum machine_mode mode, tree exp, rtx target,
+expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
 				enum rtx_code code, bool fetch_after,
 				bool ignore, enum built_in_function ext_call)
 {
@@ -5471,7 +5474,7 @@ expand_builtin_atomic_fetch_op (enum machine_mode mode, tree exp, rtx target,
 static rtx
 expand_builtin_atomic_clear (tree exp) 
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx mem, ret;
   enum memmodel model;
 
@@ -5512,7 +5515,7 @@ expand_builtin_atomic_test_and_set (tree exp, rtx target)
 {
   rtx mem;
   enum memmodel model;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0);
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
@@ -5529,7 +5532,7 @@ static tree
 fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 {
   int size;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int mode_align, type_align;
 
   if (TREE_CODE (arg0) != INTEGER_CST)
@@ -5549,7 +5552,7 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 	 end before anything else has a chance to look at it.  The pointer
 	 parameter at this point is usually cast to a void *, so check for that
 	 and look past the cast.  */
-      if (TREE_CODE (arg1) == NOP_EXPR && POINTER_TYPE_P (ttype)
+      if (CONVERT_EXPR_P (arg1) && POINTER_TYPE_P (ttype)
 	  && VOID_TYPE_P (TREE_TYPE (ttype)))
 	arg1 = TREE_OPERAND (arg1, 0);
 
@@ -5756,13 +5759,21 @@ expand_stack_save (void)
    IGNORE is nonzero if the value is to be ignored.  */
 
 rtx
-expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
+expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		int ignore)
 {
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
   int flags;
+
+  /* When ASan is enabled, we don't want to expand some memory/string
+     builtins and rely on libsanitizer's hooks.  This allows us to avoid
+     redundant checks and be sure, that possible overflow will be detected
+     by ASan.  */
+
+  if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
+    return expand_call (exp, target, ignore);
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
@@ -6979,7 +6990,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
   /* Distribute the expected value over short-circuiting operators.
      See through the cast from truthvalue_type_node to long.  */
   inner_arg0 = arg0;
-  while (TREE_CODE (inner_arg0) == NOP_EXPR
+  while (CONVERT_EXPR_P (inner_arg0)
 	 && INTEGRAL_TYPE_P (TREE_TYPE (inner_arg0))
 	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner_arg0, 0))))
     inner_arg0 = TREE_OPERAND (inner_arg0, 0);
@@ -7145,7 +7156,7 @@ integer_valued_real_p (tree t)
     case REAL_CST:
       return real_isinteger (TREE_REAL_CST_PTR (t), TYPE_MODE (TREE_TYPE (t)));
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       {
 	tree type = TREE_TYPE (TREE_OPERAND (t, 0));
 	if (TREE_CODE (type) == INTEGER_TYPE)
@@ -9349,7 +9360,7 @@ fold_builtin_modf (location_t loc, tree arg0, tree arg1, tree rettype)
 static tree
 fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (!validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
@@ -9537,7 +9548,7 @@ fold_builtin_fpclassify (location_t loc, tree exp)
 {
   tree fp_nan, fp_infinite, fp_normal, fp_subnormal, fp_zero,
     arg, type, res, tmp;
-  enum machine_mode mode;
+  machine_mode mode;
   REAL_VALUE_TYPE r;
   char buf[128];
 
@@ -10681,7 +10692,7 @@ rtx
 default_expand_builtin (tree exp ATTRIBUTE_UNUSED,
 			rtx target ATTRIBUTE_UNUSED,
 			rtx subtarget ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
+			machine_mode mode ATTRIBUTE_UNUSED,
 			int ignore ATTRIBUTE_UNUSED)
 {
   return NULL_RTX;
@@ -11273,7 +11284,7 @@ expand_builtin_object_size (tree exp)
    mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
+expand_builtin_memory_chk (tree exp, rtx target, machine_mode mode,
 			   enum built_in_function fcode)
 {
   tree dest, src, len, size;

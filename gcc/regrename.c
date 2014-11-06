@@ -27,15 +27,19 @@
 #include "regs.h"
 #include "addresses.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
-#include "reload.h"
-#include "output.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
+#include "basic-block.h"
+#include "reload.h"
+#include "output.h"
 #include "recog.h"
 #include "flags.h"
 #include "obstack.h"
@@ -311,7 +315,7 @@ static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 struct du_head *this_head, HARD_REG_SET this_unavailable)
 {
-  enum machine_mode mode = GET_MODE (*this_head->first->loc);
+  machine_mode mode = GET_MODE (*this_head->first->loc);
   int nregs = hard_regno_nregs[new_reg][mode];
   int i;
   struct du_chain *tmp;
@@ -931,7 +935,7 @@ regrename_do_replace (struct du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
-  enum machine_mode mode;
+  machine_mode mode;
 
   for (chain = head->first; chain; chain = chain->next_use)
     {
@@ -1030,7 +1034,7 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 {
   struct du_head **p;
   rtx x = *loc;
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   unsigned this_regno = REGNO (x);
   int this_nregs = hard_regno_nregs[this_regno][mode];
 
@@ -1181,7 +1185,7 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 
 static void
 scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
-		  enum scan_actions action, enum machine_mode mode,
+		  enum scan_actions action, machine_mode mode,
 		  addr_space_t as)
 {
   rtx x = *loc;
@@ -1619,7 +1623,7 @@ build_def_use (basic_block bb)
 		  && REG_P (op)
 		  && !verify_reg_tracked (op))
 		{
-		  enum machine_mode mode = GET_MODE (op);
+		  machine_mode mode = GET_MODE (op);
 		  unsigned this_regno = REGNO (op);
 		  unsigned this_nregs = hard_regno_nregs[this_regno][mode];
 		  create_new_chain (this_regno, this_nregs, NULL, NULL,

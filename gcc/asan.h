@@ -36,7 +36,7 @@ extern gimple_stmt_iterator create_cond_insert_point
 extern alias_set_type asan_shadow_set;
 
 /* Shadow memory is found at
-   (address >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+   (address >> ASAN_SHADOW_SHIFT) + asan_shadow_offset ().  */
 #define ASAN_SHADOW_SHIFT	3
 
 /* Red zone size, stack and global variables are padded by ASAN_RED_ZONE_SIZE
@@ -76,4 +76,30 @@ asan_red_zone_size (unsigned int size)
   return c ? 2 * ASAN_RED_ZONE_SIZE - c : ASAN_RED_ZONE_SIZE;
 }
 
+extern bool set_asan_shadow_offset (const char *);
+
+/* Return TRUE if builtin with given FCODE will be intercepted by
+   libasan.  */
+
+static inline bool
+asan_intercepted_p (enum built_in_function fcode)
+{
+  return fcode == BUILT_IN_INDEX
+	 || fcode == BUILT_IN_MEMCHR
+	 || fcode == BUILT_IN_MEMCMP
+	 || fcode == BUILT_IN_MEMCPY
+	 || fcode == BUILT_IN_MEMMOVE
+	 || fcode == BUILT_IN_MEMSET
+	 || fcode == BUILT_IN_STRCASECMP
+	 || fcode == BUILT_IN_STRCAT
+	 || fcode == BUILT_IN_STRCHR
+	 || fcode == BUILT_IN_STRCMP
+	 || fcode == BUILT_IN_STRCPY
+	 || fcode == BUILT_IN_STRDUP
+	 || fcode == BUILT_IN_STRLEN
+	 || fcode == BUILT_IN_STRNCASECMP
+	 || fcode == BUILT_IN_STRNCAT
+	 || fcode == BUILT_IN_STRNCMP
+	 || fcode == BUILT_IN_STRNCPY;
+}
 #endif /* TREE_ASAN */

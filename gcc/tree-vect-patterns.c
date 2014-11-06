@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "target.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -42,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "cfgloop.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "params.h"
 #include "tree-data-ref.h"
@@ -738,7 +748,7 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
       new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
       /* Check if the already created pattern stmt is what we need.  */
       if (!is_gimple_assign (new_stmt)
-          || gimple_assign_rhs_code (new_stmt) != NOP_EXPR
+          || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (new_stmt))
           || TREE_TYPE (gimple_assign_lhs (new_stmt)) != new_type)
         return false;
 
@@ -943,7 +953,7 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
 
       use_stmt = vect_single_imm_use (last_stmt);
       if (!use_stmt || !is_gimple_assign (use_stmt)
-	  || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
         return NULL;
 
       use_lhs = gimple_assign_lhs (use_stmt);
@@ -1420,7 +1430,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
               new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
               /* Check if the already created pattern stmt is what we need.  */
               if (!is_gimple_assign (new_stmt)
-                  || gimple_assign_rhs_code (new_stmt) != NOP_EXPR
+                  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (new_stmt))
                   || TREE_TYPE (gimple_assign_lhs (new_stmt)) != interm_type)
                 return false;
 
@@ -2252,7 +2262,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
   optab = optab_for_tree_code (rhs_code, vectype, optab_default);
   if (optab != unknown_optab)
     {
-      enum machine_mode vec_mode = TYPE_MODE (vectype);
+      machine_mode vec_mode = TYPE_MODE (vectype);
       int icode = (int) optab_handler (optab, vec_mode);
       if (icode != CODE_FOR_nothing)
 	return NULL;
@@ -2692,7 +2702,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt), def_stmt_info;
   tree type, vectype, comp_vectype, itype = NULL_TREE, vecitype;
-  enum machine_mode cmpmode;
+  machine_mode cmpmode;
   gimple pattern_stmt, def_stmt;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
@@ -2881,7 +2891,7 @@ check_bool_pattern (tree var, loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
 	  if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE)
 	    {
-	      enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
+	      machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	      tree itype
 		= build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	      vecitype = get_vectype_for_scalar_type (itype);
@@ -3083,7 +3093,7 @@ adjust_bool_pattern (tree var, tree out_type, tree trueval,
 	  || (TYPE_PRECISION (TREE_TYPE (rhs1))
 	      != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1)))))
 	{
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
+	  machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	  itype
 	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	}
@@ -3407,7 +3417,7 @@ vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
     }
   else
     {
-      enum machine_mode vec_mode;
+      machine_mode vec_mode;
       enum insn_code icode;
       optab optab;
 

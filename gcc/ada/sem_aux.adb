@@ -282,6 +282,8 @@ package body Sem_Aux is
         (Typ : Entity_Id) return Boolean;
       --  Scans the Discriminants to see whether any are Completely_Hidden
       --  (the mechanism for describing non-specified stored discriminants)
+      --  Note that the entity list for the type may contain anonymous access
+      --  types created by expressions that constrain access discriminants.
 
       ----------------------------------------
       -- Has_Completely_Hidden_Discriminant --
@@ -296,8 +298,17 @@ package body Sem_Aux is
          pragma Assert (Ekind (Typ) = E_Discriminant);
 
          Ent := Typ;
-         while Present (Ent) and then Ekind (Ent) = E_Discriminant loop
-            if Is_Completely_Hidden (Ent) then
+         while Present (Ent) loop
+
+            --  Skip anonymous types that may be created by expressions
+            --  used as discriminant constraints on inherited discriminants.
+
+            if Is_Itype (Ent) then
+               null;
+
+            elsif  Ekind (Ent) = E_Discriminant
+              and then Is_Completely_Hidden (Ent)
+            then
                return True;
             end if;
 
@@ -322,7 +333,8 @@ package body Sem_Aux is
 
       if Has_Completely_Hidden_Discriminant (Ent) then
          while Present (Ent) loop
-            exit when Is_Completely_Hidden (Ent);
+            exit when Ekind (Ent) = E_Discriminant
+              and then Is_Completely_Hidden (Ent);
             Ent := Next_Entity (Ent);
          end loop;
       end if;

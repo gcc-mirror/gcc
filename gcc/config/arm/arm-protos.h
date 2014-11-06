@@ -44,54 +44,54 @@ extern void arm_output_fn_unwind (FILE *, bool);
   
 
 #ifdef RTX_CODE
-extern bool arm_vector_mode_supported_p (enum machine_mode);
-extern bool arm_small_register_classes_for_mode_p (enum machine_mode);
-extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
-extern bool arm_modes_tieable_p (enum machine_mode, enum machine_mode);
+extern bool arm_vector_mode_supported_p (machine_mode);
+extern bool arm_small_register_classes_for_mode_p (machine_mode);
+extern int arm_hard_regno_mode_ok (unsigned int, machine_mode);
+extern bool arm_modes_tieable_p (machine_mode, machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
-extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
+extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern int legitimate_pic_operand_p (rtx);
-extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx, rtx);
-extern bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
-extern int arm_legitimate_address_outer_p (enum machine_mode, rtx, RTX_CODE, int);
-extern int thumb_legitimate_offset_p (enum machine_mode, HOST_WIDE_INT);
-extern bool arm_legitimize_reload_address (rtx *, enum machine_mode, int, int,
+extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
+extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);
+extern int thumb_legitimate_offset_p (machine_mode, HOST_WIDE_INT);
+extern bool arm_legitimize_reload_address (rtx *, machine_mode, int, int,
 					   int);
-extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
+extern rtx thumb_legitimize_reload_address (rtx *, machine_mode, int, int,
 					    int);
-extern int thumb1_legitimate_address_p (enum machine_mode, rtx, int);
-extern bool ldm_stm_operation_p (rtx, bool, enum machine_mode mode,
+extern int thumb1_legitimate_address_p (machine_mode, rtx, int);
+extern bool ldm_stm_operation_p (rtx, bool, machine_mode mode,
                                  bool, bool);
 extern int arm_const_double_rtx (rtx);
 extern int vfp3_const_double_rtx (rtx);
-extern int neon_immediate_valid_for_move (rtx, enum machine_mode, rtx *, int *);
-extern int neon_immediate_valid_for_logic (rtx, enum machine_mode, int, rtx *,
+extern int neon_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);
+extern int neon_immediate_valid_for_logic (rtx, machine_mode, int, rtx *,
 					   int *);
-extern int neon_immediate_valid_for_shift (rtx, enum machine_mode, rtx *,
+extern int neon_immediate_valid_for_shift (rtx, machine_mode, rtx *,
 					   int *, bool);
 extern char *neon_output_logic_immediate (const char *, rtx *,
-					  enum machine_mode, int, int);
+					  machine_mode, int, int);
 extern char *neon_output_shift_immediate (const char *, char, rtx *,
-					  enum machine_mode, int, bool);
-extern void neon_pairwise_reduce (rtx, rtx, enum machine_mode,
+					  machine_mode, int, bool);
+extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
 extern rtx neon_make_constant (rtx);
 extern tree arm_builtin_vectorized_function (tree, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-extern HOST_WIDE_INT neon_element_bits (enum machine_mode);
+extern HOST_WIDE_INT neon_element_bits (machine_mode);
 extern void neon_reinterpret (rtx, rtx);
-extern void neon_emit_pair_result_insn (enum machine_mode,
+extern void neon_emit_pair_result_insn (machine_mode,
 					rtx (*) (rtx, rtx, rtx, rtx),
 					rtx, rtx, rtx);
 extern void neon_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
 extern void neon_split_vcombine (rtx op[3]);
-extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
+extern enum reg_class coproc_secondary_reload_class (machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
 
@@ -115,8 +115,8 @@ extern bool operands_ok_ldrd_strd (rtx, rtx, rtx, HOST_WIDE_INT, bool, bool);
 extern bool gen_operands_ldrd_strd (rtx *, bool, bool, bool);
 extern int arm_gen_movmemqi (rtx *);
 extern bool gen_movmem_ldrd_strd (rtx *);
-extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
-extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,
+extern machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
+extern machine_mode arm_select_dominance_cc_mode (rtx, rtx,
 						       HOST_WIDE_INT);
 extern rtx arm_gen_compare_reg (RTX_CODE, rtx, rtx, rtx);
 extern rtx arm_gen_return_addr_mask (void);
@@ -165,8 +165,8 @@ extern rtx arm_load_tp (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern bool arm_pad_arg_upward (enum machine_mode, const_tree);
-extern bool arm_pad_reg_upward (enum machine_mode, tree, int);
+extern bool arm_pad_arg_upward (machine_mode, const_tree);
+extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
 
@@ -297,7 +297,7 @@ extern bool arm_gen_setmem (rtx *);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
-extern bool arm_autoinc_modes_ok_p (enum machine_mode, enum arm_auto_incmodes);
+extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);
 
 extern void arm_emit_eabi_attribute (const char *, int, int);
 

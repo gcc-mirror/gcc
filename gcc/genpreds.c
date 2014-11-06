@@ -111,7 +111,7 @@ process_define_predicate (rtx defn, int lineno)
 
    becomes
 
-       static inline int basereg_operand_1(rtx op, enum machine_mode mode)
+       static inline int basereg_operand_1(rtx op, machine_mode mode)
        {
          if (GET_CODE (op) == SUBREG)
            op = SUBREG_REG (op);
@@ -153,7 +153,7 @@ write_predicate_subfunction (struct pred_data *p)
   p->exp = and_exp;
 
   printf ("static inline int\n"
-	  "%s_1 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)\n",
+	  "%s_1 (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n",
 	  p->name);
   print_md_ptr_loc (p->c_block);
   if (p->c_block[0] == '{')
@@ -613,9 +613,9 @@ write_one_predicate_function (struct pred_data *p)
   write_predicate_subfunction (p);
   add_mode_tests (p);
 
-  /* A normal predicate can legitimately not look at enum machine_mode
+  /* A normal predicate can legitimately not look at machine_mode
      if it accepts only CONST_INTs and/or CONST_WIDE_INT and/or CONST_DOUBLEs.  */
-  printf ("int\n%s (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)\n{\n",
+  printf ("int\n%s (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n{\n",
 	  p->name);
   write_predicate_stmts (p->exp);
   fputs ("}\n\n", stdout);
@@ -1125,7 +1125,7 @@ write_tm_constrs_h (void)
 		"{\n", c->c_name,
 		needs_op ? "op" : "ARG_UNUSED (op)");
 	if (needs_mode)
-	  puts ("  enum machine_mode mode = GET_MODE (op);");
+	  puts ("  machine_mode mode = GET_MODE (op);");
 	if (needs_ival)
 	  puts ("  HOST_WIDE_INT ival = 0;");
 	if (needs_hval)
@@ -1275,7 +1275,7 @@ write_tm_preds_h (void)
 #ifdef HAVE_MACHINE_MODES");
 
   FOR_ALL_PREDICATES (p)
-    printf ("extern int %s (rtx, enum machine_mode);\n", p->name);
+    printf ("extern int %s (rtx, machine_mode);\n", p->name);
 
   puts ("#endif /* HAVE_MACHINE_MODES */\n");
 
@@ -1434,6 +1434,8 @@ write_insn_preds_c (void)
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
+#include \"predict.h\"\n\
+#include \"basic-block.h\"\n\
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\

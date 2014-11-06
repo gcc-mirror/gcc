@@ -14533,7 +14533,7 @@
 	  UNSPEC_ROUND))]
   "TARGET_ROUND && !flag_trapping_math"
 {
-  enum machine_mode scalar_mode;
+  machine_mode scalar_mode;
   const struct real_format *fmt;
   REAL_VALUE_TYPE pred_half, half_minus_pred_half;
   rtx half, vec_half;
@@ -17211,7 +17211,7 @@
 	  [(match_operand 3 "const_int_operand" "n, n")])))]
   "TARGET_SSSE3"
 {
-  enum machine_mode imode = GET_MODE_INNER (GET_MODE (operands[0]));
+  machine_mode imode = GET_MODE_INNER (GET_MODE (operands[0]));
   operands[2] = GEN_INT (INTVAL (operands[3]) * GET_MODE_SIZE (imode));
 
   switch (which_alternative)

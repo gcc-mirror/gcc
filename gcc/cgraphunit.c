@@ -167,6 +167,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "output.h"
 #include "rtl.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -191,13 +199,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "fibheap.h"
 #include "intl.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
@@ -1544,7 +1550,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	  else if (!is_gimple_reg_type (restype))
 	    {
 	      restmp = resdecl;
-	      add_local_decl (cfun, restmp);
+
+	      if (TREE_CODE (restmp) == VAR_DECL)
+		add_local_decl (cfun, restmp);
 	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 	    }
 	  else

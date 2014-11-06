@@ -26,15 +26,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
-#include "basic-block.h"
-#include "langhooks.h"
-#include "flags.h"
-#include "hash-set.h"
+#include "predict.h"
 #include "vec.h"
+#include "hash-set.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
+#include "langhooks.h"
+#include "flags.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -408,7 +411,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     size_tree = TREE_OPERAND (exp, 1);
   else if (!VOID_TYPE_P (TREE_TYPE (exp)))
     {
-      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+      machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else

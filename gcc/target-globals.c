@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "expmed.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "cfgloop.h"

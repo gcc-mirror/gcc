@@ -40,6 +40,7 @@
 #include "varasm.h"
 #include "calls.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
 #include "hashtab.h"
@@ -54,6 +55,14 @@
 #include "tm_p.h"
 #include "langhooks.h"
 #include "hash-table.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -88,22 +97,22 @@ static int m32c_comp_type_attributes (const_tree, const_tree);
 static bool m32c_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
-static bool m32c_legitimate_address_p (enum machine_mode, rtx, bool);
-static bool m32c_addr_space_legitimate_address_p (enum machine_mode, rtx, bool, addr_space_t);
-static rtx m32c_function_arg (cumulative_args_t, enum machine_mode,
+static bool m32c_legitimate_address_p (machine_mode, rtx, bool);
+static bool m32c_addr_space_legitimate_address_p (machine_mode, rtx, bool, addr_space_t);
+static rtx m32c_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
-static bool m32c_pass_by_reference (cumulative_args_t, enum machine_mode,
+static bool m32c_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
-static void m32c_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void m32c_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
-static unsigned int m32c_function_arg_boundary (enum machine_mode, const_tree);
+static unsigned int m32c_function_arg_boundary (machine_mode, const_tree);
 static int m32c_pushm_popm (Push_Pop_Type);
 static bool m32c_strict_argument_naming (cumulative_args_t);
 static rtx m32c_struct_value_rtx (tree, int);
-static rtx m32c_subreg (enum machine_mode, rtx, enum machine_mode, int);
+static rtx m32c_subreg (machine_mode, rtx, machine_mode, int);
 static int need_to_save (int);
 static rtx m32c_function_value (const_tree, const_tree, bool);
-static rtx m32c_libcall_value (enum machine_mode, const_rtx);
+static rtx m32c_libcall_value (machine_mode, const_rtx);
 
 /* Returns true if an address is specified, else false.  */
 static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
@@ -283,7 +292,7 @@ encode_pattern (rtx x)
    by print_operand().  */
 
 static const char *
-reg_name_with_mode (int regno, enum machine_mode mode)
+reg_name_with_mode (int regno, machine_mode mode)
 {
   int mlen = GET_MODE_SIZE (mode);
   if (regno == R0_REGNO && mlen == 1)
@@ -371,7 +380,7 @@ reduce_class (reg_class_t original_class, reg_class_t limiting_class,
 /* Used by m32c_register_move_cost to determine if a move is
    impossibly expensive.  */
 static bool
-class_can_hold_mode (reg_class_t rclass, enum machine_mode mode)
+class_can_hold_mode (reg_class_t rclass, machine_mode mode)
 {
   /* Cache the results:  0=untested  1=no  2=yes */
   static char results[LIM_REG_CLASSES][MAX_MACHINE_MODE];
@@ -553,7 +562,7 @@ m32c_conditional_register_usage (void)
    different registers are different sizes from each other, *and* may
    be different sizes in different chip families.  */
 static int
-m32c_hard_regno_nregs_1 (int regno, enum machine_mode mode)
+m32c_hard_regno_nregs_1 (int regno, machine_mode mode)
 {
   if (regno == FLG_REGNO && mode == CCmode)
     return 1;
@@ -579,7 +588,7 @@ m32c_hard_regno_nregs_1 (int regno, enum machine_mode mode)
 }
 
 int
-m32c_hard_regno_nregs (int regno, enum machine_mode mode)
+m32c_hard_regno_nregs (int regno, machine_mode mode)
 {
   int rv = m32c_hard_regno_nregs_1 (regno, mode);
   return rv ? rv : 1;
@@ -588,7 +597,7 @@ m32c_hard_regno_nregs (int regno, enum machine_mode mode)
 /* Implements HARD_REGNO_MODE_OK.  The above function does the work
    already; just test its return value.  */
 int
-m32c_hard_regno_ok (int regno, enum machine_mode mode)
+m32c_hard_regno_ok (int regno, machine_mode mode)
 {
   return m32c_hard_regno_nregs_1 (regno, mode) != 0;
 }
@@ -598,7 +607,7 @@ m32c_hard_regno_ok (int regno, enum machine_mode mode)
    bigger than our registers anyway, it's easier to implement this
    function that way, leaving QImode as the only unique case.  */
 int
-m32c_modes_tieable_p (enum machine_mode m1, enum machine_mode m2)
+m32c_modes_tieable_p (machine_mode m1, machine_mode m2)
 {
   if (GET_MODE_SIZE (m1) == GET_MODE_SIZE (m2))
     return 1;
@@ -727,7 +736,7 @@ m32c_preferred_output_reload_class (rtx x, reg_class_t rclass)
    address registers for reloads since they're needed for address
    reloads.  */
 int
-m32c_limit_reload_class (enum machine_mode mode, int rclass)
+m32c_limit_reload_class (machine_mode mode, int rclass)
 {
 #if DEBUG_RELOAD
   fprintf (stderr, "limit_reload_class for %s: %s ->",
@@ -755,7 +764,7 @@ m32c_limit_reload_class (enum machine_mode mode, int rclass)
    reloaded through appropriately sized general or address
    registers.  */
 int
-m32c_secondary_reload_class (int rclass, enum machine_mode mode, rtx x)
+m32c_secondary_reload_class (int rclass, machine_mode mode, rtx x)
 {
   int cc = class_contents[rclass][0];
 #if DEBUG0
@@ -796,7 +805,7 @@ m32c_class_likely_spilled_p (reg_class_t regclass)
 #define TARGET_CLASS_MAX_NREGS m32c_class_max_nregs
 
 static unsigned char
-m32c_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
+m32c_class_max_nregs (reg_class_t regclass, machine_mode mode)
 {
   int rn;
   unsigned char max = 0;
@@ -816,8 +825,8 @@ m32c_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
    registers (well, it does on a0/a1 but if we let gcc do that, reload
    suffers).  Otherwise, we allow changes to larger modes.  */
 int
-m32c_cannot_change_mode_class (enum machine_mode from,
-			       enum machine_mode to, int rclass)
+m32c_cannot_change_mode_class (machine_mode from,
+			       machine_mode to, int rclass)
 {
   int rn;
 #if DEBUG0
@@ -954,7 +963,7 @@ m32c_matches_constraint_p (rtx value, int constraint)
 rtx
 m32c_return_addr_rtx (int count)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int offset;
   rtx ra_mem;
 
@@ -1181,7 +1190,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
 
       if (ppt == PP_pushm)
 	{
-	  enum machine_mode mode = (bytes == 2) ? HImode : SImode;
+	  machine_mode mode = (bytes == 2) ? HImode : SImode;
 	  rtx addr;
 
 	  /* Always use stack_pointer_rtx instead of calling
@@ -1336,7 +1345,7 @@ m32c_push_rounding (int n)
 #define TARGET_FUNCTION_ARG m32c_function_arg
 static rtx
 m32c_function_arg (cumulative_args_t ca_v,
-		   enum machine_mode mode, const_tree type, bool named)
+		   machine_mode mode, const_tree type, bool named)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
@@ -1389,7 +1398,7 @@ m32c_function_arg (cumulative_args_t ca_v,
 #define TARGET_PASS_BY_REFERENCE m32c_pass_by_reference
 static bool
 m32c_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
+			machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type ATTRIBUTE_UNUSED,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -1419,7 +1428,7 @@ m32c_init_cumulative_args (CUMULATIVE_ARGS * ca,
 #define TARGET_FUNCTION_ARG_ADVANCE m32c_function_arg_advance
 static void
 m32c_function_arg_advance (cumulative_args_t ca_v,
-			   enum machine_mode mode ATTRIBUTE_UNUSED,
+			   machine_mode mode ATTRIBUTE_UNUSED,
 			   const_tree type ATTRIBUTE_UNUSED,
 			   bool named ATTRIBUTE_UNUSED)
 {
@@ -1435,7 +1444,7 @@ m32c_function_arg_advance (cumulative_args_t ca_v,
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY m32c_function_arg_boundary
 static unsigned int
-m32c_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+m32c_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 			    const_tree type ATTRIBUTE_UNUSED)
 {
   return (TARGET_A16 ? 8 : 16);
@@ -1456,7 +1465,7 @@ m32c_function_arg_regno_p (int r)
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE m32c_valid_pointer_mode
 static bool
-m32c_valid_pointer_mode (enum machine_mode mode)
+m32c_valid_pointer_mode (machine_mode mode)
 {
   if (mode == HImode
       || mode == PSImode
@@ -1480,7 +1489,7 @@ m32c_valid_pointer_mode (enum machine_mode mode)
 #define TARGET_LIBCALL_VALUE m32c_libcall_value
 
 static rtx
-m32c_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+m32c_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   /* return reg or parallel */
 #if 0
@@ -1542,7 +1551,7 @@ m32c_function_value (const_tree valtype,
 		     bool outgoing ATTRIBUTE_UNUSED)
 {
   /* return reg or parallel */
-  const enum machine_mode mode = TYPE_MODE (valtype);
+  const machine_mode mode = TYPE_MODE (valtype);
   return m32c_libcall_value (mode, NULL_RTX);
 }
 
@@ -1664,7 +1673,7 @@ m32c_trampoline_init (rtx m_tramp, tree fndecl, rtx chainval)
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P m32c_legitimate_address_p
 bool
-m32c_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+m32c_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   int mode_adjust;
   if (CONSTANT_P (x))
@@ -1844,7 +1853,7 @@ m32c_reg_ok_for_base_p (rtx x, int strict)
 #define TARGET_LEGITIMIZE_ADDRESS m32c_legitimize_address
 static rtx
 m32c_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			 enum machine_mode mode)
+			 machine_mode mode)
 {
 #if DEBUG0
   fprintf (stderr, "m32c_legitimize_address for mode %s\n", mode_name[mode]);
@@ -1872,7 +1881,7 @@ m32c_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 /* Implements LEGITIMIZE_RELOAD_ADDRESS.  See comment above.  */
 int
 m32c_legitimize_reload_address (rtx * x,
-				enum machine_mode mode,
+				machine_mode mode,
 				int opnum,
 				int type, int ind_levels ATTRIBUTE_UNUSED)
 {
@@ -1935,7 +1944,7 @@ m32c_legitimize_reload_address (rtx * x,
 /* Return the appropriate mode for a named address pointer.  */
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE m32c_addr_space_pointer_mode
-static enum machine_mode
+static machine_mode
 m32c_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1952,7 +1961,7 @@ m32c_addr_space_pointer_mode (addr_space_t addrspace)
 /* Return the appropriate mode for a named address address.  */
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE m32c_addr_space_address_mode
-static enum machine_mode
+static machine_mode
 m32c_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1971,7 +1980,7 @@ m32c_addr_space_address_mode (addr_space_t addrspace)
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
   m32c_addr_space_legitimate_address_p
 static bool
-m32c_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
+m32c_addr_space_legitimate_address_p (machine_mode mode, rtx x,
 				      bool strict, addr_space_t as)
 {
   if (as == ADDR_SPACE_FAR)
@@ -2060,7 +2069,7 @@ m32c_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
 #undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
 #define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS m32c_addr_space_legitimize_address
 static rtx
-m32c_addr_space_legitimize_address (rtx x, rtx oldx, enum machine_mode mode,
+m32c_addr_space_legitimize_address (rtx x, rtx oldx, machine_mode mode,
 				    addr_space_t as)
 {
   if (as != ADDR_SPACE_GENERIC)
@@ -2153,7 +2162,7 @@ m32c_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 #define TARGET_REGISTER_MOVE_COST m32c_register_move_cost
 
 static int
-m32c_register_move_cost (enum machine_mode mode, reg_class_t from,
+m32c_register_move_cost (machine_mode mode, reg_class_t from,
 			 reg_class_t to)
 {
   int cost = COSTS_N_INSNS (3);
@@ -2201,7 +2210,7 @@ m32c_register_move_cost (enum machine_mode mode, reg_class_t from,
 #define TARGET_MEMORY_MOVE_COST m32c_memory_move_cost
 
 static int
-m32c_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+m32c_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 		       reg_class_t rclass ATTRIBUTE_UNUSED,
 		       bool in ATTRIBUTE_UNUSED)
 {
@@ -2294,7 +2303,7 @@ m32c_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST m32c_address_cost
 static int
-m32c_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 		   addr_space_t as ATTRIBUTE_UNUSED,
 		   bool speed ATTRIBUTE_UNUSED)
 {
@@ -3138,7 +3147,7 @@ m32c_illegal_subreg_p (rtx op)
 {
   int offset;
   unsigned int i;
-  enum machine_mode src_mode, dest_mode;
+  machine_mode src_mode, dest_mode;
 
   if (GET_CODE (op) == MEM
       && ! m32c_legitimate_address_p (Pmode, XEXP (op, 0), false))
@@ -3192,7 +3201,7 @@ m32c_illegal_subreg_p (rtx op)
    number of address registers, and we can get into a situation where
    we need three of them when we only have two.  */
 bool
-m32c_mov_ok (rtx * operands, enum machine_mode mode ATTRIBUTE_UNUSED)
+m32c_mov_ok (rtx * operands, machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -3233,7 +3242,7 @@ m32c_mov_ok (rtx * operands, enum machine_mode mode ATTRIBUTE_UNUSED)
    location, can be combined into single SImode mov instruction.  */
 bool
 m32c_immd_dbl_mov (rtx * operands ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED)
+		   machine_mode mode ATTRIBUTE_UNUSED)
 {
   /* ??? This relied on the now-defunct MEM_SCALAR and MEM_IN_STRUCT_P
      flags.  */
@@ -3245,8 +3254,8 @@ m32c_immd_dbl_mov (rtx * operands ATTRIBUTE_UNUSED,
 /* Subregs are non-orthogonal for us, because our registers are all
    different sizes.  */
 static rtx
-m32c_subreg (enum machine_mode outer,
-	     rtx x, enum machine_mode inner, int byte)
+m32c_subreg (machine_mode outer,
+	     rtx x, machine_mode inner, int byte)
 {
   int r, nr = -1;
 
@@ -3333,7 +3342,7 @@ m32c_subreg (enum machine_mode outer,
 /* Used to emit move instructions.  We split some moves,
    and avoid mem-mem moves.  */
 int
-m32c_prepare_move (rtx * operands, enum machine_mode mode)
+m32c_prepare_move (rtx * operands, machine_mode mode)
 {
   if (far_addr_space_p (operands[0])
       && CONSTANT_P (operands[1]))
@@ -3395,12 +3404,12 @@ m32c_split_psi_p (rtx * operands)
    (define_expand), 1 if it is not optional (define_insn_and_split),
    and 3 for define_split (alternate api). */
 int
-m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
+m32c_split_move (rtx * operands, machine_mode mode, int split_all)
 {
   rtx s[4], d[4];
   int parts, si, di, rev = 0;
   int rv = 0, opi = 2;
-  enum machine_mode submode = HImode;
+  machine_mode submode = HImode;
   rtx *ops, local_ops[10];
 
   /* define_split modifies the existing operands, but the other two
@@ -3736,7 +3745,7 @@ shift_gen_func_for (int mode, int code)
 int
 m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
   shift_gen_func func = shift_gen_func_for (mode, shift_code);
   rtx temp;
 
@@ -4175,7 +4184,7 @@ m32c_emit_epilogue (void)
 
   if (cfun->machine->is_interrupt)
     {
-      enum machine_mode spmode = TARGET_A16 ? HImode : PSImode;
+      machine_mode spmode = TARGET_A16 ? HImode : PSImode;
 
       /* REIT clears B flag and restores $fp for us, but we still
 	 have to fix up the stack.  USE_RTS just means we didn't

@@ -211,10 +211,10 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 #if GCC_VERSION >= 4001
 #define GET_MODE_INNER(MODE) \
-  ((enum machine_mode) (__builtin_constant_p (MODE) \
+  ((machine_mode) (__builtin_constant_p (MODE) \
 			? mode_inner_inline (MODE) : mode_inner[MODE]))
 #else
-#define GET_MODE_INNER(MODE) ((enum machine_mode) mode_inner[MODE])
+#define GET_MODE_INNER(MODE) ((machine_mode) mode_inner[MODE])
 #endif
 
 /* Get the size in bytes or bites of the basic parts of an
@@ -247,36 +247,36 @@ extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
-#define GET_MODE_WIDER_MODE(MODE) ((enum machine_mode) mode_wider[MODE])
+#define GET_MODE_WIDER_MODE(MODE) ((machine_mode) mode_wider[MODE])
 
 /* For scalars, this is a mode with twice the precision.  For vectors,
    this is a mode with the same inner mode but with twice the elements.  */
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
-#define GET_MODE_2XWIDER_MODE(MODE) ((enum machine_mode) mode_2xwider[MODE])
+#define GET_MODE_2XWIDER_MODE(MODE) ((machine_mode) mode_2xwider[MODE])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
 
-extern enum machine_mode mode_for_size (unsigned int, enum mode_class, int);
+extern machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
 /* Similar, but find the smallest mode for a given width.  */
 
-extern enum machine_mode smallest_mode_for_size (unsigned int,
+extern machine_mode smallest_mode_for_size (unsigned int,
 						 enum mode_class);
 
 
 /* Return an integer mode of the exact same size as the input mode,
    or BLKmode on failure.  */
 
-extern enum machine_mode int_mode_for_mode (enum machine_mode);
+extern machine_mode int_mode_for_mode (machine_mode);
 
-extern enum machine_mode bitwise_mode_for_mode (enum machine_mode);
+extern machine_mode bitwise_mode_for_mode (machine_mode);
 
 /* Return a mode that is suitable for representing a vector,
    or BLKmode on failure.  */
 
-extern enum machine_mode mode_for_vector (enum machine_mode, unsigned);
+extern machine_mode mode_for_vector (machine_mode, unsigned);
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator
@@ -285,11 +285,11 @@ public:
   bit_field_mode_iterator (HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, HOST_WIDE_INT,
 			   unsigned int, bool);
-  bool next_mode (enum machine_mode *);
+  bool next_mode (machine_mode *);
   bool prefer_smaller_modes ();
 
 private:
-  enum machine_mode m_mode;
+  machine_mode m_mode;
   /* We use signed values here because the bit position can be negative
      for invalid input such as gcc.dg/pr48335-8.c.  */
   HOST_WIDE_INT m_bitsize;
@@ -303,36 +303,36 @@ private:
 
 /* Find the best mode to use to access a bit field.  */
 
-extern enum machine_mode get_best_mode (int, int,
+extern machine_mode get_best_mode (int, int,
 					unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT,
 					unsigned int,
-					enum machine_mode, bool);
+					machine_mode, bool);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
 extern CONST_MODE_BASE_ALIGN unsigned char mode_base_align[NUM_MACHINE_MODES];
 
-extern unsigned get_mode_alignment (enum machine_mode);
+extern unsigned get_mode_alignment (machine_mode);
 
 #define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
 
 /* Get the precision of the mode or its inner mode if it has one.  */
 
-extern unsigned int element_precision (enum machine_mode);
+extern unsigned int element_precision (machine_mode);
 
 /* For each class, get the narrowest mode in that class.  */
 
 extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
 #define GET_CLASS_NARROWEST_MODE(CLASS) \
-  ((enum machine_mode) class_narrowest_mode[CLASS])
+  ((machine_mode) class_narrowest_mode[CLASS])
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */
 
-extern enum machine_mode byte_mode;
-extern enum machine_mode word_mode;
-extern enum machine_mode ptr_mode;
+extern machine_mode byte_mode;
+extern machine_mode word_mode;
+extern machine_mode ptr_mode;
 
 /* Target-dependent machine mode initialization - in insn-modes.c.  */
 extern void init_adjust_machine_modes (void);
@@ -348,7 +348,7 @@ extern void init_adjust_machine_modes (void);
 typedef struct {
   /* These parts are initailized by genmodes output */
   unsigned int bitsize;
-  enum machine_mode m;
+  machine_mode m;
   /* RID_* is RID_INTN_BASE + index into this array */
 } int_n_data_t;
 

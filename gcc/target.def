@@ -494,7 +494,7 @@ in bits.\n\
 The default version of this function takes care of putting symbolic\n\
 constants in @code{flag_pic} mode in @code{data_section} and everything\n\
 else in @code{readonly_data_section}.",
- section *, (enum machine_mode mode, rtx x, unsigned HOST_WIDE_INT align),
+ section *, (machine_mode mode, rtx x, unsigned HOST_WIDE_INT align),
  default_select_rtx_section)
 
 /* Select a unique section name for DECL.  RELOC is the same as
@@ -1504,7 +1504,7 @@ DEFHOOK
 (reassociation_width,
 "This hook is called by tree reassociator to determine a level of\n\
 parallelism required in output calculations chain.",
-int, (unsigned int opc, enum machine_mode mode),
+int, (unsigned int opc, machine_mode mode),
 hook_int_uint_mode_1)
 
 HOOK_VECTOR_END (sched)
@@ -1630,7 +1630,7 @@ DEFHOOK
 DEFHOOK
 (vec_perm_const_ok,
  "Return true if a vector created for @code{vec_perm_const} is valid.",
- bool, (enum machine_mode, const unsigned char *sel),
+ bool, (machine_mode, const unsigned char *sel),
  NULL)
 
 /* Return true if the target supports misaligned store/load of a
@@ -1644,7 +1644,7 @@ parameter.  The vector store/load should be of machine mode @var{mode} and\n\
 the elements in the vectors should be of type @var{type}.  @var{is_packed}\n\
 parameter is true if the memory access is defined in a packed struct.",
  bool,
- (enum machine_mode mode, const_tree type, int misalignment, bool is_packed),
+ (machine_mode mode, const_tree type, int misalignment, bool is_packed),
  default_builtin_support_vector_misalignment)
 
 /* Return the builtin decl needed to load a vector of TYPE.  */
@@ -1673,8 +1673,8 @@ DEFHOOK
 mode @var{mode}.  The default is\n\
 equal to @code{word_mode}, because the vectorizer can do some\n\
 transformations even in absence of specialized @acronym{SIMD} hardware.",
- enum machine_mode,
- (enum machine_mode mode),
+ machine_mode,
+ (machine_mode mode),
  default_preferred_simd_mode)
 
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
@@ -1778,7 +1778,7 @@ actions then, you should have @code{TARGET_OPTION_OVERRIDE} call\n\
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
- enum machine_mode, (void),
+ machine_mode, (void),
  default_eh_return_filter_mode)
 
 /* Return machine mode for libgcc expanded cmp instructions.  */
@@ -1788,7 +1788,7 @@ DEFHOOK
 of compare instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- enum machine_mode, (void),
+ machine_mode, (void),
  default_libgcc_cmp_return_mode)
 
 /* Return machine mode for libgcc expanded shift instructions.  */
@@ -1798,7 +1798,7 @@ DEFHOOK
 of shift instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- enum machine_mode, (void),
+ machine_mode, (void),
  default_libgcc_shift_count_mode)
 
 /* Return machine mode to be used for _Unwind_Word type.  */
@@ -1806,7 +1806,7 @@ DEFHOOK
 (unwind_word_mode,
  "Return machine mode to be used for @code{_Unwind_Word} type.\n\
 The default is to use @code{word_mode}.",
- enum machine_mode, (void),
+ machine_mode, (void),
  default_unwind_word_mode)
 
 /* Given two decls, merge their attributes and return the result.  */
@@ -2063,7 +2063,7 @@ convenient, and have mode @var{mode} if that is convenient.\n\
 ignored.  This function should return the result of the call to the\n\
 built-in function.",
  rtx,
- (tree exp, rtx target, rtx subtarget, enum machine_mode mode, int ignore),
+ (tree exp, rtx target, rtx subtarget, machine_mode mode, int ignore),
  default_expand_builtin)
 
 /* Select a replacement for a target-specific builtin.  This is done
@@ -2342,7 +2342,7 @@ DEFHOOK
 @var{x} satisfies @code{CONSTANT_P}, so you need not check this.\n\
 \n\
 The default definition returns true.",
- bool, (enum machine_mode mode, rtx x),
+ bool, (machine_mode mode, rtx x),
  hook_bool_mode_rtx_true)
 
 /* True if the constant X cannot be placed in the constant pool.  */
@@ -2359,7 +2359,7 @@ deciding that a non-legitimate constant would be better reloaded\n\
 from the constant pool instead of spilling and reloading a register\n\
 holding the constant.  This restriction is often true of addresses\n\
 of TLS symbols for various targets.",
- bool, (enum machine_mode mode, rtx x),
+ bool, (machine_mode mode, rtx x),
  hook_bool_mode_rtx_false)
 
 DEFHOOK_UNDOC
@@ -2422,7 +2422,7 @@ the target supports only emulated TLS, it\n\
 is safe to omit this hook or make it return @var{x} if it cannot find\n\
 a valid way to legitimize the address.  But often a machine-dependent\n\
 strategy can generate better code.",
- rtx, (rtx x, rtx oldx, enum machine_mode mode),
+ rtx, (rtx x, rtx oldx, machine_mode mode),
  default_legitimize_address)
 
 /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
@@ -2512,7 +2512,7 @@ that case and the non-strict variant otherwise.\n\
 \n\
 Using the hook is usually simpler because it limits the number of\n\
 files that are recompiled when changes are made.",
- bool, (enum machine_mode mode, rtx x, bool strict),
+ bool, (machine_mode mode, rtx x, bool strict),
  default_legitimate_address_p)
 
 /* True if the given constant can be put into an object_block.  */
@@ -2523,7 +2523,7 @@ be placed in an @code{object_block} structure.  @var{mode} is the mode\n\
 of @var{x}.\n\
 \n\
 The default version returns false for all constants.",
- bool, (enum machine_mode mode, const_rtx x),
+ bool, (machine_mode mode, const_rtx x),
  hook_bool_mode_const_rtx_false)
 
 /* True if the given decl can be put into an object_block.  */
@@ -2750,7 +2750,7 @@ and 0 otherwise.  This definition is always safe, but if\n\
 @code{SHIFT_COUNT_TRUNCATED} is false, and some shift patterns\n\
 nevertheless truncate the shift count, you may get better code\n\
 by overriding it.",
- unsigned HOST_WIDE_INT, (enum machine_mode mode),
+ unsigned HOST_WIDE_INT, (machine_mode mode),
  default_shift_truncation_mask)
 
 /* Return the number of divisions in the given MODE that should be present,
@@ -2764,7 +2764,7 @@ the reciprocal.  This target hook specifies the minimum number of divisions\n\
 that should be there for GCC to perform the optimization for a variable\n\
 of mode @var{mode}.  The default implementation returns 3 if the machine\n\
 has an instruction for the division, and 2 if it does not.",
- unsigned int, (enum machine_mode mode),
+ unsigned int, (machine_mode mode),
  default_min_divisions_for_recip_mul)
 
 /* If the representation of integral MODE is such that values are
@@ -2799,7 +2799,7 @@ extension.\n\
 In order to enforce the representation of @code{mode},\n\
 @code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
- int, (enum machine_mode mode, enum machine_mode rep_mode),
+ int, (machine_mode mode, machine_mode rep_mode),
  default_mode_rep_extended)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
@@ -2808,7 +2808,7 @@ DEFHOOK
  "Define this to return nonzero if the port can handle pointers\n\
 with machine mode @var{mode}.  The default version of this\n\
 hook returns true for both @code{ptr_mode} and @code{Pmode}.",
- bool, (enum machine_mode mode),
+ bool, (machine_mode mode),
  default_valid_pointer_mode)
 
 /* Disambiguate with errno.  */
@@ -2834,7 +2834,7 @@ DEFHOOK
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{ptr_mode} for the\n\
 generic address space only.",
- enum machine_mode, (addr_space_t address_space),
+ machine_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
 /* MODE to use for an address in another address space.  */
@@ -2844,7 +2844,7 @@ DEFHOOK
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{Pmode} for the\n\
 generic address space only.",
- enum machine_mode, (addr_space_t address_space),
+ machine_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE")))
@@ -2858,7 +2858,7 @@ except that it includes explicit named address space support.  The default\n\
 version of this hook returns true for the modes returned by either the\n\
 @code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}\n\
 target hooks for the given address space.",
- bool, (enum machine_mode mode, addr_space_t as),
+ bool, (machine_mode mode, addr_space_t as),
  default_addr_space_valid_pointer_mode)
 
 /* True if an address is a valid memory address to a given named address
@@ -2871,7 +2871,7 @@ parameter says whether strict addressing is in effect after reload has\n\
 finished.  This target hook is the same as the\n\
 @code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes\n\
 explicit named address space support.",
- bool, (enum machine_mode mode, rtx exp, bool strict, addr_space_t as),
+ bool, (machine_mode mode, rtx exp, bool strict, addr_space_t as),
  default_addr_space_legitimate_address_p)
 
 /* Return an updated address to convert an invalid pointer to a named
@@ -2883,7 +2883,7 @@ DEFHOOK
 with mode @var{mode} in the named address space @var{as}.  This target\n\
 hook is the same as the @code{TARGET_LEGITIMIZE_ADDRESS} target hook,\n\
 except that it includes explicit named address space support.",
- rtx, (rtx x, rtx oldx, enum machine_mode mode, addr_space_t as),
+ rtx, (rtx x, rtx oldx, machine_mode mode, addr_space_t as),
  default_addr_space_legitimize_address)
 
 /* True if one named address space is a subset of another named address. */
@@ -2929,7 +2929,7 @@ The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
 code in @file{optabs.c}.",
- bool, (enum machine_mode mode),
+ bool, (machine_mode mode),
  default_scalar_mode_supported_p)
 
 /* Similarly for vector modes.  "Supported" here is less strict.  At
@@ -2940,7 +2940,7 @@ DEFHOOK
  "Define this to return nonzero if the port is prepared to handle\n\
 insns involving vector mode @var{mode}.  At the very least, it\n\
 must have move patterns for this mode.",
- bool, (enum machine_mode mode),
+ bool, (machine_mode mode),
  hook_bool_mode_false)
 
 DEFHOOK
@@ -2982,7 +2982,7 @@ typedef struct int8x8x3_t\n\
 If this hook allows @code{val} to have a scalar mode, then\n\
 @code{int8x8x3_t} can have the same mode.  GCC can then store\n\
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.",
- bool, (enum machine_mode mode, unsigned HOST_WIDE_INT nelems),
+ bool, (machine_mode mode, unsigned HOST_WIDE_INT nelems),
  hook_bool_mode_uhwi_false)
 
 DEFHOOK
@@ -2992,7 +2992,7 @@ floating-point mode @var{mode}, which is known to pass \n\
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
 hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
 @code{XFmode} and @code{TFmode}, if such modes exist.",
- bool, (enum machine_mode mode),
+ bool, (machine_mode mode),
  default_libgcc_floating_mode_supported_p)
 
 /* Compute cost of moving data from a register of class FROM to one of
@@ -3017,7 +3017,7 @@ allow reload to verify that the constraints are met.  You should do this\n\
 if the @samp{mov@var{m}} pattern's constraints do not allow such copying.\n\
 \n\
 The default version of this function returns 2.",
- int, (enum machine_mode mode, reg_class_t from, reg_class_t to),
+ int, (machine_mode mode, reg_class_t from, reg_class_t to),
  default_register_move_cost)
 
 /* Compute cost of moving registers to/from memory.  */
@@ -3046,8 +3046,45 @@ secondary register in the conventional way but the default base value of\n\
 4 is not correct for your machine, use this target hook to add some other\n\
 value to the result of that function.  The arguments to that function\n\
 are the same as to this target hook.",
- int, (enum machine_mode mode, reg_class_t rclass, bool in),
+ int, (machine_mode mode, reg_class_t rclass, bool in),
  default_memory_move_cost)
+
+DEFHOOK
+(use_by_pieces_infrastructure_p,
+ "GCC will attempt several strategies when asked to copy between\n\
+two areas of memory, or to set, clear or store to memory, for example\n\
+when copying a @code{struct}. The @code{by_pieces} infrastructure\n\
+implements such memory operations as a sequence of load, store or move\n\
+insns.  Alternate strategies are to expand the\n\
+@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit\n\
+unit-by-unit, loop-based operations.\n\
+\n\
+This target hook should return true if, for a memory operation with a\n\
+given @var{size} and @var{alignment}, using the @code{by_pieces}\n\
+infrastructure is expected to result in better code generation.\n\
+Both @var{size} and @var{alignment} are measured in terms of storage\n\
+units.\n\
+\n\
+The parameter @var{op} is one of: @code{CLEAR_BY_PIECES},\n\
+@code{MOVE_BY_PIECES}, @code{SET_BY_PIECES}, @code{STORE_BY_PIECES}.\n\
+These describe the type of memory operation under consideration.\n\
+\n\
+The parameter @var{speed_p} is true if the code is currently being\n\
+optimized for speed rather than size.\n\
+\n\
+Returning true for higher values of @var{size} can improve code generation\n\
+for speed if the target does not provide an implementation of the\n\
+@code{movmem} or @code{setmem} standard names, if the @code{movmem} or\n\
+@code{setmem} implementation would be more expensive than a sequence of\n\
+insns, or if the overhead of a library call would dominate that of\n\
+the body of the memory operation.\n\
+\n\
+Returning true for higher values of @code{size} may also cause an increase\n\
+in code size, for example where the number of insns emitted to perform a\n\
+move would be greater than that of a library call.",
+ bool, (unsigned int size, unsigned int alignment,
+        enum by_pieces_operation op, bool speed_p),
+ default_use_by_pieces_infrastructure_p)
 
 /* True for MODE if the target expects that registers in this mode will
    be allocated to registers in a small register class.  The compiler is
@@ -3084,7 +3121,7 @@ unnecessarily define it, you will reduce the amount of optimizations\n\
 that can be performed in some cases.  If you do not define this hook\n\
 to return a nonzero value when it is required, the compiler will run out\n\
 of spill registers and print a fatal error message.",
- bool, (enum machine_mode mode),
+ bool, (machine_mode mode),
  hook_bool_mode_false)
 
 /* Register number for a flags register.  Only needs to be defined if the
@@ -3171,7 +3208,7 @@ be live over a region of code where only one would have been if\n\
 should be considered in the definition of this macro.  Equivalent costs\n\
 should probably only be given to addresses with different numbers of\n\
 registers on machines with lots of registers.",
- int, (rtx address, enum machine_mode mode, addr_space_t as, bool speed),
+ int, (rtx address, machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
 /* Return where to allocate pseudo for a given hard register initial value.  */
@@ -3236,7 +3273,7 @@ DEFHOOK
 corresponding Dwarf frame register should have.  This is normally\n\
 used to return a smaller mode than the raw mode to prevent call\n\
 clobbered parts of a register altering the frame register size",
- enum machine_mode, (int regno),
+ machine_mode, (int regno),
  default_dwarf_frame_reg_mode)
 
 /* If expand_builtin_init_dwarf_reg_sizes needs to fill in table
@@ -3295,7 +3332,7 @@ return @code{VOIDmode}.\n\
 The default version of this hook checks whether the modes are the\n\
 same.  If they are, it returns that mode.  If they are different, it\n\
 returns @code{VOIDmode}.",
- enum machine_mode, (enum machine_mode m1, enum machine_mode m2),
+ machine_mode, (machine_mode m1, machine_mode m2),
  default_cc_modes_compatible)
 
 /* Do machine-dependent code transformations.  Called just before
@@ -3656,7 +3693,7 @@ the signedness may be different.\n\
 The default is to not promote arguments and return values.  You can\n\
 also define the hook to @code{default_promote_function_mode_always_promote}\n\
 if you would like to apply the same rules given by @code{PROMOTE_MODE}.",
- enum machine_mode, (const_tree type, enum machine_mode mode, int *punsignedp,
+ machine_mode, (const_tree type, machine_mode mode, int *punsignedp,
 		     const_tree funtype, int for_return),
  default_promote_function_mode)
 
@@ -3745,7 +3782,7 @@ pointer to the argument is passed instead of the argument itself.\n\
 The pointer is passed in whatever way is appropriate for passing a pointer\n\
 to that type.",
  bool,
- (cumulative_args_t cum, enum machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
  hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
 
 DEFHOOK
@@ -3792,7 +3829,7 @@ arguments of the function are being analyzed for the second time.  This\n\
 happens for an inline function, which is not actually compiled until the\n\
 end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should\n\
 not generate any instructions in this case.",
- void, (cumulative_args_t args_so_far, enum machine_mode mode, tree type,
+ void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
 	int *pretend_args_size, int second_time),
  default_setup_incoming_varargs)
 
@@ -3853,7 +3890,7 @@ DEFHOOK
 solely in registers.  The file @file{expr.h} defines a\n\
 definition that is usually appropriate, refer to @file{expr.h} for additional\n\
 documentation.",
- bool, (enum machine_mode mode, const_tree type),
+ bool, (machine_mode mode, const_tree type),
  must_pass_in_stack_var_size_or_pad)
 
 /* Return true if type TYPE, mode MODE, which is passed by reference,
@@ -3872,7 +3909,7 @@ not be generated.\n\
 \n\
 The default version of this hook always returns false.",
  bool,
- (cumulative_args_t cum, enum machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
  hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
 
 /* Return zero for arguments passed entirely on the stack or entirely
@@ -3896,7 +3933,7 @@ compiler when this occurs, and how many bytes should go in registers.\n\
 @code{TARGET_FUNCTION_ARG} for these arguments should return the first\n\
 register to be used by the caller for this argument; likewise\n\
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.",
- int, (cumulative_args_t cum, enum machine_mode mode, tree type, bool named),
+ int, (cumulative_args_t cum, machine_mode mode, tree type, bool named),
  hook_int_CUMULATIVE_ARGS_mode_tree_bool_0)
 
 /* Update the state in CA to advance past an argument in the
@@ -3914,7 +3951,7 @@ This hook need not do anything if the argument in question was passed\n\
 on the stack.  The compiler knows how to track the amount of stack space\n\
 used for arguments without any special help.",
  void,
- (cumulative_args_t ca, enum machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
  default_function_arg_advance)
 
 /* Return zero if the argument described by the state of CA should
@@ -3973,7 +4010,7 @@ is not defined and @code{TARGET_FUNCTION_ARG} returns nonzero for such an\n\
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is\n\
 defined, the argument will be computed in the stack and then loaded into\n\
 a register.",
- rtx, (cumulative_args_t ca, enum machine_mode mode, const_tree type,
+ rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
        bool named),
  default_function_arg)
 
@@ -3994,7 +4031,7 @@ arrive.\n\
 \n\
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,\n\
 @code{TARGET_FUNCTION_ARG} serves both purposes.",
- rtx, (cumulative_args_t ca, enum machine_mode mode, const_tree type,
+ rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
        bool named),
  default_function_incoming_arg)
 
@@ -4003,7 +4040,7 @@ DEFHOOK
  "This hook returns the alignment boundary, in bits, of an argument\n\
 with the specified mode and type.  The default hook returns\n\
 @code{PARM_BOUNDARY} for all arguments.",
- unsigned int, (enum machine_mode mode, const_tree type),
+ unsigned int, (machine_mode mode, const_tree type),
  default_function_arg_boundary)
 
 DEFHOOK
@@ -4012,7 +4049,7 @@ DEFHOOK
 which is the default value for this hook.  You can define this hook to\n\
 return a different value if an argument size must be rounded to a larger\n\
 value.",
- unsigned int, (enum machine_mode mode, const_tree type),
+ unsigned int, (machine_mode mode, const_tree type),
  default_function_arg_round_boundary)
 
 /* Return the diagnostic message string if function without a prototype
@@ -4085,7 +4122,7 @@ library function is given by @var{fun}.  The hook should return an RTX\n\
 representing the place where the library function result will be returned.\n\
 \n\
 If this hook is not defined, then LIBCALL_VALUE will be used.",
- rtx, (enum machine_mode mode, const_rtx fun),
+ rtx, (machine_mode mode, const_rtx fun),
  default_libcall_value)
 
 /* Return true if REGNO is a possible register number for
@@ -4259,7 +4296,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw return\
  registers in @code{__builtin_return}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- enum machine_mode, (int regno),
+ machine_mode, (int regno),
  default_get_reg_raw_mode)
 
 /* Return a mode wide enough to copy any argument value that might be
@@ -4269,7 +4306,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw argument\
  registers in @code{__builtin_apply_args}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- enum machine_mode, (int regno),
+ machine_mode, (int regno),
  default_get_reg_raw_mode)
 
 HOOK_VECTOR_END (calls)
@@ -4431,7 +4468,7 @@ DEFHOOK
   pseudos of the given mode and class, or @code{NO_REGS} if only memory\
   should be used.  Not defining this hook is equivalent to returning\
   @code{NO_REGS} for all inputs.",
- reg_class_t, (reg_class_t, enum machine_mode),
+ reg_class_t, (reg_class_t, machine_mode),
  NULL)
 
 DEFHOOK
@@ -4441,7 +4478,7 @@ DEFHOOK
   for the cstore being performed.  Not definiting this hook is the same\
   as accepting the mode encoded into operand 0 of the cstore expander\
   patterns.",
-  enum machine_mode, (enum insn_code icode),
+  machine_mode, (enum insn_code icode),
   default_cstore_mode)
 
 /* True if a structure, union or array with MODE containing FIELD should
@@ -4457,7 +4494,7 @@ case where structures of one field would require the structure's mode to\n\
 retain the field's mode.\n\
 \n\
 Normally, this is not needed.",
- bool, (const_tree field, enum machine_mode mode),
+ bool, (const_tree field, machine_mode mode),
  default_member_type_forces_blk)
 
 /* Return the class for a secondary reload, and fill in extra information.  */
@@ -4547,7 +4584,7 @@ Or if two dependent moves are supposed to have a lower cost than the sum\n\
 of the individual moves due to expected fortuitous scheduling and/or special\n\
 forwarding logic, you can set @code{sri->extra_cost} to a negative amount.",
  reg_class_t,
- (bool in_p, rtx x, reg_class_t reload_class, enum machine_mode reload_mode,
+ (bool in_p, rtx x, reg_class_t reload_class, machine_mode reload_mode,
   secondary_reload_info *sri),
  default_secondary_reload)
 
@@ -4642,7 +4679,7 @@ in the reload pass.\n\
 \n\
 The default version of this target hook returns the size of @var{mode}\n\
 in words.",
- unsigned char, (reg_class_t rclass, enum machine_mode mode),
+ unsigned char, (reg_class_t rclass, machine_mode mode),
  default_class_max_nregs)
 
 DEFHOOK
@@ -4797,7 +4834,7 @@ DEFHOOK_UNDOC
 (mode_for_suffix,
 "Return machine mode for non-standard constant literal suffix @var{c},\
  or VOIDmode if non-standard suffixes are unsupported.",
- enum machine_mode, (char c),
+ machine_mode, (char c),
  default_mode_for_suffix)
 
 HOOK_VECTOR_END (c)
@@ -5254,7 +5291,7 @@ DEFHOOK
 "If defined, this function returns an appropriate alignment in bits for an\
  atomic object of machine_mode @var{mode}.  If 0 is returned then the\
  default alignment for the specified mode is used. ",
- unsigned int, (enum machine_mode mode),
+ unsigned int, (machine_mode mode),
  hook_uint_mode_0)
 
 DEFHOOK

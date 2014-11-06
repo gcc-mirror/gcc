@@ -2572,6 +2572,7 @@ package body Prj.Nmsc is
 
          if Data.Flags.Compiler_Driver_Mandatory
            and then Lang_Index.Config.Compiler_Driver = No_File
+           and then not Project.Externally_Built
          then
             Error_Msg_Name_1 := Lang_Index.Display_Name;
             Error_Msg
@@ -4711,7 +4712,7 @@ package body Prj.Nmsc is
          then
             Error_Msg
               (Data.Flags,
-               "Library_Standalone valid only if Library_Interface is set",
+               "Library_Standalone valid only if library has Ada interfaces",
                Lib_Standalone.Location, Project);
          end if;
 

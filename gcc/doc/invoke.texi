@@ -297,7 +297,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
--fsanitize-undefined-trap-on-error @gol
+-fasan-shadow-offset=@var{number} -fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
@@ -342,7 +342,7 @@ Objective-C and Objective-C++ Dialects}.
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -fopt-info @gol
 -fopt-info-@var{options}@r{[}=@var{file}@r{]} @gol
--frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
+-frandom-seed=@var{number} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
 -fstack-usage  -ftest-coverage  -ftime-report -fvar-tracking @gol
 -fvar-tracking-assignments  -fvar-tracking-assignments-toggle @gol
@@ -5641,6 +5641,12 @@ While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
 
+@item -fasan-shadow-offset=@var{number}
+@opindex fasan-shadow-offset
+This option forces GCC to use custom shadow offset in AddressSanitizer checks.
+It is useful for experimenting with different shadow memory layouts in
+Kernel AddressSanitizer.
+
 @item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover
 @opindex fno-sanitize-recover
@@ -5656,13 +5662,13 @@ and program will exit after that with non-zero exit code.
 
 Currently this feature only works for @option{-fsanitize=undefined} (and its suboptions
 except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
-@option{-fsanitize=float-cast-overflow} and @option{-fsanitize=float-divide-by-zero}.
-For these sanitizers error recovery is turned on by default.
+@option{-fsanitize=float-cast-overflow}, @option{-fsanitize=float-divide-by-zero} and
+@option{-fsanitize=kernel-address}.  For these sanitizers error recovery is turned on by default.
 
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
-@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,kernel-address}.
 Similarly @option{-fno-sanitize-recover} is equivalent to
-@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,kernel-address}.
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
@@ -6804,7 +6810,7 @@ the first option takes effect and the subsequent options are
 ignored. Thus only the @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
-@item -frandom-seed=@var{string}
+@item -frandom-seed=@var{number}
 @opindex frandom-seed
 This option provides a seed that GCC uses in place of
 random numbers in generating certain symbol names
@@ -6813,7 +6819,7 @@ place unique stamps in coverage data files and the object files that
 produce them.  You can use the @option{-frandom-seed} option to produce
 reproducibly identical object files.
 
-The @var{string} should be different for every file you compile.
+The @var{number} should be different for every file you compile.
 
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose
@@ -17525,7 +17531,7 @@ The processor names are:
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a},
 @samp{m4k},
 @samp{m14k}, @samp{m14kc}, @samp{m14ke}, @samp{m14kec},
-@samp{octeon}, @samp{octeon+}, @samp{octeon2},
+@samp{octeon}, @samp{octeon+}, @samp{octeon2}, @samp{octeon3},
 @samp{orion},
 @samp{p5600},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},

@@ -36,9 +36,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "regs.h"
 #include "addresses.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
 #include "basic-block.h"
 #include "df.h"
 #include "reload.h"
@@ -350,7 +356,7 @@ static vec<rtx_p> substitute_stack;
 
 static int num_labels;
 
-static void replace_pseudos_in (rtx *, enum machine_mode, rtx);
+static void replace_pseudos_in (rtx *, machine_mode, rtx);
 static void maybe_fix_stack_asms (void);
 static void copy_reloads (struct insn_chain *);
 static void calculate_needs_all_insns (int);
@@ -365,8 +371,8 @@ static void delete_dead_insn (rtx_insn *);
 static void alter_reg (int, int, bool);
 static void set_label_offsets (rtx, rtx_insn *, int);
 static void check_eliminable_occurrences (rtx);
-static void elimination_effects (rtx, enum machine_mode);
-static rtx eliminate_regs_1 (rtx, enum machine_mode, rtx, bool, bool);
+static void elimination_effects (rtx, machine_mode);
+static rtx eliminate_regs_1 (rtx, machine_mode, rtx, bool, bool);
 static int eliminate_regs_in_insn (rtx_insn *, int);
 static void update_eliminable_offsets (void);
 static void mark_not_eliminable (rtx, const_rtx, void *);
@@ -390,13 +396,13 @@ static void forget_old_reloads_1 (rtx, const_rtx, void *);
 static void forget_marked_reloads (regset);
 static int reload_reg_class_lower (const void *, const void *);
 static void mark_reload_reg_in_use (unsigned int, int, enum reload_type,
-				    enum machine_mode);
+				    machine_mode);
 static void clear_reload_reg_in_use (unsigned int, int, enum reload_type,
-				     enum machine_mode);
+				     machine_mode);
 static int reload_reg_free_p (unsigned int, int, enum reload_type);
 static int reload_reg_free_for_value_p (int, int, int, enum reload_type,
 					rtx, rtx, int, int);
-static int free_for_value_p (int, enum machine_mode, int, enum reload_type,
+static int free_for_value_p (int, machine_mode, int, enum reload_type,
 			     rtx, rtx, int, int);
 static int allocate_reload_reg (struct insn_chain *, int, int);
 static int conflicts_with_override (rtx);
@@ -542,7 +548,7 @@ compute_use_by_pseudos (HARD_REG_SET *to, regset from)
    equivalences.  */
 
 static void
-replace_pseudos_in (rtx *loc, enum machine_mode mem_mode, rtx usage)
+replace_pseudos_in (rtx *loc, machine_mode mem_mode, rtx usage)
 {
   rtx x = *loc;
   enum rtx_code code;
@@ -1360,7 +1366,7 @@ maybe_fix_stack_asms (void)
 {
 #ifdef STACK_REGS
   const char *constraints[MAX_RECOG_OPERANDS];
-  enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+  machine_mode operand_mode[MAX_RECOG_OPERANDS];
   struct insn_chain *chain;
 
   for (chain = reload_insn_chain; chain != 0; chain = chain->next)
@@ -2187,7 +2193,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
       && reg_equiv_memory_loc (i) == 0)
     {
       rtx x = NULL_RTX;
-      enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
+      machine_mode mode = GET_MODE (regno_reg_rtx[i]);
       unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
       unsigned int total_size = MAX (inherent_size, reg_max_ref_width[i]);
@@ -2316,7 +2322,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
    pseudo-reg number REGNO, accessed in MODE.  */
 
 static void
-mark_home_live_1 (int regno, enum machine_mode mode)
+mark_home_live_1 (int regno, machine_mode mode)
 {
   int i, lim;
 
@@ -2549,7 +2555,7 @@ note_reg_elim_costly (const_rtx x, rtx insn)
    the proper thing.  */
 
 static rtx
-eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
+eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		  bool may_use_invariant, bool for_costs)
 {
   enum rtx_code code = GET_CODE (x);
@@ -2960,7 +2966,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 }
 
 rtx
-eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
+eliminate_regs (rtx x, machine_mode mem_mode, rtx insn)
 {
   return eliminate_regs_1 (x, mem_mode, insn, false, false);
 }
@@ -2970,7 +2976,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
    the mode of an enclosing MEM rtx, or VOIDmode if not within a MEM.  */
 
 static void
-elimination_effects (rtx x, enum machine_mode mem_mode)
+elimination_effects (rtx x, machine_mode mem_mode)
 {
   enum rtx_code code = GET_CODE (x);
   struct elim_table *ep;
@@ -4207,7 +4213,7 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 		}
 	      else if (function_invariant_p (x))
 		{
-		  enum machine_mode mode;
+		  machine_mode mode;
 
 		  mode = GET_MODE (SET_DEST (set));
 		  if (GET_CODE (x) == PLUS)
@@ -4768,7 +4774,7 @@ reload_as_needed (int live_known)
 
 		    {
 		      rtx reload_reg = rld[i].reg_rtx;
-		      enum machine_mode mode = GET_MODE (reload_reg);
+		      machine_mode mode = GET_MODE (reload_reg);
 		      int n = 0;
 		      rtx_insn *p;
 
@@ -5064,7 +5070,7 @@ static HARD_REG_SET reg_used_in_insn;
 
 static void
 mark_reload_reg_in_use (unsigned int regno, int opnum, enum reload_type type,
-			enum machine_mode mode)
+			machine_mode mode)
 {
   switch (type)
     {
@@ -5120,7 +5126,7 @@ mark_reload_reg_in_use (unsigned int regno, int opnum, enum reload_type type,
 
 static void
 clear_reload_reg_in_use (unsigned int regno, int opnum,
-			 enum reload_type type, enum machine_mode mode)
+			 enum reload_type type, machine_mode mode)
 {
   unsigned int nregs = hard_regno_nregs[regno][mode];
   unsigned int start_regno, end_regno, r;
@@ -6086,7 +6092,7 @@ reload_reg_free_for_value_p (int start_regno, int regno, int opnum,
    register.  */
 
 static int
-free_for_value_p (int regno, enum machine_mode mode, int opnum,
+free_for_value_p (int regno, machine_mode mode, int opnum,
 		  enum reload_type type, rtx value, rtx out, int reloadnum,
 		  int ignore_address_reloads)
 {
@@ -6175,7 +6181,7 @@ set_reload_reg (int i, int r)
      This used to be one `if', but Sequent compiler can't handle that.  */
   if (HARD_REGNO_MODE_OK (regno, rld[r].mode))
     {
-      enum machine_mode test_mode = VOIDmode;
+      machine_mode test_mode = VOIDmode;
       if (rld[r].in)
 	test_mode = GET_MODE (rld[r].in);
       /* If rld[r].in has VOIDmode, it means we will load it
@@ -6417,12 +6423,12 @@ replaced_subreg (rtx x)
    otherwise it is NULL.  */
 
 static int
-compute_reload_subreg_offset (enum machine_mode outermode,
+compute_reload_subreg_offset (machine_mode outermode,
 			      rtx subreg,
-			      enum machine_mode innermode)
+			      machine_mode innermode)
 {
   int outer_offset;
-  enum machine_mode middlemode;
+  machine_mode middlemode;
 
   if (!subreg)
     return subreg_lowpart_offset (outermode, innermode);
@@ -6578,7 +6584,7 @@ choose_reload_regs (struct insn_chain *chain)
 	    {
 	      int byte = 0;
 	      int regno = -1;
-	      enum machine_mode mode = VOIDmode;
+	      machine_mode mode = VOIDmode;
 	      rtx subreg = NULL_RTX;
 
 	      if (rld[r].in == 0)
@@ -7202,7 +7208,7 @@ static HARD_REG_SET reg_reloaded_died;
 static bool
 reload_adjust_reg_for_temp (rtx *reload_reg, rtx alt_reload_reg,
 			    enum reg_class new_class,
-			    enum machine_mode new_mode)
+			    machine_mode new_mode)
 
 {
   rtx reg;
@@ -7238,7 +7244,7 @@ reload_adjust_reg_for_icode (rtx *reload_reg, rtx alt_reload_reg,
 
 {
   enum reg_class new_class = scratch_reload_class (icode);
-  enum machine_mode new_mode = insn_data[(int) icode].operand[2].mode;
+  machine_mode new_mode = insn_data[(int) icode].operand[2].mode;
 
   return reload_adjust_reg_for_temp (reload_reg, alt_reload_reg,
 				     new_class, new_mode);
@@ -7256,7 +7262,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
   rtx oldequiv_reg = 0;
   rtx oldequiv = 0;
   int special = 0;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx_insn **where;
 
   /* delete_output_reload is only invoked properly if old contains
@@ -7716,7 +7722,7 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
   rtx_insn *insn = chain->insn;
   int special = 0;
   rtx old = rl->out;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx_insn *p;
   rtx rl_reg_rtx;
 
@@ -7924,7 +7930,7 @@ do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
 
   if (old && reg_rtx)
     {
-      enum machine_mode mode;
+      machine_mode mode;
 
       /* Determine the mode to reload in.
 	 This is very tricky because we have three to choose from.
@@ -8028,7 +8034,7 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
 
   if (rl->out && reg_rtx)
     {
-      enum machine_mode mode;
+      machine_mode mode;
 
       /* Determine the mode to reload in.
 	 See comments above (for input reloading).  */
@@ -8113,7 +8119,7 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
 static bool
 inherit_piecemeal_p (int dest ATTRIBUTE_UNUSED,
 		     int src ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED)
+		     machine_mode mode ATTRIBUTE_UNUSED)
 {
 #ifdef CANNOT_CHANGE_MODE_CLASS
   return (!REG_CANNOT_CHANGE_MODE_P (dest, mode, reg_raw_mode[dest])
@@ -8297,7 +8303,7 @@ emit_reload_insns (struct insn_chain *chain)
 	      reg = reload_reg_rtx_for_output[r];
 	      if (reload_reg_rtx_reaches_end_p (reg, r))
 		{
-		  enum machine_mode mode = GET_MODE (reg);
+		  machine_mode mode = GET_MODE (reg);
 		  int regno = REGNO (reg);
 		  int nregs = hard_regno_nregs[regno][mode];
 		  rtx out = (REG_P (rld[r].out)
@@ -8367,7 +8373,7 @@ emit_reload_insns (struct insn_chain *chain)
 	      reg = reload_reg_rtx_for_input[r];
 	      if (reload_reg_rtx_reaches_end_p (reg, r))
 		{
-		  enum machine_mode mode;
+		  machine_mode mode;
 		  int regno;
 		  int nregs;
 		  int in_regno;
@@ -8450,7 +8456,7 @@ emit_reload_insns (struct insn_chain *chain)
 	  rtx out = ((rld[r].out && REG_P (rld[r].out))
 		     ? rld[r].out : rld[r].out_reg);
 	  int out_regno = REGNO (out);
-	  enum machine_mode mode = GET_MODE (out);
+	  machine_mode mode = GET_MODE (out);
 
 	  /* REG_RTX is now set or clobbered by the main instruction.
 	     As the comment above explains, forget_old_reloads_1 only

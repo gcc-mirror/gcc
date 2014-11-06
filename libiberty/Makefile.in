@@ -152,8 +152,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 spaces.c splay-tree.c stack-limit.c stpcpy.c stpncpy.c		\
 	 strcasecmp.c strchr.c strdup.c strerror.c strncasecmp.c	\
 	 strncmp.c strrchr.c strsignal.c strstr.c strtod.c strtol.c	\
-	 strtoul.c strndup.c strnlen.c strverscmp.c			\
-	timeval-utils.c tmpnam.c					\
+	 strtoll.c strtoul.c strtoull.c strndup.c strnlen.c             \
+	 strverscmp.c timeval-utils.c tmpnam.c				\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
 	waitpid.c							\
@@ -219,8 +219,8 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 	 ./strchr.$(objext) ./strdup.$(objext) ./strncasecmp.$(objext)	\
 	 ./strncmp.$(objext) ./strndup.$(objext) ./strnlen.$(objext)	\
 	 ./strrchr.$(objext) ./strstr.$(objext) ./strtod.$(objext)	\
-	 ./strtol.$(objext) ./strtoul.$(objext) ./strverscmp.$(objext)	\
-	./tmpnam.$(objext)						\
+	 ./strtol.$(objext) ./strtoul.$(objext) strtoll.$(objext)	\
+	./strtoull.$(objext) ./tmpnam.$(objext) ./strverscmp.$(objext)	\
 	./vasprintf.$(objext) ./vfork.$(objext) ./vfprintf.$(objext)	\
 	 ./vprintf.$(objext) ./vsnprintf.$(objext) ./vsprintf.$(objext)	\
 	./waitpid.$(objext)
@@ -694,6 +694,17 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/crc32.c $(OUTPUT_OPTION)
 
+./d-demangle.$(objext): $(srcdir)/d-demangle.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/demangle.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/d-demangle.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/d-demangle.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/d-demangle.c $(OUTPUT_OPTION)
+
 ./dwarfnames.$(objext): $(srcdir)/dwarfnames.c $(INCDIR)/dwarf2.def \
 	$(INCDIR)/dwarf2.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -713,14 +724,6 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/dyn-string.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/dyn-string.c $(OUTPUT_OPTION)
-
-./d-demangle.$(objext): $(srcdir)/d-demangle.c config.h $(INCDIR)/ansidecl.h \
-	$(srcdir)/cp-demangle.h $(INCDIR)/demangle.h \
-	$(INCDIR)/dyn-string.h $(INCDIR)/getopt.h $(INCDIR)/libiberty.h
-	if [ x"$(PICFLAG)" != x ]; then \
-	  $(COMPILE.c) $(PICFLAG) $(srcdir)/d-demangle.c -o pic/$@; \
-	else true; fi
-	$(COMPILE.c) $(srcdir)/d-demangle.c $(OUTPUT_OPTION)
 
 ./fdmatch.$(objext): $(srcdir)/fdmatch.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
@@ -1471,6 +1474,15 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strtol.c $(OUTPUT_OPTION)
 
+./strtoll.$(objext): $(srcdir)/strtoll.c config.h $(INCDIR)/safe-ctype.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strtoll.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtoll.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/strtoll.c $(OUTPUT_OPTION)
+
 ./strtoul.$(objext): $(srcdir)/strtoul.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -1480,6 +1492,16 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtoul.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strtoul.c $(OUTPUT_OPTION)
+
+./strtoull.$(objext): $(srcdir)/strtoull.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/safe-ctype.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strtoull.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtoull.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/strtoull.c $(OUTPUT_OPTION)
 
 ./strverscmp.$(objext): $(srcdir)/strverscmp.c $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h

@@ -25,32 +25,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
+#include "c-common.h"
+#include "langhooks.h"
 #include "tree-upc.h"
 #include "stringpool.h"
 #include "stor-layout.h"
-#include "input.h"
-#include "c/c-tree.h"
-#include "langhooks.h"
-#include "flags.h"
-#include "opts.h"
-#include "options.h"
 #include "output.h"
-#include "toplev.h"
 #include "attribs.h"
-#include "basic-block.h"
-#include "gimple-expr.h"
-#include "ggc.h"
-#include "tm.h"
-#include "function.h"
 #include "target.h"
-#include "tree-iterator.h"
-#include "common/common-target.h"
-#include "cgraph.h"
 #include "varasm.h"
 #include "c-upc.h"
-#include "c-upc-gasp.h"
-#include "c-upc-low.h"
 #include "c-upc-pts.h"
 #include "c-upc-pts-ops.h"
 #include "c-upc-rts-names.h"
@@ -69,7 +53,7 @@ static int upc_sizeof_type_check (const char *, tree);
 tree
 upc_build_pointer_type (tree to_type)
 {
-  enum machine_mode pointer_mode;
+  machine_mode pointer_mode;
   tree ptr_type;
   if (to_type == NULL_TREE || TREE_CODE (to_type) == ERROR_MARK)
     return error_mark_node;

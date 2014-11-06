@@ -27,24 +27,24 @@
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
-				  tree, enum machine_mode);
+				  tree, machine_mode);
 #endif /* TREE_CODE */
 
-extern bool easy_altivec_constant (rtx, enum machine_mode);
+extern bool easy_altivec_constant (rtx, machine_mode);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
-extern bool macho_lo_sum_memory_operand (rtx, enum machine_mode);
-extern int num_insns_constant (rtx, enum machine_mode);
+extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
+extern int num_insns_constant (rtx, machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
-extern int small_data_operand (rtx, enum machine_mode);
-extern bool mem_operand_gpr (rtx, enum machine_mode);
+extern int small_data_operand (rtx, machine_mode);
+extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
-extern bool invalid_e500_subreg (rtx, enum machine_mode);
-extern void validate_condition_mode (enum rtx_code, enum machine_mode);
-extern bool legitimate_constant_pool_address_p (const_rtx, enum machine_mode,
+extern bool invalid_e500_subreg (rtx, machine_mode);
+extern void validate_condition_mode (enum rtx_code, machine_mode);
+extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 						bool);
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
-extern bool avoiding_indexed_address_p (enum machine_mode);
+extern bool avoiding_indexed_address_p (machine_mode);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -60,9 +60,9 @@ extern void rs6000_expand_vector_extract (rtx, rtx, int);
 extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern bool rs6000_expand_vec_perm_const (rtx op[4]);
-extern void altivec_expand_lvx_be (rtx, rtx, enum machine_mode, unsigned);
-extern void altivec_expand_stvx_be (rtx, rtx, enum machine_mode, unsigned);
-extern void altivec_expand_stvex_be (rtx, rtx, enum machine_mode, unsigned);
+extern void altivec_expand_lvx_be (rtx, rtx, machine_mode, unsigned);
+extern void altivec_expand_stvx_be (rtx, rtx, machine_mode, unsigned);
+extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
@@ -86,13 +86,13 @@ extern const char *emit_fusion_gpr_load (rtx, rtx);
 extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 							    enum reg_class);
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
-							    enum machine_mode,
+							    machine_mode,
 							    rtx);
 extern bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class,
 						   enum reg_class,
-						   enum machine_mode);
-extern bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
-						    enum machine_mode,
+						   machine_mode);
+extern bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
+						    machine_mode,
 						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
@@ -107,11 +107,11 @@ extern int extract_ME (rtx);
 extern void rs6000_output_function_entry (FILE *, const char *);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
-extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
+extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
-extern void rs6000_emit_sISEL (enum machine_mode, rtx[]);
-extern void rs6000_emit_sCOND (enum machine_mode, rtx[]);
-extern void rs6000_emit_cbranch (enum machine_mode, rtx[]);
+extern void rs6000_emit_sISEL (machine_mode, rtx[]);
+extern void rs6000_emit_sCOND (machine_mode, rtx[]);
+extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
 extern char * output_e500_flip_gt_bit (rtx, rtx);
 extern const char * output_probe_stack_range (rtx, rtx);
@@ -124,19 +124,19 @@ extern void rs6000_expand_atomic_exchange (rtx op[]);
 extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
 extern void rs6000_emit_swrsqrt (rtx, rtx);
-extern void output_toc (FILE *, rtx, int, enum machine_mode);
+extern void output_toc (FILE *, rtx, int, machine_mode);
 extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
-extern void rs6000_emit_le_vsx_move (rtx, rtx, enum machine_mode);
-extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
-extern rtx rs6000_secondary_memory_needed_rtx (enum machine_mode);
-extern enum machine_mode rs6000_secondary_memory_needed_mode (enum
+extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
+extern void rs6000_emit_move (rtx, rtx, machine_mode);
+extern rtx rs6000_secondary_memory_needed_rtx (machine_mode);
+extern machine_mode rs6000_secondary_memory_needed_mode (enum
 							      machine_mode);
-extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode,
+extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
-extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx,
+extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
 						bool, bool);
 extern rtx rs6000_find_base_term (rtx);
 extern rtx rs6000_return_addr (int, rtx);
@@ -145,11 +145,11 @@ extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
 extern void rs6000_emit_popcount (rtx, rtx);
 extern void rs6000_emit_parity (rtx, rtx);
 
-extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
+extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
 extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_address_for_altivec (rtx);
-extern rtx rs6000_allocate_stack_temp (enum machine_mode, bool, bool);
+extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern int rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 #endif /* RTX_CODE */
@@ -162,7 +162,7 @@ extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
 extern unsigned int darwin_rs6000_special_round_type_align (tree, unsigned int,
 							    unsigned int);
 extern tree altivec_resolve_overloaded_builtin (location_t, tree, void *);
-extern rtx rs6000_libcall_value (enum machine_mode);
+extern rtx rs6000_libcall_value (machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern int rs6000_reg_parm_stack_space (tree, bool);
@@ -172,7 +172,7 @@ extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding (enum machine_mode, const_tree);
+extern enum direction function_arg_padding (machine_mode, const_tree);
 #endif /* ARGS_SIZE_RTX */
 
 #endif /* TREE_CODE */

@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "df.h"
 #include "rtl.h"
-#include "basic-block.h"
 #include "hash-table.h"
 
 /* Debug uses of dead regs.  */

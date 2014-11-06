@@ -1111,7 +1111,7 @@
 (define_predicate "fcmov_comparison_operator"
   (match_operand 0 "comparison_operator")
 {
-  enum machine_mode inmode = GET_MODE (XEXP (op, 0));
+  machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
   if (inmode == CCFPmode || inmode == CCFPUmode)
@@ -1158,7 +1158,7 @@
 (define_predicate "ix86_comparison_operator"
   (match_operand 0 "comparison_operator")
 {
-  enum machine_mode inmode = GET_MODE (XEXP (op, 0));
+  machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
   if (inmode == CCFPmode || inmode == CCFPUmode)
@@ -1195,7 +1195,7 @@
 (define_predicate "ix86_carry_flag_operator"
   (match_code "ltu,lt,unlt,gtu,gt,ungt,le,unle,ge,unge,ltgt,uneq")
 {
-  enum machine_mode inmode = GET_MODE (XEXP (op, 0));
+  machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
   if (inmode == CCFPmode || inmode == CCFPUmode)

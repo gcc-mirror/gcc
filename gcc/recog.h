@@ -97,10 +97,10 @@ extern int num_validated_changes (void);
 extern void cancel_changes (int);
 extern int constrain_operands (int, alternative_mask);
 extern int constrain_operands_cached (rtx_insn *, int);
-extern int memory_address_addr_space_p (enum machine_mode, rtx, addr_space_t);
+extern int memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern int strict_memory_address_addr_space_p (enum machine_mode, rtx,
+extern int strict_memory_address_addr_space_p (machine_mode, rtx,
 					       addr_space_t);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
@@ -115,11 +115,11 @@ extern int num_changes_pending (void);
 #ifdef HAVE_cc0
 extern int next_insn_tests_no_inequality (rtx);
 #endif
-extern bool reg_fits_class_p (const_rtx, reg_class_t, int, enum machine_mode);
+extern bool reg_fits_class_p (const_rtx, reg_class_t, int, machine_mode);
 
 extern int offsettable_memref_p (rtx);
 extern int offsettable_nonstrict_memref_p (rtx);
-extern int offsettable_address_addr_space_p (int, enum machine_mode, rtx,
+extern int offsettable_address_addr_space_p (int, machine_mode, rtx,
 					     addr_space_t);
 #define offsettable_address_p(strict,mode,addr) \
 	offsettable_address_addr_space_p ((strict), (mode), (addr), \
@@ -146,7 +146,7 @@ extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
 #ifdef CLEAR_HARD_REG_SET
 extern rtx peep2_find_free_register (int, int, const char *,
-				     enum machine_mode, HARD_REG_SET *);
+				     machine_mode, HARD_REG_SET *);
 #endif
 extern rtx peephole2_insns (rtx, rtx, int *);
 
@@ -215,7 +215,7 @@ struct recog_data_d
   char is_operator[MAX_RECOG_OPERANDS];
 
   /* Gives the mode of operand N.  */
-  enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+  machine_mode operand_mode[MAX_RECOG_OPERANDS];
 
   /* Gives the type (in, out, inout) for operand N.  */
   enum op_type operand_type[MAX_RECOG_OPERANDS];
@@ -273,7 +273,7 @@ which_op_alt ()
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
-typedef int (*insn_operand_predicate_fn) (rtx, enum machine_mode);
+typedef int (*insn_operand_predicate_fn) (rtx, machine_mode);
 typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn

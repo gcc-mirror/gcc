@@ -26,6 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "calls.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -58,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-ssa-threadupdate.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "tree-ssa-threadedge.h"
 #include "wide-int.h"
@@ -5993,7 +6005,8 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 		  gimple def_stmt = SSA_NAME_DEF_STMT (t);
 
 		  while (is_gimple_assign (def_stmt)
-			 && gimple_assign_rhs_code (def_stmt)  == NOP_EXPR
+			 && CONVERT_EXPR_CODE_P
+			     (gimple_assign_rhs_code (def_stmt))
 			 && TREE_CODE
 			     (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
 			 && POINTER_TYPE_P
@@ -9401,8 +9414,8 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range_t *vr = get_value_range (rhs1);
-  enum machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
-  enum machine_mode mode;
+  machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
+  machine_mode mode;
   tree tem;
   gimple conv;
 
@@ -9527,8 +9540,10 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
     }
   else
     {
-      tree r1 = int_const_binop (subcode, vr0.min, vr1.min);
-      tree r2 = int_const_binop (subcode, vr0.max, vr1.max);
+      tree r1 = int_const_binop (subcode, vr0.min,
+				 subcode == MINUS_EXPR ? vr1.max : vr1.min);
+      tree r2 = int_const_binop (subcode, vr0.max,
+				 subcode == MINUS_EXPR ? vr1.min : vr1.max);
       if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
 	  || r2 == NULL_TREE || TREE_OVERFLOW (r2))
 	return false;

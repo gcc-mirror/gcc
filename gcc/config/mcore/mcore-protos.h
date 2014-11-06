@@ -34,7 +34,7 @@ extern int          mcore_naked_function_p       	(void);
 
 #ifdef TREE_CODE
 #ifdef HAVE_MACHINE_MODES
-extern int          mcore_num_arg_regs           	(enum machine_mode, const_tree);
+extern int          mcore_num_arg_regs           	(machine_mode, const_tree);
 #endif /* HAVE_MACHINE_MODES */
 
 #ifdef RTX_CODE
@@ -55,14 +55,14 @@ extern const char * mcore_output_andn          		(rtx, rtx *);
 extern bool         mcore_gen_compare	        	(RTX_CODE, rtx, rtx);
 extern int          mcore_symbolic_address_p     	(rtx);
 extern bool         mcore_r15_operand_p			(rtx);
-extern enum reg_class mcore_secondary_reload_class	(enum reg_class, enum machine_mode, rtx);
+extern enum reg_class mcore_secondary_reload_class	(enum reg_class, machine_mode, rtx);
 extern enum reg_class mcore_reload_class 		(rtx, enum reg_class);
 extern int          mcore_is_same_reg            	(rtx, rtx);
 extern int          mcore_arith_S_operand         	(rtx);
 
 #ifdef HAVE_MACHINE_MODES
-extern const char * mcore_output_move          		(rtx, rtx *, enum machine_mode);
-extern const char * mcore_output_movedouble    		(rtx *, enum machine_mode);
+extern const char * mcore_output_move          		(rtx, rtx *, machine_mode);
+extern const char * mcore_output_movedouble    		(rtx *, machine_mode);
 extern int          const_ok_for_mcore                  (HOST_WIDE_INT);
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */

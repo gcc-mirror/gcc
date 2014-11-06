@@ -48,6 +48,15 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "opts.h"
 #include "builtins.h"
@@ -115,7 +124,7 @@ v850_all_frame_related (rtx par)
 
 static bool
 v850_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			enum machine_mode mode, const_tree type,
+			machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   unsigned HOST_WIDE_INT size;
@@ -136,7 +145,7 @@ v850_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
    is NULL_RTX, the argument will be pushed.  */
 
 static rtx
-v850_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+v850_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		   const_tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -200,7 +209,7 @@ v850_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 /* Return the number of bytes which must be put into registers
    for values which are part in registers and part in memory.  */
 static int
-v850_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
+v850_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
                         tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -244,7 +253,7 @@ v850_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-v850_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+v850_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -910,7 +919,7 @@ output_move_single (rtx * operands)
   return "";
 }
 
-enum machine_mode
+machine_mode
 v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 {
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
@@ -936,8 +945,8 @@ v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
   return CCmode;
 }
 
-enum machine_mode
-v850_gen_float_compare (enum rtx_code cond, enum machine_mode mode ATTRIBUTE_UNUSED, rtx op0, rtx op1)
+machine_mode
+v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, rtx op0, rtx op1)
 {
   if (GET_MODE (op0) == DFmode)
     {
@@ -1000,7 +1009,7 @@ v850_gen_float_compare (enum rtx_code cond, enum machine_mode mode ATTRIBUTE_UNU
 }
 
 rtx
-v850_gen_compare (enum rtx_code cond, enum machine_mode mode, rtx op0, rtx op1)
+v850_gen_compare (enum rtx_code cond, machine_mode mode, rtx op0, rtx op1)
 {
   if (GET_MODE_CLASS(GET_MODE (op0)) != MODE_FLOAT)
     {
@@ -1022,7 +1031,7 @@ v850_gen_compare (enum rtx_code cond, enum machine_mode mode, rtx op0, rtx op1)
    MODE and signedness UNSIGNEDP.  */
 
 static int
-ep_memory_offset (enum machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
+ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 {
   int max_offset = 0;
 
@@ -1063,7 +1072,7 @@ ep_memory_offset (enum machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 /* Return true if OP is a valid short EP memory reference */
 
 int
-ep_memory_operand (rtx op, enum machine_mode mode, int unsigned_load)
+ep_memory_operand (rtx op, machine_mode mode, int unsigned_load)
 {
   rtx addr, op0, op1;
   int max_offset;
@@ -1384,7 +1393,7 @@ v850_reorg (void)
 		 for the register */
 	      if (GET_CODE (dest) == REG)
 		{
-		  enum machine_mode mode = GET_MODE (dest);
+		  machine_mode mode = GET_MODE (dest);
 		  int regno;
 		  int endregno;
 
@@ -3070,7 +3079,7 @@ v850_issue_rate (void)
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
 static bool
-v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+v850_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return (GET_CODE (x) == CONST_DOUBLE
 	  || !(GET_CODE (x) == CONST
@@ -3081,7 +3090,7 @@ v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static int
-v850_memory_move_cost (enum machine_mode mode,
+v850_memory_move_cost (machine_mode mode,
 		       reg_class_t reg_class ATTRIBUTE_UNUSED,
 		       bool in)
 {

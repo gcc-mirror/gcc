@@ -28,6 +28,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "flags.h"
 #include "hard-reg-set.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "insn-config.h"
 #include "recog.h"
@@ -570,7 +579,7 @@ ira_set_allocno_class (ira_allocno_t a, enum reg_class aclass)
 void
 ira_create_allocno_objects (ira_allocno_t a)
 {
-  enum machine_mode mode = ALLOCNO_MODE (a);
+  machine_mode mode = ALLOCNO_MODE (a);
   enum reg_class aclass = ALLOCNO_CLASS (a);
   int n = ira_reg_class_max_nregs[aclass][mode];
   int i;
@@ -1882,7 +1891,7 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
 	      a = ira_create_allocno (regno, false, ira_curr_loop_tree_node);
 	      if (outer != NULL && GET_CODE (outer) == SUBREG)
 		{
-		  enum machine_mode wmode = GET_MODE (outer);
+		  machine_mode wmode = GET_MODE (outer);
 		  if (GET_MODE_SIZE (wmode) > GET_MODE_SIZE (ALLOCNO_WMODE (a)))
 		    ALLOCNO_WMODE (a) = wmode;
 		}

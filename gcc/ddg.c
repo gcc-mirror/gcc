@@ -39,12 +39,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "except.h"
 #include "recog.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "sched-int.h"
 #include "target.h"
 #include "cfgloop.h"
 #include "sbitmap.h"
 #include "expr.h"
 #include "bitmap.h"
+#include "df.h"
 #include "ddg.h"
 #include "rtl-iter.h"
 
@@ -176,7 +179,7 @@ def_has_ccmode_p (rtx_insn *insn)
 
   FOR_EACH_INSN_DEF (def, insn)
     {
-      enum machine_mode mode = GET_MODE (DF_REF_REG (def));
+      machine_mode mode = GET_MODE (DF_REF_REG (def));
 
       if (GET_MODE_CLASS (mode) == MODE_CC)
 	return true;

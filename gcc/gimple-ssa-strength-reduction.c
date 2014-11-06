@@ -39,6 +39,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hash-map.h"
 #include "hash-table.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -668,7 +679,7 @@ static int
 stmt_cost (gimple gs, bool speed)
 {
   tree lhs, rhs1, rhs2;
-  enum machine_mode lhs_mode;
+  machine_mode lhs_mode;
 
   gcc_assert (is_gimple_assign (gs));
   lhs = gimple_assign_lhs (gs);
@@ -694,7 +705,7 @@ stmt_cost (gimple gs, bool speed)
     case NEGATE_EXPR:
       return neg_cost (speed, lhs_mode);
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       return convert_cost (lhs_mode, TYPE_MODE (TREE_TYPE (rhs1)), speed);
 
     /* Note that we don't assign costs to copies that in most cases
@@ -982,7 +993,7 @@ slsr_process_ref (gimple gs)
 {
   tree ref_expr, base, offset, type;
   HOST_WIDE_INT bitsize, bitpos;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
   slsr_cand_t c;
 
@@ -1704,7 +1715,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	      rhs2 = gimple_assign_rhs2 (gs);
 	      /* Fall-through.  */
 
-	    case NOP_EXPR:
+	    CASE_CONVERT:
 	    case MODIFY_EXPR:
 	    case NEGATE_EXPR:
 	      rhs1 = gimple_assign_rhs1 (gs);
@@ -1732,7 +1743,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	      slsr_process_neg (gs, rhs1, speed);
 	      break;
 
-	    case NOP_EXPR:
+	    CASE_CONVERT:
 	      slsr_process_cast (gs, rhs1, speed);
 	      break;
 
@@ -2022,7 +2033,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       /* It is not useful to replace casts, copies, or adds of
 	 an SSA name and a constant.  */
       && cand_code != MODIFY_EXPR
-      && cand_code != NOP_EXPR
+      && !CONVERT_EXPR_CODE_P (cand_code)
       && cand_code != PLUS_EXPR
       && cand_code != POINTER_PLUS_EXPR
       && cand_code != MINUS_EXPR)
@@ -2805,7 +2816,7 @@ total_savings (int repl_savings, slsr_cand_t c, const widest_int &incr,
    up sometime.  */
 
 static void
-analyze_increments (slsr_cand_t first_dep, enum machine_mode mode, bool speed)
+analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
 {
   unsigned i;
 
@@ -3461,7 +3472,7 @@ replace_profitable_candidates (slsr_cand_t c)
       if (i >= 0
 	  && profitable_increment_p (i) 
 	  && orig_code != MODIFY_EXPR
-	  && orig_code != NOP_EXPR)
+	  && !CONVERT_EXPR_CODE_P (orig_code))
 	{
 	  if (phi_dependent_cand_p (c))
 	    {
@@ -3549,7 +3560,7 @@ analyze_candidates_and_replace (void)
 	 less expensive to calculate than the replaced statements.  */
       else
 	{
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  bool speed;
 
 	  /* Determine whether we'll be generating pointer arithmetic

@@ -17,7 +17,11 @@ CALC (long long *mask, long long *src1, long long *dst)
 
   for (i = 0; i < SIZE; i++)
     {
+#if AVX512F_LEN == 512
       dst[i] = src1[mask[i] & 7];
+#else
+      dst[i] = src1[mask[i] & 3];
+#endif
     }
 }
 
@@ -37,14 +41,18 @@ TEST (void)
       res3.a[i] = DEFAULT_VALUE;
     }
 
+#if AVX512F_LEN == 512
   res1.x = INTRINSIC (_permutexvar_epi64) (src1.x, src2.x);
+#endif
   res2.x = INTRINSIC (_maskz_permutexvar_epi64) (mask, src1.x, src2.x);
   res3.x = INTRINSIC (_mask_permutexvar_epi64) (res3.x, mask, src1.x, src2.x);
 
   CALC (src1.a, src2.a, res_ref);
 
+#if AVX512F_LEN == 512
   if (UNION_CHECK (AVX512F_LEN, i_q) (res1, res_ref))
     abort ();
+#endif
 
   MASK_ZERO (i_q) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res2, res_ref))

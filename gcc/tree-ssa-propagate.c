@@ -25,14 +25,17 @@
 #include "tree.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "basic-block.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "bitmap.h"
@@ -1147,7 +1150,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
       /* If we made a replacement, fold the statement.  */
       if (did_replace)
-	fold_stmt (&i);
+	fold_stmt (&i, follow_single_use_edges);
 
       /* Now cleanup.  */
       if (did_replace)

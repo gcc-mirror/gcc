@@ -34,6 +34,7 @@
 #include "function.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -45,6 +46,9 @@
 #include "gimple-walk.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */

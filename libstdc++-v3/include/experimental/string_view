@@ -50,6 +50,8 @@ inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#define __cpp_lib_experimental_string_view 201402
+
   /**
    *  @class basic_string_view <experimental/string_view>
    *  @brief  A non-owning reference to a string.

@@ -55,6 +55,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -71,6 +82,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "except.h"
@@ -199,7 +216,7 @@ sem_function::sem_function (cgraph_node *node, hashval_t hash,
 sem_function::~sem_function ()
 {
   for (unsigned i = 0; i < bb_sorted.length (); i++)
-    free (bb_sorted[i]);
+    delete (bb_sorted[i]);
 
   arg_types.release ();
   bb_sizes.release ();

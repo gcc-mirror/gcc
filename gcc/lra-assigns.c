@@ -94,6 +94,9 @@ along with GCC; see the file COPYING3.	If not see
 #include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "except.h"
 #include "df.h"
@@ -481,7 +484,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   lra_live_range_t r;
   int p, i, j, rclass_size, best_hard_regno, priority, hard_regno;
   int hr, conflict_hr, nregs;
-  enum machine_mode biggest_mode;
+  machine_mode biggest_mode;
   unsigned int k, conflict_regno;
   int offset, val, biggest_nregs, nregs_diff;
   enum reg_class rclass;
@@ -777,7 +780,7 @@ static void
 setup_try_hard_regno_pseudos (int p, enum reg_class rclass)
 {
   int i, hard_regno;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int spill_regno;
   bitmap_iterator bi;
 
@@ -850,7 +853,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 {
   int i, j, n, p, hard_regno, best_hard_regno, cost, best_cost, rclass_size;
   int reload_hard_regno, reload_cost;
-  enum machine_mode mode;
+  machine_mode mode;
   enum reg_class rclass;
   unsigned int spill_regno, reload_regno, uid;
   int insn_pseudos_num, best_insn_pseudos_num;
@@ -1058,7 +1061,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
   unsigned int k, conflict_regno;
   int val, offset;
   HARD_REG_SET conflict_set;
-  enum machine_mode mode;
+  machine_mode mode;
   lra_live_range_t r;
   bitmap_iterator bi;
   int max_regno = max_reg_num ();

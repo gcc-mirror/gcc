@@ -26,7 +26,6 @@
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
-with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
@@ -54,6 +53,32 @@ package body Prj.Conf is
 
    Gprconfig_Name : constant String := "gprconfig";
 
+   Warn_For_RTS : Boolean := True;
+   --  Set to False when gprbuild parse again the project files, to avoid
+   --  an incorrect warning.
+
+   type Runtime_Root_Data;
+   type Runtime_Root_Ptr is access Runtime_Root_Data;
+   type Runtime_Root_Data is record
+      Root : String_Access;
+      Next : Runtime_Root_Ptr;
+   end record;
+   --  Data for a runtime root to be used when adding directories to the
+   --  project path.
+
+   type Compiler_Root_Data;
+   type Compiler_Root_Ptr is access Compiler_Root_Data;
+   type Compiler_Root_Data is record
+      Root : String_Access;
+      Runtimes : Runtime_Root_Ptr;
+      Next     : Compiler_Root_Ptr;
+   end record;
+   --  Data for a compiler root to be used when adding directories to the
+   --  project path.
+
+   First_Compiler_Root : Compiler_Root_Ptr := null;
+   --  Head of the list of compiler roots
+
    package RTS_Languages is new GNAT.HTable.Simple_HTable
      (Header_Num => Prj.Header_Num,
       Element    => Name_Id,
@@ -63,14 +88,6 @@ package body Prj.Conf is
       Equal      => "=");
    --  Stores the runtime names for the various languages. This is in general
    --  set from a --RTS command line option.
-
-   procedure Locate_Runtime
-     (Language : Name_Id;
-      Env      : Prj.Tree.Environment);
-   --  If RTS_Name is a base name (a name without path separator), then
-   --  do nothing. Otherwise, convert it to an absolute path (possibly by
-   --  searching it in the project path) and call Set_Runtime_For with the
-   --  absolute path. Raise Invalid_Config if the path does not exist.
 
    -----------------------
    -- Local_Subprograms --
@@ -106,6 +123,21 @@ package body Prj.Conf is
    --  Currently, this will add new attributes and packages in the various
    --  projects, so that when the second phase of the processing is performed
    --  these attributes are automatically taken into account.
+
+   type State is (No_State);
+
+   procedure Look_For_Project_Paths
+     (Project    : Project_Id;
+      Tree       : Project_Tree_Ref;
+      With_State : in out State);
+   --  Check the compilers in the Project and add record them in the list
+   --  rooted at First_Compiler_Root, with their runtimes, if they are not
+   --  already in the list.
+
+   procedure Update_Project_Path is new
+     For_Every_Project_Imported
+       (State  => State,
+        Action => Look_For_Project_Paths);
 
    ------------------------------------
    -- Add_Default_GNAT_Naming_Scheme --
@@ -733,7 +765,6 @@ package body Prj.Conf is
                               Set_Runtime_For
                                 (Name_Ada,
                                  Name_Buffer (7 .. Name_Len));
-                              Locate_Runtime (Name_Ada, Env);
                            end if;
 
                         elsif Name_Len > 7
@@ -760,7 +791,6 @@ package body Prj.Conf is
 
                                  if not Runtime_Name_Set_For (Lang) then
                                     Set_Runtime_For (Lang, RTS);
-                                    Locate_Runtime (Lang, Env);
                                  end if;
                               end;
                            end if;
@@ -1071,21 +1101,21 @@ package body Prj.Conf is
                Args (3) := Conf_File_Name;
             end if;
 
-            if Normalized_Hostname = "" then
-               Arg_Last := 3;
-            else
-               if Selected_Target'Length = 0 then
-                  if At_Least_One_Compiler_Command then
-                     Args (4) :=
-                       new String'("--target=all");
-                  else
-                     Args (4) :=
-                       new String'("--target=" & Normalized_Hostname);
-                  end if;
+            Arg_Last := 3;
 
+            if Selected_Target /= null and then
+               Selected_Target.all /= ""
+            then
+               Args (4) :=
+                  new String'("--target=" & Selected_Target.all);
+               Arg_Last := 4;
+            elsif Normalized_Hostname /= "" then
+               if At_Least_One_Compiler_Command then
+                  Args (4) :=
+                    new String'("--target=all");
                else
                   Args (4) :=
-                    new String'("--target=" & Selected_Target.all);
+                    new String'("--target=" & Normalized_Hostname);
                end if;
 
                Arg_Last := 4;
@@ -1459,13 +1489,14 @@ package body Prj.Conf is
       --  If the config file is not auto-generated, warn if there is any --RTS
       --  switch, but not when the config file is generated in memory.
 
-      elsif RTS_Languages.Get_First /= No_Name
+      elsif Warn_For_RTS
+        and then RTS_Languages.Get_First /= No_Name
         and then Opt.Warning_Mode /= Opt.Suppress
         and then On_Load_Config = null
       then
          Write_Line
            ("warning: " &
-              "--RTS is taken into account only in auto-configuration");
+              "runtimes are taken into account only in auto-configuration");
       end if;
 
       --  Parse the configuration file
@@ -1545,57 +1576,6 @@ package body Prj.Conf is
       end if;
    end Locate_Config_File;
 
-   --------------------
-   -- Locate_Runtime --
-   --------------------
-
-   procedure Locate_Runtime
-     (Language : Name_Id;
-      Env      : Prj.Tree.Environment)
-   is
-      function Is_Base_Name (Path : String) return Boolean;
-      --  Returns True if Path has no directory separator
-
-      ------------------
-      -- Is_Base_Name --
-      ------------------
-
-      function Is_Base_Name (Path : String) return Boolean is
-      begin
-         for J in Path'Range loop
-            if Is_Directory_Separator (Path (J)) then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Is_Base_Name;
-
-      --  Local declarations
-
-      function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
-        (Check_Filename => Is_Directory);
-
-      RTS_Name : constant String := Runtime_Name_For (Language);
-
-      Full_Path : String_Access;
-
-   --  Start of processing for Locate_Runtime
-
-   begin
-      if not Is_Base_Name (RTS_Name) then
-         Full_Path :=
-           Find_Rts_In_Path (Env.Project_Path, RTS_Name);
-
-         if Full_Path = null then
-            Raise_Invalid_Config ("cannot find RTS " & RTS_Name);
-         end if;
-
-         Set_Runtime_For (Language, Normalize_Pathname (Full_Path.all));
-         Free (Full_Path);
-      end if;
-   end Locate_Runtime;
-
    ------------------------------------
    -- Parse_Project_And_Apply_Config --
    ------------------------------------
@@ -1620,10 +1600,42 @@ package body Prj.Conf is
       On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
       Success : Boolean := False;
-      Try_Again : Boolean := True;
+      Target_Try_Again : Boolean := True;
+      Config_Try_Again : Boolean;
+
+      S : State := No_State;
+
+      Conf_File_Name : String_Access := new String'(Config_File_Name);
+
+      procedure Add_Directory (Dir : String);
+      --  Add a directory at the end of the Project Path
+
+      Auto_Generated : Boolean;
+
+      -------------------
+      -- Add_Directory --
+      -------------------
+
+      procedure Add_Directory (Dir : String) is
+      begin
+         if Opt.Verbose_Mode then
+            Write_Line ("   Adding directory """ & Dir & """");
+         end if;
+
+         Prj.Env.Add_Directories (Env.Project_Path, Dir);
+      end Add_Directory;
 
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
+
+      --  Start with ignoring missing withed projects
+
+      Update_Ignore_Missing_With (Env.Flags, True);
+
+      Automatically_Generated := False;
+      --  If in fact the config file is automatically generated,
+      --  Automatically_Generated will be set to True after invocation of
+      --  Process_Project_And_Apply_Config.
 
       --  Record Target_Value and Target_Origin.
 
@@ -1642,7 +1654,6 @@ package body Prj.Conf is
       Prj.Initialize (Project_Tree);
 
       Main_Project := No_Project;
-      Automatically_Generated := False;
 
       Prj.Part.Parse
         (In_Tree           => Project_Node_Tree,
@@ -1692,10 +1703,10 @@ package body Prj.Conf is
               and then
                 Get_Name_String (Variable.Value) /= Opt.Target_Value.all
             then
-               if Try_Again then
+               if Target_Try_Again then
                   Opt.Target_Value :=
                     new String'(Get_Name_String (Variable.Value));
-                  Try_Again := False;
+                  Target_Try_Again := False;
                   goto Parse_Again;
 
                else
@@ -1705,26 +1716,223 @@ package body Prj.Conf is
                end if;
             end if;
          end;
-
       end if;
+
+      --  If there are missing withed projects, the projects will be parsed
+      --  again after the project path is extended with directories rooted
+      --  at the compiler roots.
+
+      Config_Try_Again := Project_Node_Tree.Incomplete_With;
 
       Process_Project_And_Apply_Config
         (Main_Project               => Main_Project,
          User_Project_Node          => User_Project_Node,
-         Config_File_Name           => Config_File_Name,
+         Config_File_Name           => Conf_File_Name.all,
          Autoconf_Specified         => Autoconf_Specified,
          Project_Tree               => Project_Tree,
          Project_Node_Tree          => Project_Node_Tree,
          Env                        => Env,
          Packages_To_Check          => Packages_To_Check,
          Allow_Automatic_Generation => Allow_Automatic_Generation,
-         Automatically_Generated    => Automatically_Generated,
+         Automatically_Generated    => Auto_Generated,
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
          On_Load_Config             => On_Load_Config,
          On_New_Tree_Loaded         => On_New_Tree_Loaded,
          Do_Phase_1                 => Opt.Target_Origin = Specified);
+
+      if Auto_Generated then
+         Automatically_Generated := True;
+      end if;
+
+      --  Exit if there was an error. Otherwise, if Config_Try_Again is True,
+      --  update the project path and try again.
+
+      if Main_Project /= No_Project and then Config_Try_Again then
+         Update_Ignore_Missing_With (Env.Flags, False);
+
+         if Config_File_Path /= null then
+            Conf_File_Name := new String'(Config_File_Path.all);
+         end if;
+
+         --  For the second time the project files are parsed, the warning for
+         --  --RTS= being only taken into account in auto-configuration are
+         --  suppressed, as we are no longer in auto-configuration.
+
+         Warn_For_RTS := False;
+
+         --  Add the default directories corresponding to the compilers
+
+         Update_Project_Path
+           (By                 => Main_Project,
+            Tree               => Project_Tree,
+            With_State         => S,
+            Include_Aggregated => True,
+            Imported_First     => False);
+
+         declare
+            Compiler_Root : Compiler_Root_Ptr;
+            Prefix        : String_Access;
+            Runtime_Root  : Runtime_Root_Ptr;
+            Path_Value : constant String_Access := Getenv ("PATH");
+
+         begin
+            if Opt.Verbose_Mode then
+               Write_Line ("Setting the default project search directories");
+
+               if Prj.Current_Verbosity = High then
+                  if Path_Value = null or else Path_Value'Length = 0 then
+                     Write_Line ("No environment variable PATH");
+
+                  else
+                     Write_Line ("PATH =");
+                     Write_Line ("   " & Path_Value.all);
+                  end if;
+               end if;
+            end if;
+
+            --  Reorder the compiler roots in the PATH order
+
+            if First_Compiler_Root /= null
+              and then First_Compiler_Root.Next /= null
+            then
+               declare
+                  Pred : Compiler_Root_Ptr;
+                  First_New_Comp : Compiler_Root_Ptr := null;
+                  New_Comp : Compiler_Root_Ptr := null;
+                  First : Positive := Path_Value'First;
+                  Last  : Positive;
+                  Path_Last : Positive;
+               begin
+                  while First <= Path_Value'Last loop
+                     Last := First;
+
+                     if Path_Value (First) /= Path_Separator then
+                        while Last < Path_Value'Last
+                          and then Path_Value (Last + 1) /= Path_Separator
+                        loop
+                           Last := Last + 1;
+                        end loop;
+
+                        Path_Last := Last;
+                        while Path_Last > First
+                          and then
+                            Path_Value (Path_Last) = Directory_Separator
+                        loop
+                           Path_Last := Path_Last - 1;
+                        end loop;
+
+                        if Path_Last > First + 4
+                          and then
+                            Path_Value (Path_Last - 2 .. Path_Last) = "bin"
+                          and then
+                            Path_Value (Path_Last - 3) = Directory_Separator
+                        then
+                           Path_Last := Path_Last - 4;
+                           Pred := null;
+                           Compiler_Root := First_Compiler_Root;
+                           while Compiler_Root /= null
+                             and then Compiler_Root.Root.all /=
+                               Path_Value (First .. Path_Last)
+                           loop
+                              Pred := Compiler_Root;
+                              Compiler_Root := Compiler_Root.Next;
+                           end loop;
+
+                           if Compiler_Root /= null then
+                              if Pred = null then
+                                 First_Compiler_Root :=
+                                   First_Compiler_Root.Next;
+                              else
+                                 Pred.Next := Compiler_Root.Next;
+                              end if;
+
+                              if First_New_Comp = null then
+                                 First_New_Comp := Compiler_Root;
+                              else
+                                 New_Comp.Next := Compiler_Root;
+                              end if;
+
+                              New_Comp := Compiler_Root;
+                              New_Comp.Next := null;
+                           end if;
+                        end if;
+                     end if;
+
+                     First := Last + 1;
+                  end loop;
+
+                  if First_New_Comp /= null then
+                     New_Comp.Next := First_Compiler_Root;
+                     First_Compiler_Root := First_New_Comp;
+                  end if;
+               end;
+            end if;
+
+            --  Now that the compiler roots are in a correct order, add the
+            --  directories corresponding to these compiler roots in the
+            --  project path.
+
+            Compiler_Root := First_Compiler_Root;
+            while Compiler_Root /= null loop
+               Prefix := Compiler_Root.Root;
+
+               Runtime_Root := Compiler_Root.Runtimes;
+               while Runtime_Root /= null loop
+                  Add_Directory
+                    (Runtime_Root.Root.all &
+                       Directory_Separator &
+                       "lib" &
+                       Directory_Separator &
+                       "gnat");
+                  Add_Directory
+                    (Runtime_Root.Root.all &
+                       Directory_Separator &
+                       "share" &
+                       Directory_Separator &
+                       "gpr");
+                  Runtime_Root := Runtime_Root.Next;
+               end loop;
+
+               Add_Directory
+                 (Prefix.all &
+                    Directory_Separator &
+                    Opt.Target_Value.all &
+                    Directory_Separator &
+                    "lib" &
+                    Directory_Separator &
+                    "gnat");
+               Add_Directory
+                 (Prefix.all &
+                    Directory_Separator &
+                    Opt.Target_Value.all &
+                    Directory_Separator &
+                    "share" &
+                    Directory_Separator &
+                    "gpr");
+               Add_Directory
+                 (Prefix.all &
+                    Directory_Separator &
+                    "share" &
+                    Directory_Separator &
+                    "gpr");
+               Add_Directory
+                 (Prefix.all &
+                    Directory_Separator &
+                    "lib" &
+                    Directory_Separator &
+                    "gnat");
+               Compiler_Root := Compiler_Root.Next;
+            end loop;
+         end;
+
+         --  And parse again the project files. There will be no missing
+         --  withed projects, as Ignore_Missing_With is set to False in
+         --  the environment flags, so there is no risk of endless loop here.
+
+         goto Parse_Again;
+      end if;
    end Parse_Project_And_Apply_Config;
 
    --------------------------------------
@@ -1948,4 +2156,112 @@ package body Prj.Conf is
       RTS_Languages.Set (Language, Name_Find);
    end Set_Runtime_For;
 
+   ----------------------------
+   -- Look_For_Project_Paths --
+   ----------------------------
+
+   procedure Look_For_Project_Paths
+     (Project    : Project_Id;
+      Tree       : Project_Tree_Ref;
+      With_State : in out State)
+   is
+      Lang_Id : Language_Ptr;
+      Compiler_Root : Compiler_Root_Ptr;
+      Runtime_Root : Runtime_Root_Ptr;
+      Comp_Driver : String_Access;
+      Comp_Dir : String_Access;
+      Prefix   : String_Access;
+
+      pragma Unreferenced (Tree);
+
+   begin
+      With_State := No_State;
+
+      Lang_Id := Project.Languages;
+      while Lang_Id /= No_Language_Index loop
+         if Lang_Id.Config.Compiler_Driver /= No_File then
+            Comp_Driver :=
+              new String'
+                (Get_Name_String (Lang_Id.Config.Compiler_Driver));
+
+            --  Get the absolute path of the compiler driver
+
+            if not Is_Absolute_Path (Comp_Driver.all) then
+               Comp_Driver := Locate_Exec_On_Path (Comp_Driver.all);
+            end if;
+
+            if Comp_Driver /= null and then Comp_Driver'Length > 0 then
+               Comp_Dir :=
+                 new String'
+                   (Containing_Directory (Comp_Driver.all));
+
+               --  Consider only the compiler drivers that are in "bin"
+               --  subdirectories.
+
+               if Simple_Name (Comp_Dir.all) = "bin" then
+                  Prefix :=
+                    new String'(Containing_Directory (Comp_Dir.all));
+
+                  --  Check if the compiler root is already in the list. If it
+                  --  is not, add it to the list.
+
+                  Compiler_Root := First_Compiler_Root;
+                  while Compiler_Root /= null loop
+                     exit when Prefix.all = Compiler_Root.Root.all;
+                     Compiler_Root := Compiler_Root.Next;
+                  end loop;
+
+                  if Compiler_Root = null then
+                     First_Compiler_Root :=
+                       new Compiler_Root_Data'
+                         (Root => Prefix,
+                          Runtimes => null,
+                          Next => First_Compiler_Root);
+                     Compiler_Root := First_Compiler_Root;
+                  end if;
+
+                  --  If there is a runtime for this compiler, check if it is
+                  --  recorded with the compiler root. If it is not, record
+                  --  the runtime.
+
+                  declare
+                     Runtime : constant String :=
+                       Runtime_Name_For (Lang_Id.Name);
+                     Root : String_Access;
+                  begin
+                     if Runtime'Length > 0 then
+                        if Is_Absolute_Path (Runtime) then
+                           Root := new String'(Runtime);
+
+                        else
+                           Root :=
+                             new String'
+                               (Prefix.all &
+                                  Directory_Separator &
+                                  Opt.Target_Value.all &
+                                  Directory_Separator &
+                                  Runtime);
+                        end if;
+
+                        Runtime_Root := Compiler_Root.Runtimes;
+                        while Runtime_Root /= null loop
+                           exit when Root.all = Runtime_Root.Root.all;
+                           Runtime_Root := Runtime_Root.Next;
+                        end loop;
+
+                        if Runtime_Root = null then
+                           Compiler_Root.Runtimes :=
+                             new Runtime_Root_Data'
+                               (Root => Root,
+                                Next => Compiler_Root.Runtimes);
+                        end if;
+                     end if;
+                  end;
+               end if;
+            end if;
+         end if;
+
+         Lang_Id := Lang_Id.Next;
+      end loop;
+   end Look_For_Project_Paths;
 end Prj.Conf;

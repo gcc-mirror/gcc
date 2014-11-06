@@ -1161,10 +1161,9 @@ DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
    result (e.g. summing the elements of the vector, finding the minimum over
    the vector elements, etc).
    Operand 0 is a vector.
-   The expression returns a vector of the same type, with the first
-   element in the vector holding the result of the reduction of all elements
-   of the operand.  The content of the other elements in the returned vector
-   is undefined.  */
+   The expression returns a scalar, with type the same as the elements of the
+   vector, holding the result of the reduction of all elements of the operand.
+   */
 DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
@@ -1243,10 +1242,9 @@ DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
    before adding operand three.  */
 DEFTREECODE (FMA_EXPR, "fma_expr", tcc_expression, 3)
 
-/* Whole vector left/right shift in bits.
+/* Whole vector right shift in bits.
    Operand 0 is a vector to be shifted.
    Operand 1 is an integer shift amount in bits.  */
-DEFTREECODE (VEC_LSHIFT_EXPR, "vec_lshift_expr", tcc_binary, 2)
 DEFTREECODE (VEC_RSHIFT_EXPR, "vec_rshift_expr", tcc_binary, 2)
 
 /* Widening vector multiplication.

@@ -363,6 +363,12 @@ procedure Gnat1drv is
          --  happens anyway because this expansion is simply not done in the
          --  SPARK version of the expander.
 
+         --  On the contrary, we need to enable explicitly all language checks,
+         --  as they may have been marked as suppressed by the use of switch
+         --  -gnatp
+
+         Suppress_Options.Suppress := (others => False);
+
          --  Turn off dynamic elaboration checks: generates inconsistencies in
          --  trees between specs compiled as part of a main unit or as part of
          --  a with-clause.

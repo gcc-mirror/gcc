@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 
 #include "tm.h"
-#include "intl.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
 
 /* GUPC driver - derived from fortran/gfortranspec.c. */
 

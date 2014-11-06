@@ -60,6 +60,7 @@ package Sem_Util is
    --    Depends
    --    Effective_Reads
    --    Effective_Writes
+   --    Extensions_Visible
    --    Global
    --    Initial_Condition
    --    Initializes
@@ -284,10 +285,23 @@ package Sem_Util is
    --  the one containing C2, that is known to refer to the same object (RM
    --  6.4.1(6.17/3)).
 
-   procedure Check_Implicit_Dereference (Nam : Node_Id; Typ : Entity_Id);
+   procedure Check_Ghost_Completion
+     (Partial_View : Entity_Id;
+      Full_View    : Entity_Id);
+   --  Verify that the Ghost policy of a full view or a completion is the same
+   --  as the Ghost policy of the partial view. Emit an error if this is not
+   --  the case.
+
+   procedure Check_Ghost_Derivation (Typ : Entity_Id);
+   --  Verify that the parent type and all progenitors of derived type or type
+   --  extension Typ are Ghost. If this is not the case, issue an error.
+
+   procedure Check_Implicit_Dereference (N : Node_Id; Typ : Entity_Id);
    --  AI05-139-2: Accessors and iterators for containers. This procedure
    --  checks whether T is a reference type, and if so it adds an interprettion
-   --  to Expr whose type is the designated type of the reference_discriminant.
+   --  to N whose type is the designated type of the reference_discriminant.
+   --  If N is a generalized indexing operation, the interpretation is added
+   --  both to the corresponding function call, and to the indexing node.
 
    procedure Check_Internal_Protected_Use (N : Node_Id; Nam : Entity_Id);
    --  Within a protected function, the current object is a constant, and
@@ -565,6 +579,26 @@ package Sem_Util is
    --  inappropriate use of limited type T. If useful, it adds additional
    --  continuation lines to the message explaining why type T is limited.
    --  Messages are placed at node N.
+
+   type Extensions_Visible_Mode is
+     (Extensions_Visible_None,
+      --  Extensions_Visible does not yield a mode when SPARK_Mode is off. This
+      --  value acts as a default in a non-SPARK compilation.
+
+      Extensions_Visible_False,
+      --  A value of "False" signifies that Extensions_Visible is either
+      --  missing or the pragma is present and the value of its Boolean
+      --  expression is False.
+
+      Extensions_Visible_True);
+      --  A value of "True" signifies that Extensions_Visible is present and
+      --  the value of its Boolean expression is True.
+
+   function Extensions_Visible_Status
+     (Id : Entity_Id) return Extensions_Visible_Mode;
+   --  Given the entity of a subprogram or formal parameter subject to pragma
+   --  Extensions_Visible, return the Boolean value denoted by the expression
+   --  of the pragma.
 
    procedure Find_Actual
      (N      : Node_Id;
@@ -1074,10 +1108,10 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
-   function Incomplete_Or_Private_View (Typ : Entity_Id) return Entity_Id;
-   --  Given the entity of a type, retrieve the incomplete or private view of
-   --  the same type. Note that Typ may not have a partial view to begin with,
-   --  in that case the function returns Empty.
+   function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
+   --  Given the entity of a constant or a type, retrieve the incomplete or
+   --  partial view of the same entity. Note that Id may not have a partial
+   --  view in which case the function returns Empty.
 
    procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id);
    --  Inherit the default initial condition procedure from the parent type of
@@ -1086,6 +1120,14 @@ package Sem_Util is
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id);
    --  Inherit the rep item chain of type From_Typ without clobbering any
    --  existing rep items on Typ's chain. Typ is the destination type.
+
+   procedure Inherit_Subprogram_Contract
+     (Subp      : Entity_Id;
+      From_Subp : Entity_Id);
+   --  Inherit relevant contract items from source subprogram From_Subp. Subp
+   --  denotes the destination subprogram. The inherited items are:
+   --    Extensions_Visible
+   --  ??? it would be nice if this routine handles Pre'Class and Post'Class
 
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
@@ -1208,6 +1250,16 @@ package Sem_Util is
    --  expression function call, and should be inlined unconditionally. Also
    --  used to determine that such a call does not constitute a freeze point.
 
+   function Is_EVF_Expression (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes a reference to a formal parameter of
+   --  a specific tagged type whose related subprogram is subject to pragma
+   --  Extensions_Visible with value "False". Several other constructs fall
+   --  under this category:
+   --    1) A qualified expression whose operand is EVF
+   --    2) A type conversion whose operand is EVF
+   --    3) An if expression with at least one EVF dependent_expression
+   --    4) A case expression with at least one EVF dependent_expression
+
    function Is_False (U : Uint) return Boolean;
    pragma Inline (Is_False);
    --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
@@ -1226,6 +1278,18 @@ package Sem_Util is
    --  warnings for objects that are potentially referenced uninitialized. This
    --  means that the result returned is not crucial, but should err on the
    --  side of thinking things are fully initialized if it does not know.
+
+   function Is_Ghost_Entity (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id is Ghost. To qualify as such, the entity
+   --  must be subject to Convention Ghost.
+
+   function Is_Ghost_Statement_Or_Pragma (N : Node_Id) return Boolean;
+   --  Determine whether statement or pragma N is ghost. To qualify as such, N
+   --  must either
+   --    1) Occur within a ghost subprogram or package
+   --    2) Denote a call to a ghost procedure
+   --    3) Denote an assignment statement whose target is a ghost variable
+   --    4) Denote a pragma that mentions a ghost entity
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
@@ -1345,12 +1409,21 @@ package Sem_Util is
    --  constants, formal parameters, and selected_components of those are
    --  valid objects in SPARK 2005.
 
+   function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
+   --  Determine whether an arbitrary [private] type is specifically tagged
+
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);
    --  Check if the node N is a statement node. Note that this includes
    --  the case of procedure call statements (unlike the direct use of
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
+
+   function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
+   --  Determine whether declarative node N is subject to aspect or pragma
+   --  Ghost. Use this routine in cases where [source] pragma Ghost has not
+   --  been analyzed yet, but the context needs to establish the "ghostness"
+   --  of N.
 
    function Is_Subprogram_Stub_Without_Prior_Declaration
      (N : Node_Id) return Boolean;
@@ -1497,9 +1570,6 @@ package Sem_Util is
    --  to guarantee this in all cases. Note that it is more possible to give
    --  correct answer if the tree is fully analyzed.
 
-   function Must_Inline (Subp : Entity_Id) return Boolean;
-   --  Return true if Subp must be inlined by the frontend
-
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first
    --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
@@ -1638,6 +1708,10 @@ package Sem_Util is
    --  the presence of 'Class, which results in one of the special names
    --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
    --  returned to represent the corresponding aspects with x'Class names.
+
+   function Policy_In_Effect (Policy : Name_Id) return Name_Id;
+   --  Given a policy, return the policy identifier associated with it. If no
+   --  such policy is in effect, the value returned is No_Name.
 
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
@@ -1840,6 +1914,10 @@ package Sem_Util is
    --    If restriction No_Implementation_Identifiers is set, then it checks
    --    that the entity is not implementation defined.
 
+   procedure Set_Is_Ghost_Entity (Id : Entity_Id);
+   --  Set the relevant ghost attribute of entity Id depending on the current
+   --  Ghost assertion policy in effect.
+
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);
    --  Sets the Entity_Id value associated with the given name, which is the
@@ -1966,6 +2044,12 @@ package Sem_Util is
    --  of private parents and progenitors is available then it is used to
    --  generate the list of visible ancestors; otherwise their partial
    --  view is added to the resulting list.
+
+   function Within_Ghost_Scope
+     (Id : Entity_Id := Current_Scope) return Boolean;
+   --  Determine whether an arbitrary entity is either a scope or within a
+   --  scope subject to convention Ghost or one that inherits "ghostness" from
+   --  an enclosing construct.
 
    function Within_Init_Proc return Boolean;
    --  Determines if Current_Scope is within an init proc

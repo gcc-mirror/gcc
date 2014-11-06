@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "regs.h"
 #include "reload.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
 #include "intl.h"
@@ -78,11 +79,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
-#include "insn-codes.h"
 
 
 bool
-default_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			      rtx addr ATTRIBUTE_UNUSED,
 			      bool strict ATTRIBUTE_UNUSED)
 {
@@ -123,9 +123,9 @@ default_unspec_may_trap_p (const_rtx x, unsigned flags)
   return 0;
 }
 
-enum machine_mode
+machine_mode
 default_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-			       enum machine_mode mode,
+			       machine_mode mode,
 			       int *punsignedp ATTRIBUTE_UNUSED,
 			       const_tree funtype ATTRIBUTE_UNUSED,
 			       int for_return ATTRIBUTE_UNUSED)
@@ -135,9 +135,9 @@ default_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
-enum machine_mode
+machine_mode
 default_promote_function_mode_always_promote (const_tree type,
-					      enum machine_mode mode,
+					      machine_mode mode,
 					      int *punsignedp,
 					      const_tree funtype ATTRIBUTE_UNUSED,
 					      int for_return ATTRIBUTE_UNUSED)
@@ -145,8 +145,8 @@ default_promote_function_mode_always_promote (const_tree type,
   return promote_mode (type, mode, punsignedp);
 }
 
-enum machine_mode
-default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+machine_mode
+default_cc_modes_compatible (machine_mode m1, machine_mode m2)
 {
   if (m1 == m2)
     return m1;
@@ -162,7 +162,7 @@ default_return_in_memory (const_tree type,
 
 rtx
 default_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
-			    enum machine_mode mode ATTRIBUTE_UNUSED)
+			    machine_mode mode ATTRIBUTE_UNUSED)
 {
   return x;
 }
@@ -176,7 +176,7 @@ default_expand_builtin_saveregs (void)
 
 void
 default_setup_incoming_varargs (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				enum machine_mode mode ATTRIBUTE_UNUSED,
+				machine_mode mode ATTRIBUTE_UNUSED,
 				tree type ATTRIBUTE_UNUSED,
 				int *pretend_arg_size ATTRIBUTE_UNUSED,
 				int second_time ATTRIBUTE_UNUSED)
@@ -206,25 +206,25 @@ default_pretend_outgoing_varargs_named (cumulative_args_t ca ATTRIBUTE_UNUSED)
 	  != default_setup_incoming_varargs);
 }
 
-enum machine_mode
+machine_mode
 default_eh_return_filter_mode (void)
 {
   return targetm.unwind_word_mode ();
 }
 
-enum machine_mode
+machine_mode
 default_libgcc_cmp_return_mode (void)
 {
   return word_mode;
 }
 
-enum machine_mode
+machine_mode
 default_libgcc_shift_count_mode (void)
 {
   return word_mode;
 }
 
-enum machine_mode
+machine_mode
 default_unwind_word_mode (void)
 {
   return word_mode;
@@ -233,7 +233,7 @@ default_unwind_word_mode (void)
 /* The default implementation of TARGET_SHIFT_TRUNCATION_MASK.  */
 
 unsigned HOST_WIDE_INT
-default_shift_truncation_mask (enum machine_mode mode)
+default_shift_truncation_mask (machine_mode mode)
 {
   return SHIFT_COUNT_TRUNCATED ? GET_MODE_BITSIZE (mode) - 1 : 0;
 }
@@ -241,7 +241,7 @@ default_shift_truncation_mask (enum machine_mode mode)
 /* The default implementation of TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.  */
 
 unsigned int
-default_min_divisions_for_recip_mul (enum machine_mode mode ATTRIBUTE_UNUSED)
+default_min_divisions_for_recip_mul (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return have_insn_for (DIV, mode) ? 3 : 2;
 }
@@ -249,8 +249,8 @@ default_min_divisions_for_recip_mul (enum machine_mode mode ATTRIBUTE_UNUSED)
 /* The default implementation of TARGET_MODE_REP_EXTENDED.  */
 
 int
-default_mode_rep_extended (enum machine_mode mode ATTRIBUTE_UNUSED,
-			   enum machine_mode mode_rep ATTRIBUTE_UNUSED)
+default_mode_rep_extended (machine_mode mode ATTRIBUTE_UNUSED,
+			   machine_mode mode_rep ATTRIBUTE_UNUSED)
 {
   return UNKNOWN;
 }
@@ -265,7 +265,7 @@ hook_bool_CUMULATIVE_ARGS_true (cumulative_args_t a ATTRIBUTE_UNUSED)
 
 /* Return machine mode for non-standard suffix
    or VOIDmode if non-standard suffixes are unsupported.  */
-enum machine_mode
+machine_mode
 default_mode_for_suffix (char suffix ATTRIBUTE_UNUSED)
 {
   return VOIDmode;
@@ -307,7 +307,7 @@ default_cxx_get_cookie_size (tree type)
 
 bool
 hook_pass_by_reference_must_pass_in_stack (cumulative_args_t c ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
+	machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
 	bool named_arg ATTRIBUTE_UNUSED)
 {
   return targetm.calls.must_pass_in_stack (mode, type);
@@ -318,7 +318,7 @@ hook_pass_by_reference_must_pass_in_stack (cumulative_args_t c ATTRIBUTE_UNUSED,
 
 bool
 hook_callee_copies_named (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED, bool named)
 {
   return named;
@@ -385,7 +385,7 @@ default_mangle_assembler_name (const char *name ATTRIBUTE_UNUSED)
    supported by optabs.c.  */
 
 bool
-default_scalar_mode_supported_p (enum machine_mode mode)
+default_scalar_mode_supported_p (machine_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
 
@@ -432,7 +432,7 @@ default_scalar_mode_supported_p (enum machine_mode mode)
    be supported as a scalar mode).  */
 
 bool
-default_libgcc_floating_mode_supported_p (enum machine_mode mode)
+default_libgcc_floating_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
@@ -600,7 +600,7 @@ default_builtin_reciprocal (unsigned int fn ATTRIBUTE_UNUSED,
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED,
+	machine_mode mode ATTRIBUTE_UNUSED,
 	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return false;
@@ -609,7 +609,7 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED,
+	machine_mode mode ATTRIBUTE_UNUSED,
 	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return true;
@@ -618,7 +618,7 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 int
 hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED,
+	machine_mode mode ATTRIBUTE_UNUSED,
 	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return 0;
@@ -626,7 +626,7 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 
 void
 default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			      enum machine_mode mode ATTRIBUTE_UNUSED,
+			      machine_mode mode ATTRIBUTE_UNUSED,
 			      const_tree type ATTRIBUTE_UNUSED,
 			      bool named ATTRIBUTE_UNUSED)
 {
@@ -635,7 +635,7 @@ default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
 
 rtx
 default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		      enum machine_mode mode ATTRIBUTE_UNUSED,
+		      machine_mode mode ATTRIBUTE_UNUSED,
 		      const_tree type ATTRIBUTE_UNUSED,
 		      bool named ATTRIBUTE_UNUSED)
 {
@@ -644,7 +644,7 @@ default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
 
 rtx
 default_function_incoming_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			       enum machine_mode mode ATTRIBUTE_UNUSED,
+			       machine_mode mode ATTRIBUTE_UNUSED,
 			       const_tree type ATTRIBUTE_UNUSED,
 			       bool named ATTRIBUTE_UNUSED)
 {
@@ -652,14 +652,14 @@ default_function_incoming_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
 }
 
 unsigned int
-default_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 			       const_tree type ATTRIBUTE_UNUSED)
 {
   return PARM_BOUNDARY;
 }
 
 unsigned int
-default_function_arg_round_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_function_arg_round_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 				     const_tree type ATTRIBUTE_UNUSED)
 {
   return PARM_BOUNDARY;
@@ -803,7 +803,7 @@ default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
 }
 
 rtx
-default_libcall_value (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_libcall_value (machine_mode mode ATTRIBUTE_UNUSED,
 		       const_rtx fun ATTRIBUTE_UNUSED)
 {
 #ifdef LIBCALL_VALUE
@@ -919,7 +919,7 @@ default_different_addr_displacement_p (void)
 reg_class_t
 default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 			  reg_class_t reload_class_i ATTRIBUTE_UNUSED,
-			  enum machine_mode reload_mode ATTRIBUTE_UNUSED,
+			  machine_mode reload_mode ATTRIBUTE_UNUSED,
 			  secondary_reload_info *sri)
 {
   enum reg_class rclass = NO_REGS;
@@ -1041,7 +1041,7 @@ default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
    memory access if it supports movmisalign patten.
    is_packed is true if the memory access is defined in a packed struct.  */
 bool
-default_builtin_support_vector_misalignment (enum machine_mode mode,
+default_builtin_support_vector_misalignment (machine_mode mode,
 					     const_tree type
 					     ATTRIBUTE_UNUSED,
 					     int misalignment
@@ -1057,8 +1057,8 @@ default_builtin_support_vector_misalignment (enum machine_mode mode,
 /* By default, only attempt to parallelize bitwise operations, and
    possibly adds/subtracts using bit-twiddling.  */
 
-enum machine_mode
-default_preferred_simd_mode (enum machine_mode mode ATTRIBUTE_UNUSED)
+machine_mode
+default_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return word_mode;
 }
@@ -1134,7 +1134,7 @@ default_destroy_cost_data (void *data)
 /* Determine whether or not a pointer mode is valid. Assume defaults
    of ptr_mode or Pmode - can be overridden.  */
 bool
-default_valid_pointer_mode (enum machine_mode mode)
+default_valid_pointer_mode (machine_mode mode)
 {
   return (mode == ptr_mode || mode == Pmode);
 }
@@ -1169,7 +1169,7 @@ default_ref_may_alias_errno (ao_ref *ref)
 /* Return the mode for a pointer to a given ADDRSPACE, defaulting to ptr_mode
    for the generic address space only.  */
 
-enum machine_mode
+machine_mode
 default_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (addrspace));
@@ -1179,7 +1179,7 @@ default_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 /* Return the mode for an address in a given ADDRSPACE, defaulting to Pmode
    for the generic address space only.  */
 
-enum machine_mode
+machine_mode
 default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (addrspace));
@@ -1189,7 +1189,7 @@ default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 /* Named address space version of valid_pointer_mode.  */
 
 bool
-default_addr_space_valid_pointer_mode (enum machine_mode mode, addr_space_t as)
+default_addr_space_valid_pointer_mode (machine_mode mode, addr_space_t as)
 {
   if (!ADDR_SPACE_GENERIC_P (as))
     return (mode == targetm.addr_space.pointer_mode (as)
@@ -1217,7 +1217,7 @@ target_default_pointer_address_modes_p (void)
 /* Named address space version of legitimate_address_p.  */
 
 bool
-default_addr_space_legitimate_address_p (enum machine_mode mode, rtx mem,
+default_addr_space_legitimate_address_p (machine_mode mode, rtx mem,
 					 bool strict, addr_space_t as)
 {
   if (!ADDR_SPACE_GENERIC_P (as))
@@ -1230,7 +1230,7 @@ default_addr_space_legitimate_address_p (enum machine_mode mode, rtx mem,
 
 rtx
 default_addr_space_legitimize_address (rtx x, rtx oldx,
-				       enum machine_mode mode, addr_space_t as)
+				       machine_mode mode, addr_space_t as)
 {
   if (!ADDR_SPACE_GENERIC_P (as))
     return x;
@@ -1380,7 +1380,7 @@ default_builtin_tm_load_store (tree ARG_UNUSED (type))
 /* Compute cost of moving registers to/from memory.  */
 
 int
-default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t rclass ATTRIBUTE_UNUSED,
 			  bool in ATTRIBUTE_UNUSED)
 {
@@ -1395,7 +1395,7 @@ default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    TO, using MODE.  */
 
 int
-default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
                             reg_class_t from ATTRIBUTE_UNUSED,
                             reg_class_t to ATTRIBUTE_UNUSED)
 {
@@ -1404,6 +1404,61 @@ default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 #else
   return REGISTER_MOVE_COST (mode, (enum reg_class) from, (enum reg_class) to);
 #endif
+}
+
+/* For hooks which use the MOVE_RATIO macro, this gives the legacy default
+   behaviour.  SPEED_P is true if we are compiling for speed.  */
+
+static unsigned int
+get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
+{
+  unsigned int move_ratio;
+#ifdef MOVE_RATIO
+  move_ratio = (unsigned int) MOVE_RATIO (speed_p);
+#else
+#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+  move_ratio = 2;
+#else /* No movmem patterns, pick a default.  */
+  move_ratio = ((speed_p) ? 15 : 3);
+#endif
+#endif
+  return move_ratio;
+}
+
+/* Return TRUE if the move_by_pieces/set_by_pieces infrastructure should be
+   used; return FALSE if the movmem/setmem optab should be expanded, or
+   a call to memcpy emitted.  */
+
+bool
+default_use_by_pieces_infrastructure_p (unsigned int size,
+					unsigned int alignment,
+					enum by_pieces_operation op,
+					bool speed_p)
+{
+  unsigned int max_size = 0;
+  unsigned int ratio = 0;
+
+  switch (op)
+    {
+      case CLEAR_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = CLEAR_RATIO (speed_p);
+	break;
+      case MOVE_BY_PIECES:
+	max_size = MOVE_MAX_PIECES;
+	ratio = get_move_ratio (speed_p);
+	break;
+      case SET_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = SET_RATIO (speed_p);
+	break;
+      case STORE_BY_PIECES:
+	max_size = STORE_MAX_PIECES;
+	ratio = get_move_ratio (speed_p);
+	break;
+    }
+
+  return move_by_pieces_ninsns (size, alignment, max_size + 1) < ratio;
 }
 
 bool
@@ -1457,7 +1512,7 @@ default_class_likely_spilled_p (reg_class_t rclass)
 
 unsigned char
 default_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
-			 enum machine_mode mode ATTRIBUTE_UNUSED)
+			 machine_mode mode ATTRIBUTE_UNUSED)
 {
 #ifdef CLASS_MAX_NREGS
   return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass, mode);
@@ -1490,10 +1545,10 @@ default_debug_unwind_info (void)
 /* Determine the correct mode for a Dwarf frame register that represents
    register REGNO.  */
 
-enum machine_mode
+machine_mode
 default_dwarf_frame_reg_mode (int regno)
 {
-  enum machine_mode save_mode = reg_raw_mode[regno];
+  machine_mode save_mode = reg_raw_mode[regno];
 
   if (HARD_REGNO_CALL_PART_CLOBBERED (regno, save_mode))
     save_mode = choose_hard_reg_mode (regno, 1, true);
@@ -1503,7 +1558,7 @@ default_dwarf_frame_reg_mode (int regno)
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
-enum machine_mode
+machine_mode
 default_get_reg_raw_mode (int regno)
 {
   return reg_raw_mode[regno];
@@ -1631,7 +1686,7 @@ default_pch_valid_p (const void *data_p, size_t len)
 
 /* Default version of cstore_mode.  */
 
-enum machine_mode
+machine_mode
 default_cstore_mode (enum insn_code icode)
 {
   return insn_data[(int) icode].operand[0].mode;
@@ -1640,7 +1695,7 @@ default_cstore_mode (enum insn_code icode)
 /* Default version of member_type_forces_blk.  */
 
 bool
-default_member_type_forces_blk (const_tree, enum machine_mode)
+default_member_type_forces_blk (const_tree, machine_mode)
 {
   return false;
 }

@@ -64,5 +64,30 @@ swap32_d (SItype in)
 	 | (((in >> 24) & 0xFF) << 0);
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 4 "bswap" } } */
+/* This variant is adapted from swap32_d above.  It detects missing cast of
+   MARKER_BYTE_UNKNOWN to uint64_t for the CASE_CONVERT case for host
+   architecture where a left shift with too big an operand mask its high
+   bits.  */
+
+SItype
+swap32_e (SItype in)
+{
+  return (((in >> 0) & 0xFF) << 24)
+	 | (((in >> 8) & 0xFF) << 16)
+	 | (((((int64_t) in) & 0xFF0000FF0000) >> 16) << 8)
+	 | (((in >> 24) & 0xFF) << 0);
+}
+
+/* This variant comes from PR63259.  It compiles to a gimple sequence that ends
+   with a rotation instead of a bitwise OR.  */
+
+unsigned
+swap32_f (unsigned in)
+{
+  in = ((in & 0xff00ff00) >>  8) | ((in & 0x00ff00ff) <<  8);
+  in = ((in & 0xffff0000) >> 16) | ((in & 0x0000ffff) << 16);
+  return in;
+}
+
+/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 6 "bswap" } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

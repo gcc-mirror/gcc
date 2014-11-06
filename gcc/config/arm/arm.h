@@ -29,14 +29,14 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
-/* We can't use enum machine_mode inside a generator file because it
+/* We can't use machine_mode inside a generator file because it
    hasn't been created yet; we shouldn't be using any code that
    needs the real definition though, so this ought to be safe.  */
 #ifdef GENERATOR_FILE
 #define MACHMODE int
 #else
 #include "insn-modes.h"
-#define MACHMODE enum machine_mode
+#define MACHMODE machine_mode
 #endif
 
 #include "config/vxworks-dummy.h"
@@ -1510,7 +1510,7 @@ typedef struct GTY(()) arm_stack_offsets
 }
 arm_stack_offsets;
 
-#ifndef GENERATOR_FILE
+#if !defined(GENERATOR_FILE) && !defined (USED_FOR_TARGET)
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
 typedef struct GTY(()) machine_function
@@ -1547,7 +1547,7 @@ typedef struct GTY(()) machine_function
   rtx thumb1_cc_op0;
   rtx thumb1_cc_op1;
   /* Also record the CC mode that is supported.  */
-  enum machine_mode thumb1_cc_mode;
+  machine_mode thumb1_cc_mode;
   /* Set to 1 after arm_reorg has started.  */
   int after_arm_reorg;
 }
@@ -1578,6 +1578,7 @@ enum arm_pcs
 /* Default procedure calling standard of current compilation unit. */
 extern enum arm_pcs arm_pcs_default;
 
+#if !defined (USED_FOR_TARGET)
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  */
 typedef struct
@@ -1611,6 +1612,7 @@ typedef struct
   int aapcs_vfp_rcount;
   MACHMODE aapcs_vfp_rmode;
 } CUMULATIVE_ARGS;
+#endif
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
   (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
@@ -2140,9 +2142,10 @@ extern int making_const_table;
    ? reverse_condition_maybe_unordered (code) \
    : reverse_condition (code))
 
-/* The arm5 clz instruction returns 32.  */
-#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
 
 #define CC_STATUS_INIT \
   do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)

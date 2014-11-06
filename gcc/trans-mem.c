@@ -22,6 +22,17 @@
 #include "coretypes.h"
 #include "hash-table.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -30,14 +41,6 @@
 #include "is-a.h"
 #include "gimple.h"
 #include "calls.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "rtl.h"
 #include "emit-rtl.h"
 #include "gimplify.h"
@@ -45,6 +48,9 @@
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "stringpool.h"
@@ -62,7 +68,6 @@
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-ssa-address.h"
-#include "predict.h"
 
 
 #define A_RUNINSTRUMENTEDCODE	0x0001
@@ -1410,7 +1415,7 @@ thread_private_new_memory (basic_block entry_block, tree x)
 	  else if (code == POINTER_PLUS_EXPR)
 	    x = gimple_assign_rhs1 (stmt);
 	  /* x = (cast*) foo ==> foo */
-	  else if (code == VIEW_CONVERT_EXPR || code == NOP_EXPR)
+	  else if (code == VIEW_CONVERT_EXPR || CONVERT_EXPR_CODE_P (code))
 	    x = gimple_assign_rhs1 (stmt);
 	  /* x = c ? op1 : op2 == > op1 or op2 just like a PHI */
 	  else if (code == COND_EXPR)

@@ -26,6 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "stor-layout.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -48,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "recog.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "params.h"
 #include "diagnostic-core.h"
@@ -1892,9 +1904,9 @@ vect_analyze_loop (struct loop *loop)
 
    Output:
    REDUC_CODE - the corresponding tree-code to be used to reduce the
-      vector of partial results into a single scalar result (which
-      will also reside in a vector) or ERROR_MARK if the operation is
-      a supported reduction operation, but does not have such tree-code.
+      vector of partial results into a single scalar result, or ERROR_MARK
+      if the operation is a supported reduction operation, but does not have
+      such a tree-code.
 
    Return FALSE if CODE currently cannot be vectorized as reduction.  */
 
@@ -3091,7 +3103,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   tree vectype;
   gimple stmt, orig_stmt;
   tree reduction_op;
-  enum machine_mode mode;
+  machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
@@ -3848,7 +3860,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
   tree vectype;
-  enum machine_mode mode;
+  machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *outer_loop = NULL;
   basic_block exit_bb;
@@ -4168,6 +4180,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   if (reduc_code != ERROR_MARK && !slp_reduc)
     {
       tree tmp;
+      tree vec_elem_type;
 
       /*** Case 1:  Create:
            v_out2 = reduc_expr <v_out1>  */
@@ -4176,14 +4189,26 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Reduce using direct vector reduction.\n");
 
-      vec_dest = vect_create_destination_var (scalar_dest, vectype);
-      tmp = build1 (reduc_code, vectype, new_phi_result);
-      epilog_stmt = gimple_build_assign (vec_dest, tmp);
-      new_temp = make_ssa_name (vec_dest, epilog_stmt);
+      vec_elem_type = TREE_TYPE (TREE_TYPE (new_phi_result));
+      if (!useless_type_conversion_p (scalar_type, vec_elem_type))
+	{
+          tree tmp_dest =
+	      vect_create_destination_var (scalar_dest, vec_elem_type);
+	  tmp = build1 (reduc_code, vec_elem_type, new_phi_result);
+	  epilog_stmt = gimple_build_assign (tmp_dest, tmp);
+	  new_temp = make_ssa_name (tmp_dest, epilog_stmt);
+	  gimple_assign_set_lhs (epilog_stmt, new_temp);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+
+	  tmp = build1 (NOP_EXPR, scalar_type, new_temp);
+	}
+      else
+	tmp = build1 (reduc_code, scalar_type, new_phi_result);
+      epilog_stmt = gimple_build_assign (new_scalar_dest, tmp);
+      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-
-      extract_scalar_result = true;
+      scalar_results.safe_push (new_temp);
     }
   else
     {
@@ -4721,7 +4746,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, orig_code, epilog_reduc_code;
-  enum machine_mode vec_mode;
+  machine_mode vec_mode;
   int op_type;
   optab optab, reduc_optab;
   tree new_temp = NULL_TREE;
@@ -5089,15 +5114,17 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
           epilog_reduc_code = ERROR_MARK;
         }
-
-      if (reduc_optab
-          && optab_handler (reduc_optab, vec_mode) == CODE_FOR_nothing)
+      else if (optab_handler (reduc_optab, vec_mode) == CODE_FOR_nothing)
         {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduc op not supported by target.\n");
+          optab = scalar_reduc_to_vector (reduc_optab, vectype_out);
+          if (optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+            {
+              if (dump_enabled_p ())
+	        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "reduc op not supported by target.\n");
 
-          epilog_reduc_code = ERROR_MARK;
+	      epilog_reduc_code = ERROR_MARK;
+	    }
         }
     }
   else

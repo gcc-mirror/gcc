@@ -37,7 +37,7 @@ const struct rtl_hooks general_rtl_hooks = RTL_HOOKS_INITIALIZER;
 struct rtl_hooks rtl_hooks = RTL_HOOKS_INITIALIZER;
 
 rtx
-gen_lowpart_general (enum machine_mode mode, rtx x)
+gen_lowpart_general (machine_mode mode, rtx x)
 {
   rtx result = gen_lowpart_common (mode, x);
 
@@ -81,9 +81,9 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 
 rtx
 reg_num_sign_bit_copies_general (const_rtx x ATTRIBUTE_UNUSED,
-				 enum machine_mode mode ATTRIBUTE_UNUSED,
+				 machine_mode mode ATTRIBUTE_UNUSED,
                                  const_rtx known_x ATTRIBUTE_UNUSED,
-				 enum machine_mode known_mode ATTRIBUTE_UNUSED,
+				 machine_mode known_mode ATTRIBUTE_UNUSED,
                                  unsigned int known_ret ATTRIBUTE_UNUSED,
                                  unsigned int *result ATTRIBUTE_UNUSED)
 {
@@ -92,9 +92,9 @@ reg_num_sign_bit_copies_general (const_rtx x ATTRIBUTE_UNUSED,
 
 rtx
 reg_nonzero_bits_general (const_rtx x ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_rtx known_x ATTRIBUTE_UNUSED,
-                          enum machine_mode known_mode ATTRIBUTE_UNUSED,
+                          machine_mode known_mode ATTRIBUTE_UNUSED,
                           unsigned HOST_WIDE_INT known_ret ATTRIBUTE_UNUSED,
                           unsigned HOST_WIDE_INT *nonzero ATTRIBUTE_UNUSED)
 {
@@ -102,7 +102,7 @@ reg_nonzero_bits_general (const_rtx x ATTRIBUTE_UNUSED,
 }
 
 bool
-reg_truncated_to_mode_general (enum machine_mode mode ATTRIBUTE_UNUSED,
+reg_truncated_to_mode_general (machine_mode mode ATTRIBUTE_UNUSED,
 			       const_rtx x ATTRIBUTE_UNUSED)
 {
   return false;
@@ -118,7 +118,7 @@ reg_truncated_to_mode_general (enum machine_mode mode ATTRIBUTE_UNUSED,
    This is similar to gen_lowpart_general.  */
 
 rtx
-gen_lowpart_if_possible (enum machine_mode mode, rtx x)
+gen_lowpart_if_possible (machine_mode mode, rtx x)
 {
   rtx result = gen_lowpart_common (mode, x);
 

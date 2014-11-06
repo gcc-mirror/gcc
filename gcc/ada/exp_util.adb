@@ -2912,6 +2912,37 @@ package body Exp_Util is
       end if;
    end Find_Hook_Context;
 
+   ------------------------------
+   -- Following_Address_Clause --
+   ------------------------------
+
+   --  Should this function check the private part in a package ???
+
+   function Following_Address_Clause (D : Node_Id) return Node_Id is
+      Id   : constant Entity_Id := Defining_Identifier (D);
+      Decl : Node_Id;
+
+   begin
+      Decl := Next (D);
+      while Present (Decl) loop
+         if Nkind (Decl) = N_At_Clause
+           and then Chars (Identifier (Decl)) = Chars (Id)
+         then
+            return Decl;
+
+         elsif Nkind (Decl) = N_Attribute_Definition_Clause
+           and then Chars (Decl) = Name_Address
+           and then Chars (Name (Decl)) = Chars (Id)
+         then
+            return Decl;
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Following_Address_Clause;
+
    ----------------------
    -- Force_Evaluation --
    ----------------------
@@ -3518,37 +3549,6 @@ package body Exp_Util is
 
       return False;
    end Has_Annotate_Pragma_For_External_Axiomatization;
-
-   ----------------------------------
-   -- Has_Following_Address_Clause --
-   ----------------------------------
-
-   --  Should this function check the private part in a package ???
-
-   function Has_Following_Address_Clause (D : Node_Id) return Boolean is
-      Id   : constant Entity_Id := Defining_Identifier (D);
-      Decl : Node_Id;
-
-   begin
-      Decl := Next (D);
-      while Present (Decl) loop
-         if Nkind (Decl) = N_At_Clause
-           and then Chars (Identifier (Decl)) = Chars (Id)
-         then
-            return True;
-
-         elsif Nkind (Decl) = N_Attribute_Definition_Clause
-           and then Chars (Decl) = Name_Address
-           and then Chars (Name (Decl)) = Chars (Id)
-         then
-            return True;
-         end if;
-
-         Next (Decl);
-      end loop;
-
-      return False;
-   end Has_Following_Address_Clause;
 
    --------------------
    -- Homonym_Number --

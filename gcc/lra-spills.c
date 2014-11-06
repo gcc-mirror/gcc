@@ -74,6 +74,10 @@ along with GCC; see the file COPYING3.	If not see
 #include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
 #include "basic-block.h"
 #include "except.h"
 #include "timevar.h"
@@ -137,7 +141,7 @@ static void
 assign_mem_slot (int i)
 {
   rtx x = NULL_RTX;
-  enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
+  machine_mode mode = GET_MODE (regno_reg_rtx[i]);
   unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
   unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
   unsigned int max_ref_width = GET_MODE_SIZE (lra_reg_info[i].biggest_mode);
@@ -259,7 +263,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 {
   int i, k, p, regno, res, spill_class_size, hard_regno, nr;
   enum reg_class rclass, spill_class;
-  enum machine_mode mode;
+  machine_mode mode;
   lra_live_range_t r;
   rtx_insn *insn;
   rtx set;

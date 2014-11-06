@@ -1,3 +1,41 @@
+2014-10-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-objc-common.c (c_tree_printer) <case 'T'>: For a typedef name,
+	print the stripped version as well, if they're not the same.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c, c-tree.h, c-typeck.c: Remove redundant enum from
+	machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+	* c-parser.c: Ditto.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* c-tree.h (enum c_oracle_request): New.
+	(c_binding_oracle_function): New typedef.
+	(c_binding_oracle, c_pushtag, c_bind): Declare.
+	* c-decl.c (c_binding_oracle): New global.
+	(I_SYMBOL_CHECKED): New macro.
+	(i_symbol_binding): New function.
+	(I_SYMBOL_BINDING, I_SYMBOL_DECL): Redefine.
+	(I_TAG_CHECKED): New macro.
+	(i_tag_binding): New function.
+	(I_TAG_BINDING, I_TAG_DECL): Redefine.
+	(I_LABEL_CHECKED): New macro.
+	(i_label_binding): New function.
+	(I_LABEL_BINDING, I_LABEL_DECL): Redefine.
+	(c_print_identifier): Save and restore c_binding_oracle.
+	(c_pushtag, c_bind): New functions.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-typeck.c: Adjust include files.
+
 2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53061

@@ -1573,6 +1573,10 @@ package Sinfo is
    --    discriminant check has a correct value cannot be performed in this
    --    case (or the discriminant check may be optimized away).
 
+   --  Is_Inherited (Flag4-Sem)
+   --    This flag is set in an N_Pragma node that appears in a N_Contract node
+   --    to indicate that the pragma has been inherited from a parent context.
+
    --  Is_Machine_Number (Flag11-Sem)
    --    This flag is set in an N_Real_Literal node to indicate that the value
    --    is a machine number. This avoids some unnecessary cases of converting
@@ -2384,11 +2388,12 @@ package Sinfo is
       --  Next_Rep_Item (Node5-Sem)
       --  Class_Present (Flag6) set if from Aspect with 'Class
       --  From_Aspect_Specification (Flag13-Sem)
+      --  Import_Interface_Present (Flag16-Sem)
+      --  Is_Checked (Flag11-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Is_Disabled (Flag15-Sem)
       --  Is_Ignored (Flag9-Sem)
-      --  Is_Checked (Flag11-Sem)
-      --  Import_Interface_Present (Flag16-Sem)
+      --  Is_Inherited (Flag4-Sem)
       --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
       --  Uneval_Old_Accept (Flag7-Sem)
       --  Uneval_Old_Warn (Flag18-Sem)
@@ -9229,6 +9234,9 @@ package Sinfo is
    function Is_In_Discriminant_Check
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Is_Inherited
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function Is_Machine_Number
      (N : Node_Id) return Boolean;    -- Flag11
 
@@ -10245,6 +10253,9 @@ package Sinfo is
 
    procedure Set_Is_In_Discriminant_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Is_Inherited
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_Is_Machine_Number
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -12629,6 +12640,7 @@ package Sinfo is
    pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_Ignored);
    pragma Inline (Is_In_Discriminant_Check);
+   pragma Inline (Is_Inherited);
    pragma Inline (Is_Machine_Number);
    pragma Inline (Is_Null_Loop);
    pragma Inline (Is_Overloaded);
@@ -12963,6 +12975,7 @@ package Sinfo is
    pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_Ignored);
    pragma Inline (Set_Is_In_Discriminant_Check);
+   pragma Inline (Set_Is_Inherited);
    pragma Inline (Set_Is_Machine_Number);
    pragma Inline (Set_Is_Null_Loop);
    pragma Inline (Set_Is_Overloaded);

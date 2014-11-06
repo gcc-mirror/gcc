@@ -5153,7 +5153,7 @@ package body Exp_Ch3 is
 
          elsif Needs_Simple_Initialization
                  (Typ, Initialize_Scalars
-                         and then not Has_Following_Address_Clause (N))
+                         and then No (Following_Address_Clause (N)))
            and then not Is_Internal (Def_Id)
            and then not Has_Init_Expression (N)
          then
@@ -5328,13 +5328,14 @@ package body Exp_Ch3 is
 
       Next_N  : constant Node_Id := Next (N);
       Id_Ref  : Node_Id;
-      New_Ref : Node_Id;
 
       Init_After : Node_Id := N;
       --  Node after which the initialization actions are to be inserted. This
       --  is normally N, except for the case of a shared passive variable, in
       --  which case the init proc call must be inserted only after the bodies
       --  of the shared variable procedures have been seen.
+
+      Tag_Assign : Node_Id;
 
    --  Start of processing for Expand_N_Object_Declaration
 
@@ -5825,39 +5826,21 @@ package body Exp_Ch3 is
             --  CPP_CLASS, and for initializations that are aggregates, because
             --  they have to have the right tag.
 
-            if Is_Tagged_Type (Typ)
-              and then not Is_Class_Wide_Type (Typ)
-              and then not Is_CPP_Class (Typ)
-              and then Tagged_Type_Expansion
-              and then Nkind (Expr) /= N_Aggregate
-              and then (Nkind (Expr) /= N_Qualified_Expression
-                         or else Nkind (Expression (Expr)) /= N_Aggregate)
-            then
-               declare
-                  Full_Typ : constant Entity_Id := Underlying_Type (Typ);
+            --  The re-assignment of the tag has to be done even if the object
+            --  is a constant. The assignment must be analyzed after the
+            --  declaration. If an address clause follows, this is handled as
+            --  part of the freeze actions for the object, otherwise insert
+            --  tag assignment here.
 
-               begin
-                  --  The re-assignment of the tag has to be done even if the
-                  --  object is a constant. The assignment must be analyzed
-                  --  after the declaration.
+            Tag_Assign := Make_Tag_Assignment (N);
 
-                  New_Ref :=
-                    Make_Selected_Component (Loc,
-                       Prefix => New_Occurrence_Of (Def_Id, Loc),
-                       Selector_Name =>
-                         New_Occurrence_Of (First_Tag_Component (Full_Typ),
-                                           Loc));
-                  Set_Assignment_OK (New_Ref);
+            if Present (Tag_Assign) then
+               if Present (Following_Address_Clause (N)) then
+                  Ensure_Freeze_Node (Def_Id);
 
-                  Insert_Action_After (Init_After,
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Ref,
-                      Expression =>
-                        Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Occurrence_Of
-                            (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
-                             Loc))));
-               end;
+               else
+                  Insert_Action_After (Init_After, Tag_Assign);
+               end if;
 
             --  Handle C++ constructor calls. Note that we do not check that
             --  Typ is a tagged type since the equivalent Ada type of a C++
@@ -9703,6 +9686,46 @@ package body Exp_Ch3 is
 
       Predef_List := Res;
    end Make_Predefined_Primitive_Specs;
+
+   -------------------------
+   -- Make_Tag_Assignment --
+   -------------------------
+
+   function Make_Tag_Assignment (N : Node_Id) return Node_Id is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Def_If   : constant Entity_Id := Defining_Identifier (N);
+      Expr     : constant Node_Id := Expression (N);
+      Typ      : constant Entity_Id := Etype (Def_If);
+      Full_Typ : constant Entity_Id := Underlying_Type (Typ);
+      New_Ref  : Node_Id;
+
+   begin
+      if Is_Tagged_Type (Typ)
+       and then not Is_Class_Wide_Type (Typ)
+       and then not Is_CPP_Class (Typ)
+       and then Tagged_Type_Expansion
+       and then Nkind (Expr) /= N_Aggregate
+       and then (Nkind (Expr) /= N_Qualified_Expression
+                  or else Nkind (Expression (Expr)) /= N_Aggregate)
+      then
+         New_Ref :=
+           Make_Selected_Component (Loc,
+              Prefix => New_Occurrence_Of (Def_If, Loc),
+              Selector_Name =>
+                New_Occurrence_Of (First_Tag_Component (Full_Typ), Loc));
+         Set_Assignment_OK (New_Ref);
+
+         return
+           Make_Assignment_Statement (Loc,
+              Name       => New_Ref,
+              Expression =>
+                Unchecked_Convert_To (RTE (RE_Tag),
+                  New_Occurrence_Of (Node
+                      (First_Elmt (Access_Disp_Table (Full_Typ))), Loc)));
+      else
+         return Empty;
+      end if;
+   end Make_Tag_Assignment;
 
    ---------------------------------
    -- Needs_Simple_Initialization --

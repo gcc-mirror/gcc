@@ -54,7 +54,9 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN, i_q) (res3, res_ref))
     abort ();
 
+#if AVX512F_LEN == 512
   res1.x = INTRINSIC (_set1_epi64) (src.a[0]);
+#endif
   res2.x = INTRINSIC (_mask_set1_epi64) (res2.x, mask, src.a[0]);
   res3.x = INTRINSIC (_maskz_set1_epi64) (mask, src.a[0]);
 

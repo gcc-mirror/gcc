@@ -29,6 +29,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "rtl.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -45,6 +56,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -55,17 +69,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "flags.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "expr.h"
 #include "tree-pass.h"
 #include "except.h"
 #include "splay-tree.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "cfgloop.h"
 #include "target.h"
@@ -73,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-low.h"
 #include "tree-cfgcleanup.h"
 #include "pretty-print.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "tree-nested.h"
 #include "tree-eh.h"
@@ -3063,7 +3072,7 @@ omp_clause_aligned_alignment (tree clause)
 
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
-  enum machine_mode mode, vmode;
+  machine_mode mode, vmode;
   int vs = targetm.vectorize.autovectorize_vector_sizes ();
   if (vs)
     vs = 1 << floor_log2 (vs);
@@ -3114,7 +3123,7 @@ omp_max_vf (void)
       vs = 1 << floor_log2 (vs);
       return vs;
     }
-  enum machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
+  machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
   if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
     return GET_MODE_NUNITS (vqimode);
   return 1;
@@ -7727,7 +7736,7 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   location_t loc;
   gimple stmt;
   tree decl, call, type, itype;
-  enum machine_mode imode;
+  machine_mode imode;
   bool exchange;
 
   gsi = gsi_last_bb (load_bb);
@@ -7810,7 +7819,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   location_t loc;
   enum tree_code code;
   bool need_old, need_new;
-  enum machine_mode imode;
+  machine_mode imode;
   bool seq_cst;
 
   /* We expect to find the following sequences:

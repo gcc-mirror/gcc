@@ -109,6 +109,10 @@ package body Sem_Res is
       Pref : Node_Id);
    --  Check that the type of the prefix of a dereference is not incomplete
 
+   procedure Check_Ghost_Context (Ghost_Id : Entity_Id; Ghost_Ref : Node_Id);
+   --  Determine whether node Ghost_Ref appears within a Ghost-friendly context
+   --  where Ghost entity Ghost_Id can safely reside.
+
    function Check_Infinite_Recursion (N : Node_Id) return Boolean;
    --  Given a call node, N, which is known to occur immediately within the
    --  subprogram being called, determines whether it is a detectable case of
@@ -687,6 +691,193 @@ package body Sem_Res is
          Check_Fully_Declared (Typ, Parent (Pref));
       end if;
    end Check_Fully_Declared_Prefix;
+
+   -------------------------
+   -- Check_Ghost_Context --
+   -------------------------
+
+   procedure Check_Ghost_Context (Ghost_Id : Entity_Id; Ghost_Ref : Node_Id) is
+      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id);
+      --  Verify that the Ghost policy at the point of declaration of entity Id
+      --  matches the policy at the point of reference. If this is not the case
+      --  emit an error at Err_N.
+
+      function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
+      --  Determine whether node Context denotes a Ghost-friendly context where
+      --  a Ghost entity can safely reside.
+
+      -------------------------
+      -- Is_OK_Ghost_Context --
+      -------------------------
+
+      function Is_OK_Ghost_Context (Context : Node_Id) return Boolean is
+         function Is_Ghost_Declaration (Decl : Node_Id) return Boolean;
+         --  Determine whether node Decl is a Ghost declaration or appears
+         --  within a Ghost declaration.
+
+         --------------------------
+         -- Is_Ghost_Declaration --
+         --------------------------
+
+         function Is_Ghost_Declaration (Decl : Node_Id) return Boolean is
+            Par       : Node_Id;
+            Subp_Decl : Node_Id;
+            Subp_Id   : Entity_Id;
+
+         begin
+            --  Climb the parent chain looking for an object declaration
+
+            Par := Decl;
+            while Present (Par) loop
+               case Nkind (Par) is
+                  when N_Abstract_Subprogram_Declaration        |
+                       N_Exception_Declaration                  |
+                       N_Exception_Renaming_Declaration         |
+                       N_Full_Type_Declaration                  |
+                       N_Generic_Function_Renaming_Declaration  |
+                       N_Generic_Package_Declaration            |
+                       N_Generic_Package_Renaming_Declaration   |
+                       N_Generic_Procedure_Renaming_Declaration |
+                       N_Generic_Subprogram_Declaration         |
+                       N_Number_Declaration                     |
+                       N_Object_Declaration                     |
+                       N_Object_Renaming_Declaration            |
+                       N_Package_Declaration                    |
+                       N_Package_Renaming_Declaration           |
+                       N_Private_Extension_Declaration          |
+                       N_Private_Type_Declaration               |
+                       N_Subprogram_Declaration                 |
+                       N_Subprogram_Renaming_Declaration        |
+                       N_Subtype_Declaration                    =>
+                     return Is_Subject_To_Ghost (Par);
+
+                  when others                                   =>
+                     null;
+               end case;
+
+               --  Special cases
+
+               --  A reference to a Ghost entity may appear as the default
+               --  expression of a formal parameter of a subprogram body. This
+               --  context must be treated as suitable because the relation
+               --  between the spec and the body has not been established and
+               --  the body is not marked as Ghost yet. The real check was
+               --  performed on the spec.
+
+               if Nkind (Par) = N_Parameter_Specification
+                 and then Nkind (Parent (Parent (Par))) = N_Subprogram_Body
+               then
+                  return True;
+
+               --  References to Ghost entities may be relocated in internally
+               --  generated bodies.
+
+               elsif Nkind (Par) = N_Subprogram_Body
+                 and then not Comes_From_Source (Par)
+               then
+                  Subp_Id := Corresponding_Spec (Par);
+
+                  --  The original context is an expression function that has
+                  --  been split into a spec and a body. The context is OK as
+                  --  long as the the initial declaration is Ghost.
+
+                  if Present (Subp_Id) then
+                     Subp_Decl :=
+                       Original_Node (Unit_Declaration_Node (Subp_Id));
+
+                     if Nkind (Subp_Decl) = N_Expression_Function then
+                        return Is_Subject_To_Ghost (Subp_Decl);
+                     end if;
+                  end if;
+
+                  --  Otherwise this is either an internal body or an internal
+                  --  completion. Both are OK because the real check was done
+                  --  before expansion activities.
+
+                  return True;
+               end if;
+
+               --  Prevent the search from going too far
+
+               if Is_Body_Or_Package_Declaration (Par) then
+                  return False;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end Is_Ghost_Declaration;
+
+      --  Start of processing for Is_OK_Ghost_Context
+
+      begin
+         --  The Ghost entity appears within an assertion expression
+
+         if In_Assertion_Expr > 0 then
+            return True;
+
+         --  The Ghost entity is part of a declaration or its completion
+
+         elsif Is_Ghost_Declaration (Context) then
+            return True;
+
+         --  The Ghost entity is referenced within a Ghost statement
+
+         elsif Is_Ghost_Statement_Or_Pragma (Context) then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_OK_Ghost_Context;
+
+      ------------------------
+      -- Check_Ghost_Policy --
+      ------------------------
+
+      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id) is
+         Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
+
+      begin
+         --  The Ghost policy in effect a the point of declaration and at the
+         --  point of use must match (SPARK RM 6.9(13)).
+
+         if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
+            Error_Msg_Sloc := Sloc (Err_N);
+
+            SPARK_Msg_N  ("incompatible ghost policies in effect", Err_N);
+            SPARK_Msg_NE ("\& declared with ghost policy Check", Err_N, Id);
+            SPARK_Msg_NE ("\& used # with ghost policy Ignore", Err_N, Id);
+
+         elsif Is_Ignored_Ghost_Entity (Id) and then Policy = Name_Check then
+            Error_Msg_Sloc := Sloc (Err_N);
+
+            SPARK_Msg_N  ("incompatible ghost policies in effect", Err_N);
+            SPARK_Msg_NE ("\& declared with ghost policy Ignore", Err_N, Id);
+            SPARK_Msg_NE ("\& used # with ghost policy Check", Err_N, Id);
+         end if;
+      end Check_Ghost_Policy;
+
+   --  Start of processing for Check_Ghost_Context
+
+   begin
+      --  Once it has been established that the reference to the Ghost entity
+      --  is within a suitable context, ensure that the policy at the point of
+      --  declaration and at the point of use match.
+
+      if Is_OK_Ghost_Context (Ghost_Ref) then
+         Check_Ghost_Policy (Ghost_Id, Ghost_Ref);
+
+      --  Otherwise the Ghost entity appears in a non-Ghost context and affects
+      --  its behavior or value.
+
+      else
+         SPARK_Msg_N
+           ("ghost entity cannot appear in this context (SPARK RM 6.9(12))",
+            Ghost_Ref);
+      end if;
+   end Check_Ghost_Context;
 
    ------------------------------
    -- Check_Infinite_Recursion --
@@ -3260,8 +3451,8 @@ package body Sem_Res is
 
                if not Is_Aliased_View (Act) then
                   Error_Msg_NE
-                    ("object in prefixed call to& must be aliased"
-                         & " (RM-2005 4.3.1 (13))",
+                    ("object in prefixed call to& must be aliased "
+                     & "(RM 4.1.3 (13 1/2))",
                     Prefix (Act), Nam);
                end if;
 
@@ -4418,6 +4609,22 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  A formal parameter of a specific tagged type whose related
+            --  subprogram is subject to pragma Extensions_Visible with value
+            --  "False" cannot act as an actual in a subprogram with value
+            --  "True" (SPARK RM 6.1.7(3)).
+
+            if Is_EVF_Expression (A)
+              and then Extensions_Visible_Status (Nam) =
+                       Extensions_Visible_True
+            then
+               Error_Msg_N
+                 ("formal parameter with Extensions_Visible False cannot act "
+                  & "as actual parameter", A);
+               Error_Msg_NE
+                 ("\subprogram & has Extensions_Visible True", A, Nam);
+            end if;
+
             Next_Actual (A);
 
          --  Case where actual is not present
@@ -5529,9 +5736,9 @@ package body Sem_Res is
       end if;
 
       if Is_Access_Subprogram_Type (Base_Type (Etype (Nam)))
-         and then not Is_Access_Subprogram_Type (Base_Type (Typ))
-         and then Nkind (Subp) /= N_Explicit_Dereference
-         and then Present (Parameter_Associations (N))
+        and then not Is_Access_Subprogram_Type (Base_Type (Typ))
+        and then Nkind (Subp) /= N_Explicit_Dereference
+        and then Present (Parameter_Associations (N))
       then
          --  The prefix is a parameterless function call that returns an access
          --  to subprogram. If parameters are present in the current call, add
@@ -5792,6 +5999,12 @@ package body Sem_Res is
       Set_Is_Overloaded (Subp, False);
       Set_Is_Overloaded (N, False);
 
+      --  A Ghost entity must appear in a specific context
+
+      if Is_Ghost_Entity (Nam) and then Comes_From_Source (N) then
+         Check_Ghost_Context (Nam, N);
+      end if;
+
       --  If we are calling the current subprogram from immediately within its
       --  body, then that is the case where we can sometimes detect cases of
       --  infinite recursion statically. Do not try this in case restriction
@@ -6006,11 +6219,13 @@ package body Sem_Res is
       end if;
 
       --  A protected function cannot be called within the definition of the
-      --  enclosing protected type.
+      --  enclosing protected type, unless it is part of a pre/postcondition
+      --  on another protected operation.
 
       if Is_Protected_Type (Scope (Nam))
         and then In_Open_Scopes (Scope (Nam))
         and then not Has_Completion (Scope (Nam))
+        and then not In_Spec_Expression
       then
          Error_Msg_NE
            ("& cannot be called before end of protected definition", N, Nam);
@@ -6722,7 +6937,7 @@ package body Sem_Res is
       --  Local variables
 
       E   : constant Entity_Id := Entity (N);
-      Par : constant Node_Id   := Parent (N);
+      Par : Node_Id;
 
    --  Start of processing for Resolve_Entity_Name
 
@@ -6828,38 +7043,57 @@ package body Sem_Res is
          Eval_Entity_Name (N);
       end if;
 
-      --  An effectively volatile object subject to enabled properties
-      --  Async_Writers or Effective_Reads must appear in a specific context.
+      Par := Parent (N);
+
+      --  When the entity appears in a parameter association, retrieve the
+      --  related subprogram call.
+
+      if Nkind (Par) = N_Parameter_Association then
+         Par := Parent (Par);
+      end if;
+
       --  The following checks are only relevant when SPARK_Mode is on as they
       --  are not standard Ada legality rules.
 
-      if SPARK_Mode = On
-        and then Is_Object (E)
-        and then Is_Effectively_Volatile (E)
-        and then Comes_From_Source (E)
-        and then
-          (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
-      then
-         --  The effectively volatile objects appears in a "non-interfering
-         --  context" as defined in SPARK RM 7.1.3(13).
+      if SPARK_Mode = On then
 
-         if Is_OK_Volatile_Context (Par, N) then
-            null;
+         --  An effectively volatile object subject to enabled properties
+         --  Async_Writers or Effective_Reads must appear in a specific
+         --  context.
 
-         --  Assume that references to effectively volatile objects that appear
-         --  as actual parameters in a procedure call are always legal. The
-         --  full legality check is done when the actuals are resolved.
+         if Is_Object (E)
+           and then Is_Effectively_Volatile (E)
+           and then
+             (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
+           and then Comes_From_Source (N)
+         then
+            --  The effectively volatile objects appears in a "non-interfering
+            --  context" as defined in SPARK RM 7.1.3(13).
 
-         elsif Nkind (Par) = N_Procedure_Call_Statement then
-            null;
+            if Is_OK_Volatile_Context (Par, N) then
+               null;
 
-         --  Otherwise the context causes a side effect with respect to the
-         --  effectively volatile object.
+            --  Assume that references to effectively volatile objects that
+            --  appear as actual parameters in a procedure call are always
+            --  legal. A full legality check is done when the actuals are
+            --  resolved.
 
-         else
-            Error_Msg_N
-              ("volatile object cannot appear in this context "
-               & "(SPARK RM 7.1.3(13))", N);
+            elsif Nkind (Par) = N_Procedure_Call_Statement then
+               null;
+
+            --  Otherwise the context causes a side effect with respect to the
+            --  effectively volatile object.
+
+            else
+               SPARK_Msg_N
+                 ("volatile object cannot appear in this context "
+                  & "(SPARK RM 7.1.3(13))", N);
+            end if;
+
+         --  A Ghost entity must appear in a specific context
+
+         elsif Is_Ghost_Entity (E) and then Comes_From_Source (N) then
+            Check_Ghost_Context (E, N);
          end if;
       end if;
    end Resolve_Entity_Name;

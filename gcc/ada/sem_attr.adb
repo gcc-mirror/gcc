@@ -773,10 +773,6 @@ package body Sem_Attr is
 
             elsif Aname = Name_Unchecked_Access then
                Error_Attr ("attribute% cannot be applied to a subprogram", P);
-
-            elsif Is_Ghost_Subprogram (Entity (P)) then
-               Error_Attr_P
-                 ("prefix of % attribute cannot be a ghost subprogram");
             end if;
 
             --  Issue an error if the prefix denotes an eliminated subprogram
@@ -1041,11 +1037,16 @@ package body Sem_Attr is
          if not Is_Aliased_View (P)
            and then not In_Instance
            and then not In_Inlined_Body
+           and then Comes_From_Source (N)
          then
             --  Here we have a non-aliased view. This is illegal unless we
             --  have the case of Unrestricted_Access, where for now we allow
             --  this (we will reject later if expected type is access to an
             --  unconstrained array with a thin pointer).
+
+            --  No need for an error message on a generated access reference
+            --  for the controlling argument in a dispatching call: error will
+            --  be reported when resolving the call.
 
             if Aname /= Name_Unrestricted_Access then
                Error_Attr_P ("prefix of % attribute must be aliased");

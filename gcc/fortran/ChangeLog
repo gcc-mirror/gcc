@@ -1,3 +1,27 @@
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* trans-types.c, trans-types.h: Remove redundant enum from
+	machine_mode.
+
+2014-10-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (gfc_warning_cmdline): Rename as gfc_warning_now_2.
+	(gfc_error_cmdline): Rename as gfc_error_now_2.
+	* error.c (gfc_diagnostic_build_locus_prefix): Remove trailing space.
+	(gfc_diagnostic_starter): Add space between locus and prefix.
+	(gfc_warning_now_2): Renamed from gfc_warning_cmdline.
+	(gfc_error_now_2): Renamed from gfc_error_cmdline.
+	* scanner.c (add_path_to_list): Use gfc_warning_now_2.
+	(load_line): Likewise.
+	(load_file): Likewise.
+	* options.c (gfc_post_options): Update all renamed functions.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Adjust include files.
+	* trans-decl.c: Ditto.
+
 2014-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (check_co_collective): Reject coindexed A args.

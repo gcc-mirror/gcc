@@ -32,6 +32,17 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -42,6 +53,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -57,6 +71,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Need to include expr.h and optabs.h for lshift_cheap_p.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* Maximum number of case bit tests.
@@ -950,7 +965,7 @@ array_value_type (gimple swtch, tree type, int num,
 {
   unsigned int i, len = vec_safe_length (info->constructors[num]);
   constructor_elt *elt;
-  enum machine_mode mode;
+  machine_mode mode;
   int sign = 0;
   tree smaller_type;
 

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

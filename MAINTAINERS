@@ -135,8 +135,8 @@ netbsd			Krister Walfridsson	<krister.walfridsson@gmail.com>
 sh-linux-gnu		Kaz Kojima		<kkojima@gcc.gnu.org>
 RTEMS Ports		Joel Sherrill		<joel@oarcorp.com>
 RTEMS Ports		Ralf Corsepius		<ralf.corsepius@rtems.org>
-VMS			Douglas Rupp		<rupp@gnat.com>
-VMS			Tristan Gingold		<gingold@adacore.com>
+VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
+VMS			Tristan Gingold		<tgingold@free.fr>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
 windows, cygwin, mingw	Kai Tietz		<ktietz@redhat.com>
 windows, cygwin, mingw	Dave Korn		<dave.korn.cygwin@gmail.com>
@@ -373,6 +373,7 @@ Michael Eager					<eager@eagercon.com>
 Bernd Edlinger					<bernd.edlinger@hotmail.de>
 Phil Edwards					<pme@gcc.gnu.org>
 Mohan Embar					<gnustuff@thisiscool.com>
+Ilya Enkovich					<enkovich.gnu@gmail.com>
 Revital Eres					<eres@il.ibm.com>
 Marc Espie					<espie@cvs.openbsd.org>
 Ansgar Esztermann				<ansgar@thphy.uni-duesseldorf.de>

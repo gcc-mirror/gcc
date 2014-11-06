@@ -71,24 +71,24 @@ extern char *bfin_asm_long (void);
 extern char *bfin_asm_short (void);
 extern int log2constp (unsigned HOST_WIDE_INT);
 
-extern int hard_regno_mode_ok (int, enum machine_mode);
+extern int hard_regno_mode_ok (int, machine_mode);
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);	  
 extern HOST_WIDE_INT bfin_initial_elimination_offset (int, int);
 
-extern int effective_address_32bit_p (rtx, enum machine_mode);
+extern int effective_address_32bit_p (rtx, machine_mode);
 extern int symbolic_reference_mentioned_p (rtx);
-extern rtx bfin_gen_compare (rtx, enum machine_mode);
-extern bool expand_move (rtx *, enum machine_mode);
+extern rtx bfin_gen_compare (rtx, machine_mode);
+extern bool expand_move (rtx *, machine_mode);
 extern void bfin_expand_call (rtx, rtx, rtx, rtx, int);
 extern bool bfin_longcall_p (rtx, int);
 extern bool bfin_dsp_memref_p (rtx);
 extern bool bfin_expand_movmem (rtx, rtx, rtx, rtx);
 
 extern enum reg_class secondary_input_reload_class (enum reg_class,
-						    enum machine_mode,
+						    machine_mode,
 						    rtx);
 extern enum reg_class secondary_output_reload_class (enum reg_class,
-						     enum machine_mode,
+						     machine_mode,
 						     rtx);
 extern char *section_asm_op_1 (SECT_ENUM_T);
 extern char *section_asm_op (SECT_ENUM_T);
@@ -96,9 +96,9 @@ extern void print_operand (FILE *,  rtx, char);
 extern void print_address_operand (FILE *, rtx);
 extern void split_di (rtx [], int, rtx [], rtx []);
 extern int split_load_immediate (rtx []);
-extern void emit_pic_move (rtx *, enum machine_mode);
+extern void emit_pic_move (rtx *, machine_mode);
 extern void asm_conditional_branch (rtx_insn *, rtx *, int, int);
-extern rtx bfin_gen_compare (rtx, enum machine_mode);
+extern rtx bfin_gen_compare (rtx, machine_mode);
 
 extern unsigned bfin_local_alignment (tree, unsigned);
 extern rtx bfin_va_arg (tree, tree);

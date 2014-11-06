@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "c-upc-gasp.h"
-#include "c-upc-low.h"
-#include "c-upc-pts.h"
 #include "c-upc-pts-ops.h"
-#include "c-upc-rts-names.h"
 
 /* UPC_PTS is a table of functions that implement various
    operations on expressions which refer to UPC pointers-to-shared,

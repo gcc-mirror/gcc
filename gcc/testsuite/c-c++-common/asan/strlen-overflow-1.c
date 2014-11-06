@@ -9,14 +9,8 @@ char a[2] = "0";
 #ifdef __cplusplus
 extern "C"
 #endif
-
-__attribute__((no_sanitize_address, noinline)) __SIZE_TYPE__
-strlen (const char *p) {
-
-  __SIZE_TYPE__ n = 0;
-  for (; *p; ++n, ++p);
-  return n;
-}
+__SIZE_TYPE__
+strlen (const char *p);
 
 int main () {
   char *p = &a[0];
@@ -25,6 +19,6 @@ int main () {
   return __builtin_strlen (a);
 }
 
-/* { dg-output "READ of size 1 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*strlen-overflow-1.c:25|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*0x\[0-9a-f\]+ is located 1 bytes inside of global variable" } */
+/* { dg-output "READ of size 2 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
+/* { dg-output "    #1 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*strlen-overflow-1.c:19|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*0x\[0-9a-f\]+ is located 0 bytes to the right of global variable" } */

@@ -724,7 +724,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     if (flags & CPP_N_WIDTH_MD)
       {
 	char suffix;
-	enum machine_mode mode;
+	machine_mode mode;
 
 	if ((flags & CPP_N_WIDTH_MD) == CPP_N_MD_W)
 	  suffix = 'w';

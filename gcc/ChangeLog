@@ -1,3 +1,3075 @@
+2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* ifcvt.c (noce_try_store_flag_mask): Check rtx cost.
+
+2014-11-03  Andrew Pinski  <apinski@cavium.com>
+
+	* config/mips/mips-cpus.def (octeon3): New cpu.
+	* config/mips/mips.c (mips_rtx_cost_data): Add octeon3.
+	(mips_print_operand <case 'T', case 't'>): Fix a bug as the mode
+	of the comparison no longer matches mode of the operands.
+	(mips_issue_rate): Handle PROCESSOR_OCTEON3.
+	* config/mips/mips.h (TARGET_OCTEON):  Add Octeon3.
+	(TARGET_OCTEON2): Likewise.
+	(TUNE_OCTEON): Add Octeon3.
+	* config/mips/mips.md (processor): Add octeon3.
+	* config/mips/octeon.md (octeon_fpu): New automaton and cpu_unit.
+	(octeon_arith): Add octeon3.
+	(octeon_condmove): Remove.
+	(octeon_condmove_o1): New reservation.
+	(octeon_condmove_o2): New reservation.
+	(octeon_condmove_o3_int_on_cc): New reservation.
+	(octeon_load_o2): Add octeon3.
+	(octeon_cop_o2): Likewise.
+	(octeon_store): Likewise.
+	(octeon_brj_o2): Likewise.
+	(octeon_imul3_o2): Likewise.
+	(octeon_imul_o2): Likewise.
+	(octeon_mfhilo_o2): Likewise.
+	(octeon_imadd_o2): Likewise.
+	(octeon_idiv_o2_si): Likewise.
+	(octeon_idiv_o2_di): Likewise.
+	(octeon_fpu): Add to the automaton.
+	(octeon_fpu): New cpu unit.
+	(octeon_condmove_o2): Check for non floating point modes.
+	(octeon_load_o2): Add prefetchx.
+	(octeon_cop_o2): Don't check for octeon3.
+	(octeon3_faddsubcvt): New reservation.
+	(octeon3_fmul): Likewise.
+	(octeon3_fmadd): Likewise.
+	(octeon3_div_sf): Likewise.
+	(octeon3_div_df): Likewise.
+	(octeon3_sqrt_sf): Likewise.
+	(octeon3_sqrt_df): Likewise.
+	(octeon3_rsqrt_sf): Likewise.
+	(octeon3_rsqrt_df): Likewise.
+	(octeon3_fabsnegmov): Likewise.
+	(octeon_fcond): Likewise.
+	(octeon_fcondmov): Likewise.
+	(octeon_fpmtc1): Likewise.
+	(octeon_fpmfc1): Likewise.
+	(octeon_fpload): Likewise.
+	(octeon_fpstore): Likewise.
+	* config/mips/mips-tables.opt: Regenerate.
+	* doc/invoke.texi (-march=@var{arch}): Add octeon3.
+
+2014-11-03  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* ifcvt.c (noce_emit_cmove, noce_get_alt_condition, noce_get_condition):
+	Allow CC mode if HAVE_cbranchcc4.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arc/arc.c (write_ext_corereg_1): Delete.
+	(arc_write_ext_corereg): Use FOR_EACH_SUBRTX.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arc/arc.c (arc600_corereg_hazard_1): Delete.
+	(arc600_corereg_hazard): Use FOR_EACH_SUBRTX.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arc/arc.c (arc_rewrite_small_data_p): Constify argument.
+	(small_data_pattern_1): Delete.
+	(small_data_pattern): Use FOR_EACH_SUBRTX.
+
+2014-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arc/arc.c: Include rtl-iter.h.
+	(arc_rewrite_small_data_1): Delete.
+	(arc_rewrite_small_data): Use FOR_EACH_SUBRTX_PTR.
+
+2014-11-02  Michael Collison  <michael.collison@linaro.org>
+
+	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO) : Update
+	to support vector modes.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Ditto.
+
+2014-11-01  Andrew MacLeod  <amacleod@redhat,com>
+
+	* optabs.h: Flatten insn-codes.h to source files.  Move some prototypes
+	and structs to genopinit.c.  Adjust protyoptypes to match optabs.c.
+	* genopinit.c (main): Emit prototypes and structs into insn-opinit.h.
+	* optabs.c: (gen_move_insn): Move to expr.c.
+	* expr.h: Move protypes and enums to optabs.h.
+	* expr.c: (gen_move_insn): Relocate from optabs.c.
+	* genemit.c (main): Include insn-codes.h.
+	* gengtype.c (open_base_files): Include insn-codes.h.
+	* asan.c: Include insn-codes.h.
+	* bb-reorder.c: Ditto.
+	* builtins.c: Ditto.
+	* calls.c: Ditto.
+	* cfgexpand.c: Ditto.
+	* cilk-common.c: Ditto.
+	* combine.c: Ditto.
+	* dojump.c: Ditto.
+	* dse.c: Ditto.
+	* except.c: Ditto.
+	* explow.c: Ditto.
+	* expmed.c: Ditto.
+	* function.c: Ditto.
+	* ifcvt.c: Ditto.
+	* internal-fn.c: Ditto.
+	* loop-unroll.c: Ditto.
+	* lra.c: Ditto.
+	* modulo-sched.c: Ditto.
+	* omp-low.c: Ditto.
+	* postreload.c: Ditto.
+	* ree.c: Ditto.
+	* reload.c: Ditto.
+	* reload1.c: Ditto.
+	* shrink-wrap.c: Ditto.
+	* simplify-rtx.c: Ditto.
+	* stmt.c: Ditto.
+	* target-globals.c: Ditto.
+	* targhooks.c: Ditto.
+	* toplev.c: Ditto.
+	* tree-if-conv.c: Ditto.
+	* tree-ssa-forwprop.c: Ditto.
+	* tree-ssa-loop-prefetch.c: Ditto.
+	* tree-ssa-math-opts.c: Ditto.
+	* tree-ssa-phiopt.c: Ditto.
+	* tree-ssa-reassoc.c: Ditto.
+	* tree-switch-conversion.c: Ditto.
+	* tree-vect-data-refs.c: Ditto.
+	* tree-vect-generic.c: Ditto.
+	* tree-vect-loop.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree-vect-slp.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tree-vrp.c: Ditto.
+	* value-prof.c: Ditto.
+	* config/aarch64/aarch64-builtins.c: Ditto.
+	* config/alpha/alpha.c: Ditto.
+	* config/arm/arm.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/epiphany/epiphany.c: Ditto.
+	* config/frv/frv.c: Ditto.
+	* config/h8300/h8300.c: Ditto.
+	* config/ia64/ia64.c: Ditto.
+	* config/iq2000/iq2000.c: Ditto.
+	* config/m32c/m32c.c: Ditto.
+	* config/mep/mep.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/mips/mips.c: Ditto.
+	* config/mn10300/mn10300.c: Ditto.
+	* config/moxie/moxie.c: Ditto.
+	* config/msp430/msp430.c: Ditto.
+	* config/nios2/nios2.c: Ditto.
+	* config/pa/pa.c: Ditto.
+	* config/rl78/rl78.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rx/rx.c: Ditto.
+	* config/s390/s390.c: Ditto.
+	* config/sh/sh.c: Ditto.
+	* config/sh/sh_treg_combine.cc: Ditto.
+	* config/spu/spu.c: Ditto.
+	* config/stormy16/stormy16.c: Ditto.
+	* config/tilegx/mul-tables.c: Ditto.
+	* config/tilegx/tilegx.c: Ditto.
+	* config/tilepro/mul-tables.c: Ditto.
+	* config/tilepro/tilepro.c: Ditto.
+	* config/vax/vax.c: Ditto.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/tm.texi.in (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_BY_PIECES_P): Likewise.
+	* doc/tm.texi: Regenerate.
+	* system.h: Poison MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P,
+	SET_BY_PIECES_P, STORE_BY_PIECES_P.
+	* expr.c (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_BY_PIECES_P): Likewise.
+	(can_move_by_pieces): Rewrite in terms of
+	targetm.use_by_pieces_infrastructure_p.
+	(emit_block_move_hints): Likewise.
+	(can_store_by_pieces): Likewise.
+	(store_by_pieces): Likewise.
+	(clear_storage_hints): Likewise.
+	(emit_push_insn): Likewise.
+	(expand_constructor): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_use_by_pieces_infrastructre_p): New.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE): Likewise.
+	* config/aarch64/aarch64.h (STORE_BY_PIECES_P): Delete.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/mips/mips.h (MOVE_BY_PIECES_P): Remove.
+	(STORE_BY_PIECES_P): Likewise.
+	* config/mips/mips.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(mips_move_by_pieces_p): Rename to...
+	(mips_use_by_pieces_infrastructure_p): ...this, use new hook
+	parameters, use the default hook implementation as a
+	fall-back.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/sh/sh.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(sh_use_by_pieces_infrastructure_p): Likewise.
+	* config/sh/sh.h (MOVE_BY_PIECES_P): Remove.
+	(STORE_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arc/arc.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): New.
+	(arc_use_by_pieces_infrastructure_p): Likewise.
+	* confir/arc/arc.h (MOVE_BY_PIECES_P): Delete.
+	(CAN_MOVE_BY_PIECES): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/s390/s390.c (s390_use_by_pieces_infrastructure_p): New.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Likewise.
+	* config/s390/s390.h (MOVE_BY_PIECES_P): Remove.
+	(CLEAR_BY_PIECES): Likewise.
+	(SET_BY_PIECES): Likewise.
+	(STORE_BY_PIECES): Likewise.
+
+2014-11-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* target.def (use_by_pieces_infrastructure_p): New.
+	* doc/tm.texi.in (MOVE_BY_PIECES_P): Describe that this macro
+	is deprecated.
+	(STORE_BY_PIECES_P): Likewise.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(TARGET_MOVE_BY_PIECES_PROFITABLE_P): Add hook.
+	* doc/tm.texi: Regenerate.
+	* expr.c (MOVE_BY_PIECES_P): Rewrite in terms of
+	TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.
+	(STORE_BY_PIECES_P): Likewise.
+	(CLEAR_BY_PIECES_P): Likewise.
+	(SET_BY_PIECES_P): Likewise.
+	(STORE_MAX_PIECES): Move to...
+	* defaults.h (STORE_MAX_PIECES): ...here.
+	* targhooks.c (get_move_ratio): New.
+	(default_use_by_pieces_infrastructure_p): Likewise.
+	* targhooks.h (default_use_by_pieces_infrastructure_p): New.
+	* target.h (by_pieces_operation): New.
+
+2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63702
+	* config/i386/i386.c (ix86_expand_args_builtin): Remove extra
+	assignment to 'nargs' variable.
+
+2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63620
+	* config/i386/i386-protos.h (ix86_use_pseudo_pic_reg): Declare.
+	* config/i386/i386.c (ix86_use_pseudo_pic_reg): Export.
+	* config/i386/i386.md (*pushtf): Allow only CONST_DOUBLEs that won't
+	be reloaded through memory.
+	(*pushxf): Ditto.
+	(*pushdf): Ditto.
+
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63659
+	* ree.c (update_reg_equal_equiv_notes): New function.
+	(combine_set_extension, transform_ifelse): Use it.
+
+2014-10-31  Jeff Law  <law@redhat.com>
+
+	* doc/contrib.texi: Add contribution notes for Balaji Iyer (Cilk+)
+	and Jonny Grant (collect2).
+
+2014-10-31  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_atomic_always_lock_free): Use
+	CONVERT_EXPR_P, CONVERT_EXPR_CODE_P and CASE_CONVERT where
+	approprate.
+	(fold_builtin_expect): Likewise.
+	(integer_valued_real_p): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Likewise.
+	(find_foldable_builtin_expect): Likewise.
+	* trans-mem.c (thread_private_new_memory): Likewise.
+	* tree-affine.c (aff_combination_expand): Likewise.
+	* tree-data-ref.c (initialize_matrix_A): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	* tree-pretty-print.c (dump_function_name): Likewise.
+	(print_call_name): Likewise.
+	* tree-ssa-forwprop.c (constant_pointer_difference): Likewise.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* tree-vect-patterns.c (vect_handle_widen_op_by_const): Likewise.
+	(vect_recog_widen_mult_pattern): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	* tree-vrp.c (find_assert_locations_1): Likewise.
+	* tree-ssa-dom.c (initialize_hash_element): Canonicalize
+	converts to NOP_EXPR.
+
+2014-10-31  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (expr::gen_transform): Use NOP_EXPRs instead of
+	CONVERT_EXPRs in generated code.
+	(dt_simplify::gen): Likewise.
+
+2014-10-31  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/63534
+	* config/i386/i386.c (ix86_init_pic_reg): Emit SET_GOT to
+	REAL_PIC_OFFSET_TABLE_REGNUM for mcount profiling.
+	(ix86_save_reg): Save REAL_PIC_OFFSET_TABLE_REGNUM when profiling
+	using mcount in 32bit PIC mode.
+	(ix86_elim_entry_set_got): New.
+	(ix86_expand_prologue): For the mcount profiling emit new SET_GOT
+	in PROLOGUE, delete initial if possible.
+
+2014-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline.c (want_inline_small_function_p): Fix typo and formatting.
+	(want_inline_function_to_all_callers_p): Fix formatting and simplify.
+
+2014-10-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63259
+	* tree-ssa-math-opts.c (bswap_replace): Replace expression by a
+	rotation left if it is a 16 bit byte swap.
+	(pass_optimize_bswap::execute): Also consider bswap in LROTATE_EXPR
+	and RROTATE_EXPR statements if it is a byte rotation.
+
+2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63697
+	* tree-vrp.c (simplify_internal_call_using_ranges): For subcode ==
+	MINUS_EXPR, check overflow on vr0.min - vr1.max and vr0.max - vr1.min
+	instead of vr0.min - vr1.min and vr0.max - vr1.max.
+
+2014-10-31  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR ipa/63696
+	* ipa-icf.c (sem_function::~sem_function): Change free to delete to avoid
+	alloc-dealloc mismatch with new, called in ipa_icf::sem_function::init.
+
+2014-10-30  Felix Yang  <felix.yang@huawei.com>
+
+	* config/xtensa/xtensa.h (TARGET_LOOPS): New Macro.
+	* config/xtensa/xtensa.c: Include dumpfile.h and hw-doloop.h.
+	(xtensa_reorg, xtensa_reorg_loops): New.
+	(xtensa_can_use_doloop_p, xtensa_invalid_within_doloop): New.
+	(hwloop_optimize, hwloop_fail, hwloop_pattern_reg): New.
+	(xtensa_emit_loop_end): Emit the zero-overhead loop end label.
+	(xtensa_doloop_hooks): Define.
+	* config/xtensa/xtensa.md (doloop_end, loop_end): New
+	(zero_cost_loop_start): Rewritten.
+	(zero_cost_loop_end): Likewise.
+
+2014-10-30  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config.gcc (mips*-*-linux*): Combine 32 and 64 bit cases.
+
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c: Remove <map>, <utility> and <string> includes.
+	Include ggc.h and hash-map.h.
+	(ggc_internal_cleared_alloc): Provide stub definition.
+	(ggc_free): Likewise.
+	(struct capture_id_map_hasher): New traits for hash_map.
+	(cid_map_t): New typedef.
+	(everywhere else): Replace std::map use with cid_map_t.
+	* hash-map.h (hash_map::elements): New member function.
+	* Makefile.in (build/genmatch.o): Add $(HASH_TABLE_H),
+	hash-map.h and $(GGC_H) as dependency.
+
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (capture_info::walk_c_expr): Ignore capture
+	uses inside TREE_TYPE ().
+	* gimple-ssa-strength-reduction.c (stmt_cost): Use CASE_CONVERT.
+	(find_candidates_dom_walker::before_dom_children): Likewise.
+	(replace_mult_candidate): Use CONVERT_EXPR_CODE_P.
+	(replace_profitable_candidates): Likewise.
+	* tree-ssa-dom.c (initialize_hash_element): Canonicalize
+	CONVERT_EXPR_CODE_P to CONVERT_EXPR.
+	* convert.c (convert_to_integer): Use CASE_CONVERT.
+
+2014-10-30  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement more patterns that simplify to a single value.
+	* fold-const.c (fold_binary_loc): Remove them here.
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Likewise.
+	(fwprop_ssa_val): Remove restriction on single uses.
+
+2014-10-30  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/driver-avr.c (avr_set_current_device): Remove.
+
+2014-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63574
+	PR ipa/63664
+	* ipa-icf-gimple.c (func_checker::parse_labels): Missing comment added.
+	(func_checker::compare_gimple_label): Simlified comparison introduced.
+	* ipa-icf-gimple.h: Missing comment added.
+
+2014-10-30  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa-protos.h (pa_output_arg_descriptor): Strengthen
+	argument from rtx to rtx_insn *.
+	(compute_movmem_length, compute_clrmem_length): Likewise.
+	(copy_fp_args, length_fp_args): Likewise.
+	* config/pa/pa.c (legitimize_pic_address): Promote local variable
+	"insn" from rtx to rtx_insn *.
+	(legitimize_tls_address, pa_emit_move_sequence): Likewise.
+	(pa_output_block_move, store_reg, store_reg_modify): Likewise.
+	(set_reg_plus_d, pa_expand_prologue, hppa_profile_hook): Likewise.
+	(branch_to_delay_slot_p, branch_needs_nop_p, use_skip_p): Likewise.
+	(pa_output_arg_descriptor): Strengthen argument to an rtx_insn *.
+	(compute_movmem_length, compute_clrmem_length): Likewise.
+	(copy_fp-args, length_fp_args): Likewise.
+
+2014-10-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.h (MACHMODE): Treat machine_mode as a
+	scalar typedef.
+	(CUMULATIVE_ARGS): Guard against target includes.
+	(machine_function): Likewise.
+
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_madd_needs_nop): Restore
+	recog state after aarch64_prev_real_insn call.
+
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (MACHMODE): Add 'enum' to machine_mode.
+
+2014-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.h (MACHMODE): Add 'enum' to machine_mode.
+	(struct machine_function): Gate definition on
+	!defined(USED_FOR_TARGET).
+
+2014-10-29  DJ Delorie  <dj@redhat.com>
+
+	* expmed.c (strict_volatile_bitfield_p): Fix off-by-one error.
+
+2014-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63587
+	* cgraphunit.c (cgraph_node::expand_thunk): Only VAR_DECLs are put
+	to local declarations.
+	* function.c (add_local_decl): Implementation moved from header
+	file, assert introduced for tree type.
+	* function.h: Likewise.
+
+2014-10-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* godump.c (go_format_type): Represent "float _Complex" and
+	"double _Complex" as complex64 or complex128 in Go, as appropriate.
+
+2014-10-29  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement a first set of conversion patterns.
+	* fold-const.c (fold_unary_loc): Remove them here.
+	* tree-ssa-forwprop.c (simplify_vce): Remove.
+	(pass_forwprop::execute): Do not call simplify_vce.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* addresses.h, alias.c, asan.c, auto-inc-dec.c, bt-load.c, builtins.c,
+	builtins.h, caller-save.c, calls.c, calls.h, cfgexpand.c, cfgloop.h,
+	cfgrtl.c, combine.c, compare-elim.c, config/aarch64/aarch64-builtins.c,
+	config/aarch64/aarch64-protos.h, config/aarch64/aarch64-simd.md,
+	config/aarch64/aarch64.c, config/aarch64/aarch64.h,
+	config/aarch64/aarch64.md, config/alpha/alpha-protos.h,
+	config/alpha/alpha.c, config/arc/arc-protos.h, config/arc/arc.c,
+	config/arc/arc.h, config/arc/predicates.md,
+	config/arm/aarch-common-protos.h, config/arm/aarch-common.c,
+	config/arm/arm-protos.h, config/arm/arm.c, config/arm/arm.h,
+	config/arm/arm.md, config/arm/neon.md, config/arm/thumb2.md,
+	config/avr/avr-log.c, config/avr/avr-protos.h, config/avr/avr.c,
+	config/avr/avr.md, config/bfin/bfin-protos.h, config/bfin/bfin.c,
+	config/c6x/c6x-protos.h, config/c6x/c6x.c, config/c6x/c6x.md,
+	config/cr16/cr16-protos.h, config/cr16/cr16.c,
+	config/cris/cris-protos.h, config/cris/cris.c, config/cris/cris.md,
+	config/darwin-protos.h, config/darwin.c,
+	config/epiphany/epiphany-protos.h, config/epiphany/epiphany.c,
+	config/epiphany/epiphany.md, config/fr30/fr30.c,
+	config/frv/frv-protos.h, config/frv/frv.c, config/frv/predicates.md,
+	config/h8300/h8300-protos.h, config/h8300/h8300.c,
+	config/i386/i386-builtin-types.awk, config/i386/i386-protos.h,
+	config/i386/i386.c, config/i386/i386.md, config/i386/predicates.md,
+	config/i386/sse.md, config/i386/sync.md, config/ia64/ia64-protos.h,
+	config/ia64/ia64.c, config/iq2000/iq2000-protos.h,
+	config/iq2000/iq2000.c, config/iq2000/iq2000.md,
+	config/lm32/lm32-protos.h, config/lm32/lm32.c,
+	config/m32c/m32c-protos.h, config/m32c/m32c.c,
+	config/m32r/m32r-protos.h, config/m32r/m32r.c,
+	config/m68k/m68k-protos.h, config/m68k/m68k.c,
+	config/mcore/mcore-protos.h, config/mcore/mcore.c,
+	config/mcore/mcore.md, config/mep/mep-protos.h, config/mep/mep.c,
+	config/microblaze/microblaze-protos.h, config/microblaze/microblaze.c,
+	config/mips/mips-protos.h, config/mips/mips.c,
+	config/mmix/mmix-protos.h, config/mmix/mmix.c,
+	config/mn10300/mn10300-protos.h, config/mn10300/mn10300.c,
+	config/moxie/moxie.c, config/msp430/msp430-protos.h,
+	config/msp430/msp430.c, config/nds32/nds32-cost.c,
+	config/nds32/nds32-intrinsic.c, config/nds32/nds32-md-auxiliary.c,
+	config/nds32/nds32-protos.h, config/nds32/nds32.c,
+	config/nios2/nios2-protos.h, config/nios2/nios2.c,
+	config/pa/pa-protos.h, config/pa/pa.c, config/pdp11/pdp11-protos.h,
+	config/pdp11/pdp11.c, config/rl78/rl78-protos.h, config/rl78/rl78.c,
+	config/rs6000/altivec.md, config/rs6000/rs6000-c.c,
+	config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h, config/rx/rx-protos.h, config/rx/rx.c,
+	config/s390/predicates.md, config/s390/s390-protos.h,
+	config/s390/s390.c, config/s390/s390.h, config/s390/s390.md,
+	config/sh/predicates.md, config/sh/sh-protos.h, config/sh/sh.c,
+	config/sh/sh.md, config/sparc/predicates.md,
+	config/sparc/sparc-protos.h, config/sparc/sparc.c,
+	config/sparc/sparc.md, config/spu/spu-protos.h, config/spu/spu.c,
+	config/stormy16/stormy16-protos.h, config/stormy16/stormy16.c,
+	config/tilegx/tilegx-protos.h, config/tilegx/tilegx.c,
+	config/tilegx/tilegx.md, config/tilepro/tilepro-protos.h,
+	config/tilepro/tilepro.c, config/v850/v850-protos.h,
+	config/v850/v850.c, config/v850/v850.md, config/vax/vax-protos.h,
+	config/vax/vax.c, config/vms/vms-c.c, config/xtensa/xtensa-protos.h,
+	config/xtensa/xtensa.c, coverage.c, cprop.c, cse.c, cselib.c, cselib.h,
+	dbxout.c, ddg.c, df-problems.c, dfp.c, dfp.h, doc/md.texi,
+	doc/rtl.texi, doc/tm.texi, doc/tm.texi.in, dojump.c, dse.c,
+	dwarf2cfi.c, dwarf2out.c, dwarf2out.h, emit-rtl.c, emit-rtl.h,
+	except.c, explow.c, expmed.c, expmed.h, expr.c, expr.h, final.c,
+	fixed-value.c, fixed-value.h, fold-const.c, function.c, function.h,
+	fwprop.c, gcse.c, gengenrtl.c, genmodes.c, genopinit.c, genoutput.c,
+	genpreds.c, genrecog.c, gensupport.c, gimple-ssa-strength-reduction.c,
+	graphite-clast-to-gimple.c, haifa-sched.c, hooks.c, hooks.h, ifcvt.c,
+	internal-fn.c, ira-build.c, ira-color.c, ira-conflicts.c, ira-costs.c,
+	ira-emit.c, ira-int.h, ira-lives.c, ira.c, ira.h, jump.c, langhooks.h,
+	libfuncs.h, lists.c, loop-doloop.c, loop-invariant.c, loop-iv.c,
+	loop-unroll.c, lower-subreg.c, lower-subreg.h, lra-assigns.c,
+	lra-constraints.c, lra-eliminations.c, lra-int.h, lra-lives.c,
+	lra-spills.c, lra.c, lra.h, machmode.h, omp-low.c, optabs.c, optabs.h,
+	output.h, postreload.c, print-tree.c, read-rtl.c, real.c, real.h,
+	recog.c, recog.h, ree.c, reg-stack.c, regcprop.c, reginfo.c,
+	regrename.c, regs.h, reload.c, reload.h, reload1.c, rtl.c, rtl.h,
+	rtlanal.c, rtlhash.c, rtlhooks-def.h, rtlhooks.c, sched-deps.c,
+	sel-sched-dump.c, sel-sched-ir.c, sel-sched-ir.h, sel-sched.c,
+	simplify-rtx.c, stmt.c, stor-layout.c, stor-layout.h, target.def,
+	targhooks.c, targhooks.h, tree-affine.c, tree-call-cdce.c,
+	tree-complex.c, tree-data-ref.c, tree-dfa.c, tree-if-conv.c,
+	tree-inline.c, tree-outof-ssa.c, tree-scalar-evolution.c,
+	tree-ssa-address.c, tree-ssa-ccp.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-loop-ivopts.h, tree-ssa-loop-manip.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-math-opts.c, tree-ssa-reassoc.c,
+	tree-ssa-sccvn.c, tree-streamer-in.c, tree-switch-conversion.c,
+	tree-vect-data-refs.c, tree-vect-generic.c, tree-vect-loop.c,
+	tree-vect-patterns.c, tree-vect-slp.c, tree-vect-stmts.c,
+	tree-vrp.c, tree.c, tree.h, tsan.c, ubsan.c, valtrack.c,
+	var-tracking.c, varasm.c: Remove redundant enum from
+	machine_mode.
+	* gengtype.c (main): Treat machine_mode as a scalar typedef.
+	* genmodes.c (emit_insn_modes_h): Hide inline functions if
+	USED_FOR_TARGET.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/63340 (part 2)
+	* rtl.h (invalid_mode_change_p): Delete.
+	(valid_mode_changes_for_regno): New function.
+	* reginfo.c (invalid_mode_change_p): Delete.
+	(valid_mode_changes_for_regno): New function.
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Restrict the
+	classes to registers that are allowed by valid_mode_changes_for_regno.
+	(setup_regno_cost_classes_by_mode): Likewise.
+	(print_allocno_costs): Remove invalid_mode_change_p test.
+	(print_pseudo_costs, find_costs_and_classes): Likewise.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/63340 (part 1)
+	* ira-costs.c (all_cost_classes): New variable.
+	(complete_cost_classes): New function, split out from...
+	(setup_cost_classes): ...here.
+	(initiate_regno_cost_classes): Set up all_cost_classes.
+	(restrict_cost_classes): New function.
+	(setup_regno_cost_classes_by_aclass): Restrict the cost classes to
+	registers that are valid for the register's mode.
+	(setup_regno_cost_classes_by_mode): Model the mode cache as a
+	restriction of all_cost_classes to a particular mode.
+	(print_allocno_costs): Remove contains_reg_of_mode check.
+	(print_pseudo_costs, find_costs_and_classes): Likewise.
+
+2014-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63666
+	* tree-vect-slp.c (vect_get_mask_element): Properly handle
+	accessing out-of-bound elements.
+
+2014-10-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.md
+	(movhi_internal): Always detect maskmov.
+	(movqi_internal): Fix target check.
+
+2014-10-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/avx512bwintrin.h: Add new intrinsics.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+
+2014-10-28  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* godump.c (precision_to_units): New helper function.
+	(go_append_artificial_name): Ditto.
+	(go_append_decl_name): Ditto.
+	(go_append_bitfield): Ditto.
+	(go_get_uinttype_for_precision): Ditto.
+	(go_append_padding): Ditto.
+	(go_force_record_alignment): Ditto.
+	(go_format_type): Represent unions with an array of uints of the size
+	of the alignment in go.	 This fixes the 'random' size of the union's
+	representation using just the first field.
+	(go_format_type): Add argument that indicates whether a record is
+	nested (used for generation of artificial go names).
+	(go_output_fndecl): Adapt to new go_format_type signature.
+	(go_output_typedef): Ditto.
+	(go_output_var): Ditto.
+	(go_output_var): Prefer to output type as alias (typedef).
+	(go_format_type): Bitfields in records are simulated as arrays of bytes
+	in go.
+
+	* godump.c (go_format_type): Fix handling of arrays with zero elements.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cgraph.h: Flatten.  Remove all include files.
+	(symbol_table::initialize): Move to cgraph.c.
+	* cgraph.c: Adjust include files.
+	(symbol_table::initialize): Relocate from cgraph.h.
+	* gengtype.c (open_base_files): Adjust include files.
+	* gccplugin.h: Add hash-map.h, is-a.h, plugin-api.h, and ipa-ref.h to
+	included files.
+	* ipa-inline.h: Remove all include files.
+	* ipa-prop.h: Ditto.
+	* ipa-reference.h: Ditto.
+	* ipa-utils.h: Ditto:
+	* lto-streamer.h: Remove cgraph.h from include list.
+	* asan.c: Adjust include files.
+	* auto-profile.c: Ditto.
+	* bb-reorder.c: Ditto.
+	* calls.c: Ditto.
+	* cfgexpand.c: Ditto.
+	* cgraphbuild.c: Ditto.
+	* cgraphclones.c: Ditto.
+	* cgraphunit.c: Ditto.
+	* combine.c: Ditto.
+	* coverage.c: Ditto.
+	* data-streamer.c: Ditto.
+	* data-streamer-in.c: Ditto.
+	* data-streamer-out.c: Ditto.
+	* dbxout.c: Ditto.
+	* dwarf2out.c: Ditto.
+	* except.c: Ditto.
+	* expr.c: Ditto.
+	* final.c: Ditto.
+	* fold-const.c: Ditto.
+	* ggc-page.c: Ditto.
+	* gimple-fold.c: Ditto.
+	* gimple-iterator.c: Ditto.
+	* gimple-pretty-print.c: Ditto.
+	* gimple-streamer-in.c: Ditto.
+	* gimple-streamer-out.c: Ditto.
+	* gimplify.c: Ditto.
+	* ipa.c: Ditto.
+	* ipa-comdats.c: Ditto.
+	* ipa-cp.c: Ditto.
+	* ipa-devirt.c: Ditto.
+	* ipa-icf.c: Ditto.
+	* ipa-icf-gimple.c: Ditto.
+	* ipa-inline-analysis.c: Ditto.
+	* ipa-inline.c: Ditto.
+	* ipa-inline-transform.c: Ditto.
+	* ipa-polymorphic-call.c: Ditto.
+	* ipa-profile.c: Ditto.
+	* ipa-prop.c: Ditto.
+	* ipa-pure-const.c: Ditto.
+	* ipa-ref.c: Ditto.
+	* ipa-reference.c: Ditto.
+	* ipa-split.c: Ditto.
+	* ipa-utils.c: Ditto.
+	* ipa-visibility.c: Ditto.
+	* langhooks.c: Ditto.
+	* lto-cgraph.c: Ditto.
+	* lto-compress.c: Ditto.
+	* lto-opts.c: Ditto.
+	* lto-section-in.c: Ditto.
+	* lto-section-out.c: Ditto.
+	* lto-streamer.c: Ditto.
+	* lto-streamer-in.c: Ditto.
+	* lto-streamer-out.c: Ditto.
+	* omp-low.c: Ditto.
+	* opts-global.c: Ditto.
+	* passes.c: Ditto.
+	* predict.c: Ditto.
+	* print-tree.c: Ditto.
+	* profile.c: Ditto.
+	* ree.c: Ditto.
+	* stor-layout.c: Ditto.
+	* symtab.c: Ditto.
+	* toplev.c: Ditto.
+	* trans-mem.c: Ditto.
+	* tree.c: Ditto.
+	* tree-cfg.c: Ditto.
+	* tree-eh.c: Ditto.
+	* tree-emutls.c: Ditto.
+	* tree-inline.c: Ditto.
+	* tree-nested.c: Ditto.
+	* tree-pretty-print.c: Ditto.
+	* tree-profile.c: Ditto.
+	* tree-sra.c: Ditto.
+	* tree-ssa-alias.c: Ditto.
+	* tree-ssa-loop-ivcanon.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-ssa-pre.c: Ditto.
+	* tree-ssa-structalias.c: Ditto.
+	* tree-streamer.c: Ditto.
+	* tree-streamer-in.c: Ditto.
+	* tree-streamer-out.c: Ditto.
+	* tree-switch-conversion.c: Ditto.
+	* tree-tailcall.c: Ditto.
+	* tree-vect-data-refs.c: Ditto.
+	* tree-vectorizer.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tsan.c: Ditto.
+	* ubsan.c: Ditto.
+	* value-prof.c: Ditto.
+	* varasm.c: Ditto.
+	* varpool.c: Ditto.
+	* config/arm/arm.c: Ditto.
+	* config/bfin/bfin.c: Ditto.
+	* config/c6x/c6x.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/darwin.c: Ditto.
+	* config/darwin-c.c: Ditto.
+	* config/i386/i386.c: Ditto.
+	* config/i386/winnt.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/mips/mips.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rx/rx.c: Ditto.
+
+2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (follow_single_use_edges): Declare.
+	* gimple-fold.c (follow_single_use_edges): New function.
+	(gimple_fold_stmt_to_constant_1): Dispatch to gimple_simplify.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_dom_walker::before_dom_children): Allow
+	following single-use edges when folding stmts we propagated into.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/avx512bwintrin.h: New.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+	* config/i386/immintrin.h: Include avx512vlintrin.h, avx512bwintrin.h,
+	avx512dqintrin.h, avx512vlbwintrin.h, avx512vldqintrin.h.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_expand_args_builtin): Handle avx_vpermilv4df_mask,
+	avx_shufpd256_mask, avx_vpermilv2df_mask.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_init_mmx_sse_builtins):
+	Define __builtin_ia32_gather3siv2df, __builtin_ia32_gather3siv4df,
+	__builtin_ia32_gather3div2df, __builtin_ia32_gather3div4df,
+	__builtin_ia32_gather3siv4sf, __builtin_ia32_gather3siv8sf,
+	__builtin_ia32_gather3div4sf, __builtin_ia32_gather3div8sf,
+	__builtin_ia32_gather3siv2di, __builtin_ia32_gather3siv4di,
+	__builtin_ia32_gather3div2di, __builtin_ia32_gather3div4di,
+	__builtin_ia32_gather3siv4si, __builtin_ia32_gather3siv8si,
+	__builtin_ia32_gather3div4si, __builtin_ia32_gather3div8si,
+	__builtin_ia32_gather3altsiv4df, __builtin_ia32_gather3altdiv8sf,
+	__builtin_ia32_gather3altsiv4di, __builtin_ia32_gather3altdiv8si,
+	__builtin_ia32_scattersiv8sf, __builtin_ia32_scattersiv4sf,
+	__builtin_ia32_scattersiv4df, __builtin_ia32_scattersiv2df,
+	__builtin_ia32_scatterdiv8sf, __builtin_ia32_scatterdiv4sf,
+	__builtin_ia32_scatterdiv4df, __builtin_ia32_scatterdiv2df,
+	__builtin_ia32_scattersiv8si, __builtin_ia32_scattersiv4si,
+	__builtin_ia32_scattersiv4di, __builtin_ia32_scattersiv2di,
+	__builtin_ia32_scatterdiv8si, __builtin_ia32_scatterdiv4si,
+	__builtin_ia32_scatterdiv4di, __builtin_ia32_scatterdiv2di.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_builtins): Add IX86_BUILTIN_GATHER3ALTSIV4DF,
+	IX86_BUILTIN_GATHER3ALTDIV8SF, IX86_BUILTIN_GATHER3ALTSIV4DI,
+	IX86_BUILTIN_GATHER3ALTDIV8SI.
+	(ix86_expand_builtin):
+	Handle IX86_BUILTIN_GATHER3ALTDIV8SF, IX86_BUILTIN_GATHER3ALTDIV8SI,
+	IX86_BUILTIN_SCATTERSIV4DF, IX86_BUILTIN_SCATTERSIV4DI,
+	IX86_BUILTIN_SCATTERDIV2DF, IX86_BUILTIN_SCATTERDIV4DF,
+	IX86_BUILTIN_GATHER3ALTSIV4DI, IX86_BUILTIN_GATHER3ALTSIV4DF,
+	IX86_BUILTIN_SCATTERDIV4DI, IX86_BUILTIN_SCATTERDIV2DI,
+	IX86_BUILTIN_GATHER3SIV8SI, IX86_BUILTIN_GATHER3DIV8SI,
+	IX86_BUILTIN_GATHER3SIV4DF, IX86_BUILTIN_GATHER3SIV4DI,
+	IX86_BUILTIN_GATHER3DIV8SF, IX86_BUILTIN_GATHER3SIV8SF,
+	IX86_BUILTIN_GATHER3DIV4DF, IX86_BUILTIN_GATHER3DIV2DF,
+	IX86_BUILTIN_GATHER3DIV2DI, IX86_BUILTIN_GATHER3DIV4DI,
+	IX86_BUILTIN_SCATTERDIV4SF, IX86_BUILTIN_SCATTERSIV2DI,
+	IX86_BUILTIN_GATHER3SIV2DI, IX86_BUILTIN_GATHER3SIV4SI,
+	IX86_BUILTIN_GATHER3SIV4SF, IX86_BUILTIN_GATHER3SIV2DF,
+	IX86_BUILTIN_SCATTERSIV2DF, IX86_BUILTIN_SCATTERDIV4SI,
+	IX86_BUILTIN_SCATTERSIV4SF, IX86_BUILTIN_SCATTERSIV4SI,
+	IX86_BUILTIN_SCATTERDIV8SI, IX86_BUILTIN_GATHER3DIV4SI,
+	IX86_BUILTIN_SCATTERSIV8SI, IX86_BUILTIN_SCATTERSIV8SF,
+	IX86_BUILTIN_GATHER3DIV4SF, IX86_BUILTIN_SCATTERDIV8SF.
+	(ix86_vectorize_builtin_gather): Update V2DFmode, V4DFmode, V2DImode,
+	V4DImode, V4SFmode, V8SFmode, V4SImode, V8SImode.
+
+2014-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386-builtin-types.def
+	(SHORT): New.
+	(V32HI): Ditto.
+	(V12QI): Ditto.
+	(V14QI): Ditto.
+	(V32SI): Ditto.
+	(V8UDI): Ditto.
+	(V16USI): Ditto.
+	(V32UHI): Ditto.
+	(PSHORT): Ditto.
+	(PV32QI): Ditto.
+	(PV32HI): Ditto.
+	(PV64QI): Ditto.
+	(PCV8HI): Ditto.
+	(PCV16QI): Ditto.
+	(PCV16HI): Ditto.
+	(PCV32QI): Ditto.
+	(PCV32HI): Ditto.
+	(PCV64QI): Ditto.
+	(V4SF_FTYPE_V2DF_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V4DF_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V8HI_V4SF_QI): Ditto.
+	(V8SF_FTYPE_V8HI_V8SF_QI): Ditto.
+	(V16SF_FTYPE_V16HI): Ditto.
+	(V16SF_FTYPE_V16HI_V16SF_HI): Ditto.
+	(V16SF_FTYPE_V16SI): Ditto.
+	(V4DI_FTYPE_V4DI): Ditto.
+	(V16SI_FTYPE_V16SF): Ditto.
+	(V8DI_FTYPE_PV2DI): Ditto.
+	(V8DF_FTYPE_PV2DF): Ditto.
+	(V4DI_FTYPE_PV2DI): Ditto.
+	(V4DF_FTYPE_PV2DF): Ditto.
+	(V16SI_FTYPE_PV2SI): Ditto.
+	(V16SF_FTYPE_PV2SF): Ditto.
+	(V8SF_FTYPE_FLOAT): Ditto.
+	(V4SF_FTYPE_FLOAT): Ditto.
+	(V4DF_FTYPE_DOUBLE): Ditto.
+	(V8SF_FTYPE_PV4SF): Ditto.
+	(V8SI_FTYPE_PV4SI): Ditto.
+	(V4SI_FTYPE_PV2SI): Ditto.
+	(V8SF_FTYPE_PV2SF): Ditto.
+	(V8SI_FTYPE_PV2SI): Ditto.
+	(V16SF_FTYPE_PV8SF): Ditto.
+	(V16SI_FTYPE_PV8SI): Ditto.
+	(V8DI_FTYPE_V8SF): Ditto.
+	(V4DI_FTYPE_V4SF): Ditto.
+	(V2DI_FTYPE_V4SF): Ditto.
+	(V64QI_FTYPE_QI): Ditto.
+	(V32HI_FTYPE_HI): Ditto.
+	(V16UHI_FTYPE_V16UHI): Ditto.
+	(V32UHI_FTYPE_V32UHI): Ditto.
+	(V2UDI_FTYPE_V2UDI): Ditto.
+	(V4UDI_FTYPE_V4UDI): Ditto.
+	(V8UDI_FTYPE_V8UDI): Ditto.
+	(V4USI_FTYPE_V4USI): Ditto.
+	(V16USI_FTYPE_V16USI): Ditto.
+	(V2DF_FTYPE_V4DF_INT_V2DF_QI): Ditto.
+	(V2DF_FTYPE_V8DF_INT): Ditto.
+	(V2DF_FTYPE_V8DF_INT_V2DF_QI): Ditto.
+	(V2DI_FTYPE_V2DI_INT_V2DI_QI): Ditto.
+	(V8DF_FTYPE_V8DF_INT): Ditto.
+	(V4SF_FTYPE_V8SF_INT_V4SF_QI): Ditto.
+	(V4SI_FTYPE_V2DF_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V4SI_INT_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V8HI_V8HI_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V8SI_INT_V4SI_QI): Ditto.
+	(V8HI_FTYPE_V16QI_V16QI_V8HI_QI): Ditto.
+	(V8DI_FTYPE_V8DI_INT): Ditto.
+	(V8HI_FTYPE_V8SF_INT_V8HI_QI): Ditto.
+	(V8HI_FTYPE_V4SF_INT_V8HI_QI): Ditto.
+	(V8SF_FTYPE_V16SF_INT): Ditto.
+	(V8SF_FTYPE_V16SF_INT_V8SF_QI): Ditto.
+	(V64QI_FTYPE_V32HI_V32HI): Ditto.
+	(V32HI_FTYPE_V16SI_V16SI): Ditto.
+	(V8DF_FTYPE_V8DF_V2DF_INT): Ditto.
+	(V8DF_FTYPE_V8DF_V2DF_INT_V8DF_QI): Ditto.
+	(V8DF_FTYPE_V8DF_V8DF_INT): Ditto.
+	(V8DF_FTYPE_V8DF_V8DF_INT_V8DF_QI_INT): Ditto.
+	(V8DF_FTYPE_V8DF_V8DF_V8DI_INT): Ditto.
+	(V8DF_FTYPE_V8DF_V8DF_V8DI_INT_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DF_V4DI_INT_QI): Ditto.
+	(V2DF_FTYPE_V2DF_V2DF_V2DI_INT_QI): Ditto.
+	(V16SF_FTYPE_V16SF_V16SF_INT_V16SF_HI_INT): Ditto.
+	(V8SF_FTYPE_V8SF_V8SF_V8SI_INT_QI): Ditto.
+	(V16SF_FTYPE_V16SF_V8SF_INT_V16SF_HI): Ditto.
+	(V32HI_FTYPE_V64QI_V64QI): Ditto.
+	(V16HI_FTYPE_V32QI_V32QI_V16HI_HI): Ditto.
+	(V32HI_FTYPE_V64QI_V64QI_V32HI_SI): Ditto.
+	(V32HI_FTYPE_V32HI_V32HI): Ditto.
+	(V32HI_FTYPE_V32HI_INT): Ditto.
+	(V16SI_FTYPE_V16SI_V8SI_INT_V16SI_HI): Ditto.
+	(V16SI_FTYPE_V32HI_V32HI): Ditto.
+	(V8SI_FTYPE_V16HI_V16HI_V8SI_QI): Ditto.
+	(V16SI_FTYPE_V32HI_V32HI_V16SI_HI): Ditto.
+	(V8SI_FTYPE_V8SI_INT_V8SI_QI): Ditto.
+	(V8SI_FTYPE_V16SI_INT): Ditto.
+	(V8SI_FTYPE_V16SI_INT_V8SI_QI): Ditto.
+	(V8DI_FTYPE_V8DI_V8DI_INT_V8DI_DI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_INT_V4DI_SI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_INT_V2DI_HI): Ditto.
+	(V8DI_FTYPE_V8DI_V4DI_INT): Ditto.
+	(V8DI_FTYPE_V8DI_V2DI_INT): Ditto.
+	(V8DI_FTYPE_V8DI_V2DI_INT_V8DI_QI): Ditto.
+	(V8DI_FTYPE_V16SI_V16SI): Ditto.
+	(V8DI_FTYPE_V64QI_V64QI): Ditto.
+	(V4DI_FTYPE_V4DI_INT_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V4DI_INT_V2DI_QI): Ditto.
+	(V2DI_FTYPE_V8DI_INT): Ditto.
+	(V2DI_FTYPE_V8DI_INT_V2DI_QI): Ditto.
+	(QI_FTYPE_QI): Ditto.
+	(SI_FTYPE_SI): Ditto.
+	(DI_FTYPE_DI): Ditto.
+	(HI_FTYPE_V16QI): Ditto.
+	(SI_FTYPE_V32QI): Ditto.
+	(DI_FTYPE_V64QI): Ditto.
+	(QI_FTYPE_V8HI): Ditto.
+	(HI_FTYPE_V16HI): Ditto.
+	(SI_FTYPE_V32HI): Ditto.
+	(QI_FTYPE_V4SI): Ditto.
+	(QI_FTYPE_V8SI): Ditto.
+	(HI_FTYPE_V16SI): Ditto.
+	(QI_FTYPE_V2DI): Ditto.
+	(QI_FTYPE_V4DI): Ditto.
+	(QI_FTYPE_V8DI): Ditto.
+	(V16QI_FTYPE_HI): Ditto.
+	(V32QI_FTYPE_SI): Ditto.
+	(V64QI_FTYPE_DI): Ditto.
+	(V8HI_FTYPE_QI): Ditto.
+	(V16HI_FTYPE_HI): Ditto.
+	(V32HI_FTYPE_SI): Ditto.
+	(V4SI_FTYPE_QI): Ditto.
+	(V4SI_FTYPE_HI): Ditto.
+	(V8SI_FTYPE_QI): Ditto.
+	(V8SI_FTYPE_HI): Ditto.
+	(V2DI_FTYPE_QI): Ditto.
+	(V4DI_FTYPE_QI): Ditto.
+	(QI_FTYPE_QI_QI): Ditto.
+	(SI_FTYPE_SI_SI): Ditto.
+	(DI_FTYPE_DI_DI): Ditto.
+	(QI_FTYPE_QI_INT): Ditto.
+	(SI_FTYPE_SI_INT): Ditto.
+	(DI_FTYPE_DI_INT): Ditto.
+	(HI_FTYPE_V16QI_V16QI): Ditto.
+	(HI_FTYPE_V16QI_V16QI_HI): Ditto.
+	(HI_FTYPE_V16QI_V16QI_INT_HI): Ditto.
+	(SI_FTYPE_V32QI_V32QI): Ditto.
+	(SI_FTYPE_V32QI_V32QI_SI): Ditto.
+	(SI_FTYPE_V32QI_V32QI_INT_SI): Ditto.
+	(DI_FTYPE_V64QI_V64QI): Ditto.
+	(DI_FTYPE_V64QI_V64QI_DI): Ditto.
+	(DI_FTYPE_V64QI_V64QI_INT_DI): Ditto.
+	(QI_FTYPE_V8HI_V8HI): Ditto.
+	(QI_FTYPE_V8HI_V8HI_QI): Ditto.
+	(QI_FTYPE_V8HI_V8HI_INT_QI): Ditto.
+	(HI_FTYPE_V16HI_V16HI): Ditto.
+	(HI_FTYPE_V16HI_V16HI_HI): Ditto.
+	(HI_FTYPE_V16HI_V16HI_INT_HI): Ditto.
+	(SI_FTYPE_V32HI_V32HI): Ditto.
+	(SI_FTYPE_V32HI_V32HI_SI): Ditto.
+	(SI_FTYPE_V32HI_V32HI_INT_SI): Ditto.
+	(QI_FTYPE_V4SI_V4SI): Ditto.
+	(QI_FTYPE_V4SI_V4SI_QI): Ditto.
+	(QI_FTYPE_V4SI_V4SI_INT_QI): Ditto.
+	(QI_FTYPE_V8SI_V8SI): Ditto.
+	(QI_FTYPE_V8SI_V8SI_QI): Ditto.
+	(QI_FTYPE_V8SI_V8SI_INT_QI): Ditto.
+	(QI_FTYPE_V2DI_V2DI): Ditto.
+	(QI_FTYPE_V2DI_V2DI_QI): Ditto.
+	(QI_FTYPE_V2DI_V2DI_INT_QI): Ditto.
+	(QI_FTYPE_V4DI_V4DI): Ditto.
+	(QI_FTYPE_V4DI_V4DI_QI): Ditto.
+	(QI_FTYPE_V4DI_V4DI_INT_QI): Ditto.
+	(V32HI_FTYPE_V32HI_V32HI_V32HI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DI_INT): Ditto.
+	(V2DF_FTYPE_V2DI_V2DF_V2DF_QI): Ditto.
+	(V2DF_FTYPE_V2DF_V2DI_V2DF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V2DF_INT_V4DF_QI): Ditto.
+	(V8DI_FTYPE_V8DI_V8DI_INT): Ditto.
+	(V4SF_FTYPE_V4SI_V4SF_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V4SF_V4SI_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V4SF_V4SF_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V4SF_V2DF_V4SF_QI): Ditto.
+	(V8SF_FTYPE_V8SF_V4SF_INT_V8SF_QI): Ditto.
+	(V8SI_FTYPE_V8SI_V4SI_INT_V8SI_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V2DI_INT_V4DI_QI): Ditto.
+	(V2DF_FTYPE_V2DF_V2DF_QI): Ditto.
+	(V2DF_FTYPE_V4SF_V2DF_QI): Ditto.
+	(V2DF_FTYPE_V4SI_V2DF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DF_QI): Ditto.
+	(V4DF_FTYPE_V4SF_V4DF_QI): Ditto.
+	(V4DF_FTYPE_V4SI_V4DF_QI): Ditto.
+	(V2DI_FTYPE_V4SI_V2DI_QI): Ditto.
+	(V2DI_FTYPE_V8HI_V2DI_QI): Ditto.
+	(V8DI_FTYPE_V8DF_V8DI_QI): Ditto.
+	(V4DI_FTYPE_V4DF_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V2DF_V2DI_QI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_V2DI_QI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_INT_V2DI_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_INT_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V16QI_V2DI_QI): Ditto.
+	(V4DI_FTYPE_V16QI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_V4SI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_V8HI_V4DI_QI): Ditto.
+	(V4DF_FTYPE_V4DI_V4DF_V4DF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DI_V4DF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DF_V4DF_QI): Ditto.
+	(V16QI_FTYPE_V16QI_V16QI_V16QI_HI): Ditto.
+	(V16HI_FTYPE_V16HI_V16HI_V16HI_HI): Ditto.
+	(V32HI_FTYPE_V32HI_V32HI_V32HI_SI): Ditto.
+	(V64QI_FTYPE_V64QI_V64QI_V64QI_DI): Ditto.
+	(V32QI_FTYPE_V32QI_V32QI_V32QI_SI): Ditto.
+	(V8HI_FTYPE_V8HI_V8HI_V8HI_QI): Ditto.
+	(V4SF_FTYPE_V4SF_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V4SI_V4SF_QI): Ditto.
+	(V8SF_FTYPE_V8SF_V8SF_QI): Ditto.
+	(V8SF_FTYPE_V8SI_V8SF_QI): Ditto.
+	(V4SI_FTYPE_V16QI_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V8HI_V4SI_QI): Ditto.
+	(V8SI_FTYPE_V8SI_V8SI_QI): Ditto.
+	(V8SI_FTYPE_V8HI_V8SI_QI): Ditto.
+	(V8SI_FTYPE_V16QI_V8SI_QI): Ditto.
+	(V4SI_FTYPE_V4SI_V4SI_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V4SI_V4SI_INT_V4SI_QI): Ditto.
+	(V8SF_FTYPE_V8SF_V8SF_V8SF_QI): Ditto.
+	(V8SF_FTYPE_V8SI_V8SF_V8SF_QI): Ditto.
+	(V8SF_FTYPE_V8SF_V8SI_V8SF_QI): Ditto.
+	(V8SI_FTYPE_V8SI_V8SI_V8SI_QI): Ditto.
+	(V8SI_FTYPE_V8SI_V8SI_INT_V8SI_QI): Ditto.
+	(V16SF_FTYPE_V8SF_V16SF_HI): Ditto.
+	(V16SI_FTYPE_V8SI_V16SI_HI): Ditto.
+	(V4SI_FTYPE_V4DF_V4SI_QI): Ditto.
+	(V8DI_FTYPE_PCCHAR_V8DI_QI): Ditto.
+	(V8SF_FTYPE_PCFLOAT_V8SF_QI): Ditto.
+	(V4SF_FTYPE_PCFLOAT_V4SF_QI): Ditto.
+	(V4DF_FTYPE_PCDOUBLE_V4DF_QI): Ditto.
+	(V2DF_FTYPE_PCDOUBLE_V2DF_QI): Ditto.
+	(V8SI_FTYPE_PCCHAR_V8SI_QI): Ditto.
+	(V4SI_FTYPE_PCCHAR_V4SI_QI): Ditto.
+	(V4DI_FTYPE_PCCHAR_V4DI_QI): Ditto.
+	(V2DI_FTYPE_PCCHAR_V2DI_QI): Ditto.
+	(V16QI_FTYPE_V16SI_V16QI_HI): Ditto.
+	(V16QI_FTYPE_V8DI_V16QI_QI): Ditto.
+	(V32HI_FTYPE_V32HI_V32HI_SI): Ditto.
+	(V32HI_FTYPE_V64QI_V64QI_INT): Ditto.
+	(V32HI_FTYPE_V32QI_V32HI_SI): Ditto.
+	(V16HI_FTYPE_V16HI_V16HI_HI): Ditto.
+	(V16HI_FTYPE_V32QI_V32QI_INT): Ditto.
+	(V16HI_FTYPE_V16QI_V16HI_HI): Ditto.
+	(V8HI_FTYPE_V16QI_V8HI_QI): Ditto.
+	(V8HI_FTYPE_V16QI_V16QI_INT): Ditto.
+	(V8SF_FTYPE_V4SF_V8SF_QI): Ditto.
+	(V4DF_FTYPE_V2DF_V4DF_QI): Ditto.
+	(V8SI_FTYPE_V4SI_V8SI_QI): Ditto.
+	(V8SI_FTYPE_SI_V8SI_QI): Ditto.
+	(V4SI_FTYPE_V4SI_V4SI_QI): Ditto.
+	(V4SI_FTYPE_SI_V4SI_QI): Ditto.
+	(V4DI_FTYPE_V2DI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_DI_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_QI): Ditto.
+	(V2DI_FTYPE_DI_V2DI_QI): Ditto.
+	(V64QI_FTYPE_V64QI_V64QI_DI): Ditto.
+	(V64QI_FTYPE_V16QI_V64QI_DI): Ditto.
+	(V64QI_FTYPE_QI_V64QI_DI): Ditto.
+	(V32QI_FTYPE_V32QI_V32QI_SI): Ditto.
+	(V32QI_FTYPE_V16QI_V32QI_SI): Ditto.
+	(V32QI_FTYPE_QI_V32QI_SI): Ditto.
+	(V16QI_FTYPE_V16QI_V16QI_HI): Ditto.
+	(V16QI_FTYPE_QI_V16QI_HI): Ditto.
+	(V32HI_FTYPE_V8HI_V32HI_SI): Ditto.
+	(V32HI_FTYPE_HI_V32HI_SI): Ditto.
+	(V16HI_FTYPE_V8HI_V16HI_HI): Ditto.
+	(V16HI_FTYPE_HI_V16HI_HI): Ditto.
+	(V8HI_FTYPE_V8HI_V8HI_QI): Ditto.
+	(V8HI_FTYPE_HI_V8HI_QI): Ditto.
+	(V64QI_FTYPE_PCV64QI_V64QI_DI): Ditto.
+	(V32HI_FTYPE_PCV32HI_V32HI_SI): Ditto.
+	(V32QI_FTYPE_PCV32QI_V32QI_SI): Ditto.
+	(V16SF_FTYPE_PCV8SF_V16SF_HI): Ditto.
+	(V16SI_FTYPE_PCV8SI_V16SI_HI): Ditto.
+	(V16HI_FTYPE_PCV16HI_V16HI_HI): Ditto.
+	(V16QI_FTYPE_PCV16QI_V16QI_HI): Ditto.
+	(V8DF_FTYPE_PCV2DF_V8DF_QI): Ditto.
+	(V8SF_FTYPE_PCV8SF_V8SF_QI): Ditto.
+	(V8SF_FTYPE_PCV4SF_V8SF_QI): Ditto.
+	(V8DI_FTYPE_PCV2DI_V8DI_QI): Ditto.
+	(V8SI_FTYPE_PCV8SI_V8SI_QI): Ditto.
+	(V8SI_FTYPE_PCV4SI_V8SI_QI): Ditto.
+	(V8HI_FTYPE_PCV8HI_V8HI_QI): Ditto.
+	(V4DF_FTYPE_PCV2DF_V4DF_QI): Ditto.
+	(V4DF_FTYPE_PCV4DF_V4DF_QI): Ditto.
+	(V4SF_FTYPE_PCV4SF_V4SF_QI): Ditto.
+	(V4DI_FTYPE_PCV4DI_V4DI_QI): Ditto.
+	(V4DI_FTYPE_PCV2DI_V4DI_QI): Ditto.
+	(V4SI_FTYPE_PCV4SI_V4SI_QI): Ditto.
+	(V2DF_FTYPE_PCV2DF_V2DF_QI): Ditto.
+	(V2DI_FTYPE_PCV2DI_V2DI_QI): Ditto.
+	(V16QI_FTYPE_V8HI_V16QI_QI): Ditto.
+	(V16QI_FTYPE_V16HI_V16QI_HI): Ditto.
+	(V16QI_FTYPE_V4SI_V16QI_QI): Ditto.
+	(V16QI_FTYPE_V8SI_V16QI_QI): Ditto.
+	(V8HI_FTYPE_V4SI_V8HI_QI): Ditto.
+	(V8HI_FTYPE_V8SI_V8HI_QI): Ditto.
+	(V16QI_FTYPE_V2DI_V16QI_QI): Ditto.
+	(V16QI_FTYPE_V4DI_V16QI_QI): Ditto.
+	(V8HI_FTYPE_V2DI_V8HI_QI): Ditto.
+	(V8HI_FTYPE_V4DI_V8HI_QI): Ditto.
+	(V4SI_FTYPE_V2DI_V4SI_QI): Ditto.
+	(V4SI_FTYPE_V4DI_V4SI_QI): Ditto.
+	(V32QI_FTYPE_V32HI_V32QI_SI): Ditto.
+	(V2DF_FTYPE_V2DF_INT_V2DF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_INT_V4DF_QI): Ditto.
+	(V4SF_FTYPE_V4SF_INT_V4SF_QI): Ditto.
+	(V8SF_FTYPE_V8SF_INT_V8SF_QI): Ditto.
+	(V4DF_FTYPE_V4DF_V4DF_INT_V4DF_QI): Ditto.
+	(V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI): Ditto.
+	(V8SF_FTYPE_V8SF_V8SF_INT_V8SF_QI): Ditto.
+	(V4SF_FTYPE_V4SF_V4SF_INT_V4SF_QI): Ditto.
+	(VOID_FTYPE_PV8HI_V4DI_QI): Ditto.
+	(VOID_FTYPE_PV8HI_V2DI_QI): Ditto.
+	(VOID_FTYPE_PV4SI_V4DI_QI): Ditto.
+	(VOID_FTYPE_PV4SI_V2DI_QI): Ditto.
+	(VOID_FTYPE_PV8HI_V8SI_QI): Ditto.
+	(VOID_FTYPE_PV8HI_V4SI_QI): Ditto.
+	(VOID_FTYPE_PV4DF_V4DF_QI): Ditto.
+	(VOID_FTYPE_PV2DF_V2DF_QI): Ditto.
+	(VOID_FTYPE_PV8SF_V8SF_QI): Ditto.
+	(VOID_FTYPE_PV4SF_V4SF_QI): Ditto.
+	(VOID_FTYPE_PV4DI_V4DI_QI): Ditto.
+	(VOID_FTYPE_PV2DI_V2DI_QI): Ditto.
+	(VOID_FTYPE_PV16QI_V8SI_QI): Ditto.
+	(VOID_FTYPE_PV16QI_V4SI_QI): Ditto.
+	(VOID_FTYPE_PV16QI_V4DI_QI): Ditto.
+	(VOID_FTYPE_PV16QI_V2DI_QI): Ditto.
+	(VOID_FTYPE_PV8SI_V8SI_QI): Ditto.
+	(VOID_FTYPE_PV4SI_V4SI_QI): Ditto.
+	(VOID_FTYPE_PV32HI_V32HI_SI): Ditto.
+	(VOID_FTYPE_PV16HI_V16HI_HI): Ditto.
+	(VOID_FTYPE_PV8HI_V8HI_QI): Ditto.
+	(VOID_FTYPE_PV64QI_V64QI_DI): Ditto.
+	(VOID_FTYPE_PV32QI_V32QI_SI): Ditto.
+	(VOID_FTYPE_PV16QI_V16QI_HI): Ditto.
+	(V8SI_FTYPE_V8SF_V8SI_QI): Ditto.
+	(V4SI_FTYPE_V4SF_V4SI_QI): Ditto.
+	(V8DI_FTYPE_V8SF_V8DI_QI): Ditto.
+	(V4DI_FTYPE_V4SF_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V4SF_V2DI_QI): Ditto.
+	(V8SF_FTYPE_V8DI_V8SF_QI): Ditto.
+	(V4SF_FTYPE_V4DI_V4SF_QI): Ditto.
+	(V4SF_FTYPE_V2DI_V4SF_QI): Ditto.
+	(V8DF_FTYPE_V8DI_V8DF_QI): Ditto.
+	(V4DF_FTYPE_V4DI_V4DF_QI): Ditto.
+	(V2DF_FTYPE_V2DI_V2DF_QI): Ditto.
+	(V32HI_FTYPE_V32HI_INT_V32HI_SI): Ditto.
+	(V32HI_FTYPE_V32HI_V8HI_V32HI_SI): Ditto.
+	(V16HI_FTYPE_V16HI_INT_V16HI_HI): Ditto.
+	(V16HI_FTYPE_V16HI_V8HI_V16HI_HI): Ditto.
+	(V8HI_FTYPE_V8HI_INT_V8HI_QI): Ditto.
+	(V32HI_FTYPE_V64QI_V64QI_INT_V32HI_SI): Ditto.
+	(V16HI_FTYPE_V32QI_V32QI_INT_V16HI_HI): Ditto.
+	(V8HI_FTYPE_V16QI_V16QI_INT_V8HI_QI): Ditto.
+	(V64QI_FTYPE_V32HI_V32HI_V64QI_DI): Ditto.
+	(V32QI_FTYPE_V16HI_V16HI_V32QI_SI): Ditto.
+	(V16QI_FTYPE_V8HI_V8HI_V16QI_HI): Ditto.
+	(V32HI_FTYPE_V16SI_V16SI_V32HI_SI): Ditto.
+	(V16HI_FTYPE_V8SI_V8SI_V16HI_HI): Ditto.
+	(V8HI_FTYPE_V4SI_V4SI_V8HI_QI): Ditto.
+	(V8DI_FTYPE_V16SI_V16SI_V8DI_QI): Ditto.
+	(V4DI_FTYPE_V8SI_V8SI_V4DI_QI): Ditto.
+	(V2DI_FTYPE_V4SI_V4SI_V2DI_QI): Ditto.
+	(V8SI_FTYPE_V8SI_V8SI_V8SI_INT_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_V4DI_INT_QI): Ditto.
+	(V4SI_FTYPE_V4SI_V4SI_V4SI_INT_QI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_V2DI_INT_QI): Ditto.
+	(V2DF_FTYPE_V2DF_V2DI_V2DF): Ditto.
+	(V4DF_FTYPE_V4DF_V4DI_V4DF): Ditto.
+	(V4SF_FTYPE_V4SF_V4SI_V4SF): Ditto.
+	(V8SF_FTYPE_V8SF_V8SI_V8SF): Ditto.
+	(V8SI_FTYPE_V8SI_V4SI_V8SI_QI): Ditto.
+	(V4DI_FTYPE_V4DI_V2DI_V4DI_QI): Ditto.
+	(QI_FTYPE_V8DF_INT): Ditto.
+	(QI_FTYPE_V4DF_INT): Ditto.
+	(QI_FTYPE_V4DF_V4DF_INT_QI): Ditto.
+	(QI_FTYPE_V2DF_INT): Ditto.
+	(HI_FTYPE_V16SF_INT): Ditto.
+	(QI_FTYPE_V8SF_INT): Ditto.
+	(QI_FTYPE_V8SF_V8SF_INT_QI): Ditto.
+	(QI_FTYPE_V4SF_INT): Ditto.
+	(QI_FTYPE_V8DF_INT_QI): Ditto.
+	(QI_FTYPE_V4DF_INT_QI): Ditto.
+	(QI_FTYPE_V2DF_INT_QI): Ditto.
+	(HI_FTYPE_V16SF_INT_HI): Ditto.
+	(QI_FTYPE_V8SF_INT_QI): Ditto.
+	(QI_FTYPE_V4SF_INT_QI): Ditto.
+	(V8DI_FTYPE_V8DF_V8DI_QI_INT): Ditto.
+	(V8DI_FTYPE_V8SF_V8DI_QI_INT): Ditto.
+	(V8DF_FTYPE_V8DI_V8DF_QI_INT): Ditto.
+	(V8SF_FTYPE_V8DI_V8SF_QI_INT): Ditto.
+	(V2DF_FTYPE_V2DF_PCDOUBLE_V4SI_QI_INT): Ditto.
+	(V4DF_FTYPE_V4DF_PCDOUBLE_V4SI_QI_INT): Ditto.
+	(V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_QI_INT): Ditto.
+	(V2DF_FTYPE_V2DF_PCDOUBLE_V2DI_QI_INT): Ditto.
+	(V4DF_FTYPE_V4DF_PCDOUBLE_V4DI_QI_INT): Ditto.
+	(V4SF_FTYPE_V4SF_PCFLOAT_V4SI_QI_INT): Ditto.
+	(V8SF_FTYPE_V8SF_PCFLOAT_V8SI_QI_INT): Ditto.
+	(V4SF_FTYPE_V4SF_PCFLOAT_V2DI_QI_INT): Ditto.
+	(V4SF_FTYPE_V4SF_PCFLOAT_V4DI_QI_INT): Ditto.
+	(V8SF_FTYPE_V8SF_PCFLOAT_V4DI_QI_INT): Ditto.
+	(V2DI_FTYPE_V2DI_PCINT64_V4SI_QI_INT): Ditto.
+	(V4DI_FTYPE_V4DI_PCINT64_V4SI_QI_INT): Ditto.
+	(V4DI_FTYPE_V4DI_PCINT64_V8SI_QI_INT): Ditto.
+	(V2DI_FTYPE_V2DI_PCINT64_V2DI_QI_INT): Ditto.
+	(V4DI_FTYPE_V4DI_PCINT64_V4DI_QI_INT): Ditto.
+	(V4SI_FTYPE_V4SI_PCINT_V4SI_QI_INT): Ditto.
+	(V8SI_FTYPE_V8SI_PCINT_V8SI_QI_INT): Ditto.
+	(V4SI_FTYPE_V4SI_PCINT_V2DI_QI_INT): Ditto.
+	(V4SI_FTYPE_V4SI_PCINT_V4DI_QI_INT): Ditto.
+	(V8SI_FTYPE_V8SI_PCINT_V4DI_QI_INT): Ditto.
+	(VOID_FTYPE_PFLOAT_QI_V8SI_V8SF_INT): Ditto.
+	(VOID_FTYPE_PFLOAT_QI_V4SI_V4SF_INT): Ditto.
+	(VOID_FTYPE_PDOUBLE_QI_V4SI_V4DF_INT): Ditto.
+	(VOID_FTYPE_PDOUBLE_QI_V4SI_V2DF_INT): Ditto.
+	(VOID_FTYPE_PFLOAT_QI_V4DI_V4SF_INT): Ditto.
+	(VOID_FTYPE_PFLOAT_QI_V2DI_V4SF_INT): Ditto.
+	(VOID_FTYPE_PDOUBLE_QI_V4DI_V4DF_INT): Ditto.
+	(VOID_FTYPE_PDOUBLE_QI_V2DI_V2DF_INT): Ditto.
+	(VOID_FTYPE_PINT_QI_V8SI_V8SI_INT): Ditto.
+	(VOID_FTYPE_PINT_QI_V4SI_V4SI_INT): Ditto.
+	(VOID_FTYPE_PLONGLONG_QI_V4SI_V4DI_INT): Ditto.
+	(VOID_FTYPE_PLONGLONG_QI_V4SI_V2DI_INT): Ditto.
+	(VOID_FTYPE_PINT_QI_V4DI_V4SI_INT): Ditto.
+	(VOID_FTYPE_PINT_QI_V2DI_V4SI_INT): Ditto.
+	(VOID_FTYPE_PLONGLONG_QI_V4DI_V4DI_INT): Ditto.
+	(VOID_FTYPE_PLONGLONG_QI_V2DI_V2DI_INT): Ditto.
+	(V8DI_FTYPE_V8DI_INT): Ditto.
+	(V8DI_FTYPE_V8DI_V8DI_INT): Ditto.
+	(V8DI_FTYPE_V8DI_V8DI_INT_V8DI_DI): Ditto.
+	(V4DI_FTYPE_V4DI_V4DI_INT_V4DI_SI): Ditto.
+	(V2DI_FTYPE_V2DI_V2DI_INT_V2DI_HI): Ditto.
+	(V2DF_FTYPE_ V2DF_ V2DF_ V2DI_ INT_ QI): Remove.
+	(V4SF_FTYPE_ V4SF_ V2DF_ V4SF_ QI): Ditto.
+	(V4SF_FTYPE_ V4SF_ V4SF_ V4SF_ QI): Ditto.
+	(V2DF_FTYPE_ PCDOUBLE_ V2DF_ QI): Ditto.
+	(V4SF_FTYPE_ PCFLOAT_ V4SF_ QI): Ditto.
+	(V16QI_FTYPE_ V16SI_ V16QI_ HI): Ditto.
+	(V16QI_FTYPE_ V8DI_ V16QI_ QI): Ditto.
+	(V4SF_FTYPE_ V4SF_ V4SF_ INT_ V4SF_ QI): Ditto.
+	(V2DF_FTYPE_ V2DF_ V2DF_ INT_ V2DF_ QI): Ditto.
+	(V8DI_FTYPE_ V16SI_ V16SI_ V8DI_ QI): Ditto.
+	* config/i386/i386.c (ix86_builtins):
+	Add IX86_BUILTIN_PMOVUSQD256_MEM, IX86_BUILTIN_PMOVUSQD128_MEM,
+	IX86_BUILTIN_PMOVSQD256_MEM, IX86_BUILTIN_PMOVSQD128_MEM,
+	IX86_BUILTIN_PMOVQD256_MEM, IX86_BUILTIN_PMOVQD128_MEM,
+	IX86_BUILTIN_PMOVUSQW256_MEM, IX86_BUILTIN_PMOVUSQW128_MEM,
+	IX86_BUILTIN_PMOVSQW256_MEM, IX86_BUILTIN_PMOVSQW128_MEM,
+	IX86_BUILTIN_PMOVQW256_MEM, IX86_BUILTIN_PMOVQW128_MEM,
+	IX86_BUILTIN_PMOVUSQB256_MEM, IX86_BUILTIN_PMOVUSQB128_MEM,
+	IX86_BUILTIN_PMOVSQB256_MEM, IX86_BUILTIN_PMOVSQB128_MEM,
+	IX86_BUILTIN_PMOVQB256_MEM, IX86_BUILTIN_PMOVQB128_MEM,
+	IX86_BUILTIN_PMOVUSDW256_MEM, IX86_BUILTIN_PMOVUSDW128_MEM,
+	IX86_BUILTIN_PMOVSDW256_MEM, IX86_BUILTIN_PMOVSDW128_MEM,
+	IX86_BUILTIN_PMOVDW256_MEM, IX86_BUILTIN_PMOVDW128_MEM,
+	IX86_BUILTIN_PMOVUSDB256_MEM, IX86_BUILTIN_PMOVUSDB128_MEM,
+	IX86_BUILTIN_PMOVSDB256_MEM, IX86_BUILTIN_PMOVSDB128_MEM,
+	IX86_BUILTIN_PMOVDB256_MEM, IX86_BUILTIN_PMOVDB128_MEM,
+	IX86_BUILTIN_MOVDQA64LOAD256_MASK, IX86_BUILTIN_MOVDQA64LOAD128_MASK,
+	IX86_BUILTIN_MOVDQA32LOAD256_MASK, IX86_BUILTIN_MOVDQA32LOAD128_MASK,
+	IX86_BUILTIN_MOVDQA64STORE256_MASK, IX86_BUILTIN_MOVDQA64STORE128_MASK,
+	IX86_BUILTIN_MOVDQA32STORE256_MASK, IX86_BUILTIN_MOVDQA32STORE128_MASK,
+	IX86_BUILTIN_LOADAPD256_MASK, IX86_BUILTIN_LOADAPD128_MASK,
+	IX86_BUILTIN_LOADAPS256_MASK, IX86_BUILTIN_LOADAPS128_MASK,
+	IX86_BUILTIN_STOREAPD256_MASK, IX86_BUILTIN_STOREAPD128_MASK,
+	IX86_BUILTIN_STOREAPS256_MASK, IX86_BUILTIN_STOREAPS128_MASK,
+	IX86_BUILTIN_LOADUPD256_MASK, IX86_BUILTIN_LOADUPD128_MASK,
+	IX86_BUILTIN_LOADUPS256_MASK, IX86_BUILTIN_LOADUPS128_MASK,
+	IX86_BUILTIN_STOREUPD256_MASK, IX86_BUILTIN_STOREUPD128_MASK,
+	IX86_BUILTIN_STOREUPS256_MASK, IX86_BUILTIN_STOREUPS128_MASK,
+	IX86_BUILTIN_LOADDQUDI256_MASK, IX86_BUILTIN_LOADDQUDI128_MASK,
+	IX86_BUILTIN_LOADDQUSI256_MASK, IX86_BUILTIN_LOADDQUSI128_MASK,
+	IX86_BUILTIN_LOADDQUHI256_MASK, IX86_BUILTIN_LOADDQUHI128_MASK,
+	IX86_BUILTIN_LOADDQUQI256_MASK, IX86_BUILTIN_LOADDQUQI128_MASK,
+	IX86_BUILTIN_STOREDQUDI256_MASK, IX86_BUILTIN_STOREDQUDI128_MASK,
+	IX86_BUILTIN_STOREDQUSI256_MASK, IX86_BUILTIN_STOREDQUSI128_MASK,
+	IX86_BUILTIN_STOREDQUHI256_MASK, IX86_BUILTIN_STOREDQUHI128_MASK,
+	IX86_BUILTIN_STOREDQUQI256_MASK, IX86_BUILTIN_STOREDQUQI128_MASK,
+	IX86_BUILTIN_COMPRESSPDSTORE256, IX86_BUILTIN_COMPRESSPDSTORE128,
+	IX86_BUILTIN_COMPRESSPSSTORE256, IX86_BUILTIN_COMPRESSPSSTORE128,
+	IX86_BUILTIN_PCOMPRESSQSTORE256, IX86_BUILTIN_PCOMPRESSQSTORE128,
+	IX86_BUILTIN_PCOMPRESSDSTORE256, IX86_BUILTIN_PCOMPRESSDSTORE128,
+	IX86_BUILTIN_EXPANDPDLOAD256, IX86_BUILTIN_EXPANDPDLOAD128,
+	IX86_BUILTIN_EXPANDPSLOAD256, IX86_BUILTIN_EXPANDPSLOAD128,
+	IX86_BUILTIN_PEXPANDQLOAD256, IX86_BUILTIN_PEXPANDQLOAD128,
+	IX86_BUILTIN_PEXPANDDLOAD256, IX86_BUILTIN_PEXPANDDLOAD128,
+	IX86_BUILTIN_EXPANDPDLOAD256Z, IX86_BUILTIN_EXPANDPDLOAD128Z,
+	IX86_BUILTIN_EXPANDPSLOAD256Z, IX86_BUILTIN_EXPANDPSLOAD128Z,
+	IX86_BUILTIN_PEXPANDQLOAD256Z, IX86_BUILTIN_PEXPANDQLOAD128Z,
+	IX86_BUILTIN_PEXPANDDLOAD256Z, IX86_BUILTIN_PEXPANDDLOAD128Z,
+	IX86_BUILTIN_PALIGNR256_MASK, IX86_BUILTIN_PALIGNR128_MASK,
+	IX86_BUILTIN_MOVDQA64_256_MASK, IX86_BUILTIN_MOVDQA64_128_MASK,
+	IX86_BUILTIN_MOVDQA32_256_MASK, IX86_BUILTIN_MOVDQA32_128_MASK,
+	IX86_BUILTIN_MOVAPD256_MASK, IX86_BUILTIN_MOVAPD128_MASK,
+	IX86_BUILTIN_MOVAPS256_MASK, IX86_BUILTIN_MOVAPS128_MASK,
+	IX86_BUILTIN_MOVDQUHI256_MASK, IX86_BUILTIN_MOVDQUHI128_MASK,
+	IX86_BUILTIN_MOVDQUQI256_MASK, IX86_BUILTIN_MOVDQUQI128_MASK,
+	IX86_BUILTIN_MINPS128_MASK, IX86_BUILTIN_MAXPS128_MASK,
+	IX86_BUILTIN_MINPD128_MASK, IX86_BUILTIN_MAXPD128_MASK,
+	IX86_BUILTIN_MAXPD256_MASK, IX86_BUILTIN_MAXPS256_MASK,
+	IX86_BUILTIN_MINPD256_MASK, IX86_BUILTIN_MINPS256_MASK,
+	IX86_BUILTIN_MULPS128_MASK, IX86_BUILTIN_DIVPS128_MASK,
+	IX86_BUILTIN_MULPD128_MASK, IX86_BUILTIN_DIVPD128_MASK,
+	IX86_BUILTIN_DIVPD256_MASK, IX86_BUILTIN_DIVPS256_MASK,
+	IX86_BUILTIN_MULPD256_MASK, IX86_BUILTIN_MULPS256_MASK,
+	IX86_BUILTIN_ADDPD128_MASK, IX86_BUILTIN_ADDPD256_MASK,
+	IX86_BUILTIN_ADDPS128_MASK, IX86_BUILTIN_ADDPS256_MASK,
+	IX86_BUILTIN_SUBPD128_MASK, IX86_BUILTIN_SUBPD256_MASK,
+	IX86_BUILTIN_SUBPS128_MASK, IX86_BUILTIN_SUBPS256_MASK,
+	IX86_BUILTIN_XORPD256_MASK, IX86_BUILTIN_XORPD128_MASK,
+	IX86_BUILTIN_XORPS256_MASK, IX86_BUILTIN_XORPS128_MASK,
+	IX86_BUILTIN_ORPD256_MASK, IX86_BUILTIN_ORPD128_MASK,
+	IX86_BUILTIN_ORPS256_MASK, IX86_BUILTIN_ORPS128_MASK,
+	IX86_BUILTIN_BROADCASTF32x2_256, IX86_BUILTIN_BROADCASTI32x2_256,
+	IX86_BUILTIN_BROADCASTI32x2_128, IX86_BUILTIN_BROADCASTF64X2_256,
+	IX86_BUILTIN_BROADCASTI64X2_256, IX86_BUILTIN_BROADCASTF32X4_256,
+	IX86_BUILTIN_BROADCASTI32X4_256, IX86_BUILTIN_EXTRACTF32X4_256,
+	IX86_BUILTIN_EXTRACTI32X4_256, IX86_BUILTIN_DBPSADBW256,
+	IX86_BUILTIN_DBPSADBW128, IX86_BUILTIN_CVTTPD2QQ256,
+	IX86_BUILTIN_CVTTPD2QQ128, IX86_BUILTIN_CVTTPD2UQQ256,
+	IX86_BUILTIN_CVTTPD2UQQ128, IX86_BUILTIN_CVTPD2QQ256,
+	IX86_BUILTIN_CVTPD2QQ128, IX86_BUILTIN_CVTPD2UQQ256,
+	IX86_BUILTIN_CVTPD2UQQ128, IX86_BUILTIN_CVTPD2UDQ256_MASK,
+	IX86_BUILTIN_CVTPD2UDQ128_MASK, IX86_BUILTIN_CVTTPS2QQ256,
+	IX86_BUILTIN_CVTTPS2QQ128, IX86_BUILTIN_CVTTPS2UQQ256,
+	IX86_BUILTIN_CVTTPS2UQQ128, IX86_BUILTIN_CVTTPS2DQ256_MASK,
+	IX86_BUILTIN_CVTTPS2DQ128_MASK, IX86_BUILTIN_CVTTPS2UDQ256,
+	IX86_BUILTIN_CVTTPS2UDQ128, IX86_BUILTIN_CVTTPD2DQ256_MASK,
+	IX86_BUILTIN_CVTTPD2DQ128_MASK, IX86_BUILTIN_CVTTPD2UDQ256_MASK,
+	IX86_BUILTIN_CVTTPD2UDQ128_MASK, IX86_BUILTIN_CVTPD2DQ256_MASK,
+	IX86_BUILTIN_CVTPD2DQ128_MASK, IX86_BUILTIN_CVTDQ2PD256_MASK,
+	IX86_BUILTIN_CVTDQ2PD128_MASK, IX86_BUILTIN_CVTUDQ2PD256_MASK,
+	IX86_BUILTIN_CVTUDQ2PD128_MASK, IX86_BUILTIN_CVTDQ2PS256_MASK,
+	IX86_BUILTIN_CVTDQ2PS128_MASK, IX86_BUILTIN_CVTUDQ2PS256_MASK,
+	IX86_BUILTIN_CVTUDQ2PS128_MASK, IX86_BUILTIN_CVTPS2PD256_MASK,
+	IX86_BUILTIN_CVTPS2PD128_MASK, IX86_BUILTIN_PBROADCASTB256_MASK,
+	IX86_BUILTIN_PBROADCASTB256_GPR_MASK, IX86_BUILTIN_PBROADCASTB128_MASK,
+	IX86_BUILTIN_PBROADCASTB128_GPR_MASK, IX86_BUILTIN_PBROADCASTW256_MASK,
+	IX86_BUILTIN_PBROADCASTW256_GPR_MASK, IX86_BUILTIN_PBROADCASTW128_MASK,
+	IX86_BUILTIN_PBROADCASTW128_GPR_MASK, IX86_BUILTIN_PBROADCASTD256_MASK,
+	IX86_BUILTIN_PBROADCASTD256_GPR_MASK, IX86_BUILTIN_PBROADCASTD128_MASK,
+	IX86_BUILTIN_PBROADCASTD128_GPR_MASK, IX86_BUILTIN_PBROADCASTQ256_MASK,
+	IX86_BUILTIN_PBROADCASTQ256_GPR_MASK, IX86_BUILTIN_PBROADCASTQ256_MEM_MASK,
+	IX86_BUILTIN_PBROADCASTQ128_MASK, IX86_BUILTIN_PBROADCASTQ128_GPR_MASK,
+	IX86_BUILTIN_PBROADCASTQ128_MEM_MASK, IX86_BUILTIN_BROADCASTSS256,
+	IX86_BUILTIN_BROADCASTSS128, IX86_BUILTIN_BROADCASTSD256,
+	IX86_BUILTIN_EXTRACTF64X2_256, IX86_BUILTIN_EXTRACTI64X2_256,
+	IX86_BUILTIN_INSERTF32X4_256, IX86_BUILTIN_INSERTI32X4_256,
+	IX86_BUILTIN_PMOVSXBW256_MASK, IX86_BUILTIN_PMOVSXBW128_MASK,
+	IX86_BUILTIN_PMOVSXBD256_MASK, IX86_BUILTIN_PMOVSXBD128_MASK,
+	IX86_BUILTIN_PMOVSXBQ256_MASK, IX86_BUILTIN_PMOVSXBQ128_MASK,
+	IX86_BUILTIN_PMOVSXWD256_MASK, IX86_BUILTIN_PMOVSXWD128_MASK,
+	IX86_BUILTIN_PMOVSXWQ256_MASK, IX86_BUILTIN_PMOVSXWQ128_MASK,
+	IX86_BUILTIN_PMOVSXDQ256_MASK, IX86_BUILTIN_PMOVSXDQ128_MASK,
+	IX86_BUILTIN_PMOVZXBW256_MASK, IX86_BUILTIN_PMOVZXBW128_MASK,
+	IX86_BUILTIN_PMOVZXBD256_MASK, IX86_BUILTIN_PMOVZXBD128_MASK,
+	IX86_BUILTIN_PMOVZXBQ256_MASK, IX86_BUILTIN_PMOVZXBQ128_MASK,
+	IX86_BUILTIN_PMOVZXWD256_MASK, IX86_BUILTIN_PMOVZXWD128_MASK,
+	IX86_BUILTIN_PMOVZXWQ256_MASK, IX86_BUILTIN_PMOVZXWQ128_MASK,
+	IX86_BUILTIN_PMOVZXDQ256_MASK, IX86_BUILTIN_PMOVZXDQ128_MASK,
+	IX86_BUILTIN_REDUCEPD256_MASK, IX86_BUILTIN_REDUCEPD128_MASK,
+	IX86_BUILTIN_REDUCEPS256_MASK, IX86_BUILTIN_REDUCEPS128_MASK,
+	IX86_BUILTIN_REDUCESD_MASK, IX86_BUILTIN_REDUCESS_MASK,
+	IX86_BUILTIN_VPERMVARHI256_MASK, IX86_BUILTIN_VPERMVARHI128_MASK,
+	IX86_BUILTIN_VPERMT2VARHI256, IX86_BUILTIN_VPERMT2VARHI256_MASKZ,
+	IX86_BUILTIN_VPERMT2VARHI128, IX86_BUILTIN_VPERMT2VARHI128_MASKZ,
+	IX86_BUILTIN_VPERMI2VARHI256, IX86_BUILTIN_VPERMI2VARHI128,
+	IX86_BUILTIN_RCP14PD256, IX86_BUILTIN_RCP14PD128,
+	IX86_BUILTIN_RCP14PS256, IX86_BUILTIN_RCP14PS128,
+	IX86_BUILTIN_RSQRT14PD256_MASK, IX86_BUILTIN_RSQRT14PD128_MASK,
+	IX86_BUILTIN_RSQRT14PS256_MASK, IX86_BUILTIN_RSQRT14PS128_MASK,
+	IX86_BUILTIN_SQRTPD256_MASK, IX86_BUILTIN_SQRTPD128_MASK,
+	IX86_BUILTIN_SQRTPS256_MASK, IX86_BUILTIN_SQRTPS128_MASK,
+	IX86_BUILTIN_PADDB128_MASK, IX86_BUILTIN_PADDW128_MASK,
+	IX86_BUILTIN_PADDD128_MASK, IX86_BUILTIN_PADDQ128_MASK,
+	IX86_BUILTIN_PSUBB128_MASK, IX86_BUILTIN_PSUBW128_MASK,
+	IX86_BUILTIN_PSUBD128_MASK, IX86_BUILTIN_PSUBQ128_MASK,
+	IX86_BUILTIN_PADDSB128_MASK, IX86_BUILTIN_PADDSW128_MASK,
+	IX86_BUILTIN_PSUBSB128_MASK, IX86_BUILTIN_PSUBSW128_MASK,
+	IX86_BUILTIN_PADDUSB128_MASK, IX86_BUILTIN_PADDUSW128_MASK,
+	IX86_BUILTIN_PSUBUSB128_MASK, IX86_BUILTIN_PSUBUSW128_MASK,
+	IX86_BUILTIN_PADDB256_MASK, IX86_BUILTIN_PADDW256_MASK,
+	IX86_BUILTIN_PADDD256_MASK, IX86_BUILTIN_PADDQ256_MASK,
+	IX86_BUILTIN_PADDSB256_MASK, IX86_BUILTIN_PADDSW256_MASK,
+	IX86_BUILTIN_PADDUSB256_MASK, IX86_BUILTIN_PADDUSW256_MASK,
+	IX86_BUILTIN_PSUBB256_MASK, IX86_BUILTIN_PSUBW256_MASK,
+	IX86_BUILTIN_PSUBD256_MASK, IX86_BUILTIN_PSUBQ256_MASK,
+	IX86_BUILTIN_PSUBSB256_MASK, IX86_BUILTIN_PSUBSW256_MASK,
+	IX86_BUILTIN_PSUBUSB256_MASK, IX86_BUILTIN_PSUBUSW256_MASK,
+	IX86_BUILTIN_SHUF_F64x2_256, IX86_BUILTIN_SHUF_I64x2_256,
+	IX86_BUILTIN_SHUF_I32x4_256, IX86_BUILTIN_SHUF_F32x4_256,
+	IX86_BUILTIN_PMOVWB128, IX86_BUILTIN_PMOVWB256,
+	IX86_BUILTIN_PMOVSWB128, IX86_BUILTIN_PMOVSWB256,
+	IX86_BUILTIN_PMOVUSWB128, IX86_BUILTIN_PMOVUSWB256,
+	IX86_BUILTIN_PMOVDB128, IX86_BUILTIN_PMOVDB256,
+	IX86_BUILTIN_PMOVSDB128, IX86_BUILTIN_PMOVSDB256,
+	IX86_BUILTIN_PMOVUSDB128, IX86_BUILTIN_PMOVUSDB256,
+	IX86_BUILTIN_PMOVDW128, IX86_BUILTIN_PMOVDW256,
+	IX86_BUILTIN_PMOVSDW128, IX86_BUILTIN_PMOVSDW256,
+	IX86_BUILTIN_PMOVUSDW128, IX86_BUILTIN_PMOVUSDW256,
+	IX86_BUILTIN_PMOVQB128, IX86_BUILTIN_PMOVQB256,
+	IX86_BUILTIN_PMOVSQB128, IX86_BUILTIN_PMOVSQB256,
+	IX86_BUILTIN_PMOVUSQB128, IX86_BUILTIN_PMOVUSQB256,
+	IX86_BUILTIN_PMOVQW128, IX86_BUILTIN_PMOVQW256,
+	IX86_BUILTIN_PMOVSQW128, IX86_BUILTIN_PMOVSQW256,
+	IX86_BUILTIN_PMOVUSQW128, IX86_BUILTIN_PMOVUSQW256,
+	IX86_BUILTIN_PMOVQD128, IX86_BUILTIN_PMOVQD256,
+	IX86_BUILTIN_PMOVSQD128, IX86_BUILTIN_PMOVSQD256,
+	IX86_BUILTIN_PMOVUSQD128, IX86_BUILTIN_PMOVUSQD256,
+	IX86_BUILTIN_RANGEPD256, IX86_BUILTIN_RANGEPD128,
+	IX86_BUILTIN_RANGEPS256, IX86_BUILTIN_RANGEPS128,
+	IX86_BUILTIN_GETEXPPS256, IX86_BUILTIN_GETEXPPD256,
+	IX86_BUILTIN_GETEXPPS128, IX86_BUILTIN_GETEXPPD128,
+	IX86_BUILTIN_FIXUPIMMPD256_MASK, IX86_BUILTIN_FIXUPIMMPD256_MASKZ,
+	IX86_BUILTIN_FIXUPIMMPS256_MASK, IX86_BUILTIN_FIXUPIMMPS256_MASKZ,
+	IX86_BUILTIN_FIXUPIMMPD128_MASK, IX86_BUILTIN_FIXUPIMMPD128_MASKZ,
+	IX86_BUILTIN_FIXUPIMMPS128_MASK, IX86_BUILTIN_FIXUPIMMPS128_MASKZ,
+	IX86_BUILTIN_PABSQ256, IX86_BUILTIN_PABSQ128,
+	IX86_BUILTIN_PABSD256_MASK, IX86_BUILTIN_PABSD128_MASK,
+	IX86_BUILTIN_PMULHRSW256_MASK, IX86_BUILTIN_PMULHRSW128_MASK,
+	IX86_BUILTIN_PMULHUW128_MASK, IX86_BUILTIN_PMULHUW256_MASK,
+	IX86_BUILTIN_PMULHW256_MASK, IX86_BUILTIN_PMULHW128_MASK,
+	IX86_BUILTIN_PMULLW256_MASK, IX86_BUILTIN_PMULLW128_MASK,
+	IX86_BUILTIN_PMULLQ256, IX86_BUILTIN_PMULLQ128,
+	IX86_BUILTIN_ANDPD256_MASK, IX86_BUILTIN_ANDPD128_MASK,
+	IX86_BUILTIN_ANDPS256_MASK, IX86_BUILTIN_ANDPS128_MASK,
+	IX86_BUILTIN_ANDNPD256_MASK, IX86_BUILTIN_ANDNPD128_MASK,
+	IX86_BUILTIN_ANDNPS256_MASK, IX86_BUILTIN_ANDNPS128_MASK,
+	IX86_BUILTIN_PSLLWI128_MASK, IX86_BUILTIN_PSLLDI128_MASK,
+	IX86_BUILTIN_PSLLQI128_MASK, IX86_BUILTIN_PSLLW128_MASK,
+	IX86_BUILTIN_PSLLD128_MASK, IX86_BUILTIN_PSLLQ128_MASK,
+	IX86_BUILTIN_PSLLWI256_MASK , IX86_BUILTIN_PSLLW256_MASK,
+	IX86_BUILTIN_PSLLDI256_MASK, IX86_BUILTIN_PSLLD256_MASK,
+	IX86_BUILTIN_PSLLQI256_MASK, IX86_BUILTIN_PSLLQ256_MASK,
+	IX86_BUILTIN_PSRADI128_MASK, IX86_BUILTIN_PSRAD128_MASK,
+	IX86_BUILTIN_PSRADI256_MASK, IX86_BUILTIN_PSRAD256_MASK,
+	IX86_BUILTIN_PSRAQI128_MASK, IX86_BUILTIN_PSRAQ128_MASK,
+	IX86_BUILTIN_PSRAQI256_MASK, IX86_BUILTIN_PSRAQ256_MASK,
+	IX86_BUILTIN_PANDD256, IX86_BUILTIN_PANDD128,
+	IX86_BUILTIN_PSRLDI128_MASK, IX86_BUILTIN_PSRLD128_MASK,
+	IX86_BUILTIN_PSRLDI256_MASK, IX86_BUILTIN_PSRLD256_MASK,
+	IX86_BUILTIN_PSRLQI128_MASK, IX86_BUILTIN_PSRLQ128_MASK,
+	IX86_BUILTIN_PSRLQI256_MASK, IX86_BUILTIN_PSRLQ256_MASK,
+	IX86_BUILTIN_PANDQ256, IX86_BUILTIN_PANDQ128,
+	IX86_BUILTIN_PANDND256, IX86_BUILTIN_PANDND128,
+	IX86_BUILTIN_PANDNQ256, IX86_BUILTIN_PANDNQ128,
+	IX86_BUILTIN_PORD256, IX86_BUILTIN_PORD128,
+	IX86_BUILTIN_PORQ256, IX86_BUILTIN_PORQ128,
+	IX86_BUILTIN_PXORD256, IX86_BUILTIN_PXORD128,
+	IX86_BUILTIN_PXORQ256, IX86_BUILTIN_PXORQ128,
+	IX86_BUILTIN_PACKSSWB256_MASK, IX86_BUILTIN_PACKSSWB128_MASK,
+	IX86_BUILTIN_PACKUSWB256_MASK, IX86_BUILTIN_PACKUSWB128_MASK,
+	IX86_BUILTIN_RNDSCALEPS256, IX86_BUILTIN_RNDSCALEPD256,
+	IX86_BUILTIN_RNDSCALEPS128, IX86_BUILTIN_RNDSCALEPD128,
+	IX86_BUILTIN_VTERNLOGQ256_MASK, IX86_BUILTIN_VTERNLOGQ256_MASKZ,
+	IX86_BUILTIN_VTERNLOGD256_MASK, IX86_BUILTIN_VTERNLOGD256_MASKZ,
+	IX86_BUILTIN_VTERNLOGQ128_MASK, IX86_BUILTIN_VTERNLOGQ128_MASKZ,
+	IX86_BUILTIN_VTERNLOGD128_MASK, IX86_BUILTIN_VTERNLOGD128_MASKZ,
+	IX86_BUILTIN_SCALEFPD256, IX86_BUILTIN_SCALEFPS256,
+	IX86_BUILTIN_SCALEFPD128, IX86_BUILTIN_SCALEFPS128,
+	IX86_BUILTIN_VFMADDPD256_MASK, IX86_BUILTIN_VFMADDPD256_MASK3,
+	IX86_BUILTIN_VFMADDPD256_MASKZ, IX86_BUILTIN_VFMADDPD128_MASK,
+	IX86_BUILTIN_VFMADDPD128_MASK3, IX86_BUILTIN_VFMADDPD128_MASKZ,
+	IX86_BUILTIN_VFMADDPS256_MASK, IX86_BUILTIN_VFMADDPS256_MASK3,
+	IX86_BUILTIN_VFMADDPS256_MASKZ, IX86_BUILTIN_VFMADDPS128_MASK,
+	IX86_BUILTIN_VFMADDPS128_MASK3, IX86_BUILTIN_VFMADDPS128_MASKZ,
+	IX86_BUILTIN_VFMSUBPD256_MASK3, IX86_BUILTIN_VFMSUBPD128_MASK3,
+	IX86_BUILTIN_VFMSUBPS256_MASK3, IX86_BUILTIN_VFMSUBPS128_MASK3,
+	IX86_BUILTIN_VFNMADDPD256_MASK, IX86_BUILTIN_VFNMADDPD128_MASK,
+	IX86_BUILTIN_VFNMADDPS256_MASK, IX86_BUILTIN_VFNMADDPS128_MASK,
+	IX86_BUILTIN_VFNMSUBPD256_MASK, IX86_BUILTIN_VFNMSUBPD256_MASK3,
+	IX86_BUILTIN_VFNMSUBPD128_MASK, IX86_BUILTIN_VFNMSUBPD128_MASK3,
+	IX86_BUILTIN_VFNMSUBPS256_MASK, IX86_BUILTIN_VFNMSUBPS256_MASK3,
+	IX86_BUILTIN_VFNMSUBPS128_MASK, IX86_BUILTIN_VFNMSUBPS128_MASK3,
+	IX86_BUILTIN_VFMADDSUBPD256_MASK, IX86_BUILTIN_VFMADDSUBPD256_MASK3,
+	IX86_BUILTIN_VFMADDSUBPD256_MASKZ, IX86_BUILTIN_VFMADDSUBPD128_MASK,
+	IX86_BUILTIN_VFMADDSUBPD128_MASK3, IX86_BUILTIN_VFMADDSUBPD128_MASKZ,
+	IX86_BUILTIN_VFMADDSUBPS256_MASK, IX86_BUILTIN_VFMADDSUBPS256_MASK3,
+	IX86_BUILTIN_VFMADDSUBPS256_MASKZ, IX86_BUILTIN_VFMADDSUBPS128_MASK,
+	IX86_BUILTIN_VFMADDSUBPS128_MASK3, IX86_BUILTIN_VFMADDSUBPS128_MASKZ,
+	IX86_BUILTIN_VFMSUBADDPD256_MASK3, IX86_BUILTIN_VFMSUBADDPD128_MASK3,
+	IX86_BUILTIN_VFMSUBADDPS256_MASK3, IX86_BUILTIN_VFMSUBADDPS128_MASK3,
+	IX86_BUILTIN_INSERTF64X2_256, IX86_BUILTIN_INSERTI64X2_256,
+	IX86_BUILTIN_PSRAVV16HI, IX86_BUILTIN_PSRAVV8HI,
+	IX86_BUILTIN_PMADDUBSW256_MASK, IX86_BUILTIN_PMADDUBSW128_MASK,
+	IX86_BUILTIN_PMADDWD256_MASK, IX86_BUILTIN_PMADDWD128_MASK,
+	IX86_BUILTIN_PSRLVV16HI, IX86_BUILTIN_PSRLVV8HI,
+	IX86_BUILTIN_CVTPS2DQ256_MASK, IX86_BUILTIN_CVTPS2DQ128_MASK,
+	IX86_BUILTIN_CVTPS2UDQ256, IX86_BUILTIN_CVTPS2UDQ128,
+	IX86_BUILTIN_CVTPS2QQ256, IX86_BUILTIN_CVTPS2QQ128,
+	IX86_BUILTIN_CVTPS2UQQ256, IX86_BUILTIN_CVTPS2UQQ128,
+	IX86_BUILTIN_GETMANTPS256, IX86_BUILTIN_GETMANTPS128,
+	IX86_BUILTIN_GETMANTPD256, IX86_BUILTIN_GETMANTPD128,
+	IX86_BUILTIN_MOVDDUP256_MASK, IX86_BUILTIN_MOVDDUP128_MASK,
+	IX86_BUILTIN_MOVSHDUP256_MASK, IX86_BUILTIN_MOVSHDUP128_MASK,
+	IX86_BUILTIN_MOVSLDUP256_MASK, IX86_BUILTIN_MOVSLDUP128_MASK,
+	IX86_BUILTIN_CVTQQ2PS256, IX86_BUILTIN_CVTQQ2PS128,
+	IX86_BUILTIN_CVTUQQ2PS256, IX86_BUILTIN_CVTUQQ2PS128,
+	IX86_BUILTIN_CVTQQ2PD256, IX86_BUILTIN_CVTQQ2PD128,
+	IX86_BUILTIN_CVTUQQ2PD256, IX86_BUILTIN_CVTUQQ2PD128,
+	IX86_BUILTIN_VPERMT2VARQ256, IX86_BUILTIN_VPERMT2VARQ256_MASKZ,
+	IX86_BUILTIN_VPERMT2VARD256, IX86_BUILTIN_VPERMT2VARD256_MASKZ,
+	IX86_BUILTIN_VPERMI2VARQ256, IX86_BUILTIN_VPERMI2VARD256,
+	IX86_BUILTIN_VPERMT2VARPD256, IX86_BUILTIN_VPERMT2VARPD256_MASKZ,
+	IX86_BUILTIN_VPERMT2VARPS256, IX86_BUILTIN_VPERMT2VARPS256_MASKZ,
+	IX86_BUILTIN_VPERMI2VARPD256, IX86_BUILTIN_VPERMI2VARPS256,
+	IX86_BUILTIN_VPERMT2VARQ128, IX86_BUILTIN_VPERMT2VARQ128_MASKZ,
+	IX86_BUILTIN_VPERMT2VARD128, IX86_BUILTIN_VPERMT2VARD128_MASKZ,
+	IX86_BUILTIN_VPERMI2VARQ128, IX86_BUILTIN_VPERMI2VARD128,
+	IX86_BUILTIN_VPERMT2VARPD128, IX86_BUILTIN_VPERMT2VARPD128_MASKZ,
+	IX86_BUILTIN_VPERMT2VARPS128, IX86_BUILTIN_VPERMT2VARPS128_MASKZ,
+	IX86_BUILTIN_VPERMI2VARPD128, IX86_BUILTIN_VPERMI2VARPS128,
+	IX86_BUILTIN_PSHUFB256_MASK, IX86_BUILTIN_PSHUFB128_MASK,
+	IX86_BUILTIN_PSHUFHW256_MASK, IX86_BUILTIN_PSHUFHW128_MASK,
+	IX86_BUILTIN_PSHUFLW256_MASK, IX86_BUILTIN_PSHUFLW128_MASK,
+	IX86_BUILTIN_PSHUFD256_MASK, IX86_BUILTIN_PSHUFD128_MASK,
+	IX86_BUILTIN_SHUFPD256_MASK, IX86_BUILTIN_SHUFPD128_MASK,
+	IX86_BUILTIN_SHUFPS256_MASK, IX86_BUILTIN_SHUFPS128_MASK,
+	IX86_BUILTIN_PROLVQ256, IX86_BUILTIN_PROLVQ128,
+	IX86_BUILTIN_PROLQ256, IX86_BUILTIN_PROLQ128,
+	IX86_BUILTIN_PRORVQ256, IX86_BUILTIN_PRORVQ128,
+	IX86_BUILTIN_PRORQ256, IX86_BUILTIN_PRORQ128,
+	IX86_BUILTIN_PSRAVQ128, IX86_BUILTIN_PSRAVQ256,
+	IX86_BUILTIN_PSLLVV4DI_MASK, IX86_BUILTIN_PSLLVV2DI_MASK,
+	IX86_BUILTIN_PSLLVV8SI_MASK, IX86_BUILTIN_PSLLVV4SI_MASK,
+	IX86_BUILTIN_PSRAVV8SI_MASK, IX86_BUILTIN_PSRAVV4SI_MASK,
+	IX86_BUILTIN_PSRLVV4DI_MASK, IX86_BUILTIN_PSRLVV2DI_MASK,
+	IX86_BUILTIN_PSRLVV8SI_MASK, IX86_BUILTIN_PSRLVV4SI_MASK,
+	IX86_BUILTIN_PSRAWI256_MASK, IX86_BUILTIN_PSRAW256_MASK,
+	IX86_BUILTIN_PSRAWI128_MASK, IX86_BUILTIN_PSRAW128_MASK,
+	IX86_BUILTIN_PSRLWI256_MASK, IX86_BUILTIN_PSRLW256_MASK,
+	IX86_BUILTIN_PSRLWI128_MASK, IX86_BUILTIN_PSRLW128_MASK,
+	IX86_BUILTIN_PRORVD256, IX86_BUILTIN_PROLVD256,
+	IX86_BUILTIN_PRORD256, IX86_BUILTIN_PROLD256,
+	IX86_BUILTIN_PRORVD128, IX86_BUILTIN_PROLVD128,
+	IX86_BUILTIN_PRORD128, IX86_BUILTIN_PROLD128,
+	IX86_BUILTIN_FPCLASSPD256, IX86_BUILTIN_FPCLASSPD128,
+	IX86_BUILTIN_FPCLASSSD, IX86_BUILTIN_FPCLASSPS256,
+	IX86_BUILTIN_FPCLASSPS128, IX86_BUILTIN_FPCLASSSS,
+	IX86_BUILTIN_CVTB2MASK128, IX86_BUILTIN_CVTB2MASK256,
+	IX86_BUILTIN_CVTW2MASK128, IX86_BUILTIN_CVTW2MASK256,
+	IX86_BUILTIN_CVTD2MASK128, IX86_BUILTIN_CVTD2MASK256,
+	IX86_BUILTIN_CVTQ2MASK128, IX86_BUILTIN_CVTQ2MASK256,
+	IX86_BUILTIN_CVTMASK2B128, IX86_BUILTIN_CVTMASK2B256,
+	IX86_BUILTIN_CVTMASK2W128, IX86_BUILTIN_CVTMASK2W256,
+	IX86_BUILTIN_CVTMASK2D128, IX86_BUILTIN_CVTMASK2D256,
+	IX86_BUILTIN_CVTMASK2Q128, IX86_BUILTIN_CVTMASK2Q256,
+	IX86_BUILTIN_PCMPEQB128_MASK, IX86_BUILTIN_PCMPEQB256_MASK,
+	IX86_BUILTIN_PCMPEQW128_MASK, IX86_BUILTIN_PCMPEQW256_MASK,
+	IX86_BUILTIN_PCMPEQD128_MASK, IX86_BUILTIN_PCMPEQD256_MASK,
+	IX86_BUILTIN_PCMPEQQ128_MASK, IX86_BUILTIN_PCMPEQQ256_MASK,
+	IX86_BUILTIN_PCMPGTB128_MASK, IX86_BUILTIN_PCMPGTB256_MASK,
+	IX86_BUILTIN_PCMPGTW128_MASK, IX86_BUILTIN_PCMPGTW256_MASK,
+	IX86_BUILTIN_PCMPGTD128_MASK, IX86_BUILTIN_PCMPGTD256_MASK,
+	IX86_BUILTIN_PCMPGTQ128_MASK, IX86_BUILTIN_PCMPGTQ256_MASK,
+	IX86_BUILTIN_PTESTMB128, IX86_BUILTIN_PTESTMB256,
+	IX86_BUILTIN_PTESTMW128, IX86_BUILTIN_PTESTMW256,
+	IX86_BUILTIN_PTESTMD128, IX86_BUILTIN_PTESTMD256,
+	IX86_BUILTIN_PTESTMQ128, IX86_BUILTIN_PTESTMQ256,
+	IX86_BUILTIN_PTESTNMB128, IX86_BUILTIN_PTESTNMB256,
+	IX86_BUILTIN_PTESTNMW128, IX86_BUILTIN_PTESTNMW256,
+	IX86_BUILTIN_PTESTNMD128, IX86_BUILTIN_PTESTNMD256,
+	IX86_BUILTIN_PTESTNMQ128, IX86_BUILTIN_PTESTNMQ256,
+	IX86_BUILTIN_PBROADCASTMB128, IX86_BUILTIN_PBROADCASTMB256,
+	IX86_BUILTIN_PBROADCASTMW128, IX86_BUILTIN_PBROADCASTMW256,
+	IX86_BUILTIN_COMPRESSPD256, IX86_BUILTIN_COMPRESSPD128,
+	IX86_BUILTIN_COMPRESSPS256, IX86_BUILTIN_COMPRESSPS128,
+	IX86_BUILTIN_PCOMPRESSQ256, IX86_BUILTIN_PCOMPRESSQ128,
+	IX86_BUILTIN_PCOMPRESSD256, IX86_BUILTIN_PCOMPRESSD128,
+	IX86_BUILTIN_EXPANDPD256, IX86_BUILTIN_EXPANDPD128,
+	IX86_BUILTIN_EXPANDPS256, IX86_BUILTIN_EXPANDPS128,
+	IX86_BUILTIN_PEXPANDQ256, IX86_BUILTIN_PEXPANDQ128,
+	IX86_BUILTIN_PEXPANDD256, IX86_BUILTIN_PEXPANDD128,
+	IX86_BUILTIN_EXPANDPD256Z, IX86_BUILTIN_EXPANDPD128Z,
+	IX86_BUILTIN_EXPANDPS256Z, IX86_BUILTIN_EXPANDPS128Z,
+	IX86_BUILTIN_PEXPANDQ256Z, IX86_BUILTIN_PEXPANDQ128Z,
+	IX86_BUILTIN_PEXPANDD256Z, IX86_BUILTIN_PEXPANDD128Z,
+	IX86_BUILTIN_PMAXSD256_MASK, IX86_BUILTIN_PMINSD256_MASK,
+	IX86_BUILTIN_PMAXUD256_MASK, IX86_BUILTIN_PMINUD256_MASK,
+	IX86_BUILTIN_PMAXSD128_MASK, IX86_BUILTIN_PMINSD128_MASK,
+	IX86_BUILTIN_PMAXUD128_MASK, IX86_BUILTIN_PMINUD128_MASK,
+	IX86_BUILTIN_PMAXSQ256_MASK, IX86_BUILTIN_PMINSQ256_MASK,
+	IX86_BUILTIN_PMAXUQ256_MASK, IX86_BUILTIN_PMINUQ256_MASK,
+	IX86_BUILTIN_PMAXSQ128_MASK, IX86_BUILTIN_PMINSQ128_MASK,
+	IX86_BUILTIN_PMAXUQ128_MASK, IX86_BUILTIN_PMINUQ128_MASK,
+	IX86_BUILTIN_PMINSB256_MASK, IX86_BUILTIN_PMINUB256_MASK,
+	IX86_BUILTIN_PMAXSB256_MASK, IX86_BUILTIN_PMAXUB256_MASK,
+	IX86_BUILTIN_PMINSB128_MASK, IX86_BUILTIN_PMINUB128_MASK,
+	IX86_BUILTIN_PMAXSB128_MASK, IX86_BUILTIN_PMAXUB128_MASK,
+	IX86_BUILTIN_PMINSW256_MASK, IX86_BUILTIN_PMINUW256_MASK,
+	IX86_BUILTIN_PMAXSW256_MASK, IX86_BUILTIN_PMAXUW256_MASK,
+	IX86_BUILTIN_PMINSW128_MASK, IX86_BUILTIN_PMINUW128_MASK,
+	IX86_BUILTIN_PMAXSW128_MASK, IX86_BUILTIN_PMAXUW128_MASK,
+	IX86_BUILTIN_VPCONFLICTQ256, IX86_BUILTIN_VPCONFLICTD256,
+	IX86_BUILTIN_VPCLZCNTQ256, IX86_BUILTIN_VPCLZCNTD256,
+	IX86_BUILTIN_UNPCKHPD256_MASK, IX86_BUILTIN_UNPCKHPD128_MASK,
+	IX86_BUILTIN_UNPCKHPS256_MASK, IX86_BUILTIN_UNPCKHPS128_MASK,
+	IX86_BUILTIN_UNPCKLPD256_MASK, IX86_BUILTIN_UNPCKLPD128_MASK,
+	IX86_BUILTIN_UNPCKLPS256_MASK, IX86_BUILTIN_VPCONFLICTQ128,
+	IX86_BUILTIN_VPCONFLICTD128, IX86_BUILTIN_VPCLZCNTQ128,
+	IX86_BUILTIN_VPCLZCNTD128, IX86_BUILTIN_UNPCKLPS128_MASK,
+	IX86_BUILTIN_ALIGND256, IX86_BUILTIN_ALIGNQ256,
+	IX86_BUILTIN_ALIGND128, IX86_BUILTIN_ALIGNQ128,
+	IX86_BUILTIN_CVTPS2PH256_MASK, IX86_BUILTIN_CVTPS2PH_MASK,
+	IX86_BUILTIN_CVTPH2PS_MASK, IX86_BUILTIN_CVTPH2PS256_MASK,
+	IX86_BUILTIN_PUNPCKHDQ128_MASK, IX86_BUILTIN_PUNPCKHDQ256_MASK,
+	IX86_BUILTIN_PUNPCKHQDQ128_MASK, IX86_BUILTIN_PUNPCKHQDQ256_MASK,
+	IX86_BUILTIN_PUNPCKLDQ128_MASK, IX86_BUILTIN_PUNPCKLDQ256_MASK,
+	IX86_BUILTIN_PUNPCKLQDQ128_MASK, IX86_BUILTIN_PUNPCKLQDQ256_MASK,
+	IX86_BUILTIN_PUNPCKHBW128_MASK, IX86_BUILTIN_PUNPCKHBW256_MASK,
+	IX86_BUILTIN_PUNPCKHWD128_MASK, IX86_BUILTIN_PUNPCKHWD256_MASK,
+	IX86_BUILTIN_PUNPCKLBW128_MASK, IX86_BUILTIN_PUNPCKLBW256_MASK,
+	IX86_BUILTIN_PUNPCKLWD128_MASK, IX86_BUILTIN_PUNPCKLWD256_MASK,
+	IX86_BUILTIN_PSLLVV16HI, IX86_BUILTIN_PSLLVV8HI,
+	IX86_BUILTIN_PACKSSDW256_MASK, IX86_BUILTIN_PACKSSDW128_MASK,
+	IX86_BUILTIN_PACKUSDW256_MASK, IX86_BUILTIN_PACKUSDW128_MASK,
+	IX86_BUILTIN_PAVGB256_MASK, IX86_BUILTIN_PAVGW256_MASK,
+	IX86_BUILTIN_PAVGB128_MASK, IX86_BUILTIN_PAVGW128_MASK,
+	IX86_BUILTIN_VPERMVARSF256_MASK, IX86_BUILTIN_VPERMVARDF256_MASK,
+	IX86_BUILTIN_VPERMDF256_MASK, IX86_BUILTIN_PABSB256_MASK,
+	IX86_BUILTIN_PABSB128_MASK, IX86_BUILTIN_PABSW256_MASK,
+	IX86_BUILTIN_PABSW128_MASK, IX86_BUILTIN_VPERMILVARPD_MASK,
+	IX86_BUILTIN_VPERMILVARPS_MASK, IX86_BUILTIN_VPERMILVARPD256_MASK,
+	IX86_BUILTIN_VPERMILVARPS256_MASK, IX86_BUILTIN_VPERMILPD_MASK,
+	IX86_BUILTIN_VPERMILPS_MASK, IX86_BUILTIN_VPERMILPD256_MASK,
+	IX86_BUILTIN_VPERMILPS256_MASK, IX86_BUILTIN_BLENDMQ256,
+	IX86_BUILTIN_BLENDMD256, IX86_BUILTIN_BLENDMPD256,
+	IX86_BUILTIN_BLENDMPS256, IX86_BUILTIN_BLENDMQ128,
+	IX86_BUILTIN_BLENDMD128, IX86_BUILTIN_BLENDMPD128,
+	IX86_BUILTIN_BLENDMPS128, IX86_BUILTIN_BLENDMW256,
+	IX86_BUILTIN_BLENDMB256, IX86_BUILTIN_BLENDMW128,
+	IX86_BUILTIN_BLENDMB128, IX86_BUILTIN_PMULLD256_MASK,
+	IX86_BUILTIN_PMULLD128_MASK, IX86_BUILTIN_PMULUDQ256_MASK,
+	IX86_BUILTIN_PMULDQ256_MASK, IX86_BUILTIN_PMULDQ128_MASK,
+	IX86_BUILTIN_PMULUDQ128_MASK, IX86_BUILTIN_CVTPD2PS256_MASK,
+	IX86_BUILTIN_CVTPD2PS_MASK, IX86_BUILTIN_VPERMVARSI256_MASK,
+	IX86_BUILTIN_VPERMVARDI256_MASK, IX86_BUILTIN_VPERMDI256_MASK,
+	IX86_BUILTIN_CMPQ256, IX86_BUILTIN_CMPD256,
+	IX86_BUILTIN_UCMPQ256, IX86_BUILTIN_UCMPD256,
+	IX86_BUILTIN_CMPB256, IX86_BUILTIN_CMPW256,
+	IX86_BUILTIN_UCMPB256, IX86_BUILTIN_UCMPW256,
+	IX86_BUILTIN_CMPPD256_MASK, IX86_BUILTIN_CMPPS256_MASK,
+	IX86_BUILTIN_CMPQ128, IX86_BUILTIN_CMPD128,
+	IX86_BUILTIN_UCMPQ128, IX86_BUILTIN_UCMPD128,
+	IX86_BUILTIN_CMPB128, IX86_BUILTIN_CMPW128,
+	IX86_BUILTIN_UCMPB128, IX86_BUILTIN_UCMPW128,
+	IX86_BUILTIN_CMPPD128_MASK, IX86_BUILTIN_CMPPS128_MASK,
+	IX86_BUILTIN_GATHER3SIV8SF, IX86_BUILTIN_GATHER3SIV4SF,
+	IX86_BUILTIN_GATHER3SIV4DF, IX86_BUILTIN_GATHER3SIV2DF,
+	IX86_BUILTIN_GATHER3DIV8SF, IX86_BUILTIN_GATHER3DIV4SF,
+	IX86_BUILTIN_GATHER3DIV4DF, IX86_BUILTIN_GATHER3DIV2DF,
+	IX86_BUILTIN_GATHER3SIV8SI, IX86_BUILTIN_GATHER3SIV4SI,
+	IX86_BUILTIN_GATHER3SIV4DI, IX86_BUILTIN_GATHER3SIV2DI,
+	IX86_BUILTIN_GATHER3DIV8SI, IX86_BUILTIN_GATHER3DIV4SI,
+	IX86_BUILTIN_GATHER3DIV4DI, IX86_BUILTIN_GATHER3DIV2DI,
+	IX86_BUILTIN_SCATTERSIV8SF, IX86_BUILTIN_SCATTERSIV4SF,
+	IX86_BUILTIN_SCATTERSIV4DF, IX86_BUILTIN_SCATTERSIV2DF,
+	IX86_BUILTIN_SCATTERDIV8SF, IX86_BUILTIN_SCATTERDIV4SF,
+	IX86_BUILTIN_SCATTERDIV4DF, IX86_BUILTIN_SCATTERDIV2DF,
+	IX86_BUILTIN_SCATTERSIV8SI, IX86_BUILTIN_SCATTERSIV4SI,
+	IX86_BUILTIN_SCATTERSIV4DI, IX86_BUILTIN_SCATTERSIV2DI,
+	IX86_BUILTIN_SCATTERDIV8SI, IX86_BUILTIN_SCATTERDIV4SI,
+	IX86_BUILTIN_SCATTERDIV4DI, IX86_BUILTIN_SCATTERDIV2DI,
+	IX86_BUILTIN_RANGESD128, IX86_BUILTIN_RANGESS128,
+	IX86_BUILTIN_KUNPCKWD, IX86_BUILTIN_KUNPCKDQ,
+	IX86_BUILTIN_BROADCASTF32x2_512, IX86_BUILTIN_BROADCASTI32x2_512,
+	IX86_BUILTIN_BROADCASTF64X2_512, IX86_BUILTIN_BROADCASTI64X2_512,
+	IX86_BUILTIN_BROADCASTF32X8_512, IX86_BUILTIN_BROADCASTI32X8_512,
+	IX86_BUILTIN_EXTRACTF64X2_512, IX86_BUILTIN_EXTRACTF32X8,
+	IX86_BUILTIN_EXTRACTI64X2_512, IX86_BUILTIN_EXTRACTI32X8,
+	IX86_BUILTIN_REDUCEPD512_MASK, IX86_BUILTIN_REDUCEPS512_MASK,
+	IX86_BUILTIN_PMULLQ512, IX86_BUILTIN_XORPD512,
+	IX86_BUILTIN_XORPS512, IX86_BUILTIN_ORPD512,
+	IX86_BUILTIN_ORPS512, IX86_BUILTIN_ANDPD512,
+	IX86_BUILTIN_ANDPS512, IX86_BUILTIN_ANDNPD512,
+	IX86_BUILTIN_ANDNPS512, IX86_BUILTIN_INSERTF32X8,
+	IX86_BUILTIN_INSERTI32X8, IX86_BUILTIN_INSERTF64X2_512,
+	IX86_BUILTIN_INSERTI64X2_512, IX86_BUILTIN_FPCLASSPD512,
+	IX86_BUILTIN_FPCLASSPS512, IX86_BUILTIN_CVTD2MASK512,
+	IX86_BUILTIN_CVTQ2MASK512, IX86_BUILTIN_CVTMASK2D512,
+	IX86_BUILTIN_CVTMASK2Q512, IX86_BUILTIN_CVTPD2QQ512,
+	IX86_BUILTIN_CVTPS2QQ512, IX86_BUILTIN_CVTPD2UQQ512,
+	IX86_BUILTIN_CVTPS2UQQ512, IX86_BUILTIN_CVTQQ2PS512,
+	IX86_BUILTIN_CVTUQQ2PS512, IX86_BUILTIN_CVTQQ2PD512,
+	IX86_BUILTIN_CVTUQQ2PD512, IX86_BUILTIN_CVTTPS2QQ512,
+	IX86_BUILTIN_CVTTPS2UQQ512, IX86_BUILTIN_CVTTPD2QQ512,
+	IX86_BUILTIN_CVTTPD2UQQ512, IX86_BUILTIN_RANGEPS512,
+	IX86_BUILTIN_RANGEPD512, IX86_BUILTIN_PACKUSDW512,
+	IX86_BUILTIN_PACKSSDW512, IX86_BUILTIN_LOADDQUHI512_MASK,
+	IX86_BUILTIN_LOADDQUQI512_MASK, IX86_BUILTIN_PSLLDQ512,
+	IX86_BUILTIN_PSRLDQ512, IX86_BUILTIN_STOREDQUHI512_MASK,
+	IX86_BUILTIN_STOREDQUQI512_MASK, IX86_BUILTIN_PALIGNR512,
+	IX86_BUILTIN_PALIGNR512_MASK, IX86_BUILTIN_MOVDQUHI512_MASK,
+	IX86_BUILTIN_MOVDQUQI512_MASK, IX86_BUILTIN_PSADBW512,
+	IX86_BUILTIN_DBPSADBW512, IX86_BUILTIN_PBROADCASTB512,
+	IX86_BUILTIN_PBROADCASTB512_GPR, IX86_BUILTIN_PBROADCASTW512,
+	IX86_BUILTIN_PBROADCASTW512_GPR, IX86_BUILTIN_PMOVSXBW512_MASK,
+	IX86_BUILTIN_PMOVZXBW512_MASK, IX86_BUILTIN_VPERMVARHI512_MASK,
+	IX86_BUILTIN_VPERMT2VARHI512, IX86_BUILTIN_VPERMT2VARHI512_MASKZ,
+	IX86_BUILTIN_VPERMI2VARHI512, IX86_BUILTIN_PAVGB512,
+	IX86_BUILTIN_PAVGW512, IX86_BUILTIN_PADDB512,
+	IX86_BUILTIN_PSUBB512, IX86_BUILTIN_PSUBSB512,
+	IX86_BUILTIN_PADDSB512, IX86_BUILTIN_PSUBUSB512,
+	IX86_BUILTIN_PADDUSB512, IX86_BUILTIN_PSUBW512,
+	IX86_BUILTIN_PADDW512, IX86_BUILTIN_PSUBSW512,
+	IX86_BUILTIN_PADDSW512, IX86_BUILTIN_PSUBUSW512,
+	IX86_BUILTIN_PADDUSW512, IX86_BUILTIN_PMAXUW512,
+	IX86_BUILTIN_PMAXSW512, IX86_BUILTIN_PMINUW512,
+	IX86_BUILTIN_PMINSW512, IX86_BUILTIN_PMAXUB512,
+	IX86_BUILTIN_PMAXSB512, IX86_BUILTIN_PMINUB512,
+	IX86_BUILTIN_PMINSB512, IX86_BUILTIN_PMOVWB512,
+	IX86_BUILTIN_PMOVSWB512, IX86_BUILTIN_PMOVUSWB512,
+	IX86_BUILTIN_PMULHRSW512_MASK, IX86_BUILTIN_PMULHUW512_MASK,
+	IX86_BUILTIN_PMULHW512_MASK, IX86_BUILTIN_PMULLW512_MASK,
+	IX86_BUILTIN_PSLLWI512_MASK, IX86_BUILTIN_PSLLW512_MASK,
+	IX86_BUILTIN_PACKSSWB512, IX86_BUILTIN_PACKUSWB512,
+	IX86_BUILTIN_PSRAVV32HI, IX86_BUILTIN_PMADDUBSW512_MASK,
+	IX86_BUILTIN_PMADDWD512_MASK, IX86_BUILTIN_PSRLVV32HI,
+	IX86_BUILTIN_PUNPCKHBW512, IX86_BUILTIN_PUNPCKHWD512,
+	IX86_BUILTIN_PUNPCKLBW512, IX86_BUILTIN_PUNPCKLWD512,
+	IX86_BUILTIN_PSHUFB512, IX86_BUILTIN_PSHUFHW512,
+	IX86_BUILTIN_PSHUFLW512, IX86_BUILTIN_PSRAWI512,
+	IX86_BUILTIN_PSRAW512, IX86_BUILTIN_PSRLWI512,
+	IX86_BUILTIN_PSRLW512, IX86_BUILTIN_CVTB2MASK512,
+	IX86_BUILTIN_CVTW2MASK512, IX86_BUILTIN_CVTMASK2B512,
+	IX86_BUILTIN_CVTMASK2W512, IX86_BUILTIN_PCMPEQB512_MASK,
+	IX86_BUILTIN_PCMPEQW512_MASK, IX86_BUILTIN_PCMPGTB512_MASK,
+	IX86_BUILTIN_PCMPGTW512_MASK, IX86_BUILTIN_PTESTMB512,
+	IX86_BUILTIN_PTESTMW512, IX86_BUILTIN_PTESTNMB512,
+	IX86_BUILTIN_PTESTNMW512, IX86_BUILTIN_PSLLVV32HI,
+	IX86_BUILTIN_PABSB512, IX86_BUILTIN_PABSW512,
+	IX86_BUILTIN_BLENDMW512, IX86_BUILTIN_BLENDMB512,
+	IX86_BUILTIN_CMPB512, IX86_BUILTIN_CMPW512,
+	IX86_BUILTIN_UCMPB512, IX86_BUILTIN_UCMPW512.
+	(bdesc_special_args):
+	Add __builtin_ia32_loaddquhi512_mask, __builtin_ia32_loaddquqi512_mask,
+	__builtin_ia32_storedquhi512_mask, __builtin_ia32_storedquqi512_mask,
+	__builtin_ia32_loaddquhi256_mask, __builtin_ia32_loaddquhi128_mask,
+	__builtin_ia32_loaddquqi256_mask, __builtin_ia32_loaddquqi128_mask,
+	__builtin_ia32_movdqa64load256_mask, __builtin_ia32_movdqa64load128_mask,
+	__builtin_ia32_movdqa32load256_mask, __builtin_ia32_movdqa32load128_mask,
+	__builtin_ia32_movdqa64store256_mask, __builtin_ia32_movdqa64store128_mask,
+	__builtin_ia32_movdqa32store256_mask, __builtin_ia32_movdqa32store128_mask,
+	__builtin_ia32_loadapd256_mask, __builtin_ia32_loadapd128_mask,
+	__builtin_ia32_loadaps256_mask, __builtin_ia32_loadaps128_mask,
+	__builtin_ia32_storeapd256_mask, __builtin_ia32_storeapd128_mask,
+	__builtin_ia32_storeaps256_mask, __builtin_ia32_storeaps128_mask,
+	__builtin_ia32_loadupd256_mask, __builtin_ia32_loadupd128_mask,
+	__builtin_ia32_loadups256_mask, __builtin_ia32_loadups128_mask,
+	__builtin_ia32_storeupd256_mask, __builtin_ia32_storeupd128_mask,
+	__builtin_ia32_storeups256_mask, __builtin_ia32_storeups128_mask,
+	__builtin_ia32_loaddqudi256_mask, __builtin_ia32_loaddqudi128_mask,
+	__builtin_ia32_loaddqusi256_mask, __builtin_ia32_loaddqusi128_mask,
+	__builtin_ia32_storedqudi256_mask, __builtin_ia32_storedqudi128_mask,
+	__builtin_ia32_storedqusi256_mask, __builtin_ia32_storedqusi128_mask,
+	__builtin_ia32_storedquhi256_mask, __builtin_ia32_storedquhi128_mask,
+	__builtin_ia32_storedquqi256_mask, __builtin_ia32_storedquqi128_mask,
+	__builtin_ia32_compressstoredf256_mask, __builtin_ia32_compressstoredf128_mask,
+	__builtin_ia32_compressstoresf256_mask, __builtin_ia32_compressstoresf128_mask,
+	__builtin_ia32_compressstoredi256_mask, __builtin_ia32_compressstoredi128_mask,
+	__builtin_ia32_compressstoresi256_mask, __builtin_ia32_compressstoresi128_mask,
+	__builtin_ia32_expandloaddf256_mask, __builtin_ia32_expandloaddf128_mask,
+	__builtin_ia32_expandloadsf256_mask, __builtin_ia32_expandloadsf128_mask,
+	__builtin_ia32_expandloaddi256_mask, __builtin_ia32_expandloaddi128_mask,
+	__builtin_ia32_expandloadsi256_mask, __builtin_ia32_expandloadsi128_mask,
+	__builtin_ia32_expandloaddf256_maskz, __builtin_ia32_expandloaddf128_maskz,
+	__builtin_ia32_expandloadsf256_maskz, __builtin_ia32_expandloadsf128_maskz,
+	__builtin_ia32_expandloaddi256_maskz, __builtin_ia32_expandloaddi128_maskz,
+	__builtin_ia32_expandloadsi256_maskz, __builtin_ia32_expandloadsi128_maskz,
+	__builtin_ia32_pmovqd256mem_mask, __builtin_ia32_pmovqd128mem_mask,
+	__builtin_ia32_pmovsqd256mem_mask, __builtin_ia32_pmovsqd128mem_mask,
+	__builtin_ia32_pmovusqd256mem_mask, __builtin_ia32_pmovusqd128mem_mask,
+	__builtin_ia32_pmovqw256mem_mask, __builtin_ia32_pmovqw128mem_mask,
+	__builtin_ia32_pmovsqw256mem_mask, __builtin_ia32_pmovsqw128mem_mask,
+	__builtin_ia32_pmovusqw256mem_mask, __builtin_ia32_pmovusqw128mem_mask,
+	__builtin_ia32_pmovqb256mem_mask, __builtin_ia32_pmovqb128mem_mask,
+	__builtin_ia32_pmovsqb256mem_mask, __builtin_ia32_pmovsqb128mem_mask,
+	__builtin_ia32_pmovusqb256mem_mask, __builtin_ia32_pmovusqb128mem_mask,
+	__builtin_ia32_pmovdb256mem_mask, __builtin_ia32_pmovdb128mem_mask,
+	__builtin_ia32_pmovsdb256mem_mask, __builtin_ia32_pmovsdb128mem_mask,
+	__builtin_ia32_pmovusdb256mem_mask, __builtin_ia32_pmovusdb128mem_mask,
+	__builtin_ia32_pmovdw256mem_mask, __builtin_ia32_pmovdw128mem_mask,
+	__builtin_ia32_pmovsdw256mem_mask, __builtin_ia32_pmovsdw128mem_mask,
+	__builtin_ia32_pmovusdw256mem_mask, __builtin_ia32_pmovusdw128mem_mask,
+	__builtin_ia32_palignr256_mask, __builtin_ia32_palignr128_mask,
+	__builtin_ia32_movdqa64_256_mask, __builtin_ia32_movdqa64_128_mask,
+	__builtin_ia32_movdqa32_256_mask, __builtin_ia32_movdqa32_128_mask,
+	__builtin_ia32_movapd256_mask, __builtin_ia32_movapd128_mask,
+	__builtin_ia32_movaps256_mask, __builtin_ia32_movaps128_mask,
+	__builtin_ia32_movdquhi256_mask, __builtin_ia32_movdquhi128_mask,
+	__builtin_ia32_movdquqi256_mask, __builtin_ia32_movdquqi128_mask,
+	__builtin_ia32_minps_mask, __builtin_ia32_maxps_mask,
+	__builtin_ia32_minpd_mask, __builtin_ia32_maxpd_mask,
+	__builtin_ia32_maxpd256_mask, __builtin_ia32_maxps256_mask,
+	__builtin_ia32_minpd256_mask, __builtin_ia32_minps256_mask,
+	__builtin_ia32_mulps_mask, __builtin_ia32_divps_mask,
+	__builtin_ia32_mulpd_mask, __builtin_ia32_divpd_mask,
+	__builtin_ia32_divpd256_mask, __builtin_ia32_divps256_mask,
+	__builtin_ia32_mulpd256_mask, __builtin_ia32_mulps256_mask,
+	__builtin_ia32_addpd128_mask, __builtin_ia32_addpd256_mask,
+	__builtin_ia32_addps128_mask, __builtin_ia32_addps256_mask,
+	__builtin_ia32_subpd128_mask, __builtin_ia32_subpd256_mask,
+	__builtin_ia32_subps128_mask, __builtin_ia32_subps256_mask,
+	__builtin_ia32_xorpd256_mask, __builtin_ia32_xorpd128_mask,
+	__builtin_ia32_xorps256_mask, __builtin_ia32_xorps128_mask,
+	__builtin_ia32_orpd256_mask, __builtin_ia32_orpd128_mask,
+	__builtin_ia32_orps256_mask, __builtin_ia32_orps128_mask,
+	__builtin_ia32_broadcastf32x2_256_mask, __builtin_ia32_broadcasti32x2_256_mask,
+	__builtin_ia32_broadcasti32x2_128_mask, __builtin_ia32_broadcastf64x2_256_mask,
+	__builtin_ia32_broadcasti64x2_256_mask, __builtin_ia32_broadcastf32x4_256_mask,
+	__builtin_ia32_broadcasti32x4_256_mask, __builtin_ia32_extractf32x4_256_mask,
+	__builtin_ia32_extracti32x4_256_mask, __builtin_ia32_dbpsadbw256_mask,
+	__builtin_ia32_dbpsadbw128_mask, __builtin_ia32_cvttpd2qq256_mask,
+	__builtin_ia32_cvttpd2qq128_mask, __builtin_ia32_cvttpd2uqq256_mask,
+	__builtin_ia32_cvttpd2uqq128_mask, __builtin_ia32_cvtpd2qq256_mask,
+	__builtin_ia32_cvtpd2qq128_mask, __builtin_ia32_cvtpd2uqq256_mask,
+	__builtin_ia32_cvtpd2uqq128_mask, __builtin_ia32_cvtpd2udq256_mask,
+	__builtin_ia32_cvtpd2udq128_mask, __builtin_ia32_cvttps2qq256_mask,
+	__builtin_ia32_cvttps2qq128_mask, __builtin_ia32_cvttps2uqq256_mask,
+	__builtin_ia32_cvttps2uqq128_mask, __builtin_ia32_cvttps2dq256_mask,
+	__builtin_ia32_cvttps2dq128_mask, __builtin_ia32_cvttps2udq256_mask,
+	__builtin_ia32_cvttps2udq128_mask, __builtin_ia32_cvttpd2dq256_mask,
+	__builtin_ia32_cvttpd2dq128_mask, __builtin_ia32_cvttpd2udq256_mask,
+	__builtin_ia32_cvttpd2udq128_mask, __builtin_ia32_cvtpd2dq256_mask,
+	__builtin_ia32_cvtpd2dq128_mask, __builtin_ia32_cvtdq2pd256_mask,
+	__builtin_ia32_cvtdq2pd128_mask, __builtin_ia32_cvtudq2pd256_mask,
+	__builtin_ia32_cvtudq2pd128_mask, __builtin_ia32_cvtdq2ps256_mask,
+	__builtin_ia32_cvtdq2ps128_mask, __builtin_ia32_cvtudq2ps256_mask,
+	__builtin_ia32_cvtudq2ps128_mask, __builtin_ia32_cvtps2pd256_mask,
+	__builtin_ia32_cvtps2pd128_mask, __builtin_ia32_pbroadcastb256_mask,
+	__builtin_ia32_pbroadcastb256_gpr_mask, __builtin_ia32_pbroadcastb128_mask,
+	__builtin_ia32_pbroadcastb128_gpr_mask, __builtin_ia32_pbroadcastw256_mask,
+	__builtin_ia32_pbroadcastw256_gpr_mask, __builtin_ia32_pbroadcastw128_mask,
+	__builtin_ia32_pbroadcastw128_gpr_mask, __builtin_ia32_pbroadcastd256_mask,
+	__builtin_ia32_pbroadcastd256_gpr_mask, __builtin_ia32_pbroadcastd128_mask,
+	__builtin_ia32_pbroadcastd128_gpr_mask, __builtin_ia32_pbroadcastq256_mask,
+	__builtin_ia32_pbroadcastq256_gpr_mask, __builtin_ia32_pbroadcastq256_mem_mask,
+	__builtin_ia32_pbroadcastq128_mask, __builtin_ia32_pbroadcastq128_gpr_mask,
+	__builtin_ia32_pbroadcastq128_mem_mask, __builtin_ia32_broadcastss256_mask,
+	__builtin_ia32_broadcastss128_mask, __builtin_ia32_broadcastsd256_mask,
+	__builtin_ia32_extractf64x2_256_mask, __builtin_ia32_extracti64x2_256_mask,
+	__builtin_ia32_insertf32x4_256_mask, __builtin_ia32_inserti32x4_256_mask,
+	__builtin_ia32_pmovsxbw256_mask, __builtin_ia32_pmovsxbw128_mask,
+	__builtin_ia32_pmovsxbd256_mask, __builtin_ia32_pmovsxbd128_mask,
+	__builtin_ia32_pmovsxbq256_mask, __builtin_ia32_pmovsxbq128_mask,
+	__builtin_ia32_pmovsxwd256_mask, __builtin_ia32_pmovsxwd128_mask,
+	__builtin_ia32_pmovsxwq256_mask, __builtin_ia32_pmovsxwq128_mask,
+	__builtin_ia32_pmovsxdq256_mask, __builtin_ia32_pmovsxdq128_mask,
+	__builtin_ia32_pmovzxbw256_mask, __builtin_ia32_pmovzxbw128_mask,
+	__builtin_ia32_pmovzxbd256_mask, __builtin_ia32_pmovzxbd128_mask,
+	__builtin_ia32_pmovzxbq256_mask, __builtin_ia32_pmovzxbq128_mask,
+	__builtin_ia32_pmovzxwd256_mask, __builtin_ia32_pmovzxwd128_mask,
+	__builtin_ia32_pmovzxwq256_mask, __builtin_ia32_pmovzxwq128_mask,
+	__builtin_ia32_pmovzxdq256_mask, __builtin_ia32_pmovzxdq128_mask,
+	__builtin_ia32_reducepd256_mask, __builtin_ia32_reducepd128_mask,
+	__builtin_ia32_reduceps256_mask, __builtin_ia32_reduceps128_mask,
+	__builtin_ia32_reducesd, __builtin_ia32_reducess,
+	__builtin_ia32_permvarhi256_mask, __builtin_ia32_permvarhi128_mask,
+	__builtin_ia32_vpermt2varhi256_mask, __builtin_ia32_vpermt2varhi256_maskz,
+	__builtin_ia32_vpermt2varhi128_mask, __builtin_ia32_vpermt2varhi128_maskz,
+	__builtin_ia32_vpermi2varhi256_mask, __builtin_ia32_vpermi2varhi128_mask,
+	__builtin_ia32_rcp14pd256_mask, __builtin_ia32_rcp14pd128_mask,
+	__builtin_ia32_rcp14ps256_mask, __builtin_ia32_rcp14ps128_mask,
+	__builtin_ia32_rsqrt14pd256_mask, __builtin_ia32_rsqrt14pd128_mask,
+	__builtin_ia32_rsqrt14ps256_mask, __builtin_ia32_rsqrt14ps128_mask,
+	__builtin_ia32_sqrtpd256_mask, __builtin_ia32_sqrtpd128_mask,
+	__builtin_ia32_sqrtps256_mask, __builtin_ia32_sqrtps128_mask,
+	__builtin_ia32_paddb128_mask, __builtin_ia32_paddw128_mask,
+	__builtin_ia32_paddd128_mask, __builtin_ia32_paddq128_mask,
+	__builtin_ia32_psubb128_mask, __builtin_ia32_psubw128_mask,
+	__builtin_ia32_psubd128_mask, __builtin_ia32_psubq128_mask,
+	__builtin_ia32_paddsb128_mask, __builtin_ia32_paddsw128_mask,
+	__builtin_ia32_psubsb128_mask, __builtin_ia32_psubsw128_mask,
+	__builtin_ia32_paddusb128_mask, __builtin_ia32_paddusw128_mask,
+	__builtin_ia32_psubusb128_mask, __builtin_ia32_psubusw128_mask,
+	__builtin_ia32_paddb256_mask, __builtin_ia32_paddw256_mask,
+	__builtin_ia32_paddd256_mask, __builtin_ia32_paddq256_mask,
+	__builtin_ia32_paddsb256_mask, __builtin_ia32_paddsw256_mask,
+	__builtin_ia32_paddusb256_mask, __builtin_ia32_paddusw256_mask,
+	__builtin_ia32_psubb256_mask, __builtin_ia32_psubw256_mask,
+	__builtin_ia32_psubd256_mask, __builtin_ia32_psubq256_mask,
+	__builtin_ia32_psubsb256_mask, __builtin_ia32_psubsw256_mask,
+	__builtin_ia32_psubusb256_mask, __builtin_ia32_psubusw256_mask,
+	__builtin_ia32_shuf_f64x2_256_mask, __builtin_ia32_shuf_i64x2_256_mask,
+	__builtin_ia32_shuf_i32x4_256_mask, __builtin_ia32_shuf_f32x4_256_mask,
+	__builtin_ia32_pmovwb128_mask, __builtin_ia32_pmovwb256_mask,
+	__builtin_ia32_pmovswb128_mask, __builtin_ia32_pmovswb256_mask,
+	__builtin_ia32_pmovuswb128_mask, __builtin_ia32_pmovuswb256_mask,
+	__builtin_ia32_pmovdb128_mask, __builtin_ia32_pmovdb256_mask,
+	__builtin_ia32_pmovsdb128_mask, __builtin_ia32_pmovsdb256_mask,
+	__builtin_ia32_pmovusdb128_mask, __builtin_ia32_pmovusdb256_mask,
+	__builtin_ia32_pmovdw128_mask, __builtin_ia32_pmovdw256_mask,
+	__builtin_ia32_pmovsdw128_mask, __builtin_ia32_pmovsdw256_mask,
+	__builtin_ia32_pmovusdw128_mask, __builtin_ia32_pmovusdw256_mask,
+	__builtin_ia32_pmovqb128_mask, __builtin_ia32_pmovqb256_mask,
+	__builtin_ia32_pmovsqb128_mask, __builtin_ia32_pmovsqb256_mask,
+	__builtin_ia32_pmovusqb128_mask, __builtin_ia32_pmovusqb256_mask,
+	__builtin_ia32_pmovqw128_mask, __builtin_ia32_pmovqw256_mask,
+	__builtin_ia32_pmovsqw128_mask, __builtin_ia32_pmovsqw256_mask,
+	__builtin_ia32_pmovusqw128_mask, __builtin_ia32_pmovusqw256_mask,
+	__builtin_ia32_pmovqd128_mask, __builtin_ia32_pmovqd256_mask,
+	__builtin_ia32_pmovsqd128_mask, __builtin_ia32_pmovsqd256_mask,
+	__builtin_ia32_pmovusqd128_mask, __builtin_ia32_pmovusqd256_mask,
+	__builtin_ia32_rangepd256_mask, __builtin_ia32_rangepd128_mask,
+	__builtin_ia32_rangeps256_mask, __builtin_ia32_rangeps128_mask,
+	__builtin_ia32_getexpps256_mask, __builtin_ia32_getexppd256_mask,
+	__builtin_ia32_getexpps128_mask, __builtin_ia32_getexppd128_mask,
+	__builtin_ia32_fixupimmpd256, __builtin_ia32_fixupimmpd256_mask,
+	__builtin_ia32_fixupimmpd256_maskz, __builtin_ia32_fixupimmps256,
+	__builtin_ia32_fixupimmps256_mask, __builtin_ia32_fixupimmps256_maskz,
+	__builtin_ia32_fixupimmpd128, __builtin_ia32_fixupimmpd128_mask,
+	__builtin_ia32_fixupimmpd128_maskz, __builtin_ia32_fixupimmps128,
+	__builtin_ia32_fixupimmps128_mask, __builtin_ia32_fixupimmps128_maskz,
+	__builtin_ia32_pabsq256_mask, __builtin_ia32_pabsq128_mask,
+	__builtin_ia32_pabsd256_mask, __builtin_ia32_pabsd128_mask,
+	__builtin_ia32_pmulhrsw256_mask, __builtin_ia32_pmulhrsw128_mask,
+	__builtin_ia32_pmulhuw128_mask, __builtin_ia32_pmulhuw256_mask,
+	__builtin_ia32_pmulhw256_mask, __builtin_ia32_pmulhw128_mask,
+	__builtin_ia32_pmullw256_mask, __builtin_ia32_pmullw128_mask,
+	__builtin_ia32_pmullq256_mask, __builtin_ia32_pmullq128_mask,
+	__builtin_ia32_andpd256_mask, __builtin_ia32_andpd128_mask,
+	__builtin_ia32_andps256_mask, __builtin_ia32_andps128_mask,
+	__builtin_ia32_andnpd256_mask, __builtin_ia32_andnpd128_mask,
+	__builtin_ia32_andnps256_mask, __builtin_ia32_andnps128_mask,
+	__builtin_ia32_psllwi128_mask, __builtin_ia32_pslldi128_mask,
+	__builtin_ia32_psllqi128_mask, __builtin_ia32_psllw128_mask,
+	__builtin_ia32_pslld128_mask, __builtin_ia32_psllq128_mask,
+	__builtin_ia32_psllwi256_mask, __builtin_ia32_psllw256_mask,
+	__builtin_ia32_pslldi256_mask, __builtin_ia32_pslld256_mask,
+	__builtin_ia32_psllqi256_mask, __builtin_ia32_psllq256_mask,
+	__builtin_ia32_psradi128_mask, __builtin_ia32_psrad128_mask,
+	__builtin_ia32_psradi256_mask, __builtin_ia32_psrad256_mask,
+	__builtin_ia32_psraqi128_mask, __builtin_ia32_psraq128_mask,
+	__builtin_ia32_psraqi256_mask, __builtin_ia32_psraq256_mask,
+	__builtin_ia32_pandd256_mask, __builtin_ia32_pandd128_mask,
+	__builtin_ia32_psrldi128_mask, __builtin_ia32_psrld128_mask,
+	__builtin_ia32_psrldi256_mask, __builtin_ia32_psrld256_mask,
+	__builtin_ia32_psrlqi128_mask, __builtin_ia32_psrlq128_mask,
+	__builtin_ia32_psrlqi256_mask, __builtin_ia32_psrlq256_mask,
+	__builtin_ia32_pandq256_mask, __builtin_ia32_pandq128_mask,
+	__builtin_ia32_pandnd256_mask, __builtin_ia32_pandnd128_mask,
+	__builtin_ia32_pandnq256_mask, __builtin_ia32_pandnq128_mask,
+	__builtin_ia32_pord256_mask, __builtin_ia32_pord128_mask,
+	__builtin_ia32_porq256_mask, __builtin_ia32_porq128_mask,
+	__builtin_ia32_pxord256_mask, __builtin_ia32_pxord128_mask,
+	__builtin_ia32_pxorq256_mask, __builtin_ia32_pxorq128_mask,
+	__builtin_ia32_packsswb256_mask, __builtin_ia32_packsswb128_mask,
+	__builtin_ia32_packuswb256_mask, __builtin_ia32_packuswb128_mask,
+	__builtin_ia32_rndscaleps_256_mask, __builtin_ia32_rndscalepd_256_mask,
+	__builtin_ia32_rndscaleps_128_mask, __builtin_ia32_rndscalepd_128_mask,
+	__builtin_ia32_pternlogq256_mask, __builtin_ia32_pternlogq256_maskz,
+	__builtin_ia32_pternlogd256_mask, __builtin_ia32_pternlogd256_maskz,
+	__builtin_ia32_pternlogq128_mask, __builtin_ia32_pternlogq128_maskz,
+	__builtin_ia32_pternlogd128_mask, __builtin_ia32_pternlogd128_maskz,
+	__builtin_ia32_scalefpd256_mask, __builtin_ia32_scalefps256_mask,
+	__builtin_ia32_scalefpd128_mask, __builtin_ia32_scalefps128_mask,
+	__builtin_ia32_vfmaddpd256_mask, __builtin_ia32_vfmaddpd256_mask3,
+	__builtin_ia32_vfmaddpd256_maskz, __builtin_ia32_vfmaddpd128_mask,
+	__builtin_ia32_vfmaddpd128_mask3, __builtin_ia32_vfmaddpd128_maskz,
+	__builtin_ia32_vfmaddps256_mask, __builtin_ia32_vfmaddps256_mask3,
+	__builtin_ia32_vfmaddps256_maskz, __builtin_ia32_vfmaddps128_mask,
+	__builtin_ia32_vfmaddps128_mask3, __builtin_ia32_vfmaddps128_maskz,
+	__builtin_ia32_vfmsubpd256_mask3, __builtin_ia32_vfmsubpd128_mask3,
+	__builtin_ia32_vfmsubps256_mask3, __builtin_ia32_vfmsubps128_mask3,
+	__builtin_ia32_vfnmaddpd256_mask, __builtin_ia32_vfnmaddpd128_mask,
+	__builtin_ia32_vfnmaddps256_mask, __builtin_ia32_vfnmaddps128_mask,
+	__builtin_ia32_vfnmsubpd256_mask, __builtin_ia32_vfnmsubpd256_mask3,
+	__builtin_ia32_vfnmsubpd128_mask, __builtin_ia32_vfnmsubpd128_mask3,
+	__builtin_ia32_vfnmsubps256_mask, __builtin_ia32_vfnmsubps256_mask3,
+	__builtin_ia32_vfnmsubps128_mask, __builtin_ia32_vfnmsubps128_mask3,
+	__builtin_ia32_vfmaddsubpd256_mask, __builtin_ia32_vfmaddsubpd256_mask3,
+	__builtin_ia32_vfmaddsubpd256_maskz, __builtin_ia32_vfmaddsubpd128_mask,
+	__builtin_ia32_vfmaddsubpd128_mask3, __builtin_ia32_vfmaddsubpd128_maskz,
+	__builtin_ia32_vfmaddsubps256_mask, __builtin_ia32_vfmaddsubps256_mask3,
+	__builtin_ia32_vfmaddsubps256_maskz, __builtin_ia32_vfmaddsubps128_mask,
+	__builtin_ia32_vfmaddsubps128_mask3, __builtin_ia32_vfmaddsubps128_maskz,
+	__builtin_ia32_vfmsubaddpd256_mask3, __builtin_ia32_vfmsubaddpd128_mask3,
+	__builtin_ia32_vfmsubaddps256_mask3, __builtin_ia32_vfmsubaddps128_mask3,
+	__builtin_ia32_insertf64x2_256_mask, __builtin_ia32_inserti64x2_256_mask,
+	__builtin_ia32_psrav16hi_mask, __builtin_ia32_psrav8hi_mask,
+	__builtin_ia32_pmaddubsw256_mask, __builtin_ia32_pmaddubsw128_mask,
+	__builtin_ia32_pmaddwd256_mask, __builtin_ia32_pmaddwd128_mask,
+	__builtin_ia32_psrlv16hi_mask, __builtin_ia32_psrlv8hi_mask,
+	__builtin_ia32_cvtps2dq256_mask, __builtin_ia32_cvtps2dq128_mask,
+	__builtin_ia32_cvtps2udq256_mask, __builtin_ia32_cvtps2udq128_mask,
+	__builtin_ia32_cvtps2qq256_mask, __builtin_ia32_cvtps2qq128_mask,
+	__builtin_ia32_cvtps2uqq256_mask, __builtin_ia32_cvtps2uqq128_mask,
+	__builtin_ia32_getmantps256_mask, __builtin_ia32_getmantps128_mask,
+	__builtin_ia32_getmantpd256_mask, __builtin_ia32_getmantpd128_mask,
+	__builtin_ia32_movddup256_mask, __builtin_ia32_movddup128_mask,
+	__builtin_ia32_movshdup256_mask, __builtin_ia32_movshdup128_mask,
+	__builtin_ia32_movsldup256_mask, __builtin_ia32_movsldup128_mask,
+	__builtin_ia32_cvtqq2ps256_mask, __builtin_ia32_cvtqq2ps128_mask,
+	__builtin_ia32_cvtuqq2ps256_mask, __builtin_ia32_cvtuqq2ps128_mask,
+	__builtin_ia32_cvtqq2pd256_mask, __builtin_ia32_cvtqq2pd128_mask,
+	__builtin_ia32_cvtuqq2pd256_mask, __builtin_ia32_cvtuqq2pd128_mask,
+	__builtin_ia32_vpermt2varq256_mask, __builtin_ia32_vpermt2varq256_maskz,
+	__builtin_ia32_vpermt2vard256_mask, __builtin_ia32_vpermt2vard256_maskz,
+	__builtin_ia32_vpermi2varq256_mask, __builtin_ia32_vpermi2vard256_mask,
+	__builtin_ia32_vpermt2varpd256_mask, __builtin_ia32_vpermt2varpd256_maskz,
+	__builtin_ia32_vpermt2varps256_mask, __builtin_ia32_vpermt2varps256_maskz,
+	__builtin_ia32_vpermi2varpd256_mask, __builtin_ia32_vpermi2varps256_mask,
+	__builtin_ia32_vpermt2varq128_mask, __builtin_ia32_vpermt2varq128_maskz,
+	__builtin_ia32_vpermt2vard128_mask, __builtin_ia32_vpermt2vard128_maskz,
+	__builtin_ia32_vpermi2varq128_mask, __builtin_ia32_vpermi2vard128_mask,
+	__builtin_ia32_vpermt2varpd128_mask, __builtin_ia32_vpermt2varpd128_maskz,
+	__builtin_ia32_vpermt2varps128_mask, __builtin_ia32_vpermt2varps128_maskz,
+	__builtin_ia32_vpermi2varpd128_mask, __builtin_ia32_vpermi2varps128_mask,
+	__builtin_ia32_pshufb256_mask, __builtin_ia32_pshufb128_mask,
+	__builtin_ia32_pshufhw256_mask, __builtin_ia32_pshufhw128_mask,
+	__builtin_ia32_pshuflw256_mask, __builtin_ia32_pshuflw128_mask,
+	__builtin_ia32_pshufd256_mask, __builtin_ia32_pshufd128_mask,
+	__builtin_ia32_shufpd256_mask, __builtin_ia32_shufpd128_mask,
+	__builtin_ia32_shufps256_mask, __builtin_ia32_shufps128_mask,
+	__builtin_ia32_prolvq256_mask, __builtin_ia32_prolvq128_mask,
+	__builtin_ia32_prolq256_mask, __builtin_ia32_prolq128_mask,
+	__builtin_ia32_prorvq256_mask, __builtin_ia32_prorvq128_mask,
+	__builtin_ia32_prorq256_mask, __builtin_ia32_prorq128_mask,
+	__builtin_ia32_psravq128_mask, __builtin_ia32_psravq256_mask,
+	__builtin_ia32_psllv4di_mask, __builtin_ia32_psllv2di_mask,
+	__builtin_ia32_psllv8si_mask, __builtin_ia32_psllv4si_mask,
+	__builtin_ia32_psrav8si_mask, __builtin_ia32_psrav4si_mask,
+	__builtin_ia32_psrlv4di_mask, __builtin_ia32_psrlv2di_mask,
+	__builtin_ia32_psrlv8si_mask, __builtin_ia32_psrlv4si_mask,
+	__builtin_ia32_psrawi256_mask, __builtin_ia32_psraw256_mask,
+	__builtin_ia32_psrawi128_mask, __builtin_ia32_psraw128_mask,
+	__builtin_ia32_psrlwi256_mask, __builtin_ia32_psrlw256_mask,
+	__builtin_ia32_psrlwi128_mask, __builtin_ia32_psrlw128_mask,
+	__builtin_ia32_prorvd256_mask, __builtin_ia32_prolvd256_mask,
+	__builtin_ia32_prord256_mask, __builtin_ia32_prold256_mask,
+	__builtin_ia32_prorvd128_mask, __builtin_ia32_prolvd128_mask,
+	__builtin_ia32_prord128_mask, __builtin_ia32_prold128_mask,
+	__builtin_ia32_fpclasspd256_mask, __builtin_ia32_fpclasspd128_mask,
+	__builtin_ia32_fpclasssd, __builtin_ia32_fpclassps256_mask,
+	__builtin_ia32_fpclassps128_mask, __builtin_ia32_fpclassss,
+	__builtin_ia32_cvtb2mask128, __builtin_ia32_cvtb2mask256,
+	__builtin_ia32_cvtw2mask128, __builtin_ia32_cvtw2mask256,
+	__builtin_ia32_cvtd2mask128, __builtin_ia32_cvtd2mask256,
+	__builtin_ia32_cvtq2mask128, __builtin_ia32_cvtq2mask256,
+	__builtin_ia32_cvtmask2b128, __builtin_ia32_cvtmask2b256,
+	__builtin_ia32_cvtmask2w128, __builtin_ia32_cvtmask2w256,
+	__builtin_ia32_cvtmask2d128, __builtin_ia32_cvtmask2d256,
+	__builtin_ia32_cvtmask2q128, __builtin_ia32_cvtmask2q256,
+	__builtin_ia32_pcmpeqb128_mask, __builtin_ia32_pcmpeqb256_mask,
+	__builtin_ia32_pcmpeqw128_mask, __builtin_ia32_pcmpeqw256_mask,
+	__builtin_ia32_pcmpeqd128_mask, __builtin_ia32_pcmpeqd256_mask,
+	__builtin_ia32_pcmpeqq128_mask, __builtin_ia32_pcmpeqq256_mask,
+	__builtin_ia32_pcmpgtb128_mask, __builtin_ia32_pcmpgtb256_mask,
+	__builtin_ia32_pcmpgtw128_mask, __builtin_ia32_pcmpgtw256_mask,
+	__builtin_ia32_pcmpgtd128_mask, __builtin_ia32_pcmpgtd256_mask,
+	__builtin_ia32_pcmpgtq128_mask, __builtin_ia32_pcmpgtq256_mask,
+	__builtin_ia32_ptestmb128, __builtin_ia32_ptestmb256,
+	__builtin_ia32_ptestmw128, __builtin_ia32_ptestmw256,
+	__builtin_ia32_ptestmd128, __builtin_ia32_ptestmd256,
+	__builtin_ia32_ptestmq128, __builtin_ia32_ptestmq256,
+	__builtin_ia32_ptestnmb128, __builtin_ia32_ptestnmb256,
+	__builtin_ia32_ptestnmw128, __builtin_ia32_ptestnmw256,
+	__builtin_ia32_ptestnmd128, __builtin_ia32_ptestnmd256,
+	__builtin_ia32_ptestnmq128, __builtin_ia32_ptestnmq256,
+	__builtin_ia32_broadcastmb128, __builtin_ia32_broadcastmb256,
+	__builtin_ia32_broadcastmw128, __builtin_ia32_broadcastmw256,
+	__builtin_ia32_compressdf256_mask, __builtin_ia32_compressdf128_mask,
+	__builtin_ia32_compresssf256_mask, __builtin_ia32_compresssf128_mask,
+	__builtin_ia32_compressdi256_mask, __builtin_ia32_compressdi128_mask,
+	__builtin_ia32_compresssi256_mask, __builtin_ia32_compresssi128_mask,
+	__builtin_ia32_expanddf256_mask, __builtin_ia32_expanddf128_mask,
+	__builtin_ia32_expandsf256_mask, __builtin_ia32_expandsf128_mask,
+	__builtin_ia32_expanddi256_mask, __builtin_ia32_expanddi128_mask,
+	__builtin_ia32_expandsi256_mask, __builtin_ia32_expandsi128_mask,
+	__builtin_ia32_expanddf256_maskz, __builtin_ia32_expanddf128_maskz,
+	__builtin_ia32_expandsf256_maskz, __builtin_ia32_expandsf128_maskz,
+	__builtin_ia32_expanddi256_maskz, __builtin_ia32_expanddi128_maskz,
+	__builtin_ia32_expandsi256_maskz, __builtin_ia32_expandsi128_maskz,
+	__builtin_ia32_pmaxsd256_mask, __builtin_ia32_pminsd256_mask,
+	__builtin_ia32_pmaxud256_mask, __builtin_ia32_pminud256_mask,
+	__builtin_ia32_pmaxsd128_mask, __builtin_ia32_pminsd128_mask,
+	__builtin_ia32_pmaxud128_mask, __builtin_ia32_pminud128_mask,
+	__builtin_ia32_pmaxsq256_mask, __builtin_ia32_pminsq256_mask,
+	__builtin_ia32_pmaxuq256_mask, __builtin_ia32_pminuq256_mask,
+	__builtin_ia32_pmaxsq128_mask, __builtin_ia32_pminsq128_mask,
+	__builtin_ia32_pmaxuq128_mask, __builtin_ia32_pminuq128_mask,
+	__builtin_ia32_pminsb256_mask, __builtin_ia32_pminub256_mask,
+	__builtin_ia32_pmaxsb256_mask, __builtin_ia32_pmaxub256_mask,
+	__builtin_ia32_pminsb128_mask, __builtin_ia32_pminub128_mask,
+	__builtin_ia32_pmaxsb128_mask, __builtin_ia32_pmaxub128_mask,
+	__builtin_ia32_pminsw256_mask, __builtin_ia32_pminuw256_mask,
+	__builtin_ia32_pmaxsw256_mask, __builtin_ia32_pmaxuw256_mask,
+	__builtin_ia32_pminsw128_mask, __builtin_ia32_pminuw128_mask,
+	__builtin_ia32_pmaxsw128_mask, __builtin_ia32_pmaxuw128_mask,
+	__builtin_ia32_vpconflictdi_256_mask, __builtin_ia32_vpconflictsi_256_mask,
+	__builtin_ia32_vplzcntq_256_mask, __builtin_ia32_vplzcntd_256_mask,
+	__builtin_ia32_unpckhpd256_mask, __builtin_ia32_unpckhpd128_mask,
+	__builtin_ia32_unpckhps256_mask, __builtin_ia32_unpckhps128_mask,
+	__builtin_ia32_unpcklpd256_mask, __builtin_ia32_unpcklpd128_mask,
+	__builtin_ia32_unpcklps256_mask, __builtin_ia32_vpconflictdi_128_mask,
+	__builtin_ia32_vpconflictsi_128_mask, __builtin_ia32_vplzcntq_128_mask,
+	__builtin_ia32_vplzcntd_128_mask, __builtin_ia32_unpcklps128_mask,
+	__builtin_ia32_alignd256_mask, __builtin_ia32_alignq256_mask,
+	__builtin_ia32_alignd128_mask, __builtin_ia32_alignq128_mask,
+	__builtin_ia32_vcvtps2ph256_mask, __builtin_ia32_vcvtps2ph_mask,
+	__builtin_ia32_vcvtph2ps_mask, __builtin_ia32_vcvtph2ps256_mask,
+	__builtin_ia32_punpckhdq128_mask, __builtin_ia32_punpckhdq256_mask,
+	__builtin_ia32_punpckhqdq128_mask, __builtin_ia32_punpckhqdq256_mask,
+	__builtin_ia32_punpckldq128_mask, __builtin_ia32_punpckldq256_mask,
+	__builtin_ia32_punpcklqdq128_mask, __builtin_ia32_punpcklqdq256_mask,
+	__builtin_ia32_punpckhbw128_mask, __builtin_ia32_punpckhbw256_mask,
+	__builtin_ia32_punpckhwd128_mask, __builtin_ia32_punpckhwd256_mask,
+	__builtin_ia32_punpcklbw128_mask, __builtin_ia32_punpcklbw256_mask,
+	__builtin_ia32_punpcklwd128_mask, __builtin_ia32_punpcklwd256_mask,
+	__builtin_ia32_psllv16hi_mask, __builtin_ia32_psllv8hi_mask,
+	__builtin_ia32_packssdw256_mask, __builtin_ia32_packssdw128_mask,
+	__builtin_ia32_packusdw256_mask, __builtin_ia32_packusdw128_mask,
+	__builtin_ia32_pavgb256_mask, __builtin_ia32_pavgw256_mask,
+	__builtin_ia32_pavgb128_mask, __builtin_ia32_pavgw128_mask,
+	__builtin_ia32_permvarsf256_mask, __builtin_ia32_permvardf256_mask,
+	__builtin_ia32_permdf256_mask, __builtin_ia32_pabsb256_mask,
+	__builtin_ia32_pabsb128_mask, __builtin_ia32_pabsw256_mask,
+	__builtin_ia32_pabsw128_mask, __builtin_ia32_vpermilvarpd_mask,
+	__builtin_ia32_vpermilvarps_mask, __builtin_ia32_vpermilvarpd256_mask,
+	__builtin_ia32_vpermilvarps256_mask, __builtin_ia32_vpermilpd_mask,
+	__builtin_ia32_vpermilps_mask, __builtin_ia32_vpermilpd256_mask,
+	__builtin_ia32_vpermilps256_mask, __builtin_ia32_blendmq_256_mask,
+	__builtin_ia32_blendmd_256_mask, __builtin_ia32_blendmpd_256_mask,
+	__builtin_ia32_blendmps_256_mask, __builtin_ia32_blendmq_128_mask,
+	__builtin_ia32_blendmd_128_mask, __builtin_ia32_blendmpd_128_mask,
+	__builtin_ia32_blendmps_128_mask, __builtin_ia32_blendmw_256_mask,
+	__builtin_ia32_blendmb_256_mask, __builtin_ia32_blendmw_128_mask,
+	__builtin_ia32_blendmb_128_mask, __builtin_ia32_pmulld256_mask,
+	__builtin_ia32_pmulld128_mask, __builtin_ia32_pmuludq256_mask,
+	__builtin_ia32_pmuldq256_mask, __builtin_ia32_pmuldq128_mask,
+	__builtin_ia32_pmuludq128_mask, __builtin_ia32_cvtpd2ps256_mask,
+	__builtin_ia32_cvtpd2ps_mask, __builtin_ia32_permvarsi256_mask,
+	__builtin_ia32_permvardi256_mask, __builtin_ia32_permdi256_mask,
+	__builtin_ia32_cmpq256_mask, __builtin_ia32_cmpd256_mask,
+	__builtin_ia32_ucmpq256_mask, __builtin_ia32_ucmpd256_mask,
+	__builtin_ia32_cmpb256_mask, __builtin_ia32_cmpw256_mask,
+	__builtin_ia32_ucmpb256_mask, __builtin_ia32_ucmpw256_mask,
+	__builtin_ia32_cmppd256_mask, __builtin_ia32_cmpps256_mask,
+	__builtin_ia32_cmpq128_mask, __builtin_ia32_cmpd128_mask,
+	__builtin_ia32_ucmpq128_mask, __builtin_ia32_ucmpd128_mask,
+	__builtin_ia32_cmpb128_mask, __builtin_ia32_cmpw128_mask,
+	__builtin_ia32_ucmpb128_mask, __builtin_ia32_ucmpw128_mask,
+	__builtin_ia32_cmppd128_mask, __builtin_ia32_cmpps128_mask,
+	__builtin_ia32_broadcastf32x2_512_mask, __builtin_ia32_broadcasti32x2_512_mask,
+	__builtin_ia32_broadcastf64x2_512_mask, __builtin_ia32_broadcasti64x2_512_mask,
+	__builtin_ia32_broadcastf32x8_512_mask, __builtin_ia32_broadcasti32x8_512_mask,
+	__builtin_ia32_extractf64x2_512_mask, __builtin_ia32_extractf32x8_mask,
+	__builtin_ia32_extracti64x2_512_mask, __builtin_ia32_extracti32x8_mask,
+	__builtin_ia32_reducepd512_mask, __builtin_ia32_reduceps512_mask,
+	__builtin_ia32_pmullq512_mask, __builtin_ia32_xorpd512_mask,
+	__builtin_ia32_xorps512_mask, __builtin_ia32_orpd512_mask,
+	__builtin_ia32_orps512_mask, __builtin_ia32_andpd512_mask,
+	__builtin_ia32_andps512_mask, __builtin_ia32_andnpd512_mask,
+	__builtin_ia32_andnps512_mask, __builtin_ia32_insertf32x8_mask,
+	__builtin_ia32_inserti32x8_mask, __builtin_ia32_insertf64x2_512_mask,
+	__builtin_ia32_inserti64x2_512_mask, __builtin_ia32_fpclasspd512_mask,
+	__builtin_ia32_fpclassps512_mask, __builtin_ia32_cvtd2mask512,
+	__builtin_ia32_cvtq2mask512, __builtin_ia32_cvtmask2d512,
+	__builtin_ia32_cvtmask2q512, __builtin_ia32_kunpcksi,
+	__builtin_ia32_kunpckdi, __builtin_ia32_packusdw512_mask,
+	__builtin_ia32_pslldq512, __builtin_ia32_psrldq512,
+	__builtin_ia32_packssdw512_mask, __builtin_ia32_palignr512,
+	__builtin_ia32_palignr512_mask, __builtin_ia32_movdquhi512_mask,
+	__builtin_ia32_movdquqi512_mask, __builtin_ia32_psadbw512,
+	__builtin_ia32_dbpsadbw512_mask, __builtin_ia32_pbroadcastb512_mask,
+	__builtin_ia32_pbroadcastb512_gpr_mask, __builtin_ia32_pbroadcastw512_mask,
+	__builtin_ia32_pbroadcastw512_gpr_mask, __builtin_ia32_pmovsxbw512_mask,
+	__builtin_ia32_pmovzxbw512_mask, __builtin_ia32_permvarhi512_mask,
+	__builtin_ia32_vpermt2varhi512_mask, __builtin_ia32_vpermt2varhi512_maskz,
+	__builtin_ia32_vpermi2varhi512_mask, __builtin_ia32_pavgb512_mask,
+	__builtin_ia32_pavgw512_mask, __builtin_ia32_paddb512_mask,
+	__builtin_ia32_psubb512_mask, __builtin_ia32_psubsb512_mask,
+	__builtin_ia32_paddsb512_mask, __builtin_ia32_psubusb512_mask,
+	__builtin_ia32_paddusb512_mask, __builtin_ia32_psubw512_mask,
+	__builtin_ia32_paddw512_mask, __builtin_ia32_psubsw512_mask,
+	__builtin_ia32_paddsw512_mask, __builtin_ia32_psubusw512_mask,
+	__builtin_ia32_paddusw512_mask, __builtin_ia32_pmaxuw512_mask,
+	__builtin_ia32_pmaxsw512_mask, __builtin_ia32_pminuw512_mask,
+	__builtin_ia32_pminsw512_mask, __builtin_ia32_pmaxub512_mask,
+	__builtin_ia32_pmaxsb512_mask, __builtin_ia32_pminub512_mask,
+	__builtin_ia32_pminsb512_mask, __builtin_ia32_pmovwb512_mask,
+	__builtin_ia32_pmovswb512_mask, __builtin_ia32_pmovuswb512_mask,
+	__builtin_ia32_pmulhrsw512_mask, __builtin_ia32_pmulhuw512_mask,
+	__builtin_ia32_pmulhw512_mask, __builtin_ia32_pmullw512_mask,
+	__builtin_ia32_psllwi512_mask, __builtin_ia32_psllw512_mask,
+	__builtin_ia32_packsswb512_mask, __builtin_ia32_packuswb512_mask,
+	__builtin_ia32_psrav32hi_mask, __builtin_ia32_pmaddubsw512_mask,
+	__builtin_ia32_pmaddwd512_mask, __builtin_ia32_psrlv32hi_mask,
+	__builtin_ia32_punpckhbw512_mask, __builtin_ia32_punpckhwd512_mask,
+	__builtin_ia32_punpcklbw512_mask, __builtin_ia32_punpcklwd512_mask,
+	__builtin_ia32_pshufb512_mask, __builtin_ia32_pshufhw512_mask,
+	__builtin_ia32_pshuflw512_mask, __builtin_ia32_psrawi512_mask,
+	__builtin_ia32_psraw512_mask, __builtin_ia32_psrlwi512_mask,
+	__builtin_ia32_psrlw512_mask, __builtin_ia32_cvtb2mask512,
+	__builtin_ia32_cvtw2mask512, __builtin_ia32_cvtmask2b512,
+	__builtin_ia32_cvtmask2w512, __builtin_ia32_pcmpeqb512_mask,
+	__builtin_ia32_pcmpeqw512_mask, __builtin_ia32_pcmpgtb512_mask,
+	__builtin_ia32_pcmpgtw512_mask, __builtin_ia32_ptestmb512,
+	__builtin_ia32_ptestmw512, __builtin_ia32_ptestnmb512,
+	__builtin_ia32_ptestnmw512, __builtin_ia32_psllv32hi_mask,
+	__builtin_ia32_pabsb512_mask, __builtin_ia32_pabsw512_mask,
+	__builtin_ia32_blendmw_512_mask, __builtin_ia32_blendmb_512_mask,
+	__builtin_ia32_cmpb512_mask, __builtin_ia32_cmpw512_mask,
+	__builtin_ia32_ucmpb512_mask, __builtin_ia32_ucmpw512_mask,
+	__builtin_ia32_rangesd128_round, __builtin_ia32_rangess128_round,
+	__builtin_ia32_cvtpd2qq512_mask, __builtin_ia32_cvtps2qq512_mask,
+	__builtin_ia32_cvtpd2uqq512_mask, __builtin_ia32_cvtps2uqq512_mask,
+	__builtin_ia32_cvtqq2ps512_mask, __builtin_ia32_cvtuqq2ps512_mask,
+	__builtin_ia32_cvtqq2pd512_mask, __builtin_ia32_cvtuqq2pd512_mask,
+	__builtin_ia32_cvttps2qq512_mask, __builtin_ia32_cvttps2uqq512_mask,
+	__builtin_ia32_cvttpd2qq512_mask, __builtin_ia32_cvttpd2uqq512_mask,
+	__builtin_ia32_rangeps512_mask, __builtin_ia32_rangepd512_mask.
+	(ix86_expand_args_builtin): Handle HI_FTYPE_V16QI, SI_FTYPE_V32QI,
+	DI_FTYPE_V64QI, V16QI_FTYPE_HI, V32QI_FTYPE_SI, V64QI_FTYPE_DI,
+	V8HI_FTYPE_QI, V16HI_FTYPE_HI, V32HI_FTYPE_SI, V4SI_FTYPE_QI,
+	V8SI_FTYPE_QI, V4SI_FTYPE_HI, V8SI_FTYPE_HI, QI_FTYPE_V8HI,
+	HI_FTYPE_V16HI, SI_FTYPE_V32HI, QI_FTYPE_V4SI, QI_FTYPE_V8SI,
+	HI_FTYPE_V16SI, QI_FTYPE_V2DI, QI_FTYPE_V4DI, QI_FTYPE_V8DI,
+	V2DI_FTYPE_QI, V4DI_FTYPE_QI, V8DI_FTYPE_V64QI_V64QI,
+	SI_FTYPE_SI_SI,DI_FTYPE_DI_DI, V8DI_FTYPE_V8DI_INT_CONVERT,
+	QI_FTYPE_V4SF_INT, QI_FTYPE_V2DF_INT,
+	V8SF_FTYPE_V4SF_V8SF_QI, V4DF_FTYPE_V2DF_V4DF_QI,
+	V8SI_FTYPE_V4SI_V8SI_QI, V8SI_FTYPE_SI_V8SI_QI,
+	V4SI_FTYPE_V4SI_V4SI_QI, V4SI_FTYPE_SI_V4SI_QI,
+	V4DI_FTYPE_V2DI_V4DI_QI, V4DI_FTYPE_DI_V4DI_QI,
+	V2DI_FTYPE_V2DI_V2DI_QI, V2DI_FTYPE_DI_V2DI_QI,
+	V64QI_FTYPE_V64QI_V64QI_DI, V64QI_FTYPE_V16QI_V64QI_DI,
+	V64QI_FTYPE_QI_V64QI_DI, V32QI_FTYPE_V32QI_V32QI_SI,
+	V32QI_FTYPE_V16QI_V32QI_SI, V32QI_FTYPE_QI_V32QI_SI,
+	V16QI_FTYPE_V16QI_V16QI_HI, V16QI_FTYPE_QI_V16QI_HI,
+	V32HI_FTYPE_V8HI_V32HI_SI, V32HI_FTYPE_HI_V32HI_SI,
+	V16HI_FTYPE_V8HI_V16HI_HI, V16HI_FTYPE_HI_V16HI_HI,
+	V8HI_FTYPE_V8HI_V8HI_QI, V8HI_FTYPE_HI_V8HI_QI,
+	V8SF_FTYPE_V8HI_V8SF_QI, V4SF_FTYPE_V8HI_V4SF_QI,
+	V8SI_FTYPE_V8SF_V8SI_QI, V4SI_FTYPE_V4SF_V4SI_QI,
+	V8DI_FTYPE_V8SF_V8DI_QI, V4DI_FTYPE_V4SF_V4DI_QI,
+	V2DI_FTYPE_V4SF_V2DI_QI, V8SF_FTYPE_V8DI_V8SF_QI,
+	V4SF_FTYPE_V4DI_V4SF_QI, V4SF_FTYPE_V2DI_V4SF_QI,
+	V8DF_FTYPE_V8DI_V8DF_QI, V4DF_FTYPE_V4DI_V4DF_QI,
+	V2DF_FTYPE_V2DI_V2DF_QI, V16QI_FTYPE_V8HI_V16QI_QI,
+	V16QI_FTYPE_V16HI_V16QI_HI, V16QI_FTYPE_V4SI_V16QI_QI,
+	V16QI_FTYPE_V8SI_V16QI_QI, V8HI_FTYPE_V4SI_V8HI_QI,
+	V8HI_FTYPE_V8SI_V8HI_QI, V16QI_FTYPE_V2DI_V16QI_QI,
+	V16QI_FTYPE_V4DI_V16QI_QI, V8HI_FTYPE_V2DI_V8HI_QI,
+	V8HI_FTYPE_V4DI_V8HI_QI, V4SI_FTYPE_V2DI_V4SI_QI,
+	V4SI_FTYPE_V4DI_V4SI_QI, V32QI_FTYPE_V32HI_V32QI_SI,
+	HI_FTYPE_V16QI_V16QI_HI, SI_FTYPE_V32QI_V32QI_SI,
+	DI_FTYPE_V64QI_V64QI_DI, QI_FTYPE_V8HI_V8HI_QI,
+	HI_FTYPE_V16HI_V16HI_HI, SI_FTYPE_V32HI_V32HI_SI,
+	QI_FTYPE_V4SI_V4SI_QI, QI_FTYPE_V8SI_V8SI_QI,
+	QI_FTYPE_V2DI_V2DI_QI, QI_FTYPE_V4DI_V4DI_QI,
+	V4SF_FTYPE_V2DF_V4SF_QI, V4SF_FTYPE_V4DF_V4SF_QI,
+	V2DI_FTYPE_V4SI_V2DI_QI, V2DI_FTYPE_V8HI_V2DI_QI,
+	V2DI_FTYPE_V16QI_V2DI_QI, V4DI_FTYPE_V4DI_V4DI_QI,
+	V4DI_FTYPE_V4SI_V4DI_QI, V4DI_FTYPE_V8HI_V4DI_QI,
+	V4DI_FTYPE_V16QI_V4DI_QI, V8DI_FTYPE_V8DF_V8DI_QI,
+	V4DI_FTYPE_V4DF_V4DI_QI, V2DI_FTYPE_V2DF_V2DI_QI,
+	V4SI_FTYPE_V4DF_V4SI_QI, V4SI_FTYPE_V2DF_V4SI_QI,
+	V4SI_FTYPE_V8HI_V4SI_QI, V4SI_FTYPE_V16QI_V4SI_QI,
+	V8SI_FTYPE_V8SI_V8SI_V8SI, V8SF_FTYPE_V8SF_V8SF_QI,
+	V8SF_FTYPE_V8SI_V8SF_QI, V4DF_FTYPE_V4DF_V4DF_QI,
+	V4SF_FTYPE_V4SF_V4SF_QI, V2DF_FTYPE_V2DF_V2DF_QI,
+	V2DF_FTYPE_V4SF_V2DF_QI, V2DF_FTYPE_V4SI_V2DF_QI,
+	V4SF_FTYPE_V4SI_V4SF_QI, V4DF_FTYPE_V4SF_V4DF_QI,
+	V4DF_FTYPE_V4SI_V4DF_QI, V8SI_FTYPE_V8SI_V8SI_QI,
+	V8SI_FTYPE_V8HI_V8SI_QI, V8SI_FTYPE_V16QI_V8SI_QI,
+	V16SF_FTYPE_V8SF_V16SF_HI, V16SI_FTYPE_V8SI_V16SI_HI,
+	V16HI_FTYPE_V16HI_V16HI_HI, V8HI_FTYPE_V16QI_V8HI_QI,
+	V16HI_FTYPE_V16QI_V16HI_HI, V32HI_FTYPE_V32HI_V32HI_SI,
+	V32HI_FTYPE_V32QI_V32HI_SI, V8DI_FTYPE_V8DI_V8DI_INT_CONVERT,
+	V8DI_FTYPE_V8DI_V8DI_INT_V8DI_DI_CONVERT, QI_FTYPE_V8DF_INT_QI,
+	QI_FTYPE_V4DF_INT_QI, QI_FTYPE_V2DF_INT_QI,
+	HI_FTYPE_V16SF_INT_HI, QI_FTYPE_V8SF_INT_QI,
+	QI_FTYPE_V4SF_INT_QI, V4DI_FTYPE_V4DI_V4DI_INT_V4DI_SI_CONVERT,
+	V2DI_FTYPE_V2DI_V2DI_INT_V2DI_HI_CONVERT, V32QI_FTYPE_V32QI_V32QI_V32QI_SI,
+	V32HI_FTYPE_V32HI_V32HI_V32HI_SI, V32HI_FTYPE_V64QI_V64QI_V32HI_SI,
+	V16SI_FTYPE_V32HI_V32HI_V16SI_HI, V64QI_FTYPE_V64QI_V64QI_V64QI_DI,
+	V32HI_FTYPE_V32HI_V8HI_V32HI_SI, V16HI_FTYPE_V16HI_V8HI_V16HI_HI,
+	V8SI_FTYPE_V8SI_V4SI_V8SI_QI, V4DI_FTYPE_V4DI_V2DI_V4DI_QI,
+	V64QI_FTYPE_V32HI_V32HI_V64QI_DI, V32QI_FTYPE_V16HI_V16HI_V32QI_SI,
+	V16QI_FTYPE_V8HI_V8HI_V16QI_HI, V32HI_FTYPE_V16SI_V16SI_V32HI_SI,
+	V16HI_FTYPE_V8SI_V8SI_V16HI_HI, V8HI_FTYPE_V4SI_V4SI_V8HI_QI,
+	V4DF_FTYPE_V4DF_V4DI_V4DF_QI, V8SF_FTYPE_V8SF_V8SI_V8SF_QI,
+	V4SF_FTYPE_V4SF_V4SI_V4SF_QI, V2DF_FTYPE_V2DF_V2DI_V2DF_QI,
+	V2DI_FTYPE_V4SI_V4SI_V2DI_QI, V4DI_FTYPE_V8SI_V8SI_V4DI_QI,
+	V4DF_FTYPE_V4DI_V4DF_V4DF_QI, V8SF_FTYPE_V8SI_V8SF_V8SF_QI,
+	V2DF_FTYPE_V2DI_V2DF_V2DF_QI, V4SF_FTYPE_V4SI_V4SF_V4SF_QI,
+	V8HI_FTYPE_V8HI_V8HI_V8HI_QI, V8SI_FTYPE_V8SI_V8SI_V8SI_QI,
+	V4SI_FTYPE_V4SI_V4SI_V4SI_QI, V8SF_FTYPE_V8SF_V8SF_V8SF_QI,
+	V16QI_FTYPE_V16QI_V16QI_V16QI_HI, V16HI_FTYPE_V16HI_V16HI_V16HI_HI,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_QI, V4DI_FTYPE_V4DI_V4DI_V4DI_QI,
+	V4DF_FTYPE_V4DF_V4DF_V4DF_QI, V8HI_FTYPE_V16QI_V16QI_V8HI_QI,
+	V16HI_FTYPE_V32QI_V32QI_V16HI_HI, V8SI_FTYPE_V16HI_V16HI_V8SI_QI,
+	V4SI_FTYPE_V8HI_V8HI_V4SI_QI, QI_FTYPE_V4DI_V4DI_INT_QI,
+	QI_FTYPE_V8SI_V8SI_INT_QI, QI_FTYPE_V4DF_V4DF_INT_QI,
+	QI_FTYPE_V8SF_V8SF_INT_QI, QI_FTYPE_V2DI_V2DI_INT_QI,
+	QI_FTYPE_V4SI_V4SI_INT_QI, DI_FTYPE_V64QI_V64QI_INT_DI,
+	SI_FTYPE_V32QI_V32QI_INT_SI, HI_FTYPE_V16QI_V16QI_INT_HI,
+	SI_FTYPE_V32HI_V32HI_INT_SI, HI_FTYPE_V16HI_V16HI_INT_HI,
+	QI_FTYPE_V8HI_V8HI_INT_QI, V8SF_FTYPE_V8SF_INT_V8SF_QI,
+	V4SF_FTYPE_V4SF_INT_V4SF_QI, V2DF_FTYPE_V4DF_INT_V2DF_QI,
+	V2DI_FTYPE_V4DI_INT_V2DI_QI, V8SF_FTYPE_V16SF_INT_V8SF_QI,
+	V8SI_FTYPE_V16SI_INT_V8SI_QI, V2DF_FTYPE_V8DF_INT_V2DF_QI,
+	V2DI_FTYPE_V8DI_INT_V2DI_QI, V4SF_FTYPE_V8SF_INT_V4SF_QI,
+	V4SI_FTYPE_V8SI_INT_V4SI_QI, V8HI_FTYPE_V8SF_INT_V8HI_QI,
+	V8HI_FTYPE_V4SF_INT_V8HI_QI, V32HI_FTYPE_V32HI_INT_V32HI_SI,
+	V16HI_FTYPE_V16HI_INT_V16HI_HI, V8HI_FTYPE_V8HI_INT_V8HI_QI,
+	V4DI_FTYPE_V4DI_INT_V4DI_QI, V2DI_FTYPE_V2DI_INT_V2DI_QI,
+	V8SI_FTYPE_V8SI_INT_V8SI_QI, V4SI_FTYPE_V4SI_INT_V4SI_QI,
+	V4DF_FTYPE_V4DF_INT_V4DF_QI, V2DF_FTYPE_V2DF_INT_V2DF_QI,
+	V4DF_FTYPE_V4DF_V4DF_INT_V4DF_QI, V8SF_FTYPE_V8SF_V8SF_INT_V8SF_QI,
+	V8DF_FTYPE_V8DF_V2DF_INT_V8DF_QI, V8DI_FTYPE_V8DI_V2DI_INT_V8DI_QI,
+	V8SI_FTYPE_V8SI_V8SI_INT_V8SI_QI, V4DI_FTYPE_V4DI_V4DI_INT_V4DI_QI,
+	V4SI_FTYPE_V4SI_V4SI_INT_V4SI_QI, V2DI_FTYPE_V2DI_V2DI_INT_V2DI_QI,
+	V32HI_FTYPE_V64QI_V64QI_INT_V32HI_SI, V16HI_FTYPE_V32QI_V32QI_INT_V16HI_HI,
+	V8HI_FTYPE_V16QI_V16QI_INT_V8HI_QI, V16SF_FTYPE_V16SF_V8SF_INT_V16SF_HI,
+	V16SI_FTYPE_V16SI_V8SI_INT_V16SI_HI, V8SF_FTYPE_V8SF_V4SF_INT_V8SF_QI,
+	V8SI_FTYPE_V8SI_V4SI_INT_V8SI_QI, V4DI_FTYPE_V4DI_V2DI_INT_V4DI_QI,
+	V4DF_FTYPE_V4DF_V2DF_INT_V4DF_QI, V8SF_FTYPE_V8SF_V8SF_V8SI_INT_QI,
+	V8SI_FTYPE_V8SI_V8SI_V8SI_INT_QI, V4DF_FTYPE_V4DF_V4DF_V4DI_INT_QI,
+	V4DI_FTYPE_V4DI_V4DI_V4DI_INT_QI, V4SI_FTYPE_V4SI_V4SI_V4SI_INT_QI,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_INT_QI, V8DI_FTYPE_V8DF_V8DI_QI_INT,
+	V8SF_FTYPE_V8DI_V8SF_QI_INT, V8DF_FTYPE_V8DI_V8DF_QI_INT,
+	V8DI_FTYPE_V8SF_V8DI_QI_INT, V16SF_FTYPE_V16SF_V16SF_INT_V16SF_HI_INT,
+	V8DF_FTYPE_V8DF_V8DF_INT_V8DF_QI_INT, VOID_FTYPE_PV4DI_V4DI_QI,
+	VOID_FTYPE_PV2DI_V2DI_QI, VOID_FTYPE_PV8SI_V8SI_QI,
+	VOID_FTYPE_PV4SI_V4SI_QI, VOID_FTYPE_PV4SI_V4DI_QI,
+	VOID_FTYPE_PV4SI_V2DI_QI, VOID_FTYPE_PV8HI_V4DI_QI,
+	VOID_FTYPE_PV8HI_V2DI_QI, VOID_FTYPE_PV8HI_V8SI_QI,
+	VOID_FTYPE_PV8HI_V4SI_QI, VOID_FTYPE_PV16QI_V4DI_QI,
+	VOID_FTYPE_PV16QI_V2DI_QI, VOID_FTYPE_PV16QI_V8SI_QI,
+	VOID_FTYPE_PV16QI_V4SI_QI, VOID_FTYPE_PV8HI_V8HI_QI,
+	VOID_FTYPE_PV16HI_V16HI_HI, VOID_FTYPE_PV32HI_V32HI_SI,
+	VOID_FTYPE_PV16QI_V16QI_HI, VOID_FTYPE_PV32QI_V32QI_SI,
+	VOID_FTYPE_PV64QI_V64QI_DI, VOID_FTYPE_PV4DF_V4DF_QI,
+	VOID_FTYPE_PV2DF_V2DF_QI, VOID_FTYPE_PV8SF_V8SF_QI,
+	VOID_FTYPE_PV4SF_V4SF_QI, V4SF_FTYPE_PCV4SF_V4SF_QI,
+	V8SF_FTYPE_PCV8SF_V8SF_QI, V4SI_FTYPE_PCV4SI_V4SI_QI,
+	V8SI_FTYPE_PCV8SI_V8SI_QI, V2DF_FTYPE_PCV2DF_V2DF_QI,
+	V4DF_FTYPE_PCV4DF_V4DF_QI, V2DI_FTYPE_PCV2DI_V2DI_QI,
+	V4DI_FTYPE_PCV4DI_V4DI_QI, V8HI_FTYPE_PCV8HI_V8HI_QI,
+	V16HI_FTYPE_PCV16HI_V16HI_HI, V32HI_FTYPE_PCV32HI_V32HI_SI,
+	V16QI_FTYPE_PCV16QI_V16QI_HI, V32QI_FTYPE_PCV32QI_V32QI_SI,
+	V64QI_FTYPE_PCV64QI_V64QI_DI, do not handle V8USI_FTYPE_V8USI.
+
+2014-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Use uint64_t
+	type for the left shift in CASE_CONVERT case.
+
+2014-10-28  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.h (asan_intercepted_p): New function.
+	* asan.c (asan_mem_ref_hasher::hash): Remove MEM_REF access size from
+	hash value construction.  Call iterative_hash_expr instead of explicit
+	hash building.
+	(asan_mem_ref_hasher::equal): Change condition.
+	(has_mem_ref_been_instrumented): Likewise.
+	(update_mem_ref_hash_table): Likewise.
+	(maybe_update_mem_ref_hash_table): New function.
+	(instrument_strlen_call): Removed.
+	(get_mem_refs_of_builtin_call): Handle new parameter.
+	(instrument_builtin_call): Call maybe_update_mem_ref_hash_table instead
+	of instrument_mem_region_access if intercepted_p is true.
+	(instrument_mem_region_access): Instrument only base with len instead of
+	base and end with 1.
+	(build_check_stmt): Remove start_instrumented and end_instrumented
+	parameters.
+	(enum asan_check_flags): Remove ASAN_CHECK_START_INSTRUMENTED and
+	ASAN_CHECK_END_INSTRUMENTED.  Change ASAN_CHECK_LAST.
+	(asan_expand_check_ifn): Remove start_instrumented and end_instrumented.
+	* builtins.c (expand_builtin): Include asan.h.  Don't expand string/memory
+	builtin functions that have interceptors if ASan is enabled.
+
+2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63665
+	* fold-const.c (fold_comparison): Properly guard simplifying
+	against INT_MAX/INT_MIN with !TYPE_OVERFLOW_WRAPS.
+
+2014-10-28  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* expr.c (expand_expr_real_2): Remove code handling VEC_LSHIFT_EXPR.
+	* fold-const.c (const_binop): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	(expand_vec_shift_expr): Likewise, update comment.
+	* tree.def: Delete VEC_LSHIFT_EXPR, remove comment.
+	* optabs.h (expand_vec_shift_expr): Remove comment re. VEC_LSHIFT_EXPR.
+	* optabs.def: Remove vec_shl_optab.
+	* doc/md.texi: Remove references to vec_shr_m.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (report_error_func): Add noabort path.
+	(check_func): Ditto.  Formatting.
+	(asan_expand_check_ifn): Handle noabort path.
+	* common.opt (flag_sanitize_recover): Add SANITIZE_KERNEL_ADDRESS
+	to default value.
+	* doc/invoke.texi (-fsanitize-recover=): Mention KASan.
+	* opts.c (finish_options): Reword comment.
+	* sanitizer.def: Add noabort ASan builtins.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (set_asan_shadow_offset): New function.
+	(asan_shadow_offset): Likewise.
+	(asan_emit_stack_protection): Call asan_shadow_offset.
+	(build_shadow_mem_access): Likewise.
+	* asan.h (set_asan_shadow_offset): Declare.
+	* common.opt (fasan-shadow-offset): New option.
+	(frandom-seed): Fixed parameter name.
+	* doc/invoke.texi (fasan-shadow-offset): Describe new option.
+	(frandom-seed): Fixed parameter name.
+	* opts-global.c (handle_common_deferred_options): Handle
+	-fasan-shadow-offset.
+	* opts.c (common_handle_option): Likewise.
+
+2014-10-27  Jiong Wang <jiong.wang@arm.com>
+
+	PR target/63442
+	* optabs.c (prepare_cmp_insn): Use "ret_mode" instead of "word_mode".
+
+2014-10-27  DJ Delorie  <dj@redhat.com>
+
+	* tree.c (build_common_tree_nodes): Don't even store the
+	__int128 types if they're not supported.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c (ix86_loop_memcount): Delete.
+	(ix86_loop_unroll_adjust): Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c (find_constant_1): Delete.
+	(find_constant): Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c (extended_reg_mentioned_1): Delete.
+	(x86_extended_reg_mentioned_p): Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c: Include rtl-iter.h
+	(ix86_check_avx256_register): Take a const_rtx and return a bool.
+	(ix86_check_avx256_stores): Update call accordingly.
+	(ix86_avx_u128_mode_entry, ix86_avx_u128_mode_exit): Likewise.
+	(ix86_avx_u128_mode_needed): Likewise.  Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/alpha/alpha-protos.h (some_small_symbolic_operand_int):
+	Take an rtx and return a bool.
+	* config/alpha/alpha.c (some_small_symbolic_operand_int): Likewise.
+	Use FOR_EACH_SUBRTX_VAR.
+	* config/alpha/predicates.md (some_small_symbolic_operand): Update
+	accordingly.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/alpha/alpha-protos.h (alpha_find_lo_sum_using_gp): Return
+	a bool.
+	* config/alpha/alpha.c (find_lo_sum_using_gp): Delete.
+	(alpha_find_lo_sum_using_gp): Use FOR_EACH_SUBRTX.  Return a bool.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/alpha/alpha.c (alpha_set_memflags_1): Delete.
+	(alpha_set_memflags): Use FOR_EACH_SUBRTX_VAR.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/alpha/alpha.c: Include rtl-iter.h.
+	(split_small_symbolic_operand_1): Delete.
+	(split_small_symbolic_operand): Use FOR_EACH_SUBRTX_PTR.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/s390/s390.c: Include rtl-iter.h.
+	(check_dpu): Delete.
+	(s390_loop_unroll_adjust): Only iterate over patterns.
+	Use FOR_EACH_SUBRTX.
+
+2014-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/spu/spu.c: Include rtl-iter.h
+	(ea_symbol_ref): Replace with...
+	(ea_symbol_ref_p): ...this new function.
+	(spu_legitimate_address_p): Update call accordingly.
+	(spu_legitimate_constant_p): Likewise.  Use FOR_EACH_SUBRTX.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure: Rebuild.
+	* Makefile.in (aclocal_deps): Add gcc-plugin.m4.
+	* configure.ac: Use GCC_ENABLE_PLUGINS.
+	* stor-layout.c (finish_bitfield_layout): Now public.  Change
+	argument type to 'tree'.
+	(finish_record_layout): Update.
+	* stor-layout.h (finish_bitfield_layout): Declare.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Define again.
+	* config/aarch64/aarch64-builtins.c (aarch64_gimple_fold_builtin):
+	Restore, enable for bigendian, update to use __builtin..._scal...
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (reduc_smax_, reduc_smin_,
+	reduc_umax_, reduc_umin_, reduc_smax_nan_, reduc_smin_nan_): Remove.
+	(reduc_smax_scal_, reduc_smin_scal_, reduc_umax_scal_,
+	reduc_umin_scal_, reduc_smax_nan_scal_, reduc_smin_nan_scal_): New.
+
+	* config/aarch64/aarch64-simd.md
+	(reduc_<maxmin_uns>_<mode>): Rename VDQV_S variant to...
+	(reduc_<maxmin_uns>_internal<mode>): ...this.
+	(reduc_<maxmin_uns>_<mode>): New (VDQ_BHSI).
+	(reduc_<maxmin_uns>_scal_<mode>): New (*2).
+
+	(reduc_<maxmin_uns>_v2si): Combine with below, renaming...
+	(reduc_<maxmin_uns>_<mode>): Combine V2F with above, renaming...
+	(reduc_<maxmin_uns>_internal_<mode>): ...to this (VDQF).
+
+	* config/aarch64/arm_neon.h (vmaxv_f32, vmaxv_s8, vmaxv_s16,
+	vmaxv_s32, vmaxv_u8, vmaxv_u16, vmaxv_u32, vmaxvq_f32, vmaxvq_f64,
+	vmaxvq_s8, vmaxvq_s16, vmaxvq_s32, vmaxvq_u8, vmaxvq_u16, vmaxvq_u32,
+	vmaxnmv_f32, vmaxnmvq_f32, vmaxnmvq_f64, vminv_f32, vminv_s8,
+	vminv_s16, vminv_s32, vminv_u8, vminv_u16, vminv_u32, vminvq_f32,
+	vminvq_f64, vminvq_s8, vminvq_s16, vminvq_s32, vminvq_u8, vminvq_u16,
+	vminvq_u32, vminnmv_f32, vminnmvq_f32, vminnmvq_f64): Update to use
+	__builtin_aarch64_reduc_..._scal; remove vget_lane wrapper.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_splus_<mode>/VDQF, reduc_uplus_<mode>/VDQF, reduc_splus_v4sf):
+	Remove.
+	(reduc_plus_scal_<mode>, reduc_plus_scal_v4sf): New.
+
+	* config/aarch64/aarch64-simd.md (reduc_<sur>plus_mode): Remove.
+	(reduc_splus_<mode>, reduc_uplus_<mode>, reduc_plus_scal_<mode>): New.
+
+	(reduc_<sur>plus_mode): Change SUADDV -> UNSPEC_ADDV, rename to...
+	(aarch64_reduc_plus_internal<mode>): ...this.
+
+	(reduc_<sur>plus_v2si): Change SUADDV -> UNSPEC_ADDV, rename to...
+	(aarch64_reduc_plus_internalv2si): ...this.
+
+	(reduc_splus_<mode>/V2F): Rename to...
+	(aarch64_reduc_plus_internal<mode>): ...this.
+
+	* config/aarch64/iterators.md
+	(UNSPEC_SADDV, UNSPEC_UADDV, SUADDV): Remove.
+	(UNSPEC_ADDV): New.
+	(sur): Remove elements for UNSPEC_SADDV and UNSPEC_UADDV.
+
+	* config/aarch64/arm_neon.h (vaddv_s8, vaddv_s16, vaddv_s32, vaddv_u8,
+	vaddv_u16, vaddv_u32, vaddvq_s8, vaddvq_s16, vaddvq_s32, vaddvq_s64,
+	vaddvq_u8, vaddvq_u16, vaddvq_u32, vaddvq_u64, vaddv_f32, vaddvq_f32,
+	vaddvq_f64): Change __builtin_aarch64_reduc_[us]plus_... to
+	__builtin_aarch64_reduc_plus_scal, remove vget_lane wrapper.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/61114
+	* doc/md.texi (Standard Names): Add reduc_(plus,[us](min|max))|scal
+	optabs, and note in reduc_[us](plus|min|max) to prefer the former.
+
+	* expr.c (expand_expr_real_2): Use reduc_..._scal if available, fall
+	back to old reduc_... + BIT_FIELD_REF only if not.
+
+	* optabs.c (optab_for_tree_code): for REDUC_(MAX,MIN,PLUS)_EXPR,
+	return the reduce-to-scalar (reduc_..._scal) optab.
+	(scalar_reduc_to_vector): New.
+
+	* optabs.def (reduc_smax_scal_optab, reduc_smin_scal_optab,
+	reduc_plus_scal_optab, reduc_umax_scal_optab, reduc_umin_scal_optab):
+	New.
+
+	* optabs.h (scalar_reduc_to_vector): Declare.
+
+	* tree-vect-loop.c (vectorizable_reduction): Look for optabs reducing
+	to either scalar or vector.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/61114
+	* expr.c (expand_expr_real_2): For REDUC_{MIN,MAX,PLUS}_EXPR, add
+	extract_bit_field around optab result.
+
+	* fold-const.c (fold_unary_loc): For REDUC_{MIN,MAX,PLUS}_EXPR, produce
+	scalar not vector.
+
+	* tree-cfg.c (verify_gimple_assign_unary): Check result vs operand type
+	for REDUC_{MIN,MAX,PLUS}_EXPR.
+
+	* tree-vect-loop.c (vect_analyze_loop): Update comment.
+	(vect_create_epilog_for_reduction): For direct vector reduction, use
+	result of tree code directly without extract_bit_field.
+
+	* tree.def (REDUC_MAX_EXPR, REDUC_MIN_EXPR, REDUC_PLUS_EXPR): Update
+	comment.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* basic-block.h: Remove all includes.
+	(enum profile_status_d, struct control_flow_graph): Move to cfg.h
+	* cfg.h (profile_status_d, struct control_flow_graph): Relocate here.
+	* Makefile.in (GTFILES): Add cfg.h to list.
+	* cgraph.h (symbol_table::create_empty): Move to cgraph.c.
+	* cgraph.c (symbol_table::create_empty): Relocate from cgraph.h.
+	* genconditions.c (write_header): Add predict.h and basic-block.h to
+	lits of includes.
+	* genemit.c (main): Ditto.
+	* genpreds.c (write_insn_preds_c): Ditto.
+	* genrecog.c (write_header): Ditto.
+	* gengtype.c (open_base_files): Add predict.h, basic-block.h, and cfg.h
+	to list of includes.
+	* alias.c: Adjust include files.
+	* asan.c: Ditto.
+	* auto-inc-dec.c: Ditto.
+	* auto-profile.c: Ditto.
+	* bb-reorder.c: Ditto.
+	* bt-load.c: Ditto.
+	* builtins.c: Ditto.
+	* caller-save.c: Ditto.
+	* calls.c: Ditto.
+	* cfg.c: Ditto.
+	* cfganal.c: Ditto.
+	* cfgbuild.c: Ditto.
+	* cfgcleanup.c: Ditto.
+	* cfgexpand.c: Ditto.
+	* cfghooks.c: Ditto.
+	* cfgloop.c: Ditto.
+	* cfgloopanal.c: Ditto.
+	* cfgloopmanip.c: Ditto.
+	* cfgrtl.c: Ditto.
+	* cgraphbuild.c: Ditto.
+	* cgraphclones.c: Ditto.
+	* cgraphunit.c: Ditto.
+	* combine-stack-adj.c: Ditto.
+	* combine.c: Ditto.
+	* compare-elim.c: Ditto.
+	* coverage.c: Ditto.
+	* cprop.c: Ditto.
+	* cse.c: Ditto.
+	* cselib.c: Ditto.
+	* data-streamer-in.c: Ditto.
+	* data-streamer-out.c: Ditto.
+	* data-streamer.c: Ditto.
+	* dce.c: Ditto.
+	* ddg.c: Ditto.
+	* ddg.h: Ditto.
+	* df-core.c: Ditto.
+	* df-problems.c: Ditto.
+	* df-scan.c: Ditto.
+	* df.h: Ditto.
+	* dojump.c: Ditto.
+	* dominance.c: Ditto.
+	* domwalk.c: Ditto.
+	* dse.c: Ditto.
+	* dwarf2cfi.c: Ditto.
+	* emit-rtl.c: Ditto.
+	* et-forest.c: Ditto.
+	* except.c: Ditto.
+	* expmed.c: Ditto.
+	* expr.c: Ditto.
+	* final.c: Ditto.
+	* fold-const.c: Ditto.
+	* function.c: Ditto.
+	* fwprop.c: Ditto.
+	* gcc-plugin.h: Ditto.
+	* gcse.c: Ditto.
+	* generic-match-head.c: Ditto.
+	* ggc-page.c: Ditto.
+	* gimple-builder.c: Ditto.
+	* gimple-expr.c: Ditto.
+	* gimple-fold.c: Ditto.
+	* gimple-iterator.c: Ditto.
+	* gimple-low.c: Ditto.
+	* gimple-match-head.c: Ditto.
+	* gimple-pretty-print.c: Ditto.
+	* gimple-ssa-isolate-paths.c: Ditto.
+	* gimple-ssa-strength-reduction.c: Ditto.
+	* gimple-streamer-in.c: Ditto.
+	* gimple-streamer-out.c: Ditto.
+	* gimple-streamer.h: Ditto.
+	* gimple-walk.c: Ditto.
+	* gimple.c: Ditto.
+	* gimplify-me.c: Ditto.
+	* gimplify.c: Ditto.
+	* graph.c: Ditto.
+	* graphite-blocking.c: Ditto.
+	* graphite-clast-to-gimple.c: Ditto.
+	* graphite-dependences.c: Ditto.
+	* graphite-interchange.c: Ditto.
+	* graphite-isl-ast-to-gimple.c: Ditto.
+	* graphite-optimize-isl.c: Ditto.
+	* graphite-poly.c: Ditto.
+	* graphite-scop-detection.c: Ditto.
+	* graphite-sese-to-poly.c: Ditto.
+	* graphite.c: Ditto.
+	* haifa-sched.c: Ditto.
+	* hw-doloop.c: Ditto.
+	* ifcvt.c: Ditto.
+	* init-regs.c: Ditto.
+	* internal-fn.c: Ditto.
+	* ipa-cp.c: Ditto.
+	* ipa-devirt.c: Ditto.
+	* ipa-icf-gimple.c: Ditto.
+	* ipa-icf.c: Ditto.
+	* ipa-inline-analysis.c: Ditto.
+	* ipa-inline.c: Ditto.
+	* ipa-polymorphic-call.c: Ditto.
+	* ipa-profile.c: Ditto.
+	* ipa-prop.c: Ditto.
+	* ipa-pure-const.c: Ditto.
+	* ipa-reference.c: Ditto.
+	* ipa-split.c: Ditto.
+	* ipa-utils.c: Ditto.
+	* ipa.c: Ditto.
+	* ira-build.c: Ditto.
+	* ira-color.c: Ditto.
+	* ira-conflicts.c: Ditto.
+	* ira-costs.c: Ditto.
+	* ira-emit.c: Ditto.
+	* ira-lives.c: Ditto.
+	* ira.c: Ditto.
+	* jump.c: Ditto.
+	* lcm.c: Ditto.
+	* loop-doloop.c: Ditto.
+	* loop-init.c: Ditto.
+	* loop-invariant.c: Ditto.
+	* loop-iv.c: Ditto.
+	* loop-unroll.c: Ditto.
+	* lower-subreg.c: Ditto.
+	* lra-assigns.c: Ditto.
+	* lra-coalesce.c: Ditto.
+	* lra-constraints.c: Ditto.
+	* lra-eliminations.c: Ditto.
+	* lra-lives.c: Ditto.
+	* lra-spills.c: Ditto.
+	* lra.c: Ditto.
+	* lto-cgraph.c: Ditto.
+	* lto-compress.c: Ditto.
+	* lto-opts.c: Ditto.
+	* lto-section-in.c: Ditto.
+	* lto-section-out.c: Ditto.
+	* lto-streamer-in.c: Ditto.
+	* lto-streamer-out.c: Ditto.
+	* lto-streamer.c: Ditto.
+	* mcf.c: Ditto.
+	* mode-switching.c: Ditto.
+	* modulo-sched.c: Ditto.
+	* omp-low.c: Ditto.
+	* optabs.c: Ditto.
+	* opts-global.c: Ditto.
+	* passes.c: Ditto.
+	* postreload-gcse.c: Ditto.
+	* postreload.c: Ditto.
+	* predict.c: Ditto.
+	* print-rtl.c: Ditto.
+	* profile.c: Ditto.
+	* recog.c: Ditto.
+	* ree.c: Ditto.
+	* reg-stack.c: Ditto.
+	* regcprop.c: Ditto.
+	* regcprop.h: Ditto.
+	* reginfo.c: Ditto.
+	* regrename.c: Ditto.
+	* regstat.c: Ditto.
+	* reload.c: Ditto.
+	* reload1.c: Ditto.
+	* reorg.c: Ditto.
+	* resource.c: Ditto.
+	* rtlanal.c: Ditto.
+	* sched-deps.c: Ditto.
+	* sched-ebb.c: Ditto.
+	* sched-int.h: Ditto.
+	* sched-rgn.c: Ditto.
+	* sched-vis.c: Ditto.
+	* sel-sched-dump.c: Ditto.
+	* sel-sched-ir.c: Ditto.
+	* sel-sched-ir.h: Ditto.
+	* sel-sched.c: Ditto.
+	* sese.c: Ditto.
+	* shrink-wrap.c: Ditto.
+	* stack-ptr-mod.c: Ditto.
+	* stmt.c: Ditto.
+	* store-motion.c: Ditto.
+	* symtab.c: Ditto.
+	* toplev.c: Ditto.
+	* tracer.c: Ditto.
+	* trans-mem.c: Ditto.
+	* tree-affine.c: Ditto.
+	* tree-call-cdce.c: Ditto.
+	* tree-cfg.c: Ditto.
+	* tree-cfgcleanup.c: Ditto.
+	* tree-chrec.c: Ditto.
+	* tree-complex.c: Ditto.
+	* tree-data-ref.c: Ditto.
+	* tree-dfa.c: Ditto.
+	* tree-eh.c: Ditto.
+	* tree-emutls.c: Ditto.
+	* tree-if-conv.c: Ditto.
+	* tree-inline.c: Ditto.
+	* tree-into-ssa.c: Ditto.
+	* tree-loop-distribution.c: Ditto.
+	* tree-nested.c: Ditto.
+	* tree-nrv.c: Ditto.
+	* tree-object-size.c: Ditto.
+	* tree-outof-ssa.c: Ditto.
+	* tree-parloops.c: Ditto.
+	* tree-phinodes.c: Ditto.
+	* tree-predcom.c: Ditto.
+	* tree-pretty-print.c: Ditto.
+	* tree-profile.c: Ditto.
+	* tree-scalar-evolution.c: Ditto.
+	* tree-sra.c: Ditto.
+	* tree-ssa-address.c: Ditto.
+	* tree-ssa-alias.c: Ditto.
+	* tree-ssa-ccp.c: Ditto.
+	* tree-ssa-coalesce.c: Ditto.
+	* tree-ssa-copy.c: Ditto.
+	* tree-ssa-copyrename.c: Ditto.
+	* tree-ssa-dce.c: Ditto.
+	* tree-ssa-dom.c: Ditto.
+	* tree-ssa-dse.c: Ditto.
+	* tree-ssa-forwprop.c: Ditto.
+	* tree-ssa-ifcombine.c: Ditto.
+	* tree-ssa-live.c: Ditto.
+	* tree-ssa-loop-ch.c: Ditto.
+	* tree-ssa-loop-im.c: Ditto.
+	* tree-ssa-loop-ivcanon.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-ssa-loop-manip.c: Ditto.
+	* tree-ssa-loop-niter.c: Ditto.
+	* tree-ssa-loop-prefetch.c: Ditto.
+	* tree-ssa-loop-unswitch.c: Ditto.
+	* tree-ssa-loop.c: Ditto.
+	* tree-ssa-math-opts.c: Ditto.
+	* tree-ssa-operands.c: Ditto.
+	* tree-ssa-phiopt.c: Ditto.
+	* tree-ssa-phiprop.c: Ditto.
+	* tree-ssa-pre.c: Ditto.
+	* tree-ssa-propagate.c: Ditto.
+	* tree-ssa-reassoc.c: Ditto.
+	* tree-ssa-sccvn.c: Ditto.
+	* tree-ssa-sink.c: Ditto.
+	* tree-ssa-strlen.c: Ditto.
+	* tree-ssa-structalias.c: Ditto.
+	* tree-ssa-tail-merge.c: Ditto.
+	* tree-ssa-ter.c: Ditto.
+	* tree-ssa-threadedge.c: Ditto.
+	* tree-ssa-threadupdate.c: Ditto.
+	* tree-ssa-uncprop.c: Ditto.
+	* tree-ssa-uninit.c: Ditto.
+	* tree-ssa.c: Ditto.
+	* tree-ssanames.c: Ditto.
+	* tree-stdarg.c: Ditto.
+	* tree-streamer-in.c: Ditto.
+	* tree-streamer-out.c: Ditto.
+	* tree-streamer.c: Ditto.
+	* tree-switch-conversion.c: Ditto.
+	* tree-tailcall.c: Ditto.
+	* tree-vect-data-refs.c: Ditto.
+	* tree-vect-generic.c: Ditto.
+	* tree-vect-loop-manip.c: Ditto.
+	* tree-vect-loop.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree-vect-slp.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tree-vectorizer.c: Ditto.
+	* tree-vrp.c: Ditto.
+	* tree.c: Ditto.
+	* tsan.c: Ditto.
+	* ubsan.c: Ditto.
+	* valtrack.c: Ditto.
+	* valtrack.h: Ditto.
+	* value-prof.c: Ditto.
+	* var-tracking.c: Ditto.
+	* varasm.c: Ditto.
+	* varpool.c: Ditto.
+	* vtable-verify.c: Ditto.
+	* web.c: Ditto.
+	* config/aarch64/aarch64-builtins.c: Ditto.
+	* config/aarch64/aarch64.c: Ditto.
+	* config/alpha/alpha.c: Ditto.
+	* config/arc/arc.c: Ditto.
+	* config/arm/arm.c: Ditto.
+	* config/avr/avr.c: Ditto.
+	* config/bfin/bfin.c: Ditto.
+	* config/c6x/c6x.c: Ditto.
+	* config/cr16/cr16.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/darwin-c.c: Ditto.
+	* config/darwin.c: Ditto.
+	* config/epiphany/epiphany.c: Ditto.
+	* config/epiphany/mode-switch-use.c: Ditto.
+	* config/epiphany/resolve-sw-modes.c: Ditto.
+	* config/fr30/fr30.c: Ditto.
+	* config/frv/frv.c: Ditto.
+	* config/h8300/h8300.c: Ditto.
+	* config/i386/i386.c: Ditto.
+	* config/i386/winnt.c: Ditto.
+	* config/ia64/ia64.c: Ditto.
+	* config/iq2000/iq2000.c: Ditto.
+	* config/lm32/lm32.c: Ditto.
+	* config/m32c/m32c.c: Ditto.
+	* config/m32r/m32r.c: Ditto.
+	* config/m68k/m68k.c: Ditto.
+	* config/mcore/mcore.c: Ditto.
+	* config/mep/mep.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/mips/mips.c: Ditto.
+	* config/mmix/mmix.c: Ditto.
+	* config/mn10300/mn10300.c: Ditto.
+	* config/moxie/moxie.c: Ditto.
+	* config/msp430/msp430.c: Ditto.
+	* config/nds32/nds32-cost.c: Ditto.
+	* config/nds32/nds32-fp-as-gp.c: Ditto.
+	* config/nds32/nds32-intrinsic.c: Ditto.
+	* config/nds32/nds32-isr.c: Ditto.
+	* config/nds32/nds32-md-auxiliary.c: Ditto.
+	* config/nds32/nds32-memory-manipulation.c: Ditto.
+	* config/nds32/nds32-pipelines-auxiliary.c: Ditto.
+	* config/nds32/nds32-predicates.c: Ditto.
+	* config/nds32/nds32.c: Ditto.
+	* config/nios2/nios2.c: Ditto.
+	* config/pa/pa.c: Ditto.
+	* config/pdp11/pdp11.c: Ditto.
+	* config/rl78/rl78.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rx/rx.c: Ditto.
+	* config/s390/s390.c: Ditto.
+	* config/sh/sh-mem.cc: Ditto.
+	* config/sh/sh.c: Ditto.
+	* config/sh/sh_optimize_sett_clrt.cc: Ditto.
+	* config/sh/sh_treg_combine.cc: Ditto.
+	* config/sparc/sparc.c: Ditto.
+	* config/spu/spu.c: Ditto.
+	* config/stormy16/stormy16.c: Ditto.
+	* config/tilegx/tilegx.c: Ditto.
+	* config/tilepro/tilepro.c: Ditto.
+	* config/v850/v850.c: Ditto.
+	* config/vax/vax.c: Ditto.
+	* config/xtensa/xtensa.c: Ditto.
+
+2014-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Comment out.
+	* config/aarch64/aarch64-builtins.c (aarch64_gimple_fold_builtin):
+	Remove using preprocessor directives.
+
+2014-10-27  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (0 % X): Properly use the iterator iterating over
+	all modulo operators.
+	(X % 1): Likewise.
+
+2014-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c: Include tree-cfgcleanup.h and tree-into-ssa.h.
+	(lattice): New global.
+	(fwprop_ssa_val): New function.
+	(fold_all_stmts): Likewise.
+	(pass_forwprop::execute): Finally fold all stmts.
+
 2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53061

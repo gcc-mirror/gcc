@@ -943,7 +943,8 @@ configure-host:  \
     maybe-configure-libtermcap \
     maybe-configure-utils \
     maybe-configure-gnattools \
-    maybe-configure-lto-plugin
+    maybe-configure-lto-plugin \
+    maybe-configure-libcc1
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -1098,6 +1099,7 @@ all-host: maybe-all-gnattools
 @if lto-plugin-no-bootstrap
 all-host: maybe-all-lto-plugin
 @endif lto-plugin-no-bootstrap
+all-host: maybe-all-libcc1
 
 .PHONY: all-target
 
@@ -1198,6 +1200,7 @@ info-host: maybe-info-libtermcap
 info-host: maybe-info-utils
 info-host: maybe-info-gnattools
 info-host: maybe-info-lto-plugin
+info-host: maybe-info-libcc1
 
 .PHONY: info-target
 
@@ -1283,6 +1286,7 @@ dvi-host: maybe-dvi-libtermcap
 dvi-host: maybe-dvi-utils
 dvi-host: maybe-dvi-gnattools
 dvi-host: maybe-dvi-lto-plugin
+dvi-host: maybe-dvi-libcc1
 
 .PHONY: dvi-target
 
@@ -1368,6 +1372,7 @@ pdf-host: maybe-pdf-libtermcap
 pdf-host: maybe-pdf-utils
 pdf-host: maybe-pdf-gnattools
 pdf-host: maybe-pdf-lto-plugin
+pdf-host: maybe-pdf-libcc1
 
 .PHONY: pdf-target
 
@@ -1453,6 +1458,7 @@ html-host: maybe-html-libtermcap
 html-host: maybe-html-utils
 html-host: maybe-html-gnattools
 html-host: maybe-html-lto-plugin
+html-host: maybe-html-libcc1
 
 .PHONY: html-target
 
@@ -1538,6 +1544,7 @@ TAGS-host: maybe-TAGS-libtermcap
 TAGS-host: maybe-TAGS-utils
 TAGS-host: maybe-TAGS-gnattools
 TAGS-host: maybe-TAGS-lto-plugin
+TAGS-host: maybe-TAGS-libcc1
 
 .PHONY: TAGS-target
 
@@ -1623,6 +1630,7 @@ install-info-host: maybe-install-info-libtermcap
 install-info-host: maybe-install-info-utils
 install-info-host: maybe-install-info-gnattools
 install-info-host: maybe-install-info-lto-plugin
+install-info-host: maybe-install-info-libcc1
 
 .PHONY: install-info-target
 
@@ -1708,6 +1716,7 @@ install-pdf-host: maybe-install-pdf-libtermcap
 install-pdf-host: maybe-install-pdf-utils
 install-pdf-host: maybe-install-pdf-gnattools
 install-pdf-host: maybe-install-pdf-lto-plugin
+install-pdf-host: maybe-install-pdf-libcc1
 
 .PHONY: install-pdf-target
 
@@ -1793,6 +1802,7 @@ install-html-host: maybe-install-html-libtermcap
 install-html-host: maybe-install-html-utils
 install-html-host: maybe-install-html-gnattools
 install-html-host: maybe-install-html-lto-plugin
+install-html-host: maybe-install-html-libcc1
 
 .PHONY: install-html-target
 
@@ -1878,6 +1888,7 @@ installcheck-host: maybe-installcheck-libtermcap
 installcheck-host: maybe-installcheck-utils
 installcheck-host: maybe-installcheck-gnattools
 installcheck-host: maybe-installcheck-lto-plugin
+installcheck-host: maybe-installcheck-libcc1
 
 .PHONY: installcheck-target
 
@@ -1963,6 +1974,7 @@ mostlyclean-host: maybe-mostlyclean-libtermcap
 mostlyclean-host: maybe-mostlyclean-utils
 mostlyclean-host: maybe-mostlyclean-gnattools
 mostlyclean-host: maybe-mostlyclean-lto-plugin
+mostlyclean-host: maybe-mostlyclean-libcc1
 
 .PHONY: mostlyclean-target
 
@@ -2048,6 +2060,7 @@ clean-host: maybe-clean-libtermcap
 clean-host: maybe-clean-utils
 clean-host: maybe-clean-gnattools
 clean-host: maybe-clean-lto-plugin
+clean-host: maybe-clean-libcc1
 
 .PHONY: clean-target
 
@@ -2133,6 +2146,7 @@ distclean-host: maybe-distclean-libtermcap
 distclean-host: maybe-distclean-utils
 distclean-host: maybe-distclean-gnattools
 distclean-host: maybe-distclean-lto-plugin
+distclean-host: maybe-distclean-libcc1
 
 .PHONY: distclean-target
 
@@ -2218,6 +2232,7 @@ maintainer-clean-host: maybe-maintainer-clean-libtermcap
 maintainer-clean-host: maybe-maintainer-clean-utils
 maintainer-clean-host: maybe-maintainer-clean-gnattools
 maintainer-clean-host: maybe-maintainer-clean-lto-plugin
+maintainer-clean-host: maybe-maintainer-clean-libcc1
 
 .PHONY: maintainer-clean-target
 
@@ -2357,7 +2372,8 @@ check-host:  \
     maybe-check-libtermcap \
     maybe-check-utils \
     maybe-check-gnattools \
-    maybe-check-lto-plugin
+    maybe-check-lto-plugin \
+    maybe-check-libcc1
 
 .PHONY: check-target
 check-target:  \
@@ -2468,7 +2484,8 @@ install-host-nogcc:  \
     maybe-install-libtermcap \
     maybe-install-utils \
     maybe-install-gnattools \
-    maybe-install-lto-plugin
+    maybe-install-lto-plugin \
+    maybe-install-libcc1
 
 .PHONY: install-host
 install-host:  \
@@ -2516,7 +2533,8 @@ install-host:  \
     maybe-install-libtermcap \
     maybe-install-utils \
     maybe-install-gnattools \
-    maybe-install-lto-plugin
+    maybe-install-lto-plugin \
+    maybe-install-libcc1
 
 .PHONY: install-target
 install-target:  \
@@ -2621,7 +2639,8 @@ install-strip-host:  \
     maybe-install-strip-libtermcap \
     maybe-install-strip-utils \
     maybe-install-strip-gnattools \
-    maybe-install-strip-lto-plugin
+    maybe-install-strip-lto-plugin \
+    maybe-install-strip-libcc1
 
 .PHONY: install-strip-target
 install-strip-target:  \
@@ -32266,6 +32285,447 @@ maintainer-clean-lto-plugin:
 
 
 
+.PHONY: configure-libcc1 maybe-configure-libcc1
+maybe-configure-libcc1:
+@if gcc-bootstrap
+configure-libcc1: stage_current
+@endif gcc-bootstrap
+@if libcc1
+maybe-configure-libcc1: configure-libcc1
+configure-libcc1: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libcc1/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcc1 ; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/libcc1; \
+	cd "$(HOST_SUBDIR)/libcc1" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libcc1/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libcc1; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} --enable-shared \
+	  || exit 1
+@endif libcc1
+
+
+
+
+
+.PHONY: all-libcc1 maybe-all-libcc1
+maybe-all-libcc1:
+@if gcc-bootstrap
+all-libcc1: stage_current
+@endif gcc-bootstrap
+@if libcc1
+TARGET-libcc1=all
+maybe-all-libcc1: all-libcc1
+all-libcc1: configure-libcc1
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-libcc1))
+@endif libcc1
+
+
+
+
+.PHONY: check-libcc1 maybe-check-libcc1
+maybe-check-libcc1:
+@if libcc1
+maybe-check-libcc1: check-libcc1
+
+check-libcc1:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif libcc1
+
+.PHONY: install-libcc1 maybe-install-libcc1
+maybe-install-libcc1:
+@if libcc1
+maybe-install-libcc1: install-libcc1
+
+install-libcc1: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libcc1
+
+.PHONY: install-strip-libcc1 maybe-install-strip-libcc1
+maybe-install-strip-libcc1:
+@if libcc1
+maybe-install-strip-libcc1: install-strip-libcc1
+
+install-strip-libcc1: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libcc1
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libcc1 info-libcc1
+maybe-info-libcc1:
+@if libcc1
+maybe-info-libcc1: info-libcc1
+
+info-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-dvi-libcc1 dvi-libcc1
+maybe-dvi-libcc1:
+@if libcc1
+maybe-dvi-libcc1: dvi-libcc1
+
+dvi-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-pdf-libcc1 pdf-libcc1
+maybe-pdf-libcc1:
+@if libcc1
+maybe-pdf-libcc1: pdf-libcc1
+
+pdf-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-html-libcc1 html-libcc1
+maybe-html-libcc1:
+@if libcc1
+maybe-html-libcc1: html-libcc1
+
+html-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-TAGS-libcc1 TAGS-libcc1
+maybe-TAGS-libcc1:
+@if libcc1
+maybe-TAGS-libcc1: TAGS-libcc1
+
+TAGS-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-install-info-libcc1 install-info-libcc1
+maybe-install-info-libcc1:
+@if libcc1
+maybe-install-info-libcc1: install-info-libcc1
+
+install-info-libcc1: \
+    configure-libcc1 \
+    info-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-install-pdf-libcc1 install-pdf-libcc1
+maybe-install-pdf-libcc1:
+@if libcc1
+maybe-install-pdf-libcc1: install-pdf-libcc1
+
+install-pdf-libcc1: \
+    configure-libcc1 \
+    pdf-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-install-html-libcc1 install-html-libcc1
+maybe-install-html-libcc1:
+@if libcc1
+maybe-install-html-libcc1: install-html-libcc1
+
+install-html-libcc1: \
+    configure-libcc1 \
+    html-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-installcheck-libcc1 installcheck-libcc1
+maybe-installcheck-libcc1:
+@if libcc1
+maybe-installcheck-libcc1: installcheck-libcc1
+
+installcheck-libcc1: \
+    configure-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-mostlyclean-libcc1 mostlyclean-libcc1
+maybe-mostlyclean-libcc1:
+@if libcc1
+maybe-mostlyclean-libcc1: mostlyclean-libcc1
+
+mostlyclean-libcc1: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-clean-libcc1 clean-libcc1
+maybe-clean-libcc1:
+@if libcc1
+maybe-clean-libcc1: clean-libcc1
+
+clean-libcc1: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-distclean-libcc1 distclean-libcc1
+maybe-distclean-libcc1:
+@if libcc1
+maybe-distclean-libcc1: distclean-libcc1
+
+distclean-libcc1: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-maintainer-clean-libcc1 maintainer-clean-libcc1
+maybe-maintainer-clean-libcc1:
+@if libcc1
+maybe-maintainer-clean-libcc1: maintainer-clean-libcc1
+
+maintainer-clean-libcc1: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libcc1" ; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libcc1
+
+
+
 # ---------------------------------------
 # Modules which run on the target machine
 # ---------------------------------------
@@ -48906,6 +49366,8 @@ all-stage3-lto-plugin: maybe-all-stage3-libiberty-linker-plugin
 all-stage4-lto-plugin: maybe-all-stage4-libiberty-linker-plugin
 all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty-linker-plugin
 all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty-linker-plugin
+configure-libcc1: maybe-configure-gcc
+all-libcc1: maybe-all-gcc
 all-utils: maybe-all-libiberty
 configure-mpfr: maybe-all-gmp
 

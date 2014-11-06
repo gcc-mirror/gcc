@@ -230,8 +230,10 @@ struct mips_cpu_info {
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
 #define TARGET_OCTEON		    (mips_arch == PROCESSOR_OCTEON	\
-				     || mips_arch == PROCESSOR_OCTEON2)
-#define TARGET_OCTEON2		    (mips_arch == PROCESSOR_OCTEON2)
+				     || mips_arch == PROCESSOR_OCTEON2	\
+				     || mips_arch == PROCESSOR_OCTEON3)
+#define TARGET_OCTEON2		    (mips_arch == PROCESSOR_OCTEON2	\
+				     || mips_arch == PROCESSOR_OCTEON3)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
@@ -261,7 +263,8 @@ struct mips_cpu_info {
 #define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
 #define TUNE_OCTEON		    (mips_tune == PROCESSOR_OCTEON	\
-				     || mips_tune == PROCESSOR_OCTEON2)
+				     || mips_tune == PROCESSOR_OCTEON2	\
+				     || mips_tune == PROCESSOR_OCTEON3)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
 				     || mips_tune == PROCESSOR_SB1A)
 #define TUNE_P5600                  (mips_tune == PROCESSOR_P5600)
@@ -2872,9 +2875,6 @@ while (0)
    ? MIPS_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX		\
    : MIPS_CALL_RATIO / 2)
 
-#define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  mips_move_by_pieces_p (SIZE, ALIGN)
-
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
 
@@ -2887,9 +2887,6 @@ while (0)
 
 #define SET_RATIO(speed) \
   ((speed) ? 15 : MIPS_CALL_RATIO - 2)
-
-#define STORE_BY_PIECES_P(SIZE, ALIGN) \
-  mips_store_by_pieces_p (SIZE, ALIGN)
 
 /* Since the bits of the _init and _fini function is spread across
    many object files, each potentially with its own GP, we must assume

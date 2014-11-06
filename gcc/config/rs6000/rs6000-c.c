@@ -4436,7 +4436,7 @@ assignment for unaligned loads and stores");
       tree arg1_inner_type;
       tree decl, stmt;
       tree innerptrtype;
-      enum machine_mode mode;
+      machine_mode mode;
 
       /* No second argument. */
       if (nargs != 2)
@@ -4538,7 +4538,7 @@ assignment for unaligned loads and stores");
       tree arg1_inner_type;
       tree decl, stmt;
       tree innerptrtype;
-      enum machine_mode mode;
+      machine_mode mode;
 
       /* No second or third arguments. */
       if (nargs != 3)

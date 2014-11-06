@@ -23,6 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -1328,7 +1339,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   gimple stmt;
   edge exit = single_dom_exit (loop);
   gimple_seq stmts;
-  enum machine_mode mode;
+  machine_mode mode;
   bool unsigned_p = false;
 
   for (psi = gsi_start_phis (loop->header);

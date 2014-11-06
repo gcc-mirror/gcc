@@ -47,6 +47,15 @@
 #include "expr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "tm_p.h"
 #include "tm-constrs.h"
@@ -202,7 +211,7 @@ rtx
 nds32_expand_builtin_impl (tree exp,
 			   rtx target,
 			   rtx subtarget ATTRIBUTE_UNUSED,
-			   enum machine_mode mode ATTRIBUTE_UNUSED,
+			   machine_mode mode ATTRIBUTE_UNUSED,
 			   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);

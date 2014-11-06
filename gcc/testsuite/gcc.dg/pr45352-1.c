@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* ia64-*-* x86_64-*-* } } */
+/* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O3 -fschedule-insns -fschedule-insns2 -fselective-scheduling2 -fsel-sched-pipelining -funroll-loops -fprefetch-loop-arrays" } */
 
 void main1 (float *pa, float *pc)

@@ -123,6 +123,7 @@ host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
 		extra_make_flags='@extra_linker_plugin_flags@'; };
+host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -358,6 +359,9 @@ dependencies = { module=all-gnattools; on=all-target-libstdc++-v3; };
 // generic libiberty build or the specific build for linker plugins.
 dependencies = { module=all-lto-plugin; on=all-libiberty; };
 dependencies = { module=all-lto-plugin; on=all-libiberty-linker-plugin; };
+
+dependencies = { module=configure-libcc1; on=configure-gcc; };
+dependencies = { module=all-libcc1; on=all-gcc; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
 

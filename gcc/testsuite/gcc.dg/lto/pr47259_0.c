@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-skip-if "" { ! { x86_64-*-* } } { "*" } { "" } } */
+/* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } { "*" } { "" } } */
 /* { dg-lto-options { { -O2 -flto -w } } } */
 
 register int r asm("esi");

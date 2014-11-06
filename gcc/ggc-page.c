@@ -30,9 +30,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc-internal.h"
 #include "timevar.h"
 #include "params.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "plugin.h"
+#include "basic-block.h"
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  Prefer either to valloc.  */

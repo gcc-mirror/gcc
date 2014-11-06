@@ -418,6 +418,20 @@ package body Exp_Ch13 is
             Apply_Address_Clause_Check (E, N);
          end if;
 
+         --  Analyze actions in freeze node, if any.
+
+         if Present (Actions (N)) then
+            declare
+               Act : Node_Id;
+            begin
+               Act := First (Actions (N));
+               while Present (Act) loop
+                  Analyze (Act);
+                  Next (Act);
+               end loop;
+            end;
+         end if;
+
          --  If initialization statements have been captured in a compound
          --  statement, insert them back into the tree now.
 
@@ -566,7 +580,7 @@ package body Exp_Ch13 is
       --  If subprogram, freeze the subprogram
 
       elsif Is_Subprogram (E) then
-         Freeze_Subprogram (N);
+         Exp_Ch6.Freeze_Subprogram (N);
 
          --  Ada 2005 (AI-251): Remove the freezing node associated with the
          --  entities internally used by the frontend to register primitives

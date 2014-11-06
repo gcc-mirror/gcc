@@ -45,6 +45,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "dumpfile.h"
 #include "target.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -156,15 +161,15 @@ typedef struct alias_set_entry_d *alias_set_entry;
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, const_rtx, void *);
-static int base_alias_check (rtx, rtx, rtx, rtx, enum machine_mode,
-			     enum machine_mode);
+static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
+			     machine_mode);
 static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
-			       const_rtx, enum machine_mode, rtx,
+			       const_rtx, machine_mode, rtx,
 			       bool, bool, bool);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
@@ -1797,7 +1802,7 @@ may_be_sp_based_p (rtx x)
 
 static int
 base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
-		  enum machine_mode x_mode, enum machine_mode y_mode)
+		  machine_mode x_mode, machine_mode y_mode)
 {
   /* If the address itself has no known base see if a known equivalent
      value has one.  If either address still has no known base, nothing
@@ -2441,7 +2446,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
    Returns 1 if there is a true dependence, 0 otherwise.  */
 
 static int
-true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
+true_dependence_1 (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 		   const_rtx x, rtx x_addr, bool mem_canonicalized)
 {
   rtx true_mem_addr;
@@ -2523,7 +2528,7 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 /* True dependence: X is read after store in MEM takes place.  */
 
 int
-true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x)
+true_dependence (const_rtx mem, machine_mode mem_mode, const_rtx x)
 {
   return true_dependence_1 (mem, mem_mode, NULL_RTX,
 			    x, NULL_RTX, /*mem_canonicalized=*/false);
@@ -2536,7 +2541,7 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x)
    this value prior to canonicalizing.  */
 
 int
-canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
+canon_true_dependence (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 		       const_rtx x, rtx x_addr)
 {
   return true_dependence_1 (mem, mem_mode, mem_addr,
@@ -2551,7 +2556,7 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 
 static int
 write_dependence_p (const_rtx mem,
-		    const_rtx x, enum machine_mode x_mode, rtx x_addr,
+		    const_rtx x, machine_mode x_mode, rtx x_addr,
 		    bool mem_canonicalized, bool x_canonicalized, bool writep)
 {
   rtx mem_addr;
@@ -2646,7 +2651,7 @@ anti_dependence (const_rtx mem, const_rtx x)
 
 int
 canon_anti_dependence (const_rtx mem, bool mem_canonicalized,
-		       const_rtx x, enum machine_mode x_mode, rtx x_addr)
+		       const_rtx x, machine_mode x_mode, rtx x_addr)
 {
   return write_dependence_p (mem, x, x_mode, x_addr,
 			     mem_canonicalized, /*x_canonicalized=*/true,

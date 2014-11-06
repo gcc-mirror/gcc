@@ -3721,11 +3721,11 @@ extern tree signed_or_unsigned_type_for (int, tree);
 extern tree signed_type_for (tree);
 extern tree unsigned_type_for (tree);
 extern tree truth_type_for (tree);
-extern tree build_pointer_type_for_mode (tree, enum machine_mode, bool);
+extern tree build_pointer_type_for_mode (tree, machine_mode, bool);
 extern tree build_pointer_type (tree);
-extern tree build_reference_type_for_mode (tree, enum machine_mode, bool);
+extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
-extern tree build_vector_type_for_mode (tree, enum machine_mode);
+extern tree build_vector_type_for_mode (tree, machine_mode);
 extern tree build_vector_type (tree innertype, int nunits);
 extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_index_type (tree);
@@ -4872,7 +4872,7 @@ extern tree build_personality_function (const char *);
    look for the ultimate containing object, which is returned and specify
    the access position and size.  */
 extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 tree *, enum machine_mode *, int *, int *,
+				 tree *, machine_mode *, int *, int *,
 				 bool);
 
 /* Return a tree representing the lower bound of the array mentioned in

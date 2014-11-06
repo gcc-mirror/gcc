@@ -329,14 +329,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="">
 	  N3905
 	</link>
       </entry>
       <entry>Faster string searching (Boyer-Moore et al.)</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
@@ -387,14 +386,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3925.pdf">
 	  N3925
 	</link>
       </entry>
       <entry>A sample proposal</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 

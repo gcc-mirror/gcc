@@ -142,6 +142,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "except.h"
 #include "recog.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "sched-int.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -1723,7 +1729,7 @@ setup_insn_reg_pressure_info (rtx_insn *insn)
 {
   int i, change, before, after, hard_regno;
   int excess_cost_change;
-  enum machine_mode mode;
+  machine_mode mode;
   enum reg_class cl;
   struct reg_pressure_data *pressure_info;
   int *max_reg_pressure;

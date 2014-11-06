@@ -1946,7 +1946,7 @@
 {
   rtx cmp_op0 = XEXP (operands[1], 0);
   rtx cmp_op1 = XEXP (operands[1], 1);
-  enum machine_mode cmp_in_mode;
+  machine_mode cmp_in_mode;
   enum rtx_code code = GET_CODE (operands[1]);
 
   cmp_in_mode = GET_MODE (cmp_op0);

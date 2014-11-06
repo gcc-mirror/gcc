@@ -145,6 +145,8 @@ public:
   /* Memory release routine.  */
   ~func_checker();
 
+  /* Function visits all gimple labels and creates corresponding
+     mapping between basic blocks and labels.  */
   void parse_labels (sem_bb *bb);
 
   /* Basic block equivalence comparison function that returns true if

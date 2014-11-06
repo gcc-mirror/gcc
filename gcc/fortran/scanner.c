@@ -324,16 +324,16 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (stat (q, &st))
     {
       if (errno != ENOENT)
-	gfc_warning_cmdline ("Include directory %qs: %s", path,
-			     xstrerror(errno));
+	gfc_warning_now_2 ("Include directory %qs: %s", path,
+			   xstrerror(errno));
       else if (warn)
-	gfc_warning_cmdline (OPT_Wmissing_include_dirs,
-			     "Nonexistent include directory %qs", path);
+	gfc_warning_now_2 (OPT_Wmissing_include_dirs,
+			   "Nonexistent include directory %qs", path);
       return;
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_cmdline ("%qs is not a directory", path);
+      gfc_warning_now_2 ("%qs is not a directory", path);
       return;
     }
 
@@ -1476,11 +1476,11 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      && !seen_printable && seen_ampersand)
 	    {
 	      if (pedantic)
-		gfc_error_now ("'&' not allowed by itself in line %d",
-			       current_line);
+		gfc_error_now_2 ("%<&%> not allowed by itself in line %d",
+				   current_line);
 	      else
-		gfc_warning_now ("'&' not allowed by itself in line %d",
-				 current_line);
+		gfc_warning_now_2 ("%<&%> not allowed by itself in line %d",
+				     current_line);
 	    }
 	  break;
 	}
@@ -1538,8 +1538,8 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      && current_line != linenum)
 	    {
 	      linenum = current_line;
-	      gfc_warning_now ("Nonconforming tab character in column %d "
-			       "of line %d", i+1, linenum);
+	      gfc_warning_now_2 ("Nonconforming tab character in column %d "
+				   "of line %d", i+1, linenum);
 	    }
 
 	  while (i < 6)
@@ -1922,7 +1922,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	input = gfc_open_file (realfilename);
       if (input == NULL)
 	{
-	  gfc_error_cmdline ("Can't open file %qs", filename);
+	  gfc_error_now_2 ("Can't open file %qs", filename);
 	  return false;
 	}
     }

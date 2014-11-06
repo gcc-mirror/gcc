@@ -553,6 +553,8 @@ package body Prj.Part is
 
    begin
       In_Tree.Incomplete_With := False;
+      Project_Stack.Init;
+      Tree_Private_Part.Projects_Htable.Reset (In_Tree.Projects_HT);
 
       if not Is_Initialized (Env.Project_Path) then
          Prj.Env.Initialize_Default_Project_Path
@@ -1296,7 +1298,6 @@ package body Prj.Part is
       Name_From_Path  : constant Name_Id :=
         Project_Name_From (Path_Name, Is_Config_File => Is_Config_File);
       Name_Of_Project : Name_Id := No_Name;
-      Display_Name_Of_Project : Name_Id := No_Name;
 
       Duplicated : Boolean := False;
 
@@ -1632,11 +1633,11 @@ package body Prj.Part is
             end if;
          end;
 
-         --  Read the original casing of the project name
+         --  Read the original casing of the project name and put it in the
+         --  project node.
 
          declare
             Loc : Source_Ptr;
-
          begin
             Loc := Location_Of (Project, In_Tree);
             for J in 1 .. Name_Len loop
@@ -1644,7 +1645,7 @@ package body Prj.Part is
                Loc := Loc + 1;
             end loop;
 
-            Display_Name_Of_Project := Name_Find;
+            Set_Display_Name_Of (Project, In_Tree, Name_Find);
          end;
 
          declare
@@ -2016,7 +2017,6 @@ package body Prj.Part is
            (T => In_Tree.Projects_HT,
             K => Name_Of_Project,
             E => (Name           => Name_Of_Project,
-                  Display_Name   => Display_Name_Of_Project,
                   Node           => Project,
                   Resolved_Path  => Resolved_Path_Name,
                   Extended       => Extended,

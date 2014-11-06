@@ -126,14 +126,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "basic-block.h"
+#include "predict.h"
+#include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "vec.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
@@ -419,7 +422,7 @@ set_value_varying (tree var)
 static void
 canonicalize_value (ccp_prop_value_t *val)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   tree type;
   REAL_VALUE_TYPE d;
 
