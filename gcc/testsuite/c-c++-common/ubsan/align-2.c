@@ -51,4 +51,6 @@ main ()
 /* { dg-output "\.c:(13|16):\[0-9]*: \[^\n\r]*store to misaligned address 0x\[0-9a-fA-F]* for type 'int', which requires 4 byte alignment.*" } */
 /* { dg-output "\.c:23:\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment.*" } */
 /* { dg-output "\.c:(29|30):\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment.*" } */
+/* { dg-output "\.c:30:\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment.*" } */
+/* { dg-output "\.c:31:\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment.*" } */
 /* { dg-output "\.c:37:\[0-9]*: \[^\n\r]*load of misaligned address 0x\[0-9a-fA-F]* for type 'long long int', which requires \[48] byte alignment" } */

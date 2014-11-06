@@ -35,3 +35,5 @@ main (void)
 
 // { dg-output "\.C:26:\[0-9]*:\[\^\n\r]*member call on null pointer of type 'struct U'.*" }
 // { dg-output "\.C:29:\[0-9]*:\[\^\n\r]*member call on null pointer of type 'struct V'.*" }
+// { dg-output "\.C:31:\[0-9]*:\[\^\n\r]*member call on null pointer of type 'struct V'.*" }
+// { dg-output "\.C:33:\[0-9]*:\[\^\n\r]*member call on null pointer of type 'struct V'" }
