@@ -2342,7 +2342,10 @@ copy_blkmode_to_reg (machine_mode mode, tree src)
 void
 use_reg_mode (rtx *call_fusage, rtx reg, machine_mode mode)
 {
-  gcc_assert (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER);
+  gcc_assert (REG_P (reg));
+
+  if (!HARD_REGISTER_P (reg))
+    return;
 
   *call_fusage
     = gen_rtx_EXPR_LIST (mode, gen_rtx_USE (VOIDmode, reg), *call_fusage);
