@@ -1,3 +1,14 @@
+2014-11-06  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/cond.md (movqicc_<code>_<mode>): Remove mode of
+	conditional.
+	(movhicc_<code>_<mode>): Likewise.
+	* config/m32c/m32c.c (encode_pattern_1): Specialise PSImode
+	subregs.
+	(m32c_eh_return_data_regno): Change to using memregs to avoid
+	tying up all the compute regs.
+	(m32c_legitimate_address_p) Subregs are not valid addresses.
+
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* target.def (call_args, end_call_args): New hooks.
