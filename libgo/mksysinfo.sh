@@ -475,9 +475,9 @@ if test "$regs" == ""; then
   regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
   if test "$regs" != ""; then
     # Substructures of __user_regs_struct on s390
-    upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT}
-    upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT}
-    upcase_fields "__user_per_struct" "PtracePer" >> ${OUT}
+    upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT} || true
+    upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT} || true
+    upcase_fields "__user_per_struct" "PtracePer" >> ${OUT} || true
   fi
 fi
 if test "$regs" != ""; then
@@ -746,7 +746,7 @@ grep '^const _SCM_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(SCM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The ucred struct.
-upcase_fields "_ucred" "Ucred" >> ${OUT}
+upcase_fields "_ucred" "Ucred" >> ${OUT} || true
 
 # The ip_mreq struct.
 grep '^type _ip_mreq ' gen-sysinfo.go | \
