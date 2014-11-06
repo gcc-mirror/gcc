@@ -221,6 +221,7 @@
    hypersparc,
    leon,
    leon3,
+   leon3v7,
    sparclite,
    f930,
    f934,
