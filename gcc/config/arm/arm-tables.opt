@@ -241,6 +241,15 @@ EnumValue
 Enum(processor_type) String(cortex-m0plus) Value(cortexm0plus)
 
 EnumValue
+Enum(processor_type) String(cortex-m1.small-multiply) Value(cortexm1smallmultiply)
+
+EnumValue
+Enum(processor_type) String(cortex-m0.small-multiply) Value(cortexm0smallmultiply)
+
+EnumValue
+Enum(processor_type) String(cortex-m0plus.small-multiply) Value(cortexm0plussmallmultiply)
+
+EnumValue
 Enum(processor_type) String(generic-armv7-a) Value(genericv7a)
 
 EnumValue

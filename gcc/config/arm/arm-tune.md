@@ -25,6 +25,7 @@
 	arm1176jzs,arm1176jzfs,mpcorenovfp,
 	mpcore,arm1156t2s,arm1156t2fs,
 	cortexm1,cortexm0,cortexm0plus,
+	cortexm1smallmultiply,cortexm0smallmultiply,cortexm0plussmallmultiply,
 	genericv7a,cortexa5,cortexa7,
 	cortexa8,cortexa9,cortexa12,
 	cortexa15,cortexr4,cortexr4f,
