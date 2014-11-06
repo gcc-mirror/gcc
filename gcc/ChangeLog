@@ -1,5 +1,29 @@
 2014-11-06  Hale Wang  <Hale.Wang@arm.com>
 
+	* config/arm/arm-cores.def: Add support for
+	-mcpu=cortex-m0.small-multiply,cortex-m0plus.small-multiply,
+	cortex-m1.small-multiply.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm.c: Update the rtx-costs for MUL.
+	* config/arm/bpabi.h: Handle
+	-mcpu=cortex-m0.small-multiply,cortex-m0plus.small-multiply,
+	cortex-m1.small-multiply.
+	* doc/invoke.texi: Document
+	-mcpu=cortex-m0.small-multiply,cortex-m0plus.small-multiply,
+	cortex-m1.small-multiply.
+	* testsuite/gcc.target/arm/small-multiply-m0-1.c: New test case.
+	* testsuite/gcc.target/arm/small-multiply-m0-2.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m0-3.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m0plus-1.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m0plus-2.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m0plus-3.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m1-1.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m1-2.c: Likewise.
+	* testsuite/gcc.target/arm/small-multiply-m1-3.c: Likewise.
+
+2014-11-06  Hale Wang  <Hale.Wang@arm.com>
+
 	* config/arm/arm.c: Add cortex-m7 tune.
 	* config/arm/arm-cores.def: Use cortex-m7 tune.
 

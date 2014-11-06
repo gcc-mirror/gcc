@@ -137,6 +137,11 @@ ARM_CORE("cortex-m1",		cortexm1, cortexm1,		6M, FL_LDSCHED, v6m)
 ARM_CORE("cortex-m0",		cortexm0, cortexm0,		6M, FL_LDSCHED, v6m)
 ARM_CORE("cortex-m0plus",	cortexm0plus, cortexm0plus,	6M, FL_LDSCHED, v6m)
 
+/* V6M Architecture Processors for small-multiply implementations.  */
+ARM_CORE("cortex-m1.small-multiply",	cortexm1smallmultiply, cortexm1,	6M, FL_LDSCHED | FL_SMALLMUL, v6m)
+ARM_CORE("cortex-m0.small-multiply",	cortexm0smallmultiply, cortexm0,	6M, FL_LDSCHED | FL_SMALLMUL, v6m)
+ARM_CORE("cortex-m0plus.small-multiply",cortexm0plussmallmultiply, cortexm0plus,6M, FL_LDSCHED | FL_SMALLMUL, v6m)
+
 /* V7 Architecture Processors */
 ARM_CORE("generic-armv7-a",	genericv7a, genericv7a,		7A,  FL_LDSCHED, cortex)
 ARM_CORE("cortex-a5",		cortexa5, cortexa5,		7A,  FL_LDSCHED, cortex_a5)
