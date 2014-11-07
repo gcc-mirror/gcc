@@ -290,15 +290,40 @@ fold_assignment_stmt (gimple stmt)
 }
 
 /* A new value has been assigned to LHS.  If necessary, invalidate any
-   equivalences that are no longer valid.  */
+   equivalences that are no longer valid.   This includes invaliding
+   LHS and any objects that are currently equivalent to LHS.
+
+   Finding the objects that are currently marked as equivalent to LHS
+   is a bit tricky.  We could walk the ssa names and see if any have
+   SSA_NAME_VALUE that is the same as LHS.  That's expensive.
+
+   However, it's far more efficient to look at the unwinding stack as
+   that will have all context sensitive equivalences which are the only
+   ones that we really have to worry about here.   */
 static void
 invalidate_equivalences (tree lhs, vec<tree> *stack)
 {
 
-  for (unsigned int i = 1; i < num_ssa_names; i++)
-    if (ssa_name (i) && SSA_NAME_VALUE (ssa_name (i)) == lhs)
-      record_temporary_equivalence (ssa_name (i), NULL_TREE, stack);
+  /* The stack is an unwinding stack.  If the current element is NULL
+     then it's a "stop unwinding" marker.  Else the current marker is
+     the SSA_NAME with an equivalence and the prior entry in the stack
+     is what the current element is equivalent to.  */
+  for (int i = stack->length() - 1; i >= 0; i--)
+    {
+      /* Ignore the stop unwinding markers.  */
+      if ((*stack)[i] == NULL)
+	continue;
 
+      /* We want to check the current value of stack[i] to see if
+	 it matches LHS.  If so, then invalidate.  */
+      if (SSA_NAME_VALUE ((*stack)[i]) == lhs)
+	record_temporary_equivalence ((*stack)[i], NULL_TREE, stack);
+
+      /* Remember, we're dealing with two elements in this case.  */
+      i--;
+    }
+
+  /* And invalidate any known value for LHS itself.  */
   if (SSA_NAME_VALUE (lhs))
     record_temporary_equivalence (lhs, NULL_TREE, stack);
 }
