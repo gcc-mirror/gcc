@@ -496,6 +496,7 @@ package body Inline is
          end if;
 
          Last_Inlined := E;
+
       else
          Register_Backend_Not_Inlined_Subprogram (E);
       end if;
@@ -3323,6 +3324,7 @@ package body Inline is
 
       D := First (Decls);
       while Present (D) loop
+
          --  First declarations universally excluded
 
          if Nkind (D) = N_Package_Declaration then

@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug; use Debug;
 with Opt;   use Opt;
 with Table;
 with Types; use Types;
@@ -395,7 +396,11 @@ package body Snames is
         and then (Ada_Version >= Ada_95
                    or else N not in Ada_95_Reserved_Words)
         and then (Ada_Version >= Ada_2005
-                   or else N not in Ada_2005_Reserved_Words)
+                   or else N not in Ada_2005_Reserved_Words
+                   or else (Debug_Flag_Dot_DD and then N = Name_Overriding))
+                   --  Accept 'overriding' keywords if -gnatd.D is used,
+                   --  for compatibility with Ada 95 compilers implementing
+                   --  only this Ada 2005 extension.
         and then (Ada_Version >= Ada_2012
                    or else N not in Ada_2012_Reserved_Words);
    end Is_Keyword_Name;

@@ -2681,7 +2681,7 @@ package body Sem_Util is
 
    begin
       --  The Ghost policy in effect at the point of declaration and at the
-      --  point of completion must match (SPARK RM 6.9(14)).
+      --  point of completion must match (SPARK RM 6.9(15)).
 
       if Is_Checked_Ghost_Entity (Partial_View)
         and then Policy = Name_Ignore

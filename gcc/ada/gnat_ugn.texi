@@ -3588,6 +3588,13 @@ Enforce Ada 83 restrictions.
 @cindex @option{-gnat95} (@command{gcc})
 Enforce Ada 95 restrictions.
 
+Note: for compatibility with some Ada 95 compilers which support only
+the @code{overriding} keyword of Ada 2005, the @option{-gnatd.D} switch can
+be used along with @option{-gnat95} to achieve a similar effect with GNAT.
+
+@option{-gnatd.D} instructs GNAT to consider @code{overriding} as a keyword
+and handle its associated semantic checks, even in Ada 95 mode.
+
 @item -gnat05
 @cindex @option{-gnat05} (@command{gcc})
 Allow full Ada 2005 features.

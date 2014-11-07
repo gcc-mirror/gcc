@@ -5615,10 +5615,12 @@ package body Sem_Ch10 is
          Init_Size_Align       (Ent);
 
          --  A tagged type and its corresponding shadow entity share one common
-         --  class-wide type.
+         --  class-wide type. The list of primitive operations for the shadow
+         --  entity is empty.
 
          if Is_Tagged then
             Set_Is_Tagged_Type (Ent);
+            Set_Direct_Primitive_Operations (Ent, New_Elmt_List);
 
             if No (Class_Wide_Type (Ent)) then
                CW_Typ :=

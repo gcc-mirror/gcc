@@ -418,7 +418,7 @@ package body Exp_Ch13 is
             Apply_Address_Clause_Check (E, N);
          end if;
 
-         --  Analyze actions in freeze node, if any.
+         --  Analyze actions in freeze node, if any
 
          if Present (Actions (N)) then
             declare

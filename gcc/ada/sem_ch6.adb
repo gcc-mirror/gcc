@@ -1220,7 +1220,7 @@ package body Sem_Ch6 is
             Set_Is_Ghost_Entity (Body_Id);
 
             --  The Ghost policy in effect at the point of declaration and at
-            --  the point of completion must match (SPARK RM 6.9(14)).
+            --  the point of completion must match (SPARK RM 6.9(15)).
 
             Check_Ghost_Completion (Gen_Id, Body_Id);
          end if;
@@ -3343,7 +3343,7 @@ package body Sem_Ch6 is
                Set_Is_Ghost_Entity (Body_Id);
 
                --  The Ghost policy in effect at the point of declaration and
-               --  at the point of completion must match (SPARK RM 6.9(14)).
+               --  at the point of completion must match (SPARK RM 6.9(15)).
 
                Check_Ghost_Completion (Spec_Id, Body_Id);
             end if;

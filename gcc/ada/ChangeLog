@@ -1,3 +1,54 @@
+2014-11-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb, snames.adb-tmpl (Is_Keyword_Name): Consider 'overriding'
+	a keyword in Ada 95 mode when -gnatd.D is used.
+	* gnat_ugn.texi: Document -gnatd.D.
+
+2014-11-07  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnatls.adb: Lower severity of the program's return value in
+	some common cases.
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Decorate_Type): The limited view of a tagged
+	type has an empty list of primitive operations.
+
+2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Update references to SPARK
+	RM.
+	(Process_Full_View): Update references to SPARK RM.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Update references
+	to SPARK RM.
+	(Analyze_Subprogram_Body_Helper): Update references
+	to SPARK RM.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Update references
+	to SPARK RM.
+	* sem_prag.adb (Check_Ghost_Constituent): Update references to
+	SPARK RM.
+	* sem_res.adb (Check_Ghost_Policy): Update references to SPARK RM.
+	(Resolve_Actuals): Ensure that the actual parameter of a Ghost
+	subprogram whose formal is of mode IN OUT or OUT is Ghost.
+	* sem_util.adb (Check_Ghost_Completion): Update references to
+	SPARK RM.
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): If type of designated object is
+	derived from that of the formal of the Deep_Finalize procedure,
+	add an unchecked conversion to prevent spurious type error.
+
+2014-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* table.adb, inline.adb, einfo.adb, gnat1drv.adb, exp_ch13.adb,
+	exp_fixd.adb, prj-conf.adb, exp_strm.adb, a-cofove.adb, exp_ch3.ads:
+	Minor reformatting.
+
+2014-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb, sem_ch13.adb, prj-tree.adb: Minor reformatting.
+
 2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Set_Is_Checked_Ghost_Entity,
