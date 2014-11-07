@@ -242,6 +242,7 @@ package Ada.Containers.Formal_Hashed_Maps is
      Global => null;
 
    function Strict_Equal (Left, Right : Map) return Boolean with
+     Ghost,
      Global => null;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
@@ -249,10 +250,13 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    function First_To_Previous (Container : Map; Current : Cursor) return Map
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
+
    function Current_To_Last (Container : Map; Current : Cursor) return Map
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
    --  First_To_Previous returns a container containing all elements preceding
