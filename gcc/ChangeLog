@@ -1,8 +1,8 @@
 2014-11-07  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61515
-	* tree-ssa-threadedge.c (invalidate_equivalences): Walk the unwinding stack
-	rather than looking at ever SSA_NAME's value.
+	* tree-ssa-threadedge.c (invalidate_equivalences): Walk the unwinding
+	stack rather than looking at every SSA_NAME's value.
 
 2014-11-07  Richard Biener  <rguenther@suse.de>
 
