@@ -39,6 +39,11 @@ along with GCC; see the file COPYING3.  If not see
     (op @0 integer_zerop)
     (non_lvalue @0)))
 
+/* 0 +p index -> (type)index */
+(simplify
+ (pointer_plus integer_zerop @1)
+ (non_lvalue (convert @1)))
+
 /* Simplify x - x.
    This is unsafe for certain floats even in non-IEEE formats.
    In IEEE, it is unsafe because it does wrong for NaNs.
@@ -228,17 +233,48 @@ along with GCC; see the file COPYING3.  If not see
        && TYPE_PRECISION (TREE_TYPE (@1)) == 1)
    (le @0 @1)))
 
-/* From tree-ssa-forwprop.c:simplify_not_neg_expr.  */
-
 /* ~~x -> x */
 (simplify
   (bit_not (bit_not @0))
   @0)
 
-/* The corresponding (negate (negate @0)) -> @0 is in match-plusminus.pd.  */
 (simplify
  (negate (negate @0))
  @0)
+
+
+/* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
+(simplify
+  (pointer_plus (pointer_plus @0 @1) @3)
+  (pointer_plus @0 (plus @1 @3)))
+
+/* Pattern match
+     tem1 = (long) ptr1;
+     tem2 = (long) ptr2;
+     tem3 = tem2 - tem1;
+     tem4 = (unsigned long) tem3;
+     tem5 = ptr1 + tem4;
+   and produce
+     tem5 = ptr2;  */
+(simplify
+  (pointer_plus @0 (convert?@2 (minus@3 (convert @1) (convert @0))))
+  /* Conditionally look through a sign-changing conversion.  */
+  (if (TYPE_PRECISION (TREE_TYPE (@2)) == TYPE_PRECISION (TREE_TYPE (@3))
+       && ((GIMPLE && useless_type_conversion_p (type, TREE_TYPE (@1)))
+	    || (GENERIC && type == TREE_TYPE (@1))))
+   @1))
+
+/* Pattern match
+     tem = (sizetype) ptr;
+     tem = tem & algn;
+     tem = -tem;
+     ... = ptr p+ tem;
+   and produce the simpler and easier to analyze with respect to alignment
+     ... = ptr & ~algn;  */
+(simplify
+  (pointer_plus @0 (negate (bit_and (convert @0) INTEGER_CST@1)))
+  (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), wi::bit_not (@1)); }
+   (bit_and @0 { algn; })))
 
 
 /* Simplifications of conversions.  */

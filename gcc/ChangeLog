@@ -1,3 +1,26 @@
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add patterns for POINTER_PLUS_EXPR association
+	and special patterns from tree-ssa-forwprop.c
+	* fold-const.c (fold_binary_loc): Remove them here.
+	* tree-ssa-forwprop.c (to_purge): New global bitmap.
+	(fwprop_set_lattice_val): New function.
+	(fwprop_invalidate_lattice): Likewise.
+	(remove_prop_source_from_use): Instead of purging dead EH
+	edges record blocks to do that in to_purge.
+	(tidy_after_forward_propagate_addr): Likewise.
+	(forward_propagate_addr_expr): Invalidate the lattice for
+	SSA names we release.
+	(simplify_conversion_from_bitmask): Likewise.
+	(simplify_builtin_call): Likewise.
+	(associate_pointerplus_align): Remove.
+	(associate_pointerplus_diff): Likewise.
+	(associate_pointerplus): Likewise.
+	(fold_all_stmts): Merge with ...
+	(pass_forwprop::execute): ... the original loop over all
+	basic-blocks.  Delay purging dead EH edges and invalidate
+	the lattice for SSA names we release.
+
 2014-11-07  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.opt (masm-syntax-unified): New option.
