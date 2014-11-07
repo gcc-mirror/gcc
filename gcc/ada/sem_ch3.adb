@@ -3185,24 +3185,22 @@ package body Sem_Ch3 is
                      Obj_Id);
                end if;
             end if;
+         end if;
 
-            if Is_Ghost_Entity (Obj_Id) then
+         if Is_Ghost_Entity (Obj_Id) then
 
-               --  A Ghost object cannot be effectively volatile
-               --  (SPARK RM 6.9(8)).
+            --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8))
 
-               if Is_Effectively_Volatile (Obj_Id) then
-                  SPARK_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
+            if Is_Effectively_Volatile (Obj_Id) then
+               Error_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
 
-               --  A Ghost object cannot be imported or exported
-               --  (SPARK RM 6.9(8)).
+            --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8))
 
-               elsif Is_Imported (Obj_Id) then
-                  SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
+            elsif Is_Imported (Obj_Id) then
+               Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
 
-               elsif Is_Exported (Obj_Id) then
-                  SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
-               end if;
+            elsif Is_Exported (Obj_Id) then
+               Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
             end if;
          end if;
 
@@ -3256,10 +3254,10 @@ package body Sem_Ch3 is
 
       if Is_Ghost_Entity (Obj_Id) then
          if Is_Exported (Obj_Id) then
-            SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
+            Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
 
          elsif Is_Imported (Obj_Id) then
-            SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
+            Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
          end if;
       end if;
    end Analyze_Object_Contract;
@@ -4788,8 +4786,6 @@ package body Sem_Ch3 is
 
             when Class_Wide_Kind =>
                Set_Ekind                (Id, E_Class_Wide_Subtype);
-               Set_First_Entity         (Id, First_Entity       (T));
-               Set_Last_Entity          (Id, Last_Entity        (T));
                Set_Class_Wide_Type      (Id, Class_Wide_Type    (T));
                Set_Cloned_Subtype       (Id, T);
                Set_Is_Tagged_Type       (Id, True);

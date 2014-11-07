@@ -1,3 +1,31 @@
+2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Issue an error regardless of the
+	SPARK_Mode when a ghost type is effectively volatile.
+	* sem_ch3.adb (Analyze_Object_Contract): Decouple the checks
+	related to Ghost from SPARK_Mode.
+	* sem_res.adb (Check_Ghost_Policy): Issue an error regardless
+	of the SPARK_Mode when the Ghost policies do not match.
+	* sem_util.adb (Check_Ghost_Completion): Issue an error regardless
+	of the SPARK_Mode when the Ghost policies do not match.
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): return if name
+	in iterator does not have any usable aspect for iteration.
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): Reject a null procedure
+	that there is a previous null procedure in scope with a matching
+	profile.
+
+2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.adb (Copy_Separate_Tree): Copy the aspect specifications.
+	* inline.adb (Has_Some_Contract): Do the check only when the
+	related entity has been analyzed.
+
 2014-11-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Integer):
