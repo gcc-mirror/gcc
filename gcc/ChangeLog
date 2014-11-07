@@ -1,3 +1,8 @@
+2014-11-07  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config.gcc (sparc-*-rtems*): Clean away unused t-elf.
+	* config/sparc/t-rtems: Add leon3v7 and muser-mode multilibs.
+
 2014-11-07  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63580
