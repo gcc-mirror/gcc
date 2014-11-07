@@ -4502,39 +4502,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_FUNCTION_NAME:
 	case RID_PRETTY_FUNCTION_NAME:
 	case RID_C99_FUNCTION_NAME:
-	  {
-	    non_integral_constant name;
-
 	    /* The symbols __FUNCTION__, __PRETTY_FUNCTION__, and
-	       __func__ are the names of variables -- but they are
-	       treated specially.  Therefore, they are handled here,
-	       rather than relying on the generic id-expression logic
-	       below.  Grammatically, these names are id-expressions.
-
-	       Consume the token.  */
-	    token = cp_lexer_consume_token (parser->lexer);
-
-	    switch (token->keyword)
-	      {
-	      case RID_FUNCTION_NAME:
-		name = NIC_FUNC_NAME;
-		break;
-	      case RID_PRETTY_FUNCTION_NAME:
-		name = NIC_PRETTY_FUNC;
-		break;
-	      case RID_C99_FUNCTION_NAME:
-		name = NIC_C99_FUNC;
-		break;
-	      default:
-		gcc_unreachable ();
-	      }
-
-	    if (cp_parser_non_integral_constant_expression (parser, name))
-	      return error_mark_node;
-
-	    /* Look up the name.  */
-	    return finish_fname (token->u.value);
-	  }
+	       __func__ are the names of variables.  */
+	  goto id_expression;
 
 	case RID_VA_ARG:
 	  {
@@ -4955,6 +4925,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 			  bool optional_p)
 {
   cp_token *token;
+  tree id;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -4963,8 +4934,6 @@ cp_parser_unqualified_id (cp_parser* parser,
     {
     case CPP_NAME:
       {
-	tree id;
-
 	/* We don't know yet whether or not this will be a
 	   template-id.  */
 	cp_parser_parse_tentatively (parser);
@@ -5201,10 +5170,9 @@ cp_parser_unqualified_id (cp_parser* parser,
       }
 
     case CPP_KEYWORD:
-      if (token->keyword == RID_OPERATOR)
+      switch (token->keyword)
 	{
-	  tree id;
-
+	case RID_OPERATOR:
 	  /* This could be a template-id, so we try that first.  */
 	  cp_parser_parse_tentatively (parser);
 	  /* Try a template-id.  */
@@ -5234,6 +5202,16 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    }
 
 	  return id;
+
+	case RID_FUNCTION_NAME:
+	case RID_PRETTY_FUNCTION_NAME:
+	case RID_C99_FUNCTION_NAME:
+	  cp_lexer_consume_token (parser->lexer);
+	  finish_fname (token->u.value);
+	  return token->u.value;
+
+	default:
+	  break;
 	}
       /* Fall through.  */
 
