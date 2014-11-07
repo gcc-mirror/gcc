@@ -798,6 +798,19 @@ func_checker::compare_gimple_switch (gimple g1, gimple g2)
       tree label1 = gimple_switch_label (g1, i);
       tree label2 = gimple_switch_label (g2, i);
 
+      /* Label LOW and HIGH comparison.  */
+      tree low1 = CASE_LOW (label1);
+      tree low2 = CASE_LOW (label2);
+
+      if (!tree_int_cst_equal (low1, low2))
+	return return_false_with_msg ("case low values are different");
+
+      tree high1 = CASE_HIGH (label1);
+      tree high2 = CASE_HIGH (label2);
+
+      if (!tree_int_cst_equal (high1, high2))
+	return return_false_with_msg ("case high values are different");
+
       if (TREE_CODE (label1) == CASE_LABEL_EXPR
 	  && TREE_CODE (label2) == CASE_LABEL_EXPR)
 	{
