@@ -4,22 +4,21 @@
 # Daisuke Yamashita <yamad@mb.infoweb.ne.jp>, 1999-2001
 #    Masahito Yamaga <yamaga@ipc.chiba-u.ac.jp>, 1999.
 #    IIDA Yosiaki <iida@secom.ne.jp>, 1999.
-# Yasuaki Taniguchi <yasuakit@gmail.com>, 2010, 2011.
 # Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>, 2012, 2013
+# Yasuaki Taniguchi <yasuakit@gmail.com>, 2010, 2011, 2014.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.8-b20130224\n"
+"Project-Id-Version: cpplib 4.9-b20140202\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2014-02-02 17:35+0000\n"
-"PO-Revision-Date: 2013-03-04 18:01+0900\n"
-"Last-Translator: Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>\n"
+"PO-Revision-Date: 2014-11-07 08:19+0000\n"
+"Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.5.4\n"
 
 #: charset.c:673
 #, c-format
@@ -456,10 +455,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "整数定数に無効な接尾辞 \"%.*s\" があります"
 
 #: expr.c:667
-#, fuzzy
-#| msgid "use of C++0x long long integer constant"
 msgid "use of C++11 long long integer constant"
-msgstr "C++0x の long long 整数定数を使用しています"
+msgstr "C++11 の long long 整数定数を使用しています"
 
 #: expr.c:668
 msgid "use of C99 long long integer constant"
@@ -470,10 +467,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "虚数定数は GCC 拡張です"
 
 #: expr.c:690
-#, fuzzy
-#| msgid "binary constants are a GCC extension"
 msgid "binary constants are a C++1y feature or GCC extension"
-msgstr "二進定数は GCC 拡張です"
+msgstr "二進定数は C++1y の機能または GCC 拡張です"
 
 #: expr.c:787
 msgid "integer constant is too large for its type"
@@ -703,10 +698,8 @@ msgid "raw string delimiter longer than 16 characters"
 msgstr "生の文字列区切りが 16 文字より大きいです"
 
 #: lex.c:1558
-#, fuzzy
-#| msgid "invalid character '%c' in raw string delimiter"
 msgid "invalid new-line in raw string delimiter"
-msgstr "生の文字列区切り内に無効な文字 '%c' があります"
+msgstr "生の文字列区切り内に無効な改行があります"
 
 #: lex.c:1562
 #, c-format
@@ -718,10 +711,8 @@ msgid "unterminated raw string"
 msgstr "終端されていない生の文字列です"
 
 #: lex.c:1654 lex.c:1783
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "リテラルの接尾辞が無効です。C++11 では、リテラルと識別子の間にスペースを入れる必要があります。"
+msgstr "リテラルの接尾辞が無効です。C++11 では、リテラルと文字列マクロの間にスペースを入れる必要があります。"
 
 #: lex.c:1765
 msgid "null character(s) preserved in literal"
@@ -762,7 +753,7 @@ msgstr "無効な組み込みマクロ \"%s\" です"
 #: macro.c:236 macro.c:333
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
-msgstr ""
+msgstr "マクロ \"%s\" は再生性可能なビルドを阻害するかもしれません"
 
 #: macro.c:267
 msgid "could not determine file timestamp"
