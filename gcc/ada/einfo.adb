@@ -4748,6 +4748,7 @@ package body Einfo is
         or else Ekind (Id) = E_Abstract_State
         or else Ekind (Id) = E_Component
         or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Exception
         or else Ekind (Id) = E_Package_Body
         or else Ekind (Id) = E_Subprogram_Body);
       Set_Flag277 (Id, V);
@@ -4942,6 +4943,7 @@ package body Einfo is
         or else Ekind (Id) = E_Abstract_State
         or else Ekind (Id) = E_Component
         or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Exception
         or else Ekind (Id) = E_Package_Body
         or else Ekind (Id) = E_Subprogram_Body);
       Set_Flag278 (Id, V);
