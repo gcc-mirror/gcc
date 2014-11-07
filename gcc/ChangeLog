@@ -1,5 +1,10 @@
 2014-11-07  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/63770
+	* match.pd: Guard conflicting GENERIC pattern properly.
+
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Add patterns for POINTER_PLUS_EXPR association
 	and special patterns from tree-ssa-forwprop.c
 	* fold-const.c (fold_binary_loc): Remove them here.

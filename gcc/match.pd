@@ -129,14 +129,15 @@ along with GCC; see the file COPYING3.  If not see
   (bitop (convert @0) (convert? @1))
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	 && int_fits_type_p (@1, TREE_TYPE (@0))
-	 /* ???  This transform conflicts with fold-const.c doing
-	    Convert (T)(x & c) into (T)x & (T)c, if c is an integer
-	    constants (if x has signed type, the sign bit cannot be set
-	    in c).  This folds extension into the BIT_AND_EXPR.
-	    Restrict it to GIMPLE to avoid endless recursions.  */
-	 && (bitop != BIT_AND_EXPR || GIMPLE))
-	|| types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
+	 && int_fits_type_p (@1, TREE_TYPE (@0)))
+	|| (GIMPLE && types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
+	|| (GENERIC && TREE_TYPE (@0) == TREE_TYPE (@1)))
+       /* ???  This transform conflicts with fold-const.c doing
+	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
+	  constants (if x has signed type, the sign bit cannot be set
+	  in c).  This folds extension into the BIT_AND_EXPR.
+	  Restrict it to GIMPLE to avoid endless recursions.  */
+       && (bitop != BIT_AND_EXPR || GIMPLE)
        && (/* That's a good idea if the conversion widens the operand, thus
 	      after hoisting the conversion the operation will be narrower.  */
 	   TYPE_PRECISION (TREE_TYPE (@0)) < TYPE_PRECISION (type)

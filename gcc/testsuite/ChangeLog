@@ -1,3 +1,8 @@
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63770
+	* gcc.dg/pr63770.c: New testcase.
+
 2014-11-07  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/anddi_notdi-1.c: Match with UAL format.
