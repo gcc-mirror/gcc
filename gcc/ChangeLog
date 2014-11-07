@@ -1,3 +1,9 @@
+2014-11-07  Daniel Hellstrom  <daniel@gaisler.com>
+
+	Backport from mainline
+	* config.gcc (sparc-*-rtems*): Clean away unused t-elf.
+	* config/sparc/t-rtems: Add leon3v7 and muser-mode multilibs.
+
 2014-11-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
