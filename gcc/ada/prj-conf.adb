@@ -1105,17 +1105,17 @@ package body Prj.Conf is
 
             if Selected_Target /= null and then
                Selected_Target.all /= ""
+
             then
                Args (4) :=
                   new String'("--target=" & Selected_Target.all);
                Arg_Last := 4;
+
             elsif Normalized_Hostname /= "" then
                if At_Least_One_Compiler_Command then
-                  Args (4) :=
-                    new String'("--target=all");
+                  Args (4) := new String'("--target=all");
                else
-                  Args (4) :=
-                    new String'("--target=" & Normalized_Hostname);
+                  Args (4) := new String'("--target=" & Normalized_Hostname);
                end if;
 
                Arg_Last := 4;
@@ -1599,7 +1599,7 @@ package body Prj.Conf is
       Implicit_Project           : Boolean := False;
       On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
-      Success : Boolean := False;
+      Success          : Boolean := False;
       Target_Try_Again : Boolean := True;
       Config_Try_Again : Boolean;
 
@@ -1632,12 +1632,13 @@ package body Prj.Conf is
 
       Update_Ignore_Missing_With (Env.Flags, True);
 
-      Automatically_Generated := False;
-      --  If in fact the config file is automatically generated,
+      --  Note: If in fact the config file is automatically generated, then
       --  Automatically_Generated will be set to True after invocation of
       --  Process_Project_And_Apply_Config.
 
-      --  Record Target_Value and Target_Origin.
+      Automatically_Generated := False;
+
+      --  Record Target_Value and Target_Origin
 
       if Target_Name = "" then
          Opt.Target_Value  := new String'(Normalized_Hostname);
@@ -2165,11 +2166,11 @@ package body Prj.Conf is
       Tree       : Project_Tree_Ref;
       With_State : in out State)
    is
-      Lang_Id : Language_Ptr;
+      Lang_Id       : Language_Ptr;
       Compiler_Root : Compiler_Root_Ptr;
-      Runtime_Root : Runtime_Root_Ptr;
-      Comp_Driver : String_Access;
-      Comp_Dir : String_Access;
+      Runtime_Root  : Runtime_Root_Ptr;
+      Comp_Driver   : String_Access;
+      Comp_Dir      : String_Access;
       Prefix   : String_Access;
 
       pragma Unreferenced (Tree);
@@ -2226,8 +2227,9 @@ package body Prj.Conf is
 
                   declare
                      Runtime : constant String :=
-                       Runtime_Name_For (Lang_Id.Name);
-                     Root : String_Access;
+                                 Runtime_Name_For (Lang_Id.Name);
+                     Root    : String_Access;
+
                   begin
                      if Runtime'Length > 0 then
                         if Is_Absolute_Path (Runtime) then

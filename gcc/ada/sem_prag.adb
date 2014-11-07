@@ -23473,7 +23473,7 @@ package body Sem_Prag is
 
                      --  The Ghost policy in effect at the point of abstract
                      --  state declaration and constituent must match
-                     --  (SPARK RM 6.9(15)).
+                     --  (SPARK RM 6.9(16)).
 
                      if Is_Checked_Ghost_Entity (State_Id)
                        and then Is_Ignored_Ghost_Entity (Constit_Id)

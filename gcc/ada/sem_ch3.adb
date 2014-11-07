@@ -3925,7 +3925,7 @@ package body Sem_Ch3 is
 
                   --  The Ghost policy in effect at the point of declaration
                   --  and at the point of completion must match
-                  --  (SPARK RM 6.9(14)).
+                  --  (SPARK RM 6.9(15)).
 
                   if Present (Prev_Entity)
                     and then Is_Ghost_Entity (Prev_Entity)
@@ -4112,7 +4112,7 @@ package body Sem_Ch3 is
          Set_Is_Ghost_Entity (Id);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
+         --  point of completion must match (SPARK RM 6.9(16)).
 
          if Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity) then
             Check_Ghost_Completion (Prev_Entity, Id);
@@ -19786,7 +19786,7 @@ package body Sem_Ch3 is
          Set_Is_Ghost_Entity (Full_T);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
+         --  point of completion must match (SPARK RM 6.9(15)).
 
          Check_Ghost_Completion (Priv_T, Full_T);
 

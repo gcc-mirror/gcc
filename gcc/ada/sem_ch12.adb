@@ -3454,9 +3454,10 @@ package body Sem_Ch12 is
             ASN : Node_Id;
 
          begin
-            ASN := Make_Aspect_Specification (Loc,
-               Identifier => Make_Identifier (Loc, Name_Default_Storage_Pool),
-               Expression => New_Copy (Default_Pool));
+            ASN :=
+              Make_Aspect_Specification (Loc,
+                Identifier => Make_Identifier (Loc, Name_Default_Storage_Pool),
+                Expression => New_Copy (Default_Pool));
 
             if No (Aspect_Specifications (Specification (N))) then
                Set_Aspect_Specifications (Specification (N), New_List (ASN));
@@ -3972,8 +3973,8 @@ package body Sem_Ch12 is
 
                         ASN2 := First (Aspect_Specifications (Gen_Spec));
                         while Present (ASN2) loop
-                           if Chars (Identifier (ASN2))
-                              = Name_Default_Storage_Pool
+                           if Chars (Identifier (ASN2)) =
+                                                    Name_Default_Storage_Pool
                            then
                               Remove (ASN2);
                               exit;

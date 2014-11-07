@@ -841,7 +841,7 @@ package body Sem_Res is
 
       begin
          --  The Ghost policy in effect a the point of declaration and at the
-         --  point of use must match (SPARK RM 6.9(13)).
+         --  point of use must match (SPARK RM 6.9(14)).
 
          if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
             Error_Msg_Sloc := Sloc (Err_N);
@@ -4623,6 +4623,26 @@ package body Sem_Res is
                   & "as actual parameter", A);
                Error_Msg_NE
                  ("\subprogram & has Extensions_Visible True", A, Nam);
+            end if;
+
+            --  The actual parameter of a Ghost subprogram whose formal is of
+            --  mode IN OUT or OUT must be a Ghost variable (SPARK RM 6.9(13)).
+
+            if Is_Ghost_Entity (Nam)
+              and then Ekind_In (F, E_In_Out_Parameter, E_Out_Parameter)
+              and then Is_Entity_Name (A)
+              and then Present (Entity (A))
+              and then not Is_Ghost_Entity (Entity (A))
+            then
+               Error_Msg_NE
+                 ("non-ghost variable & cannot appear as actual in call to "
+                  & "ghost procedure", A, Entity (A));
+
+               if Ekind (F) = E_In_Out_Parameter then
+                  Error_Msg_N ("\corresponding formal has mode `IN OUT`", A);
+               else
+                  Error_Msg_N ("\corresponding formal has mode OUT", A);
+               end if;
             end if;
 
             Next_Actual (A);

@@ -26,7 +26,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Containers.Generic_Array_Sort;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Formal_Vectors is
@@ -41,7 +42,7 @@ package body Ada.Containers.Formal_Vectors is
    type Elements_Array_Ptr_Const is access constant Elements_Array;
 
    procedure Free is
-      new Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
+      new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
 
    function Elems (Container : in out Vector) return Elements_Array_Ptr;
    function Elemsc
