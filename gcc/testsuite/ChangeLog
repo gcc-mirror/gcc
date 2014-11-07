@@ -1,3 +1,7 @@
+2014-11-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/undefined-2.c: New test.
+
 2014-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63538
