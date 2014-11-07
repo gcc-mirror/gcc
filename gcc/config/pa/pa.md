@@ -123,7 +123,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,sh_func_adrs,parallel_branch,fpstore_load,store_fpload"
+  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,sh_func_adrs,parallel_branch,fpstore_load,store_fpload,trap"
   (const_string "binary"))
 
 (define_attr "pa_combine_type"
@@ -166,7 +166,7 @@
 ;; For conditional branches. Frame related instructions are not allowed
 ;; because they confuse the unwind support.
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch,trap")
 		     (eq_attr "length" "4")
 		     (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 		(const_string "true")
@@ -175,7 +175,7 @@
 ;; Disallow instructions which use the FPU since they will tie up the FPU
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch,trap")
 		     (eq_attr "length" "4")
 		     (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 		(const_string "true")
@@ -184,7 +184,7 @@
 ;; For calls and millicode calls.  Allow unconditional branches in the
 ;; delay slot.
 (define_attr "in_call_delay" "false,true"
-  (cond [(and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch")
+  (cond [(and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,sibcall,dyncall,multi,milli,sh_func_adrs,parallel_branch,trap")
 	      (eq_attr "length" "4")
 	      (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 	   (const_string "true")
@@ -5330,6 +5330,15 @@
   {subio|subi,tsv} %1,%2,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,4")])
+
+;; Trap instructions.
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "{addit|addi,tc},<> 1,%%r0,%%r0"
+  [(set_attr "type" "trap")
+   (set_attr "length" "4")])
 
 ;; Clobbering a "register_operand" instead of a match_scratch
 ;; in operand3 of millicode calls avoids spilling %r1 and
