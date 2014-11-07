@@ -1,5 +1,10 @@
 2014-11-07  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/63747
+	* gcc.dg/ipa/pr63747.c: New test.
+
+2014-11-07  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/63595
 	* g++.dg/ipa/pr63595.C: New test.
 

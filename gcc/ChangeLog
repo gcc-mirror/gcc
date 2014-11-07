@@ -1,5 +1,11 @@
 2014-11-07  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/63747
+	* ipa-icf-gimple.c (func_checker::compare_gimple_switch):
+	Missing checking for CASE_LOW and CASE_HIGH added.
+
+2014-11-07  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/63595
 	* cgraphunit.c (cgraph_node::expand_thunk): DECL_BY_REFERENCE
 	is correctly handled for thunks created by IPA ICF.
