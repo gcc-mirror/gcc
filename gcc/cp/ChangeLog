@@ -1,3 +1,8 @@
+2014-11-07  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_unqualified_id): Handle __func__ here.
+	(cp_parser_primary_expression): Not here.
+
 2014-11-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR c++/63366
