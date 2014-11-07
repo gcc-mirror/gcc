@@ -1,3 +1,21 @@
+2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Set_Is_Checked_Ghost_Entity,
+	Set_Is_Ignored_Ghost_Entity): Add exceptions to the assertion
+	check.
+	* sem_ch6.adb (Check_Conformance): Consider only
+	source subprograms when checking for Ghost conformance.
+	* sem_prag.adb (Analyze_Pragma): Handle the case
+	where pragma Ghost applies to a stand alone subprogram body that
+	acts as a compilation unit.
+	* sem_res.adb: Minor reformatting (merge if statements).
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function):
+	Check whether underlying type is constrained before generating
+	the object declaration for the result object of the function.
+
 2014-11-07  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb: Code clean up.

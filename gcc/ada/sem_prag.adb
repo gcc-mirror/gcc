@@ -14216,7 +14216,7 @@ package body Sem_Prag is
          --  pragma Ghost [ (boolean_EXPRESSION) ];
 
          when Pragma_Ghost => Ghost : declare
-            Context   : constant Node_Id := Parent (N);
+            Context   : Node_Id;
             Expr      : Node_Id;
             Id        : Entity_Id;
             Orig_Stmt : Node_Id;
@@ -14227,6 +14227,14 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
+
+            Context := Parent (N);
+
+            --  Handle compilation units
+
+            if Nkind (Context) = N_Compilation_Unit_Aux then
+               Context := Unit (Parent (Context));
+            end if;
 
             Id   := Empty;
             Stmt := Prev (N);

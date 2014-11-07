@@ -7053,42 +7053,37 @@ package body Sem_Res is
       end if;
 
       --  The following checks are only relevant when SPARK_Mode is on as they
-      --  are not standard Ada legality rules.
+      --  are not standard Ada legality rules. An effectively volatile object
+      --  subject to enabled properties Async_Writers or Effective_Reads must
+      --  appear in a specific context.
 
-      if SPARK_Mode = On then
+      if SPARK_Mode = On
+        and then Is_Object (E)
+        and then Is_Effectively_Volatile (E)
+        and then
+          (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
+        and then Comes_From_Source (N)
+      then
+         --  The effectively volatile objects appears in a "non-interfering
+         --  context" as defined in SPARK RM 7.1.3(13).
 
-         --  An effectively volatile object subject to enabled properties
-         --  Async_Writers or Effective_Reads must appear in a specific
-         --  context.
+         if Is_OK_Volatile_Context (Par, N) then
+            null;
 
-         if Is_Object (E)
-           and then Is_Effectively_Volatile (E)
-           and then
-             (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
-           and then Comes_From_Source (N)
-         then
-            --  The effectively volatile objects appears in a "non-interfering
-            --  context" as defined in SPARK RM 7.1.3(13).
+         --  Assume that references to effectively volatile objects that appear
+         --  as actual parameters in a procedure call are always legal. A full
+         --  legality check is done when the actuals are resolved.
 
-            if Is_OK_Volatile_Context (Par, N) then
-               null;
+         elsif Nkind (Par) = N_Procedure_Call_Statement then
+            null;
 
-            --  Assume that references to effectively volatile objects that
-            --  appear as actual parameters in a procedure call are always
-            --  legal. A full legality check is done when the actuals are
-            --  resolved.
+         --  Otherwise the context causes a side effect with respect to the
+         --  effectively volatile object.
 
-            elsif Nkind (Par) = N_Procedure_Call_Statement then
-               null;
-
-            --  Otherwise the context causes a side effect with respect to the
-            --  effectively volatile object.
-
-            else
-               SPARK_Msg_N
-                 ("volatile object cannot appear in this context "
-                  & "(SPARK RM 7.1.3(13))", N);
-            end if;
+         else
+            SPARK_Msg_N
+              ("volatile object cannot appear in this context "
+               & "(SPARK RM 7.1.3(13))", N);
          end if;
       end if;
 

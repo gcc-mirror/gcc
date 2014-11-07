@@ -1123,9 +1123,15 @@ package body Exp_Strm is
 
       J := 1;
 
+      --  In the presence of multiple instantiations (as in uses of the Booch
+      --  components) the base type may be private, and the underlying type
+      --  already constrained, in which case there's no discriminant constraint
+      --  to construct.
+
       if Has_Discriminants (Typ)
         and then
           No (Discriminant_Default_Value (First_Discriminant (Typ)))
+        and then not Is_Constrained (Underlying_Type (B_Typ))
       then
          Discr := First_Discriminant (B_Typ);
 
