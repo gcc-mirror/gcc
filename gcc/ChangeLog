@@ -1,3 +1,10 @@
+2014-11-07  Jiong Wang  <jiong.wang@arm.com>
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63676
+	* gimple-fold.c (fold_gimple_assign): Do not fold node when
+	TREE_CLOBBER_P be true.
+
 2014-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63770
