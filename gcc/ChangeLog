@@ -1,3 +1,9 @@
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63605
+	* fold-const.c (fold_binary_loc): Properly use element_precision
+	for types that may not be scalar.
+
 2014-11-07  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/63534
