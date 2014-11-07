@@ -846,16 +846,16 @@ package body Sem_Res is
          if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
             Error_Msg_Sloc := Sloc (Err_N);
 
-            SPARK_Msg_N  ("incompatible ghost policies in effect", Err_N);
-            SPARK_Msg_NE ("\& declared with ghost policy Check", Err_N, Id);
-            SPARK_Msg_NE ("\& used # with ghost policy Ignore", Err_N, Id);
+            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
+            Error_Msg_NE ("\& declared with ghost policy Check", Err_N, Id);
+            Error_Msg_NE ("\& used # with ghost policy Ignore", Err_N, Id);
 
          elsif Is_Ignored_Ghost_Entity (Id) and then Policy = Name_Check then
             Error_Msg_Sloc := Sloc (Err_N);
 
-            SPARK_Msg_N  ("incompatible ghost policies in effect", Err_N);
-            SPARK_Msg_NE ("\& declared with ghost policy Ignore", Err_N, Id);
-            SPARK_Msg_NE ("\& used # with ghost policy Check", Err_N, Id);
+            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
+            Error_Msg_NE ("\& declared with ghost policy Ignore", Err_N, Id);
+            Error_Msg_NE ("\& used # with ghost policy Check", Err_N, Id);
          end if;
       end Check_Ghost_Policy;
 
@@ -873,7 +873,7 @@ package body Sem_Res is
       --  its behavior or value.
 
       else
-         SPARK_Msg_N
+         Error_Msg_N
            ("ghost entity cannot appear in this context (SPARK RM 6.9(12))",
             Ghost_Ref);
       end if;
@@ -7089,12 +7089,13 @@ package body Sem_Res is
                  ("volatile object cannot appear in this context "
                   & "(SPARK RM 7.1.3(13))", N);
             end if;
-
-         --  A Ghost entity must appear in a specific context
-
-         elsif Is_Ghost_Entity (E) and then Comes_From_Source (N) then
-            Check_Ghost_Context (E, N);
          end if;
+      end if;
+
+      --  A Ghost entity must appear in a specific context
+
+      if Is_Ghost_Entity (E) and then Comes_From_Source (N) then
+         Check_Ghost_Context (E, N);
       end if;
    end Resolve_Entity_Name;
 

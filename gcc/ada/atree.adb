@@ -892,6 +892,16 @@ package body Atree is
          Set_Field4 (New_Id, Possible_Copy (Field4 (New_Id)));
          Set_Field5 (New_Id, Possible_Copy (Field5 (New_Id)));
 
+         --  Explicitly copy the aspect specifications as those do not reside
+         --  in a node field.
+
+         if Permits_Aspect_Specifications (Source)
+           and then Has_Aspects (Source)
+         then
+            Set_Aspect_Specifications
+              (New_Id, Copy_List (Aspect_Specifications (Source)));
+         end if;
+
          --  Set Entity field to Empty to ensure that no entity references
          --  are shared between the two, if the source is already analyzed.
 

@@ -1316,12 +1316,23 @@ package body Inline is
       -----------------------
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean is
-         Items : constant Node_Id := Contract (Id);
+         Items : Node_Id;
+
       begin
-         return Present (Items)
-           and then (Present (Pre_Post_Conditions (Items)) or else
-                     Present (Contract_Test_Cases (Items)) or else
-                     Present (Classifications     (Items)));
+         --  A call to an expression function may precede the actual body which
+         --  is inserted at the end of the enclosing declarations. Ensure that
+         --  the related entity is analyzed before inspecting the contract.
+
+         if Analyzed (Id) then
+            Items := Contract (Id);
+
+            return Present (Items)
+              and then (Present (Pre_Post_Conditions (Items)) or else
+                        Present (Contract_Test_Cases (Items)) or else
+                        Present (Classifications     (Items)));
+         end if;
+
+         return False;
       end Has_Some_Contract;
 
       -----------------------------

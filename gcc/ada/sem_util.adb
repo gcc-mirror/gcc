@@ -2688,18 +2688,18 @@ package body Sem_Util is
       then
          Error_Msg_Sloc := Sloc (Full_View);
 
-         SPARK_Msg_N ("incompatible ghost policies in effect",   Partial_View);
-         SPARK_Msg_N ("\& declared with ghost policy Check",     Partial_View);
-         SPARK_Msg_N ("\& completed # with ghost policy Ignore", Partial_View);
+         Error_Msg_N ("incompatible ghost policies in effect",   Partial_View);
+         Error_Msg_N ("\& declared with ghost policy Check",     Partial_View);
+         Error_Msg_N ("\& completed # with ghost policy Ignore", Partial_View);
 
       elsif Is_Ignored_Ghost_Entity (Partial_View)
         and then Policy = Name_Check
       then
          Error_Msg_Sloc := Sloc (Full_View);
 
-         SPARK_Msg_N ("incompatible ghost policies in effect",  Partial_View);
-         SPARK_Msg_N ("\& declared with ghost policy Ignore",   Partial_View);
-         SPARK_Msg_N ("\& completed # with ghost policy Check", Partial_View);
+         Error_Msg_N ("incompatible ghost policies in effect",  Partial_View);
+         Error_Msg_N ("\& declared with ghost policy Ignore",   Partial_View);
+         Error_Msg_N ("\& completed # with ghost policy Check", Partial_View);
       end if;
    end Check_Ghost_Completion;
 
@@ -2722,8 +2722,8 @@ package body Sem_Util is
       --  The parent type of a Ghost type extension must be Ghost
 
       elsif not Is_Ghost_Entity (Parent_Typ) then
-         SPARK_Msg_N  ("type extension & cannot be ghost", Typ);
-         SPARK_Msg_NE ("\parent type & is not ghost", Typ, Parent_Typ);
+         Error_Msg_N  ("type extension & cannot be ghost", Typ);
+         Error_Msg_NE ("\parent type & is not ghost", Typ, Parent_Typ);
          return;
       end if;
 
@@ -2735,8 +2735,8 @@ package body Sem_Util is
             Iface := Node (Iface_Elmt);
 
             if not Is_Ghost_Entity (Iface) then
-               SPARK_Msg_N  ("type extension & cannot be ghost", Typ);
-               SPARK_Msg_NE ("\interface type & is not ghost", Typ, Iface);
+               Error_Msg_N  ("type extension & cannot be ghost", Typ);
+               Error_Msg_NE ("\interface type & is not ghost", Typ, Iface);
                return;
             end if;
 
