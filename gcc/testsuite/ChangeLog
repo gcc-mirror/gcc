@@ -1,3 +1,8 @@
+2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63605
+	* gcc.dg/vect/pr63605.c: New testcase.
+
 2014-11-07  Jeff Law  <law@redhat.com>
 
 	* g++.dg/pr61289-2.C: Renamed from pr61289-2.c.
