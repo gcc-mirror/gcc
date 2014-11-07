@@ -1210,6 +1210,7 @@ sparc_option_override (void)
     { TARGET_CPU_hypersparc, PROCESSOR_HYPERSPARC },
     { TARGET_CPU_leon, PROCESSOR_LEON },
     { TARGET_CPU_leon3, PROCESSOR_LEON3 },
+    { TARGET_CPU_leon3v7, PROCESSOR_LEON3V7 },
     { TARGET_CPU_sparclite, PROCESSOR_F930 },
     { TARGET_CPU_sparclite86x, PROCESSOR_SPARCLITE86X },
     { TARGET_CPU_sparclet, PROCESSOR_TSC701 },
@@ -1238,6 +1239,7 @@ sparc_option_override (void)
     { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
     { "leon",		MASK_ISA, MASK_V8|MASK_LEON|MASK_FPU },
     { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3|MASK_FPU },
+    { "leon3v7",	MASK_ISA, MASK_LEON3|MASK_FPU },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
@@ -1490,6 +1492,7 @@ sparc_option_override (void)
       sparc_costs = &leon_costs;
       break;
     case PROCESSOR_LEON3:
+    case PROCESSOR_LEON3V7:
       sparc_costs = &leon3_costs;
       break;
     case PROCESSOR_SPARCLET:
