@@ -1,3 +1,18 @@
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Integer):
+	If the restriction No_Floating_Point is in effect, and the
+	operands have the same type, introduce a temporary to hold
+	the fixed point result, to prevent the use of floating-point
+	operations at run-time.
+
+2014-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Check_Address_Clause): Minor reformatting
+	(Find_Constant): Minor reformatting.
+	(Freeze_Array_Type): Modify check for packed declarations.
+	(Freeze_Entity): Minor reformatting.
+
 2014-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 5.0.

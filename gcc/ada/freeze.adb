@@ -111,7 +111,7 @@ package body Freeze is
    --  itself is frozen. Check that the expression does not include references
    --  to deferred constants without completion. We report this at the freeze
    --  point of the function, to provide a better error message.
-
+   --
    --  In most cases the expression itself is frozen by the time the function
    --  itself is frozen, because the formals will be frozen by then. However,
    --  Attribute references to outer types are freeze points for those types;
@@ -664,7 +664,6 @@ package body Freeze is
             if Present (Tag_Assign) then
                Append_Freeze_Action (E, Tag_Assign);
             end if;
-
          end if;
       end if;
    end Check_Address_Clause;
@@ -1295,6 +1294,7 @@ package body Freeze is
 
          elsif Nkind (Nod) = N_Attribute_Reference then
             Analyze (Prefix (Nod));
+
             if Is_Entity_Name (Prefix (Nod))
               and then Is_Type (Entity (Prefix (Nod)))
             then
@@ -2398,24 +2398,6 @@ package body Freeze is
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), True);
                         Set_Is_Packed            (Base_Type (Arr), True);
-
-                        --  Make sure that we have the necessary routines to
-                        --  implement the packing, and complain now if not.
-
-                        declare
-                           CS : constant Int   := UI_To_Int (Csiz);
-                           RE : constant RE_Id := Get_Id (CS);
-
-                        begin
-                           if RE /= RE_Null
-                             and then not RTE_Available (RE)
-                           then
-                              Error_Msg_CRT
-                                ("packing of " & UI_Image (Csiz)
-                                 & "-bit components",
-                                 First_Subtype (Etype (Arr)));
-                           end if;
-                        end;
                      end if;
                   end;
                end if;
@@ -2668,6 +2650,37 @@ package body Freeze is
             Create_Packed_Array_Impl_Type (Arr);
             Freeze_And_Append (Packed_Array_Impl_Type (Arr), N, Result);
 
+            --  Make sure that we have the necessary routines to implement the
+            --  packing, and complain now if not. Note that we only test this
+            --  for constrained array types.
+
+            if Is_Constrained (Arr)
+              and then Is_Bit_Packed_Array (Arr)
+              and then Present (Packed_Array_Impl_Type (Arr))
+              and then Is_Array_Type (Packed_Array_Impl_Type (Arr))
+            then
+               declare
+                  CS : constant Uint  := Component_Size (Arr);
+                  RE : constant RE_Id := Get_Id (UI_To_Int (CS));
+
+               begin
+                  if RE /= RE_Null
+                    and then not RTE_Available (RE)
+                  then
+                     Error_Msg_CRT
+                       ("packing of " & UI_Image (CS) & "-bit components",
+                        First_Subtype (Etype (Arr)));
+
+                     --  Cancel the packing
+
+                     Set_Is_Packed (Base_Type (Arr), False);
+                     Set_Is_Bit_Packed_Array (Base_Type (Arr), False);
+                     Set_Packed_Array_Impl_Type (Arr, Empty);
+                     goto Skip_Packed;
+                  end if;
+               end;
+            end if;
+
             --  Size information of packed array type is copied to the array
             --  type, since this is really the representation. But do not
             --  override explicit existing size values. If the ancestor subtype
@@ -2688,6 +2701,8 @@ package body Freeze is
                Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
             end if;
          end if;
+
+         <<Skip_Packed>>
 
          --  For non-packed arrays set the alignment of the array to the
          --  alignment of the component type if it is unknown. Skip this
@@ -4561,12 +4576,12 @@ package body Freeze is
                   if Is_CPP_Class (Etype (E)) then
                      Error_Msg_NE
                        ("\} may need a cpp_constructor",
-                       Object_Definition (Parent (E)), Etype (E));
+                        Object_Definition (Parent (E)), Etype (E));
 
                   elsif Present (Expression (Parent (E))) then
                      Error_Msg_N --  CODEFIX
                        ("\maybe a class-wide type was meant",
-                         Object_Definition (Parent (E)));
+                        Object_Definition (Parent (E)));
                   end if;
                end if;
 
@@ -5432,7 +5447,7 @@ package body Freeze is
                Check_Suspicious_Modulus (E);
             end if;
 
-         --  the pool applies to named and anonymous access types, but not
+         --  The pool applies to named and anonymous access types, but not
          --  to subprogram and to  internal types generated for 'Access
          --  references.
 
