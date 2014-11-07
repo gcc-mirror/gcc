@@ -9,4 +9,4 @@ mymul3 (int x)
   return x * 0x555;
 }
 
-/* { dg-final { scan-assembler "mul\[\\t \]*r.,\[\\t \]*r." } } */
+/* { dg-final { scan-assembler "muls\[\\t \]*r.,\[\\t \]*r." } } */

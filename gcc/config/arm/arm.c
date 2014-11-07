@@ -3162,6 +3162,11 @@ arm_option_override (void)
   if (target_slow_flash_data)
     arm_disable_literal_pool = true;
 
+  /* Thumb2 inline assembly code should always use unified syntax.
+     This will apply to ARM and Thumb1 eventually.  */
+  if (TARGET_THUMB2)
+    inline_asm_unified = 1;
+
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 }
@@ -28658,12 +28663,14 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  fputs ("\tldr\tr3, ", file);
 	  assemble_name (file, label);
 	  fputs ("+4\n", file);
-	  asm_fprintf (file, "\t%s\t%r, %r, r3\n",
+	  asm_fprintf (file, "\t%ss\t%r, %r, r3\n",
 		       mi_op, this_regno, this_regno);
 	}
       else if (mi_delta != 0)
 	{
-	  asm_fprintf (file, "\t%s\t%r, %r, #%d\n",
+	  /* Thumb1 unified syntax requires s suffix in instruction name when
+	     one of the operands is immediate.  */
+	  asm_fprintf (file, "\t%ss\t%r, %r, #%d\n",
 		       mi_op, this_regno, this_regno,
 		       mi_delta);
 	}

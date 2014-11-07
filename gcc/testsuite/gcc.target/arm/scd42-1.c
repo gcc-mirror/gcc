@@ -13,4 +13,4 @@ unsigned load1(void)
     return 17;
 }
 
-/* { dg-final { scan-assembler "mov\[ 	].*17" } } */
+/* { dg-final { scan-assembler "movs\[ 	].*17" } } */

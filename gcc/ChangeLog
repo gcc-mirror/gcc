@@ -1,3 +1,14 @@
+2014-11-07  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.opt (masm-syntax-unified): New option.
+	* doc/invoke.texi (-masm-syntax-unified): Document new option.
+	* config/arm/arm.h (TARGET_UNIFIED_ASM): Also include thumb1.
+	(ASM_APP_ON): Redefined.
+	* config/arm/arm.c (arm_option_override): Thumb2 inline assembly
+	code always use UAL syntax.
+	(arm_output_mi_thunk): Use UAL syntax for Thumb1 target.
+	* config/arm/thumb1.md: Likewise.
+
 2014-11-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (trap): New insn.  Add "trap" to attribute type.

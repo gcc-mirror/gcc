@@ -1,7 +1,8 @@
 /* { dg-options "-Os -fpic" }  */
 /* { dg-require-effective-target fpic } */
 /* Make sure the constant "0" is loaded into register only once.  */
-/* { dg-final { scan-assembler-times "mov\[\\t \]*r., #0" 1 } } */
+/* { dg-final { scan-assembler-times "movs\[\\t \]*r., #0" 1 { target arm_thumb1 } } } */
+/* { dg-final { scan-assembler-times "mov\[\\t \]*r., #0" 1 { target { ! arm_thumb1 } } } } */
 
 int foo(int p, int* q)
 {
