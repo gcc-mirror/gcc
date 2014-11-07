@@ -1,3 +1,11 @@
+2014-11-07  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/anddi_notdi-1.c: Match with UAL format.
+	* gcc.target/arm/pr40956.c: Likewise.
+	* gcc.target/arm/thumb1-Os-mult.c: Likewise.
+	* gcc.target/arm/thumb1-load-64bit-constant-3.c: Likewise.
+	* gcc.target/arm/scd42-1.c: Likewise.
+
 2014-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/cpp/ucnid-2.C, g++.dg/cpp/ucnid-3.C,

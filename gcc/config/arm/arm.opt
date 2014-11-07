@@ -271,3 +271,7 @@ Use Neon to perform 64-bits operations rather than core registers.
 mslow-flash-data
 Target Report Var(target_slow_flash_data) Init(0)
 Assume loading data from flash is slower than fetching instructions.
+
+masm-syntax-unified
+Target Report Var(inline_asm_unified) Init(0)
+Assume unified syntax for Thumb inline assembly code.

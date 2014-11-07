@@ -29,7 +29,7 @@
    (clobber (reg:CC CC_REGNUM))
   ]
   "TARGET_THUMB1"
-  "add\\t%Q0, %Q0, %Q2\;adc\\t%R0, %R0, %R2"
+  "adds\\t%Q0, %Q0, %Q2\;adcs\\t%R0, %R0, %R2"
   [(set_attr "length" "4")
    (set_attr "type" "multiple")]
 )
@@ -42,9 +42,9 @@
   "*
    static const char * const asms[] =
    {
-     \"add\\t%0, %0, %2\",
-     \"sub\\t%0, %0, #%n2\",
-     \"add\\t%0, %1, %2\",
+     \"adds\\t%0, %0, %2\",
+     \"subs\\t%0, %0, #%n2\",
+     \"adds\\t%0, %1, %2\",
      \"add\\t%0, %0, %2\",
      \"add\\t%0, %0, %2\",
      \"add\\t%0, %1, %2\",
@@ -56,7 +56,7 @@
    if ((which_alternative == 2 || which_alternative == 6)
        && CONST_INT_P (operands[2])
        && INTVAL (operands[2]) < 0)
-     return \"sub\\t%0, %1, #%n2\";
+     return (which_alternative == 2) ? \"subs\\t%0, %1, #%n2\" : \"sub\\t%0, %1, #%n2\";
    return asms[which_alternative];
   "
   "&& reload_completed && CONST_INT_P (operands[2])
@@ -105,7 +105,7 @@
 		  (match_operand:DI 2 "register_operand"  "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB1"
-  "sub\\t%Q0, %Q0, %Q2\;sbc\\t%R0, %R0, %R2"
+  "subs\\t%Q0, %Q0, %Q2\;sbcs\\t%R0, %R0, %R2"
   [(set_attr "length" "4")
    (set_attr "type" "multiple")]
 )
@@ -115,7 +115,7 @@
 	(minus:SI (match_operand:SI 1 "register_operand" "l")
 		  (match_operand:SI 2 "reg_or_int_operand" "lPd")))]
   "TARGET_THUMB1"
-  "sub\\t%0, %1, %2"
+  "subs\\t%0, %1, %2"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
    (set_attr "type" "alus_sreg")]
@@ -133,9 +133,9 @@
  "TARGET_THUMB1 && !arm_arch6"
   "*
   if (which_alternative < 2)
-    return \"mov\\t%0, %1\;mul\\t%0, %2\";
+    return \"mov\\t%0, %1\;muls\\t%0, %2\";
   else
-    return \"mul\\t%0, %2\";
+    return \"muls\\t%0, %2\";
   "
   [(set_attr "length" "4,4,2")
    (set_attr "type" "muls")]
@@ -147,9 +147,9 @@
 		 (match_operand:SI 2 "register_operand" "l,0,0")))]
   "TARGET_THUMB1 && arm_arch6"
   "@
-   mul\\t%0, %2
-   mul\\t%0, %1
-   mul\\t%0, %1"
+   muls\\t%0, %2
+   muls\\t%0, %1
+   muls\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "type" "muls")]
 )
@@ -159,7 +159,7 @@
 	(and:SI (match_operand:SI 1 "register_operand" "%0")
 		(match_operand:SI 2 "register_operand" "l")))]
   "TARGET_THUMB1"
-  "and\\t%0, %2"
+  "ands\\t%0, %2"
   [(set_attr "length" "2")
    (set_attr "type"  "logic_imm")
    (set_attr "conds" "set")])
@@ -202,7 +202,7 @@
 	(and:SI (not:SI (match_operand:SI 1 "register_operand" "l"))
 		(match_operand:SI         2 "register_operand" "0")))]
   "TARGET_THUMB1"
-  "bic\\t%0, %1"
+  "bics\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
    (set_attr "type" "logics_reg")]
@@ -213,7 +213,7 @@
 	(ior:SI (match_operand:SI 1 "register_operand" "%0")
 		(match_operand:SI 2 "register_operand" "l")))]
   "TARGET_THUMB1"
-  "orr\\t%0, %2"
+  "orrs\\t%0, %2"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
    (set_attr "type" "logics_reg")])
@@ -223,7 +223,7 @@
 	(xor:SI (match_operand:SI 1 "register_operand" "%0")
 		(match_operand:SI 2 "register_operand" "l")))]
   "TARGET_THUMB1"
-  "eor\\t%0, %2"
+  "eors\\t%0, %2"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
    (set_attr "type" "logics_reg")]
@@ -234,7 +234,7 @@
 	(ashift:SI (match_operand:SI 1 "register_operand" "l,0")
 		   (match_operand:SI 2 "nonmemory_operand" "N,l")))]
   "TARGET_THUMB1"
-  "lsl\\t%0, %1, %2"
+  "lsls\\t%0, %1, %2"
   [(set_attr "length" "2")
    (set_attr "type" "shift_imm,shift_reg")
    (set_attr "conds" "set")])
@@ -244,7 +244,7 @@
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "l,0")
 		     (match_operand:SI 2 "nonmemory_operand" "N,l")))]
   "TARGET_THUMB1"
-  "asr\\t%0, %1, %2"
+  "asrs\\t%0, %1, %2"
   [(set_attr "length" "2")
    (set_attr "type" "shift_imm,shift_reg")
    (set_attr "conds" "set")])
@@ -254,7 +254,7 @@
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "l,0")
 		     (match_operand:SI 2 "nonmemory_operand" "N,l")))]
   "TARGET_THUMB1"
-  "lsr\\t%0, %1, %2"
+  "lsrs\\t%0, %1, %2"
   [(set_attr "length" "2")
    (set_attr "type" "shift_imm,shift_reg")
    (set_attr "conds" "set")])
@@ -264,7 +264,7 @@
 	(rotatert:SI (match_operand:SI 1 "register_operand" "0")
 		     (match_operand:SI 2 "register_operand" "l")))]
   "TARGET_THUMB1"
-  "ror\\t%0, %0, %2"
+  "rors\\t%0, %0, %2"
   [(set_attr "type" "shift_reg")
    (set_attr "length" "2")]
 )
@@ -274,7 +274,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB1"
-  "mov\\t%R0, #0\;neg\\t%Q0, %Q1\;sbc\\t%R0, %R1"
+  "movs\\t%R0, #0\;rsbs\\t%Q0, %Q1, #0\;sbcs\\t%R0, %R1"
   [(set_attr "length" "6")
    (set_attr "type" "multiple")]
 )
@@ -283,7 +283,7 @@
   [(set (match_operand:SI         0 "register_operand" "=l")
 	(neg:SI (match_operand:SI 1 "register_operand" "l")))]
   "TARGET_THUMB1"
-  "neg\\t%0, %1"
+  "rsbs\\t%0, %1, #0"
   [(set_attr "length" "2")
    (set_attr "type" "alu_imm")]
 )
@@ -322,7 +322,7 @@
   [(set (match_operand:SI         0 "register_operand" "=l")
 	(not:SI (match_operand:SI 1 "register_operand"  "l")))]
   "TARGET_THUMB1"
-  "mvn\\t%0, %1"
+  "mvns\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "type" "mvn_reg")]
 )
@@ -456,7 +456,7 @@
       ops[3] = ops[0];
     else
       ops[3] = operands[2];
-    output_asm_insn (\"mov\\t%3, %2\;ldrsh\\t%0, [%1, %3]\", ops);
+    output_asm_insn (\"movs\\t%3, %2\;ldrsh\\t%0, [%1, %3]\", ops);
     return \"\";
   }"
   [(set_attr_alternative "length"
@@ -586,10 +586,10 @@
 	return \"add\\t%0,  %1,  #0\;add\\t%H0, %H1, #0\";
       return   \"add\\t%H0, %H1, #0\;add\\t%0,  %1,  #0\";
     case 1:
-      return \"mov\\t%Q0, %1\;mov\\t%R0, #0\";
+      return \"movs\\t%Q0, %1\;movs\\t%R0, #0\";
     case 2:
       operands[1] = GEN_INT (- INTVAL (operands[1]));
-      return \"mov\\t%Q0, %1\;neg\\t%Q0, %Q0\;asr\\t%R0, %Q0, #31\";
+      return \"movs\\t%Q0, %1\;rsbs\\t%Q0, %Q0, #0\;asrs\\t%R0, %Q0, #31\";
     case 3:
       return \"ldmia\\t%1, {%0, %H0}\";
     case 4:
@@ -619,8 +619,8 @@
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
-   mov	%0, %1
-   mov	%0, %1
+   movs	%0, %1
+   movs	%0, %1
    #
    #
    ldmia\\t%1, {%0}
@@ -715,11 +715,11 @@
   "*
   switch (which_alternative)
     {
-    case 0: return \"add	%0, %1, #0\";
+    case 0: return \"adds	%0, %1, #0\";
     case 2: return \"strh	%1, %0\";
     case 3: return \"mov	%0, %1\";
     case 4: return \"mov	%0, %1\";
-    case 5: return \"mov	%0, %1\";
+    case 5: return \"movs	%0, %1\";
     default: gcc_unreachable ();
     case 1:
       /* The stack pointer can end up being taken as an index register.
@@ -767,12 +767,12 @@
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
   "@
-   add\\t%0, %1, #0
+   adds\\t%0, %1, #0
    ldrb\\t%0, %1
    strb\\t%1, %0
    mov\\t%0, %1
    mov\\t%0, %1
-   mov\\t%0, %1"
+   movs\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "type" "alu_imm,load1,store1,mov_reg,mov_imm,mov_imm")
    (set_attr "pool_range" "*,32,*,*,*,*")
@@ -819,7 +819,7 @@
    && (   register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
   "@
-   add\\t%0, %1, #0
+   adds\\t%0, %1, #0
    ldmia\\t%1, {%0}
    stmia\\t%0, {%1}
    ldr\\t%0, %1
@@ -848,8 +848,8 @@
     default:
     case 0:
       if (REGNO (operands[1]) == REGNO (operands[0]) + 1)
-	return \"add\\t%0, %1, #0\;add\\t%H0, %H1, #0\";
-      return \"add\\t%H0, %H1, #0\;add\\t%0, %1, #0\";
+	return \"adds\\t%0, %1, #0\;adds\\t%H0, %H1, #0\";
+      return \"adds\\t%H0, %H1, #0\;adds\\t%0, %1, #0\";
     case 1:
       return \"ldmia\\t%1, {%0, %H0}\";
     case 2:
@@ -1013,7 +1013,7 @@
    (clobber (match_scratch:SI 0 "=l,l"))]
   "TARGET_THUMB1"
   "*
-  output_asm_insn (\"add\\t%0, %1, #%n2\", operands);
+  output_asm_insn (\"adds\\t%0, %1, #%n2\", operands);
 
   switch (get_attr_length (insn))
     {
@@ -1095,7 +1095,7 @@
   op[1] = operands[1];
   op[2] = GEN_INT (32 - 1 - INTVAL (operands[2]));
 
-  output_asm_insn (\"lsl\\t%0, %1, %2\", op);
+  output_asm_insn (\"lsls\\t%0, %1, %2\", op);
   switch (get_attr_length (insn))
     {
     case 4:  return \"b%d0\\t%l3\";
@@ -1140,7 +1140,7 @@
   op[1] = operands[1];
   op[2] = GEN_INT (32 - INTVAL (operands[2]));
 
-  output_asm_insn (\"lsl\\t%0, %1, %2\", op);
+  output_asm_insn (\"lsls\\t%0, %1, %2\", op);
   switch (get_attr_length (insn))
     {
     case 4:  return \"b%d0\\t%l3\";
@@ -1224,20 +1224,20 @@
      cond[1] = operands[4];
 
      if (which_alternative == 0)
-       output_asm_insn (\"sub\\t%0, %2, #1\", operands);
+       output_asm_insn (\"subs\\t%0, %2, #1\", operands);
      else if (which_alternative == 1)
        {
 	 /* We must provide an alternative for a hi reg because reload
 	    cannot handle output reloads on a jump instruction, but we
 	    can't subtract into that.  Fortunately a mov from lo to hi
 	    does not clobber the condition codes.  */
-	 output_asm_insn (\"sub\\t%1, %2, #1\", operands);
+	 output_asm_insn (\"subs\\t%1, %2, #1\", operands);
 	 output_asm_insn (\"mov\\t%0, %1\", operands);
        }
      else
        {
 	 /* Similarly, but the target is memory.  */
-	 output_asm_insn (\"sub\\t%1, %2, #1\", operands);
+	 output_asm_insn (\"subs\\t%1, %2, #1\", operands);
 	 output_asm_insn (\"str\\t%1, %0\", operands);
        }
 
@@ -1336,9 +1336,9 @@
      cond[2] = operands[3];
 
      if (CONST_INT_P (cond[2]) && INTVAL (cond[2]) < 0)
-       output_asm_insn (\"sub\\t%0, %1, #%n2\", cond);
+       output_asm_insn (\"subs\\t%0, %1, #%n2\", cond);
      else
-       output_asm_insn (\"add\\t%0, %1, %2\", cond);
+       output_asm_insn (\"adds\\t%0, %1, %2\", cond);
 
      if (which_alternative >= 2
 	 && which_alternative < 4)
@@ -1418,13 +1418,13 @@
 	 break;
        case 2:
 	 if (INTVAL (operands[2]) < 0)
-	   output_asm_insn (\"sub\t%0, %1, %2\", operands);
+	   output_asm_insn (\"subs\t%0, %1, %2\", operands);
 	 else
 	   output_asm_insn (\"add\t%0, %1, %2\", operands);
 	 break;
        case 3:
 	 if (INTVAL (operands[2]) < 0)
-	   output_asm_insn (\"sub\t%0, %0, %2\", operands);
+	   output_asm_insn (\"subs\t%0, %0, %2\", operands);
 	 else
 	   output_asm_insn (\"add\t%0, %0, %2\", operands);
 	 break;
@@ -1465,7 +1465,7 @@
 		      (const_int 0)))
    (clobber (match_scratch:SI 1 "=l"))]
   "TARGET_THUMB1"
-  "orr\\t%1, %Q0, %R0"
+  "orrs\\t%1, %Q0, %R0"
   [(set_attr "conds" "set")
    (set_attr "length" "2")
    (set_attr "type" "logics_reg")]
@@ -1498,8 +1498,8 @@
    (clobber (match_operand:SI 2 "s_register_operand" "=X,l"))]
   "TARGET_THUMB1"
   "@
-   neg\\t%0, %1\;adc\\t%0, %0, %1
-   neg\\t%2, %1\;adc\\t%0, %1, %2"
+   rsbs\\t%0, %1, #0\;adcs\\t%0, %0, %1
+   rsbs\\t%2, %1, #0\;adcs\\t%0, %1, %2"
   [(set_attr "length" "4")
    (set_attr "type" "multiple")]
 )
@@ -1510,7 +1510,7 @@
 	       (const_int 0)))
    (clobber (match_operand:SI 2 "s_register_operand" "=l"))]
   "TARGET_THUMB1"
-  "sub\\t%2, %1, #1\;sbc\\t%0, %1, %2"
+  "subs\\t%2, %1, #1\;sbcs\\t%0, %1, %2"
   [(set_attr "length" "4")]
 )
 
@@ -1520,7 +1520,7 @@
         (neg:SI (ltu:SI (match_operand:SI 1 "s_register_operand" "l,*h")
 			(match_operand:SI 2 "thumb1_cmp_operand" "lI*h,*r"))))]
   "TARGET_THUMB1"
-  "cmp\\t%1, %2\;sbc\\t%0, %0, %0"
+  "cmp\\t%1, %2\;sbcs\\t%0, %0, %0"
   [(set_attr "length" "4")
    (set_attr "type" "multiple")]
 )
@@ -1548,7 +1548,7 @@
 		 (geu:SI (match_operand:SI 3 "s_register_operand" "l")
 			 (match_operand:SI 4 "thumb1_cmp_operand" "lI"))))]
   "TARGET_THUMB1"
-  "cmp\\t%3, %4\;adc\\t%0, %1, %2"
+  "cmp\\t%3, %4\;adcs\\t%0, %1, %2"
   [(set_attr "length" "4")
    (set_attr "type" "multiple")]
 )

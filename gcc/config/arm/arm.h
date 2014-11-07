@@ -168,6 +168,8 @@ extern char arm_arch_name[];
             builtin_define ("__ARM_ARCH_EXT_IDIV__");	\
             builtin_define ("__ARM_FEATURE_IDIV");	\
          }						\
+	if (inline_asm_unified)				\
+	  builtin_define ("__ARM_ASM_SYNTAX_UNIFIED__");\
     } while (0)
 
 #include "config/arm/arm-opts.h"
@@ -351,8 +353,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
        || (!optimize_size && !current_tune->prefer_constant_pool)))
 
 /* We could use unified syntax for arm mode, but for now we just use it
-   for Thumb-2.  */
-#define TARGET_UNIFIED_ASM TARGET_THUMB2
+   for thumb mode.  */
+#define TARGET_UNIFIED_ASM (TARGET_THUMB)
 
 /* Nonzero if this chip provides the DMB instruction.  */
 #define TARGET_HAVE_DMB		(arm_arch6m || arm_arch7)
@@ -2150,8 +2152,13 @@ extern int making_const_table;
 #define CC_STATUS_INIT \
   do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
 
+#undef ASM_APP_ON
+#define ASM_APP_ON (inline_asm_unified ? "\t.syntax unified\n" : \
+		    "\t.syntax divided\n")
+
 #undef  ASM_APP_OFF
-#define ASM_APP_OFF (TARGET_ARM ? "" : "\t.thumb\n")
+#define ASM_APP_OFF (TARGET_ARM ? "\t.arm\n\t.syntax divided\n" : \
+		     "\t.thumb\n\t.syntax unified\n")
 
 /* Output a push or a pop instruction (only used when profiling).
    We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know
