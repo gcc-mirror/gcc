@@ -1,3 +1,10 @@
+2014-11-07  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/63534
+	* config/i386/i386.md (builtin_setjmp_receiver): Use
+	pic_offset_table_rtx for PIC register.
+	(nonlocal_goto_receiver): Delete.
+
 2014-11-07  Daniel Hellstrom  <daniel@gaisler.com>
 
 	* config.gcc (sparc-*-rtems*): Clean away unused t-elf.
