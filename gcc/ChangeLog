@@ -1,3 +1,9 @@
+2014-11-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (trap): New insn.  Add "trap" to attribute type.
+	Don't allow trap insn in in_branch_delay, in_nullified_branch_delay
+	or in_call_delay.
+	
 2014-11-06  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc (mips*-mti-linux*): Remove gnu_ld and gas assignments.
