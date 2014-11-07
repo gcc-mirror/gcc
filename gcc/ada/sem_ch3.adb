@@ -11697,12 +11697,13 @@ package body Sem_Ch3 is
          Item := First_Rep_Item (Full);
 
          --  If no existing rep items on full type, we can just link directly
-         --  to the list of items on the private type. Same if the rep items
-         --  are only those inherited from the base
+         --  to the list of items on the private type, if any exist.. Same if
+         --  the rep items are only those inherited from the base
 
-         if No (Item)
-           or else Nkind (Item) /= N_Aspect_Specification
-           or else Entity (Item) = Full_Base
+         if (No (Item)
+              or else Nkind (Item) /= N_Aspect_Specification
+              or else Entity (Item) = Full_Base)
+             and then Present (First_Rep_Item (Priv))
          then
             Set_First_Rep_Item (Full, First_Rep_Item (Priv));
 

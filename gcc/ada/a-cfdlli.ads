@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -311,6 +311,7 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
    end Generic_Sorting;
 
    function Strict_Equal (Left, Right : List) return Boolean with
+     Ghost,
      Global => null;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
@@ -318,10 +319,13 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function First_To_Previous (Container : List; Current : Cursor) return List
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
+
    function Current_To_Last (Container : List; Current : Cursor) return List
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
    --  First_To_Previous returns a container containing all elements preceding

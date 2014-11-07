@@ -2398,24 +2398,6 @@ package body Freeze is
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), True);
                         Set_Is_Packed            (Base_Type (Arr), True);
-
-                        --  Make sure that we have the necessary routines to
-                        --  implement the packing, and complain now if not.
-
-                        declare
-                           CS : constant Int   := UI_To_Int (Csiz);
-                           RE : constant RE_Id := Get_Id (CS);
-
-                        begin
-                           if RE /= RE_Null
-                             and then not RTE_Available (RE)
-                           then
-                              Error_Msg_CRT
-                                ("packing of " & UI_Image (Csiz)
-                                 & "-bit components",
-                                 First_Subtype (Etype (Arr)));
-                           end if;
-                        end;
                      end if;
                   end;
                end if;
@@ -2668,6 +2650,37 @@ package body Freeze is
             Create_Packed_Array_Impl_Type (Arr);
             Freeze_And_Append (Packed_Array_Impl_Type (Arr), N, Result);
 
+            --  Make sure that we have the necessary routines to implement the
+            --  packing, and complain now if not. Note that we only test this
+            --  for constrained array types.
+
+            if Is_Constrained (Arr)
+              and then Is_Bit_Packed_Array (Arr)
+              and then Present (Packed_Array_Impl_Type (Arr))
+              and then Is_Array_Type (Packed_Array_Impl_Type (Arr))
+            then
+               declare
+                  CS : constant Uint  := Component_Size (Arr);
+                  RE : constant RE_Id := Get_Id (UI_To_Int (CS));
+
+               begin
+                  if RE /= RE_Null
+                    and then not RTE_Available (RE)
+                  then
+                     Error_Msg_CRT
+                       ("packing of " & UI_Image (CS) & "-bit components",
+                        First_Subtype (Etype (Arr)));
+
+                     --  Cancel the packing
+
+                     Set_Is_Packed (Base_Type (Arr), False);
+                     Set_Is_Bit_Packed_Array (Base_Type (Arr), False);
+                     Set_Packed_Array_Impl_Type (Arr, Empty);
+                     goto Skip_Packed;
+                  end if;
+               end;
+            end if;
+
             --  Size information of packed array type is copied to the array
             --  type, since this is really the representation. But do not
             --  override explicit existing size values. If the ancestor subtype
@@ -2688,6 +2701,8 @@ package body Freeze is
                Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
             end if;
          end if;
+
+         <<Skip_Packed>>
 
          --  For non-packed arrays set the alignment of the array to the
          --  alignment of the component type if it is unknown. Skip this

@@ -1,3 +1,17 @@
+2014-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Code clean up.
+
+2014-11-07  Yannick Moy  <moy@adacore.com>
+
+	* a-cfdlli.ads, a-cfhama.ads, a-cfhase.ads, a-cfinve.ads,
+	* a-cforma.ads, a-cforse.ads, a-cofove.ads: Mark First_To_Previous,
+	Current_To_Last and Strict_Equal as Ghost.
+
+2014-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Code clean up.
+
 2014-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Issue an error regardless of the

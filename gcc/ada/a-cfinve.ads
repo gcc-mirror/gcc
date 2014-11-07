@@ -209,11 +209,14 @@ package Ada.Containers.Formal_Indefinite_Vectors is
      (Container : Vector;
       Current : Index_Type) return Vector
    with
+     Ghost,
      Global => null;
+
    function Current_To_Last
      (Container : Vector;
       Current : Index_Type) return Vector
    with
+     Ghost,
      Global => null;
 
 private
