@@ -1,3 +1,9 @@
+2014-11-07  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63595
+	* cgraphunit.c (cgraph_node::expand_thunk): DECL_BY_REFERENCE
+	is correctly handled for thunks created by IPA ICF.
+
 2014-11-07  Jiong Wang  <jiong.wang@arm.com>
 2014-11-07  Richard Biener  <rguenther@suse.de>
 
