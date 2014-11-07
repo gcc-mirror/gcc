@@ -1,5 +1,11 @@
 2014-11-07  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/63580
+	* cgraphunit.c (cgraph_node::create_wrapper):
+	TREE_ADDRESSABLE is set to false for a newly created thunk.
+
+2014-11-07  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/63747
 	* ipa-icf-gimple.c (func_checker::compare_gimple_switch):
 	Missing checking for CASE_LOW and CASE_HIGH added.

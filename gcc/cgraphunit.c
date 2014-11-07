@@ -2369,6 +2369,14 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
     cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
 
+    tree arguments = DECL_ARGUMENTS (decl);
+
+    while (arguments)
+      {
+	TREE_ADDRESSABLE (arguments) = false;
+	arguments = TREE_CHAIN (arguments);
+      }
+
     expand_thunk (false, true);
     e->call_stmt_cannot_inline_p = true;
 
