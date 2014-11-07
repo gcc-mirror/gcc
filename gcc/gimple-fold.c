@@ -320,6 +320,9 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       {
         tree rhs = gimple_assign_rhs1 (stmt);
 
+	if (TREE_CLOBBER_P (rhs))
+	  return NULL_TREE;
+
 	if (REFERENCE_CLASS_P (rhs))
 	  return maybe_fold_reference (rhs, false);
 
