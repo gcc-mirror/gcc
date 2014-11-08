@@ -1,5 +1,13 @@
 2014-11-07  Jason Merrill  <jason@redhat.com>
 
+	DR 1558
+	* pt.c (dependent_alias_template_spec_p): New.
+	(dependent_type_p_r): Handle dependent alias template specialization.
+	(template_args_equal): A dependent alias template specializations
+	is not equal to its underlying type as a template argument.
+	* tree.c (strip_typedefs): Don't strip a dependent alias
+	template-id.
+
 	* parser.c (cp_parser_unqualified_id): Handle __func__ here.
 	(cp_parser_primary_expression): Not here.
 
