@@ -1,5 +1,11 @@
 2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arm/arm.c: Include rtl-iter.h.
+	(arm_tls_referenced_p_1): Delete.
+	(arm_tls_referenced_p): Use FOR_EACH_SUBRTX.
+
+2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/aarch-common.c: Include rtl-iter.h.
 	(search_term, arm_find_sub_rtx_with_search_term): Delete.
 	(arm_find_sub_rtx_with_code): Use FOR_EACH_SUBRTX_VAR.
