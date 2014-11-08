@@ -1,5 +1,10 @@
 2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arm/arm.c (arm_note_pic_base): Delete.
+	(arm_cannot_copy_insn_p): Use FOR_EACH_SUBRTX.
+
+2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/arm.c: Include rtl-iter.h.
 	(arm_tls_referenced_p_1): Delete.
 	(arm_tls_referenced_p): Use FOR_EACH_SUBRTX.
