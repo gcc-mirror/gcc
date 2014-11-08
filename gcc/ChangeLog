@@ -1,5 +1,11 @@
 2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c: Include rtl-iter.h.
+	(aarch64_tls_operand_p_1): Delete.
+	(aarch64_tls_operand_p): Use FOR_EACH_SUBRTX.
+
+2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/arm.c (arm_note_pic_base): Delete.
 	(arm_cannot_copy_insn_p): Use FOR_EACH_SUBRTX.
 
