@@ -28492,7 +28492,11 @@ arm_set_return_address (rtx source, rtx scratch)
 
 	  addr = plus_constant (Pmode, addr, delta);
 	}
-      emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      /* The store needs to be marked as frame related in order to prevent
+	 DSE from deleting it as dead if it is based on fp.  */
+      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
     }
 }
 
@@ -28544,7 +28548,11 @@ thumb_set_return_address (rtx source, rtx scratch)
       else
 	addr = plus_constant (Pmode, addr, delta);
 
-      emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      /* The store needs to be marked as frame related in order to prevent
+	 DSE from deleting it as dead if it is based on fp.  */
+      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
     }
   else
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);

@@ -1,6 +1,11 @@
+2014-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_set_return_address): Mark the store as frame
+	related, if any.
+	(thumb_set_return_address): Likewise.
+
 2014-11-07  Daniel Hellstrom  <daniel@gaisler.com>
 
-	Backport from mainline
 	* config.gcc (sparc-*-rtems*): Clean away unused t-elf.
 	* config/sparc/t-rtems: Add leon3v7 and muser-mode multilibs.
 
