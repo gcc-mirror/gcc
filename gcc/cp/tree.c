@@ -1244,6 +1244,11 @@ strip_typedefs (tree t)
   if (t == TYPE_CANONICAL (t))
     return t;
 
+  if (dependent_alias_template_spec_p (t))
+    /* DR 1558: However, if the template-id is dependent, subsequent
+       template argument substitution still applies to the template-id.  */
+    return t;
+
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
