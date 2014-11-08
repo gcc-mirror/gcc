@@ -30,6 +30,7 @@
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "rtl.h"
+#include "rtl-iter.h"
 
 /* In ARMv8-A there's a general expectation that AESE/AESMC
    and AESD/AESIMC sequences of the form:
@@ -68,13 +69,6 @@ aarch_crypto_can_dual_issue (rtx_insn *producer_insn, rtx_insn *consumer_insn)
   return 0;
 }
 
-typedef struct
-{
-  rtx_code search_code;
-  rtx search_result;
-  bool find_any_shift;
-} search_term;
-
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
 bool
@@ -96,68 +90,32 @@ static rtx_code shift_rtx_codes[] =
   { ASHIFT, ROTATE, ASHIFTRT, LSHIFTRT,
     ROTATERT, ZERO_EXTEND, SIGN_EXTEND };
 
-/* Callback function for arm_find_sub_rtx_with_code.
-   DATA is safe to treat as a SEARCH_TERM, ST.  This will
-   hold a SEARCH_CODE.  PATTERN is checked to see if it is an
-   RTX with that code.  If it is, write SEARCH_RESULT in ST
-   and return 1.  Otherwise, or if we have been passed a NULL_RTX
-   return 0.  If ST.FIND_ANY_SHIFT then we are interested in
-   anything which can reasonably be described as a SHIFT RTX.  */
-static int
-arm_find_sub_rtx_with_search_term (rtx *pattern, void *data)
-{
-  search_term *st = (search_term *) data;
-  rtx_code pattern_code;
-  int found = 0;
-
-  gcc_assert (pattern);
-  gcc_assert (st);
-
-  /* Poorly formed patterns can really ruin our day.  */
-  if (*pattern == NULL_RTX)
-    return 0;
-
-  pattern_code = GET_CODE (*pattern);
-
-  if (st->find_any_shift)
-    {
-      unsigned i = 0;
-
-      /* Left shifts might have been canonicalized to a MULT of some
-	 power of two.  Make sure we catch them.  */
-      if (arm_rtx_shift_left_p (*pattern))
-	found = 1;
-      else
-	for (i = 0; i < ARRAY_SIZE (shift_rtx_codes); i++)
-	  if (pattern_code == shift_rtx_codes[i])
-	    found = 1;
-    }
-
-  if (pattern_code == st->search_code)
-    found = 1;
-
-  if (found)
-    st->search_result = *pattern;
-
-  return found;
-}
-
-/* Traverse PATTERN looking for a sub-rtx with RTX_CODE CODE.  */
+/* Traverse PATTERN looking for a sub-rtx with RTX_CODE CODE.
+   If FIND_ANY_SHIFT then we are interested in anything which can
+   reasonably be described as a SHIFT RTX.  */
 static rtx
 arm_find_sub_rtx_with_code (rtx pattern, rtx_code code, bool find_any_shift)
 {
-  search_term st;
-  int result = 0;
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, pattern, NONCONST)
+    {
+      rtx x = *iter;
+      if (find_any_shift)
+	{
+	  /* Left shifts might have been canonicalized to a MULT of some
+	     power of two.  Make sure we catch them.  */
+	  if (arm_rtx_shift_left_p (x))
+	    return x;
+	  else
+	    for (unsigned int i = 0; i < ARRAY_SIZE (shift_rtx_codes); i++)
+	      if (GET_CODE (x) == shift_rtx_codes[i])
+		return x;
+	}
 
-  gcc_assert (pattern != NULL_RTX);
-  st.search_code = code;
-  st.search_result = NULL_RTX;
-  st.find_any_shift = find_any_shift;
-  result = for_each_rtx (&pattern, arm_find_sub_rtx_with_search_term, &st);
-  if (result)
-    return st.search_result;
-  else
-    return NULL_RTX;
+      if (GET_CODE (x) == code)
+	return x;
+    }
+  return NULL_RTX;
 }
 
 /* Traverse PATTERN looking for any sub-rtx which looks like a shift.  */
@@ -180,8 +138,10 @@ static int
 arm_get_set_operands (rtx producer, rtx consumer,
 		      rtx *set_source, rtx *set_destination)
 {
-  rtx set_producer = arm_find_sub_rtx_with_code (producer, SET, false);
-  rtx set_consumer = arm_find_sub_rtx_with_code (consumer, SET, false);
+  rtx set_producer = arm_find_sub_rtx_with_code (PATTERN (producer),
+						 SET, false);
+  rtx set_consumer = arm_find_sub_rtx_with_code (PATTERN (consumer),
+						 SET, false);
 
   if (set_producer && set_consumer)
     {
@@ -353,8 +313,8 @@ arm_no_early_mul_dep (rtx producer, rtx consumer)
 int
 arm_no_early_store_addr_dep (rtx producer, rtx consumer)
 {
-  rtx value = arm_find_sub_rtx_with_code (producer, SET, false);
-  rtx addr = arm_find_sub_rtx_with_code (consumer, SET, false);
+  rtx value = arm_find_sub_rtx_with_code (PATTERN (producer), SET, false);
+  rtx addr = arm_find_sub_rtx_with_code (PATTERN (consumer), SET, false);
 
   if (value)
     value = SET_DEST (value);
