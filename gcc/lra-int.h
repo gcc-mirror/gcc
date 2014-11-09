@@ -284,6 +284,7 @@ extern lra_insn_recog_data_t *lra_insn_recog_data;
 
 extern int lra_curr_reload_num;
 
+extern void lra_dump_bitmap_with_title (const char *, bitmap, int);
 extern void lra_push_insn (rtx_insn *);
 extern void lra_push_insn_by_uid (unsigned int);
 extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);
@@ -302,6 +303,9 @@ extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);
+
+extern bool lra_substitute_pseudo (rtx *, int, rtx);
+extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx);
 
 extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx_insn *);
 extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx_insn *);

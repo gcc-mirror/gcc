@@ -129,6 +129,33 @@ along with GCC; see the file COPYING3.	If not see
 #include "lra-int.h"
 #include "df.h"
 
+/* Dump bitmap SET with TITLE and BB INDEX.  */
+void
+lra_dump_bitmap_with_title (const char *title, bitmap set, int index)
+{
+  unsigned int i;
+  int count;
+  bitmap_iterator bi;
+  static const int max_nums_on_line = 10;
+
+  if (bitmap_empty_p (set))
+    return;
+  fprintf (lra_dump_file, "  %s %d:", title, index);
+  fprintf (lra_dump_file, "\n");
+  count = max_nums_on_line + 1;
+  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+    {
+      if (count > max_nums_on_line)
+	{
+	  fprintf (lra_dump_file, "\n    ");
+	  count = 0;
+	}
+      fprintf (lra_dump_file, " %4u", i);
+      count++;
+    }
+  fprintf (lra_dump_file, "\n");
+}
+
 /* Hard registers currently not available for allocation.  It can
    changed after some hard  registers become not eliminable.  */
 HARD_REG_SET lra_no_alloc_regs;
@@ -1749,6 +1776,68 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
       push_insns (last, insn);
       setup_sp_offset (after, last);
     }
+}
+
+
+
+/* Replace all references to register OLD_REGNO in *LOC with pseudo
+   register NEW_REG.  Return true if any change was made.  */
+bool
+lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg)
+{
+  rtx x = *loc;
+  bool result = false;
+  enum rtx_code code;
+  const char *fmt;
+  int i, j;
+
+  if (x == NULL_RTX)
+    return false;
+
+  code = GET_CODE (x);
+  if (code == REG && (int) REGNO (x) == old_regno)
+    {
+      machine_mode mode = GET_MODE (*loc);
+      machine_mode inner_mode = GET_MODE (new_reg);
+
+      if (mode != inner_mode)
+	{
+	  if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (inner_mode)
+	      || ! SCALAR_INT_MODE_P (inner_mode))
+	    new_reg = gen_rtx_SUBREG (mode, new_reg, 0);
+	  else
+	    new_reg = gen_lowpart_SUBREG (mode, new_reg);
+	}
+      *loc = new_reg;
+      return true;
+    }
+
+  /* Scan all the operand sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (lra_substitute_pseudo (&XEXP (x, i), old_regno, new_reg))
+	    result = true;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (lra_substitute_pseudo (&XVECEXP (x, i, j), old_regno, new_reg))
+	      result = true;
+	}
+    }
+  return result;
+}
+
+/* Call lra_substitute_pseudo within an insn.  This won't update the insn ptr,
+   just the contents of the insn.  */
+bool
+lra_substitute_pseudo_within_insn (rtx_insn *insn, int old_regno, rtx new_reg)
+{
+  rtx loc = insn;
+  return lra_substitute_pseudo (&loc, old_regno, new_reg);
 }
 
 
