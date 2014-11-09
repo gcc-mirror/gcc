@@ -29,13 +29,13 @@ avx_test (void)
   ap = ep;
   bp = fp;
 
-  for (i = N; i >= 0; i--)
+  for (i = N; i > 0; i--)
     {
       *ap++ = str;
       *bp++ = str;
     }
 
-  for (i = N; i >= 0; i--)
+  for (i = N; i > 0; i--)
     {
       if (strcmp (*--ap, "STR") != 0)
 	abort ();

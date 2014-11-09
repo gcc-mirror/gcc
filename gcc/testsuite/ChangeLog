@@ -1,3 +1,13 @@
+2014-11-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2014-11-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/63305
+	* gcc.target/i386/avx256-unaligned-load-7.c (avx_test): Fix
+	buffer overflow.
+	* gcc.target/i386/avx256-unaligned-store-7.c (avx_test): Likewise.
+
 2014-11-07  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/undefined-2.c: New test.
