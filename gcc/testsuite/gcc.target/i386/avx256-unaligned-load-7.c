@@ -34,7 +34,7 @@ avx_test (void)
   cp = mp;
   dp = lp;
 
-  for (i = N; i >= 0; i--)
+  for (i = N; i > 0; i--)
     {
       *cp++ = str;
       *dp++ = str;
@@ -45,13 +45,13 @@ avx_test (void)
   cp = mp;
   dp = lp;
 
-  for (i = N; i >= 0; i--)
+  for (i = N; i > 0; i--)
     {
       *ap++ = *cp++;
       *bp++ = *dp++;
     }
 
-  for (i = N; i >= 0; i--)
+  for (i = N; i > 0; i--)
     {
       if (strcmp (*--ap, "STR") != 0)
 	abort ();
