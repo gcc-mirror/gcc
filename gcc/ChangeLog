@@ -1,3 +1,7 @@
+2014-11-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/predicates.md (low_io_address_operand): Fix typo.
+
 2014-11-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63620
