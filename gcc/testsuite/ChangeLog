@@ -1,3 +1,7 @@
+2014-11-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/powerpc/pr51623.c: Fix implicit declarations.
+
 2014-11-09  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/cpp0x/constexpr-reinterpret1.C: XFAIL.
