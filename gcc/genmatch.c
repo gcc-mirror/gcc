@@ -1615,7 +1615,7 @@ dt_operand::gen_gimple_expr (FILE *f)
       else
 	fprintf (f, "tree %s = gimple_call_arg (def_stmt, %u);\n",
 		 child_opname, i);
-      fprintf (f, "if ((%s = do_valueize (valueize, %s)) != 0)\n",
+      fprintf (f, "if ((%s = do_valueize (valueize, %s)))\n",
 	       child_opname, child_opname);
       fprintf (f, "{\n");
     }
@@ -1726,6 +1726,7 @@ dt_node::gen_kids (FILE *f, bool gimple)
   if (exprs_len || fns_len)
     {
       fprintf (f, "case SSA_NAME:\n");
+      fprintf (f, "if (do_valueize (valueize, %s) != NULL_TREE)\n", kid_opname);
       fprintf (f, "{\n");
       fprintf (f, "gimple def_stmt = SSA_NAME_DEF_STMT (%s);\n", kid_opname);
 
