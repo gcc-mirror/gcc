@@ -1,3 +1,12 @@
+2014-11-09  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add patterns convering two conversions in a row
+	from fold-const.c.
+	* fold-const.c (fold_unary_loc): Remove them here.
+	* tree-ssa-forwprop.c (combine_conversions): Likewise.
+	* genmatch.c (dt_node::gen_kids): Check whether we may
+	follow SSA use-def chains.
+
 2014-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c: Include rtl-iter.h.

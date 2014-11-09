@@ -1,3 +1,8 @@
+2014-11-09  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/cpp0x/constexpr-reinterpret1.C: XFAIL.
+	* gcc.dg/tree-ssa/pr21031.c: XFAIL.
+
 2014-11-07  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/execute/20141107-1.c: New testcase.
