@@ -4366,67 +4366,6 @@ add_next_usage_insn (int regno, rtx insn, int reloads_num)
     usage_insns[regno].check = 0;
 }
 
-/* Replace all references to register OLD_REGNO in *LOC with pseudo
-   register NEW_REG.  Return true if any change was made.  */
-static bool
-substitute_pseudo (rtx *loc, int old_regno, rtx new_reg)
-{
-  rtx x = *loc;
-  bool result = false;
-  enum rtx_code code;
-  const char *fmt;
-  int i, j;
-
-  if (x == NULL_RTX)
-    return false;
-
-  code = GET_CODE (x);
-  if (code == REG && (int) REGNO (x) == old_regno)
-    {
-      machine_mode mode = GET_MODE (*loc);
-      machine_mode inner_mode = GET_MODE (new_reg);
-
-      if (mode != inner_mode)
-	{
-	  if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (inner_mode)
-	      || ! SCALAR_INT_MODE_P (inner_mode))
-	    new_reg = gen_rtx_SUBREG (mode, new_reg, 0);
-	  else
-	    new_reg = gen_lowpart_SUBREG (mode, new_reg);
-	}
-      *loc = new_reg;
-      return true;
-    }
-
-  /* Scan all the operand sub-expressions.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (substitute_pseudo (&XEXP (x, i), old_regno, new_reg))
-	    result = true;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    if (substitute_pseudo (&XVECEXP (x, i, j), old_regno, new_reg))
-	      result = true;
-	}
-    }
-  return result;
-}
-
-/* Call substitute_pseudo within an insn.  This won't update the insn ptr,
-   just the contents of the insn.  */
-
-static bool
-substitute_pseudo_within_insn (rtx_insn *insn, int old_regno, rtx new_reg)
-{
-  rtx loc = insn;
-  return substitute_pseudo (&loc, old_regno, new_reg);
-}
-
 /* Return first non-debug insn in list USAGE_INSNS.  */
 static rtx_insn *
 skip_usage_debug_insns (rtx usage_insns)
@@ -4588,7 +4527,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 	}
       return false;
     }
-  substitute_pseudo_within_insn (insn, original_regno, new_reg);
+  lra_substitute_pseudo_within_insn (insn, original_regno, new_reg);
   lra_update_insn_regno_info (insn);
   if (! def_p)
     /* We now have a new usage insn for original regno.  */
@@ -4620,7 +4559,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 	  lra_assert (DEBUG_INSN_P (usage_insn));
 	  next_usage_insns = XEXP (next_usage_insns, 1);
 	}
-      substitute_pseudo (&usage_insn, original_regno, new_reg);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg);
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
@@ -4884,7 +4823,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       usage_insn = XEXP (next_usage_insns, 0);
       lra_assert (DEBUG_INSN_P (usage_insn));
       next_usage_insns = XEXP (next_usage_insns, 1);
-      substitute_pseudo (&usage_insn, original_regno, new_reg);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg);
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
@@ -5803,7 +5742,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		    {
 		      if (change_p && bitmap_bit_p (remove_pseudos, regno))
 			{
-			  substitute_pseudo_within_insn (
+			  lra_substitute_pseudo_within_insn (
 			    curr_insn, regno, regno_reg_rtx[restore_regno]);
 			  restored_regs_p = true;
 			}
@@ -5927,7 +5866,7 @@ undo_optional_reloads (void)
 		 we remove the inheritance pseudo and the optional
 		 reload.  */
 	    }
-	  substitute_pseudo_within_insn (
+	  lra_substitute_pseudo_within_insn (
 	    insn, regno,
 	    regno_reg_rtx[lra_reg_info[regno].restore_regno]);
 	  lra_update_insn_regno_info (insn);

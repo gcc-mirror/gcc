@@ -1,3 +1,36 @@
+2014-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63620
+	* lra-constraints.c (substitute_pseudo): Add prefix lra_ to the
+	name.  Move to lra.c.  Make it external.
+	(substitute_pseudo_within_insn): Ditto.
+	(inherit_reload_reg, split_reg, remove_inheritance_pseudos): Use
+	the new names.
+	(undo_optional_reloads): Ditto.
+	* lra-int.h (lra_dump_bitmap_with_title, lra_substitute_pseudo):
+	New prototypes.
+	(lra_substitute_pseudo_within_insn): Ditto.
+	* lra-lives.c (bb_killed_pseudos, bb_gen_pseudos): New.
+	(mark_regno_live): Add parameter.  Update bb_gen_pseudos.
+	(mark_regno_dead): Add parameter.  Update bb_gen_pseudos and
+	bb_killed_pseudos.
+	(struct bb_data, bb_data_t, bb_data): New.
+	(get_bb_data, get_bb_data_by_index): Ditto.
+	(all_hard_regs_bitmap): New.
+	(live_trans_fun, live_con_fun_0, live_con_fun_n, all_blocks): New.
+	(initiate_live_solver, finish_live_solver): New.
+	(process_bb_lives): Change return type.  Add code updating local
+	live data and removing dead insns.  Pass new argument to
+	mark_regno_live and mark_regno_dead.  Check changing bb pseudo
+	life info.  Return the result.
+	(lra_create_live_ranges): Add code to do global pseudo live
+	analysis.
+	(lra_live_ranges_init): Call initiate_live_solver.
+	(lra_live_ranges_finish): Call finish_live_solver.
+	* lra.c (lra_dump_bitmap_with_title): New.
+	(lra_substitute_pseudo, lra_substitute_pseudo_within_insn): Move
+	from lra-constraints.c.
+
 2014-11-09  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Add patterns convering two conversions in a row
