@@ -1,6 +1,6 @@
 2014-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* testsuite/63305
+	PR testsuite/63305
 	* gcc.target/i386/avx256-unaligned-load-7.c (avx_test): Fix
 	buffer overflow.
 	* gcc.target/i386/avx256-unaligned-store-7.c (avx_test): Likewise.
