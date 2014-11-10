@@ -495,6 +495,10 @@ typedef struct avr_args
 #define DRIVER_SELF_SPECS " %{mmcu=*:-specs=device-specs/specs-%*%s %<mmcu=*} "
 #define CPP_SPEC ""
 
+/* We want cc1plus used as a preprocessor to pick up the cpp spec from the
+   per-device spec files  */
+#define CPLUSPLUS_CPP_SPEC "%(cpp)"
+
 #define CC1_SPEC ""
 
 #define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
