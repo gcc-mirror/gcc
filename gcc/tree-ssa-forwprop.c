@@ -2588,54 +2588,6 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Simplify multiplications.
-   Return true if a transformation applied, otherwise return false.  */
-
-static bool
-simplify_mult (gimple_stmt_iterator *gsi)
-{
-  gimple stmt = gsi_stmt (*gsi);
-  tree arg1 = gimple_assign_rhs1 (stmt);
-  tree arg2 = gimple_assign_rhs2 (stmt);
-
-  if (TREE_CODE (arg1) != SSA_NAME)
-    return false;
-
-  gimple def_stmt = SSA_NAME_DEF_STMT (arg1);
-  if (!is_gimple_assign (def_stmt))
-    return false;
-
-  /* Look through a sign-changing conversion.  */
-  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
-    {
-      if (TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (def_stmt)))
-	  != TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
-	  || TREE_CODE (gimple_assign_rhs1 (def_stmt)) != SSA_NAME)
-	return false;
-      def_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
-      if (!is_gimple_assign (def_stmt))
-	return false;
-    }
-
-  if (gimple_assign_rhs_code (def_stmt) == EXACT_DIV_EXPR)
-    {
-      if (operand_equal_p (gimple_assign_rhs2 (def_stmt), arg2, 0))
-	{
-	  tree res = gimple_assign_rhs1 (def_stmt);
-	  if (useless_type_conversion_p (TREE_TYPE (arg1), TREE_TYPE (res)))
-	    gimple_assign_set_rhs_with_ops (gsi, TREE_CODE (res), res,
-					    NULL_TREE);
-	  else
-	    gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, res, NULL_TREE);
-	  gcc_assert (gsi_stmt (*gsi) == stmt);
-	  update_stmt (stmt);
-	  return true;
-	}
-    }
-
-  return false;
-}
-
 
 /* Primitive "lattice" function for gimple_simplify.  */
 
@@ -2853,13 +2805,6 @@ pass_forwprop::execute (function *fun)
 			  || code == BIT_XOR_EXPR)
 			 && simplify_rotate (&gsi))
 		  changed = true;
-		else if (code == MULT_EXPR)
-		  {
-		    changed = simplify_mult (&gsi);
-		    if (changed
-			&& maybe_clean_or_replace_eh_stmt (stmt, stmt))
-		      bitmap_set_bit (to_purge, bb->index);
-		  }
 		else if (code == PLUS_EXPR
 			 || code == MINUS_EXPR)
 		  {

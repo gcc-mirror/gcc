@@ -443,3 +443,11 @@ along with GCC; see the file COPYING3.  If not see
        && operand_equal_p (@1, build_low_bits_mask (TREE_TYPE (@1),
 						    TYPE_PRECISION (type)), 0))
    (convert @0)))
+
+
+/* (X /[ex] A) * A -> X.  */
+(simplify
+  (mult (convert? (exact_div @0 @1)) @1)
+  /* Look through a sign-changing conversion.  */
+  (if (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
+   (convert @0)))
