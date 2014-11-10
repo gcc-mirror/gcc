@@ -19,7 +19,7 @@ uint128_central_bitsi_ior (unsigned __int128 in1, uint64_t in2)
 }
 
 int
-main(int argc)
+main(int argc, char **argv)
 {
   __int128 in = 1;
 #ifdef __SIZEOF_INT128__
