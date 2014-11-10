@@ -411,4 +411,23 @@ along with GCC; see the file COPYING3.  If not see
 	&& ! (final_ptr && inside_prec != inter_prec)
 	&& ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
 	      && TYPE_MODE (type) == TYPE_MODE (inter_type)))
-    (ocvt @0))))))
+    (ocvt @0))
+
+   /* A truncation to an unsigned type (a zero-extension) should be
+      canonicalized as bitwise and of a mask.  */
+   (if (final_int && inter_int && inside_int
+	&& final_prec == inside_prec
+	&& final_prec > inter_prec
+	&& inter_unsignedp)
+    (convert (bit_and @0 { wide_int_to_tree
+	                     (inside_type,
+			      wi::mask (inter_prec, false,
+					TYPE_PRECISION (inside_type))); })))
+
+   /* If we are converting an integer to a floating-point that can
+      represent it exactly and back to an integer, we can skip the
+      floating-point conversion.  */
+   (if (inside_int && inter_float && final_int &&
+	(unsigned) significand_size (TYPE_MODE (inter_type))
+	>= inside_prec - !inside_unsignedp)
+    (convert @0))))))
