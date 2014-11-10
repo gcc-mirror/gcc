@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-O -fsanitize=null -fno-sanitize-recover=null -fdump-tree-sanopt-details" }
+// { dg-skip-if "" { *-*-* } { "-flto -fno-fat-lto-objects" } }
 // { dg-shouldfail "ubsan" }
 
 int
