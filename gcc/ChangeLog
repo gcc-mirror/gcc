@@ -1,5 +1,11 @@
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
+	* match.pd: Implement pattern from simplify_conversion_from_bitmask.
+	* tree-ssa-forwprop.c (simplify_conversion_from_bitmask): Remove.
+	(pass_forwprop::execute): Do not call simplify_conversion_from_bitmask.
+
+2014-11-10  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Move rest of the conversion combining patterns
 	from tree-ssa-forwprop.c.
 	* tree-ssa-forwprop.c (combine_conversions): Remove.

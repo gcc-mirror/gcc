@@ -431,3 +431,15 @@ along with GCC; see the file COPYING3.  If not see
 	(unsigned) significand_size (TYPE_MODE (inter_type))
 	>= inside_prec - !inside_unsignedp)
     (convert @0))))))
+
+/* If we have a narrowing conversion to an integral type that is fed by a
+   BIT_AND_EXPR, we might be able to remove the BIT_AND_EXPR if it merely
+   masks off bits outside the final type (and nothing else).  */
+(simplify
+  (convert (bit_and @0 INTEGER_CST@1))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))
+       && operand_equal_p (@1, build_low_bits_mask (TREE_TYPE (@1),
+						    TYPE_PRECISION (type)), 0))
+   (convert @0)))
