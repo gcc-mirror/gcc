@@ -1,3 +1,32 @@
+2014-11-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.dg/fshort-wchar.c: Use arm_eabi instead of arm*-*-*eabi*.
+	* gcc.target/arm/aapcs/neon-vect1.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect2.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect3.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect4.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect5.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect6.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect7.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect8.c: Likewise.
+	* gcc.target/arm/aapcs/vfp1.c: Likewise.
+	* gcc.target/arm/aapcs/vfp2.c: Likewise.
+	* gcc.target/arm/aapcs/vfp3.c: Likewise.
+	* gcc.target/arm/aapcs/vfp4.c: Likewise.
+	* gcc.target/arm/aapcs/vfp5.c: Likewise.
+	* gcc.target/arm/aapcs/vfp6.c: Likewise.
+	* gcc.target/arm/aapcs/vfp7.c: Likewise.
+	* gcc.target/arm/aapcs/vfp8.c: Likewise.
+	* gcc.target/arm/aapcs/vfp9.c: Likewise.
+	* gcc.target/arm/aapcs/vfp10.c: Likewise.
+	* gcc.target/arm/aapcs/vfp11.c: Likewise.
+	* gcc.target/arm/aapcs/vfp12.c: Likewise.
+	* gcc.target/arm/aapcs/vfp13.c: Likewise.
+	* gcc.target/arm/aapcs/vfp14.c: Likewise.
+	* gcc.target/arm/aapcs/vfp15.c: Likewise.
+	* gcc.target/arm/aapcs/vfp16.c: Likewise.
+	* gcc.target/arm/aapcs/vfp17.c: Likewise.
+
 2014-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/63778

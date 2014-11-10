@@ -1,6 +1,6 @@
 /* Test AAPCS layout (VFP variant for Neon types) */
 
-/* { dg-do run { target arm*-*-*eabi* } } */
+/* { dg-do run { target arm_eabi } } */
 /* { dg-require-effective-target arm_hard_vfp_ok  } */
 /* { dg-require-effective-target arm_neon_ok } */
 /* { dg-require-effective-target arm32 } */
