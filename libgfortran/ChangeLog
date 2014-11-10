@@ -1,3 +1,33 @@
+2014-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47007
+	PR libfortran/61847
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac (AC_CHECK_HEADERS_ONCE): Check for xlocale.h.
+	(AC_CHECK_FUNCS_ONCE): Check for newlocale, freelocale, uselocale,
+	strerror_l.
+	* io/io.h (locale.h): Include.
+	(xlocale.h): Include if present.
+	(c_locale): New variable.
+	(old_locale): New variable.
+	(old_locale_ctr): New variable.
+	(old_locale_lock): New variable.
+	(st_parameter_dt): Add old_locale member.
+	* io/transfer.c (data_transfer_init): Set locale to "C" if doing
+	formatted transfer.
+	(finalize_transfer): Reset locale to previous.
+	* io/unit.c (c_locale): New variable.
+	(old_locale): New variable.
+	(old_locale_ctr): New variable.
+	(old_locale_lock): New variable.
+	(init_units): Init c_locale, init old_locale_lock.
+	(close_units): Free c_locale.
+	* runtime/error.c (locale.h): Include.
+	(xlocale.h): Include if present.
+	(gf_strerror): Use strerror_l if available. Reset locale to
+	LC_GLOBAL_LOCALE for strerror_r branch.
+
 2014-10-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/63589

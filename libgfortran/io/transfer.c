@@ -2870,12 +2870,26 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	dtp->u.p.current_unit->read_bad = 1;
     }
 
-  /* Start the data transfer if we are doing a formatted transfer.  */
-  if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED
-      && ((cf & (IOPARM_DT_LIST_FORMAT | IOPARM_DT_HAS_NAMELIST_NAME)) == 0)
-      && dtp->u.p.ionml == NULL)
-    formatted_transfer (dtp, 0, NULL, 0, 0, 1);
+  if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED)
+    {
+#ifdef HAVE_USELOCALE
+      dtp->u.p.old_locale = uselocale (c_locale);
+#else
+      __gthread_mutex_lock (&old_locale_lock);
+      if (!old_locale_ctr++)
+	{
+	  old_locale = setlocale (LC_NUMERIC, NULL);
+	  setlocale (LC_NUMERIC, "C");
+	}
+      __gthread_mutex_unlock (&old_locale_lock);
+#endif
+      /* Start the data transfer if we are doing a formatted transfer.  */
+      if ((cf & (IOPARM_DT_LIST_FORMAT | IOPARM_DT_HAS_NAMELIST_NAME)) == 0
+	&& dtp->u.p.ionml == NULL)
+	formatted_transfer (dtp, 0, NULL, 0, 0, 1);
+    }
 }
+
 
 /* Initialize an array_loop_spec given the array descriptor.  The function
    returns the index of the last element of the array, and also returns
@@ -3531,14 +3545,14 @@ finalize_transfer (st_parameter_dt *dtp)
   if (dtp->u.p.eor_condition)
     {
       generate_error (&dtp->common, LIBERROR_EOR, NULL);
-      return;
+      goto done;
     }
 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     {
       if (dtp->u.p.current_unit && current_mode (dtp) == UNFORMATTED_SEQUENTIAL)
 	dtp->u.p.current_unit->current_record = 0;
-      return;
+      goto done;
     }
 
   if ((dtp->u.p.ionml != NULL)
@@ -3552,12 +3566,12 @@ finalize_transfer (st_parameter_dt *dtp)
 
   dtp->u.p.transfer = NULL;
   if (dtp->u.p.current_unit == NULL)
-    return;
+    goto done;
 
   if ((cf & IOPARM_DT_LIST_FORMAT) != 0 && dtp->u.p.mode == READING)
     {
       finish_list_read (dtp);
-      return;
+      goto done;
     }
 
   if (dtp->u.p.mode == WRITING)
@@ -3570,7 +3584,7 @@ finalize_transfer (st_parameter_dt *dtp)
 	  && dtp->u.p.advance_status != ADVANCE_NO)
 	next_record (dtp, 1);
 
-      return;
+      goto done;
     }
 
   dtp->u.p.current_unit->current_record = 0;
@@ -3579,7 +3593,7 @@ finalize_transfer (st_parameter_dt *dtp)
     {
       fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
       dtp->u.p.seen_dollar = 0;
-      return;
+      goto done;
     }
 
   /* For non-advancing I/O, save the current maximum position for use in the
@@ -3591,7 +3605,7 @@ finalize_transfer (st_parameter_dt *dtp)
       dtp->u.p.current_unit->saved_pos =
 	dtp->u.p.max_pos > 0 ? dtp->u.p.max_pos - bytes_written : 0;
       fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
-      return;
+      goto done;
     }
   else if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED 
            && dtp->u.p.mode == WRITING && !is_internal_unit (dtp))
@@ -3600,6 +3614,23 @@ finalize_transfer (st_parameter_dt *dtp)
   dtp->u.p.current_unit->saved_pos = 0;
 
   next_record (dtp, 1);
+
+ done:
+#ifdef HAVE_USELOCALE
+  if (dtp->u.p.old_locale != (locale_t) 0)
+    {
+      uselocale (dtp->u.p.old_locale);
+      dtp->u.p.old_locale = (locale_t) 0;
+    }
+#else
+  __gthread_mutex_lock (&old_locale_lock);
+  if (!--old_locale_ctr)
+    {
+      setlocale (LC_NUMERIC, old_locale);
+      old_locale = NULL;
+    }
+  __gthread_mutex_unlock (&old_locale_lock);
+#endif
 }
 
 /* Transfer function for IOLENGTH. It doesn't actually do any
