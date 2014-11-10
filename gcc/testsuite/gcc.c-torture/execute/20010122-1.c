@@ -1,4 +1,5 @@
 /* { dg-skip-if "requires frame pointers" { *-*-* } "-fomit-frame-pointer" "" } */
+/* { dg-require-effective-target return_address } */
 
 extern void exit (int);
 extern void abort (void);
