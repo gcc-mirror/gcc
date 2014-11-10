@@ -1,3 +1,10 @@
+2014-11-10  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Move rest of the conversion combining patterns
+	from tree-ssa-forwprop.c.
+	* tree-ssa-forwprop.c (combine_conversions): Remove.
+	(pass_forwprop::execute): Do not call it.
+
 2014-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-low.c (lower_function_body): Clear the location of the first

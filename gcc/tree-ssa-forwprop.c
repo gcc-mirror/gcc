@@ -2345,114 +2345,6 @@ out:
   return false;
 }
 
-/* Combine two conversions in a row for the second conversion at *GSI.
-   Returns 1 if there were any changes made, 2 if cfg-cleanup needs to
-   run.  Else it returns 0.  */
- 
-static int
-combine_conversions (gimple_stmt_iterator *gsi)
-{
-  gimple stmt = gsi_stmt (*gsi);
-  gimple def_stmt;
-  tree op0, lhs;
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-  enum tree_code code2;
-
-  gcc_checking_assert (CONVERT_EXPR_CODE_P (code)
-		       || code == FLOAT_EXPR
-		       || code == FIX_TRUNC_EXPR);
-
-  lhs = gimple_assign_lhs (stmt);
-  op0 = gimple_assign_rhs1 (stmt);
-  if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (op0)))
-    {
-      gimple_assign_set_rhs_code (stmt, TREE_CODE (op0));
-      return 1;
-    }
-
-  if (TREE_CODE (op0) != SSA_NAME)
-    return 0;
-
-  def_stmt = SSA_NAME_DEF_STMT (op0);
-  if (!is_gimple_assign (def_stmt))
-    return 0;
-
-  code2 = gimple_assign_rhs_code (def_stmt);
-
-  if (CONVERT_EXPR_CODE_P (code2) || code2 == FLOAT_EXPR)
-    {
-      tree defop0 = gimple_assign_rhs1 (def_stmt);
-      tree type = TREE_TYPE (lhs);
-      tree inside_type = TREE_TYPE (defop0);
-      tree inter_type = TREE_TYPE (op0);
-      int inside_int = INTEGRAL_TYPE_P (inside_type);
-      unsigned int inside_prec = TYPE_PRECISION (inside_type);
-      int inside_unsignedp = TYPE_UNSIGNED (inside_type);
-      int inter_int = INTEGRAL_TYPE_P (inter_type);
-      int inter_float = FLOAT_TYPE_P (inter_type);
-      unsigned int inter_prec = TYPE_PRECISION (inter_type);
-      int inter_unsignedp = TYPE_UNSIGNED (inter_type);
-      int final_int = INTEGRAL_TYPE_P (type);
-      unsigned int final_prec = TYPE_PRECISION (type);
-
-      /* Don't propagate ssa names that occur in abnormal phis.  */
-      if (TREE_CODE (defop0) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (defop0))
-	return 0;
-
-      /* A truncation to an unsigned type should be canonicalized as
-	 bitwise and of a mask.  */
-      if (final_int && inter_int && inside_int
-	  && final_prec == inside_prec
-	  && final_prec > inter_prec
-	  && inter_unsignedp)
-	{
-	  tree tem;
-	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
-			     defop0,
-			     wide_int_to_tree
-			     (inside_type,
-			      wi::mask (inter_prec, false,
-					TYPE_PRECISION (inside_type))));
-	  if (!useless_type_conversion_p (type, inside_type))
-	    {
-	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,
-					      GSI_SAME_STMT);
-	      gimple_assign_set_rhs1 (stmt, tem);
-	    }
-	  else
-	    gimple_assign_set_rhs_from_tree (gsi, tem);
-	  update_stmt (gsi_stmt (*gsi));
-	  return 1;
-	}
-
-      /* If we are converting an integer to a floating-point that can
-	 represent it exactly and back to an integer, we can skip the
-	 floating-point conversion.  */
-      if (inside_int && inter_float && final_int &&
-          (unsigned) significand_size (TYPE_MODE (inter_type))
-          >= inside_prec - !inside_unsignedp)
-        {
-	  if (useless_type_conversion_p (type, inside_type))
-	    {
-	      gimple_assign_set_rhs1 (stmt, unshare_expr (defop0));
-	      gimple_assign_set_rhs_code (stmt, TREE_CODE (defop0));
-	      update_stmt (stmt);
-	      return remove_prop_source_from_use (op0) ? 2 : 1;
-	    }
-	  else
-	    {
-	      gimple_assign_set_rhs1 (stmt, defop0);
-	      gimple_assign_set_rhs_code (stmt, CONVERT_EXPR);
-	      update_stmt (stmt);
-	      return remove_prop_source_from_use (op0) ? 2 : 1;
-	    }
-	}
-    }
-
-  return 0;
-}
-
 /* Combine an element access with a shuffle.  Returns true if there were
    any changes made, else it returns false.  */
  
@@ -3052,28 +2944,19 @@ pass_forwprop::execute (function *fun)
 			 || code == FLOAT_EXPR
 			 || code == FIX_TRUNC_EXPR)
 		  {
-		    int did_something = combine_conversions (&gsi);
-		    if (did_something == 2)
-		      cfg_changed = true;
-
 		    /* If we have a narrowing conversion to an integral
 		       type that is fed by a BIT_AND_EXPR, we might be
 		       able to remove the BIT_AND_EXPR if it merely
 		       masks off bits outside the final type (and nothing
 		       else.  */
-		    if (! did_something)
-		      {
-			tree outer_type = TREE_TYPE (gimple_assign_lhs (stmt));
-			tree inner_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-			if (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-			    && INTEGRAL_TYPE_P (outer_type)
-			    && INTEGRAL_TYPE_P (inner_type)
-			    && (TYPE_PRECISION (outer_type)
-				<= TYPE_PRECISION (inner_type)))
-			  did_something = simplify_conversion_from_bitmask (&gsi);
-		      }
-		      
-		    changed = did_something != 0;
+		    tree outer_type = TREE_TYPE (gimple_assign_lhs (stmt));
+		    tree inner_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+		    if (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+			&& INTEGRAL_TYPE_P (outer_type)
+			&& INTEGRAL_TYPE_P (inner_type)
+			&& (TYPE_PRECISION (outer_type)
+			    <= TYPE_PRECISION (inner_type)))
+		      changed = simplify_conversion_from_bitmask (&gsi);
 		  }
 		else if (code == VEC_PERM_EXPR)
 		  {
