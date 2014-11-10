@@ -1,3 +1,10 @@
+2014-11-11  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_bb): Fix comment typo.
+	(func_checker::compare_gimple_call): Compare gimple_call_fn,
+	gimple_call_chain, gimple_call_fntype and call flags.
+
 2014-11-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63620
