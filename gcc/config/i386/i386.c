@@ -12698,9 +12698,8 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	  || index_reg == frame_pointer_rtx
 	  || (REG_P (index_reg) && REGNO (index_reg) == STACK_POINTER_REGNUM)))
     {
-      rtx tmp;
-      tmp = base, base = index, index = tmp;
-      tmp = base_reg, base_reg = index_reg, index_reg = tmp;
+      std::swap (base, index);
+      std::swap (base_reg, index_reg);
     }
 
   /* Special case: %ebp cannot be encoded as a base without a displacement.
@@ -17753,14 +17752,10 @@ ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
   /* Canonicalize operand order.  */
   if (ix86_swap_binary_operands_p (code, mode, operands))
     {
-      rtx temp;
-
       /* It is invalid to swap operands of different modes.  */
       gcc_assert (GET_MODE (src1) == GET_MODE (src2));
 
-      temp = src1;
-      src1 = src2;
-      src2 = temp;
+      std::swap (src1, src2);
     }
 
   /* Both source operands cannot be in memory.  */
@@ -17950,11 +17945,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
 
   /* Canonicalize operand order for commutative operators.  */
   if (ix86_swap_binary_operands_p (code, mode, operands))
-    {
-      rtx temp = src1;
-      src1 = src2;
-      src2 = temp;
-    }
+    std::swap (src1, src2);
 
   /* If the destination is memory, we must have a matching source operand.  */
   if (MEM_P (dst) && !rtx_equal_p (dst, src1))
@@ -19994,8 +19985,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  enum rtx_code new_code = ix86_fp_swap_condition (code);
 	  if (new_code != UNKNOWN)
 	    {
-	      rtx tmp;
-	      tmp = op0, op0 = op1, op1 = tmp;
+	      std::swap (op0, op1);
 	      code = new_code;
 	    }
 	}
@@ -20023,8 +20013,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
       > ix86_fp_comparison_cost (swap_condition (code))
       && (REG_P (op1) || can_create_pseudo_p ()))
     {
-      rtx tmp;
-      tmp = op0, op0 = op1, op1 = tmp;
+      std::swap (op0, op1);
       code = swap_condition (code);
       if (!REG_P (op0))
 	op0 = force_reg (op_mode, op0);
@@ -20290,7 +20279,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
 	if (CONSTANT_P (op0) && !CONSTANT_P (op1))
 	  {
-	    tmp = op0, op0 = op1, op1 = tmp;
+	    std::swap (op0, op1);
 	    code = swap_condition (code);
 	  }
 
@@ -20471,9 +20460,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
       if ((code == GT || code == UNLE || code == LE || code == UNGT)
 	  && !TARGET_IEEE_FP)
 	{
-	  rtx tmp = op0;
-	  op0 = op1;
-	  op1 = tmp;
+	  std::swap (op0, op1);
 	  code = swap_condition (code);
 	}
 
@@ -20533,9 +20520,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	}
       else
 	{
-	  rtx tmp = op1;
-	  op1 = op0;
-	  op0 = tmp;
+	  std::swap (op1, op0);
 	  code = (code == GTU ? LTU : GEU);
 	}
       break;
@@ -20764,8 +20749,7 @@ ix86_expand_int_movcc (rtx operands[])
 	{
 	  machine_mode cmp_mode = GET_MODE (op0);
 
-	  HOST_WIDE_INT tmp;
-	  tmp = ct, ct = cf, cf = tmp;
+	  std::swap (ct, cf);
 	  diff = -diff;
 
 	  if (SCALAR_FLOAT_MODE_P (cmp_mode))
@@ -20962,11 +20946,7 @@ ix86_expand_int_movcc (rtx operands[])
 		  compare_code = LT;
 		}
 	      else
-		{
-		  HOST_WIDE_INT tmp = cf;
-		  cf = ct;
-		  ct = tmp;
-		}
+		std::swap (cf, ct);
 
 	      out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, -1);
 	    }
@@ -21090,8 +21070,6 @@ static enum rtx_code
 ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
 				  rtx *pop0, rtx *pop1)
 {
-  rtx tmp;
-
   switch (code)
     {
     case LTGT:
@@ -21133,9 +21111,7 @@ ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
 	 ix86_expand_sse_fp_minmax only optimizes LT/UNGE.  Swap the
 	 comparison operands to transform into something that is
 	 supported.  */
-      tmp = *pop0;
-      *pop0 = *pop1;
-      *pop1 = tmp;
+      std::swap (*pop0, *pop1);
       code = swap_condition (code);
       break;
 
@@ -21164,11 +21140,7 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   if (code == LT)
     ;
   else if (code == UNGE)
-    {
-      tmp = if_true;
-      if_true = if_false;
-      if_false = tmp;
-    }
+    std::swap (if_true, if_false);
   else
     return false;
 
@@ -21632,8 +21604,8 @@ ix86_expand_int_vcond (rtx operands[])
 
 	case LT:
 	case LTU:
+	  std::swap (cop0, cop1);
 	  code = swap_condition (code);
-	  x = cop0, cop0 = cop1, cop1 = x;
 	  break;
 
 	default:
@@ -22742,8 +22714,8 @@ ix86_split_long_move (rtx operands[])
       /* Collision in the middle part can be handled by reordering.  */
       if (collisions == 1 && nparts == 3 && collisionparts [1])
 	{
-	  tmp = part[0][1]; part[0][1] = part[0][2]; part[0][2] = tmp;
-	  tmp = part[1][1]; part[1][1] = part[1][2]; part[1][2] = tmp;
+	  std::swap (part[0][1], part[0][2]);
+	  std::swap (part[1][1], part[1][2]);
 	}
       else if (collisions == 1
 	       && nparts == 4
@@ -22751,13 +22723,13 @@ ix86_split_long_move (rtx operands[])
 	{
 	  if (collisionparts [1])
 	    {
-	      tmp = part[0][1]; part[0][1] = part[0][2]; part[0][2] = tmp;
-	      tmp = part[1][1]; part[1][1] = part[1][2]; part[1][2] = tmp;
+	      std::swap (part[0][1], part[0][2]);
+	      std::swap (part[1][1], part[1][2]);
 	    }
 	  else
 	    {
-	      tmp = part[0][2]; part[0][2] = part[0][3]; part[0][3] = tmp;
-	      tmp = part[1][2]; part[1][2] = part[1][3]; part[1][3] = tmp;
+	      std::swap (part[0][2], part[0][3]);
+	      std::swap (part[1][2], part[1][3]);
 	    }
 	}
 
@@ -35906,11 +35878,7 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
   /* Swap operands if we have a comparison that isn't available in
      hardware.  */
   if (d->flag & BUILTIN_DESC_SWAP_OPERANDS)
-    {
-      rtx tmp = op1;
-      op1 = op0;
-      op0 = tmp;
-    }
+    std::swap (op1, op0);
 
   target = gen_reg_rtx (SImode);
   emit_move_insn (target, const0_rtx);
@@ -45751,11 +45719,7 @@ ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
   rtx tmp;
 
   if (swap_operands)
-    {
-      tmp = op0;
-      op0 = op1;
-      op1 = tmp;
-    }
+    std::swap (op0, op1);
 
   label = gen_label_rtx ();
   tmp = gen_rtx_REG (fpcmp_mode, FLAGS_REG);
@@ -45782,11 +45746,7 @@ ix86_expand_sse_compare_mask (enum rtx_code code, rtx op0, rtx op1,
   rtx mask = gen_reg_rtx (mode);
 
   if (swap_operands)
-    {
-      rtx tmp = op0;
-      op0 = op1;
-      op1 = tmp;
-    }
+    std::swap (op0, op1);
 
   insn = mode == DFmode ? gen_setcc_df_sse : gen_setcc_sf_sse;
 
