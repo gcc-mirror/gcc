@@ -1,3 +1,9 @@
+2014-11-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/ldist-19.c: ICF is disabled
+	for the test because of default char signedness
+	on powerpc64 target.
+
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Implement pattern from simplify_conversion_from_bitmask.

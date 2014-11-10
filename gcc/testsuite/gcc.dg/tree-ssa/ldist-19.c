@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-ldist-details" } */
+/* { dg-options "-O3 -fno-ipa-icf -fdump-tree-ldist-details" } */
 
 struct Foo
 {
