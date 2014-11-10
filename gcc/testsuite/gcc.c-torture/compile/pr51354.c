@@ -1,4 +1,5 @@
 /* PR target/51354 */
+/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 

@@ -1,4 +1,5 @@
 /* ICE due to invalid GIMPLE created during strlen simplification.  */
+/* { dg-require-effective-target alloca } */
 
 extern unsigned long strlen (__const char *__s);
 extern void bar ();

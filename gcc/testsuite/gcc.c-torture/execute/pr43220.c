@@ -1,4 +1,5 @@
 /* { dg-require-effective-target int32plus } */
+/* { dg-require-effective-target alloca } */
 
 void *volatile p;
 
