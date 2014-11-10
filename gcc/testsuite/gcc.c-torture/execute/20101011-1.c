@@ -71,6 +71,9 @@ __aeabi_idiv0 (int return_value)
   /* Nios II requires both hardware support and user configuration to
      raise an exception on divide by zero.  */
 # define DO_TEST 0
+#elif defined (__nvptx__)
+/* There isn't even a signal function.  */
+# define DO_TEST 0
 #else
 # define DO_TEST 1
 #endif
