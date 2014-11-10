@@ -453,7 +453,7 @@ _mm256_broadcast_f32x2 (__m128 __A)
 {
   return (__m256) __builtin_ia32_broadcastf32x2_256_mask ((__v4sf) __A,
 						          (__v8sf)_mm256_undefined_ps(),
-							  (__mmask16) -
+							  (__mmask8) -
 							  1);
 }
 
