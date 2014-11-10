@@ -1,3 +1,8 @@
+2014-11-10  Renlin Li  <renlin.li@arm.com>
+
+	PR middle-end/61529
+	* gcc.dg/pr61529.c: New.
+
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_return_address):
