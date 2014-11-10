@@ -1,3 +1,4 @@
+/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 extern void abort (void);
 
 extern __SIZE_TYPE__ strlen (const char *);

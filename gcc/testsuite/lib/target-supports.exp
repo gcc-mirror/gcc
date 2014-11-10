@@ -599,6 +599,15 @@ proc add_options_for_tls { flags } {
     return $flags
 }
 
+# Return 1 if alloca is supported, 0 otherwise.
+
+proc check_effective_target_alloca {} {
+    if { [istarget nvptx-*-*] } {
+	return 0
+    }
+    return 1
+}
+
 # Return 1 if thread local storage (TLS) is supported, 0 otherwise.
 
 proc check_effective_target_tls {} {

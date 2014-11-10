@@ -1,3 +1,74 @@
+2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_alloca): New function.
+	* gcc.c-torture/execute/20010209-1.c: Require alloca.
+	* gcc.c-torture/execute/20020314-1.c: Likewise.
+	* gcc.c-torture/execute/20020412-1.c: Likewise.
+	* gcc.c-torture/execute/20021113-1.c: Likewise.
+	* gcc.c-torture/execute/20040223-1.c: Likewise.
+	* gcc.c-torture/execute/20040308-1.c: Likewise.
+	* gcc.c-torture/execute/20040811-1.c: Likewise.
+	* gcc.c-torture/execute/20070824-1.c: Likewise.
+	* gcc.c-torture/execute/20070919-1.c: Likewise.
+	* gcc.c-torture/execute/built-in-setjmp.c: Likewise.
+	* gcc.c-torture/execute/pr22061-1.c: Likewise.
+	* gcc.c-torture/execute/pr22061-4.c: Likewise.
+	* gcc.c-torture/execute/pr43220.c: Likewise.
+	* gcc.c-torture/execute/vla-dealloc-1.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-2.c: Likewise.
+	* gcc.c-torture/compile/20000923-1.c: Likewise.
+	* gcc.c-torture/compile/20030224-1.c: Likewise.
+	* gcc.c-torture/compile/20071108-1.c: Likewise.
+	* gcc.c-torture/compile/20071117-1.c: Likewise.
+	* gcc.c-torture/compile/900313-1.c: Likewise.
+	* gcc.c-torture/compile/pr17397.c: Likewise.
+	* gcc.c-torture/compile/pr35006.c: Likewise.
+	* gcc.c-torture/compile/pr42956.c: Likewise.
+	* gcc.c-torture/compile/pr51354.c: Likewise.
+	* gcc.c-torture/compile/pr55851.c: Likewise.
+	* gcc.c-torture/compile/vla-const-1.c: Likewise.
+	* gcc.c-torture/compile/vla-const-2.c: Likewise.
+	* gcc.c-torture/compile/pr31507-1.c: Likewise.
+	* gcc.c-torture/compile/pr52714.c: Likewise.
+	* gcc.dg/20001012-2.c: Likewise.
+	* gcc.dg/auto-type-1.c: Likewise.
+	* gcc.dg/builtin-object-size-1.c: Likewise.
+	* gcc.dg/builtin-object-size-2.c: Likewise.
+	* gcc.dg/builtin-object-size-3.c: Likewise.
+	* gcc.dg/builtin-object-size-4.c: Likewise.
+	* gcc.dg/packed-vla.c: Likewise.
+	* gcc.c-torture/compile/parms.c: Likewise.
+	* gcc.c-torture/execute/920721-2.c: Skip -O0 unless alloca is available.
+	* gcc.c-torture/execute/920929-1.c: Likewise.
+	* gcc.c-torture/execute/921017-1.c: Likewise.
+	* gcc.c-torture/execute/941202-1.c: Likewise.
+	* gcc.c-torture/execute/align-nest.c: Likewise.
+	* gcc.c-torture/execute/alloca-1.c: Likewise.
+	* gcc.c-torture/execute/pr36321.c: Likewise.
+	* gcc.c-torture/compile/20001221-1.c: Likewise.
+	* gcc.c-torture/compile/20020807-1.c: Likewise.
+	* gcc.c-torture/compile/20050801-2.c: Likewise.
+	* gcc.c-torture/compile/920428-4.c: Likewise.
+	* gcc.c-torture/compile/debugvlafunction-1.c.c: Likewise.
+	* gcc.c-torture/compile/pr41469.c: Likewise.
+	* gcc.dg/torture/pr48953.c: Likewise.
+	* gcc.dg/torture/pr8081.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-1.c: Skip if nvptx-*-*.
+	* gcc.dg/torture/stackalign/inline-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-1.c: Likewise.
+	* gcc.dg/torture/stackalign/global-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-2.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-3.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+
 2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* g++.dg/cpp1y/feat-cxx11.C: Test new feature macros for C++98

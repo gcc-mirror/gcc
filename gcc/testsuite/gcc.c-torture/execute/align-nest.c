@@ -1,3 +1,4 @@
+/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 
 void foo(int n)
 {

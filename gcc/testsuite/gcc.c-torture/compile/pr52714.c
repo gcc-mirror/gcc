@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 
 int __re_compile_fastmap(unsigned char *p)
 {

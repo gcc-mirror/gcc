@@ -1,3 +1,4 @@
+/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 __inline int f(int i)
 {
   struct {

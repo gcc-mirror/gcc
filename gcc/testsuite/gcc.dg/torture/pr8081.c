@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 
 extern void abort (void);
 int
