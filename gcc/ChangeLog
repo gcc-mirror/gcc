@@ -1,3 +1,11 @@
+2014-11-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-if-conv.c (add_to_predicate_list): Check unconditionally
+	that bb is always executed to early exit. Use predicate of
+	cd-equivalent block for join blocks if it exists.
+	(if_convertible_loop_p_1): Recompute POST_DOMINATOR tree.
+	(tree_if_conversion): Free post-dominance information.
+
 2014-11-09  Jason Merrill  <jason@redhat.com>
 
 	* config/i386/avx512vldqintrin.h (_mm256_broadcast_f32x2): __mmask8.
