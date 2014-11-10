@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 #include "ifcvt.h"
+#include "rtl-iter.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline
@@ -338,7 +339,6 @@ static rtx frv_emit_comparison			(enum rtx_code, rtx, rtx);
 static void frv_ifcvt_add_insn			(rtx, rtx, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
-static int frv_acc_group_1			(rtx *, void *);
 static unsigned int frv_insn_unit		(rtx_insn *);
 static bool frv_issues_to_branch_unit_p		(rtx_insn *);
 static int frv_cond_flags 			(rtx);
@@ -7013,33 +7013,29 @@ frv_issue_rate (void)
     }
 }
 
-/* A for_each_rtx callback.  If X refers to an accumulator, return
-   ACC_GROUP_ODD if the bit 2 of the register number is set and
-   ACC_GROUP_EVEN if it is clear.  Return 0 (ACC_GROUP_NONE)
-   otherwise.  */
-
-static int
-frv_acc_group_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (REG_P (*x))
-    {
-      if (ACC_P (REGNO (*x)))
-	return (REGNO (*x) - ACC_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
-      if (ACCG_P (REGNO (*x)))
-	return (REGNO (*x) - ACCG_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
-    }
-  return 0;
-}
-
 /* Return the value of INSN's acc_group attribute.  */
 
 int
 frv_acc_group (rtx insn)
 {
   /* This distinction only applies to the FR550 packing constraints.  */
-  if (frv_cpu_type != FRV_CPU_FR550)
-    return ACC_GROUP_NONE;
-  return for_each_rtx (&PATTERN (insn), frv_acc_group_1, 0);
+  if (frv_cpu_type == FRV_CPU_FR550)
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	if (REG_P (*iter))
+	  {
+	    unsigned int regno = REGNO (*iter);
+	    /* If REGNO refers to an accumulator, return ACC_GROUP_ODD if
+	       the bit 2 of the register number is set and ACC_GROUP_EVEN if
+	       it is clear.  */
+	    if (ACC_P (regno))
+	      return (regno - ACC_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
+	    if (ACCG_P (regno))
+	      return (regno - ACCG_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
+	  }
+    }
+  return ACC_GROUP_NONE;
 }
 
 /* Return the index of the DFA unit in FRV_UNIT_NAMES[] that instruction
