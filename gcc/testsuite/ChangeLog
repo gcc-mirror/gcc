@@ -1,5 +1,35 @@
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_trampolines,
+	check_profiling_available, check_effective_target_lto,
+	check_effective_target_vect_natural): False for nvptx-*-*.
+	* gcc.c-torture/compile/limits-fndefn.c: Skip for nvptx-*-*.
+	* gcc.c-torture/compile/pr34334.c: Likewise.
+	* gcc.c-torture/compile/pr37056.c: Likewise.
+	* gcc.c-torture/compile/pr39423-1.c: Likewise.
+	* gcc.c-torture/compile/pr46534.c: Likewise.
+	* gcc.c-torture/compile/pr49049.c: Likewise.
+	* gcc.c-torture/compile/pr59417.c: Likewise.
+	* gcc.c-torture/compile/20080721-1.c: Likewise.
+	* gcc.c-torture/compile/920501-4.c: Likewise.
+	* gcc.c-torture/compile/921011-1.c: Likewise.
+	* gcc.dg/20040813-1.c: Likewise.
+	* gcc.dg/pr28755.c: Likewise.
+	* gcc.dg/pr44194-1.c: Likewise.
+	* gcc.c-torture/compile/pr42717.c: Xfail for nvptx-*-*.
+	* gcc.c-torture/compile/pr61684.c: Likewise.
+	* gcc.c-torture/compile/pr20601-1.c: Likewise.
+	* gcc.c-torture/compile/pr59221.c: Likewise.
+	* gcc.c-torture/compile/20060208-1.c: Likewise.
+	* gcc.c-torture/execute/pr52129.c: Likewise.
+	* gcc.c-torture/execute/20020310-1.c: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Define DO_TEST to 0 for nvptx.
+	* gcc.c-torture/execute20020312-2.c: Add case for for nvptx.
+	* gcc.c-torture/compile/pr60655-1.c: Don't add -fdata-sections
+	for nvptx-*-*.
+	* gcc.dg/pr36400.c: Xfail scan-assembler test on nvptx-*-*.
+	* gcc.dg/const-elim-2.c: Likewise.
+
 	* lib/target-supports.exp
 	(check_effective_target_untyped_assembly): New function.
 	* gcc.c-torture/compile/20091215-1.c: Require untyped_assembly.

@@ -436,6 +436,7 @@ proc check_effective_target_trampolines { } {
     }
     if { [istarget avr-*-*]
 	 || [istarget msp430-*-*]
+	 || [istarget nvptx-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
 	 || [istarget hppa64-hp-hpux11.23] } {
 	return 0;
@@ -532,6 +533,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget msp430-*-*]
 	     || [istarget nds32*-*-elf]
 	     || [istarget nios2-*-elf]
+	     || [istarget nvptx-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
 	     || [istarget rx-*-*]	
@@ -4190,7 +4192,8 @@ proc check_effective_target_vect_natural_alignment { } {
         verbose "check_effective_target_vect_natural_alignment: using cached result" 2
     } else {
         set et_vect_natural_alignment_saved 1
-        if { [check_effective_target_arm_eabi] } {
+        if { [check_effective_target_arm_eabi]
+	     || [istarget nvptx-*-*] } {
             set et_vect_natural_alignment_saved 0
         }
     }
@@ -5660,6 +5663,9 @@ proc check_effective_target_gld { } {
 
 proc check_effective_target_lto { } {
     global ENABLE_LTO
+    if { [istarget nvptx-*-*] } {
+	return 0;
+    }
     return [info exists ENABLE_LTO]
 }
 

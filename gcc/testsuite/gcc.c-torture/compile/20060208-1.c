@@ -1,4 +1,5 @@
 /* PR middle-end/26092 */
+/* { dg-skip-if "can't take address of malloc" { nvptx-*-* } { "*" } { "" } } */
 typedef __SIZE_TYPE__ size_t;
 extern void *malloc (size_t);
 

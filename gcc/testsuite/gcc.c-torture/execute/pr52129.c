@@ -1,4 +1,5 @@
 /* PR target/52129 */
+/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "-O1" } { "" } } */
 
 extern void abort (void);
 struct S { void *p; unsigned int q; };

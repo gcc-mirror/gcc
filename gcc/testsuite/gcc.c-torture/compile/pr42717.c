@@ -1,3 +1,4 @@
+/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "-O0" } { "" } } */
 static signed char
 foo (signed char si1, unsigned char si2)
 {
