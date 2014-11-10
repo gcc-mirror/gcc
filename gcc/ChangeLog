@@ -1,3 +1,8 @@
+2014-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* expmed.c (expand_shift_1): Expand 8 bit rotate of 16 bit value to
+	bswaphi if available.
+
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/nvptx/nvptx.c: New file.
