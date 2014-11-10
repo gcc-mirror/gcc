@@ -1,3 +1,10 @@
+2014-11-10  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/align-7.c: Skip for -flto -fno-fat-lto-objects.
+	* c-c++-common/ubsan/align-8.c: Likewise.
+	* g++.dg/ubsan/null-4.C: Likewise.
+	* g++.dg/ubsan/null-5.C: Likewise.
+
 2014-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.misc-tests/gcov-16.c: New test.
