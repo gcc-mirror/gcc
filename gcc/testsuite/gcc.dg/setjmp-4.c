@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O" } */
+/* { dg-require-effective-target indirect_jumps } */
 
 #include <setjmp.h>
 

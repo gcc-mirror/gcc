@@ -1,4 +1,6 @@
 /* PR rtl-optimization/51447 */
+/* { dg-require-effective-target label_values } */
+/* { dg-require-effective-target indirect_jumps } */
 
 extern void abort (void);
 

@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-g -O2 -w -fpic" { target fpic } } */
 /* { dg-options "-g -O2 -w" { target { ! fpic } } } */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
 
 struct S { void (*bar) (long); };
 struct T { struct S *t; };

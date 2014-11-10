@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 int j_;
 void g (void);

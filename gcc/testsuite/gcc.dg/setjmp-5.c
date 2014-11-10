@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wall" } */
+/* { dg-require-effective-target indirect_jumps } */
 
 #include <setjmp.h>
 

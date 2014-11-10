@@ -3,6 +3,8 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
 /* { dg-options "-pedantic" } */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
 
 void
 f (void)

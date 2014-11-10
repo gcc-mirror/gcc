@@ -1,5 +1,90 @@
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_indirect_jumps):
+	New function.
+	(check_effective_target_nonlocal_goto): New function.
+	(check_effective_target_label_values): New function.
+	* gcc.c-torture/execute/20071220-2.c: Require label_values.
+	* gcc.c-torture/compile/labels-2.c: Likewise.
+	* gcc.c-torture/compile/20000518-1.c: Likewise.
+	* gcc.c-torture/compile/20021108-1.c: Likewise.
+	* gcc.c-torture/compile/981006-1.c: Likewise.
+	* gcc.c-torture/execute/20040302-1.c: Likewise.
+	* gcc.dg/torture/pr33848.c: Likewise.
+
+	* gcc.c-torture/compile/pr46107.c: Require indirect jumps and
+	label values.
+	* gcc.c-torture/compile/pr32919.c: Likewise.
+	* gcc.c-torture/compile/pr17913.c: Likewise.
+	* gcc.c-torture/compile/pr51495.c: Likewise.
+	* gcc.c-torture/compile/pr25224.c: Likewise.
+	* gcc.c-torture/compile/labels-3.c: Likewise.
+	* gcc.c-torture/compile/pr27863.c: Likewise.
+	* gcc.c-torture/compile/20050510-1.c: Likewise.
+	* gcc.c-torture/compile/pr28489.c: Likewise.
+	* gcc.c-torture/compile/pr29128.c: Likewise.
+	* gcc.c-torture/compile/pr21356: Likewise.
+	* gcc.c-torture/execute/20071210-1.c: Likewise.
+	* gcc.c-torture/execute/200701220-1.c: Likewise.
+	* gcc.c-torture/execute/pr51447.c: Likewise.
+	* gcc.c-torture/execute/comp-goto-1.c: Likewise.
+	* gcc.c-torture/execute/comp-goto-2.c: Likewise.
+	* gcc.dg/20021029-1.c: Likewise.
+	* gcc.dg/pr43379.c: Likewise.
+	* gcc.dg/pr45259.c: Likewise.
+	* gcc.dg/torture/pr53695.c: Likewise.
+	* gcc.dg/torture/pr57584.c: Likewise.
+
+	* gcc.c-torture/execute/980526-1.c: Skip if -O0 and neither label_values
+	or indirect_jumps are available.
+	* gcc.c-torture/compile/920415-1.c: Likewise.  Remove NO_LABEL_VALUES
+	test.
+	* gcc.c-torture/compile/920428-3.c: Likewise.
+	* gcc.c-torture/compile/950613-1.c: Likewise.
+
+	* gcc.c-torture/compile/pr30984.c: Require indirect jumps.
+	* gcc.c-torture/compile/991213-3.c: Likewise.
+	* gcc.c-torture/compile/920825-1.c: Likewise.
+	* gcc.c-torture/compile/20011029-1.c: Likewise.
+	* gcc.c-torture/compile/complex-6.c: Likewise.
+	* gcc.c-torture/compile/pr27127.c: Likewise.
+	* gcc.c-torture/compile/pr58164.c: Likewise.
+	* gcc.c-torture/compile/20041214-1.c: Likewise.
+	* gcc.c-torture/execute/built-in-setjmp.c: Likewise.
+	* gcc.c-torture/execute/pr56982.c: Likewise.
+	* gcc.c-torture/execute/pr60003.c: Likewise.
+	* gcc.c-torture/execute/pr26983.c: Likewise.
+	* gcc.dg/pr57287-2.c: Likewise.
+	* gcc.dg/pr59920-1.c: Likewise.
+	* gcc.dg/pr59920-2.c: Likewise.
+	* gcc.dg/pr59920-3.c: Likewise.
+	* gcc.dg/setjmp-3.c: Likewise.
+	* gcc.dg/setjmp-4.c: Likewise.
+	* gcc.dg/setjmp-5.c: Likewise.
+	* gcc.dg/torture/pr48542.c: Likewise.
+	* gcc.dg/torture/pr57147-2.c: Likewise.
+	* gcc.dg/torture/pr59993.c: Likewise.
+
+	* gcc.dg/torture/stackalign/non-local-goto-1.c: Require nonlocal_goto.
+	* gcc.dg/torture/stackalign/non-local-goto-2.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-3.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Likewise.
+ 	* gcc.dg/torture/stackalign/setjmp-1.c: Likewise.
+ 	* gcc.dg/torture/stackalign/setjmp-3.c: Likewise.
+ 	* gcc.dg/torture/stackalign/setjmp-4.c: Likewise.
+	* gcc.dg/non-local-goto-1.c: Likewise.
+	* gcc.dg/non-local-goto-2.c: Likewise.
+	* gcc.dg/pr49994-1.c: Likewise.
+	* gcc.dg/torture/pr57036-2.c: Likewise.
+
+	* gcc.c-torture/compile/20040614-1.c: Require label_values.  Remove
+	NO_LABEL_VALUES test.
+	* gcc.c-torture/compile/920831-1.c: Likewise.
+	* gcc.c-torture/compile/920502-1.c: Likewise.
+	* gcc.c-torture/compile/920501-7.c: Likewise.
+	* gcc.dg/pr52139.c: Likewise.
+
 	* lib/target-supports.exp (check_effective_target_trampolines,
 	check_profiling_available, check_effective_target_lto,
 	check_effective_target_vect_natural): False for nvptx-*-*.

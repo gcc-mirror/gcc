@@ -1,4 +1,7 @@
 /* This test used to ICE on IA64.  */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
+
 long stack[100];
 int main(int argc,char**argv,char **envp)
 {

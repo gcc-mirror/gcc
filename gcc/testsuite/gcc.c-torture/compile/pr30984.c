@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_jumps } */
+
 int fs_exec(int ino)
 {
  void *src = 0;

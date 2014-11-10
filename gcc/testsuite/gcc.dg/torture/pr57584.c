@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int32plus } */
+/* { dg-require-effective-target label_values } */
+/* { dg-require-effective-target indirect_jumps } */
 
 typedef int int32_t;
 typedef unsigned char uint8_t;

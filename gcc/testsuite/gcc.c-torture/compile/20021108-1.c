@@ -1,3 +1,5 @@
+/* { dg-require-effective-target label_values } */
+
 int
 main()
 {

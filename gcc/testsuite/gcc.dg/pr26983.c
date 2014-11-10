@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-require-effective-target indirect_jumps } */
 
 /* This used to cause a linker failure because GCC would output
    assembler code referencing labels that it had not output.  */

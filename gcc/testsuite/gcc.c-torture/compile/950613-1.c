@@ -1,4 +1,6 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+/* { dg-require-effective-target indirect_jumps } */
+
 f ()
 {
   long *sp;
@@ -26,6 +28,3 @@ f ()
     goto *pc++;
   }
 }
-#else
-int x;
-#endif

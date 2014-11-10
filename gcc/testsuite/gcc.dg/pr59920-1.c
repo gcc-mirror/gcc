@@ -1,6 +1,7 @@
 /* PR tree-optimization/59920 */
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-effective-target indirect_jumps } */
 
 #include <setjmp.h>
 

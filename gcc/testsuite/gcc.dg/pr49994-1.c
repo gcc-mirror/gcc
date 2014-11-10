@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fsched2-use-superblocks -g" } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 void x (int a)
 {
