@@ -1304,6 +1304,16 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  && TREE_CODE (base) != SSA_NAME
 		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
 	    {
+	      /* Argument setup code may have copied the value to register.  We
+		 revert that optimization now because the tail call code must
+		 use the original location.  */
+	      if (TREE_CODE (args[i].tree_value) == PARM_DECL
+		  && !MEM_P (DECL_RTL (args[i].tree_value))
+		  && DECL_INCOMING_RTL (args[i].tree_value)
+		  && MEM_P (DECL_INCOMING_RTL (args[i].tree_value)))
+		set_decl_rtl (args[i].tree_value,
+			      DECL_INCOMING_RTL (args[i].tree_value));
+
 	      mark_addressable (args[i].tree_value);
 
 	      /* We can't use sibcalls if a callee-copied argument is

@@ -1,3 +1,9 @@
+2014-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/63573
+	* calls.c (initialize_argument_information): When emitting thunk call
+	use original memory placement of the argument.
+
 2014-11-10  Renlin Li  <renlin.li@arm.com>
 
 	PR middle-end/61529
