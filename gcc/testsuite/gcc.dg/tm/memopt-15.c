@@ -1,5 +1,5 @@
 /* { dg-do compile { target { i?86-*-linux* x86_64-*-linux* } } } */
-/* { dg-options "-fgnu-tm -O" } */
+/* { dg-options "-fgnu-tm -O -msse2" } */
 
 /* Test the TM vector logging functions.  */
 
