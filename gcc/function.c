@@ -5849,7 +5849,7 @@ emit_return_for_exit (edge exit_fallthru_edge, bool simple_p)
    in a sibcall omit the sibcall_epilogue if the block is not in
    ANTIC.  */
 
-static void
+void
 thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;

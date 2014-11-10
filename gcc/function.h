@@ -902,6 +902,8 @@ extern void stack_protect_epilogue (void);
 extern void expand_function_start (tree);
 extern void expand_dummy_function_end (void);
 
+extern void thread_prologue_and_epilogue_insns (void);
+
 #ifdef RTX_CODE
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);

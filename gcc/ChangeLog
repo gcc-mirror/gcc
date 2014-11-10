@@ -272,6 +272,9 @@
 
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* function.c (thread_prologue_and_epilogue_insns): No longer static.
+	* function.h (thread_prologue_and_epilogue_insns): Declare.
+
 	* target.def (assemble_undefined_decl): New hooks.
 	* hooks.c (hook_void_FILEptr_constcharptr_const_tree): New function.
 	* hooks.h (hook_void_FILEptr_constcharptr_const_tree): Declare.
