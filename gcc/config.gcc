@@ -422,6 +422,9 @@ nios2-*-*)
 	cpu_type=nios2
 	extra_options="${extra_options} g.opt"
 	;;
+nvptx-*-*)
+	cpu_type=nvptx
+	;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
@@ -2152,6 +2155,10 @@ nios2-*-*)
 		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
 		;;
         esac
+	;;
+nvptx-*)
+	tm_file="${tm_file} newlib-stdint.h"
+	tmake_file="nvptx/t-nvptx"
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
