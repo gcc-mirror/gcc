@@ -43,26 +43,11 @@ namespace __gnu_profile
   : public __object_info_base 
   {
   public:
-    __container_size_info()
-    : _M_init(0), _M_max(0), _M_min(0), _M_total(0), _M_item_min(0),
-      _M_item_max(0), _M_item_total(0), _M_count(0), _M_resize(0), _M_cost(0) 
-    { }
-
-    __container_size_info(const __container_size_info& __o)
-    : __object_info_base(__o), _M_init(__o._M_init), _M_max(__o._M_max),
-      _M_min(__o._M_min), _M_total(__o._M_total),
-      _M_item_min(__o._M_item_min), _M_item_max(__o._M_item_max),
-      _M_item_total(__o._M_item_total), _M_count(__o._M_count),
-      _M_resize(__o._M_resize), _M_cost(__o._M_cost)
-    { }
-
-    __container_size_info(__stack_t __stack, std::size_t __num)
-    : __object_info_base(__stack), _M_init(__num), _M_max(__num),
+    __container_size_info(__stack_t __stack)
+    : __object_info_base(__stack), _M_init(0), _M_max(0),
       _M_min(0), _M_total(0), _M_item_min(0), _M_item_max(0),
       _M_item_total(0), _M_count(0), _M_resize(0), _M_cost(0)
     { }
-
-    virtual ~__container_size_info() { }
 
     void
     __write(FILE* __f) const
@@ -87,8 +72,16 @@ namespace __gnu_profile
     }
 
     void
+    __init(std::size_t __num)
+    {
+      _M_init = __num;
+      _M_max = __num;
+    }
+
+    void
     __merge(const __container_size_info& __o)
     {
+      __object_info_base::__merge(__o);
       _M_init        = std::max(_M_init, __o._M_init);
       _M_max         = std::max(_M_max, __o._M_max);
       _M_item_max    = std::max(_M_item_max, __o._M_item_max);
@@ -117,6 +110,7 @@ namespace __gnu_profile
 	  _M_min = std::min(_M_min, __num);
 	  _M_item_min = std::min(_M_item_min, __inum);
 	}
+
       _M_total += __num;
       _M_item_total += __inum;
       _M_count += 1;
@@ -149,7 +143,6 @@ namespace __gnu_profile
     std::size_t _M_cost;
   };
 
-
   /** @brief A container size instrumentation line in the stack table.  */
   class __container_size_stack_info
   : public __container_size_info
@@ -158,7 +151,6 @@ namespace __gnu_profile
     __container_size_stack_info(const __container_size_info& __o)
     : __container_size_info(__o) { }
   };
-
   
   /** @brief Container size instrumentation trace producer.  */
   class __trace_container_size
@@ -171,43 +163,22 @@ namespace __gnu_profile
     : __trace_base<__container_size_info, __container_size_stack_info>() { };
 
     // Insert a new node at construct with object, callstack and initial size. 
-    void
-    __insert(const __object_t __obj, __stack_t __stack, std::size_t __num)
-    { __add_object(__obj, __container_size_info(__stack, __num)); }
-
-    // XXX Undefined?
-    void
-    __construct(const void* __obj, std::size_t __inum);
-  
-    // Call at destruction/clean to set container final size.
-    void
-    __destruct(const void* __obj, std::size_t __num, std::size_t __inum)
+    __container_size_info*
+    __insert(__stack_t __stack, std::size_t __num)
     {
-      if (!__is_on())
-	return;
-
-      __object_t __obj_handle = static_cast<__object_t>(__obj);
-
-      __container_size_info* __object_info = __get_object_info(__obj_handle);
-      if (!__object_info)
-	return;
-
-      __object_info->__destruct(__num, __inum);
-      __retire_object(__obj_handle);
+      __container_size_info* __ret =  __add_object(__stack);
+      if (__ret)
+	__ret->__init(__num);
+      return __ret;
     }
 
-    // Call at resize to set resize/cost information.
+    // Call at destruction/clean to set container final size.
     void
-    __resize(const void* __obj, int __from, int __to)
+    __destruct(__container_size_info* __obj_info,
+	       std::size_t __num, std::size_t __inum)
     {
-      if (!__is_on())
-	return;
-
-      __container_size_info* __object_info = __get_object_info(__obj);
-      if (!__object_info)
-	return;
-
-      __object_info->__resize(__from, __to);
+      __obj_info->__destruct(__num, __inum);
+      __retire_object(__obj_info);
     }
   };
 

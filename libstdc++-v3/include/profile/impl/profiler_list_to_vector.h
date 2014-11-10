@@ -43,31 +43,19 @@ namespace __gnu_profile
   : public __object_info_base
   {
   public:
-    __list2vector_info()
-    : _M_shift_count(0), _M_iterate(0), _M_resize(0), _M_list_cost(0),
-      _M_vector_cost(0), _M_valid(true), _M_max_size(0) { }
-
     __list2vector_info(__stack_t __stack)
     : __object_info_base(__stack), _M_shift_count(0), _M_iterate(0),
-      _M_resize(0), _M_list_cost(0), _M_vector_cost(0), _M_valid(true),
+      _M_resize(0), _M_list_cost(0), _M_vector_cost(0),
       _M_max_size(0) { }
-
-    virtual ~__list2vector_info() { }
-
-    __list2vector_info(const __list2vector_info& __o)
-    : __object_info_base(__o), _M_shift_count(__o._M_shift_count),
-      _M_iterate(__o._M_iterate), _M_resize(__o._M_resize),
-      _M_list_cost(__o._M_list_cost), _M_vector_cost(__o._M_vector_cost),
-      _M_valid(__o._M_valid), _M_max_size(__o._M_max_size) { }
 
     void
     __merge(const __list2vector_info& __o)
     {
+      __object_info_base::__merge(__o);
       _M_shift_count  += __o._M_shift_count;
       _M_iterate      += __o._M_iterate;
       _M_vector_cost  += __o._M_vector_cost;
       _M_list_cost    += __o._M_list_cost;
-      _M_valid        &= __o._M_valid;
       _M_resize       += __o._M_resize;
       _M_max_size     = std::max( _M_max_size, __o._M_max_size);
     }
@@ -117,14 +105,6 @@ namespace __gnu_profile
     __set_vector_cost(float __vc)
     { _M_vector_cost = __vc; }
     
-    bool
-    __is_valid()
-    { return _M_valid; }
-    
-    void
-    __set_invalid()
-    { _M_valid = false; }
-
     void
     __opr_insert(std::size_t __shift, std::size_t __size)
     {
@@ -133,8 +113,8 @@ namespace __gnu_profile
     }
 
     void
-    __opr_iterate(std::size_t __num)
-    { _M_iterate += __num;}
+    __opr_iterate(int __num)
+    { __gnu_cxx::__atomic_add(&_M_iterate, __num); }
 
     void
     __resize(std::size_t __from, std::size_t)
@@ -142,11 +122,10 @@ namespace __gnu_profile
 
   private:
     std::size_t _M_shift_count;
-    std::size_t _M_iterate;
+    mutable _Atomic_word _M_iterate;
     std::size_t _M_resize;
     float _M_list_cost;
     float _M_vector_cost;
-    bool  _M_valid;
     std::size_t _M_max_size;
   };
 
@@ -168,65 +147,20 @@ namespace __gnu_profile
 
     ~__trace_list_to_vector() { }
 
-    // Insert a new node at construct with object, callstack and initial size.
-    void
-    __insert(__object_t __obj, __stack_t __stack)
-    { __add_object(__obj, __list2vector_info(__stack)); }
-
     // Call at destruction/clean to set container final size.
     void
-    __destruct(const void* __obj)
+    __destruct(__list2vector_info* __obj_info)
     {
-      if (!__is_on())
-	return;
-
-      __list2vector_info* __res = __get_object_info(__obj);
-      if (!__res)
-	return;
-
-      float __vc = __vector_cost(__res->__shift_count(), __res->__iterate());
-      float __lc = __list_cost(__res->__shift_count(), __res->__iterate());
-      __res->__set_vector_cost(__vc);
-      __res->__set_list_cost(__lc);
-      __retire_object(__obj);
+      float __vc = __vector_cost(__obj_info->__shift_count(),
+				 __obj_info->__iterate());
+      float __lc = __list_cost(__obj_info->__shift_count(),
+			       __obj_info->__iterate());
+      __obj_info->__set_vector_cost(__vc);
+      __obj_info->__set_list_cost(__lc);
+      __retire_object(__obj_info);
     }
-
-    // Find the node in the live map.
-    __list2vector_info* __find(const void* __obj);
 
     // Collect cost of operations.
-    void
-    __opr_insert(const void* __obj, std::size_t __shift, std::size_t __size)
-    {
-      __list2vector_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__opr_insert(__shift, __size);
-    }
-
-    void
-    __opr_iterate(const void* __obj, std::size_t __num)
-    {
-      __list2vector_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__opr_iterate(__num);
-    }
-
-    void
-    __invalid_operator(const void* __obj)
-    {
-      __list2vector_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__set_invalid();
-    }
-
-    void
-    __resize(const void* __obj, std::size_t __from, std::size_t __to)
-    {
-      __list2vector_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__resize(__from, __to);
-    }
-
     float
     __vector_cost(std::size_t __shift, std::size_t __iterate)
     {
@@ -253,71 +187,74 @@ namespace __gnu_profile
   { _GLIBCXX_PROFILE_DATA(_S_list_to_vector) = new __trace_list_to_vector(); }
 
   inline void
+  __trace_list_to_vector_free()
+  { delete _GLIBCXX_PROFILE_DATA(_S_list_to_vector); }
+
+  inline void
   __trace_list_to_vector_report(FILE* __f, __warning_vector_t& __warnings)
-  {
-    if (_GLIBCXX_PROFILE_DATA(_S_list_to_vector))
-      {
-	_GLIBCXX_PROFILE_DATA(_S_list_to_vector)->
-	  __collect_warnings(__warnings);
-	_GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__write(__f);
-      }
-  }
+  { __trace_report(_GLIBCXX_PROFILE_DATA(_S_list_to_vector), __f, __warnings); }
 
-  inline void
-  __trace_list_to_vector_construct(const void* __obj)
+  inline __list2vector_info*
+  __trace_list_to_vector_construct()
   {
     if (!__profcxx_init())
-      return;
+      return 0;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__insert(__obj, __get_stack());
+    if (!__reentrance_guard::__get_in())
+      return 0;
+
+    __reentrance_guard __get_out;
+    return _GLIBCXX_PROFILE_DATA(_S_list_to_vector)
+      ->__add_object(__get_stack());
   }
 
   inline void
-  __trace_list_to_vector_destruct(const void* __obj)
-  {
-    if (!__profcxx_init())
-      return;
-
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__destruct(__obj);
-  }
-
-  inline void
-  __trace_list_to_vector_insert(const void* __obj, 
+  __trace_list_to_vector_insert(__list2vector_info* __obj_info,
 				std::size_t __shift, std::size_t __size)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__opr_insert(__obj, __shift, 
-							   __size);
+    __obj_info->__opr_insert(__shift, __size);
   }
 
   inline void
-  __trace_list_to_vector_iterate(const void* __obj, std::size_t __num = 1)
+  __trace_list_to_vector_iterate(__list2vector_info* __obj_info,
+				 int)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__opr_iterate(__obj, __num);
+    // We only collect if an iteration took place no matter in what side.
+    __obj_info->__opr_iterate(1);
   }
 
   inline void
-  __trace_list_to_vector_invalid_operator(const void* __obj)
+  __trace_list_to_vector_invalid_operator(__list2vector_info* __obj_info)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__invalid_operator(__obj);
+    __obj_info->__set_invalid();
   }
 
   inline void
-  __trace_list_to_vector_resize(const void* __obj, 
+  __trace_list_to_vector_resize(__list2vector_info* __obj_info, 
 				std::size_t __from, std::size_t __to)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__resize(__obj, __from, __to);
+    __obj_info->__resize(__from, __to);
+  }
+
+  inline void
+  __trace_list_to_vector_destruct(__list2vector_info* __obj_info)
+  {
+    if (!__obj_info)
+      return;
+
+    _GLIBCXX_PROFILE_DATA(_S_list_to_vector)->__destruct(__obj_info);
   }
 
 } // namespace __gnu_profile

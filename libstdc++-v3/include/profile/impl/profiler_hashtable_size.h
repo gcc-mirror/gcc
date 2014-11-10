@@ -53,44 +53,46 @@ namespace __gnu_profile
   { _GLIBCXX_PROFILE_DATA(_S_hashtable_size) = new __trace_hashtable_size(); }
 
   inline void
+  __trace_hashtable_size_free()
+  { delete _GLIBCXX_PROFILE_DATA(_S_hashtable_size); }
+
+  inline void
   __trace_hashtable_size_report(FILE* __f, __warning_vector_t& __warnings)
-  {
-    if (_GLIBCXX_PROFILE_DATA(_S_hashtable_size))
-      {
-	_GLIBCXX_PROFILE_DATA(_S_hashtable_size)->
-	  __collect_warnings(__warnings);
-	_GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__write(__f);
-      }
-  }
+  { __trace_report(_GLIBCXX_PROFILE_DATA(_S_hashtable_size), __f, __warnings); }
 
-  inline void
-  __trace_hashtable_size_construct(const void* __obj, std::size_t __num)
+  inline __container_size_info*
+  __trace_hashtable_size_construct(std::size_t __num)
   {
     if (!__profcxx_init())
-      return;
+      return 0;
   
-    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__insert(__obj, __get_stack(),
-						       __num);
+    if (!__reentrance_guard::__get_in())
+      return 0;
+
+    __reentrance_guard __get_out;
+    return _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->
+      __insert(__get_stack(), __num);
   }
 
   inline void
-  __trace_hashtable_size_destruct(const void* __obj, std::size_t __num, 
-				  std::size_t __inum)
+  __trace_hashtable_size_resize(__container_size_info* __obj_info,
+				std::size_t __from, std::size_t __to)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__destruct(__obj, __num, __inum);
+    __obj_info->__resize(__from, __to);
   }
 
   inline void
-  __trace_hashtable_size_resize(const void* __obj, std::size_t __from, 
-				std::size_t __to)
+  __trace_hashtable_size_destruct(__container_size_info* __obj_info,
+				  std::size_t __num, std::size_t __inum)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__resize(__obj, __from, __to);
+    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->
+      __destruct(__obj_info, __num, __inum);
   }
 
 } // namespace __gnu_profile

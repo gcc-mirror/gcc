@@ -154,38 +154,78 @@ namespace __profile
       using __unique_keys = std::integral_constant<bool, _Unique_keys>;
 
     protected:
-      _Unordered_profile()
-      {
-	auto& __uc = _M_conjure();
-	__profcxx_hashtable_construct(&__uc, __uc.bucket_count());
-	__profcxx_hashtable_construct2(&__uc);
-      }
-      _Unordered_profile(const _Unordered_profile&)
-	: _Unordered_profile() { }
-      _Unordered_profile(_Unordered_profile&&)
+      _Unordered_profile() noexcept
+      { _M_profile_construct(); }
+
+      _Unordered_profile(const _Unordered_profile&) noexcept
 	: _Unordered_profile() { }
 
-      ~_Unordered_profile() noexcept
+      _Unordered_profile(_Unordered_profile&& __other) noexcept
+	: _Unordered_profile()
+      { _M_swap(__other); }
+
+      ~_Unordered_profile()
+      { _M_profile_destruct(); }
+
+      _Unordered_profile&
+      operator=(const _Unordered_profile&) noexcept
       {
-	auto& __uc = _M_conjure();
-	__profcxx_hashtable_destruct(&__uc, __uc.bucket_count(), __uc.size());
+	// Assignment just reset profiling.
 	_M_profile_destruct();
+	_M_profile_construct();
       }
 
       _Unordered_profile&
-      operator=(const _Unordered_profile&) = default;
+      operator=(_Unordered_profile&& __other) noexcept
+      {
+	// Take profiling of the moved instance...
+	_M_swap(__other);
 
-      _Unordered_profile&
-      operator=(_Unordered_profile&&) = default;
+	// ...and then reset other instance profiling.
+	__other._M_profile_destruct();
+	__other._M_profile_construct();
+      }
 
       void
-      _M_profile_destruct()
+      _M_profile_construct() noexcept
       {
-	if (!__profcxx_inefficient_hash_is_on())
+	auto& __uc = _M_conjure();
+	_M_size_info = __profcxx_hashtable_size_construct(__uc.bucket_count());
+	_M_hashfunc_info = __profcxx_hash_func_construct();
+      }
+
+      void
+      _M_profile_destruct() noexcept
+      {
+	auto& __uc = _M_conjure();
+	__profcxx_hashtable_size_destruct(_M_size_info,
+					  __uc.bucket_count(), __uc.size());
+	_M_size_info = 0;
+
+	if (!_M_hashfunc_info)
 	  return;
 
 	_M_profile_destruct(__unique_keys());
+	_M_hashfunc_info = 0;
       }
+
+      void
+      _M_swap(_Unordered_profile& __other) noexcept
+      {
+	std::swap(_M_size_info, __other._M_size_info);
+	std::swap(_M_hashfunc_info, __other._M_hashfunc_info);
+      }
+
+      void
+      _M_profile_resize(std::size_t __old_size)
+      {
+	auto __new_size = _M_conjure().bucket_count();
+	if (__old_size != __new_size)
+	  __profcxx_hashtable_size_resize(_M_size_info, __old_size, __new_size);
+      }
+
+      __gnu_profile::__container_size_info* _M_size_info;
+      __gnu_profile::__hashfunc_info* _M_hashfunc_info;
 
     private:
       void
@@ -219,7 +259,9 @@ namespace __profile
 	      __chain = 0;
 	    }
 	}
-      __profcxx_hashtable_destruct2(&__uc, __lc, __uc.size(), __hops);
+
+      __profcxx_hash_func_destruct(_M_hashfunc_info,
+				   __lc, __uc.size(), __hops);
     }
 
   template<typename _UnorderedCont, bool _Unique_keys>
@@ -255,7 +297,9 @@ namespace __profile
 	      __chain = 0;
 	    }
 	}
-      __profcxx_hashtable_destruct2(&__uc, __lc, __unique_size, __hops);
+
+      __profcxx_hash_func_destruct(_M_hashfunc_info,
+				   __lc, __unique_size, __hops);
     }
 
 } // namespace __profile
