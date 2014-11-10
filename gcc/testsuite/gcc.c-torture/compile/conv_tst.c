@@ -1,3 +1,5 @@
+/* { dg-require-effective-target untyped_assembly } */
+
 #define ID_1 2400000000.0
 #define ID_2 1.7
 #define ID_3 -1.7

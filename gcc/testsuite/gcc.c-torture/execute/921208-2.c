@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 #define STACK_REQUIREMENT (100000 * 4 + 1024)
 #if defined (STACK_SIZE) && STACK_SIZE < STACK_REQUIREMENT
 main () { exit (0); }

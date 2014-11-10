@@ -1,3 +1,5 @@
+/* { dg-require-effective-target untyped_assembly } */
+
 g (a, b) {}
 
 f (xx)

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 int
 foo (a, b, c)
 {

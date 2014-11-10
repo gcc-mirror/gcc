@@ -1,3 +1,5 @@
+/* { dg-require-effective-target untyped_assembly } */
+
 struct r
 {
   int d1, d2;

@@ -599,6 +599,17 @@ proc add_options_for_tls { flags } {
     return $flags
 }
 
+# Return 1 if the assembler does not verify function types against
+# calls, 0 otherwise.  Such verification will typically show up problems
+# with K&R C function declarations.
+
+proc check_effective_target_untyped_assembly {} {
+    if { [istarget nvptx-*-*] } {
+	return 0
+    }
+    return 1
+}
+
 # Return 1 if alloca is supported, 0 otherwise.
 
 proc check_effective_target_alloca {} {
