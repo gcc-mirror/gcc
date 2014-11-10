@@ -502,13 +502,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { /* Caller must initialize map. */ }
 
 #if __cplusplus >= 201103L
-      _Deque_base(_Deque_base&& __x)
-      : _M_impl(__x._M_get_Tp_allocator())
+      _Deque_base(_Deque_base&& __x, false_type)
+      : _M_impl(__x._M_move_impl())
+      { }
+
+      _Deque_base(_Deque_base&& __x, true_type)
+      : _M_impl(std::move(__x._M_get_Tp_allocator()))
       {
 	_M_initialize_map(0);
 	if (__x._M_impl._M_map)
 	  this->_M_impl._M_swap_data(__x._M_impl);
       }
+
+      _Deque_base(_Deque_base&& __x)
+      : _Deque_base(std::move(__x),
+		    __gnu_cxx::__allocator_always_compares_equal<_Alloc>{})
+      { }
 
       _Deque_base(_Deque_base&& __x, const allocator_type& __a, size_type __n)
       : _M_impl(__a)
@@ -555,18 +564,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ }
 
 #if __cplusplus >= 201103L
-	_Deque_impl(_Tp_alloc_type&& __a) _GLIBCXX_NOEXCEPT
+	_Deque_impl(_Deque_impl&&) = default;
+
+	_Deque_impl(_Tp_alloc_type&& __a) noexcept
 	: _Tp_alloc_type(std::move(__a)), _M_map(), _M_map_size(0),
 	  _M_start(), _M_finish()
 	{ }
 #endif
 
-	void _M_swap_data(_Deque_impl& __x)
+	void _M_swap_data(_Deque_impl& __x) _GLIBCXX_NOEXCEPT
 	{
-	  std::swap(this->_M_start, __x._M_start);
-	  std::swap(this->_M_finish, __x._M_finish);
-	  std::swap(this->_M_map, __x._M_map);
-	  std::swap(this->_M_map_size, __x._M_map_size);
+	  using std::swap;
+	  swap(this->_M_start, __x._M_start);
+	  swap(this->_M_finish, __x._M_finish);
+	  swap(this->_M_map, __x._M_map);
+	  swap(this->_M_map_size, __x._M_map_size);
 	}
       };
 
@@ -618,6 +630,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       enum { _S_initial_map_size = 8 };
 
       _Deque_impl _M_impl;
+
+#if __cplusplus >= 201103L
+    private:
+      _Deque_impl
+      _M_move_impl()
+      {
+	if (!_M_impl._M_map)
+	  return std::move(_M_impl);
+
+	// Create a copy of the current allocator.
+	_Tp_alloc_type __alloc{_M_get_Tp_allocator()};
+	// Put that copy in a moved-from state.
+	_Tp_alloc_type __unused __attribute((__unused__)) {std::move(__alloc)};
+	// Create an empty map that allocates using the moved-from allocator.
+	_Deque_base __empty{__alloc};
+	// Now safe to modify current allocator and perform non-throwing swaps.
+	_Deque_impl __ret{std::move(_M_get_Tp_allocator())};
+	_M_impl._M_swap_data(__ret);
+	_M_impl._M_swap_data(__empty._M_impl);
+	return __ret;
+      }
+#endif
     };
 
   template<typename _Tp, typename _Alloc>

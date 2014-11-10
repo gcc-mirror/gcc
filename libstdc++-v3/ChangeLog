@@ -1,3 +1,17 @@
+2014-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_deque.h (_Deque_base::_Deque_base(_Deque_base&&)):
+	Dispatch according to whether allocators are always equal.
+	(_Deque_base::_M_move_impl()): Implement move-from state.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Fix
+	dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2014-11-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	Major maintenance patch of the profile mode.
