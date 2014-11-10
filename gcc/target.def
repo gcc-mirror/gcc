@@ -158,6 +158,16 @@ global; that is, available for reference from other files.\n\
 The default implementation uses the TARGET_ASM_GLOBALIZE_LABEL target hook.",
  void, (FILE *stream, tree decl), default_globalize_decl_name)
 
+/* Output code that will declare an external variable.  */
+DEFHOOK
+(assemble_undefined_decl,
+ "This target hook is a function to output to the stdio stream\n\
+@var{stream} some commands that will declare the name associated with\n\
+@var{decl} which is not defined in the current translation unit.  Most\n\
+assemblers do not require anything to be output in this case.",
+ void, (FILE *stream, const char *name, const_tree decl),
+ hook_void_FILEptr_constcharptr_const_tree)
+
 /* Output code that will emit a label for unwind info, if this
    target requires such labels.  Second argument is the decl the
    unwind info is associated with, third is a boolean: true if

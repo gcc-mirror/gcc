@@ -5606,6 +5606,8 @@ You may wish to use @code{ASM_OUTPUT_SIZE_DIRECTIVE} and/or
 
 @hook TARGET_ASM_GLOBALIZE_DECL_NAME
 
+@hook TARGET_ASM_ASSEMBLE_UNDEFINED_DECL
+
 @defmac ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} weak;

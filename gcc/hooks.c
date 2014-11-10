@@ -139,6 +139,13 @@ hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUT
 {
 }
 
+/* Generic hook that takes (FILE *, const char *, constr_tree *) and does
+   nothing.  */
+void
+hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *, const_tree)
+{
+}
+
 /* Generic hook that takes (FILE *, rtx) and returns false.  */
 bool
 hook_bool_FILEptr_rtx_false (FILE *a ATTRIBUTE_UNUSED,

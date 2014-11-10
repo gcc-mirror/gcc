@@ -70,6 +70,8 @@ extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);
 extern void hook_void_rtx_insn_int (rtx_insn *, int);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
+extern void hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *,
+						       const_tree);
 extern bool hook_bool_FILEptr_rtx_false (FILE *, rtx);
 extern void hook_void_rtx_tree (rtx, tree);
 extern void hook_void_tree (tree);

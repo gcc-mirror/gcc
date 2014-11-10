@@ -707,6 +707,9 @@ symbol_table::output_variables (void)
 
   timevar_push (TV_VAROUT);
 
+  FOR_EACH_VARIABLE (node)
+    if (!node->definition)
+      assemble_undefined_decl (node->decl);
   FOR_EACH_DEFINED_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
