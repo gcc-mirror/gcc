@@ -1,5 +1,14 @@
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_return_address):
+	New function.
+	* gcc.c-torture/execute/20010122-1.c: Require return_address.
+	* gcc.c-torture/execute/20030323-1.c: Likewise.
+	* gcc.c-torture/execute/20030811-1.c: Likewise.
+	* gcc.c-torture/execute/eeprof-1.c: Likewise.
+	* gcc.c-torture/execute/frame-address.c: Likewise.
+	* gcc.c-torture/execute/pr17377.c: Likewise.
+
 	* gcc.c-torture/compile/920625-2.c: Add return type to
 	freeReturnStruct.
 	* gcc.c-torture/execute/20091229-1.c: Declare main properly.
