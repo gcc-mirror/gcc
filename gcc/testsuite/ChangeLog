@@ -1,3 +1,7 @@
+2014-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr44194-1.c (dg-do): Add missing braces.
+
 2014-11-10 Roman Gareev  <gareevroman@gmail.com>
 
 	* gcc.dg/graphite/isl-ast-gen-blocks-1.c: Remove using of
