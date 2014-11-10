@@ -1,3 +1,11 @@
+2014-11-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63620
+	PR rtl-optimization/63799
+	* lra-lives.c (process_bb_lives): Do not delete EH_REGION, trapped
+	and setting PIC pseudo insns.
+	(lra_create_live_ranges): Fix the typo.
+
 2014-11-10  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR middle-end/63748
