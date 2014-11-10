@@ -377,14 +377,12 @@ extern void print_pbb_domain (FILE *, poly_bb_p, int);
 extern void print_pbb (FILE *, poly_bb_p, int);
 extern void print_scop_context (FILE *, scop_p, int);
 extern void print_scop (FILE *, scop_p, int);
-extern void print_cloog (FILE *, scop_p, int);
 extern void debug_pbb_domain (poly_bb_p, int);
 extern void debug_pbb (poly_bb_p, int);
 extern void print_pdrs (FILE *, poly_bb_p, int);
 extern void debug_pdrs (poly_bb_p, int);
 extern void debug_scop_context (scop_p, int);
 extern void debug_scop (scop_p, int);
-extern void debug_cloog (scop_p, int);
 extern void print_scop_params (FILE *, scop_p, int);
 extern void debug_scop_params (scop_p, int);
 extern void print_iteration_domain (FILE *, poly_bb_p, int);
@@ -1402,7 +1400,6 @@ extern int scop_max_loop_depth (scop_p);
 extern int unify_scattering_dimensions (scop_p);
 extern bool apply_poly_transforms (scop_p);
 extern bool graphite_legal_transform (scop_p);
-extern void cloog_checksum (scop_p);
 
 /* Set the region of SCOP to REGION.  */
 

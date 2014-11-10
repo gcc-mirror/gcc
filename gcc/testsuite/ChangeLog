@@ -1,3 +1,19 @@
+2014-11-10 Roman Gareev  <gareevroman@gmail.com>
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-1.c: Remove using of
+	fgraphite-code-generator flag.
+	* gcc.dg/graphite/isl-ast-gen-blocks-2.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-blocks-3.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-blocks-4.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-user-1.c: Likewise.
+	* gcc.dg/graphite/isl-codegen-loop-dumping.c: Likewise.
+	* gcc.dg/graphite/pr35356-2.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-1.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-2.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-3.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-if-1.c: Likewise.
+	* gcc.dg/graphite/isl-ast-gen-if-2.c: Likewise.
+
 2014-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.c-torture/compile/pr35468.c: Revert the last change.

@@ -1,3 +1,19 @@
+2014-11-10 Roman Gareev  <gareevroman@gmail.com>
+
+	* Makefile.in: Remove the compilation of graphite-clast-to-gimple.o.
+	* common.opt: Remove using of fgraphite-code-generator flag.
+	* flag-types.h: Likewise.
+	* graphite.c: Remove using of CLooG.
+	* graphite-blocking.c: Likewise.
+	* graphite-dependences.c: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-poly.h: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite-clast-to-gimple.c: Removed.
+	* graphite-clast-to-gimple.h: Likewise.
+	* graphite-htab.h: Likewise.
+
 2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/invoke.texi ([-Wshift-count-negative, -Wshift-count-overflow]):

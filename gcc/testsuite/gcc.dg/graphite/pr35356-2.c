@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgraphite-identity -fdump-tree-graphite-all  -fgraphite-code-generator=isl" } */
+/* { dg-options "-O2 -fgraphite-identity -fdump-tree-graphite-all" } */
 
 int a[100];
 

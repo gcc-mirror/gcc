@@ -38,11 +38,6 @@ extern "C" {
 #if defined(__cplusplus)
 }
 #endif
-#ifdef HAVE_cloog
-#include <cloog/cloog.h>
-#include <cloog/cloog.h>
-#include <cloog/isl/domain.h>
-#endif
 #endif
 
 #include "system.h"
