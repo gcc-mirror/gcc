@@ -1,3 +1,8 @@
+2014-11-10  Renlin Li  <renlin.li@arm.com>
+
+	PR middle-end/61529
+	* tree-ssa-threadupdate.c (compute_path_counts): Bound path_in_freq.
+
 2014-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* expmed.c (expand_shift_1): Expand 8 bit rotate of 16 bit value to

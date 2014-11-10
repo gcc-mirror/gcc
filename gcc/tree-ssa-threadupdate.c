@@ -734,6 +734,11 @@ compute_path_counts (struct redirection_data *rd,
             nonpath_count += ein->count;
         }
     }
+
+  /* This is needed due to insane incoming frequencies.  */
+  if (path_in_freq > BB_FREQ_MAX)
+    path_in_freq = BB_FREQ_MAX;
+
   BITMAP_FREE (in_edge_srcs);
 
   /* Now compute the fraction of the total count coming into the first
