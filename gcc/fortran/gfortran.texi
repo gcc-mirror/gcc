@@ -1223,10 +1223,26 @@ implemented with the @code{system} function, which need not be
 thread-safe.  It is the responsibility of the user to ensure that
 @code{system} is not called concurrently.
 
-Finally, for platforms not supporting thread-safe POSIX functions,
-further functionality might not be thread-safe.  For details, please
-consult the documentation for your operating system.
+For platforms not supporting thread-safe POSIX functions, further
+functionality might not be thread-safe.  For details, please consult
+the documentation for your operating system.
 
+The GNU Fortran runtime library uses various C library functions that
+depend on the locale, such as @code{strtod} and @code{snprintf}.  In
+order to work correctly in locale-aware programs that set the locale
+using @code{setlocale}, the locale is reset to the default ``C''
+locale while executing a formatted @code{READ} or @code{WRITE}
+statement.  On targets supporting the POSIX 2008 per-thread locale
+functions (e.g. @code{newlocale}, @code{uselocale},
+@code{freelocale}), these are used and thus the global locale set
+using @code{setlocale} or the per-thread locales in other threads are
+not affected.  However, on targets lacking this functionality, the
+global LC_NUMERIC locale is set to ``C'' during the formatted I/O.
+Thus, on such targets it's not safe to call @code{setlocale}
+concurrently from another thread while a Fortran formatted I/O
+operation is in progress.  Also, other threads doing something
+dependent on the LC_NUMERIC locale might not work correctly if a
+formatted I/O operation is in progress in another thread.
 
 @node Data consistency and durability
 @section Data consistency and durability

@@ -90,6 +90,26 @@ static char stdin_name[] = "stdin";
 static char stdout_name[] = "stdout";
 static char stderr_name[] = "stderr";
 
+
+#ifdef HAVE_NEWLOCALE
+locale_t c_locale;
+#else
+/* If we don't have POSIX 2008 per-thread locales, we need to use the
+   traditional setlocale().  To prevent multiple concurrent threads
+   doing formatted I/O from messing up the locale, we need to store a
+   global old_locale, and a counter keeping track of how many threads
+   are currently doing formatted I/O.  The first thread saves the old
+   locale, and the last one restores it.  */
+char *old_locale;
+int old_locale_ctr;
+#ifdef __GTHREAD_MUTEX_INIT
+__gthread_mutex_t old_locale_lock = __GTHREAD_MUTEX_INIT;
+#else
+__gthread_mutex_t old_locale_lock;
+#endif
+#endif
+
+
 /* This implementation is based on Stefan Nilsson's article in the
  * July 1997 Doctor Dobb's Journal, "Treaps in Java". */
 
@@ -561,6 +581,14 @@ init_units (void)
   gfc_unit *u;
   unsigned int i;
 
+#ifdef HAVE_NEWLOCALE
+  c_locale = newlocale (0, "C", 0);
+#else
+#ifndef __GTHREAD_MUTEX_INIT
+  __GTHREAD_MUTEX_INIT_FUNCTION (&old_locale_lock);
+#endif
+#endif
+
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
@@ -736,6 +764,10 @@ close_units (void)
   while (unit_root != NULL)
     close_unit_1 (unit_root, 1);
   __gthread_mutex_unlock (&unit_lock);
+
+#ifdef HAVE_FREELOCALE
+  freelocale (c_locale);
+#endif
 }
 
 

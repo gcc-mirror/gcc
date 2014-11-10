@@ -2549,6 +2549,7 @@ as_fn_append ac_header_list " fptrap.h"
 as_fn_append ac_header_list " fpxcp.h"
 as_fn_append ac_header_list " pwd.h"
 as_fn_append ac_header_list " complex.h"
+as_fn_append ac_header_list " xlocale.h"
 as_fn_append ac_func_list " getrusage"
 as_fn_append ac_func_list " times"
 as_fn_append ac_func_list " mkstemp"
@@ -2605,6 +2606,10 @@ as_fn_append ac_func_list " mkostemp"
 as_fn_append ac_func_list " strnlen"
 as_fn_append ac_func_list " strndup"
 as_fn_append ac_func_list " strtok_r"
+as_fn_append ac_func_list " newlocale"
+as_fn_append ac_func_list " freelocale"
+as_fn_append ac_func_list " uselocale"
+as_fn_append ac_func_list " strerror_l"
 as_fn_append ac_header_list " math.h"
 # Check that the precious variables saved in the cache have kept the same
 # value.
@@ -12350,7 +12355,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12353 "configure"
+#line 12358 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12456,7 +12461,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12459 "configure"
+#line 12464 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16019,6 +16024,8 @@ done
 
 
 
+
+
 inttype_headers=`echo inttypes.h sys/inttypes.h  | sed -e 's/,/ /g'`
 
 acx_cv_header_stdint=stddef.h
@@ -16513,6 +16520,14 @@ _ACEOF
 
 fi
 done
+
+
+
+
+
+
+
+
 
 
 

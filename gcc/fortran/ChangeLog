@@ -1,3 +1,10 @@
+2014-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47007
+	PR libfortran/61847
+	* gfortran.texi: Add note about locale issues to thread-safety
+	section.
+
 2014-11-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Use type index 2 for
