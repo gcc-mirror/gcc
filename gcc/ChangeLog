@@ -1,3 +1,8 @@
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/invoke.texi ([-Wshift-count-negative, -Wshift-count-overflow]):
+	Add.
+
 2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/frv/frv.c (frv_io_handle_use_1): Delete.

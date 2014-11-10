@@ -1,3 +1,8 @@
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_binary_op): Use OPT_Wshift_count_negative and
+	OPT_Wshift_count_overflow in the warnings.
+
 2014-11-09  Jason Merrill  <jason@redhat.com>
 
 	DR 799

@@ -269,6 +269,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
+-Wshift-count-negative -Wshift-count-overflow @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -3824,6 +3825,16 @@ message, even when @option{-Wno-return-type} is specified.  The only
 exceptions are @samp{main} and functions defined in system headers.
 
 This warning is enabled by @option{-Wall}.
+
+@item -Wshift-count-negative
+@opindex Wshift-count-negative
+@opindex Wno-shift-count-negative
+Warn if shift count is negative. This warning is enabled by default.
+
+@item -Wshift-count-overflow
+@opindex Wshift-count-overflow
+@opindex Wno-shift-count-overflow
+Warn if shift count >= width of type. This warning is enabled by default.
 
 @item -Wswitch
 @opindex Wswitch

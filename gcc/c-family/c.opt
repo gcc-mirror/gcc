@@ -760,13 +760,21 @@ Wselector
 ObjC ObjC++ Var(warn_selector) Warning
 Warn if a selector has multiple methods
 
+Wsequence-point
+C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about possible violations of sequence point rules
+
 Wshadow-ivar
 ObjC ObjC++ Var(warn_shadow_ivar) EnabledBy(Wshadow) Init(1) Warning
 Warn if a local declaration hides an instance variable
 
-Wsequence-point
-C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about possible violations of sequence point rules
+Wshift-count-negative
+C ObjC C++ ObjC++ Var(warn_shift_count_negative) Init(1) Warning
+Warn if shift count is negative
+
+Wshift-count-overflow
+C ObjC C++ ObjC++ Var(warn_shift_count_overflow) Init(1) Warning
+Warn if shift count >= width of type
 
 Wsign-compare
 C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
