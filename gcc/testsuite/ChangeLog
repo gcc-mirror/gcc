@@ -1,3 +1,7 @@
+2014-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c-torture/compile/pr35468.c: Revert the last change.
+
 2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-c++-common/Wshift-count-overflow-1.c: New.
