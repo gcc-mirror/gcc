@@ -407,25 +407,44 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 }
 
 /* Add condition NC to the predicate list of basic block BB.  LOOP is
-   the loop to be if-converted.  */
+   the loop to be if-converted. Use predicate of cd-equivalent block
+   for join bb if it exists: we call basic blocks bb1 and bb2 
+   cd-equivalent if they are executed under the same condition.  */
 
 static inline void
 add_to_predicate_list (struct loop *loop, basic_block bb, tree nc)
 {
   tree bc, *tp;
+  basic_block dom_bb;
 
   if (is_true_predicate (nc))
     return;
 
-  if (!is_predicated (bb))
-    {
-      /* If dominance tells us this basic block is always executed, don't
-	 record any predicates for it.  */
-      if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-	return;
+  /* If dominance tells us this basic block is always executed,
+     don't record any predicates for it.  */
+  if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
+    return;
 
-      bc = nc;
+  dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+  /* We use notion of cd equivalence to get simpler predicate for
+     join block, e.g. if join block has 2 predecessors with predicates
+     p1 & p2 and p1 & !p2, we'd like to get p1 for it instead of
+     p1 & p2 | p1 & !p2.  */
+  if (dom_bb != loop->header
+      && get_immediate_dominator (CDI_POST_DOMINATORS, dom_bb) == bb)
+    {
+      gcc_assert (flow_bb_inside_loop_p (loop, dom_bb));
+      bc = bb_predicate (dom_bb);
+      gcc_assert (!is_true_predicate (bc));
+      set_bb_predicate (bb, bc);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Use predicate of bb#%d for bb#%d\n",
+		 dom_bb->index, bb->index);
+      return;
     }
+
+  if (!is_predicated (bb))
+    bc = nc;
   else
     {
       bc = bb_predicate (bb);
@@ -1187,6 +1206,7 @@ if_convertible_loop_p_1 (struct loop *loop,
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */
   ifc_bbs = get_loop_body_in_if_conv_order (loop);
@@ -2159,6 +2179,7 @@ tree_if_conversion (struct loop *loop)
       free (ifc_bbs);
       ifc_bbs = NULL;
     }
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   return todo;
 }
