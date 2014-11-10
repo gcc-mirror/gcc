@@ -8621,6 +8621,19 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  }
 
 	def0 = get_def_for_expr (treeop0, NEGATE_EXPR);
+	/* The multiplication is commutative - look at its 2nd operand
+	   if the first isn't fed by a negate.  */
+	if (!def0)
+	  {
+	    def0 = get_def_for_expr (treeop1, NEGATE_EXPR);
+	    /* Swap operands if the 2nd operand is fed by a negate.  */
+	    if (def0)
+	      {
+		tree tem = treeop0;
+		treeop0 = treeop1;
+		treeop1 = tem;
+	      }
+	  }
 	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
 
 	op0 = op2 = NULL;
