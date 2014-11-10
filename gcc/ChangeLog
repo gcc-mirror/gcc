@@ -1,5 +1,11 @@
 2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/frv/frv.c: Include rtl-iter.h.
+	(frv_acc_group_1): Delete.
+	(frv_acc_group): Use FOR_EACH_SUBRTX.
+
+2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/frv/frv.c: Move include of rtl.h after hard-reg-set.h.
 	(frv_clear_registers_used): Delete.
 	(frv_ifcvt_modify_tests): Use find_all_hard_regs.
