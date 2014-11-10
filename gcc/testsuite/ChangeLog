@@ -1,3 +1,9 @@
+2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
+	    Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/63620
+	* gcc.target/i386/pr63620.c: New test.
+
 2014-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tm/memopt-15.c: Add -msse2 to dg-options.
