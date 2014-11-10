@@ -28,10 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/constraint.h>
-#ifdef HAVE_cloog
-#include <cloog/cloog.h>
-#include <cloog/isl/domain.h>
-#endif
 #endif
 
 #include "system.h"

@@ -1293,19 +1293,6 @@ Enable in and out of Graphite representation
 fgraphite-identity
 Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
- 
-fgraphite-code-generator=
-Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_ISL)
-Choose code generator of Graphite
-
-Enum
-Name(fgraphite_generator) Type(enum fgraphite_generator) UnknownError(unknown code generator of graphite %qs)
-
-EnumValue
-Enum(fgraphite_generator) String(isl) Value(FGRAPHITE_CODE_GEN_ISL)
-
-EnumValue
-Enum(fgraphite_generator) String(cloog) Value(FGRAPHITE_CODE_GEN_CLOOG)
 
 fhoist-adjacent-loads
 Common Report Var(flag_hoist_adjacent_loads) Optimization
