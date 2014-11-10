@@ -1,3 +1,295 @@
+2014-11-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	Major maintenance patch of the profile mode.
+	* include/profile/impl/profiler_container_size.h
+	(__container_size_info()): Delete.
+	(__container_size_info(const __container_size_info&)): Delete.
+	(virtual ~__container_size_info()): Delete.
+	(__container_size_info(__stack_t, size_t)): Delete.
+	(__container_size_info(__stack_t)): New.
+	(__container_size_info::__init(size_t)): New.
+	(__container_size_info::__merge): Call __object_info_base::__merge.
+	(__trace_container_size::__construct): Delete declaration.
+	(__trace_container_size::__insert): Return __container_size_info*,
+	call __init.
+	* include/profile/impl/profiler_hash_func.h
+	(__hashfunc_into()): Delete.
+	(__hashfunc_info(const __hashfunc_info&)): Delete.
+	(virtual ~__hashfunc_info()): Delete.
+	(__hashfunc_info::__merge): Call __object_info_base::__merge.
+	(__trace_hash_func::__insert): Delete.
+	(__trace_hash_func_free): New.
+	(__trace_hash_func_report): Call __trace_report.
+	(__trace_hash_func_construct): Return __hashfunc_info*. Add check for
+	reentrancy.
+	* include/profile/impl/profiler_hashtable_size.h
+	(__trace_hashtable_size_free): New.
+	(__trace_hashtable_size_report): Call __trace_report.
+	(__trace_hashtable_size_construct): Return __container_size_info*. Add
+	check for reentrancy.
+	* include/profile/impl/profiler_list_to_slist.h
+	(__list2slist_info()): Delete.
+	(__list2slist_info(const __list2slist_info&)): Delete.
+	(virtual ~__list2slist_info()): Delete.
+	(__trace_list_to_slist::__merge(const __list2slist_info&)): Delete.
+	(__trace_list_to_slist::__opr_rewind(const void*)): Delete.
+	(__trace_list_to_slist::__record_operation(const void*)): Delete.
+	(__trace_list_to_slist::__insert(const __object_t, __stack_t)): Delete.
+	(__trace_list_to_slist::__destruct): Only call __retire_object.
+	(__trace_list_to_slist_free()): New.
+	(__trace_list_to_slist_report): Call __trace_report.
+	(__trace_list_to_slist_construct): Return __list2slist_info*. Add check
+	for reentrancy.
+	* include/profile/impl/profiler_list_to_vector.h
+	(__list2vector_info()): Delete.
+	(__list2vector_info(const __list2vector_info&)): Delete.
+	(virtual ~__list2vector_info()): Delete.
+	(_list2vector_info::__is_valid): Delete.
+	(_list2vector_info::__set_invalid): Delete.
+	(_list2vector_info::__opr_iterate): Use atomic operation.
+	(_list2vector_info::_M_valid): Delete.
+	(__trace_list_to_vector::__insert): Delete.
+	(__trace_list_to_vector::__find): Delete.
+	(__trace_list_to_vector::__opr_insert): Delete.
+	(__trace_list_to_vector::__opr_iterate): Delete.
+	(__trace_list_to_vector::__invalid_operator): Delete.
+	(__trace_list_to_vector::__resize): Delete.
+	(__trace_list_to_vector_free): New.
+	(__trace_list_to_vector_report): Call __trace_report.
+	(__trace_list_to_vector_construct): Return __list2vector_info*. Add
+	check for reentrancy.
+	* include/profile/impl/profiler_map_to_unordered_map.h
+	(__map2umap_info()): Delete.
+	(__map2umap_info(const __map2umap_info&)): Delete.
+	(virtual ~__map2umap_info()): Delete.
+	(__map2umap_info::__record_iterate): Use atomic operation.
+	(__map2umap_info::__set_iterate_costs): New.
+	(__map2umap_info::__record_invalidate): Delete.
+	(__map2umap_info::_M_valid): Delete.
+	(__trace_map2umap::__destruct): New.
+	(__trace_map_to_unordered_map_free): New.
+	(__trace_map_to_unordered_map_report): Call __trace_report.
+	(__trace_map_to_unordered_map_construct): Return __map2umap_info*. Add
+	check for reentrancy.
+	* include/profile/impl/profiler_node.h (__object_t): Delete typedef.
+	(__get_stack): Return null stack trace in case of (bad_alloc) exception.
+	(__object_info_base()): Delete.
+	(__object_info_base(const __object_info_base&)): Delete.
+	(virtual ~__object_info_base()): Delete.
+	(__object_info_base::__set_invalid): New.
+	(__object_info_base::__merge): New.
+	(virtual void __write(FILE*)): Delete.
+	(class __stack_info_base): Delete.
+	* include/profile/impl/profiler_trace.h (__global_lock): Rename into
+	__global_mutex.
+	(__trace_vector_size_free): New declaration.
+	(__trace_hashtable_size_free): Likewise.
+	(__trace_hash_func_free): Likewise.
+	(__trace_vector_to_list_free): Likewise.
+	(__trace_list_to_slist_free): Likewise.
+	(__trace_list_to_vector_free): Likewise.
+	(__trace_map_to_unordered_map_free): Likewise.
+	(__trace_base::~__trace_base()): Not virtual anymore. Delete stored
+	backtrace information.
+	(__trace_base::__add_object): Return __object_info*, take only a stack
+	trace.
+	(__trace_base::__get_object_info): Delete.
+	(__trace_base::__retire_object): Take __object_info* instead of
+	__object_t.
+	(__trace_base::__object_table_lock): Delete.
+	(__trace_base::__stack_table_lock): Delete.
+	(__trace_base::__object_table_t): Delete typedef.
+	(__trace_base::__object_table): Delete.
+	(__trace_base::__trace_mutex): New.
+	(__trace_base::__object_byte_size): New.
+	(__trace_report): New.
+	(__report): Use __gnu_cxx::__scoped_lock to lock/unlock __global_mutex
+	rather than explicitely calling lock() method, exception safe.
+	(__report_and_free): New. Call __report and free all profile mode
+	resources.
+	(__profcxx_init_unconditional): Use __scoped_lock. Register
+	__report_and_free with atexit.
+	* include/profile/impl/profiler_vector_size.h
+	(__trace_vector_size_free): New.
+	(__trace_vector_size_report): Call __trace_report.
+	(__trace_vector_size_construct): Return __container_size_info*. Add
+	check for reentrancy.
+	* include/profile/impl/profiler_vector_to_list.h
+	(__vector2list_info()): Delete.
+	(virtual ~__vector2list_info()): Delete.
+	(__vector2list_info(const __vector2list_info&)): Delete.
+	(__vector2list_info::__merge): Call __object_info_base::__merge.
+	(__vector2list_info::__is_valid): Delete.
+	(__vector2list_info::__set_valid): Delete.
+	(__vector2list_info::__opr_find): Delete.
+	(__vector2list_info::_M_valid): Delete.
+	(__trace_vector_to_list::__insert): Delete.
+	(__trace_vector_to_list::__find): Delete.
+	(__trace_vector_to_list::__opr_insert): Delete.
+	(__trace_vector_to_list::__opr_iterate): Delete.
+	(__trace_vector_to_list::__invalid_operator): Delete.
+	(__trace_vector_to_list::__resize): Delete.
+	(__trace_vector_to_list::__opr_find): Delete.
+	(__trace_vector_to_list_free): New.
+	(__trace_vector_to_list_report): Call __trace_report.
+	(__trace_vector_to_list_construct): Return __vector2list_info*. Add
+	check for reentrancy.
+	* include/profile/iterator_tracker.h
+	(__iterator_tracker<>::operator=): Add missing _M_ds assignment.
+	(__iterator_tracker<>::_M_find): Delete.
+	* include/profile/impl/profiler.h
+	([_GLIBCXX_PROFILE_REENTRANCE_GUARD]): Delete.
+	(__container_size_info): Add class declaration.
+	(__hashfunc_info): Likewise.
+	(__map2umap_info): Likewise.
+	(__vector2list_info): Likewise.
+	(__list2slist_info): Likewise.
+	(__list2vector_info): Likewise.
+	(__trace_list_to_set_destruct): Delete declaration.
+	(__trace_list_to_set_construct): Likewise.
+	(__trace_list_to_set_insert): Likewise.
+	(__trace_list_to_set_iterate): Likewise.
+	(__trace_list_to_set_invalid_operator): Likewise.
+	(__trace_list_to_set_find): Likewise.
+	([__profcxx_report]): Remove usage of _GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_turn_on]): Likewise.
+	([__profcxx_turn_off]): Likewise.
+	([__profcxx_is_invalid]): Likewise.
+	([__profcxx_is_on]): Likewise.
+	([__profcxx_is_off]): Likewise.
+	([__profcxx_hashtable_resize]): Likewise.
+	([__profcxx_hashtable_destruct]): Likewise.
+	([__profcxx_hashtable_construct]): Likewise.
+	([__profcxx_vector_size_construct]): Likewise.
+	([__profcxx_vector_size_resize]): Likewise.
+	([__profcxx_vector_size_destruct]): Likewise.
+	([__profcxx_inefficient_hash_is_on]): Delete.
+	([__profcxx_hash_func_construct]): Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_hash_func_destruct]): Likewise.
+	([__profcxx_vector_construct2]): Rename into...
+	([__profcxx_vector2list_construct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_insert]): Rename into...
+	([__profcxx_vector2list_insert]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_iterate]): Rename into...
+	([__profcxx_vector2list_iterate]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_invalid_operator]): Rename into...
+	([__profcxx_vector2list_invalid_operator]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_resize2]): Rename into...
+	([__profcxx_vector2list_resize]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_destruct2]): Rename into...
+	([__profcxx_vector2list_destruct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_vector_find]): Delete.
+	([__profcxx_list_construct2]): Rename into...
+	([__profcxx_list2vector_construct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_insert]): Rename into...
+	([__profcxx_list2vector_insert]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_iterate]): Rename into...
+	([__profcxx_list2vector_iterate]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([_profcxx_list_invalid_operator]): Rename into...
+	([__profcxx_list2vector_invalid_operator]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_destruct2]): Rename into...
+	([__profcxx_list2vector_destruct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_construct]): Rename into...
+	([__profcxx_list2slist_construct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_rewind]): Rename into...
+	([__profcxx_list2slist_rewind]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_operation]): Rename into...
+	([__profcxx_list2slist_operation]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_list_destruct]): Rename into...
+	([__profcxx_list2slist_destruct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_construct]): Rename into...
+	([__profcxx_map2umap_construct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_insert]): Rename into...
+	([__profcxx_map2umap_insert]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_erase]): Rename into...
+	([__profcxx_map2umap_erase]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_iterate]): Rename into...
+	([__profcxx_map2umap_iterate]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_invalidate]): Rename into...
+	([__profcxx_map2umap_invalidate]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_find]): Rename into...
+	([__profcxx_map2umap_find]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	([__profcxx_map_to_unordered_map_destruct]): Rename into...
+	([__profcxx_map2umap_destruct]): ... this. Remove usage of
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	* include/profile/list
+	(_List_profile): Adapt.
+	(_List_profile::_M_profile_construct): New.
+	(_List_profile()): Call latter.
+	(_List_profile::_M_profile_destruct): New.
+	(~_List_profile()): Call latter.
+	(_List_profile::_M_swap): New.
+	(_List_profile(_List_profile&&)): Call latter.
+	(_List_profile::operator=(const _List_profile&)): Reinit profile
+	structures.
+	(_List_profile::operator=(_List_profile&&)): Move profile struct and
+	re-init profile structures on moved instance.
+	(std::__profile::list<>): Adapt.
+	* include/profile/ordered_base.h
+	(_Ordered_profile::_M_profile_iterate): New.
+	(_Ordered_profile::_M_profile_construct): New.
+	(_Ordered_profile()): Call latter.
+	(_Ordered_profile::_M_swap): New.
+	(_Ordered_profile(_Ordered_profile&&)): Call latter.
+	(_Ordered_profile::operator=(const _Ordered_profile&)): Reinit
+	profiling.
+	(_Ordered_profile::operator=(_Ordered_profile&&)): Swap and reinit
+	profiling on the moved instance.
+	(_Ordered_profile::_M_profile_destruct): New.
+	(~_Ordered_profile()): Call latter.
+	* include/profile/map.h (std::__profile::map<>): Add profiling on
+	iterators. Adapt.
+	* include/profile/multimap.h (std::__profile::multimap<>): Likewise.
+	* include/profile/set.h (std::__profile::set<>): Likewise.
+	* include/profile/multiset.h (std::__profile::multiset<>): Likewise.
+	* include/profile/unordered_base.h
+	(_Unordered_profile::_M_profile_construct): New.
+	(_Unordered_profile()): Call latter.
+	(_Unordered_profile::_M_swap): New.
+	(_Unordered_profile(_Unordered_profile&&)): Call latter.
+	(_Unordered_profile::operator=(const _Unordered_profile&)): Reinit
+	profiling.
+	(_Unordered_profile::operator=(_Unordered_profile&&)): Swap and reinit
+	profiling on the moved instance.
+	(_Unordered_profile::_M_profile_destruct): New.
+	(~_Ordered_profile()): Call latter.
+	* include/profile/unordered_map
+	(std::__profile::unordered_map<>): Adapt.
+	(std::__profile::unordered_multimap<>): Adapt.
+	* include/profile/unordered_set
+	(std::__profile::unordered_set<>): Adapt.
+	(std::__profile::unordered_multiset<>): Adapt.
+	* include/profile/vector
+	(_Vector_profile_pre::_M_profile_destruct): Move...
+	(_Vector_profile_post::_M_profile_destruct): ...here.
+	(_Vector_profile_post::_M_profile_construct): New.
+	(_Vector_profile_post()): Call latter.
+	(std::__profile::vector<>): Adapt.
+	* testsuite/ext/profile/mh.cc: Rename into...
+	* testsuite/ext/profile/replace_new.cc: ... this and fix test.
+
 2014-11-05  François Dumont  <fdumont@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

@@ -40,18 +40,9 @@ namespace __gnu_profile
   : public __object_info_base
   {
   public:
-    __list2slist_info()
-    : _M_rewind(false), _M_operations(0) { }
-  
     __list2slist_info(__stack_t __stack)
     : __object_info_base(__stack), _M_rewind(false), _M_operations(0) { }
 
-    virtual ~__list2slist_info() { }
-
-    __list2slist_info(const __list2slist_info& __o)
-    : __object_info_base(__o), _M_rewind(__o._M_rewind),
-      _M_operations(__o._M_operations) { }
-  
     // XXX: the magnitude should be multiplied with a constant factor F,
     // where F is 1 when the malloc size class of list nodes is different
     // from the malloc size class of slist nodes.  When they fall into the same
@@ -70,9 +61,6 @@ namespace __gnu_profile
     }
     
     void
-    __merge(const __list2slist_info&) { }
-
-    void
     __write(FILE* __f) const
     { std::fprintf(__f, "%s\n", _M_rewind ? "invalid" : "valid"); }
 
@@ -84,7 +72,7 @@ namespace __gnu_profile
     __opr_rewind()
     {
       _M_rewind = true;
-      _M_valid = false;
+      __set_invalid();
     }
 
     void
@@ -119,37 +107,8 @@ namespace __gnu_profile
     { __id = "list-to-slist"; }
 
     void
-    __opr_rewind(const void* __obj)
-    {
-      __list2slist_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__opr_rewind();
-    }
-
-    void
-    __record_operation(const void* __obj)
-    {
-      __list2slist_info* __res = __get_object_info(__obj);
-      if (__res)
-	__res->__record_operation();
-    }
-
-    void
-    __insert(const __object_t __obj, __stack_t __stack)
-    { __add_object(__obj, __list2slist_info(__stack)); }
-  
-    void
-    __destruct(const void* __obj)
-    {
-      if (!__is_on())
-	return;
-
-      __list2slist_info* __res = __get_object_info(__obj);
-      if (!__res)
-	return;
-
-      __retire_object(__obj);
-    }
+    __destruct(__list2slist_info* __obj_info)
+    { __retire_object(__obj_info); }
   };
 
 
@@ -158,50 +117,51 @@ namespace __gnu_profile
   { _GLIBCXX_PROFILE_DATA(_S_list_to_slist) = new __trace_list_to_slist(); }
 
   inline void
+  __trace_list_to_slist_free()
+  { delete _GLIBCXX_PROFILE_DATA(_S_list_to_slist); }
+
+  inline void
   __trace_list_to_slist_report(FILE* __f, __warning_vector_t& __warnings)
+  { __trace_report(_GLIBCXX_PROFILE_DATA(_S_list_to_slist), __f, __warnings); }
+
+  inline __list2slist_info*
+  __trace_list_to_slist_construct()
   {
-    if (_GLIBCXX_PROFILE_DATA(_S_list_to_slist))
-      {
-	_GLIBCXX_PROFILE_DATA(_S_list_to_slist)->
-	  __collect_warnings(__warnings);
-	_GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__write(__f);
-      }
+    if (!__profcxx_init())
+      return 0;
+
+    if (!__reentrance_guard::__get_in())
+      return 0;
+
+    __reentrance_guard __get_out;
+    return _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__add_object(__get_stack());
   }
 
   inline void
-  __trace_list_to_slist_rewind(const void* __obj) 
+  __trace_list_to_slist_rewind(__list2slist_info* __obj_info) 
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__opr_rewind(__obj);
+    __obj_info->__opr_rewind();
   }
 
   inline void
-  __trace_list_to_slist_operation(const void* __obj) 
+  __trace_list_to_slist_operation(__list2slist_info* __obj_info) 
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__record_operation(__obj);
+    __obj_info->__record_operation();
   }
 
   inline void
-  __trace_list_to_slist_construct(const void* __obj)
+  __trace_list_to_slist_destruct(__list2slist_info* __obj_info)
   {
-    if (!__profcxx_init())
+    if (!__obj_info)
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__insert(__obj, __get_stack());
-  }
-
-  inline void
-  __trace_list_to_slist_destruct(const void* __obj)
-  {
-    if (!__profcxx_init())
-      return;
-
-    _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__destruct(__obj);
+    _GLIBCXX_PROFILE_DATA(_S_list_to_slist)->__destruct(__obj_info);
   }
 
 } // namespace __gnu_profile

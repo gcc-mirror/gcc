@@ -1,7 +1,3 @@
-// { dg-do compile { target *-*-linux* *-*-gnu* } }
-// { dg-xfail-if "" { uclibc } { "*" } { "" } }
-// { dg-require-profile-mode "" }
-
 // -*- C++ -*-
 
 // Copyright (C) 2006-2014 Free Software Foundation, Inc.
@@ -21,47 +17,37 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <stdio.h>
-#include <malloc.h>
+// { dg-require-profile-mode "" }
+
 #include <vector>
 
 using std::vector;
 
-static void my_init_hook (void);
-static void *my_malloc_hook (size_t, const void *);
-typedef void* (*malloc_hook) (size_t, const void *);
-
-malloc_hook old_malloc_hook;
-     
-void (*__malloc_initialize_hook) (void) = my_init_hook;
-
-static void
-my_init_hook (void)
+void* operator new(std::size_t size) throw(std::bad_alloc)
 {
-  old_malloc_hook = __malloc_hook;
-  __malloc_hook = my_malloc_hook;
+  void* p = std::malloc(size);
+  if (!p)
+    throw std::bad_alloc();
+  return p;
 }
 
-static void *
-my_malloc_hook (size_t size, const void *caller)
+void* operator new (std::size_t size, const std::nothrow_t&) throw()
 {
-  void *result;
-  __malloc_hook = old_malloc_hook;
-  result = malloc (size);
-  old_malloc_hook = __malloc_hook;
-
   // With _GLIBCXX_PROFILE, the instrumentation of the vector constructor
-  // will call back into malloc.
+  // will call back into this new operator.
   vector<int> v;
-
-  __malloc_hook = my_malloc_hook;
-  return result;
+  return std::malloc(size);
 }
-     
 
-int main() 
+void operator delete(void* p) throw()
 {
-  int* test = (int*) malloc(sizeof(int));
-  *test = 1;
-  return *test;
+  if (p)
+    std::free(p);
+}
+
+int
+main() 
+{
+  vector<int> v;
+  return 0;
 }

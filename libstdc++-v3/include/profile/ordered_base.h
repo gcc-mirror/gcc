@@ -35,28 +35,63 @@ namespace __profile
   template<typename _Cont>
     class _Ordered_profile
     {
-      _Cont&
-      _M_conjure()
-      { return *static_cast<_Cont*>(this); }
-
     public:
+      void
+      _M_profile_iterate(int __rewind = 0) const
+      { __profcxx_map2umap_iterate(this->_M_map2umap_info, __rewind); }
+
+    protected:
       _Ordered_profile() _GLIBCXX_NOEXCEPT
-      { __profcxx_map_to_unordered_map_construct(&_M_conjure()); }
+      { _M_profile_construct(); }
 
 #if __cplusplus >= 201103L
       _Ordered_profile(const _Ordered_profile&) noexcept
       : _Ordered_profile() { }
-      _Ordered_profile(_Ordered_profile&&) noexcept
-      : _Ordered_profile() { }
+      _Ordered_profile(_Ordered_profile&& __other) noexcept
+      : _Ordered_profile()
+      { _M_swap(__other); }
 
       _Ordered_profile&
-      operator=(const _Ordered_profile&) = default;
+      operator=(const _Ordered_profile&) noexcept
+      {
+	_M_profile_destruct();
+	_M_profile_construct();
+      }
+
       _Ordered_profile&
-      operator=(_Ordered_profile&&) = default;
+      operator=(_Ordered_profile&& __other) noexcept
+      {
+	_M_swap(__other);
+	
+	__other._M_profile_destruct();
+	__other._M_profile_construct();
+      }
 #endif
 
       ~_Ordered_profile()
-      { __profcxx_map_to_unordered_map_destruct(&_M_conjure()); }
+      { _M_profile_destruct(); }
+
+      void
+      _M_profile_construct() _GLIBCXX_NOEXCEPT
+      { _M_map2umap_info = __profcxx_map2umap_construct(); }
+
+      void
+      _M_profile_destruct() _GLIBCXX_NOEXCEPT
+      {
+	__profcxx_map2umap_destruct(_M_map2umap_info);
+	_M_map2umap_info = 0;
+      }
+
+      void
+      _M_swap(_Ordered_profile& __other)
+      { std::swap(_M_map2umap_info, __other._M_map2umap_info); }
+
+      __gnu_profile::__map2umap_info* _M_map2umap_info;
+
+    private:
+      _Cont&
+      _M_conjure()
+      { return *static_cast<_Cont*>(this); }
     };
 
 } // namespace __profile
