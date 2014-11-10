@@ -1,5 +1,12 @@
 2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/frv/frv.c (frv_registers_conflict_p_1): Take an rtx rather
+	than an rtx *.  Take the regstate_t directly rather than via a void *.
+	Return a bool rather than an int.  Iterate over all subrtxes here.
+	(frv_registers_conflict_p): Update accordingly.
+
+2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/frv/frv.c: Include rtl-iter.h.
 	(frv_acc_group_1): Delete.
 	(frv_acc_group): Use FOR_EACH_SUBRTX.
