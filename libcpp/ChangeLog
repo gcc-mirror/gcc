@@ -1,3 +1,16 @@
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/cpplib.h (cpp_callbacks): Add has_attribute.
+	* internal.h (lexer_state): Add in__has_attribute__.
+	* directives.c (lex_macro_node): Prevent use of __has_attribute__
+	as a macro.
+	* expr.c (parse_has_attribute): New function; (eval_token): Look for
+	__has_attribute__ and route to parse_has_attribute.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__has_attribute__.
+	* pch.c (cpp_read_state): Initialize n__has_attribute__.
+	* traditional.c (enum ls): Add ls_has_attribute, ls_has_attribute_close;
+	(_cpp_scan_out_logical_line): Attend to __has_attribute__.
+
 2014-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpp-id-data.h (struct cpp_macro): Update comment

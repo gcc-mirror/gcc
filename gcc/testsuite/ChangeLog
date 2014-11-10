@@ -1,3 +1,15 @@
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx11.C: Test new feature macros for C++98
+	and C++11; Test existence of __has_cpp_attribute;  Test C++11
+	attributes.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Ditto.
+	* g++.dg/cpp1y/feat-cxx14.C: Ditto and test for C++14 attributes.
+	* g++.dg/cpp1y/feat-cxx98.C: Test new feature macros for C++98.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto.
+	* g++.dg/cpp1y/feat-neg.C: Test that __cpp_rtti, _cpp_exceptions
+	will be undefined for -fno-rtti -fno-exceptions.
+
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63800
