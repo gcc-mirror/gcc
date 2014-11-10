@@ -790,10 +790,15 @@ c_cpp_builtins (cpp_reader *pfile)
   c_stddef_cpp_builtins ();
 
   /* Set include test macros for all C/C++ (not for just C++11 etc.)
-     the builtins __has_include__ and __has_include_next__ are defined
+     The builtins __has_include__ and __has_include_next__ are defined
      in libcpp.  */
   cpp_define (pfile, "__has_include(STR)=__has_include__(STR)");
   cpp_define (pfile, "__has_include_next(STR)=__has_include_next__(STR)");
+
+  /* Set attribute test macros for all C/C++ (not for just C++11 etc.)
+     The builtin __has_attribute__ is defined in libcpp.  */
+  cpp_define (pfile, "__has_attribute(STR)=__has_attribute__(STR)");
+  cpp_define (pfile, "__has_cpp_attribute(STR)=__has_attribute__(STR)");
 
   if (c_dialect_cxx ())
     {
@@ -806,7 +811,10 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__DEPRECATED");
 
       if (flag_rtti)
-	cpp_define (pfile, "__GXX_RTTI");
+	{
+	  cpp_define (pfile, "__GXX_RTTI");
+	  cpp_define (pfile, "__cpp_rtti=199711");
+	}
 
       if (cxx_dialect >= cxx11)
         cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
@@ -824,13 +832,18 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_user_defined_literals=200809");
 	  cpp_define (pfile, "__cpp_lambdas=200907");
 	  cpp_define (pfile, "__cpp_constexpr=200704");
+	  cpp_define (pfile, "__cpp_range_based_for=200907");
 	  cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
 	  cpp_define (pfile, "__cpp_attributes=200809");
 	  cpp_define (pfile, "__cpp_rvalue_reference=200610");
 	  cpp_define (pfile, "__cpp_variadic_templates=200704");
+	  cpp_define (pfile, "__cpp_initializer_lists=200806");
+	  cpp_define (pfile, "__cpp_delegating_constructors=200604");
+	  cpp_define (pfile, "__cpp_nsdmi=200809");
+	  cpp_define (pfile, "__cpp_inheriting_constructors=200802");
+	  cpp_define (pfile, "__cpp_ref_qualifiers=200710");
 	  cpp_define (pfile, "__cpp_alias_templates=200704");
-	  cpp_define (pfile, "__cpp_attribute_deprecated=201309");
 	}
       if (cxx_dialect > cxx11)
 	{
@@ -853,7 +866,11 @@ c_cpp_builtins (cpp_reader *pfile)
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */
   if (flag_exceptions)
-    cpp_define (pfile, "__EXCEPTIONS");
+    {
+      cpp_define (pfile, "__EXCEPTIONS");
+      if (c_dialect_cxx ())
+	cpp_define (pfile, "__cpp_exceptions=199711");
+    }
 
   /* Represents the C++ ABI version, always defined so it can be used while
      preprocessing C and assembler.  */

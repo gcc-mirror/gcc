@@ -580,6 +580,9 @@ struct cpp_callbacks
      Second argument is the location of the start of the current expansion.  */
   void (*used) (cpp_reader *, source_location, cpp_hashnode *);
 
+  /* Callback to identify whether an attribute exists.  */
+  int (*has_attribute) (cpp_reader *);
+
   /* Callback that can change a user builtin into normal macro.  */
   bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *);
 };
