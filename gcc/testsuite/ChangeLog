@@ -1,5 +1,12 @@
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* gcc.c-torture/compile/920625-2.c: Add return type to
+	freeReturnStruct.
+	* gcc.c-torture/execute/20091229-1.c: Declare main properly.
+	* gcc.c-torture/execute/pr61375.c: Likewise.
+	* gcc.c-torture/execute/20111208-1.c: Use __SIZE_TYPE__ for size_t.
+	* gcc.dg/pr30904.c: Remove extern from declaration of t.
+
 	* lib/target-supports.exp (check_effective_target_indirect_jumps):
 	New function.
 	(check_effective_target_nonlocal_goto): New function.

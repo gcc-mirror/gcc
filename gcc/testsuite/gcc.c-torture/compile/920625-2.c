@@ -100,4 +100,4 @@ copyQueryResult(Widget w, Boolean copy, caddr_t call_data)
   freeReturnStruct();
 }
 
-freeReturnStruct(){}
+void freeReturnStruct(){}

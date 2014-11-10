@@ -1,7 +1,7 @@
 /* PR tree-optimization/51315 */
 /* Reported by Jurij Smakov <jurij@wooyd.org> */
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 extern void *memcpy (void *__restrict __dest,
        __const void *__restrict __src, size_t __n)
