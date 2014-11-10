@@ -1,4 +1,5 @@
 /* PR tree-optimization/60003 */
+/* { dg-require-effective-target indirect_jumps } */
 
 extern void abort (void);
 

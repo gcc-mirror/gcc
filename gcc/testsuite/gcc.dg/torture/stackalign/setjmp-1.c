@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target indirect_jumps } */
 
 extern int strcmp(const char *, const char *);
 extern char *strcpy(char *, const char *);

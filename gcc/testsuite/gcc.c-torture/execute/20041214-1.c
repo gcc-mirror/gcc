@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_jumps } */
+
 typedef long unsigned int size_t;
 extern void abort (void);
 extern char *strcpy (char *, const char *);

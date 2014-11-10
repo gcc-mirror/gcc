@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fno-tree-dominator-opts -fno-tree-fre" } */
 /* { dg-additional-options "-fpic" { target fpic } } */
+/* { dg-require-effective-target label_values } */
 
 void *p;
 

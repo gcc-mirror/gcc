@@ -1,3 +1,4 @@
+/* { dg-require-effective-target label_values } */
 int code[]={0,0,0,0,1};
 
 void foo(int x) {

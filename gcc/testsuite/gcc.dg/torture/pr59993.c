@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target indirect_jumps } */
 
 #include <setjmp.h>
 

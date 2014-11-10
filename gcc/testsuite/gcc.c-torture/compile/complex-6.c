@@ -1,4 +1,5 @@
 /* PR tree-opt/35737 */
+/* { dg-require-effective-target indirect_jumps } */
 
 long buf[10];
 

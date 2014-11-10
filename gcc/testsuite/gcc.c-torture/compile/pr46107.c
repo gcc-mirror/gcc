@@ -1,4 +1,6 @@
 /* PR tree-optimization/46107 */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
 
 int foo (void) __attribute__ ((noreturn));
 
