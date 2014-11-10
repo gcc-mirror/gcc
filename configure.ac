@@ -1138,6 +1138,10 @@ case "${target}" in
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
+  nvptx*-*-*)
+    # nvptx is just a compiler
+    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
+    ;;
   sh-*-* | sh64-*-*)
     case "${target}" in
       sh*-*-elf)

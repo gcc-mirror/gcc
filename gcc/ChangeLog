@@ -1,3 +1,14 @@
+2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/nvptx/nvptx.c: New file.
+	* config/nvptx/nvptx.h: New file.
+	* config/nvptx/nvptx-protos.h: New file.
+	* config/nvptx/nvptx.md: New file.
+	* config/nvptx/t-nvptx: New file.
+	* config/nvptx/nvptx.opt: New file.
+	* common/config/nvptx/nvptx-common.c: New file.
+	* config.gcc: Handle nvptx-*-*.
+
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (finalize_ssa_uses): Properly put

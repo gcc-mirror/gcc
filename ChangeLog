@@ -1,3 +1,8 @@
+2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* configure.ac: Handle nvptx-*-*.
+	* configure: Regenerate.
+
 2014-11-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
