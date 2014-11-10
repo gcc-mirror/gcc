@@ -1,3 +1,7 @@
+2014-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.misc-tests/gcov-16.c: New test.
+
 2014-11-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc.dg/tree-ssa/ifc-cd.c: New test.
