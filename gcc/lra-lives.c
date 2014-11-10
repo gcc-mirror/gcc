@@ -704,7 +704,13 @@ process_bb_lives (basic_block bb, int &curr_point)
       set = single_set (curr_insn);
 
       if (set != NULL_RTX
-	  && REG_P (SET_DEST (set)) && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
+	  && REG_P (SET_DEST (set)) && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+	  && find_reg_note (curr_insn, REG_EH_REGION, NULL_RTX) == NULL_RTX
+	  && ! may_trap_p (PATTERN (curr_insn))
+	  /* Don't do premature remove of pic offset pseudo as we can
+	     start to use it after some reload generation.  */
+	  && (pic_offset_table_rtx == NULL_RTX
+	      || pic_offset_table_rtx != SET_DEST (set)))
 	{
 	  bool dead_insn_p = true;
 
@@ -1273,7 +1279,8 @@ lra_create_live_ranges (bool all_p)
 	 df_get_postorder (DF_BACKWARD), df_get_n_blocks (DF_BACKWARD));
       if (lra_dump_file != NULL)
 	{
-	  fprintf (lra_dump_file, "Global pseudo live data have be updated:\n");
+	  fprintf (lra_dump_file,
+		   "Global pseudo live data have been updated:\n");
 	  basic_block bb;
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
