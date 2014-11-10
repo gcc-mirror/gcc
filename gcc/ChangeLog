@@ -1,5 +1,13 @@
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/63800
+	* tree-ssa-pre.c (eliminate_push_avail): Push in a way so
+	we can restore the previous availability in after_dom_children.
+	(eliminate_dom_walker::after_dom_children): Restore
+	previous availability.
+
+2014-11-10  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/63798
 	* expr.c (expand_expr_real_2): When expanding FMA_EXPRs
 	properly treat the embedded multiplication as commutative
