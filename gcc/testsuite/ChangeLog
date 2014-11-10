@@ -1,3 +1,10 @@
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/Wshift-count-overflow-1.c: New.
+	* c-c++-common/Wshift-count-overflow-2.c: Likewise.
+	* c-c++-common/Wshift-count-negative-1.c: Likewise.
+	* c-c++-common/Wshift-count-negative-2.c: Likewise.
+
 2014-11-10  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* gcc.dg/fshort-wchar.c: Use arm_eabi instead of arm*-*-*eabi*.
