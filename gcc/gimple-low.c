@@ -129,7 +129,8 @@ lower_function_body (void)
   /* If the function falls off the end, we need a null return statement.
      If we've already got one in the return_statements vector, we don't
      need to do anything special.  Otherwise build one by hand.  */
-  if (gimple_seq_may_fallthru (lowered_body)
+  bool may_fallthru = gimple_seq_may_fallthru (lowered_body);
+  if (may_fallthru
       && (data.return_statements.is_empty ()
 	  || (gimple_return_retval (data.return_statements.last().stmt)
 	      != NULL)))
@@ -138,6 +139,7 @@ lower_function_body (void)
       gimple_set_location (x, cfun->function_end_locus);
       gimple_set_block (x, DECL_INITIAL (current_function_decl));
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
+      may_fallthru = false;
     }
 
   /* If we lowered any return statements, emit the representative
@@ -148,6 +150,14 @@ lower_function_body (void)
       x = gimple_build_label (t.label);
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
       gsi_insert_after (&i, t.stmt, GSI_CONTINUE_LINKING);
+      if (may_fallthru)
+	{
+	  /* Remove the line number from the representative return statement.
+	     It now fills in for the fallthru too.  Failure to remove this
+	     will result in incorrect results for coverage analysis.  */
+	  gimple_set_location (t.stmt, UNKNOWN_LOCATION);
+	  may_fallthru = false;
+	}
     }
 
   /* Once the old body has been lowered, replace it with the new

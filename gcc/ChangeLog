@@ -1,3 +1,8 @@
+2014-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (lower_function_body): Clear the location of the first
+	inserted representative return if it also fills in for the fallthru.
+
 2014-11-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-if-conv.c (add_to_predicate_list): Check unconditionally
