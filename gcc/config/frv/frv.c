@@ -7802,29 +7802,13 @@ frv_io_handle_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
       CLEAR_HARD_REG_BIT (*set, regno);
 }
 
-/* A for_each_rtx callback for which DATA points to a HARD_REG_SET.
-   Add every register in *X to the set.  */
-
-static int
-frv_io_handle_use_1 (rtx *x, void *data)
-{
-  HARD_REG_SET *set = (HARD_REG_SET *) data;
-  unsigned int regno;
-
-  if (REG_P (*x))
-    FOR_EACH_REGNO (regno, *x)
-      SET_HARD_REG_BIT (*set, regno);
-
-  return 0;
-}
-
-/* A note_stores callback that applies frv_io_handle_use_1 to an
-   entire rhs value.  */
+/* A note_uses callback that adds all registers in *X to hard register
+   set *DATA.  */
 
 static void
 frv_io_handle_use (rtx *x, void *data)
 {
-  for_each_rtx (x, frv_io_handle_use_1, data);
+  find_all_hard_regs (*x, (HARD_REG_SET *) data);
 }
 
 /* Go through block BB looking for membars to remove.  There are two

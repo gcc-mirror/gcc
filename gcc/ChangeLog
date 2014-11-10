@@ -1,5 +1,10 @@
 2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/frv/frv.c (frv_io_handle_use_1): Delete.
+	(frv_io_handle_use): Use find_all_hard_regs.
+
+2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/frv/frv.c (frv_registers_conflict_p_1): Take an rtx rather
 	than an rtx *.  Take the regstate_t directly rather than via a void *.
 	Return a bool rather than an int.  Iterate over all subrtxes here.
