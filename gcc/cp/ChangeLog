@@ -1,5 +1,9 @@
 2014-11-09  Jason Merrill  <jason@redhat.com>
 
+	DR 799
+	* typeck.c (build_reinterpret_cast_1): reinterpret_cast to the
+	same scalar type is an rvalue.
+
 	DR 2007
 	* call.c (build_new_op_1): Don't do non-class lookup for =, -> or [].
 
