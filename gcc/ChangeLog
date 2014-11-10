@@ -1,3 +1,10 @@
+2014-11-10  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR middle-end/63748
+	* tree-ssa-propagate.c (may_propagate_copy): Allow propagating
+	SSA copies whose source and destination names both occur in
+	abnormal PHIs.
+
 2014-11-10 Roman Gareev  <gareevroman@gmail.com>
 
 	* Makefile.in: Remove the compilation of graphite-clast-to-gimple.o.
