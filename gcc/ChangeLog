@@ -1,5 +1,33 @@
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_decompose_address): Replace open-coded
+	swap with std::swap to swap values.
+	(ix86_fixup_binary_operands): Ditto.
+	(ix86_binary_operator_ok): Ditto.
+	(ix86_prepare_fp_compare_args): Ditto.
+	(ix86_expand_branch): Ditto.
+	(ix86_expand_carry_flag_compare): Ditto.
+	(ix86_expand_int_movcc): Ditto.
+	(ix86_prepare_sse_fp_compare_args): Ditto.
+	(ix86_expand_sse_fp_minmax): Ditto.
+	(ix86_expand_int_vcond): Ditto.
+	(ix86_split_long_move): Ditto.
+	(ix86_expand_sse_comi): Ditto.
+	(ix86_expand_sse_compare_and_jump): Ditto.
+	(ix86_expand_sse_compare_mask): Ditto.
+	* config/i386/i386.md (*add<mode>_1): Ditto.
+	(addsi_1_zext): Ditto.
+	(*addhi_1): Ditto.
+	(*addqi_1): Ditto.
+	(*add<mode>_2): Ditto.
+	(*addsi_2_zext): Ditto.
+	(*add<mode>_3): Ditto.
+	(*addsi_3_zext): Ditto.
+	(*add<mode>_5): Ditto.
+	(absneg splitter): Ditto.
+
+2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	Revert:
 	2014-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
