@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 foo (a, p)
      register int a;
      int *p;

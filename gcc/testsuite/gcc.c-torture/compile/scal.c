@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 int g1, g2;
 
 void

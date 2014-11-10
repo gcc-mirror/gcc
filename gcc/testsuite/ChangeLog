@@ -1,5 +1,56 @@
 2014-11-10  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* lib/target-supports.exp
+	(check_effective_target_untyped_assembly): New function.
+	* gcc.c-torture/compile/20091215-1.c: Require untyped_assembly.
+	* gcc.c-torture/compile/920917-1.c: Likewise.
+	* gcc.c-torture/compile/930120-1.c: Likewise.
+	* gcc.c-torture/compile/930411-1.c: Likewise.
+	* gcc.c-torture/compile/930529-1.c: Likewise.
+	* gcc.c-torture/compile/930623-1.c: Likewise.
+	* gcc.c-torture/compile/950329-1.c: Likewise.
+	* gcc.c-torture/compile/calls.c: Likewise.
+	* gcc.c-torture/compile/pr37258.c: Likewise.
+	* gcc.c-torture/compile/pr37327.c: Likewise.
+	* gcc.c-torture/compile/pr38360.c: Likewise.
+	* gcc.c-torture/compile/pr43635.c: Likewise.
+	* gcc.c-torture/compile/pr47428.c: Likewise.
+	* gcc.c-torture/compile/pr47967.c: Likewise.
+	* gcc.c-torture/compile/pr49145.c: Likewise.
+	* gcc.c-torture/compile/pr51694.c: Likewise.
+	* gcc.c-torture/compile/pr53411.c: Likewise.
+	* gcc.c-torture/execute/20001101.c: Likewise.
+	* gcc.c-torture/execute/20051012-1.c: Likewise.
+	* gcc.c-torture/execute/920501-1.c: Likewise.
+	* gcc.c-torture/execute/921202-1.c: Likewise.
+	* gcc.c-torture/execute/921208-2.c: Likewise.
+	* gcc.c-torture/execute/call-trap-1.c: Likewise.
+	* gcc.c-torture/compile/20010525-1.c: Likewise.
+	* gcc.c-torture/compile/20021015-2.c: Likewise.
+	* gcc.c-torture/compile/20031023-1.c: Likewise.
+	* gcc.c-torture/compile/20031023-2.c: Likewise.
+	* gcc.c-torture/compile/pr49206.c: Likewise.
+	* gcc.c-torture/execute/pr47237.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-1.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-3.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-return-1.c: Likewise.
+	* gcc.dg/builtin-apply1.c: Likewise.
+	* gcc.dg/builtin-apply2.c: Likewise.
+	* gcc.dg/builtin-apply3.c: Likewise.
+	* gcc.dg/builtin-apply4.c: Likewise.
+	* gcc.dg/pr38338.c: Likewise.
+	* gcc.dg/torture/pr41993.c: Likewise.
+	* gcc.c-torture/compile/386.c: Likewise.
+	* gcc.c-torture/compile/cmpsi386.c: Likewise.
+	* gcc.c-torture/compile/consec.c: Likewise.
+	* gcc.c-torture/compile/ex.c: Likewise.
+	* gcc.c-torture/compile/pass.c: Likewise.
+	* gcc.c-torture/compile/scal.c: Likewise.
+	* gcc.c-torture/compile/uuarg.c: Likewise.
+	* gcc.c-torture/compile/conv_tst.c: Likewise.
+
 	* lib/target-supports.exp (check_effective_target_alloca): New function.
 	* gcc.c-torture/execute/20010209-1.c: Require alloca.
 	* gcc.c-torture/execute/20020314-1.c: Likewise.

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 static int
 func1 (int a, int b)
 {

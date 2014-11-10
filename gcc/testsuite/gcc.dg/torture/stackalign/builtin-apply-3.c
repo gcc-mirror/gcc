@@ -5,6 +5,7 @@
    to the right location by __builtin_apply after the direct call.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target untyped_assembly } */
 
 
 #define INTEGER_ARG  5

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target untyped_assembly } */
+
 int heap;
 
 g(){}
