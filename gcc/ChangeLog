@@ -1,5 +1,11 @@
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
+	* match.pd: Implement pattern from simplify_mult.
+	* tree-ssa-forwprop.c (simplify_mult): Remove.
+	(pass_forwprop::execute): Do not call simplify_mult.
+
+2014-11-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/63800
 	* tree-ssa-pre.c (eliminate_push_avail): Push in a way so
 	we can restore the previous availability in after_dom_children.
