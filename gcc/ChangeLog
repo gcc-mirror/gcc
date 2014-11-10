@@ -1,3 +1,9 @@
+2014-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/frv/frv.c: Move include of rtl.h after hard-reg-set.h.
+	(frv_clear_registers_used): Delete.
+	(frv_ifcvt_modify_tests): Use find_all_hard_regs.
+
 2014-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/63573

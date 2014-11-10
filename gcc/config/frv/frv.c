@@ -21,13 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "rtl.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
@@ -335,7 +335,6 @@ static rtx frv_expand_mwtacc_builtin		(enum insn_code, tree);
 static rtx frv_expand_noargs_builtin		(enum insn_code);
 static void frv_split_iacc_move			(rtx, rtx);
 static rtx frv_emit_comparison			(enum rtx_code, rtx, rtx);
-static int frv_clear_registers_used		(rtx *, void *);
 static void frv_ifcvt_add_insn			(rtx, rtx, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
@@ -5194,33 +5193,6 @@ frv_split_abs (rtx operands[])
 }
 
 
-/* An internal function called by for_each_rtx to clear in a hard_reg set each
-   register used in an insn.  */
-
-static int
-frv_clear_registers_used (rtx *ptr, void *data)
-{
-  if (GET_CODE (*ptr) == REG)
-    {
-      int regno = REGNO (*ptr);
-      HARD_REG_SET *p_regs = (HARD_REG_SET *)data;
-
-      if (regno < FIRST_PSEUDO_REGISTER)
-	{
-	  int reg_max = regno + HARD_REGNO_NREGS (regno, GET_MODE (*ptr));
-
-	  while (regno < reg_max)
-	    {
-	      CLEAR_HARD_REG_BIT (*p_regs, regno);
-	      regno++;
-	    }
-	}
-    }
-
-  return 0;
-}
-
-
 /* Initialize machine-specific if-conversion data.
    On the FR-V, we don't have any extra fields per se, but it is useful hook to
    initialize the static storage.  */
@@ -5413,9 +5385,11 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
 	      rtx pattern;
 	      rtx set;
 	      int skip_nested_if = FALSE;
+	      HARD_REG_SET mentioned_regs;
 
-	      for_each_rtx (&PATTERN (insn), frv_clear_registers_used,
-			    (void *)&tmp_reg->regs);
+	      CLEAR_HARD_REG_SET (mentioned_regs);
+	      find_all_hard_regs (PATTERN (insn), &mentioned_regs);
+	      AND_COMPL_HARD_REG_SET (tmp_reg->regs, mentioned_regs);
 
 	      pattern = PATTERN (insn);
 	      if (GET_CODE (pattern) == COND_EXEC)
@@ -5451,8 +5425,8 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
 		}
 
 	      if (! skip_nested_if)
-		for_each_rtx (&PATTERN (insn), frv_clear_registers_used,
-			      (void *)&frv_ifcvt.nested_cc_ok_rewrite);
+		AND_COMPL_HARD_REG_SET (frv_ifcvt.nested_cc_ok_rewrite,
+					mentioned_regs);
 	    }
 
 	  if (insn == last_insn)
