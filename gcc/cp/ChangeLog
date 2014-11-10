@@ -1,3 +1,8 @@
+2014-11-09  Jason Merrill  <jason@redhat.com>
+
+	DR 2007
+	* call.c (build_new_op_1): Don't do non-class lookup for =, -> or [].
+
 2014-11-07  Jason Merrill  <jason@redhat.com>
 
 	DR 1558
