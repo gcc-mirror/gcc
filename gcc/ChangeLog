@@ -1,5 +1,10 @@
 2014-11-10  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-operands.c (finalize_ssa_uses): Properly put
+	released operands on the free list.
+
+2014-11-10  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Implement pattern from simplify_mult.
 	* tree-ssa-forwprop.c (simplify_mult): Remove.
 	(pass_forwprop::execute): Do not call simplify_mult.
