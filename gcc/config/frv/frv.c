@@ -343,7 +343,6 @@ static unsigned int frv_insn_unit		(rtx_insn *);
 static bool frv_issues_to_branch_unit_p		(rtx_insn *);
 static int frv_cond_flags 			(rtx);
 static bool frv_regstate_conflict_p 		(regstate_t, regstate_t);
-static int frv_registers_conflict_p_1 		(rtx *, void *);
 static bool frv_registers_conflict_p 		(rtx);
 static void frv_registers_update_1 		(rtx, const_rtx, void *);
 static void frv_registers_update 		(rtx);
@@ -7171,53 +7170,49 @@ frv_regstate_conflict_p (regstate_t cond1, regstate_t cond2)
 }
 
 
-/* A for_each_rtx callback.  Return 1 if *X depends on an instruction in
-   the current packet.  DATA points to a regstate_t that describes the
-   condition under which *X might be set or used.  */
+/* Return true if an instruction with pattern PAT depends on an
+   instruction in the current packet.  COND describes the condition
+   under which PAT might be set or used.  */
 
-static int
-frv_registers_conflict_p_1 (rtx *x, void *data)
+static bool
+frv_registers_conflict_p_1 (rtx pat, regstate_t cond)
 {
-  unsigned int regno, i;
-  regstate_t cond;
-
-  cond = *(regstate_t *) data;
-
-  if (GET_CODE (*x) == REG)
-    FOR_EACH_REGNO (regno, *x)
-      if ((frv_packet.regstate[regno] & REGSTATE_MODIFIED) != 0)
-	if (frv_regstate_conflict_p (frv_packet.regstate[regno], cond))
-	  return 1;
-
-  if (GET_CODE (*x) == MEM)
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, pat, NONCONST)
     {
-      /* If we ran out of memory slots, assume a conflict.  */
-      if (frv_packet.num_mems > ARRAY_SIZE (frv_packet.mems))
-	return 1;
+      rtx x = *iter;
+      if (GET_CODE (x) == REG)
+	{
+	  unsigned int regno;
+	  FOR_EACH_REGNO (regno, x)
+	    if ((frv_packet.regstate[regno] & REGSTATE_MODIFIED) != 0)
+	      if (frv_regstate_conflict_p (frv_packet.regstate[regno], cond))
+		return true;
+	}
+      else if (GET_CODE (x) == MEM)
+	{
+	  /* If we ran out of memory slots, assume a conflict.  */
+	  if (frv_packet.num_mems > ARRAY_SIZE (frv_packet.mems))
+	    return 1;
 
-      /* Check for output or true dependencies with earlier MEMs.  */
-      for (i = 0; i < frv_packet.num_mems; i++)
-	if (frv_regstate_conflict_p (frv_packet.mems[i].cond, cond))
-	  {
-	    if (true_dependence (frv_packet.mems[i].mem, VOIDmode, *x))
-	      return 1;
+	  /* Check for output or true dependencies with earlier MEMs.  */
+	  for (unsigned int i = 0; i < frv_packet.num_mems; i++)
+	    if (frv_regstate_conflict_p (frv_packet.mems[i].cond, cond))
+	      {
+		if (true_dependence (frv_packet.mems[i].mem, VOIDmode, x))
+		  return true;
 
-	    if (output_dependence (frv_packet.mems[i].mem, *x))
-	      return 1;
-	  }
+		if (output_dependence (frv_packet.mems[i].mem, x))
+		  return true;
+	      }
+	}
+
+      /* The return values of calls aren't significant: they describe
+	 the effect of the call as a whole, not of the insn itself.  */
+      else if (GET_CODE (x) == SET && GET_CODE (SET_SRC (x)) == CALL)
+	iter.substitute (SET_SRC (x));
     }
-
-  /* The return values of calls aren't significant: they describe
-     the effect of the call as a whole, not of the insn itself.  */
-  if (GET_CODE (*x) == SET && GET_CODE (SET_SRC (*x)) == CALL)
-    {
-      if (for_each_rtx (&SET_SRC (*x), frv_registers_conflict_p_1, data))
-	return 1;
-      return -1;
-    }
-
-  /* Check subexpressions.  */
-  return 0;
+  return false;
 }
 
 
@@ -7232,13 +7227,13 @@ frv_registers_conflict_p (rtx x)
   flags = 0;
   if (GET_CODE (x) == COND_EXEC)
     {
-      if (for_each_rtx (&XEXP (x, 0), frv_registers_conflict_p_1, &flags))
+      if (frv_registers_conflict_p_1 (XEXP (x, 0), flags))
 	return true;
 
       flags |= frv_cond_flags (XEXP (x, 0));
       x = XEXP (x, 1);
     }
-  return for_each_rtx (&x, frv_registers_conflict_p_1, &flags);
+  return frv_registers_conflict_p_1 (x, flags);
 }
 
 
