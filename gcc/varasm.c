@@ -1673,6 +1673,18 @@ decide_function_section (tree decl)
   in_cold_section_p = first_function_block_is_cold;
 }
 
+/* Get the function's name, as described by its RTL.  This may be
+   different from the DECL_NAME name used in the source file.  */
+const char *
+get_fnname_from_decl (tree decl)
+{
+  rtx x = DECL_RTL (decl);
+  gcc_assert (MEM_P (x));
+  x = XEXP (x, 0);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  return XSTR (x, 0);
+}
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -2043,6 +2055,15 @@ assemble_variable_contents (tree decl, const char *name,
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
       targetm.asm_out.decl_end ();
     }
+}
+
+/* Write out assembly for the variable DECL, which is not defined in
+   the current translation unit.  */
+void
+assemble_undefined_decl (tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  targetm.asm_out.assemble_undefined_decl (asm_out_file, name, decl);
 }
 
 /* Assemble everything that is needed for a variable or function declaration.

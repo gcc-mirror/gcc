@@ -4468,17 +4468,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
 static unsigned int
 rest_of_handle_final (void)
 {
-  rtx x;
-  const char *fnname;
-
-  /* Get the function's name, as described by its RTL.  This may be
-     different from the DECL_NAME name used in the source file.  */
-
-  x = DECL_RTL (current_function_decl);
-  gcc_assert (MEM_P (x));
-  x = XEXP (x, 0);
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
-  fnname = XSTR (x, 0);
+  const char *fnname = get_fnname_from_decl (current_function_decl);
 
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);

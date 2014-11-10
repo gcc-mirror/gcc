@@ -272,6 +272,19 @@
 
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* target.def (assemble_undefined_decl): New hooks.
+	* hooks.c (hook_void_FILEptr_constcharptr_const_tree): New function.
+	* hooks.h (hook_void_FILEptr_constcharptr_const_tree): Declare.
+	* doc/tm.texi.in (TARGET_ASM_ASSEMBLE_UNDEFINED_DECL): Add.
+	* doc/tm.texi: Regenerate.
+	* output.h (assemble_undefined_decl): Declare.
+	(get_fnname_from_decl): Declare.
+	* varasm.c (assemble_undefined_decl): New function.
+	(get_fnname_from_decl): New function.
+	* final.c (rest_of_handle_final): Use it.
+	* varpool.c (varpool_output_variables): Call assemble_undefined_decl
+	for nodes without a definition.
+
 	* target.def (call_args, end_call_args): New hooks.
 	* hooks.c (hook_void_rtx_tree): New empty function.
 	* hooks.h (hook_void_rtx_tree): Declare.

@@ -178,6 +178,9 @@ extern void default_assemble_visibility (tree, int);
    for an `asm' keyword used between functions.  */
 extern void assemble_asm (tree);
 
+/* Get the function's name from a decl, as described by its RTL.  */
+extern const char *get_fnname_from_decl (tree);
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -202,6 +205,10 @@ extern void assemble_variable (tree, int, int, int);
 /* Put the vtable verification constructor initialization function
    into the preinit array.  */
 extern void assemble_vtv_preinit_initializer (tree);
+
+/* Assemble everything that is needed for a variable declaration that has
+   no definition in the current translation unit.  */
+extern void assemble_undefined_decl (tree);
 
 /* Compute the alignment of variable specified by DECL.
    DONT_OUTPUT_DATA is from assemble_variable.  */

@@ -7896,6 +7896,13 @@ global; that is, available for reference from other files.
 The default implementation uses the TARGET_ASM_GLOBALIZE_LABEL target hook.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_ASSEMBLE_UNDEFINED_DECL (FILE *@var{stream}, const char *@var{name}, const_tree @var{decl})
+This target hook is a function to output to the stdio stream
+@var{stream} some commands that will declare the name associated with
+@var{decl} which is not defined in the current translation unit.  Most
+assemblers do not require anything to be output in this case.
+@end deftypefn
+
 @defmac ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} weak;
