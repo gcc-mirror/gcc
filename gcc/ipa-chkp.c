@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-chkp.h"
 #include "ipa-chkp.h"
-#include <string>
 
 /*  Pointer Bounds Checker has two IPA passes to support code instrumentation.
 
