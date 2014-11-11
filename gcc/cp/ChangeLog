@@ -1,3 +1,9 @@
+2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63265
+	* pt.c (tsubst_copy_and_build, case COND_EXPR): Maybe fold to
+	constant the condition.
+
 2014-10-30  Release Manager
 
 	* GCC 4.9.2 released.
