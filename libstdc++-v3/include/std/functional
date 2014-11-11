@@ -67,24 +67,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Mem_fn<_Tp _Class::*>
     mem_fn(_Tp _Class::*) noexcept;
 
-_GLIBCXX_HAS_NESTED_TYPE(result_type)
-
   /// If we have found a result_type, extract it.
-  template<bool _Has_result_type, typename _Functor>
+  template<typename _Functor, typename = __void_t<>>
     struct _Maybe_get_result_type
     { };
 
   template<typename _Functor>
-    struct _Maybe_get_result_type<true, _Functor>
+    struct _Maybe_get_result_type<_Functor,
+				  __void_t<typename _Functor::result_type>>
     { typedef typename _Functor::result_type result_type; };
 
   /**
    *  Base class for any function object that has a weak result type, as
-   *  defined in 3.3/3 of TR1.
+   *  defined in 20.8.2 [func.require] of C++11.
   */
   template<typename _Functor>
     struct _Weak_result_type_impl
-    : _Maybe_get_result_type<__has_result_type<_Functor>::value, _Functor>
+    : _Maybe_get_result_type<_Functor>
     { };
 
   /// Retrieve the result type for a function type.

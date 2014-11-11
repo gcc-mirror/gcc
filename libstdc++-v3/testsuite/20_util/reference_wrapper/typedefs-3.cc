@@ -46,8 +46,7 @@ struct S012 : S0, S1, S2 { };
 
 using std::true_type;
 using std::false_type;
-using std::integral_constant;
-using std::remove_cv;
+using std::__void_t;
 
 _GLIBCXX_HAS_NESTED_TYPE(argument_type)
 _GLIBCXX_HAS_NESTED_TYPE(first_argument_type)

@@ -1,5 +1,16 @@
 2014-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/type_traits (__void_t): Define new alias template.
+	(_GLIBCXX_HAS_NESTED_TYPE): Redefine using __void_t.
+	* include/std/functional (_Maybe_get_result_type): Likewise.
+	* include/bits/stl_iterator_base_types.h (__iterator_traits): Likewise.
+	* include/bits/uses_allocator.h (__uses_allocator_helper): Likewise.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Adjust to changes
+	in _GLIBCXX_HAS_NESTED_TYPE.
+
+2014-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/std/functional (_Mem_fn_traits): Add partial specializations
 	for varargs functions.
 	(_Mem_fn_base): Do not check arguments are convertible for varargs.
