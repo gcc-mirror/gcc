@@ -550,7 +550,7 @@ decode_statement (void)
      stored an error message of some sort.  */
 
   if (gfc_error_check () == 0)
-    gfc_error_now ("Unclassifiable statement at %C");
+    gfc_error_now_2 ("Unclassifiable statement at %C");
 
   reject_statement ();
 
@@ -797,7 +797,7 @@ decode_gcc_attribute (void)
      stored an error message of some sort.  */
 
   if (gfc_error_check () == 0)
-    gfc_error_now ("Unclassifiable GCC directive at %C");
+    gfc_error_now_2 ("Unclassifiable GCC directive at %C");
 
   reject_statement ();
 
@@ -836,17 +836,17 @@ next_free (void)
 	  gfc_match_small_literal_int (&i, &cnt);
 
 	  if (cnt > 5)
-	    gfc_error_now ("Too many digits in statement label at %C");
+	    gfc_error_now_2 ("Too many digits in statement label at %C");
 
 	  if (i == 0)
-	    gfc_error_now ("Zero is not a valid statement label at %C");
+	    gfc_error_now_2 ("Zero is not a valid statement label at %C");
 
 	  do
 	    c = gfc_next_ascii_char ();
 	  while (ISDIGIT(c));
 
 	  if (!gfc_is_whitespace (c))
-	    gfc_error_now ("Non-numeric character in statement label at %C");
+	    gfc_error_now_2 ("Non-numeric character in statement label at %C");
 
 	  return ST_NONE;
 	}
@@ -858,7 +858,7 @@ next_free (void)
 
 	  if (at_bol && gfc_peek_ascii_char () == ';')
 	    {
-	      gfc_error_now ("Semicolon at %C needs to be preceded by "
+	      gfc_error_now_2 ("Semicolon at %C needs to be preceded by "
 			     "statement");
 	      gfc_next_ascii_char (); /* Eat up the semicolon.  */
 	      return ST_NONE;
@@ -917,8 +917,8 @@ next_free (void)
   if (at_bol && c == ';')
     {
       if (!(gfc_option.allow_std & GFC_STD_F2008))
-	gfc_error_now ("Fortran 2008: Semicolon at %C without preceding "
-		       "statement");
+	gfc_error_now_2 ("Fortran 2008: Semicolon at %C without preceding "
+			 "statement");
       gfc_next_ascii_char (); /* Eat up the semicolon.  */
       return ST_NONE;
     }
@@ -1017,7 +1017,7 @@ next_fixed (void)
   if (digit_flag)
     {
       if (label == 0)
-	gfc_warning_now ("Zero is not a valid statement label at %C");
+	gfc_warning_now_2 ("Zero is not a valid statement label at %C");
       else
 	{
 	  /* We've found a valid statement label.  */

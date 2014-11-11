@@ -1,3 +1,23 @@
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (warn_use_without_only): Remove.
+	(gfc_diagnostics_finish): Declare.
+	* error.c: Include tree-diagnostics.h
+	(gfc_format_decoder): New.
+	(gfc_diagnostics_init): Use gfc_format_decoder. Set default caret
+	char.
+	(gfc_diagnostics_finish): Restore tree diagnostics defaults, but
+	keep gfc_diagnostics_starter and finalizer. Restore default caret.
+	* options.c: Remove all uses of warn_use_without_only.
+	* lang.opt (Wuse-without-only): Add Var.
+	* f95-lang.c (gfc_be_parse_file): Call gfc_diagnostics_finish.
+	* module.c (gfc_use_module): Use gfc_warning_now_2.
+	* parse.c (decode_statement): Likewise.
+	(decode_gcc_attribute): Likewise.
+	(next_free): Likewise.
+	(next_fixed): Likewise.
+
 2014-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR fortran/63701

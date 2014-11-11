@@ -1,3 +1,11 @@
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* lib/gfortran-dg.exp: Update regexp to match locus and message
+	without caret.
+	* gfortran.dg/use_without_only_1.f90: Add column numbers.
+        * gfortran.dg/warnings_are_errors_1.f: Update.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.
