@@ -1414,4 +1414,6 @@ extern tree cilk_install_body_pedigree_operations (tree);
 extern void cilk_outline (tree, tree *, void *);
 extern bool contains_cilk_spawn_stmt (tree);
 extern tree cilk_for_number_of_iterations (tree);
+extern bool check_no_cilk (tree, const char *, const char *,
+		           location_t loc = UNKNOWN_LOCATION);
 #endif /* ! GCC_C_COMMON_H */

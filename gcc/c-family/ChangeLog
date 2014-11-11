@@ -1,5 +1,12 @@
 2014-11-10  Andi Kleen  <ak@linux.intel.com>
 
+	PR c/60804
+	* c-common.h (check_no_cilk): Declare.
+	* cilk.c (get_error_location): New function.
+	(check_no_cilk): Dito.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
 	* cilk.c (recognize_spawn): Use expression location
 	for error message.
 
