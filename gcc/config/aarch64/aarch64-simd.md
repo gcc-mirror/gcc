@@ -1924,15 +1924,15 @@
 ;;     bif op0, op1, mask
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
-  [(set (match_operand:VALLDIF 0 "register_operand"		"=w,w,w")
-	(ior:VALLDIF
-	   (and:VALLDIF
-	     (match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
-	     (match_operand:VALLDIF 2 "register_operand"	" w,w,0"))
-	   (and:VALLDIF
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand"		"=w,w,w")
+	(ior:VSDQ_I_DI
+	   (and:VSDQ_I_DI
 	     (not:<V_cmp_result>
-		(match_dup:<V_cmp_result> 1))
-	     (match_operand:VALLDIF 3 "register_operand"	" w,0,w"))
+	       (match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w"))
+	     (match_operand:VSDQ_I_DI 3 "register_operand"	" w,0,w"))
+	   (and:VSDQ_I_DI
+	     (match_dup:<V_cmp_result> 1)
+	     (match_operand:VSDQ_I_DI 2 "register_operand"	" w,w,0"))
 	))]
   "TARGET_SIMD"
   "@
@@ -1950,9 +1950,21 @@
  "TARGET_SIMD"
 {
   /* We can't alias operands together if they have different modes.  */
+  rtx tmp = operands[0];
+  if (FLOAT_MODE_P (<MODE>mode))
+    {
+      operands[2] = gen_lowpart (<V_cmp_result>mode, operands[2]);
+      operands[3] = gen_lowpart (<V_cmp_result>mode, operands[3]);
+      tmp = gen_reg_rtx (<V_cmp_result>mode);
+    }
   operands[1] = gen_lowpart (<V_cmp_result>mode, operands[1]);
-  emit_insn (gen_aarch64_simd_bsl<mode>_internal (operands[0], operands[1],
-						  operands[2], operands[3]));
+  emit_insn (gen_aarch64_simd_bsl<v_cmp_result>_internal (tmp,
+							  operands[1],
+							  operands[2],
+							  operands[3]));
+  if (tmp != operands[0])
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
+
   DONE;
 })
 
