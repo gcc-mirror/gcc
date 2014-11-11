@@ -1,3 +1,9 @@
+2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63265
+	* pt.c (tsubst_copy_and_build, case COND_EXPR): Maybe fold to
+	constant the condition.
+
 2014-11-10  Andi Kleen  <ak@linux.intel.com>
 
 	* semantics.c (finish_goto_stmt): Call check_no_cilk.
