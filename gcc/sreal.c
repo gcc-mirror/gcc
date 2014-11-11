@@ -156,7 +156,7 @@ sreal::to_int () const
   if (m_exp <= -SREAL_BITS)
     return 0;
   if (m_exp >= SREAL_PART_BITS)
-    return INT64_MAX;
+    return INTTYPE_MAXIMUM (int64_t);
   if (m_exp > 0)
     return m_sig << m_exp;
   if (m_exp < 0)
