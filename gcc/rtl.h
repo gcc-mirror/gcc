@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
 
-#include <utility>
 #include "statistics.h"
 #include "machmode.h"
 #include "input.h"

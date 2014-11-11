@@ -215,7 +215,9 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
+# include <algorithm>
 # include <cstring>
+# include <utility>
 #endif
 
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather

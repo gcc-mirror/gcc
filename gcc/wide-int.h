@@ -216,8 +216,6 @@ along with GCC; see the file COPYING3.  If not see
    the same result as X + X; the precision of the shift amount Y
    can be arbitrarily different from X.  */
 
-
-#include <utility>
 #include "system.h"
 #include "hwint.h"
 #include "signop.h"
