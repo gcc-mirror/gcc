@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "tree-diagnostic.h" /* tree_diagnostics_defaults */
 
 static int suppress_errors = 0;
 
@@ -958,6 +959,38 @@ gfc_warning_now (const char *gmsgid, ...)
   buffer_flag = i;
 }
 
+/* Called from output_format -- during diagnostic message processing
+   to handle Fortran specific format specifiers with the following meanings:
+
+   %C  Current locus (no argument)
+*/
+static bool
+gfc_format_decoder (pretty_printer *pp,
+		    text_info *text, const char *spec,
+		    int precision ATTRIBUTE_UNUSED, bool wide ATTRIBUTE_UNUSED,
+		    bool plus ATTRIBUTE_UNUSED, bool hash ATTRIBUTE_UNUSED)
+{
+  switch (*spec)
+    {
+    case 'C':
+      {
+	static const char *result = "(1)";
+	gcc_assert (gfc_current_locus.nextc - gfc_current_locus.lb->line >= 0);
+	unsigned int c1 = gfc_current_locus.nextc - gfc_current_locus.lb->line;
+	gcc_assert (text->locus);
+	*text->locus
+	  = linemap_position_for_loc_and_offset (line_table,
+						 gfc_current_locus.lb->location,
+						 c1);
+	global_dc->caret_char = '1';
+	pp_string (pp, result);
+	return true;
+      }
+    default:
+      return false;
+    }
+}
+
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 static char *
@@ -1354,6 +1387,18 @@ gfc_errors_to_warnings (int f)
 void
 gfc_diagnostics_init (void)
 {
+  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
+  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  diagnostic_format_decoder (global_dc) = gfc_format_decoder;
+  global_dc->caret_char = '^';
+}
+
+void
+gfc_diagnostics_finish (void)
+{
+  tree_diagnostics_defaults (global_dc);
+  /* We still want to use the gfc starter and finalizer, not the tree
+     defaults.  */
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   global_dc->caret_char = '^';

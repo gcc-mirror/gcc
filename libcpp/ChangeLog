@@ -1,3 +1,10 @@
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* include/line-map.h (linemap_position_for_loc_and_offset):
+	Declare.
+	* line-map.c (linemap_position_for_loc_and_offset): New.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.

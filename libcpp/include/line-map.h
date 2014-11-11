@@ -603,6 +603,14 @@ source_location
 linemap_position_for_line_and_column (const struct line_map *,
 				      linenum_type, unsigned int);
 
+/* Encode and return a source_location starting from location LOC and
+   shifting it by OFFSET columns.  This function does not support
+   virtual locations.  */
+source_location
+linemap_position_for_loc_and_offset (struct line_maps *set,
+				     source_location loc,
+				     unsigned int offset);
+
 /* Return the file this map is for.  */
 #define LINEMAP_FILE(MAP)					\
   (linemap_check_ordinary (MAP)->d.ordinary.to_file)

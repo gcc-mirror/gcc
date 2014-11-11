@@ -262,7 +262,7 @@ Fortran
 ; Documented in C/C++
 
 Wuse-without-only
-Fortran Warning
+Fortran Var(warn_use_without_only) Warning
 Warn about USE statements that have no ONLY qualifier
 
 Wopenmp-simd

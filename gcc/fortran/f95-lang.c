@@ -230,6 +230,10 @@ gfc_be_parse_file (void)
   /* Clear the binding level stack.  */
   while (!global_bindings_p ())
     poplevel (0, 0);
+
+  /* Switch to the default tree diagnostics here, because there may be
+     diagnostics before gfc_finish().  */
+  gfc_diagnostics_finish ();
 }
 
 

@@ -6744,8 +6744,9 @@ gfc_use_module (gfc_use_list *module)
   only_flag = module->only_flag;
   current_intmod = INTMOD_NONE;
 
-  if (!only_flag && gfc_option.warn_use_without_only) 
-    gfc_warning_now ("USE statement at %C has no ONLY qualifier");
+  if (!only_flag)
+    gfc_warning_now_2 (OPT_Wuse_without_only,
+		       "USE statement at %C has no ONLY qualifier");
 
   filename = XALLOCAVEC (char, strlen (module_name) + strlen (MODULE_EXTENSION)
 			       + 1);
