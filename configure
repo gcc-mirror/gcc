@@ -646,8 +646,6 @@ extra_host_libiberty_configure_flags
 stage1_languages
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
-clooginc
-clooglibs
 islinc
 isllibs
 poststage1_ldflags
@@ -772,14 +770,10 @@ with_stage1_libs
 with_stage1_ldflags
 with_boot_libs
 with_boot_ldflags
-with_cloog
 with_isl
 with_isl_include
 with_isl_lib
 enable_isl_version_check
-with_cloog_include
-with_cloog_lib
-enable_cloog_version_check
 enable_lto
 enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
@@ -1479,8 +1473,6 @@ Optional Features:
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --disable-isl-version-check
                           disable check for ISL version
-  --disable-cloog-version-check
-                          disable check for CLooG version
   --enable-lto            enable link time optimization support
   --enable-linker-plugin-configure-flags=FLAGS
                           additional flags for configuring linker plugins
@@ -1538,20 +1530,12 @@ Optional Packages:
   --with-boot-libs=LIBS   libraries for stage2 and later
   --with-boot-ldflags=FLAGS
                           linker flags for stage2 and later
-  --with-cloog=PATH       Specify prefix directory for the installed CLooG-ISL
-                          package. Equivalent to
-                          --with-cloog-include=PATH/include plus
-                          --with-cloog-lib=PATH/lib
   --with-isl=PATH         Specify prefix directory for the installed ISL
                           package. Equivalent to
                           --with-isl-include=PATH/include plus
                           --with-isl-lib=PATH/lib
   --with-isl-include=PATH Specify directory for installed ISL include files
   --with-isl-lib=PATH     Specify the directory for the installed ISL library
-  --with-cloog-include=PATH
-                          Specify directory for installed CLooG include files
-  --with-cloog-lib=PATH   Specify the directory for the installed CLooG
-                          library
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -2720,7 +2704,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -5790,15 +5774,8 @@ fi
 
 
 
-# GCC GRAPHITE dependences, ISL and CLOOG which in turn requires ISL.
-# Basic setup is inlined here, actual checks are in config/cloog.m4 and
-# config/isl.m4
-
-
-# Check whether --with-cloog was given.
-if test "${with_cloog+set}" = set; then :
-  withval=$with_cloog;
-fi
+# GCC GRAPHITE dependency ISL.
+# Basic setup is inlined here, actual checks are in config/isl.m4
 
 
 # Check whether --with-isl was given.
@@ -5933,157 +5910,14 @@ $as_echo "$gcc_cv_isl" >&6; }
   fi
 
 
-
-  if test "x$gcc_cv_isl" != "xno"; then
-    # Check for CLOOG
-
-
-# Check whether --with-cloog-include was given.
-if test "${with_cloog_include+set}" = set; then :
-  withval=$with_cloog_include;
 fi
 
-
-# Check whether --with-cloog-lib was given.
-if test "${with_cloog_lib+set}" = set; then :
-  withval=$with_cloog_lib;
-fi
-
-
-  # Check whether --enable-cloog-version-check was given.
-if test "${enable_cloog_version_check+set}" = set; then :
-  enableval=$enable_cloog_version_check; ENABLE_CLOOG_CHECK=$enableval
-else
-  ENABLE_CLOOG_CHECK=yes
-fi
-
-
-  # Initialize clooglibs and clooginc.
-  case $with_cloog in
-    no)
-      clooglibs=
-      clooginc=
-      ;;
-    "" | yes)
-      ;;
-    *)
-      clooglibs="-L$with_cloog/lib"
-      clooginc="-I$with_cloog/include"
-      ;;
-  esac
-  if test "x${with_cloog_include}" != x ; then
-    clooginc="-I$with_cloog_include"
-  fi
-  if test "x${with_cloog_lib}" != x; then
-    clooglibs="-L$with_cloog_lib"
-  fi
-        if test "x${clooginc}" = x && test "x${clooglibs}" = x \
-     && test -d ${srcdir}/cloog; then
-     clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
-     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include'
-    ENABLE_CLOOG_CHECK=no
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree CLooG, disabling version check" >&5
-$as_echo "$as_me: WARNING: using in-tree CLooG, disabling version check" >&2;}
-  fi
-
-  clooginc="-DCLOOG_INT_GMP ${clooginc}"
-  clooglibs="${clooglibs} -lcloog-isl"
-
-
-
-
-
-  if test "${ENABLE_CLOOG_CHECK}" = yes ; then
-    _cloog_saved_CFLAGS=$CFLAGS
-    _cloog_saved_LDFLAGS=$LDFLAGS
-
-    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.18.1 of CLooG" >&5
-$as_echo_n "checking for version 0.18.1 of CLooG... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/version.h"
-int
-main ()
-{
-#if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 18 \
-    || CLOOG_VERSION_REVISION < 1
-    choke me
-   #endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  gcc_cv_cloog=yes
-else
-  gcc_cv_cloog=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
-$as_echo "$gcc_cv_cloog" >&6; }
-
-    CFLAGS=$_cloog_saved_CFLAGS
-    LDFLAGS=$_cloog_saved_LDFLAGS
-  fi
-
-
-
-
-
-
-
-  if test "x${with_cloog}" = xno; then
-    graphite_requested=no
-  elif test "x${with_cloog}" != x \
-    || test "x${with_cloog_include}" != x \
-    || test "x${with_cloog_lib}" != x ; then
-    graphite_requested=yes
-  else
-    graphite_requested=no
-  fi
-
-
-
-  if test "${gcc_cv_cloog}" = no ; then
-    clooglibs=
-    clooginc=
-  fi
-
-  if test "${graphite_requested}" = yes \
-    && test "x${clooglibs}" = x \
-    && test "x${clooginc}" = x ; then
-
-      as_fn_error "Unable to find a usable CLooG.  See config.log for details." "$LINENO" 5
-  fi
-
-
-  fi
-fi
-
-# If the ISL check failed, disable builds of in-tree
-# variants of both ISL and CLooG
+# If the ISL check failed, disable builds of in-tree variant of ISL
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
+  noconfigdirs="$noconfigdirs isl"
   islinc=
-  clooginc=
-  clooglibs=
 fi
-
-# If the CLooG check failed, disable builds of in-tree
-# variants of CLooG
-if test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
-  clooginc=
-  clooglibs=
-fi
-
-
 
 
 
@@ -7306,7 +7140,7 @@ do
 
 
     case $lib in
-    mpc | mpfr | gmp | isl | cloog)
+    mpc | mpfr | gmp | isl)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
