@@ -1,3 +1,10 @@
+2014-11-11  Terry Guo  <terry.guo@arm.com>
+
+	* doc/invoke.texi (-masm-syntax-unified): Reword and fix typo.
+	* config/arm/thumb1.md (*thumb_mulsi3): Use movs to move low
+	registers.
+	(*thumb1_movhf): Likewise.
+
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sreal.c (sreal::to_int): Use INTTYPE_MAXIMUM (int64_t)
