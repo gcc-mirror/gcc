@@ -9939,59 +9939,8 @@ fold_binary_loc (location_t loc,
       return NULL_TREE;
 
     case PLUS_EXPR:
-      /* A + (-B) -> A - B */
-      if (TREE_CODE (arg1) == NEGATE_EXPR
-	  && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
-	return fold_build2_loc (loc, MINUS_EXPR, type,
-			    fold_convert_loc (loc, type, arg0),
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg1, 0)));
-      /* (-A) + B -> B - A */
-      if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1)
-	  && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
-	return fold_build2_loc (loc, MINUS_EXPR, type,
-			    fold_convert_loc (loc, type, arg1),
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg0, 0)));
-
       if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
 	{
-	  /* Convert ~A + 1 to -A.  */
-	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	      && integer_each_onep (arg1))
-	    return fold_build1_loc (loc, NEGATE_EXPR, type,
-				fold_convert_loc (loc, type,
-						  TREE_OPERAND (arg0, 0)));
-
-	  /* ~X + X is -1.  */
-	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	      && !TYPE_OVERFLOW_TRAPS (type))
-	    {
-	      tree tem = TREE_OPERAND (arg0, 0);
-
-	      STRIP_NOPS (tem);
-	      if (operand_equal_p (tem, arg1, 0))
-		{
-		  t1 = build_all_ones_cst (type);
-		  return omit_one_operand_loc (loc, type, t1, arg1);
-		}
-	    }
-
-	  /* X + ~X is -1.  */
-	  if (TREE_CODE (arg1) == BIT_NOT_EXPR
-	      && !TYPE_OVERFLOW_TRAPS (type))
-	    {
-	      tree tem = TREE_OPERAND (arg1, 0);
-
-	      STRIP_NOPS (tem);
-	      if (operand_equal_p (arg0, tem, 0))
-		{
-		  t1 = build_all_ones_cst (type);
-		  return omit_one_operand_loc (loc, type, t1, arg0);
-		}
-	    }
-
 	  /* X + (X / CST) * -CST is X % CST.  */
 	  if (TREE_CODE (arg1) == MULT_EXPR
 	      && TREE_CODE (TREE_OPERAND (arg1, 0)) == TRUNC_DIV_EXPR
@@ -10469,11 +10418,6 @@ fold_binary_loc (location_t loc,
 		return fold_build2_loc (loc, MINUS_EXPR, type, tmp, arg11);
 	    }
 	}
-      /* A - (-B) -> A + B */
-      if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold_build2_loc (loc, PLUS_EXPR, type, op0,
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg1, 0)));
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && negate_expr_p (arg1)
