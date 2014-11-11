@@ -1,3 +1,7 @@
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/install.texi (Prerequisites): Remove CLooG.
+
 2014-11-10  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* ipa-inline.c (edge_badness): Adjust.

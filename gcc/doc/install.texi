@@ -393,21 +393,6 @@ built together with GCC.  Alternatively, the @option{--with-isl} configure
 option should be used if ISL is not installed in your default library
 search path.
 
-@item CLooG 0.18.1
-
-Necessary to build GCC with the Graphite loop optimizations.  It can be
-downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
-@file{cloog-0.18.1.tar.gz}.  If a CLooG source distribution is found
-in a subdirectory of your GCC sources named @file{cloog}, it will be
-built together with GCC.  Alternatively, the @option{--with-cloog} configure
-option should be used if CLooG is not installed in your default library search
-path.
-
-If you want to install CLooG separately it needs to be built against
-ISL 0.12.2 by using the @option{--with-isl=system} to direct CLooG to pick
-up an already installed ISL.  Using the ISL library as bundled with CLooG
-is not supported.
-
 @end table
 
 @heading Tools/packages necessary for modifying GCC
