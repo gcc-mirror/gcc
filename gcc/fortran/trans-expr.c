@@ -1406,7 +1406,7 @@ tree
 gfc_get_tree_for_caf_expr (gfc_expr *expr)
 {
   tree caf_decl;
-  bool found;
+  bool found = false;
   gfc_ref *ref;
 
   gcc_assert (expr && expr->expr_type == EXPR_VARIABLE);
