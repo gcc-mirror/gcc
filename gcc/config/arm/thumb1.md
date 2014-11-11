@@ -131,12 +131,10 @@
 	(mult:SI (match_operand:SI 1 "register_operand" "%l,*h,0")
 		 (match_operand:SI 2 "register_operand" "l,l,l")))]
  "TARGET_THUMB1 && !arm_arch6"
-  "*
-  if (which_alternative < 2)
-    return \"mov\\t%0, %1\;muls\\t%0, %2\";
-  else
-    return \"muls\\t%0, %2\";
-  "
+  "@
+   movs\\t%0, %1\;muls\\t%0, %2
+   mov\\t%0, %1\;muls\\t%0, %2
+   muls\\t%0, %2"
   [(set_attr "length" "4,4,2")
    (set_attr "type" "muls")]
 )
@@ -787,6 +785,8 @@
   "*
   switch (which_alternative)
     {
+    case 0:
+      return \"movs\\t%0, %1\";
     case 1:
       {
 	rtx addr;

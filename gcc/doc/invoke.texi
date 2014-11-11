@@ -13040,13 +13040,11 @@ off by default.
 
 @item -masm-syntax-unified
 @opindex masm-syntax-unified
-Assume the Thumb1 inline assembly code are using unified syntax.
-The default is currently off, which means divided syntax is assumed.
+Assume inline assembler is using unified asm syntax.  The default is
+currently off which implies divided syntax.  Currently this option is
+available only for Thumb1 and has no effect on ARM state and Thumb2.
 However, this may change in future releases of GCC.  Divided syntax
-should be considered deprecated.  This option has no effect when
-generating Thumb2 code.  Thumb2 assembly code always uses unified syntax.
-This option has no effect for ARM state assembly code which will still
-uses divided syntax.
+should be considered deprecated.
 
 @item -mrestrict-it
 @opindex mrestrict-it
