@@ -1,3 +1,7 @@
+2014-11-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* mklog: Symbol '}' stops search for changes.  
+
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
 	* download_prerequisites: Stop downloading CLooG.

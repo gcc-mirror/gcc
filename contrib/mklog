@@ -129,7 +129,7 @@ sub is_top_level {
 	} else {
 		$function =~ s/^.//;
 	}
-	return $function && $function !~ /^[\s{}]/;
+	return $function && $function !~ /^[\s{]/;
 }
 
 # For every file in the .diff print all the function names in ChangeLog
