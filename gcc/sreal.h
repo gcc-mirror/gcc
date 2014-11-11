@@ -21,46 +21,92 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SREAL_H
 
 /* SREAL_PART_BITS has to be an even number.  */
-#if (HOST_BITS_PER_WIDE_INT / 2) % 2 == 1
-#define SREAL_PART_BITS (HOST_BITS_PER_WIDE_INT / 2 - 1)
-#else
-#define SREAL_PART_BITS (HOST_BITS_PER_WIDE_INT / 2)
-#endif
+#define SREAL_PART_BITS 32
 
-#define uhwi unsigned HOST_WIDE_INT
-#define MAX_HOST_WIDE_INT (((uhwi) 1 << (HOST_BITS_PER_WIDE_INT - 1)) - 1)
-
-#define SREAL_MIN_SIG ((uhwi) 1 << (SREAL_PART_BITS - 1))
-#define SREAL_MAX_SIG (((uhwi) 1 << SREAL_PART_BITS) - 1)
+#define SREAL_MIN_SIG ((uint64_t) 1 << (SREAL_PART_BITS - 1))
+#define SREAL_MAX_SIG (((uint64_t) 1 << SREAL_PART_BITS) - 1)
 #define SREAL_MAX_EXP (INT_MAX / 4)
 
-#if SREAL_PART_BITS < 32
-#define SREAL_BITS (SREAL_PART_BITS * 2)
-#else
 #define SREAL_BITS SREAL_PART_BITS
-#endif
 
 /* Structure for holding a simple real number.  */
-struct sreal
+class sreal
 {
-#if SREAL_PART_BITS < 32
-  unsigned HOST_WIDE_INT sig_lo;	/* Significant (lower part).  */
-  unsigned HOST_WIDE_INT sig_hi;	/* Significant (higher part).  */
-#else
-  unsigned HOST_WIDE_INT sig;		/* Significant.  */
-#endif
-  signed int exp;			/* Exponent.  */
+public:
+  /* Construct an uninitialized sreal.  */
+  sreal () : m_sig (-1), m_exp (-1) {}
+
+  /* Construct a sreal.  */
+  sreal (uint64_t sig, int exp) : m_sig (sig), m_exp (exp) { normalize (); }
+
+  void dump (FILE *) const;
+  int64_t to_int () const;
+
+  sreal operator+ (const sreal &other) const;
+  sreal operator- (const sreal &other) const;
+  sreal operator* (const sreal &other) const;
+  sreal operator/ (const sreal &other) const;
+
+  bool operator< (const sreal &other) const
+  {
+    return m_exp < other.m_exp
+      || (m_exp == other.m_exp && m_sig < other.m_sig);
+  }
+
+  bool operator== (const sreal &other) const
+  {
+    return m_exp == other.m_exp && m_sig == other.m_sig;
+  }
+
+private:
+  void normalize ();
+  void shift_right (int amount);
+
+  uint64_t m_sig;		/* Significant.  */
+  signed int m_exp;			/* Exponent.  */
 };
 
-extern void dump_sreal (FILE *, sreal *);
 extern void debug (sreal &ref);
 extern void debug (sreal *ptr);
-extern sreal *sreal_init (sreal *, unsigned HOST_WIDE_INT, signed int);
-extern HOST_WIDE_INT sreal_to_int (sreal *);
-extern int sreal_compare (sreal *, sreal *);
-extern sreal *sreal_add (sreal *, sreal *, sreal *);
-extern sreal *sreal_sub (sreal *, sreal *, sreal *);
-extern sreal *sreal_mul (sreal *, sreal *, sreal *);
-extern sreal *sreal_div (sreal *, sreal *, sreal *);
+
+inline sreal &operator+= (sreal &a, const sreal &b)
+{
+  return a = a + b;
+}
+
+inline sreal &operator-= (sreal &a, const sreal &b)
+{
+return a = a - b;
+}
+
+inline sreal &operator/= (sreal &a, const sreal &b)
+{
+return a = a / b;
+}
+
+inline sreal &operator*= (sreal &a, const sreal &b)
+{
+  return a = a  * b;
+}
+
+inline bool operator!= (const sreal &a, const sreal &b)
+{
+  return !(a == b);
+}
+
+inline bool operator> (const sreal &a, const sreal &b)
+{
+  return !(a == b || a < b);
+}
+
+inline bool operator<= (const sreal &a, const sreal &b)
+{
+  return a < b || a == b;
+}
+
+inline bool operator>= (const sreal &a, const sreal &b)
+{
+  return a == b || a > b;
+}
 
 #endif

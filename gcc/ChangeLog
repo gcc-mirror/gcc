@@ -1,3 +1,31 @@
+2014-11-10  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* ipa-inline.c (edge_badness): Adjust.
+	(inline_small_functions): Likewise.
+	* predict.c (propagate_freq): Likewise.
+	(estimate_bb_frequencies): Likewise.
+	* sreal.c (sreal::dump): Rename from dump_sreal.
+	(debug): Adjust.
+	(copy): Remove function.
+	(sreal::shift_right): Rename from sreal_sift_right.
+	(sreal::normalize): Rename from normalize.
+	(sreal_init): Remove function.
+	(sreal::to_int): Rename from sreal_to_int.
+	(sreal_compare): Remove function.
+	(sreal::operator+): Rename from sreal_add.
+	(sreal::operator-): Rename from sreal_sub.
+	(sreal::operator*): Rename from sreal_mul.
+	(sreal::operator/): Rename from sreal_div.
+	* sreal.h (class sreal): Adjust.
+	(inline sreal &operator+=): New operator.
+	(inline sreal &operator-=): Likewise.
+	(inline sreal &operator/=): Likewise.
+	(inline sreal &operator*=): Likewise.
+	(inline bool operator!=): Likewise.
+	(inline bool operator>): Likewise.
+	(inline bool operator<=): Likewise.
+	(inline bool operator>=): Likewise.
+
 2014-11-11  Bin Cheng  <bin.cheng@arm.com>
 
 	* sched-deps.c (sched_analyze_1): Check pending list if it is not
