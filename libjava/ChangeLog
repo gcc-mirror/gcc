@@ -1,3 +1,8 @@
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* testsuite/lib/libjava.exp (load_gcc_lib): Register loaded libs.

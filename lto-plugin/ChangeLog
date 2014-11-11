@@ -1,3 +1,8 @@
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-08-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/62260
