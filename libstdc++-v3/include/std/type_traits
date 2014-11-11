@@ -2404,34 +2404,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using result_of_t = typename result_of<_Tp>::type;
 #endif
 
+  template<typename...> using __void_t = void;
+
   /// @} group metaprogramming
-	
+
   /**
    *  Use SFINAE to determine if the type _Tp has a publicly-accessible
    *  member type _NTYPE.
    */
 #define _GLIBCXX_HAS_NESTED_TYPE(_NTYPE)				\
-  template<typename _Tp>						\
-    class __has_##_NTYPE##_helper					\
-    {									\
-      template<typename _Up>						\
-	struct _Wrap_type						\
-	{ };								\
-									\
-      template<typename _Up>						\
-	static true_type __test(_Wrap_type<typename _Up::_NTYPE>*);	\
-									\
-      template<typename _Up>						\
-	static false_type __test(...);					\
-									\
-    public:								\
-      typedef decltype(__test<_Tp>(0)) type;				\
-    };									\
-									\
-  template<typename _Tp>						\
+  template<typename _Tp, typename = __void_t<>>				\
     struct __has_##_NTYPE						\
-    : public __has_##_NTYPE##_helper					\
-			<typename remove_cv<_Tp>::type>::type		\
+    : false_type							\
+    { };								\
+  template<typename _Tp>						\
+    struct __has_##_NTYPE<_Tp, __void_t<typename _Tp::_NTYPE>>		\
+    : true_type								\
     { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
