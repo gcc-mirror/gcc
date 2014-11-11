@@ -1,3 +1,8 @@
+2014-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (MACHMODE): Remove 'enum' keyword.
+	(CUMULATIVE_ARGS): Guard on !defined(USED_FOR_TARGET).
+
 2014-11-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-core.h (pedantic_lvalues): Remove.
