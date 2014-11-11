@@ -1,3 +1,8 @@
+2014-11-11  Simon Wright  <simon@pushface.org>
+
+	PR ada/42978
+	* mlib-utl.adb (ar): Output the options passed to ranlib.
+
 2014-11-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* debug.adb, snames.adb-tmpl (Is_Keyword_Name): Consider 'overriding'

@@ -282,6 +282,10 @@ package body MLib.Utl is
          if not Opt.Quiet_Output then
             Write_Str  (Ranlib_Name.all);
             Write_Char (' ');
+            for J in Ranlib_Options'Range loop
+               Write_Str  (Ranlib_Options (J).all);
+               Write_Char (' ');
+            end loop;
             Write_Line (Arguments (Ar_Options'Length + 1).all);
          end if;
 
