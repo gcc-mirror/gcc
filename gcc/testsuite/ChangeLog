@@ -1,3 +1,7 @@
+2014-11-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* gcc.target/i386/pr52252-atom-1.c: New.
+
 2014-11-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63622
