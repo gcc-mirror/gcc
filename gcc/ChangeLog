@@ -1,3 +1,8 @@
+2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sreal.c (sreal::to_int): Use INTTYPE_MAXIMUM (int64_t)
+	instead of INT64_MAX.
+
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/install.texi (Prerequisites): Remove CLooG.
