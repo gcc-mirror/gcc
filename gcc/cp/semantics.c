@@ -625,6 +625,10 @@ finish_goto_stmt (tree destination)
     TREE_USED (destination) = 1;
   else
     {
+      if (check_no_cilk (destination,
+	 "Cilk array notation cannot be used as a computed goto expression",
+	 "%<_Cilk_spawn%> statement cannot be used as a computed goto expression"))
+	destination = error_mark_node;
       destination = mark_rvalue_use (destination);
       if (!processing_template_decl)
 	{
@@ -796,6 +800,10 @@ begin_while_stmt (void)
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
 {
+  if (check_no_cilk (cond,
+      "Cilk array notation cannot be used as a condition for while statement",
+      "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
+    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   finish_cond (&WHILE_COND (while_stmt), cond);
   begin_maybe_infinite_loop (cond);
@@ -851,6 +859,10 @@ finish_do_body (tree do_stmt)
 void
 finish_do_stmt (tree cond, tree do_stmt, bool ivdep)
 {
+  if (check_no_cilk (cond,
+  "Cilk array notation cannot be used as a condition for a do-while statement",
+  "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
+    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
@@ -960,6 +972,10 @@ finish_for_init_stmt (tree for_stmt)
 void
 finish_for_cond (tree cond, tree for_stmt, bool ivdep)
 {
+  if (check_no_cilk (cond,
+	 "Cilk array notation cannot be used in a condition for a for-loop",
+	 "%<_Cilk_spawn%> statement cannot be used in a condition for a for-loop"))
+    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   finish_cond (&FOR_COND (for_stmt), cond);
   begin_maybe_infinite_loop (cond);
@@ -1122,6 +1138,12 @@ void
 finish_switch_cond (tree cond, tree switch_stmt)
 {
   tree orig_type = NULL;
+
+  if (check_no_cilk (cond,
+	"Cilk array notation cannot be used as a condition for switch statement",
+	"%<_Cilk_spawn%> statement cannot be used as a condition for switch statement"))
+    cond = error_mark_node;
+
   if (!processing_template_decl)
     {
       /* Convert the condition to an integer or enumeration type.  */

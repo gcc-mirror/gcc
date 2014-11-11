@@ -1,3 +1,11 @@
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	* semantics.c (finish_goto_stmt): Call check_no_cilk.
+	(finish_while_stmt_cond): Dito.
+	(finish_do_stmt): Dito.
+	(finish_for_cond): Dito.
+	(finish_switch_cond): Dito.
+
 2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_binary_op): Use OPT_Wshift_count_negative and
