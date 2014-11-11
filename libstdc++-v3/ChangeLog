@@ -1,3 +1,15 @@
+2014-11-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/61107
+	* include/bits/stl_algo.h (__inplace_stable_partition): Delete.
+	(__stable_partition_adaptive): Return __first if range length is 1.
+	(__stable_partition): Adapt.
+	* testsuite/util/testsuite_new_operators.h: New.
+	* testsuite/25_algorithms/stable_sort/1.cc: Test algo in simulated
+	constraint memory context.
+	* testsuite/25_algorithms/inplace_merge/1.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/1.cc: Likewise.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610
