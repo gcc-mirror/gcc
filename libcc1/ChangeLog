@@ -1,5 +1,10 @@
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR target/63610
+	* configure: Regenerate.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR bootstrap/63699
 	PR bootstrap/63750
 	* plugin.cc: Don't include <string>.

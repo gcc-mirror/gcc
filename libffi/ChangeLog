@@ -1,3 +1,8 @@
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-10-15  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: If the compiler supports -Qunused-arguments, use
