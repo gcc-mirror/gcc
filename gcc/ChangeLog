@@ -1,3 +1,9 @@
+2014-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (pedantic_lvalues): Remove.
+	* fold-const.c (pedantic_lvalues): Likewise.
+	(pedantic_non_lvalue_loc): Remove conditional non_lvalue_loc call.
+
 2014-11-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63622

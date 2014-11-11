@@ -2152,20 +2152,12 @@ non_lvalue_loc (location_t loc, tree x)
   return build1_loc (loc, NON_LVALUE_EXPR, TREE_TYPE (x), x);
 }
 
-/* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
-   Zero means allow extended lvalues.  */
-
-int pedantic_lvalues;
-
 /* When pedantic, return an expr equal to X but certainly not valid as a
    pedantic lvalue.  Otherwise, return X.  */
 
 static tree
 pedantic_non_lvalue_loc (location_t loc, tree x)
 {
-  if (pedantic_lvalues)
-    return non_lvalue_loc (loc, x);
-
   return protected_set_expr_location_unshare (x, loc);
 }
 
