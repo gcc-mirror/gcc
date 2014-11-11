@@ -16,21 +16,28 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11" }
-// { dg-do compile }
 
 #include <functional>
+#include <testsuite_hooks.h>
 
-struct Foo
+struct X
 {
-  void r()&& { }
-  int l() const& { return 0; }
-  void lv(int, ...)& { }
+  int f() const& { return 0; }
+  int g(int i, ...)& { return i; }
 };
 
-void test01()
+void
+test01()
 {
-  Foo f;
-  int i = std::mem_fn(&Foo::l)( f );
-  std::mem_fn(&Foo::r)( std::move(f) );
-  std::mem_fn(&Foo::lv)( f, 1, 2, 3 );
+  X x;
+  auto b = std::bind(&X::f, &x);
+  VERIFY( b() == 0 );
+  auto bb = std::bind(&X::g, &x, 1, 2);
+  VERIFY( bb() == 1 );
+}
+
+int
+main()
+{
+  test01();
 }

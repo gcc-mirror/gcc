@@ -1,3 +1,19 @@
+2014-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_Mem_fn_traits): Add partial specializations
+	for varargs functions.
+	(_Mem_fn_base): Do not check arguments are convertible for varargs.
+	(_Bind_check_arity): Add partial specializations for varargs functions.
+	* include/std/type_traits (__bool_constant): Add alias template.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error.
+	* testsuite/20_util/bind/refqual.cc: New, test ref-qualifiers.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error.
+	* testsuite/20_util/function_objects/mem_fn/refqual.cc: Test varargs.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust
+	dg-error.
+
 2014-11-11  Siva Chandra Reddy  <sivachandra@google.com>
 
 	* testsuite/libstdc++-xmethods/associative-containers.cc: Add new

@@ -512,113 +512,38 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       using __arity = integral_constant<size_t, sizeof...(_ArgTypes)>;
     };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)>
-    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...);
-      using __lvalue = true_type;
-      using __rvalue = true_type;
+#define _GLIBCXX_MEM_FN_TRAITS2(_CV, _REF, _LVAL, _RVAL)		\
+  template<typename _Res, typename _Class, typename... _ArgTypes>	\
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) _CV _REF>	\
+    : _Mem_fn_traits_base<_Res, _CV _Class, _ArgTypes...>		\
+    {									\
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) _CV _REF;	\
+      using __lvalue = _LVAL;						\
+      using __rvalue = _RVAL;						\
+      using __vararg = false_type;					\
+    };									\
+  template<typename _Res, typename _Class, typename... _ArgTypes>	\
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes... ...) _CV _REF>	\
+    : _Mem_fn_traits_base<_Res, _CV _Class, _ArgTypes...>		\
+    {									\
+      using __pmf_type  = _Res (_Class::*)(_ArgTypes... ...) _CV _REF;	\
+      using __lvalue = _LVAL;						\
+      using __rvalue = _RVAL;						\
+      using __vararg = true_type;					\
     };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const>
-    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const;
-      using __lvalue = true_type;
-      using __rvalue = true_type;
-    };
+#define _GLIBCXX_MEM_FN_TRAITS(_REF, _LVAL, _RVAL)		\
+  _GLIBCXX_MEM_FN_TRAITS2(		, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(const		, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(volatile	, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(const volatile, _REF, _LVAL, _RVAL)
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile>
-    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile;
-      using __lvalue = true_type;
-      using __rvalue = true_type;
-    };
+_GLIBCXX_MEM_FN_TRAITS( , true_type, true_type)
+_GLIBCXX_MEM_FN_TRAITS(&, true_type, false_type)
+_GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile>
-    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile;
-      using __lvalue = true_type;
-      using __rvalue = true_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)&>
-    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...)&;
-      using __lvalue = true_type;
-      using __rvalue = false_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const&>
-    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const&;
-      using __lvalue = true_type;
-      using __rvalue = false_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile&>
-    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile&;
-      using __lvalue = true_type;
-      using __rvalue = false_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile&>
-    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile&;
-      using __lvalue = true_type;
-      using __rvalue = false_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...)&&>
-    : _Mem_fn_traits_base<_Res, _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...)&&;
-      using __lvalue = false_type;
-      using __rvalue = true_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const&&>
-    : _Mem_fn_traits_base<_Res, const _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const&&;
-      using __lvalue = false_type;
-      using __rvalue = true_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) volatile&&>
-    : _Mem_fn_traits_base<_Res, volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) volatile&&;
-      using __lvalue = false_type;
-      using __rvalue = true_type;
-    };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) const volatile&&>
-    : _Mem_fn_traits_base<_Res, const volatile _Class, _ArgTypes...>
-    {
-      using __pmf_type  = _Res (_Class::*)(_ArgTypes...) const volatile&&;
-      using __lvalue = false_type;
-      using __rvalue = true_type;
-    };
+#undef _GLIBCXX_MEM_FN_TRAITS
+#undef _GLIBCXX_MEM_FN_TRAITS2
 
   template<typename _MemFunPtr,
 	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>
@@ -627,15 +552,74 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     {
       using _Traits = _Mem_fn_traits<_MemFunPtr>;
 
-    public:
-      using result_type = typename _Traits::__result_type;
-      using _Arity = typename _Traits::__arity;
-
-    private:
       using _Class = typename _Traits::__class_type;
       using _ArgTypes = typename _Traits::__arg_types;
       using _Pmf = typename _Traits::__pmf_type;
 
+      using _Arity = typename _Traits::__arity;
+      using _Varargs = typename _Traits::__vararg;
+
+      template<typename _Func, typename... _BoundArgs>
+	friend struct _Bind_check_arity;
+
+      // for varargs functions we just check the number of arguments,
+      // otherwise we also check they are convertible.
+      template<typename _Args>
+	using _CheckArgs = typename conditional<_Varargs::value,
+	  __bool_constant<(_Args::value >= _ArgTypes::value)>,
+	  _AllConvertible<_Args, _ArgTypes>
+	>::type;
+
+    public:
+      using result_type = typename _Traits::__result_type;
+
+      explicit _Mem_fn_base(_Pmf __pmf) : _M_pmf(__pmf) { }
+
+      // Handle objects
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__lvalue,
+                          _CheckArgs<_Pack<_Args...>>>>
+	result_type
+	operator()(_Class& __object, _Args&&... __args) const
+	{ return (__object.*_M_pmf)(std::forward<_Args>(__args)...); }
+
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__rvalue,
+                          _CheckArgs<_Pack<_Args...>>>>
+	result_type
+	operator()(_Class&& __object, _Args&&... __args) const
+	{
+	  return (std::move(__object).*_M_pmf)(std::forward<_Args>(__args)...);
+	}
+
+      // Handle pointers
+      template<typename... _Args, typename _Req
+               = _Require<typename _Traits::__lvalue,
+                          _CheckArgs<_Pack<_Args...>>>>
+	result_type
+	operator()(_Class* __object, _Args&&... __args) const
+	{ return (__object->*_M_pmf)(std::forward<_Args>(__args)...); }
+
+      // Handle smart pointers, references and pointers to derived
+      template<typename _Tp, typename... _Args, typename _Req
+               = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+                          _CheckArgs<_Pack<_Args...>>>>
+	result_type
+	operator()(_Tp&& __object, _Args&&... __args) const
+	{
+	  return _M_call(std::forward<_Tp>(__object), &__object,
+	      std::forward<_Args>(__args)...);
+	}
+
+      // Handle reference wrappers
+      template<typename _Tp, typename... _Args, typename _Req
+               = _Require<is_base_of<_Class, _Tp>, typename _Traits::__lvalue,
+                          _CheckArgs<_Pack<_Args...>>>>
+	result_type
+	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
+	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
+
+    private:
       template<typename _Tp, typename... _Args>
 	result_type
 	_M_call(_Tp&& __object, const volatile _Class *,
@@ -650,75 +634,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	_M_call(_Tp&& __ptr, const volatile void *, _Args&&... __args) const
 	{ return ((*__ptr).*_M_pmf)(std::forward<_Args>(__args)...); }
 
-      // Require each _Args to be convertible to corresponding _ArgTypes
-      template<typename... _Args>
-	using _RequireValidArgs
-	  = _Require<_AllConvertible<_Pack<_Args...>, _ArgTypes>>;
-
-      // Require each _Args to be convertible to corresponding _ArgTypes
-      // and require _Tp is not _Class, _Class& or _Class*
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _ArgTypes>>;
-
-      // Require each _Args to be convertible to corresponding _ArgTypes
-      // and require _Tp is _Class or derived from _Class
-      template<typename _Tp, typename... _Args>
-	using _RequireValidArgs3
-	  = _Require<is_base_of<_Class, _Tp>,
-		     _AllConvertible<_Pack<_Args...>, _ArgTypes>>;
-
-    public:
-      explicit _Mem_fn_base(_Pmf __pmf) : _M_pmf(__pmf) { }
-
-      // Handle objects
-      template<typename... _Args, typename _Req
-               = _Require<typename _Traits::__lvalue,
-                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
-	result_type
-	operator()(_Class& __object, _Args&&... __args) const
-	{ return (__object.*_M_pmf)(std::forward<_Args>(__args)...); }
-
-      template<typename... _Args, typename _Req
-               = _Require<typename _Traits::__rvalue,
-                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
-	result_type
-	operator()(_Class&& __object, _Args&&... __args) const
-	{
-	  return (std::move(__object).*_M_pmf)(std::forward<_Args>(__args)...);
-	}
-
-      // Handle pointers
-      template<typename... _Args, typename _Req
-               = _Require<typename _Traits::__lvalue,
-                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
-	result_type
-	operator()(_Class* __object, _Args&&... __args) const
-	{ return (__object->*_M_pmf)(std::forward<_Args>(__args)...); }
-
-      // Handle smart pointers, references and pointers to derived
-      // TODO how to constrain to lvalue/rvalue here? constrain _M_call?
-      template<typename _Tp, typename... _Args, typename _Req
-               = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
-                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
-	result_type
-	operator()(_Tp&& __object, _Args&&... __args) const
-	{
-	  return _M_call(std::forward<_Tp>(__object), &__object,
-	      std::forward<_Args>(__args)...);
-	}
-
-      // Handle reference wrappers
-      template<typename _Tp, typename... _Args, typename _Req
-               = _Require<is_base_of<_Class, _Tp>,
-                          typename _Traits::__lvalue,
-                          _AllConvertible<_Pack<_Args...>, _ArgTypes>>>
-	result_type
-	operator()(reference_wrapper<_Tp> __ref, _Args&&... __args) const
-	{ return operator()(__ref.get(), std::forward<_Args>(__args)...); }
-
-    private:
       _Pmf _M_pmf;
     };
 
@@ -750,9 +665,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	-> decltype((*__ptr).*std::declval<__pm_type&>())
 	{ return (*__ptr).*_M_pm; }
 
-    public:
       using _Arity = integral_constant<size_t, 0>;
+      using _Varargs = false_type;
 
+      template<typename _Func, typename... _BoundArgs>
+	friend struct _Bind_check_arity;
+
+    public:
       explicit
       _Mem_fn_base(_Res _Class::*__pm) noexcept : _M_pm(__pm) { }
 
@@ -1493,12 +1412,22 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
                    "Wrong number of arguments for function");
     };
 
+  template<typename _Ret, typename... _Args, typename... _BoundArgs>
+    struct _Bind_check_arity<_Ret (*)(_Args......), _BoundArgs...>
+    {
+      static_assert(sizeof...(_BoundArgs) >= sizeof...(_Args),
+                   "Wrong number of arguments for function");
+    };
+
   template<typename _Tp, typename _Class, typename... _BoundArgs>
     struct _Bind_check_arity<_Tp _Class::*, _BoundArgs...>
     {
       using _Arity = typename _Mem_fn<_Tp _Class::*>::_Arity;
-      static_assert(sizeof...(_BoundArgs) == _Arity::value + 1,
-                   "Wrong number of arguments for pointer-to-member");
+      using _Varargs = typename _Mem_fn<_Tp _Class::*>::_Varargs;
+      static_assert(_Varargs::value
+		    ? sizeof...(_BoundArgs) >= _Arity::value + 1
+		    : sizeof...(_BoundArgs) == _Arity::value + 1,
+		    "Wrong number of arguments for pointer-to-member");
     };
 
   // Trait type used to remove std::bind() from overload set via SFINAE
