@@ -1,3 +1,8 @@
+2014-11-11  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.c (c_init_decl_processing): Do not set pedantic_lvalues
+	to true.
+
 2014-11-10  Andi Kleen  <ak@linux.intel.com>
 
 	PR c/60804
