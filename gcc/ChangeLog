@@ -1,3 +1,11 @@
+2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Replace
+	open-coded swap with std::swap to swap values.
+	(alpha_emit_setcc): Ditto.
+	(alpha_emit_conditional_move): Ditto.
+	(alpha_split_tmode_pair): Ditto.
+
 2014-11-11  Evgeny Stupachenko  <evstupac@gmail.com>
 
         * tree-vect-data-refs.c (vect_shift_permute_load_chain): Extend shift
