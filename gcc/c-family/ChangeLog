@@ -1,3 +1,8 @@
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	* cilk.c (recognize_spawn): Use expression location
+	for error message.
+
 2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c.opt ([Wshift-count-negative, Wshift-count-overflow]): Add.
