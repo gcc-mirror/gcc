@@ -1,3 +1,14 @@
+2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/36312
+	* diagnostic-core.h: Add prototype for fatal_error.
+	* diagnostic.c (fatal_error): New function fatal_error.
+	* gcc.c (store_arg): Remove have_o_argbuf_index.
+	(process_command): Check if input and output files are the same.
+	* toplev.c (init_asm_output): Check if input and output files are
+	the same.
+
 2014-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (fill_slots_from_thread): Do not copy frame-related insns.

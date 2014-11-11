@@ -1702,16 +1702,14 @@ typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
 static vec<const_char_p> argbuf;
 
-/* Position in the argbuf vector containing the name of the output file
-   (the value associated with the "-o" flag).  */
-
-static int have_o_argbuf_index = 0;
-
 /* Were the options -c, -S or -E passed.  */
 static int have_c = 0;
 
 /* Was the option -o passed.  */
 static int have_o = 0;
+
+/* Pointer to output file name passed in with -o. */
+static const char *output_file = 0;
 
 /* This is the list of suffixes and codes (%g/%u/%U/%j) and the associated
    temp file.  If the HOST_BIT_BUCKET is used for %j, no entry is made for
@@ -1762,8 +1760,6 @@ store_arg (const char *arg, int delete_always, int delete_failure)
 {
   argbuf.safe_push (arg);
 
-  if (strcmp (arg, "-o") == 0)
-    have_o_argbuf_index = argbuf.length ();
   if (delete_always || delete_failure)
     {
       const char *p;
@@ -3713,6 +3709,7 @@ driver_handle_option (struct gcc_options *opts,
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX) || defined(HAVE_TARGET_OBJECT_SUFFIX)
       arg = convert_filename (arg, ! have_c, 0);
 #endif
+      output_file = arg;
       /* Save the output name in case -save-temps=obj was used.  */
       save_temps_prefix = xstrdup (arg);
       /* On some systems, ld cannot handle "-o" without a space.  So
@@ -4050,6 +4047,16 @@ process_command (unsigned int decoded_options_count,
       read_cmdline_option (&global_options, &global_options_set,
 			   decoded_options + j, UNKNOWN_LOCATION,
 			   CL_DRIVER, &handlers, global_dc);
+    }
+
+  if (output_file && strcmp (output_file, "-"))
+    {
+      int i;
+      for (i = 0; i < n_infiles; i++)
+	if ((!infiles[i].language || infiles[i].language[0] != '*')
+	    && canonical_filename_eq (infiles[i].name, output_file))
+	  fatal_error ("input file %qs is the same as output file",
+		       output_file);
     }
 
   /* If -save-temps=obj and -o name, create the prefix to use for %b.
