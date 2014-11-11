@@ -1,3 +1,7 @@
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	* c-c++-common/cilk-plus/CK/errors.c: New test.
+
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 	    Ilya Enkovich  <ilya.enkovich@intel.com>
 
