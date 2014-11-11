@@ -2718,14 +2718,6 @@ comp_dr_with_seg_len_pair (const void *p1_, const void *p2_)
   return 0;
 }
 
-template <class T> static void
-swap (T& a, T& b)
-{
-  T c (a);
-  a = b;
-  b = c;
-}
-
 /* Function vect_vfa_segment_size.
 
    Create an expression that computes the size of segment
@@ -2858,7 +2850,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	   dr_with_seg_len (dr_b, segment_length_b));
 
       if (compare_tree (DR_BASE_ADDRESS (dr_a), DR_BASE_ADDRESS (dr_b)) > 0)
-	swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
+	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
 
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
@@ -2908,8 +2900,8 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	     and DR_A1 and DR_A2 are two consecutive memrefs.  */
 	  if (*dr_a1 == *dr_a2)
 	    {
-	      swap (dr_a1, dr_b1);
-	      swap (dr_a2, dr_b2);
+	      std::swap (dr_a1, dr_b1);
+	      std::swap (dr_a2, dr_b2);
 	    }
 
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),

@@ -1,3 +1,11 @@
+2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* system.h: Include algorithm and utility.
+	* rtl.h: Do not include utility here.
+	* wide-int.h: Ditto.
+	* tree-vect-data-refs.c (swap): Remove template.
+	(vect_prune_runtime_alias_test_list): Use std::swap instead of swap.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR bootstrap/63699
