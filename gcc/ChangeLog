@@ -1,5 +1,9 @@
 2014-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* reorg.c (fill_slots_from_thread): Do not copy frame-related insns.
+
+2014-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/61535
 	* config/sparc/sparc.c (function_arg_vector_value): Deal with vectors
 	smaller than 8 bytes.
