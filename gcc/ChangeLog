@@ -1,3 +1,10 @@
+2014-11-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_bsl<mode>_internal): Remove float cases, canonicalize.
+	(aarch64_simd_bsl<mode>): Add gen_lowpart expressions where we
+	are punning between float vectors and integer vectors.
+
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_branch): Replace

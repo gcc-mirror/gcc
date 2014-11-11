@@ -1,3 +1,10 @@
+2014-11-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vbslq_f64_1.c: New.
+	* gcc.target/aarch64/vbslq_f64_2.c: Likewise.
+	* gcc.target/aarch64/vbslq_u64_1.c: Likewise.
+	* gcc.target/aarch64/vbslq_u64_2.c: Likewise.
+
 2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63265
