@@ -89,6 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// The type used as a compile-time boolean with false value.
   typedef integral_constant<bool, false>    false_type;
 
+  template<bool __v>
+    using __bool_constant = integral_constant<bool, __v>;
+
   // Meta programming helper types.
 
   template<bool, typename, typename>
