@@ -25,8 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Generic tree predicates we inherit.  */
 (define_predicates
-   integer_onep integer_zerop integer_all_onesp
-   real_zerop real_onep
+   integer_onep integer_zerop integer_all_onesp integer_minus_onep
+   integer_each_onep
+   real_zerop real_onep real_minus_onep
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p)
 
@@ -239,10 +240,6 @@ along with GCC; see the file COPYING3.  If not see
   (bit_not (bit_not @0))
   @0)
 
-(simplify
- (negate (negate @0))
- @0)
-
 
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
 (simplify
@@ -276,6 +273,116 @@ along with GCC; see the file COPYING3.  If not see
   (pointer_plus @0 (negate (bit_and (convert @0) INTEGER_CST@1)))
   (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), wi::bit_not (@1)); }
    (bit_and @0 { algn; })))
+
+
+/* We can't reassociate at all for saturating types.  */
+(if (!TYPE_SATURATING (type))
+
+ /* Contract negates.  */
+ /* A + (-B) -> A - B */
+ (simplify
+  (plus:c (convert1? @0) (convert2? (negate @1)))
+  /* Apply STRIP_NOPS on @0 and the negate.  */
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@1))
+       && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
+   (minus (convert @0) (convert @1))))
+ /* A - (-B) -> A + B */
+ (simplify
+  (minus (convert1? @0) (convert2? (negate @1)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+   (plus (convert @0) (convert @1))))
+ /* -(-A) -> A */
+ (simplify
+  (negate (convert? (negate @1)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
+       && (TYPE_OVERFLOW_WRAPS (type)
+	   || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
+   @1))
+
+ /* We can't reassociate floating-point or fixed-point plus or minus
+    because of saturation to +-Inf.  */
+ (if (!FLOAT_TYPE_P (type) && !FIXED_POINT_TYPE_P (type))
+
+  /* Match patterns that allow contracting a plus-minus pair
+     irrespective of overflow issues.  */
+  /* (A +- B) - A       ->  +- B */
+  /* (A +- B) -+ B      ->  A */
+  /* A - (A +- B)       -> -+ B */
+  /* A +- (B -+ A)      ->  +- B */
+  (simplify
+    (minus (plus:c @0 @1) @0)
+    @1)
+  (simplify
+    (minus (minus @0 @1) @0)
+    (negate @1))
+  (simplify
+    (plus:c (minus @0 @1) @1)
+    @0)
+  (simplify
+   (minus @0 (plus:c @0 @1))
+   (negate @1))
+  (simplify
+   (minus @0 (minus @0 @1))
+   @1)
+
+  /* (A +- CST) +- CST -> A + CST  */
+  (for outer_op (plus minus)
+   (for inner_op (plus minus)
+    (simplify
+     (outer_op (inner_op @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
+     /* If the constant operation overflows we cannot do the transform
+	as we would introduce undefined overflow, for example
+	with (a - 1) + INT_MIN.  */
+     (with { tree cst = fold_binary (outer_op == inner_op
+				     ? PLUS_EXPR : MINUS_EXPR, type, @1, @2); }
+      (if (cst && !TREE_OVERFLOW (cst))
+       (inner_op @0 { cst; } ))))))
+
+  /* (CST - A) +- CST -> CST - A  */
+  (for outer_op (plus minus)
+   (simplify
+    (outer_op (minus CONSTANT_CLASS_P@1 @0) CONSTANT_CLASS_P@2)
+    (with { tree cst = fold_binary (outer_op, type, @1, @2); }
+     (if (cst && !TREE_OVERFLOW (cst))
+      (minus { cst; } @0)))))
+
+  /* ~A + A -> -1 */
+  (simplify
+   (plus:c (bit_not @0) @0)
+   (if (!TYPE_OVERFLOW_TRAPS (type))
+    { build_all_ones_cst (type); }))
+
+  /* ~A + 1 -> -A */
+  (simplify
+   (plus (bit_not @0) integer_each_onep)
+   (negate @0))
+
+  /* (T)(P + A) - (T)P -> (T) A */
+  (for add (plus pointer_plus)
+   (simplify
+    (minus (convert (add @0 @1))
+     (convert @0))
+    (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@1))
+	 /* For integer types, if A has a smaller type
+	    than T the result depends on the possible
+	    overflow in P + A.
+	    E.g. T=size_t, A=(unsigned)429497295, P>0.
+	    However, if an overflow in P + A would cause
+	    undefined behavior, we can assume that there
+	    is no overflow.  */
+	 || (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	     && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+	 /* For pointer types, if the conversion of A to the
+	    final type requires a sign- or zero-extension,
+	    then we have to punt - it is not defined which
+	    one is correct.  */
+	 || (POINTER_TYPE_P (TREE_TYPE (@0))
+	     && TREE_CODE (@1) == INTEGER_CST
+	     && tree_int_cst_sign_bit (@1) == 0))
+     (convert @1))))))
+
 
 
 /* Simplifications of conversions.  */

@@ -1,3 +1,14 @@
+2014-11-11  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement patterns from associate_plusminus
+	and factor in differences from the fold-const.c implementation.
+	* fold-const.c (fold_binary_loc): Remove patterns here.
+	* tree-ssa-forwprop.c (associate_plusminus): Remove.
+	(pass_forwprop::execute): Don't call it.
+	* tree.c (tree_nop_conversion_p): New function, factored
+	from tree_nop_conversion.
+	* tree.h (tree_nop_conversion_p): Declare.
+
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* system.h: Include algorithm and utility.
