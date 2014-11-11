@@ -1,3 +1,11 @@
+2014-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/61535
+	* config/sparc/sparc.c (function_arg_vector_value): Deal with vectors
+	smaller than 8 bytes.
+	(sparc_function_arg_1): Tweak.
+	(sparc_function_value_1): Tweak.
+
 2014-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_set_return_address): Mark the store as frame
