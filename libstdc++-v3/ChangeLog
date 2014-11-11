@@ -1,3 +1,8 @@
+2014-11-11  Siva Chandra Reddy  <sivachandra@google.com>
+
+	* testsuite/libstdc++-xmethods/associative-containers.cc: Add new
+	file missed from earlier commit.
+
 2014-11-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/61107
