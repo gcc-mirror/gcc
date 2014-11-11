@@ -619,10 +619,10 @@ enum arm_pcs
 #define MACHMODE int
 #else
 #include "insn-modes.h"
-#define MACHMODE enum machine_mode
+#define MACHMODE machine_mode
 #endif
 
-
+#ifndef USED_FOR_TARGET
 /* AAPCS related state tracking.  */
 typedef struct
 {
@@ -643,6 +643,7 @@ typedef struct
   int aapcs_stack_size;		/* The total size (in words, per 8 byte) of the
 				   stack arg area so far.  */
 } CUMULATIVE_ARGS;
+#endif
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
   (aarch64_pad_arg_upward (MODE, TYPE) ? upward : downward)
