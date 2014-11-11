@@ -1,3 +1,15 @@
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/60804
+	* c-parser.c (c_parser_statement_after_labels): Call
+	check_no_cilk.
+	(c_parser_if_statement): Dito.
+	(c_parser_switch_statement): Dito.
+	(c_parser_while_statement): Dito.
+	(c_parser_do_statement): Dito.
+	(c_parser_for_statement): Dito.
+	* c-typeck.c (c_finish_loop): Dito.
+
 2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-typeck.c (build_binary_op): Use OPT_Wshift_count_negative and

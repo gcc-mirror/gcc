@@ -1324,3 +1324,42 @@ contains_cilk_spawn_stmt (tree expr)
   return walk_tree (&expr, contains_cilk_spawn_stmt_walker, NULL, NULL)
 	 != NULL_TREE;
 }
+
+/* Return a error location for EXPR if LOC is not set.  */
+
+static location_t
+get_error_location (tree expr, location_t loc)
+{
+  if (loc == UNKNOWN_LOCATION)
+    {
+      if (TREE_CODE (expr) == MODIFY_EXPR)
+        expr = TREE_OPERAND (expr, 0);
+      loc = EXPR_LOCATION (expr);
+    }
+  return loc;
+}
+
+/* Check that no array notation or spawn statement is in EXPR.
+   If not true generate an error at LOC for ARRAY_GMSGID or
+   SPAWN_MSGID.  */
+
+bool
+check_no_cilk (tree expr, const char *array_msgid, const char *spawn_msgid,
+	      location_t loc)
+{
+  if (!flag_cilkplus)
+    return false;
+  if (contains_array_notation_expr (expr))
+    {
+      loc = get_error_location (expr, loc);
+      error_at (loc, array_msgid);
+      return true;
+    }
+  if (walk_tree (&expr, contains_cilk_spawn_stmt_walker, NULL, NULL))
+    {
+      loc = get_error_location (expr, loc);
+      error_at (loc, spawn_msgid);
+      return true;
+    }
+  return false;
+}

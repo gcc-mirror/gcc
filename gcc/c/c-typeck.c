@@ -9622,12 +9622,8 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  if (flag_cilkplus && contains_array_notation_expr (cond))
-    {
-      error_at (start_locus, "array notation expression cannot be used in a "
-		"loop%'s condition");
-      return;
-    }
+  /* In theory could forbid cilk spawn for loop increment expression,
+     but it should work just fine.  */
   
   /* If the condition is zero don't generate a loop construct.  */
   if (cond && integer_zerop (cond))
