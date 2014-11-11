@@ -66,11 +66,6 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
 		extra_make_flags='V=1';
 		no_install= true; };
-host_modules= { module= cloog; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared --with-gmp=system --with-bits=gmp --with-isl=system';
-		extra_exports='CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS; ';
-		extra_make_flags='CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1';
-		no_install= true; };
 host_modules= { module= libelf; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared';
 		no_install= true; };
@@ -319,7 +314,6 @@ dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
 dependencies = { module=all-gcc; on=all-mpfr; };
 dependencies = { module=all-gcc; on=all-mpc; };
-dependencies = { module=all-gcc; on=all-cloog; };
 dependencies = { module=all-gcc; on=all-build-texinfo; };
 dependencies = { module=all-gcc; on=all-build-bison; };
 dependencies = { module=all-gcc; on=all-build-flex; };
@@ -365,8 +359,6 @@ dependencies = { module=all-utils; on=all-libiberty; };
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };
 dependencies = { module=configure-isl; on=all-gmp; };
-dependencies = { module=configure-cloog; on=all-isl; };
-dependencies = { module=configure-cloog; on=all-gmp; };
 
 // Host modules specific to gdb.
 dependencies = { module=configure-gdb; on=all-intl; };

@@ -29,7 +29,6 @@ m4_include([ltsugar.m4])
 m4_include([ltversion.m4])
 m4_include([lt~obsolete.m4])
 m4_include([config/isl.m4])
-m4_include([config/cloog.m4])
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -133,7 +132,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1640,16 +1639,9 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# GCC GRAPHITE dependences, ISL and CLOOG which in turn requires ISL.
-# Basic setup is inlined here, actual checks are in config/cloog.m4 and
-# config/isl.m4
+# GCC GRAPHITE dependency ISL.
+# Basic setup is inlined here, actual checks are in config/isl.m4
 
-AC_ARG_WITH(cloog,
-  [AS_HELP_STRING(
-    [--with-cloog=PATH],
-    [Specify prefix directory for the installed CLooG-ISL package.
-     Equivalent to --with-cloog-include=PATH/include
-     plus --with-cloog-lib=PATH/lib])])
 AC_ARG_WITH(isl,
   [AS_HELP_STRING(
    [--with-isl=PATH],
@@ -1669,44 +1661,17 @@ if test "x$with_isl" != "xno"; then
   dnl Only execute fail-action, if ISL has been requested.
   ISL_IF_FAILED([
     AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
-
-  if test "x$gcc_cv_isl" != "xno"; then
-    # Check for CLOOG
-    dnl Provide configure switches and initialize clooginc & clooglibs
-    dnl with user input.
-    CLOOG_INIT_FLAGS
-    dnl The versions of CLooG that work for Graphite.
-    CLOOG_CHECK_VERSION(0,18,1)
-
-    dnl Only execute fail-action, if CLooG has been requested.
-    CLOOG_IF_FAILED([
-      AC_MSG_ERROR([Unable to find a usable CLooG.  See config.log for details.])])
-  fi
 fi
 
-# If the ISL check failed, disable builds of in-tree
-# variants of both ISL and CLooG
+# If the ISL check failed, disable builds of in-tree variant of ISL
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
+  noconfigdirs="$noconfigdirs isl"
   islinc=
-  clooginc=
-  clooglibs=
-fi
-
-# If the CLooG check failed, disable builds of in-tree
-# variants of CLooG
-if test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
-  clooginc=
-  clooglibs=
 fi
 
 AC_SUBST(isllibs)
 AC_SUBST(islinc)
-AC_SUBST(clooglibs)
-AC_SUBST(clooginc)
 
 # Check for LTO support.
 AC_ARG_ENABLE(lto,
@@ -2839,7 +2804,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | isl | cloog)
+    mpc | mpfr | gmp | isl)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
