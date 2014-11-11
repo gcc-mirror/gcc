@@ -1,3 +1,12 @@
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR bootstrap/63699
+	PR bootstrap/63750
+	* system.h: Include <string> before "safe-ctype.h"
+	* wide-int.h (wi::smin, wi::smax, wi::umin, wi::umax): Prefix
+	calls to min/max with wi namespace.
+	* ipa-chkp.c: Don't include <string>.
+
 2014-11-11  Terry Guo  <terry.guo@arm.com>
 
 	* doc/invoke.texi (-masm-syntax-unified): Reword and fix typo.

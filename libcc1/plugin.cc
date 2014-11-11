@@ -55,8 +55,6 @@
 #include "connection.hh"
 #include "rpc.hh"
 
-#include <string>
-
 #ifdef __GNUC__
 #pragma GCC visibility push(default)
 #endif
