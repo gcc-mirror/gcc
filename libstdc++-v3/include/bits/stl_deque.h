@@ -642,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	// Create a copy of the current allocator.
 	_Tp_alloc_type __alloc{_M_get_Tp_allocator()};
 	// Put that copy in a moved-from state.
-	_Tp_alloc_type __unused __attribute((__unused__)) {std::move(__alloc)};
+	_Tp_alloc_type __sink __attribute((__unused__)) {std::move(__alloc)};
 	// Create an empty map that allocates using the moved-from allocator.
 	_Deque_base __empty{__alloc};
 	// Now safe to modify current allocator and perform non-throwing swaps.

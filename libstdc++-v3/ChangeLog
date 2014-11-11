@@ -1,3 +1,9 @@
+2014-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63811
+	* include/bits/stl_deque.h (_Deque_base::_M_move_impl()): Avoid using
+	badname.
+
 2014-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_deque.h (_Deque_base::_Deque_base(_Deque_base&&)):
