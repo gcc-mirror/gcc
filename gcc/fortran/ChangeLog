@@ -1,3 +1,8 @@
+2014-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR fortran/63701
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Initialise found to false.
+
 2014-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47007
