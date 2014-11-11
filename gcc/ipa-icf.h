@@ -138,8 +138,10 @@ public:
 
   /* Return base tree that can be used for compatible_types_p and
      contains_polymorphic_type_p comparison.  */
-
   static bool get_base_types (tree *t1, tree *t2);
+
+  /* Return true if target supports alias symbols.  */
+  bool target_supports_symbol_aliases_p (void);
 
   /* Item type.  */
   sem_item_type type;

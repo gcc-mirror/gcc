@@ -1,3 +1,12 @@
+2014-11-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63622
+	PR ipa/63795
+	* ipa-icf.c (sem_function::merge): Add new target symbol alias
+	support guard.
+	(sem_variable::merge): Likewise.
+	* ipa-icf.h (target_supports_symbol_aliases_p): New function.
+
 2014-11-11  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Implement patterns from associate_plusminus
