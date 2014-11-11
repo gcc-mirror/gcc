@@ -1473,3 +1473,4 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef VAR10
 #undef VAR11
 
+#include "gt-aarch64-builtins.h"
