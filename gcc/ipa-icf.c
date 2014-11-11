@@ -191,6 +191,18 @@ sem_item::dump (void)
     }
 }
 
+/* Return true if target supports alias symbols.  */
+
+bool
+sem_item::target_supports_symbol_aliases_p (void)
+{
+#if !defined (ASM_OUTPUT_DEF) || (!defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL))
+  return false;
+#else
+  return true;
+#endif
+}
+
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
@@ -589,7 +601,8 @@ sem_function::merge (sem_item *alias_item)
       redirect_callers = false;
     }
 
-  if (create_alias && DECL_COMDAT_GROUP (alias->decl))
+  if (create_alias && (DECL_COMDAT_GROUP (alias->decl)
+		       || !sem_item::target_supports_symbol_aliases_p ()))
     {
       create_alias = false;
       create_thunk = true;
@@ -604,6 +617,14 @@ sem_function::merge (sem_item *alias_item)
 		  == DECL_COMDAT_GROUP (alias->decl)))))
     local_original
       = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
+
+    if (!local_original)
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Noninterposable alias cannot be created.\n\n");
+
+	return false;
+      }
 
   if (redirect_callers)
     {
@@ -649,7 +670,7 @@ sem_function::merge (sem_item *alias_item)
       alias->resolve_alias (original);
 
       /* Workaround for PR63566 that forces equal calling convention
-	 to be used.  */
+       to be used.  */
       alias->local.local = false;
       original->local.local = false;
 
@@ -1154,6 +1175,13 @@ bool
 sem_variable::merge (sem_item *alias_item)
 {
   gcc_assert (alias_item->type == VAR);
+
+  if (!sem_item::target_supports_symbol_aliases_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "Symbol aliases are not supported by target\n\n");
+      return false;
+    }
 
   sem_variable *alias_var = static_cast<sem_variable *> (alias_item);
 

@@ -1,3 +1,11 @@
+2014-11-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63622
+	PR ipa/63795
+	* g++.dg/ipa/ipa-icf-4.C: Add more precise dump scan.
+	* g++.dg/ipa/ipa-icf-5.C: Add condition for target
+	with symbol alias support.
+
 2014-11-10  Andi Kleen  <ak@linux.intel.com>
 
 	* c-c++-common/cilk-plus/AN/misc.c (main): Handle
