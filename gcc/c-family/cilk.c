@@ -247,7 +247,7 @@ recognize_spawn (tree exp, tree *exp0)
     }
   /* _Cilk_spawn can't be wrapped in expression such as PLUS_EXPR.  */
   else if (contains_cilk_spawn_stmt (exp))
-    error ("invalid use of %<_Cilk_spawn%>");
+    error_at (EXPR_LOCATION (exp), "invalid use of %<_Cilk_spawn%>");
   return spawn_found;
 }
 
