@@ -1,3 +1,9 @@
+2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/36312
+	* filenames.h: Add prototype for canonical_filename_eq.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.

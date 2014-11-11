@@ -1,3 +1,10 @@
+2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/36312
+	* gcc.misc-tests/output.exp: New test case for identical input and
+	output files.
+
 2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
