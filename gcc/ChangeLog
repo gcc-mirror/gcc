@@ -1,3 +1,9 @@
+2014-11-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* sched-deps.c (sched_analyze_1): Check pending list if it is not
+	less than MAX_PENDING_LIST_LENGTH.
+	(sched_analyze_2, sched_analyze_insn, deps_analyze_insn): Ditto.
+
 2014-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Replace open-coded

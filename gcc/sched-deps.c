@@ -2504,7 +2504,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
       /* Pending lists can't get larger with a readonly context.  */
       if (!deps->readonly
           && ((deps->pending_read_list_length + deps->pending_write_list_length)
-              > MAX_PENDING_LIST_LENGTH))
+              >= MAX_PENDING_LIST_LENGTH))
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
@@ -2722,7 +2722,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  {
 	    if ((deps->pending_read_list_length
 		 + deps->pending_write_list_length)
-		> MAX_PENDING_LIST_LENGTH
+		>= MAX_PENDING_LIST_LENGTH
 		&& !DEBUG_INSN_P (insn))
 	      flush_pending_lists (deps, insn, true, true);
 	    add_insn_mem_dependence (deps, true, insn, x);
@@ -3227,8 +3227,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
-		  || reg_last->clobbers_length > MAX_PENDING_LIST_LENGTH)
+	      if (reg_last->uses_length >= MAX_PENDING_LIST_LENGTH
+		  || reg_last->clobbers_length >= MAX_PENDING_LIST_LENGTH)
 		{
 		  add_dependence_list_and_free (deps, insn, &reg_last->sets, 0,
 						REG_DEP_OUTPUT, false);
@@ -3661,7 +3661,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
                && sel_insn_is_speculation_check (insn)))
         {
           /* Keep the list a reasonable size.  */
-          if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
+          if (deps->pending_flush_length++ >= MAX_PENDING_LIST_LENGTH)
             flush_pending_lists (deps, insn, true, true);
           else
 	    deps->pending_jump_insns
