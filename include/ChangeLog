@@ -1,3 +1,7 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
 2014-10-28  Richard Henderson  <rth@redhat.com>
 
 	* longlong.h [__alpha] (umul_ppmm): Disable for c++.

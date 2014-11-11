@@ -1,3 +1,28 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* Makefile.in (doc_build_sys): New variable, set to "sphinx" if
+	sphinx is installed, falling back to "texinfo" otherwise.
+	(FULL_DRIVER_NAME): New variable, adapted from the
+	install-driver target.  New target, a symlink within the builddir,
+	linked to "xgcc", for use when running the JIT library from the
+	builddir.
+	(MOSTLYCLEANFILES): Add FULL_DRIVER_NAME.
+	(install-driver): Use $(FULL_DRIVER_NAME) rather than spelling it
+	out.
+	* configure.ac (doc_build_sys): New variable, set to "sphinx" if
+	sphinx is installed, falling back to "texinfo" otherwise.
+	(GCC_DRIVER_NAME): Generate a gcc-driver-name.h file containing
+	GCC_DRIVER_NAME for the benefit of jit/internal-api.c.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-host-shared): Specify that this is
+	required when building libgccjit.
+	(Tools/packages necessary for modifying GCC): Add Sphinx.
+	* timevar.def (TV_JIT_REPLAY): New.
+	(TV_ASSEMBLE): New.
+	(TV_LINK): New.
+	(TV_LOAD): New.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

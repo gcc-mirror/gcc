@@ -1,3 +1,9 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* jit-coverage-report.py: New file: a script to print crude
+	code-coverage information for the libgccjit API.
+
 2014-11-11  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* mklog: Symbol '}' stops search for changes.  

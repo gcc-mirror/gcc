@@ -316,6 +316,11 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1))" \
 	     | tr ' ' '\012' >> $(2)))
 
+# The jit documentation looks better if built with sphinx, but can be
+# built with texinfo if sphinx is not available.
+# configure sets "doc_build_sys" to "sphinx" or "texinfo" accordingly
+doc_build_sys=@doc_build_sys@
+
 # --------
 # UNSORTED
 # --------
@@ -1508,6 +1513,9 @@ BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 # front-end checking.
 TREECHECKING = @TREECHECKING@
 
+# The full name of the driver on installation
+FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
+
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
@@ -1515,7 +1523,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  tm-preds.h tm-constrs.h checksum-options gimple-match.c generic-match.c \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- xgcc$(exeext) cpp$(exeext) \
+ xgcc$(exeext) cpp$(exeext) $(FULL_DRIVER_NAME) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
@@ -1523,6 +1531,12 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  gcov-tool$(exeect) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk
+
+# This symlink makes the full installation name of the driver be available
+# from within the *build* directory, for use when running the JIT library
+# from there (e.g. when running its testsuite).
+$(FULL_DRIVER_NAME): ./xgcc
+	$(LN) -s $< $@
 
 #
 # Language makefile fragments.
@@ -3287,9 +3301,9 @@ install-driver: installdirs xgcc$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
 	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version)$(exeext) ); \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
 	fi
 	-if [ ! -f gcc-cross$(exeext) ] \
 	    && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
