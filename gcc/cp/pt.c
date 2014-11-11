@@ -15138,11 +15138,13 @@ tsubst_copy_and_build (tree t,
     case COND_EXPR:
       {
 	tree cond = RECUR (TREE_OPERAND (t, 0));
+	tree folded_cond = (maybe_constant_value
+			    (fold_non_dependent_expr_sfinae (cond, tf_none)));
 	tree exp1, exp2;
 
-	if (TREE_CODE (cond) == INTEGER_CST)
+	if (TREE_CODE (folded_cond) == INTEGER_CST)
 	  {
-	    if (integer_zerop (cond))
+	    if (integer_zerop (folded_cond))
 	      {
 		++c_inhibit_evaluation_warnings;
 		exp1 = RECUR (TREE_OPERAND (t, 1));
@@ -15156,6 +15158,7 @@ tsubst_copy_and_build (tree t,
 		exp2 = RECUR (TREE_OPERAND (t, 2));
 		--c_inhibit_evaluation_warnings;
 	      }
+	    cond = folded_cond;
 	  }
 	else
 	  {
