@@ -1,0 +1,50 @@
+# Simple recursive factorial implementation, roughly equivalent to:
+#
+#  int factorial (int arg)
+#  {
+#     if (arg < 2)
+#       return arg
+#     return arg * factorial (arg - 1)
+#  }
+
+# Initial state:
+# stack: [arg]
+
+# 0:
+DUP
+# stack: [arg, arg]
+
+# 1:
+PUSH_CONST 2
+# stack: [arg, arg, 2]
+
+# 2:
+BINARY_COMPARE_LT
+# stack: [arg, (arg < 2)]
+
+# 3:
+JUMP_ABS_IF_TRUE 9
+# stack: [arg]
+
+# 4:
+DUP
+# stack: [arg, arg]
+
+# 5:
+PUSH_CONST 1
+# stack: [arg, arg, 1]
+
+# 6:
+BINARY_SUBTRACT
+# stack: [arg,  (arg - 1)
+
+# 7:
+RECURSE
+# stack: [arg, factorial(arg - 1)]
+
+# 8:
+BINARY_MULT
+# stack: [arg * factorial(arg - 1)]
+
+# 9:
+RETURN

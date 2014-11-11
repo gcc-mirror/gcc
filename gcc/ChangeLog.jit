@@ -1,0 +1,360 @@
+2014-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/install.texi (Tools/packages necessary for modifying GCC):
+	Specify that Sphinx version 1.0 or later is required.  Wrap .rst
+	inside an @file command.
+
+2014-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.h: Drop now-redundant prototype of ipa_cp_c_finalize,
+	since trunk added this in ipa-prop.h.
+	* ipa-icf.c (ipa_icf_driver): Set optimizer to NULL when
+	done.
+
+2014-10-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/install.texi (Tools/packages necessary for modifying GCC):
+	Add Sphinx.
+
+2014-10-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (pkgconfigdir): Drop this.
+	(installdirs): Likewise.
+	* configure.ac (gcc_version): Don't AC_SUBST this.
+	* configure: Regenerate.
+
+2014-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (FULL_DRIVER_NAME): New variable, adapted from the
+	install-driver target.  New target, a symlink within the builddir,
+	linked to "xgcc", for use when running the JIT library from the
+	builddir.
+	(MOSTLYCLEANFILES): Add FULL_DRIVER_NAME.
+	(install-driver): Use $(FULL_DRIVER_NAME) rather than spelling it
+	out.
+	(site.exp): Don't set "bindir", as this is no longer needed when
+	running the jit testsuite.
+
+2014-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Update a reference to jit/internal-api.c to
+	jit/jit-playback.c.
+	* configure: Regenerate.
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (site.exp): When constructing site.exp, add a line
+	to set "bindir".
+	* configure.ac: Generate a gcc-driver-name.h file containing
+	GCC_DRIVER_NAME for the benefit of jit/internal-api.c.
+	* configure: Regenerate.
+
+2014-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (diagnostic_finish): Free the memory for
+	context->classify_diagnostic and context->printer, running the
+	destructor for the latter.
+
+2014-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure: Regenerate, after merger from trunk.
+
+2014-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac (doc_build_sys): New variable, set to "sphinx" if
+	sphinx is installed, falling back to "texinfo" otherwise.
+	* configure: Regenerate.
+	* Makefile.in (doc_build_sys): New.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: Add copyright footer.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.h (cgraphbuild_c_finalize): Delete prototype of empty
+	function.
+	(ipa_c_finalize): Likewise.
+	(predict_c_finalize): Likewise.
+	(symtab_c_finalize): Likewise.
+	(varpool_c_finalize): Likewise.
+
+	* cgraph.c (cgraph_c_finalize): Add leading comment.  Put return
+	type on line before function name.
+	* cgraphunit.c (cgraphunit_c_finalize): Likewise.
+	* dwarf2out.c (dwarf2out_c_finalize): Likewise.
+	* gcse.c (gcse_c_finalize): Likewise.
+	* ipa-cp.c (ipa_cp_c_finalize): Likewise.
+	* ipa-reference.c (ipa_reference_c_finalize): Likewise.
+
+	* params.c (params_c_finalize): Update leading comment to match
+	format of the others mentioned above.
+
+	* cgraphbuild.c (cgraphbuild_c_finalize): Delete empty function.
+	* ipa.c (ipa_c_finalize): Likewise.
+	* predict.c (predict_c_finalize): Likewise.
+	* symtab.c (symtab_c_finalize): Likewise.
+	* varpool.c (varpool_c_finalize): Likewise.
+
+	* toplev.c (toplev::finalize): Remove calls to empty functions
+	cgraphbuild_c_finalize, ipa_c_finalize, predict_c_finalize,
+	symtab_c_finalize, varpool_c_finalize.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* passes.c (execute_ipa_summary_passes): Fix whitespace when
+	assigning to current_pass.
+	(ipa_write_summaries_2): Assign "pass" to "current_pass" global
+	before calling write_summary hook.
+	(ipa_write_optimization_summaries_1): Likewise when calling
+	write_optimization_summary hook.
+	(ipa_read_summaries_1): Likewise for read_summary hook.
+	(ipa_read_optimization_summaries_1): Likewise for
+	read_optimization_summary hook.
+	(execute_ipa_stmt_fixups): Likewise for stmt_fixup hook.
+
+2014-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c (cgraph_c_finalize): Remove FIXME.
+	* timevar.c (timevar_init): Likewise.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (pkgconfigdir): New.
+	(installdirs): Add creation of $(DESTDIR)$(pkgconfigdir).
+	* configure.ac (gcc_version): Expose this value for use via
+	AC_SUBST, since we need it within the new file libgccjit.pc.in.
+	* configure: Regenerate.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c (cgraph_c_finalize): Update to reflect the movement of
+	many globals into fields of the "symtab" object.
+	* cgraphunit.c (graphunit_c_finalize): Likewise.
+	* symtab.c (symtab_c_finalize): Likewise.
+
+	* toplev.c (initialize_rtl): Move static local "initialized_once"
+	into file scope, and rename to...
+	(rtl_initialized): New variable.
+	(toplev::finalize): Clear rtl_initialized and
+	this_target_rtl->target_specific_initialized so that RTL will be
+	reinitialized when the compiler is run more than once in-process.
+
+2014-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.h (ipa_cp_c_finalize): Add prototype.
+	* ipa-cp.c (ipa_cp_c_finalize): New.
+	* toplev.c (toplev::finalize): Add call to ipa_cp_c_finalize.
+
+2014-05-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* params.c (global_init_params): Require that params_finished be
+	false, rather than being idempotent, in favor of purging all state
+	between toplev invocations, since in a release build
+	init_ggc_heuristics calls set_param_value_internal, and the
+	latter assumes that params_finished is true.
+	(params_c_finalize): New.
+	* params.h (params_c_finalize): New.
+	* toplev.c (toplev::finalize): Call params_c_finalize.
+
+2014-03-24  Tom Tromey  <tromey@redhat.com>
+
+	* toplev.c (general_init): Initialize input_location.
+	* input.c (input_location): Initialize to UNKNOWN_LOCATION.
+
+2014-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* timevar.h (auto_timevar): New class.
+
+2014-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* diagnostic.c (bt_stop): Use toplev::main.
+	* main.c (main): Update.
+	* toplev.c (do_compile): Remove argument.  Don't check
+	use_TV_TOTAL.
+	(toplev::toplev, toplev::~toplev, toplev::start_timevars): New
+	functions.
+	(toplev::main): Rename from toplev_main.  Update.
+	(toplev::finalize): Rename from toplev_finalize.  Update.
+	* toplev.h (class toplev): New.
+	(struct toplev_options): Remove.
+	(toplev_main, toplev_finalize): Don't declare.
+
+2014-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcse.c (gcse_c_finalize): New, to clear test_insn between
+	in-process compiles.
+	* gcse.h (gcse_c_finalize): New.
+	* toplev.c: Include "gcse.h" so that we can...
+	(toplev_finalize): Call gcse_c_finalize.
+
+2014-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* dwarf2out.c (dwarf2out_c_finalize): Release base_types.
+
+2014-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-reference.c (ipa_init): Move static bool init_p from here
+	to...
+	(ipa_init_p): New file-scope variable, so that it can be reset
+	when repeatedly invoking the compiler within one process by...
+	(ipa_reference_c_finalize): New function.
+	* ipa-reference.h (ipa_reference_c_finalize): New.
+	* toplev.c (toplev_finalize): Invoke new function
+	ipa_reference_c_finalize.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* timevar.def: Replace TV_CLIENT_CALLBACK with TV_JIT_REPLAY.
+
+2013-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/install.texi (--enable-shared): Add note contrasting it
+	with...
+	(--enable-host-shared): New option.
+
+2013-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.h (gcc::dump_manager): New class, to hold state
+	relating to dumpfile management.
+	(get_dump_file_name): Remove in favor of method of dump_manager.
+	(dump_initialized_p): Likewise.
+	(dump_start): Likewise.
+	(dump_finish): Likewise.
+	(dump_switch_p): Likewise.
+	(dump_register): Likewise.
+	(get_dump_file_info): Likewise.
+	* context.c (gcc::context::context): Construct the dump_manager
+	instance.
+	* context.h (gcc::context::get_dumps): New.
+	(gcc::context::m_dumps): New.
+	* coverage.c (coverage_init): Port to dump_manager API.
+	* dumpfile.c (extra_dump_files): Convert to field of
+	gcc::dump_manager.
+	(extra_dump_files_in_use): Likewise.
+	(extra_dump_files_alloced): Likewise.
+	(gcc::dump_manager::dump_manager): New.
+	(dump_register): Convert to...
+	(gcc::dump_manager::dump_register): ...method, replacing
+	function-static next_dump with m_next_dump field.
+	(get_dump_file_info): Convert to...
+	(gcc::dump_manager::get_dump_file_info): ...method.
+	(get_dump_file_name): Convert to...
+	(gcc::dump_manager::get_dump_file_name): ...method.
+	(dump_start): Convert to...
+	(gcc::dump_manager::dump_start): ...method.
+	(dump_finish): Convert to...
+	(gcc::dump_manager::dump_finish): ...method.
+	(dump_begin): Replace body with...
+	(gcc::dump_manager::dump_begin): ...new method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_initialized_p):  Convert to...
+	(gcc::dump_manager::dump_initialized_p): ...method.
+	(dump_flag_name): Replace body with...
+	(gcc::dump_manager::dump_flag_name): ...new method.
+	(dump_enable_all): Convert to...
+	(gcc::dump_manager::dump_enable_all): ...new method.
+	(opt_info_enable_passes): Convert to...
+	(gcc::dump_manager::opt_info_enable_passes): ...new method.
+	(dump_switch_p_1): Convert to...
+	(gcc::dump_manager::dump_switch_p_1): ...new method.
+	(dump_switch_p):  Convert to...
+	(gcc::dump_manager::dump_switch_p): ...new method.
+	(opt_info_switch_p): Port to dump_manager API.
+	(enable_rtl_dump_file): Likewise.
+	* opts-global.c (handle_common_deferred_options): Port to new
+	dump_manager API.
+	* passes.c (pass_manager::finish_optimization_passes): Likewise.
+	(pass_manager::register_one_dump_file): Likewise.
+	(pass_manager::register_pass): Likewise.
+	(pass_init_dump_file): Likewise.
+	(pass_fini_dump_file): Likewise.
+	* statistics.c (statistics_early_init): Likewise.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-inline.c (ipa_inline): Fix leak of "order" when
+	optimizations are disabled.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* coverage.c (coverage_finish): Fix leak of da_file_name.
+
+2013-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Set PICFLAG from configure script; add it to
+	INTERNAL_CFLAGS.
+	* configure.ac (--enable-host-shared): Set up PICFLAG rather
+	than attempting to append -fPIC to CFLAGS, CXXFLAGS, LDFLAGS.
+	* configure: Regenerate.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (LIBIBERTY): Use pic build of libiberty.a if
+	configured with --enable-host-shared.
+	(BUILD_LIBIBERTY): Likewise.
+	* cgraph.c (cgraph_c_finalize): New.
+	* cgraph.h (symtab_c_finalize): New declaration.
+	(cgraph_c_finalize): Likewise.
+	(cgraphunit_c_finalize): Likewise.
+	(cgraphbuild_c_finalize): Likewise.
+	(ipa_c_finalize): Likewise.
+	(predict_c_finalize): Likewise.
+	(varpool_c_finalize): Likewise.
+	* cgraphbuild.c (cgraphbuild_c_finalize): New.
+	* cgraphunit.c (first_analyzed): Move from analyze_functions
+	to file-scope.
+	(first_analyzed_var): Likewise.
+	(analyze_functions): Move static variables into file-scope.
+	(cgraphunit_c_finalize): New.
+	* configure.ac: Add --enable-host-shared, adding -fPIC.
+	* configure: Regenerate.
+	* dwarf2out.c (dwarf2out_c_finalize): New.
+	* dwarf2out.h (dwarf2out_c_finalize): Declare.
+	* ggc-page.c (init_ggc): Make idempotent.
+	* ipa-pure-const.c (function_insertion_hook_holder): Move to be
+	a field of class pass_ipa_pure_const.
+	(node_duplication_hook_holder): Likewise.
+	(node_removal_hook_holder): Likewise.
+	(register_hooks): Convert to method...
+	(pass_ipa_pure_const::register_hooks): ...here, converting
+	static variable init_p into...
+	(pass_ipa_pure_const::init_p): ...new field.
+	(pure_const_generate_summary): Update invocation of
+	register_hooks to invoke as a method of current_pass.
+	(pure_const_read_summary): Likewise.
+	(propagate): Convert to...
+	(pass_ipa_pure_const::execute): ...method.
+	* ipa.c (ipa_c_finalize): New.
+	* main.c (main): Update usage of toplev_main.
+	* params.c (global_init_params): Make idempotent.
+	* passes.c (execute_ipa_summary_passes): Set current_pass.
+	* predict.c (predict_c_finalize): New.
+	* stringpool.c (init_stringpool): Clean up if we're called more
+	than once.
+	* symtab.c (symtab_c_finalize): New.
+	* timevar.c (timevar_init): Ignore repeated calls.
+	* timevar.def (TV_CLIENT_CALLBACK): Add.
+	(TV_ASSEMBLE): Add.
+	(TV_LINK): Add.
+	(TV_LOAD): Add.
+	* toplev.c (do_compile) Add parameter (const toplev_options *);
+	use it to avoid starting/stopping/reporting timevar TV_TOTAL
+	for the case where toplev_main does not emcompass all timevars.
+	(toplev_main): Add parameter (const toplev_options *); pass it
+	to do_compile.
+	(toplev_finalize): New.
+	* toplev.h (struct toplev_options): New.
+	(toplev_main): Add parameter (const toplev_options *).
+	(toplev_finalize): New.
+	* varpool.c (varpool_c_finalize): New.
+
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

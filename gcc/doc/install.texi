@@ -476,6 +476,11 @@ Necessary for running @command{texi2dvi} and @command{texi2pdf}, which
 are used when running @command{make dvi} or @command{make pdf} to create
 DVI or PDF files, respectively.
 
+@item Sphinx version 1.0 (or later)
+
+Necessary to regenerate @file{jit/docs/_build/texinfo} from the @file{.rst}
+files in the directories below @file{jit/docs}.
+
 @item SVN (any version)
 @itemx SSH (any version)
 
@@ -939,7 +944,7 @@ Specify that the @emph{host} code should be built into position-independent
 machine code (with -fPIC), allowing it to be used within shared libraries,
 but yielding a slightly slower compiler.
 
-Currently this option is only of use to people developing GCC itself.
+This option is required when building the libgccjit.so library.
 
 Contrast with @option{--enable-shared}, which affects @emph{target}
 libraries.

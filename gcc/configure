@@ -743,6 +743,7 @@ CXXDEPMODE
 DEPDIR
 am__leading_dot
 CXXCPP
+doc_build_sys
 AR
 NM
 BISON
@@ -8068,6 +8069,47 @@ fi
 
 
 fi
+
+# The jit documentation looks better if built with sphinx, but can be
+# built with texinfo if sphinx is not available.
+# Set "doc_build_sys" to "sphinx" or "texinfo" accordingly.
+# Extract the first word of "sphinx-build", so it can be a program name with args.
+set dummy sphinx-build; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_doc_build_sys+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$doc_build_sys"; then
+  ac_cv_prog_doc_build_sys="$doc_build_sys" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_doc_build_sys="sphinx"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_doc_build_sys" && ac_cv_prog_doc_build_sys="texinfo"
+fi
+fi
+doc_build_sys=$ac_cv_prog_doc_build_sys
+if test -n "$doc_build_sys"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $doc_build_sys" >&5
+$as_echo "$doc_build_sys" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 
 
 # --------------------
@@ -18058,7 +18100,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18061 "configure"
+#line 18103 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18164,7 +18206,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18167 "configure"
+#line 18209 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28184,6 +28226,12 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
+# Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
+# of jit/jit-playback.c.
+cat > gcc-driver-name.h <<EOF
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+EOF
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

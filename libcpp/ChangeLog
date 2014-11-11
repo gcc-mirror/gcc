@@ -1,3 +1,7 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
 2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/cpplib.h (cpp_callbacks): Add has_attribute.

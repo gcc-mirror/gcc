@@ -1,0 +1,626 @@
+2014-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-get-type-bad-enum.c: New test case.
+	* jit.dg/test-error-new-binary-op-bad-op.c: Likewise.
+	* jit.dg/test-error-new-function-bad-kind.c: Likewise.
+	* jit.dg/test-error-new-unary-op-bad-op.c: Likewise.
+
+2014-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (DEFAULT_CFLAGS): Add -fgnu89-inline since
+	dejagnu.h assumes this.
+
+2014-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (get_path_of_driver): New procedure.
+	(jit-dg-test): Don't unsetenv GCC_EXEC_PREFIX, since jit-playback.c
+	now adds -fno-use-linker-plugin to the driver cmdline sidestepping
+	the builddir/installdir libtto_plugin naming issue.
+	When setting up PATH so that the JIT library can invoke the driver
+	by installation name, don't use the installation "bindir".
+	Instead, simply use the location of xgcc as detected
+	get_path_of_driver.  In addition, set up LIBRARY_PATH so that the
+	linker run from inside the JIT library can locate libgcc etc when
+	building the .so, pointing it at the same directory.
+
+2014-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (fixed_host_execute): New function, taken from
+	"host_execute" in DejaGnu's dejagnu.exp, with one line removed.
+	(jit-dg-test): Use fixed_host_execute, rathern than host_execute.
+
+2014-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h [MAKE_DEJAGNU_H_THREADSAFE] (note): Redefine
+	"note" from dejagnu.h to new function dejagnu_note so that we can
+	make "note" be threadsafe.
+	(set_options): Don't enable GCC_JIT_BOOL_OPTION_DUMP_SUMMARY,
+	since it can generate large amounts of output that could overwhelm
+	expect's buffer.
+	* jit.dg/test-dot-product.c (verify_code): Use "note" rather than
+	"printf", to give DejaGnu more chances to parse this log data,
+	rather than overflowing its buffer.
+	* jit.dg/test-factorial.c (verify_code): Likewise.
+	* jit.dg/test-fibonacci.c (verify_code): Likewise.
+	* jit.dg/test-fuzzer.c (main): Likewise.
+	* jit.dg/test-nested-loops.c (verify_code): Likewise.
+	* jit.dg/test-sum-of-squares.c (verify_code): Likewise.
+	* jit.dg/test-threads.c (note): New function, adding thread-safety
+	on top of "dejagnu_note", the latter being the implementation
+	found in dejagnu.h.
+	(run_threaded_test): Use "note" rather than "printf".
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): Prepend the installed bindir to
+	the PATH before invoking built binaries using the library, so that
+	the library can find the driver.  Restore the PATH immediately
+	afterwards.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: Add copyright footer.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_tests_of_binary_ops): Add
+	shift operators.
+	(verify_binary_ops): Likewise.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp: When constructing "tests", add the example files
+	from the documentation, to ensure that they compile.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp: Load target-supports.exp.
+
+2014-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-nested-loops.c: New test case.
+	* jit.dg/all-non-failing-tests.h: Add test-nested-loops.c.
+	* jit.dg/test-combination.c (create_code): Likewise.
+	(verify_code): Likewise.
+	* jit.dg/test-threads.c (const): Add test-nested-loops.c.
+
+2014-08-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-threads.c: New test case, running all of the
+	individual test cases in separate threads.
+	* jit.dg/test-combination.c: Move inclusion of the various
+	individual testcases into...
+	* jit.dg/all-non-failing-tests.h: ...this new file, and rename
+	TEST_COMBINATION to COMBINED_TEST.
+	* jit.dg/harness.h: Respond to new macro MAKE_DEJAGNU_H_THREADSAFE
+	by hacking up <dejagnu.h> to be threadsafe.  Rename
+	TEST_COMBINATION to COMBINED_TEST.
+	* jit.dg/jit.exp (proc jit-dg-test): Add "-lpthread" when building
+	test-threads.exe.
+
+2014-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-union.c: New test case.
+	* jit.dg/test-combination.c: Add test-accessing-union.c.
+
+2014-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-combination.c (create_code): Add missing calls to
+	create_code_quadratic and create_code_reading_struct.
+	(verify_code): Add missing calls to verify_code_quadratic and
+	verify_code_reading_struct.
+
+2014-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-calling-function-ptr.c: New test case.
+	* jit.dg/test-combination.c: Add test-calling-function-ptr.c.
+	* jit.dg/test-error-call-through-ptr-with-mismatching-args.c: New
+	test case.
+	* jit.dg/test-error-call-through-ptr-with-non-function.c: New test
+	case.
+	* jit.dg/test-error-call-through-ptr-with-non-pointer.c: New test
+	case.
+	* jit.dg/test-error-call-through-ptr-with-not-enough-args.c: New
+	test case.
+
+2014-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-index-not-a-numeric-type.c: New test case.
+	* jit.dg/test-error-value-not-a-numeric-type.c: New test case.
+
+2014-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-array-as-pointer.c: New test case, verifying that
+	there's a way to treat arrays as pointers.
+	* jit.dg/test-combination.c: Add test-array-as-pointer.c...
+	(create_code): ...here and...
+	(verify_code): ...here.
+
+	* jit.dg/test-error-array-as-pointer.c: New test case, verifying
+	that bogus casts from array to pointer are caught by the type
+	system, rather than leading to ICEs seen in:
+	https://github.com/davidmalcolm/pygccjit/pull/3#issuecomment-37883129
+
+2014-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-combination.c: Add test-arrays.c and test-volatile.c.
+	Add comment about test-error-*.c.  Remove comment about
+	test-failure.c, which was removed in
+	96b218c9a1d5f39fb649e02c0e77586b180e8516.
+	(create_code): Call into test-arrays.c and test-volatile.c.
+	(verify_code): Likewise.
+
+2014-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (called_pointer_checking_function): New.
+	(make_tests_of_casts): Add test of casting from array to pointer.
+	(verify_casts): Likewise.
+
+2014-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-bad-cast.c: New test case.
+
+2014-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (set_options): Increase optimization level from
+	0 to 3.
+
+2014-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-functions.c (create_test_of_hidden_function): New,
+	adding test coverage for GCC_JIT_FUNCTION_ALWAYS_INLINE and
+	GCC_JIT_FUNCTION_INTERNAL.
+	(create_tests_of_hidden_functions): Likewise.
+	(verify_hidden_functions): Likewise.
+	(create_code): Add call to create_tests_of_hidden_functions.
+	(verify_code): Add call to verify_hidden_functions.
+	* jit.dg/test-quadratic.c (make_calc_discriminant): Convert
+	from GCC_JIT_FUNCTION_EXPORTED to GCC_JIT_FUNCTION_INTERNAL.
+
+2014-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-functions.c: Reorder function definitions, grouping
+	them by subject-matter rather than by create-vs-verify phase.
+
+2014-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-nested-contexts.c (main): Dump the contexts to
+	files, setting up source locations, and adding test coverage for
+	gcc_jit_context_dump_to_file.
+
+2014-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-mismatching-types-in-call.c: New test case,
+	to ensure that a (struct foo *) vs (struct foo) type error is
+	gracefully handled.
+
+2014-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-volatile.c: New testcase, to exercise
+	gcc_jit_type_get_volatile, and show a way to work with pre-existing
+	global variables.
+
+2014-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_test_of_cast): New, to test new
+	entrypoint gcc_jit_context_new_cast.
+	(make_tests_of_casts): New.
+	(create_code): Add call to make_tests_of_casts.
+	(verify_code): Add call to verify_casts.
+
+2014-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-struct.c (create_code): Port to
+	block-based API.
+	* jit.dg/test-calling-external-function.c (create_code): Likewise.
+	* jit.dg/test-error-accessing-field-in-other-struct.c (create_code):
+	Likewise.
+	* jit.dg/test-error-call-with-mismatching-args.c (create_code):
+	Likewise.
+	* jit.dg/test-error-call-with-not-enough-args.c (create_code):
+	Likewise.
+	* jit.dg/test-error-call-with-too-many-args.c (create_code):
+	Likewise.
+	* jit.dg/test-error-dereference-field-of-non-pointer.c (create_code):
+	Likewise.
+	* jit.dg/test-error-dereference-read: Likewise.
+	* jit.dg/test-error-mismatching-types-in-assignment.c: Likewise.
+	* jit.dg/test-error-return-within-void-function.c: Likewise.
+	* jit.dg/test-expressions.c: Likewise.
+	* jit.dg/test-factorial.c: Likewise.
+	* jit.dg/test-functions.c: Likewise.
+	* jit.dg/test-fuzzer.c: Likewise.
+	* jit.dg/test-hello-world.c (create_code): Likewise.
+	* jit.dg/test-nested-contexts.c: Likewise.
+	* jit.dg/test-operator-overloading.cc: Likewise.
+	* jit.dg/test-quadratic.c: Likewise.
+	* jit.dg/test-quadratic.cc: Likewise.
+	* jit.dg/test-reading-struct.c (create_code): Likewise.
+	* jit.dg/test-string-literal.c (create_code): Likewise.
+	* jit.dg/test-sum-of-squares.c (create_code): Likewise.
+	* jit.dg/test-types.c (create_code): Likewise.
+	* jit.dg/test-using-global.c (create_code): Likewise.
+
+	* jit.dg/test-arrays.c (create_code): Likewise, eliminating use of
+	loop API.
+	* jit.dg/test-dot-product.c (create_code): Likewise.
+	* jit.dg/test-linked-list.c (create_code): Likewise.
+
+	* jit.dg/test-error-adding-to-terminated-block.c: New testcase.
+	* jit.dg/test-error-block-in-wrong-function.c: Likewise.
+	* jit.dg/test-error-missing-return.c: Likewise.
+	* jit.dg/test-error-unreachable-block.c: Likewise.
+	* jit.dg/test-error-unterminated-block.c: Likewise.
+
+	* jit.dg/test-error-label-already-placed.c: Delete obsolete testcase.
+	* jit.dg/test-error-unplaced-label.c: Likewise.
+
+2014-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-functions.c (create_use_of_void_return): New, to add
+	test coverage for gcc_jit_function_add_void_return.
+	(verify_void_return): Likewise.
+	(create_code): Add call to create_use_of_void_return.
+	(verify_code): Add call to verify_void_return.
+
+2014-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-struct.c (create_code): Update for change to
+	return type of gcc_jit_context_new_struct_type.
+	* jit.dg/test-arrays.c (create_code): Likewise.
+	* jit.dg/test-error-accessing-field-in-other-struct.c (create_code):
+	Likewise.
+	* jit.dg/test-error-dereference-field-of-non-pointer.c (create_code):
+	Likewise.
+	* jit.dg/test-fuzzer.c (make_random_type): Likewise.
+	* jit.dg/test-nested-contexts.c (make_types): Likewise.
+	* jit.dg/test-quadratic.c (make_types): Likewise.
+	* jit.dg/test-reading-struct.c (create_code): Likewise.
+	* jit.dg/test-types.c (create_code): Likewise.
+
+	* jit.dg/test-linked-list.c: New selftest, exercising
+	gcc_jit_context_new_opaque_struct, gcc_jit_type_get_pointer, and
+	gcc_jit_context_null.
+	* jit.dg/test-combination.c: Add test-linked-list.c
+
+2014-02-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-operator-overloading.cc (make_test_quadratic): Use
+	the new "zero" and "one" methods of gccjit::type.
+	* jit.dg/test-quadratic.cc (make_test_quadratic): Use the new
+	"add_call" method of gccjit::function.
+
+2014-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (CHECK_DOUBLE_VALUE): New macro.
+	(CHECK): New macro.
+	* jit.dg/test-functions.c: New testcase, exercising
+	gcc_jit_context_get_builtin_function.
+	* jit.dg/test-combination.c: Add test-functions.c to the combined
+	test.
+
+2014-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-types.c: Add test coverage for getting type
+	GCC_JIT_TYPE_BOOL.
+	* jit.dg/test-expressions.c (make_test_of_comparison): Convert
+	return type from int to bool.
+	(verify_comparisons): Likewise.
+
+2014-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-unplaced-label.c (verify_code): Update
+	expected error message to reflect commit
+	6cd4f82c5237cc328aea229cdaaa428ff09d6e98.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-types.c (struct zoo): Add field m_sized_int_type,
+	to be populated by...
+	(create_code): Use gcc_jit_context_get_int_type.
+	(verify_code): Verify that type from gcc_jit_context_get_int_type
+	works properly.
+	* jit.dg/test-operator-overloading.cc (make_types): Use the
+	template form of get_int_type.
+	* jit.dg/test-quadratic.cc (make_types): Likewise.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-operator-overloading.cc: New testcase, a
+	rewrite of test-quadratic.cc to use operator overloading.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-quadratic.cc (make_calc_discriminant): Make use of
+	new methods of the C++ wrapper API to shorten the example code.
+	(make_test_quadratic): Likewise.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-quadratic.cc (make_test_quadratic): Update for
+	change to gccjit::context::new_call to pass args by reference
+	rather than by value.
+
+2014-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (check_string_value): Add a forward declaration,
+	so that we can use CHECK_STRING_VALUE from within tests used by
+	test-combination.c.
+
+	* jit.dg/test-expressions.c (make_test_of_unary_op): Return a debug
+	stringification of the operation so that it be sanity-checked.
+	(make_test_of_binary_op): Likewise.
+	(make_test_of_comparison): Likewise.
+	(make_tests_of_unary_ops): Verify that said stringifications are
+	indeed sane.
+	(make_tests_of_binary_ops): Likewise.
+	(make_tests_of_comparisons): Likewise.
+
+	* jit.dg/test-quadratic.cc (make_types): Verify that the
+	get_debug_string method works.
+	(make_test_quadratic): Likewise, also, verify that the <<
+	operator works.
+
+2014-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-quadratic.cc: New file - a translation of
+	test-quadratic.c to the libgccjit++.h C++ API.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-label-already-placed.c: New test case.
+	* jit.dg/test-error-unplaced-label.c: New test case.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-call-with-mismatching-args.c: New test case.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-accessing-field-in-other-struct.c: New test
+	case.
+	* jit.dg/test-error-dereference-field-of-non-pointer.c: Likewise.
+	* jit.dg/test-error-dereference-read-of-non-pointer.c: Likewise.
+	* jit.dg/test-error-mismatching-types-in-assignment.c: Likewise.
+	* jit.dg/test-error-return-within-void-function.c: Likewise.
+
+2014-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-struct.c (create_code): Update for API change
+	for accessing fields in terms of gcc_jit_field pointers rather than
+	by name.
+	* jit.dg/test-nested-contexts.c (make_calc_discriminant): Likewise.
+	(make_test_quadratic): Likewise.
+	* jit.dg/test-quadratic.c (make_calc_discriminant): Likewise.
+	(make_test_quadratic): Likewise.
+	* jit.dg/test-reading-struct.c (create_code): Likewise.
+	* jit.dg/test-types.c: Likewise.
+
+2014-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (test_jit): Add the possibility of turning off
+	this function, if the newly-coined "TEST_ESCHEWS_TEST_JIT" is
+	defined, for use by...
+	* jit.dg/test-nested-contexts.c: New test case, adapting
+	test-quadratic.c, but splitting it into a 3-deep arrangement of
+	nested contexts, to test the implementation of child contexts.
+
+2014-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (test_jit): Move the various calls to set up
+	options on the context into...
+	(set_options): ...this new function.
+
+2014-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-call-with-not-enough-args.c: New test case.
+	* jit.dg/test-error-call-with-too-many-args.c: New test case.
+	* jit.dg/test-null-passed-to-api.c: Rename to...
+	* jit.dg/test-error-null-passed-to-api.c: ...this, so that
+	error-handling test cases are consistently named.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-empty.c: New test case.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (code_making_callback): Rename to...
+	(create_code): ...this, and eliminate the returned
+	error-handling value: test cases will simply call into the
+	gcc_jit_ API, without needing to be run from a callback.
+	(test_jit): Don't register a callback, simply call the
+	"create_code" function for the testcase before compiling the
+	context.
+
+	* jit.dg/test-accessing-struct.c: Rename "code_making_callback"
+	to "create_code" and eliminate the return code.
+	* jit.dg/test-calling-external-function.c: Likewise.
+	* jit.dg/test-combination.c: Likewise.
+	* jit.dg/test-dot-product.c: Likewise.
+	* jit.dg/test-expressions.c: Likewise.
+	* jit.dg/test-factorial.c: Likewise.
+	* jit.dg/test-fibonacci.c: Likewise.
+	* jit.dg/test-fuzzer.c: Likewise.
+	* jit.dg/test-hello-world.c: Likewise.
+	* jit.dg/test-null-passed-to-api.c: Likewise.
+	* jit.dg/test-quadratic.c: Likewise.
+	* jit.dg/test-reading-struct.c: Likewise.
+	* jit.dg/test-string-literal.c: Likewise.
+	* jit.dg/test-sum-of-squares.c: Likewise.
+	* jit.dg/test-types.c: Likewise.
+	* jit.dg/test-using-global.c: Likewise.
+
+	* jit.dg/test-failure.c: Remove this test case, since it was
+	specifically for testing the now-defunct callback-based API.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-quadratic.c: New test case, written to achieve test
+	coverage of gcc_jit_rvalue_access_field, but also exercising
+	division of doubles.
+
+	* jit.dg/test-combination.c: Add test-quadratic.c
+
+	* jit.dg/test-expressions.c: Add TODOs.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-reading-struct.c: New test, to provide test coverage
+	of gcc_jit_type_get_const and gcc_jit_lvalue_access_field, in the
+	process uncovering bugs in how locals were handled.
+	* jit.dg/test-combination.c: Add usage of test-reading-struct.c.
+
+2014-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-hello-world.c (code_making_callback): Add usage of
+	gcc_jit_function_add_comment.
+
+2013-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (main): Wrap with #ifndef TEST_PROVIDES_MAIN
+	* jit.dg/test-fuzzer.c: New.
+
+2013-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (verify_code): Add context param so that
+	test cases of failure can query errors on it.
+	(CHECK_STRING_VALUE): New.
+	(check_string_value): New.
+	(test_jit): Add user_data param and pass it to the code factory.
+	Pass context to verify_code, calling it before releasing said
+	context.
+	(main): Add NULL user_data to test_jit call.
+	* jit.dg/test-accessing-struct.c (verify_code): Add context
+	param.
+	* jit.dg/test-calling-external-function.c (verify_code):
+	Likewise.
+	* jit.dg/test-combination.c (verify_code): Likewise.
+	* jit.dg/test-dot-product.c (verify_code): Likewise.
+	* jit.dg/test-expressions.c (verify_code): Likewise.
+	* jit.dg/test-factorial.c (verify_code): Likewise.
+	* jit.dg/test-failure.c (verify_code): Likewise.
+	* jit.dg/test-fibonacci.c (verify_code): Likewise.
+	* jit.dg/test-hello-world.c (verify_code): Likewise.
+	* jit.dg/test-string-literal.c (verify_code): Likewise.
+	* jit.dg/test-sum-of-squares.c (verify_code): Likewise.
+	* jit.dg/test-types.c (verify_code): Likewise.
+	* jit.dg/test-using-global.c (verify_code): Likewise.
+	* jit.dg/test-null-passed-to-api.c (verify_code): Likewise;
+	use context to verify that the library provides a sane error
+	message to the client code.
+
+2013-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (test_global): New.
+	(make_test_of_get_address): New.
+	(verify_get_address): New.
+	(code_making_callback): Add call to make_test_of_get_address.
+	(verify_code): Add call to verify_get_address.
+
+2013-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c: New.
+	* jit.dg/test-combination.c: Add usage of test-expressions.c
+	* jit.dg/test-accessing-struct.c (code_making_callback): Update
+	for changes to field-access API.
+	* jit.dg/test-types.c (code_making_callback): Likewise.
+
+2013-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-null-passed-to-api.c: New.
+
+2013-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-struct.c (code_making_callback): Update
+	for changes to type API.
+	* jit.dg/test-calling-external-function.c (code_making_callback):
+	Likewise.
+	* jit.dg/test-dot-product.c (code_making_callback): Likewise.
+	* jit.dg/test-factorial.c (code_making_callback): Likewise.
+	* jit.dg/test-fibonacci.c (code_making_callback): Likewise.
+	* jit.dg/test-hello-world.c (code_making_callback): Likewise.
+	* jit.dg/test-string-literal.c (code_making_callback): Likewise.
+	* jit.dg/test-sum-of-squares.c (code_making_callback): Likewise.
+	* jit.dg/test-using-globals.c (code_making_callback): Likewise.
+	* jit.dg/test-types.c: New.
+	* jit.dg/test-combination.c (code_making_callback): Use code
+	from test-types.c.
+	(verify_code): ...and verify it.
+
+2013-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-dot-product.c (code_making_callback): Update for
+	API changes to locals.
+	* jit.dg/test-sum-of-squares.c (code_making_callback): Likewise.
+
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): Detect compilation errors and
+	make them be test failures.
+
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-factorial.c (code_making_callback): Update
+	for change to gcc_jit_function_place_forward_label.
+	* jit.dg/test-fibonacci.c (code_making_callback): Add line
+	numbering to comment, and set up source locations throughout)
+	allowing stepping throught the comment in the debugger.
+	* jit.dg/test-sum-of-squares.c (code_making_callback): Update
+	for change to gcc_jit_function_place_forward_label.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h: Set GCC_JIT_BOOL_OPTION_DUMP_SUMMARY when
+	running selftests.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h: Wrap parts of harness within a
+	#ifndef TEST_COMBINATION so that it can be included multiple
+	times.
+	* jit.dg/test-accessing-struct.c (code_making_callback): Rename
+	the generated function from test_fn to test_access to avoid a
+	naming collision in the combined test.
+	(verify_code): Likewise.
+	* jit.dg/test-calling-external-function.c (code_making_callback):
+	Rename the generated function from test_fn to test_caller.
+	(verify_code): Likewise.
+	* jit.dg/test-combination.c: New.
+	* jit.dg/test-string-literal.c (code_making_callback): Rename
+	the generated function from test_fn to test_string_literal.
+	(verify_code): Likewise.
+	* jit.dg/test-using-global.c (code_making_callback): Rename
+	the generated function from test_fn to test_using_global.
+	(verify_code): Likewise.
+
+2013-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (test_jit): Set
+	GCC_JIT_BOOL_OPTION_SELFCHECK_GC when running selftests.
+
+2013-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-using-global.c: New.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg: New subdirectory
+	* jit.dg/harness.h: New.
+	* jit.dg/jit.exp: New.
+	* jit.dg/test-accessing-struct.c: New.
+	* jit.dg/test-calling-external-function.c: New.
+	* jit.dg/test-dot-product.c: New.
+	* jit.dg/test-factorial.c: New.
+	* jit.dg/test-failure.c: New.
+	* jit.dg/test-fibonacci.c: New.
+	* jit.dg/test-hello-world.c: New.
+	* jit.dg/test-string-literal.c: New.
+	* jit.dg/test-sum-of-squares.c: New.
+
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

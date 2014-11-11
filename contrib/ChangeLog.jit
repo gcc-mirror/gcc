@@ -1,0 +1,14 @@
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: Add copyright footer.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-coverage-report.py: New file: a script to print crude
+	code-coverage information for the libgccjit API.
+
+Copyright (C) 2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

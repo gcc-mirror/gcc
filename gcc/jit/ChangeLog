@@ -1,0 +1,60 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* ChangeLog: New.
+	* Make-lang.in: New.
+	* TODO.rst: New.
+	* config-lang.in: New.
+	* docs/Makefile: New.
+	* docs/_build/texinfo/Makefile: New.
+	* docs/_build/texinfo/factorial.png: New.
+	* docs/_build/texinfo/libgccjit.texi: New.
+	* docs/_build/texinfo/sum-of-squares.png: New.
+	* docs/conf.py: New.
+	* docs/examples/tut01-hello-world.c: New.
+	* docs/examples/tut02-square.c: New.
+	* docs/examples/tut03-sum-of-squares.c: New.
+	* docs/examples/tut04-toyvm/Makefile: New.
+	* docs/examples/tut04-toyvm/factorial.toy: New.
+	* docs/examples/tut04-toyvm/fibonacci.toy: New.
+	* docs/examples/tut04-toyvm/toyvm.c: New.
+	* docs/index.rst: New.
+	* docs/internals/index.rst: New.
+	* docs/intro/factorial.png: New.
+	* docs/intro/index.rst: New.
+	* docs/intro/sum-of-squares.png: New.
+	* docs/intro/tutorial01.rst: New.
+	* docs/intro/tutorial02.rst: New.
+	* docs/intro/tutorial03.rst: New.
+	* docs/intro/tutorial04.rst: New.
+	* docs/topics/contexts.rst: New.
+	* docs/topics/expressions.rst: New.
+	* docs/topics/functions.rst: New.
+	* docs/topics/index.rst: New.
+	* docs/topics/locations.rst: New.
+	* docs/topics/objects.rst: New.
+	* docs/topics/results.rst: New.
+	* docs/topics/types.rst: New.
+	* dummy-frontend.c: New.
+	* jit-builtins.c: New.
+	* jit-builtins.h: New.
+	* jit-common.h: New.
+	* jit-playback.c: New.
+	* jit-playback.h: New.
+	* jit-recording.c: New.
+	* jit-recording.h: New.
+	* libgccjit++.h: New.
+	* libgccjit.c: New.
+	* libgccjit.h: New.
+	* libgccjit.map: New.
+	* notes.txt: New.
+
+2013-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* Initial creation
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

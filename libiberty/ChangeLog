@@ -1,3 +1,7 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
 2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sigsetmask.c (_POSIX_SOURCE): Remove.
