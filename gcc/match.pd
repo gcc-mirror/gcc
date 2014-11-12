@@ -558,3 +558,15 @@ along with GCC; see the file COPYING3.  If not see
   /* Look through a sign-changing conversion.  */
   (if (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
    (convert @0)))
+
+
+/* COMPLEX_EXPR and REALPART/IMAGPART_EXPR cancellations.  */
+(simplify
+ (complex (realpart @0) (imagpart @0))
+ @0)
+(simplify
+ (realpart (complex @0 @1))
+ @0)
+(simplify
+ (imagpart (complex @0 @1))
+ @1)
