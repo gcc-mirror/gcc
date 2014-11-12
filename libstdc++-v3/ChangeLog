@@ -5,6 +5,13 @@
 	* testsuite/experimental/optional/observers/2.cc: Add operator&.
 	* testsuite/experimental/optional/constexpr/observers/2.cc: Likewise.
 
+	* testsuite/experimental/optional/constexpr/observers/1.cc: Remove
+	unused header.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/5.cc: Likewise.
+
 2014-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (__void_t): Define new alias template.
