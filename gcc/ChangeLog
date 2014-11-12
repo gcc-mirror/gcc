@@ -1,3 +1,8 @@
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement simple complex operations cancelling.
+	* fold-const.c (fold_unary_loc): Remove them here.
+
 2014-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):

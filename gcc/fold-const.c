@@ -7988,9 +7988,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     case REALPART_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return fold_convert_loc (loc, type, arg0);
-      if (TREE_CODE (arg0) == COMPLEX_EXPR)
-	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 0),
-				 TREE_OPERAND (arg0, 1));
       if (TREE_CODE (arg0) == COMPLEX_CST)
 	return fold_convert_loc (loc, type, TREE_REALPART (arg0));
       if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
@@ -8031,9 +8028,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
     case IMAGPART_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return build_zero_cst (type);
-      if (TREE_CODE (arg0) == COMPLEX_EXPR)
-	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 1),
-				 TREE_OPERAND (arg0, 0));
       if (TREE_CODE (arg0) == COMPLEX_CST)
 	return fold_convert_loc (loc, type, TREE_IMAGPART (arg0));
       if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
@@ -13350,13 +13344,6 @@ fold_binary_loc (location_t loc,
 	  || (TREE_CODE (arg0) == INTEGER_CST
 	      && TREE_CODE (arg1) == INTEGER_CST))
 	return build_complex (type, arg0, arg1);
-      if (TREE_CODE (arg0) == REALPART_EXPR
-	  && TREE_CODE (arg1) == IMAGPART_EXPR
-	  && TREE_TYPE (TREE_OPERAND (arg0, 0)) == type
-	  && operand_equal_p (TREE_OPERAND (arg0, 0),
-			      TREE_OPERAND (arg1, 0), 0))
-	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 0),
-				     TREE_OPERAND (arg1, 0));
       return NULL_TREE;
 
     case ASSERT_EXPR:
