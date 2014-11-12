@@ -1,3 +1,8 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/63838
+	* g++.dg/ipa/pr63838.C: New test.
+
 2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/args-1.c: Handle __mips_fpr == 0.
