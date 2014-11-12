@@ -4933,6 +4933,8 @@ typedef struct cp_decl_specifier_seq {
   BOOL_BITFIELD explicit_char_p : 1;
   /* True iff ds_thread is set for __thread, not thread_local.  */
   BOOL_BITFIELD gnu_thread_keyword_p : 1;
+  /* True iff the type is a decltype.  */
+  BOOL_BITFIELD decltype_p : 1;
 } cp_decl_specifier_seq;
 
 /* The various kinds of declarators.  */

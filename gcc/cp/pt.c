@@ -12462,7 +12462,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
 					     | cp_type_quals (type),
-					     complain);
+					     complain | tf_ignore_bad_quals);
       }
 
     case UNDERLYING_TYPE:

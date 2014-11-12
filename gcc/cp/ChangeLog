@@ -1,3 +1,12 @@
+2014-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1510
+	PR c++/60420
+	* cp-tree.h (struct cp_decl_specifier_seq): Add decltype_p bool field.
+	* decl.c (grokdeclarator): Use it.
+	* parser.c (cp_parser_simple_type_specifier): Likewise.
+	* pt.c (tsubst, case DECLTYPE_TYPE): Use tf_ignore_bad_quals.
+
 2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63265
