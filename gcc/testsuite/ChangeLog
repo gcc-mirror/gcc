@@ -1,3 +1,9 @@
+2014-11-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/gcc-dg.exp (${tool}_load): Truncate gcc output.
+	* lib/prune.exp (prune_gcc_output): New absolute path to relative path
+	truncation pattern.
+
 2014-11-12  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* gcc.target/arm/eabi1.c: Replace arm*-*-*eabi* and arm*-*-symbianelf*
