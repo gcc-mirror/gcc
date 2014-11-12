@@ -1,3 +1,9 @@
+2014-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Define __NO_MATH_ERRNO__ if -fno-math-errno.
+	* doc/cpp.texi (__NO_MATH_ERRNO__): Document predefined macro.
+
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (::gen_transform): Add capture_info and

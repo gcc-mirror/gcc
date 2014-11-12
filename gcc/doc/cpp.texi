@@ -2421,6 +2421,10 @@ Annex G requirements (for example, because @option{-fcx-limited-range}
 was used).  If 1 or more, it indicates that it is intended to support
 those requirements; this does not mean that all relevant language
 features are supported by GCC.
+
+@item __NO_MATH_ERRNO__
+This macro is defined if @option{-fno-math-errno} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
 @end table
 
 @node System-specific Predefined Macros
