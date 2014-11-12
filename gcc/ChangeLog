@@ -1,3 +1,15 @@
+2014-11-11  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-vrp.c (register_edge_assert_for_2): Change return type to
+	void and adjust accordingly.
+	(register_edge_assert_for_1): Likewise.
+	(register_edge_assert_for): Likewise.
+	(find_conditional_asserts): Likewise.
+	(find_switch_asserts): Likewise.
+	(find_assert_locations_1): Likewise.
+	(find_assert_locations): Likewise.
+	(insert_range_insertions): Inspect the need_assert_for bitmap.
+
 2014-11-11  Andrew Pinski  <apinski@cavium.com>
 
 	Bug target/61997
