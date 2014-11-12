@@ -9649,6 +9649,30 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	}
       return false;
 
+    case BUILT_IN_ADD_OVERFLOW:
+    case BUILT_IN_SUB_OVERFLOW:
+    case BUILT_IN_MUL_OVERFLOW:
+      if (builtin_function_validate_nargs (fndecl, nargs, 3))
+	{
+	  unsigned i;
+	  for (i = 0; i < 2; i++)
+	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
+	      {
+		error ("argument %u in call to function %qE does not have "
+		       "integral type", i + 1, fndecl);
+		return false;
+	      }
+	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) != INTEGER_TYPE)
+	    {
+	      error ("argument 3 in call to function %qE does not have "
+		     "pointer to integer type", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
     default:
       return true;
     }

@@ -2586,6 +2586,33 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Return true if ARG0 CODE ARG1 in infinite signed precision operation
+   doesn't fit into TYPE.  The test for overflow should be regardless of
+   -fwrapv, and even for unsigned types.  */
+
+bool
+arith_overflowed_p (enum tree_code code, const_tree type,
+		    const_tree arg0, const_tree arg1)
+{
+  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) widest2_int;
+  typedef generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> >
+    widest2_int_cst;
+  widest2_int warg0 = widest2_int_cst (arg0);
+  widest2_int warg1 = widest2_int_cst (arg1);
+  widest2_int wres;
+  switch (code)
+    {
+    case PLUS_EXPR: wres = wi::add (warg0, warg1); break;
+    case MINUS_EXPR: wres = wi::sub (warg0, warg1); break;
+    case MULT_EXPR: wres = wi::mul (warg0, warg1); break;
+    default: gcc_unreachable ();
+    }
+  signop sign = TYPE_SIGN (type);
+  if (sign == UNSIGNED && wi::neg_p (wres))
+    return true;
+  return wi::min_precision (wres, sign) > TYPE_PRECISION (type);
+}
+
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
    The statement may be replaced by another statement, e.g., if the call
    simplifies to a constant value. Return true if any changes were made.
@@ -2714,6 +2741,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
     {
       enum tree_code subcode = ERROR_MARK;
       tree result = NULL_TREE;
+      bool cplx_result = false;
+      tree overflow = NULL_TREE;
       switch (gimple_call_internal_fn (stmt))
 	{
 	case IFN_BUILTIN_EXPECT:
@@ -2744,6 +2773,18 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	case IFN_UBSAN_CHECK_MUL:
 	  subcode = MULT_EXPR;
 	  break;
+	case IFN_ADD_OVERFLOW:
+	  subcode = PLUS_EXPR;
+	  cplx_result = true;
+	  break;
+	case IFN_SUB_OVERFLOW:
+	  subcode = MINUS_EXPR;
+	  cplx_result = true;
+	  break;
+	case IFN_MUL_OVERFLOW:
+	  subcode = MULT_EXPR;
+	  cplx_result = true;
+	  break;
 	default:
 	  break;
 	}
@@ -2751,30 +2792,88 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
 	  tree arg0 = gimple_call_arg (stmt, 0);
 	  tree arg1 = gimple_call_arg (stmt, 1);
+	  tree type = TREE_TYPE (arg0);
+	  if (cplx_result)
+	    {
+	      tree lhs = gimple_call_lhs (stmt);
+	      if (lhs == NULL_TREE)
+		type = NULL_TREE;
+	      else
+		type = TREE_TYPE (TREE_TYPE (lhs));
+	    }
+	  if (type == NULL_TREE)
+	    ;
 	  /* x = y + 0; x = y - 0; x = y * 0; */
-	  if (integer_zerop (arg1))
-	    result = subcode == MULT_EXPR
-		     ? build_zero_cst (TREE_TYPE (arg0))
-		     : arg0;
+	  else if (integer_zerop (arg1))
+	    result = subcode == MULT_EXPR ? integer_zero_node : arg0;
 	  /* x = 0 + y; x = 0 * y; */
 	  else if (subcode != MINUS_EXPR && integer_zerop (arg0))
-	    result = subcode == MULT_EXPR
-		     ? build_zero_cst (TREE_TYPE (arg0))
-		     : arg1;
+	    result = subcode == MULT_EXPR ? integer_zero_node : arg1;
 	  /* x = y - y; */
 	  else if (subcode == MINUS_EXPR && operand_equal_p (arg0, arg1, 0))
-	    result = build_zero_cst (TREE_TYPE (arg0));
+	    result = integer_zero_node;
 	  /* x = y * 1; x = 1 * y; */
-	  else if (subcode == MULT_EXPR)
+	  else if (subcode == MULT_EXPR && integer_onep (arg1))
+	    result = arg0;
+	  else if (subcode == MULT_EXPR && integer_onep (arg0))
+	    result = arg1;
+	  else if (TREE_CODE (arg0) == INTEGER_CST
+		   && TREE_CODE (arg1) == INTEGER_CST)
 	    {
-	      if (integer_onep (arg1))
-		result = arg0;
-	      else if (integer_onep (arg0))
-		result = arg1;
+	      if (cplx_result)
+		result = int_const_binop (subcode, fold_convert (type, arg0),
+					  fold_convert (type, arg1));
+	      else
+		result = int_const_binop (subcode, arg0, arg1);
+	      if (result && arith_overflowed_p (subcode, type, arg0, arg1))
+		{
+		  if (cplx_result)
+		    overflow = build_one_cst (type);
+		  else
+		    result = NULL_TREE;
+		}
+	    }
+	  if (result)
+	    {
+	      if (result == integer_zero_node)
+		result = build_zero_cst (type);
+	      else if (cplx_result && TREE_TYPE (result) != type)
+		{
+		  if (TREE_CODE (result) == INTEGER_CST)
+		    {
+		      if (arith_overflowed_p (PLUS_EXPR, type, result,
+					      integer_zero_node))
+			overflow = build_one_cst (type);
+		    }
+		  else if ((!TYPE_UNSIGNED (TREE_TYPE (result))
+			    && TYPE_UNSIGNED (type))
+			   || (TYPE_PRECISION (type)
+			       < (TYPE_PRECISION (TREE_TYPE (result))
+				  + (TYPE_UNSIGNED (TREE_TYPE (result))
+				     && !TYPE_UNSIGNED (type)))))
+		    result = NULL_TREE;
+		  if (result)
+		    result = fold_convert (type, result);
+		}
 	    }
 	}
+
       if (result)
 	{
+	  if (TREE_CODE (result) == INTEGER_CST && TREE_OVERFLOW (result))
+	    result = drop_tree_overflow (result);
+	  if (cplx_result)
+	    {
+	      if (overflow == NULL_TREE)
+		overflow = build_zero_cst (TREE_TYPE (result));
+	      tree ctype = build_complex_type (TREE_TYPE (result));
+	      if (TREE_CODE (result) == INTEGER_CST
+		  && TREE_CODE (overflow) == INTEGER_CST)
+		result = build_complex (ctype, result, overflow);
+	      else
+		result = build2_loc (gimple_location (stmt), COMPLEX_EXPR,
+				     ctype, result, overflow);
+	    }
 	  if (!update_call_from_tree (gsi, result))
 	    gimplify_and_update_call_from_tree (gsi, result);
 	  changed = true;

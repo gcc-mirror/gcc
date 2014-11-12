@@ -85,6 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-chkp.h"
+#include "tree-ssa-propagate.h"
+#include "gimple-fold.h"
 
 static struct stmt_stats
 {
@@ -1162,6 +1164,109 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
   release_defs (stmt);
 }
 
+/* Helper for maybe_optimize_arith_overflow.  Find in *TP if there are any
+   uses of data (SSA_NAME) other than REALPART_EXPR referencing it.  */
+
+static tree
+find_non_realpart_uses (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TYPE_P (*tp) || TREE_CODE (*tp) == REALPART_EXPR)
+    *walk_subtrees = 0;
+  if (*tp == (tree) data)
+    return *tp;
+  return NULL_TREE;
+}
+
+/* If the IMAGPART_EXPR of the {ADD,SUB,MUL}_OVERFLOW result is never used,
+   but REALPART_EXPR is, optimize the {ADD,SUB,MUL}_OVERFLOW internal calls
+   into plain unsigned {PLUS,MINUS,MULT}_EXPR, and if needed reset debug
+   uses.  */
+
+static void
+maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
+			       enum tree_code subcode)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (lhs == NULL || TREE_CODE (lhs) != SSA_NAME)
+    return;
+
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  bool has_debug_uses = false;
+  bool has_realpart_uses = false;
+  bool has_other_uses = false;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+    {
+      gimple use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	has_debug_uses = true;
+      else if (is_gimple_assign (use_stmt)
+	       && gimple_assign_rhs_code (use_stmt) == REALPART_EXPR
+	       && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == lhs)
+	has_realpart_uses = true;
+      else
+	{
+	  has_other_uses = true;
+	  break;
+	}
+    }
+
+  if (!has_realpart_uses || has_other_uses)
+    return;
+
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  location_t loc = gimple_location (stmt);
+  tree type = TREE_TYPE (TREE_TYPE (lhs));
+  tree utype = type;
+  if (!TYPE_UNSIGNED (type))
+    utype = build_nonstandard_integer_type (TYPE_PRECISION (type), 1);
+  tree result = fold_build2_loc (loc, subcode, utype,
+				 fold_convert_loc (loc, utype, arg0),
+				 fold_convert_loc (loc, utype, arg1));
+  result = fold_convert_loc (loc, type, result);
+
+  if (has_debug_uses)
+    {
+      gimple use_stmt;
+      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
+	{
+	  if (!gimple_debug_bind_p (use_stmt))
+	    continue;
+	  tree v = gimple_debug_bind_get_value (use_stmt);
+	  if (walk_tree (&v, find_non_realpart_uses, lhs, NULL))
+	    {
+	      gimple_debug_bind_reset_value (use_stmt);
+	      update_stmt (use_stmt);
+	    }
+	}
+    }
+
+  if (TREE_CODE (result) == INTEGER_CST && TREE_OVERFLOW (result))
+    result = drop_tree_overflow (result);
+  tree overflow = build_zero_cst (type);
+  tree ctype = build_complex_type (type);
+  if (TREE_CODE (result) == INTEGER_CST)
+    result = build_complex (ctype, result, overflow);
+  else
+    result = build2_loc (gimple_location (stmt), COMPLEX_EXPR,
+			 ctype, result, overflow);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Transforming call: ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "because the overflow result is never used into: ");
+      print_generic_stmt (dump_file, result, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  if (!update_call_from_tree (gsi, result))
+    gimplify_and_update_call_from_tree (gsi, result);
+}
+
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
    contributes nothing to the program, and can be deleted.  */
 
@@ -1298,6 +1403,21 @@ eliminate_unnecessary_stmts (void)
 		  update_stmt (stmt);
 		  release_ssa_name (name);
 		}
+	      else if (gimple_call_internal_p (stmt))
+		switch (gimple_call_internal_fn (stmt))
+		  {
+		  case IFN_ADD_OVERFLOW:
+		    maybe_optimize_arith_overflow (&gsi, PLUS_EXPR);
+		    break;
+		  case IFN_SUB_OVERFLOW:
+		    maybe_optimize_arith_overflow (&gsi, MINUS_EXPR);
+		    break;
+		  case IFN_MUL_OVERFLOW:
+		    maybe_optimize_arith_overflow (&gsi, MULT_EXPR);
+		    break;
+		  default:
+		    break;
+		  }
 	    }
 	}
     }

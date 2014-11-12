@@ -178,6 +178,9 @@ DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_4, ATTR_NONNULL, ATTR_LIST_4, \
 /* Nothrow functions whose fifth parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_5, ATTR_NONNULL, ATTR_LIST_5, \
 			ATTR_NOTHROW_LIST)
+/* Nothrow leaf functions which are type-generic.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_TYPEGENERIC_LEAF, ATTR_TYPEGENERIC, ATTR_NULL, \
+			ATTR_NOTHROW_LEAF_LIST)
 /* Nothrow const functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL, ATTR_CONST, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL)
