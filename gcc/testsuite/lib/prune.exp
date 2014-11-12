@@ -68,12 +68,18 @@ proc prune_gcc_output { text } {
     # Ignore harmless warnings from Xcode 4.0.
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
 
+    #send_user "After:$text\n"
+
+    return $text
+}
+
+proc prune_file_path { text } {
+    global srcdir
+
     # Truncate absolute file path into relative path.
     set topdir "[file dirname [file dirname [file dirname $srcdir]]]"
     regsub -all "$srcdir\/" $text "" text
     regsub -all "$topdir\/" $text "" text
-
-    #send_user "After:$text\n"
 
     return $text
 }
