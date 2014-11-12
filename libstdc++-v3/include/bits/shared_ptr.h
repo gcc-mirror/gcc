@@ -92,6 +92,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
     {
+      template<typename _Ptr>
+	using _Convertible
+	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+
     public:
       /**
        *  @brief  Construct an empty %shared_ptr.
@@ -213,8 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A %shared_ptr.
        *  @post   get() == __r.get() && use_count() == __r.use_count()
        */
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	shared_ptr(const shared_ptr<_Tp1>& __r) noexcept
         : __shared_ptr<_Tp>(__r) { }
 
@@ -231,8 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A %shared_ptr rvalue.
        *  @post   *this contains the old value of @a __r, @a __r is empty.
        */
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	shared_ptr(shared_ptr<_Tp1>&& __r) noexcept
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
@@ -253,7 +255,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(std::auto_ptr<_Tp1>&& __r);
 #endif
 
-      template<typename _Tp1, typename _Del>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2399. shared_ptr's constructor from unique_ptr should be constrained
+      template<typename _Tp1, typename _Del, typename
+	       = _Convertible<typename unique_ptr<_Tp1, _Del>::pointer>>
 	shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
@@ -464,25 +469,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class weak_ptr : public __weak_ptr<_Tp>
     {
+      template<typename _Ptr>
+	using _Convertible
+	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+
     public:
       constexpr weak_ptr() noexcept = default;
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	weak_ptr(const shared_ptr<_Tp1>& __r) noexcept
 	: __weak_ptr<_Tp>(__r) { }
 
       weak_ptr(const weak_ptr&) noexcept = default;
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	weak_ptr(const weak_ptr<_Tp1>& __r) noexcept
 	: __weak_ptr<_Tp>(__r) { }
 
       weak_ptr(weak_ptr&&) noexcept = default;
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	weak_ptr(weak_ptr<_Tp1>&& __r) noexcept
 	: __weak_ptr<_Tp>(std::move(__r)) { }
 
