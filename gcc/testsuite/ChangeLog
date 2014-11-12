@@ -1,3 +1,8 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/63838
+	* g++.dg/ipa/pr63838.C: New test.
+
 2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63265
