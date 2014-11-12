@@ -1,3 +1,8 @@
+2014-11-12  Kai Tietz  <ktietz@redhat.com>
+
+	* sdbout.c (sdbout_symbol): Eliminate register only
+	if decl isn't a global variable.
+
 2014-11-12  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_lane_bounds): Display indices.
