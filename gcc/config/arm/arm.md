@@ -8261,7 +8261,7 @@
 	  [(match_operand:SI 3 "s_register_operand" "r,r,r")
 	   (match_operand:SI 4 "shift_amount_operand" "M,M,r")])
 	 (match_operand:SI 1 "s_register_operand" "rk,<t2_binop0>,rk")))]
-  "TARGET_32BIT && GET_CODE (operands[3]) != MULT"
+  "TARGET_32BIT && GET_CODE (operands[2]) != MULT"
   "<arith_shift_insn>%?\\t%0, %1, %3%S2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
