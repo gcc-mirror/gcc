@@ -1,3 +1,8 @@
+2014-11-12  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* testsuite/test-strtol.c (run_tests): Cast strtol return to
+	unsigned long.
+
 2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
