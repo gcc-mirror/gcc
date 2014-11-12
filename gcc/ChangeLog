@@ -1,3 +1,77 @@
+2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* common/config/mips/mips-common.c (mips_handle_option): Ensure
+	that -mfp32, -mfp64 disable -mfpxx and -mfpxx disables -mfp64.
+	* config.gcc (--with-fp-32): New option.
+	(--with-odd-spreg-32): Likewise.
+	* config.in (HAVE_AS_DOT_MODULE): New config define.
+	* config/mips/mips-protos.h
+	(mips_secondary_memory_needed): New prototype.
+	(mips_hard_regno_caller_save_mode): Likewise.
+	* config/mips/mips.c (mips_get_reg_raw_mode): New static prototype.
+	(mips_get_arg_info): Assert that V2SFmode is only handled specially
+	with TARGET_PAIRED_SINGLE_FLOAT.
+	(mips_return_mode_in_fpr_p): Likewise.
+	(mips16_call_stub_mode_suffix): Likewise.
+	(mips_get_reg_raw_mode): New static function.
+	(mips_return_fpr_pair): O32 return values span two registers.
+	(mips16_build_call_stub): Likewise.
+	(mips_function_value_regno_p): Support both FP return registers.
+	(mips_output_64bit_xfer): Use mthc1 whenever TARGET_HAS_MXHC1.  Add
+	specific cases for TARGET_FPXX to move via memory.
+	(mips_dwarf_register_span): For TARGET_FPXX pretend that modes larger
+	than UNITS_PER_FPREG 'span' one register.
+	(mips_dwarf_frame_reg_mode): New static function.
+	(mips_file_start): Switch to using .module instead of .gnu_attribute.
+	No longer support FP ABI 4 (-mips32r2 -mfp64), replace with FP ABI 6.
+	Add FP ABI 5 (-mfpxx) and FP ABI 7 (-mfp64 -mno-odd-spreg).
+	(mips_save_reg, mips_restore_reg): Always represent DFmode frame
+	slots with two CFI directives even for O32 FP64.
+	(mips_for_each_saved_gpr_and_fpr): Account for fixed_regs when
+	saving/restoring callee-saved registers.
+	(mips_hard_regno_mode_ok_p): Implement O32 FP64A extension.
+	(mips_secondary_memory_needed): New function.
+	(mips_option_override): ABI check for TARGET_FLOATXX.  Disable
+	odd-numbered single-precision registers	when using TARGET_FLOATXX.
+	Implement -modd-spreg and defaults.
+	(mips_conditional_register_usage): Redefine O32 FP64 to match O32 FP32
+	callee-saved behaviour.
+	(mips_hard_regno_caller_save_mode): Implement.
+	(TARGET_GET_RAW_RESULT_MODE): Define target hook.
+	(TARGET_GET_RAW_ARG_MODE): Define target hook.
+	(TARGET_DWARF_FRAME_REG_MODE): Define target hook.
+	* config/mips/mips.h (TARGET_FLOAT32): New macro.
+	(TARGET_O32_FP64A_ABI): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): TARGET_FPXX is __mips_fpr==0. Add
+	_MIPS_SPFPSET builtin define.
+	(MIPS_FPXX_OPTION_SPEC): New macro.
+	(OPTION_DEFAULT_SPECS): Pass through --with-fp-32=* to -mfp and
+	--with-odd-spreg-32=* to -m[no-]odd-spreg.
+	(ISA_HAS_ODD_SPREG): New macro.
+	(ISA_HAS_MXHC1): True for anything other than -mfp32.
+	(ASM_SPEC): Pass through mfpxx, mfp64, -mno-odd-spreg and -modd-spreg.
+	(MIN_FPRS_PER_FMT): Redefine in terms of TARGET_ODD_SPREG.
+	(HARD_REGNO_CALLER_SAVE_MODE): Define.  Implement O32 FPXX extension
+	(HARD_REGNO_CALL_PART_CLOBBERED): Likewise.
+	(SECONDARY_MEMORY_NEEDED): Likewise.
+	(FUNCTION_ARG_REGNO_P): Update for O32 FPXX and FP64 extensions.
+	* config/mips/mips.md (define_attr enabled): Implement O32 FPXX and
+	FP64A ABI extensions.
+	(move_doubleword_fpr<mode>): Use ISA_HAS_MXHC1 instead of
+	TARGET_FLOAT64.
+	* config/mips/mips.opt (mfpxx): New target option.
+	(modd-spreg): Likewise.
+	* config/mips/mti-elf.h (DRIVER_SELF_SPECS): Infer FP ABI from arch.
+	* config/mips/mti-linux.h (DRIVER_SELF_SPECS): Likewise and remove
+	fp64 sysroot.
+	* config/mips/t-mti-elf: Remove fp64 multilib.
+	* config/mips/t-mti-linux: Likewise.
+	* configure.ac: Detect .module support.
+	* configure: Regenerate.
+	* doc/invoke.texi: Document -mfpxx, -modd-spreg, -mno-odd-spreg option.
+	* doc/install.texi (--with-fp-32, --with-odd-spreg-32): Document new
+	options.
+
 2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/63815

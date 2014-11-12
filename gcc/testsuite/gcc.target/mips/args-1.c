@@ -5,7 +5,7 @@
 const char *compiled_for = _MIPS_ARCH;
 const char *optimized_for = _MIPS_TUNE;
 
-#if __mips_fpr != 32 && __mips_fpr != 64
+#if __mips_fpr != 32 && __mips_fpr != 64 && __mips_fpr != 0
 #error Bad __mips_fpr
 #endif
 

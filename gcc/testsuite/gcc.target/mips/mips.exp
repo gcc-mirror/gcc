@@ -235,7 +235,7 @@ set mips_option_groups {
     endianness "-E(L|B)|-me(l|b)"
     float "-m(hard|soft)-float"
     forbid_cpu "forbid_cpu=.*"
-    fp "-mfp(32|64)"
+    fp "-mfp(32|xx|64)"
     gp "-mgp(32|64)"
     long "-mlong(32|64)"
     micromips "-mmicromips|-mno-micromips"
@@ -246,6 +246,10 @@ set mips_option_groups {
     small-data "-G[0-9]+"
     warnings "-w"
     dump "-fdump-.*"
+}
+
+for { set option 0 } { $option < 32 } { incr option } {
+    lappend mips_option_groups "fixed-f$option" "-ffixed-f$option"
 }
 
 # Add -mfoo/-mno-foo options to mips_option_groups.
@@ -270,6 +274,7 @@ foreach option {
     synci
     relax-pic-calls
     mcount-ra-address
+    odd-spreg
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -723,7 +728,11 @@ proc mips-dg-init {} {
 	    #if __mips_fpr == 64
 	    "-mfp64",
 	    #else
+	    #if __mips_fpr == 0
+	    "-mfpxx",
+	    #else
 	    "-mfp32",
+	    #endif
 	    #endif
 
 	    #ifdef __mips64
@@ -754,6 +763,12 @@ proc mips-dg-init {} {
 	    "-mpaired-single",
 	    #else
 	    "-mno-paired-single",
+	    #endif
+
+	    #if _MIPS_SPFPSET == 32
+	    "-modd-spreg",
+	    #else
+	    "-mno-odd-spreg",
 	    #endif
 
 	    #if __mips_abicalls
@@ -840,6 +855,8 @@ proc mips-dg-finish {} {
 #         -mpaired-single             -mno-paired-single
 #            |                           |
 #         -mfp64                      -mfp32
+#            |                           |
+#         -modd-spreg                 -mno-odd-spreg
 #            |                           |
 #         -mabs=2008/-mabs=legacy     <no option>
 #            |                           |
@@ -930,6 +947,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips3d" "-mpaired-single"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
+    mips_option_dependency options "-mfp64" "-modd-spreg"
     mips_option_dependency options "-mabs=2008" "-mhard-float"
     mips_option_dependency options "-mabs=legacy" "-mhard-float"
     mips_option_dependency options "-mrelax-pic-calls" "-mno-plt"
@@ -1046,10 +1064,13 @@ proc mips-dg-options { args } {
         # We need a MIPS32 or MIPS64 ISA for:
 	#
         #   - paired-single instructions(*)
+        #   - odd numbered single precision registers
         #
 	# (*) Note that we don't support MIPS V at the moment.
 	} elseif { $isa_rev < 1
-		   && [mips_have_test_option_p options "-mpaired-single"] } {
+		   && ([mips_have_test_option_p options "-mpaired-single"]
+		       || ([mips_have_test_option_p options "-modd-spreg"]
+			   && ![mips_have_test_option_p options "-mfp64"]))} {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32"
 	    } else {
@@ -1071,7 +1092,9 @@ proc mips-dg-options { args } {
 	# (*) needed by both -mbranch-likely and -mfix-r10000
 	} elseif { $isa < 2
 		   && ([mips_have_test_option_p options "-mbranch-likely"]
-		       || [mips_have_test_option_p options "-mfix-r10000"]) } {
+		       || [mips_have_test_option_p options "-mfix-r10000"]
+		       || ($gp_size == 32
+			   && [mips_have_test_option_p options "-mfpxx"])) } {
 	    mips_make_test_option options "-mips2"
 	# Check whether we need to switch from a 32-bit processor to the
 	# "nearest" 64-bit processor.
@@ -1121,6 +1144,9 @@ proc mips-dg-options { args } {
 	    set force_abi 1
 	} elseif { [mips_have_test_option_p options "-mlong64"]
 		   && [mips_long32_abi_p $abi] } {
+	    set force_abi 1
+	} elseif { [mips_have_test_option_p options "-mfpxx"]
+		   && ![mips_same_option_p $abi "-mabi=32"] } {
 	    set force_abi 1
 	} else {
 	    set force_abi 0
@@ -1193,6 +1219,9 @@ proc mips-dg-options { args } {
 	}
 	if { $isa_rev < 1 } {
 	    mips_make_test_option options "-mno-paired-single"
+	    if { ![mips_have_test_option_p options "-mgp64"] } {
+		mips_make_test_option options "-mno-odd-spreg"
+	    }
 	}
 	if { $isa_rev < 2 } {
 	    if { $gp_size == 32 } {
@@ -1223,6 +1252,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mplt" "-mno-shared"
     mips_option_dependency options "-mno-shared" "-fno-pic"
     mips_option_dependency options "-mfp32" "-mno-paired-single"
+    mips_option_dependency options "-mfpxx" "-mno-paired-single"
     mips_option_dependency options "-msoft-float" "-mno-paired-single"
     mips_option_dependency options "-mno-paired-single" "-mno-mips3d"
 
@@ -1244,7 +1274,9 @@ proc mips-dg-options { args } {
     foreach group $mips_abi_groups {
 	set old_option [mips_original_option $group]
 	set new_option [mips_option options $group]
-	if { ![mips_same_option_p $old_option $new_option] } {
+	if { ![mips_same_option_p $old_option $new_option]
+	     && ![mips_same_option_p $old_option "-mfpxx"]
+	     && ![mips_same_option_p $new_option "-mfpxx"] } {
 	    switch -- [lindex $do_what 0] {
 		link -
 		run {
