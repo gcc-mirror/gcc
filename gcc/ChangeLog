@@ -1,3 +1,14 @@
+2014-11-12  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* Makefile.in (TEXI_GCC_FILES): Remove arm-acle-intrinsics.texi,
+	arm-neon-intrinsics.texi, aarch64-acle-intrinsics.texi.
+	* doc/aarch64-acle-intrinsics.texi: Remove.
+	* doc/arm-acle-intrinsics.texi: Remove.
+	* doc/arm-neon-intrinsics.texi: Remove.
+	* doc/extend.texi: Consolidate sections AArch64 intrinsics,
+	ARM NEON Intrinsics, ARM ACLE Intrinsics into one ARM C Language
+	Extension section. Add references to public ACLE specification.
+
 2014-11-11  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-vrp.c (register_edge_assert_for_2): Change return type to
