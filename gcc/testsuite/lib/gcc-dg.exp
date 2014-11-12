@@ -282,7 +282,7 @@ if { [info procs ${tool}_load] != [list] \
 	    set result [list $status [lindex $result 1]]
 	}
 
-	set result [list [lindex $result 0] [prune_gcc_output [lindex $result 1]]]
+	set result [list [lindex $result 0] [prune_file_path [lindex $result 1]]]
 	return $result
     }
 }

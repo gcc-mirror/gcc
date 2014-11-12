@@ -1,5 +1,11 @@
 2014-11-12  Marek Polacek  <polacek@redhat.com>
 
+	* lib/gcc-dg.exp (${tool}_load): Call prune_file_path instead
+	of prune_gcc_output.
+	* lib/prune.exp (prune_file_path): New procedure.
+
+2014-11-12  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/ubsan/overflow-sub-4.c: New test.
 	* c-c++-common/ubsan/overflow-sub-2.c: Adjust dg-output.
 	* c-c++-common/ubsan/overflow-int128.c: Likewise.
