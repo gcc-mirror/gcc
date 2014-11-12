@@ -1,3 +1,9 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/63838
+	* ipa-pure-const.c (propagate_nothrow): Walk w->indirect_calls
+	chain instead of node->indirect_calls.
+
 2014-11-10  Daniel Hellstrom  <daniel@gaisler.com>
 
 	Backport from mainline

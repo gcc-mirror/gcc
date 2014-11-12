@@ -1429,7 +1429,7 @@ propagate_nothrow (void)
 	      else if (e->can_throw_external && !TREE_NOTHROW (y->symbol.decl))
 	        can_throw = true;
 	    }
-          for (ie = node->indirect_calls; ie; ie = ie->next_callee)
+          for (ie = w->indirect_calls; ie; ie = ie->next_callee)
 	    if (ie->can_throw_external)
 	      can_throw = true;
 	  w_info = (struct ipa_dfs_info *) w->symbol.aux;
