@@ -1011,7 +1011,7 @@ _LT_EOF
       case ${MACOSX_DEPLOYMENT_TARGET-10.0},$host in
 	10.0,*86*-darwin8*|10.0,*-darwin[[91]]*)
 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
-	10.[[012]]*)
+	10.[[012]][[,.]]*)
 	  _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress' ;;
 	10.*)
 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
@@ -1237,7 +1237,14 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	    LD="${LD-ld} -m elf_i386_fbsd"
 	    ;;
 	  x86_64-*linux*)
-	    LD="${LD-ld} -m elf_i386"
+	    case `/usr/bin/file conftest.o` in
+	      *x86-64*)
+		LD="${LD-ld} -m elf32_x86_64"
+		;;
+	      *)
+		LD="${LD-ld} -m elf_i386"
+		;;
+	    esac
 	    ;;
 	  powerpc64le-*linux*)
 	    LD="${LD-ld} -m elf32lppclinux"
@@ -1293,27 +1300,14 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
     CFLAGS="$SAVE_CFLAGS"
   fi
   ;;
-*-*solaris*)
+sparc*-*solaris*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
   if AC_TRY_EVAL(ac_compile); then
     case `/usr/bin/file conftest.o` in
     *64-bit*)
       case $lt_cv_prog_gnu_ld in
-      yes*)
-        case $host in
-        i?86-*-solaris* | x86_64-*-solaris2.1[[0-9]]*)
-          LD="${LD-ld} -m elf_x86_64"
-          ;;
-        sparc*-*-solaris*)
-          LD="${LD-ld} -m elf64_sparc"
-          ;;
-        esac
-        # GNU ld 2.21 introduced _sol2 emulations.  Use them if available.
-        if ${LD-ld} -V | grep _sol2 >/dev/null 2>&1; then
-          LD="${LD-ld}_sol2"
-        fi
-        ;;
+      yes*) LD="${LD-ld} -m elf64_sparc" ;;
       *)
 	if ${LD-ld} -64 -r -o conftest2.o conftest.o >/dev/null 2>&1; then
 	  LD="${LD-ld} -64"
@@ -2297,7 +2291,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[[123]]*) objformat=aout ;;
+    freebsd[[23]].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -2315,7 +2309,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[[01]]* | freebsdelf3.[[01]]*)
@@ -3597,6 +3591,7 @@ m4_if([$1], [CXX], [
 	# AIX 5 now supports IA64 processor
 	_LT_TAGVAR(lt_prog_compiler_static, $1)='-Bstatic'
       fi
+      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-fPIC'
       ;;
 
     amigaos*)
@@ -3908,6 +3903,7 @@ m4_if([$1], [CXX], [
 	# AIX 5 now supports IA64 processor
 	_LT_TAGVAR(lt_prog_compiler_static, $1)='-Bstatic'
       fi
+      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-fPIC'
       ;;
 
     amigaos*)
@@ -4828,7 +4824,7 @@ _LT_EOF
       ;;
 
     # Unfortunately, older versions of FreeBSD 2 do not have this feature.
-    freebsd2*)
+    freebsd2.*)
       _LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'
       _LT_TAGVAR(hardcode_direct, $1)=yes
       _LT_TAGVAR(hardcode_minus_L, $1)=yes
@@ -5775,7 +5771,7 @@ if test "$_lt_caught_CXX_error" != yes; then
         esac
         ;;
 
-      freebsd[[12]]*)
+      freebsd2.*)
         # C++ shared libraries reported to be fairly broken before
 	# switch to ELF
         _LT_TAGVAR(ld_shlibs, $1)=no
