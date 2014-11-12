@@ -1,3 +1,12 @@
+2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/63815
+	* config/i386/i386.c (ix86_init_large_pic_reg): New.  Extracted
+	from ...
+	(ix86_init_pic_reg): Here.  Use ix86_init_large_pic_reg.
+	(x86_output_mi_thunk): Set PIC register to %r11.  Call
+	ix86_init_large_pic_reg to initialize PIC register.
+
 2014-11-12  Kai Tietz  <ktietz@redhat.com>
 
 	* sdbout.c (sdbout_symbol): Eliminate register only
