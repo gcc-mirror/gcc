@@ -4977,32 +4977,27 @@ masked_increment (const wide_int &val_in, const wide_int &mask,
 
 /* Try to register an edge assertion for SSA name NAME on edge E for
    the condition COND contributing to the conditional jump pointed to by BSI.
-   Invert the condition COND if INVERT is true.
-   Return true if an assertion for NAME could be registered.  */
+   Invert the condition COND if INVERT is true.  */
 
-static bool
+static void
 register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 			    enum tree_code cond_code,
 			    tree cond_op0, tree cond_op1, bool invert)
 {
   tree val;
   enum tree_code comp_code;
-  bool retval = false;
 
   if (!extract_code_and_val_from_cond_with_ops (name, cond_code,
 						cond_op0,
 						cond_op1,
 						invert, &comp_code, &val))
-    return false;
+    return;
 
   /* Only register an ASSERT_EXPR if NAME was found in the sub-graph
      reachable from E.  */
   if (live_on_edge (e, name)
       && !has_single_use (name))
-    {
-      register_new_assert_for (name, name, comp_code, val, NULL, e, bsi);
-      retval = true;
-    }
+    register_new_assert_for (name, name, comp_code, val, NULL, e, bsi);
 
   /* In the case of NAME <= CST and NAME being defined as
      NAME = (unsigned) NAME2 + CST2 we can assert NAME2 >= -CST2
@@ -5063,8 +5058,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	    }
 
 	  register_new_assert_for (name3, tmp, comp_code, val, NULL, e, bsi);
-
-	  retval = true;
 	}
 
       /* If name2 is used later, create an ASSERT_EXPR for it.  */
@@ -5094,8 +5087,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	    }
 
 	  register_new_assert_for (name2, tmp, comp_code, val, NULL, e, bsi);
-
-	  retval = true;
 	}
     }
 
@@ -5133,7 +5124,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      cst = int_const_binop (code, val, cst);
 	      register_new_assert_for (name2, name2, comp_code, cst,
 				       NULL, e, bsi);
-	      retval = true;
 	    }
 	}
     }
@@ -5197,8 +5187,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 
 	      register_new_assert_for (name2, tmp, new_comp_code, cst, NULL,
 				       e, bsi);
-
-	      retval = true;
 	    }
 	}
 
@@ -5276,7 +5264,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 
 	      register_new_assert_for (name2, tmp, new_comp_code, new_val,
 				       NULL, e, bsi);
-	      retval = true;
 	    }
 	}
 
@@ -5297,8 +5284,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      && TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE
 	      && TYPE_UNSIGNED (TREE_TYPE (val))
 	      && TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
-		 > prec
-	      && !retval))
+		 > prec))
 	{
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  if (rhs_code == BIT_AND_EXPR)
@@ -5522,13 +5508,10 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 
 		    register_new_assert_for (names[i], tmp, LE_EXPR,
 					     new_val, NULL, e, bsi);
-		    retval = true;
 		  }
 	    }
 	}
     }
-
-  return retval;
 }
 
 /* OP is an operand of a truth value expression which is known to have
@@ -5538,18 +5521,17 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
    If CODE is EQ_EXPR, then we want to register OP is zero (false),
    if CODE is NE_EXPR, then we want to register OP is nonzero (true).   */
 
-static bool
+static void
 register_edge_assert_for_1 (tree op, enum tree_code code,
 			    edge e, gimple_stmt_iterator bsi)
 {
-  bool retval = false;
   gimple op_def;
   tree val;
   enum tree_code rhs_code;
 
   /* We only care about SSA_NAMEs.  */
   if (TREE_CODE (op) != SSA_NAME)
-    return false;
+    return;
 
   /* We know that OP will have a zero or nonzero value.  If OP is used
      more than once go ahead and register an assert for OP.  */
@@ -5558,7 +5540,6 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     {
       val = build_int_cst (TREE_TYPE (op), 0);
       register_new_assert_for (op, op, code, val, NULL, e, bsi);
-      retval = true;
     }
 
   /* Now look at how OP is set.  If it's set from a comparison,
@@ -5566,7 +5547,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
      to register information about the operands of that assignment.  */
   op_def = SSA_NAME_DEF_STMT (op);
   if (gimple_code (op_def) != GIMPLE_ASSIGN)
-    return retval;
+    return;
 
   rhs_code = gimple_assign_rhs_code (op_def);
 
@@ -5577,11 +5558,9 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       tree op1 = gimple_assign_rhs2 (op_def);
 
       if (TREE_CODE (op0) == SSA_NAME)
-        retval |= register_edge_assert_for_2 (op0, e, bsi, rhs_code, op0, op1,
-					      invert);
+        register_edge_assert_for_2 (op0, e, bsi, rhs_code, op0, op1, invert);
       if (TREE_CODE (op1) == SSA_NAME)
-        retval |= register_edge_assert_for_2 (op1, e, bsi, rhs_code, op0, op1,
-					      invert);
+        register_edge_assert_for_2 (op1, e, bsi, rhs_code, op0, op1, invert);
     }
   else if ((code == NE_EXPR
 	    && gimple_assign_rhs_code (op_def) == BIT_AND_EXPR)
@@ -5593,24 +5572,22 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       tree op1 = gimple_assign_rhs2 (op_def);
       if (TREE_CODE (op0) == SSA_NAME
 	  && has_single_use (op0))
-	retval |= register_edge_assert_for_1 (op0, code, e, bsi);
+	register_edge_assert_for_1 (op0, code, e, bsi);
       if (TREE_CODE (op1) == SSA_NAME
 	  && has_single_use (op1))
-	retval |= register_edge_assert_for_1 (op1, code, e, bsi);
+	register_edge_assert_for_1 (op1, code, e, bsi);
     }
   else if (gimple_assign_rhs_code (op_def) == BIT_NOT_EXPR
 	   && TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (op_def))) == 1)
     {
       /* Recurse, flipping CODE.  */
       code = invert_tree_comparison (code, false);
-      retval |= register_edge_assert_for_1 (gimple_assign_rhs1 (op_def),
-					    code, e, bsi);
+      register_edge_assert_for_1 (gimple_assign_rhs1 (op_def), code, e, bsi);
     }
   else if (gimple_assign_rhs_code (op_def) == SSA_NAME)
     {
       /* Recurse through the copy.  */
-      retval |= register_edge_assert_for_1 (gimple_assign_rhs1 (op_def),
-					    code, e, bsi);
+      register_edge_assert_for_1 (gimple_assign_rhs1 (op_def), code, e, bsi);
     }
   else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (op_def)))
     {
@@ -5620,40 +5597,37 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       if (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
 	  && (TYPE_PRECISION (TREE_TYPE (rhs))
 	      <= TYPE_PRECISION (TREE_TYPE (op))))
-	retval |= register_edge_assert_for_1 (rhs, code, e, bsi);
+	register_edge_assert_for_1 (rhs, code, e, bsi);
     }
-
-  return retval;
 }
 
 /* Try to register an edge assertion for SSA name NAME on edge E for
-   the condition COND contributing to the conditional jump pointed to by SI.
-   Return true if an assertion for NAME could be registered.  */
+   the condition COND contributing to the conditional jump pointed to by
+   SI.  */
 
-static bool
+static void
 register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
 			  enum tree_code cond_code, tree cond_op0,
 			  tree cond_op1)
 {
   tree val;
   enum tree_code comp_code;
-  bool retval = false;
   bool is_else_edge = (e->flags & EDGE_FALSE_VALUE) != 0;
 
   /* Do not attempt to infer anything in names that flow through
      abnormal edges.  */
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-    return false;
+    return;
 
   if (!extract_code_and_val_from_cond_with_ops (name, cond_code,
 						cond_op0, cond_op1,
 						is_else_edge,
 						&comp_code, &val))
-    return false;
+    return;
 
   /* Register ASSERT_EXPRs for name.  */
-  retval |= register_edge_assert_for_2 (name, e, si, cond_code, cond_op0,
-					cond_op1, is_else_edge);
+  register_edge_assert_for_2 (name, e, si, cond_code, cond_op0,
+			      cond_op1, is_else_edge);
 
 
   /* If COND is effectively an equality test of an SSA_NAME against
@@ -5673,8 +5647,8 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
 	{
 	  tree op0 = gimple_assign_rhs1 (def_stmt);
 	  tree op1 = gimple_assign_rhs2 (def_stmt);
-	  retval |= register_edge_assert_for_1 (op0, NE_EXPR, e, si);
-	  retval |= register_edge_assert_for_1 (op1, NE_EXPR, e, si);
+	  register_edge_assert_for_1 (op0, NE_EXPR, e, si);
+	  register_edge_assert_for_1 (op1, NE_EXPR, e, si);
 	}
     }
 
@@ -5695,12 +5669,10 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
 	{
 	  tree op0 = gimple_assign_rhs1 (def_stmt);
 	  tree op1 = gimple_assign_rhs2 (def_stmt);
-	  retval |= register_edge_assert_for_1 (op0, EQ_EXPR, e, si);
-	  retval |= register_edge_assert_for_1 (op1, EQ_EXPR, e, si);
+	  register_edge_assert_for_1 (op0, EQ_EXPR, e, si);
+	  register_edge_assert_for_1 (op1, EQ_EXPR, e, si);
 	}
     }
-
-  return retval;
 }
 
 
@@ -5712,17 +5684,15 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
    the predicate operands, an assert location node is added to the
    list of assertions for the corresponding operands.  */
 
-static bool
+static void
 find_conditional_asserts (basic_block bb, gimple last)
 {
-  bool need_assert;
   gimple_stmt_iterator bsi;
   tree op;
   edge_iterator ei;
   edge e;
   ssa_op_iter iter;
 
-  need_assert = false;
   bsi = gsi_for_stmt (last);
 
   /* Look for uses of the operands in each of the sub-graphs
@@ -5737,15 +5707,11 @@ find_conditional_asserts (basic_block bb, gimple last)
       /* Register the necessary assertions for each operand in the
 	 conditional predicate.  */
       FOR_EACH_SSA_TREE_OPERAND (op, last, iter, SSA_OP_USE)
-	{
-	  need_assert |= register_edge_assert_for (op, e, bsi,
-						   gimple_cond_code (last),
-						   gimple_cond_lhs (last),
-						   gimple_cond_rhs (last));
-	}
+	register_edge_assert_for (op, e, bsi,
+				  gimple_cond_code (last),
+				  gimple_cond_lhs (last),
+				  gimple_cond_rhs (last));
     }
-
-  return need_assert;
 }
 
 struct case_info
@@ -5790,10 +5756,9 @@ compare_case_labels (const void *p1, const void *p2)
    the predicate operands, an assert location node is added to the
    list of assertions for the corresponding operands.  */
 
-static bool
+static void
 find_switch_asserts (basic_block bb, gimple last)
 {
-  bool need_assert;
   gimple_stmt_iterator bsi;
   tree op;
   edge e;
@@ -5806,11 +5771,10 @@ find_switch_asserts (basic_block bb, gimple last)
   volatile unsigned int idx;
 #endif
 
-  need_assert = false;
   bsi = gsi_for_stmt (last);
   op = gimple_switch_index (last);
   if (TREE_CODE (op) != SSA_NAME)
-    return false;
+    return;
 
   /* Build a vector of case labels sorted by destination label.  */
   ci = XNEWVEC (struct case_info, n);
@@ -5857,22 +5821,15 @@ find_switch_asserts (basic_block bb, gimple last)
 
       /* Register the necessary assertions for the operand in the
 	 SWITCH_EXPR.  */
-      need_assert |= register_edge_assert_for (op, e, bsi,
-					       max ? GE_EXPR : EQ_EXPR,
-					       op,
-					       fold_convert (TREE_TYPE (op),
-							     min));
+      register_edge_assert_for (op, e, bsi,
+				max ? GE_EXPR : EQ_EXPR,
+				op, fold_convert (TREE_TYPE (op), min));
       if (max)
-	{
-	  need_assert |= register_edge_assert_for (op, e, bsi, LE_EXPR,
-						   op,
-						   fold_convert (TREE_TYPE (op),
-								 max));
-	}
+	register_edge_assert_for (op, e, bsi, LE_EXPR, op,
+				  fold_convert (TREE_TYPE (op), max));
     }
 
   XDELETEVEC (ci);
-  return need_assert;
 }
 
 
@@ -5933,20 +5890,14 @@ find_switch_asserts (basic_block bb, gimple last)
    registered assertions to prevent adding unnecessary assertions.
    For instance, if a pointer P_4 is dereferenced more than once in a
    dominator tree, only the location dominating all the dereference of
-   P_4 will receive an ASSERT_EXPR.
+   P_4 will receive an ASSERT_EXPR.  */
 
-   If this function returns true, then it means that there are names
-   for which we need to generate ASSERT_EXPRs.  Those assertions are
-   inserted by process_assert_insertions.  */
-
-static bool
+static void
 find_assert_locations_1 (basic_block bb, sbitmap live)
 {
   gimple_stmt_iterator si;
   gimple last;
-  bool need_assert;
 
-  need_assert = false;
   last = last_stmt (bb);
 
   /* If BB's last statement is a conditional statement involving integer
@@ -5955,14 +5906,14 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
       && gimple_code (last) == GIMPLE_COND
       && !fp_predicate (last)
       && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
-    need_assert |= find_conditional_asserts (bb, last);
+    find_conditional_asserts (bb, last);
 
   /* If BB's last statement is a switch statement involving integer
      operands, determine if we need to add ASSERT_EXPRs.  */
   if (last
       && gimple_code (last) == GIMPLE_SWITCH
       && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
-    need_assert |= find_switch_asserts (bb, last);
+    find_switch_asserts (bb, last);
 
   /* Traverse all the statements in BB marking used names and looking
      for statements that may infer assertions for their used operands.  */
@@ -6019,16 +5970,12 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 			 operand of the NOP_EXPR after SI, not after the
 			 conversion.  */
 		      if (! has_single_use (t))
-			{
-			  register_new_assert_for (t, t, comp_code, value,
-						   bb, NULL, si);
-			  need_assert = true;
-			}
+			register_new_assert_for (t, t, comp_code, value,
+						 bb, NULL, si);
 		    }
 		}
 
 	      register_new_assert_for (op, op, comp_code, value, bb, NULL, si);
-	      need_assert = true;
 	    }
 	}
 
@@ -6059,22 +6006,18 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
       bitmap_clear_bit (live, SSA_NAME_VERSION (res));
     }
-
-  return need_assert;
 }
 
 /* Do an RPO walk over the function computing SSA name liveness
-   on-the-fly and deciding on assert expressions to insert.
-   Returns true if there are assert expressions to be inserted.  */
+   on-the-fly and deciding on assert expressions to insert.  */
 
-static bool
+static void
 find_assert_locations (void)
 {
   int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int *bb_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int *last_rpo = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   int rpo_cnt, i;
-  bool need_asserts;
 
   live = XCNEWVEC (sbitmap, last_basic_block_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
@@ -6108,7 +6051,6 @@ find_assert_locations (void)
 	}
     }
 
-  need_asserts = false;
   for (i = rpo_cnt - 1; i >= 0; --i)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
@@ -6123,7 +6065,7 @@ find_assert_locations (void)
 
       /* Process BB and update the live information with uses in
          this block.  */
-      need_asserts |= find_assert_locations_1 (bb, live[rpo[i]]);
+      find_assert_locations_1 (bb, live[rpo[i]]);
 
       /* Merge liveness into the predecessor blocks and free it.  */
       if (!bitmap_empty_p (live[rpo[i]]))
@@ -6174,8 +6116,6 @@ find_assert_locations (void)
     if (live[i])
       sbitmap_free (live[i]);
   XDELETEVEC (live);
-
-  return need_asserts;
 }
 
 /* Create an ASSERT_EXPR for NAME and insert it in the location
@@ -6311,7 +6251,8 @@ insert_range_assertions (void)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  if (find_assert_locations ())
+  find_assert_locations ();
+  if (!bitmap_empty_p (need_assert_for))
     {
       process_assert_insertions ();
       update_ssa (TODO_update_ssa_no_phi);
