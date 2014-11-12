@@ -1940,7 +1940,10 @@ capture_info::capture_info (simplify *s)
   info.safe_grow_cleared (s->capture_max + 1);
   e = as_a <expr *> (s->match);
   for (unsigned i = 0; i < e->ops.length (); ++i)
-    walk_match (e->ops[i], i, false);
+    walk_match (e->ops[i], i,
+		(i != 0 && *e->operation == COND_EXPR)
+		|| *e->operation == TRUTH_ANDIF_EXPR
+		|| *e->operation == TRUTH_ORIF_EXPR);
 
   walk_result (s->result, false);
 
@@ -1971,8 +1974,7 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg, bool conditional_p)
       for (unsigned i = 0; i < e->ops.length (); ++i)
 	{
 	  bool cond_p = conditional_p;
-	  if (i == 0
-	      && *e->operation == COND_EXPR)
+	  if (i != 0 && *e->operation == COND_EXPR)
 	    cond_p = true;
 	  else if (*e->operation == TRUTH_ANDIF_EXPR
 		   || *e->operation == TRUTH_ORIF_EXPR)
@@ -2018,8 +2020,7 @@ capture_info::walk_result (operand *o, bool conditional_p)
       for (unsigned i = 0; i < e->ops.length (); ++i)
 	{
 	  bool cond_p = conditional_p;
-	  if (i == 0
-	      && *e->operation == COND_EXPR)
+	  if (i != 0 && *e->operation == COND_EXPR)
 	    cond_p = true;
 	  else if (*e->operation == TRUTH_ANDIF_EXPR
 		   || *e->operation == TRUTH_ORIF_EXPR)
