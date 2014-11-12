@@ -47692,6 +47692,14 @@ all-stage3-gcc: maybe-all-stage3-mpc
 all-stage4-gcc: maybe-all-stage4-mpc
 all-stageprofile-gcc: maybe-all-stageprofile-mpc
 all-stagefeedback-gcc: maybe-all-stagefeedback-mpc
+all-gcc: maybe-all-isl
+
+all-stage1-gcc: maybe-all-stage1-isl
+all-stage2-gcc: maybe-all-stage2-isl
+all-stage3-gcc: maybe-all-stage3-isl
+all-stage4-gcc: maybe-all-stage4-isl
+all-stageprofile-gcc: maybe-all-stageprofile-isl
+all-stagefeedback-gcc: maybe-all-stagefeedback-isl
 all-gcc: maybe-all-build-texinfo
 
 all-stage1-gcc: maybe-all-build-texinfo
