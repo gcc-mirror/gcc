@@ -19,4 +19,4 @@ pair_mul_sum(byte *in, byte *out, int size)
     }
 }
 
-/* { dg-final { scan-assembler "palignr" } } */
+/* { dg-final { scan-assembler "perm2i128|palignr" } } */

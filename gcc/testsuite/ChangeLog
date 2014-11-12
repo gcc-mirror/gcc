@@ -1,3 +1,7 @@
+2014-11-12  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* gcc.target/i386/pr52252-atom-1.c: Extend assembler scan on AVX2 case.
+
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-32.c: Disable forwprop.
