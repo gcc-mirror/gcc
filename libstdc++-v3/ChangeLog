@@ -1,5 +1,17 @@
 2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c++/33911
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Use -Wno-deprecated.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/ext/array_allocator/variadic_construct.cc: Likewise.
+
+2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/experimental/optional (_Has_addressof): Check for non-member
 	operator&.
 	* testsuite/experimental/optional/observers/2.cc: Add operator&.
