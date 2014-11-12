@@ -1,3 +1,10 @@
+2014-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr45852.c: Simplify target selector.
+	* gcc.target/i386/pr63495.c: Ditto.
+	* gcc.target/i386/pr39496.c: Ditto.
+	* gcc.target/i386/pr36613.c: Ditto.
+
 2014-11-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/lr_free_1.c: New testcase for -fomit-frame-pointer.
