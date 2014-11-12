@@ -1,3 +1,8 @@
+2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (x86_output_mi_thunk): Use gen_rtx_REG to
+	set pic_offset_table_rtx.
+
 2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* common/config/mips/mips-common.c (mips_handle_option): Ensure
