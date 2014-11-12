@@ -1,5 +1,12 @@
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (capture_info::capture_info): Add missing
+	COND_EXPR handling.
+	(capture_info::walk_match): Fix COND_EXPR handling.
+	(capture_info::walk_result): Likewise.
+
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/63821
 	* match.pd: Add missing conversion to the -(T)-X pattern.
 
