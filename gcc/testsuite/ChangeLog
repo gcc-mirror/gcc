@@ -1,3 +1,7 @@
+2014-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/ipa/devirt-42.C: Fix dump scanning for "return 2".
+
 2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
