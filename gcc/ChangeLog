@@ -1,3 +1,72 @@
+2014-11-12  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_lane_bounds): Display indices.
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers): Add
+	qualifier_lane_index.
+	(aarch64_types_ternop_lane_qualifiers, TYPES_TERNOP_LANE): Rename to...
+	(aarch64_types_quadop_lane_qualifiers, TYPES_QUADOP_LANE): ...these.
+	(aarch64_types_ternop_lane_qualifiers, TYPES_TERNOP_LANE): New.
+
+	(aarch64_types_getlane_qualifiers): Rename to...
+	(aarch64_types_binop_imm_qualifiers): ...this.
+	(TYPES_SHIFTIMM): Follow renaming.
+	(TYPES_GETLANE): Rename to...
+	(TYPE_GETREG): ...this.
+
+	(aarch64_types_setlane_qualifiers): Rename to...
+	(aarch64_type_ternop_imm_qualifiers): ...this.
+	(TYPES_SHIFTINSERT, TYPES_SHIFTACC): Follow renaming.
+	(TYPES_SETLANE): Follow renaming above, and rename self to...
+	(TYPE_SETREG): ...this.
+
+	(enum builtin_simd_arg): Add SIMD_ARG_LANE_INDEX.
+	(aarch64_simd_expand_args): Add range check and endianness-flip.
+
+	(aarch64_simd_expand_builtin): Add mapping for qualifier_lane_index.
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sq<r>dmulh_lane<mode>_internal *2): Rename to...
+	(aarch64_sq<r>dmulh_lane<mode>): ...this, and remove lane bounds check.
+	(aarch64_sqdmulh_lane<mode> *2, aarch64_sqrdmulh_lane<mode> *2): Delete.
+
+	(aarch64_sq<r>dmulh_laneq<mode>_internal): Rename to...
+	(aarch64_sq<r>dmulh_lane<mode>): ...this.
+
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal *2): Rename to...
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>): ...this.
+
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>_internal *2): Rename to...
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>): ...this.
+
+	(aarch64_sqdmull_lane<mode>_internal *2): Rename to...
+	(aarch64_sqdmull_lane<mode>): ...this.
+
+	(aarch64_sqdmull_laneq<mode>_internal *2): Rename to...
+	(aarch64_sqdmull_laneq<mode>): ...this.
+
+	(aarch64_sqdmulh_laneq<mode>, aarch64_sqrdmulh_laneq<mode>,
+	(aarch64_sqdmlal_lane<mode>, aarch64_sqdmlal_laneq<mode>,
+	aarch64_sqdmlsl_lane<mode>, aarch64_sqdmlsl_laneq<mode>,
+	aarch64_sqdmull_lane<mode>, aarch64_sqdmull_laneq<mode>): Delete.
+
+	(aarch64_sqdmlal2_lane<mode>, aarch64_sqdmlal2_laneq<mode>,
+	aarch64_sqdmlsl2_lane<mode>, aarch64_sqdmlsl2_laneq<mode>,
+	aarch64_sqdmull2_lane<mode>, aarch64_sqdmull2_laneq<mode>): Remove
+	bounds check and lane flip.
+
+	* config/aarch64/aarch64-simd-builtins.def (be_checked_get_lane,
+	get_dregoi, get_dregci, getdregxi, get_qregoi,get_qregci, get_qregxi,
+	set_qregoi, set_qregci, set_qregxi): Change qualifiers to GETREG.
+
+	(sqdmlal_lane, sqdmlsl_lane, sqdmlal_laneq, sqdmlsl_laneq,
+	sqdmlal2_lane, sqdmlsl2_lane, sqdmlal2_laneq, sqdmlsl2_laneq): Follow
+	renaming of TERNOP_LANE to QUADOP_LANE.
+
+	(sqdmull_lane, sqdmull_laneq, sqdmull2_lane, sqdmull2_laneq,
+	sqdmulh_lane, sqdmulh_laneq, sqrdmulh_lane, sqrdmulh_laneq): Set
+	qualifiers to TERNOP_LANE.
+
 2014-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	* Makefile.in (CLOOGLIBS, CLOOGINC): Remove.

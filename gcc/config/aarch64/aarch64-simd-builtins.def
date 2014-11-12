@@ -47,7 +47,8 @@
   VAR1 (UNOP, addp, 0, di)
   BUILTIN_VDQ_BHSI (UNOP, clz, 2)
 
-  BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
+  /* be_checked_get_lane does its own lane swapping, so not a lane index.  */
+  BUILTIN_VALL (GETREG, be_checked_get_lane, 0)
 
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
@@ -64,17 +65,17 @@
   BUILTIN_VSDQ_I (BINOP_UUS, usqadd, 0)
 
   /* Implemented by aarch64_get_dreg<VSTRUCT:mode><VDC:mode>.  */
-  BUILTIN_VDC (GETLANE, get_dregoi, 0)
-  BUILTIN_VDC (GETLANE, get_dregci, 0)
-  BUILTIN_VDC (GETLANE, get_dregxi, 0)
+  BUILTIN_VDC (GETREG, get_dregoi, 0)
+  BUILTIN_VDC (GETREG, get_dregci, 0)
+  BUILTIN_VDC (GETREG, get_dregxi, 0)
   /* Implemented by aarch64_get_qreg<VSTRUCT:mode><VQ:mode>.  */
-  BUILTIN_VQ (GETLANE, get_qregoi, 0)
-  BUILTIN_VQ (GETLANE, get_qregci, 0)
-  BUILTIN_VQ (GETLANE, get_qregxi, 0)
+  BUILTIN_VQ (GETREG, get_qregoi, 0)
+  BUILTIN_VQ (GETREG, get_qregci, 0)
+  BUILTIN_VQ (GETREG, get_qregxi, 0)
   /* Implemented by aarch64_set_qreg<VSTRUCT:mode><VQ:mode>.  */
-  BUILTIN_VQ (SETLANE, set_qregoi, 0)
-  BUILTIN_VQ (SETLANE, set_qregci, 0)
-  BUILTIN_VQ (SETLANE, set_qregxi, 0)
+  BUILTIN_VQ (SETREG, set_qregoi, 0)
+  BUILTIN_VQ (SETREG, set_qregci, 0)
+  BUILTIN_VQ (SETREG, set_qregxi, 0)
   /* Implemented by aarch64_ld<VSTRUCT:nregs><VDC:mode>.  */
   BUILTIN_VDC (LOADSTRUCT, ld2, 0)
   BUILTIN_VDC (LOADSTRUCT, ld3, 0)
@@ -142,43 +143,44 @@
   BUILTIN_VSDQ_I (UNOP, sqabs, 0)
   BUILTIN_VSDQ_I (UNOP, sqneg, 0)
 
-  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlal_lane, 0)
-  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlsl_lane, 0)
-  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlal_laneq, 0)
-  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmlsl_laneq, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmlal2, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmlsl2, 0)
-  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlal2_lane, 0)
-  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlsl2_lane, 0)
-  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlal2_laneq, 0)
-  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmlsl2_laneq, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmlal2_n, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmlsl2_n, 0)
   /* Implemented by aarch64_sqdml<SBINQOPS:as>l<mode>.  */
   BUILTIN_VSD_HSI (TERNOP, sqdmlal, 0)
   BUILTIN_VSD_HSI (TERNOP, sqdmlsl, 0)
+  /* Implemented by aarch64_sqdml<SBINQOPS:as>l_lane<mode>.  */
+  BUILTIN_VSD_HSI (QUADOP_LANE, sqdmlal_lane, 0)
+  BUILTIN_VSD_HSI (QUADOP_LANE, sqdmlsl_lane, 0)
+  /* Implemented by aarch64_sqdml<SBINQOPS:as>l_laneq<mode>.  */
+  BUILTIN_VSD_HSI (QUADOP_LANE, sqdmlal_laneq, 0)
+  BUILTIN_VSD_HSI (QUADOP_LANE, sqdmlsl_laneq, 0)
   /* Implemented by aarch64_sqdml<SBINQOPS:as>l_n<mode>.  */
   BUILTIN_VD_HSI (TERNOP, sqdmlal_n, 0)
   BUILTIN_VD_HSI (TERNOP, sqdmlsl_n, 0)
 
+  BUILTIN_VQ_HSI (TERNOP, sqdmlal2, 0)
+  BUILTIN_VQ_HSI (TERNOP, sqdmlsl2, 0)
+  BUILTIN_VQ_HSI (QUADOP_LANE, sqdmlal2_lane, 0)
+  BUILTIN_VQ_HSI (QUADOP_LANE, sqdmlsl2_lane, 0)
+  BUILTIN_VQ_HSI (QUADOP_LANE, sqdmlal2_laneq, 0)
+  BUILTIN_VQ_HSI (QUADOP_LANE, sqdmlsl2_laneq, 0)
+  BUILTIN_VQ_HSI (TERNOP, sqdmlal2_n, 0)
+  BUILTIN_VQ_HSI (TERNOP, sqdmlsl2_n, 0)
+
   BUILTIN_VSD_HSI (BINOP, sqdmull, 0)
-  BUILTIN_VSD_HSI (TERNOP, sqdmull_lane, 0)
-  BUILTIN_VSD_HSI (TERNOP, sqdmull_laneq, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_lane, 0)
+  BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_laneq, 0)
   BUILTIN_VD_HSI (BINOP, sqdmull_n, 0)
   BUILTIN_VQ_HSI (BINOP, sqdmull2, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmull2_lane, 0)
-  BUILTIN_VQ_HSI (TERNOP, sqdmull2_laneq, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmull2_lane, 0)
+  BUILTIN_VQ_HSI (TERNOP_LANE, sqdmull2_laneq, 0)
   BUILTIN_VQ_HSI (BINOP, sqdmull2_n, 0)
   /* Implemented by aarch64_sq<r>dmulh<mode>.  */
   BUILTIN_VSDQ_HSI (BINOP, sqdmulh, 0)
   BUILTIN_VSDQ_HSI (BINOP, sqrdmulh, 0)
   /* Implemented by aarch64_sq<r>dmulh_lane<q><mode>.  */
-  BUILTIN_VDQHS (TERNOP, sqdmulh_lane, 0)
-  BUILTIN_VSDQ_HSI (TERNOP, sqdmulh_laneq, 0)
-  BUILTIN_VDQHS (TERNOP, sqrdmulh_lane, 0)
-  BUILTIN_VSDQ_HSI (TERNOP, sqrdmulh_laneq, 0)
-  BUILTIN_SD_HSI (TERNOP, sqdmulh_lane, 0)
-  BUILTIN_SD_HSI (TERNOP, sqrdmulh_lane, 0)
+  BUILTIN_VSDQ_HSI (TERNOP_LANE, sqdmulh_lane, 0)
+  BUILTIN_VSDQ_HSI (TERNOP_LANE, sqdmulh_laneq, 0)
+  BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_lane, 0)
+  BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_laneq, 0)
 
   BUILTIN_VSDQ_I_DI (BINOP, ashl, 3)
   /* Implemented by aarch64_<sur>shl<mode>.  */

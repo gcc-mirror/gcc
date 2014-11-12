@@ -8163,7 +8163,7 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
   lane = INTVAL (operand);
 
   if (lane < low || lane >= high)
-    error ("lane out of range");
+    error ("lane %ld out of range %ld - %ld", lane, low, high - 1);
 }
 
 /* Emit code to place a AdvSIMD pair result in memory locations (with equal
