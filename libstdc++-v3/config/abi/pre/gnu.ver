@@ -1476,6 +1476,9 @@ GLIBCXX_3.4.21 {
     # std::ctype_base::blank
     _ZNSt10ctype_base5blankE;
 
+    # std::_Sp_locker::*
+    _ZNSt10_Sp_locker[CD]*;
+
 } GLIBCXX_3.4.20;
 
 

@@ -34,5 +34,63 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   bad_weak_ptr::what() const noexcept
   { return "bad_weak_ptr"; }
 
+#ifdef __GTHREADS
+  namespace
+  {
+    const unsigned char mask = 0xf;
+    const unsigned char invalid = mask + 1;
+
+    inline unsigned char key(const void* addr)
+    { return _Hash_impl::hash(addr) & mask; }
+
+    /* Returns different instances of __mutex depending on the passed address
+     * in order to limit contention.
+     */
+    __gnu_cxx::__mutex&
+    get_mutex(unsigned char i)
+    {
+      static __gnu_cxx::__mutex m[mask + 1];
+      return m[i];
+    }
+  }
+
+  _Sp_locker::_Sp_locker(const void* p)
+  {
+    if (__gthread_active_p())
+      {
+	_M_key1 = _M_key2 = key(p);
+	get_mutex(_M_key1).lock();
+      }
+    else
+      _M_key1 = _M_key2 = invalid;
+  }
+
+  _Sp_locker::_Sp_locker(const void* p1, const void* p2)
+  {
+    if (__gthread_active_p())
+      {
+	_M_key1 = key(p1);
+	_M_key2 = key(p2);
+	if (_M_key2 < _M_key1)
+	  get_mutex(_M_key2).lock();
+	get_mutex(_M_key1).lock();
+	if (_M_key2 > _M_key1)
+	  get_mutex(_M_key2).lock();
+      }
+    else
+      _M_key1 = _M_key2 = invalid;
+  }
+
+  _Sp_locker::~_Sp_locker()
+  {
+    if (_M_key1 != invalid)
+      {
+	get_mutex(_M_key1).unlock();
+	if (_M_key2 != _M_key1)
+	  get_mutex(_M_key2).unlock();
+      }
+  }
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
