@@ -1,3 +1,10 @@
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/63819
+	* hash-table.h: Include ggc.h also for generator programs.
+	* genmatch.c (ggc_internal_cleared_alloc): Properly define
+	using MEM_STAT_DECL instead of CXX_MEM_STAT_INFO.
+
 2014-11-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63761

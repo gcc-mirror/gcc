@@ -196,14 +196,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef TYPED_HASHTAB_H
 #define TYPED_HASHTAB_H
 
-#ifndef GENERATOR_FILE
 #include "ggc.h"
-#else
-template <typename T>
-T *ggc_cleared_vec_alloc (size_t);
-template <typename T>
-T *ggc_alloc ();
-#endif
 #include "hashtab.h"
 #include <new>
 
